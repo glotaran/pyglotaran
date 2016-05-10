@@ -1,35 +1,9 @@
 import numpy as np
 import scipy.optimize
 import scipy.linalg.lapack as lapack
-from scipy.special import erf
 import time
 
-
-def disp(par_0, par_disp=None, l=None, l_c=None):
-    disp_s = par_0
-    if par_disp:
-        if not l or not l_c:
-            raise ValueError("Parameters missing")
-        for i in range(par_disp.shape[0]):
-            disp_s += par_disp[i] * np.power(((l - l_c) / 100), i)
-    return disp_s
-
-
-def calculateC(k, T, mu_0=None, delta_0=None, mu_disp=None, delta_disp=None, l=None, l_c_mu=None, l_c_delta=None):
-    C = np.exp(np.outer(T, -k))
-    if not mu_0 and not delta_0:
-        return C
-    mu = disp(mu_0, mu_disp, l, l_c_mu)
-    delta = disp(delta_0, delta_disp, l, l_c_delta)
-    delta_tilde = delta / (2 * np.sqrt(2 * np.log(2)))
-    for i in range(T.shape[0]):
-        for j in range(k.shape[0]):
-            t_i = T[i]
-            k_j = k[j]
-            term_1 = np.exp(k_j * (k_j * delta_tilde * delta_tilde / 2))
-            term_2 = 1 + erf((t_i - (mu + k_j * delta_tilde * delta_tilde)) / (np.sqrt(2) * delta_tilde))
-            C[i, j] *= .5 * term_1 * term_2
-    return C
+from calculateC import calculateC
 
 
 def qr(a, c):
@@ -43,13 +17,13 @@ def qr(a, c):
 
 def solve(params, PSI, times, n_k, irf=False, disp=False, n_m=0, n_d=0):
     res = np.empty(PSI.shape, dtype=np.float64)
-    mu_0 = None
-    delta_0 = None
-    mu_disp = None
-    delta_disp = None
-    l = None
-    l_c_mu = None
-    l_c_delta = None
+    mu_0 = np.nan
+    delta_0 = np.nan
+    mu_disp = np.empty((0,))
+    delta_disp = np.empty((0,))
+    l = np.nan
+    l_c_mu = np.nan
+    l_c_delta = np.nan
     k = np.asarray(params[:n_k])
     if irf:
         idx = n_k
@@ -93,7 +67,7 @@ def main():
     for i in range(location.size):
         E[:, i] = amp[i] * np.exp(-np.log(2) * np.square(2 * (wavenum - location[i]) / delta[i]))
 
-    C = calculateC(kinpar, times, irfvec[0], irfvec[1])
+    C = calculateC(kinpar, times, irfvec[0], irfvec[1], np.empty((0,)), np.empty((0,)), np.nan, np.nan, np.nan)
 
     PSI = np.dot(C, np.transpose(E))
 
