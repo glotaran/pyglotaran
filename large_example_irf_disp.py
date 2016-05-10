@@ -15,7 +15,7 @@ def qr(a, c):
     return c
 
 
-def solve(params, PSI, times, n_k, irf=False, disp=False, n_m=0, n_d=0):
+def solve(params, PSI, times, wavenum, n_k, irf=False, disp=False, n_m=0, n_d=0):
     res = np.empty(PSI.shape, dtype=np.float64)
     mu_0 = np.nan
     delta_0 = np.nan
@@ -43,8 +43,8 @@ def solve(params, PSI, times, n_k, irf=False, disp=False, n_m=0, n_d=0):
 
     for i in range(PSI.shape[1]):
         if disp:
-            l = i
-        C = calculateC(k, times, mu_0, delta_0, mu_disp, delta_disp, l, l_c_mu, l_c_delta)
+            l = wavenum[i]
+        C = calculateC(k, times, irf, mu_0, delta_0, mu_disp, delta_disp, l, l_c_mu, l_c_delta)
         b = PSI[:,i]
         res[:,i] = qr(C, b)
 
@@ -67,7 +67,7 @@ def main():
     for i in range(location.size):
         E[:, i] = amp[i] * np.exp(-np.log(2) * np.square(2 * (wavenum - location[i]) / delta[i]))
 
-    C = calculateC(kinpar, times, irfvec[0], irfvec[1], np.empty((0,)), np.empty((0,)), np.nan, np.nan, np.nan)
+    C = calculateC(kinpar, times, True, irfvec[0], irfvec[1], np.empty((0,)), np.empty((0,)), np.nan, np.nan, np.nan)
 
     PSI = np.dot(C, np.transpose(E))
 
@@ -78,7 +78,7 @@ def main():
 
     start = time.perf_counter()
 
-    res = scipy.optimize.least_squares(solve, params, args=(PSI, times, start_kinpar.shape[0], True), verbose=0, method='trf')
+    res = scipy.optimize.least_squares(solve, params, args=(PSI, times, wavenum, start_kinpar.shape[0], True), verbose=0, method='trf')
 
     stop = time.perf_counter()
 
