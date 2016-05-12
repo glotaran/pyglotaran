@@ -10,6 +10,7 @@ ext_modules=[
               libraries=["m"],
               extra_compile_args = ["-O3", "-ffast-math", "-march=native", "-fopenmp" ],
               extra_link_args=['-fopenmp']
+              #define_macros=[("CYTHON_TRACE_NOGIL", "1")]
               ) 
 ]
 
