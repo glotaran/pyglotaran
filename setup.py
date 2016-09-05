@@ -9,7 +9,7 @@ import numpy
 
 ext_modules = [
     Extension("calculateC",
-              ["glotaran-core/calculateC.pyx"],
+              ["glotaran_core/calculateC.pyx"],
               include_dirs=[numpy.get_include()],
               libraries=["m"],
               extra_compile_args=["-O3", "-ffast-math", "-march=native",
@@ -28,7 +28,7 @@ setup(
                     YamiNoKeshin@gmail.com,
                     joern.weissenborn@gmail.com""",
     license='GPLv3',
-    packages=['glotaran-core'],
+    packages=['glotaran_core'],
     install_requires=[
         'numpy',
         'scipy',
@@ -36,4 +36,6 @@ setup(
     ],
     cmdclass={"build_ext": build_ext},
     ext_modules=ext_modules,
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )
