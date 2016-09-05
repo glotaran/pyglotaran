@@ -11,7 +11,15 @@ ext_modules=[
               extra_compile_args = ["-O3", "-ffast-math", "-march=native", "-fopenmp" ],
               extra_link_args=['-fopenmp']
               #define_macros=[("CYTHON_TRACE_NOGIL", "1")]
-              ) 
+              ),
+#    Extension("solve",
+#              ["solve.pyx"],
+#              include_dirs=[numpy.get_include()],
+#              libraries=["m"],
+#              extra_compile_args = ["-O3", "-ffast-math", "-march=native", "-fopenmp" ],
+#              extra_link_args=['-fopenmp']
+#              #define_macros=[("CYTHON_TRACE_NOGIL", "1")]
+#              )
 ]
 
 

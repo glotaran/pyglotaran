@@ -4,10 +4,40 @@ import scipy.linalg.lapack as lapack
 import time
 import scipy.linalg
 
+from math import sqrt, exp
+#from scipy.special import erf, erfcx
+
 from calculateC import calculateC, calculateCirf
 
+count = 0
+#
+#def calculateCirf(C, k, T, mu, delta):
+#    I = T.shape[0]
+#    J = k.shape[0]
+#    for i in range(I):
+#        for j in range(J):
+#            t_i = T[i]
+#            k_j = k[j]
+#            
+#            if k_j == 0:
+#                C[i, j] = 0
+#                continue
+#            
+#            alpha = k_j * delta / sqrt(2)
+#            beta = (t_i - mu) / (delta * sqrt(2))
+#            thresh = beta - alpha
+#            
+#            if thresh < -1 :
+#                C[i, j] = .5 * erfcx(-thresh) * exp(-beta * beta)
+#            else:
+#                C[i, j] = .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+    
 
 def qr(a, c):
+
+    global count
+    count +=1 
+    
     qr, tau, _, _ = lapack.dgeqrf(a, overwrite_a=1)
     c, _, _ = lapack.dormqr("L", "T", qr, tau, c, max(1, a.shape[1]), overwrite_c=1)
     for i in range(a.shape[1]):
@@ -115,21 +145,23 @@ def compModel(kinpar, times, wavenum, irf=False, mu=0.0, delta=0.0,\
                 jvec=np.empty(0,), fixedkmat=False,kinscalspecial=np.empty(0,), \
                 kinscalspecialspec=np.empty(0,), nocolsums=False):
     
-    C = np.empty((times.shape[0], kinpar.shape[0]), dtype=np.float64)
+    C = np.zeros((times.shape[0], kinpar.shape[0]), dtype=np.float64)
     
     if fullk:
        eig = fullKF(kinpar, kinscal, kmat, jvec, fixedkmat,\
             kinscalspecial, kinscalspecialspec, nocolsums)
        k = eig[1]
-       #A = eig[0]
+       A = eig[0]
     else:
        k = kinpar
-   
     if irf:
-       calculateCirf(C, k, times, mu, delta)
+        calculateCirf(C, k, times, mu, delta)
     else:
-       calculateC(C, k, times)
-       
+        calculateC(C, k, times)
+        
+    if fullk:
+        C = C * A
+    
     return C
     
 
@@ -139,6 +171,7 @@ def solve(params, PSI, times, wavenum, n_k, irf=False, disp=False, l_c=0,\
             fixedkmat=False, kinscalspecial=np.empty((0,)), \
             kinscalspecialspec=np.empty((0,)), nocolsums=False):
     res = np.empty(PSI.shape, dtype=np.float64)
+   
     
     (k, mu_0, delta_0, mu_disp, delta_disp)=\
         splitVector(params, n_k, irf, disp, n_m, n_d)
@@ -176,7 +209,7 @@ def solve(params, PSI, times, wavenum, n_k, irf=False, disp=False, l_c=0,\
 
 def main():
     times1 = np.asarray(np.arange(-0.5, 9.98, 0.02))
-    times2 = np.asarray(np.arange(0, 1500, 3))
+    times2 = np.asarray(np.arange(10, 1500, 3))
     times = np.hstack((times1, times2))
     #times = np.asarray(np.arange(50, 350, 0.6))
     wavenum = np.asarray(np.arange(12820, 15120, 4.6))
@@ -191,8 +224,8 @@ def main():
     kinpar = np.asarray([.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909])
     #kinpar = np.asarray([.01, .05, .05])
     
-    mu_0 = -0.05
-    delta_0 = 0.02
+    mu_0 = -0.02
+    delta_0 = 0.05
     
     mu_disp = np.asarray([.001, .001])
     delta_disp = np.asarray([.002, .002])
@@ -203,7 +236,7 @@ def main():
 
     for i in range(location.size):
         E[:, i] = amp[i] * np.exp(-np.log(2) * np.square(2 * (wavenum - location[i]) / d[i]))
-    
+    #print(E)
     irf = True
     disp = True
     
@@ -219,8 +252,8 @@ def main():
             C = compModel(kinpar, times, wavenum, irf, mu, delta) #Needs to be expanded
         else:
             C = compModel(kinpar, times, wavenum)
+        #print(C[0,0])
         PSI[:,i] = np.matmul(C, E[i,:])
-    
 
     start_kinpar = np.asarray([.005, 0.003, 0.00022, 0.0300, 0.000888])
     #start_kinpar = np.asarray([.015, 0.04])
@@ -240,12 +273,12 @@ def main():
     #res = scipy.optimize.least_squares(solve, params, args=(PSI, times, wavenum,\
     #start_kinpar.size, irf, disp, l_c, mu_disp.size), verbose=0, method='trf')
     res = scipy.optimize.leastsq(solve, params, args=(PSI, times, wavenum,\
-        start_kinpar.size, irf, disp, l_c, mu_disp.size, delta_disp.size), full_output=0)
+        start_kinpar.size, irf, disp, l_c, mu_disp.size, delta_disp.size), full_output=1)
 
     stop = time.perf_counter()
 
     print(stop - start)
-    print(res)
+    print(res[0])
 
 if __name__ == '__main__':
     main()
