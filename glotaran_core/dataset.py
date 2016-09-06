@@ -2,7 +2,7 @@ class Dataset(object):
     """
     Class representing a dataset for fitting.
     """
-    def __init__(self, label, channels, channel_labels, timepoints):
+    def __init__(self, label, channels, channel_labels, observations):
         if isinstance(channels, list):
             raise TypeError
 
@@ -24,15 +24,15 @@ class Dataset(object):
         if not len(channels) == len(channel_labels):
             raise Exception("To few or too much labels for channels")
 
-        if any(not len(channel) == len(timepoints) for channel in channels):
-            raise Exception("Channels must be of same length as timepoints.")
+        if any(not len(channel) == len(observations) for channel in channels):
+            raise Exception("Channels must be of same length as observations.")
 
         # TODO: Remove NaN, inf, etc.
 
         self._label = label
         self._channels = channels
         self._channel_labels = channel_labels
-        self._timepoints
+        self._observations
 
     def label(self):
         return self._label
@@ -48,5 +48,5 @@ class Dataset(object):
     def number_of_channels(self):
         return len(self._channel_labels)
 
-    def timepoints(self):
-        return self._timepoints
+    def observations(self):
+        return self._observations
