@@ -28,7 +28,7 @@ setup(
                     YamiNoKeshin@gmail.com,
                     joern.weissenborn@gmail.com""",
     license='GPLv3',
-    packages=['glotaran_core'],
+    packages=['glotaran_core', 'glotaran_tools'],
     install_requires=[
         'numpy',
         'scipy',
