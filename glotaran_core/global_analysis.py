@@ -16,14 +16,16 @@ class GlobalAnalysis(object):
     def __init__(self, datasets, models):
 
         if isinstance(datasets, Dataset):
-            ds = Datasets()
-            ds.add(datasets)
-            dataset = ds
+            datasets = Datasets(datasets)
         if not isinstance(datasets, Datasets):
             raise TypeError
 
+        if isinstance(models, Model):
+            models = Models(models)
+        if not isinstance(models, Models):
+            raise TypeError
         self._datasets = datasets
-        self._model = model
+        self._models = models
 
     def fit(self):
         raise NotImplementedError
