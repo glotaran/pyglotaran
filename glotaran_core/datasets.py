@@ -7,8 +7,7 @@ from dataset import Dataset
 
 class Datasets(OrderedDict):
     """
-    A dictionary of all datasets to be fitted. Names must agree with names in
-    model spec.
+    A dictionary of all datasets to be fitted.
     """
     def __init__(self):
         super(Datasets, self)
