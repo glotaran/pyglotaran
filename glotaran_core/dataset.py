@@ -1,30 +1,52 @@
 class Dataset(object):
     """
-    Abstract class representing a dataset for fitting.
+    Class representing a dataset for fitting.
     """
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, label, channels, channel_labels, timepoints):
+        if isinstance(channels, list):
+            raise TypeError
 
-    def wavenumbers(self):
-        try:
-            wn = []
-            for wl in self.wavelengths():
-                wn.append(10000000/wl)
-            return wn
-        except:
-            raise NotImplementedError
+        if not isinstance(channel_labels, list):
+            raise TypeError
 
-    def wavelengths(self):
-        try:
-            wl = []
-            for wn in self.wavenumbers():
-                wl.append(10000000/wn)
-            return wl
-        except:
-            raise NotImplementedError
+        # TODO: Maybe allow non-string labels
+        if any(not isinstance(label, basestring) for label in channel_labels):
+            raise TypeError
+
+        if any(not isinstance(channel, list) for channel in channels):
+            raise TypeError
+
+        if any(any(not isinstance(channel_value, int) and not
+                   isinstance(channel_value, float) for channel_value in
+                   channel) for channel in channels):
+            raise TypeError
+
+        if not len(channels) == len(channel_labels):
+            raise Exception("To few or too much labels for channels")
+
+        if any(not len(channel) == len(timepoints) for channel in channels):
+            raise Exception("Channels must be of same length as timepoints.")
+
+        # TODO: Remove NaN, inf, etc.
+
+        self._label = label
+        self._channels = channels
+        self._channel_labels = channel_labels
+        self._timepoints
+
+    def label(self):
+        return self._label
+
+    def channel_labels(self):
+        return self._channel_labels
+
+    def get_channel(self, label):
+        if label not in self._channel_labels:
+            raise Exception("Non-existing channel: {}".format(label))
+        return self._channels[self._channel_labels.index(label)]
+
+    def number_of_channels(self):
+        return len(self._channel_labels)
 
     def timepoints(self):
-        raise NotImplementedError
-
-    def data(self):
-        raise NotImplementedError
+        return self._timepoints

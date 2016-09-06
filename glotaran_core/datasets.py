@@ -2,6 +2,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+from dataset import Dataset
 
 
 class Datasets(OrderedDict):
@@ -16,4 +17,7 @@ class Datasets(OrderedDict):
         """
         Add a dataset.
         """
-        self.__setitem__(dataset.name, dataset)
+        if not isinstance(dataset, Dataset):
+            raise TypeError
+
+        self.__setitem__(dataset.label(), dataset)
