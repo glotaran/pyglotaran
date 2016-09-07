@@ -1,12 +1,12 @@
+
+
 class Model(object):
     """
     Model represents a global analysis model.
 
-    It contains parameters and labels.
-
     The labels are used to link a model to dataset in the fitting.
     """
-    def __init__(self, labels, rate_constants, contrains):
+    def __init__(self, labels):
         if not isinstance(labels, list):
             labels = [labels]
         # TODO: maybe allow non numeric labels
