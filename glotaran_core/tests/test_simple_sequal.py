@@ -25,7 +25,7 @@ class TestSimpleSerial(TestCase):
 
         epsilon_percent = 0.1
         for i in range(analysis.result().best_fit_parameters()):
-            real_par = kinpar[i]
+            real_par = rates[i]
             epsilon = real_par * epsilon_percent
             fitted_par = analysis.result().best_fit_parameters()
 
