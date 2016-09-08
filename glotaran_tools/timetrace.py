@@ -7,5 +7,6 @@ class Timetrace(Dataset):
     """
     def __init__(self, label, channels, channel_labels, timepoints,
                  timeunit="s"):
-        super(Dataset, self, label, channels, channel_labels, timepoints)
+        super(Timetrace, self).__init__(label, channels, channel_labels,
+                                        timepoints)
         self.timeunit = timeunit

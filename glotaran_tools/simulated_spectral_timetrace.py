@@ -24,22 +24,21 @@ class SimulatedSpectralTimetrace(SpectralTimetrace):
             timepoints.append(i*delta_timepoints)
 
         spectral_indices = []
-        while i in range(0, (spectrum_max-spectrum_min)//spectrum_delta):
+        for i in range((spectrum_max-spectrum_min)//spectrum_delta):
             spectral_indices.append(spectrum_min+i*spectrum_max)
-
         channels = []
         for i in range(len(spectral_indices)):
             channels.append([])
             for j in range(len(timepoints)):
                 val = 0
                 for k in range(len(rates)):
-                    val += {amplitudes[k] *
+                    val += amplitudes[k] * \
                             m.exp(-m.log(2) *
-                                  square(2*(spectral_indices[i]-positions[k]) /
-                                         widths[k])) *
+                                  square(2*(spectral_indices[i] -
+                                            positions[k]) /
+                                         widths[k])) * \
                             m.exp(timepoints[j]*rates[k])
-                            }
-                channels[i].append()
-
-        super(SpectralTimetrace, self, label, channels, timepoints,
-              spectral_indices=spectral_indices)
+                channels[i].append(val)
+        super(SimulatedSpectralTimetrace, self).__init__(label, channels,
+                                                         timepoints,
+                                                         spectral_indices)

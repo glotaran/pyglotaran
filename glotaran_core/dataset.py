@@ -3,14 +3,10 @@ class Dataset(object):
     Class representing a dataset for fitting.
     """
     def __init__(self, label, channels, channel_labels, observations):
-        if isinstance(channels, list):
+        if not isinstance(channels, list):
             raise TypeError
 
         if not isinstance(channel_labels, list):
-            raise TypeError
-
-        # TODO: Maybe allow non-string labels
-        if any(not isinstance(label, basestring) for label in channel_labels):
             raise TypeError
 
         if any(not isinstance(channel, list) for channel in channels):
@@ -32,7 +28,7 @@ class Dataset(object):
         self._label = label
         self._channels = channels
         self._channel_labels = channel_labels
-        self._observations
+        self._observations = observations
 
     def label(self):
         return self._label

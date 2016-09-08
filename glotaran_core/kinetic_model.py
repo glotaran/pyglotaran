@@ -61,7 +61,7 @@ class GaussianIrf(Irf):
     """
     def __init__(self, center, width, center_dispersion=None,
                  width_dispersion=None):
-        super(Irf, self, center, center_dispersion=center_dispersion)
+        super(Irf, self).__init__(center, center_dispersion=center_dispersion)
 
 
 class KineticModel(Model):
@@ -91,7 +91,7 @@ class KineticModel(Model):
 
         self.parent = parent
 
-        super(Model, self, labels)
+        super(Model, self).__init(labels)
 
     def derive(self, labels, kinetic_parameters, irf_parameter=None):
         """

@@ -24,8 +24,9 @@ class SpectralTimetrace(Timetrace):
         channel_labels = []
         for i in spectral_indices:
             channel_labels.append(str(i))
-        super(Timetrace, self, label, spectra, channel_labels, timepoints,
-              timeunit=timeunit)
+        super(SpectralTimetrace, self).__init__(label, spectra, channel_labels,
+                                                timepoints,
+                                                timeunit=timeunit)
 
     def wavenumbers(self):
         if self.spectral_unit is SpectralUnit.nm:

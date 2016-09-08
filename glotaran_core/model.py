@@ -9,9 +9,6 @@ class Model(object):
     def __init__(self, labels):
         if not isinstance(labels, list):
             labels = [labels]
-        # TODO: maybe allow non numeric labels
-        if any(not isinstance(label, basestring) for label in labels):
-            raise TypeError
 
     def labels(self):
         return self._labels
