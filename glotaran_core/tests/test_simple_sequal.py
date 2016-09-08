@@ -1,6 +1,6 @@
-from glotaran_core import Datasets, KineticModel, KineticParameter, GaussianIrf GlobalAnalysis
+from glotaran_core import (Datasets, KineticModel, KineticParameter,
+                           GaussianIrf, GlobalAnalysis)
 from glotaran_tools import SimulatedSpectralTimetrace
-import numpy as np
 from unittest import TestCase
 
 rates = [.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909]
@@ -17,7 +17,7 @@ class TestSimpleSerial(TestCase):
                                             label="TestData"))
         kinpar = []
         for i in range(len(rates)):
-            kinpar.append(KineticParameter("k{}".format(i), rates[i], i)
+            kinpar.append(KineticParameter("k{}".format(i), rates[i], i))
         irf = GaussianIrf(450, 100)
         analysis = GlobalAnalysis(data, KineticModel("TestData", kinpar, irf))
 
