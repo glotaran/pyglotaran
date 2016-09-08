@@ -1,4 +1,4 @@
-from spectral_timetrace import SpectralTimetrace, SpectralUnit
+from .spectral_timetrace import SpectralTimetrace, SpectralUnit
 import os.path
 import csv
 

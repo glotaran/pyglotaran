@@ -2,7 +2,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-from dataset import Dataset
+from .dataset import Dataset
 
 
 class Datasets(OrderedDict):

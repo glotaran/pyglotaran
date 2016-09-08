@@ -1,4 +1,4 @@
-from timetrace import Timetrace
+from .timetrace import Timetrace
 from enum import Enum
 
 

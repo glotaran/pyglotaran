@@ -1,4 +1,4 @@
-from spectral_timetrace import SpectralTimetrace
+from .spectral_timetrace import SpectralTimetrace
 import math as m
 
 

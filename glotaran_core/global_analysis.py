@@ -1,7 +1,7 @@
-from datasets import Datasets
-from dataset import Dataset
-from models import Models
-from model import Model
+from .datasets import Datasets
+from .dataset import Dataset
+from .models import Models
+from .model import Model
 
 
 class GlobalAnalysis(object):

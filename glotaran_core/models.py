@@ -2,7 +2,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-from model import Model
+from .model import Model
 
 
 class Models(OrderedDict):
