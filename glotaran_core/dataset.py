@@ -36,6 +36,9 @@ class Dataset(object):
     def channel_labels(self):
         return self._channel_labels
 
+    def get_channels(self):
+        return self._channels
+
     def get_channel(self, label):
         if label not in self._channel_labels:
             raise Exception("Non-existing channel: {}".format(label))

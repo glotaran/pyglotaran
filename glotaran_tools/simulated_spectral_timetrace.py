@@ -25,7 +25,7 @@ class SimulatedSpectralTimetrace(SpectralTimetrace):
 
         spectral_indices = []
         for i in range((spectrum_max-spectrum_min)//spectrum_delta):
-            spectral_indices.append(spectrum_min+i*spectrum_max)
+            spectral_indices.append(spectrum_min+i*spectrum_delta)
         channels = []
         for i in range(len(spectral_indices)):
             channels.append([])

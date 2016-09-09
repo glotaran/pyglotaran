@@ -23,7 +23,7 @@ class SpectralTimetrace(Timetrace):
         self._spectral_indices = spectral_indices
         channel_labels = []
         for i in spectral_indices:
-            channel_labels.append(str(i))
+            channel_labels.append(i)
         super(SpectralTimetrace, self).__init__(label, spectra, channel_labels,
                                                 timepoints,
                                                 timeunit=timeunit)
