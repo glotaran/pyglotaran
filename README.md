@@ -26,12 +26,16 @@ repository folder and issue
 
 Note: You will need [VirtualBox](https://www.virtualbox.org/) installed.
 
-After running `vagrant up`, open a browser and browse to `localhost:8888`.
+After running `vagrant up`, open a browser and browse to `localhost:8888` (`127.0.0.1:8888`).
 
 To shut down the box, issue
 
-    vagrant down
+    vagrant down / halt
 
-To delete it
+To connect (via ssh) and aquire a terminal on the box issue:
+
+    vagrant ssh
+
+To delete it (and remove all traces from your computer)
 
     vagrant destroy
