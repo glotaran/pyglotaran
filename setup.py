@@ -24,7 +24,7 @@ setup(
     description='The Glotaran fitting engine.',
     url='http://github.com/ThingiverseIO/pythingiverseio',
     author='Joris Snellenburg, Stefan Schuetz, Joern Weissenborn',
-    author_email="""xxjorisxx@gmail.com,
+    author_email="""j.snellenburg@vu.nl,
                     YamiNoKeshin@gmail.com,
                     joern.weissenborn@gmail.com""",
     license='GPLv3',
