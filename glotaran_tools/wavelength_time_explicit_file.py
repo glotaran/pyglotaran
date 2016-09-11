@@ -109,7 +109,7 @@ class WavelengthExplicitFile(ExplicitFile):
 
     def add_data_row(self, row):
         if self._timepoints is None:
-            self.timepoints = []
+            self._timepoints = []
         self._timepoints.append(float(row.pop(0)))
 
         if self._spectra is None:
@@ -138,7 +138,7 @@ class TimeExplicitFile(ExplicitFile):
 
     def add_data_row(self, row):
         if self._spectral_indices is None:
-            self.spectral_indices = []
+            self._spectral_indices = []
         self._spectral_indices.append(row.pop(0))
 
         if self._spectra is None:
