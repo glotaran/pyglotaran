@@ -16,6 +16,9 @@ sudo ln -s /usr/include/freetype2/ft2build.h /usr/include/ft2build.h
 
 sudo pip3 install matplotlib
 
+# Intall minimal latex environment to allow print to pdf in jupyter
+sudo apt-get install texlive-latex-base -y
+
 # Install glotaran
 cd /vagrant/
 sudo python3 setup.py install
