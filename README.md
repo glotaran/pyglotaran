@@ -39,3 +39,13 @@ To connect (via ssh) and aquire a terminal on the box issue:
 To delete it (and remove all traces from your computer)
 
     vagrant destroy
+
+To update the glotaran-core installation on a vagrant box (without rebuilding it):
+
+    vagrant ssh
+    cd /vagrant
+    sudo python3 setup.py install
+    exit
+    vagrant reload
+
+
