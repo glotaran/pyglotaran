@@ -159,9 +159,6 @@ parameters:
   - 0.182545677
   - 0.139947399
 
-# one absorption parameter per compartment. Total number is determined
-# implicitly from k matrix!
-absorbtion_parameter: [71,2,2,2,73,74,2,74,73,72,2,2,2]
 
 irf_parameter:
   - label: irf1
@@ -176,6 +173,7 @@ irf_parameter:
     center: [1, 4] # multiple gaussians
     width: [2, 5]
     dispersion: [3] # dispersion is of 1st order
+    width_dispersion: [4] # dispersion is of 1st order
     normalize: true
   - label: irf4
     type: gaussian
@@ -232,30 +230,30 @@ k_matrices:
 megacomplexes:
     - label: cmplx1
       k_matrices: [km1] # A megacomplex has one or more k-matrices
-
+      initial_concentration: [71,2,2,2,73,74,2]
     - label: cmplx2
       k_matrix: km1
+      initial_concentration: [71,2,2,2,73,74,2]
 
-    - [cmplx3, [km1]]
+    - [cmplx3, [km1], [71,2,2,2,73,74,2]]
 
 datasets:
     - label: set1
       megacomplexes: [cmplx3]
       path: 'set1.ascii' #relative path
-      exitation_parameter: 1 # index one in the parameter vector
-    - scalings:
+      concentration_scaling: 1 # index one in the parameter vector
+      irf: irf1
+      scalings:
         - megacomplexes: [cmplx3] # optional
           compartments: [5, 6]
-          type: multiply
           parameter: 75 # 75th parameter
-        - [[cmplx3], [8,9], multiply, 76] # alternative, order matters!
+        - [[cmplx3], [8,9], 76] # alternative, order matters!
     - label: set2
       megacomplexes: [cmplx4]
       path: 'c:/myexp/set2.ascii' # absolutepath win
-      exitation_parameter: 1 # index one in the parameter vector
-    - scalings:
+      concentration_scaling: 1 # index one in the parameter vector
+      scalings:
         - megacomplexes: [cmplx4] # optional
           compartments: [5, 6]
-          type: multiply
           parameter: 77 # 77th parameter
-        - [[cmplx4], [8,9], multiply, 78] # alternative, order matters!
+        - [[cmplx4], [8,9], 78] # alternative, order matters!
