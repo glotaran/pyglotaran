@@ -12,21 +12,37 @@ class ParameterConstraint(object):
     """
     def __init__(self, parameters):
         if isinstance(parameters, list):
+            self.range = None
             self.parameters = parameters
         elif isinstance(parameters, tuple):
+            self.range = parameters
             if len(parameters) is not 2:
                 raise Exception("Size of parameter range must be 2")
-            self._parameters = range(parameters[0], parameters[1])
+            self.parameters = range(parameters[0], parameters[1])
         else:
             raise TypeError
 
     def type(self):
         raise NotImplementedError
 
+    def type_string(self):
+        raise NotImplementedError
+
+    def __str__(self):
+        if self.range is None:
+            parameter = self.parameters
+        else:
+            parameter = self.range
+        return "Type: '{}' Parameters: {}".format(self.type_string(),
+                                                  parameter)
+
 
 class FixedConstraint(ParameterConstraint):
     def type(self):
         return ParameterConstraintType.fix
+
+    def type_string(self):
+        return "Fixed"
 
 
 class BoundConstraint(ParameterConstraint):
@@ -36,10 +52,18 @@ class BoundConstraint(ParameterConstraint):
     def __init__(self, parameters, lower=float('nan'), upper=float('nan')):
         self.lower = lower
         self.upper = upper
-        super(BoundConstraint).__init__(parameters)
+        super(BoundConstraint, self).__init__(parameters)
 
     def type(self):
         return ParameterConstraintType.bound
+
+    def type_string(self):
+        return "Bound"
+
+    def __str__(self):
+        return "{} Lower: {} Upper: {}".format(super(BoundConstraint,
+                                                     self).__str__(),
+                                               self.lower, self.upper)
 
 
 class CompartmentConstraintType(Enum):
@@ -57,8 +81,8 @@ class CompartmentConstraint(object):
         if not isinstance(compartment, int):
             raise TypeError
         if isinstance(intervals, tuple):
-            self.intervals = [intervals]
-        elif isinstance(intervals, list):
+            intervals = [intervals]
+        if isinstance(intervals, list):
             if any(not isinstance(interval, tuple) for interval in intervals):
                 raise TypeError
             self.intervals = intervals
@@ -71,10 +95,20 @@ class CompartmentConstraint(object):
     def type(self):
         raise NotImplementedError
 
+    def type_string(self):
+        raise NotImplementedError
+
+    def __str__(self):
+        return "Type: '{}' Intervals: {}".format(self.type_string(),
+                                                 self.intervals)
+
 
 class ZeroConstraint(CompartmentConstraint):
     def type(self):
         return CompartmentConstraintType.zero
+
+    def type_string(self):
+        return "Zero"
 
 
 class EqualConstraint(CompartmentConstraint):
@@ -87,9 +121,19 @@ class EqualConstraint(CompartmentConstraint):
             raise TypeError
         self.target = target
         self.parameter = parameter
+        super(EqualConstraint, self).__init__(compartment, intervals)
 
     def type(self):
         CompartmentConstraintType.equal
+
+    def type_string(self):
+        return "Equal"
+
+    def __str__(self):
+        return "{} Target: {} Parameter: {}".format(super(EqualConstraint,
+                                                          self).__str__(),
+                                                    self.target,
+                                                    self.parameter)
 
 
 class EqualAreaConstraint(EqualConstraint):
@@ -103,11 +147,18 @@ class EqualAreaConstraint(EqualConstraint):
 
         self.weight = weight
 
-        super(EqualConstraint).__init__(compartment, intervals, target,
-                                        parameter)
+        super(EqualAreaConstraint, self).__init__(compartment, intervals,
+                                                  target, parameter)
 
     def type(self):
         return CompartmentConstraintType.equal_area
+
+    def type_string(self):
+        return "Equal Area"
+
+    def __str__(self):
+        return "{} Weight: {}".format(super(EqualAreaConstraint,
+                                            self).__str__(), self.weight)
 
 
 class Relation(object):
@@ -142,3 +193,19 @@ class Relation(object):
 
         self.parameter = parameter
         self.to = to
+
+    def __str__(self):
+        s = "Parameter {} =".format(self.parameter)
+
+        for t in self.to:
+            if t is "const":
+                if self.to[t] < 0:
+                    s += "{}".format(self.to[t])
+                else:
+                    s += "+{}".format(self.to[t])
+            else:
+                if self.to[t] < 0:
+                    s += "{}*P{}".format(self.to[t], t)
+                else:
+                    s += "+{}*P{}".format(self.to[t], t)
+        return s
