@@ -4,23 +4,27 @@ options:
   iterations: 10
   gradient: finite_difference      # default
   method: non_linear_least_squares # default
+  parameter_ordering: relative #absolute, relative # maybe labeled
   temperature: 293
 
+# For each dataset either the relative path or absolute path can be given
+# The absolute path is OS dependent
+
 datasets:
-    - label: set1
+    - label: WT_S1
       megacomplexes: [cmplx3]
-      path: 'set1.ascii' #relative path
-      absorption_vector_index: 1 # refers to the first element in the absorption_vectors list
+      path: 'data/T_S1_TR4_slit40_AnalInt_Scanspeed1_250kHz_250uW_JIT_BG_SH_12112014noColim.ascii'
+      intitial_concentration: inputWT # refers to the first element in the absorption_vectors list
       irf: irf1      
       scalings:
         - megacomplexes: [cmplx3] # optional
           compartments: [5, 6]
           parameter: 75 # 75th parameter
         - [[cmplx3], [8,9], 76] # alternative, order matters!
-    - label: set2
+    - label: WT_S2
       megacomplexes: [cmplx4]
-      path: 'c:/myexp/set2.ascii' # absolutepath win
-      absorption_vector_index: 1 # index one in the parameter vector
+      path: 'data/T_S2_TR4_slit40_AnalInt_Scanspeed1_250kHz_250uW_JIT_BG_SH_12112014noColim.ascii'
+      absorption_vector_index: inputWT # index one in the parameter vector
       scalings:
         - megacomplexes: [cmplx4] # optional
           compartments: [5, 6]
@@ -49,8 +53,11 @@ irf_parameter: #specific to kinetic or spectro_temporal model
     dispersion: [3] # dispersion is of 1st order
     normalize: true
 
-absorption_vectors: #equal to the total number of compartments
-  - absorption_vector: [71,2,2,2,73,74,2,74,73,72,2,2,2] #these are indices in the total prameter vector
+initial_concentrations: #equal to the total number of compartments
+  - label: inputWT
+    absorption_vector: [71,2,2,2,73,74,2,74,73,72,2,2,2] #these are indices in the total prameter vector
+#  - label: inputd2
+#    absorption_vector: [71,2,2,2,73,74,2,74,73,72,2,2,2] 
     
 # Convention matrix notation column = source, row = target compartment
 # (2,1) means from 1 to 2
