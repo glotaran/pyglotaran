@@ -55,9 +55,9 @@ irf_parameter: #specific to kinetic or spectro_temporal model
 
 initial_concentrations: #equal to the total number of compartments
   - label: inputD1
-    absorption_vector: [1,2,3,4,5,6,7,8,9,10] #these are indices in the total prameter vector
+    parameter: [1,2,3,4,5,6,7,8,9,10] #these are indices in the total prameter vector
   - label: inputD2
-    absorption_vector: [11,12,13,14,15,16,17,18,19,20] 
+    parameter: [11,12,13,14,15,16,17,18,19,20] 
     
 # Convention matrix notation column = source, row = target compartment
 # (2,1) means from 1 to 2
