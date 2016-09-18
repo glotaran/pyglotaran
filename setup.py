@@ -31,6 +31,7 @@ setup(
     packages=['glotaran_core', 'glotaran_tools'],
     install_requires=[
         'numpy',
+        'click',
         'scipy',
         'lmfit',
         'pyyaml',
