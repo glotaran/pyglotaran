@@ -1,7 +1,7 @@
-from glotaran_core import Dataset
+from glotaran_core import KineticDataset
 
 
-class Timetrace(Dataset):
+class Timetrace(KineticDataset):
     """
     Represents a Dataset where observations are timepoints.
     """

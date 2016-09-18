@@ -1,8 +1,8 @@
-from glotaran_core import (constraints, dataset, datasets, global_analysis, model, models,
+from glotaran_core import (constraints, dataset, global_analysis, model,
                            result, kinetic_model, parameter)
 
-Scaling = dataset.Scaling
 
+Scaling = dataset.Scaling
 Model = model.Model
 Result = result.Result
 GlobalAnalysis = global_analysis.GlobalAnalysis

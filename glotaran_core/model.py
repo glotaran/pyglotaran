@@ -18,6 +18,9 @@ class Model(object):
         self._compartment_constraints = []
         self._datasets = {}
 
+    def type_string(self):
+        raise NotImplementedError
+
     def add_parameter(self, parameter):
         if not isinstance(parameter, list):
             parameter = [parameter]
@@ -58,7 +61,9 @@ class Model(object):
         self._datasets[dataset.label()] = dataset
 
     def __str__(self):
-        s = "Parameter\n---------\n\n"
+        s = "Modeltype: {}\n\n".format(self.type_string())
+
+        s += "Parameter\n---------\n\n"
 
         for p in self.parameters():
             s += "{}\n".format(p)
