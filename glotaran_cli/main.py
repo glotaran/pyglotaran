@@ -1,6 +1,7 @@
 import click
 from click import echo
-from glotaran_tools import parse_file
+from glotaran_tools.specification_parser import parse_file
+
 
 @click.group()
 def glotaran():

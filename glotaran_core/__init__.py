@@ -1,5 +1,6 @@
 from glotaran_core import (constraints, dataset, global_analysis, model,
-                           result, kinetic_model, parameter)
+                           result, kinetic_model, parameter,
+                           initial_concentration)
 
 
 Scaling = dataset.Scaling
@@ -24,3 +25,5 @@ FixedConstraint = constraints.FixedConstraint
 BoundConstraint = constraints.BoundConstraint
 
 Relation = constraints.Relation
+
+InitialConcentration = initial_concentration.InitialConcentration

@@ -1,15 +1,20 @@
 class Megacomplex(object):
     """
-    A mega complex has a label.
+    A megacomplex has a label.
     """
     def __init__(self, label):
         if not isinstance(label, str):
             raise TypeError
-        self._label = label
+        self.label = label
 
+    @property
     def label(self):
         return self._label
 
+    @label.setter
+    def label(self, label):
+        self._label = label
+
     def __str__(self):
         return "Label: {}"\
-          .format(self._label)
+          .format(self.label)
