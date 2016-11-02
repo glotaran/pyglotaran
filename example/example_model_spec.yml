@@ -11,66 +11,70 @@ options:
 # The absolute path is OS dependent
 
 datasets:
-    - label: dataset1
-      megacomplexes: [cmplx1]
-      path: 'data/dataset1.ascii'
-      intitial_concentration: inputD1 # refers to the first element in the absorption_vectors list
-      irf: irf1      
-      scalings:
-        - megacomplexes: [cmplx1] # optional
-          compartments: [1, 2]
-          parameter: 21 # 75th parameter
-        - [[cmplx1], [3,4], 22] # alternative, order matters!
-    - label: dataset2
-      megacomplexes: [cmplx2]
-      path: 'C:/data/dataset2.ascii'
-      absorption_vector_index: inputD2 # index one in the parameter vector
-      scalings:
-        - megacomplexes: [cmplx4] # optional
-          compartments: [5, 6]
-          parameter: 23 # 77th parameter
-        - [[cmplx4], [7,8], 24] # alternative, order matters!
-        
+  - label: dataset1
+    type: spectral
+    megacomplexes: [cmplx1]
+    path: 'data/dataset1.ascii'
+    initial_concentration: inputD1 # refers to the first element in the absorption_vectors list
+    irf: irf1
+    dataset_scaling: 78 # scale dataset with parameter 78
+    megacomplex_scalings:
+      - megacomplexes: [cmplx1] # optional
+        compartments: [1, 2]
+        parameter: 21 # 75th parameter
+      - [[cmplx1], [3,4], 22] # alternative, order matters!
+  - label: dataset2
+    megacomplexes: [cmplx2]
+    path: 'C:/data/dataset2.ascii'
+    initial_concentration: inputD2
+    scalings:
+      - megacomplexes: [cmplx4] # optional
+        compartments: [5, 6]
+        parameter: 23 # 77th parameter
+      - [[cmplx4], [7,8], 24] # alternative, order matters!
+
 irf_parameter: #specific to kinetic or spectro_temporal model
   - label: irf1
     type: gaussian
     center: 1
     width: 2
-    dispersion: [3] # dispersion is of 1st order
+    center_dispersion: [3] # dispersion is of 1st order
+    width_dispersion: [4] # dispersion is of 1st order
     normalize: true
-  - [irf2, gaussian, 4, 2, [3], true] # compact
+  - [irf2, gaussian, 4, 2, [3], [4], true] # compact
   - label: irf3
     type: gaussian
     center: [1, 4] # multiple gaussians
     width: [2, 5]
-    dispersion: [3] # dispersion is of 1st order
+    center_dispersion: [3] # dispersion is of 1st order
     width_dispersion: [4] # dispersion is of 1st order
     normalize: true
   - label: irf4
     type: gaussian
     center: 1 # double gaussian
     width: [2, 5]
-    dispersion: [3] # dispersion is of 1st order
+    center_dispersion: [3] # dispersion is of 1st order
+    width_dispersion: [4] # dispersion is of 1st order
     normalize: true
 
 initial_concentrations: #equal to the total number of compartments
   - label: inputD1
     parameter: [1,2,3,4,5,6,7,8,9,10] #these are indices in the total prameter vector
   - label: inputD2
-    parameter: [11,12,13,14,15,16,17,18,19,20] 
-    
+    parameter: [11,12,13,14,15,16,17,18,19,20]
+
 # Convention matrix notation column = source, row = target compartment
 # (2,1) means from 1 to 2
 k_matrices:
   - label: km1
     matrix: {
-      (1,1): 31
-      (2,1): 32
-      (1,2): 33
-      (3,1): 34
-      (1,3): 35
-      (4,1): 36
-      (1,4): 37
+      '(1,1)': 31,
+      '(2,1)': 32,
+      '(1,2)': 33,
+      '(3,1)': 34,
+      '(1,3)': 35,
+      '(4,1)': 36,
+      '(1,4)': 37,
 }
 
 # The input vector for a megacomplex is determined in the following way:
@@ -84,41 +88,43 @@ megacomplexes:
     - label: cmplx1
       k_matrices: [km1] # A megacomplex has one or more k-matrices
     - label: cmplx2
-      k_matrix: km1
+      k_matrices: km1
     - [cmplx3, [km1]]
-    
-compartment_constrains:
+
+compartment_constraints:
   - type: zero
     compartment: 5
-    intervals: [(799.99, 800.00), (1,100)]
-  - [zero, 2, [(1,683)]]
+    intervals: ['(799.99, 800.00)', '(1,100)']
+  - [zero, 2, ['(1,683)']]
   - type: equal
     compartment: 5
+    intervals: ['(60, 799.99)']
     target: 9
-    intervals: [(60, 799.99)]
     parameter: 54 # usually fixed
   - type: equal_area
     compartment: 3
+    intervals: ['(670, 810)']
     target: 1
-    intervals: [(670, 810)]
     parameter: 55 # usually fixed
     weight: 0.0016
     # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 
 parameter_constraints:
   - type: fix
-    parameters: [1, 2, 3, 54] # fix some parameters
+    parameter: [1, 2, 3, 54] # fix some parameters
+  - [fix, [1,2,3]] # compact
   - type: bound
-    range: (100, 150) # range of parameters
+    range: '(100,150)' # range of parameters
     lower: 0 # no upper specified => no upper bound
+  - [bound, '(100,120)', NaN, 7E-8] # compact, lower is NaN, so only upper bound
 
 relations:
   - parameter: 86
     to: {const: 0, 89: 1, 90: 1, 87: -1.0} #Theta86 = 0 +1*theta89 + 1*theta90 -1*theta87
   - [80, {83: 1, 84: 1, 81: -1.0}]
   - [57, 30] # equality
-                
-parameters:
+
+parameter:
   - 4.13E-02
   - 0
   - 3.26E-02

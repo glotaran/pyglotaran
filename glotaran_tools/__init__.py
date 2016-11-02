@@ -1,9 +1,3 @@
-from glotaran_tools import (timetrace,
-                            spectral_timetrace, simulated_spectral_timetrace,
-                            wavelength_time_explicit_file)
+from . import specification_parser
 
-Timetrace = timetrace.Timetrace
-SpectralTimetrace = spectral_timetrace.SpectralTimetrace
-SimulatedSpectralTimetrace = simulated_spectral_timetrace.SimulatedSpectralTimetrace
-WavelengthExplicitFile = wavelength_time_explicit_file.WavelengthExplicitFile
-TimeExplicitFile = wavelength_time_explicit_file.TimeExplicitFile
+specification_parser = specification_parser
