@@ -1,4 +1,3 @@
-from .model import Model
 
 
 class GlobalAnalysis(object):

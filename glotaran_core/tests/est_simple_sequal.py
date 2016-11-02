@@ -9,8 +9,8 @@ positions = [150, 300, 350, 420, 560, 600]
 widths = [20, 20, 20, 20, 20, 20]
 
 
-class TestSimpleSerial(TestCase):
-    def test_simple_serial(self):
+class estSimpleSerial(TestCase):
+    def est_simple_serial(self):
         data = Datasets()
         data.add(SimulatedSpectralTimetrace(amplitudes, rates, positions,
                                             widths, 100, 700, 1, 5e-9, 1e-10,

@@ -38,7 +38,7 @@ class Parameter(object):
 
     def __str__(self):
         return 'Index: {} Initial Value: {} Label: {}'.format(self._index,
-                                                              self.initial,
+                                                              self.value,
                                                               self.label)
 
 

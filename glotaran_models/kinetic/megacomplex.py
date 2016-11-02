@@ -1,4 +1,4 @@
-from .megacomplex import Megacomplex
+from glotaran_core.model.megacomplex import Megacomplex
 
 
 class KineticMegacomplex(Megacomplex):

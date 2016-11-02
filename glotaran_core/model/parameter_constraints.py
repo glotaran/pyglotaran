@@ -27,7 +27,7 @@ class ParameterConstraint(object):
             raise TypeError("Range must be tuple")
         if not len(val) == 2:
             raise ValueError("Range must be (FROM, TO)")
-        self.parameter = range(val[0], val[1])
+        self.parameter = list(range(val[0], val[1]))
         self._range = val
 
     @property
@@ -38,8 +38,9 @@ class ParameterConstraint(object):
     def parameter(self, value):
         if not isinstance(value, list):
             value = [value]
-        if any(isinstance(v, int) for v in value):
+        if any(not isinstance(v, int) for v in value):
             raise TypeError("Parameter mus be an integer or a list of integer")
+        self._parameter = value
 
     def type(self):
         raise NotImplementedError

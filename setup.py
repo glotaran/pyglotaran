@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 # TODO: include generated c and include switches if cython is not available ->
 # https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
@@ -28,7 +28,9 @@ setup(
                     YamiNoKeshin@gmail.com,
                     joern.weissenborn@gmail.com""",
     license='GPLv3',
-    packages=['glotaran_core', 'glotaran_tools',
+    packages=['glotaran_core',
+              'glotaran_core.model',
+              'glotaran_models.kinetic',
               'glotaran_tools.specification_parser'],
     install_requires=[
         'numpy',

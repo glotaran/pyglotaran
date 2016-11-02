@@ -1,14 +1,18 @@
 import os
 import csv
 from ast import literal_eval as make_tuple
-from glotaran_core import (create_parameter_list,
-                           FixedConstraint,
-                           BoundConstraint,
-                           ZeroConstraint,
-                           EqualConstraint,
-                           EqualAreaConstraint,
-                           Relation,
-                           InitialConcentration)
+from glotaran_core.model import (create_parameter_list,
+                                 Dataset,
+                                 DatasetScaling,
+                                 FixedConstraint,
+                                 BoundConstraint,
+                                 ZeroConstraint,
+                                 EqualConstraint,
+                                 EqualAreaConstraint,
+                                 Megacomplex,
+                                 MegacomplexScaling,
+                                 Relation,
+                                 InitialConcentration)
 
 
 class ModelKeys:
@@ -51,6 +55,14 @@ class CompartmentConstraintKeys:
 class RelationKeys:
     TO = "to"
 
+
+class DatasetKeys:
+    PATH = "path"
+    DATASET_SCALING = "dataset_scaling"
+    MEGACOMPLEX_SCALING = "megacomplex_scaling"
+    INITIAL_CONCENTRATION = "initial_concentration"
+    COMPARTEMENTS = "compartments"
+
 ModelParser = {}
 
 
@@ -83,15 +95,44 @@ class ModelSpecParser(object):
     def get_additionals(self):
         raise NotImplementedError
 
-    def get_dataset(self):
+    def get_dataset_descriptor(self, label, initial_concentration,
+                               megacomplexes, megacomplex_scalings,
+                               dataset, dataset_scaling):
         raise NotImplementedError
+
+    def get_dataset(self, dataset_spec):
+        label = dataset_spec[ModelKeys.LABEL]
+        path = dataset_spec[DatasetKeys.PATH]
+        type = dataset_spec[ModelKeys.TYPE]
+        initial_concentration = dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
+        megacomplexes = dataset_spec[ModelKeys.MEGACOMPLEXES]
+        dataset_scaling = dataset_spec[DatasetKeys.DATASET_SCALING]
+        mss = []
+        for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
+            compact = is_compact(ms)
+            mc = ModelKeys.MEGACOMPLEXES
+            cp = DatasetKeys.COMPARTEMENTS
+            pm = ModelKeys.PARAMETER
+            if compact:
+                mc = 0
+                cp = 1
+                pm = 2
+            mss.append(MegacomplexScaling(ms[mc], ms[cp], ms[pm]))
+        self.model.add_dataset(
+            self.get_dataset_descriptor(label,
+                                        initial_concentration,
+                                        megacomplexes,
+                                        mss,
+                                        Dataset(),
+                                        DatasetScaling(dataset_scaling),
+                                        dataset_spec))
 
     def get_dataset_additionals(self, dataset, dataset_spec):
         raise NotImplementedError
 
     def get_datasets(self):
-        for dataset in self.spec[ModelKeys.DATASETS]:
-
+        for dataset_spec in self.spec[ModelKeys.DATASETS]:
+            self.get_dataset(dataset_spec)
 
     def get_parameter(self):
         params = self.spec[ModelKeys.PARAMETER]
@@ -108,7 +149,7 @@ class ModelSpecParser(object):
             for row in reader:
                 params += [float(e) for e in row]
         plist = create_parameter_list(params)
-        self.model.add_parameter(plist)
+        self.model.parameter = plist
 
     def get_parameter_constraints(self):
         if ModelKeys.PARAMETER_CONSTRAINTS not in self.spec:
@@ -197,7 +238,6 @@ class ModelSpecParser(object):
 
         for relation in self.spec[ModelKeys.RELATIONS]:
             compact = is_compact(relation)
-            print(relation)
 
             par = ModelKeys.PARAMETER
             to = RelationKeys.TO
@@ -205,9 +245,6 @@ class ModelSpecParser(object):
             if compact:
                 par = 0
                 to = 1
-
-            print(relation[to])
-            print(isinstance(relation[to], dict))
 
             self.model.add_relation(Relation(relation[par], relation[to]))
 
@@ -231,6 +268,7 @@ class ModelSpecParser(object):
         self.get_relations()
         self.get_initial_concentrations()
         self.get_megacomplexes()
+        self.get_datasets()
         self.get_additionals()
 
 

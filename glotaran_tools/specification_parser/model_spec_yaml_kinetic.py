@@ -3,16 +3,17 @@ from .model_spec_yaml import (ModelKeys,
                               is_compact,
                               register_model_parser)
 from ast import literal_eval as make_tuple
-from glotaran_core import (KMatrix,
-                           KineticMegacomplex,
-                           KineticModel,
-                           GaussianIrf)
+from glotaran_models.kinetic import (KMatrix,
+                                     KineticDatasetDescriptor,
+                                     KineticMegacomplex,
+                                     KineticModel,
+                                     GaussianIrf)
 
 
 class KineticModelKeys(object):
     K_MATRICES = "k_matrices"
     MATRIX = 'matrix'
-    IRF_PARAMETER = 'irf_parameter'
+    IRF = 'irf'
 
 
 class IrfTypes:
@@ -30,6 +31,14 @@ class GaussianIrfKeys:
 class KineticModelParser(ModelSpecParser):
     def get_model(self):
         return KineticModel
+
+    def get_dataset_descriptor(self, label, initial_concentration,
+                               megacomplexes, megacomplex_scalings,
+                               dataset, dataset_scaling, dataset_spec):
+        irf = dataset_spec[KineticModelKeys.IRF]
+        return KineticDatasetDescriptor(label, initial_concentration,
+                                        megacomplexes, megacomplex_scalings,
+                                        dataset, dataset_scaling, irf)
 
     def get_megacomplexes(self):
         if KineticModelKeys.K_MATRICES not in self.spec:
@@ -52,7 +61,7 @@ class KineticModelParser(ModelSpecParser):
         self.get_irfs()
 
     def get_irfs(self):
-        for irf in self.spec[KineticModelKeys.IRF_PARAMETER]:
+        for irf in self.spec[KineticModelKeys.IRF]:
             compact = is_compact(irf)
 
             lb = ModelKeys.LABEL

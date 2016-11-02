@@ -26,7 +26,7 @@ class MegacomplexScaling(object):
             compartments = [compartments]
         if any(not isinstance(val, int) for val in compartments):
             raise ValueError("Compartment indices must be integer.")
-        self._compartements = compartments
+        self._compartments = compartments
 
     @property
     def parameter(self):
@@ -37,3 +37,8 @@ class MegacomplexScaling(object):
         if not isinstance(parameter, int):
             raise TypeError("Parameter index must be numerical")
         self._parameter = parameter
+
+    def __str__(self):
+        return \
+                "Megacomplexes: {}, Compartements: {}, Parameter:{}".format(
+                    self.megacomplexes, self.compartments, self.parameter)

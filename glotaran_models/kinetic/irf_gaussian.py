@@ -23,8 +23,8 @@ class GaussianIrf(Irf):
         width as parameter indices. None for no dispersion.
 
     """
-    def __init__(self, label, center, width, center_dispersion=[],
-                 width_dispersion=[], normalize=True):
+    def __init__(self, label, center, width, center_dispersion,
+                 width_dispersion, normalize):
         self.center = center
         self.center_dispersion = center_dispersion
         self.width = width
@@ -88,6 +88,7 @@ class GaussianIrf(Irf):
     def normalize(self, value):
         if not isinstance(value, bool):
             raise TypeError("Normalize must be 'true' or 'false'.")
+        self._normalize = value
 
     def type_string(self):
         t = "'Gaussian'"

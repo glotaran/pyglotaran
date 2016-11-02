@@ -1,5 +1,4 @@
 from glotaran_core.model import DatasetDescriptor
-from .irf import Irf
 
 
 class KineticDatasetDescriptor(DatasetDescriptor):
@@ -18,15 +17,15 @@ class KineticDatasetDescriptor(DatasetDescriptor):
 
     @property
     def irf(self):
+        '''Returns the label for the Irf to be used to fit the dataset.'''
         return self._irf
 
     @irf.setter
-    def set_irf(self, irf):
-        if not issubclass(type(irf), Irf):
-            raise TypeError("Irf musst be subclass of 'Irf'.")
+    def irf(self, irf):
+        '''Sets the label for the Irf to be used to fit the dataset.'''
         self._irf = irf
 
     def __str__(self):
-        return "{}\n\t\tIRF: {}".format(super(KineticDatasetDescriptor, self)
-                                        .__str__(),
-                                        self.irf())
+        return "{}\n\tIrf: {}".format(super(KineticDatasetDescriptor, self)
+                                      .__str__(),
+                                      self.irf)

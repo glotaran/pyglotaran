@@ -36,7 +36,7 @@ class CompartmentConstraint(object):
             value = [value]
         if any(not isinstance(val, tuple) for val in value):
             raise TypeError("Intervals must be tuples or list of tuples.")
-        if any(len(val, tuple) is not 2 for val in value):
+        if any(len(val) is not 2 for val in value):
             raise ValueError("Intervals must be of length 2")
         self._intervals = value
 
@@ -109,7 +109,6 @@ class EqualAreaConstraint(EqualConstraint):
     """
     def __init__(self, compartment, intervals, target, parameter, weight):
         self.weight = weight
-
         super(EqualAreaConstraint, self).__init__(compartment, intervals,
                                                   target, parameter)
 
@@ -121,7 +120,7 @@ class EqualAreaConstraint(EqualConstraint):
     def weight(self, value):
         if not isinstance(value, float):
             raise TypeError("Weight must be float.")
-        self._weigth = value
+        self._weight = value
 
     def type(self):
         return CompartmentConstraintType.equal_area

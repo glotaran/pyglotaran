@@ -1,7 +1,6 @@
-from .initial_concentration import InitialConcentration
-from .megacomplex_scaling import MegacomplexScaling
 from .dataset import Dataset
 from .dataset_scaling import DatasetScaling
+from .megacomplex_scaling import MegacomplexScaling
 
 
 class DatasetDescriptor(object):
@@ -9,11 +8,11 @@ class DatasetDescriptor(object):
     Class representing a dataset for fitting.
     """
     def __init__(self, label, initial_concentration, megacomplexes,
-                 megacomplex_scalings, dataset, dataset_scaling):
+                 megacomplex_scaling, dataset, dataset_scaling):
         self.label = label
         self.initial_concentration = initial_concentration
         self.megacomplexes = megacomplexes
-        self.megacomplex_scalings = megacomplex_scalings
+        self.megacomplex_scaling = megacomplex_scaling
         self.dataset = dataset
         self.dataset_scaling = dataset_scaling
 
@@ -27,14 +26,15 @@ class DatasetDescriptor(object):
 
     @property
     def initial_concentration(self):
+        '''Returns the label of the initial concentration to be used to fit the
+        dataset.'''
         return self._initial_concentration
 
     @initial_concentration.setter
     def initial_concentration(self, value):
-        if not isinstance(value, InitialConcentration):
-            raise TypeError(
-                "Initial concentration must be instance of"
-                " 'InitialConcentration'")
+        '''Sets the label of the initial concentration to be used to fit the
+        dataset.'''
+        self._initial_concentration = value
 
     @property
     def dataset(self):
@@ -70,7 +70,7 @@ class DatasetDescriptor(object):
 
     @property
     def megacomplex_scaling(self):
-        return self._scalings
+        return self._megacomplex_scaling
 
     @megacomplex_scaling.setter
     def megacomplex_scaling(self, scaling):
@@ -78,19 +78,21 @@ class DatasetDescriptor(object):
             scaling = [scaling]
         if any(not isinstance(s, MegacomplexScaling) for s in scaling):
             raise TypeError
-        self._megacomplexe_scaling = scaling
+        self._megacomplex_scaling = scaling
 
     def __str__(self):
-        s = "Dataset '{}'\n\n".format(self.label())
+        s = "Dataset '{}'\n\n".format(self.label)
+
+        s += "\tDataset Scaling: {}\n".format(self.dataset_scaling)
 
         s += "\tInitial Concentration: {}\n"\
-            .format(self.initial_concentration())
+            .format(self.initial_concentration)
 
-        s += "\tMegacomplexes: {}\n".format(self.megacomplexes())
+        s += "\tMegacomplexes: {}\n".format(self.megacomplexes)
 
-        if len(self.scalings()) is not 0:
+        if len(self.megacomplex_scaling) is not 0:
             s += "\tScalings:\n"
-            for sc in self.scalings():
+            for sc in self.megacomplex_scaling:
                 s += "\t\t- {}\n".format(sc)
 
         return s

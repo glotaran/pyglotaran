@@ -1,4 +1,4 @@
-from .glotaran_core.model import Model
+from glotaran_core.model import Model
 from .megacomplex import KineticMegacomplex
 from .k_matrix import KMatrix
 from .irf import Irf
@@ -70,9 +70,9 @@ class KineticModel(Model):
         s = "{}\n\nK-Matrices\n----------\n\n".format(super(KineticModel,
                                                             self).__str__())
         for k in self.k_matrices:
-            s += "{}\n\n".format(self.k_matrices[k])
+            s += "{}\n".format(self.k_matrices[k])
 
         s += "\n\nIRFs\n----\n\n"
         for irf in self.irfs:
-            s += "\n{}".format(self.irfs[irf])
+            s += "{}\n".format(self.irfs[irf])
         return s

@@ -7,9 +7,8 @@ def parse_file(fname):
     if not os.path.isfile(fname):
         raise Exception("File does not exist.")
 
-    f = open(fname)
-    spec = load(f)
-    f.close
+    with open(fname) as f:
+        spec = load(f)
 
     parser = get_model_parser(spec)
 
