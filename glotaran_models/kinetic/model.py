@@ -66,6 +66,17 @@ class KineticModel(Model):
                 raise Exception("Irfs labels must be unique")
             self.irfs[irf.label] = irf
 
+    def get_residual(self, params, **kwargs):
+        independent_var = kwargs["independent_var"]
+
+        # PLACEHOLDER: this assumes simply that there only diagonal elements
+        rates = []
+        mat = self.k_matrices[0]
+        for i in range(len(mat)):
+            rate = params["p{}".format(mat[i, i])]
+            rates.append(rate)
+            
+
     def __str__(self):
         s = "{}\n\nK-Matrices\n----------\n\n".format(super(KineticModel,
                                                             self).__str__())

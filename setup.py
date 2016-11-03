@@ -28,7 +28,7 @@ setup(
                     YamiNoKeshin@gmail.com,
                     joern.weissenborn@gmail.com""",
     license='GPLv3',
-    packages=['glotaran_core',
+    packages=['glotaran_core.fitting',
               'glotaran_core.model',
               'glotaran_models.kinetic',
               'glotaran_tools.specification_parser'],

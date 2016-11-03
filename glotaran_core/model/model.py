@@ -13,7 +13,18 @@ class Model(object):
 
     Consists of parameters, megacomplexes, relations and constraints.
     """
+    _parameter = None
+    _megacomplexes = None
+    _relations = None
+    _compartment_constraints = None
+    _parameter_constraints = None
+    _datasets = None
+    _initial_concentrations = None
+
     def type_string(self):
+        raise NotImplementedError
+
+    def get_c_matrix(self):
         raise NotImplementedError
 
     @property
@@ -47,11 +58,11 @@ class Model(object):
     def add_megacomplex(self, megacomplex):
         if not issubclass(type(megacomplex), Megacomplex):
             raise TypeError("Megacomplexes must be subclass of 'Megacomplex'")
-        try:
+        if self.megacomplexes is not None:
             if megacomplex.label in self.megacomplexes:
                 raise Exception("Megacomplex labels must be unique")
             self.megacomplexes[megacomplex.label] = megacomplex
-        except:
+        else:
             self.megacomplexes = {megacomplex.label: megacomplex}
 
     @property
@@ -69,9 +80,9 @@ class Model(object):
     def add_relation(self, relation):
         if not isinstance(relation, Relation):
             raise TypeError("Relations must be instance of class 'Relation'")
-        try:
+        if self.relations is not None:
             self.relations.append(relation)
-        except:
+        else:
             self.relations = relation
 
     @property
@@ -91,9 +102,9 @@ class Model(object):
         if not isinstance(constraint, ParameterConstraint):
             raise TypeError("ParameterConstraint must be instance of class"
                             " 'ParameterConstraint'")
-        try:
+        if self.parameter_constraints is not None:
             self.parameter_constraints.append(constraint)
-        except:
+        else:
             self.parameter_constraints = constraint
 
     @property
@@ -113,9 +124,9 @@ class Model(object):
         if not issubclass(type(constraint), CompartmentConstraint):
             raise TypeError("CompartmentConstraint must be instance of class"
                             " 'CompartmentConstraint'")
-        try:
+        if self.compartment_constraints is not None:
             self.compartment_constraints.append(constraint)
-        except:
+        else:
             self.compartment_constraints = constraint
 
     @property
@@ -126,16 +137,17 @@ class Model(object):
     def datasets(self, value):
         if not isinstance(value, dict):
             raise TypeError("Datasets must be dict.")
-        if any(not issubclass(type(value[val]), DatasetDescriptor) for val in value):
+        if any(not issubclass(type(value[val]),
+                              DatasetDescriptor) for val in value):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
         self._datasets = value
 
     def add_dataset(self, dataset):
         if not issubclass(type(dataset), DatasetDescriptor):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
-        try:
+        if self.datasets is not None:
             self.datasets[dataset.label] = dataset
-        except:
+        else:
             self.datasets = {dataset.label: dataset}
 
     @property
@@ -156,10 +168,10 @@ class Model(object):
         if not isinstance(initial_concentration, InitialConcentration):
             raise TypeError("Initial concentrations must be instance of"
                             " 'InitialConcentration'")
-        try:
+        if self.initial_concentrations is not None:
             self.initial_concentrations[initial_concentration.label] =\
                 initial_concentration
-        except:
+        else:
             self.initial_concentrations = {initial_concentration.label:
                                            initial_concentration}
 
@@ -171,33 +183,39 @@ class Model(object):
         for p in self.parameter:
             s += "{}\n".format(p)
 
-        s += "\nParameter Constraints\n--------------------\n\n"
+        if self.parameter_constraints is not None:
+            s += "\nParameter Constraints\n--------------------\n\n"
 
-        for p in self._parameter_constraints:
-            s += "{}\n".format(p)
+            for p in self._parameter_constraints:
+                s += "{}\n".format(p)
 
-        s += "\nParameter Relations\n------------------\n\n"
+        if self.relations is not None:
+            s += "\nParameter Relations\n------------------\n\n"
 
-        for p in self._relations:
-            s += "{}\n".format(p)
+            for p in self._relations:
+                s += "{}\n".format(p)
 
         s += "\nMegacomplexes\n-------------\n\n"
 
         for m in self._megacomplexes:
             s += "{}\n".format(self._megacomplexes[m])
 
-        s += "\nCompartment Constraints\n------------------------\n\n"
+        if self.compartment_constraints is not None:
+            s += "\nCompartment Constraints\n------------------------\n\n"
 
-        for c in self._compartment_constraints:
-            s += "{}\n".format(c)
+            for c in self._compartment_constraints:
+                s += "{}\n".format(c)
 
-        s += "\nInitital Concentrations\n-----------------------\n\n"
+        if self.initial_concentrations is not None:
+            s += "\nInitital Concentrations\n-----------------------\n\n"
 
-        for i in self._initial_concentrations:
-            s += "{}\n".format(self._initial_concentrations[i])
+            for i in self._initial_concentrations:
+                s += "{}\n".format(self._initial_concentrations[i])
 
-        s += "\nDatasets\n--------\n\n"
+        if self.datasets is not None:
+            s += "\nDatasets\n--------\n\n"
 
-        for d in self._datasets:
-            s += "{}\n".format(self._datasets[d])
+            for d in self._datasets:
+                s += "{}\n".format(self._datasets[d])
+
         return s

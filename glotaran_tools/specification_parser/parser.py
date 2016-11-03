@@ -10,6 +10,16 @@ def parse_file(fname):
     with open(fname) as f:
         spec = load(f)
 
+    return parse_spec(spec)
+
+
+def parse_yml(spec):
+    spec = load(spec)
+    return parse_spec(spec)
+
+
+def parse_spec(spec):
+
     parser = get_model_parser(spec)
 
     parser.parse()
