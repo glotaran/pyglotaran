@@ -23,6 +23,8 @@ def solve(k, PSI, times):
         b = PSI[:,i]
         res[:,i] = qr(C, b)
 
+    print(np.sum(res))
+
     return res.flatten()
 
 
@@ -30,25 +32,31 @@ def main():
 
     times = np.asarray(np.arange(0, 1500, 1.5))
     wavenum = np.asarray(np.arange(12820, 15120, 4.6))
+    #  wavenum = np.asarray(np.arange(12820, 15120, 4.6))
     location = np.asarray([14705, 13513, 14492, 14388, 14184, 13986])
     delta = np.asarray([400, 1000, 300, 200, 350, 330])
-    amp = np.asarray([1, 0.2, 1, 1, 1, 1])
-    kinpar = np.asarray([.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909])
+    amp = np.asarray([1])
+    kinpar = np.asarray([.006667])
+    #  kinpar = np.asarray([.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909])
 
-    E = np.empty((wavenum.size, location.size), dtype=np.float64, order="F")
+    E = np.empty((1, 1), dtype=np.float64, order="F")
 
-    for i in range(location.size):
-        E[:,i] = amp[i] * np.exp(-np.log(2) * np.square(2 * (wavenum - location[i])/delta[i]))
+    for i in range(amp.size):
+        E[:, i] = amp[i]
+        #  E[:,i] = amp[i] * np.exp(-np.log(2) * np.square(2 * (wavenum - location[i])/delta[i]))
 
     C = calculateC(kinpar, times)
 
     PSI = np.dot(C, np.transpose(E))
+    print(PSI.shape)
 
-    start_kinpar = np.asarray([.005, 0.003, 0.00022, 0.0300, 0.000888])
+    start_kinpar = np.asarray([.005])
+    #  start_kinpar = np.asarray([.005, 0.003, 0.00022, 0.0300, 0.000888])
 
     start = time.perf_counter()
 
-    res = scipy.optimize.least_squares(solve, start_kinpar, args=(PSI, times), verbose=2, method='lm')
+    res = scipy.optimize.least_squares(solve, start_kinpar, args=(PSI, times),
+                                       verbose=2, method='lm', gtol=1e-5)
 
     stop = time.perf_counter()
 
