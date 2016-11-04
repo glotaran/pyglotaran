@@ -1,97 +1,149 @@
-from unittest import TestCase, main
+from unittest import TestCase
 from glotaran_core.fitting.variable_projection import (
     SeperableModel,
-    VariableProjectionMinimizer,
 )
 from lmfit import Parameters
 import numpy as np
 
-import scipy.optimize
-import scipy.linalg.lapack as lapack
 
-
-def qr(a, c):
-    qr, tau, _, _ = lapack.dgeqrf(a, overwrite_a=1)
-    c, _, _ = lapack.dormqr("L", "T", qr, tau, c, max(1, a.shape[1]), overwrite_c=1)
-    for i in range(a.shape[1]):
-        c[i] = 0
-    c, _, _ = lapack.dormqr("L", "N", qr, tau, c, max(1, a.shape[1]), overwrite_c=1)
-    return c
-
+EPSILON = 1e-3
 
 
 class TestSimpleKinetic(TestCase):
 
-    def test_one_compartment_decay(self):
+    def assertEpsilon(self, number, value):
+        self.assertTrue(
+            value > number * (1-EPSILON) and
+            value < number * (1+EPSILON)
+        )
+
+    def tst_one_compartment_decay(self):
 
         class OneComparmentDecay(SeperableModel):
 
-            def parameter(self):
-                params = Parameters()
-                params.add("p1", 4e-3)
-                return params
-
             def c_matrix(self, parameter, *times, **kwargs):
-                kinpar = np.asarray([parameter["p1"]])
-                return np.exp(np.outer(np.asarray(times), -kinpar))
+                kinpar = np.asarray([parameter["p0"]])
+                c = np.exp(np.outer(np.asarray(times), -kinpar))
+                return c
 
-        # E Matrix => channels X compartments
-        E = np.empty((1, 1), dtype=np.float64, order="F")
+            def e_matrix(self):
+                # E Matrix => channels X compartments
+                E = np.empty((1, 1), dtype=np.float64, order="F")
 
-        E[0, 0] = 3.4
+                E[0, 0] = 1
+
+                return E
 
         model = OneComparmentDecay()
         times = np.asarray(np.arange(0, 1500, 1.5))
 
+        params = [101e-4]
+
         real_params = Parameters()
-        real_params.add("p1", 4.679e-3)
+        for i in range(len(params)):
+            real_params.add("p{}".format(i), params[i])
+        data = model.eval(real_params, times)
 
-        data = np.dot(model.c_matrix(real_params, times),
-                      np.transpose(E))
+        initial_parameter = Parameters()
+        initial_parameter.add("p0", 100e-5)
 
-        print("ddddd")
-        print(data.shape)
-        print("ddddd")
+        result = model.fit(initial_parameter, times, **{"data": data})
+        for i in range(len(params)):
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
 
-        def solve(k, PSI, times):
-            res = np.empty(PSI.shape, dtype=np.float64)
-            C = model.c_matrix({'p1':k[0]}, times)
-            for i in range(PSI.shape[1]):
-                b = PSI[:,i]
-                res[:,i] = qr(C, b)
-            return res.flatten()
+    def test_two_compartment_decay(self):
 
+        class TwoComparmentDecay(SeperableModel):
 
-        minimizer = VariableProjectionMinimizer(model,
-                                                *times, **{"data": data})
+            def c_matrix(self, parameter, *times, **kwargs):
+                kinpar = np.asarray([parameter["p0"], parameter["p1"]])
+                c = np.exp(np.outer(np.asarray(times), -kinpar))
+                return c
 
-        result = minimizer.minimize(method='least_squares')
-        print(result)
+            def e_matrix(self):
+                # E Matrix => channels X compartments
+                E = np.empty((1, 2), dtype=np.float64, order="F")
+
+                E[0, 0] = 1
+                E[0, 1] = 2
+
+                return E
+
+        model = TwoComparmentDecay()
+        times = np.asarray(np.arange(0, 1500, 1.5))
+
+        params = [101e-4, 202e-5]
+
+        real_params = Parameters()
+        for i in range(len(params)):
+            real_params.add("p{}".format(i), params[i])
+
+        data = model.eval(real_params.valuesdict(), *times)
+
+        initial_parameter = Parameters()
+        initial_parameter.add("p0", 100e-5)
+        initial_parameter.add("p1", 200e-6)
+
+        result = model.fit(initial_parameter, times, **{"data": data})
+        for i in range(len(params)):
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+        for i in range(len(params)):
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+
+        #  self.assertTrue(False)
+
+    def test_multi_compartment_multi_channel_decay(self):
+
+        class MultiChannelMultiCompartmentDecay(SeperableModel):
+
+            def c_matrix(self, parameter, *times, **kwargs):
+                #  print([parameter[k] for k in parameter])
+                #  kinpar = np.asarray([])
+                kinpar = np.asarray([parameter["p{}".format(i)] for k in
+                                     range(len((parameter)))])
+                c = np.exp(np.outer(np.asarray(times), -kinpar))
+                return c
+
+            def e_matrix(self):
+                wavenum = np.asarray(np.arange(12820, 15120, 4.6))
+                location = np.asarray(
+                    [14705, 13513, 14492, 14388, 14184, 13986])
+                delta = np.asarray([400, 1000, 300, 200, 350, 330])
+                amp = np.asarray([1, 0.2, 1, 1, 1, 1])
+
+                E = np.empty((wavenum.size, location.size), dtype=np.float64,
+                             order="F")
+
+                for i in range(location.size):
+                    E[:, i] = amp[i] * np.exp(
+                        -np.log(2) * np.square(
+                            2 * (wavenum - location[i])/delta[i]
+                        )
+                    )
+
+                return E
+
+        model = MultiChannelMultiCompartmentDecay()
+        times = np.asarray(np.arange(0, 1500, 1.5))
+
+        params = [.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909]
+
+        real_params = Parameters()
+        for i in range(len(params)):
+            real_params.add("p{}".format(i), params[i])
+
+        data = model.eval(real_params.valuesdict(), *times)
+        #  print(data.shape)
+
+        params = [.005, 0.003, 0.00022, 0.0300, 0.000888]
+        initial_parameter = Parameters()
+        for i in range(len(params)):
+            initial_parameter.add("p{}".format(i), params[i])
+
+        result = model.fit(initial_parameter, *times, **{"data": data})
         print(result.params)
-        print(result.success)
-        print(result.message)
-
-        # start_kinpar = np.asarray([.001])
-        # res = scipy.optimize.least_squares(solve, start_kinpar, args=(data, times), verbose=2, method='lm')
-        print("ggggggggggggggggg")
-        # print(res)
+        for i in range(len(params)):
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+        for i in range(len(params)):
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
         self.assertTrue(False)
-#
-#      class TestMultiKinetics
-#
-#          def test_one_compartment_decay(self):
-#
-#              class OneComparmentDecay(SeperableModel):
-#
-#                  def parameter(self):
-#                      params = Parameters()
-#                      params.add("p1", 4e-3)
-#                      return params
-#
-#                  def c_matrix(self, parameter, *times, **kwargs):
-#                      kinpar = np.asarray([parameter["p1"]])
-#                      return np.exp(np.outer(np.asarray(times), -kinpar))
-#
-#
-#  if __name__ == '__main__':
-#      main()

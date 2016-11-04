@@ -21,19 +21,27 @@ def solve(k, single_trace, times):
     res = np.empty(single_trace.shape, dtype=np.float64)
     C = calculateC(k, times)            
     res = qr(C, single_trace)
+    r = np.sum(res)
+    print("ITER: {}".format(C.shape))
+    print("ITER: {}".format(np.sum(C)))
+    print("ITER: {}".format(r*r))
+    print("ITER: {}".format(res.shape))
+    print("ITER: {}".format(res.flatten().shape))
     return res.flatten()
 
 
 def main():
 
     times = np.asarray(np.arange(0, 1500, 1.5))
-    amp = np.asarray([1,2])
+    amp = np.asarray([[1, 2]])
+    print(amp.shape)
     kinpar = np.asarray([0.0101,.00202])
 
     C = calculateC(kinpar, times)
 
-    single_trace = np.dot(C, amp)
-    assert len(single_trace.shape)==1, "data is not a single trace"
+    single_trace = np.dot(C, np.transpose(amp))
+    print(single_trace.shape)
+    #  assert len(single_trace.shape)==1, "data is not a single trace"
 
     start_kinpar =  0.1*kinpar
     start = time.perf_counter()
