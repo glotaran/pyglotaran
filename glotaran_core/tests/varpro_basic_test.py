@@ -39,7 +39,7 @@ def main():
     start_kinpar = np.asarray([.005, 0.02])
     start = time.perf_counter()
 
-    res = scipy.optimize.least_squares(solve, start_kinpar, args=(single_trace, times), verbose=3, method='lm')
+    res = scipy.optimize.least_squares(solve, start_kinpar, args=(single_trace, times), verbose=2, method='lm')
 
     stop = time.perf_counter()
 
