@@ -18,9 +18,13 @@ def qr(a, c):
 
 
 def solve(k, single_trace, times):
+    if len(single_trace.shape) == 1:
+        single_trace.shape = (-1, 1)
     res = np.empty(single_trace.shape, dtype=np.float64)
     C = calculateC(k, times)            
-    res = qr(C, single_trace)
+    for i in range(single_trace.shape[1]):
+        b = single_trace[:, i]
+        res[:, i] = qr(C, b)
     r = np.sum(res)
     print("ITER: {}".format(C.shape))
     print("ITER: {}".format(np.sum(C)))
