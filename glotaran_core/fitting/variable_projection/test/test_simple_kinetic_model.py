@@ -17,7 +17,7 @@ class TestSimpleKinetic(TestCase):
             value < number * (1+EPSILON)
         )
 
-    def tst_one_compartment_decay(self):
+    def test_one_compartment_decay(self):
 
         class OneComparmentDecay(SeperableModel):
 
@@ -126,11 +126,11 @@ class TestSimpleKinetic(TestCase):
         model = MultiChannelMultiCompartmentDecay()
         times = np.asarray(np.arange(0, 1500, 1.5))
 
-        params = [.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909]
+        rparams = [.006667, .006667, 0.00333, 0.00035, 0.0303, 0.000909]
 
         real_params = Parameters()
-        for i in range(len(params)):
-            real_params.add("p{}".format(i), params[i])
+        for i in range(len(rparams)):
+            real_params.add("p{}".format(i), rparams[i])
 
         data = model.eval(real_params.valuesdict(), *times)
         #  print(data.shape)
@@ -143,7 +143,8 @@ class TestSimpleKinetic(TestCase):
         result = model.fit(initial_parameter, *times, **{"data": data})
         print(result.params)
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+            self.assertEpsilon(rparams[i],
+                               result.params["p{}".format(i)].value)
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
-        self.assertTrue(False)
+            self.assertEpsilon(rparams[i],
+                               result.params["p{}".format(i)].value)
