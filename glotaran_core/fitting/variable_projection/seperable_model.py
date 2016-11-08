@@ -18,4 +18,4 @@ class SeperableModel(object):
     def fit(self, initial_parameter, *args, **kwargs):
         minimizer = VariableProjectionMinimizer(self, initial_parameter, *args,
                                                 **kwargs)
-        return minimizer.minimize(method='least_squares')
+        return minimizer.minimize(method='least_squares', ftol=1e-10, gtol=1e-10, verbose=2)

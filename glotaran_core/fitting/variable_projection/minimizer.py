@@ -29,13 +29,14 @@ class VariableProjectionMinimizer(Minimizer):
         #  for i in range(data.shape[1]):
         #  print(data.shape[1])
         #  print(len(data[0,:]))
-        for i in range(100):
+        for i in range(data.shape[1]):
         
             #  print(i)
-            #  print(data[:,i].shape)
-        #      b = data[:,i]
-            #  qr = qr_decomposition(c_matrix, data[:, i])
-            qr = qr_decomposition(c_matrix, np.asarray([data[:,i]]).T)[:,0]
+            #print(data.shape)
+            b = data[:, i]
+            qr = qr_decomposition(c_matrix, b)
+            #print(data[:, i])
+            #qr = qr_decomposition(c_matrix, np.asarray([data[:, i]]).T)
             #  print(qr.shape)
             res[:, i] = qr
             #  res[:, i] = qr_decomposition(c_matrix, data[:,i])
@@ -47,9 +48,10 @@ class VariableProjectionMinimizer(Minimizer):
             #  print(res[:,i].shape)
             #  res[:,i] = qr
 
-        print("DDD")
-        print(res[:10, 499])
-        print(res[:10, 500])
-        print(np.asarray([data[:,0]]).T.shape)
+        #print("DDD")
+        #print(res[:10, 499])
+        #print(res[:10, 500])
+        #print(np.asarray([data[:,0]]).T.shape)
         #  res = qr_decomposition(c_matrix, data)
+        #print(res)
         return res.flatten()

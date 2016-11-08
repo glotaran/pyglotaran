@@ -5,19 +5,21 @@ from glotaran_core.fitting.variable_projection import (
 from lmfit import Parameters
 import numpy as np
 
-
-EPSILON = 1e-3
+#EPSILON = 1e-3
 
 
 class TestSimpleKinetic(TestCase):
 
-    def assertEpsilon(self, number, value):
-        self.assertTrue(
-            value > number * (1-EPSILON) and
-            value < number * (1+EPSILON)
-        )
+    def assertEpsilon(self, number, value, epsilon):
+        print(abs(number - value))
+        print((number, value, epsilon))
+        #self.assertTrue(
+        #    value >= number * (1 - EPSILON) and
+        #    value <= number * (1 + EPSILON)
+        #)
+        self.assertTrue(abs(number - value) < epsilon)
 
-    def tst_one_compartment_decay(self):
+    def test_one_compartment_decay(self):
 
         class OneComparmentDecay(SeperableModel):
 
@@ -47,9 +49,10 @@ class TestSimpleKinetic(TestCase):
         initial_parameter = Parameters()
         initial_parameter.add("p0", 100e-5)
 
-        result = model.fit(initial_parameter, times, **{"data": data})
+        result = model.fit(initial_parameter, *times, **{"data": data})
+        print(result.params)
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value, 1e-6)
 
     def test_two_compartment_decay(self):
 
@@ -66,13 +69,13 @@ class TestSimpleKinetic(TestCase):
 
                 E[0, 0] = 1
                 E[0, 1] = 2
-
                 return E
 
         model = TwoComparmentDecay()
         times = np.asarray(np.arange(0, 1500, 1.5))
 
         params = [101e-4, 202e-5]
+        #params = [0.00333, 0.00035]
 
         real_params = Parameters()
         for i in range(len(params)):
@@ -83,14 +86,17 @@ class TestSimpleKinetic(TestCase):
         initial_parameter = Parameters()
         initial_parameter.add("p0", 100e-5)
         initial_parameter.add("p1", 200e-6)
+        #initial_parameter.add("p0", 0.003)
+        #initial_parameter.add("p1", 0.00022)
 
-        result = model.fit(initial_parameter, times, **{"data": data})
+        result = model.fit(initial_parameter, *times, **{"data": data})
+        print(result.params)
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
-        for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value, 1e-6)
+        #for i in range(len(params)):
+        #    self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
 
-        #  self.assertTrue(False)
+        #self.assertTrue(False)
 
     def test_multi_compartment_multi_channel_decay(self):
 
@@ -143,7 +149,7 @@ class TestSimpleKinetic(TestCase):
         result = model.fit(initial_parameter, *times, **{"data": data})
         print(result.params)
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
-        for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
-        self.assertTrue(False)
+            self.assertEpsilon(params[i], result.params["p{}".format(i)].value, 1e-3)
+        #for i in range(len(params)):
+        #    self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+        #self.assertTrue(False)
