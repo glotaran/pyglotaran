@@ -148,8 +148,9 @@ class TestSimpleKinetic(TestCase):
 
         result = model.fit(initial_parameter, *times, **{"data": data})
         print(result.params)
-        for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value, 1e-3)
+        wanted_params = [.006667, 0.00333, 0.00035, 0.0303, 0.000909]
+        for i in range(len(wanted_params)):
+            self.assertEpsilon(wanted_params[i], result.params["p{}".format(i)].value, 1e-3)
         #for i in range(len(params)):
         #    self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
         #self.assertTrue(False)
