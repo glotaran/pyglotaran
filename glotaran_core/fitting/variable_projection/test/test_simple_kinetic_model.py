@@ -6,16 +6,10 @@ from lmfit import Parameters
 import numpy as np
 
 
-EPSILON = 1e-3
-
-
 class TestSimpleKinetic(TestCase):
 
-    def assertEpsilon(self, number, value):
-        self.assertTrue(
-            value > number * (1-EPSILON) and
-            value < number * (1+EPSILON)
-        )
+    def assertEpsilon(self, number, value, epsilon):
+        self.assertTrue(abs(number - value) < epsilon)
 
     def test_one_compartment_decay(self):
 
@@ -47,9 +41,10 @@ class TestSimpleKinetic(TestCase):
         initial_parameter = Parameters()
         initial_parameter.add("p0", 100e-5)
 
-        result = model.fit(initial_parameter, times, **{"data": data})
+        result = model.fit(initial_parameter, *times, **{"data": data})
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
+            self.assertEpsilon(params[i],
+                               result.params["p{}".format(i)].value, 1e-6)
 
     def test_two_compartment_decay(self):
 
@@ -66,7 +61,6 @@ class TestSimpleKinetic(TestCase):
 
                 E[0, 0] = 1
                 E[0, 1] = 2
-
                 return E
 
         model = TwoComparmentDecay()
@@ -84,22 +78,18 @@ class TestSimpleKinetic(TestCase):
         initial_parameter.add("p0", 100e-5)
         initial_parameter.add("p1", 200e-6)
 
-        result = model.fit(initial_parameter, times, **{"data": data})
+        result = model.fit(initial_parameter, *times, **{"data": data})
         for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
-        for i in range(len(params)):
-            self.assertEpsilon(params[i], result.params["p{}".format(i)].value)
-
-        #  self.assertTrue(False)
+            self.assertEpsilon(params[i],
+                               result.params["p{}".format(i)].value,
+                               1e-6)
 
     def test_multi_compartment_multi_channel_decay(self):
 
         class MultiChannelMultiCompartmentDecay(SeperableModel):
 
             def c_matrix(self, parameter, *times, **kwargs):
-                #  print([parameter[k] for k in parameter])
-                #  kinpar = np.asarray([])
-                kinpar = np.asarray([parameter["p{}".format(i)] for k in
+                kinpar = np.asarray([parameter["p{}".format(i)] for i in
                                      range(len((parameter)))])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
                 return c
@@ -133,7 +123,6 @@ class TestSimpleKinetic(TestCase):
             real_params.add("p{}".format(i), rparams[i])
 
         data = model.eval(real_params.valuesdict(), *times)
-        #  print(data.shape)
 
         params = [.005, 0.003, 0.00022, 0.0300, 0.000888]
         initial_parameter = Parameters()
@@ -141,10 +130,9 @@ class TestSimpleKinetic(TestCase):
             initial_parameter.add("p{}".format(i), params[i])
 
         result = model.fit(initial_parameter, *times, **{"data": data})
-        print(result.params)
-        for i in range(len(params)):
-            self.assertEpsilon(rparams[i],
-                               result.params["p{}".format(i)].value)
-        for i in range(len(params)):
-            self.assertEpsilon(rparams[i],
-                               result.params["p{}".format(i)].value)
+
+        wanted_params = [.006667, 0.00333, 0.00035, 0.0303, 0.000909]
+        for i in range(len(wanted_params)):
+            self.assertEpsilon(wanted_params[i],
+                               result.params["p{}".format(i)].value,
+                               1e-6)
