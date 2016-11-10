@@ -35,7 +35,11 @@ class KineticModelParser(ModelSpecParser):
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
                                dataset, dataset_scaling, dataset_spec):
-        irf = dataset_spec[KineticModelKeys.IRF]
+        try:
+            irf = dataset_spec[KineticModelKeys.IRF]
+        except:
+            irf = None
+
         return KineticDatasetDescriptor(label, initial_concentration,
                                         megacomplexes, megacomplex_scalings,
                                         dataset, dataset_scaling, irf)
@@ -61,30 +65,33 @@ class KineticModelParser(ModelSpecParser):
         self.get_irfs()
 
     def get_irfs(self):
-        for irf in self.spec[KineticModelKeys.IRF]:
-            compact = is_compact(irf)
+        try:
+            for irf in self.spec[KineticModelKeys.IRF]:
+                compact = is_compact(irf)
 
-            lb = ModelKeys.LABEL
-            tp = ModelKeys.TYPE
-            if compact:
-                lb = 0
-                tp = 1
-            if irf[tp] == IrfTypes.GAUSSIAN:
-                ct = GaussianIrfKeys.CENTER
-                wt = GaussianIrfKeys.WIDTH
-                cd = GaussianIrfKeys.CENTER_DISPERSION
-                wd = GaussianIrfKeys.WIDTH_DISPERSION
-                nm = GaussianIrfKeys.NORMALIZE
+                lb = ModelKeys.LABEL
+                tp = ModelKeys.TYPE
                 if compact:
-                    ct = 2
-                    wt = 3
-                    cd = 4
-                    wd = 5
-                    nm = 6
-                self.model.add_irf(GaussianIrf(irf[lb], irf[ct], irf[wt],
-                                   center_dispersion=irf[cd],
-                                   width_dispersion=irf[wd],
-                                   normalize=irf[nm]))
+                    lb = 0
+                    tp = 1
+                if irf[tp] == IrfTypes.GAUSSIAN:
+                    ct = GaussianIrfKeys.CENTER
+                    wt = GaussianIrfKeys.WIDTH
+                    cd = GaussianIrfKeys.CENTER_DISPERSION
+                    wd = GaussianIrfKeys.WIDTH_DISPERSION
+                    nm = GaussianIrfKeys.NORMALIZE
+                    if compact:
+                        ct = 2
+                        wt = 3
+                        cd = 4
+                        wd = 5
+                        nm = 6
+                    self.model.add_irf(GaussianIrf(irf[lb], irf[ct], irf[wt],
+                                       center_dispersion=irf[cd],
+                                       width_dispersion=irf[wd],
+                                       normalize=irf[nm]))
+        except:
+            pass
 
 
 register_model_parser("kinetic", KineticModelParser)

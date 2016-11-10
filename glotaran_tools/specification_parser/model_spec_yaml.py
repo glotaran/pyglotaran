@@ -104,27 +104,39 @@ class ModelSpecParser(object):
         label = dataset_spec[ModelKeys.LABEL]
         path = dataset_spec[DatasetKeys.PATH]
         type = dataset_spec[ModelKeys.TYPE]
-        initial_concentration = dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
+        try:
+            initial_concentration = dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
+        except:
+            initial_concentration = []
         megacomplexes = dataset_spec[ModelKeys.MEGACOMPLEXES]
-        dataset_scaling = dataset_spec[DatasetKeys.DATASET_SCALING]
+
+        try:
+            dataset_scaling = DatasetScaling(dataset_spec[DatasetKeys.DATASET_SCALING])
+        except:
+            dataset_scaling = None
+
         mss = []
-        for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
-            compact = is_compact(ms)
-            mc = ModelKeys.MEGACOMPLEXES
-            cp = DatasetKeys.COMPARTEMENTS
-            pm = ModelKeys.PARAMETER
-            if compact:
-                mc = 0
-                cp = 1
-                pm = 2
-            mss.append(MegacomplexScaling(ms[mc], ms[cp], ms[pm]))
+        try:
+            for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
+                compact = is_compact(ms)
+                mc = ModelKeys.MEGACOMPLEXES
+                cp = DatasetKeys.COMPARTEMENTS
+                pm = ModelKeys.PARAMETER
+                if compact:
+                    mc = 0
+                    cp = 1
+                    pm = 2
+                mss.append(MegacomplexScaling(ms[mc], ms[cp], ms[pm]))
+        except:
+            pass
+
         self.model.add_dataset(
             self.get_dataset_descriptor(label,
                                         initial_concentration,
                                         megacomplexes,
                                         mss,
                                         Dataset(),
-                                        DatasetScaling(dataset_scaling),
+                                        dataset_scaling,
                                         dataset_spec))
 
     def get_dataset_additionals(self, dataset, dataset_spec):

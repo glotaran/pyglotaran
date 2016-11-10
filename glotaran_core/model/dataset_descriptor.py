@@ -7,14 +7,19 @@ class DatasetDescriptor(object):
     """
     Class representing a dataset for fitting.
     """
+    _dataset_scaling = None
+    _initial_concentration = None
+
     def __init__(self, label, initial_concentration, megacomplexes,
                  megacomplex_scaling, dataset, dataset_scaling):
         self.label = label
-        self.initial_concentration = initial_concentration
+        if initial_concentration is not None:
+            self.initial_concentration = initial_concentration
         self.megacomplexes = megacomplexes
         self.megacomplex_scaling = megacomplex_scaling
         self.dataset = dataset
-        self.dataset_scaling = dataset_scaling
+        if dataset_scaling is not None:
+            self.dataset_scaling = dataset_scaling
 
     @property
     def label(self):

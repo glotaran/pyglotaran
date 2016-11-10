@@ -134,5 +134,5 @@ class TestSimpleKinetic(TestCase):
         wanted_params = [.006667, 0.00333, 0.00035, 0.0303, 0.000909]
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params[i],
-                               result.params["p{}".format(i)].value,
+                               result.params["p{}".format(i)],
                                1e-6)

@@ -8,8 +8,8 @@ from Cython.Distutils import build_ext
 import numpy
 
 ext_modules = [
-    Extension("calculateC",
-              ["glotaran_core/calculateC.pyx"],
+    Extension("c_matrix",
+              ["glotaran_models/kinetic/c_matrix.pyx"],
               include_dirs=[numpy.get_include()],
               libraries=["m"],
               extra_compile_args=["-O3", "-ffast-math", "-march=native",
