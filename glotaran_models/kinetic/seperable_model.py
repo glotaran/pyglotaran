@@ -154,42 +154,32 @@ class KineticSeperableModel(SeperableModel):
 
     def e_matrix(self, **kwargs):
         dataset = self._model.datasets[kwargs['dataset']]
+        amplitudes = kwargs["amplitudes"] if "amplitudes" in kwargs else None
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]
             k_matrix = self._get_combined_k_matrix(cmplx)
             # E Matrix => channels X compartments
-            E = np.empty((1, len(k_matrix.compartment_map)), dtype=np.float64,
-                         order="F")
+            nr_compartments = len(k_matrix.compartment_map)
 
-            concentration_vector = dataset.initial_concentration
-            has_concentration_vector = concentration_vector is not None
-            if has_concentration_vector:
-                concentration_vector = \
-                    self._parameter_map(self._model.parameter)
+            if amplitudes is None:
+                E = np.full((1, nr_compartments), 1.0)
             else:
-                concentration_vector = list([1 for _ in
-                                             range(len(self._model.compartments
-                                                       ))])
-            m = k_matrix.compartment_map
+                E = np.empty((1, nr_compartments), dtype=np.float64)
+                m = k_matrix.compartment_map
+                compartments = self._model.compartments
+                # translate compartments to indices
 
-            # get compartment vector
+                for i in range(len(m)):
+                    m[i] = compartments.index(m[i])
 
-            compartments = self._model.compartments
+                # construct j_vector
 
-            # translate compartments to indices
+                mapped_amps = [amplitudes[i] for i in m]
 
-            for i in range(len(m)):
-                m[i] = compartments.index(m[i])
-
-            # construct j_vector
-
-            j_vector = [concentration_vector[i] for i in m]
-
-            for i in range(len(j_vector)):
-                E[0, i] = j_vector[i]
+                for i in range(len(mapped_amps)):
+                    E[1:i] = mapped_amps[i]
 
             break
-
         # get the
         return E
 
