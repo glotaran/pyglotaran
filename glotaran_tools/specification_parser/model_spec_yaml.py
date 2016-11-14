@@ -16,6 +16,7 @@ from glotaran_core.model import (create_parameter_list,
 
 
 class ModelKeys:
+    COMPARTMENTS = "compartments"
     DATASETS = "datasets"
     PARAMETER = "parameter"
     MEGACOMPLEXES = "megacomplexes"
@@ -107,7 +108,7 @@ class ModelSpecParser(object):
         try:
             initial_concentration = dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
         except:
-            initial_concentration = []
+            initial_concentration = None
         megacomplexes = dataset_spec[ModelKeys.MEGACOMPLEXES]
 
         try:
@@ -273,7 +274,11 @@ class ModelSpecParser(object):
             self.model.add_initial_concentration(
                 InitialConcentration(concentration[lb], concentration[par]))
 
+    def get_compartments(self):
+        self.model.compartments = self.spec[ModelKeys.COMPARTMENTS]
+
     def parse(self):
+        self.get_compartments()
         self.get_parameter()
         self.get_parameter_constraints()
         self.get_compartment_constraints()

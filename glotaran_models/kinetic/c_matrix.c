@@ -2254,7 +2254,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
  *             for j in range(J):
  *                 t_i = T[i]             # <<<<<<<<<<<<<<
  *                 k_j = k[j]
- *                 C[i, j] = exp(-k_j * t_i)
+ *                 C[i, j] = exp(k_j * t_i)
  */
                                   __pyx_t_6 = __pyx_v_i;
                                   __pyx_v_t_i = (*((double *) ( /* dim=0 */ (__pyx_v_T.data + __pyx_t_6 * __pyx_v_T.strides[0]) )));
@@ -2263,7 +2263,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
  *             for j in range(J):
  *                 t_i = T[i]
  *                 k_j = k[j]             # <<<<<<<<<<<<<<
- *                 C[i, j] = exp(-k_j * t_i)
+ *                 C[i, j] = exp(k_j * t_i)
  */
                                   __pyx_t_7 = __pyx_v_j;
                                   __pyx_v_k_j = (*((double *) ( /* dim=0 */ (__pyx_v_k.data + __pyx_t_7 * __pyx_v_k.strides[0]) )));
@@ -2271,11 +2271,11 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
                                   /* "c_matrix.pyx":32
  *                 t_i = T[i]
  *                 k_j = k[j]
- *                 C[i, j] = exp(-k_j * t_i)             # <<<<<<<<<<<<<<
+ *                 C[i, j] = exp(k_j * t_i)             # <<<<<<<<<<<<<<
  */
                                   __pyx_t_8 = __pyx_v_i;
                                   __pyx_t_9 = __pyx_v_j;
-                                  *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_8 * __pyx_v_C.strides[0]) ) + __pyx_t_9 * __pyx_v_C.strides[1]) )) = exp(((-__pyx_v_k_j) * __pyx_v_t_i));
+                                  *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_8 * __pyx_v_C.strides[0]) ) + __pyx_t_9 * __pyx_v_C.strides[1]) )) = exp((__pyx_v_k_j * __pyx_v_t_i));
                                 }
                             }
                         }

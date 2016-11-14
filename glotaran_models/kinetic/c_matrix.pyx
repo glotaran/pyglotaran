@@ -29,4 +29,4 @@ def calculateC(double[:, :] C, double[:] k, double[:] T):
             for j in range(J):
                 t_i = T[i]
                 k_j = k[j]
-                C[i, j] = exp(-k_j * t_i)
+                C[i, j] = exp(k_j * t_i)

@@ -7,11 +7,11 @@ class SeperableModel(object):
     def c_matrix(self, parameter, *args, **kwargs):
         raise NotImplementedError
 
-    def e_matrix(self):
+    def e_matrix(self, **kwarg):
         raise NotImplementedError("'self.e_matrix' not defined in model.")
 
     def eval(self, parameter, *args, **kwargs):
-        e = self.e_matrix()
+        e = self.e_matrix(**kwargs)
         c = self.c_matrix(parameter, *args, **kwargs)
         return np.dot(c, np.transpose(e))
 

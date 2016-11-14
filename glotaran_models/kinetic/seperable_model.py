@@ -38,8 +38,13 @@ class KineticSeperableModel(SeperableModel):
     def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor,
                                         times):
 
+        initial_concentration = dataset_descriptor.initial_concentration
+
         for m in dataset_descriptor.megacomplexes:
-            c = self._construct_c_matrix_for_megacomplex(parameter, m, None,
+            cmplx = self._model.megacomplexes[m]
+            c = self._construct_c_matrix_for_megacomplex(parameter,
+                                                         cmplx,
+                                                         initial_concentration,
                                                          times)
 
         return c
@@ -47,39 +52,76 @@ class KineticSeperableModel(SeperableModel):
     def _construct_c_matrix_for_megacomplex(self, parameter, megacomplex,
                                             initial_concentration, times):
 
-        model_k_matrix_label = \
-                self._model.megacomplexes[megacomplex].k_matrices[0]
-        model_k_matrix = self._model.k_matrices[model_k_matrix_label].matrix
-        model_k_matrix = model_k_matrix.toarray().astype(np.float64)
-        eigenvalues, eigenvectors = \
-            self._construct_k_matrix_eigen(parameter, model_k_matrix)
+        # Combine K-Matrices of the megacomplex.
 
-        has_concentration_vector = \
-            initial_concentration is not None
+        model_k_matrix = self._get_combined_k_matrix(megacomplex)
+
+        # Get K-Matrix array
+
+        k_matrix = self._construct_k_matrix(parameter, model_k_matrix)
+
+        # Get eigenvalues and vectors.
+
+        eigenvalues, eigenvectors = \
+            self._construct_k_matrix_eigen(parameter, k_matrix)
+
+        # Calculate C Matrix
 
         C = np.empty((times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
-
         calculateC(C, eigenvalues, times)
 
+        # Apply initial concentration vector if needed
+        has_concentration_vector = \
+            initial_concentration is not None
         if has_concentration_vector:
+
+            # Get concentration vector
+
             concentration_vector = \
                 self._model.initial_concentrations[
                     initial_concentration]\
                 .parameter
+
+            # Map to matrix
+
+            # get compartment vector
+
+            compartments = self._model.compartments
+
+            # get compartment_map
+
+            m = model_k_matrix.compartment_map
+
+            # translate compartments to indices
+
+            for i in range(len(m)):
+                m[i] = compartments.index(m[i])
+
+            # construct j_vector
+
+            j_vector = [concentration_vector[i] for i in m]
             concentration_matrix = \
                 self._construct_concentration_matrix(parameter,
-                                                     concentration_vector,
+                                                     j_vector,
                                                      eigenvectors)
             C = np.dot(C, concentration_matrix)
 
         return C
 
-    def _construct_k_matrix_eigen(self, parameter, model_k_matrix):
+    def _get_combined_k_matrix(self, megacomplex):
+        model_k_matrix = None
+        for k_matrix_label in megacomplex.k_matrices:
+            m = self._model.k_matrices[k_matrix_label]
+            if model_k_matrix is None:
+                model_k_matrix = m
+            else:
+                model_k_matrix = model_k_matrix.combine(m)
+            return model_k_matrix
 
-        k_matrix = self._construct_k_matrix(parameter, model_k_matrix)
+    def _construct_k_matrix_eigen(self, parameter, k_matrix):
 
-        eigenvalues, eigenvectors = np.linalg.eig(k_matrix.astype(np.float64))
+        eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
         idx = eigenvalues.argsort()[::-1]
         eigenvalues = eigenvalues[idx]
         eigenvectors = eigenvectors[:, idx]
@@ -97,12 +139,59 @@ class KineticSeperableModel(SeperableModel):
         for i in range(k_matrix_eigenvectors.shape[0]):
             concentration_matrix[i, :] = k_matrix_eigenvectors[:, i] * gamma[i]
 
-    def _construct_k_matrix(self, parameter, model_k_matrix):
-        k_matrix = self._parameter_map(parameter)(model_k_matrix)
+        return concentration_matrix
 
+    def _construct_concentration_vector(self, parameter, megacomplex,
+                                        dataset_descriptor):
+        pass
+
+    def _construct_k_matrix(self, parameter, model_k_matrix):
+        k_matrix = model_k_matrix.asarray().astype(np.float64)
+        k_matrix = self._parameter_map(parameter)(k_matrix)
         for i in range(k_matrix.shape[0]):
             k_matrix[i, i] = -np.sum(k_matrix[:, i])
         return k_matrix
+
+    def e_matrix(self, **kwargs):
+        dataset = self._model.datasets[kwargs['dataset']]
+        for megacomplex in dataset.megacomplexes:
+            cmplx = self._model.megacomplexes[megacomplex]
+            k_matrix = self._get_combined_k_matrix(cmplx)
+            # E Matrix => channels X compartments
+            E = np.empty((1, len(k_matrix.compartment_map)), dtype=np.float64,
+                         order="F")
+
+            concentration_vector = dataset.initial_concentration
+            has_concentration_vector = concentration_vector is not None
+            if has_concentration_vector:
+                concentration_vector = \
+                    self._parameter_map(self._model.parameter)
+            else:
+                concentration_vector = list([1 for _ in
+                                             range(len(self._model.compartments
+                                                       ))])
+            m = k_matrix.compartment_map
+
+            # get compartment vector
+
+            compartments = self._model.compartments
+
+            # translate compartments to indices
+
+            for i in range(len(m)):
+                m[i] = compartments.index(m[i])
+
+            # construct j_vector
+
+            j_vector = [concentration_vector[i] for i in m]
+
+            for i in range(len(j_vector)):
+                E[0, i] = j_vector[i]
+
+            break
+
+        # get the
+        return E
 
     def _parameter_map(self, parameter):
         def map_fun(i):

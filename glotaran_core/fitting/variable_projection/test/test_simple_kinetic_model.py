@@ -20,7 +20,7 @@ class TestSimpleKinetic(TestCase):
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
                 return c
 
-            def e_matrix(self):
+            def e_matrix(self, **kwargs):
                 # E Matrix => channels X compartments
                 E = np.empty((1, 1), dtype=np.float64, order="F")
 

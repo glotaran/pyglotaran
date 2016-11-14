@@ -13,6 +13,7 @@ class Model(object):
 
     Consists of parameters, megacomplexes, relations and constraints.
     """
+    _compartments = None
     _parameter = None
     _megacomplexes = None
     _relations = None
@@ -24,8 +25,13 @@ class Model(object):
     def type_string(self):
         raise NotImplementedError
 
-    def get_c_matrix(self):
-        raise NotImplementedError
+    @property
+    def compartments(self):
+        return self._compartments
+
+    @compartments.setter
+    def compartments(self, value):
+        self._compartments = value
 
     @property
     def parameter(self):

@@ -24,6 +24,10 @@ class TestParser(TestCase):
                          "test_model_spec.yml"))
         self.model = parse_file(spec_path)
 
+    def test_compartments(self):
+        self.assertTrue(isinstance(self.model.compartments, list))
+        self.assertEqual(self.model.compartments, ['s1', 's2', 's3'])
+
     def test_model_type(self):
         self.assertTrue(isinstance(self.model, KineticModel))
 
@@ -85,7 +89,7 @@ class TestParser(TestCase):
     def test_k_matrices(self):
         self.assertTrue("km1" in self.model.k_matrices)
         self.assertTrue(np.array_equal(self.model.k_matrices["km1"]
-                                       .matrix.toarray(),
+                                       .asarray(),
                         np.array([[31, 33, 35, 37],
                                  [32, 0, 0, 0],
                                  [34, 0, 0, 0],
