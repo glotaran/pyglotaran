@@ -39,13 +39,23 @@ class KineticSeperableModel(SeperableModel):
                                         times):
 
         initial_concentration = dataset_descriptor.initial_concentration
-
+        c = None
         for m in dataset_descriptor.megacomplexes:
             cmplx = self._model.megacomplexes[m]
-            c = self._construct_c_matrix_for_megacomplex(parameter,
-                                                         cmplx,
-                                                         initial_concentration,
-                                                         times)
+            tmp = self._construct_c_matrix_for_megacomplex(parameter,
+                                                           cmplx,
+                                                           initial_concentration,
+                                                           times)
+            if c is None:
+                c = tmp
+            else:
+                if c.shape[1] > tmp.shape[1]:
+                    for i in range(tmp.shape[1]):
+                        c[:, i] = tmp[:, i] + c[:, i]
+                else:
+                    for i in range(c.shape[1]):
+                        tmp[:, i] = tmp[:, i] + c[:, i]
+                        c = tmp
 
         return c
 
@@ -117,7 +127,7 @@ class KineticSeperableModel(SeperableModel):
                 model_k_matrix = m
             else:
                 model_k_matrix = model_k_matrix.combine(m)
-            return model_k_matrix
+        return model_k_matrix
 
     def _construct_k_matrix_eigen(self, parameter, k_matrix):
 
@@ -155,6 +165,7 @@ class KineticSeperableModel(SeperableModel):
     def e_matrix(self, **kwargs):
         dataset = self._model.datasets[kwargs['dataset']]
         amplitudes = kwargs["amplitudes"] if "amplitudes" in kwargs else None
+        e = None
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]
             k_matrix = self._get_combined_k_matrix(cmplx)
@@ -162,9 +173,9 @@ class KineticSeperableModel(SeperableModel):
             nr_compartments = len(k_matrix.compartment_map)
 
             if amplitudes is None:
-                E = np.full((1, nr_compartments), 1.0)
+                tmp = np.full((1, nr_compartments), 1.0)
             else:
-                E = np.empty((1, nr_compartments), dtype=np.float64)
+                tmp = np.empty((1, nr_compartments), dtype=np.float64)
                 m = k_matrix.compartment_map
                 compartments = self._model.compartments
                 # translate compartments to indices
@@ -172,16 +183,24 @@ class KineticSeperableModel(SeperableModel):
                 for i in range(len(m)):
                     m[i] = compartments.index(m[i])
 
-                # construct j_vector
-
                 mapped_amps = [amplitudes[i] for i in m]
 
                 for i in range(len(mapped_amps)):
-                    E[1:i] = mapped_amps[i]
+                    tmp[1:i] = mapped_amps[i]
+            if e is None:
+                e = tmp
+            else:
+                if e.shape[1] > tmp.shape[1]:
+                    for i in range(tmp.shape[1]):
+                        e[:, i] = tmp[:, i] + e[:, i]
+                else:
+                    for i in range(e.shape[1]):
+                        tmp[:, i] = tmp[:, i] + e[:, i]
+                        e = tmp
 
             break
         # get the
-        return E
+        return e
 
     def _parameter_map(self, parameter):
         def map_fun(i):
