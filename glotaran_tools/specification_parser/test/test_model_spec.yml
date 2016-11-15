@@ -106,7 +106,7 @@ parameter_constraints:
   - type: bound
     range: '(100,150)' # range of parameters
     lower: 0 # no upper specified => no upper bound
-  - [bound, '(100,120)', NaN, 7E-8] # compact, lower is NaN, so only upper bound
+  - [bound, '(100,120)', 'NaN', 7.0E-8] # compact, lower is NaN, so only upper bound
 
 relations:
   - parameter: 86

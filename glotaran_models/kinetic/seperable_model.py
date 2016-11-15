@@ -3,23 +3,66 @@ from lmfit import Parameters
 import numpy as np
 import scipy.linalg
 from c_matrix import calculateC
+from glotaran_core.model import BoundConstraint, FixedConstraint
 
 
 class KineticSeperableModel(SeperableModel):
     def __init__(self, model):
         self._model = model
+        self._prepare_parameter()
 
-    def get_nr_of_compartements(self):
-        return [self._model.k_matrices[k].matrix for k in
-                self._model.k_matrices][0].shape[0]
+    def _prepare_parameter(self):
+        self._fit_params = Parameters()
 
-    def get_kinetic_parameter(self):
-        kinetic_parameter = []
-        for i in range(self.get_nr_of_compartements()):
-            par_index = [self._model.k_matrices[k].matrix for k in
-                         self._model.k_matrices][0][i, i]
-            kinetic_parameter.append(par_index)
-        return kinetic_parameter
+        # get fixed param indices
+        fixed = []
+        bound = []
+        relations = []
+
+        if self._model.relations is not None:
+            relations = [r.parameter for r in self._model.relations]
+
+        if self._model.parameter_constraints is not None:
+            i = 0
+            for constraint in self._model.parameter_constraints:
+                if isinstance(constraint, FixedConstraint):
+                    for p in constraint.parameter:
+                        fixed.append(p)
+                elif isinstance(constraint, BoundConstraint):
+                    bound.append((i, constraint.parameter))
+                i += 1
+
+        for p in self._model.parameter:
+            if not p.value == 'NaN':
+                vary = p.index not in fixed
+                min, max = None, None
+                expr = None
+                val = p.val
+                for i in range(len(bound)):
+                    if p.index in bound[i][1]:
+                        b = self._model.relations[bound[i][0]]
+                        if b.min != 'NaN':
+                            min = b.min
+                        if b.max != 'NaN':
+                            max = b.max
+
+                if p.index in relations:
+                    r = self._model.relations[relations.index(p.index)]
+                    vary = False
+                    val = None
+                    first = True
+                    expr = ''
+                    for target in r.to:
+                        if not first:
+                            expr += "+"
+                        first = False
+                        if target == 'const':
+                            expr += "{}".format(r.to[target])
+                        else:
+                            expr += "p{}*{}".format(target, r.to[target])
+
+                self._fit_params.add("p{}".format(p.index), val,
+                                     vary=vary, min=min, max=max, expr=expr)
 
     def c_matrix(self, parameter, *times, **kwargs):
         for dataset in self._model.datasets:
@@ -30,10 +73,7 @@ class KineticSeperableModel(SeperableModel):
         return c
 
     def get_initial_fitting_parameter(self):
-        params = Parameters()
-        for p in self._model.parameter:
-            params.add("p{}".format(p.index), p.value)
-        return params
+        return self._fit_params
 
     def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor,
                                         times):

@@ -28,7 +28,7 @@ class Parameter(object):
 
     @value.setter
     def value(self, val):
-        if not isinstance(val, (int, float)):
+        if not isinstance(val, (int, float)) and val != 'nan':
             raise Exception("Parameter value must be numeric.")
 
         if isinstance(val, int):
@@ -47,7 +47,7 @@ def create_parameter_list(parameter):
         raise TypeError
     parameterlist = []
     for p in parameter:
-        if isinstance(p, (float, int)):
+        if isinstance(p, (float, int, str)):
             parameterlist.append(Parameter(p))
         elif isinstance(p, list):
             parameterlist.append(Parameter(p[1], label=p[0]))

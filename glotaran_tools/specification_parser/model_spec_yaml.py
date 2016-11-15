@@ -188,11 +188,11 @@ class ModelSpecParser(object):
                 self.model.add_parameter_constraint(
                     FixedConstraint(params))
             elif constraint[tp] == ParameterConstraintTypes.BOUND:
-                lower = float('nan')
-                upper = float('nan')
+                lower = 'NaN'
+                upper = 'NaN'
                 if compact:
-                    lower = float(constraint[2])
-                    upper = float(constraint[3])
+                    lower = constraint[2]
+                    upper = constraint[3]
                 else:
                     if BoundParameterConstraintKeys.LOWER in constraint:
                         lower = float(

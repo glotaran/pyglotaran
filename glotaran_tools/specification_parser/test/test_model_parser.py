@@ -8,7 +8,9 @@ from glotaran_core.model import (InitialConcentration,
                                  EqualConstraint,
                                  EqualAreaConstraint,
                                  Relation,
-                                 Parameter
+                                 Parameter,
+                                 FixedConstraint,
+                                 BoundConstraint
                                  )
 from os import getcwd
 from os.path import join
@@ -159,8 +161,30 @@ class TestParser(TestCase):
 
         rel = [r for r in self.model.relations
                if r.parameter == 89][0]
-        print(rel)
         self.assertTrue(rel.to == {30: 1})
+
+    def test_parameter_constraints(self):
+        self.assertTrue(len(self.model.parameter_constraints) is 4)
+
+        pc = self.model.parameter_constraints[0]
+        self.assertTrue(isinstance(pc, FixedConstraint))
+        self.assertEqual(pc.parameter, [1, 2, 3, 54])
+
+        pc = self.model.parameter_constraints[1]
+        self.assertTrue(isinstance(pc, FixedConstraint))
+        self.assertEqual(pc.parameter, [1, 2, 3])
+
+        pc = self.model.parameter_constraints[2]
+        self.assertTrue(isinstance(pc, BoundConstraint))
+        self.assertEqual(pc.parameter, list(range(100, 150)))
+        self.assertEqual(pc.lower, 0)
+        self.assertEqual(pc.upper, "NaN")
+
+        pc = self.model.parameter_constraints[3]
+        self.assertTrue(isinstance(pc, BoundConstraint))
+        self.assertEqual(pc.parameter, list(range(100, 120)))
+        self.assertEqual(pc.lower, "NaN")
+        self.assertEqual(pc.upper, 7e-8)
 
     def test_parameter(self):
         self.assertTrue(len(self.model.parameter) is 3)
