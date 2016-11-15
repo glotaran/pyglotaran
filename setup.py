@@ -1,21 +1,32 @@
 from setuptools import setup
-from distutils.extension import Extension
+from setuptools.extension import Extension
 # TODO: include generated c and include switches if cython is not available ->
 # https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
 from Cython.Distutils import build_ext
 # TODO: bootstrap numpy ->
 # https://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
 import numpy
+import sys
 
-ext_modules = [
-    Extension("c_matrix",
-              ["glotaran_models/kinetic/c_matrix.pyx"],
-              include_dirs=[numpy.get_include()],
-              libraries=["m"],
-              extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                  "-fopenmp"],
-              extra_link_args=['-fopenmp'])
-              ]
+if sys.platform == 'win32':
+    ext_modules = [
+        Extension("c_matrix",
+                  ["glotaran_models/kinetic/c_matrix.pyx"],
+                  include_dirs=[numpy.get_include()],
+                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
+                                      "-fopenmp"],
+                  extra_link_args=['-fopenmp'])
+                  ]
+else:
+    ext_modules = [
+        Extension("c_matrix",
+                  ["glotaran_models/kinetic/c_matrix.pyx"],
+                  include_dirs=[numpy.get_include()],
+                  libraries=["m"],
+                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
+                                      "-fopenmp"],
+                  extra_link_args=['-fopenmp'])
+                  ]
 
 
 setup(
@@ -28,11 +39,11 @@ setup(
                     YamiNoKeshin@gmail.com,
                     joern.weissenborn@gmail.com""",
     license='GPLv3',
-    packages=['glotaran_core.fitting',
-              'glotaran_core.fitting.variable_projection',
+    packages=['glotaran_core.fitting.variable_projection',
               'glotaran_core.model',
               'glotaran_models.kinetic',
-              'glotaran_tools.specification_parser'],
+              'glotaran_tools.specification_parser'
+              ],
     install_requires=[
         'numpy',
         'click',
