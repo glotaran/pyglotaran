@@ -37,7 +37,7 @@ class KineticSeperableModel(SeperableModel):
                 vary = p.index not in fixed
                 min, max = None, None
                 expr = None
-                val = p.val
+                val = p.value
                 for i in range(len(bound)):
                     if p.index in bound[i][1]:
                         b = self._model.relations[bound[i][0]]
