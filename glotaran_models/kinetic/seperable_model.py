@@ -3,6 +3,7 @@ from lmfit import Parameters
 import numpy as np
 import scipy.linalg
 from c_matrix import calculateC
+from c_matrix_gaussian_irf import calculateCMultiGaussian
 from glotaran_core.model import BoundConstraint, FixedConstraint
 
 
@@ -79,28 +80,30 @@ class KineticSeperableModel(SeperableModel):
                                         times):
 
         initial_concentration = dataset_descriptor.initial_concentration
-        c = None
+        irf = dataset_descriptor.irf
+        c_matrix = None
         for m in dataset_descriptor.megacomplexes:
             cmplx = self._model.megacomplexes[m]
-            tmp = self._construct_c_matrix_for_megacomplex(parameter,
-                                                           cmplx,
-                                                           initial_concentration,
-                                                           times)
-            if c is None:
-                c = tmp
+            tmp = \
+                self._construct_c_matrix_for_megacomplex(parameter,
+                                                         cmplx,
+                                                         initial_concentration,
+                                                         irf,
+                                                         times)
+            if c_matrix is None:
+                c_matrix = tmp
             else:
-                if c.shape[1] > tmp.shape[1]:
+                if c_matrix.shape[1] > tmp.shape[1]:
                     for i in range(tmp.shape[1]):
-                        c[:, i] = tmp[:, i] + c[:, i]
+                        c_matrix[:, i] = tmp[:, i] + c_matrix[:, i]
                 else:
-                    for i in range(c.shape[1]):
-                        tmp[:, i] = tmp[:, i] + c[:, i]
-                        c = tmp
+                    for i in range(c_matrix.shape[1]):
+                        c_matrix[:, i] = tmp[:, i] + c_matrix[:, i]
 
-        return c
+        return c_matrix
 
     def _construct_c_matrix_for_megacomplex(self, parameter, megacomplex,
-                                            initial_concentration, times):
+                                            initial_concentration, irf, times):
 
         # Combine K-Matrices of the megacomplex.
 
@@ -119,7 +122,15 @@ class KineticSeperableModel(SeperableModel):
 
         C = np.empty((times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
-        calculateC(C, eigenvalues, times)
+
+        has_irf = irf is not None
+
+        if has_irf:
+            center, width, scale = self._get_irf_parameter(parameter, irf)
+            calculateCMultiGaussian(C, eigenvalues, times, center, width,
+                                    scale)
+        else:
+            calculateC(C, eigenvalues, times)
 
         # Apply initial concentration vector if needed
         has_concentration_vector = \
@@ -201,6 +212,21 @@ class KineticSeperableModel(SeperableModel):
         for i in range(k_matrix.shape[0]):
             k_matrix[i, i] = -np.sum(k_matrix[:, i])
         return k_matrix
+
+    def _get_irf_parameter(self, parameter, irf):
+
+        irf = self._model.irfs[irf]
+
+        center = self._parameter_map(parameter)(np.asarray(irf.center))
+        width = self._parameter_map(parameter)(np.asarray(irf.width))
+        if width.shape[0] is not center.shape[0]:
+            width = np.fill(center.shape, width[0])
+        if len(irf.scale) is 0:
+            scale = np.ones(center.shape)
+        else:
+            scale = self._parameter_map(parameter)(np.asarray(irf.scale))
+
+        return center, width, scale
 
     def e_matrix(self, **kwargs):
         dataset = self._model.datasets[kwargs['dataset']]

@@ -9,7 +9,6 @@ from glotaran_core.model import (create_parameter_list,
                                  ZeroConstraint,
                                  EqualConstraint,
                                  EqualAreaConstraint,
-                                 Megacomplex,
                                  MegacomplexScaling,
                                  Relation,
                                  InitialConcentration)
@@ -106,13 +105,15 @@ class ModelSpecParser(object):
         path = dataset_spec[DatasetKeys.PATH]
         type = dataset_spec[ModelKeys.TYPE]
         try:
-            initial_concentration = dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
+            initial_concentration = \
+                    dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
         except:
             initial_concentration = None
         megacomplexes = dataset_spec[ModelKeys.MEGACOMPLEXES]
 
         try:
-            dataset_scaling = DatasetScaling(dataset_spec[DatasetKeys.DATASET_SCALING])
+            dataset_scaling = \
+                    DatasetScaling(dataset_spec[DatasetKeys.DATASET_SCALING])
         except:
             dataset_scaling = None
 
@@ -262,6 +263,8 @@ class ModelSpecParser(object):
             self.model.add_relation(Relation(relation[par], relation[to]))
 
     def get_initial_concentrations(self):
+        if ModelKeys.INITIAL_CONCENTRATIONS not in self.spec:
+            return
         for concentration in self.spec[ModelKeys.INITIAL_CONCENTRATIONS]:
             compact = is_compact(concentration)
 

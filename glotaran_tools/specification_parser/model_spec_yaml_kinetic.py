@@ -78,13 +78,19 @@ class KineticModelParser(ModelSpecParser):
                 if irf[tp] == IrfTypes.GAUSSIAN:
                     ct = GaussianIrfKeys.CENTER
                     wt = GaussianIrfKeys.WIDTH
-                    cd = GaussianIrfKeys.CENTER_DISPERSION
-                    wd = GaussianIrfKeys.WIDTH_DISPERSION
                     if compact:
                         ct = 2
                         wt = 3
-                        cd = 4
-                        wd = 5
+
+                    center_disp = retrieve_optional(irf,
+                                                    GaussianIrfKeys.
+                                                    CENTER_DISPERSION,
+                                                    4, [])
+
+                    width_disp = retrieve_optional(irf,
+                                                   GaussianIrfKeys.
+                                                   WIDTH_DISPERSION,
+                                                   5, [])
 
                     scale = retrieve_optional(irf, GaussianIrfKeys.SCALE, 6,
                                               [])
@@ -92,8 +98,8 @@ class KineticModelParser(ModelSpecParser):
                                              True)
 
                     self.model.add_irf(GaussianIrf(irf[lb], irf[ct], irf[wt],
-                                       center_dispersion=irf[cd],
-                                       width_dispersion=irf[wd],
+                                       center_dispersion=center_disp,
+                                       width_dispersion=width_disp,
                                        scale=scale,
                                        normalize=norm))
 
