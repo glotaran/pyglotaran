@@ -59,7 +59,7 @@ class TestParser(TestCase):
             i = i + 1
 
     def test_initial_concentration(self):
-        self.assertTrue(len(self.model.irfs) is 2)
+        self.assertTrue(len(self.model.initial_concentrations) is 2)
 
         i = 1
         for _ in self.model.initial_concentrations:
@@ -72,7 +72,7 @@ class TestParser(TestCase):
             self.assertTrue(initial_concentration.parameter == [1, 2, 3])
 
     def test_irf(self):
-        self.assertTrue(len(self.model.initial_concentrations) is 2)
+        self.assertTrue(len(self.model.irfs) is 2)
 
         i = 1
         for _ in self.model.irfs:
@@ -81,10 +81,16 @@ class TestParser(TestCase):
             irf = self.model.irfs[label]
             self.assertTrue(isinstance(irf, GaussianIrf))
             self.assertTrue(irf.label == label)
-            self.assertTrue(irf.center == [1])
-            self.assertTrue(irf.width == [2])
-            self.assertTrue(irf.center_dispersion == [3])
-            self.assertTrue(irf.width_dispersion == [4])
+            want = [1] if i is 1 else [1, 2]
+            self.assertEqual(irf.center, want)
+            want = [2] if i is 1 else [3, 4]
+            self.assertEqual(irf.width, want)
+            want = [3] if i is 1 else [5, 6]
+            self.assertEqual(irf.center_dispersion, want)
+            want = [4] if i is 1 else [7, 8]
+            self.assertEqual(irf.width_dispersion, want)
+            want = [] if i is 1 else [9, 10]
+            self.assertEqual(irf.scale, want)
             self.assertTrue(irf.normalize)
             i = i + 1
 

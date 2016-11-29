@@ -23,14 +23,29 @@ class GaussianIrf(Irf):
         width as parameter indices. None for no dispersion.
 
     """
-    def __init__(self, label, center, width, center_dispersion,
-                 width_dispersion, normalize):
+    _scale = None
+
+    def __init__(self, label, center, width, center_dispersion=None,
+                 width_dispersion=None, scale=None, normalize=True):
         self.center = center
         self.center_dispersion = center_dispersion
         self.width = width
         self.width_dispersion = width_dispersion
+        self.scale = scale
         self.normalize = normalize
         super(GaussianIrf, self).__init__(label)
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        if not isinstance(value, list):
+            raise TypeError("Scale must be list  of parameter indices.")
+        if any(not isinstance(val, int) for val in value):
+            raise TypeError("Scale must be list  of parameter indices.")
+        self._scale = value
 
     @property
     def center(self):
@@ -104,8 +119,8 @@ class GaussianIrf(Irf):
         return t
 
     def __str__(self):
-        s = "{} Center: {} Width: {} Center Dispersion: {} Width Dispersion {}\
-        "
+        s = """{} Center: {} Width: {} Center Dispersion: {} \
+Width Dispersion {} Scale: {}, Nomalize: {}"""
         return s.format(super(GaussianIrf, self).__str__(), self.center,
                         self.width, self.center_dispersion,
-                        self.width_dispersion)
+                        self.width_dispersion, self.scale, self.normalize)

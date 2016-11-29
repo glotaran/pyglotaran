@@ -29,7 +29,7 @@ class TestSimpleKinetic(TestCase):
                 return E
 
         model = OneComparmentDecay()
-        times = np.asarray(np.arange(0, 1500, 1.5))
+        times = np.asarray(np.arange(0, 1000, 1.5))
 
         params = [101e-4]
 

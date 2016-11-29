@@ -2,6 +2,8 @@ class Irf(object):
     """
     Represents an abstract IRF.
     """
+    _label = None
+
     def __init__(self, label):
         self.label = label
 
@@ -14,9 +16,6 @@ class Irf(object):
         if not isinstance(value, str):
             raise TypeError("Labels must be strings.")
         self._label = value
-
-    def get_irf_function(self):
-        raise NotImplementedError
 
     def type_string(self):
         raise NotImplementedError

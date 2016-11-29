@@ -44,6 +44,7 @@ irf_parameter: #specific to kinetic or spectro_temporal model
   - [irf2, gaussian, 4, 2, [3], [4], true] # compact
   - label: irf3
     type: gaussian
+    amplitude: [2,1,3]
     center: [1, 4] # multiple gaussians
     width: [2, 5]
     center_dispersion: [3] # dispersion is of 1st order
