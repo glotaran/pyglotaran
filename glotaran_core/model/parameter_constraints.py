@@ -69,7 +69,7 @@ class BoundConstraint(ParameterConstraint):
     """
     Represents a boundary constraint.
     """
-    def __init__(self, parameters, lower=float('nan'), upper=float('nan')):
+    def __init__(self, parameters, lower='NaN', upper='NaN'):
         self.lower = lower
         self.upper = upper
         super(BoundConstraint, self).__init__(parameters)
@@ -80,8 +80,8 @@ class BoundConstraint(ParameterConstraint):
 
     @lower.setter
     def lower(self, value):
-        if not isinstance(value, (int, float)):
-            raise TypeError("Lower bound must be a number.")
+        if not isinstance(value, (int, float)) and value != 'NaN':
+            raise TypeError("Lower bound must be a number oder 'NaN'.")
         self._lower = value
 
     @property
@@ -90,8 +90,8 @@ class BoundConstraint(ParameterConstraint):
 
     @upper.setter
     def upper(self, value):
-        if not isinstance(value, (int, float)):
-            raise TypeError("Upper bound must be a number.")
+        if not isinstance(value, (int, float)) and value != 'NaN':
+            raise TypeError("Upper bound must be a number or 'NaN'.")
         self._upper = value
 
     def type(self):

@@ -3,7 +3,8 @@ from glotaran_models.kinetic import (
     irf_gaussian,
     k_matrix,
     megacomplex,
-    model
+    model,
+    seperable_model
 )
 
 # Dataset Descriptor
@@ -25,3 +26,7 @@ KineticMegacomplex = megacomplex.KineticMegacomplex
 # Model
 
 KineticModel = model.KineticModel
+
+# SeperableModel
+
+KineticSeperableModel = seperable_model.KineticSeperableModel

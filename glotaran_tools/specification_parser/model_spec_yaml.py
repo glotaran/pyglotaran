@@ -9,13 +9,13 @@ from glotaran_core.model import (create_parameter_list,
                                  ZeroConstraint,
                                  EqualConstraint,
                                  EqualAreaConstraint,
-                                 Megacomplex,
                                  MegacomplexScaling,
                                  Relation,
                                  InitialConcentration)
 
 
 class ModelKeys:
+    COMPARTMENTS = "compartments"
     DATASETS = "datasets"
     PARAMETER = "parameter"
     MEGACOMPLEXES = "megacomplexes"
@@ -104,27 +104,41 @@ class ModelSpecParser(object):
         label = dataset_spec[ModelKeys.LABEL]
         path = dataset_spec[DatasetKeys.PATH]
         type = dataset_spec[ModelKeys.TYPE]
-        initial_concentration = dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
+        try:
+            initial_concentration = \
+                    dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
+        except:
+            initial_concentration = None
         megacomplexes = dataset_spec[ModelKeys.MEGACOMPLEXES]
-        dataset_scaling = dataset_spec[DatasetKeys.DATASET_SCALING]
+
+        try:
+            dataset_scaling = \
+                    DatasetScaling(dataset_spec[DatasetKeys.DATASET_SCALING])
+        except:
+            dataset_scaling = None
+
         mss = []
-        for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
-            compact = is_compact(ms)
-            mc = ModelKeys.MEGACOMPLEXES
-            cp = DatasetKeys.COMPARTEMENTS
-            pm = ModelKeys.PARAMETER
-            if compact:
-                mc = 0
-                cp = 1
-                pm = 2
-            mss.append(MegacomplexScaling(ms[mc], ms[cp], ms[pm]))
+        try:
+            for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
+                compact = is_compact(ms)
+                mc = ModelKeys.MEGACOMPLEXES
+                cp = DatasetKeys.COMPARTEMENTS
+                pm = ModelKeys.PARAMETER
+                if compact:
+                    mc = 0
+                    cp = 1
+                    pm = 2
+                mss.append(MegacomplexScaling(ms[mc], ms[cp], ms[pm]))
+        except:
+            pass
+
         self.model.add_dataset(
             self.get_dataset_descriptor(label,
                                         initial_concentration,
                                         megacomplexes,
                                         mss,
                                         Dataset(),
-                                        DatasetScaling(dataset_scaling),
+                                        dataset_scaling,
                                         dataset_spec))
 
     def get_dataset_additionals(self, dataset, dataset_spec):
@@ -175,11 +189,11 @@ class ModelSpecParser(object):
                 self.model.add_parameter_constraint(
                     FixedConstraint(params))
             elif constraint[tp] == ParameterConstraintTypes.BOUND:
-                lower = float('nan')
-                upper = float('nan')
+                lower = 'NaN'
+                upper = 'NaN'
                 if compact:
-                    lower = float(constraint[2])
-                    upper = float(constraint[3])
+                    lower = constraint[2]
+                    upper = constraint[3]
                 else:
                     if BoundParameterConstraintKeys.LOWER in constraint:
                         lower = float(
@@ -249,6 +263,8 @@ class ModelSpecParser(object):
             self.model.add_relation(Relation(relation[par], relation[to]))
 
     def get_initial_concentrations(self):
+        if ModelKeys.INITIAL_CONCENTRATIONS not in self.spec:
+            return
         for concentration in self.spec[ModelKeys.INITIAL_CONCENTRATIONS]:
             compact = is_compact(concentration)
 
@@ -261,7 +277,11 @@ class ModelSpecParser(object):
             self.model.add_initial_concentration(
                 InitialConcentration(concentration[lb], concentration[par]))
 
+    def get_compartments(self):
+        self.model.compartments = self.spec[ModelKeys.COMPARTMENTS]
+
     def parse(self):
+        self.get_compartments()
         self.get_parameter()
         self.get_parameter_constraints()
         self.get_compartment_constraints()

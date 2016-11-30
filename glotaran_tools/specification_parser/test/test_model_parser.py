@@ -8,7 +8,9 @@ from glotaran_core.model import (InitialConcentration,
                                  EqualConstraint,
                                  EqualAreaConstraint,
                                  Relation,
-                                 Parameter
+                                 Parameter,
+                                 FixedConstraint,
+                                 BoundConstraint
                                  )
 from os import getcwd
 from os.path import join
@@ -23,6 +25,10 @@ class TestParser(TestCase):
                               "test",
                          "test_model_spec.yml"))
         self.model = parse_file(spec_path)
+
+    def test_compartments(self):
+        self.assertTrue(isinstance(self.model.compartments, list))
+        self.assertEqual(self.model.compartments, ['s1', 's2', 's3'])
 
     def test_model_type(self):
         self.assertTrue(isinstance(self.model, KineticModel))
@@ -53,7 +59,7 @@ class TestParser(TestCase):
             i = i + 1
 
     def test_initial_concentration(self):
-        self.assertTrue(len(self.model.irfs) is 2)
+        self.assertTrue(len(self.model.initial_concentrations) is 2)
 
         i = 1
         for _ in self.model.initial_concentrations:
@@ -66,7 +72,7 @@ class TestParser(TestCase):
             self.assertTrue(initial_concentration.parameter == [1, 2, 3])
 
     def test_irf(self):
-        self.assertTrue(len(self.model.initial_concentrations) is 2)
+        self.assertTrue(len(self.model.irfs) is 2)
 
         i = 1
         for _ in self.model.irfs:
@@ -75,17 +81,23 @@ class TestParser(TestCase):
             irf = self.model.irfs[label]
             self.assertTrue(isinstance(irf, GaussianIrf))
             self.assertTrue(irf.label == label)
-            self.assertTrue(irf.center == [1])
-            self.assertTrue(irf.width == [2])
-            self.assertTrue(irf.center_dispersion == [3])
-            self.assertTrue(irf.width_dispersion == [4])
+            want = [1] if i is 1 else [1, 2]
+            self.assertEqual(irf.center, want)
+            want = [2] if i is 1 else [3, 4]
+            self.assertEqual(irf.width, want)
+            want = [3] if i is 1 else [5, 6]
+            self.assertEqual(irf.center_dispersion, want)
+            want = [4] if i is 1 else [7, 8]
+            self.assertEqual(irf.width_dispersion, want)
+            want = [] if i is 1 else [9, 10]
+            self.assertEqual(irf.scale, want)
             self.assertTrue(irf.normalize)
             i = i + 1
 
     def test_k_matrices(self):
         self.assertTrue("km1" in self.model.k_matrices)
         self.assertTrue(np.array_equal(self.model.k_matrices["km1"]
-                                       .matrix.toarray(),
+                                       .asarray(),
                         np.array([[31, 33, 35, 37],
                                  [32, 0, 0, 0],
                                  [34, 0, 0, 0],
@@ -155,8 +167,30 @@ class TestParser(TestCase):
 
         rel = [r for r in self.model.relations
                if r.parameter == 89][0]
-        print(rel)
         self.assertTrue(rel.to == {30: 1})
+
+    def test_parameter_constraints(self):
+        self.assertTrue(len(self.model.parameter_constraints) is 4)
+
+        pc = self.model.parameter_constraints[0]
+        self.assertTrue(isinstance(pc, FixedConstraint))
+        self.assertEqual(pc.parameter, [1, 2, 3, 54])
+
+        pc = self.model.parameter_constraints[1]
+        self.assertTrue(isinstance(pc, FixedConstraint))
+        self.assertEqual(pc.parameter, [1, 2, 3])
+
+        pc = self.model.parameter_constraints[2]
+        self.assertTrue(isinstance(pc, BoundConstraint))
+        self.assertEqual(pc.parameter, list(range(100, 150)))
+        self.assertEqual(pc.lower, 0)
+        self.assertEqual(pc.upper, "NaN")
+
+        pc = self.model.parameter_constraints[3]
+        self.assertTrue(isinstance(pc, BoundConstraint))
+        self.assertEqual(pc.parameter, list(range(100, 120)))
+        self.assertEqual(pc.lower, "NaN")
+        self.assertEqual(pc.upper, 7e-8)
 
     def test_parameter(self):
         self.assertTrue(len(self.model.parameter) is 3)
