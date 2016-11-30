@@ -4,17 +4,13 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
-from libc.math cimport exp, erf, erfc, pow, log, sqrt
+from libc.math cimport exp
 from numpy.math cimport NAN
 
 from cython.parallel import prange, parallel
 
 def __init__():
     np.import_array()
-
-
-cpdef double erfce(double x) nogil:
-    return exp(x*x) * erfc(x)
 
 
 @cython.boundscheck(False)

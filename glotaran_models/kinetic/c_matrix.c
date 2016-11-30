@@ -1658,7 +1658,6 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static double __pyx_f_8c_matrix_erfce(double, int __pyx_skip_dispatch); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1872,8 +1871,7 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_pf_8c_matrix___init__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_8c_matrix_2erfce(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_x); /* proto */
-static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T); /* proto */
+static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1994,88 +1992,7 @@ static PyObject *__pyx_pf_8c_matrix___init__(CYTHON_UNUSED PyObject *__pyx_self)
   return __pyx_r;
 }
 
-/* "c_matrix.pyx":16
- * 
- * 
- * cpdef double erfce(double x) nogil:             # <<<<<<<<<<<<<<
- *     return exp(x*x) * erfc(x)
- * 
- */
-
-static PyObject *__pyx_pw_8c_matrix_3erfce(PyObject *__pyx_self, PyObject *__pyx_arg_x); /*proto*/
-static double __pyx_f_8c_matrix_erfce(double __pyx_v_x, CYTHON_UNUSED int __pyx_skip_dispatch) {
-  double __pyx_r;
-
-  /* "c_matrix.pyx":17
- * 
- * cpdef double erfce(double x) nogil:
- *     return exp(x*x) * erfc(x)             # <<<<<<<<<<<<<<
- * 
- * 
- */
-  __pyx_r = (exp((__pyx_v_x * __pyx_v_x)) * erfc(__pyx_v_x));
-  goto __pyx_L0;
-
-  /* "c_matrix.pyx":16
- * 
- * 
- * cpdef double erfce(double x) nogil:             # <<<<<<<<<<<<<<
- *     return exp(x*x) * erfc(x)
- * 
- */
-
-  /* function exit code */
-  __pyx_L0:;
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_8c_matrix_3erfce(PyObject *__pyx_self, PyObject *__pyx_arg_x); /*proto*/
-static PyObject *__pyx_pw_8c_matrix_3erfce(PyObject *__pyx_self, PyObject *__pyx_arg_x) {
-  double __pyx_v_x;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("erfce (wrapper)", 0);
-  assert(__pyx_arg_x); {
-    __pyx_v_x = __pyx_PyFloat_AsDouble(__pyx_arg_x); if (unlikely((__pyx_v_x == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 16, __pyx_L3_error)
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("c_matrix.erfce", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8c_matrix_2erfce(__pyx_self, ((double)__pyx_v_x));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_8c_matrix_2erfce(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_x) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  __Pyx_RefNannySetupContext("erfce", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_8c_matrix_erfce(__pyx_v_x, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("c_matrix.erfce", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "c_matrix.pyx":22
+/* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
@@ -2084,9 +2001,9 @@ static PyObject *__pyx_pf_8c_matrix_2erfce(CYTHON_UNUSED PyObject *__pyx_self, d
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8c_matrix_5calculateC(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8c_matrix_5calculateC = {"calculateC", (PyCFunction)__pyx_pw_8c_matrix_5calculateC, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8c_matrix_5calculateC(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_8c_matrix_3calculateC(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_8c_matrix_3calculateC = {"calculateC", (PyCFunction)__pyx_pw_8c_matrix_3calculateC, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_8c_matrix_3calculateC(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_C = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_k = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_T = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2114,16 +2031,16 @@ static PyObject *__pyx_pw_8c_matrix_5calculateC(PyObject *__pyx_self, PyObject *
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_k)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, 1); __PYX_ERR(0, 22, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, 1); __PYX_ERR(0, 18, __pyx_L3_error)
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_T)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, 2); __PYX_ERR(0, 22, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, 2); __PYX_ERR(0, 18, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calculateC") < 0)) __PYX_ERR(0, 22, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calculateC") < 0)) __PYX_ERR(0, 18, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2132,26 +2049,26 @@ static PyObject *__pyx_pw_8c_matrix_5calculateC(PyObject *__pyx_self, PyObject *
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 22, __pyx_L3_error)
-    __pyx_v_k = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_k.memview)) __PYX_ERR(0, 22, __pyx_L3_error)
-    __pyx_v_T = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_T.memview)) __PYX_ERR(0, 22, __pyx_L3_error)
+    __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
+    __pyx_v_k = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_k.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
+    __pyx_v_T = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_T.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 22, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 18, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("c_matrix.calculateC", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8c_matrix_4calculateC(__pyx_self, __pyx_v_C, __pyx_v_k, __pyx_v_T);
+  __pyx_r = __pyx_pf_8c_matrix_2calculateC(__pyx_self, __pyx_v_C, __pyx_v_k, __pyx_v_T);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T) {
+static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T) {
   CYTHON_UNUSED Py_ssize_t __pyx_v_I;
   Py_ssize_t __pyx_v_J;
   int __pyx_v_i;
@@ -2171,7 +2088,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
   Py_ssize_t __pyx_t_9;
   __Pyx_RefNannySetupContext("calculateC", 0);
 
-  /* "c_matrix.pyx":23
+  /* "c_matrix.pyx":19
  * @cython.wraparound(False)
  * def calculateC(double[:, :] C, double[:] k, double[:] T):
  *     I = T.shape[0]             # <<<<<<<<<<<<<<
@@ -2180,7 +2097,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
  */
   __pyx_v_I = (__pyx_v_T.shape[0]);
 
-  /* "c_matrix.pyx":24
+  /* "c_matrix.pyx":20
  * def calculateC(double[:, :] C, double[:] k, double[:] T):
  *     I = T.shape[0]
  *     J = k.shape[0]             # <<<<<<<<<<<<<<
@@ -2189,7 +2106,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
  */
   __pyx_v_J = (__pyx_v_k.shape[0]);
 
-  /* "c_matrix.pyx":27
+  /* "c_matrix.pyx":23
  *     cdef int i, j
  *     cdef double t_i, k_j
  *     with nogil, parallel(num_threads=4):             # <<<<<<<<<<<<<<
@@ -2214,7 +2131,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
             #endif /* _OPENMP */
             {
 
-                /* "c_matrix.pyx":28
+                /* "c_matrix.pyx":24
  *     cdef double t_i, k_j
  *     with nogil, parallel(num_threads=4):
  *         for i in prange(I, schedule=static):             # <<<<<<<<<<<<<<
@@ -2238,7 +2155,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
                                 __pyx_v_k_j = ((double)__PYX_NAN());
                                 __pyx_v_t_i = ((double)__PYX_NAN());
 
-                                /* "c_matrix.pyx":29
+                                /* "c_matrix.pyx":25
  *     with nogil, parallel(num_threads=4):
  *         for i in prange(I, schedule=static):
  *             for j in range(J):             # <<<<<<<<<<<<<<
@@ -2249,7 +2166,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
                                 for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
                                   __pyx_v_j = __pyx_t_5;
 
-                                  /* "c_matrix.pyx":30
+                                  /* "c_matrix.pyx":26
  *         for i in prange(I, schedule=static):
  *             for j in range(J):
  *                 t_i = T[i]             # <<<<<<<<<<<<<<
@@ -2259,7 +2176,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
                                   __pyx_t_6 = __pyx_v_i;
                                   __pyx_v_t_i = (*((double *) ( /* dim=0 */ (__pyx_v_T.data + __pyx_t_6 * __pyx_v_T.strides[0]) )));
 
-                                  /* "c_matrix.pyx":31
+                                  /* "c_matrix.pyx":27
  *             for j in range(J):
  *                 t_i = T[i]
  *                 k_j = k[j]             # <<<<<<<<<<<<<<
@@ -2268,7 +2185,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
                                   __pyx_t_7 = __pyx_v_j;
                                   __pyx_v_k_j = (*((double *) ( /* dim=0 */ (__pyx_v_k.data + __pyx_t_7 * __pyx_v_k.strides[0]) )));
 
-                                  /* "c_matrix.pyx":32
+                                  /* "c_matrix.pyx":28
  *                 t_i = T[i]
  *                 k_j = k[j]
  *                 C[i, j] = exp(k_j * t_i)             # <<<<<<<<<<<<<<
@@ -2291,7 +2208,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
         #endif
       }
 
-      /* "c_matrix.pyx":27
+      /* "c_matrix.pyx":23
  *     cdef int i, j
  *     cdef double t_i, k_j
  *     with nogil, parallel(num_threads=4):             # <<<<<<<<<<<<<<
@@ -2309,7 +2226,7 @@ static PyObject *__pyx_pf_8c_matrix_4calculateC(CYTHON_UNUSED PyObject *__pyx_se
       }
   }
 
-  /* "c_matrix.pyx":22
+  /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
@@ -16687,7 +16604,6 @@ static PyTypeObject __pyx_type___pyx_memoryviewslice = {
 };
 
 static PyMethodDef __pyx_methods[] = {
-  {"erfce", (PyCFunction)__pyx_pw_8c_matrix_3erfce, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -16797,7 +16713,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 25, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 218, __pyx_L1_error)
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(1, 799, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(2, 146, __pyx_L1_error)
@@ -17036,17 +16952,17 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_init, 12, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 12, __pyx_L1_error)
 
-  /* "c_matrix.pyx":22
+  /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
  *     I = T.shape[0]
  *     J = k.shape[0]
  */
-  __pyx_tuple__21 = PyTuple_Pack(9, __pyx_n_s_C, __pyx_n_s_k, __pyx_n_s_T, __pyx_n_s_I, __pyx_n_s_J, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_t_i, __pyx_n_s_k_j); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __pyx_tuple__21 = PyTuple_Pack(9, __pyx_n_s_C, __pyx_n_s_k, __pyx_n_s_T, __pyx_n_s_I, __pyx_n_s_J, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_t_i, __pyx_n_s_k_j); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
-  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(3, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateC, 22, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(3, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateC, 18, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 18, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -17290,16 +17206,16 @@ PyMODINIT_FUNC PyInit_c_matrix(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_init, __pyx_t_1) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "c_matrix.pyx":22
+  /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
  *     I = T.shape[0]
  *     J = k.shape[0]
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8c_matrix_5calculateC, NULL, __pyx_n_s_c_matrix); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8c_matrix_3calculateC, NULL, __pyx_n_s_c_matrix); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_calculateC, __pyx_t_1) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_calculateC, __pyx_t_1) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "c_matrix.pyx":1

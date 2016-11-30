@@ -51,7 +51,7 @@ def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu
                     C[i, j] = 0
                     continue
 
-                alpha = k_j * delta / sqrt(2)
+                alpha = -k_j * delta / sqrt(2)
                 beta = (t_i - mu) / (delta * sqrt(2))
                 thresh = beta - alpha
                 if thresh < -1 :

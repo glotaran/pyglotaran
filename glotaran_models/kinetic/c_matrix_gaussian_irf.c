@@ -2836,7 +2836,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
  *                     C[i, j] = 0
  *                     continue             # <<<<<<<<<<<<<<
  * 
- *                 alpha = k_j * delta / sqrt(2)
+ *                 alpha = -k_j * delta / sqrt(2)
  */
                                     goto __pyx_L14_continue;
 
@@ -2852,11 +2852,11 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                                   /* "c_matrix_gaussian_irf.pyx":54
  *                     continue
  * 
- *                 alpha = k_j * delta / sqrt(2)             # <<<<<<<<<<<<<<
+ *                 alpha = -k_j * delta / sqrt(2)             # <<<<<<<<<<<<<<
  *                 beta = (t_i - mu) / (delta * sqrt(2))
  *                 thresh = beta - alpha
  */
-                                  __pyx_t_1 = (__pyx_v_k_j * __pyx_v_delta);
+                                  __pyx_t_1 = ((-__pyx_v_k_j) * __pyx_v_delta);
                                   __pyx_t_12 = sqrt(2.0);
                                   if (unlikely(__pyx_t_12 == 0)) {
                                     #ifdef WITH_THREAD
@@ -2872,7 +2872,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
 
                                   /* "c_matrix_gaussian_irf.pyx":55
  * 
- *                 alpha = k_j * delta / sqrt(2)
+ *                 alpha = -k_j * delta / sqrt(2)
  *                 beta = (t_i - mu) / (delta * sqrt(2))             # <<<<<<<<<<<<<<
  *                 thresh = beta - alpha
  *                 if thresh < -1 :
@@ -2892,7 +2892,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                                   __pyx_v_beta = (__pyx_t_12 / __pyx_t_1);
 
                                   /* "c_matrix_gaussian_irf.pyx":56
- *                 alpha = k_j * delta / sqrt(2)
+ *                 alpha = -k_j * delta / sqrt(2)
  *                 beta = (t_i - mu) / (delta * sqrt(2))
  *                 thresh = beta - alpha             # <<<<<<<<<<<<<<
  *                 if thresh < -1 :

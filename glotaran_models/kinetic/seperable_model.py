@@ -266,6 +266,7 @@ class KineticSeperableModel(SeperableModel):
 
             break
         # get the
+
         return e
 
     def _parameter_map(self, parameter):
