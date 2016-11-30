@@ -1,5 +1,6 @@
 import numpy as np
-from .minimizer import VariableProjectionMinimizer
+from .result import SeperableModelResult 
+from .qr_decomposition import qr_decomposition_coeff
 
 
 class SeperableModel(object):
@@ -22,10 +23,19 @@ class SeperableModel(object):
         return res
 
     def fit(self, initial_parameter, *args, **kwargs):
-        minimizer = VariableProjectionMinimizer(self, initial_parameter, *args,
-                                                **kwargs)
-        verbose = kwargs['verbose'] if 'verbose' in kwargs else 2
-        return minimizer.minimize(method='least_squares',
-                                  ftol=1e-10,
-                                  gtol=1e-10,
-                                  verbose=verbose)
+        result = SeperableModelResult(self, initial_parameter, *args,
+                                      **kwargs)
+        result.fit(initial_parameter, *args, **kwargs)
+        return result
+
+    def retrieve_e_matrix(self, parameter, *args, **kwargs):
+        data = kwargs['data']
+        c_matrix = self.c_matrix(parameter, *args, **kwargs)
+        res = np.empty(data.shape, dtype=np.float64)
+
+        for i in range(data.shape[1]):
+
+            b = data[:, i]
+            qr = qr_decomposition_coeff(c_matrix, b)
+            res[:, i] = qr
+        return res
