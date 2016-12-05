@@ -19,8 +19,12 @@ class SeperableModelResult(VariableProjectionMinimizer):
 
         self.best_fit_parameter = _res.params
 
+    def e_matrix(self, *args, **kwargs):
+        return self.model.retrieve_e_matrix(self.best_fit_parameter,
+                                            *args, **kwargs)
+
     def eval(self, *args, **kwargs):
-        e = self.model.retrieve_e_matrix(self.best_fit_parameter, *args, **kwargs)
+        e = self.e_matrix(*args, **kwargs)
         c = self.model.c_matrix(self.best_fit_parameter, *args, **kwargs)
-        res = np.dot(c, np.transpose(e))
+        res = np.dot(c, e)
         return res

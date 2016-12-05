@@ -252,7 +252,8 @@ class KineticSeperableModel(SeperableModel):
                 mapped_amps = [amplitudes[i] for i in m]
 
                 for i in range(len(mapped_amps)):
-                    tmp[1:i] = mapped_amps[i]
+                    tmp[:, i] = mapped_amps[i]
+                print(tmp)
             if e is None:
                 e = tmp
             else:

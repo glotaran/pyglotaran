@@ -1,5 +1,5 @@
 import numpy as np
-from .result import SeperableModelResult 
+from .result import SeperableModelResult
 from .qr_decomposition import qr_decomposition_coeff
 
 
@@ -31,11 +31,13 @@ class SeperableModel(object):
     def retrieve_e_matrix(self, parameter, *args, **kwargs):
         data = kwargs['data']
         c_matrix = self.c_matrix(parameter, *args, **kwargs)
-        res = np.empty(data.shape, dtype=np.float64)
+        e_matrix = np.empty((c_matrix.shape[1], data.shape[1]),
+                            dtype=np.float64)
+
+        #  for i in range(data.shape[1]):
 
         for i in range(data.shape[1]):
-
             b = data[:, i]
             qr = qr_decomposition_coeff(c_matrix, b)
-            res[:, i] = qr
-        return res
+            e_matrix[:, i] = qr[:c_matrix.shape[1]]
+        return e_matrix
