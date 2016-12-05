@@ -231,6 +231,9 @@ class KineticSeperableModel(SeperableModel):
     def e_matrix(self, **kwargs):
         dataset = self._model.datasets[kwargs['dataset']]
         amplitudes = kwargs["amplitudes"] if "amplitudes" in kwargs else None
+        locations = kwargs["locations"] if "locations" in kwargs else None
+        delta = kwargs["delta"] if "delta" in kwargs else None
+        x = kwargs["x"] if "x" in kwargs else [0]
         e = None
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]
@@ -239,9 +242,9 @@ class KineticSeperableModel(SeperableModel):
             nr_compartments = len(k_matrix.compartment_map)
 
             if amplitudes is None:
-                tmp = np.full((1, nr_compartments), 1.0)
+                tmp = np.full((len(x), nr_compartments), 1.0)
             else:
-                tmp = np.empty((1, nr_compartments), dtype=np.float64)
+                tmp = np.empty((len(x), nr_compartments), dtype=np.float64)
                 m = k_matrix.compartment_map
                 compartments = self._model.compartments
                 # translate compartments to indices
@@ -252,7 +255,16 @@ class KineticSeperableModel(SeperableModel):
                 mapped_amps = [amplitudes[i] for i in m]
 
                 for i in range(len(mapped_amps)):
-                    tmp[:, i] = mapped_amps[i]
+                    for j in range(len(x)):
+                        if locations is None or delta is None:
+                            tmp[j, i] = mapped_amps[i]
+                        else:
+                            tmp[:, i] = mapped_amps[i] * np.exp(
+                                -np.log(2) * np.square(
+                                    2 * (x - locations[i])/delta[i]
+                                )
+                            )
+
                 print(tmp)
             if e is None:
                 e = tmp
