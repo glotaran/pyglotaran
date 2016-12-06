@@ -20,19 +20,24 @@ cpdef double erfce(double x) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,
-                            double[:] center, double[:] width, double[:] scale,
+def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
+                            double[:, :] centers, double[:, :] widths, double[:] scale,
                             int num_threads):
-    nr_gaussian = center.shape[0]
+    nr_gaussian = centers.shape[1]
     if nr_gaussian > 1:
         tmp = np.empty(C.shape, dtype=np.float64)
+    J = centers.shape[0]
     for i in range(nr_gaussian):
         if i is 0:
-            calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i],
-                                     num_threads)
+            for j in range(J):
+                calculateCSingleGaussian(C[j, :, :], k ,T, centers[j, i],
+                                         widths[j, i], scale[i],
+                                         num_threads)
         else:
-            calculateCSingleGaussian(tmp, k ,T, center[i], width[i], scale[i],
-                                     num_threads)
+            for j in range(J):
+                calculateCSingleGaussian(tmp[j, :, :], k ,T, centers[j, i],
+                                         widths[j, i], scale[i],
+                                         num_threads)
             C += tmp
 
 @cython.boundscheck(False)

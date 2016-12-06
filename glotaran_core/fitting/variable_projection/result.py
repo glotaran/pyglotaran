@@ -32,19 +32,22 @@ class SeperableModelResult(Minimizer):
     def eval(self, *args, **kwargs):
         e = self.e_matrix(*args, **kwargs)
         c = self.c_matrix(*args, **kwargs)
-        res = np.dot(c, e)
+        res = np.empty((c.shape[1], e.shape[1]))
+        for i in range(e.shape[1]):
+            res[:, i] = np.dot(c[i, :, :], e[:, i])
         return res
 
     def _residual(self, parameter, *args, **kwargs):
 
-        data = kwargs['data']
+        data = self.model.data(**kwargs)[0]
         c_matrix = self.model.c_matrix(parameter.valuesdict(), *args, **kwargs)
         res = np.empty(data.shape, dtype=np.float64)
 
         for i in range(data.shape[1]):
 
             b = data[:, i]
-            qr = qr_residual(c_matrix, b)
+            c = c_matrix[i, :, :]
+            qr = qr_residual(c, b)
             res[:, i] = qr
 
         return res.flatten()
