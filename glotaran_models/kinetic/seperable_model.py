@@ -9,11 +9,19 @@ from glotaran_core.model import BoundConstraint, FixedConstraint
 from c_matrix import calculateC
 from c_matrix_gaussian_irf import calculateCMultiGaussian
 
+from .result import KineticSeperableModelResult
+
 
 class KineticSeperableModel(SeperableModel):
     def __init__(self, model):
         self._model = model
         self._prepare_parameter()
+
+    def fit(self, initial_parameter, *args, **kwargs):
+        result = KineticSeperableModelResult(self, initial_parameter, *args,
+                                             **kwargs)
+        result.fit(initial_parameter, *args, **kwargs)
+        return result
 
     def _prepare_parameter(self):
         self._fit_params = Parameters()
@@ -262,13 +270,14 @@ class KineticSeperableModel(SeperableModel):
                         if locations is None or delta is None:
                             tmp[j, i] = mapped_amps[i]
                         else:
+                            mapped_locs = [locations[i] for i in m]
+                            mapped_delta = [delta[i] for i in m]
                             tmp[:, i] = mapped_amps[i] * np.exp(
                                 -np.log(2) * np.square(
-                                    2 * (x - locations[i])/delta[i]
+                                    2 * (x - mapped_locs[i])/mapped_delta[i]
                                 )
                             )
 
-                print(tmp)
             if e is None:
                 e = tmp
             else:
