@@ -21,27 +21,30 @@ cpdef double erfce(double x) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,
-                            double[:] center, double[:] width, double[:] scale):
+                            double[:] center, double[:] width, double[:] scale,
+                            int num_threads):
     nr_gaussian = center.shape[0]
     if nr_gaussian > 1:
         tmp = np.empty(C.shape, dtype=np.float64)
     for i in range(nr_gaussian):
         if i is 0:
-            calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i])
+            calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i],
+                                     num_threads)
         else:
-            calculateCSingleGaussian(tmp, k ,T, center[i], width[i], scale[i])
+            calculateCSingleGaussian(tmp, k ,T, center[i], width[i], scale[i],
+                                     num_threads)
             C += tmp
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double
-                  delta, double scale):
+                  delta, double scale, int num_threads):
     I = T.shape[0]
     J = k.shape[0]
     cdef int i, j
     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
     cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
-    with nogil, parallel(num_threads=4):
+    with nogil, parallel(num_threads=num_threads):
         for i in prange(I, schedule=static):
             for j in range(J):
                 t_i = T[i]

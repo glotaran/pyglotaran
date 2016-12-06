@@ -15,12 +15,12 @@ def __init__():
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateC(double[:, :] C, double[:] k, double[:] T):
+def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):
     I = T.shape[0]
     J = k.shape[0]
     cdef int i, j
     cdef double t_i, k_j
-    with nogil, parallel(num_threads=4):
+    with nogil, parallel(num_threads=num_threads):
         for i in prange(I, schedule=static):
             for j in range(J):
                 t_i = T[i]

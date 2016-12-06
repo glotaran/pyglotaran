@@ -1755,6 +1755,7 @@ static const char __pyx_k_ValueError[] = "ValueError";
 static const char __pyx_k_calculateC[] = "calculateC";
 static const char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
 static const char __pyx_k_MemoryError[] = "MemoryError";
+static const char __pyx_k_num_threads[] = "num_threads";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
 static const char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static const char __pyx_k_allocate_buffer[] = "allocate_buffer";
@@ -1849,6 +1850,7 @@ static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
 static PyObject *__pyx_kp_u_ndarray_is_not_Fortran_contiguou;
 static PyObject *__pyx_n_s_ndim;
 static PyObject *__pyx_n_s_np;
+static PyObject *__pyx_n_s_num_threads;
 static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_n_s_obj;
 static PyObject *__pyx_n_s_pack;
@@ -1871,7 +1873,7 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_pf_8c_matrix___init__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T); /* proto */
+static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T, int __pyx_v_num_threads); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1995,7 +1997,7 @@ static PyObject *__pyx_pf_8c_matrix___init__(CYTHON_UNUSED PyObject *__pyx_self)
 /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
+ * def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):             # <<<<<<<<<<<<<<
  *     I = T.shape[0]
  *     J = k.shape[0]
  */
@@ -2007,16 +2009,18 @@ static PyObject *__pyx_pw_8c_matrix_3calculateC(PyObject *__pyx_self, PyObject *
   __Pyx_memviewslice __pyx_v_C = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_k = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_T = { 0, 0, { 0 }, { 0 }, { 0 } };
+  int __pyx_v_num_threads;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calculateC (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_C,&__pyx_n_s_k,&__pyx_n_s_T,0};
-    PyObject* values[3] = {0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_C,&__pyx_n_s_k,&__pyx_n_s_T,&__pyx_n_s_num_threads,0};
+    PyObject* values[4] = {0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
         case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -2031,44 +2035,51 @@ static PyObject *__pyx_pw_8c_matrix_3calculateC(PyObject *__pyx_self, PyObject *
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_k)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, 1); __PYX_ERR(0, 18, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 4, 4, 1); __PYX_ERR(0, 18, __pyx_L3_error)
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_T)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, 2); __PYX_ERR(0, 18, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 4, 4, 2); __PYX_ERR(0, 18, __pyx_L3_error)
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_num_threads)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("calculateC", 1, 4, 4, 3); __PYX_ERR(0, 18, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calculateC") < 0)) __PYX_ERR(0, 18, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
     }
     __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
     __pyx_v_k = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_k.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
     __pyx_v_T = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_T.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
+    __pyx_v_num_threads = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_num_threads == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 18, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("calculateC", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 18, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("calculateC", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 18, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("c_matrix.calculateC", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8c_matrix_2calculateC(__pyx_self, __pyx_v_C, __pyx_v_k, __pyx_v_T);
+  __pyx_r = __pyx_pf_8c_matrix_2calculateC(__pyx_self, __pyx_v_C, __pyx_v_k, __pyx_v_T, __pyx_v_num_threads);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T) {
+static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T, int __pyx_v_num_threads) {
   CYTHON_UNUSED Py_ssize_t __pyx_v_I;
   Py_ssize_t __pyx_v_J;
   int __pyx_v_i;
@@ -2090,7 +2101,7 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
 
   /* "c_matrix.pyx":19
  * @cython.wraparound(False)
- * def calculateC(double[:, :] C, double[:] k, double[:] T):
+ * def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):
  *     I = T.shape[0]             # <<<<<<<<<<<<<<
  *     J = k.shape[0]
  *     cdef int i, j
@@ -2098,7 +2109,7 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
   __pyx_v_I = (__pyx_v_T.shape[0]);
 
   /* "c_matrix.pyx":20
- * def calculateC(double[:, :] C, double[:] k, double[:] T):
+ * def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):
  *     I = T.shape[0]
  *     J = k.shape[0]             # <<<<<<<<<<<<<<
  *     cdef int i, j
@@ -2109,7 +2120,7 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
   /* "c_matrix.pyx":23
  *     cdef int i, j
  *     cdef double t_i, k_j
- *     with nogil, parallel(num_threads=4):             # <<<<<<<<<<<<<<
+ *     with nogil, parallel(num_threads=num_threads):             # <<<<<<<<<<<<<<
  *         for i in prange(I, schedule=static):
  *             for j in range(J):
  */
@@ -2127,13 +2138,13 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
                 #define unlikely(x) (x)
             #endif
             #ifdef _OPENMP
-            #pragma omp parallel  private(__pyx_t_1, __pyx_t_2, __pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_t_9) num_threads(4)
+            #pragma omp parallel  private(__pyx_t_1, __pyx_t_2, __pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_t_9) num_threads(__pyx_v_num_threads)
             #endif /* _OPENMP */
             {
 
                 /* "c_matrix.pyx":24
  *     cdef double t_i, k_j
- *     with nogil, parallel(num_threads=4):
+ *     with nogil, parallel(num_threads=num_threads):
  *         for i in prange(I, schedule=static):             # <<<<<<<<<<<<<<
  *             for j in range(J):
  *                 t_i = T[i]
@@ -2156,7 +2167,7 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
                                 __pyx_v_t_i = ((double)__PYX_NAN());
 
                                 /* "c_matrix.pyx":25
- *     with nogil, parallel(num_threads=4):
+ *     with nogil, parallel(num_threads=num_threads):
  *         for i in prange(I, schedule=static):
  *             for j in range(J):             # <<<<<<<<<<<<<<
  *                 t_i = T[i]
@@ -2211,7 +2222,7 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
       /* "c_matrix.pyx":23
  *     cdef int i, j
  *     cdef double t_i, k_j
- *     with nogil, parallel(num_threads=4):             # <<<<<<<<<<<<<<
+ *     with nogil, parallel(num_threads=num_threads):             # <<<<<<<<<<<<<<
  *         for i in prange(I, schedule=static):
  *             for j in range(J):
  */
@@ -2229,7 +2240,7 @@ static PyObject *__pyx_pf_8c_matrix_2calculateC(CYTHON_UNUSED PyObject *__pyx_se
   /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
+ * def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):             # <<<<<<<<<<<<<<
  *     I = T.shape[0]
  *     J = k.shape[0]
  */
@@ -16689,6 +16700,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_ndarray_is_not_Fortran_contiguou, __pyx_k_ndarray_is_not_Fortran_contiguou, sizeof(__pyx_k_ndarray_is_not_Fortran_contiguou), 0, 1, 0, 0},
   {&__pyx_n_s_ndim, __pyx_k_ndim, sizeof(__pyx_k_ndim), 0, 0, 1, 1},
   {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
+  {&__pyx_n_s_num_threads, __pyx_k_num_threads, sizeof(__pyx_k_num_threads), 0, 0, 1, 1},
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_n_s_obj, __pyx_k_obj, sizeof(__pyx_k_obj), 0, 0, 1, 1},
   {&__pyx_n_s_pack, __pyx_k_pack, sizeof(__pyx_k_pack), 0, 0, 1, 1},
@@ -16955,14 +16967,14 @@ static int __Pyx_InitCachedConstants(void) {
   /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
+ * def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):             # <<<<<<<<<<<<<<
  *     I = T.shape[0]
  *     J = k.shape[0]
  */
-  __pyx_tuple__21 = PyTuple_Pack(9, __pyx_n_s_C, __pyx_n_s_k, __pyx_n_s_T, __pyx_n_s_I, __pyx_n_s_J, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_t_i, __pyx_n_s_k_j); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 18, __pyx_L1_error)
+  __pyx_tuple__21 = PyTuple_Pack(10, __pyx_n_s_C, __pyx_n_s_k, __pyx_n_s_T, __pyx_n_s_num_threads, __pyx_n_s_I, __pyx_n_s_J, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_t_i, __pyx_n_s_k_j); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
-  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(3, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateC, 18, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 18, __pyx_L1_error)
+  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(4, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateC, 18, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 18, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -17209,7 +17221,7 @@ PyMODINIT_FUNC PyInit_c_matrix(void)
   /* "c_matrix.pyx":18
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateC(double[:, :] C, double[:] k, double[:] T):             # <<<<<<<<<<<<<<
+ * def calculateC(double[:, :] C, double[:] k, double[:] T, int num_threads):             # <<<<<<<<<<<<<<
  *     I = T.shape[0]
  *     J = k.shape[0]
  */

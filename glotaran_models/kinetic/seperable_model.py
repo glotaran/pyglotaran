@@ -1,10 +1,13 @@
-from glotaran_core.fitting.variable_projection import SeperableModel
+import multiprocessing
 from lmfit import Parameters
 import numpy as np
 import scipy.linalg
+
+from glotaran_core.fitting.variable_projection import SeperableModel
+from glotaran_core.model import BoundConstraint, FixedConstraint
+
 from c_matrix import calculateC
 from c_matrix_gaussian_irf import calculateCMultiGaussian
-from glotaran_core.model import BoundConstraint, FixedConstraint
 
 
 class KineticSeperableModel(SeperableModel):
@@ -123,14 +126,14 @@ class KineticSeperableModel(SeperableModel):
         C = np.empty((times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
 
-        has_irf = irf is not None
+        num_threads = multiprocessing.cpu_count()
 
-        if has_irf:
+        if irf is not None:
             center, width, scale = self._get_irf_parameter(parameter, irf)
             calculateCMultiGaussian(C, eigenvalues, times, center, width,
-                                    scale)
+                                    scale, num_threads)
         else:
-            calculateC(C, eigenvalues, times)
+            calculateC(C, eigenvalues, times, num_threads)
 
         # Apply initial concentration vector if needed
         has_concentration_vector = \
@@ -238,7 +241,7 @@ class KineticSeperableModel(SeperableModel):
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]
             k_matrix = self._get_combined_k_matrix(cmplx)
-            # E Matrix => channels X compartments
+            #  E Matrix => channels X compartments
             nr_compartments = len(k_matrix.compartment_map)
 
             if amplitudes is None:

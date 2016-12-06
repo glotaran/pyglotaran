@@ -1,4 +1,3 @@
-from . import minimizer, seperable_model
+from . import seperable_model
 
-VariableProjectionMinimizer = minimizer.VariableProjectionMinimizer
 SeperableModel = seperable_model.SeperableModel

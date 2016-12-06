@@ -1,7 +1,7 @@
 import scipy.linalg.lapack as lapack
 
 
-def qr_decomposition(A, B):
+def qr_residual(A, B):
 
     # Kaufman Q2 step 3
     qr, tau, _, _ = lapack.dgeqrf(A)
@@ -19,7 +19,7 @@ def qr_decomposition(A, B):
     return B
 
 
-def qr_decomposition_coeff(A, B):
+def qr_coefficents(A, B):
 
     # Kaufman Q2 step 3
 
