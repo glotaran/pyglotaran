@@ -4,6 +4,7 @@ from .qr_decomposition import qr_residual
 
 
 class SeperableModelResult(Minimizer):
+    _residual_buffer = None
 
     def __init__(self, model, initial_parameter, *args, **kwargs):
         self.model = model
@@ -36,17 +37,41 @@ class SeperableModelResult(Minimizer):
             res[:, i] = np.dot(c[i, :, :], e[:, i])
         return res
 
+    @profile
     def _residual(self, parameter, *args, **kwargs):
 
         data = self.model.data(**kwargs)[0]
         c_matrix = self.model.c_matrix(parameter.valuesdict(), *args, **kwargs)
-        res = np.empty(data.shape, dtype=np.float64)
+        #  res = np.empty(data.shape, dtype=np.float64)
+        if self._residual_buffer is None:
+            self._residual_buffer = np.empty(data.shape, dtype=np.float64)
 
+        #  print(parameter['p1'])
+        #  print(self._residual_buffer.shape)
+        #  print(data.shape)
+        #  print('befor copy')
+        #  print(self._residual_buffer.flatten()[:12])
+        np.copyto(self._residual_buffer, data)
+        #  print('after copy')
+        #  print(self._residual_buffer.flatten()[:12])
         for i in range(data.shape[1]):
 
+            #  b = self._residual_buffer[:, i]
+            #  print('go')
+            #  print(i)
+            #  print(self._residual_buffer[:, i].shape)
             b = data[:, i]
+            #  print('bevor')
+            #  print(self._residual_buffer[:, i][:6])
             c = c_matrix[i, :, :]
+            #  qr_residual(c, self._residual_buffer[:, i])
             qr = qr_residual(c, b)
-            res[:, i] = qr
+            self._residual_buffer[:, i] = qr
+            #  print('danach')
+            #  print(self._residual_buffer[:, i][:6])
+            #  res[:, i] = qr
 
-        return res.flatten()
+        #  print('final')
+        #  print(self._residual_buffer.flatten()[:12])
+        return self._residual_buffer.flatten()
+        #  return res.flatten()

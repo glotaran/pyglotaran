@@ -11,7 +11,7 @@ type: kinetic
 
 parameter: {}
 
-compartments: [s1]
+compartments: [s1, s2, s3]
 
 megacomplexes:
 - label: mc1
@@ -21,6 +21,8 @@ k_matrices:
   - label: "k1"
     matrix: {{
       '("s1","s1")': 1,
+      '("s2","s2")': 2,
+      '("s3","s3")': 3,
     }}
 
 initial_concentrations: []
@@ -28,8 +30,8 @@ initial_concentrations: []
 irf:
   - label: irf1
     type: gaussian
-    center: 2
-    width: 3
+    center: 4
+    width: 5
 
 
 datasets:
@@ -39,16 +41,24 @@ datasets:
   path: ''
   irf: irf1
 '''
+initial_parameter = [101e-4, 202e-5, 505e-6, 0.1, 4]
 
-initial_parameter = [101e-4, 0, 5]
-times = np.asarray(np.arange(-100, 1500, 1.5))
-#  x = np.arange(12820, 15120, 4.6)
-x = np.asarray([0, 1])
+times = np.concatenate([np.arange(-10, 1, 0.1).flatten(),
+                        np.arange(-1, 1,
+                                  0.01).flatten(),
+                        np.arange(10, 50, 1.5).flatten(),
+                        np.arange(100, 1000,
+                                  15).flatten()])
+x = np.arange(12820, 15120, 4.6)
+#  x = np.asarray([0, 1])
 
 wanted_params = Parameters()
 wanted_params.add("p1", 101e-3)
-wanted_params.add("p2", 0.3)
-wanted_params.add("p3", 10)
+wanted_params.add("p2", 202e-4)
+wanted_params.add("p3", 505e-5)
+wanted_params.add("p4", 0.1)
+wanted_params.add("p5", 3.0)
+wanted_params.pretty_print()
 
 model = parse_yml(fitspec.format(initial_parameter))
 
