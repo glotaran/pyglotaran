@@ -15,10 +15,14 @@ class TestSimpleKinetic(TestCase):
 
         class OneComparmentDecay(SeperableModel):
 
+            def data(self, **kwargs):
+                data = (kwargs['data'],)
+                return data
+
             def c_matrix(self, parameter, *times, **kwargs):
                 kinpar = np.asarray([parameter["p0"]])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
-                return c
+                return np.asarray([c])
 
             def e_matrix(self, **kwargs):
                 # E Matrix => channels X compartments
@@ -54,10 +58,14 @@ class TestSimpleKinetic(TestCase):
 
         class TwoComparmentDecay(SeperableModel):
 
+            def data(self, **kwargs):
+                data = (kwargs['data'],)
+                return data
+
             def c_matrix(self, parameter, *times, **kwargs):
                 kinpar = np.asarray([parameter["p0"], parameter["p1"]])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
-                return c
+                return np.asarray([c])
 
             def e_matrix(self):
                 # E Matrix => channels X compartments
@@ -98,26 +106,32 @@ class TestSimpleKinetic(TestCase):
 
         class MultiChannelMultiCompartmentDecay(SeperableModel):
 
+            wavenum = np.asarray(np.arange(12820, 15120, 4.6))
+
+            def data(self, **kwargs):
+                data = (kwargs['data'],)
+                return data
+
             def c_matrix(self, parameter, *times, **kwargs):
                 kinpar = np.asarray([parameter["p{}".format(i)] for i in
                                      range(len((parameter)))])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
-                return c
+                return np.asarray([c for _ in range(self.wavenum.shape[0])])
 
             def e_matrix(self):
-                wavenum = np.asarray(np.arange(12820, 15120, 4.6))
                 location = np.asarray(
                     [14705, 13513, 14492, 14388, 14184, 13986])
                 delta = np.asarray([400, 1000, 300, 200, 350, 330])
                 amp = np.asarray([1, 0.1, 10, 100, 1000, 10000])
 
-                E = np.empty((wavenum.size, location.size), dtype=np.float64,
+                E = np.empty((self.wavenum.size, location.size),
+                             dtype=np.float64,
                              order="F")
 
                 for i in range(location.size):
                     E[:, i] = amp[i] * np.exp(
                         -np.log(2) * np.square(
-                            2 * (wavenum - location[i])/delta[i]
+                            2 * (self.wavenum - location[i])/delta[i]
                         )
                     )
 

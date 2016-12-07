@@ -19,9 +19,9 @@ class SeperableModel(object):
         c = self.c_matrix(parameter, *args, **kwargs)
         noise = kwargs["noise"] if "noise" in kwargs else False
         res = np.empty((c.shape[1], e.shape[0]))
+        print(res.shape)
         for i in range(e.shape[0]):
             res[:, i] = np.dot(c[i, :, :], np.transpose(e[i, :]))
-        print(res.shape)
         if noise:
             std_dev = kwargs["noise_std_dev"] if "noise_std_dev" in kwargs \
                 else 1.0

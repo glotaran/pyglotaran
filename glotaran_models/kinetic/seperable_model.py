@@ -213,9 +213,9 @@ class KineticSeperableModel(SeperableModel):
     def _construct_k_matrix_eigen(self, parameter, k_matrix):
 
         eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
-        idx = eigenvalues.argsort()[::-1]
-        eigenvalues = eigenvalues[idx]
-        eigenvectors = eigenvectors[:, idx]
+        #  idx = eigenvalues.argsort()[::-1]
+        #  eigenvalues = eigenvalues[idx]
+        #  eigenvectors = eigenvectors[:, idx]
 
         return(eigenvalues, eigenvectors)
 
@@ -249,6 +249,11 @@ class KineticSeperableModel(SeperableModel):
 
         center = self._parameter_map(parameter)(np.asarray(irf.center))
         centers = np.asarray([center for _ in x])
+
+        print('centers')
+        print(x.shape)
+        print(center)
+        print(centers.shape)
         center_dispersion = \
             self._parameter_map(parameter)(np.asarray(irf.center_dispersion)) \
             if len(irf.center_dispersion) is not 0 else None
@@ -258,14 +263,14 @@ class KineticSeperableModel(SeperableModel):
             if len(irf.width_dispersion) is not 0 else None
 
         if center_dispersion is not None or width_dispersion is not None:
-            dist = x - x[0]
+            dist = (x - x[0])/100
 
         if center_dispersion is not None:
             for i in range(len(center_dispersion)):
                 centers = centers + center_dispersion[i] * np.power(dist, i+1)
 
         if width.shape[0] is not center.shape[0]:
-            width = np.fill(center.shape, width[0])
+            width = np.full(center.shape, width[0])
 
         widths = np.asarray([width for _ in x])
 
@@ -273,6 +278,10 @@ class KineticSeperableModel(SeperableModel):
             for i in range(len(width_dispersion)):
                 widths = widths + width_dispersion[i] * np.power(dist, i+1)
 
+        print('width')
+        print(x.shape)
+        print(width)
+        print(widths.shape)
         if len(irf.scale) is 0:
             scale = np.ones(center.shape)
         else:
@@ -335,6 +344,25 @@ class KineticSeperableModel(SeperableModel):
         # get the
 
         return e
+
+    def coefficients(self, *args, **kwargs):
+        dataset = self._model.datasets[kwargs['dataset']]
+
+        for megacomplex in dataset.megacomplexes:
+            cmplx = self._model.megacomplexes[megacomplex]
+            k_matrix = self._get_combined_k_matrix(cmplx)
+            m = k_matrix.compartment_map
+            compartments = self._model.compartments
+            for i in range(len(m)):
+                m[i] = compartments.index(m[i])
+            e_matrix = self.e_matrix(*args, **kwargs)
+            print("em")
+            print(e_matrix.shape)
+            print(m)
+            mapped_e_matrix = np.empty(e_matrix.shape, e_matrix.dtype)
+            for i in range(len(m)):
+                mapped_e_matrix[:, m[i]] = e_matrix[:, i]
+            return mapped_e_matrix
 
     def _parameter_map(self, parameter):
         def map_fun(i):
