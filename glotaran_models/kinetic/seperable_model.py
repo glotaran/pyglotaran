@@ -1,4 +1,3 @@
-import multiprocessing
 from lmfit import Parameters
 import numpy as np
 import scipy.linalg
@@ -150,15 +149,15 @@ class KineticSeperableModel(SeperableModel):
         C = np.empty((x.shape[0], times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
 
-        num_threads = multiprocessing.cpu_count()
+        #  num_threads = multiprocessing.cpu_count()
 
         if irf is not None:
             centers, widths, scale = self._get_irf_parameter(parameter, irf,
                                                              x)
             calculateCMultiGaussian(C, eigenvalues, times, centers, widths,
-                                    scale, num_threads)
+                                    scale)
         else:
-            calculateC(C[0, :, :], eigenvalues, times, num_threads)
+            calculateC(C[0, :, :], eigenvalues, times)
             for i in range(1, C.shape[0]):
                 C[i, :, :] = C[0, :, :]
 
@@ -250,10 +249,6 @@ class KineticSeperableModel(SeperableModel):
         center = self._parameter_map(parameter)(np.asarray(irf.center))
         centers = np.asarray([center for _ in x])
 
-        print('centers')
-        print(x.shape)
-        print(center)
-        print(centers.shape)
         center_dispersion = \
             self._parameter_map(parameter)(np.asarray(irf.center_dispersion)) \
             if len(irf.center_dispersion) is not 0 else None
@@ -278,10 +273,6 @@ class KineticSeperableModel(SeperableModel):
             for i in range(len(width_dispersion)):
                 widths = widths + width_dispersion[i] * np.power(dist, i+1)
 
-        print('width')
-        print(x.shape)
-        print(width)
-        print(widths.shape)
         if len(irf.scale) is 0:
             scale = np.ones(center.shape)
         else:

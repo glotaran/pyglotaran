@@ -21,8 +21,7 @@ cpdef double erfce(double x) nogil:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
-                            double[:, :] centers, double[:, :] widths, double[:] scale,
-                            int num_threads):
+                            double[:, :] centers, double[:, :] widths, double[:] scale):
     nr_gaussian = centers.shape[1]
     if nr_gaussian > 1:
         tmp = np.empty(C.shape, dtype=np.float64)
@@ -31,38 +30,37 @@ def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
         if i is 0:
             for j in range(J):
                 calculateCSingleGaussian(C[j, :, :], k ,T, centers[j, i],
-                                         widths[j, i], scale[i],
-                                         num_threads)
+                                         widths[j, i], scale[i])
         else:
             for j in range(J):
                 calculateCSingleGaussian(tmp[j, :, :], k ,T, centers[j, i],
-                                         widths[j, i], scale[i],
-                                         num_threads)
+                                         widths[j, i], scale[i])
             C += tmp
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double
-                  delta, double scale, int num_threads):
+                  delta, double scale):
     I = T.shape[0]
     J = k.shape[0]
     cdef int i, j
     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
     cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
-    with nogil, parallel(num_threads=num_threads):
-        for i in prange(I, schedule=static):
-            for j in range(J):
-                t_i = T[i]
-                k_j = k[j]
+    #  with nogil, parallel(num_threads=num_threads):
+    #      for i in prange(I, schedule=static):
+    for i in range(I):
+        for j in range(J):
+            t_i = T[i]
+            k_j = k[j]
 
-                if k_j == 0:
-                    C[i, j] = 0
-                    continue
+            if k_j == 0:
+                C[i, j] = 0
+                continue
 
-                alpha = -k_j * delta / sqrt(2)
-                beta = (t_i - mu) / (delta * sqrt(2))
-                thresh = beta - alpha
-                if thresh < -1 :
-                    C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
-                else:
-                    C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+            alpha = -k_j * delta / sqrt(2)
+            beta = (t_i - mu) / (delta * sqrt(2))
+            thresh = beta - alpha
+            if thresh < -1 :
+                C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
+            else:
+                C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))

@@ -1,6 +1,5 @@
 from lmfit import Minimizer
 import numpy as np
-
 from .qr_decomposition import qr_residual
 
 
