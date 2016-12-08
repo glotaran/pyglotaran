@@ -13,14 +13,16 @@ class SeperableModelResult(Minimizer):
                                                    fcn_args=args,
                                                    fcn_kws=kwargs)
 
-    def fit(self, initial_parameter, *args, **kwargs):
+    def fit(self, initial_parameter, ftol=1e-10, gtol=1e-10, *args, **kwargs):
         verbose = kwargs['verbose'] if 'verbose' in kwargs else 2
-        _res = self.minimize(method='least_squares',
-                             ftol=1e-10,
-                             gtol=1e-10,
-                             verbose=verbose)
+        ftol = 1e-10
+        gtol = 1e-10
+        res = self.minimize(method='least_squares',
+                            ftol=ftol,
+                            gtol=gtol,
+                            verbose=verbose)
 
-        self.best_fit_parameter = _res.params
+        self.best_fit_parameter = res.params
 
     def e_matrix(self, *args, **kwargs):
         return self.model.retrieve_e_matrix(self.best_fit_parameter,
@@ -37,7 +39,17 @@ class SeperableModelResult(Minimizer):
             res[:, i] = np.dot(c[i, :, :], e[:, i])
         return res
 
-    @profile
+    def final_residual(self, *args, **kwargs):
+        data = self.model.data(**kwargs)[0]
+        reconstructed = self.eval(*args, **kwargs)
+        return data-reconstructed
+
+    def final_residual_svd(self, *args, **kwargs):
+        residual = self.final_residual(*args, **kwargs)
+        lsvd, svals, rsvd = np.linalg.svd(residual)
+        return lsvd, svals, rsvd
+
+    #  @profile
     def _residual(self, parameter, *args, **kwargs):
 
         data = self.model.data(**kwargs)[0]
@@ -48,7 +60,8 @@ class SeperableModelResult(Minimizer):
 
         #  print(parameter['p1'])
         #  print(self._residual_buffer.shape)
-        #  print(data.shape)
+        #  print('bef')
+        #  print(c_matrix.shape)
         #  print('befor copy')
         #  print(self._residual_buffer.flatten()[:12])
         np.copyto(self._residual_buffer, data)
