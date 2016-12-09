@@ -33,7 +33,7 @@ else:
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran_models/kinetic/c_matrix_gaussian_irf.pyx"],
+                  ["glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx"],
                   include_dirs=[numpy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",

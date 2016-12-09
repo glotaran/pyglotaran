@@ -69,6 +69,7 @@ data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
 
 
 def fit():
+    fitmodel.get_initial_fitting_parameter().pretty_print()
     fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
                  *times, **{"dataset1":
                             data}).best_fit_parameter.pretty_print()

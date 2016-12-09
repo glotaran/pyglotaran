@@ -6,7 +6,8 @@ from glotaran_core.fitting.variable_projection import SeperableModel
 from glotaran_core.model import BoundConstraint, FixedConstraint
 
 from c_matrix import calculateC
-from c_matrix_gaussian_irf import calculateCMultiGaussian
+from .c_matrix_cython import CMatrixCython
+from .c_matrix_python import CMatrixPython
 
 from .result import KineticSeperableModelResult
 
@@ -154,7 +155,8 @@ class KineticSeperableModel(SeperableModel):
         if irf is not None:
             centers, widths, scale = self._get_irf_parameter(parameter, irf,
                                                              x)
-            calculateCMultiGaussian(C, eigenvalues, times, centers, widths,
+            backend = CMatrixPython()
+            backend.c_matrix_gaussian_irf(C, eigenvalues, times, centers, widths,
                                     scale)
         else:
             calculateC(C[0, :, :], eigenvalues, times)

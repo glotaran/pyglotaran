@@ -1,27 +1,15 @@
-
-import cython
-cimport cython
-
 import numpy as np
-cimport numpy as np
+from math import exp, sqrt, erf, erfc
+class CMatrixPython(object):
+    def c_matrix(self, rates, times, centers, widths, scale):
+        raise NotImplementedError
 
-from libc.math cimport exp, erf, erfc, pow, log, sqrt
-from numpy.math cimport NAN
+    def c_matrix_gaussian_irf(self, C, rates, times, centers, widths, scale):
+        calculateCMultiGaussian(C, rates, times, centers, widths,
+                                scale)
 
-from cython.parallel import prange, parallel
-
-def __init__():
-    np.import_array()
-
-
-cpdef double erfce(double x) nogil:
-    return exp(x*x) * erfc(x)
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
-                            double[:, :] centers, double[:, :] widths, double[:] scale):
+def calculateCMultiGaussian(C,k,T,
+                            centers, widths, scale):
     nr_gaussian = centers.shape[1]
     if nr_gaussian > 1:
         tmp = np.empty(C.shape, dtype=np.float64)
@@ -37,14 +25,13 @@ def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
                                          widths[j, i], scale[i])
             C += tmp
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double
-                  delta, double scale):
+def erfce(x):
+    return exp(x*x) * erfc(x)
+
+def calculateCSingleGaussian(C, k,T,mu,
+                  delta, scale):
     I = T.shape[0]
     J = k.shape[0]
-    cdef int i, j
-    cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
     #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
     #  with nogil, parallel(num_threads=num_threads):
     #      for i in prange(I, schedule=static):
