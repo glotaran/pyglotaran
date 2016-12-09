@@ -41,10 +41,8 @@ datasets:
   path: ''
   irf: irf1
 '''
-#TODO: will crash
+
 initial_parameter = [123e-3, 234e-4, 567e-5, -0.05, 0.1]
-#TODO: will work
-initial_parameter = [123e-3, 234e-4, 567e-5, 0.28, 0.28]
 
 times = np.concatenate([np.arange(-10, -1, 0.1).flatten(),
                         np.arange(-1, 10, 0.01).flatten(),
@@ -82,8 +80,8 @@ def fit():
     result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
                  *times, **{"dataset1":
                             data})
-    result.best_fit_parameter.pretty_print()
     stop = time.perf_counter()
+    result.best_fit_parameter.pretty_print()
     print("Fitting the data took: {:.2f}s".format(stop - start))
 
 

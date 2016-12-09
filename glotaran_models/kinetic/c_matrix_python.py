@@ -1,5 +1,6 @@
 import numpy as np
 from math import exp, sqrt, erf, erfc
+from scipy.special import erfcx
 class CMatrixPython(object):
     def c_matrix(self, rates, times, centers, widths, scale):
         raise NotImplementedError
@@ -25,8 +26,22 @@ def calculateCMultiGaussian(C,k,T,
                                          widths[j, i], scale[i])
             C += tmp
 
+# Calculates exp(x*x) * erfc(x) but avoid under or overflow for large values of x
 def erfce(x):
-    return exp(x*x) * erfc(x)
+    #option 1 found here: http://stackoverflow.com/a/8963650
+    #return erfcx1(x)
+    #option 2 found here: http://stackoverflow.com/a/13995496
+    return erfcx(x)
+
+def erfcx1(x):
+    if x < 25:
+        return erfc(x) * exp(x * x)
+    else:
+        y = 1. / x
+        z = y * y
+        s = y * (1. + z * (-0.5 + z * (0.75 + z * (-1.875 + z * (6.5625 - 29.53125 * z)))))
+        return s * 0.564189583547756287
+
 
 def calculateCSingleGaussian(C, k,T,mu,
                   delta, scale):
@@ -51,3 +66,5 @@ def calculateCSingleGaussian(C, k,T,mu,
                 C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
                 C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+
+     # print(np.isnan(C).any())
