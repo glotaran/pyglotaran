@@ -6,35 +6,36 @@ from Cython.Distutils import build_ext
 # TODO: bootstrap numpy ->
 # https://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
 import numpy
+import scipy
 import sys
 
 if sys.platform == 'win32':
     ext_modules = [
         Extension("c_matrix",
                   ["glotaran_models/kinetic/c_matrix.pyx"],
-                  include_dirs=[numpy.get_include()],
-                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
+                  include_dirs=[numpy.get_include(),scipy.get_include()],
+                  extra_compile_args=["-O3", "-ffast-mat h", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
                   ["glotaran_models/kinetic/c_matrix_gaussian_irf.pyx"],
-                  include_dirs=[numpy.get_include()],
+                  include_dirs=[numpy.get_include(), scipy.get_include()],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                      "-fopenmp"],
+                                      "-fopenmp", "-g"],
                   extra_link_args=['-fopenmp'])
                   ]
 else:
     ext_modules = [
         Extension("c_matrix",
                   ["glotaran_models/kinetic/c_matrix.pyx"],
-                  include_dirs=[numpy.get_include()],
+                  include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
                   ["glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx"],
-                  include_dirs=[numpy.get_include()],
+                  include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],

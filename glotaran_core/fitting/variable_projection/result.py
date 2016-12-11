@@ -49,7 +49,7 @@ class SeperableModelResult(Minimizer):
         lsvd, svals, rsvd = np.linalg.svd(residual)
         return lsvd, svals, rsvd
 
-    @profile
+    # @profile
     def _residual(self, parameter, *args, **kwargs):
 
         data = self.model.data(**kwargs)[0]

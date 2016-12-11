@@ -155,7 +155,7 @@ class KineticSeperableModel(SeperableModel):
         if irf is not None:
             centers, widths, scale = self._get_irf_parameter(parameter, irf,
                                                              x)
-            backend = CMatrixPython()
+            backend = CMatrixCython()
             backend.c_matrix_gaussian_irf(C, eigenvalues, times, centers, widths,
                                     scale)
         else:
