@@ -8,6 +8,7 @@ from glotaran_core.model import BoundConstraint, FixedConstraint
 from c_matrix import calculateC
 from .c_matrix_cython import CMatrixCython
 from .c_matrix_python import CMatrixPython
+from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
 
 from .result import KineticSeperableModelResult
 
@@ -16,6 +17,7 @@ class KineticSeperableModel(SeperableModel):
     def __init__(self, model):
         self._model = model
         self._prepare_parameter()
+        self._c_matrix_backend = CMatrixOpenCL()
 
     def data(self, **kwargs):
         data = ()
@@ -155,8 +157,7 @@ class KineticSeperableModel(SeperableModel):
         if irf is not None:
             centers, widths, scale = self._get_irf_parameter(parameter, irf,
                                                              x)
-            backend = CMatrixCython()
-            backend.c_matrix_gaussian_irf(C, eigenvalues, times, centers, widths,
+            self._c_matrix_backend.c_matrix_gaussian_irf(C, eigenvalues, times, centers, widths,
                                     scale)
         else:
             calculateC(C[0, :, :], eigenvalues, times)

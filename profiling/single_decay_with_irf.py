@@ -41,7 +41,7 @@ datasets:
 '''
 
 initial_parameter = [101e-4, 0, 5]
-times = np.asarray(np.arange(-100, 1500, 1.5))
+times = np.asarray(np.arange(-100, 150, 1.5))
 #  x = np.arange(12820, 15120, 4.6)
 x = np.asarray([0, 1])
 

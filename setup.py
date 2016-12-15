@@ -56,6 +56,7 @@ setup(
     packages=['glotaran_core.fitting.variable_projection',
               'glotaran_core.model',
               'glotaran_models.kinetic',
+              'glotaran_models.kinetic.c_matrix_opencl',
               'glotaran_tools.specification_parser'
               ],
     install_requires=[
@@ -65,6 +66,8 @@ setup(
         'lmfit',
         'pyyaml',
     ],
+    package_data={'glotaran_models.kinetic.c_matrix_opencl':
+                  ['*.cl']},
     cmdclass={"build_ext": build_ext},
     ext_modules=ext_modules,
     test_suite='nose.collector',
