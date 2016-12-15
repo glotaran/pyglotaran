@@ -14,14 +14,14 @@ if sys.platform == 'win32':
         Extension("c_matrix",
                   ["glotaran_models/kinetic/c_matrix.pyx"],
                   include_dirs=[numpy.get_include(),scipy.get_include()],
-                  extra_compile_args=["-O3", "-ffast-mat h", "-march=native",
+                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
                   ["glotaran_models/kinetic/c_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                      "-fopenmp", "-g"],
+                                      "-fopenmp"],
                   extra_link_args=['-fopenmp'])
                   ]
 else:
@@ -34,7 +34,7 @@ else:
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx"],
+                  ["glotaran_models/kinetic/c_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
