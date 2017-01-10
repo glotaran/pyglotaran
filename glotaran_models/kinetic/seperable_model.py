@@ -7,8 +7,8 @@ from glotaran_core.model import BoundConstraint, FixedConstraint
 
 from c_matrix import calculateC
 from .c_matrix_cython import CMatrixCython
-from .c_matrix_python import CMatrixPython
-from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
+#from .c_matrix_python import CMatrixPython
+#from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
 
 from .result import KineticSeperableModelResult
 
@@ -17,7 +17,7 @@ class KineticSeperableModel(SeperableModel):
     def __init__(self, model):
         self._model = model
         self._prepare_parameter()
-        self._c_matrix_backend = CMatrixOpenCL()
+        self._c_matrix_backend = CMatrixCython()
 
     def data(self, **kwargs):
         data = ()

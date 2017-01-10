@@ -9,19 +9,22 @@ cimport numpy as np
 
 # Not sure why but the scipy.special.cython_special.erfcx function doesnt' sseem to work.
 #from scipy.special import erf, erfc, erfcx
-from scipy.special.cython_special cimport erf, erfc, erfcx
+#from scipy.special.cython_special cimport erf, erfc, erfcx #try in 0.19.0
 #cimport scipy.special.cython_special as csc
 
-from libc.math cimport exp,  pow, log, sqrt
+from libc.math cimport exp,  pow, log, sqrt, erf
 from numpy.math cimport NAN
 
 from cython.parallel import prange, parallel
 
+cdef extern from "erfce.c":
+    double erfce(double x)
+
 def __init__():
     np.import_array()
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+#def eprint(*args, **kwargs):
+#    print(*args, file=sys.stderr, **kwargs)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -51,7 +54,7 @@ def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu
     cdef int i, j
     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
     #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
-    #  with nogil, parallel(num_threads=num_threads):
+    #with nogil, parallel(num_threads=num_threads):
     #      for i in prange(I, schedule=static):
     for i in range(I):
         for j in range(J):
@@ -65,9 +68,9 @@ def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu
             alpha = -k_j * delta / sqrt(2)
             beta = (t_i - mu) / (delta * sqrt(2))
             thresh = beta - alpha
-            eprint("thresh is: ", thresh)
+            #eprint("thresh is: ", thresh)
             if thresh < -1 :
-                C[i, j] = scale * .5 * erfcx(-thresh) * exp(-beta * beta)
+                C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
                 C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
 
