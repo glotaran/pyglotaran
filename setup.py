@@ -44,10 +44,10 @@ else:
 
 
 setup(
-    name="glotaran-core",
+    name="glotaran",
     version="0.1.0",
     description='The Glotaran fitting engine.',
-    url='http://github.com/ThingiverseIO/pythingiverseio',
+    url='http://glotaran.org',
     author='Joris Snellenburg, Stefan Schuetz, Joern Weissenborn',
     author_email="""j.snellenburg@vu.nl,
                     YamiNoKeshin@gmail.com,
