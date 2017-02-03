@@ -1,17 +1,17 @@
 import os
 import csv
 from ast import literal_eval as make_tuple
-from glotaran_core.model import (create_parameter_list,
-                                 Dataset,
-                                 DatasetScaling,
-                                 FixedConstraint,
-                                 BoundConstraint,
-                                 ZeroConstraint,
-                                 EqualConstraint,
-                                 EqualAreaConstraint,
-                                 MegacomplexScaling,
-                                 Relation,
-                                 InitialConcentration)
+from glotaran.model import (create_parameter_list,
+                            Dataset,
+                            DatasetScaling,
+                            FixedConstraint,
+                            BoundConstraint,
+                            ZeroConstraint,
+                            EqualConstraint,
+                            EqualAreaConstraint,
+                            MegacomplexScaling,
+                            Relation,
+                            InitialConcentration)
 
 
 class ModelKeys:

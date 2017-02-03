@@ -1,17 +1,17 @@
 from unittest import TestCase
-from glotaran_tools.specification_parser import parse_file
-from glotaran_models.kinetic import (KineticModel,
+from glotaran.specification_parser import parse_file
+from glotaran.models.kinetic import (KineticModel,
                                      GaussianIrf,
                                      KineticMegacomplex)
-from glotaran_core.model import (InitialConcentration,
-                                 ZeroConstraint,
-                                 EqualConstraint,
-                                 EqualAreaConstraint,
-                                 Relation,
-                                 Parameter,
-                                 FixedConstraint,
-                                 BoundConstraint
-                                 )
+from glotaran.model import (InitialConcentration,
+                            ZeroConstraint,
+                            EqualConstraint,
+                            EqualAreaConstraint,
+                            Relation,
+                            Parameter,
+                            FixedConstraint,
+                            BoundConstraint
+                            )
 from os import getcwd
 from os.path import join
 import numpy as np
@@ -20,7 +20,7 @@ import numpy as np
 class TestParser(TestCase):
 
     def setUp(self):
-        spec_path = join(join(join(join(getcwd(), "glotaran_tools"),
+        spec_path = join(join(join(join(getcwd(), "glotaran"),
                               "specification_parser"),
                               "test",
                          "test_model_spec.yml"))

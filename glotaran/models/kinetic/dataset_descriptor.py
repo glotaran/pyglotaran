@@ -1,4 +1,4 @@
-from glotaran_core.model import DatasetDescriptor
+from glotaran.model import DatasetDescriptor
 
 
 class KineticDatasetDescriptor(DatasetDescriptor):

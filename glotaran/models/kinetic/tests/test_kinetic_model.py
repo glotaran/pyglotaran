@@ -3,8 +3,8 @@ import numpy as np
 
 from lmfit import Parameters
 
-from glotaran_tools.specification_parser import parse_yml
-from glotaran_models.kinetic import KineticSeperableModel
+from glotaran.specification_parser import parse_yml
+from glotaran.models.kinetic import KineticSeperableModel
 
 
 class TestKineticModel(TestCase):

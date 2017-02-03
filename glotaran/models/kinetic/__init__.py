@@ -1,4 +1,4 @@
-from glotaran_models.kinetic import (
+from . import (
     dataset_descriptor,
     irf_gaussian,
     k_matrix,

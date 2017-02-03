@@ -1,4 +1,4 @@
-from glotaran_core.model import Model
+from glotaran.model import Model
 from .megacomplex import KineticMegacomplex
 from .k_matrix import KMatrix
 from .irf import Irf

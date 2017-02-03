@@ -3,7 +3,7 @@ from .model_spec_yaml import (ModelKeys,
                               is_compact,
                               register_model_parser)
 from ast import literal_eval as make_tuple
-from glotaran_models.kinetic import (KMatrix,
+from glotaran.models.kinetic import (KMatrix,
                                      KineticDatasetDescriptor,
                                      KineticMegacomplex,
                                      KineticModel,

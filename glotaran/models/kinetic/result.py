@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran_core.fitting.variable_projection import SeperableModelResult
+from lmfit_varpro import SeperableModelResult
 
 
 class KineticSeperableModelResult(SeperableModelResult):

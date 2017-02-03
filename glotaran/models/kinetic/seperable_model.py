@@ -2,8 +2,8 @@ from lmfit import Parameters
 import numpy as np
 import scipy.linalg
 
-from glotaran_core.fitting.variable_projection import SeperableModel
-from glotaran_core.model import BoundConstraint, FixedConstraint
+from lmfit_varpro import SeperableModel
+from glotaran.model import BoundConstraint, FixedConstraint
 
 from c_matrix import calculateC
 from .c_matrix_cython import CMatrixCython

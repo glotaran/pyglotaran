@@ -1,14 +1,14 @@
-from glotaran_core.model import (compartment_constraints,
-                                 initial_concentration,
-                                 dataset,
-                                 dataset_descriptor,
-                                 dataset_scaling,
-                                 megacomplex,
-                                 megacomplex_scaling,
-                                 model,
-                                 parameter,
-                                 parameter_constraints,
-                                 relation)
+from . import (compartment_constraints,
+               initial_concentration,
+               dataset,
+               dataset_descriptor,
+               dataset_scaling,
+               megacomplex,
+               megacomplex_scaling,
+               model,
+               parameter,
+               parameter_constraints,
+               relation)
 
 # Functions
 
