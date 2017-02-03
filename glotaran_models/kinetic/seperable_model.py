@@ -1,16 +1,35 @@
-from glotaran_core.fitting.variable_projection import SeperableModel
 from lmfit import Parameters
 import numpy as np
 import scipy.linalg
-from c_matrix import calculateC
-from c_matrix_gaussian_irf import calculateCMultiGaussian
+
+from glotaran_core.fitting.variable_projection import SeperableModel
 from glotaran_core.model import BoundConstraint, FixedConstraint
+
+from c_matrix import calculateC
+from .c_matrix_cython import CMatrixCython
+#from .c_matrix_python import CMatrixPython
+#from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
+
+from .result import KineticSeperableModelResult
 
 
 class KineticSeperableModel(SeperableModel):
     def __init__(self, model):
         self._model = model
         self._prepare_parameter()
+        self._c_matrix_backend = CMatrixCython()
+
+    def data(self, **kwargs):
+        data = ()
+        for dataset in self._model.datasets:
+            data = data + (kwargs[dataset],)
+        return data
+
+    def fit(self, initial_parameter, *args, **kwargs):
+        result = KineticSeperableModelResult(self, initial_parameter, *args,
+                                             **kwargs)
+        result.fit(initial_parameter, *args, **kwargs)
+        return result
 
     def _prepare_parameter(self):
         self._fit_params = Parameters()
@@ -68,8 +87,12 @@ class KineticSeperableModel(SeperableModel):
     def c_matrix(self, parameter, *times, **kwargs):
         for dataset in self._model.datasets:
             desc = self._model.datasets[dataset]
+            x = '{}_x'.format(dataset)
+            x = kwargs[x] if x in kwargs else \
+                list(range(kwargs['{}'.format(dataset)].shape[1]))
             c = self._construct_c_matrix_for_dataset(parameter, desc,
-                                                     np.asarray(times))
+                                                     np.asarray(times),
+                                                     np.asarray(x))
             break
         return c
 
@@ -77,7 +100,7 @@ class KineticSeperableModel(SeperableModel):
         return self._fit_params
 
     def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor,
-                                        times):
+                                        times, x):
 
         initial_concentration = dataset_descriptor.initial_concentration
         irf = dataset_descriptor.irf
@@ -89,7 +112,8 @@ class KineticSeperableModel(SeperableModel):
                                                          cmplx,
                                                          initial_concentration,
                                                          irf,
-                                                         times)
+                                                         times,
+                                                         x)
             if c_matrix is None:
                 c_matrix = tmp
             else:
@@ -102,8 +126,13 @@ class KineticSeperableModel(SeperableModel):
 
         return c_matrix
 
-    def _construct_c_matrix_for_megacomplex(self, parameter, megacomplex,
-                                            initial_concentration, irf, times):
+    def _construct_c_matrix_for_megacomplex(self,
+                                            parameter,
+                                            megacomplex,
+                                            initial_concentration,
+                                            irf,
+                                            times,
+                                            x):
 
         # Combine K-Matrices of the megacomplex.
 
@@ -120,17 +149,20 @@ class KineticSeperableModel(SeperableModel):
 
         # Calculate C Matrix
 
-        C = np.empty((times.shape[0], eigenvalues.shape[0]),
+        C = np.empty((x.shape[0], times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
 
-        has_irf = irf is not None
+        #  num_threads = multiprocessing.cpu_count()
 
-        if has_irf:
-            center, width, scale = self._get_irf_parameter(parameter, irf)
-            calculateCMultiGaussian(C, eigenvalues, times, center, width,
+        if irf is not None:
+            centers, widths, scale = self._get_irf_parameter(parameter, irf,
+                                                             x)
+            self._c_matrix_backend.c_matrix_gaussian_irf(C, eigenvalues, times, centers, widths,
                                     scale)
         else:
-            calculateC(C, eigenvalues, times)
+            calculateC(C[0, :, :], eigenvalues, times)
+            for i in range(1, C.shape[0]):
+                C[i, :, :] = C[0, :, :]
 
         # Apply initial concentration vector if needed
         has_concentration_vector = \
@@ -183,9 +215,9 @@ class KineticSeperableModel(SeperableModel):
     def _construct_k_matrix_eigen(self, parameter, k_matrix):
 
         eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
-        idx = eigenvalues.argsort()[::-1]
-        eigenvalues = eigenvalues[idx]
-        eigenvectors = eigenvectors[:, idx]
+        #  idx = eigenvalues.argsort()[::-1]
+        #  eigenvalues = eigenvalues[idx]
+        #  eigenvectors = eigenvectors[:, idx]
 
         return(eigenvalues, eigenvectors)
 
@@ -213,35 +245,62 @@ class KineticSeperableModel(SeperableModel):
             k_matrix[i, i] = -np.sum(k_matrix[:, i])
         return k_matrix
 
-    def _get_irf_parameter(self, parameter, irf):
+    def _get_irf_parameter(self, parameter, irf, x):
 
         irf = self._model.irfs[irf]
 
         center = self._parameter_map(parameter)(np.asarray(irf.center))
+        centers = np.asarray([center for _ in x])
+
+        center_dispersion = \
+            self._parameter_map(parameter)(np.asarray(irf.center_dispersion)) \
+            if len(irf.center_dispersion) is not 0 else None
         width = self._parameter_map(parameter)(np.asarray(irf.width))
+        width_dispersion = \
+            self._parameter_map(parameter)(np.asarray(irf.width_dispersion)) \
+            if len(irf.width_dispersion) is not 0 else None
+
+        if center_dispersion is not None or width_dispersion is not None:
+            dist = (x - x[0])/100
+
+        if center_dispersion is not None:
+            for i in range(len(center_dispersion)):
+                centers = centers + center_dispersion[i] * np.power(dist, i+1)
+
         if width.shape[0] is not center.shape[0]:
-            width = np.fill(center.shape, width[0])
+            width = np.full(center.shape, width[0])
+
+        widths = np.asarray([width for _ in x])
+
+        if width_dispersion is not None:
+            for i in range(len(width_dispersion)):
+                widths = widths + width_dispersion[i] * np.power(dist, i+1)
+
         if len(irf.scale) is 0:
             scale = np.ones(center.shape)
         else:
             scale = self._parameter_map(parameter)(np.asarray(irf.scale))
 
-        return center, width, scale
+        return centers, widths, scale
 
     def e_matrix(self, **kwargs):
         dataset = self._model.datasets[kwargs['dataset']]
         amplitudes = kwargs["amplitudes"] if "amplitudes" in kwargs else None
+        locations = kwargs["locations"] if "locations" in kwargs else None
+        delta = kwargs["delta"] if "delta" in kwargs else None
+        x = "{}_x".format(dataset.label)
+        x = kwargs[x] if x in kwargs else np.asarray([0])
         e = None
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]
             k_matrix = self._get_combined_k_matrix(cmplx)
-            # E Matrix => channels X compartments
+            #  E Matrix => channels X compartments
             nr_compartments = len(k_matrix.compartment_map)
 
             if amplitudes is None:
-                tmp = np.full((1, nr_compartments), 1.0)
+                tmp = np.full((len(x), nr_compartments), 1.0)
             else:
-                tmp = np.empty((1, nr_compartments), dtype=np.float64)
+                tmp = np.empty((len(x), nr_compartments), dtype=np.float64)
                 m = k_matrix.compartment_map
                 compartments = self._model.compartments
                 # translate compartments to indices
@@ -252,7 +311,18 @@ class KineticSeperableModel(SeperableModel):
                 mapped_amps = [amplitudes[i] for i in m]
 
                 for i in range(len(mapped_amps)):
-                    tmp[1:i] = mapped_amps[i]
+                    for j in range(len(x)):
+                        if locations is None or delta is None:
+                            tmp[j, i] = mapped_amps[i]
+                        else:
+                            mapped_locs = [locations[i] for i in m]
+                            mapped_delta = [delta[i] for i in m]
+                            tmp[:, i] = mapped_amps[i] * np.exp(
+                                -np.log(2) * np.square(
+                                    2 * (x - mapped_locs[i])/mapped_delta[i]
+                                )
+                            )
+
             if e is None:
                 e = tmp
             else:
@@ -266,7 +336,27 @@ class KineticSeperableModel(SeperableModel):
 
             break
         # get the
+
         return e
+
+    def coefficients(self, *args, **kwargs):
+        dataset = self._model.datasets[kwargs['dataset']]
+
+        for megacomplex in dataset.megacomplexes:
+            cmplx = self._model.megacomplexes[megacomplex]
+            k_matrix = self._get_combined_k_matrix(cmplx)
+            m = k_matrix.compartment_map
+            compartments = self._model.compartments
+            for i in range(len(m)):
+                m[i] = compartments.index(m[i])
+            e_matrix = self.e_matrix(*args, **kwargs)
+            print("em")
+            print(e_matrix.shape)
+            print(m)
+            mapped_e_matrix = np.empty(e_matrix.shape, e_matrix.dtype)
+            for i in range(len(m)):
+                mapped_e_matrix[:, m[i]] = e_matrix[:, i]
+            return mapped_e_matrix
 
     def _parameter_map(self, parameter):
         def map_fun(i):

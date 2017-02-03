@@ -514,7 +514,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "glotaran_models/kinetic/c_matrix_gaussian_irf.pyx",
+  "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -1447,10 +1447,13 @@ static int __Pyx_ValidateAndInit_memviewslice(
                 PyObject *original_obj);
 
 /* ObjectToMemviewSlice.proto */
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_double(PyObject *);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_double(PyObject *);
 
 /* ObjectToMemviewSlice.proto */
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_double(PyObject *);
+
+/* ObjectToMemviewSlice.proto */
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_double(PyObject *);
 
 /* MemviewDtypeToObject.proto */
 static CYTHON_INLINE PyObject *__pyx_memview_get_double(const char *itemp);
@@ -1720,6 +1723,7 @@ static PyObject *__pyx_builtin_IndexError;
 static const char __pyx_k_C[] = "C";
 static const char __pyx_k_I[] = "I";
 static const char __pyx_k_J[] = "J";
+static const char __pyx_k_K[] = "K";
 static const char __pyx_k_O[] = "O";
 static const char __pyx_k_T[] = "T";
 static const char __pyx_k_c[] = "c";
@@ -1738,6 +1742,7 @@ static const char __pyx_k_beta[] = "beta";
 static const char __pyx_k_init[] = "__init__";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_mode[] = "mode";
+static const char __pyx_k_mu_k[] = "mu_k";
 static const char __pyx_k_name[] = "name";
 static const char __pyx_k_ndim[] = "ndim";
 static const char __pyx_k_pack[] = "pack";
@@ -1755,11 +1760,11 @@ static const char __pyx_k_error[] = "error";
 static const char __pyx_k_flags[] = "flags";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_range[] = "range";
+static const char __pyx_k_rates[] = "rates";
 static const char __pyx_k_scale[] = "scale";
 static const char __pyx_k_shape[] = "shape";
 static const char __pyx_k_start[] = "start";
-static const char __pyx_k_width[] = "width";
-static const char __pyx_k_center[] = "center";
+static const char __pyx_k_times[] = "times";
 static const char __pyx_k_encode[] = "encode";
 static const char __pyx_k_format[] = "format";
 static const char __pyx_k_import[] = "__import__";
@@ -1767,6 +1772,9 @@ static const char __pyx_k_name_2[] = "__name__";
 static const char __pyx_k_struct[] = "struct";
 static const char __pyx_k_thresh[] = "thresh";
 static const char __pyx_k_unpack[] = "unpack";
+static const char __pyx_k_widths[] = "widths";
+static const char __pyx_k_centers[] = "centers";
+static const char __pyx_k_delta_k[] = "delta_k";
 static const char __pyx_k_float64[] = "float64";
 static const char __pyx_k_fortran[] = "fortran";
 static const char __pyx_k_memview[] = "memview";
@@ -1778,7 +1786,6 @@ static const char __pyx_k_IndexError[] = "IndexError";
 static const char __pyx_k_ValueError[] = "ValueError";
 static const char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
 static const char __pyx_k_MemoryError[] = "MemoryError";
-static const char __pyx_k_delta_tilde[] = "delta_tilde";
 static const char __pyx_k_nr_gaussian[] = "nr_gaussian";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
 static const char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
@@ -1799,7 +1806,7 @@ static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cyt
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_home_joern_programming_py_glota[] = "/home/joern/programming/py/glotaran-core-python/glotaran_models/kinetic/c_matrix_gaussian_irf.pyx";
+static const char __pyx_k_home_joern_programming_py_glota[] = "/home/joern/programming/py/glotaran-core-python/glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
@@ -1829,6 +1836,7 @@ static PyObject *__pyx_kp_s_Indirect_dimensions_not_supporte;
 static PyObject *__pyx_kp_s_Invalid_mode_expected_c_or_fortr;
 static PyObject *__pyx_kp_s_Invalid_shape_in_axis_d_d;
 static PyObject *__pyx_n_s_J;
+static PyObject *__pyx_n_s_K;
 static PyObject *__pyx_n_s_MemoryError;
 static PyObject *__pyx_kp_s_MemoryView_of_r_at_0x_x;
 static PyObject *__pyx_kp_s_MemoryView_of_r_object;
@@ -1849,12 +1857,12 @@ static PyObject *__pyx_n_u_c;
 static PyObject *__pyx_n_s_c_matrix_gaussian_irf;
 static PyObject *__pyx_n_s_calculateCMultiGaussian;
 static PyObject *__pyx_n_s_calculateCSingleGaussian;
-static PyObject *__pyx_n_s_center;
+static PyObject *__pyx_n_s_centers;
 static PyObject *__pyx_n_s_class;
 static PyObject *__pyx_kp_s_contiguous_and_direct;
 static PyObject *__pyx_kp_s_contiguous_and_indirect;
 static PyObject *__pyx_n_s_delta;
-static PyObject *__pyx_n_s_delta_tilde;
+static PyObject *__pyx_n_s_delta_k;
 static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_dtype_is_object;
 static PyObject *__pyx_n_s_empty;
@@ -1881,6 +1889,7 @@ static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_memview;
 static PyObject *__pyx_n_s_mode;
 static PyObject *__pyx_n_s_mu;
+static PyObject *__pyx_n_s_mu_k;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_name_2;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
@@ -1894,6 +1903,7 @@ static PyObject *__pyx_n_s_pack;
 static PyObject *__pyx_n_s_pyx_getbuffer;
 static PyObject *__pyx_n_s_pyx_vtable;
 static PyObject *__pyx_n_s_range;
+static PyObject *__pyx_n_s_rates;
 static PyObject *__pyx_n_s_scale;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
@@ -1907,16 +1917,17 @@ static PyObject *__pyx_n_s_struct;
 static PyObject *__pyx_n_s_t_i;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_thresh;
+static PyObject *__pyx_n_s_times;
 static PyObject *__pyx_n_s_tmp;
 static PyObject *__pyx_kp_s_unable_to_allocate_array_data;
 static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
-static PyObject *__pyx_n_s_width;
+static PyObject *__pyx_n_s_widths;
 static PyObject *__pyx_pf_21c_matrix_gaussian_irf___init__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_21c_matrix_gaussian_irf_2erfce(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_x); /* proto */
-static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T, __Pyx_memviewslice __pyx_v_center, __Pyx_memviewslice __pyx_v_width, __Pyx_memviewslice __pyx_v_scale); /* proto */
-static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T, double __pyx_v_mu, double __pyx_v_delta, double __pyx_v_scale); /* proto */
+static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_rates, __Pyx_memviewslice __pyx_v_T, __Pyx_memviewslice __pyx_v_centers, __Pyx_memviewslice __pyx_v_widths, __Pyx_memviewslice __pyx_v_scale); /* proto */
+static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_rates, __Pyx_memviewslice __pyx_v_times, __Pyx_memviewslice __pyx_v_mu, __Pyx_memviewslice __pyx_v_delta, double __pyx_v_scale, int __pyx_v_nr_gaussian); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1988,7 +1999,7 @@ static PyObject *__pyx_codeobj__20;
 static PyObject *__pyx_codeobj__22;
 static PyObject *__pyx_codeobj__24;
 
-/* "c_matrix_gaussian_irf.pyx":13
+/* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":13
  * from cython.parallel import prange, parallel
  * 
  * def __init__():             # <<<<<<<<<<<<<<
@@ -2015,7 +2026,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf___init__(CYTHON_UNUSED PyObjec
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "c_matrix_gaussian_irf.pyx":14
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":14
  * 
  * def __init__():
  *     np.import_array()             # <<<<<<<<<<<<<<
@@ -2024,7 +2035,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf___init__(CYTHON_UNUSED PyObjec
  */
   import_array();
 
-  /* "c_matrix_gaussian_irf.pyx":13
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":13
  * from cython.parallel import prange, parallel
  * 
  * def __init__():             # <<<<<<<<<<<<<<
@@ -2039,7 +2050,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf___init__(CYTHON_UNUSED PyObjec
   return __pyx_r;
 }
 
-/* "c_matrix_gaussian_irf.pyx":17
+/* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":17
  * 
  * 
  * cpdef double erfce(double x) nogil:             # <<<<<<<<<<<<<<
@@ -2051,7 +2062,7 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_3erfce(PyObject *__pyx_self, P
 static double __pyx_f_21c_matrix_gaussian_irf_erfce(double __pyx_v_x, CYTHON_UNUSED int __pyx_skip_dispatch) {
   double __pyx_r;
 
-  /* "c_matrix_gaussian_irf.pyx":18
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":18
  * 
  * cpdef double erfce(double x) nogil:
  *     return exp(x*x) * erfc(x)             # <<<<<<<<<<<<<<
@@ -2061,7 +2072,7 @@ static double __pyx_f_21c_matrix_gaussian_irf_erfce(double __pyx_v_x, CYTHON_UNU
   __pyx_r = (exp((__pyx_v_x * __pyx_v_x)) * erfc(__pyx_v_x));
   goto __pyx_L0;
 
-  /* "c_matrix_gaussian_irf.pyx":17
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":17
  * 
  * 
  * cpdef double erfce(double x) nogil:             # <<<<<<<<<<<<<<
@@ -2120,12 +2131,12 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_2erfce(CYTHON_UNUSED PyObject 
   return __pyx_r;
 }
 
-/* "c_matrix_gaussian_irf.pyx":23
+/* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":23
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,             # <<<<<<<<<<<<<<
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]
+ * def calculateCMultiGaussian(double[:, :, :] C, double[:] rates, double[:] T,             # <<<<<<<<<<<<<<
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]
  */
 
 /* Python wrapper */
@@ -2133,16 +2144,16 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian(PyObj
 static PyMethodDef __pyx_mdef_21c_matrix_gaussian_irf_5calculateCMultiGaussian = {"calculateCMultiGaussian", (PyCFunction)__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian, METH_VARARGS|METH_KEYWORDS, 0};
 static PyObject *__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_C = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_k = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_rates = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_T = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_center = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_width = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_centers = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_widths = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_scale = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calculateCMultiGaussian (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_C,&__pyx_n_s_k,&__pyx_n_s_T,&__pyx_n_s_center,&__pyx_n_s_width,&__pyx_n_s_scale,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_C,&__pyx_n_s_rates,&__pyx_n_s_T,&__pyx_n_s_centers,&__pyx_n_s_widths,&__pyx_n_s_scale,0};
     PyObject* values[6] = {0,0,0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
@@ -2163,7 +2174,7 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian(PyObj
         if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_C)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
-        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_k)) != 0)) kw_args--;
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_rates)) != 0)) kw_args--;
         else {
           __Pyx_RaiseArgtupleInvalid("calculateCMultiGaussian", 1, 6, 6, 1); __PYX_ERR(0, 23, __pyx_L3_error)
         }
@@ -2173,12 +2184,12 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian(PyObj
           __Pyx_RaiseArgtupleInvalid("calculateCMultiGaussian", 1, 6, 6, 2); __PYX_ERR(0, 23, __pyx_L3_error)
         }
         case  3:
-        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_center)) != 0)) kw_args--;
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_centers)) != 0)) kw_args--;
         else {
           __Pyx_RaiseArgtupleInvalid("calculateCMultiGaussian", 1, 6, 6, 3); __PYX_ERR(0, 23, __pyx_L3_error)
         }
         case  4:
-        if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_width)) != 0)) kw_args--;
+        if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_widths)) != 0)) kw_args--;
         else {
           __Pyx_RaiseArgtupleInvalid("calculateCMultiGaussian", 1, 6, 6, 4); __PYX_ERR(0, 23, __pyx_L3_error)
         }
@@ -2201,11 +2212,11 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian(PyObj
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
       values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
     }
-    __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 23, __pyx_L3_error)
-    __pyx_v_k = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_k.memview)) __PYX_ERR(0, 23, __pyx_L3_error)
+    __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 23, __pyx_L3_error)
+    __pyx_v_rates = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_rates.memview)) __PYX_ERR(0, 23, __pyx_L3_error)
     __pyx_v_T = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_T.memview)) __PYX_ERR(0, 23, __pyx_L3_error)
-    __pyx_v_center = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[3]); if (unlikely(!__pyx_v_center.memview)) __PYX_ERR(0, 24, __pyx_L3_error)
-    __pyx_v_width = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[4]); if (unlikely(!__pyx_v_width.memview)) __PYX_ERR(0, 24, __pyx_L3_error)
+    __pyx_v_centers = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[3]); if (unlikely(!__pyx_v_centers.memview)) __PYX_ERR(0, 24, __pyx_L3_error)
+    __pyx_v_widths = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[4]); if (unlikely(!__pyx_v_widths.memview)) __PYX_ERR(0, 24, __pyx_L3_error)
     __pyx_v_scale = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[5]); if (unlikely(!__pyx_v_scale.memview)) __PYX_ERR(0, 24, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
@@ -2216,16 +2227,17 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_5calculateCMultiGaussian(PyObj
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(__pyx_self, __pyx_v_C, __pyx_v_k, __pyx_v_T, __pyx_v_center, __pyx_v_width, __pyx_v_scale);
+  __pyx_r = __pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(__pyx_self, __pyx_v_C, __pyx_v_rates, __pyx_v_T, __pyx_v_centers, __pyx_v_widths, __pyx_v_scale);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T, __Pyx_memviewslice __pyx_v_center, __Pyx_memviewslice __pyx_v_width, __Pyx_memviewslice __pyx_v_scale) {
+static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_rates, __Pyx_memviewslice __pyx_v_T, __Pyx_memviewslice __pyx_v_centers, __Pyx_memviewslice __pyx_v_widths, __Pyx_memviewslice __pyx_v_scale) {
   Py_ssize_t __pyx_v_nr_gaussian;
   PyObject *__pyx_v_tmp = NULL;
+  CYTHON_UNUSED Py_ssize_t __pyx_v_J;
   Py_ssize_t __pyx_v_i;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -2237,46 +2249,43 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHO
   PyObject *__pyx_t_6 = NULL;
   Py_ssize_t __pyx_t_7;
   Py_ssize_t __pyx_t_8;
-  Py_ssize_t __pyx_t_9;
+  PyObject *__pyx_t_9 = NULL;
   PyObject *__pyx_t_10 = NULL;
   Py_ssize_t __pyx_t_11;
   PyObject *__pyx_t_12 = NULL;
-  Py_ssize_t __pyx_t_13;
+  PyObject *__pyx_t_13 = NULL;
   PyObject *__pyx_t_14 = NULL;
-  PyObject *__pyx_t_15 = NULL;
-  Py_ssize_t __pyx_t_16;
-  PyObject *__pyx_t_17 = NULL;
-  Py_ssize_t __pyx_t_18;
-  Py_ssize_t __pyx_t_19;
-  Py_ssize_t __pyx_t_20;
-  __Pyx_memviewslice __pyx_t_21 = { 0, 0, { 0 }, { 0 }, { 0 } };
+  Py_ssize_t __pyx_t_15;
+  PyObject *__pyx_t_16 = NULL;
+  Py_ssize_t __pyx_t_17;
+  __Pyx_memviewslice __pyx_t_18 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_RefNannySetupContext("calculateCMultiGaussian", 0);
 
-  /* "c_matrix_gaussian_irf.pyx":25
- * def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]             # <<<<<<<<<<<<<<
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":25
+ * def calculateCMultiGaussian(double[:, :, :] C, double[:] rates, double[:] T,
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]             # <<<<<<<<<<<<<<
  *     if nr_gaussian > 1:
  *         tmp = np.empty(C.shape, dtype=np.float64)
  */
-  __pyx_v_nr_gaussian = (__pyx_v_center.shape[0]);
+  __pyx_v_nr_gaussian = (__pyx_v_centers.shape[1]);
 
-  /* "c_matrix_gaussian_irf.pyx":26
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":26
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]
  *     if nr_gaussian > 1:             # <<<<<<<<<<<<<<
  *         tmp = np.empty(C.shape, dtype=np.float64)
- *     for i in range(nr_gaussian):
+ *     J = centers.shape[0]
  */
   __pyx_t_1 = ((__pyx_v_nr_gaussian > 1) != 0);
   if (__pyx_t_1) {
 
-    /* "c_matrix_gaussian_irf.pyx":27
- *     nr_gaussian = center.shape[0]
+    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":27
+ *     nr_gaussian = centers.shape[1]
  *     if nr_gaussian > 1:
  *         tmp = np.empty(C.shape, dtype=np.float64)             # <<<<<<<<<<<<<<
+ *     J = centers.shape[0]
  *     for i in range(nr_gaussian):
- *         if i is 0:
  */
     __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 27, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
@@ -2307,137 +2316,165 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHO
     __pyx_v_tmp = __pyx_t_6;
     __pyx_t_6 = 0;
 
-    /* "c_matrix_gaussian_irf.pyx":26
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]
+    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":26
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]
  *     if nr_gaussian > 1:             # <<<<<<<<<<<<<<
  *         tmp = np.empty(C.shape, dtype=np.float64)
- *     for i in range(nr_gaussian):
+ *     J = centers.shape[0]
  */
   }
 
-  /* "c_matrix_gaussian_irf.pyx":28
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":28
  *     if nr_gaussian > 1:
  *         tmp = np.empty(C.shape, dtype=np.float64)
+ *     J = centers.shape[0]             # <<<<<<<<<<<<<<
+ *     for i in range(nr_gaussian):
+ *         if i is 0:
+ */
+  __pyx_v_J = (__pyx_v_centers.shape[0]);
+
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":29
+ *         tmp = np.empty(C.shape, dtype=np.float64)
+ *     J = centers.shape[0]
  *     for i in range(nr_gaussian):             # <<<<<<<<<<<<<<
  *         if i is 0:
- *             calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i])
+ *             calculateCSingleGaussian(C, rates, T, centers,
  */
   __pyx_t_7 = __pyx_v_nr_gaussian;
   for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
     __pyx_v_i = __pyx_t_8;
 
-    /* "c_matrix_gaussian_irf.pyx":29
- *         tmp = np.empty(C.shape, dtype=np.float64)
+    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":30
+ *     J = centers.shape[0]
  *     for i in range(nr_gaussian):
  *         if i is 0:             # <<<<<<<<<<<<<<
- *             calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i])
- *         else:
+ *             calculateCSingleGaussian(C, rates, T, centers,
+ *                                      widths, scale[i], i)
  */
     __pyx_t_1 = ((__pyx_v_i == 0) != 0);
     if (__pyx_t_1) {
 
-      /* "c_matrix_gaussian_irf.pyx":30
+      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":31
  *     for i in range(nr_gaussian):
  *         if i is 0:
- *             calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i])             # <<<<<<<<<<<<<<
+ *             calculateCSingleGaussian(C, rates, T, centers,             # <<<<<<<<<<<<<<
+ *                                      widths, scale[i], i)
  *         else:
- *             calculateCSingleGaussian(tmp, k ,T, center[i], width[i], scale[i])
  */
-      __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_calculateCSingleGaussian); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_calculateCSingleGaussian); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_4 = __pyx_memoryview_fromslice(__pyx_v_C, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_4 = __pyx_memoryview_fromslice(__pyx_v_C, 3, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 31, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_k, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_3 = __pyx_memoryview_fromslice(__pyx_v_rates, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_5 = __pyx_memoryview_fromslice(__pyx_v_T, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_5 = __pyx_memoryview_fromslice(__pyx_v_T, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 31, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_9 = __pyx_v_i;
-      __pyx_t_10 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_center.data + __pyx_t_9 * __pyx_v_center.strides[0]) )))); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_centers, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 31, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+
+      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":32
+ *         if i is 0:
+ *             calculateCSingleGaussian(C, rates, T, centers,
+ *                                      widths, scale[i], i)             # <<<<<<<<<<<<<<
+ *         else:
+ *             calculateCSingleGaussian(tmp, rates ,T, centers,
+ */
+      __pyx_t_10 = __pyx_memoryview_fromslice(__pyx_v_widths, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 32, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __pyx_t_11 = __pyx_v_i;
-      __pyx_t_12 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_width.data + __pyx_t_11 * __pyx_v_width.strides[0]) )))); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_12 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_scale.data + __pyx_t_11 * __pyx_v_scale.strides[0]) )))); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 32, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_12);
-      __pyx_t_13 = __pyx_v_i;
-      __pyx_t_14 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_scale.data + __pyx_t_13 * __pyx_v_scale.strides[0]) )))); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 30, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_14);
-      __pyx_t_15 = NULL;
-      __pyx_t_16 = 0;
+      __pyx_t_13 = PyInt_FromSsize_t(__pyx_v_i); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 32, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_13);
+      __pyx_t_14 = NULL;
+      __pyx_t_15 = 0;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_2))) {
-        __pyx_t_15 = PyMethod_GET_SELF(__pyx_t_2);
-        if (likely(__pyx_t_15)) {
+        __pyx_t_14 = PyMethod_GET_SELF(__pyx_t_2);
+        if (likely(__pyx_t_14)) {
           PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-          __Pyx_INCREF(__pyx_t_15);
+          __Pyx_INCREF(__pyx_t_14);
           __Pyx_INCREF(function);
           __Pyx_DECREF_SET(__pyx_t_2, function);
-          __pyx_t_16 = 1;
+          __pyx_t_15 = 1;
         }
       }
-      __pyx_t_17 = PyTuple_New(6+__pyx_t_16); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 30, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_17);
-      if (__pyx_t_15) {
-        __Pyx_GIVEREF(__pyx_t_15); PyTuple_SET_ITEM(__pyx_t_17, 0, __pyx_t_15); __pyx_t_15 = NULL;
+      __pyx_t_16 = PyTuple_New(7+__pyx_t_15); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 31, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_16);
+      if (__pyx_t_14) {
+        __Pyx_GIVEREF(__pyx_t_14); PyTuple_SET_ITEM(__pyx_t_16, 0, __pyx_t_14); __pyx_t_14 = NULL;
       }
       __Pyx_GIVEREF(__pyx_t_4);
-      PyTuple_SET_ITEM(__pyx_t_17, 0+__pyx_t_16, __pyx_t_4);
+      PyTuple_SET_ITEM(__pyx_t_16, 0+__pyx_t_15, __pyx_t_4);
       __Pyx_GIVEREF(__pyx_t_3);
-      PyTuple_SET_ITEM(__pyx_t_17, 1+__pyx_t_16, __pyx_t_3);
+      PyTuple_SET_ITEM(__pyx_t_16, 1+__pyx_t_15, __pyx_t_3);
       __Pyx_GIVEREF(__pyx_t_5);
-      PyTuple_SET_ITEM(__pyx_t_17, 2+__pyx_t_16, __pyx_t_5);
+      PyTuple_SET_ITEM(__pyx_t_16, 2+__pyx_t_15, __pyx_t_5);
+      __Pyx_GIVEREF(__pyx_t_9);
+      PyTuple_SET_ITEM(__pyx_t_16, 3+__pyx_t_15, __pyx_t_9);
       __Pyx_GIVEREF(__pyx_t_10);
-      PyTuple_SET_ITEM(__pyx_t_17, 3+__pyx_t_16, __pyx_t_10);
+      PyTuple_SET_ITEM(__pyx_t_16, 4+__pyx_t_15, __pyx_t_10);
       __Pyx_GIVEREF(__pyx_t_12);
-      PyTuple_SET_ITEM(__pyx_t_17, 4+__pyx_t_16, __pyx_t_12);
-      __Pyx_GIVEREF(__pyx_t_14);
-      PyTuple_SET_ITEM(__pyx_t_17, 5+__pyx_t_16, __pyx_t_14);
+      PyTuple_SET_ITEM(__pyx_t_16, 5+__pyx_t_15, __pyx_t_12);
+      __Pyx_GIVEREF(__pyx_t_13);
+      PyTuple_SET_ITEM(__pyx_t_16, 6+__pyx_t_15, __pyx_t_13);
       __pyx_t_4 = 0;
       __pyx_t_3 = 0;
       __pyx_t_5 = 0;
+      __pyx_t_9 = 0;
       __pyx_t_10 = 0;
       __pyx_t_12 = 0;
-      __pyx_t_14 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_17, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 30, __pyx_L1_error)
+      __pyx_t_13 = 0;
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_16, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 31, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
+      __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "c_matrix_gaussian_irf.pyx":29
- *         tmp = np.empty(C.shape, dtype=np.float64)
+      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":30
+ *     J = centers.shape[0]
  *     for i in range(nr_gaussian):
  *         if i is 0:             # <<<<<<<<<<<<<<
- *             calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i])
- *         else:
+ *             calculateCSingleGaussian(C, rates, T, centers,
+ *                                      widths, scale[i], i)
  */
       goto __pyx_L6;
     }
 
-    /* "c_matrix_gaussian_irf.pyx":32
- *             calculateCSingleGaussian(C, k ,T, center[i], width[i], scale[i])
+    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":34
+ *                                      widths, scale[i], i)
  *         else:
- *             calculateCSingleGaussian(tmp, k ,T, center[i], width[i], scale[i])             # <<<<<<<<<<<<<<
+ *             calculateCSingleGaussian(tmp, rates ,T, centers,             # <<<<<<<<<<<<<<
+ *                                      widths, scale[i], i)
+ *             C += tmp
+ */
+    /*else*/ {
+      __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_calculateCSingleGaussian); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 34, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      if (unlikely(!__pyx_v_tmp)) { __Pyx_RaiseUnboundLocalError("tmp"); __PYX_ERR(0, 34, __pyx_L1_error) }
+      __pyx_t_16 = __pyx_memoryview_fromslice(__pyx_v_rates, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 34, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_16);
+      __pyx_t_13 = __pyx_memoryview_fromslice(__pyx_v_T, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 34, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_13);
+      __pyx_t_12 = __pyx_memoryview_fromslice(__pyx_v_centers, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 34, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_12);
+
+      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":35
+ *         else:
+ *             calculateCSingleGaussian(tmp, rates ,T, centers,
+ *                                      widths, scale[i], i)             # <<<<<<<<<<<<<<
  *             C += tmp
  * 
  */
-    /*else*/ {
-      __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_calculateCSingleGaussian); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      if (unlikely(!__pyx_v_tmp)) { __Pyx_RaiseUnboundLocalError("tmp"); __PYX_ERR(0, 32, __pyx_L1_error) }
-      __pyx_t_17 = __pyx_memoryview_fromslice(__pyx_v_k, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 32, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_17);
-      __pyx_t_14 = __pyx_memoryview_fromslice(__pyx_v_T, 1, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 32, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_14);
-      __pyx_t_18 = __pyx_v_i;
-      __pyx_t_12 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_center.data + __pyx_t_18 * __pyx_v_center.strides[0]) )))); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 32, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_12);
-      __pyx_t_19 = __pyx_v_i;
-      __pyx_t_10 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_width.data + __pyx_t_19 * __pyx_v_width.strides[0]) )))); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 32, __pyx_L1_error)
+      __pyx_t_10 = __pyx_memoryview_fromslice(__pyx_v_widths, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 35, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
-      __pyx_t_20 = __pyx_v_i;
-      __pyx_t_5 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_scale.data + __pyx_t_20 * __pyx_v_scale.strides[0]) )))); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 32, __pyx_L1_error)
+      __pyx_t_17 = __pyx_v_i;
+      __pyx_t_9 = PyFloat_FromDouble((*((double *) ( /* dim=0 */ (__pyx_v_scale.data + __pyx_t_17 * __pyx_v_scale.strides[0]) )))); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 35, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      __pyx_t_5 = PyInt_FromSsize_t(__pyx_v_i); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 35, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_t_3 = NULL;
-      __pyx_t_16 = 0;
+      __pyx_t_15 = 0;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_2))) {
         __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
         if (likely(__pyx_t_3)) {
@@ -2445,68 +2482,71 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHO
           __Pyx_INCREF(__pyx_t_3);
           __Pyx_INCREF(function);
           __Pyx_DECREF_SET(__pyx_t_2, function);
-          __pyx_t_16 = 1;
+          __pyx_t_15 = 1;
         }
       }
-      __pyx_t_4 = PyTuple_New(6+__pyx_t_16); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 32, __pyx_L1_error)
+      __pyx_t_4 = PyTuple_New(7+__pyx_t_15); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 34, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       if (__pyx_t_3) {
         __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3); __pyx_t_3 = NULL;
       }
       __Pyx_INCREF(__pyx_v_tmp);
       __Pyx_GIVEREF(__pyx_v_tmp);
-      PyTuple_SET_ITEM(__pyx_t_4, 0+__pyx_t_16, __pyx_v_tmp);
-      __Pyx_GIVEREF(__pyx_t_17);
-      PyTuple_SET_ITEM(__pyx_t_4, 1+__pyx_t_16, __pyx_t_17);
-      __Pyx_GIVEREF(__pyx_t_14);
-      PyTuple_SET_ITEM(__pyx_t_4, 2+__pyx_t_16, __pyx_t_14);
+      PyTuple_SET_ITEM(__pyx_t_4, 0+__pyx_t_15, __pyx_v_tmp);
+      __Pyx_GIVEREF(__pyx_t_16);
+      PyTuple_SET_ITEM(__pyx_t_4, 1+__pyx_t_15, __pyx_t_16);
+      __Pyx_GIVEREF(__pyx_t_13);
+      PyTuple_SET_ITEM(__pyx_t_4, 2+__pyx_t_15, __pyx_t_13);
       __Pyx_GIVEREF(__pyx_t_12);
-      PyTuple_SET_ITEM(__pyx_t_4, 3+__pyx_t_16, __pyx_t_12);
+      PyTuple_SET_ITEM(__pyx_t_4, 3+__pyx_t_15, __pyx_t_12);
       __Pyx_GIVEREF(__pyx_t_10);
-      PyTuple_SET_ITEM(__pyx_t_4, 4+__pyx_t_16, __pyx_t_10);
+      PyTuple_SET_ITEM(__pyx_t_4, 4+__pyx_t_15, __pyx_t_10);
+      __Pyx_GIVEREF(__pyx_t_9);
+      PyTuple_SET_ITEM(__pyx_t_4, 5+__pyx_t_15, __pyx_t_9);
       __Pyx_GIVEREF(__pyx_t_5);
-      PyTuple_SET_ITEM(__pyx_t_4, 5+__pyx_t_16, __pyx_t_5);
-      __pyx_t_17 = 0;
-      __pyx_t_14 = 0;
+      PyTuple_SET_ITEM(__pyx_t_4, 6+__pyx_t_15, __pyx_t_5);
+      __pyx_t_16 = 0;
+      __pyx_t_13 = 0;
       __pyx_t_12 = 0;
       __pyx_t_10 = 0;
+      __pyx_t_9 = 0;
       __pyx_t_5 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 32, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 34, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "c_matrix_gaussian_irf.pyx":33
- *         else:
- *             calculateCSingleGaussian(tmp, k ,T, center[i], width[i], scale[i])
+      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":36
+ *             calculateCSingleGaussian(tmp, rates ,T, centers,
+ *                                      widths, scale[i], i)
  *             C += tmp             # <<<<<<<<<<<<<<
  * 
  * @cython.boundscheck(False)
  */
-      __pyx_t_6 = __pyx_memoryview_fromslice(__pyx_v_C, 2, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 33, __pyx_L1_error)
+      __pyx_t_6 = __pyx_memoryview_fromslice(__pyx_v_C, 3, (PyObject *(*)(char *)) __pyx_memview_get_double, (int (*)(char *, PyObject *)) __pyx_memview_set_double, 0);; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 36, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      if (unlikely(!__pyx_v_tmp)) { __Pyx_RaiseUnboundLocalError("tmp"); __PYX_ERR(0, 33, __pyx_L1_error) }
-      __pyx_t_2 = PyNumber_InPlaceAdd(__pyx_t_6, __pyx_v_tmp); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 33, __pyx_L1_error)
+      if (unlikely(!__pyx_v_tmp)) { __Pyx_RaiseUnboundLocalError("tmp"); __PYX_ERR(0, 36, __pyx_L1_error) }
+      __pyx_t_2 = PyNumber_InPlaceAdd(__pyx_t_6, __pyx_v_tmp); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 36, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_21 = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(__pyx_t_2);
-      if (unlikely(!__pyx_t_21.memview)) __PYX_ERR(0, 33, __pyx_L1_error)
+      __pyx_t_18 = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_double(__pyx_t_2);
+      if (unlikely(!__pyx_t_18.memview)) __PYX_ERR(0, 36, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __PYX_XDEC_MEMVIEW(&__pyx_v_C, 1);
-      __pyx_v_C = __pyx_t_21;
-      __pyx_t_21.memview = NULL;
-      __pyx_t_21.data = NULL;
+      __pyx_v_C = __pyx_t_18;
+      __pyx_t_18.memview = NULL;
+      __pyx_t_18.data = NULL;
     }
     __pyx_L6:;
   }
 
-  /* "c_matrix_gaussian_irf.pyx":23
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":23
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,             # <<<<<<<<<<<<<<
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]
+ * def calculateCMultiGaussian(double[:, :, :] C, double[:] rates, double[:] T,             # <<<<<<<<<<<<<<
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]
  */
 
   /* function exit code */
@@ -2518,33 +2558,34 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_4calculateCMultiGaussian(CYTHO
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_12);
+  __Pyx_XDECREF(__pyx_t_13);
   __Pyx_XDECREF(__pyx_t_14);
-  __Pyx_XDECREF(__pyx_t_15);
-  __Pyx_XDECREF(__pyx_t_17);
-  __PYX_XDEC_MEMVIEW(&__pyx_t_21, 1);
+  __Pyx_XDECREF(__pyx_t_16);
+  __PYX_XDEC_MEMVIEW(&__pyx_t_18, 1);
   __Pyx_AddTraceback("c_matrix_gaussian_irf.calculateCMultiGaussian", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_tmp);
   __PYX_XDEC_MEMVIEW(&__pyx_v_C, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_k, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_rates, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_T, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_center, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_width, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_centers, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_widths, 1);
   __PYX_XDEC_MEMVIEW(&__pyx_v_scale, 1);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "c_matrix_gaussian_irf.pyx":37
+/* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double             # <<<<<<<<<<<<<<
- *                   delta, double scale):
- *     I = T.shape[0]
+ * def calculateCSingleGaussian(double[:, :, :] C, double[:] rates, double[:] times,             # <<<<<<<<<<<<<<
+ *                              double[:, :] mu, double[:, :] delta, double scale, int nr_gaussian):
+ *     I = times.shape[0]
  */
 
 /* Python wrapper */
@@ -2552,21 +2593,23 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_7calculateCSingleGaussian(PyOb
 static PyMethodDef __pyx_mdef_21c_matrix_gaussian_irf_7calculateCSingleGaussian = {"calculateCSingleGaussian", (PyCFunction)__pyx_pw_21c_matrix_gaussian_irf_7calculateCSingleGaussian, METH_VARARGS|METH_KEYWORDS, 0};
 static PyObject *__pyx_pw_21c_matrix_gaussian_irf_7calculateCSingleGaussian(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_C = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_k = { 0, 0, { 0 }, { 0 }, { 0 } };
-  __Pyx_memviewslice __pyx_v_T = { 0, 0, { 0 }, { 0 }, { 0 } };
-  double __pyx_v_mu;
-  double __pyx_v_delta;
+  __Pyx_memviewslice __pyx_v_rates = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_times = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_mu = { 0, 0, { 0 }, { 0 }, { 0 } };
+  __Pyx_memviewslice __pyx_v_delta = { 0, 0, { 0 }, { 0 }, { 0 } };
   double __pyx_v_scale;
+  int __pyx_v_nr_gaussian;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("calculateCSingleGaussian (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_C,&__pyx_n_s_k,&__pyx_n_s_T,&__pyx_n_s_mu,&__pyx_n_s_delta,&__pyx_n_s_scale,0};
-    PyObject* values[6] = {0,0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_C,&__pyx_n_s_rates,&__pyx_n_s_times,&__pyx_n_s_mu,&__pyx_n_s_delta,&__pyx_n_s_scale,&__pyx_n_s_nr_gaussian,0};
+    PyObject* values[7] = {0,0,0,0,0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
         case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
         case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
@@ -2582,35 +2625,40 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_7calculateCSingleGaussian(PyOb
         if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_C)) != 0)) kw_args--;
         else goto __pyx_L5_argtuple_error;
         case  1:
-        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_k)) != 0)) kw_args--;
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_rates)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 6, 6, 1); __PYX_ERR(0, 37, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, 1); __PYX_ERR(0, 40, __pyx_L3_error)
         }
         case  2:
-        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_T)) != 0)) kw_args--;
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_times)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 6, 6, 2); __PYX_ERR(0, 37, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, 2); __PYX_ERR(0, 40, __pyx_L3_error)
         }
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_mu)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 6, 6, 3); __PYX_ERR(0, 37, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, 3); __PYX_ERR(0, 40, __pyx_L3_error)
         }
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_delta)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 6, 6, 4); __PYX_ERR(0, 37, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, 4); __PYX_ERR(0, 40, __pyx_L3_error)
         }
         case  5:
         if (likely((values[5] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_scale)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 6, 6, 5); __PYX_ERR(0, 37, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, 5); __PYX_ERR(0, 40, __pyx_L3_error)
+        }
+        case  6:
+        if (likely((values[6] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nr_gaussian)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, 6); __PYX_ERR(0, 40, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calculateCSingleGaussian") < 0)) __PYX_ERR(0, 37, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "calculateCSingleGaussian") < 0)) __PYX_ERR(0, 40, __pyx_L3_error)
       }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 6) {
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 7) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
@@ -2619,98 +2667,107 @@ static PyObject *__pyx_pw_21c_matrix_gaussian_irf_7calculateCSingleGaussian(PyOb
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
       values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+      values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
     }
-    __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 37, __pyx_L3_error)
-    __pyx_v_k = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_k.memview)) __PYX_ERR(0, 37, __pyx_L3_error)
-    __pyx_v_T = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_T.memview)) __PYX_ERR(0, 37, __pyx_L3_error)
-    __pyx_v_mu = __pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_mu == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 37, __pyx_L3_error)
-    __pyx_v_delta = __pyx_PyFloat_AsDouble(values[4]); if (unlikely((__pyx_v_delta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 37, __pyx_L3_error)
-    __pyx_v_scale = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_scale == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 38, __pyx_L3_error)
+    __pyx_v_C = __Pyx_PyObject_to_MemoryviewSlice_dsdsds_double(values[0]); if (unlikely(!__pyx_v_C.memview)) __PYX_ERR(0, 40, __pyx_L3_error)
+    __pyx_v_rates = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[1]); if (unlikely(!__pyx_v_rates.memview)) __PYX_ERR(0, 40, __pyx_L3_error)
+    __pyx_v_times = __Pyx_PyObject_to_MemoryviewSlice_ds_double(values[2]); if (unlikely(!__pyx_v_times.memview)) __PYX_ERR(0, 40, __pyx_L3_error)
+    __pyx_v_mu = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[3]); if (unlikely(!__pyx_v_mu.memview)) __PYX_ERR(0, 41, __pyx_L3_error)
+    __pyx_v_delta = __Pyx_PyObject_to_MemoryviewSlice_dsds_double(values[4]); if (unlikely(!__pyx_v_delta.memview)) __PYX_ERR(0, 41, __pyx_L3_error)
+    __pyx_v_scale = __pyx_PyFloat_AsDouble(values[5]); if (unlikely((__pyx_v_scale == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 41, __pyx_L3_error)
+    __pyx_v_nr_gaussian = __Pyx_PyInt_As_int(values[6]); if (unlikely((__pyx_v_nr_gaussian == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 41, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 6, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 37, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("calculateCSingleGaussian", 1, 7, 7, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 40, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("c_matrix_gaussian_irf.calculateCSingleGaussian", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(__pyx_self, __pyx_v_C, __pyx_v_k, __pyx_v_T, __pyx_v_mu, __pyx_v_delta, __pyx_v_scale);
+  __pyx_r = __pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(__pyx_self, __pyx_v_C, __pyx_v_rates, __pyx_v_times, __pyx_v_mu, __pyx_v_delta, __pyx_v_scale, __pyx_v_nr_gaussian);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_k, __Pyx_memviewslice __pyx_v_T, double __pyx_v_mu, double __pyx_v_delta, double __pyx_v_scale) {
+static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_C, __Pyx_memviewslice __pyx_v_rates, __Pyx_memviewslice __pyx_v_times, __Pyx_memviewslice __pyx_v_mu, __Pyx_memviewslice __pyx_v_delta, double __pyx_v_scale, int __pyx_v_nr_gaussian) {
   CYTHON_UNUSED Py_ssize_t __pyx_v_I;
   Py_ssize_t __pyx_v_J;
+  Py_ssize_t __pyx_v_K;
   int __pyx_v_i;
   int __pyx_v_j;
+  int __pyx_v_k;
   double __pyx_v_t_i;
   double __pyx_v_k_j;
+  double __pyx_v_mu_k;
+  double __pyx_v_delta_k;
   double __pyx_v_thresh;
   double __pyx_v_alpha;
   double __pyx_v_beta;
-  CYTHON_UNUSED double __pyx_v_delta_tilde;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  double __pyx_t_1;
+  Py_ssize_t __pyx_t_1;
   Py_ssize_t __pyx_t_2;
   Py_ssize_t __pyx_t_3;
   Py_ssize_t __pyx_t_4;
-  Py_ssize_t __pyx_t_5;
-  int __pyx_t_6;
-  Py_ssize_t __pyx_t_7;
+  int __pyx_t_5;
+  Py_ssize_t __pyx_t_6;
+  int __pyx_t_7;
   Py_ssize_t __pyx_t_8;
-  int __pyx_t_9;
+  Py_ssize_t __pyx_t_9;
   Py_ssize_t __pyx_t_10;
   Py_ssize_t __pyx_t_11;
-  double __pyx_t_12;
+  Py_ssize_t __pyx_t_12;
   Py_ssize_t __pyx_t_13;
-  Py_ssize_t __pyx_t_14;
+  int __pyx_t_14;
   Py_ssize_t __pyx_t_15;
   Py_ssize_t __pyx_t_16;
+  Py_ssize_t __pyx_t_17;
+  double __pyx_t_18;
+  double __pyx_t_19;
+  Py_ssize_t __pyx_t_20;
+  Py_ssize_t __pyx_t_21;
+  Py_ssize_t __pyx_t_22;
+  Py_ssize_t __pyx_t_23;
+  Py_ssize_t __pyx_t_24;
+  Py_ssize_t __pyx_t_25;
   __Pyx_RefNannySetupContext("calculateCSingleGaussian", 0);
 
-  /* "c_matrix_gaussian_irf.pyx":39
- * def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double
- *                   delta, double scale):
- *     I = T.shape[0]             # <<<<<<<<<<<<<<
- *     J = k.shape[0]
- *     cdef int i, j
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":42
+ * def calculateCSingleGaussian(double[:, :, :] C, double[:] rates, double[:] times,
+ *                              double[:, :] mu, double[:, :] delta, double scale, int nr_gaussian):
+ *     I = times.shape[0]             # <<<<<<<<<<<<<<
+ *     J = rates.shape[0]
+ *     K = mu.shape[0]
  */
-  __pyx_v_I = (__pyx_v_T.shape[0]);
+  __pyx_v_I = (__pyx_v_times.shape[0]);
 
-  /* "c_matrix_gaussian_irf.pyx":40
- *                   delta, double scale):
- *     I = T.shape[0]
- *     J = k.shape[0]             # <<<<<<<<<<<<<<
- *     cdef int i, j
- *     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":43
+ *                              double[:, :] mu, double[:, :] delta, double scale, int nr_gaussian):
+ *     I = times.shape[0]
+ *     J = rates.shape[0]             # <<<<<<<<<<<<<<
+ *     K = mu.shape[0]
+ *     cdef int i, j, k
  */
-  __pyx_v_J = (__pyx_v_k.shape[0]);
+  __pyx_v_J = (__pyx_v_rates.shape[0]);
 
-  /* "c_matrix_gaussian_irf.pyx":43
- *     cdef int i, j
- *     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
- *     cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))             # <<<<<<<<<<<<<<
- *     with nogil, parallel(num_threads=4):
- *         for i in prange(I, schedule=static):
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":44
+ *     I = times.shape[0]
+ *     J = rates.shape[0]
+ *     K = mu.shape[0]             # <<<<<<<<<<<<<<
+ *     cdef int i, j, k
+ *     cdef double t_i, k_j, mu_k, delta_k, thresh, alpha, beta#term_1, term_2
  */
-  __pyx_t_1 = (2.0 * sqrt((2.0 * log(2.0))));
-  if (unlikely(__pyx_t_1 == 0)) {
-    PyErr_SetString(PyExc_ZeroDivisionError, "float division");
-    __PYX_ERR(0, 43, __pyx_L1_error)
-  }
-  __pyx_v_delta_tilde = (__pyx_v_delta / __pyx_t_1);
+  __pyx_v_K = (__pyx_v_mu.shape[0]);
 
-  /* "c_matrix_gaussian_irf.pyx":44
- *     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
- *     cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
- *     with nogil, parallel(num_threads=4):             # <<<<<<<<<<<<<<
- *         for i in prange(I, schedule=static):
- *             for j in range(J):
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":48
+ *     cdef double t_i, k_j, mu_k, delta_k, thresh, alpha, beta#term_1, term_2
+ *     #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
+ *     with nogil, parallel(num_threads=6):             # <<<<<<<<<<<<<<
+ *         for i in prange(I, schedule=dynamic):
+ *     #  for i in range(I):
  */
   {
       #ifdef WITH_THREAD
@@ -2730,7 +2787,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                 #define unlikely(x) (x)
             #endif
             #ifdef _OPENMP
-            #pragma omp parallel  private(__pyx_t_1, __pyx_t_10, __pyx_t_11, __pyx_t_12, __pyx_t_13, __pyx_t_14, __pyx_t_15, __pyx_t_16, __pyx_t_2, __pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_t_9) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb) num_threads(4)
+            #pragma omp parallel  private(__pyx_t_1, __pyx_t_10, __pyx_t_11, __pyx_t_12, __pyx_t_13, __pyx_t_14, __pyx_t_15, __pyx_t_16, __pyx_t_17, __pyx_t_18, __pyx_t_19, __pyx_t_2, __pyx_t_20, __pyx_t_21, __pyx_t_22, __pyx_t_23, __pyx_t_24, __pyx_t_25, __pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_t_9) private(__pyx_filename, __pyx_lineno, __pyx_clineno) shared(__pyx_parallel_why, __pyx_parallel_exc_type, __pyx_parallel_exc_value, __pyx_parallel_exc_tb) num_threads(6)
             #endif /* _OPENMP */
             {
                 #ifdef _OPENMP
@@ -2740,211 +2797,254 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                 Py_BEGIN_ALLOW_THREADS
                 #endif /* _OPENMP */
 
-                /* "c_matrix_gaussian_irf.pyx":45
- *     cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
- *     with nogil, parallel(num_threads=4):
- *         for i in prange(I, schedule=static):             # <<<<<<<<<<<<<<
+                /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":49
+ *     #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
+ *     with nogil, parallel(num_threads=6):
+ *         for i in prange(I, schedule=dynamic):             # <<<<<<<<<<<<<<
+ *     #  for i in range(I):
  *             for j in range(J):
- *                 t_i = T[i]
  */
-                __pyx_t_2 = __pyx_v_I;
+                __pyx_t_1 = __pyx_v_I;
                 if (1 == 0) abort();
                 {
                     double __pyx_parallel_temp0 = __PYX_NAN();
                     double __pyx_parallel_temp1 = __PYX_NAN();
-                    int __pyx_parallel_temp2 = 0xbad0bad0;
+                    double __pyx_parallel_temp2 = __PYX_NAN();
                     int __pyx_parallel_temp3 = 0xbad0bad0;
-                    double __pyx_parallel_temp4 = __PYX_NAN();
-                    double __pyx_parallel_temp5 = __PYX_NAN();
+                    int __pyx_parallel_temp4 = 0xbad0bad0;
+                    int __pyx_parallel_temp5 = 0xbad0bad0;
                     double __pyx_parallel_temp6 = __PYX_NAN();
+                    double __pyx_parallel_temp7 = __PYX_NAN();
+                    double __pyx_parallel_temp8 = __PYX_NAN();
+                    double __pyx_parallel_temp9 = __PYX_NAN();
                     const char *__pyx_parallel_filename = NULL; int __pyx_parallel_lineno = 0, __pyx_parallel_clineno = 0;
                     PyObject *__pyx_parallel_exc_type = NULL, *__pyx_parallel_exc_value = NULL, *__pyx_parallel_exc_tb = NULL;
                     int __pyx_parallel_why;
                     __pyx_parallel_why = 0;
-                    __pyx_t_4 = (__pyx_t_2 - 0 + 1 - 1/abs(1)) / 1;
-                    if (__pyx_t_4 > 0)
+                    __pyx_t_3 = (__pyx_t_1 - 0 + 1 - 1/abs(1)) / 1;
+                    if (__pyx_t_3 > 0)
                     {
                         #ifdef _OPENMP
-                        #pragma omp for lastprivate(__pyx_v_alpha) lastprivate(__pyx_v_beta) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) lastprivate(__pyx_v_k_j) lastprivate(__pyx_v_t_i) lastprivate(__pyx_v_thresh)
+                        #pragma omp for lastprivate(__pyx_v_alpha) lastprivate(__pyx_v_beta) lastprivate(__pyx_v_delta_k) firstprivate(__pyx_v_i) lastprivate(__pyx_v_i) lastprivate(__pyx_v_j) lastprivate(__pyx_v_k) lastprivate(__pyx_v_k_j) lastprivate(__pyx_v_mu_k) lastprivate(__pyx_v_t_i) lastprivate(__pyx_v_thresh)
                         #endif /* _OPENMP */
-                        for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_4; __pyx_t_3++){
+                        for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_3; __pyx_t_2++){
                             if (__pyx_parallel_why < 2)
                             {
-                                __pyx_v_i = (int)(0 + 1 * __pyx_t_3);
+                                __pyx_v_i = (int)(0 + 1 * __pyx_t_2);
                                 /* Initialize private variables to invalid values */
                                 __pyx_v_alpha = ((double)__PYX_NAN());
                                 __pyx_v_beta = ((double)__PYX_NAN());
+                                __pyx_v_delta_k = ((double)__PYX_NAN());
                                 __pyx_v_j = ((int)0xbad0bad0);
+                                __pyx_v_k = ((int)0xbad0bad0);
                                 __pyx_v_k_j = ((double)__PYX_NAN());
+                                __pyx_v_mu_k = ((double)__PYX_NAN());
                                 __pyx_v_t_i = ((double)__PYX_NAN());
                                 __pyx_v_thresh = ((double)__PYX_NAN());
 
-                                /* "c_matrix_gaussian_irf.pyx":46
- *     with nogil, parallel(num_threads=4):
- *         for i in prange(I, schedule=static):
+                                /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":51
+ *         for i in prange(I, schedule=dynamic):
+ *     #  for i in range(I):
  *             for j in range(J):             # <<<<<<<<<<<<<<
- *                 t_i = T[i]
- *                 k_j = k[j]
+ *                 for k in range(K):
+ *                     t_i = times[i]
  */
-                                __pyx_t_5 = __pyx_v_J;
-                                for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_5; __pyx_t_6+=1) {
-                                  __pyx_v_j = __pyx_t_6;
+                                __pyx_t_4 = __pyx_v_J;
+                                for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
+                                  __pyx_v_j = __pyx_t_5;
 
-                                  /* "c_matrix_gaussian_irf.pyx":47
- *         for i in prange(I, schedule=static):
+                                  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":52
+ *     #  for i in range(I):
  *             for j in range(J):
- *                 t_i = T[i]             # <<<<<<<<<<<<<<
- *                 k_j = k[j]
- * 
+ *                 for k in range(K):             # <<<<<<<<<<<<<<
+ *                     t_i = times[i]
+ *                     k_j = rates[j]
  */
-                                  __pyx_t_7 = __pyx_v_i;
-                                  __pyx_v_t_i = (*((double *) ( /* dim=0 */ (__pyx_v_T.data + __pyx_t_7 * __pyx_v_T.strides[0]) )));
+                                  __pyx_t_6 = __pyx_v_K;
+                                  for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
+                                    __pyx_v_k = __pyx_t_7;
 
-                                  /* "c_matrix_gaussian_irf.pyx":48
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":53
  *             for j in range(J):
- *                 t_i = T[i]
- *                 k_j = k[j]             # <<<<<<<<<<<<<<
- * 
- *                 if k_j == 0:
+ *                 for k in range(K):
+ *                     t_i = times[i]             # <<<<<<<<<<<<<<
+ *                     k_j = rates[j]
+ *                     mu_k = mu[k, nr_gaussian]
  */
-                                  __pyx_t_8 = __pyx_v_j;
-                                  __pyx_v_k_j = (*((double *) ( /* dim=0 */ (__pyx_v_k.data + __pyx_t_8 * __pyx_v_k.strides[0]) )));
+                                    __pyx_t_8 = __pyx_v_i;
+                                    __pyx_v_t_i = (*((double *) ( /* dim=0 */ (__pyx_v_times.data + __pyx_t_8 * __pyx_v_times.strides[0]) )));
 
-                                  /* "c_matrix_gaussian_irf.pyx":50
- *                 k_j = k[j]
- * 
- *                 if k_j == 0:             # <<<<<<<<<<<<<<
- *                     C[i, j] = 0
- *                     continue
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":54
+ *                 for k in range(K):
+ *                     t_i = times[i]
+ *                     k_j = rates[j]             # <<<<<<<<<<<<<<
+ *                     mu_k = mu[k, nr_gaussian]
+ *                     delta_k = delta[k, nr_gaussian]
  */
-                                  __pyx_t_9 = ((__pyx_v_k_j == 0.0) != 0);
-                                  if (__pyx_t_9) {
+                                    __pyx_t_9 = __pyx_v_j;
+                                    __pyx_v_k_j = (*((double *) ( /* dim=0 */ (__pyx_v_rates.data + __pyx_t_9 * __pyx_v_rates.strides[0]) )));
 
-                                    /* "c_matrix_gaussian_irf.pyx":51
- * 
- *                 if k_j == 0:
- *                     C[i, j] = 0             # <<<<<<<<<<<<<<
- *                     continue
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":55
+ *                     t_i = times[i]
+ *                     k_j = rates[j]
+ *                     mu_k = mu[k, nr_gaussian]             # <<<<<<<<<<<<<<
+ *                     delta_k = delta[k, nr_gaussian]
  * 
  */
-                                    __pyx_t_10 = __pyx_v_i;
-                                    __pyx_t_11 = __pyx_v_j;
-                                    *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_10 * __pyx_v_C.strides[0]) ) + __pyx_t_11 * __pyx_v_C.strides[1]) )) = 0.0;
+                                    __pyx_t_10 = __pyx_v_k;
+                                    __pyx_t_11 = __pyx_v_nr_gaussian;
+                                    __pyx_v_mu_k = (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_mu.data + __pyx_t_10 * __pyx_v_mu.strides[0]) ) + __pyx_t_11 * __pyx_v_mu.strides[1]) )));
 
-                                    /* "c_matrix_gaussian_irf.pyx":52
- *                 if k_j == 0:
- *                     C[i, j] = 0
- *                     continue             # <<<<<<<<<<<<<<
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":56
+ *                     k_j = rates[j]
+ *                     mu_k = mu[k, nr_gaussian]
+ *                     delta_k = delta[k, nr_gaussian]             # <<<<<<<<<<<<<<
  * 
- *                 alpha = k_j * delta / sqrt(2)
+ *                     if k_j == 0:
  */
-                                    goto __pyx_L14_continue;
+                                    __pyx_t_12 = __pyx_v_k;
+                                    __pyx_t_13 = __pyx_v_nr_gaussian;
+                                    __pyx_v_delta_k = (*((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_delta.data + __pyx_t_12 * __pyx_v_delta.strides[0]) ) + __pyx_t_13 * __pyx_v_delta.strides[1]) )));
 
-                                    /* "c_matrix_gaussian_irf.pyx":50
- *                 k_j = k[j]
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":58
+ *                     delta_k = delta[k, nr_gaussian]
  * 
- *                 if k_j == 0:             # <<<<<<<<<<<<<<
- *                     C[i, j] = 0
- *                     continue
+ *                     if k_j == 0:             # <<<<<<<<<<<<<<
+ *                         C[k, i, j] = 0
+ *                         continue
  */
+                                    __pyx_t_14 = ((__pyx_v_k_j == 0.0) != 0);
+                                    if (__pyx_t_14) {
+
+                                      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":59
+ * 
+ *                     if k_j == 0:
+ *                         C[k, i, j] = 0             # <<<<<<<<<<<<<<
+ *                         continue
+ * 
+ */
+                                      __pyx_t_15 = __pyx_v_k;
+                                      __pyx_t_16 = __pyx_v_i;
+                                      __pyx_t_17 = __pyx_v_j;
+                                      *((double *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_15 * __pyx_v_C.strides[0]) ) + __pyx_t_16 * __pyx_v_C.strides[1]) ) + __pyx_t_17 * __pyx_v_C.strides[2]) )) = 0.0;
+
+                                      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":60
+ *                     if k_j == 0:
+ *                         C[k, i, j] = 0
+ *                         continue             # <<<<<<<<<<<<<<
+ * 
+ *                     alpha = -k_j * delta_k / sqrt(2)
+ */
+                                      goto __pyx_L16_continue;
+
+                                      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":58
+ *                     delta_k = delta[k, nr_gaussian]
+ * 
+ *                     if k_j == 0:             # <<<<<<<<<<<<<<
+ *                         C[k, i, j] = 0
+ *                         continue
+ */
+                                    }
+
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":62
+ *                         continue
+ * 
+ *                     alpha = -k_j * delta_k / sqrt(2)             # <<<<<<<<<<<<<<
+ *                     beta = (t_i - mu_k) / (delta_k * sqrt(2))
+ *                     thresh = beta - alpha
+ */
+                                    __pyx_t_18 = ((-__pyx_v_k_j) * __pyx_v_delta_k);
+                                    __pyx_t_19 = sqrt(2.0);
+                                    if (unlikely(__pyx_t_19 == 0)) {
+                                      #ifdef WITH_THREAD
+                                      PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                                      #endif
+                                      PyErr_SetString(PyExc_ZeroDivisionError, "float division");
+                                      #ifdef WITH_THREAD
+                                      PyGILState_Release(__pyx_gilstate_save);
+                                      #endif
+                                      __PYX_ERR(0, 62, __pyx_L12_error)
+                                    }
+                                    __pyx_v_alpha = (__pyx_t_18 / __pyx_t_19);
+
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":63
+ * 
+ *                     alpha = -k_j * delta_k / sqrt(2)
+ *                     beta = (t_i - mu_k) / (delta_k * sqrt(2))             # <<<<<<<<<<<<<<
+ *                     thresh = beta - alpha
+ *                     if thresh < -1 :
+ */
+                                    __pyx_t_19 = (__pyx_v_t_i - __pyx_v_mu_k);
+                                    __pyx_t_18 = (__pyx_v_delta_k * sqrt(2.0));
+                                    if (unlikely(__pyx_t_18 == 0)) {
+                                      #ifdef WITH_THREAD
+                                      PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+                                      #endif
+                                      PyErr_SetString(PyExc_ZeroDivisionError, "float division");
+                                      #ifdef WITH_THREAD
+                                      PyGILState_Release(__pyx_gilstate_save);
+                                      #endif
+                                      __PYX_ERR(0, 63, __pyx_L12_error)
+                                    }
+                                    __pyx_v_beta = (__pyx_t_19 / __pyx_t_18);
+
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":64
+ *                     alpha = -k_j * delta_k / sqrt(2)
+ *                     beta = (t_i - mu_k) / (delta_k * sqrt(2))
+ *                     thresh = beta - alpha             # <<<<<<<<<<<<<<
+ *                     if thresh < -1 :
+ *                         C[k, i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
+ */
+                                    __pyx_v_thresh = (__pyx_v_beta - __pyx_v_alpha);
+
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":65
+ *                     beta = (t_i - mu_k) / (delta_k * sqrt(2))
+ *                     thresh = beta - alpha
+ *                     if thresh < -1 :             # <<<<<<<<<<<<<<
+ *                         C[k, i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
+ *                     else:
+ */
+                                    __pyx_t_14 = ((__pyx_v_thresh < -1.0) != 0);
+                                    if (__pyx_t_14) {
+
+                                      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":66
+ *                     thresh = beta - alpha
+ *                     if thresh < -1 :
+ *                         C[k, i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)             # <<<<<<<<<<<<<<
+ *                     else:
+ *                         C[k, i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+ */
+                                      __pyx_t_20 = __pyx_v_k;
+                                      __pyx_t_21 = __pyx_v_i;
+                                      __pyx_t_22 = __pyx_v_j;
+                                      *((double *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_20 * __pyx_v_C.strides[0]) ) + __pyx_t_21 * __pyx_v_C.strides[1]) ) + __pyx_t_22 * __pyx_v_C.strides[2]) )) = (((__pyx_v_scale * .5) * __pyx_f_21c_matrix_gaussian_irf_erfce((-__pyx_v_thresh), 0)) * exp(((-__pyx_v_beta) * __pyx_v_beta)));
+
+                                      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":65
+ *                     beta = (t_i - mu_k) / (delta_k * sqrt(2))
+ *                     thresh = beta - alpha
+ *                     if thresh < -1 :             # <<<<<<<<<<<<<<
+ *                         C[k, i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
+ *                     else:
+ */
+                                      goto __pyx_L19;
+                                    }
+
+                                    /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":68
+ *                         C[k, i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
+ *                     else:
+ *                         C[k, i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))             # <<<<<<<<<<<<<<
+ */
+                                    /*else*/ {
+                                      __pyx_t_23 = __pyx_v_k;
+                                      __pyx_t_24 = __pyx_v_i;
+                                      __pyx_t_25 = __pyx_v_j;
+                                      *((double *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_23 * __pyx_v_C.strides[0]) ) + __pyx_t_24 * __pyx_v_C.strides[1]) ) + __pyx_t_25 * __pyx_v_C.strides[2]) )) = (((__pyx_v_scale * .5) * (1.0 + erf(__pyx_v_thresh))) * exp((__pyx_v_alpha * (__pyx_v_alpha - (2.0 * __pyx_v_beta)))));
+                                    }
+                                    __pyx_L19:;
+                                    __pyx_L16_continue:;
                                   }
-
-                                  /* "c_matrix_gaussian_irf.pyx":54
- *                     continue
- * 
- *                 alpha = k_j * delta / sqrt(2)             # <<<<<<<<<<<<<<
- *                 beta = (t_i - mu) / (delta * sqrt(2))
- *                 thresh = beta - alpha
- */
-                                  __pyx_t_1 = (__pyx_v_k_j * __pyx_v_delta);
-                                  __pyx_t_12 = sqrt(2.0);
-                                  if (unlikely(__pyx_t_12 == 0)) {
-                                    #ifdef WITH_THREAD
-                                    PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
-                                    #endif
-                                    PyErr_SetString(PyExc_ZeroDivisionError, "float division");
-                                    #ifdef WITH_THREAD
-                                    PyGILState_Release(__pyx_gilstate_save);
-                                    #endif
-                                    __PYX_ERR(0, 54, __pyx_L12_error)
-                                  }
-                                  __pyx_v_alpha = (__pyx_t_1 / __pyx_t_12);
-
-                                  /* "c_matrix_gaussian_irf.pyx":55
- * 
- *                 alpha = k_j * delta / sqrt(2)
- *                 beta = (t_i - mu) / (delta * sqrt(2))             # <<<<<<<<<<<<<<
- *                 thresh = beta - alpha
- *                 if thresh < -1 :
- */
-                                  __pyx_t_12 = (__pyx_v_t_i - __pyx_v_mu);
-                                  __pyx_t_1 = (__pyx_v_delta * sqrt(2.0));
-                                  if (unlikely(__pyx_t_1 == 0)) {
-                                    #ifdef WITH_THREAD
-                                    PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
-                                    #endif
-                                    PyErr_SetString(PyExc_ZeroDivisionError, "float division");
-                                    #ifdef WITH_THREAD
-                                    PyGILState_Release(__pyx_gilstate_save);
-                                    #endif
-                                    __PYX_ERR(0, 55, __pyx_L12_error)
-                                  }
-                                  __pyx_v_beta = (__pyx_t_12 / __pyx_t_1);
-
-                                  /* "c_matrix_gaussian_irf.pyx":56
- *                 alpha = k_j * delta / sqrt(2)
- *                 beta = (t_i - mu) / (delta * sqrt(2))
- *                 thresh = beta - alpha             # <<<<<<<<<<<<<<
- *                 if thresh < -1 :
- *                     C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
- */
-                                  __pyx_v_thresh = (__pyx_v_beta - __pyx_v_alpha);
-
-                                  /* "c_matrix_gaussian_irf.pyx":57
- *                 beta = (t_i - mu) / (delta * sqrt(2))
- *                 thresh = beta - alpha
- *                 if thresh < -1 :             # <<<<<<<<<<<<<<
- *                     C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
- *                 else:
- */
-                                  __pyx_t_9 = ((__pyx_v_thresh < -1.0) != 0);
-                                  if (__pyx_t_9) {
-
-                                    /* "c_matrix_gaussian_irf.pyx":58
- *                 thresh = beta - alpha
- *                 if thresh < -1 :
- *                     C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)             # <<<<<<<<<<<<<<
- *                 else:
- *                     C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
- */
-                                    __pyx_t_13 = __pyx_v_i;
-                                    __pyx_t_14 = __pyx_v_j;
-                                    *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_13 * __pyx_v_C.strides[0]) ) + __pyx_t_14 * __pyx_v_C.strides[1]) )) = (((__pyx_v_scale * .5) * __pyx_f_21c_matrix_gaussian_irf_erfce((-__pyx_v_thresh), 0)) * exp(((-__pyx_v_beta) * __pyx_v_beta)));
-
-                                    /* "c_matrix_gaussian_irf.pyx":57
- *                 beta = (t_i - mu) / (delta * sqrt(2))
- *                 thresh = beta - alpha
- *                 if thresh < -1 :             # <<<<<<<<<<<<<<
- *                     C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
- *                 else:
- */
-                                    goto __pyx_L17;
-                                  }
-
-                                  /* "c_matrix_gaussian_irf.pyx":60
- *                     C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
- *                 else:
- *                     C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))             # <<<<<<<<<<<<<<
- */
-                                  /*else*/ {
-                                    __pyx_t_15 = __pyx_v_i;
-                                    __pyx_t_16 = __pyx_v_j;
-                                    *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_C.data + __pyx_t_15 * __pyx_v_C.strides[0]) ) + __pyx_t_16 * __pyx_v_C.strides[1]) )) = (((__pyx_v_scale * .5) * (1.0 + erf(__pyx_v_thresh))) * exp((__pyx_v_alpha * (__pyx_v_alpha - (2.0 * __pyx_v_beta)))));
-                                  }
-                                  __pyx_L17:;
-                                  __pyx_L14_continue:;
                                 }
-                                goto __pyx_L19;
+                                goto __pyx_L21;
                                 __pyx_L12_error:;
                                 {
                                     #ifdef WITH_THREAD
@@ -2963,21 +3063,24 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                                     #endif
                                 }
                                 __pyx_parallel_why = 4;
-                                goto __pyx_L18;
-                                __pyx_L18:;
+                                goto __pyx_L20;
+                                __pyx_L20:;
                                 #ifdef _OPENMP
                                 #pragma omp critical(__pyx_parallel_lastprivates0)
                                 #endif /* _OPENMP */
                                 {
                                     __pyx_parallel_temp0 = __pyx_v_alpha;
                                     __pyx_parallel_temp1 = __pyx_v_beta;
-                                    __pyx_parallel_temp2 = __pyx_v_i;
-                                    __pyx_parallel_temp3 = __pyx_v_j;
-                                    __pyx_parallel_temp4 = __pyx_v_k_j;
-                                    __pyx_parallel_temp5 = __pyx_v_t_i;
-                                    __pyx_parallel_temp6 = __pyx_v_thresh;
+                                    __pyx_parallel_temp2 = __pyx_v_delta_k;
+                                    __pyx_parallel_temp3 = __pyx_v_i;
+                                    __pyx_parallel_temp4 = __pyx_v_j;
+                                    __pyx_parallel_temp5 = __pyx_v_k;
+                                    __pyx_parallel_temp6 = __pyx_v_k_j;
+                                    __pyx_parallel_temp7 = __pyx_v_mu_k;
+                                    __pyx_parallel_temp8 = __pyx_v_t_i;
+                                    __pyx_parallel_temp9 = __pyx_v_thresh;
                                 }
-                                __pyx_L19:;
+                                __pyx_L21:;
                                 #ifdef _OPENMP
                                 #pragma omp flush(__pyx_parallel_why)
                                 #endif /* _OPENMP */
@@ -2991,11 +3094,14 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                     if (__pyx_parallel_why) {
                       __pyx_v_alpha = __pyx_parallel_temp0;
                       __pyx_v_beta = __pyx_parallel_temp1;
-                      __pyx_v_i = __pyx_parallel_temp2;
-                      __pyx_v_j = __pyx_parallel_temp3;
-                      __pyx_v_k_j = __pyx_parallel_temp4;
-                      __pyx_v_t_i = __pyx_parallel_temp5;
-                      __pyx_v_thresh = __pyx_parallel_temp6;
+                      __pyx_v_delta_k = __pyx_parallel_temp2;
+                      __pyx_v_i = __pyx_parallel_temp3;
+                      __pyx_v_j = __pyx_parallel_temp4;
+                      __pyx_v_k = __pyx_parallel_temp5;
+                      __pyx_v_k_j = __pyx_parallel_temp6;
+                      __pyx_v_mu_k = __pyx_parallel_temp7;
+                      __pyx_v_t_i = __pyx_parallel_temp8;
+                      __pyx_v_thresh = __pyx_parallel_temp9;
                       switch (__pyx_parallel_why) {
                             case 4:
                         {
@@ -3013,7 +3119,7 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                       }
                     }
                 }
-                goto __pyx_L21;
+                goto __pyx_L23;
                 __pyx_L8_error:;
                 {
                     #ifdef WITH_THREAD
@@ -3032,8 +3138,8 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
                     #endif
                 }
                 __pyx_parallel_why = 4;
-                goto __pyx_L21;
-                __pyx_L21:;
+                goto __pyx_L23;
+                __pyx_L23:;
                 #ifdef _OPENMP
                 Py_END_ALLOW_THREADS
                 #else
@@ -3080,12 +3186,12 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
         #endif
       }
 
-      /* "c_matrix_gaussian_irf.pyx":44
- *     cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
- *     cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
- *     with nogil, parallel(num_threads=4):             # <<<<<<<<<<<<<<
- *         for i in prange(I, schedule=static):
- *             for j in range(J):
+      /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":48
+ *     cdef double t_i, k_j, mu_k, delta_k, thresh, alpha, beta#term_1, term_2
+ *     #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
+ *     with nogil, parallel(num_threads=6):             # <<<<<<<<<<<<<<
+ *         for i in prange(I, schedule=dynamic):
+ *     #  for i in range(I):
  */
       /*finally:*/ {
         /*normal exit:*/{
@@ -3104,12 +3210,12 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
       }
   }
 
-  /* "c_matrix_gaussian_irf.pyx":37
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double             # <<<<<<<<<<<<<<
- *                   delta, double scale):
- *     I = T.shape[0]
+ * def calculateCSingleGaussian(double[:, :, :] C, double[:] rates, double[:] times,             # <<<<<<<<<<<<<<
+ *                              double[:, :] mu, double[:, :] delta, double scale, int nr_gaussian):
+ *     I = times.shape[0]
  */
 
   /* function exit code */
@@ -3120,8 +3226,10 @@ static PyObject *__pyx_pf_21c_matrix_gaussian_irf_6calculateCSingleGaussian(CYTH
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_C, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_k, 1);
-  __PYX_XDEC_MEMVIEW(&__pyx_v_T, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_rates, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_times, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_mu, 1);
+  __PYX_XDEC_MEMVIEW(&__pyx_v_delta, 1);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -17734,6 +17842,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_Invalid_mode_expected_c_or_fortr, __pyx_k_Invalid_mode_expected_c_or_fortr, sizeof(__pyx_k_Invalid_mode_expected_c_or_fortr), 0, 0, 1, 0},
   {&__pyx_kp_s_Invalid_shape_in_axis_d_d, __pyx_k_Invalid_shape_in_axis_d_d, sizeof(__pyx_k_Invalid_shape_in_axis_d_d), 0, 0, 1, 0},
   {&__pyx_n_s_J, __pyx_k_J, sizeof(__pyx_k_J), 0, 0, 1, 1},
+  {&__pyx_n_s_K, __pyx_k_K, sizeof(__pyx_k_K), 0, 0, 1, 1},
   {&__pyx_n_s_MemoryError, __pyx_k_MemoryError, sizeof(__pyx_k_MemoryError), 0, 0, 1, 1},
   {&__pyx_kp_s_MemoryView_of_r_at_0x_x, __pyx_k_MemoryView_of_r_at_0x_x, sizeof(__pyx_k_MemoryView_of_r_at_0x_x), 0, 0, 1, 0},
   {&__pyx_kp_s_MemoryView_of_r_object, __pyx_k_MemoryView_of_r_object, sizeof(__pyx_k_MemoryView_of_r_object), 0, 0, 1, 0},
@@ -17754,12 +17863,12 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_c_matrix_gaussian_irf, __pyx_k_c_matrix_gaussian_irf, sizeof(__pyx_k_c_matrix_gaussian_irf), 0, 0, 1, 1},
   {&__pyx_n_s_calculateCMultiGaussian, __pyx_k_calculateCMultiGaussian, sizeof(__pyx_k_calculateCMultiGaussian), 0, 0, 1, 1},
   {&__pyx_n_s_calculateCSingleGaussian, __pyx_k_calculateCSingleGaussian, sizeof(__pyx_k_calculateCSingleGaussian), 0, 0, 1, 1},
-  {&__pyx_n_s_center, __pyx_k_center, sizeof(__pyx_k_center), 0, 0, 1, 1},
+  {&__pyx_n_s_centers, __pyx_k_centers, sizeof(__pyx_k_centers), 0, 0, 1, 1},
   {&__pyx_n_s_class, __pyx_k_class, sizeof(__pyx_k_class), 0, 0, 1, 1},
   {&__pyx_kp_s_contiguous_and_direct, __pyx_k_contiguous_and_direct, sizeof(__pyx_k_contiguous_and_direct), 0, 0, 1, 0},
   {&__pyx_kp_s_contiguous_and_indirect, __pyx_k_contiguous_and_indirect, sizeof(__pyx_k_contiguous_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_delta, __pyx_k_delta, sizeof(__pyx_k_delta), 0, 0, 1, 1},
-  {&__pyx_n_s_delta_tilde, __pyx_k_delta_tilde, sizeof(__pyx_k_delta_tilde), 0, 0, 1, 1},
+  {&__pyx_n_s_delta_k, __pyx_k_delta_k, sizeof(__pyx_k_delta_k), 0, 0, 1, 1},
   {&__pyx_n_s_dtype, __pyx_k_dtype, sizeof(__pyx_k_dtype), 0, 0, 1, 1},
   {&__pyx_n_s_dtype_is_object, __pyx_k_dtype_is_object, sizeof(__pyx_k_dtype_is_object), 0, 0, 1, 1},
   {&__pyx_n_s_empty, __pyx_k_empty, sizeof(__pyx_k_empty), 0, 0, 1, 1},
@@ -17786,6 +17895,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_memview, __pyx_k_memview, sizeof(__pyx_k_memview), 0, 0, 1, 1},
   {&__pyx_n_s_mode, __pyx_k_mode, sizeof(__pyx_k_mode), 0, 0, 1, 1},
   {&__pyx_n_s_mu, __pyx_k_mu, sizeof(__pyx_k_mu), 0, 0, 1, 1},
+  {&__pyx_n_s_mu_k, __pyx_k_mu_k, sizeof(__pyx_k_mu_k), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_name_2, __pyx_k_name_2, sizeof(__pyx_k_name_2), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
@@ -17799,6 +17909,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_pyx_getbuffer, __pyx_k_pyx_getbuffer, sizeof(__pyx_k_pyx_getbuffer), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
+  {&__pyx_n_s_rates, __pyx_k_rates, sizeof(__pyx_k_rates), 0, 0, 1, 1},
   {&__pyx_n_s_scale, __pyx_k_scale, sizeof(__pyx_k_scale), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
@@ -17812,16 +17923,17 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_t_i, __pyx_k_t_i, sizeof(__pyx_k_t_i), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_thresh, __pyx_k_thresh, sizeof(__pyx_k_thresh), 0, 0, 1, 1},
+  {&__pyx_n_s_times, __pyx_k_times, sizeof(__pyx_k_times), 0, 0, 1, 1},
   {&__pyx_n_s_tmp, __pyx_k_tmp, sizeof(__pyx_k_tmp), 0, 0, 1, 1},
   {&__pyx_kp_s_unable_to_allocate_array_data, __pyx_k_unable_to_allocate_array_data, sizeof(__pyx_k_unable_to_allocate_array_data), 0, 0, 1, 0},
   {&__pyx_kp_s_unable_to_allocate_shape_and_str, __pyx_k_unable_to_allocate_shape_and_str, sizeof(__pyx_k_unable_to_allocate_shape_and_str), 0, 0, 1, 0},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
-  {&__pyx_n_s_width, __pyx_k_width, sizeof(__pyx_k_width), 0, 0, 1, 1},
+  {&__pyx_n_s_widths, __pyx_k_widths, sizeof(__pyx_k_widths), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 29, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 218, __pyx_L1_error)
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(1, 799, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(2, 146, __pyx_L1_error)
@@ -18051,7 +18163,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
 
-  /* "c_matrix_gaussian_irf.pyx":13
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":13
  * from cython.parallel import prange, parallel
  * 
  * def __init__():             # <<<<<<<<<<<<<<
@@ -18060,29 +18172,29 @@ static int __Pyx_InitCachedConstants(void) {
  */
   __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_init, 13, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 13, __pyx_L1_error)
 
-  /* "c_matrix_gaussian_irf.pyx":23
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":23
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,             # <<<<<<<<<<<<<<
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]
+ * def calculateCMultiGaussian(double[:, :, :] C, double[:] rates, double[:] T,             # <<<<<<<<<<<<<<
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]
  */
-  __pyx_tuple__21 = PyTuple_Pack(9, __pyx_n_s_C, __pyx_n_s_k, __pyx_n_s_T, __pyx_n_s_center, __pyx_n_s_width, __pyx_n_s_scale, __pyx_n_s_nr_gaussian, __pyx_n_s_tmp, __pyx_n_s_i); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __pyx_tuple__21 = PyTuple_Pack(10, __pyx_n_s_C, __pyx_n_s_rates, __pyx_n_s_T, __pyx_n_s_centers, __pyx_n_s_widths, __pyx_n_s_scale, __pyx_n_s_nr_gaussian, __pyx_n_s_tmp, __pyx_n_s_J, __pyx_n_s_i); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
-  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(6, 0, 9, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateCMultiGaussian, 23, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(6, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateCMultiGaussian, 23, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 23, __pyx_L1_error)
 
-  /* "c_matrix_gaussian_irf.pyx":37
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double             # <<<<<<<<<<<<<<
- *                   delta, double scale):
- *     I = T.shape[0]
+ * def calculateCSingleGaussian(double[:, :, :] C, double[:] rates, double[:] times,             # <<<<<<<<<<<<<<
+ *                              double[:, :] mu, double[:, :] delta, double scale, int nr_gaussian):
+ *     I = times.shape[0]
  */
-  __pyx_tuple__23 = PyTuple_Pack(16, __pyx_n_s_C, __pyx_n_s_k, __pyx_n_s_T, __pyx_n_s_mu, __pyx_n_s_delta, __pyx_n_s_scale, __pyx_n_s_I, __pyx_n_s_J, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_t_i, __pyx_n_s_k_j, __pyx_n_s_thresh, __pyx_n_s_alpha, __pyx_n_s_beta, __pyx_n_s_delta_tilde); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_tuple__23 = PyTuple_Pack(20, __pyx_n_s_C, __pyx_n_s_rates, __pyx_n_s_times, __pyx_n_s_mu, __pyx_n_s_delta, __pyx_n_s_scale, __pyx_n_s_nr_gaussian, __pyx_n_s_I, __pyx_n_s_J, __pyx_n_s_K, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_t_i, __pyx_n_s_k_j, __pyx_n_s_mu_k, __pyx_n_s_delta_k, __pyx_n_s_thresh, __pyx_n_s_alpha, __pyx_n_s_beta); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
-  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(6, 0, 16, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateCSingleGaussian, 37, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(7, 0, 20, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_joern_programming_py_glota, __pyx_n_s_calculateCSingleGaussian, 40, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 40, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -18302,7 +18414,7 @@ PyMODINIT_FUNC PyInit_c_matrix_gaussian_irf(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 2, __pyx_L1_error)
   #endif
 
-  /* "c_matrix_gaussian_irf.pyx":5
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":5
  * cimport cython
  * 
  * import numpy as np             # <<<<<<<<<<<<<<
@@ -18314,7 +18426,7 @@ PyMODINIT_FUNC PyInit_c_matrix_gaussian_irf(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "c_matrix_gaussian_irf.pyx":13
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":13
  * from cython.parallel import prange, parallel
  * 
  * def __init__():             # <<<<<<<<<<<<<<
@@ -18326,31 +18438,31 @@ PyMODINIT_FUNC PyInit_c_matrix_gaussian_irf(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_init, __pyx_t_1) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "c_matrix_gaussian_irf.pyx":23
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":23
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCMultiGaussian(double[:, :] C, double[:] k, double[:] T,             # <<<<<<<<<<<<<<
- *                             double[:] center, double[:] width, double[:] scale):
- *     nr_gaussian = center.shape[0]
+ * def calculateCMultiGaussian(double[:, :, :] C, double[:] rates, double[:] T,             # <<<<<<<<<<<<<<
+ *                             double[:, :] centers, double[:, :] widths, double[:] scale):
+ *     nr_gaussian = centers.shape[1]
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_21c_matrix_gaussian_irf_5calculateCMultiGaussian, NULL, __pyx_n_s_c_matrix_gaussian_irf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_calculateCMultiGaussian, __pyx_t_1) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "c_matrix_gaussian_irf.pyx":37
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":40
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double             # <<<<<<<<<<<<<<
- *                   delta, double scale):
- *     I = T.shape[0]
+ * def calculateCSingleGaussian(double[:, :, :] C, double[:] rates, double[:] times,             # <<<<<<<<<<<<<<
+ *                              double[:, :] mu, double[:, :] delta, double scale, int nr_gaussian):
+ *     I = times.shape[0]
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_21c_matrix_gaussian_irf_7calculateCSingleGaussian, NULL, __pyx_n_s_c_matrix_gaussian_irf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_21c_matrix_gaussian_irf_7calculateCSingleGaussian, NULL, __pyx_n_s_c_matrix_gaussian_irf); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_calculateCSingleGaussian, __pyx_t_1) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_calculateCSingleGaussian, __pyx_t_1) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "c_matrix_gaussian_irf.pyx":2
+  /* "glotaran_models/kinetic/c_matrix_gaussian_irf_parallel.pyx":2
  * 
  * import cython             # <<<<<<<<<<<<<<
  * cimport cython
@@ -20825,17 +20937,17 @@ no_fail:
 }
 
 /* ObjectToMemviewSlice */
-          static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_double(PyObject *obj) {
+          static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsdsds_double(PyObject *obj) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
-    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
+    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
     int retcode;
     if (obj == Py_None) {
         result.memview = (struct __pyx_memoryview_obj *) Py_None;
         return result;
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
-                                                 PyBUF_RECORDS, 2,
+                                                 PyBUF_RECORDS, 3,
                                                  &__Pyx_TypeInfo_double, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
@@ -20870,16 +20982,27 @@ __pyx_fail:
     return result;
 }
 
-/* MemviewDtypeToObject */
-          static CYTHON_INLINE PyObject *__pyx_memview_get_double(const char *itemp) {
-    return (PyObject *) PyFloat_FromDouble(*(double *) itemp);
-}
-static CYTHON_INLINE int __pyx_memview_set_double(const char *itemp, PyObject *obj) {
-    double value = __pyx_PyFloat_AsDouble(obj);
-    if ((value == (double)-1) && PyErr_Occurred())
-        return 0;
-    *(double *) itemp = value;
-    return 1;
+/* ObjectToMemviewSlice */
+          static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_dsds_double(PyObject *obj) {
+    __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
+    __Pyx_BufFmt_StackElem stack[1];
+    int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED), (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
+    int retcode;
+    if (obj == Py_None) {
+        result.memview = (struct __pyx_memoryview_obj *) Py_None;
+        return result;
+    }
+    retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
+                                                 PyBUF_RECORDS, 2,
+                                                 &__Pyx_TypeInfo_double, stack,
+                                                 &result, obj);
+    if (unlikely(retcode == -1))
+        goto __pyx_fail;
+    return result;
+__pyx_fail:
+    result.memview = NULL;
+    result.data = NULL;
+    return result;
 }
 
 /* CIntFromPyVerify */
@@ -20903,6 +21026,18 @@ static CYTHON_INLINE int __pyx_memview_set_double(const char *itemp, PyObject *o
         }\
         return (target_type) value;\
     }
+
+/* MemviewDtypeToObject */
+          static CYTHON_INLINE PyObject *__pyx_memview_get_double(const char *itemp) {
+    return (PyObject *) PyFloat_FromDouble(*(double *) itemp);
+}
+static CYTHON_INLINE int __pyx_memview_set_double(const char *itemp, PyObject *obj) {
+    double value = __pyx_PyFloat_AsDouble(obj);
+    if ((value == (double)-1) && PyErr_Occurred())
+        return 0;
+    *(double *) itemp = value;
+    return 1;
+}
 
 /* None */
           #if CYTHON_CCOMPLEX

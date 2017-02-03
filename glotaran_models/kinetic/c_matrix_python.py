@@ -1,35 +1,16 @@
-from __future__ import print_function
-import sys
-
-import cython
-cimport cython
-
 import numpy as np
-cimport numpy as np
+from math import exp, sqrt, erf, erfc
+from scipy.special import erfcx
+class CMatrixPython(object):
+    def c_matrix(self, rates, times, centers, widths, scale):
+        raise NotImplementedError
 
-# Not sure why but the scipy.special.cython_special.erfcx function doesnt' sseem to work.
-#from scipy.special import erf, erfc, erfcx
-#from scipy.special.cython_special cimport erf, erfc, erfcx #try in 0.19.0
-#cimport scipy.special.cython_special as csc
+    def c_matrix_gaussian_irf(self, C, rates, times, centers, widths, scale):
+        calculateCMultiGaussian(C, rates, times, centers, widths,
+                                scale)
 
-from libc.math cimport exp,  pow, log, sqrt, erf
-from numpy.math cimport NAN
-
-from cython.parallel import prange, parallel
-
-cdef extern from "erfce.c":
-    double erfce(double x)
-
-def __init__():
-    np.import_array()
-
-#def eprint(*args, **kwargs):
-#    print(*args, file=sys.stderr, **kwargs)
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
-                            double[:, :] centers, double[:, :] widths, double[:] scale):
+def calculateCMultiGaussian(C,k,T,
+                            centers, widths, scale):
     nr_gaussian = centers.shape[1]
     if nr_gaussian > 1:
         tmp = np.empty(C.shape, dtype=np.float64)
@@ -45,16 +26,29 @@ def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
                                          widths[j, i], scale[i])
             C += tmp
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double
-                  delta, double scale):
+# Calculates exp(x*x) * erfc(x) but avoid under or overflow for large values of x
+def erfce(x):
+    #option 1 found here: http://stackoverflow.com/a/8963650
+    #return erfcx1(x)
+    #option 2 found here: http://stackoverflow.com/a/13995496
+    return erfcx(x)
+
+def erfcx1(x):
+    if x < 25:
+        return erfc(x) * exp(x * x)
+    else:
+        y = 1. / x
+        z = y * y
+        s = y * (1. + z * (-0.5 + z * (0.75 + z * (-1.875 + z * (6.5625 - 29.53125 * z)))))
+        return s * 0.564189583547756287
+
+
+def calculateCSingleGaussian(C, k,T,mu,
+                  delta, scale):
     I = T.shape[0]
     J = k.shape[0]
-    cdef int i, j
-    cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
     #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
-    #with nogil, parallel(num_threads=num_threads):
+    #  with nogil, parallel(num_threads=num_threads):
     #      for i in prange(I, schedule=static):
     for i in range(I):
         for j in range(J):
@@ -68,11 +62,9 @@ def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu
             alpha = -k_j * delta / sqrt(2)
             beta = (t_i - mu) / (delta * sqrt(2))
             thresh = beta - alpha
-            #eprint("thresh is: ", thresh)
             if thresh < -1 :
                 C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
                 C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
 
-
-
+     # print(np.isnan(C).any())

@@ -15,10 +15,14 @@ class TestSimpleKinetic(TestCase):
 
         class OneComparmentDecay(SeperableModel):
 
+            def data(self, **kwargs):
+                data = (kwargs['data'],)
+                return data
+
             def c_matrix(self, parameter, *times, **kwargs):
                 kinpar = np.asarray([parameter["p0"]])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
-                return c
+                return np.asarray([c])
 
             def e_matrix(self, **kwargs):
                 # E Matrix => channels X compartments
@@ -44,16 +48,24 @@ class TestSimpleKinetic(TestCase):
         result = model.fit(initial_parameter, *times, **{"data": data})
         for i in range(len(params)):
             self.assertEpsilon(params[i],
-                               result.params["p{}".format(i)].value, 1e-6)
+                               result.best_fit_parameter["p{}".format(i)]
+                               .value, 1e-6)
+        amps = result.e_matrix(*times, **{"data": data})
+        print(amps)
+        self.assertEpsilon(amps, [1.0], 1e-6)
 
     def test_two_compartment_decay(self):
 
         class TwoComparmentDecay(SeperableModel):
 
+            def data(self, **kwargs):
+                data = (kwargs['data'],)
+                return data
+
             def c_matrix(self, parameter, *times, **kwargs):
                 kinpar = np.asarray([parameter["p0"], parameter["p1"]])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
-                return c
+                return np.asarray([c])
 
             def e_matrix(self):
                 # E Matrix => channels X compartments
@@ -81,33 +93,45 @@ class TestSimpleKinetic(TestCase):
         result = model.fit(initial_parameter, *times, **{"data": data})
         for i in range(len(params)):
             self.assertEpsilon(params[i],
-                               result.params["p{}".format(i)].value,
+                               result.best_fit_parameter["p{}".format(i)]
+                               .value,
                                1e-6)
+        amps = result.e_matrix(*times, **{"data": data})[:, 0]
+        print(amps)
+        want = [1.0, 2.0]
+        for i in range(len(want)):
+            self.assertEpsilon(amps[i], want[i], 1e-6)
 
     def test_multi_compartment_multi_channel_decay(self):
 
         class MultiChannelMultiCompartmentDecay(SeperableModel):
 
+            wavenum = np.asarray(np.arange(12820, 15120, 4.6))
+
+            def data(self, **kwargs):
+                data = (kwargs['data'],)
+                return data
+
             def c_matrix(self, parameter, *times, **kwargs):
                 kinpar = np.asarray([parameter["p{}".format(i)] for i in
                                      range(len((parameter)))])
                 c = np.exp(np.outer(np.asarray(times), -kinpar))
-                return c
+                return np.asarray([c for _ in range(self.wavenum.shape[0])])
 
             def e_matrix(self):
-                wavenum = np.asarray(np.arange(12820, 15120, 4.6))
                 location = np.asarray(
                     [14705, 13513, 14492, 14388, 14184, 13986])
                 delta = np.asarray([400, 1000, 300, 200, 350, 330])
-                amp = np.asarray([1, 0.2, 1, 1, 1, 1])
+                amp = np.asarray([1, 0.1, 10, 100, 1000, 10000])
 
-                E = np.empty((wavenum.size, location.size), dtype=np.float64,
+                E = np.empty((self.wavenum.size, location.size),
+                             dtype=np.float64,
                              order="F")
 
                 for i in range(location.size):
                     E[:, i] = amp[i] * np.exp(
                         -np.log(2) * np.square(
-                            2 * (wavenum - location[i])/delta[i]
+                            2 * (self.wavenum - location[i])/delta[i]
                         )
                     )
 
@@ -134,5 +158,11 @@ class TestSimpleKinetic(TestCase):
         wanted_params = [.006667, 0.00333, 0.00035, 0.0303, 0.000909]
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params[i],
-                               result.params["p{}".format(i)],
+                               result.best_fit_parameter["p{}".format(i)],
                                1e-6)
+        #  amps = result.e_matrix(*times, **{"data": data}).flatten()
+        #  print(amps)
+        #  want = model.e_matrix().flatten()
+        #  print(want)
+        #  for i in range(len(want)):
+        #      self.assertEpsilon(amps[i], want[i], 1e-6)
