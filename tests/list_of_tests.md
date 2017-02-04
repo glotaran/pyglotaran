@@ -5,7 +5,7 @@ Kinetic models
 --------------
 
 ### one_exponential_decay_single_trace
-- [ ] R
+- [x] R
 - [ ] Python
 - [ ] Jupyter notebook
 
