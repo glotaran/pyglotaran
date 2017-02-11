@@ -13,17 +13,17 @@ from glotaran.model import (InitialConcentration,
                             BoundConstraint
                             )
 from os import getcwd
-from os.path import join
+from os.path import join, dirname, abspath
 import numpy as np
+
+THIS_DIR = dirname(abspath(__file__))
 
 
 class TestParser(TestCase):
 
     def setUp(self):
-        spec_path = join(join(join(join(getcwd(), "glotaran"),
-                              "specification_parser"),
-                              "test",
-                         "test_model_spec.yml"))
+        print(getcwd())
+        spec_path = join(THIS_DIR, 'test_model_spec.yml')
         self.model = parse_file(spec_path)
 
     def test_compartments(self):
