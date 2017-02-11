@@ -10,7 +10,8 @@ from glotaran.specification_parser import parse_file
 # loadSomethingFromFile
 # Load Glotaran analysis protocol (*.gat or *.yml) from file
 
-load = parse_file # short for loadProtocol
+load = parse_file  # short for loadProtocol
+parse = parse_yml  # short for loadProtocol
 
 # # user calls this object whatever
 # glotaran._loadProtocol()

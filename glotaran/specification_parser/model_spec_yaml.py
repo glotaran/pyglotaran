@@ -17,7 +17,7 @@ from glotaran.model import (create_parameter_list,
 class ModelKeys:
     COMPARTMENTS = "compartments"
     DATASETS = "datasets"
-    PARAMETER = "parameter"
+    PARAMETERS = "parameters"
     MEGACOMPLEXES = "megacomplexes"
     COMPARTMENT_CONSTRAINTS = "compartment_constraints"
     PARAMETER_CONSTRAINTS = "parameter_constraints"
@@ -102,8 +102,8 @@ class ModelSpecParser(object):
 
     def get_dataset(self, dataset_spec):
         label = dataset_spec[ModelKeys.LABEL]
-        path = dataset_spec[DatasetKeys.PATH]
-        type = dataset_spec[ModelKeys.TYPE]
+        # path = dataset_spec[DatasetKeys.PATH]
+        # type = dataset_spec[ModelKeys.TYPE]
         try:
             initial_concentration = \
                     dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
@@ -123,7 +123,7 @@ class ModelSpecParser(object):
                 compact = is_compact(ms)
                 mc = ModelKeys.MEGACOMPLEXES
                 cp = DatasetKeys.COMPARTEMENTS
-                pm = ModelKeys.PARAMETER
+                pm = ModelKeys.PARAMETERS
                 if compact:
                     mc = 0
                     cp = 1
@@ -149,7 +149,7 @@ class ModelSpecParser(object):
             self.get_dataset(dataset_spec)
 
     def get_parameter(self):
-        params = self.spec[ModelKeys.PARAMETER]
+        params = self.spec[ModelKeys.PARAMETERS]
         if isinstance(params, str):
             if os.path.isfile(params):
                 f = open(params)
@@ -178,8 +178,8 @@ class ModelSpecParser(object):
             params = []
             if ModelKeys.RANGE in constraint:
                 params = make_tuple(constraint[ModelKeys.RANGE])
-            elif ModelKeys.PARAMETER in constraint:
-                params = constraint[ModelKeys.PARAMETER]
+            elif ModelKeys.PARAMETERS in constraint:
+                params = constraint[ModelKeys.PARAMETERS]
             elif compact:
                 params = constraint[1]
                 if isinstance(params, str):
@@ -228,7 +228,7 @@ class ModelSpecParser(object):
 
             else:
                 tg = CompartmentConstraintKeys.TARGET
-                par = ModelKeys.PARAMETER
+                par = ModelKeys.PARAMETERS
                 wg = CompartmentConstraintKeys.WEIGHT
                 if compact:
                     tg = 3
@@ -253,7 +253,7 @@ class ModelSpecParser(object):
         for relation in self.spec[ModelKeys.RELATIONS]:
             compact = is_compact(relation)
 
-            par = ModelKeys.PARAMETER
+            par = ModelKeys.PARAMETERS
             to = RelationKeys.TO
 
             if compact:
@@ -269,7 +269,7 @@ class ModelSpecParser(object):
             compact = is_compact(concentration)
 
             lb = ModelKeys.LABEL
-            par = ModelKeys.PARAMETER
+            par = ModelKeys.PARAMETERS
             if compact:
                 lb = 0
                 par = 1
