@@ -9,6 +9,7 @@ import numpy
 import scipy
 import sys
 
+# ‘win32’, ‘win-amd64’ and ‘win-ia64’.
 if sys.platform == 'win32':
     ext_modules = [
         Extension("c_matrix",
@@ -48,10 +49,12 @@ setup(
     version="0.1.0",
     description='The Glotaran fitting engine.',
     url='http://glotaran.org',
-    author='Joris Snellenburg, Stefan Schuetz, Joern Weissenborn',
+    author='Joris Snellenburg, Joern Weissenborn, Stefan Schuetz, Sergey Laptenok, Ivo van Stokkum',
     author_email="""j.snellenburg@vu.nl,
-                    YamiNoKeshin@gmail.com,
-                    joern.weissenborn@gmail.com""",
+                    TODO-email-Joern,
+                    TODO-email-Stefan,
+                    TODO-email-Sergey,
+                    i.h.m.van.stokkum@vu.nl""",
     license='GPLv3',
     packages=[
               'glotaran.datasets',
