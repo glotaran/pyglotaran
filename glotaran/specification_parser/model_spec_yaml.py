@@ -2,7 +2,6 @@ import os
 import csv
 from ast import literal_eval as make_tuple
 from glotaran.model import (create_parameter_list,
-                            Dataset,
                             DatasetScaling,
                             FixedConstraint,
                             BoundConstraint,
@@ -136,8 +135,7 @@ class ModelSpecParser(object):
             self.get_dataset_descriptor(label,
                                         initial_concentration,
                                         megacomplexes,
-                                        mss,
-                                        Dataset(),
+                                    mss,
                                         dataset_scaling,
                                         dataset_spec))
 

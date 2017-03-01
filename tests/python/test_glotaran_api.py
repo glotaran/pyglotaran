@@ -1,3 +1,47 @@
-from glotaran import load
+#from glotaran import load
 
-load('test_glotaran_api_spec.yml')
+# load('test_glotaran_api_spec.yml')
+
+from glotaran.model import (create_parameter_list, Parameter, InitialConcentration,
+                           ZeroConstraint, EqualConstraint, EqualAreaConstraint, FixedConstraint, BoundConstraint,
+                           Relation)
+from glotaran.models.kinetic import KineticModel, KMatrix, KineticMegacomplex, KineticDatasetDescriptor, KineticSeperableModel
+import numpy as np
+import matplotlib.pyplot as plt
+model = KineticModel()
+plist = create_parameter_list([["k1", 0.05], ["k2", 100]])
+model.parameter = plist
+model.add_parameter(Parameter(1, label="j1"))
+model.add_parameter(Parameter(1, label="j2"))
+
+model.compartments = ["s1","s2"]
+
+k_mat = KMatrix("k1", {("s1","s2"): 1, ("s2","s2"): 2})
+
+model.add_k_matrix(k_mat)
+
+mc = KineticMegacomplex("mc1", "k1")
+
+model.add_megacomplex(mc)
+
+ic = InitialConcentration("j1", [3, 4])
+
+model.add_initial_concentration(ic)
+
+dset = KineticDatasetDescriptor("d1", "j1", ["mc1"], [], None, None)
+
+model.add_dataset(dset)
+
+print(model)
+
+times = np.asarray(np.arange(0, 1500, 1.5))
+
+fitmodel = KineticSeperableModel(model)
+data = fitmodel.eval(fitmodel.get_initial_fitting_parameter(), *times, **{'dataset':'d1', 'd1_x':[0,1,2]})
+#plt.plot(times, data[:, 0])
+print(data.shape)
+plt.plot(times, data)
+plt.ioff()
+plt.show()
+
+

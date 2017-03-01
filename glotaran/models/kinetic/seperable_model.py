@@ -88,8 +88,8 @@ class KineticSeperableModel(SeperableModel):
         for dataset in self._model.datasets:
             desc = self._model.datasets[dataset]
             x = '{}_x'.format(dataset)
-            x = kwargs[x] if x in kwargs else \
-                list(range(kwargs['{}'.format(dataset)].shape[1]))
+            x = kwargs[x] if x in kwargs else [0]
+                # list(range(kwargs['{}'.format(dataset)].shape[1]))
             c = self._construct_c_matrix_for_dataset(parameter, desc,
                                                      np.asarray(times),
                                                      np.asarray(x))

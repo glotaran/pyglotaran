@@ -13,14 +13,16 @@ class Model(object):
 
     Consists of parameters, megacomplexes, relations and constraints.
     """
-    _compartments = None
-    _parameter = None
-    _megacomplexes = None
-    _relations = None
-    _compartment_constraints = None
-    _parameter_constraints = None
-    _datasets = None
-    _initial_concentrations = None
+
+    def __init__(self):
+        self._compartments = None
+        self._parameter = []
+        self._megacomplexes = {}
+        self._relations = None
+        self._compartment_constraints = None
+        self._parameter_constraints = None
+        self._datasets = None
+        self._initial_concentrations = None
 
     def type_string(self):
         raise NotImplementedError
@@ -42,12 +44,17 @@ class Model(object):
         if not isinstance(parameter, list):
             parameter = [parameter]
 
-        self._parameter = []
         for p in parameter:
             if not isinstance(p, Parameter):
                 raise TypeError
             p.index = len(self._parameter)+1
             self._parameter.append(p)
+
+    def add_parameter(self, parameter):
+        if not isinstance(parameter, Parameter):
+            raise TypeError
+        parameter.index = len(self._parameter)+1
+        self._parameter.append(parameter)
 
     @property
     def megacomplexes(self):
@@ -200,6 +207,12 @@ class Model(object):
 
             for p in self._relations:
                 s += "{}\n".format(p)
+
+        if self.compartments is not None:
+            s += "\nCompartments\n-------------------------\n\n"
+
+            s += "{}\n".format(self.compartments)
+
 
         s += "\nMegacomplexes\n-------------\n\n"
 

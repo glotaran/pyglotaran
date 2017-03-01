@@ -1,6 +1,5 @@
 from . import (compartment_constraints,
                initial_concentration,
-               dataset,
                dataset_descriptor,
                dataset_scaling,
                megacomplex,
@@ -24,9 +23,6 @@ EqualAreaConstraint = compartment_constraints.EqualAreaConstraint
 
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 
-# Dataset
-
-Dataset = dataset.Dataset
 
 # Dataset Descriptor
 

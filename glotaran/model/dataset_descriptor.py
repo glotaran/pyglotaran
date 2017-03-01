@@ -1,4 +1,3 @@
-from .dataset import Dataset
 from .dataset_scaling import DatasetScaling
 from .megacomplex_scaling import MegacomplexScaling
 
@@ -7,17 +6,16 @@ class DatasetDescriptor(object):
     """
     Class representing a dataset for fitting.
     """
-    _dataset_scaling = None
-    _initial_concentration = None
 
     def __init__(self, label, initial_concentration, megacomplexes,
-                 megacomplex_scaling, dataset, dataset_scaling):
+                 megacomplex_scaling, dataset_scaling):
         self.label = label
+        self._dataset_scaling = None
+        self._initial_concentration = None
         if initial_concentration is not None:
             self.initial_concentration = initial_concentration
         self.megacomplexes = megacomplexes
         self.megacomplex_scaling = megacomplex_scaling
-        self.dataset = dataset
         if dataset_scaling is not None:
             self.dataset_scaling = dataset_scaling
 
