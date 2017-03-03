@@ -8,15 +8,17 @@ from glotaran.model import (create_parameter_list, Parameter, InitialConcentrati
 from glotaran.models.kinetic import KineticModel, KMatrix, KineticMegacomplex, KineticDatasetDescriptor, KineticSeperableModel
 import numpy as np
 import matplotlib.pyplot as plt
+
 model = KineticModel()
-plist = create_parameter_list([["k1", 0.002], ["k2", 0.002]])
+plist = create_parameter_list([["k1", 0.005], ["k2", 0.001]])
 model.parameter = plist
 model.add_parameter(Parameter(1, label="j1"))
-model.add_parameter(Parameter(1, label="j2"))
+model.add_parameter(Parameter(0, label="j1"))
 
-model.compartments = ["s1","s2"]
+model.compartments = ["s1", "s2"]
 
-k_mat = KMatrix("k1", {("s1","s1"): 1, ("s2","s1"): 2})
+k_mat = KMatrix("k1", {("s2", "s1"): 1, ("s1", "s2"): 2, ("s2", "s2"): 2})
+k_mat = KMatrix("k1", {("s2", "s1"): 1, ("s2", "s2"): 2})
 
 model.add_k_matrix(k_mat)
 
