@@ -5,7 +5,7 @@
 from glotaran.model import (create_parameter_list, Parameter, InitialConcentration,
                            ZeroConstraint, EqualConstraint, EqualAreaConstraint, FixedConstraint, BoundConstraint,
                            Relation)
-from glotaran.models.kinetic import KineticModel, KMatrix, KineticMegacomplex, KineticDatasetDescriptor, KineticSeperableModel
+from glotaran.models.kinetic import KineticModel, KMatrix, KineticMegacomplex, KineticDatasetDescriptor, KineticSeparableModel
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -39,7 +39,7 @@ print(model)
 times = np.asarray(np.arange(0, 1500, 1.5))
 test_x = np.arange(12820, 15120, 46)
 
-fitmodel = KineticSeperableModel(model)
+fitmodel = KineticSeparableModel(model)
 data = fitmodel.eval(fitmodel.get_initial_fitting_parameter(), *times, **{'dataset':'d1',
                                            'noise':True, 'noise_std_dev':0.0001,
                                            'd1_x': test_x,

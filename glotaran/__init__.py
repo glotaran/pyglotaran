@@ -4,8 +4,8 @@ from glotaran.specification_parser import parse_yml
 from glotaran.specification_parser import parse_file
 
 # Top level API
-# SeperableModel = seperable_model.SeperableModel
-# SeperableModelResult = result.SeperableModelResult
+# SeparableModel = separable_model.SeparableModel
+# SeparableModelResult = result.SeparableModelResult
 
 # loadSomethingFromFile
 # Load Glotaran analysis protocol (*.gat or *.yml) from file

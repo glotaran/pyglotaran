@@ -4,7 +4,7 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran_tools.specification_parser import parse_yml
-from glotaran_models.kinetic import KineticSeperableModel
+from glotaran_models.kinetic import KineticSeparableModel
 
 fitspec = '''
 type: kinetic
@@ -62,7 +62,7 @@ wanted_params.pretty_print()
 
 model = parse_yml(fitspec.format(initial_parameter))
 
-fitmodel = KineticSeperableModel(model)
+fitmodel = KineticSeparableModel(model)
 data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
                                                'dataset1_x': x,
                                                })

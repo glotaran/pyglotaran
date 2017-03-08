@@ -2,7 +2,7 @@ from lmfit import Parameters
 import numpy as np
 import scipy.linalg
 
-from lmfit_varpro import SeperableModel
+from lmfit_varpro import SeparableModel
 from glotaran.model import BoundConstraint, FixedConstraint
 
 from c_matrix import calculateC
@@ -10,10 +10,10 @@ from .c_matrix_cython import CMatrixCython
 #from .c_matrix_python import CMatrixPython
 #from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
 
-from .result import KineticSeperableModelResult
+from .result import KineticSeparableModelResult
 
 
-class KineticSeperableModel(SeperableModel):
+class KineticSeparableModel(SeparableModel):
     def __init__(self, model):
         self._model = model
         self._prepare_parameter()
@@ -26,7 +26,7 @@ class KineticSeperableModel(SeperableModel):
         return data
 
     def fit(self, initial_parameter, *args, **kwargs):
-        result = KineticSeperableModelResult(self, initial_parameter, *args,
+        result = KineticSeparableModelResult(self, initial_parameter, *args,
                                              **kwargs)
         result.fit(initial_parameter, *args, **kwargs)
         return result

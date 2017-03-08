@@ -1,9 +1,9 @@
 import numpy as np
 
-from lmfit_varpro import SeperableModelResult
+from lmfit_varpro import SeparableModelResult
 
 
-class KineticSeperableModelResult(SeperableModelResult):
+class KineticSeparableModelResult(SeparableModelResult):
     _left_singular_values = None
     _singular_values = None
     _right_singular_values = None
