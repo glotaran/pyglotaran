@@ -5,8 +5,8 @@ install:
 
 rebuild: uninstall clean install
 
-uninstall: 
-	rm -rf /usr/lib64/python3.5/site-packages/glotaran_*
+uninstall:
+	rm -rf /usr/lib64/python3.5/site-packages/glotaran*
 
 clean:
 	rm -rf build/

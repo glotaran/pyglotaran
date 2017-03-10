@@ -18,6 +18,7 @@ class DatasetDescriptor(object):
         self.megacomplex_scaling = megacomplex_scaling
         if dataset_scaling is not None:
             self.dataset_scaling = dataset_scaling
+        self._data = None
 
     @property
     def label(self):
@@ -26,6 +27,14 @@ class DatasetDescriptor(object):
     @label.setter
     def label(self, value):
         self._label = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
 
     @property
     def initial_concentration(self):
@@ -38,16 +47,6 @@ class DatasetDescriptor(object):
         '''Sets the label of the initial concentration to be used to fit the
         dataset.'''
         self._initial_concentration = value
-
-    @property
-    def dataset(self):
-        return self._dataset
-
-    @dataset.setter
-    def dataset(self, dataset):
-        if not issubclass(type(dataset), Dataset):
-            raise TypeError("Dataset must be of subclass of 'Dataset' class.")
-        self._dataset = dataset
 
     @property
     def dataset_scaling(self):

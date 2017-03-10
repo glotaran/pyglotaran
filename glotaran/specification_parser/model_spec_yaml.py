@@ -2,6 +2,7 @@ import os
 import csv
 from ast import literal_eval as make_tuple
 from glotaran.model import (create_parameter_list,
+                            Dataset,
                             DatasetScaling,
                             FixedConstraint,
                             BoundConstraint,
@@ -96,7 +97,7 @@ class ModelSpecParser(object):
 
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
-                               dataset, dataset_scaling):
+                               dataset_scaling):
         raise NotImplementedError
 
     def get_dataset(self, dataset_spec):

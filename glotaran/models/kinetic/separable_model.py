@@ -6,7 +6,7 @@ from lmfit_varpro import SeparableModel
 from glotaran.model import BoundConstraint, FixedConstraint
 
 from c_matrix import calculateC
-from .c_matrix_cython import CMatrixCython
+from .c_matrix_cython.c_matrix_cython import CMatrixCython
 #from .c_matrix_python import CMatrixPython
 #from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
 
@@ -20,9 +20,9 @@ class KineticSeparableModel(SeparableModel):
         self._c_matrix_backend = CMatrixCython()
 
     def data(self, **kwargs):
-        data = ()
-        for dataset in self._model.datasets:
-            data = data + (kwargs[dataset],)
+        print(type(self._model.datasets))
+        for lbl, dataset in self._model.datasets.items():
+            data = data + (dataset.data.data,)
         return data
 
     def fit(self, initial_parameter, *args, **kwargs):
@@ -84,24 +84,18 @@ class KineticSeparableModel(SeparableModel):
                 self._fit_params.add("p{}".format(p.index), val,
                                      vary=vary, min=min, max=max, expr=expr)
 
-    def c_matrix(self, parameter, *times, **kwargs):
+    def c_matrix(self, parameter, *args, **kwargs):
         for dataset in self._model.datasets:
             desc = self._model.datasets[dataset]
-            x = '{}_x'.format(dataset)
-            x = kwargs[x] if x in kwargs else [0]
-                # list(range(kwargs['{}'.format(dataset)].shape[1]))
-            c = self._construct_c_matrix_for_dataset(parameter, desc,
-                                                     np.asarray(times),
-                                                     np.asarray(x))
+            c = self._construct_c_matrix_for_dataset(parameter, desc)
             break
         return c
 
     def get_initial_fitting_parameter(self):
         return self._fit_params
 
-    def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor,
-                                        times, x):
-
+    def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor):
+        axies = dataset_descriptor.data.independent_axies
         initial_concentration = dataset_descriptor.initial_concentration
         irf = dataset_descriptor.irf
         c_matrix = None
@@ -112,8 +106,7 @@ class KineticSeparableModel(SeparableModel):
                                                          cmplx,
                                                          initial_concentration,
                                                          irf,
-                                                         times,
-                                                         x)
+                                                         axies)
             if c_matrix is None:
                 c_matrix = tmp
             else:
@@ -131,9 +124,7 @@ class KineticSeparableModel(SeparableModel):
                                             megacomplex,
                                             initial_concentration,
                                             irf,
-                                            times,
-                                            x):
-
+                                            axies):
         # Combine K-Matrices of the megacomplex.
 
         model_k_matrix = self._get_combined_k_matrix(megacomplex)
@@ -149,6 +140,9 @@ class KineticSeparableModel(SeparableModel):
 
         # Calculate C Matrix
 
+        x = axies.get(0)
+        times = axies.get(0)
+
         C = np.empty((x.shape[0], times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
 
@@ -157,7 +151,9 @@ class KineticSeparableModel(SeparableModel):
         if irf is not None:
             centers, widths, scale = self._get_irf_parameter(parameter, irf,
                                                              x)
-            self._c_matrix_backend.c_matrix_gaussian_irf(C, eigenvalues, times, centers, widths,
+            self._c_matrix_backend.c_matrix_gaussian_irf(C, eigenvalues,
+                                                         times,
+                                                         centers, widths,
                                     scale)
         else:
             calculateC(C[0, :, :], eigenvalues, times)

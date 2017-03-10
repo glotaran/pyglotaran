@@ -27,6 +27,9 @@ class Model(object):
     def type_string(self):
         raise NotImplementedError
 
+    def eval(dataset, axies):
+        raise NotImplementedError
+
     @property
     def compartments(self):
         return self._compartments
@@ -162,6 +165,9 @@ class Model(object):
             self.datasets[dataset.label] = dataset
         else:
             self.datasets = {dataset.label: dataset}
+
+    def set_data(self, label, data):
+        self.datasets[label].data = data
 
     @property
     def initial_concentrations(self):

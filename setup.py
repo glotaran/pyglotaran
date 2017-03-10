@@ -13,13 +13,13 @@ import sys
 if sys.platform == 'win32':
     ext_modules = [
         Extension("c_matrix",
-                  ["glotaran/models/kinetic/c_matrix.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/kinetic/c_matrix_gaussian_irf.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
@@ -28,14 +28,14 @@ if sys.platform == 'win32':
 else:
     ext_modules = [
         Extension("c_matrix",
-                  ["glotaran/models/kinetic/c_matrix.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/kinetic/c_matrix_gaussian_irf.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
@@ -60,6 +60,7 @@ setup(
               'glotaran.datasets',
               'glotaran.model',
               'glotaran.models.kinetic',
+              'glotaran.models.kinetic.c_matrix_cython',
               'glotaran.models.kinetic.c_matrix_opencl',
               'glotaran.specification_parser'
               ],
