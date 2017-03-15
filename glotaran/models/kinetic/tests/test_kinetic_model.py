@@ -4,6 +4,7 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
+from glotaran.model import IndependentAxies
 from glotaran.models.kinetic import KineticSeparableModel
 
 
@@ -52,11 +53,13 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        fitmodel = KineticSeparableModel(model)
-        data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
-                                                       'dataset1_x': x,
-                                                       })
+        axies = IndependentAxies()
+        axies.add(x)
+        axies.add(times)
 
+        data = model.eval(wanted_params, 'dataset1', axies)
+
+        fitmodel = KineticSeparableModel(model)
         result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
                               *times, **{"dataset1": data})
 
@@ -111,11 +114,13 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        fitmodel = KineticSeparableModel(model)
-        data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
-                                                       'dataset1_x': x,
-                                                       })
+        axies = IndependentAxies()
+        axies.add(x)
+        axies.add(times)
 
+        data = model.eval(wanted_params, 'dataset1', axies)
+
+        fitmodel = KineticSeparableModel(model)
         result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
                               *times, **{"dataset1": data})
 
@@ -170,13 +175,16 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
+        axies = IndependentAxies()
+        axies.add(x)
+        axies.add(times)
+
+        data = model.eval(wanted_params, 'dataset1', axies,
+                          **{'amplitudes': amps,
+                             'locations': locations,
+                             'delta': delta})
+
         fitmodel = KineticSeparableModel(model)
-        data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
-                                                       'dataset1_x': x,
-                                                       'amplitudes': amps,
-                                                       'locations': locations,
-                                                       'delta': delta
-                                                       })
 
         result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
                               *times, **{"dataset1": data})
