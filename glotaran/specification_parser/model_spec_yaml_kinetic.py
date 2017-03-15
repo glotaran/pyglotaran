@@ -35,7 +35,7 @@ class KineticModelParser(ModelSpecParser):
 
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
-                               dataset, dataset_scaling, dataset_spec):
+                               dataset_scaling, dataset_spec):
         try:
             irf = dataset_spec[KineticModelKeys.IRF]
         except:
@@ -43,7 +43,7 @@ class KineticModelParser(ModelSpecParser):
 
         return KineticDatasetDescriptor(label, initial_concentration,
                                         megacomplexes, megacomplex_scalings,
-                                        dataset, dataset_scaling, irf)
+                                        dataset_scaling, irf)
 
     def get_megacomplexes(self):
         if KineticModelKeys.K_MATRICES not in self.spec:

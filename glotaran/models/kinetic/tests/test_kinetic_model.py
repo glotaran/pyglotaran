@@ -4,7 +4,7 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
-from glotaran.models.kinetic import KineticSeperableModel
+from glotaran.models.kinetic import KineticSeparableModel
 
 
 class TestKineticModel(TestCase):
@@ -17,7 +17,7 @@ class TestKineticModel(TestCase):
         fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1]
 
@@ -52,7 +52,7 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        fitmodel = KineticSeperableModel(model)
+        fitmodel = KineticSeparableModel(model)
         data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
                                                        'dataset1_x': x,
                                                        })
@@ -69,7 +69,7 @@ datasets:
         fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1]
 
@@ -111,7 +111,7 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        fitmodel = KineticSeperableModel(model)
+        fitmodel = KineticSeparableModel(model)
         data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
                                                        'dataset1_x': x,
                                                        })
@@ -128,7 +128,7 @@ datasets:
         fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1, s2, s3]
 
@@ -170,7 +170,7 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        fitmodel = KineticSeperableModel(model)
+        fitmodel = KineticSeparableModel(model)
         data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
                                                        'dataset1_x': x,
                                                        'amplitudes': amps,

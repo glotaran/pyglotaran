@@ -6,13 +6,12 @@ class KineticDatasetDescriptor(DatasetDescriptor):
     KineticDataset is a Dataset with an Irf
     """
     def __init__(self, label, initial_concentration, megacomplexes,
-                 megacomplex_scalings, dataset, dataset_scaling, irf):
+                 megacomplex_scalings, dataset_scaling, irf):
         self.irf = irf
         super(KineticDatasetDescriptor, self).__init__(label,
                                                        initial_concentration,
                                                        megacomplexes,
                                                        megacomplex_scalings,
-                                                       dataset,
                                                        dataset_scaling)
 
     @property

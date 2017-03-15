@@ -24,9 +24,9 @@ EqualAreaConstraint = compartment_constraints.EqualAreaConstraint
 
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 
-# Dataset
 
 Dataset = dataset.Dataset
+IndependentAxies = dataset.IndependentAxies
 
 # Dataset Descriptor
 

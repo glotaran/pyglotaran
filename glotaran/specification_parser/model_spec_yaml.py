@@ -17,6 +17,7 @@ from glotaran.model import (create_parameter_list,
 class ModelKeys:
     COMPARTMENTS = "compartments"
     DATASETS = "datasets"
+    PARAMETERS = "parameters"
     PARAMETER = "parameter"
     MEGACOMPLEXES = "megacomplexes"
     COMPARTMENT_CONSTRAINTS = "compartment_constraints"
@@ -97,13 +98,13 @@ class ModelSpecParser(object):
 
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
-                               dataset, dataset_scaling):
+                               dataset_scaling):
         raise NotImplementedError
 
     def get_dataset(self, dataset_spec):
         label = dataset_spec[ModelKeys.LABEL]
-        path = dataset_spec[DatasetKeys.PATH]
-        type = dataset_spec[ModelKeys.TYPE]
+        # path = dataset_spec[DatasetKeys.PATH]
+        # type = dataset_spec[ModelKeys.TYPE]
         try:
             initial_concentration = \
                     dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
@@ -136,8 +137,7 @@ class ModelSpecParser(object):
             self.get_dataset_descriptor(label,
                                         initial_concentration,
                                         megacomplexes,
-                                        mss,
-                                        Dataset(),
+                                    mss,
                                         dataset_scaling,
                                         dataset_spec))
 
@@ -149,7 +149,7 @@ class ModelSpecParser(object):
             self.get_dataset(dataset_spec)
 
     def get_parameter(self):
-        params = self.spec[ModelKeys.PARAMETER]
+        params = self.spec[ModelKeys.PARAMETERS]
         if isinstance(params, str):
             if os.path.isfile(params):
                 f = open(params)

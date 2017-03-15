@@ -113,7 +113,7 @@ relations:
   - [87, {const: 2.6, 83: 1, 84: 1, 81: -1.0}]
   - [89, 30] # equality
 
-parameter:
+parameters:
   - 4.13E-02
   - 1
   - ["spectral_equality" , 1.78]

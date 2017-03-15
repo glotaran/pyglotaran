@@ -1,3 +1,6 @@
+# TIMP data
+*.ascii
+
 #
 cython_debug
 
@@ -133,3 +136,4 @@ _selectedtraces.ps
 _summary.ps
 
 
+.Rproj.user

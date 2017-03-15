@@ -43,7 +43,7 @@ class Parameter(object):
 
 
 def create_parameter_list(parameter):
-    if not isinstance(parameter, list):
+    if not isinstance(parameter, list):  #TODO: consider allowing None
         raise TypeError
     parameterlist = []
     for p in parameter:

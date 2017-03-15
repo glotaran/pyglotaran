@@ -9,16 +9,17 @@ import numpy
 import scipy
 import sys
 
+# ‘win32’, ‘win-amd64’ and ‘win-ia64’.
 if sys.platform == 'win32':
     ext_modules = [
         Extension("c_matrix",
-                  ["glotaran/models/kinetic/c_matrix.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/kinetic/c_matrix_gaussian_irf.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
@@ -27,14 +28,14 @@ if sys.platform == 'win32':
 else:
     ext_modules = [
         Extension("c_matrix",
-                  ["glotaran/models/kinetic/c_matrix.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                       "-fopenmp"],
                   extra_link_args=['-fopenmp']),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/kinetic/c_matrix_gaussian_irf.pyx"],
+                  ["glotaran/models/kinetic/c_matrix_cython/c_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include()],
                   libraries=["m"],
                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
@@ -48,15 +49,18 @@ setup(
     version="0.1.0",
     description='The Glotaran fitting engine.',
     url='http://glotaran.org',
-    author='Joris Snellenburg, Stefan Schuetz, Joern Weissenborn',
+    author='Joris Snellenburg, Joern Weissenborn, Stefan Schuetz, Sergey Laptenok, Ivo van Stokkum',
     author_email="""j.snellenburg@vu.nl,
-                    YamiNoKeshin@gmail.com,
-                    joern.weissenborn@gmail.com""",
+                    TODO-email-Joern,
+                    TODO-email-Stefan,
+                    TODO-email-Sergey,
+                    i.h.m.van.stokkum@vu.nl""",
     license='GPLv3',
     packages=[
               'glotaran.datasets',
               'glotaran.model',
               'glotaran.models.kinetic',
+              'glotaran.models.kinetic.c_matrix_cython',
               'glotaran.models.kinetic.c_matrix_opencl',
               'glotaran.specification_parser'
               ],

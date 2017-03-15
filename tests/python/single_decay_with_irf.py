@@ -3,13 +3,14 @@ import numpy as np
 
 from lmfit import Parameters
 
-from glotaran_tools.specification_parser import parse_yml
-from glotaran_models.kinetic import KineticSeperableModel
+from glotaran.specification_parser import parse_yml
+from glotaran.model import Dataset, IndependentAxies
+from glotaran.models.kinetic import KineticSeparableModel
 
 fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1]
 
@@ -41,9 +42,13 @@ datasets:
 '''
 
 initial_parameter = [101e-4, 0, 5]
-times = np.asarray(np.arange(-100, 150, 1.5))
-#  x = np.arange(12820, 15120, 4.6)
-x = np.asarray([0, 1])
+times = np.asarray(np.arange(-100, 1500, 1.5))
+# x = np.arange(12820, 15120, 4.6)
+x = np.asarray([1.0])
+
+axies = IndependentAxies()
+axies.add(x)
+axies.add(times)
 
 wanted_params = Parameters()
 wanted_params.add("p1", 101e-3)
@@ -52,17 +57,17 @@ wanted_params.add("p3", 10)
 
 model = parse_yml(fitspec.format(initial_parameter))
 
-fitmodel = KineticSeperableModel(model)
-data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
-                                               'dataset1_x': x,
-                                               })
+fitmodel = KineticSeparableModel(model)
+model.eval(wanted_params, 'dataset1', axies)
+
+
+# print(model.datasets['dataset1'].data.data.shape)
 
 
 def fit():
-    fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
-                 *times, **{"dataset1":
-                            data}).best_fit_parameter.pretty_print()
-
+    fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
+    pass
 
 if __name__ == '__main__':
     fit()
+    pass

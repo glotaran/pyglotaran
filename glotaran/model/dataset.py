@@ -1,22 +1,48 @@
+import numpy as np
+
+
 class Dataset(object):
 
-    def channels(self):
-        raise NotImplementedError
+    def __init__(self, label, independent_axies):
+        self.label = label
+        self.independent_axies = independent_axies
 
-    def get_channels_for_range(self, range):
-        raise NotImplementedError
+    @property
+    def label(self):
+        return self._label
 
-    def number_of_channels(self):
-        return len(self.channels)
+    @label.setter
+    def label(self, label):
+        self._label = label
 
     @property
     def independent_axies(self):
-        return self._observations
+        return self._indpendent_axies
 
     @independent_axies.setter
-    def independet_axies(self, independent_axies):
-        if not isinstance(independent_axies, list):
-            independent_axies = [independent_axies]
-        if any(not isinstance(val, (int, float)) for val in independent_axies):
-            raise ValueError("Non numerical independent axies")
-        self._indpendent_axies = independent_axies
+    def independent_axies(self, value):
+        self._indpendent_axies = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        if not isinstance(data, np.ndarray):
+            raise TypeError("Data must be a nd array")
+        if len(data.shape) is not 2:
+            raise ValueError("Dataset must be 2-dimensional")
+        self._data = data
+
+
+class IndependentAxies(object):
+
+    def __init__(self):
+        self._axies = []
+
+    def add(self, axies):
+        self._axies.append(axies)
+
+    def get(self, nr):
+        return self._axies[nr]

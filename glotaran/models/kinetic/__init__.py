@@ -4,7 +4,7 @@ from . import (
     k_matrix,
     megacomplex,
     model,
-    seperable_model
+    separable_model
 )
 
 # Dataset Descriptor
@@ -27,6 +27,6 @@ KineticMegacomplex = megacomplex.KineticMegacomplex
 
 KineticModel = model.KineticModel
 
-# SeperableModel
+# SeparableModel
 
-KineticSeperableModel = seperable_model.KineticSeperableModel
+KineticSeparableModel = separable_model.KineticSeparableModel
