@@ -18,6 +18,7 @@ class ModelKeys:
     COMPARTMENTS = "compartments"
     DATASETS = "datasets"
     PARAMETERS = "parameters"
+    PARAMETER = "parameter"
     MEGACOMPLEXES = "megacomplexes"
     COMPARTMENT_CONSTRAINTS = "compartment_constraints"
     PARAMETER_CONSTRAINTS = "parameter_constraints"
@@ -123,7 +124,7 @@ class ModelSpecParser(object):
                 compact = is_compact(ms)
                 mc = ModelKeys.MEGACOMPLEXES
                 cp = DatasetKeys.COMPARTEMENTS
-                pm = ModelKeys.PARAMETERS
+                pm = ModelKeys.PARAMETER
                 if compact:
                     mc = 0
                     cp = 1
@@ -177,8 +178,8 @@ class ModelSpecParser(object):
             params = []
             if ModelKeys.RANGE in constraint:
                 params = make_tuple(constraint[ModelKeys.RANGE])
-            elif ModelKeys.PARAMETERS in constraint:
-                params = constraint[ModelKeys.PARAMETERS]
+            elif ModelKeys.PARAMETER in constraint:
+                params = constraint[ModelKeys.PARAMETER]
             elif compact:
                 params = constraint[1]
                 if isinstance(params, str):
@@ -227,7 +228,7 @@ class ModelSpecParser(object):
 
             else:
                 tg = CompartmentConstraintKeys.TARGET
-                par = ModelKeys.PARAMETERS
+                par = ModelKeys.PARAMETER
                 wg = CompartmentConstraintKeys.WEIGHT
                 if compact:
                     tg = 3
@@ -252,7 +253,7 @@ class ModelSpecParser(object):
         for relation in self.spec[ModelKeys.RELATIONS]:
             compact = is_compact(relation)
 
-            par = ModelKeys.PARAMETERS
+            par = ModelKeys.PARAMETER
             to = RelationKeys.TO
 
             if compact:
@@ -268,7 +269,7 @@ class ModelSpecParser(object):
             compact = is_compact(concentration)
 
             lb = ModelKeys.LABEL
-            par = ModelKeys.PARAMETERS
+            par = ModelKeys.PARAMETER
             if compact:
                 lb = 0
                 par = 1

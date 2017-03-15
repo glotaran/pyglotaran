@@ -20,7 +20,7 @@ class KineticSeparableModel(SeparableModel):
         self._c_matrix_backend = CMatrixCython()
 
     def data(self, **kwargs):
-        print(type(self._model.datasets))
+        data = ()
         for lbl, dataset in self._model.datasets.items():
             data = data + (dataset.data.data,)
         return data
@@ -141,7 +141,7 @@ class KineticSeparableModel(SeparableModel):
         # Calculate C Matrix
 
         x = axies.get(0)
-        times = axies.get(0)
+        times = axies.get(1)
 
         C = np.empty((x.shape[0], times.shape[0], eigenvalues.shape[0]),
                      dtype=np.float64)
@@ -284,8 +284,7 @@ class KineticSeparableModel(SeparableModel):
         amplitudes = kwargs["amplitudes"] if "amplitudes" in kwargs else None
         locations = kwargs["locations"] if "locations" in kwargs else None
         delta = kwargs["delta"] if "delta" in kwargs else None
-        x = "{}_x".format(dataset.label)
-        x = kwargs[x] if x in kwargs else np.asarray([0])
+        x = dataset.data.independent_axies.get(0)
         e = None
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]
@@ -332,7 +331,6 @@ class KineticSeparableModel(SeparableModel):
 
             break
         # get the
-
         return e
 
     def coefficients(self, *args, **kwargs):
@@ -346,9 +344,6 @@ class KineticSeparableModel(SeparableModel):
             for i in range(len(m)):
                 m[i] = compartments.index(m[i])
             e_matrix = self.e_matrix(*args, **kwargs)
-            print("em")
-            print(e_matrix.shape)
-            print(m)
             mapped_e_matrix = np.empty(e_matrix.shape, e_matrix.dtype)
             for i in range(len(m)):
                 mapped_e_matrix[:, m[i]] = e_matrix[:, i]

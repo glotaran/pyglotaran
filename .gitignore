@@ -1,3 +1,6 @@
+# TIMP data
+*.ascii
+
 #
 cython_debug
 

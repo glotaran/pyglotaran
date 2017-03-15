@@ -1,47 +1,63 @@
 from glotaran import load, parse
+from unittest import TestCase
+from os import getcwd
+from os.path import join, dirname, abspath
 
-fitspec = '''
-type: kinetic
+THIS_DIR = dirname(abspath(__file__))
 
-parameters:
-  - 0.1
-  - 0.2
+class TestParser(TestCase):
 
-compartments: [s1, s2]
+    def setUp(self):
+        print(getcwd())
+        spec_path = join(THIS_DIR, '../resources/test_glotaran_api_spec.yml')
 
-megacomplexes:
-    - label: mc1
-      k_matrices: [k1]
+        fitspec = '''
+        type: kinetic
 
-k_matrices:
-  - label: "k1"
-    type: sequential
-    compartments: [s1, s2, s3]
-    parameters: [1, 2, 3]
-    matrix: {
-      '("s1","s1")': 1,
-      '("s2","s2")': 2,
-    }
+        parameters:
+          - 0.1
+          - 0.2
 
-irf:
-  - label: irf1
-    type: gaussian
-    center: 3
-    width: 4
+        compartments: [s1, s2]
 
-datasets:
-  - label: dataset1
-    megacomplexes: [mc1]
-    irf: irf1
-'''
+        megacomplexes:
+            - label: mc1
+              k_matrices: [k1]
 
-gta1 = parse(fitspec)
-print("Parsing from string")
-print(gta1.k_matrices)
-print(gta1)
-gta1.eval()
+        k_matrices:
+          - label: "k1"
+            type: sequential
+            compartments: [s1, s2, s3]
+            parameters: [1, 2, 3]
+            matrix: {
+              '("s1","s1")': 1,
+              '("s2","s2")': 2,
+            }
 
-print("Loading from file")
-gta2 = load('../resources/test_glotaran_api_spec.yml')
-print(gta2)
+        irf:
+          - label: irf1
+            type: gaussian
+            center: 3
+            width: 4
+
+        datasets:
+          - label: dataset1
+            megacomplexes: [mc1]
+            irf: irf1
+        '''
+
+    def test_fitspec_from_string(self):
+        gta1 = parse(self.fitspec)
+        print("Parsing from string")
+        print(gta1.k_matrices)
+        print(gta1)
+        #TODO: Replace with another test:
+        # gta1.eval()
+
+    def test_fitspec_from_file(self):
+        print("Loading from file")
+        gta2 = load('../resources/test_glotaran_api_spec.yml')
+        print(gta2)
+
+
 

@@ -3,7 +3,7 @@ from glotaran.model import Dataset
 from .megacomplex import KineticMegacomplex
 from .k_matrix import KMatrix
 from .irf import Irf
-from .seperable_model import KineticSeperableModel
+from .separable_model import KineticSeparableModel
 
 
 class KineticModel(Model):
@@ -82,7 +82,7 @@ class KineticModel(Model):
     def eval(self, parameter, dataset, independent_axies):
         self.set_data(dataset, Dataset(dataset, independent_axies))
 
-        fitmodel = KineticSeperableModel(self)
+        fitmodel = KineticSeparableModel(self)
         data = fitmodel.eval(parameter, **{'dataset': 'dataset1'})
 
         self.datasets[dataset].data.data = data

@@ -1,6 +1,6 @@
 type: kinetic
 
-parameter:
+parameters:
   - 0.1
   - 0.2
 

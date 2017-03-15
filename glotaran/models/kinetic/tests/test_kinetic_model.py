@@ -17,7 +17,7 @@ class TestKineticModel(TestCase):
         fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1]
 
@@ -69,7 +69,7 @@ datasets:
         fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1]
 
@@ -128,7 +128,7 @@ datasets:
         fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1, s2, s3]
 
