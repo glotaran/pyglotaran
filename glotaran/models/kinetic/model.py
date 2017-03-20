@@ -14,6 +14,7 @@ class KineticModel(Model):
     def __init__(self):
         self.k_matrices = {}
         self.irfs = {}
+        self.dispersion_center = None
         super(KineticModel, self).__init__()
 
     def type_string(self):
@@ -23,6 +24,18 @@ class KineticModel(Model):
         if not isinstance(megacomplex, KineticMegacomplex):
             raise TypeError
         super(KineticModel).add_megakomplex(megacomplex)
+
+    @property
+    def dispersion_center(self):
+        if self._dispersion_center is None:
+            for d in self.data():
+                return d.independent_axies.get(0)
+        else:
+            return self._dispersion_center
+
+    @dispersion_center.setter
+    def dispersion_center(self, value):
+        self._dispersion_center = value
 
     @property
     def k_matrices(self):
@@ -81,10 +94,9 @@ class KineticModel(Model):
 
     def eval(self, parameter, dataset, independent_axies, **kwargs):
         self.set_data(dataset, Dataset(dataset, independent_axies))
-
         fitmodel = KineticSeparableModel(self)
 
         kwargs['dataset'] = dataset
-        data = fitmodel.eval(parameter, **kwargs)
+        #  data = fitmodel.eval(parameter, **kwargs)
 
-        self.datasets[dataset].data.data = data
+        #  self.datasets[dataset].data.data = data

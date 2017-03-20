@@ -3,12 +3,12 @@ import numpy as np
 import scipy.linalg
 
 from lmfit_varpro import SeparableModel
-from glotaran.model import BoundConstraint, FixedConstraint
+from glotaran.model import CMatrix, BoundConstraint, FixedConstraint
 
 from c_matrix import calculateC
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
-#from .c_matrix_python import CMatrixPython
-#from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
+# from .c_matrix_python import CMatrixPython
+# from .c_matrix_opencl.c_matrix_opencl import CMatrixOpenCL
 
 from .result import KineticSeparableModelResult
 
@@ -18,6 +18,7 @@ class KineticSeparableModel(SeparableModel):
         self._model = model
         self._prepare_parameter()
         self._c_matrix_backend = CMatrixCython()
+        self._axies_tolerance = 0.5
 
     def data(self, **kwargs):
         data = ()
@@ -30,6 +31,55 @@ class KineticSeparableModel(SeparableModel):
                                              **kwargs)
         result.fit(initial_parameter, *args, **kwargs)
         return result
+
+    def _prepare_c(self):
+
+        # C Dims WL X [Compartments X Times]
+
+        C = []
+
+        for group, items in self._get_construction_order().items():
+
+            all_data = [i['dataset'] for i in items]
+
+            n_times = np.sum([len(dataset.data.independent_axies.get(1))
+                              for dataset in all_data])
+
+            all_mc = [d.megacomplexes for d in all_data]
+            all_mc = [self._model.megacomplexes[mc] for mcs in all_mc for mc in
+                      mcs]
+            all_k = [mc.k_matrices for mc in all_mc]
+            all_k = [self._model.k_matrices[k] for ks in all_k for k in ks]
+
+            compartment_order = set([c for ks in all_k for c in ks.compartment_map])
+
+            n_compartments = len(compartment_order)
+
+            c = np.empty((n_compartments, n_times), dtype=np.float64)
+            C.append((group, items, compartment_order, c))
+
+        return C
+
+    def _get_construction_order(self):
+
+        # construction item
+        #
+        # {x: wl, label}
+
+        construction_order = {}
+        for label, dataset in self._model.datasets.items():
+            for item in [{'x': x, 'dataset': dataset} for x in dataset.data.independent_axies.get(0)]:
+                if item['x'] in construction_order:
+                    construction_order[item['x']].append(item)
+                elif any(abs(item['x']-val) < self._axies_tolerance for val in
+                         construction_order):
+                    idx = [val for val in construction_order if abs(item['x']-val) <
+                           self._axies_tolerance][0]
+                    construction_order[idx].append(item)
+
+                else:
+                    construction_order[item['x']] = [item]
+        return construction_order
 
     def _prepare_parameter(self):
         self._fit_params = Parameters()
@@ -85,16 +135,20 @@ class KineticSeparableModel(SeparableModel):
                                      vary=vary, min=min, max=max, expr=expr)
 
     def c_matrix(self, parameter, *args, **kwargs):
-        for dataset in self._model.datasets:
-            desc = self._model.datasets[dataset]
-            c = self._construct_c_matrix_for_dataset(parameter, desc)
-            break
-        return c
+
+        if "dataset" in kwargs:
+            desc = self._model.datasets[kwargs["dataset"]]
+            return self._construct_c_matrix_for_dataset(parameter, desc)
+        else:
+            for (group, items, c_order, C) in self._prepare_c():
+                print(group)
+        return
 
     def get_initial_fitting_parameter(self):
         return self._fit_params
 
-    def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor):
+    def _construct_c_matrix_for_dataset(self, parameter, dataset_descriptor,
+                                        compartment_order=None):
         axies = dataset_descriptor.data.independent_axies
         initial_concentration = dataset_descriptor.initial_concentration
         irf = dataset_descriptor.irf
@@ -106,25 +160,24 @@ class KineticSeparableModel(SeparableModel):
                                                          cmplx,
                                                          initial_concentration,
                                                          irf,
-                                                         axies)
+                                                         axies,
+                                                         compartment_order)
             if c_matrix is None:
                 c_matrix = tmp
             else:
-                if c_matrix.shape[1] > tmp.shape[1]:
-                    for i in range(tmp.shape[1]):
-                        c_matrix[:, i] = tmp[:, i] + c_matrix[:, i]
-                else:
-                    for i in range(c_matrix.shape[1]):
-                        c_matrix[:, i] = tmp[:, i] + c_matrix[:, i]
+                c_matrix = c_matrix.combine(tmp)
 
-        return c_matrix
+        return c_matrix.matrix
 
     def _construct_c_matrix_for_megacomplex(self,
                                             parameter,
                                             megacomplex,
                                             initial_concentration,
                                             irf,
-                                            axies):
+                                            axies,
+                                            compartment_order,
+                                            c_matrix=None,
+                                           ):
         # Combine K-Matrices of the megacomplex.
 
         model_k_matrix = self._get_combined_k_matrix(megacomplex)
@@ -138,25 +191,30 @@ class KineticSeparableModel(SeparableModel):
         eigenvalues, eigenvectors = \
             self._construct_k_matrix_eigen(parameter, k_matrix)
 
+        print(eigenvalues)
+        print(model_k_matrix.compartment_map)
+
         # Calculate C Matrix
 
         x = axies.get(0)
         times = axies.get(1)
 
-        C = np.empty((x.shape[0], times.shape[0], eigenvalues.shape[0]),
-                     dtype=np.float64)
+        if c_matrix is None:
+            c_matrix = np.empty((x.shape[0], times.shape[0],
+                                 eigenvalues.shape[0]),
+                                dtype=np.float64)
 
         #  num_threads = multiprocessing.cpu_count()
 
         if irf is not None:
             centers, widths, scale = self._get_irf_parameter(parameter, irf,
                                                              x)
-            self._c_matrix_backend.c_matrix_gaussian_irf(C, eigenvalues,
+            self._c_matrix_backend.c_matrix_gaussian_irf(c_matrix, eigenvalues,
                                                          times,
                                                          centers, widths,
-                                    scale)
+                                                         scale)
         else:
-            calculateC(C[0, :, :], eigenvalues, times)
+            calculateC(c_matrix[0, :, :], eigenvalues, times)
             for i in range(1, C.shape[0]):
                 C[i, :, :] = C[0, :, :]
 
@@ -196,7 +254,7 @@ class KineticSeparableModel(SeparableModel):
                                                      eigenvectors)
             C = np.dot(C, concentration_matrix)
 
-        return C
+        return CMatrix(C, model_k_matrix.compartment_map, axies)
 
     def _get_combined_k_matrix(self, megacomplex):
         model_k_matrix = None
@@ -214,8 +272,8 @@ class KineticSeparableModel(SeparableModel):
         #  idx = eigenvalues.argsort()[::-1]
         #  eigenvalues = eigenvalues[idx]
         #  eigenvectors = eigenvectors[:, idx]
-
         return(eigenvalues, eigenvectors)
+
 
     def _construct_concentration_matrix(self, parameter, concentration_vector,
                                         k_matrix_eigenvectors):

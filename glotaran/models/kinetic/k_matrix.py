@@ -1,4 +1,3 @@
-from scipy.sparse import dok_matrix
 import numpy as np
 
 
@@ -54,6 +53,7 @@ class KMatrix(object):
         compartment_map = self.compartment_map
         size = len(compartment_map)
         array = np.zeros((size, size), dtype=np.int32)
+        # Matrix is a dict
         for index in self.matrix:
             i = compartment_map.index(index[0])
             j = compartment_map.index(index[1])
