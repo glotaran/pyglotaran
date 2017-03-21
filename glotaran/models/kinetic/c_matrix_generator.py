@@ -175,6 +175,7 @@ class CMatrix(object):
             for i in range(len(k_matrix.compartment_map)):
                 target_idx = \
                     self.compartment_order.index(k_matrix.compartment_map[i])
+                # TODO: implement scaling
                 c_matrix[:, target_idx] += tmp_c[:, i]
 
         return c_matrix
