@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from .parameter import Parameter
 from .parameter_constraints import ParameterConstraint
 from .compartment_constraints import CompartmentConstraint
@@ -21,7 +23,7 @@ class Model(object):
         self._relations = None
         self._compartment_constraints = None
         self._parameter_constraints = None
-        self._datasets = None
+        self._datasets = OrderedDict()
         self._initial_concentrations = None
 
     def type_string(self):
@@ -145,14 +147,18 @@ class Model(object):
         else:
             self.compartment_constraints = constraint
 
+    def data(self):
+        for _, d in self.datasets.items():
+            yield d.data
+
     @property
     def datasets(self):
         return self._datasets
 
     @datasets.setter
     def datasets(self, value):
-        if not isinstance(value, dict):
-            raise TypeError("Datasets must be dict.")
+        if not isinstance(value, OrderedDict):
+            raise TypeError("Datasets must be Ordered.")
         if any(not issubclass(type(value[val]),
                               DatasetDescriptor) for val in value):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
@@ -161,10 +167,7 @@ class Model(object):
     def add_dataset(self, dataset):
         if not issubclass(type(dataset), DatasetDescriptor):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
-        if self.datasets is not None:
-            self.datasets[dataset.label] = dataset
-        else:
-            self.datasets = {dataset.label: dataset}
+        self.datasets[dataset.label] = dataset
 
     def set_data(self, label, data):
         self.datasets[label].data = data
@@ -218,7 +221,6 @@ class Model(object):
             s += "\nCompartments\n-------------------------\n\n"
 
             s += "{}\n".format(self.compartments)
-
 
         s += "\nMegacomplexes\n-------------\n\n"
 

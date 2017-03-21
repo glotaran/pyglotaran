@@ -5,6 +5,7 @@ class Parameter(object):
     def __init__(self, initial, label=None):
         self.value = initial
         self.label = label
+        self._index = -1
 
     @property
     def index(self):
@@ -28,8 +29,14 @@ class Parameter(object):
 
     @value.setter
     def value(self, val):
+
         if not isinstance(val, (int, float)) and val != 'nan':
-            raise Exception("Parameter value must be numeric.")
+            if isinstance(val, str):
+                try:
+                    val = float(val)
+                except:
+                    raise Exception("Parameter Error: value must be numeric:"
+                                    "{} Type: {}".format(val, type(val)))
 
         if isinstance(val, int):
             val = float(val)
@@ -43,7 +50,7 @@ class Parameter(object):
 
 
 def create_parameter_list(parameter):
-    if not isinstance(parameter, list):  #TODO: consider allowing None
+    if not isinstance(parameter, list):  # TODO: consider allowing None
         raise TypeError
     parameterlist = []
     for p in parameter:

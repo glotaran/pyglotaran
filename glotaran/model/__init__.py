@@ -1,5 +1,6 @@
 from . import (compartment_constraints,
                initial_concentration,
+               c_matrix,
                dataset,
                dataset_descriptor,
                dataset_scaling,
@@ -14,23 +15,20 @@ from . import (compartment_constraints,
 
 create_parameter_list = parameter.create_parameter_list
 
+# C Matrix
+
+CMatrix = c_matrix.CMatrix
 
 # Compartment Constraints
 ZeroConstraint = compartment_constraints.ZeroConstraint
 EqualConstraint = compartment_constraints.EqualConstraint
 EqualAreaConstraint = compartment_constraints.EqualAreaConstraint
 
-# Dataset Descriptor
+# Dataset
 
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
-
-
 Dataset = dataset.Dataset
 IndependentAxies = dataset.IndependentAxies
-
-# Dataset Descriptor
-
-DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 
 # Dataset Scaling
 
