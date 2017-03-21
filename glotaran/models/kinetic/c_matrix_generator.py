@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import numpy as np
+import scipy.linalg
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
 
@@ -8,21 +9,38 @@ backend = CMatrixCython()
 
 
 class CMatrixGenerator(object):
-    def __init__(self, model, xtol=0.5):
-        self._init_groups(model, xtol)
-
-    def _init_groups(self, model, xtol):
+    def __init__(self):
         self._groups = OrderedDict()
-        for label, dataset in model.datasets.items():
+
+    @classmethod
+    def for_model(cls, model, xtol=0.5):
+        gen = cls()
+        gen._init_groups_for_model(model, xtol)
+        return gen
+
+    @classmethod
+    def for_dataset(cls, model, dataset):
+        gen = cls()
+        data = model.datasets[dataset]
+        gen._add_dataset_to_group(model, data, 0)
+        return gen
+
+    def _init_groups_for_model(self, model, xtol):
+        for _, dataset in model.datasets.items():
+            self._add_dataset_to_group(model, dataset, xtol)
+
+    def _add_dataset_to_group(self, model, dataset, xtol):
             for matrix in [CMatrix(x, dataset, model) for x in
                            dataset.data.independent_axies.get(0)]:
+                self._add_c_matrix_to_group(matrix, xtol)
+
+    def _add_c_matrix_to_group(self, matrix, xtol):
                 if matrix.x in self._groups:
                     self._groups[matrix.x].add_cmatrix(matrix)
                 elif any(abs(matrix.x-val) < xtol for val in self._groups):
                     idx = [val for val in self._groups if abs(matrix.x-val) <
                            xtol][0]
                     self._groups[idx].add_cmatrix(matrix)
-
                 else:
                     self._groups[matrix.x] = CMatrixGroup(matrix)
 
@@ -32,6 +50,20 @@ class CMatrixGenerator(object):
 
     def calculate(self, parameter):
         return [group.calculate(parameter) for group in self.groups()]
+
+    def create_dataset_group(self):
+
+        dataset_group = []
+        for _, group in self._groups.items():
+            slices = []
+            for mat in group.c_matrices:
+                x = np.where(mat.dataset.data.independent_axies.get(0) ==
+                             mat.x)[0]
+                slices.append(mat.dataset.data.data[:, x])
+            slice = np.append([], slices)
+            dataset_group.append(slice)
+
+        return dataset_group
 
 
 class CMatrixGroup(object):
@@ -77,7 +109,7 @@ class CMatrixGroup(object):
 class CMatrix(object):
     def __init__(self, x, dataset, model):
         self.x = x
-        self._dataset = dataset
+        self.dataset = dataset
 
         self._irf = None
         self._collect_irf(model)
@@ -97,13 +129,13 @@ class CMatrix(object):
         self.compartment_order = list(set(compartment_order))
 
     def _collect_irf(self, model):
-        if self._dataset.irf is None:
+        if self.dataset.irf is None:
             return
-        self._irf = model.irfs[self._dataset.irf]
+        self._irf = model.irfs[self.dataset.irf]
 
     def _collect_k_matrices(self, model):
         for mc in [model.megacomplexes[mc] for mc in
-                   self._dataset.megacomplexes]:
+                   self.dataset.megacomplexes]:
             model_k_matrix = None
             for k_matrix_label in mc.k_matrices:
                 m = model.k_matrices[k_matrix_label]
@@ -114,10 +146,22 @@ class CMatrix(object):
         self._k_matrices.append(model_k_matrix)
 
     def _collect_intital_concentration(self, model):
-        if self._dataset.initial_concentration is None:
+
+        if self.dataset.initial_concentration is None:
             return
+        initial_concentrations = \
+            model.initial_concentration[self.dataset.initial_concentration]
+
+        # The initial concentration vector has an element for each compartment
+        # declared in the model. The current C Matrix must not necessary invole
+        # all compartments, as well as the order of compartments can be
+        # different. Thus we shrink and reorder the concentration.
+
+        all_cmps = model.compartments
+
         self._initial_concentrations = \
-            model.initial_concentration[self._dataset.initial_concentration]
+            [initial_concentrations[all_cmps.index(c)]
+             for c in self.compartment_order]
 
     def calculate(self, parameter):
 
@@ -142,7 +186,7 @@ class CMatrix(object):
                                                                    parameter)
 
         # get the time axis
-        time = self._dataset.data.independent_axies.get(1)
+        time = self.dataset.data.independent_axies.get(1)
 
         # allocate C matrix
         # TODO: do this earlier
@@ -153,11 +197,16 @@ class CMatrix(object):
         if self._irf is None:
             backend.c_matrix(c_matrix, eigenvalues, time)
         else:
-            centers, widths, scale = self.calculate_irf_parameter(parameter)
+            centers, widths, scale = self._calculate_irf_parameter(parameter)
             backend.c_matrix_gaussian_irf(c_matrix, eigenvalues,
                                           time,
                                           centers, widths,
                                           scale)
+
+        if self._initial_concentrations is not None:
+            c_matrix = self._apply_initial_concentration_vector(c_matrix,
+                                                                eigenvectors,
+                                                                parameter)
 
         return c_matrix
 
@@ -176,7 +225,7 @@ class CMatrix(object):
         eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
         return(eigenvalues, eigenvectors)
 
-    def calculate_irf_parameter(self, parameter):
+    def _calculate_irf_parameter(self, parameter):
 
         centers = parameter_map(parameter)(np.asarray(self._irf.center))
         widths = parameter_map(parameter)(np.asarray(self._irf.width))
@@ -205,8 +254,24 @@ class CMatrix(object):
 
         return centers, widths, scale
 
+    def _apply_initial_concentration_vector(self, c_matrix, eigenvectors,
+                                            parameter):
+
+        initial_concentrations = \
+            parameter_map(parameter)(self._initial_concentrations)
+
+        gamma = np.matmul(scipy.linalg.inv(eigenvectors),
+                          initial_concentrations)
+
+        concentration_matrix = np.empty(eigenvectors.shape,
+                                        dtype=np.float64)
+        for i in range(eigenvectors.shape[0]):
+            concentration_matrix[i, :] = eigenvectors[:, i] * gamma[i]
+
+        return np.dot(c_matrix, concentration_matrix)
+
     def time(self):
-        return self._dataset.data.independent_axies.get(1)
+        return self.dataset.data.independent_axies.get(1)
 
 
 def parameter_map(parameter):

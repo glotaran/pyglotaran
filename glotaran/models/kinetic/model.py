@@ -97,6 +97,5 @@ class KineticModel(Model):
         fitmodel = KineticSeparableModel(self)
 
         kwargs['dataset'] = dataset
-        #  data = fitmodel.eval(parameter, **kwargs)
-
-        #  self.datasets[dataset].data.data = data
+        data = fitmodel.eval(parameter, **kwargs)
+        self.datasets[dataset].data.data = data
