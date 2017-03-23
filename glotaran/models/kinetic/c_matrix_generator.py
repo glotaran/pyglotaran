@@ -116,6 +116,7 @@ class CMatrix(object):
         self._disp_center = model.dispersion_center
 
         self._k_matrices = []
+        self._megacomplex_scaling = []
         self._collect_k_matrices(model)
         self._set_compartment_order()
 
@@ -143,7 +144,10 @@ class CMatrix(object):
                     model_k_matrix = m
                 else:
                     model_k_matrix = model_k_matrix.combine(m)
-        self._k_matrices.append(model_k_matrix)
+            scaling = self.dataset.megacomplex_scaling[mc.label] \
+                if mc.label in self.dataset.megacomplex_scaling else None
+            self._megacomplex_scaling.append(scaling)
+            self._k_matrices.append(model_k_matrix)
 
     def _collect_intital_concentration(self, model):
 
@@ -169,8 +173,12 @@ class CMatrix(object):
                              len(self.compartment_order)),
                             dtype=np.float64)
 
-        for k_matrix in self._k_matrices:
+        for k_matrix, scale in self._k_matrices_and_scalings():
             tmp_c = self._calculate_for_k_matrix(k_matrix, parameter)
+
+            if scale is not None:
+                scale = np.prod(parameter_map(parameter)(scale))
+                tmp_c *= scale
 
             for i in range(len(k_matrix.compartment_map)):
                 target_idx = \
@@ -178,7 +186,11 @@ class CMatrix(object):
                 # TODO: implement scaling
                 c_matrix[:, target_idx] += tmp_c[:, i]
 
-        return c_matrix
+        return self.scaling(parameter) * c_matrix
+
+    def _k_matrices_and_scalings(self):
+        for i in range(len(self._k_matrices)):
+            yield self._k_matrices[i], self._megacomplex_scaling[i]
 
     def _calculate_for_k_matrix(self, k_matrix, parameter):
 
@@ -261,6 +273,13 @@ class CMatrix(object):
         initial_concentrations = \
             parameter_map(parameter)(self._initial_concentrations)
 
+        for i in range(len(self.compartment_order)):
+            comp = self.compartment_order[i]
+            if comp in self.dataset.compartment_scalings:
+                scale = self.dataset.compartment_scalings[comp]
+                scale = np.prod(parameter_map(parameter)(scale))
+                initial_concentrations[i] *= scale
+
         gamma = np.matmul(scipy.linalg.inv(eigenvectors),
                           initial_concentrations)
 
@@ -274,6 +293,10 @@ class CMatrix(object):
     def time(self):
         return self.dataset.data.independent_axies.get(1)
 
+    def scaling(self, parameter):
+        return parameter_idx_to_val(parameter, self.dataset.scaling) \
+            if self.dataset.scaling is not None else 1
+
 
 def parameter_map(parameter):
     def map_fun(i):
@@ -281,3 +304,9 @@ def parameter_map(parameter):
             i = parameter["p{}".format(int(i))]
         return i
     return np.vectorize(map_fun)
+
+
+def parameter_idx_to_val(parameter, index):
+        if index != 0:
+            index = parameter["p{}".format(int(index))]
+        return index

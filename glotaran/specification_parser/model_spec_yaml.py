@@ -2,14 +2,11 @@ import os
 import csv
 from ast import literal_eval as make_tuple
 from glotaran.model import (create_parameter_list,
-                            Dataset,
-                            DatasetScaling,
                             FixedConstraint,
                             BoundConstraint,
                             ZeroConstraint,
                             EqualConstraint,
                             EqualAreaConstraint,
-                            MegacomplexScaling,
                             Relation,
                             InitialConcentration)
 
@@ -98,7 +95,7 @@ class ModelSpecParser(object):
 
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
-                               dataset_scaling):
+                               dataset_scaling, compartment_scalings):
         raise NotImplementedError
 
     def get_dataset(self, dataset_spec):
@@ -114,22 +111,33 @@ class ModelSpecParser(object):
 
         try:
             dataset_scaling = \
-                    DatasetScaling(dataset_spec[DatasetKeys.DATASET_SCALING])
+                    dataset_spec[DatasetKeys.DATASET_SCALING]
         except:
             dataset_scaling = None
 
-        mss = []
+        mss = {}
         try:
             for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
                 compact = is_compact(ms)
                 mc = ModelKeys.MEGACOMPLEXES
-                cp = DatasetKeys.COMPARTEMENTS
                 pm = ModelKeys.PARAMETER
                 if compact:
                     mc = 0
-                    cp = 1
-                    pm = 2
-                mss.append(MegacomplexScaling(ms[mc], ms[cp], ms[pm]))
+                    pm = 1
+                mss[ms[mc]] = ms[pm]
+        except:
+            pass
+
+        compartment_scalings = {}
+        try:
+            for ms in dataset_spec[DatasetKeys.COMPARTEMENT_SCALING]:
+                compact = is_compact(ms)
+                c = ModelKeys.COMPARTMENT
+                pm = ModelKeys.PARAMETER
+                if compact:
+                    c = 0
+                    pm = 1
+                compartment_scalings[ms[c]] = ms[pm]
         except:
             pass
 
@@ -137,8 +145,9 @@ class ModelSpecParser(object):
             self.get_dataset_descriptor(label,
                                         initial_concentration,
                                         megacomplexes,
-                                    mss,
+                                        mss,
                                         dataset_scaling,
+                                        compartment_scalings,
                                         dataset_spec))
 
     def get_dataset_additionals(self, dataset, dataset_spec):

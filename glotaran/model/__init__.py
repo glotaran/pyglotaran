@@ -3,9 +3,7 @@ from . import (compartment_constraints,
                c_matrix,
                dataset,
                dataset_descriptor,
-               dataset_scaling,
                megacomplex,
-               megacomplex_scaling,
                model,
                parameter,
                parameter_constraints,
@@ -30,10 +28,6 @@ DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 Dataset = dataset.Dataset
 IndependentAxies = dataset.IndependentAxies
 
-# Dataset Scaling
-
-DatasetScaling = dataset_scaling.DatasetScaling
-
 # Initial Concentration
 
 InitialConcentration = initial_concentration.InitialConcentration
@@ -41,10 +35,6 @@ InitialConcentration = initial_concentration.InitialConcentration
 # Megacomplex
 
 Megacomplex = megacomplex.Megacomplex
-
-# Megacomplex Scaling
-
-MegacomplexScaling = megacomplex_scaling.MegacomplexScaling
 
 # Model
 

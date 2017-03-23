@@ -32,10 +32,9 @@ datasets:
     irf: irf2
     dataset_scaling: 2 # scale dataset with parameter 78
     megacomplex_scaling:
-      - megacomplexes: [cmplx1] # optional
-        compartments: [1, 2]
+      - megacomplex: cmplx1 # optional
         parameter: 21 # 75th parameter
-      - [[cmplx1], [1, 2], 21] # alternative, order matters!
+      - [cmplx1, 21] # alternative, order matters!
 
 irf: #specific to kinetic or spectro_temporal model
   - label: irf1

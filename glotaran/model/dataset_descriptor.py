@@ -1,23 +1,19 @@
-from .dataset_scaling import DatasetScaling
-from .megacomplex_scaling import MegacomplexScaling
-
-
 class DatasetDescriptor(object):
     """
     Class representing a dataset for fitting.
     """
 
     def __init__(self, label, initial_concentration, megacomplexes,
-                 megacomplex_scaling, dataset_scaling):
+                 megacomplex_scaling, dataset_scaling, compartment_scalings):
         self.label = label
         self._dataset_scaling = None
         self._initial_concentration = None
         if initial_concentration is not None:
             self.initial_concentration = initial_concentration
         self.megacomplexes = megacomplexes
+        self.compartment_scalings = compartment_scalings
         self.megacomplex_scaling = megacomplex_scaling
-        if dataset_scaling is not None:
-            self.dataset_scaling = dataset_scaling
+        self.scaling = dataset_scaling
         self._data = None
 
     @property
@@ -49,14 +45,24 @@ class DatasetDescriptor(object):
         self._initial_concentration = value
 
     @property
-    def dataset_scaling(self):
-        return self._dataset_scaling
+    def scaling(self):
+        return self._scaling
 
-    @dataset_scaling.setter
-    def dataset_scaling(self, scaling):
-        if not isinstance(scaling, DatasetScaling):
+    @scaling.setter
+    def scaling(self, scaling):
+        if not isinstance(scaling, int) and scaling is not None:
+            raise TypeError("Parameter index must be numerical")
+        self._scaling = scaling
+
+    @property
+    def compartment_scalings(self):
+        return self._compartments_scalings
+
+    @compartment_scalings.setter
+    def compartment_scalings(self, scaling):
+        if not isinstance(scaling, dict):
             raise TypeError
-        self._dataset_scaling = scaling
+        self._megacomplex_scaling = scaling
 
     @property
     def megacomplexes(self):
@@ -76,10 +82,9 @@ class DatasetDescriptor(object):
 
     @megacomplex_scaling.setter
     def megacomplex_scaling(self, scaling):
-        if not isinstance(scaling, list):
-            scaling = [scaling]
-        if any(not isinstance(s, MegacomplexScaling) for s in scaling):
-            raise TypeError
+        if not isinstance(scaling, dict):
+            raise TypeError("Megacomplex Scaling must by dict, got"
+                            "{}".format(type(scaling)))
         self._megacomplex_scaling = scaling
 
     def __str__(self):
@@ -92,9 +97,8 @@ class DatasetDescriptor(object):
 
         s += "\tMegacomplexes: {}\n".format(self.megacomplexes)
 
-        if len(self.megacomplex_scaling) is not 0:
-            s += "\tScalings:\n"
-            for sc in self.megacomplex_scaling:
-                s += "\t\t- {}\n".format(sc)
+        s += "\tMega scalings:\n"
+        for cmplx, scale in self._megacomplex_scaling.items():
+            s += "\t\t- {}:{}\n".format(cmplx, scale)
 
         return s
