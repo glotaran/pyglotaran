@@ -92,8 +92,11 @@ class KineticModel(Model):
             s += "{}\n".format(self.irfs[irf])
         return s
 
-    def eval(self, parameter, dataset, independent_axies, **kwargs):
-        self.set_data(dataset, Dataset(dataset, independent_axies))
+    def eval(self, parameter, dataset, axes, **kwargs):
+        data = Dataset(dataset)
+        for label, val in axes.items():
+            data.set_axis(label, val)
+        self.set_data(dataset, data)
         fitmodel = KineticSeparableModel(self)
 
         kwargs['dataset'] = dataset

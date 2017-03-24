@@ -52,7 +52,7 @@ class KMatrix(object):
             next = k_matrix[1:] if len(k_matrix) > 2 else k_matrix[1]
             return self.combine(k_matrix[0]).combine(next)
         if not isinstance(k_matrix, KMatrix):
-            raise TypeError("K-Matrices can oly be combined with other"
+            raise TypeError("K-Matrices can only be combined with other"
                             "K-Matrices.")
         combined_matrix = {}
         for entry in k_matrix.matrix:

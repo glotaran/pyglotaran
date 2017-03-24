@@ -3,9 +3,9 @@ import numpy as np
 
 class Dataset(object):
 
-    def __init__(self, label, independent_axies):
+    def __init__(self, label):
         self.label = label
-        self.independent_axies = independent_axies
+        self._axis = {}
 
     @property
     def label(self):
@@ -15,13 +15,11 @@ class Dataset(object):
     def label(self, label):
         self._label = label
 
-    @property
-    def independent_axies(self):
-        return self._indpendent_axies
+    def get_axis(self, label):
+        return self._axis[label]
 
-    @independent_axies.setter
-    def independent_axies(self, value):
-        self._indpendent_axies = value
+    def set_axis(self, label, value):
+        self._axis[label] = value
 
     @property
     def data(self):
@@ -34,15 +32,3 @@ class Dataset(object):
         if len(data.shape) is not 2:
             raise ValueError("Dataset must be 2-dimensional")
         self._data = data
-
-
-class IndependentAxies(object):
-
-    def __init__(self):
-        self._axies = []
-
-    def add(self, axies):
-        self._axies.append(axies)
-
-    def get(self, nr):
-        return self._axies[nr]

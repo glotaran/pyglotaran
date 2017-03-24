@@ -62,13 +62,13 @@ times = np.asarray(np.arange(-100, 1500, 1.5))
 x1 = np.asarray([1.0, 2.0, 3.0])
 x2 = np.asarray([2.0, 3.1, 4.0])
 
-axies1 = IndependentAxies()
-axies1.add(x1)
-axies1.add(times)
-
-axies2 = IndependentAxies()
-axies2.add(x2)
-axies2.add(times)
+#  axies1 = IndependentAxies()
+#  axies1.add(x1)
+#  axies1.add(times)
+#
+#  axies2 = IndependentAxies()
+#  axies2.add(x2)
+#  axies2.add(times)
 
 wanted_params = Parameters()
 wanted_params.add("p1", 101e-3)
@@ -82,7 +82,7 @@ wanted_params.add("p5", 10)
 model = parse_yml(fitspec.format(initial_parameter))
 print(model)
 
-#  model.eval(wanted_params, 'dataset1', axies1)
+model.eval(wanted_params, 'dataset1', {"time": times, "spec": x1})
 #  model.eval(wanted_params, 'dataset2', axies2)
 
 #  gen = CMatrixGenerator.for_model(model)
