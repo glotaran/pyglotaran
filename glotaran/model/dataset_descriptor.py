@@ -90,7 +90,7 @@ class DatasetDescriptor(object):
     def __str__(self):
         s = "Dataset '{}'\n\n".format(self.label)
 
-        s += "\tDataset Scaling: {}\n".format(self.dataset_scaling)
+        s += "\tDataset Scaling: {}\n".format(self.scaling)
 
         s += "\tInitial Concentration: {}\n"\
             .format(self.initial_concentration)

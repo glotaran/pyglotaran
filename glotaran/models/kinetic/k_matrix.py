@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import numpy as np
 
 
@@ -5,9 +6,10 @@ class KMatrix(object):
     """
     A KMatrix has an label and a scipy.sparse matrix
     """
-    def __init__(self, label, matrix):
+    def __init__(self, label, matrix, compartments):
         self.label = label
         self.matrix = matrix
+        self._create_compartment_map(compartments)
 
     @property
     def label(self):
@@ -23,12 +25,12 @@ class KMatrix(object):
 
     @matrix.setter
     def matrix(self, value):
-        if not isinstance(value, dict):
-            raise TypeError("Matrix must be dict like {(1,2):value}")
+        if not isinstance(value, OrderedDict):
+            raise TypeError("Matrix must be OrderedDict like {(1,2):value}")
         self._matrix = value
 
     @property
-    def compartment_map(self):
+    def involved_compartments(self):
         compartments = []
         for index in self.matrix:
             compartments.append(index[0])
@@ -36,6 +38,14 @@ class KMatrix(object):
 
         compartments = list(set(compartments))
         return compartments
+
+    @property
+    def compartment_map(self):
+        return self._compartment_map
+
+    def _create_compartment_map(self, compartments):
+        self._compartment_map = [c for c in compartments if c in
+                                 self.involved_compartments]
 
     def combine(self, k_matrix):
         if isinstance(k_matrix, list):

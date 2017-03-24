@@ -3,6 +3,7 @@ from .model_spec_yaml import (ModelKeys,
                               is_compact,
                               register_model_parser)
 from ast import literal_eval as make_tuple
+from collections import OrderedDict
 from glotaran.models.kinetic import (KMatrix,
                                      KineticDatasetDescriptor,
                                      KineticMegacomplex,
@@ -51,10 +52,11 @@ class KineticModelParser(ModelSpecParser):
         if KineticModelKeys.K_MATRICES not in self.spec:
             raise Exception("No k-matrices defined")
         for km in self.spec[KineticModelKeys.K_MATRICES]:
-            m = {}
+            m = OrderedDict()
             for i in km[KineticModelKeys.MATRIX]:
                 m[make_tuple(i)] = km[KineticModelKeys.MATRIX][i]
-            self.model.add_k_matrix(KMatrix(km[ModelKeys.LABEL], m))
+            self.model.add_k_matrix(KMatrix(km[ModelKeys.LABEL], m,
+                                            self.model.compartments))
         for cmplx in self.spec[ModelKeys.MEGACOMPLEXES]:
             l = ModelKeys.LABEL
             km = KineticModelKeys.K_MATRICES

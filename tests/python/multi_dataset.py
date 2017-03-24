@@ -15,7 +15,7 @@ type: kinetic
 
 parameters: {}
 
-compartments: [s1, s2]
+compartments: [s1, s2, s3]
 
 megacomplexes:
 - label: mc1
@@ -27,7 +27,7 @@ k_matrices:
   - label: "k1"
     matrix: {{
       '("s1","s2")': 1,
-      '("s2","s2")': 2,
+      '("s2","s3")': 2,
     }}
   - label: "k2"
     matrix: {{
@@ -77,30 +77,30 @@ wanted_params.add("p3", 101e-5)
 wanted_params.add("p4", 0.3)
 wanted_params.add("p5", 10)
 
-print(fitspec.format(initial_parameter))
+#  print(fitspec.format(initial_parameter))
 
 model = parse_yml(fitspec.format(initial_parameter))
+print(model)
 
+#  model.eval(wanted_params, 'dataset1', axies1)
+#  model.eval(wanted_params, 'dataset2', axies2)
 
-model.eval(wanted_params, 'dataset1', axies1)
-model.eval(wanted_params, 'dataset2', axies2)
+#  gen = CMatrixGenerator.for_model(model)
+#  gen2 = CMatrixGenerator.for_dataset(model, 'dataset1')
 
-gen = CMatrixGenerator.for_model(model)
-gen2 = CMatrixGenerator.for_dataset(model, 'dataset1')
+#  for g in gen.groups():
+#      print(g.id)
+#      for c in g.c_matrices:
+#          print(c.x)
+#          print(c.dataset)
+#          print(c.compartment_order)
 
-for g in gen.groups():
-    print(g.id)
-    for c in g.c_matrices:
-        print(c.x)
-        print(c.dataset)
-        print(c.compartment_order)
+#  c_mat = gen.calculate(wanted_params)
 
-c_mat = gen.calculate(wanted_params)
-
-print(model.datasets['dataset1'].data.data.shape)
-print("=======CMAT=====")
-for c in c_mat:
-    print(c.shape)
+#  print(model.datasets['dataset1'].data.data.shape)
+#  print("=======CMAT=====")
+#  for c in c_mat:
+    #  print(c.shape)
 
 #print(fitmodel._get_construction_order())
 #  print(fitmodel.c_matrix(initial_parameter))
@@ -108,15 +108,15 @@ for c in c_mat:
 #  np.savetxt("foo.csv", model.datasets['dataset1'].data.data[:, 2], delimiter=",")
 
 fitmodel = KineticSeparableModel(model)
-fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
+#  fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
 
-print("====DATAGROUP=====")
-
-for g in gen.create_dataset_group():
-    print(g.shape)
-
-def fit():
-    pass
+#  print("====DATAGROUP=====")
+#
+#  for g in gen.create_dataset_group():
+#      print(g.shape)
+#
+#  def fit():
+#      pass
 
 if __name__ == '__main__':
     #  fit()
