@@ -26,7 +26,6 @@ EqualAreaConstraint = compartment_constraints.EqualAreaConstraint
 
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 Dataset = dataset.Dataset
-IndependentAxies = dataset.IndependentAxies
 
 # Initial Concentration
 

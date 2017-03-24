@@ -96,7 +96,7 @@ class KineticSeparableModel(SeparableModel):
         amplitudes = kwargs["amplitudes"] if "amplitudes" in kwargs else None
         locations = kwargs["locations"] if "locations" in kwargs else None
         delta = kwargs["delta"] if "delta" in kwargs else None
-        x = dataset.data.independent_axies.get(0)
+        x = dataset.data.get_axis("spec")
         e = None
         for megacomplex in dataset.megacomplexes:
             cmplx = self._model.megacomplexes[megacomplex]

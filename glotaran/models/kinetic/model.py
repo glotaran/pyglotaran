@@ -29,7 +29,7 @@ class KineticModel(Model):
     def dispersion_center(self):
         if self._dispersion_center is None:
             for d in self.data():
-                return d.independent_axies.get(0)
+                return d.get_axis("spec")[0]
         else:
             return self._dispersion_center
 

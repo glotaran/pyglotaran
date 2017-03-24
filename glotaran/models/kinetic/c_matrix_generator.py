@@ -31,7 +31,7 @@ class CMatrixGenerator(object):
 
     def _add_dataset_to_group(self, model, dataset, xtol):
             for matrix in [CMatrix(x, dataset, model) for x in
-                           dataset.data.independent_axies.get(0)]:
+                           dataset.data.get_axis("spec")]:
                 self._add_c_matrix_to_group(matrix, xtol)
 
     def _add_c_matrix_to_group(self, matrix, xtol):
@@ -57,7 +57,7 @@ class CMatrixGenerator(object):
         for _, group in self._groups.items():
             slices = []
             for mat in group.c_matrices:
-                x = np.where(mat.dataset.data.independent_axies.get(0) ==
+                x = np.where(mat.dataset.data.get_axis("spec") ==
                              mat.x)[0]
                 slices.append(mat.dataset.data.data[:, x])
             slice = np.append([], slices)
@@ -199,7 +199,7 @@ class CMatrix(object):
                                                                    parameter)
 
         # get the time axis
-        time = self.dataset.data.independent_axies.get(1)
+        time = self.dataset.data.get_axis("time")
 
         # allocate C matrix
         # TODO: do this earlier
@@ -291,7 +291,7 @@ class CMatrix(object):
         return np.dot(c_matrix, concentration_matrix)
 
     def time(self):
-        return self.dataset.data.independent_axies.get(1)
+        return self.dataset.data.get_axis("time")
 
     def scaling(self, parameter):
         return parameter_idx_to_val(parameter, self.dataset.scaling) \
