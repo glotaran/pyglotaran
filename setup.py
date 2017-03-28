@@ -59,6 +59,9 @@ setup(
     packages=[
               'glotaran.datasets',
               'glotaran.model',
+              'glotaran.fitmodel',
+              'glotaran.models.spectral_temporal',
+              'glotaran.models.spectral_temporal.c_matrix_cython',
               'glotaran.models.kinetic',
               'glotaran.models.kinetic.c_matrix_cython',
               'glotaran.models.kinetic.c_matrix_opencl',

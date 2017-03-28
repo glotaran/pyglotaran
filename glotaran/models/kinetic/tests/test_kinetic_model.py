@@ -4,7 +4,7 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
-from glotaran.model import IndependentAxies
+
 from glotaran.models.kinetic import KineticSeparableModel
 
 
@@ -53,9 +53,7 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        axies = IndependentAxies()
-        axies.add(x)
-        axies.add(times)
+        axies = {"time": times, "spec": x}
 
         data = model.eval(wanted_params, 'dataset1', axies)
 
@@ -114,9 +112,7 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        axies = IndependentAxies()
-        axies.add(x)
-        axies.add(times)
+        axies = {"time": times, "spec": x}
 
         data = model.eval(wanted_params, 'dataset1', axies)
 
@@ -175,9 +171,7 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        axies = IndependentAxies()
-        axies.add(x)
-        axies.add(times)
+        axies = {"time": times, "spec": x}
 
         data = model.eval(wanted_params, 'dataset1', axies,
                           **{'amplitudes': amps,

@@ -5,15 +5,18 @@ from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
 from glotaran.model import Dataset
-from glotaran.models.kinetic import KineticSeparableModel
 from glotaran.models.kinetic.c_matrix_generator import CMatrixGenerator
+from glotaran.fitmodel import FitModel
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 fitspec = '''
 type: kinetic
 
 parameters: {}
+
+parameter_blocks:
+    - label: shape
+      parameter: {}
+      fit: false
 
 compartments: [s1, s2, s3]
 
@@ -42,6 +45,19 @@ irf:
     center: 4
     width: 5
 
+shapes:
+  - label: "shape1"
+    type: "gaussian"
+    amplitude: shape.1
+    location: shape.2
+    width: shape.3
+  - label: "shape2"
+    type: "gaussian"
+    amplitude: shape.3
+    location: shape.4
+    width: shape.5
+  - ["shape3", "gaussian", shape.6, shape.7, shape.8]
+
 
 datasets:
 - label: dataset1
@@ -57,6 +73,7 @@ datasets:
 '''
 
 initial_parameter = [101e-4, 2E-5, 3e-6, 0., 5.]
+simparams_parameter = [5,1400,100, 3, 1200,10, 7,1800,50]
 times = np.asarray(np.arange(-100, 1500, 1.5))
 # x = np.arange(12820, 15120, 4.6)
 x1 = np.asarray([1.0, 2.0, 3.0])
@@ -79,7 +96,7 @@ wanted_params.add("p5", 10)
 
 #  print(fitspec.format(initial_parameter))
 
-model = parse_yml(fitspec.format(initial_parameter))
+model = parse_yml(fitspec.format(initial_parameter, simparams_parameter))
 print(model)
 
 model.eval(wanted_params, 'dataset1', {"time": times, "spec": x1})
@@ -107,7 +124,7 @@ model.eval(wanted_params, 'dataset1', {"time": times, "spec": x1})
 
 #  np.savetxt("foo.csv", model.datasets['dataset1'].data.data[:, 2], delimiter=",")
 
-fitmodel = KineticSeparableModel(model)
+fitmodel = FitModel(model)
 #  fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
 
 #  print("====DATAGROUP=====")

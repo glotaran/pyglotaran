@@ -1,33 +1,31 @@
-from .model_spec_yaml import (ModelKeys,
+from .model_spec_yaml import (Keys,
                               ModelSpecParser,
-                              is_compact,
                               register_model_parser)
 from ast import literal_eval as make_tuple
 from collections import OrderedDict
-from glotaran.models.kinetic import (KMatrix,
-                                     KineticDatasetDescriptor,
-                                     KineticMegacomplex,
-                                     KineticModel,
-                                     GaussianIrf)
+from .utils import get_keys_from_object, retrieve_optional
+from glotaran.models.spectral_temporal import (KMatrix,
+                                               KineticDatasetDescriptor,
+                                               KineticMegacomplex,
+                                               KineticModel,
+                                               GaussianIrf,
+                                               SpectralShapeGaussian)
 
 
-class KineticModelKeys(object):
-    K_MATRICES = "k_matrices"
-    MATRIX = 'matrix'
-    IRF = 'irf'
-
-
-class IrfTypes:
-    GAUSSIAN = 'gaussian'
-
-
-class GaussianIrfKeys:
+class KineticKeys(object):
+    AMPLITUDE = "amplitude"
     CENTER = 'center'
-    WIDTH = 'width'
     CENTER_DISPERSION = 'center_dispersion'
-    WIDTH_DISPERSION = 'width_dispersion'
-    SCALE = 'scale'
+    GAUSSIAN = 'gaussian'
+    IRF = 'irf'
+    K_MATRICES = "k_matrices"
+    LOCATION = "location"
+    MATRIX = 'matrix'
     NORMALIZE = 'normalize'
+    SCALE = 'scale'
+    SHAPE = 'shapes'
+    WIDTH = 'width'
+    WIDTH_DISPERSION = 'width_dispersion'
 
 
 class KineticModelParser(ModelSpecParser):
@@ -38,10 +36,8 @@ class KineticModelParser(ModelSpecParser):
                                megacomplexes, megacomplex_scalings,
                                dataset_scaling, compartment_scalings,
                                dataset_spec):
-        try:
-            irf = dataset_spec[KineticModelKeys.IRF]
-        except:
-            irf = None
+        irf = dataset_spec[KineticKeys.IRF] if KineticKeys.IRF \
+            in dataset_spec else None
 
         return KineticDatasetDescriptor(label, initial_concentration,
                                         megacomplexes, megacomplex_scalings,
@@ -49,74 +45,71 @@ class KineticModelParser(ModelSpecParser):
                                         irf)
 
     def get_megacomplexes(self):
-        if KineticModelKeys.K_MATRICES not in self.spec:
+        if KineticKeys.K_MATRICES not in self.spec:
             raise Exception("No k-matrices defined")
-        for km in self.spec[KineticModelKeys.K_MATRICES]:
+        for km in self.spec[KineticKeys.K_MATRICES]:
             m = OrderedDict()
-            for i in km[KineticModelKeys.MATRIX]:
-                m[make_tuple(i)] = km[KineticModelKeys.MATRIX][i]
-            self.model.add_k_matrix(KMatrix(km[ModelKeys.LABEL], m,
+            for i in km[KineticKeys.MATRIX]:
+                m[make_tuple(i)] = km[KineticKeys.MATRIX][i]
+            self.model.add_k_matrix(KMatrix(km[Keys.LABEL], m,
                                             self.model.compartments))
-        for cmplx in self.spec[ModelKeys.MEGACOMPLEXES]:
-            l = ModelKeys.LABEL
-            km = KineticModelKeys.K_MATRICES
-            if isinstance(cmplx, list):
-                l = 0
-                km = 1
-            self.model.add_megacomplex(KineticMegacomplex(cmplx[l],
-                                       cmplx[km]))
+        for cmplx in self.spec[Keys.MEGACOMPLEXES]:
+            (label, mat) = get_keys_from_object(cmplx, [Keys.LABEL,
+                                                        KineticKeys.K_MATRICES]
+                                                )
+            self.model.add_megacomplex(KineticMegacomplex(label, mat))
 
     def get_additionals(self):
         self.get_irfs()
+        self.get_shapes()
 
     def get_irfs(self):
-        if KineticModelKeys.IRF in self.spec:
-            for irf in self.spec[KineticModelKeys.IRF]:
-                compact = is_compact(irf)
-
-                lb = ModelKeys.LABEL
-                tp = ModelKeys.TYPE
-                if compact:
-                    lb = 0
-                    tp = 1
-                if irf[tp] == IrfTypes.GAUSSIAN:
-                    ct = GaussianIrfKeys.CENTER
-                    wt = GaussianIrfKeys.WIDTH
-                    if compact:
-                        ct = 2
-                        wt = 3
+        if KineticKeys.IRF in self.spec:
+            for irf in self.spec[KineticKeys.IRF]:
+                (label, type) = get_keys_from_object(irf, [Keys.LABEL,
+                                                           Keys.TYPE])
+                if type == KineticKeys.GAUSSIAN:
+                    (center, width) = get_keys_from_object(irf,
+                                                           [KineticKeys.CENTER,
+                                                            KineticKeys.WIDTH])
 
                     center_disp = retrieve_optional(irf,
-                                                    GaussianIrfKeys.
+                                                    KineticKeys.
                                                     CENTER_DISPERSION,
                                                     4, [])
 
                     width_disp = retrieve_optional(irf,
-                                                   GaussianIrfKeys.
+                                                   KineticKeys.
                                                    WIDTH_DISPERSION,
                                                    5, [])
 
-                    scale = retrieve_optional(irf, GaussianIrfKeys.SCALE, 6,
-                                              [])
-                    norm = retrieve_optional(irf, GaussianIrfKeys.NORMALIZE, 7,
+                    scale = retrieve_optional(irf, KineticKeys.SCALE, 6, [])
+
+                    norm = retrieve_optional(irf, KineticKeys.NORMALIZE, 7,
                                              True)
 
-                    self.model.add_irf(GaussianIrf(irf[lb], irf[ct], irf[wt],
+                    self.model.add_irf(GaussianIrf(label, center, width,
                                        center_dispersion=center_disp,
                                        width_dispersion=width_disp,
                                        scale=scale,
                                        normalize=norm))
 
+    def get_shapes(self):
+        if KineticKeys.SHAPE in self.spec:
+            for shape in self.spec[KineticKeys.SHAPE]:
+                (label, type) = get_keys_from_object(shape, [Keys.LABEL,
+                                                             Keys.TYPE])
+                if type == KineticKeys.GAUSSIAN:
+                    (amp, loc, width) = \
+                        get_keys_from_object(shape,
+                                             [KineticKeys.AMPLITUDE,
+                                              KineticKeys.LOCATION,
+                                              KineticKeys.WIDTH],
+                                             start=2)
 
-def retrieve_optional(obj, key, index, default):
-    compact = is_compact(obj)
-    if compact:
-        if len(obj) <= index:
-            return default
-        return obj[index]
-    else:
-        if key in obj:
-            return obj[key]
-        return default
+                    self.model.add_shape(SpectralShapeGaussian(label,
+                                                               amp,
+                                                               loc,
+                                                               width))
 
 register_model_parser("kinetic", KineticModelParser)

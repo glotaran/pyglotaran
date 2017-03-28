@@ -1,75 +1,57 @@
 import os
 import csv
 from ast import literal_eval as make_tuple
+
+from .utils import get_keys_from_object, is_compact
+
 from glotaran.model import (create_parameter_list,
-                            FixedConstraint,
                             BoundConstraint,
-                            ZeroConstraint,
-                            EqualConstraint,
                             EqualAreaConstraint,
+                            EqualConstraint,
+                            FixedConstraint,
+                            InitialConcentration,
+                            ParameterBlock,
                             Relation,
-                            InitialConcentration)
+                            ZeroConstraint,
+                            )
 
 
-class ModelKeys:
-    COMPARTMENTS = "compartments"
-    DATASETS = "datasets"
-    PARAMETERS = "parameters"
-    PARAMETER = "parameter"
-    MEGACOMPLEXES = "megacomplexes"
-    COMPARTMENT_CONSTRAINTS = "compartment_constraints"
-    PARAMETER_CONSTRAINTS = "parameter_constraints"
-    RELATIONS = "relations"
-    INITIAL_CONCENTRATIONS = "initial_concentrations"
-    DATASET = "dataset"
-    TYPE = 'type'
-    LABEL = "label"
-    RANGE = "range"
-
-
-class ParameterConstraintTypes:
-    FIX = "fix"
+class Keys:
     BOUND = "bound"
-
-
-class BoundParameterConstraintKeys:
-    LOWER = "lower"
-    UPPER = "upper"
-
-
-class CompartmentConstraintTypes:
-    ZERO = "zero"
-    EQUAL = "equal"
-    EQUAL_AREA = "equal_area"
-
-
-class CompartmentConstraintKeys:
-    INTERVALS = "intervals"
-    COMPARTMENT = "compartment"
-    TARGET = "target"
-    WEIGHT = "weight"
-
-
-class RelationKeys:
-    TO = "to"
-
-
-class DatasetKeys:
-    PATH = "path"
+    COMPARTMENTS = "compartments"
+    COMPARTMENT_SCALING = "compartment_scaling"
+    COMPARTMENT_CONSTRAINTS = "compartment_constraints"
+    DATASET = "dataset"
+    DATASETS = "datasets"
     DATASET_SCALING = "dataset_scaling"
-    MEGACOMPLEX_SCALING = "megacomplex_scaling"
+    EQUAL_AREA = "equal_area"
+    FIX = "fix"
     INITIAL_CONCENTRATION = "initial_concentration"
-    COMPARTEMENTS = "compartments"
+    LABEL = "label"
+    MEGACOMPLEXES = "megacomplexes"
+    MEGACOMPLEX_SCALING = "megacomplex_scaling"
+    PARAMETER = "parameter"
+    PARAMETERS = "parameters"
+    PARAMETER_BLOCK = "parameter_block"
+    PARAMETER_CONSTRAINTS = "parameter_constraints"
+    PATH = "path"
+    RANGE = "range"
+    RELATIONS = "relations"
+    SUBBLOCKS = "sub_blocks"
+    TARGET = "target"
+    TO = "to"
+    TYPE = 'type'
+    WEIGHT = "weight"
 
 ModelParser = {}
 
 
 def get_model_parser(spec):
-    if spec[ModelKeys.TYPE] in ModelParser:
-        return ModelParser[spec[ModelKeys.TYPE]](spec)
+    if spec[Keys.TYPE] in ModelParser:
+        return ModelParser[spec[Keys.TYPE]](spec)
     else:
         raise Exception("Unsupported model type {}."
-                        .format(spec[ModelKeys.TYPE]))
+                        .format(spec[Keys.TYPE]))
 
 
 def register_model_parser(type_name, parser):
@@ -99,53 +81,39 @@ class ModelSpecParser(object):
         raise NotImplementedError
 
     def get_dataset(self, dataset_spec):
-        label = dataset_spec[ModelKeys.LABEL]
+        label = dataset_spec[Keys.LABEL]
         # path = dataset_spec[DatasetKeys.PATH]
-        # type = dataset_spec[ModelKeys.TYPE]
-        try:
-            initial_concentration = \
-                    dataset_spec[DatasetKeys.INITIAL_CONCENTRATION]
-        except:
-            initial_concentration = None
-        megacomplexes = dataset_spec[ModelKeys.MEGACOMPLEXES]
+        # type = dataset_spec[Keys.TYPE]
+        initial_concentration = \
+            dataset_spec[Keys.INITIAL_CONCENTRATION] if \
+            Keys.INITIAL_CONCENTRATION in dataset_spec else \
+            None
+        megacomplexes = dataset_spec[Keys.MEGACOMPLEXES]
 
-        try:
-            dataset_scaling = \
-                    dataset_spec[DatasetKeys.DATASET_SCALING]
-        except:
-            dataset_scaling = None
+        dataset_scaling = \
+            dataset_spec[Keys.DATASET_SCALING] if \
+            Keys.DATASET_SCALING in dataset_spec else None
 
-        mss = {}
-        try:
-            for ms in dataset_spec[DatasetKeys.MEGACOMPLEX_SCALING]:
-                compact = is_compact(ms)
-                mc = ModelKeys.MEGACOMPLEXES
-                pm = ModelKeys.PARAMETER
-                if compact:
-                    mc = 0
-                    pm = 1
-                mss[ms[mc]] = ms[pm]
-        except:
-            pass
+        cmplx_scalings = {}
+        if Keys.MEGACOMPLEX_SCALING in dataset_spec:
+            for scaling in dataset_spec[Keys.MEGACOMPLEX_SCALING]:
+                (cmplx, params) = \
+                    get_keys_from_object(scaling, [Keys.MEGACOMPLEX,
+                                                   Keys.PARAMETER])
+                cmplx_scalings[cmplx] = params
 
         compartment_scalings = {}
-        try:
-            for ms in dataset_spec[DatasetKeys.COMPARTEMENT_SCALING]:
-                compact = is_compact(ms)
-                c = ModelKeys.COMPARTMENT
-                pm = ModelKeys.PARAMETER
-                if compact:
-                    c = 0
-                    pm = 1
-                compartment_scalings[ms[c]] = ms[pm]
-        except:
-            pass
+        if Keys.COMPARTMENT_SCALING in dataset_spec:
+            for scaling in dataset_spec[Keys.COMPARTEMENT_SCALING]:
+                (c, param) = get_keys_from_object(scaling, [Keys.COMPARTMENT,
+                                                            Keys.PARAMETER])
+                compartment_scalings[c] = params
 
         self.model.add_dataset(
             self.get_dataset_descriptor(label,
                                         initial_concentration,
                                         megacomplexes,
-                                        mss,
+                                        cmplx_scalings,
                                         dataset_scaling,
                                         compartment_scalings,
                                         dataset_spec))
@@ -154,11 +122,11 @@ class ModelSpecParser(object):
         raise NotImplementedError
 
     def get_datasets(self):
-        for dataset_spec in self.spec[ModelKeys.DATASETS]:
+        for dataset_spec in self.spec[Keys.DATASETS]:
             self.get_dataset(dataset_spec)
 
     def get_parameter(self):
-        params = self.spec[ModelKeys.PARAMETERS]
+        params = self.spec[Keys.PARAMETERS]
         if isinstance(params, str):
             if os.path.isfile(params):
                 f = open(params)
@@ -174,120 +142,108 @@ class ModelSpecParser(object):
         plist = create_parameter_list(params)
         self.model.parameter = plist
 
-    def get_parameter_constraints(self):
-        if ModelKeys.PARAMETER_CONSTRAINTS not in self.spec:
+    def get_parameter_blocks(self):
+        if Keys.PARAMETER_BLOCK not in self.spec:
             return
-        for constraint in self.spec[ModelKeys.PARAMETER_CONSTRAINTS]:
-            compact = is_compact(constraint)
+        for block in self.spec[Keys.PARAMETER_BLOCK]:
+            (label, params, sub_blocks) = get_keys_from_object(block,
+                                                               [Keys.LABEL,
+                                                                Keys.PARAMETER,
+                                                                Keys.SUBBLOCKS,
+                                                                ]
+                                                               )
+            self.model.parameter_blocks[label] = ParameterBlock(label, params,
+                                                                sub_blocks)
 
-            tp = ModelKeys.TYPE
-            if compact:
-                tp = 0
+    def get_parameter_constraints(self):
+        if Keys.PARAMETER_CONSTRAINTS not in self.spec:
+            return
+        for constraint in self.spec[Keys.PARAMETER_CONSTRAINTS]:
+
+            (type) = get_keys_from_object(constraint, [Keys.Type])
 
             params = []
-            if ModelKeys.RANGE in constraint:
-                params = make_tuple(constraint[ModelKeys.RANGE])
-            elif ModelKeys.PARAMETER in constraint:
-                params = constraint[ModelKeys.PARAMETER]
-            elif compact:
+            if Keys.RANGE in constraint:
+                params = make_tuple(constraint[Keys.RANGE])
+            elif Keys.PARAMETER in constraint:
+                params = constraint[Keys.PARAMETER]
+            elif is_compact(constraint):
                 params = constraint[1]
                 if isinstance(params, str):
                     params = make_tuple(params)
 
-            if constraint[tp] == ParameterConstraintTypes.FIX:
+            if type == Keys.FIX:
                 self.model.add_parameter_constraint(
                     FixedConstraint(params))
-            elif constraint[tp] == ParameterConstraintTypes.BOUND:
+            elif type == Keys.BOUND:
                 lower = 'NaN'
                 upper = 'NaN'
-                if compact:
+                if is_compact(constraint):
                     lower = constraint[2]
                     upper = constraint[3]
                 else:
-                    if BoundParameterConstraintKeys.LOWER in constraint:
-                        lower = float(
-                            constraint[BoundParameterConstraintKeys.LOWER])
-                    if BoundParameterConstraintKeys.UPPER in constraint:
-                        upper = float(
-                            constraint[BoundParameterConstraintKeys.UPPER])
+                    if Keys.LOWER in constraint:
+                        lower = float(constraint[Keys.LOWER])
+                    if Keys.UPPER in constraint:
+                        upper = float(constraint[Keys.UPPER])
                 self.model.add_parameter_constraint(BoundConstraint(
                     params,
                     lower=lower,
                     upper=upper))
 
     def get_compartment_constraints(self):
-        if ModelKeys.COMPARTMENT_CONSTRAINTS not in self.spec:
+        if Keys.COMPARTMENT_CONSTRAINTS not in self.spec:
             return
-        for constraint in self.spec[ModelKeys.COMPARTMENT_CONSTRAINTS]:
-            compact = is_compact(constraint)
-            tp = ModelKeys.TYPE
-            cp = CompartmentConstraintKeys.COMPARTMENT
-            it = CompartmentConstraintKeys.INTERVALS
-            if compact:
-                tp = 0
-                cp = 1
-                it = 2
-
+        for constraint in self.spec[Keys.COMPARTMENT_CONSTRAINTS]:
+            (type, c, intv) = get_keys_from_object(constraint,
+                                                   [Keys.Type,
+                                                    Keys.COMPARTMENT,
+                                                    Keys.INTERVALS])
             intervals = []
-            for interval in constraint[it]:
+            for interval in intv:
                 intervals.append(make_tuple(interval))
-            if constraint[tp] == CompartmentConstraintTypes.ZERO:
+            if type == Keys.ZERO:
                 self.model.add_compartment_constraint(
-                    ZeroConstraint(constraint[cp], intervals))
+                    ZeroConstraint(c, intervals))
 
             else:
-                tg = CompartmentConstraintKeys.TARGET
-                par = ModelKeys.PARAMETER
-                wg = CompartmentConstraintKeys.WEIGHT
-                if compact:
-                    tg = 3
-                    par = 4
-                    wg = 5
+                (target, param) = get_keys_from_object(constraint,
+                                                       [Keys.TARGET,
+                                                        Keys.PARAMETER],
+                                                       start=3)
 
-                if constraint[tp] == CompartmentConstraintTypes.EQUAL:
+                if type == Keys.EQUAL:
                     self.model.add_compartment_constraint(
-                        EqualConstraint(constraint[cp], intervals,
-                                        constraint[tg], constraint[par]))
-
-                elif constraint[tp] == CompartmentConstraintTypes.EQUAL_AREA:
+                        EqualConstraint(c, intervals, target, param))
+                elif type == Keys.EQUAL_AREA:
+                    (weight) = get_keys_from_object(constraint,
+                                                    [Keys.WEIGHT],
+                                                    start=5)
                     self.model.add_compartment_constraint(
-                        EqualAreaConstraint(constraint[cp], intervals,
-                                            constraint[tg], constraint[par],
-                                            constraint[wg]))
+                        EqualAreaConstraint(c, intervals, target, param,
+                                            weight))
 
     def get_relations(self):
-        if ModelKeys.RELATIONS not in self.spec:
+        if Keys.RELATIONS not in self.spec:
             return
 
-        for relation in self.spec[ModelKeys.RELATIONS]:
-            compact = is_compact(relation)
-
-            par = ModelKeys.PARAMETER
-            to = RelationKeys.TO
-
-            if compact:
-                par = 0
-                to = 1
-
-            self.model.add_relation(Relation(relation[par], relation[to]))
+        for relation in self.spec[Keys.RELATIONS]:
+            (params, to) = get_keys_from_object(relation[Keys.PARAMETER,
+                                                         Keys.TO])
+            self.model.add_relation(Relation(params, to))
 
     def get_initial_concentrations(self):
-        if ModelKeys.INITIAL_CONCENTRATIONS not in self.spec:
+        if Keys.INITIAL_CONCENTRATION not in self.spec:
             return
-        for concentration in self.spec[ModelKeys.INITIAL_CONCENTRATIONS]:
-            compact = is_compact(concentration)
-
-            lb = ModelKeys.LABEL
-            par = ModelKeys.PARAMETER
-            if compact:
-                lb = 0
-                par = 1
-
+        for concentration in self.spec[Keys.INITIAL_CONCENTRATIONS]:
+            (label, parameter) = get_keys_from_object(concentration,
+                                                      [Keys.LABEL,
+                                                       Keys.PARAMETER])
             self.model.add_initial_concentration(
-                InitialConcentration(concentration[lb], concentration[par]))
+                InitialConcentration(label, parameter))
 
     def get_compartments(self):
-        self.model.compartments = self.spec[ModelKeys.COMPARTMENTS]
+        self.model.compartments = self.spec[Keys.COMPARTMENTS]
 
     def parse(self):
         self.get_compartments()
@@ -299,7 +255,3 @@ class ModelSpecParser(object):
         self.get_megacomplexes()
         self.get_datasets()
         self.get_additionals()
-
-
-def is_compact(element):
-    return isinstance(element, list)

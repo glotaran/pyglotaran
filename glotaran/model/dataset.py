@@ -15,6 +15,9 @@ class Dataset(object):
     def label(self, label):
         self._label = label
 
+    def get_explicit_axis(self):
+        raise NotImplementedError
+
     def get_axis(self, label):
         return self._axis[label]
 

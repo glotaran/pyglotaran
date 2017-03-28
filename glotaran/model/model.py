@@ -17,14 +17,20 @@ class Model(object):
     """
 
     def __init__(self):
-        self._compartments = None
+
         self._parameter = []
-        self._megacomplexes = {}
-        self._relations = None
-        self._compartment_constraints = None
+        self._parameter_blocks = {}
         self._parameter_constraints = None
+        self._relations = None
+
+        self._compartments = None
+        self._compartment_constraints = None
+
         self._datasets = OrderedDict()
+
         self._initial_concentrations = None
+
+        self._megacomplexes = {}
 
     def type_string(self):
         raise NotImplementedError
@@ -39,6 +45,14 @@ class Model(object):
     @compartments.setter
     def compartments(self, value):
         self._compartments = value
+
+    @property
+    def parameter_blocks(self):
+        return self._parameter_blocks
+
+    @parameter_blocks.setter
+    def parameter_blocks(self, value):
+        self._parameter_blocks = value
 
     @property
     def parameter(self):
@@ -203,6 +217,11 @@ class Model(object):
         s += "Parameter\n---------\n\n"
 
         for p in self.parameter:
+            s += "{}\n".format(p)
+
+        s += "Parameter Blocks\n---------\n\n"
+
+        for b in self.parameter_blocks:
             s += "{}\n".format(p)
 
         if self.parameter_constraints is not None:
