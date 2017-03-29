@@ -18,16 +18,21 @@ from glotaran.model import (create_parameter_list,
 
 class Keys:
     BOUND = "bound"
+    COMPARTMENT = "compartment"
     COMPARTMENTS = "compartments"
-    COMPARTMENT_SCALING = "compartment_scaling"
     COMPARTMENT_CONSTRAINTS = "compartment_constraints"
+    COMPARTMENT_SCALING = "compartment_scaling"
     DATASET = "dataset"
     DATASETS = "datasets"
-    DATASET_SCALING = "dataset_scaling"
+    EQUAL = "equal"
+    EQUAL_AREA = "equal_area"
     EQUAL_AREA = "equal_area"
     FIX = "fix"
     INITIAL_CONCENTRATION = "initial_concentration"
+    INTERVALS = "intervals"
     LABEL = "label"
+    LOWER = "lower"
+    MEGACOMPLEX = "megacomplex"
     MEGACOMPLEXES = "megacomplexes"
     MEGACOMPLEX_SCALING = "megacomplex_scaling"
     PARAMETER = "parameter"
@@ -37,11 +42,14 @@ class Keys:
     PATH = "path"
     RANGE = "range"
     RELATIONS = "relations"
+    SCALING = "scaling"
     SUBBLOCKS = "sub_blocks"
     TARGET = "target"
     TO = "to"
     TYPE = 'type'
+    UPPER = "upper"
     WEIGHT = "weight"
+    ZERO = "zero"
 
 ModelParser = {}
 
@@ -91,8 +99,8 @@ class ModelSpecParser(object):
         megacomplexes = dataset_spec[Keys.MEGACOMPLEXES]
 
         dataset_scaling = \
-            dataset_spec[Keys.DATASET_SCALING] if \
-            Keys.DATASET_SCALING in dataset_spec else None
+            dataset_spec[Keys.SCALING] if \
+            Keys.SCALING in dataset_spec else None
 
         cmplx_scalings = {}
         if Keys.MEGACOMPLEX_SCALING in dataset_spec:
@@ -104,10 +112,10 @@ class ModelSpecParser(object):
 
         compartment_scalings = {}
         if Keys.COMPARTMENT_SCALING in dataset_spec:
-            for scaling in dataset_spec[Keys.COMPARTEMENT_SCALING]:
+            for scaling in dataset_spec[Keys.COMPARTMENT_SCALING]:
                 (c, param) = get_keys_from_object(scaling, [Keys.COMPARTMENT,
                                                             Keys.PARAMETER])
-                compartment_scalings[c] = params
+                compartment_scalings[c] = param
 
         self.model.add_dataset(
             self.get_dataset_descriptor(label,
@@ -160,7 +168,7 @@ class ModelSpecParser(object):
             return
         for constraint in self.spec[Keys.PARAMETER_CONSTRAINTS]:
 
-            (type) = get_keys_from_object(constraint, [Keys.Type])
+            (type,) = get_keys_from_object(constraint, [Keys.TYPE])
 
             params = []
             if Keys.RANGE in constraint:
@@ -195,14 +203,14 @@ class ModelSpecParser(object):
         if Keys.COMPARTMENT_CONSTRAINTS not in self.spec:
             return
         for constraint in self.spec[Keys.COMPARTMENT_CONSTRAINTS]:
-            (type, c, intv) = get_keys_from_object(constraint,
-                                                   [Keys.Type,
-                                                    Keys.COMPARTMENT,
-                                                    Keys.INTERVALS])
+            (tpe, c, intv) = get_keys_from_object(constraint,
+                                                  [Keys.TYPE,
+                                                   Keys.COMPARTMENT,
+                                                   Keys.INTERVALS])
             intervals = []
             for interval in intv:
                 intervals.append(make_tuple(interval))
-            if type == Keys.ZERO:
+            if tpe == Keys.ZERO:
                 self.model.add_compartment_constraint(
                     ZeroConstraint(c, intervals))
 
@@ -212,13 +220,13 @@ class ModelSpecParser(object):
                                                         Keys.PARAMETER],
                                                        start=3)
 
-                if type == Keys.EQUAL:
+                if tpe == Keys.EQUAL:
                     self.model.add_compartment_constraint(
                         EqualConstraint(c, intervals, target, param))
-                elif type == Keys.EQUAL_AREA:
-                    (weight) = get_keys_from_object(constraint,
-                                                    [Keys.WEIGHT],
-                                                    start=5)
+                elif tpe == Keys.EQUAL_AREA:
+                    (weight,) = get_keys_from_object(constraint,
+                                                     [Keys.WEIGHT],
+                                                     start=5)
                     self.model.add_compartment_constraint(
                         EqualAreaConstraint(c, intervals, target, param,
                                             weight))
@@ -228,14 +236,14 @@ class ModelSpecParser(object):
             return
 
         for relation in self.spec[Keys.RELATIONS]:
-            (params, to) = get_keys_from_object(relation[Keys.PARAMETER,
-                                                         Keys.TO])
+            (params, to) = get_keys_from_object(relation, [Keys.PARAMETER,
+                                                           Keys.TO])
             self.model.add_relation(Relation(params, to))
 
     def get_initial_concentrations(self):
         if Keys.INITIAL_CONCENTRATION not in self.spec:
             return
-        for concentration in self.spec[Keys.INITIAL_CONCENTRATIONS]:
+        for concentration in self.spec[Keys.INITIAL_CONCENTRATION]:
             (label, parameter) = get_keys_from_object(concentration,
                                                       [Keys.LABEL,
                                                        Keys.PARAMETER])

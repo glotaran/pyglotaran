@@ -1,8 +1,8 @@
 from unittest import TestCase
 from glotaran.specification_parser import parse_file
-from glotaran.models.kinetic import (KineticModel,
-                                     GaussianIrf,
-                                     KineticMegacomplex)
+from glotaran.models.spectral_temporal import (KineticModel,
+                                               GaussianIrf,
+                                               KineticMegacomplex)
 from glotaran.model import (InitialConcentration,
                             ZeroConstraint,
                             EqualConstraint,
@@ -28,7 +28,7 @@ class TestParser(TestCase):
 
     def test_compartments(self):
         self.assertTrue(isinstance(self.model.compartments, list))
-        self.assertEqual(self.model.compartments, ['s1', 's2', 's3'])
+        self.assertEqual(self.model.compartments, ['s1', 's2', 's3', 's4'])
 
     def test_model_type(self):
         self.assertTrue(isinstance(self.model, KineticModel))
@@ -47,14 +47,21 @@ class TestParser(TestCase):
             self.assertTrue(dataset.initial_concentration ==
                             "inputD{}".format(i))
             self.assertTrue(dataset.irf == "irf{}".format(i))
-            self.assertTrue(dataset.dataset_scaling.parameter == i)
+            self.assertEqual(dataset.scaling, i)
 
-            self.assertTrue(len(dataset.megacomplex_scaling) == 2)
+            self.assertEqual(len(dataset.megacomplex_scaling), 2)
 
-            for scaling in dataset.megacomplex_scaling:
-                self.assertTrue(scaling.megacomplexes == ["cmplx1"])
-                self.assertTrue(scaling.compartments == [1, 2])
-                self.assertTrue(scaling.parameter == 21)
+            self.assertTrue('cmplx1' in dataset.megacomplex_scaling)
+            self.assertTrue('cmplx2' in dataset.megacomplex_scaling)
+            for _, param in dataset.megacomplex_scaling.items():
+                self.assertEqual(param, [1, 2])
+
+            self.assertEqual(len(dataset.compartment_scaling), 2)
+
+            self.assertTrue('s1' in dataset.compartment_scaling)
+            self.assertTrue('s2' in dataset.compartment_scaling)
+            for _, param in dataset.compartment_scaling.items():
+                self.assertEqual(param, [3, 4])
 
             i = i + 1
 

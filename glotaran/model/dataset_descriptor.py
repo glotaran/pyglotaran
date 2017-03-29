@@ -4,17 +4,14 @@ class DatasetDescriptor(object):
     """
 
     def __init__(self, label, initial_concentration, megacomplexes,
-                 megacomplex_scaling, dataset_scaling, compartment_scalings):
+                 megacomplex_scaling, dataset_scaling, compartment_scaling):
         self.label = label
-        self._dataset_scaling = None
-        self._initial_concentration = None
-        if initial_concentration is not None:
-            self.initial_concentration = initial_concentration
+        self.initial_concentration = initial_concentration
         self.megacomplexes = megacomplexes
-        self.compartment_scalings = compartment_scalings
+        self.compartment_scaling = compartment_scaling
         self.megacomplex_scaling = megacomplex_scaling
         self.scaling = dataset_scaling
-        self._data = None
+        self.data = None
 
     @property
     def label(self):
@@ -55,14 +52,14 @@ class DatasetDescriptor(object):
         self._scaling = scaling
 
     @property
-    def compartment_scalings(self):
-        return self._compartments_scalings
+    def compartment_scaling(self):
+        return self._compartment_scaling
 
-    @compartment_scalings.setter
-    def compartment_scalings(self, scaling):
+    @compartment_scaling.setter
+    def compartment_scaling(self, scaling):
         if not isinstance(scaling, dict):
             raise TypeError
-        self._megacomplex_scaling = scaling
+        self._compartment_scaling = scaling
 
     @property
     def megacomplexes(self):

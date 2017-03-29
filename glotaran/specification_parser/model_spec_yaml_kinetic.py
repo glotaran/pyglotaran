@@ -71,7 +71,8 @@ class KineticModelParser(ModelSpecParser):
                 if type == KineticKeys.GAUSSIAN:
                     (center, width) = get_keys_from_object(irf,
                                                            [KineticKeys.CENTER,
-                                                            KineticKeys.WIDTH])
+                                                            KineticKeys.WIDTH],
+                                                           start=2)
 
                     center_disp = retrieve_optional(irf,
                                                     KineticKeys.

@@ -7,7 +7,7 @@ options:
   parameter_ordering: relative #absolute, relative # maybe labeled
   temperature: 293
 
-compartments: [s1,s2,s3]
+compartments: [s1,s2,s3,s4]
 
 # For each dataset either the relative path or absolute path can be given
 # The absolute path is OS dependent
@@ -18,23 +18,30 @@ datasets:
     path: 'data/dataset1.ascii'
     initial_concentration: inputD1 # refers to the first element in the absorption_vectors list
     irf: irf1
-    dataset_scaling: 1 # scale dataset with parameter 78
+    scaling: 1 # scale dataset with parameter 78
+    compartment_scaling:
+      - compartment: s1
+        parameter: [3,4]
+      - [s2, [3,4]]
     megacomplex_scaling:
-      - megacomplexes: [cmplx1] # optional
-        compartments: [1, 2]
-        parameter: 21 # 75th parameter
-      - [[cmplx1], [1, 2], 21] # alternative, order matters!
+      - megacomplex: cmplx1 # optional
+        parameter: [1, 2] # 75th parameter
+      - [cmplx2, [1, 2]] # alternative, order matters!
   - label: dataset2
     type: spectral
     megacomplexes: [cmplx2]
     path: 'data/dataset2.ascii'
     initial_concentration: inputD2
     irf: irf2
-    dataset_scaling: 2 # scale dataset with parameter 78
+    scaling: 2 # scale dataset with parameter 78
+    compartment_scaling:
+      - compartment: s1
+        parameter: [3,4]
+      - [s2, [3,4]]
     megacomplex_scaling:
       - megacomplex: cmplx1 # optional
-        parameter: 21 # 75th parameter
-      - [cmplx1, 21] # alternative, order matters!
+        parameter: [1, 2] # 75th parameter
+      - [cmplx2, [1, 2]] # alternative, order matters!
 
 irf: #specific to kinetic or spectro_temporal model
   - label: irf1
@@ -45,7 +52,7 @@ irf: #specific to kinetic or spectro_temporal model
     width_dispersion: [4] # dispersion is of 1st order
   - [irf2, gaussian, [1, 2], [3,4], [5,6], [7,8], [9,10], true] # compact
 
-initial_concentrations: #equal to the total number of compartments
+initial_concentration: #equal to the total number of compartments
   - label: inputD1
     parameter: [1,2,3] #these are indices in the total prameter vector
   - label: inputD2
@@ -56,13 +63,13 @@ initial_concentrations: #equal to the total number of compartments
 k_matrices:
   - label: km1
     matrix: {
-      '(1,1)': 31,
-      '(2,1)': 32,
-      '(1,2)': 33,
-      '(3,1)': 34,
-      '(1,3)': 35,
-      '(4,1)': 36,
-      '(1,4)': 37,
+      '("s1","s1")': 31,
+      '("s2","s1")': 32,
+      '("s1","s2")': 33,
+      '("s3","s1")': 34,
+      '("s1","s3")': 35,
+      '("s4","s1")': 36,
+      '("s1","s4")': 37,
 }
 
 # The input vector for a megacomplex is determined in the following way:

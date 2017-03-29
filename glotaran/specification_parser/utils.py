@@ -1,7 +1,7 @@
 def get_keys_from_object(obj, keys, start=0):
     if is_compact(obj):
         keys = [i+start for i in range(len(keys))]
-    return (obj[k] for k in keys)
+    return tuple(list([obj[k] for k in keys]))
 
 
 def retrieve_optional(obj, key, index, default):
