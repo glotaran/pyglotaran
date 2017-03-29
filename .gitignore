@@ -1,6 +1,7 @@
 # TIMP data
 *.ascii
-*/R/.RData
+*.RData
+*.Rhistory
 
 #
 cython_debug

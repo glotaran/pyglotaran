@@ -1,4 +1,3 @@
-from .timetrace import Timetrace
 from enum import Enum
 
 
@@ -8,11 +7,11 @@ class SpectralUnit(Enum):
     per_cm = 2
 
 
-class SpectralTimetrace(Timetrace):
+class SpectralTimetrace(object):
     """
     Represents a spectral timetrace
     """
-    def __init__(self, label, spectra, timepoints, spectral_indices=[],
+    def __init__(self, spectra, timepoints, spectral_indices=[],
                  spectral_unit=SpectralUnit.pixel, timeunit="s"):
         if not isinstance(spectral_unit, SpectralUnit):
             raise TypeError
@@ -24,9 +23,6 @@ class SpectralTimetrace(Timetrace):
         channel_labels = []
         for i in spectral_indices:
             channel_labels.append(i)
-        super(SpectralTimetrace, self).__init__(label, spectra, channel_labels,
-                                                timepoints,
-                                                timeunit=timeunit)
 
     def wavenumbers(self):
         if self.spectral_unit is SpectralUnit.nm:
