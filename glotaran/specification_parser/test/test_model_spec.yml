@@ -123,3 +123,14 @@ parameters:
   - 4.13E-02
   - 1
   - ["spectral_equality" , 1.78]
+
+parameter_block:
+    - label: shape
+      parameter: [22, 33, 44]
+      fit: false
+
+    - label: nested
+      parameter: []
+      sub_blocks:
+        - label: inner
+          parameter: [66]

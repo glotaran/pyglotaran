@@ -3,6 +3,13 @@ class ParameterBlock(object):
         self.label = label
         self.parameter = parameter
         self.sub_blocks = sub_blocks
+        self.fit = fit
+
+    def add_sub_block(self, block):
+        if self.sub_blocks is None:
+            self.sub_blocks = {block.label: block}
+        else:
+            self.sub_blocks[block.label] = block
 
     def __str__(self):
         s = "Label: {}\n".format(self.label)

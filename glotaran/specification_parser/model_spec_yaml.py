@@ -2,7 +2,7 @@ import os
 import csv
 from ast import literal_eval as make_tuple
 
-from .utils import get_keys_from_object, is_compact
+from .utils import get_keys_from_object, is_compact, retrieve_optional
 
 from glotaran.model import (create_parameter_list,
                             BoundConstraint,
@@ -27,6 +27,7 @@ class Keys:
     EQUAL = "equal"
     EQUAL_AREA = "equal_area"
     EQUAL_AREA = "equal_area"
+    FIT = "fit"
     FIX = "fix"
     INITIAL_CONCENTRATION = "initial_concentration"
     INTERVALS = "intervals"
@@ -154,14 +155,22 @@ class ModelSpecParser(object):
         if Keys.PARAMETER_BLOCK not in self.spec:
             return
         for block in self.spec[Keys.PARAMETER_BLOCK]:
-            (label, params, sub_blocks) = get_keys_from_object(block,
-                                                               [Keys.LABEL,
-                                                                Keys.PARAMETER,
-                                                                Keys.SUBBLOCKS,
-                                                                ]
-                                                               )
-            self.model.parameter_blocks[label] = ParameterBlock(label, params,
-                                                                sub_blocks)
+            block = self.get_block(block)
+            self.model.parameter_blocks[block.label] = block
+
+    def get_block(self, obj):
+            (label, params) = get_keys_from_object(obj,
+                                                   [Keys.LABEL,
+                                                    Keys.PARAMETER,
+                                                    ]
+                                                   )
+            fit = retrieve_optional(obj, Keys.FIT, 4, True)
+            block = ParameterBlock(label, params, fit=fit)
+            if Keys.SUBBLOCKS in obj:
+                for subblock in obj[Keys.SUBBLOCKS]:
+                    block.add_sub_block(self.get_block(subblock))
+
+            return block
 
     def get_parameter_constraints(self):
         if Keys.PARAMETER_CONSTRAINTS not in self.spec:
@@ -256,6 +265,7 @@ class ModelSpecParser(object):
     def parse(self):
         self.get_compartments()
         self.get_parameter()
+        self.get_parameter_blocks()
         self.get_parameter_constraints()
         self.get_compartment_constraints()
         self.get_relations()

@@ -217,3 +217,28 @@ class TestParser(TestCase):
                if p.index == 3][0]
         self.assertTrue(par.value == 1.78)
         self.assertTrue(par.label == "spectral_equality")
+
+    def test_parameter_blocks(self):
+
+        self.assertTrue("shape" in self.model.parameter_blocks)
+
+        block = self.model.parameter_blocks["shape"]
+
+        self.assertFalse(block.fit)
+        self.assertEqual(block.parameter, [22, 33, 44])
+        self.assertEqual(block.sub_blocks, None)
+
+        self.assertTrue("nested" in self.model.parameter_blocks)
+
+        block = self.model.parameter_blocks["nested"]
+
+        self.assertTrue(block.fit)
+        self.assertEqual(block.parameter, [])
+        self.assertEqual(len(block.sub_blocks), 1)
+        self.assertTrue("inner" in block.sub_blocks)
+
+        block = block.sub_blocks["inner"]
+
+        self.assertTrue(block.fit)
+        self.assertEqual(block.parameter, [66])
+        self.assertEqual(block.sub_blocks, None)
