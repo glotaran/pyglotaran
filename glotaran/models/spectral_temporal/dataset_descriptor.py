@@ -7,8 +7,9 @@ class KineticDatasetDescriptor(DatasetDescriptor):
     """
     def __init__(self, label, initial_concentration, megacomplexes,
                  megacomplex_scalings, dataset_scaling,
-                 compartment_scalings, irf):
+                 compartment_scalings, irf, shapes):
         self.irf = irf
+        self.shapes = shapes
         super(KineticDatasetDescriptor, self).__init__(label,
                                                        initial_concentration,
                                                        megacomplexes,
@@ -25,6 +26,14 @@ class KineticDatasetDescriptor(DatasetDescriptor):
     def irf(self, irf):
         '''Sets the label for the Irf to be used to fit the dataset.'''
         self._irf = irf
+
+    @property
+    def shapes(self):
+        return self._shapes
+
+    @shapes.setter
+    def shapes(self, value):
+        self._shapes = value
 
     def __str__(self):
         return "{}\n\tIrf: {}".format(super(KineticDatasetDescriptor, self)

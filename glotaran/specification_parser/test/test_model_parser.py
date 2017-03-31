@@ -64,6 +64,13 @@ class TestParser(TestCase):
             for _, param in dataset.compartment_scaling.items():
                 self.assertEqual(param, [3, 4])
 
+            if i is 1:
+                self.assertEqual(len(dataset.shapes), 2)
+                self.assertTrue("s1" in dataset.shapes)
+                self.assertEqual(dataset.shapes["s1"], "shape1")
+                self.assertTrue("s2" in dataset.shapes)
+                self.assertEqual(dataset.shapes["s2"], "shape2")
+
             i = i + 1
 
     def test_initial_concentration(self):

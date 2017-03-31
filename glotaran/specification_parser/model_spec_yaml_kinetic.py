@@ -23,7 +23,8 @@ class KineticKeys(object):
     MATRIX = 'matrix'
     NORMALIZE = 'normalize'
     SCALE = 'scale'
-    SHAPE = 'shapes'
+    SHAPE = 'shape'
+    SHAPES = 'shapes'
     WIDTH = 'width'
     WIDTH_DISPERSION = 'width_dispersion'
 
@@ -39,10 +40,17 @@ class KineticModelParser(ModelSpecParser):
         irf = dataset_spec[KineticKeys.IRF] if KineticKeys.IRF \
             in dataset_spec else None
 
+        shapes = {}
+        if KineticKeys.SHAPES in dataset_spec:
+            for shape in dataset_spec[KineticKeys.SHAPES]:
+                (c, s) = get_keys_from_object(shape, [Keys.COMPARTMENT,
+                                                      KineticKeys.SHAPE])
+                shapes[c] = s
+
         return KineticDatasetDescriptor(label, initial_concentration,
                                         megacomplexes, megacomplex_scalings,
                                         dataset_scaling, compartment_scalings,
-                                        irf)
+                                        irf, shapes)
 
     def get_megacomplexes(self):
         if KineticKeys.K_MATRICES not in self.spec:
@@ -96,8 +104,8 @@ class KineticModelParser(ModelSpecParser):
                                        normalize=norm))
 
     def get_shapes(self):
-        if KineticKeys.SHAPE in self.spec:
-            for shape in self.spec[KineticKeys.SHAPE]:
+        if KineticKeys.SHAPES in self.spec:
+            for shape in self.spec[KineticKeys.SHAPES]:
                 (label, type) = get_keys_from_object(shape, [Keys.LABEL,
                                                              Keys.TYPE])
                 if type == KineticKeys.GAUSSIAN:

@@ -27,6 +27,10 @@ datasets:
       - megacomplex: cmplx1 # optional
         parameter: [1, 2] # 75th parameter
       - [cmplx2, [1, 2]] # alternative, order matters!
+    shapes:
+      - compartment: s1
+        shape: shape1
+      - [s2, shape2]
   - label: dataset2
     type: spectral
     megacomplexes: [cmplx2]
