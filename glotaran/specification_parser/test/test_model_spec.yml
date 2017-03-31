@@ -72,13 +72,15 @@ k_matrices:
       '("s1","s4")': 37,
 }
 
-# The input vector for a megacomplex is determined in the following way:
-# first take the relevant absorption_vector
-# then apply the dataset specific scaling parameters
-# Example:
-# cmplx3:
-# Step 1: [71,2,2,2,73,74,2,74,73,72,2,2,2]
-# Step 2: [71,2,2,2,73*75,74*75,2,74,73,72,2,2,2]
+shapes:
+  - label: "shape1"
+    type: "gaussian"
+    amplitude: shape.1
+    location: shape.2
+    width: shape.3
+  - ["shape3", "gaussian", shape.6, shape.7, shape.8]
+
+
 megacomplexes:
     - label: cmplx1
       k_matrices: [km1] # A megacomplex has one or more k-matrices

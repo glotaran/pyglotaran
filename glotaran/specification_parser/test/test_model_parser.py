@@ -2,6 +2,7 @@ from unittest import TestCase
 from glotaran.specification_parser import parse_file
 from glotaran.models.spectral_temporal import (KineticModel,
                                                GaussianIrf,
+                                               SpectralShapeGaussian,
                                                KineticMegacomplex)
 from glotaran.model import (InitialConcentration,
                             ZeroConstraint,
@@ -112,6 +113,17 @@ class TestParser(TestCase):
                                  )
                                       )
                         )
+
+    def test_shapes(self):
+
+        self.assertTrue("shape1" in self.model.shapes)
+
+        shape = self.model.shapes["shape1"]
+
+        self.assertTrue(isinstance(shape, SpectralShapeGaussian))
+        self.assertEqual(shape.amplitude, "shape.1")
+        self.assertEqual(shape.location, "shape.2")
+        self.assertEqual(shape.width, "shape.3")
 
     def test_megacomplexes(self):
         self.assertTrue(len(self.model.megacomplexes) is 3)

@@ -103,7 +103,7 @@ class KineticModel(Model):
         else:
             if shape.label in self.shapes:
                 raise Exception("Shape labels must be unique")
-            self.irfs[shape.label] = shape
+            self.shapes[shape.label] = shape
 
     def __str__(self):
         s = "{}\n\nK-Matrices\n----------\n\n".format(super(KineticModel,
