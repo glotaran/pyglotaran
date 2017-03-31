@@ -1,7 +1,5 @@
 from lmfit import Parameters
-
 from lmfit_varpro import SeparableModel
-from glotaran.model import BoundConstraint, FixedConstraint
 
 from .matrix_group_generator import MatrixGroupGenerator
 from .result import Result
@@ -21,12 +19,32 @@ class FitModel(SeparableModel):
     def data(self, **kwargs):
         return self._dataset_group
 
-    def fit(self, initial_parameter, *args, **kwargs):
-        self._generator = MatrixGroupGenerator.for_model(self._model)
+    def fit(self, *args, **kwargs):
+        self._generator = MatrixGroupGenerator.for_model(self._model,
+                                                         self._model.
+                                                         calculated_matrix())
         self._dataset_group = self._generator.create_dataset_group()
-        result = Result(self, initial_parameter, *args, **kwargs)
-        result.fit(initial_parameter, *args, **kwargs)
+        result = Result(self, self.get_initial_fitting_parameter(),
+                        *args, **kwargs)
+        result.fit(*args, **kwargs)
         return result
+
+    def c_matrix(self, parameter, **kwargs):
+        if "dataset" in kwargs:
+            label = kwargs["dataset"]
+            gen = MatrixGroupGenerator.for_dataset(self._model, label,
+                                                   self._model.
+                                                   calculated_matrix())
+            return gen.calculate(parameter)
+        else:
+            return self._generator.calculate(parameter)
+
+    def e_matrix(self, parameter, **kwargs):
+        dataset = kwargs["dataset"]
+        gen = MatrixGroupGenerator.for_dataset(self._model, dataset,
+                                               self._model.estimated_matrix(),
+                                               calculated=True)
+        return gen.calculate(parameter)
 
     def _prepare_parameter(self):
         self._fit_params = Parameters()
@@ -44,10 +62,10 @@ class FitModel(SeparableModel):
         if self._model.parameter_constraints is not None:
             i = 0
             for constraint in self._model.parameter_constraints:
-                if isinstance(constraint, FixedConstraint):
+                if isclass(constraint, "FixedConstraint"):
                     for p in constraint.parameter:
                         fixed.append(p)
-                elif isinstance(constraint, BoundConstraint):
+                elif isclass(constraint, "BoundConstraint"):
                     bound.append((i, constraint.parameter))
                 i += 1
 
@@ -85,3 +103,7 @@ class FitModel(SeparableModel):
 
                 self._fit_params.add("p{}".format(p.index), val,
                                      vary=vary, min=min, max=max, expr=expr)
+
+
+def isclass(obj, classname):
+    return obj.__class__.__name__ == classname

@@ -1,10 +1,13 @@
 from glotaran.model import Model
-from glotaran.model import Dataset
-from .megacomplex import KineticMegacomplex
-from .k_matrix import KMatrix
-from .irf import Irf
-from .spectral_shape import SpectralShape
 from glotaran.fitmodel import FitModel
+
+from .dataset import SpectralTemporalDataset
+from .irf import Irf
+from .k_matrix import KMatrix
+from .kinetic_c_matrix import KineticCMatrix
+from .megacomplex import KineticMegacomplex
+from .spectral_c_matrix import SpectralCMatrix
+from .spectral_shape import SpectralShape
 
 
 class KineticModel(Model):
@@ -22,6 +25,12 @@ class KineticModel(Model):
     def type_string(self):
         return "Kinetic"
 
+    def calculated_matrix(self):
+        return KineticCMatrix
+
+    def estimated_matrix(self):
+        return SpectralCMatrix
+
     def add_megakomplex(self, megacomplex):
         if not isinstance(megacomplex, KineticMegacomplex):
             raise TypeError
@@ -31,7 +40,7 @@ class KineticModel(Model):
     def dispersion_center(self):
         if self._dispersion_center is None:
             for d in self.data():
-                return d.get_axis("spec")[0]
+                return d.spectral_axis[0]
         else:
             return self._dispersion_center
 
@@ -121,7 +130,7 @@ class KineticModel(Model):
         return s
 
     def eval(self, parameter, dataset, axes, **kwargs):
-        data = Dataset(dataset)
+        data = SpectralTemporalDataset(dataset)
         for label, val in axes.items():
             data.set_axis(label, val)
         self.set_data(dataset, data)
@@ -129,4 +138,5 @@ class KineticModel(Model):
 
         kwargs['dataset'] = dataset
         data = fitmodel.eval(parameter, **kwargs)
+        print(data.shape)
         self.datasets[dataset].data.data = data

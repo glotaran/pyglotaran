@@ -1,12 +1,14 @@
 from collections import OrderedDict
 
-from .parameter import Parameter
-from .parameter_constraints import ParameterConstraint
+from glotaran.fitmodel import FitModel
+
 from .compartment_constraints import CompartmentConstraint
-from .relation import Relation
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
+from .parameter import Parameter
+from .parameter_constraints import ParameterConstraint
+from .relation import Relation
 
 
 class Model(object):
@@ -37,6 +39,15 @@ class Model(object):
 
     def eval(dataset, axies):
         raise NotImplementedError
+
+    def calculated_matrix(self):
+        raise NotImplementedError
+
+    def estimated_matrix(self):
+        raise NotImplementedError
+
+    def fit(self, *args, **kwargs):
+        return FitModel(self).fit(*args, **kwargs)
 
     @property
     def compartments(self):

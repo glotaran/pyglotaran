@@ -5,7 +5,6 @@ from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
 
-from glotaran.models.kinetic import KineticSeparableModel
 
 
 class TestKineticModel(TestCase):
@@ -53,13 +52,11 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        axies = {"time": times, "spec": x}
+        axies = {"time": times, "spectral": x}
 
-        data = model.eval(wanted_params, 'dataset1', axies)
+        model.eval(wanted_params, 'dataset1', axies)
 
-        fitmodel = KineticSeparableModel(model)
-        result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
-                              *times, **{"dataset1": data})
+        result = model.fit()
 
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params["p{}".format(i+1)].value,
@@ -112,13 +109,11 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        axies = {"time": times, "spec": x}
+        axies = {"time": times, "spectral": x}
 
-        data = model.eval(wanted_params, 'dataset1', axies)
+        model.eval(wanted_params, 'dataset1', axies)
 
-        fitmodel = KineticSeparableModel(model)
-        result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
-                              *times, **{"dataset1": data})
+        result = model.fit()
 
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params["p{}".format(i+1)].value,
@@ -171,17 +166,14 @@ datasets:
 
         model = parse_yml(fitspec.format(initial_parameter))
 
-        axies = {"time": times, "spec": x}
+        axies = {"time": times, "spectral": x}
 
-        data = model.eval(wanted_params, 'dataset1', axies,
-                          **{'amplitudes': amps,
-                             'locations': locations,
-                             'delta': delta})
+        model.eval(wanted_params, 'dataset1', axies,
+                   **{'amplitudes': amps,
+                      'locations': locations,
+                      'delta': delta})
 
-        fitmodel = KineticSeparableModel(model)
-
-        result = fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
-                              *times, **{"dataset1": data})
+        result = model.fit()
         result.best_fit_parameter.pretty_print()
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params["p{}".format(i+1)].value,

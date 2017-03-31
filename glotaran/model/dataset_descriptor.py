@@ -1,3 +1,6 @@
+from .dataset import Dataset
+
+
 class DatasetDescriptor(object):
     """
     Class representing a dataset for fitting.
@@ -27,6 +30,8 @@ class DatasetDescriptor(object):
 
     @data.setter
     def data(self, data):
+        if not isinstance(data, Dataset) and data is not None:
+            raise TypeError
         self._data = data
 
     @property

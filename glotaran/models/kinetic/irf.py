@@ -17,6 +17,25 @@ class Irf(object):
             raise TypeError("Labels must be strings.")
         self._label = value
 
+    @property
+    def time_axis(self):
+        return self.get_axis("time")
+
+    @time_axis.setter
+    def time_axis(self, value):
+        self.set_axis("time", value)
+
+    @property
+    def spectral_axis(self):
+        return self.get_axis("spectral")
+
+    @spectral_axis.setter
+    def spectral_axis(self, value):
+        self.set_axis("spectral", value)
+
+    def get_estimated_axis(self):
+        return self.time_axis
+
     def type_string(self):
         raise NotImplementedError
 

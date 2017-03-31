@@ -2,7 +2,6 @@ class Irf(object):
     """
     Represents an abstract IRF.
     """
-    _label = None
 
     def __init__(self, label):
         self.label = label

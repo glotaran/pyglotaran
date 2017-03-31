@@ -38,7 +38,6 @@ class KMatrix(object):
             compartments.append(index[1])
 
         compartments = list(set(compartments))
-        print(compartments)
         return compartments
 
     @property
@@ -57,10 +56,8 @@ class KMatrix(object):
         self.__compartment_map = val
 
     def _create_compartment_map(self, compartments):
-        print(compartments)
         self._compartment_map = [c for c in compartments if c in
                                  self.involved_compartments]
-        print(self._compartment_map)
 
     def combine(self, k_matrix):
         if isinstance(k_matrix, list):
@@ -79,13 +76,10 @@ class KMatrix(object):
 
     def asarray(self):
         compartment_map = self.compartment_map
-        print(self._compartment_map)
-        print(type(compartment_map))
         size = len(compartment_map)
         array = np.zeros((size, size), dtype=np.int32)
         # Matrix is a dict
         for index in self.matrix:
-            print(index)
             i = compartment_map.index(index[0])
             j = compartment_map.index(index[1])
             array[i, j] = self.matrix[index]
