@@ -149,14 +149,14 @@ class ModelSpecParser(object):
             for row in reader:
                 params += [float(e) for e in row]
         plist = create_parameter_list(params)
-        self.model.parameter = plist
+        self.model.add_parameter(plist)
 
     def get_parameter_blocks(self):
         if Keys.PARAMETER_BLOCK not in self.spec:
             return
         for block in self.spec[Keys.PARAMETER_BLOCK]:
             block = self.get_block(block)
-            self.model.parameter_blocks[block.label] = block
+            self.model.add_parameter_block(block)
 
     def get_block(self, obj):
             (label, params) = get_keys_from_object(obj,

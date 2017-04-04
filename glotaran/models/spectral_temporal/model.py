@@ -125,7 +125,7 @@ class KineticModel(Model):
             s += "{}\n".format(self.irfs[irf])
 
         s += "\n\Shapes\n----\n\n"
-        for _, shape in self.shapes:
+        for _, shape in self.shapes.items():
             s += "{}\n".format(shape)
         return s
 

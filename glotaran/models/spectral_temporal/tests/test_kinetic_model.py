@@ -126,6 +126,17 @@ type: kinetic
 
 parameters: {}
 
+parameter_blocks:
+    - label: shape
+      fit: false
+      sub_blocks:
+        - label: amps
+          parameter: {}
+        - label: locs
+          parameter: {}
+        - label: width
+          parameter: {}
+
 compartments: [s1, s2, s3]
 
 megacomplexes:
@@ -139,6 +150,19 @@ k_matrices:
       '("s2","s2")': 2,
       '("s3","s3")': 3,
 }}
+
+shapes:
+  - label: "shape1"
+    type: "gaussian"
+    amplitude: shape.amps.1
+    location: shape.locs.1
+    width: shape.width.1
+  - label: "shape2"
+    type: "gaussian"
+    amplitude: shape.amps.2
+    location: shape.locs.2
+    width: shape.width.2
+  - ["shape3", "gaussian", shape.amps.3, shape.locs.7, shape.width.3]
 
 initial_concentrations: []
 
@@ -164,7 +188,8 @@ datasets:
         wanted_params.add("p2", 202e-4)
         wanted_params.add("p3", 505e-5)
 
-        model = parse_yml(fitspec.format(initial_parameter))
+        model = parse_yml(fitspec.format(initial_parameter, amps, locations,
+                                         delta))
 
         axies = {"time": times, "spectral": x}
 

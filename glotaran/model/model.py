@@ -6,9 +6,12 @@ from .compartment_constraints import CompartmentConstraint
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
-from .parameter import Parameter
+from .parameter_block import ParameterBlock
 from .parameter_constraints import ParameterConstraint
 from .relation import Relation
+
+
+ROOT_BLOCK_LABEL = "p"
 
 
 class Model(object):
@@ -20,8 +23,7 @@ class Model(object):
 
     def __init__(self):
 
-        self._parameter = []
-        self._parameter_blocks = {}
+        self._parameter_root = ParameterBlock(ROOT_BLOCK_LABEL)
         self._parameter_constraints = None
         self._relations = None
 
@@ -57,34 +59,19 @@ class Model(object):
     def compartments(self, value):
         self._compartments = value
 
-    @property
-    def parameter_blocks(self):
-        return self._parameter_blocks
-
-    @parameter_blocks.setter
-    def parameter_blocks(self, value):
-        self._parameter_blocks = value
+    def all_parameter(self):
+        for p in self._parameter_root.all_parameter():
+            yield p
 
     @property
     def parameter(self):
-        return self._parameter
-
-    @parameter.setter
-    def parameter(self, parameter):
-        if not isinstance(parameter, list):
-            parameter = [parameter]
-
-        for p in parameter:
-            if not isinstance(p, Parameter):
-                raise TypeError
-            p.index = len(self._parameter)+1
-            self._parameter.append(p)
+        return list(self.all_parameter())
 
     def add_parameter(self, parameter):
-        if not isinstance(parameter, Parameter):
-            raise TypeError
-        parameter.index = len(self._parameter)+1
-        self._parameter.append(parameter)
+        self._parameter_root.add_parameter(parameter)
+
+    def add_parameter_block(self, block):
+        self._parameter_root.add_sub_block(block)
 
     @property
     def megacomplexes(self):
@@ -228,11 +215,6 @@ class Model(object):
         s += "Parameter\n---------\n\n"
 
         for p in self.parameter:
-            s += "{}\n".format(p)
-
-        s += "Parameter Blocks\n---------\n\n"
-
-        for b in self.parameter_blocks:
             s += "{}\n".format(p)
 
         if self.parameter_constraints is not None:

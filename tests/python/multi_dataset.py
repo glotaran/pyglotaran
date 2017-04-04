@@ -4,8 +4,6 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
-from glotaran.model import Dataset
-from glotaran.models.kinetic.c_matrix_generator import CMatrixGenerator
 from glotaran.fitmodel import FitModel
 
 fitspec = '''

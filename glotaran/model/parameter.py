@@ -1,3 +1,6 @@
+from lmfit import Parameter as LmParameter
+
+
 class Parameter(object):
     """
     A parameter has an initial value and an optional label.
@@ -17,6 +20,8 @@ class Parameter(object):
 
     @property
     def label(self):
+        if self._label is None:
+            return self.index
         return self._label
 
     @label.setter
@@ -42,6 +47,10 @@ class Parameter(object):
             val = float(val)
 
         self._value = val
+
+    def as_lmfit_parameter(self, root):
+        name = "{}.{}".format(root, self.label)
+        return LmParameter(name=name, value=self.value)
 
     def __str__(self):
         return 'Index: {} Initial Value: {} Label: {}'.format(self._index,
