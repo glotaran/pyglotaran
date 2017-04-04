@@ -7,3 +7,8 @@ class SpectralShapeGaussian(SpectralShape):
         self.amplitude = amplitude
         self.location = location
         self.width = width
+
+    def __str__(self):
+        return "Label: {} Type: Gaussian\tAmplitude: {}\tLocation: {}\t"\
+            "Width: {}"\
+            .format(self.label, self.amplitude, self.location, self.width)

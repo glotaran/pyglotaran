@@ -39,6 +39,7 @@ class Keys:
     PARAMETER = "parameter"
     PARAMETERS = "parameters"
     PARAMETER_BLOCK = "parameter_block"
+    PARAMETER_BLOCKS = "parameter_blocks"
     PARAMETER_CONSTRAINTS = "parameter_constraints"
     PATH = "path"
     RANGE = "range"
@@ -152,9 +153,9 @@ class ModelSpecParser(object):
         self.model.add_parameter(plist)
 
     def get_parameter_blocks(self):
-        if Keys.PARAMETER_BLOCK not in self.spec:
+        if Keys.PARAMETER_BLOCKS not in self.spec:
             return
-        for block in self.spec[Keys.PARAMETER_BLOCK]:
+        for block in self.spec[Keys.PARAMETER_BLOCKS]:
             block = self.get_block(block)
             self.model.add_parameter_block(block)
 
@@ -164,8 +165,10 @@ class ModelSpecParser(object):
                                                     Keys.PARAMETER,
                                                     ]
                                                    )
+            params = create_parameter_list(params)
             fit = retrieve_optional(obj, Keys.FIT, 4, True)
-            block = ParameterBlock(label, params, fit=fit)
+            block = ParameterBlock(label, fit=fit)
+            block.add_parameter(params)
             if Keys.SUBBLOCKS in obj:
                 for subblock in obj[Keys.SUBBLOCKS]:
                     block.add_sub_block(self.get_block(subblock))

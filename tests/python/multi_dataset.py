@@ -95,6 +95,10 @@ wanted_params.add("p5", 10)
 #  print(fitspec.format(initial_parameter))
 
 model = parse_yml(fitspec.format(initial_parameter, simparams_parameter))
+
+print(model._parameter_root.sub_blocks)
+print(model._parameter_root.sub_blocks["shape"].sub_blocks)
+
 print(model)
 
 model.eval(wanted_params, 'dataset1', {"time": times, "spec": x1})
