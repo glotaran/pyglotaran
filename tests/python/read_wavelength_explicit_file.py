@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 test = ' Time explicit\n'
 print(not test.lower().find("time"))
 
-file = ExplicitFile('../resources/te_data_file.ascii')
+data_file_te = ExplicitFile('../resources/te_data_file.ascii')
 
-data_file_te = file.read("psi_1")
+data_file_te.read("psi_1")
 dataset_te = data_file_te.dataset()
 
 print(dataset_te.get_axis("time"))
 print(dataset_te.get_axis("spec"))
-print(dataset_te.data)
+# print(dataset_te.data)
 # axis(v)
 # v = [xmin, xmax, ymin, ymax]
 
@@ -31,4 +31,4 @@ plt.xscale('symlog', linthreshx=20)
 # plt.xlabel('$Wavenumber\ [\ cm^{-1}\ ]$')
 # plt.pcolormesh(dataset_te.get_axis("spec"),dataset_te.get_axis("time"), dataset_te.data.T)
 plt.show()
-file.write()
+data_file_te.write('test.ascii')

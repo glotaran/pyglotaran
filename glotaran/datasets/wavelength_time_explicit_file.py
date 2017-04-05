@@ -43,20 +43,20 @@ class ExplicitFile(object):
     def get_format_name(self):
         raise NotImplementedError
 
-    def write(self, dataset, overwrite=False, comment=""):
-        if not isinstance(dataset, SpectralTimetrace):
-            raise TypeError
+    def write(self, filename, type, overwrite=False, comment=""):
+        if not isinstance(type, DataFileType):
+            raise TypeError("Export type not supported")
 
-        self._dataset = dataset
+        #self._dataset = dataset
 
         comment = comment.splitlines()
         while len(comment) < 2:
             comment.append("")
 
-        if os.path.isfile(self._file) and not overwrite:
+        if os.path.isfile(filename) and not overwrite:
             raise Exception("File already exist.")
 
-        f = open(self._file, "w")
+        f = open(filename, "w")
 
         f.write(comment[0])
         f.write(comment[1])
@@ -140,8 +140,9 @@ class ExplicitFile(object):
 
     def dataset(self):
         dataset = Dataset(self._label)
-
-        if self._file_data_format == DataFileType.time_explicit:
+        if not self._file_data_format:
+            pass
+        elif self._file_data_format == DataFileType.time_explicit:
             dataset.set_axis("spec", self._spectral_indices)
             dataset.set_axis("time", self._times)
         elif self._file_data_format == DataFileType.time_explicit:
@@ -155,6 +156,7 @@ class WavelengthExplicitFile(ExplicitFile):
     """
     Represents a wavelength explicit file
     """
+
     def get_explicit_axis(self):
         return self._spectral_indices
 
