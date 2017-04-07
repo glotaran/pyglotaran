@@ -36,7 +36,7 @@ initial_concentrations: []
 
 irf: []
 
-datasets:
+io:
   - label: dataset1
     type: spectral
     megacomplexes: [mc1]
@@ -94,7 +94,7 @@ irf:
     center: 2
     width: 3
 
-datasets:
+io:
   - label: dataset1
     type: spectral
     megacomplexes: [mc1]
@@ -153,7 +153,7 @@ initial_concentrations: []
 
 irf: []
 
-datasets:
+io:
   - label: dataset1
     type: spectral
     megacomplexes: [mc1]

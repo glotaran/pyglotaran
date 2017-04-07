@@ -57,7 +57,7 @@ setup(
                     i.h.m.van.stokkum@vu.nl""",
     license='GPLv3',
     packages=[
-              'glotaran.datasets',
+              'glotaran.io',
               'glotaran.model',
               'glotaran.models.kinetic',
               'glotaran.models.kinetic.c_matrix_cython',

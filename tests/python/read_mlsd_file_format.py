@@ -1,4 +1,4 @@
-from glotaran.datasets.mlsd_file_format import MLSDFile
+from glotaran.io.mlsd_file_format import MLSDFile
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
