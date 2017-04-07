@@ -38,6 +38,7 @@ ax2.pcolormesh(times_cmp, wavelength_cmp, data_cmp)
 # plt.ylabel('Time (ps)')
 # plt.xlabel('$Wavenumber\ [\ cm^{-1}\ ]$')
 # plt.pcolormesh(dataset_te.get_axis("spec"),dataset_te.get_axis("time"), dataset_te.data.T)
+
+data_file_mlsd.write('test.ascii',overwrite=True)
 plt.show()
-# data_file_mlsd.write('test.ascii')
 

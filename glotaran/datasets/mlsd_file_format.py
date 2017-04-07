@@ -11,6 +11,7 @@ import pandas as pd
 class DataFileType(Enum):
     mlsd_mulheim = "MLSD Mulheim"
 
+
 class HeaderMLSDMulheim(Enum):
     int_time = "[integration time:]"
     int_delay = "[integration delay:]"
@@ -20,6 +21,7 @@ class HeaderMLSDMulheim(Enum):
     comment = "[comment:]"
     prot = "[number, period, cycle, actinic light]"
     data = "[data, wavelength(once), 1st dark, 2nd dark, measure]"
+
 
 class MLSDFile(object):
     """
@@ -52,39 +54,28 @@ class MLSDFile(object):
     def get_format_name(self):
         raise NotImplementedError
 
-    def write(self, filename, type, overwrite=False, comment=""):
-        if not isinstance(type, DataFileType):
-            raise TypeError("Export type not supported")
-
-        #self._dataset = dataset
-
-        comment = comment.splitlines()
-        while len(comment) < 2:
-            comment.append("")
+    def write(self, filename, overwrite=False, comment="", format="Time explicit"):
+        #TODO: write a more elegant method
 
         if os.path.isfile(filename) and not overwrite:
+            print('File {} already exists'.format(os.path.isfile(filename)))
             raise Exception("File already exist.")
 
-        f = open(filename, "w")
+        comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
 
-        f.write(comment[0])
-        f.write(comment[1])
+        #Wavelength explicit
+        wav = '\t'.join([repr(num) for num in self._spectral_indices])
+        #header = comments + "Wavelength explicit\nIntervalnr {}".format(len(self._spectral_indices)) + "\n" + wav
+        #raw_data = np.vstack((self._times.T, self._observations)).T
+        #header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + wav
 
-        f.write(self.get_format_name())
+        tim = '\t'.join([repr(num) for num in self._times])
+        header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + tim
+        raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
 
-        f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
+        np.savetxt(filename, raw_data, fmt='%.18e', delimiter='\t', newline='\n', header=header, footer='', comments='')
 
-        datawriter = csv.writer(f, delimiter='\t')
-
-        datawriter.writerow(self.get_explicit_axis())
-
-        for i in range(len(self.get_secondary_axis())):
-            datawriter.writerow(self.get_data_row(i)
-                                .prepend(self.get_secondary_axis()[i]))
-
-        f.close()
-
-    def read(self, label, spectral_unit=SpectralUnit.nm, time_unit="s"):
+    def read(self, label):
         if not os.path.isfile(self._file):
             raise Exception("File does not exist.")
 
@@ -136,14 +127,14 @@ class MLSDFile(object):
                 pass
             else:
                 protocol.append(line)
-        times = np.array([0])
+        tmp = [0]
         for l in protocol:
             val = l.strip().split()
             period = float(val[1])
             cycle = float(val[2])
-            print('period={}, cycle={}'.format(period,cycle))
-            print(np.arange(period + times[-1], times[-1] + period + cycle * period, period))
-            times = np.concatenate((times, np.arange(period + times[-1], times[-1] + period + cycle * period, period)))
+            for i in range(int(cycle)):
+                tmp.append(tmp[-1]+period)
+            times = np.array(tmp)
         print('len(times)={}'.format(len(times)))
 
         self._times = times
@@ -180,3 +171,11 @@ def get_data_file_format(f):
                     break
 
     return data_file_format
+
+
+def is_blank (mystr):
+    return not (mystr and mystr.strip())
+
+
+def is_not_blank (mystr):
+    return bool(mystr and mystr.strip())
