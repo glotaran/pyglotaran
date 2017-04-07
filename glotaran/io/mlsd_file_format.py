@@ -1,9 +1,7 @@
 from glotaran.model import Dataset
-from .spectral_timetrace import SpectralTimetrace, SpectralUnit
+# from .spectral_timetrace import SpectralTimetrace, SpectralUnit
 from enum import Enum
 import os.path
-import csv
-import re
 import numpy as np
 import pandas as pd
 
@@ -25,9 +23,10 @@ class HeaderMLSDMulheim(Enum):
 
 class MLSDFile(object):
     """
-    Abstract class representing either a time- or wavelength-explicit file.
+    Class capable of reading in so called time- or wavelength-explicit file format.
+    Returns a glotaran.model.dataset
     """
-    def __init__(self, file):
+    def __init__(self, file, debug = False):
         self._file = file
         self._file_data_format = None
         self._observations = []  # TODO: choose name: data_points, observations, data
@@ -35,6 +34,7 @@ class MLSDFile(object):
         self._spectral_indices = []
         self._label = ""
         self._comment = ""
+        self._debug = debug
 
     def get_explicit_axis(self):
         raise NotImplementedError
@@ -54,7 +54,7 @@ class MLSDFile(object):
     def get_format_name(self):
         raise NotImplementedError
 
-    def write(self, filename, overwrite=False, comment="", format="Time explicit"):
+    def write(self, filename, overwrite=False, comment="", file_format="Time explicit"):
         #TODO: write a more elegant method
 
         if os.path.isfile(filename) and not overwrite:
@@ -63,15 +63,16 @@ class MLSDFile(object):
 
         comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
 
-        #Wavelength explicit
-        wav = '\t'.join([repr(num) for num in self._spectral_indices])
-        #header = comments + "Wavelength explicit\nIntervalnr {}".format(len(self._spectral_indices)) + "\n" + wav
-        #raw_data = np.vstack((self._times.T, self._observations)).T
-        #header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + wav
-
-        tim = '\t'.join([repr(num) for num in self._times])
-        header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + tim
-        raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
+        if file_format == "Wavelength explicit":
+            wav = '\t'.join([repr(num) for num in self._spectral_indices])
+            header = comments + "Wavelength explicit\nIntervalnr {}".format(len(self._spectral_indices)) + "\n" + wav
+            raw_data = np.vstack((self._times.T, self._observations)).T
+        elif file_format == "Time explicit":
+            tim = '\t'.join([repr(num) for num in self._times])
+            header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + tim
+            raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
+        else:
+            raise NotImplementedError
 
         np.savetxt(filename, raw_data, fmt='%.18e', delimiter='\t', newline='\n', header=header, footer='', comments='')
 
@@ -135,7 +136,8 @@ class MLSDFile(object):
             for i in range(int(cycle)):
                 tmp.append(tmp[-1]+period)
             times = np.array(tmp)
-        print('len(times)={}'.format(len(times)))
+        if self._debug:
+            print('len(times)={}'.format(len(times)))
 
         self._times = times
 
@@ -173,9 +175,9 @@ def get_data_file_format(f):
     return data_file_format
 
 
-def is_blank (mystr):
-    return not (mystr and mystr.strip())
+#def is_blank (mystr):
+#    return not (mystr and mystr.strip())
 
 
-def is_not_blank (mystr):
-    return bool(mystr and mystr.strip())
+#def is_not_blank (mystr):
+#    return bool(mystr and mystr.strip())
