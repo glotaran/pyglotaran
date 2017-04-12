@@ -13,7 +13,7 @@ from glotaran.model import (create_parameter_list,
 
 class ModelKeys:
     COMPARTMENTS = "compartments"
-    DATASETS = "io"
+    DATASETS = "datasets"
     PARAMETERS = "parameters"
     PARAMETER = "parameter"
     MEGACOMPLEXES = "megacomplexes"
