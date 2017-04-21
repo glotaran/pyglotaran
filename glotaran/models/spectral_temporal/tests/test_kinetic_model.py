@@ -103,9 +103,9 @@ datasets:
         x = np.asarray([0])
 
         wanted_params = Parameters()
-        wanted_params.add("p1", 101e-3)
-        wanted_params.add("p2", 0.3)
-        wanted_params.add("p3", 10)
+        wanted_params.add("p_1", 101e-3)
+        wanted_params.add("p_2", 0.3)
+        wanted_params.add("p_3", 10)
 
         model = parse_yml(fitspec.format(initial_parameter))
 

@@ -2,12 +2,10 @@ import os
 import csv
 from ast import literal_eval as make_tuple
 
-from .utils import get_keys_from_object, is_compact
+from .utils import get_keys_from_object, parse_range_list
 
-from glotaran.model import (BoundConstraint,
-                            EqualAreaConstraint,
+from glotaran.model import (EqualAreaConstraint,
                             EqualConstraint,
-                            FixedConstraint,
                             InitialConcentration,
                             Parameter,
                             ParameterLeaf,
@@ -47,6 +45,7 @@ class Keys:
     TARGET = "target"
     TO = "to"
     TYPE = 'type'
+    VALUE = 'value'
     WEIGHT = "weight"
     ZERO = "zero"
 
@@ -192,37 +191,33 @@ class ModelSpecParser(object):
         if Keys.PARAMETER_CONSTRAINTS not in self.spec:
             return
         for constraint in self.spec[Keys.PARAMETER_CONSTRAINTS]:
-
+            print(constraint)
             (type,) = get_keys_from_object(constraint, [Keys.TYPE])
 
-            params = []
-            if Keys.RANGE in constraint:
-                params = make_tuple(constraint[Keys.RANGE])
-            elif Keys.PARAMETER in constraint:
-                params = constraint[Keys.PARAMETER]
-            elif is_compact(constraint):
-                params = constraint[1]
-                if isinstance(params, str):
-                    params = make_tuple(params)
-
             if type == Keys.FIX:
-                self.model.add_parameter_constraint(
-                    FixedConstraint(params))
+                (value, params) = get_keys_from_object(constraint,
+                                                       [Keys.VALUE,
+                                                        Keys.PARAMETERS],
+                                                       start=1)
+
+                if isinstance(params, list):
+                    params = ", ".join(["{}".format(p) for p in params])
+
+                for p in parse_range_list(params):
+                    self.model.parameter.get(p).vary = not value
+
             elif type == Keys.BOUND:
-                lower = 'NaN'
-                upper = 'NaN'
-                if is_compact(constraint):
-                    lower = constraint[2]
-                    upper = constraint[3]
-                else:
-                    if Keys.LOWER in constraint:
-                        lower = float(constraint[Keys.LOWER])
-                    if Keys.UPPER in constraint:
-                        upper = float(constraint[Keys.UPPER])
-                self.model.add_parameter_constraint(BoundConstraint(
-                    params,
-                    lower=lower,
-                    upper=upper))
+                (min, max, params) = get_keys_from_object(constraint,
+                                                          [Keys.MIN, Keys.MAX,
+                                                           Keys.PARAMETERS],
+                                                          start=1)
+                if isinstance(params, list):
+                    params = ", ".join(["{}".format(p) for p in params])
+                for p in parse_range_list(params):
+                    if max is not None:
+                        self.model.parameter.get(p).max = float(max)
+                    if min is not None:
+                        self.model.parameter.get(p).min = float(min)
 
     def get_compartment_constraints(self):
         if Keys.COMPARTMENT_CONSTRAINTS not in self.spec:

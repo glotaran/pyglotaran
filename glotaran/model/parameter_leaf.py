@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from lmfit import Parameters
+
 from .parameter import Parameter
 
 
@@ -40,7 +42,7 @@ class ParameterLeaf(OrderedDict):
         for p in self.all_leaf():
             p.vary = value
         self._fit = value
-        for l in self:
+        for _, l in self.items():
             l.fit = value
 
     @property
@@ -77,3 +79,17 @@ class ParameterLeaf(OrderedDict):
         for l in self:
             for p in l.all():
                 yield p
+
+    def all_with_label(self, root):
+        for label, p in self._parameters.items():
+            yield ("{}_{}".format(root, label), p)
+        for _, l in self.items():
+            for (lbl, p) in l.all_with_label("{}_{}".format(root, self.label)):
+                yield ("{}_{}".format(root, lbl), p)
+
+    def as_parameters_dict(self):
+        params = Parameters()
+        for (label, p) in self.all_with_label("p"):
+            p.name = label
+            params.add(p)
+        return params

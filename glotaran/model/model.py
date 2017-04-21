@@ -6,7 +6,6 @@ from .compartment_constraints import CompartmentConstraint
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
-from .parameter_constraints import ParameterConstraint
 from .parameter_leaf import ParameterLeaf
 
 
@@ -83,28 +82,6 @@ class Model(object):
             self.megacomplexes[megacomplex.label] = megacomplex
         else:
             self.megacomplexes = {megacomplex.label: megacomplex}
-
-    @property
-    def parameter_constraints(self):
-        return self._parameter_constraints
-
-    @parameter_constraints.setter
-    def parameter_constraints(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        if any(not isinstance(val, ParameterConstraint) for val in value):
-            raise TypeError("ParameterConstraint must be instance of class"
-                            " 'ParameterConstraint'")
-        self._parameter_constraints = value
-
-    def add_parameter_constraint(self, constraint):
-        if not isinstance(constraint, ParameterConstraint):
-            raise TypeError("ParameterConstraint must be instance of class"
-                            " 'ParameterConstraint'")
-        if self.parameter_constraints is not None:
-            self.parameter_constraints.append(constraint)
-        else:
-            self.parameter_constraints = constraint
 
     @property
     def compartment_constraints(self):

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from math import isnan
+from math import isnan, isinf
 from glotaran.specification_parser import parse_file
 from glotaran.models.spectral_temporal import (KineticModel,
                                                GaussianIrf,
@@ -202,22 +202,30 @@ class TestParser(TestCase):
 
     def test_parameter(self):
         allp = list(self.model.parameter.all_leaf())
-        self.assertEqual(len(allp), 6)
+        self.assertEqual(len(allp), 10)
 
         self.assertTrue(all(isinstance(p, Parameter) for p in allp))
 
         p = self.model.parameter.get('1')
         self.assertEqual(p.label, '1')
         self.assertEqual(p.value, 4.13E-02)
+        self.assertEqual(p.min, 0)
+        self.assertTrue(isinf(p.max))
         self.assertTrue(p.vary)
 
-        p = self.model.parameter.get('2')
-        self.assertEqual(p.label, '2')
+        for i in ['2', '3', '4', '5']:
+            p = self.model.parameter.get(i)
+            self.assertEqual(p.label, i)
+            self.assertEqual(p.value, 1.0)
+            self.assertFalse(p.vary)
+
+        p = self.model.parameter.get('6')
+        self.assertEqual(p.label, '6')
         self.assertEqual(p.value, 1.0)
         self.assertTrue(p.vary)
 
-        p = self.model.parameter.get('3')
-        self.assertEqual(p.label, '3')
+        p = self.model.parameter.get('7')
+        self.assertEqual(p.label, '7')
         self.assertTrue(isnan(p.value))
         self.assertFalse(p.vary)
 
@@ -226,14 +234,14 @@ class TestParser(TestCase):
         self.assertEqual(p.value, 1.78)
         self.assertTrue(p.vary)
 
-        p = self.model.parameter.get_by_index(5)
+        p = self.model.parameter.get_by_index(9)
         self.assertEqual(p.label, 'boundparam')
         self.assertEqual(p.value, 1.78)
         self.assertFalse(p.vary)
         self.assertEqual(p.min, 0)
         self.assertEqual(p.max, 10)
 
-        p = self.model.parameter.get_by_index(6)
+        p = self.model.parameter.get_by_index(10)
         self.assertEqual(p.label, 'relatedparam')
         self.assertEqual(p.value, 1.78)
         self.assertFalse(p.vary)
@@ -253,7 +261,7 @@ class TestParser(TestCase):
         p = self.model.parameter.get('kinpar.kf')
         self.assertEqual(p.label, 'kf')
         self.assertEqual(p.value, 0.0002)
-        self.assertTrue(p.vary)
+        self.assertFalse(p.vary)
 
         p = self.model.parameter.get('shape.1')
         self.assertEqual(p.label, '1')
@@ -269,3 +277,9 @@ class TestParser(TestCase):
         self.assertEqual(p.label, 'myparam')
         self.assertEqual(p.value, 2.2)
         self.assertFalse(p.vary)
+
+        for i in range(3):
+
+            p = self.model.parameter.get('testblock.{}'.format(i+1))
+            self.assertEqual(p.min, 0)
+            self.assertTrue(isinf(p.max))
