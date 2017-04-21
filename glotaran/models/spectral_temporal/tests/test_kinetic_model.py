@@ -6,7 +6,6 @@ from lmfit import Parameters
 from glotaran.specification_parser import parse_yml
 
 
-
 class TestKineticModel(TestCase):
 
     def assertEpsilon(self, number, value, epsilon):
@@ -48,7 +47,7 @@ datasets:
         x = np.asarray([0])
 
         wanted_params = Parameters()
-        wanted_params.add("p1", 101e-3)
+        wanted_params.add("p_1", 101e-3)
 
         model = parse_yml(fitspec.format(initial_parameter))
 
@@ -59,8 +58,8 @@ datasets:
         result = model.fit()
 
         for i in range(len(wanted_params)):
-            self.assertEpsilon(wanted_params["p{}".format(i+1)].value,
-                               result.best_fit_parameter["p{}".format(i+1)]
+            self.assertEpsilon(wanted_params["p_{}".format(i+1)].value,
+                               result.best_fit_parameter["p_{}".format(i+1)]
                                .value, 1e-6)
 
     def test_one_component_one_channel_gaussian_irf(self):
@@ -116,8 +115,8 @@ datasets:
         result = model.fit()
 
         for i in range(len(wanted_params)):
-            self.assertEpsilon(wanted_params["p{}".format(i+1)].value,
-                               result.best_fit_parameter["p{}".format(i+1)]
+            self.assertEpsilon(wanted_params["p_{}".format(i+1)].value,
+                               result.best_fit_parameter["p_{}".format(i+1)]
                                .value, 1e-6)
 
     def test_three_component_multi_channel(self):
@@ -184,9 +183,9 @@ datasets:
         delta = [400, 100, 300]
 
         wanted_params = Parameters()
-        wanted_params.add("p1", 101e-3)
-        wanted_params.add("p2", 202e-4)
-        wanted_params.add("p3", 505e-5)
+        wanted_params.add("p_1", 101e-3)
+        wanted_params.add("p_2", 202e-4)
+        wanted_params.add("p_3", 505e-5)
 
         model = parse_yml(fitspec.format(initial_parameter, amps, locations,
                                          delta))
@@ -201,6 +200,6 @@ datasets:
         result = model.fit()
         result.best_fit_parameter.pretty_print()
         for i in range(len(wanted_params)):
-            self.assertEpsilon(wanted_params["p{}".format(i+1)].value,
-                               result.best_fit_parameter["p{}".format(i+1)]
+            self.assertEpsilon(wanted_params["p_{}".format(i+1)].value,
+                               result.best_fit_parameter["p_{}".format(i+1)]
                                .value, 1e-6)
