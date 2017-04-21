@@ -110,15 +110,7 @@ compartment_constraints:
     weight: 0.0016
     # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 
-parameter_constraints:
-  - type: fix
-    parameter: [1, 2, 3, 54] # fix some parameters
-  - [fix, [1,2,3]] # compact
-  - type: bound
-    range: '(100,150)' # range of parameters
-    lower: 0 # no upper specified => no upper bound
-  - [bound, '(100,120)', 'NaN', 7.0E-8] # compact, lower is NaN, so only upper bound
-
+# put relations into parameters?
 relations:
   - parameter: 86
     to: {const: 0, 89: 1, 90: 1, 87: -1.0} #Theta86 = 0 +1*theta89 + 1*theta90 -1*theta87
@@ -126,17 +118,27 @@ relations:
   - [89, 30] # equality
 
 parameters:
-  - 4.13E-02
-  - 1
-  - ["spectral_equality" , 1.78]
+  - 4.13E-02 #p1
+  - 1 #p2
+  - nan
+  - [1.78, "spectral_equality", true] #p4
+  - kinpar: [[0.2, "k1"], [0.01], [0.0002, "kf"]] #parameter 5, 6, 7
+  - shape: [[2.2, false], [0.35, true, “rocks”], [2.2, “,my param”,false]]
+  - irf1: [[-80.2, "position"], [1.6, "width"]]
+  - irf2: [[-80.2, "position"], [1.6, "width"]]
 
-parameter_block:
-    - label: shape
-      parameter: [22, 33, 44]
+parameter_attributes:
+    - type: fix
+      value: true
+      from: 10
+      to: 34 # defaults to from
+      interval: 1 # default 1
+      pyrange: "10,10+25,3" #optional, overrides from, to, interval by calling range(pyrange.value) internally
       fit: false
-
-    - label: nested
-      parameter: []
-      sub_blocks:
-        - label: inner
-          parameter: [66]
+    - type: bound
+      lower: 0
+      upper: inf
+      from: 1
+      to: 2
+      # interval: 1 (implicit)
+    - [bound, 0, inf, 1] #implicit are to = from, interval = 1
