@@ -40,7 +40,7 @@ class TestParser(TestCase):
             center: 3
             width: 4
 
-        io:
+        datasets:
           - label: dataset1
             megacomplexes: [mc1]
             irf: irf1

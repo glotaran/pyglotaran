@@ -58,6 +58,7 @@ setup(
     license='GPLv3',
     packages=[
               'glotaran.io',
+              'glotaran.plotting',
               'glotaran.model',
               'glotaran.models.kinetic',
               'glotaran.models.kinetic.c_matrix_cython',

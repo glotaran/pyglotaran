@@ -54,7 +54,7 @@ initial_concentrations: []
 
 irf: []
 
-io:
+datasets:
 - label: dataset1
   type: spectral
   megacomplexes: [mc1]

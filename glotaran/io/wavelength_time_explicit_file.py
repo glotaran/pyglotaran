@@ -24,6 +24,7 @@ class ExplicitFile(object):
         self._times = []
         self._spectral_indices = []
         self._label = ""
+        self._comment = ""
 
     def get_explicit_axis(self):
         raise NotImplementedError
@@ -43,7 +44,7 @@ class ExplicitFile(object):
     def get_format_name(self):
         raise NotImplementedError
 
-    def write(self, filename, type, overwrite=False, comment=""):
+    def write_old(self, filename, export_type, overwrite=False, comment=""):
         if not isinstance(type, DataFileType):
             raise TypeError("Export type not supported")
 
@@ -74,6 +75,28 @@ class ExplicitFile(object):
                                 .prepend(self.get_secondary_axis()[i]))
 
         f.close()
+
+    def write(self, filename, overwrite=False, comment="", file_format="Time explicit"):
+        #TODO: write a more elegant method
+
+        if os.path.isfile(filename) and not overwrite:
+            print('File {} already exists'.format(os.path.isfile(filename)))
+            raise Exception("File already exist.")
+
+        comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
+
+        if file_format == "Wavelength explicit":
+            wav = '\t'.join([repr(num) for num in self._spectral_indices])
+            header = comments + "Wavelength explicit\nIntervalnr {}".format(len(self._spectral_indices)) + "\n" + wav
+            raw_data = np.vstack((self._times.T, self._observations)).T
+        elif file_format == "Time explicit":
+            tim = '\t'.join([repr(num) for num in self._times])
+            header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + tim
+            raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
+        else:
+            raise NotImplementedError
+
+        np.savetxt(filename, raw_data, fmt='%.18e', delimiter='\t', newline='\n', header=header, footer='', comments='')
 
     def read(self, label, spectral_unit=SpectralUnit.nm, time_unit="s"):
         if not os.path.isfile(self._file):

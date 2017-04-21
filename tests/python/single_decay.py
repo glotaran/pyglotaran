@@ -2,13 +2,13 @@ import numpy as np
 
 from lmfit import Parameters
 
-from glotaran_tools.specification_parser import parse_yml
-from glotaran_models.kinetic import KineticSeparableModel
+from glotaran.specification_parser import parse_yml
+from glotaran.models.kinetic import KineticSeparableModel
 
 fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1]
 

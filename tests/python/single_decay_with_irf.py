@@ -6,6 +6,8 @@ from lmfit import Parameters
 from glotaran.specification_parser import parse_yml
 from glotaran.model import Dataset
 from glotaran.models.kinetic import KineticSeparableModel
+import matplotlib.pyplot as plt
+import glotaran.plotting.basic_plots as gplt
 
 fitspec = '''
 type: kinetic
@@ -33,7 +35,7 @@ irf:
     width: 3
 
 
-io:
+datasets:
 - label: dataset1
   type: spectral
   megacomplexes: [mc1]
@@ -41,33 +43,35 @@ io:
   irf: irf1
 '''
 
-initial_parameter = [101e-4, 0, 5]
+initial_parameter = [0.05, 0, 5]
 times = np.asarray(np.arange(-100, 1500, 1.5))
-# x = np.arange(12820, 15120, 4.6)
-x = np.asarray([1.0, 2.0])
-
-#  axies = IndependentAxies()
-#  axies.add(x)
-#  axies.add(times)
-
-wanted_params = Parameters()
-wanted_params.add("p1", 101e-3)
-wanted_params.add("p2", 0.3)
-wanted_params.add("p3", 10)
-
-model = parse_yml(fitspec.format(initial_parameter))
-
-fitmodel = KineticSeparableModel(model)
-model.eval(wanted_params, 'dataset1', {"time": times, "spec": x})
+x = np.asarray([1.0, 2.0, 3.0, 4.0])
+# x = np.arange(12820, 15120, 46)
 
 
-# print(model.datasets['dataset1'].data.data.shape)
+
+
 
 
 def fit():
-    fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
-    pass
+    return fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
 
 if __name__ == '__main__':
-    fit()
-    pass
+    simulated_params = Parameters()
+    simulated_params.add("p1", 0.005)
+    simulated_params.add("p2", 0.3)
+    simulated_params.add("p3", 10)
+
+    model = parse_yml(fitspec.format(initial_parameter))
+    model.eval(simulated_params, 'dataset1', {"time": times, "spec": x})
+
+    fitmodel = KineticSeparableModel(model)
+    print(model.datasets['dataset1'].data.data.shape)
+    gplt.plot_data_overview(model.datasets['dataset1'].data.get_axis("time"),
+                   model.datasets['dataset1'].data.get_axis("spec"),
+                   model.datasets['dataset1'].data.data.T)
+
+    fitmodel = fit()
+
+    # TODO: fitmodel.get_residual_matrix()
+    plt.show()

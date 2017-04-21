@@ -3,13 +3,13 @@ import numpy as np
 
 from lmfit import Parameters
 
-from glotaran_tools.specification_parser import parse_yml
-from glotaran_models.kinetic import KineticSeparableModel
+from glotaran.specification_parser import parse_yml
+from glotaran.models.kinetic import KineticSeparableModel
 
 fitspec = '''
 type: kinetic
 
-parameter: {}
+parameters: {}
 
 compartments: [s1, s2, s3]
 
@@ -34,7 +34,7 @@ irf:
     width: 5
 
 
-io:
+datasets:
 - label: dataset1
   type: spectral
   megacomplexes: [mc1]
@@ -63,17 +63,15 @@ wanted_params.pretty_print()
 model = parse_yml(fitspec.format(initial_parameter))
 
 fitmodel = KineticSeparableModel(model)
-data = fitmodel.eval(wanted_params, *times, **{'dataset': 'dataset1',
-                                               'dataset1_x': x,
-                                               })
+
+model.eval(wanted_params, 'dataset1', {"time": times, "spec": x})
 
 
 def fit():
-    fitmodel.get_initial_fitting_parameter().pretty_print()
-    fitmodel.fit(fitmodel.get_initial_fitting_parameter(),
-                 *times, **{"dataset1":
-                            data}).best_fit_parameter.pretty_print()
-
+    fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
+    pass
 
 if __name__ == '__main__':
     fit()
+    pass
+
