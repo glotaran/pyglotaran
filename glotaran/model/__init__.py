@@ -7,14 +7,10 @@ from . import (
                megacomplex,
                model,
                parameter,
-               parameter_block,
                parameter_constraints,
-               relation,
+               parameter_leaf,
                )
 
-# Functions
-
-create_parameter_list = parameter.create_parameter_list
 
 # C Matrix
 
@@ -45,13 +41,9 @@ Model = model.Model
 # Parameter
 
 Parameter = parameter.Parameter
-ParameterBlock = parameter_block.ParameterBlock
+ParameterLeaf = parameter_leaf.ParameterLeaf
 
 # Parameter Constraint
 
 BoundConstraint = parameter_constraints.BoundConstraint
 FixedConstraint = parameter_constraints.FixedConstraint
-
-# Relation
-
-Relation = relation.Relation

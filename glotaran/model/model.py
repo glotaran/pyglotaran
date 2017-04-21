@@ -6,9 +6,8 @@ from .compartment_constraints import CompartmentConstraint
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
-from .parameter_block import ParameterBlock
 from .parameter_constraints import ParameterConstraint
-from .relation import Relation
+from .parameter_leaf import ParameterLeaf
 
 
 ROOT_BLOCK_LABEL = "p"
@@ -23,18 +22,12 @@ class Model(object):
 
     def __init__(self):
 
-        self._parameter_root = ParameterBlock(ROOT_BLOCK_LABEL)
-        self._parameter_constraints = None
-        self._relations = None
-
-        self._compartments = None
         self._compartment_constraints = None
-
+        self._compartments = None
         self._datasets = OrderedDict()
-
         self._initial_concentrations = None
-
         self._megacomplexes = {}
+        self._parameter = None
 
     def type_string(self):
         raise NotImplementedError
@@ -59,19 +52,15 @@ class Model(object):
     def compartments(self, value):
         self._compartments = value
 
-    def all_parameter(self):
-        for p in self._parameter_root.all_parameter():
-            yield p
-
     @property
     def parameter(self):
-        return list(self.all_parameter())
+        return self._parameter
 
-    def add_parameter(self, parameter):
-        self._parameter_root.add_parameter(parameter)
-
-    def add_parameter_block(self, block):
-        self._parameter_root.add_sub_block(block)
+    @parameter.setter
+    def parameter(self, val):
+        if not isinstance(val, ParameterLeaf):
+            raise TypeError
+        self._parameter = val
 
     @property
     def megacomplexes(self):
@@ -94,26 +83,6 @@ class Model(object):
             self.megacomplexes[megacomplex.label] = megacomplex
         else:
             self.megacomplexes = {megacomplex.label: megacomplex}
-
-    @property
-    def relations(self):
-        return self._relations
-
-    @relations.setter
-    def relations(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        if any(not isinstance(val, Relation) for val in value):
-            raise TypeError("Relations must be instance of class 'Relation'")
-        self._relations = value
-
-    def add_relation(self, relation):
-        if not isinstance(relation, Relation):
-            raise TypeError("Relations must be instance of class 'Relation'")
-        if self.relations is not None:
-            self.relations.append(relation)
-        else:
-            self.relations = relation
 
     @property
     def parameter_constraints(self):

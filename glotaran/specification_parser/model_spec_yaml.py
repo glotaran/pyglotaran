@@ -2,16 +2,15 @@ import os
 import csv
 from ast import literal_eval as make_tuple
 
-from .utils import get_keys_from_object, is_compact, retrieve_optional
+from .utils import get_keys_from_object, is_compact
 
-from glotaran.model import (create_parameter_list,
-                            BoundConstraint,
+from glotaran.model import (BoundConstraint,
                             EqualAreaConstraint,
                             EqualConstraint,
                             FixedConstraint,
                             InitialConcentration,
-                            ParameterBlock,
-                            Relation,
+                            Parameter,
+                            ParameterLeaf,
                             ZeroConstraint,
                             )
 
@@ -27,31 +26,30 @@ class Keys:
     EQUAL = "equal"
     EQUAL_AREA = "equal_area"
     EQUAL_AREA = "equal_area"
+    EXPR = "expr"
     FIT = "fit"
     FIX = "fix"
     INITIAL_CONCENTRATION = "initial_concentration"
     INTERVALS = "intervals"
     LABEL = "label"
-    LOWER = "lower"
+    MAX = "max"
     MEGACOMPLEX = "megacomplex"
     MEGACOMPLEXES = "megacomplexes"
     MEGACOMPLEX_SCALING = "megacomplex_scaling"
+    MIN = "min"
     PARAMETER = "parameter"
     PARAMETERS = "parameters"
-    PARAMETER_BLOCK = "parameter_block"
-    PARAMETER_BLOCKS = "parameter_blocks"
     PARAMETER_CONSTRAINTS = "parameter_constraints"
     PATH = "path"
     RANGE = "range"
-    RELATIONS = "relations"
     SCALING = "scaling"
     SUBBLOCKS = "sub_blocks"
     TARGET = "target"
     TO = "to"
     TYPE = 'type'
-    UPPER = "upper"
     WEIGHT = "weight"
     ZERO = "zero"
+
 
 ModelParser = {}
 
@@ -135,7 +133,7 @@ class ModelSpecParser(object):
         for dataset_spec in self.spec[Keys.DATASETS]:
             self.get_dataset(dataset_spec)
 
-    def get_parameter(self):
+    def get_parameters(self):
         params = self.spec[Keys.PARAMETERS]
         if isinstance(params, str):
             if os.path.isfile(params):
@@ -149,31 +147,46 @@ class ModelSpecParser(object):
             params = []
             for row in reader:
                 params += [float(e) for e in row]
-        plist = create_parameter_list(params)
-        self.model.add_parameter(plist)
+        self.model.parameter = self.get_leaf("p", params)
 
-    def get_parameter_blocks(self):
-        if Keys.PARAMETER_BLOCKS not in self.spec:
-            return
-        for block in self.spec[Keys.PARAMETER_BLOCKS]:
-            block = self.get_block(block)
-            self.model.add_parameter_block(block)
+    def get_leaf(self, label, items):
+        leaf = ParameterLeaf(label)
+        for item in items:
+            if isinstance(item, dict):
+                label, items = list(item.items())[0]
+                leaf[label] = self.get_leaf(label, items)
+            elif isinstance(item, bool):
+                leaf.fit = item
+            else:
+                leaf.add_parameter(self.get_parameter(item))
+        return leaf
 
-    def get_block(self, obj):
-            (label, params) = get_keys_from_object(obj,
-                                                   [Keys.LABEL,
-                                                    Keys.PARAMETER,
-                                                    ]
-                                                   )
-            params = create_parameter_list(params)
-            fit = retrieve_optional(obj, Keys.FIT, 4, True)
-            block = ParameterBlock(label, fit=fit)
-            block.add_parameter(params)
-            if Keys.SUBBLOCKS in obj:
-                for subblock in obj[Keys.SUBBLOCKS]:
-                    block.add_sub_block(self.get_block(subblock))
+    def get_parameter(self, p):
+        param = Parameter()
 
-            return block
+        if not isinstance(p, list):
+            param.value = p
+            return param
+
+        def retrieve(filt, default):
+            tmp = list(filter(filt, p))
+            return tmp[0] if tmp else default
+
+        param.value = retrieve(lambda x: isinstance(x, (int, float)) and not
+                               isinstance(x, bool), 'nan')
+        param.label = retrieve(lambda x: isinstance(x, str) and not
+                               x == 'nan', None)
+        param.vary = retrieve(lambda x: isinstance(x, bool), True)
+        options = retrieve(lambda x: isinstance(x, dict), None)
+
+        if options is not None:
+            if Keys.MAX in options:
+                param.max = options[Keys.MAX]
+            if Keys.MIN in options:
+                param.min = options[Keys.MIN]
+            if Keys.EXPR in options:
+                param.expr = options[Keys.EXPR]
+        return param
 
     def get_parameter_constraints(self):
         if Keys.PARAMETER_CONSTRAINTS not in self.spec:
@@ -243,15 +256,6 @@ class ModelSpecParser(object):
                         EqualAreaConstraint(c, intervals, target, param,
                                             weight))
 
-    def get_relations(self):
-        if Keys.RELATIONS not in self.spec:
-            return
-
-        for relation in self.spec[Keys.RELATIONS]:
-            (params, to) = get_keys_from_object(relation, [Keys.PARAMETER,
-                                                           Keys.TO])
-            self.model.add_relation(Relation(params, to))
-
     def get_initial_concentrations(self):
         if Keys.INITIAL_CONCENTRATION not in self.spec:
             return
@@ -267,11 +271,9 @@ class ModelSpecParser(object):
 
     def parse(self):
         self.get_compartments()
-        self.get_parameter()
-        self.get_parameter_blocks()
+        self.get_parameters()
         self.get_parameter_constraints()
         self.get_compartment_constraints()
-        self.get_relations()
         self.get_initial_concentrations()
         self.get_megacomplexes()
         self.get_datasets()

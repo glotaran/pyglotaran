@@ -1,4 +1,5 @@
 from unittest import TestCase
+from math import isnan
 from glotaran.specification_parser import parse_file
 from glotaran.models.spectral_temporal import (KineticModel,
                                                GaussianIrf,
@@ -8,7 +9,6 @@ from glotaran.model import (InitialConcentration,
                             ZeroConstraint,
                             EqualConstraint,
                             EqualAreaConstraint,
-                            Relation,
                             Parameter,
                             FixedConstraint,
                             BoundConstraint
@@ -177,25 +177,7 @@ class TestParser(TestCase):
         self.assertTrue(eac.parameter == 55)
         self.assertTrue(eac.weight == 0.0016)
 
-    def test_relations(self):
-        self.assertTrue(len(self.model.relations) is 3)
-
-        self.assertTrue(all(isinstance(r, Relation) for r in
-                            self.model.relations))
-
-        rel = [r for r in self.model.relations
-               if r.parameter == 86][0]
-        self.assertTrue(rel.to == {'const': 0, 89: 1, 90: 1, 87: -1.0})
-
-        rel = [r for r in self.model.relations
-               if r.parameter == 87][0]
-        self.assertTrue(rel.to == {'const': 2.6, 83: 1, 84: 1, 81: -1.0})
-
-        rel = [r for r in self.model.relations
-               if r.parameter == 89][0]
-        self.assertTrue(rel.to == {30: 1})
-
-    def test_parameter_constraints(self):
+    def tst_parameter_constraints(self):
         self.assertTrue(len(self.model.parameter_constraints) is 4)
 
         pc = self.model.parameter_constraints[0]
@@ -219,45 +201,71 @@ class TestParser(TestCase):
         self.assertEqual(pc.upper, 7e-8)
 
     def test_parameter(self):
-        self.assertTrue(len(self.model.parameter) is 3)
+        allp = list(self.model.parameter.all_leaf())
+        self.assertEqual(len(allp), 6)
 
-        self.assertTrue(all(isinstance(p, Parameter) for p in
-                            self.model.parameter))
+        self.assertTrue(all(isinstance(p, Parameter) for p in allp))
 
-        par = [p for p in self.model.parameter
-               if p.index == 1][0]
-        self.assertTrue(par.value == 4.13e-02)
+        p = self.model.parameter.get('1')
+        self.assertEqual(p.label, '1')
+        self.assertEqual(p.value, 4.13E-02)
+        self.assertTrue(p.vary)
 
-        par = [p for p in self.model.parameter
-               if p.index == 2][0]
-        self.assertTrue(par.value == 1)
+        p = self.model.parameter.get('2')
+        self.assertEqual(p.label, '2')
+        self.assertEqual(p.value, 1.0)
+        self.assertTrue(p.vary)
 
-        par = [p for p in self.model.parameter
-               if p.index == 3][0]
-        self.assertTrue(par.value == 1.78)
-        self.assertTrue(par.label == "spectral_equality")
+        p = self.model.parameter.get('3')
+        self.assertEqual(p.label, '3')
+        self.assertTrue(isnan(p.value))
+        self.assertFalse(p.vary)
 
-    def test_parameter_blocks(self):
+        p = self.model.parameter.get('spectral_equality')
+        self.assertEqual(p.label, 'spectral_equality')
+        self.assertEqual(p.value, 1.78)
+        self.assertTrue(p.vary)
 
-        self.assertTrue("shape" in self.model.parameter_blocks)
+        p = self.model.parameter.get_by_index(5)
+        self.assertEqual(p.label, 'boundparam')
+        self.assertEqual(p.value, 1.78)
+        self.assertFalse(p.vary)
+        self.assertEqual(p.min, 0)
+        self.assertEqual(p.max, 10)
 
-        block = self.model.parameter_blocks["shape"]
+        p = self.model.parameter.get_by_index(6)
+        self.assertEqual(p.label, 'relatedparam')
+        self.assertEqual(p.value, 1.78)
+        self.assertFalse(p.vary)
+        self.assertEqual(p.max, 2)
+        self.assertEqual(p.expr, 'p.1 + 3')
 
-        self.assertFalse(block.fit)
-        self.assertEqual(block.parameter, [22, 33, 44])
-        self.assertEqual(block.sub_blocks, None)
+        p = self.model.parameter.get('kinpar.k1')
+        self.assertEqual(p.label, 'k1')
+        self.assertEqual(p.value, 0.2)
+        self.assertTrue(p.vary)
 
-        self.assertTrue("nested" in self.model.parameter_blocks)
+        p = self.model.parameter.get('kinpar.2')
+        self.assertEqual(p.label, '2')
+        self.assertEqual(p.value, 0.01)
+        self.assertTrue(p.vary)
 
-        block = self.model.parameter_blocks["nested"]
+        p = self.model.parameter.get('kinpar.kf')
+        self.assertEqual(p.label, 'kf')
+        self.assertEqual(p.value, 0.0002)
+        self.assertTrue(p.vary)
 
-        self.assertTrue(block.fit)
-        self.assertEqual(block.parameter, [])
-        self.assertEqual(len(block.sub_blocks), 1)
-        self.assertTrue("inner" in block.sub_blocks)
+        p = self.model.parameter.get('shape.1')
+        self.assertEqual(p.label, '1')
+        self.assertEqual(p.value, 2.2)
+        self.assertFalse(p.vary)
 
-        block = block.sub_blocks["inner"]
+        p = self.model.parameter.get('shape.rocks')
+        self.assertEqual(p.label, 'rocks')
+        self.assertEqual(p.value, 0.35)
+        self.assertFalse(p.vary)
 
-        self.assertTrue(block.fit)
-        self.assertEqual(block.parameter, [66])
-        self.assertEqual(block.sub_blocks, None)
+        p = self.model.parameter.get('shape.myparam')
+        self.assertEqual(p.label, 'myparam')
+        self.assertEqual(p.value, 2.2)
+        self.assertFalse(p.vary)
