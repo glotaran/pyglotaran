@@ -41,7 +41,10 @@ class Model(object):
         raise NotImplementedError
 
     def fit(self, *args, **kwargs):
-        return FitModel(self).fit(*args, **kwargs)
+        return self.fit_model().fit(*args, **kwargs)
+
+    def fit_model(self):
+        return FitModel(self)
 
     @property
     def compartments(self):

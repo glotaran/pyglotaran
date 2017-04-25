@@ -12,20 +12,25 @@ class FitModel(SeparableModel):
         self._dataset_group = None
 
     def get_initial_fitting_parameter(self):
-        return self._model.parameter.as_parameters_dict()
+        return self._model.parameter.as_parameters_dict(only_fit=True)
 
     def data(self, **kwargs):
         return self._dataset_group
 
     def fit(self, *args, **kwargs):
+        result = self.result(*args, **kwargs)
+        result.fit(*args, **kwargs)
+        return result
+
+    def result(self, *args, **kwargs):
         self._generator = MatrixGroupGenerator.for_model(self._model,
                                                          self._model.
                                                          calculated_matrix())
         self._dataset_group = self._generator.create_dataset_group()
         result = Result(self, self.get_initial_fitting_parameter(),
                         *args, **kwargs)
-        result.fit(*args, **kwargs)
         return result
+
 
     def c_matrix(self, parameter, **kwargs):
         parameter = parameter.valuesdict()

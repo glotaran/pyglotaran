@@ -89,9 +89,10 @@ class ParameterLeaf(OrderedDict):
             for (lbl, p) in l.all_with_label(root):
                 yield (lbl, p)
 
-    def as_parameters_dict(self):
+    def as_parameters_dict(self, only_fit=False):
         params = Parameters()
         for (label, p) in self.all_with_label(None):
             p.name = label
-            params.add(p)
+            if not only_fit or p.vary:
+                params.add(p)
         return params
