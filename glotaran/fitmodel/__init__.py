@@ -9,13 +9,16 @@ CMatrix = c_matrix.CMatrix
 
 def parameter_map(parameter):
     def map_fun(i):
-        if i != 0:
-            i = parameter["p_{}".format(int(i))]
-        return i
+        return parameter_idx_to_val(parameter, i)
     return np.vectorize(map_fun)
 
 
 def parameter_idx_to_val(parameter, index):
-        if index != 0:
-            index = parameter["p_{}".format(int(index))]
-        return index
+    if isinstance(index, (float, str)):
+        try:
+            index = int(index)
+            if index == 0:
+                return index
+        except:
+            index = index.replace('.', '_')
+    return parameter["p_{}".format(index)]

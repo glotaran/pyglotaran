@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.fitmodel import CMatrix
+from glotaran.fitmodel import CMatrix, parameter_idx_to_val
 
 from .spectral_shape_gaussian import SpectralShapeGaussian
 
@@ -15,6 +15,10 @@ class SpectralCMatrix(CMatrix):
         self._compartment_order = model.compartments
 
     def _collect_shapes(self, model):
+
+        # We create a shape for every compartment. If we find a shape for a
+        # compartment in the descriptor, we set the index of the compartment in
+        # our shape vector to the shape
         self._shapes = list([None for _ in model.compartments])
         for c, shape in self.dataset.shapes.items():
             idx = model.compartments.index(c)
@@ -32,17 +36,18 @@ class SpectralCMatrix(CMatrix):
         shapes = self._shapes
         x = self.dataset.data.spectral_axis
 
+        # we use ones, so that if no shape is defined for the compartment, its
+        # amplitude is 1.0 by convention.
         mat = np.ones(self.shape(), np.float64)
-
         for i in range(len(shapes)):
             if shapes[i] is not None:
-                mat[:, i] = self._calcuate_shape(shapes[i], x)
+                mat[:, i] = self._calculate_shape(parameter, shapes[i], x)
         return mat
 
-    def _calculate_shape(self, shape, x):
+    def _calculate_shape(self, parameter, shape, x):
         if isinstance(shape, SpectralShapeGaussian):
-            return shape.amplitude * np.exp(
-                                -np.log(2) * np.square(
-                                    2 * (x - shape.location)/shape.width
-                                )
-                            )
+            amp = parameter_idx_to_val(parameter, shape.amplitude)
+            location = parameter_idx_to_val(parameter, shape.location)
+            width = parameter_idx_to_val(parameter, shape.width)
+            return amp * np.exp(-np.log(2) *
+                                np.square(2 * (x - location)/width))

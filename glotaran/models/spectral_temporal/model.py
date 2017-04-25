@@ -129,14 +129,23 @@ class KineticModel(Model):
             s += "{}\n".format(shape)
         return s
 
-    def eval(self, parameter, dataset, axes, **kwargs):
+    def eval(self, dataset, axes, parameter=None):
         data = SpectralTemporalDataset(dataset)
+        if parameter is None:
+            parameter = self.parameter.as_parameters_dict()
         for label, val in axes.items():
             data.set_axis(label, val)
         self.set_data(dataset, data)
         fitmodel = FitModel(self)
 
+        kwargs = {}
         kwargs['dataset'] = dataset
         data = fitmodel.eval(parameter, **kwargs)
-        print(data.shape)
         self.datasets[dataset].data.data = data
+
+    def c_matrix(self, parameter=None):
+        if parameter is None:
+            parameter = self.parameter.as_parameters_dict()
+        fitmodel = FitModel(self)
+
+        return fitmodel.c_matrix(parameter)

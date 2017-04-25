@@ -1,4 +1,3 @@
-from lmfit import Parameter, Parameters
 from lmfit_varpro import SeparableModel
 
 from .matrix_group_generator import MatrixGroupGenerator
@@ -29,16 +28,22 @@ class FitModel(SeparableModel):
         return result
 
     def c_matrix(self, parameter, **kwargs):
+        parameter = parameter.valuesdict()
         if "dataset" in kwargs:
             label = kwargs["dataset"]
             gen = MatrixGroupGenerator.for_dataset(self._model, label,
                                                    self._model.
                                                    calculated_matrix())
-            return gen.calculate(parameter)
         else:
-            return self._generator.calculate(parameter)
+            gen = self._generator
+            if gen is None:
+                gen = MatrixGroupGenerator.for_model(self._model,
+                                                     self._model.
+                                                     calculated_matrix())
+        return gen.calculate(parameter)
 
     def e_matrix(self, parameter, **kwargs):
+        parameter = parameter.valuesdict()
         dataset = kwargs["dataset"]
         gen = MatrixGroupGenerator.for_dataset(self._model, dataset,
                                                self._model.estimated_matrix(),

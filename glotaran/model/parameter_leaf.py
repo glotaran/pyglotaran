@@ -81,15 +81,17 @@ class ParameterLeaf(OrderedDict):
                 yield p
 
     def all_with_label(self, root):
+        root = "{}_{}".format(root, self.label) if root is not None else \
+            self.label
         for label, p in self._parameters.items():
             yield ("{}_{}".format(root, label), p)
         for _, l in self.items():
-            for (lbl, p) in l.all_with_label("{}_{}".format(root, self.label)):
-                yield ("{}_{}".format(root, lbl), p)
+            for (lbl, p) in l.all_with_label(root):
+                yield (lbl, p)
 
     def as_parameters_dict(self):
         params = Parameters()
-        for (label, p) in self.all_with_label("p"):
+        for (label, p) in self.all_with_label(None):
             p.name = label
             params.add(p)
         return params

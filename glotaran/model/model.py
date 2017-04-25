@@ -31,7 +31,7 @@ class Model(object):
     def type_string(self):
         raise NotImplementedError
 
-    def eval(dataset, axies):
+    def eval(dataset, axies, parameter=None):
         raise NotImplementedError
 
     def calculated_matrix(self):
