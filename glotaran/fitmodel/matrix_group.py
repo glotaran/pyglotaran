@@ -11,31 +11,26 @@ class MatrixGroup(object):
 
     def calculate(self, parameter):
 
-        self._set_compartment_order()
+        compartment_order = self.compartment_order()
 
         c_matrix = np.zeros(self.shape(), dtype=np.float64)
 
         t_idx = 0
 
         for cmat in self.c_matrices:
-            tmp_c = cmat.calculate(parameter)
-
             n_t = t_idx + cmat.shape()[0]
-            for i in range(cmat.shape()[1]):
-                target_idx = \
-                    self.compartment_order.index(cmat.compartment_order()[i])
-                c_matrix[t_idx:n_t, target_idx] = tmp_c[:, i]
+            cmat.calculate(c_matrix[t_idx:n_t, :], compartment_order,
+                           parameter)
             t_idx = n_t
 
         return c_matrix
 
-    def _set_compartment_order(self):
+    def compartment_order(self):
         compartment_order = [c for cmat in self.c_matrices
                              for c in cmat.compartment_order()]
-
-        self.compartment_order = list(set(compartment_order))
+        return list(set(compartment_order))
 
     def shape(self):
         dim0 = sum([mat.shape()[0] for mat in self.c_matrices])
-        dim1 = len(self.compartment_order)
+        dim1 = len(self.compartment_order())
         return (dim0, dim1)

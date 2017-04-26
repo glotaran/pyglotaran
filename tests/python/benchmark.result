@@ -2,9 +2,9 @@ Benchmark Results
 
 Iterations: 20
 
-Model Evaluation:	2.508397
-C Matrix Calculation:	0.272670
-E Matrix Calculation:	0.595049
-Residual Calculation:	0.327536
+Model Evaluation:	2.604182
+C Matrix Calculation:	0.239693
+E Matrix Calculation:	0.571403
+Residual Calculation:	0.288610
 
-Total:			 67.929793
+Total:			 68.447859

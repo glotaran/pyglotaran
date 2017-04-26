@@ -64,3 +64,8 @@ class MatrixGroupGenerator(object):
             dataset_group.append(slice)
 
         return dataset_group
+
+
+def calc(data):
+    (res, parameter, group, index) = data
+    res[index] = group.calculate(parameter)

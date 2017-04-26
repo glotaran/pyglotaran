@@ -77,29 +77,20 @@ class KineticCMatrix(CMatrix):
             [initial_concentrations[all_cmps.index(c)]
              for c in self.compartment_order]
 
-    def calculate(self, parameter):
-
-        c_matrix = np.zeros(self.shape(), dtype=np.float64)
+    def calculate(self, c_matrix, compartment_order, parameter):
 
         for k_matrix, scale in self._k_matrices_and_scalings():
 
             scale = parameter_idx_to_val(scale) if scale is not None else 1.0
+            scale *= self.dataset_scaling(parameter)
 
-            tmp_c = self._calculate_for_k_matrix(k_matrix, parameter, scale)
-
-            for i in range(len(k_matrix.compartment_map)):
-                target_idx = \
-                    self.compartment_order().index(k_matrix.compartment_map[i])
-                # TODO: implement scaling
-                c_matrix[:, target_idx] += tmp_c[:, i]
-
-        return self.scaling(parameter) * c_matrix
+            self._calculate_for_k_matrix(c_matrix, compartment_order, k_matrix, parameter, scale)
 
     def _k_matrices_and_scalings(self):
         for i in range(len(self._k_matrices)):
             yield self._k_matrices[i], self._megacomplex_scaling[i]
 
-    def _calculate_for_k_matrix(self, k_matrix, parameter, scale):
+    def _calculate_for_k_matrix(self, c_matrix, compartment_order, k_matrix, parameter, scale):
 
         # calculate k_matrix eigenvectos
         eigenvalues, eigenvectors = self._calculate_k_matrix_eigen(k_matrix,
@@ -107,17 +98,11 @@ class KineticCMatrix(CMatrix):
 
         # we need this since the full c matrix can have more compartments then
         # the kk matrix
-        compartment_idxs = [self.compartment_order().index(c) for c in
+        compartment_idxs = [compartment_order.index(c) for c in
                             k_matrix.compartment_map]
 
         # get the time axis
         time = self.dataset.data.get_axis("time")
-
-        # allocate C matrix
-        # TODO: do this earlier
-
-        c_matrix = np.zeros((time.shape[0], eigenvalues.shape[0]),
-                            dtype=np.float64)
 
         if self._irf is None:
             backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time,
@@ -136,8 +121,6 @@ class KineticCMatrix(CMatrix):
             c_matrix = self._apply_initial_concentration_vector(c_matrix,
                                                                 eigenvectors,
                                                                 parameter)
-
-        return c_matrix
 
     def _calculate_k_matrix_eigen(self, k_matrix, parameter):
 
@@ -210,6 +193,6 @@ class KineticCMatrix(CMatrix):
     def time(self):
         return self.dataset.data.get_axis("time")
 
-    def scaling(self, parameter):
+    def dataset_scaling(self, parameter):
         return parameter_idx_to_val(parameter, self.dataset.scaling) \
-            if self.dataset.scaling is not None else 1
+            if self.dataset.scaling is not None else 1.0
