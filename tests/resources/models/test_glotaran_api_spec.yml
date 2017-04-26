@@ -22,6 +22,7 @@ irf:
     type: gaussian
     center: 3
     width: 4
+
 datasets:
   - label: dataset1
     type: spectral

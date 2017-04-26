@@ -1,0 +1,143 @@
+type: kinetic
+
+options:
+  iterations: 10
+  gradient: finite_difference      # default
+  method: non_linear_least_squares # default
+  parameter_ordering: relative #absolute, relative # maybe labeled
+  temperature: 293
+
+compartments: [s1,s2,s3,s4]
+
+# For each dataset either the relative path or absolute path can be given
+# The absolute path is OS dependent
+datasets:
+  - label: dataset1
+    type: spectral
+    megacomplexes: [cmplx1]
+    path: 'data/dataset1.ascii'
+    initial_concentration: inputD1 # refers to the first element in the absorption_vectors list
+    irf: irf1
+    scaling: 1 # scale dataset with parameter 78
+    compartment_scaling:
+      - compartment: s1
+        parameter: [3,4]
+      - [s2, [3,4]]
+    megacomplex_scaling:
+      - megacomplex: cmplx1 # optional
+        parameter: [1, 2] # 75th parameter
+      - [cmplx2, [1, 2]] # alternative, order matters!
+    shapes:
+      - compartment: s1
+        shape: shape1
+      - [s2, shape2]
+  - label: dataset2
+    type: spectral
+    megacomplexes: [cmplx2]
+    path: 'data/dataset2.ascii'
+    initial_concentration: inputD2
+    irf: irf2
+    scaling: 2 # scale dataset with parameter 78
+    compartment_scaling:
+      - compartment: s1
+        parameter: [3,4]
+      - [s2, [3,4]]
+    megacomplex_scaling:
+      - megacomplex: cmplx1 # optional
+        parameter: [1, 2] # 75th parameter
+      - [cmplx2, [1, 2]] # alternative, order matters!
+
+irf: #specific to kinetic or spectro_temporal model
+  - label: irf1
+    type: gaussian
+    center: 1
+    width: 2
+    center_dispersion: [3] # dispersion is of 1st order
+    width_dispersion: [4] # dispersion is of 1st order
+  - [irf2, gaussian, [1, 2], [3,4], [5,6], [7,8], [9,10], true] # compact
+
+initial_concentration: #equal to the total number of compartments
+  - label: inputD1
+    parameter: [1,2,3] #these are indices in the total prameter vector
+  - label: inputD2
+    parameter: [1,2,3]
+
+# Convention matrix notation column = source, row = target compartment
+# (2,1) means from 1 to 2
+k_matrices:
+  - label: km1
+    matrix: {
+      '("s1","s1")': 31,
+      '("s2","s1")': 32,
+      '("s1","s2")': 33,
+      '("s3","s1")': 34,
+      '("s1","s3")': 35,
+      '("s4","s1")': 36,
+      '("s1","s4")': 37,
+}
+
+shapes:
+  - label: "shape1"
+    type: "gaussian"
+    amplitude: shape.1
+    location: shape.2
+    width: shape.3
+  - ["shape3", "gaussian", shape.6, shape.7, shape.8]
+
+
+megacomplexes:
+    - label: cmplx1
+      k_matrices: [km1] # A megacomplex has one or more k-matrices
+    - label: cmplx2
+      k_matrices: km2
+    - [cmplx3, [km3]]
+
+compartment_constraints:
+  - type: zero
+    compartment: 5
+    intervals: ['(1,100)', '(2,200)']
+  - [zero, 5, ['(1,100)', '(2,200)']]
+  - type: equal
+    compartment: 5
+    intervals: ['(60, 700)']
+    target: 9
+    parameter: 54 # usually fixed
+  - type: equal_area
+    compartment: 3
+    intervals: ['(670, 810)']
+    target: 1
+    parameter: 55 # usually fixed
+    weight: 0.0016
+    # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
+
+# put relations into parameters?
+relations:
+  - parameter: 86
+    to: {const: 0, 89: 1, 90: 1, 87: -1.0} #Theta86 = 0 +1*theta89 + 1*theta90 -1*theta87
+  - [87, {const: 2.6, 83: 1, 84: 1, 81: -1.0}]
+  - [89, 30] # equality
+
+parameters:
+  - 4.13E-02 #p1
+  - 1 #p2
+  - 1
+  - 1
+  - 1
+  - 1
+  - nan
+  - [1.78, "spectral_equality"] #p4
+  - [1.78, "boundparam", false, {min: 0, max: 10}] # the value will set to bound if initally out of
+  - [1.78, "relatedparam", true, {max: 2, expr: "p.1 + 3"}] # having a leation implies vary false, will overwrite!
+  - kinpar: [[0.2, "k1"], [0.01], [0.0002, "kf"]] #parameter 5, 6, 7
+  - shape: [false, 2.2, [0.35, rocks], [2.2, myparam]] # this block will not be fitted
+  - testblock: [1,2,3,7]
+
+parameter_constraints:
+    - type: fix
+      value: true
+      parameters: '2-4, 5, kinpar.kf'
+    - type: bound
+      min: 0
+      # max: inf is implicit
+      parameters: [testblock.1-3]
+    - [bound, 0, inf, [1]] #implicit are to = from, interval = 1

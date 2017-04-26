@@ -27,6 +27,9 @@ class TestParser(TestCase):
         spec_path = join(THIS_DIR, 'test_model_spec.yml')
         self.model = parse_file(spec_path)
 
+    def print_model_spec(self):
+        print(self.model)
+
     def test_compartments(self):
         self.assertTrue(isinstance(self.model.compartments, list))
         self.assertEqual(self.model.compartments, ['s1', 's2', 's3', 's4'])

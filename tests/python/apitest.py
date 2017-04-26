@@ -5,13 +5,15 @@ from os.path import join, dirname, abspath
 
 THIS_DIR = dirname(abspath(__file__))
 
+
 class TestParser(TestCase):
 
     def setUp(self):
         print(getcwd())
-        spec_path = join(THIS_DIR, '../resources/test_glotaran_api_spec.yml')
+        self.ref_spec_path = join(THIS_DIR, '../resources/models/test_model_spec.yml')
+        self.spec_path = join(THIS_DIR, '../resources/models/test_glotaran_api_spec.yml')
 
-        fitspec = '''
+        self.fitspec = '''
         type: kinetic
 
         parameters:
@@ -46,6 +48,11 @@ class TestParser(TestCase):
             irf: irf1
         '''
 
+    def test_reference_model_spec_from_file(self):
+        print("Loading from file")
+        gta0 = load(self.ref_spec_path)
+        print(gta0)
+
     def test_fitspec_from_string(self):
         gta1 = parse(self.fitspec)
         print("Parsing from string")
@@ -56,7 +63,7 @@ class TestParser(TestCase):
 
     def test_fitspec_from_file(self):
         print("Loading from file")
-        gta2 = load('../resources/test_glotaran_api_spec.yml')
+        gta2 = load(self.spec_path)
         print(gta2)
 
 
