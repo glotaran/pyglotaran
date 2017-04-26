@@ -116,6 +116,16 @@ def bench_residual(n):
     return t
 
 
+def bench_fit(n):
+    print("Benchmarking Fit")
+
+    def f():
+        model.fit()
+    t = timeit.timeit(f, number=n) / n
+    print("Result: {}".format(t))
+    return t
+
+
 REPORT = '''Benchmark Results
 
 Iterations: {}
@@ -124,8 +134,9 @@ Model Evaluation:\t{:.6f}
 C Matrix Calculation:\t{:.6f}
 E Matrix Calculation:\t{:.6f}
 Residual Calculation:\t{:.6f}
+Fitting:\t\t{:.6f}
 
-Total:\t\t\t {:.6f}
+Total:\t\t\t{:.6f}
 '''
 
 
@@ -144,9 +155,10 @@ if __name__ == "__main__":
     t_c = bench_c_matrix(n)
     t_e = bench_e_matrix(n)
     t_r = bench_residual(n)
+    t_f = bench_fit(n)
     t = time.time() - bench_start
     print("")
-    rep = REPORT.format(n, t_s, t_c, t_e, t_r, t)
+    rep = REPORT.format(n, t_s, t_c, t_e, t_r, t_f, t)
     print(rep)
 
     if out is not None:

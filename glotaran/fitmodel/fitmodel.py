@@ -31,7 +31,6 @@ class FitModel(SeparableModel):
                         *args, **kwargs)
         return result
 
-
     def c_matrix(self, parameter, **kwargs):
         parameter = parameter.valuesdict()
         if "dataset" in kwargs:
