@@ -13,7 +13,7 @@ def __init__():
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateC(double[:, :] C, idxs, double[:] k, double[:] T):
+def calculateC(double[:, :] C, idxs, double[:] k, double[:] T, double scale):
     nr_times = T.shape[0]
     nr_comps = k.shape[0]
     cdef int n_c, n_t, n_k
@@ -23,4 +23,4 @@ def calculateC(double[:, :] C, idxs, double[:] k, double[:] T):
         k_n = k[n_k]
         for n_t in range(nr_times):
             t_n = T[n_t]
-            C[n_t, n_c] += exp(k_n * t_n)
+            C[n_t, n_c] += scale * exp(k_n * t_n)

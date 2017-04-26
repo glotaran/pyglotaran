@@ -82,11 +82,10 @@ class KineticCMatrix(CMatrix):
         c_matrix = np.zeros(self.shape(), dtype=np.float64)
 
         for k_matrix, scale in self._k_matrices_and_scalings():
-            tmp_c = self._calculate_for_k_matrix(k_matrix, parameter)
 
-            if scale is not None:
-                scale = np.prod(parameter_map(parameter)(scale))
-                tmp_c *= scale
+            scale = parameter_idx_to_val(scale) if scale is not None else 1.0
+
+            tmp_c = self._calculate_for_k_matrix(k_matrix, parameter, scale)
 
             for i in range(len(k_matrix.compartment_map)):
                 target_idx = \
@@ -100,7 +99,7 @@ class KineticCMatrix(CMatrix):
         for i in range(len(self._k_matrices)):
             yield self._k_matrices[i], self._megacomplex_scaling[i]
 
-    def _calculate_for_k_matrix(self, k_matrix, parameter):
+    def _calculate_for_k_matrix(self, k_matrix, parameter, scale):
 
         # calculate k_matrix eigenvectos
         eigenvalues, eigenvectors = self._calculate_k_matrix_eigen(k_matrix,
@@ -121,15 +120,17 @@ class KineticCMatrix(CMatrix):
                             dtype=np.float64)
 
         if self._irf is None:
-            backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time)
+            backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time,
+                             scale)
         else:
-            centers, widths, scale = self._calculate_irf_parameter(parameter)
+            centers, widths, irf_scale = \
+                    self._calculate_irf_parameter(parameter)
             backend.c_matrix_gaussian_irf(c_matrix,
                                           compartment_idxs,
                                           eigenvalues,
                                           time,
                                           centers, widths,
-                                          scale)
+                                          scale * irf_scale)
 
         if self._initial_concentrations is not None:
             c_matrix = self._apply_initial_concentration_vector(c_matrix,
