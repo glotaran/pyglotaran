@@ -20,7 +20,7 @@ class KineticCMatrix(CMatrix):
         self._k_matrices = []
         self._megacomplex_scaling = []
         self._collect_k_matrices(model)
-        self._set_compartment_order()
+        self._set_compartment_order(model)
 
         self._initial_concentrations = None
         self._collect_intital_concentration(model)
@@ -31,11 +31,13 @@ class KineticCMatrix(CMatrix):
     def shape(self):
         return (self.time().shape[0], len(self._compartment_order))
 
-    def _set_compartment_order(self):
+    def _set_compartment_order(self, model):
         compartment_order = [c for mat in self._k_matrices
                              for c in mat.compartment_map]
 
-        self._compartment_order = list(set(compartment_order))
+        compartment_order = list(set(compartment_order))
+        self._compartment_order = [c for c in model.compartments if c in
+                                   compartment_order]
 
     def _collect_irf(self, model):
         if self.dataset.irf is None:
@@ -104,20 +106,27 @@ class KineticCMatrix(CMatrix):
         eigenvalues, eigenvectors = self._calculate_k_matrix_eigen(k_matrix,
                                                                    parameter)
 
+        # we need this since the full c matrix can have more compartments then
+        # the kk matrix
+        compartment_idxs = [self.compartment_order().index(c) for c in
+                            k_matrix.compartment_map]
+
         # get the time axis
         time = self.dataset.data.get_axis("time")
 
         # allocate C matrix
         # TODO: do this earlier
 
-        c_matrix = np.empty((time.shape[0], eigenvalues.shape[0]),
+        c_matrix = np.zeros((time.shape[0], eigenvalues.shape[0]),
                             dtype=np.float64)
 
         if self._irf is None:
-            backend.c_matrix(c_matrix, eigenvalues, time)
+            backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time)
         else:
             centers, widths, scale = self._calculate_irf_parameter(parameter)
-            backend.c_matrix_gaussian_irf(c_matrix, eigenvalues,
+            backend.c_matrix_gaussian_irf(c_matrix,
+                                          compartment_idxs,
+                                          eigenvalues,
                                           time,
                                           centers, widths,
                                           scale)
@@ -133,6 +142,7 @@ class KineticCMatrix(CMatrix):
 
         # convert k_matrix to np.array and replace indices with actual
         # parameters
+        # TODO: This does not work with labels and grouping
         k_matrix = k_matrix.asarray().astype(np.float64)
         k_matrix = parameter_map(parameter)(k_matrix)
 

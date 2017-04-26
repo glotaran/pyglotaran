@@ -7,23 +7,20 @@ cimport numpy as np
 from libc.math cimport exp
 from numpy.math cimport NAN
 
-from cython.parallel import prange, parallel
-
 def __init__():
     np.import_array()
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateC(double[:, :] C, double[:] k, double[:] T):
-    I = T.shape[0]
-    J = k.shape[0]
-    cdef int i, j
-    cdef double t_i, k_j
-    #  with nogil, parallel(num_threads=num_threads):
-    #      for i in prange(I, schedule=static):
-    for i in range(I):
-        for j in range(J):
-            t_i = T[i]
-            k_j = k[j]
-            C[i, j] = exp(k_j * t_i)
+def calculateC(double[:, :] C, idxs, double[:] k, double[:] T):
+    nr_times = T.shape[0]
+    nr_comps = k.shape[0]
+    cdef int n_c, n_t, n_k
+    cdef double t_n, k_n
+    for n_k in range(nr_comps):
+        n_c = idxs[n_k]
+        k_n = k[n_k]
+        for n_t in range(nr_times):
+            t_n = T[n_t]
+            C[n_t, n_c] += exp(k_n * t_n)

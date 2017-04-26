@@ -15,64 +15,34 @@ cimport numpy as np
 from libc.math cimport exp,  pow, log, sqrt, erf
 from numpy.math cimport NAN
 
-from cython.parallel import prange, parallel
-
 cdef extern from "erfce.c":
     double erfce(double x)
 
 def __init__():
     np.import_array()
 
-#def eprint(*args, **kwargs):
-#    print(*args, file=sys.stderr, **kwargs)
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateCMultiGaussian(double[:, :, :] C, double[:] k, double[:] T,
-                            double[:, :] centers, double[:, :] widths, double[:] scale):
-    nr_gaussian = centers.shape[1]
-    if nr_gaussian > 1:
-        tmp = np.empty(C.shape, dtype=np.float64)
-    J = centers.shape[0]
-    for i in range(nr_gaussian):
-        if i is 0:
-            for j in range(J):
-                calculateCSingleGaussian(C[j, :, :], k ,T, centers[j, i],
-                                         widths[j, i], scale[i])
-        else:
-            for j in range(J):
-                calculateCSingleGaussian(tmp[j, :, :], k ,T, centers[j, i],
-                                         widths[j, i], scale[i])
-            C += tmp
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def calculateCSingleGaussian(double[:, :] C, double[:] k, double[:] T, double mu, double
+def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, double mu, double
                   delta, double scale):
-    I = T.shape[0]
-    J = k.shape[0]
-    cdef int i, j
-    cdef double t_i, k_j, thresh, alpha, beta#term_1, term_2
-    #  cdef double delta_tilde = delta / (2 * sqrt(2 * log(2)))
-    #with nogil, parallel(num_threads=num_threads):
-    #      for i in prange(I, schedule=static):
-    for i in range(I):
-        for j in range(J):
-            t_i = T[i]
-            k_j = k[j]
-
-            if k_j == 0:
-                C[i, j] = 0
-                continue
-
-            alpha = -k_j * delta / sqrt(2)
-            beta = (t_i - mu) / (delta * sqrt(2))
+    nr_times = T.shape[0]
+    nr_comps = k.shape[0]
+    cdef int n_c, n_t, n_k
+    cdef double t_n, k_n, thresh, alpha, beta#term_1, term_2
+    for n_k in range(nr_comps):
+        k_n = k[n_k]
+        if k_n == 0:
+            continue
+        n_c = idxs[n_k]
+        alpha = -k_n * delta / sqrt(2)
+        for n_t in range(nr_times):
+            t_n = T[n_t]
+            beta = (t_n - mu) / (delta * sqrt(2))
             thresh = beta - alpha
-            #eprint("thresh is: ", thresh)
             if thresh < -1 :
-                C[i, j] = scale * .5 * erfce(-thresh) * exp(-beta * beta)
+                C[n_t, n_c] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
-                C[i, j] = scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+                C[n_t, n_c] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
 
 
 
