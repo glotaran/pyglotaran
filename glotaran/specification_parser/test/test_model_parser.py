@@ -1,13 +1,14 @@
 from unittest import TestCase
+from math import isnan, isinf
 from glotaran.specification_parser import parse_file
-from glotaran.models.kinetic import (KineticModel,
-                                     GaussianIrf,
-                                     KineticMegacomplex)
+from glotaran.models.spectral_temporal import (KineticModel,
+                                               GaussianIrf,
+                                               SpectralShapeGaussian,
+                                               KineticMegacomplex)
 from glotaran.model import (InitialConcentration,
                             ZeroConstraint,
                             EqualConstraint,
                             EqualAreaConstraint,
-                            Relation,
                             Parameter,
                             FixedConstraint,
                             BoundConstraint
@@ -28,7 +29,7 @@ class TestParser(TestCase):
 
     def test_compartments(self):
         self.assertTrue(isinstance(self.model.compartments, list))
-        self.assertEqual(self.model.compartments, ['s1', 's2', 's3'])
+        self.assertEqual(self.model.compartments, ['s1', 's2', 's3', 's4'])
 
     def test_model_type(self):
         self.assertTrue(isinstance(self.model, KineticModel))
@@ -47,14 +48,28 @@ class TestParser(TestCase):
             self.assertTrue(dataset.initial_concentration ==
                             "inputD{}".format(i))
             self.assertTrue(dataset.irf == "irf{}".format(i))
-            self.assertTrue(dataset.dataset_scaling.parameter == i)
+            self.assertEqual(dataset.scaling, i)
 
-            self.assertTrue(len(dataset.megacomplex_scaling) == 2)
+            self.assertEqual(len(dataset.megacomplex_scaling), 2)
 
-            for scaling in dataset.megacomplex_scaling:
-                self.assertTrue(scaling.megacomplexes == ["cmplx1"])
-                self.assertTrue(scaling.compartments == [1, 2])
-                self.assertTrue(scaling.parameter == 21)
+            self.assertTrue('cmplx1' in dataset.megacomplex_scaling)
+            self.assertTrue('cmplx2' in dataset.megacomplex_scaling)
+            for _, param in dataset.megacomplex_scaling.items():
+                self.assertEqual(param, [1, 2])
+
+            self.assertEqual(len(dataset.compartment_scaling), 2)
+
+            self.assertTrue('s1' in dataset.compartment_scaling)
+            self.assertTrue('s2' in dataset.compartment_scaling)
+            for _, param in dataset.compartment_scaling.items():
+                self.assertEqual(param, [3, 4])
+
+            if i is 1:
+                self.assertEqual(len(dataset.shapes), 2)
+                self.assertTrue("s1" in dataset.shapes)
+                self.assertEqual(dataset.shapes["s1"], "shape1")
+                self.assertTrue("s2" in dataset.shapes)
+                self.assertEqual(dataset.shapes["s2"], "shape2")
 
             i = i + 1
 
@@ -106,6 +121,17 @@ class TestParser(TestCase):
                                       )
                         )
 
+    def test_shapes(self):
+
+        self.assertTrue("shape1" in self.model.shapes)
+
+        shape = self.model.shapes["shape1"]
+
+        self.assertTrue(isinstance(shape, SpectralShapeGaussian))
+        self.assertEqual(shape.amplitude, "shape.1")
+        self.assertEqual(shape.location, "shape.2")
+        self.assertEqual(shape.width, "shape.3")
+
     def test_megacomplexes(self):
         self.assertTrue(len(self.model.megacomplexes) is 3)
 
@@ -151,25 +177,7 @@ class TestParser(TestCase):
         self.assertTrue(eac.parameter == 55)
         self.assertTrue(eac.weight == 0.0016)
 
-    def test_relations(self):
-        self.assertTrue(len(self.model.relations) is 3)
-
-        self.assertTrue(all(isinstance(r, Relation) for r in
-                            self.model.relations))
-
-        rel = [r for r in self.model.relations
-               if r.parameter == 86][0]
-        self.assertTrue(rel.to == {'const': 0, 89: 1, 90: 1, 87: -1.0})
-
-        rel = [r for r in self.model.relations
-               if r.parameter == 87][0]
-        self.assertTrue(rel.to == {'const': 2.6, 83: 1, 84: 1, 81: -1.0})
-
-        rel = [r for r in self.model.relations
-               if r.parameter == 89][0]
-        self.assertTrue(rel.to == {30: 1})
-
-    def test_parameter_constraints(self):
+    def tst_parameter_constraints(self):
         self.assertTrue(len(self.model.parameter_constraints) is 4)
 
         pc = self.model.parameter_constraints[0]
@@ -193,20 +201,85 @@ class TestParser(TestCase):
         self.assertEqual(pc.upper, 7e-8)
 
     def test_parameter(self):
-        self.assertTrue(len(self.model.parameter) is 3)
+        allp = list(self.model.parameter.all_leaf())
+        self.assertEqual(len(allp), 10)
 
-        self.assertTrue(all(isinstance(p, Parameter) for p in
-                            self.model.parameter))
+        self.assertTrue(all(isinstance(p, Parameter) for p in allp))
 
-        par = [p for p in self.model.parameter
-               if p.index == 1][0]
-        self.assertTrue(par.value == 4.13e-02)
+        p = self.model.parameter.get('1')
+        self.assertEqual(p.label, '1')
+        self.assertEqual(p.value, 4.13E-02)
+        self.assertEqual(p.min, 0)
+        self.assertTrue(isinf(p.max))
+        self.assertTrue(p.vary)
 
-        par = [p for p in self.model.parameter
-               if p.index == 2][0]
-        self.assertTrue(par.value == 1)
+        for i in ['2', '3', '4', '5']:
+            p = self.model.parameter.get(i)
+            self.assertEqual(p.label, i)
+            self.assertEqual(p.value, 1.0)
+            self.assertFalse(p.vary)
 
-        par = [p for p in self.model.parameter
-               if p.index == 3][0]
-        self.assertTrue(par.value == 1.78)
-        self.assertTrue(par.label == "spectral_equality")
+        p = self.model.parameter.get('6')
+        self.assertEqual(p.label, '6')
+        self.assertEqual(p.value, 1.0)
+        self.assertTrue(p.vary)
+
+        p = self.model.parameter.get('7')
+        self.assertEqual(p.label, '7')
+        self.assertTrue(isnan(p.value))
+        self.assertFalse(p.vary)
+
+        p = self.model.parameter.get('spectral_equality')
+        self.assertEqual(p.label, 'spectral_equality')
+        self.assertEqual(p.value, 1.78)
+        self.assertTrue(p.vary)
+
+        p = self.model.parameter.get_by_index(9)
+        self.assertEqual(p.label, 'boundparam')
+        self.assertEqual(p.value, 1.78)
+        self.assertFalse(p.vary)
+        self.assertEqual(p.min, 0)
+        self.assertEqual(p.max, 10)
+
+        p = self.model.parameter.get_by_index(10)
+        self.assertEqual(p.label, 'relatedparam')
+        self.assertEqual(p.value, 1.78)
+        self.assertFalse(p.vary)
+        self.assertEqual(p.max, 2)
+        self.assertEqual(p.expr, 'p.1 + 3')
+
+        p = self.model.parameter.get('kinpar.k1')
+        self.assertEqual(p.label, 'k1')
+        self.assertEqual(p.value, 0.2)
+        self.assertTrue(p.vary)
+
+        p = self.model.parameter.get('kinpar.2')
+        self.assertEqual(p.label, '2')
+        self.assertEqual(p.value, 0.01)
+        self.assertTrue(p.vary)
+
+        p = self.model.parameter.get('kinpar.kf')
+        self.assertEqual(p.label, 'kf')
+        self.assertEqual(p.value, 0.0002)
+        self.assertFalse(p.vary)
+
+        p = self.model.parameter.get('shape.1')
+        self.assertEqual(p.label, '1')
+        self.assertEqual(p.value, 2.2)
+        self.assertFalse(p.vary)
+
+        p = self.model.parameter.get('shape.rocks')
+        self.assertEqual(p.label, 'rocks')
+        self.assertEqual(p.value, 0.35)
+        self.assertFalse(p.vary)
+
+        p = self.model.parameter.get('shape.myparam')
+        self.assertEqual(p.label, 'myparam')
+        self.assertEqual(p.value, 2.2)
+        self.assertFalse(p.vary)
+
+        for i in range(3):
+
+            p = self.model.parameter.get('testblock.{}'.format(i+1))
+            self.assertEqual(p.min, 0)
+            self.assertTrue(isinf(p.max))

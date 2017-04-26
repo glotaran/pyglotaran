@@ -1,17 +1,16 @@
-from . import (compartment_constraints,
-               initial_concentration,
+from . import (
                c_matrix,
+               compartment_constraints,
                dataset,
                dataset_descriptor,
+               initial_concentration,
                megacomplex,
                model,
                parameter,
                parameter_constraints,
-               relation)
+               parameter_leaf,
+               )
 
-# Functions
-
-create_parameter_list = parameter.create_parameter_list
 
 # C Matrix
 
@@ -42,12 +41,9 @@ Model = model.Model
 # Parameter
 
 Parameter = parameter.Parameter
+ParameterLeaf = parameter_leaf.ParameterLeaf
 
 # Parameter Constraint
 
 BoundConstraint = parameter_constraints.BoundConstraint
 FixedConstraint = parameter_constraints.FixedConstraint
-
-# Relation
-
-Relation = relation.Relation

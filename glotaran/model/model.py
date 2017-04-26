@@ -1,12 +1,15 @@
 from collections import OrderedDict
 
-from .parameter import Parameter
-from .parameter_constraints import ParameterConstraint
+from glotaran.fitmodel import FitModel
+
 from .compartment_constraints import CompartmentConstraint
-from .relation import Relation
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
+from .parameter_leaf import ParameterLeaf
+
+
+ROOT_BLOCK_LABEL = "p"
 
 
 class Model(object):
@@ -17,20 +20,31 @@ class Model(object):
     """
 
     def __init__(self):
-        self._compartments = None
-        self._parameter = []
-        self._megacomplexes = {}
-        self._relations = None
+
         self._compartment_constraints = None
-        self._parameter_constraints = None
+        self._compartments = None
         self._datasets = OrderedDict()
         self._initial_concentrations = None
+        self._megacomplexes = {}
+        self._parameter = None
 
     def type_string(self):
         raise NotImplementedError
 
-    def eval(dataset, axies):
+    def eval(dataset, axies, parameter=None):
         raise NotImplementedError
+
+    def calculated_matrix(self):
+        raise NotImplementedError
+
+    def estimated_matrix(self):
+        raise NotImplementedError
+
+    def fit(self, *args, **kwargs):
+        return self.fit_model().fit(*args, **kwargs)
+
+    def fit_model(self):
+        return FitModel(self)
 
     @property
     def compartments(self):
@@ -45,21 +59,10 @@ class Model(object):
         return self._parameter
 
     @parameter.setter
-    def parameter(self, parameter):
-        if not isinstance(parameter, list):
-            parameter = [parameter]
-
-        for p in parameter:
-            if not isinstance(p, Parameter):
-                raise TypeError
-            p.index = len(self._parameter)+1
-            self._parameter.append(p)
-
-    def add_parameter(self, parameter):
-        if not isinstance(parameter, Parameter):
+    def parameter(self, val):
+        if not isinstance(val, ParameterLeaf):
             raise TypeError
-        parameter.index = len(self._parameter)+1
-        self._parameter.append(parameter)
+        self._parameter = val
 
     @property
     def megacomplexes(self):
@@ -82,48 +85,6 @@ class Model(object):
             self.megacomplexes[megacomplex.label] = megacomplex
         else:
             self.megacomplexes = {megacomplex.label: megacomplex}
-
-    @property
-    def relations(self):
-        return self._relations
-
-    @relations.setter
-    def relations(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        if any(not isinstance(val, Relation) for val in value):
-            raise TypeError("Relations must be instance of class 'Relation'")
-        self._relations = value
-
-    def add_relation(self, relation):
-        if not isinstance(relation, Relation):
-            raise TypeError("Relations must be instance of class 'Relation'")
-        if self.relations is not None:
-            self.relations.append(relation)
-        else:
-            self.relations = relation
-
-    @property
-    def parameter_constraints(self):
-        return self._parameter_constraints
-
-    @parameter_constraints.setter
-    def parameter_constraints(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        if any(not isinstance(val, ParameterConstraint) for val in value):
-            raise TypeError("ParameterConstraint must be instance of class"
-                            " 'ParameterConstraint'")
-        self._parameter_constraints = value
-
-    def add_parameter_constraint(self, constraint):
-        if not isinstance(constraint, ParameterConstraint):
-            raise TypeError("ParameterConstraint must be instance of class"
-                            " 'ParameterConstraint'")
-        if self.parameter_constraints is not None:
-            self.parameter_constraints.append(constraint)
-        else:
-            self.parameter_constraints = constraint
 
     @property
     def compartment_constraints(self):
