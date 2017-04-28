@@ -133,15 +133,15 @@ class KineticCMatrix(CMatrix):
 
     def _calculate_irf_parameter(self, parameter):
 
-        centers = parameter_map(parameter)(np.asarray(self._irf.center))
-        widths = parameter_map(parameter)(np.asarray(self._irf.width))
+        centers = np.asarray(parameter_map(parameter)(self._irf.center))
+        widths = np.asarray(parameter_map(parameter)(self._irf.width))
 
         center_dispersion = \
-            parameter_map(parameter)(np.asarray(self._irf.center_dispersion)) \
+            np.asarray(parameter_map(parameter)(self._irf.center_dispersion)) \
             if len(self._irf.center_dispersion) is not 0 else []
 
         width_dispersion = \
-            parameter_map(parameter)(np.asarray(self._irf.width_dispersion)) \
+            np.asarray(parameter_map(parameter)(self._irf.width_dispersion)) \
             if len(self._irf.width_dispersion) is not 0 else []
 
         dist = (self.x - self._disp_center)/100
@@ -156,7 +156,7 @@ class KineticCMatrix(CMatrix):
         if len(self._irf.scale) is 0:
             scale = np.ones(centers.shape)
         else:
-            scale = parameter_map(parameter)(np.asarray(self._irf.scale))
+            scale = np.asarray(parameter_map(parameter)(self._irf.scale))
 
         return centers, widths, scale
 
