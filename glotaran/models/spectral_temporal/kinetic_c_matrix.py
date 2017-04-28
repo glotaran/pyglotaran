@@ -118,9 +118,10 @@ class KineticCMatrix(CMatrix):
                                           scale * irf_scale)
 
         if self._initial_concentrations is not None:
-            c_matrix = self._apply_initial_concentration_vector(c_matrix,
-                                                                eigenvectors,
-                                                                parameter)
+            self._apply_initial_concentration_vector(c_matrix,
+                                                     eigenvectors,
+                                                     parameter,
+                                                     compartment_order)
 
     def _calculate_k_matrix_eigen(self, k_matrix, parameter):
 
@@ -160,27 +161,25 @@ class KineticCMatrix(CMatrix):
         return centers, widths, scale
 
     def _apply_initial_concentration_vector(self, c_matrix, eigenvectors,
-                                            parameter):
+                                            parameter, compartment_order):
 
         initial_concentrations = \
             parameter_map(parameter)(self._initial_concentrations)
 
-        for i in range(len(self.compartment_order)):
-            comp = self.compartment_order[i]
-            if comp in self.dataset.compartment_scalings:
-                scale = self.dataset.compartment_scalings[comp]
-                scale = np.prod(parameter_map(parameter)(scale))
-                initial_concentrations[i] *= scale
+        initial_concentration = \
+            [initial_concentration[compartment_order.index(c)] for c in
+             self.compartment_order]
 
         gamma = np.matmul(scipy.linalg.inv(eigenvectors),
                           initial_concentrations)
 
         concentration_matrix = np.empty(eigenvectors.shape,
                                         dtype=np.float64)
+
         for i in range(eigenvectors.shape[0]):
             concentration_matrix[i, :] = eigenvectors[:, i] * gamma[i]
 
-        return np.dot(c_matrix, concentration_matrix)
+        np.dot(c_matrix, concentration_matrix, out=c_matrix)
 
     def time(self):
         return self.dataset.data.get_axis("time")
