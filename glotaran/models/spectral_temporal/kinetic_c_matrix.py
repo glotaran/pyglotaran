@@ -75,7 +75,7 @@ class KineticCMatrix(CMatrix):
 
         self._initial_concentrations = \
             [initial_concentrations[all_cmps.index(c)]
-             for c in self.compartment_order]
+             for c in self.compartment_order()]
 
     def calculate(self, c_matrix, compartment_order, parameter):
 
@@ -168,7 +168,7 @@ class KineticCMatrix(CMatrix):
 
         initial_concentration = \
             [initial_concentration[compartment_order.index(c)] for c in
-             self.compartment_order]
+             self.compartment_order()]
 
         gamma = np.matmul(scipy.linalg.inv(eigenvectors),
                           initial_concentrations)
