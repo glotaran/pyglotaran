@@ -1,6 +1,8 @@
 from collections import OrderedDict
 import numpy as np
 
+from glotaran.fitmodel import parameter_idx_to_val
+
 
 class KMatrix(object):
     """
@@ -9,7 +11,6 @@ class KMatrix(object):
     def __init__(self, label, matrix, compartments):
         self.label = label
         self.matrix = matrix
-        self._canary = False
         self._create_compartment_map(compartments)
 
     @property
@@ -50,9 +51,6 @@ class KMatrix(object):
 
     @_compartment_map.setter
     def _compartment_map(self, val):
-        if self._canary:
-            raise Exception
-        self._canary = True
         self.__compartment_map = val
 
     def _create_compartment_map(self, compartments):
@@ -84,6 +82,42 @@ class KMatrix(object):
             j = compartment_map.index(index[1])
             array[i, j] = self.matrix[index]
         return np.array(array, copy=True)
+
+    def full(self, parameter):
+        """
+        [ 0 k3
+          k1 k2]
+
+        translates to
+
+        [ -k1 k3
+          k1 -k2-k3]
+
+        this still correct
+
+        d/dt S1 = -k1 S1 + k3 S2
+        d/dt S2 = +k1 S1 - k2 S2 - k3 S2
+
+        it helps to read it so:
+
+
+        [-k1     k3       [S1]
+        k1  -k2-k3]    [S2]
+        """
+
+        size = len(self.compartment_map)
+        mat = np.zeros((size, size), np.float64)
+        for (to, fr), param in self.matrix.items():
+            to_idx = self.compartment_map.index(to)
+            fr_idx = self.compartment_map.index(fr)
+            param = parameter_idx_to_val(parameter, param)
+
+            if to_idx == fr_idx:
+                mat[to_idx, fr_idx] -= param
+            else:
+                mat[to_idx, fr_idx] += param
+                mat[fr_idx, fr_idx] -= param
+        return mat
 
     def __str__(self):
         return "Label: {}\nMatrix:\n{}".format(self.label,

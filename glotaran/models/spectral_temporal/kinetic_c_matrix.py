@@ -124,15 +124,7 @@ class KineticCMatrix(CMatrix):
 
     def _calculate_k_matrix_eigen(self, k_matrix, parameter):
 
-        # convert k_matrix to np.array and replace indices with actual
-        # parameters
-        # TODO: This does not work with labels and grouping
-        k_matrix = k_matrix.asarray().astype(np.float64)
-        k_matrix = parameter_map(parameter)(k_matrix)
-
-        # construct the full k matrix matrix
-        for i in range(k_matrix.shape[0]):
-            k_matrix[i, i] = -np.sum(k_matrix[:, i])
+        k_matrix = k_matrix.full(parameter)
 
         # get the eigenvectors and values
         eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
