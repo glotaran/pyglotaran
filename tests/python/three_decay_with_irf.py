@@ -4,7 +4,7 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
-from glotaran.models.kinetic import KineticSeparableModel
+from glotaran.models.spectral_temporal import model
 
 fitspec = '''
 type: kinetic
@@ -49,26 +49,25 @@ times = np.concatenate([np.arange(-10, 1, 0.1).flatten(),
                         np.arange(10, 50, 1.5).flatten(),
                         np.arange(100, 1000,
                                   15).flatten()])
-x = np.arange(12820, 15120, 4.6)
-#  x = np.asarray([0, 1])
+#x = np.arange(12820, 15120, 4.6)
+x = np.asarray([0, 1])
 
 wanted_params = Parameters()
-wanted_params.add("p1", 101e-3)
-wanted_params.add("p2", 202e-4)
-wanted_params.add("p3", 505e-5)
-wanted_params.add("p4", 0.1)
-wanted_params.add("p5", 3.0)
+wanted_params.add("p_1", 101e-3)
+wanted_params.add("p_2", 202e-4)
+wanted_params.add("p_3", 505e-5)
+wanted_params.add("p_4", 0.1)
+wanted_params.add("p_5", 3.0)
 wanted_params.pretty_print()
 
 model = parse_yml(fitspec.format(initial_parameter))
 
-fitmodel = KineticSeparableModel(model)
-
-model.eval(wanted_params, 'dataset1', {"time": times, "spec": x})
+model.eval('dataset1',  {"time": times, "spectral": x}, parameter=wanted_params)
 
 
 def fit():
-    fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()
+    result = model.fit()
+    result.best_fit_parameter.pretty_print()
     pass
 
 if __name__ == '__main__':
