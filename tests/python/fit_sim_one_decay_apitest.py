@@ -115,7 +115,16 @@ specfit_result = specfit_model.fit()
 specfit_result.best_fit_parameter.pretty_print()
 # TODO: implement return method for Result object besides best_fit_parameter
 # also estimated spectra (i.e. EAS, DAS, SAS depending on model), reconstructed DAS (EAS?), SVD, residuals
-print(specfit_result.svd())
+# Get spectra
+print(specfit_result.e_matrix())
+# Get concentrations
+## TODO: replace this line with code
+# Get final residuals
+## TODO: replace this line with code
+# Get svd of final residuals
+## TODO: replace this line with code
+# Get svd of original data
+## TODO: file a seperate issue for this
 
 # Statement to get simulated dataset back based on best_fit_parameters
 result_data = specfit_result.eval('dataset1')

@@ -41,6 +41,8 @@ class Model(object):
         raise NotImplementedError
 
     def fit(self, *args, **kwargs):
+        if any([dset.data is None for _, dset in self.datasets.items()]):
+            raise Exception("Model datasets not initialized")
         return self.fit_model().fit(*args, **kwargs)
 
     def fit_model(self):

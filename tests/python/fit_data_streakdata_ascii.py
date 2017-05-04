@@ -1,11 +1,12 @@
 from glotaran.io.wavelength_time_explicit_file import ExplicitFile
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable, SubplotDivider, LocatableAxes, Size
 from copy import copy
+from glotaran.specification_parser import parse_yml
 
 # Settings:
-reproduce_figures_from_paper = False
+reproduce_figures_from_paper = True
 # Read in streakdata.ascii from resources/data sub-folder
 #data_file_te = ExplicitFile('../resources/data/streakdata.ascii')
 data_file_te = ExplicitFile('C:\\src\\glotaran\\tests\\resources\\data\\streakdata.ascii')
@@ -27,43 +28,51 @@ else:
 print([xmin,xmax,ymin,ymax])
 
 # Plot the data
-axMain = plt.subplot(111)
-axMain.pcolormesh(times, wavelengths, dataset_te.data)
+fig, axMain = plt.subplots(1, 1)
+meshLin = axMain.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
 axMain.set_xscale('linear')
-axMain.spines['right'].set_visible(False)
+axMain.spines['right'].set_visible(True)
 axMain.yaxis.set_ticks_position('left')
 axMain.set_xlim((linear_range[0], linear_range[1]))
 axMain.set_ylim(ymin, ymax)
 axMain.yaxis.set_ticks_position('left')
-axMain.yaxis.set_visible(False)
+axMain.yaxis.set_visible(True)
 
 divider = make_axes_locatable(axMain)
-axLog = divider.append_axes("right", size=5.0, pad=0, sharey=axMain)
+axLog = divider.append_axes("right", size="50%", pad=0, sharey=axMain)
+plt.setp(axMain.get_xticklabels(), visible=True)
+meshLog = axLog.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
 axLog.set_xscale('log')
 axLog.set_xlim((linear_range[1], xmax))
-#axLog.xaxis.set_ticks_position('bottom')
-#axLog.spines['left'].set_visible(False)
+axLog.xaxis.set_ticks_position('bottom')
+axLog.spines['left'].set_visible(False)
 axLog.yaxis.set_visible(False)
-#axLog.yaxis.set_ticks_position('right')
-axLog.pcolormesh(times, wavelengths, dataset_te.data)
-plt.setp(axMain.get_xticklabels(), visible=False)
+axLog.set_ylim(ymin, ymax)
+axLog.yaxis.set_ticks_position('right')
+ax_cb = divider.new_horizontal(size="5%", pad=0.05)
+fig1 = axLog.get_figure()
+fig1.add_axes(ax_cb)
+plt.colorbar(meshLog, cax=ax_cb)
+#fig.colorbar(meshLin, pad=20.2)
 
 #ax2 = axLog.twinx()
 #ax2.spines['right'].set_visible(False)
 #ax2.tick_params(axis='y',which='both',labelright='on')
-
-
-
-
 
 plt.show()
 
 fitspec = '''
 type: kinetic
 
-parameters: {}
+parameters: 
+ - -81
+ - 1.6
+ - 0.2
+ - 0.06
+ - 0.02
+ - 0.00016
 
-compartments: [s1, s2, s3]
+compartments: [s1, s2, s3, s4]
 
 megacomplexes:
     - label: mc1
@@ -71,71 +80,31 @@ megacomplexes:
 
 k_matrices:
   - label: "k1"
-    matrix: {{
-      '("s1","s1")': 1,
-      '("s2","s2")': 2,
-      '("s3","s3")': 3,
-}}
+    matrix: {
+      '("s1","s1")': 3,
+      '("s2","s2")': 4,
+      '("s3","s3")': 5,
+      '("s4","s4")': 6
+    }
 
-shapes:
-  - label: "shape1"
-    type: "gaussian"
-    amplitude: shape.amps.1
-    location: shape.locs.1
-    width: shape.width.1
-  - label: "shape2"
-    type: "gaussian"
-    amplitude: shape.amps.2
-    location: shape.locs.2
-    width: shape.width.2
-  - ["shape3", "gaussian", shape.amps.3, shape.locs.3, shape.width.3]
-
-initial_concentrations: []
-
-irf: []
+irf:
+  - label: irf
+    type: gaussian
+    center: 1
+    width: 2
 
 datasets:
-  - label: dataset1
+  - label: streakdata.ascii
     type: spectral
     megacomplexes: [mc1]
     path: ''
-    shapes:
-      - compartment: s1
-        shape: shape1
-      - [s2, shape2]
-      - [s3, shape3]
+    irf: irf1
 
 '''
 
-wanted_params = [101e-3, 202e-4, 305e-5]
-simparams = copy(wanted_params)
-times = np.asarray(np.arange(0, 1500, 1.5))
-x = np.arange(12820, 15120, 4.6)
-amps = [7, 3, 30, False]
-locations = [14700, 13515, 14180, False]
-delta = [400, 100, 300, False]
-
-simparams.append({'shape': [{'amps': amps}, {'locs': locations},
-                            {'width': delta}]})
-
-model = parse_yml(fitspec.format(simparams))
-
-axies = {"time": times, "spectral": x}
-
-print(model.parameter.as_parameters_dict().pretty_print())
-
-model.eval('dataset1', axies)
-
-print(np.isnan(model.datasets['dataset1'].data.data).any())
-print(np.isnan(model.c_matrix()).any())
-model.parameter.get("1").value = 300e-3
-model.parameter.get("2").value = 500e-4
-model.parameter.get("3").value = 700e-5
-
-print(model.parameter.as_parameters_dict().pretty_print())
-result = model.fit()
-result.best_fit_parameter.pretty_print()
-for i in range(len(wanted_params)):
-    self.assertEpsilon(wanted_params[i],
-                       result.best_fit_parameter["p_{}".format(i + 1)]
-                       .value, 1e-6)
+specfit_model = parse_yml(fitspec)
+print(specfit_model)
+times = dataset_te.get_axis("time")
+wavelengths = dataset_te.get_axis("spec")
+specfit_result = specfit_model.fit()
+specfit_result.best_fit_parameter.pretty_print()
