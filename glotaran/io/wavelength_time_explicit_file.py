@@ -166,12 +166,12 @@ class ExplicitFile(object):
             pass
         elif self._file_data_format == DataFileType.time_explicit:
             dataset = SpectralTemporalDataset(self._label)
-            dataset.set_axis("spec", self._spectral_indices)
+            dataset.set_axis("spectral", self._spectral_indices)
             dataset.set_axis("time", self._times)
         elif self._file_data_format == DataFileType.time_explicit:
             dataset = SpectralTemporalDataset(self._label)
             dataset.set_axis("time", self._times)
-            dataset.set_axis("spec", self._spectral_indices)
+            dataset.set_axis("spectral", self._spectral_indices)
         dataset.data = self._observations
         return dataset
 
