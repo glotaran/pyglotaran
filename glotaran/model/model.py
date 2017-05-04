@@ -161,22 +161,7 @@ class Model(object):
     def __str__(self):
         s = "Modeltype: {}\n\n".format(self.type_string())
 
-        s += "Parameter\n---------\n\n"
-
-        for p in self.parameter:
-            s += "{}\n".format(p)
-
-        if self.parameter_constraints is not None:
-            s += "\nParameter Constraints\n--------------------\n\n"
-
-            for p in self._parameter_constraints:
-                s += "{}\n".format(p)
-
-        if self.relations is not None:
-            s += "\nParameter Relations\n------------------\n\n"
-
-            for p in self._relations:
-                s += "{}\n".format(p)
+        s += "Parameter\n---------\n{}\n".format(self.parameter)
 
         if self.compartments is not None:
             s += "\nCompartments\n-------------------------\n\n"

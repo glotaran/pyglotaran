@@ -71,7 +71,7 @@ datasets:
 '''
 
 initial_parameter = [101e-4, 2E-5, 3e-6, 0., 5.]
-simparams_parameter = [5,1400,100, 3, 1200,10, 7,1800,50]
+simparams_parameter = [5, 1400, 100, 3, 1200, 10, 7, 1800, 50]
 times = np.asarray(np.arange(-100, 1500, 1.5))
 # x = np.arange(12820, 15120, 4.6)
 x1 = np.asarray([1.0, 2.0, 3.0])
@@ -96,9 +96,6 @@ wanted_params.add("p5", 10)
 
 model = parse_yml(fitspec.format(initial_parameter, simparams_parameter))
 
-print(model._parameter_root.sub_blocks)
-print(model._parameter_root.sub_blocks["shape"].sub_blocks)
-
 print(model)
 
 model.eval(wanted_params, 'dataset1', {"time": times, "spec": x1})
@@ -119,12 +116,11 @@ model.eval(wanted_params, 'dataset1', {"time": times, "spec": x1})
 #  print(model.datasets['dataset1'].data.data.shape)
 #  print("=======CMAT=====")
 #  for c in c_mat:
-    #  print(c.shape)
+#  print(c.shape)
 
-#print(fitmodel._get_construction_order())
+# print(fitmodel._get_construction_order())
 #  print(fitmodel.c_matrix(initial_parameter))
 
-#  np.savetxt("foo.csv", model.datasets['dataset1'].data.data[:, 2], delimiter=",")
 
 fitmodel = FitModel(model)
 #  fitmodel.fit(fitmodel.get_initial_fitting_parameter()).best_fit_parameter.pretty_print()

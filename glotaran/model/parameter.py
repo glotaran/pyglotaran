@@ -46,6 +46,9 @@ class Parameter(LmParameter):
         LmParameter.value.fset(self, val)
 
     def _str__(self):
-        return 'Index: {} Initial Value: {} Label: {}'.format(self._index,
-                                                              self.value,
-                                                              self.label)
+        return 'Label: {}\tInitial Value: {}\t Fix: {}\tMin: {} Max: {}'\
+                .format(self.label,
+                        self.value,
+                        not self.vary,
+                        self.min,
+                        self.max)

@@ -96,3 +96,10 @@ class ParameterLeaf(OrderedDict):
             if not only_fit or p.vary:
                 params.add(p)
         return params
+
+    def __str__(self):
+        s = "Label\tValue\tMin\tMax\tFix\n"
+        for _, p in self.as_parameters_dict().items():
+            s += "{}\t{}\t{}\t{}\t{}\n".format(p.name, p.value, p.min, p.max,
+                                               not p.vary)
+        return s
