@@ -2,7 +2,7 @@
 
 # load('test_glotaran_api_spec.yml')
 
-from glotaran.model import (create_parameter_list, Parameter, InitialConcentration,
+from glotaran.model import (Model, Parameter, InitialConcentration,
                            ZeroConstraint, EqualConstraint, EqualAreaConstraint, FixedConstraint, BoundConstraint,
                            Relation)
 from glotaran.models.kinetic import KineticModel, KMatrix, KineticMegacomplex, KineticDatasetDescriptor, KineticSeparableModel
