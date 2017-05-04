@@ -1,4 +1,5 @@
 from glotaran.model import Dataset
+from glotaran.models.spectral_temporal.dataset import SpectralTemporalDataset
 from .spectral_timetrace import SpectralTimetrace, SpectralUnit
 from enum import Enum
 import os.path
@@ -144,31 +145,31 @@ class ExplicitFile(object):
             del observations[-1]
 
             if self._file_data_format == DataFileType.time_explicit:
-                self._times = explicit_axis
-                self._spectral_indices = secondary_axis
-                self._observations = np.array(observations)
+                self._times = np.asarray(explicit_axis)
+                self._spectral_indices = np.asarray(secondary_axis)
+                self._observations = np.asarray(observations)
 
             elif self._file_data_format == DataFileType.wavelength_explicit:
-                self._spectral_indices = explicit_axis
-                self._times = secondary_axis
-                self._observations = np.array(observations)
+                self._spectral_indices = np.asarray(explicit_axis)
+                self._times = np.asarray(secondary_axis)
+                self._observations = np.asarray(observations)
 
             else:
                 NotImplementedError()
                 pass
 
-            print(self._observations.shape)
-            print([x.shape for x in self._observations])
-            return self
+        return self.dataset()
 
     def dataset(self):
-        dataset = Dataset(self._label)
         if not self._file_data_format:
+            dataset = Dataset(self._label)
             pass
         elif self._file_data_format == DataFileType.time_explicit:
+            dataset = SpectralTemporalDataset(self._label)
             dataset.set_axis("spec", self._spectral_indices)
             dataset.set_axis("time", self._times)
         elif self._file_data_format == DataFileType.time_explicit:
+            dataset = SpectralTemporalDataset(self._label)
             dataset.set_axis("time", self._times)
             dataset.set_axis("spec", self._spectral_indices)
         dataset.data = self._observations
