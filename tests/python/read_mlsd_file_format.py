@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from numpy import linalg
 
-data_file_mlsd = MLSDFile('../resources/Al_6_1.txt')
+data_file_mlsd = MLSDFile('../resources/data/Al_6_1.txt')
 data_file_mlsd.read("AL_6_1")
 dataset_te = data_file_mlsd.dataset()
 
@@ -29,7 +29,7 @@ ax2.set_xlim([xmin, xmax])
 ax3.plot(dataset_te.get_axis("spec"),U1[:,0:3])
 ax3.set_xlim([ymin, ymax])
 
-data_file_mlsd_cmp = pd.read_csv('../resources/Al_6_1.csv', header=None,index_col=None)
+data_file_mlsd_cmp = pd.read_csv('../resources/data/Al_6_1.csv', header=None,index_col=None)
 times_cmp = data_file_mlsd_cmp.values[1:,0]
 wavelength_cmp = data_file_mlsd_cmp.values[0,1:]
 data_cmp = data_file_mlsd_cmp.values[1:,1:].T
