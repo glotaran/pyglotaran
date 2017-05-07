@@ -4,13 +4,13 @@ from numpy import linalg
 from .glotaran_color_codes import *
 from cycler import cycler
 
-from glotaran.models.kinetic.separable_model import KineticSeparableModel
+from glotaran.models.spectral_temporal import KineticModel
 
 #TODO: calculate svd when plots are requested
 #TODO: calculate svd in background
 
 def plot_data(*args, **kwargs):
-    if len(args) == 1 and isinstance(args[0], KineticSeparableModel):
+    if len(args) == 1 and isinstance(args[0], KineticModel):
         _plot_data_from_kin_sep_model(args[0])
     elif len(args) == 2 and isinstance(args[1], int):
         pass
