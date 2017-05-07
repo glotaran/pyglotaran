@@ -1,8 +1,9 @@
-from glotaran.io.wavelength_time_explicit_file import ExplicitFile
-import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable, SubplotDivider, LocatableAxes, Size
-from copy import copy
+import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from glotaran.io.wavelength_time_explicit_file import ExplicitFile
+from glotaran.plotting.basic_plots import plot_data
 from glotaran.specification_parser import parse_yml
 
 # Settings:
@@ -29,19 +30,25 @@ else:
 print([xmin,xmax,ymin,ymax])
 
 # Plot the data
-fig, axMain = plt.subplots(1, 1)
-meshLin = axMain.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
-axMain.set_xscale('linear')
-axMain.spines['right'].set_visible(True)
-axMain.yaxis.set_ticks_position('left')
-axMain.set_xlim((linear_range[0], linear_range[1]))
-axMain.set_ylim(ymin, ymax)
-axMain.yaxis.set_ticks_position('left')
-axMain.yaxis.set_visible(True)
+fig, all_axes = plt.subplots(2, 2)
 
-divider = make_axes_locatable(axMain)
-axLog = divider.append_axes("right", size="50%", pad=0, sharey=axMain)
-plt.setp(axMain.get_xticklabels(), visible=True)
+axData = all_axes[0,0]
+plot_data(axData, times, wavelengths, dataset_te.data)
+plt.show(block=False)
+
+axDataMesh = all_axes[0,1]
+meshLin = axDataMesh.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
+axDataMesh.set_xscale('linear')
+axDataMesh.spines['right'].set_visible(True)
+axDataMesh.yaxis.set_ticks_position('left')
+axDataMesh.set_xlim((linear_range[0], linear_range[1]))
+axDataMesh.set_ylim(ymin, ymax)
+axDataMesh.yaxis.set_ticks_position('left')
+axDataMesh.yaxis.set_visible(True)
+
+divider = make_axes_locatable(axDataMesh)
+axLog = divider.append_axes("right", size="50%", pad=0, sharey=axDataMesh)
+plt.setp(axDataMesh.get_xticklabels(), visible=True)
 meshLog = axLog.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
 axLog.set_xscale('log')
 axLog.set_xlim((linear_range[1], xmax))
@@ -55,12 +62,19 @@ fig1 = axLog.get_figure()
 fig1.add_axes(ax_cb)
 plt.colorbar(meshLog, cax=ax_cb)
 #fig.colorbar(meshLin, pad=20.2)
-
+plt.show(block=False)
 #ax2 = axLog.twinx()
 #ax2.spines['right'].set_visible(False)
 #ax2.tick_params(axis='y',which='both',labelright='on')
 
-plt.show()
+axDataContourf = all_axes[1,0]
+levels = np.linspace(0, max(dataset_te.data.flatten()), 10)
+cnt = axDataContourf.contourf(times, wavelengths, dataset_te.data, levels=levels, cmap="Greys")
+# This is the fix for the white lines between contour levels
+for c in cnt.collections:
+    c.set_edgecolor("face")
+
+plt.show(block=False)
 
 fitspec = '''
 type: kinetic
@@ -110,3 +124,24 @@ wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
 specfit_result = specfit_model.fit()
 specfit_result.best_fit_parameter.pretty_print()
+
+residual = specfit_result.final_residual()
+axResidualContourf = all_axes[1,1]
+levels = np.linspace(0, max(dataset_te.data.flatten()), 10)
+cnt = axResidualContourf.contourf(times, wavelengths, residual, levels=levels, cmap="Greys")
+# This is the fix for the white lines between contour levels
+for c in cnt.collections:
+    c.set_edgecolor("face")
+
+plt.show()
+
+# plot svd of residual
+residual_svd = specfit_result.final_residual_svd()
+
+# TODO: getting e_matrix still crashes
+#spectra = specfit_result.e_matrix()
+# print("spectra.shape = {}",spectra.shape)
+# plt.plot(wavelengths,spectra)
+
+
+
