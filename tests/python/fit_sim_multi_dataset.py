@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from _shared import times_with_irf
 
@@ -77,7 +79,8 @@ datasets:
 '''
 
 specfit_model = parse_yml(fitspec)
-print(specfit_model)
+print(specfit_model,flush=True)
+time.sleep(1)
 specfit_model.eval('dataset1', {"spectral": spectral_indices1, "time": times1})
 specfit_model.eval('dataset2', {"spectral": spectral_indices2, "time": times2})
 
