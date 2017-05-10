@@ -12,7 +12,10 @@ class SpectralCMatrix(CMatrix):
         self._shapes = {}
         self._collect_shapes(model)
 
-        self._compartment_order = model.compartments
+        if len(self.dataset.shapes) is 0:
+            self._compartment_order = model.compartments
+        else:
+            self._compartment_order = [c for c in model.compartments if c in self.dataset.shapes]
 
     def _collect_shapes(self, model):
 

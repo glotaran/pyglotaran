@@ -10,7 +10,7 @@ from glotaran.specification_parser import parse_yml
 times1 = times_with_irf()
 times2 = np.concatenate((np.arange(3100, 3500, 100),times_with_irf()))
 spectral_indices1 = np.asarray([1, 2])
-spectral_indices2 = np.asarray([2, 3])
+spectral_indices2 = np.asarray([3, 4])
 
 # Defining the parameter(s) for which the model will be initially evaluated
 # to produce the simulated data
@@ -81,8 +81,8 @@ datasets:
 specfit_model = parse_yml(fitspec)
 print(specfit_model,flush=True)
 time.sleep(1)
-print('times1.shape = {} and times1[0] = {}'.format(times1.shape,times1[0]))
-print(times2.shape)
+print('times1.shape = {} and times1[0] = {}'.format(times1.shape, times1[0]))
+print('times2.shape = {} and times2[0] = {}'.format(times2.shape, times2[0]))
 time.sleep(1)
 specfit_model.eval('dataset1', {"spectral": spectral_indices1, "time": times1})
 specfit_model.eval('dataset2', {"spectral": spectral_indices2, "time": times2})
