@@ -70,11 +70,13 @@ setup(
         'scipy',
         'lmfit',
         'pyyaml',
+        'matplotlib' #dependency introduced by glotaran.plotting
     ],
-    package_data={'glotaran.models.kinetic.c_matrix_opencl':
-                  ['*.cl']},
     cmdclass={"build_ext": build_ext},
     ext_modules=ext_modules,
     test_suite='nose.collector',
     tests_require=['nose'],
 )
+
+#    package_data={'glotaran.models.kinetic.c_matrix_opencl':
+#                  ['*.cl']},

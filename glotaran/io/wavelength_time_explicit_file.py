@@ -13,19 +13,29 @@ class DataFileType(Enum):
     wavelength_explicit = "Wavelength explicit"
     # TODO: implement time_intervals
 
+class DataRequired(Exception):
+    pass
 
 class ExplicitFile(object):
     """
     Abstract class representing either a time- or wavelength-explicit file.
     """
-    def __init__(self, file):
-        self._file = file
+    def __init__(self, file=None, *args, **kwargs):
         self._file_data_format = None
         self._observations = []  # TODO: choose name: data_points, observations, data
         self._times = []
         self._spectral_indices = []
         self._label = ""
         self._comment = ""
+        if not file and 'dataset' in kwargs:
+            self._initialize_with_dataset(kwargs.get('dataset'))
+        elif os.path.isfile(file):
+            self._file = file
+        else:
+            raise DataRequired("Usage:"
+                               "\n1: ExplicitFile(path_to_ascii_file)"
+                               "\n2: ExplicitFile(dataset=my_dataset) #where my_dataset is instance of SpectralTemporalDataset")
+
 
     def get_explicit_axis(self):
         raise NotImplementedError
@@ -174,6 +184,13 @@ class ExplicitFile(object):
             dataset.set_axis("spectral", self._spectral_indices)
         dataset.data = self._observations
         return dataset
+
+    def _initialize_with_dataset(self, dataset):
+        if isinstance(dataset,SpectralTemporalDataset):
+            self._times = dataset.get_axis("time")
+            self._spectral_indices = dataset.get_axis("spectral")
+            self._observations = dataset.data
+            self._file = "SpectralTemporalDataset"
 
 
 class WavelengthExplicitFile(ExplicitFile):
