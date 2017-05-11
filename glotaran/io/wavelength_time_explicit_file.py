@@ -87,7 +87,7 @@ class ExplicitFile(object):
 
         f.close()
 
-    def write(self, filename, overwrite=False, comment="", file_format="Time explicit"):
+    def write(self, filename, overwrite=False, comment="", file_format="Time explicit", number_format="%.10e"):
         #TODO: write a more elegant method
 
         if os.path.isfile(filename) and not overwrite:
@@ -107,7 +107,7 @@ class ExplicitFile(object):
         else:
             raise NotImplementedError
 
-        np.savetxt(filename, raw_data, fmt='%.18e', delimiter='\t', newline='\n', header=header, footer='', comments='')
+        np.savetxt(filename, raw_data, fmt=number_format, delimiter='\t', newline='\n', header=header, footer='', comments='')
 
     def read(self, label, spectral_unit=SpectralUnit.nm, time_unit="s"):
         if not os.path.isfile(self._file):
