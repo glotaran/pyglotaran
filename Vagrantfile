@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "ubuntu/xenial64"
   
   # Provisioning:
   config.vm.provision :shell, path: "ubuntu-bootstrap.sh"
@@ -72,7 +72,7 @@ Vagrant.configure(2) do |config|
   #   sudo apt-get install -y apache2
   # SHELL
     config.vm.provision "shell", run: "always", inline: <<-SHELL
-    jupyter notebook --notebook-dir=/vagrant/notebook --no-browser --ip=0.0.0.0 &
+    jupyter notebook --notebook-dir=/vagrant/notebook --no-browser --ip=127.0.0.1 &
   SHELL
 end
 

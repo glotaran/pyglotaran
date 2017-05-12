@@ -5,6 +5,7 @@ sudo apt-get upgrade -y
 
 # Install deps
 sudo apt-get install python3-pip cython3 python3-scipy libfreetype6-dev -y
+sudo apt-get install git
 
 # Install Jupyter
 sudo pip3 install jupyter
