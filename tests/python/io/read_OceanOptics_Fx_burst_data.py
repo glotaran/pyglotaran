@@ -4,6 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os.path
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# TODO: read data from zip file
+# root_data_path = os.path.join(THIS_DIR, '..', '..', 'resources', 'data', 'ocean_optics_fx_burst.zip')
+
 datapath = r'C:\Users\Joris\Downloads\FX_test_data\test01' # use your path
 exportFile = os.path.join(datapath,"test01.ascii")
 allFiles = glob.glob(datapath + "/*.txt")
