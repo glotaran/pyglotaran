@@ -19,7 +19,7 @@ for exp_name in os.listdir(root_data_path):
     datapath = os.path.join(root_data_path, exp_name)  # use your path
     export_ascii = os.path.join(root_data_path, exp_name +'.ascii')
     export_png = os.path.join(root_data_path, exp_name + '.png')
-    if not os.path.isdir(datapath):
+    if not ChlorospecData.is_valid_path(datapath):
         continue
 
     data_file_object = ChlorospecData(datapath)
