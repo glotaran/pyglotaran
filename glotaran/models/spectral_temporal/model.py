@@ -146,6 +146,9 @@ class KineticModel(Model):
     def c_matrix(self, parameter=None):
         if parameter is None:
             parameter = self.parameter.as_parameters_dict()
-        fitmodel = FitModel(self)
+        return self.fit_model().c_matrix(parameter)
 
-        return fitmodel.c_matrix(parameter)
+    def e_matrix(self, parameter=None):
+        if parameter is None:
+            parameter = self.parameter.as_parameters_dict()
+        return self.fit_model().e_matrix(parameter)

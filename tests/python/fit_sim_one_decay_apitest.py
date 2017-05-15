@@ -116,7 +116,7 @@ specfit_result.best_fit_parameter.pretty_print()
 # TODO: implement return method for Result object besides best_fit_parameter
 # also estimated spectra (i.e. EAS, DAS, SAS depending on model), reconstructed DAS (EAS?), SVD, residuals
 # Get spectra
-print(specfit_result.e_matrix())
+print(specfit_result.e_matrix('dataset1'))
 # Get concentrations
 ## TODO: replace this line with code
 # Get final residuals

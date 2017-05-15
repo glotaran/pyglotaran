@@ -31,7 +31,7 @@ class FitModel(SeparableModel):
                         *args, **kwargs)
         return result
 
-    def c_matrix(self, parameter, **kwargs):
+    def c_matrix(self, parameter, *args, **kwargs):
         parameter = parameter.valuesdict()
         if "dataset" in kwargs:
             label = kwargs["dataset"]
@@ -46,12 +46,22 @@ class FitModel(SeparableModel):
                                                      calculated_matrix())
         return gen.calculate(parameter)
 
-    def e_matrix(self, parameter, **kwargs):
+    def e_matrix(self, parameter, *args, **kwargs):
         parameter = parameter.valuesdict()
-        dataset = kwargs["dataset"]
-        gen = MatrixGroupGenerator.for_dataset(self._model, dataset,
-                                               self._model.estimated_matrix(),
-                                               calculated=True)
+
+        if "dataset" in kwargs:
+            dataset = kwargs["dataset"]
+            gen = MatrixGroupGenerator.for_dataset(self._model, dataset,
+                                                   self._model.
+                                                   estimated_matrix(),
+                                                   calculated=True)
+        else:
+            gen = self._generator
+            if gen is None:
+                gen = MatrixGroupGenerator.for_model(self._model,
+                                                     self._model.
+                                                     estimated_matrix(),
+                                                     calculated=True)
         return gen.calculate(parameter)
 
 

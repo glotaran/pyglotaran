@@ -3,7 +3,7 @@ import numpy as np
 from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
-from glotaran.models.kinetic import KineticSeparableModel
+from glotaran.models. import KineticSeparableModel
 
 fitspec = '''
 type: kinetic
