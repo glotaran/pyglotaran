@@ -17,7 +17,7 @@ spectral_indices = np.asarray([0, 1])
 # Defining the parameter(s) for which the model will be initially evaluated
 # to produce the simulated data
 eval_pars = Parameters()  # the simulated parameters
-eval_pars.add('p_1', 0.0123456789)
+eval_pars.add('p_1', 0.00123456789)
 eval_pars.pretty_print()
 
 ############################################################################
@@ -85,7 +85,7 @@ fitspec = '''
 type: kinetic
 
 parameters:
- - 0.05
+ - 0.001
 
 compartments: [s1]
 
@@ -116,7 +116,8 @@ specfit_result.best_fit_parameter.pretty_print()
 # TODO: implement return method for Result object besides best_fit_parameter
 # also estimated spectra (i.e. EAS, DAS, SAS depending on model), reconstructed DAS (EAS?), SVD, residuals
 # Get spectra
-print(specfit_result.e_matrix('dataset1'))
+plt.figure()
+plt.plot(spectral_indices,specfit_result.e_matrix('dataset1')[0])
 # Get concentrations
 ## TODO: replace this line with code
 # Get final residuals
@@ -128,8 +129,8 @@ print(specfit_result.e_matrix('dataset1'))
 
 # Statement to get simulated dataset back based on best_fit_parameters
 result_data = specfit_result.eval('dataset1')
-
-plt.plot(times, sim_data, label="data")
-plt.plot(times, result_data, label="fit")
-
+plt.figure()
+plt.pcolormesh(times,spectral_indices, sim_data)
+plt.figure()
+plt.pcolormesh(times,spectral_indices, result_data)
 plt.show()
