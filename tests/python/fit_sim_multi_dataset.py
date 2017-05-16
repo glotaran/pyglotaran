@@ -8,9 +8,9 @@ from glotaran.specification_parser import parse_yml
 
 # Initializing the (common) times and spectral_indices vectors:
 times1 = times_with_irf()
-times2 = np.concatenate((np.arange(3100, 3500, 100),times_with_irf()))
+times2 = np.concatenate((times_with_irf(),np.arange(3100, 3500, 100)))
 spectral_indices1 = np.asarray([1, 2])
-spectral_indices2 = np.asarray([3, 4])
+spectral_indices2 = np.asarray([2, 4])
 
 # Defining the parameter(s) for which the model will be initially evaluated
 # to produce the simulated data
