@@ -204,7 +204,7 @@ class TestParser(TestCase):
         self.assertEqual(pc.upper, 7e-8)
 
     def test_parameter(self):
-        allp = list(self.model.parameter.all_leaf())
+        allp = list(self.model.parameter.all_group())
         self.assertEqual(len(allp), 10)
 
         self.assertTrue(all(isinstance(p, Parameter) for p in allp))

@@ -6,7 +6,7 @@ from .compartment_constraints import CompartmentConstraint
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
-from .parameter_leaf import ParameterLeaf
+from .parameter_group import ParameterGroup
 
 
 ROOT_BLOCK_LABEL = "p"
@@ -62,7 +62,7 @@ class Model(object):
 
     @parameter.setter
     def parameter(self, val):
-        if not isinstance(val, ParameterLeaf):
+        if not isinstance(val, ParameterGroup):
             raise TypeError
         self._parameter = val
 

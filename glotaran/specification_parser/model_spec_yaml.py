@@ -8,7 +8,7 @@ from glotaran.model import (EqualAreaConstraint,
                             EqualConstraint,
                             InitialConcentration,
                             Parameter,
-                            ParameterLeaf,
+                            ParameterGroup,
                             ZeroConstraint,
                             )
 
@@ -150,7 +150,7 @@ class ModelSpecParser(object):
         self.model.parameter = self.get_leaf("p", params)
 
     def get_leaf(self, label, items):
-        leaf = ParameterLeaf(label)
+        leaf = ParameterGroup(label)
         for item in items:
             if isinstance(item, dict):
                 label, items = list(item.items())[0]

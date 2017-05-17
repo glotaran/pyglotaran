@@ -8,7 +8,7 @@ from . import (
                model,
                parameter,
                parameter_constraints,
-               parameter_leaf,
+               parameter_group,
                )
 
 
@@ -41,7 +41,7 @@ Model = model.Model
 # Parameter
 
 Parameter = parameter.Parameter
-ParameterLeaf = parameter_leaf.ParameterLeaf
+ParameterGroup = parameter_group.ParameterGroup
 
 # Parameter Constraint
 
