@@ -46,6 +46,7 @@ class Keys:
     TO = "to"
     TYPE = 'type'
     VALUE = 'value'
+    VARY = "vary"
     WEIGHT = "weight"
     ZERO = "zero"
 
@@ -175,7 +176,7 @@ class ModelSpecParser(object):
                                isinstance(x, bool), 'nan')
         param.label = retrieve(lambda x: isinstance(x, str) and not
                                x == 'nan', None)
-        param.vary = retrieve(lambda x: isinstance(x, bool), True)
+        param.fit = retrieve(lambda x: isinstance(x, bool), True)
         options = retrieve(lambda x: isinstance(x, dict), None)
 
         if options is not None:
@@ -185,6 +186,8 @@ class ModelSpecParser(object):
                 param.min = options[Keys.MIN]
             if Keys.EXPR in options:
                 param.expr = options[Keys.EXPR]
+            if Keys.VARY in options:
+                param.vary = options[Keys.VARY]
         return param
 
     def get_parameter_constraints(self):

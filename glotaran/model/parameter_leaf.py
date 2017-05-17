@@ -23,7 +23,7 @@ class ParameterLeaf(OrderedDict):
             if p.label is None:
                 p.label = "{}".format(p.index)
             if not self.fit:
-                p.vary = False
+                p.fit = False
             self._parameters[p.label] = p
 
     def add_leaf(self, leaf):
@@ -40,7 +40,7 @@ class ParameterLeaf(OrderedDict):
     @fit.setter
     def fit(self, value):
         for p in self.all_leaf():
-            p.vary = value
+            p.fit = value
         self._fit = value
         for _, l in self.items():
             l.fit = value
@@ -93,7 +93,7 @@ class ParameterLeaf(OrderedDict):
         params = Parameters()
         for (label, p) in self.all_with_label(None):
             p.name = label
-            if not only_fit or p.vary:
+            if not only_fit or p.fit:
                 params.add(p)
         return params
 

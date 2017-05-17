@@ -125,7 +125,7 @@ parameters:
   - 1
   - 1
   - nan
-  - [1.78, "spectral_equality"] #p4
+  - [1.78, "spectral_equality", {vary: false}] #p4
   - [1.78, "boundparam", false, {min: 0, max: 10}] # the value will set to bound if initally out of
   - [1.78, "relatedparam", true, {max: 2, expr: "p.1 + 3"}] # having a leation implies vary false, will overwrite!
   - kinpar: [[0.2, "k1"], [0.01], [0.0002, "kf"]] #parameter 5, 6, 7

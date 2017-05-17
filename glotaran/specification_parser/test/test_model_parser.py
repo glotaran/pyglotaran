@@ -235,12 +235,14 @@ class TestParser(TestCase):
         p = self.model.parameter.get('spectral_equality')
         self.assertEqual(p.label, 'spectral_equality')
         self.assertEqual(p.value, 1.78)
-        self.assertTrue(p.vary)
+        self.assertFalse(p.vary)
+        self.assertTrue(p.fit)
 
         p = self.model.parameter.get_by_index(9)
         self.assertEqual(p.label, 'boundparam')
         self.assertEqual(p.value, 1.78)
-        self.assertFalse(p.vary)
+        self.assertFalse(p.fit)
+        self.assertTrue(p.vary)
         self.assertEqual(p.min, 0)
         self.assertEqual(p.max, 10)
 
@@ -269,17 +271,20 @@ class TestParser(TestCase):
         p = self.model.parameter.get('shape.1')
         self.assertEqual(p.label, '1')
         self.assertEqual(p.value, 2.2)
-        self.assertFalse(p.vary)
+        self.assertFalse(p.fit)
+        self.assertTrue(p.vary)
 
         p = self.model.parameter.get('shape.rocks')
         self.assertEqual(p.label, 'rocks')
         self.assertEqual(p.value, 0.35)
-        self.assertFalse(p.vary)
+        self.assertFalse(p.fit)
+        self.assertTrue(p.vary)
 
         p = self.model.parameter.get('shape.myparam')
         self.assertEqual(p.label, 'myparam')
         self.assertEqual(p.value, 2.2)
-        self.assertFalse(p.vary)
+        self.assertFalse(p.fit)
+        self.assertTrue(p.vary)
 
         for i in range(3):
 
