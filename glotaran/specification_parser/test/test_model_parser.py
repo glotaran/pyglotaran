@@ -110,6 +110,14 @@ class TestParser(TestCase):
             want = [] if i is 1 else [9, 10]
             self.assertEqual(irf.scale, want)
             self.assertTrue(irf.normalize)
+
+            if i is 1:
+                self.assertTrue(irf.backsweep)
+                self.assertEqual(irf.backsweep_period, 0.1)
+            else:
+                self.assertFalse(irf.backsweep)
+                self.assertEqual(irf.backsweep_period, None)
+
             i = i + 1
 
     def test_k_matrices(self):

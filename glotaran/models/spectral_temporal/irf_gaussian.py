@@ -26,14 +26,16 @@ class GaussianIrf(Irf):
     _scale = None
 
     def __init__(self, label, center, width, center_dispersion=None,
-                 width_dispersion=None, scale=None, normalize=True):
+                 width_dispersion=None, scale=None, normalize=True,
+                 backsweep=False, backsweep_period=None):
         self.center = center
         self.center_dispersion = center_dispersion
         self.width = width
         self.width_dispersion = width_dispersion
         self.scale = scale
         self.normalize = normalize
-        super(GaussianIrf, self).__init__(label)
+        super(GaussianIrf, self).__init__(label, backsweep=backsweep,
+                                          backsweep_period=backsweep_period)
 
     @property
     def scale(self):

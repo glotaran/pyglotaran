@@ -14,6 +14,8 @@ from glotaran.models.spectral_temporal import (KMatrix,
 
 class KineticKeys(object):
     AMPLITUDE = "amplitude"
+    BACKSWEEP = "backsweep"
+    BACKSWEEP_PERIOD = "backsweep_period"
     CENTER = 'center'
     CENTER_DISPERSION = 'center_dispersion'
     GAUSSIAN = 'gaussian'
@@ -97,11 +99,22 @@ class KineticModelParser(ModelSpecParser):
                     norm = retrieve_optional(irf, KineticKeys.NORMALIZE, 7,
                                              True)
 
+                    backsweep = retrieve_optional(irf, KineticKeys.BACKSWEEP,
+                                                  8, False)
+
+                    backsweep_period = retrieve_optional(irf,
+                                                         KineticKeys.
+                                                         BACKSWEEP_PERIOD,
+                                                         9, None)
+
                     self.model.add_irf(GaussianIrf(label, center, width,
-                                       center_dispersion=center_disp,
-                                       width_dispersion=width_disp,
-                                       scale=scale,
-                                       normalize=norm))
+                                                   center_dispersion=center_disp,
+                                                   width_dispersion=width_disp,
+                                                   scale=scale,
+                                                   normalize=norm,
+                                                   backsweep=backsweep,
+                                                   backsweep_period=backsweep_period,
+                                                   ))
 
     def get_shapes(self):
         if KineticKeys.SHAPES in self.spec:

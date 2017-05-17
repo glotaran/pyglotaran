@@ -54,6 +54,8 @@ irf: #specific to kinetic or spectro_temporal model
     width: 2
     center_dispersion: [3] # dispersion is of 1st order
     width_dispersion: [4] # dispersion is of 1st order
+    backsweep: True
+    backsweep_period: 0.1
   - [irf2, gaussian, [1, 2], [3,4], [5,6], [7,8], [9,10], true] # compact
 
 initial_concentration: #equal to the total number of compartments
