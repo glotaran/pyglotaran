@@ -1,4 +1,3 @@
-from __future__ import print_function
 import sys
 
 import cython
@@ -24,7 +23,7 @@ def __init__():
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, double mu, double
-                  delta, double scale):
+                  delta, double scale, int backsweep, double backsweep_period):
     nr_times = T.shape[0]
     nr_comps = k.shape[0]
     cdef int n_c, n_t, n_k
@@ -43,6 +42,8 @@ def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, dou
                 C[n_t, n_c] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
                 C[n_t, n_c] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
-
-
-
+            if backsweep != 0:
+                x1 = exp(-k_n) * (t_n - mu + backsweep_period)
+                x2 = exp(-k_n) * ((backsweep_period / 2) - (t_n - mu))
+                x3 = exp(-k_n * backsweep_period)
+                C[n_t, n_c] = (x1 + x2) / (1 - x3)

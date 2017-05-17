@@ -7,6 +7,6 @@ class CMatrixCython(object):
         return calculateC(C, idxs, rates, times, scale)
 
     def c_matrix_gaussian_irf(self, C, idxs, rates, times, centers, widths,
-                              scale):
+                              scale, backsweep, backsweep_period):
         calculateCSingleGaussian(C, idxs, rates, times, centers, widths,
-                                 scale)
+                                 scale, backsweep, backsweep_period)

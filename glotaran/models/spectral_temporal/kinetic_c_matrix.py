@@ -111,14 +111,17 @@ class KineticCMatrix(CMatrix):
             backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time,
                              scale)
         else:
-            centers, widths, irf_scale = \
+            centers, widths, irf_scale, backsweep, backsweep_period = \
                     self._calculate_irf_parameter(parameter)
             backend.c_matrix_gaussian_irf(c_matrix,
                                           compartment_idxs,
                                           eigenvalues,
                                           time,
                                           centers, widths,
-                                          scale * irf_scale)
+                                          scale * irf_scale,
+                                          backsweep,
+                                          backsweep_period,
+                                          )
 
         if self._initial_concentrations is not None:
             self._apply_initial_concentration_vector(c_matrix,
@@ -161,7 +164,12 @@ class KineticCMatrix(CMatrix):
         else:
             scale = np.asarray(parameter_map(parameter)(self._irf.scale))
 
-        return centers, widths, scale
+        backsweep = 1 if self._irf.backsweep else 0
+
+        backsweep_period = parameter_idx_to_val(parameter)\
+            (self._irf.backsweep) if self._irf.backsweep else 0
+
+        return centers, widths, scale, backsweep, backsweep_period
 
     def _apply_initial_concentration_vector(self, c_matrix, eigenvectors,
                                             parameter, compartment_order):
