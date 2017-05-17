@@ -84,26 +84,29 @@ class KineticCMatrix(CMatrix):
             scale = parameter_idx_to_val(scale) if scale is not None else 1.0
             scale *= self.dataset_scaling(parameter)
 
-            self._calculate_for_k_matrix(c_matrix, compartment_order, k_matrix, parameter, scale)
+            self._calculate_for_k_matrix(c_matrix, compartment_order, k_matrix,
+                                         parameter, scale)
 
     def _k_matrices_and_scalings(self):
         for i in range(len(self._k_matrices)):
             yield self._k_matrices[i], self._megacomplex_scaling[i]
 
-    def _calculate_for_k_matrix(self, c_matrix, compartment_order, k_matrix, parameter, scale):
+    def _calculate_for_k_matrix(self, c_matrix, compartment_order, k_matrix,
+                                parameter, scale):
 
         # calculate k_matrix eigenvectos
         eigenvalues, eigenvectors = self._calculate_k_matrix_eigen(k_matrix,
                                                                    parameter)
 
         # we need this since the full c matrix can have more compartments then
-        # the kk matrix
+        # the k matrix
         compartment_idxs = [compartment_order.index(c) for c in
                             k_matrix.compartment_map]
 
         # get the time axis
         time = self.dataset.data.get_axis("time")
 
+        # calculate the c_matrix
         if self._irf is None:
             backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time,
                              scale)
@@ -166,8 +169,8 @@ class KineticCMatrix(CMatrix):
         initial_concentrations = \
             parameter_map(parameter)(self._initial_concentrations)
 
-        initial_concentration = \
-            [initial_concentration[compartment_order.index(c)] for c in
+        initial_concentrations = \
+            [initial_concentrations[compartment_order.index(c)] for c in
              self.compartment_order()]
 
         gamma = np.matmul(scipy.linalg.inv(eigenvectors),
