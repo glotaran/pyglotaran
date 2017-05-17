@@ -55,14 +55,13 @@ class MatrixGroupGenerator(object):
 
         dataset_group = []
         for _, group in self._groups.items():
-            slices = []
+            slice = np.array([])
             for mat in group.c_matrices:
                 x = np.where(mat.dataset.data.get_estimated_axis() ==
-                             mat.x)[0]
-                slices.append(mat.dataset.data.data[x, :])
-            slice = np.append([], slices)
+                             mat.x)
+                slice = np.concatenate((slice,
+                                        mat.dataset.data.data[x, :].flatten()))
             dataset_group.append(slice)
-
         return dataset_group
 
 

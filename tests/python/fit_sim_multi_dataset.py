@@ -3,7 +3,7 @@ import time
 import numpy as np
 from _shared import times_with_irf
 
-from glotaran.model.parameter_leaf import Parameters
+from glotaran.model.parameter_group import Parameters
 from glotaran.specification_parser import parse_yml
 
 # Initializing the (common) times and spectral_indices vectors:
