@@ -178,24 +178,19 @@ datasets:
         locations = [14700, 13515, 14180, False]
         delta = [400, 100, 300, False]
 
-        simparams.append({'shape': [{'amps': amps}, {'locs': locations},
+        simparams.append({'shape': [False, {'amps': amps}, {'locs': locations},
                          {'width': delta}]})
 
         model = parse_yml(fitspec.format(simparams))
 
         axies = {"time": times, "spectral": x}
 
-        print(model.parameter.as_parameters_dict().pretty_print())
-
         model.eval('dataset1', axies)
 
-        print(np.isnan(model.datasets['dataset1'].data.data).any())
-        print(np.isnan(model.c_matrix()).any())
         model.parameter.get("1").value = 300e-3
         model.parameter.get("2").value = 500e-4
         model.parameter.get("3").value = 700e-5
 
-        print(model.parameter.as_parameters_dict().pretty_print())
         result = model.fit()
         result.best_fit_parameter.pretty_print()
         for i in range(len(wanted_params)):

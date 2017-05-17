@@ -1,4 +1,3 @@
-from collections import Hashable
 import numpy as np
 
 
@@ -76,7 +75,7 @@ class Dataset(object):
         """
         if not isinstance(axis, (list, np.ndarray)):
             raise TypeError("Axis must be list or ndarray")
-        if any(not Hashable(v) for v in axis):
+        if any(not _hashable(v) for v in axis):
             raise ValueError("Axis must be list or ndarray of hashable values")
         self._axis[label] = axis
 
@@ -103,3 +102,11 @@ class Dataset(object):
         if len(data.shape) is not 2:
             raise ValueError("Dataset must be 2-dimensional")
         self._data = data
+
+
+def _hashable(value):
+    try:
+        {value: None}
+        return True
+    except:
+        return False
