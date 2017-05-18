@@ -9,7 +9,7 @@ import numpy
 import scipy
 import sys
 
-# TODO: ‘win32’ ok, else=linux/mac, what about ‘win-amd64’ and ‘win-ia64’?
+# TODO: 'win32' ok, else=linux/mac, what about 'win-amd64' and 'win-ia64'?
 if sys.platform == 'win32':
     ext_modules = [
         Extension("c_matrix",
