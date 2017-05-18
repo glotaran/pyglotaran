@@ -11,6 +11,8 @@ times1 = times_with_irf()
 times2 = np.concatenate((times_with_irf(),np.arange(3100, 3500, 100)))
 spectral_indices1 = np.asarray([1, 2])
 spectral_indices2 = np.asarray([2, 4])
+spectral_indices3 = np.asarray([1, 2])
+spectral_indices4 = np.asarray([3, 4])
 
 # Defining the parameter(s) for which the model will be initially evaluated
 # to produce the simulated data
@@ -84,9 +86,15 @@ time.sleep(1)
 print('times1.shape = {} and times1[0] = {}'.format(times1.shape, times1[0]))
 print('times2.shape = {} and times2[0] = {}'.format(times2.shape, times2[0]))
 time.sleep(1)
-specfit_model.eval('dataset1', {"spectral": spectral_indices1, "time": times1})
-specfit_model.eval('dataset2', {"spectral": spectral_indices2, "time": times2})
+specfit_model.eval('dataset1', {"spectral": spectral_indices1, "time": times1}, parameter=eval_pars)
+specfit_model.eval('dataset2', {"spectral": spectral_indices2, "time": times2}, parameter=eval_pars)
 
-specfit_result = specfit_model.fit()
-specfit_result.best_fit_parameter.pretty_print()
+specfit_result1 = specfit_model.fit()
+specfit_result1.best_fit_parameter.pretty_print()
+
+specfit_model.eval('dataset1', {"spectral": spectral_indices3, "time": times1}, parameter=eval_pars)
+specfit_model.eval('dataset2', {"spectral": spectral_indices4, "time": times2}, parameter=eval_pars)
+
+specfit_result2 = specfit_model.fit()
+specfit_result2.best_fit_parameter.pretty_print()
 
