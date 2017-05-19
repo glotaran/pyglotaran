@@ -107,6 +107,8 @@ irf:
     type: gaussian
     center: 1
     width: 2
+    backsweep: True
+    backsweep_period: 13200.0
 
 datasets:
   - label: dataset1
