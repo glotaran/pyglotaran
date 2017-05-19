@@ -60,7 +60,7 @@ class CompartmentConstraint(object):
             raise ValueError("Intervals must be of length 2")
         self._intervals = value
 
-    def applies(self, x):
+    def applies(self, x, intervals):
         """
         Returns true if x is in one of the intervals.
         Parameters
@@ -115,7 +115,7 @@ class EqualConstraint(CompartmentConstraint):
     targets: list of target compartments
     parameters: list of scaling parameter for the targets
     """
-    def __init__(self, compartment, intervals, targets, parameters:
+    def __init__(self, compartment, intervals, targets, parameters):
         self.targets = targets
         self.parameters = parameters
         super(EqualConstraint, self).__init__(compartment, intervals)
