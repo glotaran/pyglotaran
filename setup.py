@@ -1,14 +1,16 @@
-from setuptools import setup, Command
-from setuptools.extension import Extension
-import sys
 import os
-# TODO: include generated c and include switches if cython is not available ->
-# https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
-from Cython.Distutils import build_ext
+import sys
+
 # TODO: bootstrap numpy ->
 # https://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
 import numpy
 import scipy
+# TODO: include generated c and include switches if cython is not available ->
+# https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
+from Cython.Distutils import build_ext
+from setuptools import setup, Command
+from setuptools.extension import Extension
+
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
@@ -19,14 +21,6 @@ class CleanCommand(Command):
         pass
     def run(self):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.pyd ./*.tgz ./*.egg-info')
-
-# Further down when you call setup()
-setup(
-    # ... Other setup options
-    cmdclass={
-        'clean': CleanCommand,
-    }
-)
 
 # TODO: 'win32' ok, else=linux/mac, what about 'win-amd64' and 'win-ia64'?
 if sys.platform == 'win32':
