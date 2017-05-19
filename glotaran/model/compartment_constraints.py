@@ -175,15 +175,18 @@ class EqualConstraint(CompartmentConstraint):
 
 
 class EqualAreaConstraint(EqualConstraint):
-    """An equal area constraint is a CompartmentConstraint with a target
-    compartment, a parameter and a weigth.
+    """An equal area constraint adds a the differenc of the sum of a
+    compartements in the e matrix in one ore more intervals to the scaled sum of the
+    e matrix of one or more target compartmants to resiudal. The additional
+    residual is scaled with the weight.
 
     Parameters
     ----------
-
-    Returns
-    -------
-
+    compartment: label of the compartment
+    intervals: list of tuples representing intervals on the estimated axies
+    targets: list of target compartments
+    parameters: list of scaling parameter for the targets
+    weight: scaling factor for the residual
     """
     def __init__(self, compartment, intervals, target, parameter, weight):
         self.weight = weight
@@ -192,7 +195,7 @@ class EqualAreaConstraint(EqualConstraint):
 
     @property
     def weight(self):
-        """ """
+        """scaling factor for the residual"""
         return self._weight
 
     @weight.setter
@@ -201,12 +204,7 @@ class EqualAreaConstraint(EqualConstraint):
 
         Parameters
         ----------
-        value :
-
-
-        Returns
-        -------
-
+        value : scaling factor for the residual
         """
         if not isinstance(value, float):
             raise TypeError("Weight must be float.")
