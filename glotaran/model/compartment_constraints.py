@@ -35,8 +35,6 @@ class CompartmentConstraint(object):
         value : label of the compartment
 
         """
-        if not isinstance(value, int):
-            raise TypeError("Compartment must be an integer")
         self._compartement = value
 
     @property
@@ -125,25 +123,25 @@ class EqualConstraint(CompartmentConstraint):
         CompartmentConstraintType.equal
 
     @property
-    def target(self):
-        """ list of target compartments
-"""
-        return self._target
+    def targets(self):
+        """list of target compartments"""
+        return self._targets
 
-    @target.setter
-    def target(self, value):
+    @targets.setter
+    def targets(self, value):
         """
 
         Parameters
         ----------
         value :list of target compartments
         """
+        if not isinstance(value, list):
+            value = [value]
         self._targets = value
 
     @property
     def parameters(self):
-        """ list of scaling parameter for the targets
-"""
+        """list of scaling parameter for the targets"""
         return self._parameters
 
     @parameters.setter
@@ -154,12 +152,16 @@ class EqualConstraint(CompartmentConstraint):
         ----------
         value : list of scaling parameter for the targets
         """
-        if not len(value) == len(self._compartments):
-            raise ValueError("number of parameters != nr targets")
+        if not isinstance(value, list):
+            value = [value]
+        if not len(value) == len(self.targets):
+            raise ValueError("number of parameters({}) != nr"
+                             " targets({})".format(len(value),
+                                                   len(self.targets)))
         self._parameters = value
 
     def parameter_and_targets(self):
-        """genrates traget and parameter pairs """
+        """generates traget and parameter pairs """
         for i in range(len(self.parameters)):
             yield self.parameters[i], self.targets[i]
 

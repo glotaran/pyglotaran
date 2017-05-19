@@ -74,6 +74,37 @@ class TestParser(TestCase):
                 self.assertTrue("s2" in dataset.shapes)
                 self.assertEqual(dataset.shapes["s2"], "shape2")
 
+            else:
+                self.assertTrue(len(dataset.compartment_constraints) is 4)
+
+                self.assertTrue(any(isinstance(c, ZeroConstraint) for c in
+                                    dataset.compartment_constraints))
+
+                zcs = [zc for zc in dataset.compartment_constraints
+                       if isinstance(zc, ZeroConstraint)]
+                self.assertTrue(len(zcs) is 2)
+                for zc in zcs:
+                    self.assertEqual(zc.compartment, 's1')
+                    self.assertEqual(zc.intervals, [(1, 100), (2, 200)])
+
+                self.assertTrue(any(isinstance(c, EqualConstraint) for c in
+                                    dataset.compartment_constraints))
+                ec = [ec for ec in dataset.compartment_constraints
+                      if isinstance(ec, EqualConstraint)][0]
+                self.assertEqual(ec.compartment, 's2')
+                self.assertEqual(ec.intervals, [(60, 700)])
+                self.assertEqual(ec.targets, ['s1', 's2'])
+                self.assertEqual(ec.parameters, [54, 56])
+
+                self.assertTrue(any(isinstance(c, EqualAreaConstraint) for c in
+                                    dataset.compartment_constraints))
+                eac = [eac for eac in dataset.compartment_constraints
+                       if isinstance(eac, EqualAreaConstraint)][0]
+                self.assertEqual(eac.compartment, 's3')
+                self.assertEqual(eac.intervals, [(670, 810)])
+                self.assertEqual(eac.targets, ['s2'])
+                self.assertEqual(eac.parameters, [55])
+                self.assertEqual(eac.weight, 0.0016)
             i = i + 1
 
     def test_initial_concentration(self):
@@ -113,7 +144,7 @@ class TestParser(TestCase):
 
             if i is 1:
                 self.assertTrue(irf.backsweep)
-                self.assertEqual(irf.backsweep_period, 0.1)
+                self.assertEqual(irf.backsweep_period, 55)
             else:
                 self.assertFalse(irf.backsweep)
                 self.assertEqual(irf.backsweep_period, None)
@@ -156,38 +187,7 @@ class TestParser(TestCase):
             self.assertTrue(megacomplex.k_matrices == ["km{}".format(i)])
             i = i + 1
 
-    def test_compartment_constraints(self):
-        self.assertTrue(len(self.model.compartment_constraints) is 4)
-
-        self.assertTrue(any(isinstance(c, ZeroConstraint) for c in
-                            self.model.compartment_constraints))
-
-        zcs = [zc for zc in self.model.compartment_constraints
-               if isinstance(zc, ZeroConstraint)]
-        self.assertTrue(len(zcs) is 2)
-        for zc in zcs:
-            self.assertTrue(zc.compartment is 5)
-            self.assertTrue(zc.intervals == [(1, 100), (2, 200)])
-
-        self.assertTrue(any(isinstance(c, EqualConstraint) for c in
-                            self.model.compartment_constraints))
-        ec = [ec for ec in self.model.compartment_constraints
-              if isinstance(ec, EqualConstraint)][0]
-        self.assertTrue(ec.compartment is 5)
-        self.assertTrue(ec.intervals == [(60, 700)])
-        self.assertTrue(ec.target == 9)
-        self.assertTrue(ec.parameter == 54)
-
-        self.assertTrue(any(isinstance(c, EqualAreaConstraint) for c in
-                            self.model.compartment_constraints))
-        eac = [eac for eac in self.model.compartment_constraints
-               if isinstance(eac, EqualAreaConstraint)][0]
-        self.assertTrue(eac.compartment is 3)
-        self.assertTrue(eac.intervals == [(670, 810)])
-        self.assertTrue(eac.target == 1)
-        self.assertTrue(eac.parameter == 55)
-        self.assertTrue(eac.weight == 0.0016)
-
+    #TODO
     def tst_parameter_constraints(self):
         self.assertTrue(len(self.model.parameter_constraints) is 4)
 

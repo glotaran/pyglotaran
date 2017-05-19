@@ -5,7 +5,7 @@ from ast import literal_eval as make_tuple
 from collections import OrderedDict
 from .utils import get_keys_from_object, retrieve_optional
 from glotaran.models.spectral_temporal import (KMatrix,
-                                               KineticDatasetDescriptor,
+                                               SpectralTemporalDatasetDescriptor,
                                                KineticMegacomplex,
                                                KineticModel,
                                                GaussianIrf,
@@ -38,7 +38,7 @@ class KineticModelParser(ModelSpecParser):
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
                                dataset_scaling, compartment_scalings,
-                               dataset_spec):
+                               dataset_spec, compartment_constraints):
         irf = dataset_spec[KineticKeys.IRF] if KineticKeys.IRF \
             in dataset_spec else None
 
@@ -49,10 +49,10 @@ class KineticModelParser(ModelSpecParser):
                                                       KineticKeys.SHAPE])
                 shapes[c] = s
 
-        return KineticDatasetDescriptor(label, initial_concentration,
-                                        megacomplexes, megacomplex_scalings,
-                                        dataset_scaling, compartment_scalings,
-                                        irf, shapes)
+        return SpectralTemporalDatasetDescriptor(label, initial_concentration,
+                                                 megacomplexes, megacomplex_scalings,
+                                                 dataset_scaling, compartment_scalings,
+                                                 compartment_constraints, irf, shapes)
 
     def get_megacomplexes(self):
         if KineticKeys.K_MATRICES not in self.spec:

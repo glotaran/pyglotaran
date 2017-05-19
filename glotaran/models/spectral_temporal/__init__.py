@@ -9,7 +9,8 @@ from . import (
 
 # Dataset Descriptor
 
-KineticDatasetDescriptor = dataset_descriptor.KineticDatasetDescriptor
+SpectralTemporalDatasetDescriptor = \
+    dataset_descriptor.SpectralTemporalDatasetDescriptor
 
 # Irfs
 

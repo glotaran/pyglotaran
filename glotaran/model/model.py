@@ -21,7 +21,6 @@ class Model(object):
 
     def __init__(self):
 
-        self._compartment_constraints = None
         self._compartments = None
         self._datasets = OrderedDict()
         self._initial_concentrations = None
@@ -87,28 +86,6 @@ class Model(object):
             self.megacomplexes[megacomplex.label] = megacomplex
         else:
             self.megacomplexes = {megacomplex.label: megacomplex}
-
-    @property
-    def compartment_constraints(self):
-        return self._compartment_constraints
-
-    @compartment_constraints.setter
-    def compartment_constraints(self, value):
-        if not isinstance(value, list):
-            value = [value]
-        if any(not isinstance(val, CompartmentConstraint) for val in value):
-            raise TypeError("CompartmentConstraint must be instance of class"
-                            " 'CompartmentConstraint'")
-        self._compartment_constraints = value
-
-    def add_compartment_constraint(self, constraint):
-        if not issubclass(type(constraint), CompartmentConstraint):
-            raise TypeError("CompartmentConstraint must be instance of class"
-                            " 'CompartmentConstraint'")
-        if self.compartment_constraints is not None:
-            self.compartment_constraints.append(constraint)
-        else:
-            self.compartment_constraints = constraint
 
     def data(self):
         for _, d in self.datasets.items():
