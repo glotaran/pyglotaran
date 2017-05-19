@@ -46,6 +46,23 @@ datasets:
       - megacomplex: cmplx1 # optional
         parameter: [1, 2] # 75th parameter
       - [cmplx2, [1, 2]] # alternative, order matters!
+    compartment_constraints:
+      - type: zero
+        compartment: s1
+        intervals: ['(1,100)', '(2,200)']
+      - [zero, s1, ['(1,100)', '(2,200)']]
+      - type: equal
+        compartment: s2
+        intervals: ['(60, 700)']
+        targets: [s1, s2]
+        parameters: [54, 56] # usually fixed
+      - type: equal_area
+        compartment: s3
+        intervals: ['(670, 810)']
+        targets: s2
+        parameters: 55 # usually fixed
+        weight: 0.0016
+        # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 
 irf: #specific to kinetic or spectro_temporal model
   - label: irf1
@@ -55,7 +72,7 @@ irf: #specific to kinetic or spectro_temporal model
     center_dispersion: [3] # dispersion is of 1st order
     width_dispersion: [4] # dispersion is of 1st order
     backsweep: True
-    backsweep_period: 0.1
+    backsweep_period: 55
   - [irf2, gaussian, [1, 2], [3,4], [5,6], [7,8], [9,10], true] # compact
 
 initial_concentration: #equal to the total number of compartments
@@ -93,24 +110,6 @@ megacomplexes:
     - label: cmplx2
       k_matrices: km2
     - [cmplx3, [km3]]
-
-compartment_constraints:
-  - type: zero
-    compartment: 5
-    intervals: ['(1,100)', '(2,200)']
-  - [zero, 5, ['(1,100)', '(2,200)']]
-  - type: equal
-    compartment: 5
-    intervals: ['(60, 700)']
-    target: 9
-    parameter: 54 # usually fixed
-  - type: equal_area
-    compartment: 3
-    intervals: ['(670, 810)']
-    target: 1
-    parameter: 55 # usually fixed
-    weight: 0.0016
-    # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 
 # put relations into parameters?
 relations:

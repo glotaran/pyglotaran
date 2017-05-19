@@ -42,7 +42,7 @@ class Keys:
     RANGE = "range"
     SCALING = "scaling"
     SUBBLOCKS = "sub_blocks"
-    TARGET = "target"
+    TARGETS = "targets"
     TO = "to"
     TYPE = 'type'
     VALUE = 'value'
@@ -85,7 +85,8 @@ class ModelSpecParser(object):
 
     def get_dataset_descriptor(self, label, initial_concentration,
                                megacomplexes, megacomplex_scalings,
-                               dataset_scaling, compartment_scalings):
+                               dataset_scaling, compartment_scalings,
+                               compartment_constraints):
         raise NotImplementedError
 
     def get_dataset(self, dataset_spec):
@@ -117,6 +118,9 @@ class ModelSpecParser(object):
                                                             Keys.PARAMETER])
                 compartment_scalings[c] = param
 
+        compartment_constraints = \
+            self.get_compartment_constraints(dataset_spec)
+
         self.model.add_dataset(
             self.get_dataset_descriptor(label,
                                         initial_concentration,
@@ -124,7 +128,9 @@ class ModelSpecParser(object):
                                         cmplx_scalings,
                                         dataset_scaling,
                                         compartment_scalings,
-                                        dataset_spec))
+                                        dataset_spec,
+                                        compartment_constraints,
+                                        ))
 
     def get_dataset_additionals(self, dataset, dataset_spec):
         raise NotImplementedError
@@ -194,7 +200,6 @@ class ModelSpecParser(object):
         if Keys.PARAMETER_CONSTRAINTS not in self.spec:
             return
         for constraint in self.spec[Keys.PARAMETER_CONSTRAINTS]:
-            print(constraint)
             (type,) = get_keys_from_object(constraint, [Keys.TYPE])
 
             if type == Keys.FIX:
@@ -222,10 +227,11 @@ class ModelSpecParser(object):
                     if min is not None:
                         self.model.parameter.get(p).min = float(min)
 
-    def get_compartment_constraints(self):
-        if Keys.COMPARTMENT_CONSTRAINTS not in self.spec:
-            return
-        for constraint in self.spec[Keys.COMPARTMENT_CONSTRAINTS]:
+    def get_compartment_constraints(self, dataset_spec):
+        if Keys.COMPARTMENT_CONSTRAINTS not in dataset_spec:
+            return []
+        constraints = []
+        for constraint in dataset_spec[Keys.COMPARTMENT_CONSTRAINTS]:
             (tpe, c, intv) = get_keys_from_object(constraint,
                                                   [Keys.TYPE,
                                                    Keys.COMPARTMENT,
@@ -234,25 +240,24 @@ class ModelSpecParser(object):
             for interval in intv:
                 intervals.append(make_tuple(interval))
             if tpe == Keys.ZERO:
-                self.model.add_compartment_constraint(
-                    ZeroConstraint(c, intervals))
+                constraints.append(ZeroConstraint(c, intervals))
 
             else:
                 (target, param) = get_keys_from_object(constraint,
-                                                       [Keys.TARGET,
-                                                        Keys.PARAMETER],
+                                                       [Keys.TARGETS,
+                                                        Keys.PARAMETERS],
                                                        start=3)
-
                 if tpe == Keys.EQUAL:
-                    self.model.add_compartment_constraint(
+                    constraints.append(
                         EqualConstraint(c, intervals, target, param))
                 elif tpe == Keys.EQUAL_AREA:
                     (weight,) = get_keys_from_object(constraint,
                                                      [Keys.WEIGHT],
                                                      start=5)
-                    self.model.add_compartment_constraint(
-                        EqualAreaConstraint(c, intervals, target, param,
-                                            weight))
+                    constraints.append(
+                        EqualAreaConstraint(c, intervals, target,
+                                            param, weight))
+        return constraints
 
     def get_initial_concentrations(self):
         if Keys.INITIAL_CONCENTRATION not in self.spec:
@@ -271,7 +276,6 @@ class ModelSpecParser(object):
         self.get_compartments()
         self.get_parameters()
         self.get_parameter_constraints()
-        self.get_compartment_constraints()
         self.get_initial_concentrations()
         self.get_megacomplexes()
         self.get_datasets()
