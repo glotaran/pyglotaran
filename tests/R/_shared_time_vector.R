@@ -9,7 +9,7 @@ times_no_IRF <- c(
            shared_times
          )
 
-times <- c(head(seq(-10, -1, by=0.1),-1),
+times_with_IRF <- c(head(seq(-10, -1, by=0.1),-1),
            head(seq(-1, 10, by=0.01),-1),
            shared_times)
 
