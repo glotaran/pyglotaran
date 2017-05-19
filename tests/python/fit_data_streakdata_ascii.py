@@ -86,6 +86,7 @@ parameters:
  - 0.06
  - 0.02
  - 0.00016
+ - [13200.0, {vary: false}]
 
 compartments: [s1, s2, s3, s4]
 
@@ -108,7 +109,7 @@ irf:
     center: 1
     width: 2
     backsweep: True
-    backsweep_period: 13200.0
+    backsweep_period: 7
 
 datasets:
   - label: dataset1
