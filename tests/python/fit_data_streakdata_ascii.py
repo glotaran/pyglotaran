@@ -107,6 +107,8 @@ irf:
     type: gaussian
     center: 1
     width: 2
+    backsweep: True
+    backsweep_period: 13200.0
 
 datasets:
   - label: dataset1
@@ -141,7 +143,6 @@ residual_svd = specfit_result.final_residual_svd()
 # TODO: getting e_matrix still crashes
 spectra = specfit_result.e_matrix('dataset1')
 #TODO: spectra is a list of length(timepoints) - this is too much
-print("spectra.shape = {}",spectra.shape[0])
 plt.plot(wavelengths, spectra[0])
 
 
