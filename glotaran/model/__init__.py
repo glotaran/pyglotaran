@@ -17,6 +17,7 @@ from . import (
 CMatrix = c_matrix.CMatrix
 
 # Compartment Constraints
+CompartmentConstraintType = compartment_constraints.CompartmentConstraintType
 ZeroConstraint = compartment_constraints.ZeroConstraint
 EqualConstraint = compartment_constraints.EqualConstraint
 EqualAreaConstraint = compartment_constraints.EqualAreaConstraint

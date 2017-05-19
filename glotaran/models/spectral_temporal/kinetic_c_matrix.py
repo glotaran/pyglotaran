@@ -3,6 +3,7 @@ import scipy.linalg
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
 from glotaran.fitmodel import parameter_map, parameter_idx_to_val, CMatrix
+from glotaran.model import CompartmentConstraintType
 
 
 backend = CMatrixCython()
@@ -103,6 +104,17 @@ class KineticCMatrix(CMatrix):
         compartment_idxs = [compartment_order.index(c) for c in
                             k_matrix.compartment_map]
 
+        # get constraint compartment indeces
+        constraint_compartments = [c.compartment for c in
+                                   self.dataset.compartment_constraints if
+                                   c.applies(self.x) and c.type() is not
+                                   CompartmentConstraintType.equal_area]
+        constraint_idx = [k_matrix.compartment_map.index(c) for c in
+                          constraint_compartments]
+
+        eigenvalues = np.delete(eigenvalues, constraint_idx)
+        compartment_idxs = np.delete(compartment_idxs, constraint_idx)
+
         # get the time axis
         time = self.dataset.data.get_axis("time")
 
@@ -122,6 +134,15 @@ class KineticCMatrix(CMatrix):
                                           backsweep,
                                           backsweep_period,
                                           )
+        # Apply equal equal constraints
+        for c in self.dataset.compartment_constraints:
+            if c.type() is CompartmentConstraintType.equal and \
+              c.applies(self.x):
+                idx = compartment_order.index(c.compartment)
+                for target, param in c.targets_and_parameter:
+                    t_idx = compartment_order.index(target)
+                    param = parameter_idx_to_val(parameter)(param)
+                    c_matrix[:, idx] += param * c_matrix[:, t_idx]
 
         if self._initial_concentrations is not None:
             self._apply_initial_concentration_vector(c_matrix,
