@@ -43,7 +43,13 @@ def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, dou
             else:
                 C[n_t, n_c] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
             if backsweep != 0:
-                x1 = exp(-k_n) * (t_n - mu + backsweep_period)
-                x2 = exp(-k_n) * ((backsweep_period / 2) - (t_n - mu))
-                x3 = exp(-k_n * backsweep_period)
-                C[n_t, n_c] = (x1 + x2) / (1 - x3)
+                x1 = -exp(-k_n * (t_n - mu + backsweep_period))
+                x2 = -exp(-k_n * ((backsweep_period / 2) - (t_n - mu)))
+                x3 = -exp(-k_n * backsweep_period)
+                print("C={} - streak= {}".format(C[n_t, n_c],(x1 + x2) / (1 - x3)))
+                C[n_t, n_c] += (x1 + x2) / (1 - x3)
+            #if backsweep != 0:
+            #    x1 = exp(-k_n) * (t_n - mu + backsweep_period)
+            #    x2 = exp(-k_n) * ((backsweep_period / 2) - (t_n - mu))
+            #    x3 = exp(-k_n * backsweep_period)
+            #    C[n_t, n_c] = (x1 + x2) / (1 - x3)

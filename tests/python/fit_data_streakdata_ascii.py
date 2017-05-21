@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from glotaran.io.wavelength_time_explicit_file import ExplicitFile
 from glotaran.plotting.basic_plots import plot_data
 from glotaran.specification_parser import parse_yml
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+root_data_path = os.path.join(THIS_DIR, '..', 'resources', 'data', 'streakdata.ascii')
 
 # Settings:
 reproduce_figures_from_paper = True
