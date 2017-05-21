@@ -1,5 +1,4 @@
 # TIMP data
-*.ascii
 *.RData
 *.Rhistory
 

@@ -13,9 +13,7 @@ root_data_path = os.path.join(THIS_DIR, '..', 'resources', 'data', 'streakdata.a
 # Settings:
 reproduce_figures_from_paper = True
 # Read in streakdata.ascii from resources/data sub-folder
-data_file_te = ExplicitFile('../resources/data/streakdata.ascii')
-#data_file_te = ExplicitFile('C:\\src\\glotaran\\tests\\resources\\data\\streakdata.ascii')
-#data_file_te.read("streakdata.ascii")
+data_file_te = ExplicitFile(root_data_path)
 dataset_te = data_file_te.read("dataset1")
 #dataset_te = data_file_te.dataset()
 times = dataset_te.get_axis("time")
@@ -125,7 +123,7 @@ datasets:
 '''
 
 specfit_model = parse_yml(fitspec)
-print(specfit_model)
+# print(specfit_model)
 times = np.asarray(dataset_te.get_axis("time"))
 wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
