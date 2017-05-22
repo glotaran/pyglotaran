@@ -1,11 +1,11 @@
 import numpy as np
 
-from glotaran.fitmodel import CMatrix, parameter_idx_to_val
+from glotaran.fitmodel import Matrix, parameter_idx_to_val
 
 from .spectral_shape_gaussian import SpectralShapeGaussian
 
 
-class SpectralCMatrix(CMatrix):
+class SpectralCMatrix(Matrix):
     def __init__(self, x, dataset, model):
         super(SpectralCMatrix, self).__init__(x, dataset, model)
 
@@ -29,9 +29,8 @@ class SpectralCMatrix(CMatrix):
         return self._compartment_order
 
     def shape(self):
-        shapes = self._shapes
         x = self.dataset.data.spectral_axis
-        return (x.shape[0], len(shapes))
+        return (x.shape[0], len(self.compartment_order()))
 
     def calculate(self, c_matrix, compartment_order, parameter):
         shapes = self._shapes

@@ -2,14 +2,14 @@ import numpy as np
 import scipy.linalg
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
-from glotaran.fitmodel import parameter_map, parameter_idx_to_val, CMatrix
+from glotaran.fitmodel import parameter_map, parameter_idx_to_val, Matrix
 from glotaran.model import CompartmentConstraintType
 
 
 backend = CMatrixCython()
 
 
-class KineticCMatrix(CMatrix):
+class KineticCMatrix(Matrix):
     def __init__(self, x, dataset, model):
 
         super(KineticCMatrix, self).__init__(x, dataset, model)

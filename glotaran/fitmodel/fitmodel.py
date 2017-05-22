@@ -47,22 +47,15 @@ class FitModel(SeparableModel):
         return gen.calculate(parameter)
 
     def e_matrix(self, parameter, *args, **kwargs):
-        parameter = parameter.valuesdict()
 
-        if "dataset" in kwargs:
-            dataset = kwargs["dataset"]
-            gen = MatrixGroupGenerator.for_dataset(self._model, dataset,
-                                                   self._model.
-                                                   estimated_matrix(),
-                                                   calculated=True)
-        else:
-            gen = self._generator
-            if gen is None:
-                gen = MatrixGroupGenerator.for_model(self._model,
-                                                     self._model.
-                                                     estimated_matrix(),
-                                                     calculated=True)
-        return gen.calculate(parameter)
+        if "dataset" not in kwargs:
+            raise Exception("'dataset' non specified in kwargs")
+
+        parameter = parameter.valuesdict()
+        dataset = self._model.datasets[kwargs["dataset"]]
+        x = kwargs["x"] if "x" in kwargs else 0
+        e_matrix = self._model.estimated_matrix()(x, dataset, self._model)
+        return e_matrix.calculate_standalone(parameter)
 
 
 def isclass(obj, classname):

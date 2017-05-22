@@ -1,10 +1,10 @@
 import numpy as np
 
-from . import (c_matrix, matrix_group_generator, fitmodel)
+from . import (matrix, matrix_group_generator, fitmodel)
 
 FitModel = fitmodel.FitModel
 MatrixGroupGenerator = matrix_group_generator.MatrixGroupGenerator
-CMatrix = c_matrix.CMatrix
+Matrix = matrix.Matrix
 
 
 def parameter_map(parameter):
