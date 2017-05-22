@@ -42,6 +42,7 @@ class Keys:
     RANGE = "range"
     SCALING = "scaling"
     SUBBLOCKS = "sub_blocks"
+    TARGET = "target"
     TARGETS = "targets"
     TO = "to"
     TYPE = 'type'
@@ -243,14 +244,18 @@ class ModelSpecParser(object):
                 constraints.append(ZeroConstraint(c, intervals))
 
             else:
-                (target, param) = get_keys_from_object(constraint,
-                                                       [Keys.TARGETS,
-                                                        Keys.PARAMETERS],
-                                                       start=3)
                 if tpe == Keys.EQUAL:
+                    (target, param) = get_keys_from_object(constraint,
+                                                           [Keys.TARGETS,
+                                                            Keys.PARAMETERS],
+                                                           start=3)
                     constraints.append(
                         EqualConstraint(c, intervals, target, param))
                 elif tpe == Keys.EQUAL_AREA:
+                    (target, param) = get_keys_from_object(constraint,
+                                                           [Keys.TARGET,
+                                                            Keys.PARAMETER],
+                                                           start=3)
                     (weight,) = get_keys_from_object(constraint,
                                                      [Keys.WEIGHT],
                                                      start=5)

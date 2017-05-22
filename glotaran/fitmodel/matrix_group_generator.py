@@ -32,21 +32,24 @@ class MatrixGroupGenerator(object):
                 else dataset.data.get_estimated_axis()
         for matrix in [self._matrix(x, dataset, model) for x
                        in grouping_axis]:
-            self._add_c_matrix_to_group(matrix, xtol)
+            self._add_matrix_to_group(matrix, xtol)
 
-    def _add_c_matrix_to_group(self, matrix, xtol):
+    def _add_matrix_to_group(self, matrix, xtol):
                 if matrix.x in self._groups:
-                    self._groups[matrix.x].add_cmatrix(matrix)
+                    self._groups[matrix.x].add_matrix(matrix)
                 elif any(abs(matrix.x-val) < xtol for val in self._groups):
                     idx = [val for val in self._groups if abs(matrix.x-val) <
                            xtol][0]
-                    self._groups[idx].add_cmatrix(matrix)
+                    self._groups[idx].add_matrix(matrix)
                 else:
                     self._groups[matrix.x] = MatrixGroup(matrix)
 
     def groups(self):
         for _, group in self._groups.items():
             yield group
+
+    def groups_in_range(self, range):
+        return [g for g in self.groups if range[0] <= g.x <= range[1]]
 
     def calculate(self, parameter):
         return [group.calculate(parameter) for group in self.groups()]
@@ -56,7 +59,7 @@ class MatrixGroupGenerator(object):
         dataset_group = []
         for _, group in self._groups.items():
             slice = np.array([])
-            for mat in group.c_matrices:
+            for mat in group.matrices:
                 x = np.where(mat.dataset.data.get_estimated_axis() ==
                              mat.x)
                 slice = np.concatenate((slice,

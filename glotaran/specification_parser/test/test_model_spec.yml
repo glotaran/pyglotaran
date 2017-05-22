@@ -59,8 +59,8 @@ datasets:
       - type: equal_area
         compartment: s3
         intervals: ['(670, 810)']
-        targets: s2
-        parameters: 55 # usually fixed
+        target: s2
+        parameter: 55 # usually fixed
         weight: 0.0016
         # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 
@@ -128,7 +128,7 @@ parameters:
   - nan
   - [1.78, "spectral_equality", {vary: false}] #p4
   - [1.78, "boundparam", false, {min: 0, max: 10}] # the value will set to bound if initally out of
-  - [1.78, "relatedparam", true, {max: 2, expr: "p.1 + 3"}] # having a leation implies vary false, will overwrite!
+  - [1.78, "relatedparam", true, {max: 2, expr: "p_1 + 3"}] # having a leation implies vary false, will overwrite!
   - kinpar: [[0.2, "k1"], [0.01], [0.0002, "kf"]] #parameter 5, 6, 7
   - shape: [false, 2.2, [0.35, rocks], [2.2, myparam]] # this block will not be fitted
   - testblock: [1,2,3,7]

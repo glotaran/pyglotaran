@@ -1,4 +1,4 @@
-from lmfit_varpro import SeparableModel
+from lmfit_varpro import CompartmentEqualityConstraint, SeparableModel
 
 from .matrix_group_generator import MatrixGroupGenerator
 from .result import Result
@@ -18,7 +18,9 @@ class FitModel(SeparableModel):
         return self._dataset_group
 
     def fit(self, *args, **kwargs):
+
         result = self.result(*args, **kwargs)
+
         result.fit(*args, **kwargs)
         return result
 
@@ -27,8 +29,22 @@ class FitModel(SeparableModel):
                                                          self._model.
                                                          calculated_matrix())
         self._dataset_group = self._generator.create_dataset_group()
+        c_constraints = []
+        for _, dataset in self._model.datasets.items():
+            constraints = [c for c in dataset.compartment_constraints if
+                           c.type() == 2]
+
+            for c in constraints:
+                for interval in c.intervals:
+                    g = list(self._generator.groups_in_range(interval))[0]
+                    crange = g.get_dataset_location(dataset)
+                    i = g.compartment_order.index(c.target)
+                    j = g.compartment_order.index(c.compartment)
+                    c_constraints.append(
+                        CompartmentEqualityConstraint(c.weight, i, j, interval,
+                                                      crange))
         result = Result(self, self.get_initial_fitting_parameter(),
-                        *args, **kwargs)
+                        c_constraints, *args, **kwargs)
         return result
 
     def c_matrix(self, parameter, *args, **kwargs):

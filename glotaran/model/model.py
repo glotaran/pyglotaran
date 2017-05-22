@@ -152,12 +152,6 @@ class Model(object):
         for m in self._megacomplexes:
             s += "{}\n".format(self._megacomplexes[m])
 
-        if self.compartment_constraints is not None:
-            s += "\nCompartment Constraints\n------------------------\n\n"
-
-            for c in self._compartment_constraints:
-                s += "{}\n".format(c)
-
         if self.initial_concentrations is not None:
             s += "\nInitital Concentrations\n-----------------------\n\n"
 

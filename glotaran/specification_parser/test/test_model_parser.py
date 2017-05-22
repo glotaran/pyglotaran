@@ -23,11 +23,10 @@ THIS_DIR = dirname(abspath(__file__))
 class TestParser(TestCase):
 
     def setUp(self):
-        print(getcwd())
         spec_path = join(THIS_DIR, 'test_model_spec.yml')
         self.model = parse_file(spec_path)
 
-    def print_model_spec(self):
+    def test_print_model_spec(self):
         print(self.model)
 
     def test_compartments(self):
@@ -102,8 +101,8 @@ class TestParser(TestCase):
                        if isinstance(eac, EqualAreaConstraint)][0]
                 self.assertEqual(eac.compartment, 's3')
                 self.assertEqual(eac.intervals, [(670, 810)])
-                self.assertEqual(eac.targets, ['s2'])
-                self.assertEqual(eac.parameters, [55])
+                self.assertEqual(eac.target, 's2')
+                self.assertEqual(eac.parameter, 55)
                 self.assertEqual(eac.weight, 0.0016)
             i = i + 1
 
@@ -187,30 +186,6 @@ class TestParser(TestCase):
             self.assertTrue(megacomplex.k_matrices == ["km{}".format(i)])
             i = i + 1
 
-    #TODO
-    def tst_parameter_constraints(self):
-        self.assertTrue(len(self.model.parameter_constraints) is 4)
-
-        pc = self.model.parameter_constraints[0]
-        self.assertTrue(isinstance(pc, FixedConstraint))
-        self.assertEqual(pc.parameter, [1, 2, 3, 54])
-
-        pc = self.model.parameter_constraints[1]
-        self.assertTrue(isinstance(pc, FixedConstraint))
-        self.assertEqual(pc.parameter, [1, 2, 3])
-
-        pc = self.model.parameter_constraints[2]
-        self.assertTrue(isinstance(pc, BoundConstraint))
-        self.assertEqual(pc.parameter, list(range(100, 150)))
-        self.assertEqual(pc.lower, 0)
-        self.assertEqual(pc.upper, "NaN")
-
-        pc = self.model.parameter_constraints[3]
-        self.assertTrue(isinstance(pc, BoundConstraint))
-        self.assertEqual(pc.parameter, list(range(100, 120)))
-        self.assertEqual(pc.lower, "NaN")
-        self.assertEqual(pc.upper, 7e-8)
-
     def test_parameter(self):
         allp = list(self.model.parameter.all_group())
         self.assertEqual(len(allp), 10)
@@ -259,7 +234,7 @@ class TestParser(TestCase):
         self.assertEqual(p.value, 1.78)
         self.assertFalse(p.vary)
         self.assertEqual(p.max, 2)
-        self.assertEqual(p.expr, 'p.1 + 3')
+        self.assertEqual(p.expr, 'p_1 + 3')
 
         p = self.model.parameter.get('kinpar.k1')
         self.assertEqual(p.label, 'k1')

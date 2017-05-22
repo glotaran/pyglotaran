@@ -176,10 +176,10 @@ class EqualConstraint(CompartmentConstraint):
                                                     self.parameter)
 
 
-class EqualAreaConstraint(EqualConstraint):
+class EqualAreaConstraint(CompartmentConstraint):
     """An equal area constraint adds a the differenc of the sum of a
-    compartements in the e matrix in one ore more intervals to the scaled sum of the
-    e matrix of one or more target compartmants to resiudal. The additional
+    compartements in the e matrix in one ore more intervals to the scaled sum
+    of the e matrix of one or more target compartmants to resiudal. The additional
     residual is scaled with the weight.
 
     Parameters
@@ -191,9 +191,10 @@ class EqualAreaConstraint(EqualConstraint):
     weight: scaling factor for the residual
     """
     def __init__(self, compartment, intervals, target, parameter, weight):
+        self.parameter = parameter
+        self.target = target
         self.weight = weight
-        super(EqualAreaConstraint, self).__init__(compartment, intervals,
-                                                  target, parameter)
+        super(EqualAreaConstraint, self).__init__(compartment, intervals)
 
     @property
     def weight(self):
@@ -212,6 +213,36 @@ class EqualAreaConstraint(EqualConstraint):
             raise TypeError("Weight must be float.")
         self._weight = value
 
+    @property
+    def target(self):
+        """target compartment"""
+        return self._target
+
+    @target.setter
+    def target(self, value):
+        """
+
+        Parameters
+        ----------
+        value : target compartment
+        """
+        self._target = value
+
+    @property
+    def parameter(self):
+        """scaling parameter for the target"""
+        return self._parameter
+
+    @parameter.setter
+    def parameter(self, value):
+        """
+
+        Parameters
+        ----------
+        value : scaling parameter for the target
+        """
+        self._parameter = value
+
     def type(self):
         """ """
         return CompartmentConstraintType.equal_area
@@ -221,5 +252,6 @@ class EqualAreaConstraint(EqualConstraint):
         return "Equal Area"
 
     def __str__(self):
-        return "{} Weight: {}".format(super(EqualAreaConstraint,
-                                            self).__str__(), self.weight)
+        return "{}\tTarget: {}\tParameter: {}\tWeight: {}"\
+                .format(super(EqualAreaConstraint, self).__str__(),
+                        self.target, self.parameter, self.weight)
