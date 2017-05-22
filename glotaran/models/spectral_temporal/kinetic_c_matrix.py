@@ -188,7 +188,7 @@ class KineticCMatrix(CMatrix):
         backsweep = 1 if self._irf.backsweep else 0
 
         backsweep_period = \
-            parameter_idx_to_val(parameter)(self._irf.backsweep_period) \
+            parameter_idx_to_val(parameter, self._irf.backsweep_period) \
             if self._irf.backsweep else 0
 
         return centers, widths, scale, backsweep, backsweep_period
