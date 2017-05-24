@@ -39,10 +39,10 @@ class Model(object):
     def estimated_matrix(self):
         raise NotImplementedError
 
-    def fit(self, *args, **kwargs):
+    def fit(self, nnls=False, *args, **kwargs):
         if any([dset.data is None for _, dset in self.datasets.items()]):
             raise Exception("Model datasets not initialized")
-        return self.fit_model().fit(*args, **kwargs)
+        return self.fit_model().fit(nnls, *args, **kwargs)
 
     def fit_model(self):
         return FitModel(self)

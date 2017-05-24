@@ -17,14 +17,14 @@ class FitModel(SeparableModel):
     def data(self, **kwargs):
         return self._dataset_group
 
-    def fit(self, *args, **kwargs):
+    def fit(self, nnls=False, *args, **kwargs):
 
-        result = self.result(*args, **kwargs)
+        result = self.result(nnls, *args, **kwargs)
 
         result.fit(*args, **kwargs)
         return result
 
-    def result(self, *args, **kwargs):
+    def result(self, nnls, *args, **kwargs):
         self._generator = MatrixGroupGenerator.for_model(self._model,
                                                          self._model.
                                                          calculated_matrix())
@@ -44,7 +44,8 @@ class FitModel(SeparableModel):
                         CompartmentEqualityConstraint(c.weight, i, j, interval,
                                                       crange))
         result = Result(self, self.get_initial_fitting_parameter(),
-                        c_constraints, *args, **kwargs)
+                        equality_constraints=c_constraints, nnls=nnls,
+                        *args, **kwargs)
         return result
 
     def c_matrix(self, parameter, *args, **kwargs):
