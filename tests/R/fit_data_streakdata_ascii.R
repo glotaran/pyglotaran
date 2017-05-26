@@ -1,8 +1,8 @@
-require(TIMP)
+# require(TIMP)
 # Determine the local dir:
 # http://stackoverflow.com/questions/3452086/getting-path-of-an-r-script
-# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-getSrcDirectory(function(x) {x})
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+#getSrcDirectory(function(x) {x})
 gtaDataset1 <- readData('../resources/data/streakdata.ascii')
 
 # R Call for the TIMP function "initModel": 
@@ -17,9 +17,29 @@ gtaModel1 <- initModel(mod_type = "kin",
                        fixed = list(clpequ=1:0),
                        seqmod = FALSE)
 
+kmat <- array(0, dim=c(4,4,2))
+kmat[1,1,1] <- 1
+kmat[2,2,1] <- 2
+kmat[3,3,1] <- 3
+kmat[4,4,1] <- 4
+jvec=c(1,1,1,1)
+
+gtaModel2 <- initModel(mod_type = "kin",
+                       kinpar = c(0.15,0.03,0.01,2.0E-4),
+                       irffun = "gaus",
+                       irfpar = c(-82.0,0.5), 
+                       kmat=kmat,
+                       jvec=jvec,
+                       streak = TRUE, 
+                       streakT = 13200.0,
+                       positivepar=vector(),
+                       cohspec = list(type = ""),
+                       fixed = list(clpequ=1:0),
+                       seqmod = FALSE)
+
 # R Call for the TIMP function "fitModel": 
 gtaFitResult <- fitModel(data = list(gtaDataset1),
-                         modspec = list(gtaModel1),
+                         modspec = list(gtaModel2),
                          modeldiffs = list(linkclp = list(c(1))),
                          opt = kinopt(iter = 15, 
                                       nnls = FALSE, 
