@@ -82,13 +82,13 @@ fitspec = '''
 type: kinetic
 
 parameters: 
- - -81.0
- - 1.6
+ - -83.0
+ - 1.5
  - 0.2
- - 0.06
  - 0.02
+ - 0.07
  - 0.00016
- - [13200.0, {vary: false}]
+ - 13200.0
 
 compartments: [s1, s2, s3, s4]
 
@@ -123,7 +123,7 @@ datasets:
 '''
 
 specfit_model = parse_yml(fitspec)
-# print(specfit_model)
+#print(specfit_model)
 times = np.asarray(dataset_te.get_axis("time"))
 wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
@@ -147,6 +147,3 @@ residual_svd = specfit_result.final_residual_svd()
 spectra = specfit_result.e_matrix('dataset1')
 #TODO: spectra is a list of length(timepoints) - this is too much
 plt.plot(wavelengths, spectra[0])
-
-
-

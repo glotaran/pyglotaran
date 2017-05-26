@@ -22,20 +22,21 @@ def __init__():
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, double mu, double
+def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] x, double mu, double
                   delta, double scale, int backsweep, double backsweep_period):
-    nr_times = T.shape[0]
+    nr_times = x.shape[0]
     nr_comps = k.shape[0]
     cdef int n_c, n_t, n_k
     cdef double t_n, k_n, thresh, alpha, beta#term_1, term_2
     for n_k in range(nr_comps):
         k_n = k[n_k]
+        #print("k_n: {}, mu: {}, scale: {}".format(k_n, mu, scale))
         if k_n == 0:
             continue
         n_c = idxs[n_k]
         alpha = (k_n * delta) / sqrt(2)
         for n_t in range(nr_times):
-            t_n = T[n_t]
+            t_n = x[n_t]
             beta = (t_n - mu) / (delta * sqrt(2))
             thresh = beta - alpha
             if thresh < -1 :
@@ -43,15 +44,7 @@ def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, dou
             else:
                 C[n_t, n_c] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
             if backsweep != 0:
-                x1 = -exp(-k_n * (t_n - mu + backsweep_period))
-                x2 = -exp(-k_n * ((backsweep_period / 2) - (t_n - mu)))
+                x1 = exp(-k_n * (t_n - mu + backsweep_period))
+                x2 = exp(-k_n * ((backsweep_period / 2) - (t_n - mu)))
                 x3 = exp(-k_n * backsweep_period)
-                if n_t==499:
-                    print("backsweep: k_n = {}, n_t = {}, mu = {}, T = {}".format(k_n,t_n,mu,backsweep_period))
-                    print("C={} - streak= {}, x1 = {}, x2= {}, x3 = {}".format(C[n_t, n_c],(x1 + x2) / (1 - x3),x1,x2,x3))
                 C[n_t, n_c] += (x1 + x2) / (1 - x3)
-            #if backsweep != 0:
-            #    x1 = exp(-k_n) * (t_n - mu + backsweep_period)
-            #    x2 = exp(-k_n) * ((backsweep_period / 2) - (t_n - mu))
-            #    x3 = exp(-k_n * backsweep_period)
-            #    C[n_t, n_c] = (x1 + x2) / (1 - x3)
