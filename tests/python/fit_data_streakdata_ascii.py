@@ -88,7 +88,15 @@ parameters:
  - 0.02
  - 0.07
  - 0.00016
- - 13200.0
+ - {}
+
+irf:
+  - label: irf
+    type: gaussian
+    center: 1
+    width: 2
+    backsweep: True
+    backsweep_period: {}
 
 compartments: [s1, s2, s3, s4]
 
@@ -98,20 +106,12 @@ megacomplexes:
 
 k_matrices:
   - label: "k1"
-    matrix: {
+    matrix: {{
       '("s1","s1")': 3,
       '("s2","s2")': 4,
       '("s3","s3")': 5,
       '("s4","s4")': 6
-    }
-
-irf:
-  - label: irf
-    type: gaussian
-    center: 1
-    width: 2
-    backsweep: True
-    backsweep_period: 7
+    }}
 
 datasets:
   - label: dataset1
@@ -122,15 +122,33 @@ datasets:
 
 '''
 
-specfit_model = parse_yml(fitspec)
-#print(specfit_model)
+# only the last 2 test strings work
+defaultTestCase = ("13200.0", "7")
+testCases = [("[13200.0, false]", "7"),
+             ("[13200.0, {vary: false}]", "7"),
+             ("[13200.0, {fit: false}]", "7"),
+             ("[13200.0, \"backsweep_period\", {vary: true}]", "backsweep_period"),
+             ("[13200.0, true]", "7")
+             ]
+
+for spec in testCases:
+    specfit_model = parse_yml(fitspec.format(*spec))
+    # TODO: fix printing model
+    # print(specfit_model)
+    times = np.asarray(dataset_te.get_axis("time"))
+    wavelengths = np.asarray(dataset_te.get_axis("spectral"))
+    specfit_model.datasets['dataset1'].data = dataset_te
+    specfit_result = specfit_model.fit()
+    specfit_result.best_fit_parameter.pretty_print()
+
+specfit_model = parse_yml(fitspec.format(*defaultTestCase))
 times = np.asarray(dataset_te.get_axis("time"))
 wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
 specfit_result = specfit_model.fit()
 specfit_result.best_fit_parameter.pretty_print()
-
 residual = specfit_result.final_residual()
+
 axResidualContourf = all_axes[1,1]
 levels = np.linspace(0, max(dataset_te.data.flatten()), 10)
 cnt = axResidualContourf.contourf(times, wavelengths, residual, levels=levels, cmap="Greys")
