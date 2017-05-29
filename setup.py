@@ -79,7 +79,6 @@ setup(
               'glotaran.specification_parser'
               ],
     install_requires=[
-        'cython',
         'numpy',
         'scipy',
         'lmfit',
