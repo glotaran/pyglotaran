@@ -98,6 +98,7 @@ class KineticCMatrix(Matrix):
         # calculate k_matrix eigenvectos
         eigenvalues, eigenvectors = self._calculate_k_matrix_eigen(k_matrix,
                                                                    parameter)
+        rates = -eigenvalues
 
         # we need this since the full c matrix can have more compartments then
         # the k matrix
@@ -112,7 +113,7 @@ class KineticCMatrix(Matrix):
         constraint_idx = [k_matrix.compartment_map.index(c) for c in
                           constraint_compartments]
 
-        eigenvalues = np.delete(eigenvalues, constraint_idx)
+        rates = np.delete(rates, constraint_idx)
         compartment_idxs = np.delete(compartment_idxs, constraint_idx)
 
         # get the time axis
@@ -120,14 +121,14 @@ class KineticCMatrix(Matrix):
 
         # calculate the c_matrix
         if self._irf is None:
-            backend.c_matrix(c_matrix, compartment_idxs, eigenvalues, time,
+            backend.c_matrix(c_matrix, compartment_idxs, rates, time,
                              scale)
         else:
             centers, widths, irf_scale, backsweep, backsweep_period = \
                     self._calculate_irf_parameter(parameter)
             backend.c_matrix_gaussian_irf(c_matrix,
                                           compartment_idxs,
-                                          eigenvalues,
+                                          rates,
                                           time,
                                           centers, widths,
                                           scale * irf_scale,
@@ -188,7 +189,7 @@ class KineticCMatrix(Matrix):
         backsweep = 1 if self._irf.backsweep else 0
 
         backsweep_period = \
-            parameter_idx_to_val(parameter)(self._irf.backsweep_period) \
+            parameter_idx_to_val(parameter, self._irf.backsweep_period) \
             if self._irf.backsweep else 0
 
         return centers, widths, scale, backsweep, backsweep_period

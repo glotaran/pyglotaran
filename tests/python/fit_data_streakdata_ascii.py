@@ -1,78 +1,54 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import os
+from glotaran.plotting.glotaran_color_codes import get_glotaran_default_colors_cycler
+from cycler import cycler
 
 from glotaran.io.wavelength_time_explicit_file import ExplicitFile
-from glotaran.plotting.basic_plots import plot_data
 from glotaran.specification_parser import parse_yml
 
-# Settings:
-reproduce_figures_from_paper = True
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+root_data_path = os.path.join(THIS_DIR, '..', 'resources', 'data', 'streakdata.ascii')
+
 # Read in streakdata.ascii from resources/data sub-folder
-data_file_te = ExplicitFile('../resources/data/streakdata.ascii')
-#data_file_te = ExplicitFile('C:\\src\\glotaran\\tests\\resources\\data\\streakdata.ascii')
-#data_file_te.read("streakdata.ascii")
+data_file_te = ExplicitFile(root_data_path)
 dataset_te = data_file_te.read("dataset1")
-#dataset_te = data_file_te.dataset()
 times = dataset_te.get_axis("time")
-times = list(np.asarray(times) + 83)
+times_shifted = list(np.asarray(times) + 83)
 wavelengths = dataset_te.get_axis("spectral")
 
-# Get data limits
-if reproduce_figures_from_paper:
-    [xmin, xmax] = [-20, 200] #with respect to maximum of IRF (needs function written)
-    [ymin, ymax] = [630,770]
-    linear_range = [-20, 20]
-else:
-    [xmin,xmax] = [min(dataset_te.get_axis("time")), max(dataset_te.get_axis("time"))]
-    [ymin, ymax] = [min(dataset_te.get_axis("spec")),max(dataset_te.get_axis("spec"))]
-    linear_range = [-20, 20]
-print([xmin,xmax,ymin,ymax])
+# # Get data limits
+# if reproduce_figures_from_paper:
+#     [xmin, xmax] = [-20, 200] #with respect to maximum of IRF (needs function written)
+#     [ymin, ymax] = [630,770]
+#     linear_range = [-20, 20]
+# else:
+#     [xmin,xmax] = [min(dataset_te.get_axis("time")), max(dataset_te.get_axis("time"))]
+#     [ymin, ymax] = [min(dataset_te.get_axis("spec")),max(dataset_te.get_axis("spec"))]
+#     linear_range = [-20, 20]
+# print([xmin,xmax,ymin,ymax])
+plt.figure(figsize=(12, 8))
+plt.subplot(3, 4, 1)
+plt.title('Data')
+plt.pcolormesh(times, wavelengths, dataset_te.data)
 
-# Plot the data
-fig, all_axes = plt.subplots(2, 2)
-
-axData = all_axes[0,0]
-plot_data(axData, times, wavelengths, dataset_te.data)
-plt.show(block=False)
-
-axDataMesh = all_axes[0,1]
-meshLin = axDataMesh.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
-axDataMesh.set_xscale('linear')
-axDataMesh.spines['right'].set_visible(True)
-axDataMesh.yaxis.set_ticks_position('left')
-axDataMesh.set_xlim((linear_range[0], linear_range[1]))
-axDataMesh.set_ylim(ymin, ymax)
-axDataMesh.yaxis.set_ticks_position('left')
-axDataMesh.yaxis.set_visible(True)
-
-divider = make_axes_locatable(axDataMesh)
-axLog = divider.append_axes("right", size="50%", pad=0, sharey=axDataMesh)
-plt.setp(axDataMesh.get_xticklabels(), visible=True)
-meshLog = axLog.pcolormesh(times, wavelengths, dataset_te.data, cmap='Greys')
-axLog.set_xscale('log')
-axLog.set_xlim((linear_range[1], xmax))
-axLog.xaxis.set_ticks_position('bottom')
-axLog.spines['left'].set_visible(False)
-axLog.yaxis.set_visible(False)
-axLog.set_ylim(ymin, ymax)
-axLog.yaxis.set_ticks_position('right')
-ax_cb = divider.new_horizontal(size="5%", pad=0.05)
-fig1 = axLog.get_figure()
-fig1.add_axes(ax_cb)
-plt.colorbar(meshLog, cax=ax_cb)
-#fig.colorbar(meshLin, pad=20.2)
-plt.show(block=False)
-#ax2 = axLog.twinx()
-#ax2.spines['right'].set_visible(False)
-#ax2.tick_params(axis='y',which='both',labelright='on')
-
-axDataContourf = all_axes[1,0]
-levels = np.linspace(0, max(dataset_te.data.flatten()), 10)
-cnt = axDataContourf.contourf(times, wavelengths, dataset_te.data, levels=levels, cmap="Greys")
-# This is the fix for the white lines between contour levels
-for c in cnt.collections:
-    c.set_edgecolor("face")
+rsvd, svals, lsvd = np.linalg.svd(dataset_te.data)
+plt.subplot(3, 4, 2)
+plt.title('LSV Data')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())  # unsure why this is not working
+for i in range(4):
+    plt.plot(times, lsvd[i, :])
+# Plot singular values (SV)
+plt.subplot(3, 4, 3)
+plt.title('SVals Data')
+plt.plot(range(max(10, min(len(times), len(wavelengths)))), svals, 'ro')
+plt.yscale('log')
+# Plot right singular vectors (RSV, wavelengths, first 3)
+plt.subplot(3, 4, 4)
+plt.title('RSV Data')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+for i in range(4):
+    plt.plot(wavelengths, rsvd[:, i])
 
 plt.show(block=False)
 
@@ -80,13 +56,21 @@ fitspec = '''
 type: kinetic
 
 parameters: 
- - -81.0
- - 1.6
+ - -83.0
+ - 1.5
  - 0.2
- - 0.06
  - 0.02
+ - 0.07
  - 0.00016
- - [13200.0, {vary: false}]
+ - {}
+
+irf:
+  - label: irf
+    type: gaussian
+    center: 1
+    width: 2
+    backsweep: True
+    backsweep_period: {}
 
 compartments: [s1, s2, s3, s4]
 
@@ -96,20 +80,12 @@ megacomplexes:
 
 k_matrices:
   - label: "k1"
-    matrix: {
+    matrix: {{
       '("s1","s1")': 3,
       '("s2","s2")': 4,
       '("s3","s3")': 5,
       '("s4","s4")': 6
-    }
-
-irf:
-  - label: irf
-    type: gaussian
-    center: 1
-    width: 2
-    backsweep: True
-    backsweep_period: 7
+    }}
 
 datasets:
   - label: dataset1
@@ -120,31 +96,80 @@ datasets:
 
 '''
 
-specfit_model = parse_yml(fitspec)
-print(specfit_model)
+# only the last 2 test strings work
+defaultTestCase = ("13200.0", "7")
+testCases = [("[13200.0, false]", "7"),
+             ("[13200.0, {vary: false}]", "7"),
+             ("[13200.0, {fit: false}]", "7"),
+             ("[13200.0, \"backsweep_period\", {vary: true}]", "backsweep_period"),
+             ("[13200.0, true]", "7")
+             ]
+
+# comment these lines out for bug-free test case
+# for spec in testCases:
+#     specfit_model = parse_yml(fitspec.format(*spec))
+#     #  TODO: fix printing model
+#     # print(specfit_model)
+#     times = np.asarray(dataset_te.get_axis("time"))
+#     wavelengths = np.asarray(dataset_te.get_axis("spectral"))
+#     specfit_model.datasets['dataset1'].data = dataset_te
+#     specfit_result = specfit_model.fit()
+#     specfit_result.best_fit_parameter.pretty_print()
+
+specfit_model = parse_yml(fitspec.format(*defaultTestCase))
 times = np.asarray(dataset_te.get_axis("time"))
 wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
 specfit_result = specfit_model.fit()
 specfit_result.best_fit_parameter.pretty_print()
-
 residual = specfit_result.final_residual()
-axResidualContourf = all_axes[1,1]
+
+plt.subplot(3, 4, 9)
 levels = np.linspace(0, max(dataset_te.data.flatten()), 10)
-cnt = axResidualContourf.contourf(times, wavelengths, residual, levels=levels, cmap="Greys")
+cnt = plt.contourf(times, wavelengths, residual, levels=levels, cmap="Greys")
 # This is the fix for the white lines between contour levels
 for c in cnt.collections:
     c.set_edgecolor("face")
+plt.title('Residuals')
+plt.show(block=False)
 
-plt.show()
-
-# plot svd of residual
 residual_svd = specfit_result.final_residual_svd()
+# Plot left singular vectors (LSV, times, first 3)
+plt.subplot(3, 4, 10)
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+plt.title('LSV Residuals')
+for i in range(3):
+    plt.plot(times, residual_svd[2][i, :])
+# Plot singular values (SV)
+plt.subplot(3, 4, 11)
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+plt.title('SVals Residuals')
+plt.plot(range(min(len(times), len(wavelengths))), residual_svd[1], 'ro')
+plt.yscale('log')
+# Plot right singular vectors (RSV, wavelengths, first 3)
+plt.subplot(3, 4, 12)
+plt.title('RSV Residuals')
+for i in range(3):
+    plt.plot(wavelengths, residual_svd[0][:, i])
 
-# TODO: getting e_matrix still crashes
 spectra = specfit_result.e_matrix('dataset1')
-#TODO: spectra is a list of length(timepoints) - this is too much
-plt.plot(wavelengths, spectra[0])
+plt.subplot(3, 4, 7)
+plt.title('EAS')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+for i in range(spectra.shape[1]):
+    plt.plot(wavelengths, spectra[:, i])
+plt.subplot(3, 4, 8)
+plt.title('norm EAS')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+for i in range(spectra.shape[1]):
+    scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
+    plt.plot(wavelengths, spectra[:, i] / scale)
 
+concentrations = specfit_result.c_matrix('dataset1')
+plt.subplot(3, 4, 5)
+plt.title('Concentrations')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+plt.plot(times, concentrations[0])
 
-
+plt.tight_layout()
+plt.show()
