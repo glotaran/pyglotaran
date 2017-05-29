@@ -22,28 +22,28 @@ def __init__():
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] T, double mu, double
+def calculateCSingleGaussian(double[:, :] C, idxs, double[:] k, double[:] x, double mu, double
                   delta, double scale, int backsweep, double backsweep_period):
-    nr_times = T.shape[0]
+    nr_x = x.shape[0]
     nr_comps = k.shape[0]
-    cdef int n_c, n_t, n_k
-    cdef double t_n, k_n, thresh, alpha, beta#term_1, term_2
+    cdef int n_c, n_x, n_k
+    cdef double x_n, k_n, thresh, alpha, beta#term_1, term_2
     for n_k in range(nr_comps):
         k_n = k[n_k]
         if k_n == 0:
             continue
         n_c = idxs[n_k]
-        alpha = -k_n * delta / sqrt(2)
-        for n_t in range(nr_times):
-            t_n = T[n_t]
-            beta = (t_n - mu) / (delta * sqrt(2))
+        alpha = (k_n * delta) / sqrt(2)
+        for n_x in range(nr_x):
+            x_n = x[n_x]
+            beta = (x_n - mu) / (delta * sqrt(2))
             thresh = beta - alpha
             if thresh < -1 :
-                C[n_t, n_c] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
+                C[n_x, n_c] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
-                C[n_t, n_c] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+                C[n_x, n_c] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
             if backsweep != 0:
-                x1 = exp(-k_n) * (t_n - mu + backsweep_period)
-                x2 = exp(-k_n) * ((backsweep_period / 2) - (t_n - mu))
+                x1 = exp(-k_n * (x_n - mu + backsweep_period))
+                x2 = exp(-k_n * ((backsweep_period / 2) - (x_n - mu)))
                 x3 = exp(-k_n * backsweep_period)
-                C[n_t, n_c] = (x1 + x2) / (1 - x3)
+                C[n_x, n_c] += (x1 + x2) / (1 - x3)
