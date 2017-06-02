@@ -3,7 +3,7 @@ import numpy as np
 import os
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from glotaran.io.wavelength_time_explicit_file import ExplicitFile
+from glotaran.dataio.wavelength_time_explicit_file import ExplicitFile
 from glotaran.plotting.basic_plots import plot_data
 from glotaran.specification_parser import parse_yml
 

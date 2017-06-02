@@ -1,5 +1,5 @@
-from glotaran.io.chlorospec_format import ChlorospecData
-from glotaran.io.wavelength_time_explicit_file import ExplicitFile
+from glotaran.dataio.chlorospec_format import ChlorospecData
+from glotaran.dataio.wavelength_time_explicit_file import ExplicitFile
 from glotaran.models.spectral_temporal.dataset import SpectralTemporalDataset
 import os
 import numpy as np

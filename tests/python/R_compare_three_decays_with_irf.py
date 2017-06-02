@@ -34,7 +34,7 @@ irf:
     width: 5
 
 
-io:
+dataio:
 - label: dataset1
   type: spectral
   megacomplexes: [mc1]

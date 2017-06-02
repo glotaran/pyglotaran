@@ -1,4 +1,4 @@
-from glotaran.io.mlsd_file_format import MLSDFile
+from glotaran.dataio.mlsd_file_format import MLSDFile
 from glotaran.plotting.glotaran_color_codes import get_glotaran_default_colors
 import numpy as np
 import matplotlib.pyplot as plt

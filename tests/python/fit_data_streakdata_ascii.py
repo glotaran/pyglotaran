@@ -4,7 +4,7 @@ import os
 from glotaran.plotting.glotaran_color_codes import get_glotaran_default_colors_cycler
 from cycler import cycler
 
-from glotaran.io.wavelength_time_explicit_file import ExplicitFile
+from glotaran.dataio.wavelength_time_explicit_file import ExplicitFile
 from glotaran.specification_parser import parse_yml
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))

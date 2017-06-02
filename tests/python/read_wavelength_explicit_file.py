@@ -1,4 +1,4 @@
-from glotaran.io.wavelength_time_explicit_file import WavelengthExplicitFile, TimeExplicitFile, ExplicitFile
+from glotaran.dataio.wavelength_time_explicit_file import WavelengthExplicitFile, TimeExplicitFile, ExplicitFile
 import numpy as np
 import matplotlib.pyplot as plt
 
