@@ -56,13 +56,13 @@ fitspec = '''
 type: kinetic
 
 parameters: 
- - [1, {{vary: false}}]
- - 1
- - 1
- - 1
+ - [1, {{fit: false}}]
+ - 0
+ - 0
+ - 0
  - -83.0
- - {}
  - 1.5
+ - {}
  - 0.2
  - 0.02
  - 0.07
