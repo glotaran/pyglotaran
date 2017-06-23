@@ -106,30 +106,32 @@ datasets:
 '''
 
 # only the last 2 test strings work
-defaultTestCase = ("13200.0", "7")
-testCases = [("[13200.0, false]", "7"),
-             ("[13200.0, {vary: false}]", "7"),
-             ("[13200.0, {fit: false}]", "7"),
-             ("[13200.0, \"backsweep_period\", {vary: true}]", "backsweep_period"),
-             ("[13200.0, true]", "7")
-             ]
+defaultTestCase = ("[13200.0, {vary: false}]", "7")
+# not working test cases
+# ("[13200.0, false]", "7"),
+testCases = [("[13200.0, {vary: false}]", "7"),
+             ("[13200.0, \"backsweep_period\", {vary: false}]", "backsweep_period")]\
+# extra unused test cases
+             #("[13200.0, {fit: false}]", "7"),
+             #("[13200.0, true]", "7")
+             #]
 
 # comment these lines out for bug-free test case
-# for spec in testCases:
-#     specfit_model = parse_yml(fitspec.format(*spec))
-#     #  TODO: fix printing model
-#     # print(specfit_model)
-#     times = np.asarray(dataset_te.get_axis("time"))
-#     wavelengths = np.asarray(dataset_te.get_axis("spectral"))
-#     specfit_model.datasets['dataset1'].data = dataset_te
-#     specfit_result = specfit_model.fit()
-#     specfit_result.best_fit_parameter.pretty_print()
+for spec in testCases:
+    specfit_model = parse_yml(fitspec.format(*spec))
+    #  TODO: fix printing model
+    # print(specfit_model)
+    times = np.asarray(dataset_te.get_axis("time"))
+    wavelengths = np.asarray(dataset_te.get_axis("spectral"))
+    specfit_model.datasets['dataset1'].data = dataset_te
+    specfit_result = specfit_model.fit()
+    specfit_result.best_fit_parameter.pretty_print()
 
 specfit_model = parse_yml(fitspec.format(*defaultTestCase))
 times = np.asarray(dataset_te.get_axis("time"))
 wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
-specfit_result = specfit_model.fit()
+specfit_result = specfit_model.fit(nnls=True)
 specfit_result.best_fit_parameter.pretty_print()
 residual = specfit_result.final_residual()
 
