@@ -103,7 +103,6 @@ class KineticCMatrix(Matrix):
         # the k matrix
         compartment_idxs = [compartment_order.index(c) for c in
                             k_matrix.compartment_map]
-        print('compartment_idxs: ', compartment_idxs)
 
         # get constraint compartment indeces
         constraint_compartments = [c.compartment for c in
@@ -210,7 +209,6 @@ class KineticCMatrix(Matrix):
 
         gamma = np.matmul(scipy.linalg.inv(eigenvectors),
                           initial_concentrations)
-        print('gamma: ', gamma)
 
         concentration_matrix = np.empty(eigenvectors.shape,
                                         dtype=np.float64)
