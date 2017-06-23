@@ -131,7 +131,7 @@ specfit_model = parse_yml(fitspec.format(*defaultTestCase))
 times = np.asarray(dataset_te.get_axis("time"))
 wavelengths = np.asarray(dataset_te.get_axis("spectral"))
 specfit_model.datasets['dataset1'].data = dataset_te
-specfit_result = specfit_model.fit(nnls=True)
+specfit_result = specfit_model.fit()
 specfit_result.best_fit_parameter.pretty_print()
 residual = specfit_result.final_residual()
 
