@@ -166,11 +166,14 @@ for i in range(3):
 spectra = specfit_result.e_matrix('dataset1')
 plt.subplot(3, 4, 7)
 plt.title('EAS')
+plt.axhline(0, color='gray', linewidth=0.2)
+# plt.axvline(0, color='gray')
 plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
 for i in range(spectra.shape[1]):
     plt.plot(wavelengths, spectra[:, i])
 plt.subplot(3, 4, 8)
 plt.title('norm EAS')
+plt.axhline(0, color='gray', linewidth=0.2)
 plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
 for i in range(spectra.shape[1]):
     scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
