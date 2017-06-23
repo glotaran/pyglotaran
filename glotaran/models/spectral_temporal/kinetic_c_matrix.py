@@ -29,7 +29,7 @@ class KineticCMatrix(Matrix):
         return self._compartment_order
 
     def shape(self):
-        return (self.time().shape[0], len(self._compartment_order))
+        return self.time().shape[0], len(self._compartment_order)
 
     def _set_compartment_order(self, model):
         compartment_order = [c for mat in self._k_matrices
@@ -81,7 +81,7 @@ class KineticCMatrix(Matrix):
 
         for k_matrix, scale in self._k_matrices_and_scalings():
 
-            scale = parameter_idx_to_val(scale) if scale is not None else 1.0
+            scale = parameter_idx_to_val(parameter, scale) if scale is not None else 1.0
             scale *= self.dataset_scaling(parameter)
 
             self._calculate_for_k_matrix(c_matrix, compartment_order, k_matrix,
@@ -152,14 +152,9 @@ class KineticCMatrix(Matrix):
                                                      compartment_order)
 
     def _calculate_k_matrix_eigen(self, k_matrix, parameter):
-
         k_matrix = k_matrix.full(parameter)
-
         # get the eigenvectors and values
         eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
-        # sort the eigenvector by the size of the eigenvalues
-        # idx = eigenvalues.argsort()  # reverse add [::-1]
-        # return(eigenvalues[idx], eigenvectors[:, idx])
         return (eigenvalues, eigenvectors)
 
     def _calculate_irf_parameter(self, parameter):
