@@ -79,9 +79,9 @@ setup(
               'glotaran.specification_parser'
               ],
     install_requires=[
-        'numpy',
-        'scipy',
-        'lmfit',
+        'numpy>=1.9.1',
+        'scipy>=0.15.1',
+        'lmfit>=0.9.7',
         'pyyaml',
         'matplotlib' #dependency introduced by glotaran.plotting
     ],
