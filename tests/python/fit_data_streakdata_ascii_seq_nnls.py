@@ -56,19 +56,23 @@ fitspec = '''
 type: kinetic
 
 parameters: 
+ - [1, {{vary: false}}]
+ - [0, {{vary: false}}]
+ - [0, {{vary: false}}]
+ - [0, {{vary: false}}]
  - -83.0
  - 1.5
- - 0.2
- - 0.02
- - 0.07
- - 0.00016
  - {}
+ - 0.2
+ - 0.07
+ - 0.02
+ - 0.00016
 
 irf:
   - label: irf
     type: gaussian
-    center: 1
-    width: 2
+    center: 5
+    width: 6
     backsweep: True
     backsweep_period: {}
 
@@ -81,15 +85,20 @@ megacomplexes:
 k_matrices:
   - label: "k1"
     matrix: {{
-      '("s2","s1")': 3,
-      '("s3","s2")': 4,
-      '("s4","s3")': 5,
-      '("s4","s4")': 6
+      '("s2","s1")': 8,
+      '("s3","s2")': 9,
+      '("s4","s3")': 10,
+      '("s4","s4")': 11
     }}
 
+initial_concentration: #equal to the total number of compartments
+  - label: inputD1
+    parameter: [1, 2, 3, 4] 
+    
 datasets:
   - label: dataset1
     type: spectral
+    initial_concentration: inputD1
     megacomplexes: [mc1]
     path: ''
     irf: irf
@@ -97,7 +106,7 @@ datasets:
 '''
 
 # only the last 2 test strings work
-defaultTestCase = ("13200.0", "7")
+defaultTestCase = ("[13200.0, {vary: false}]", "7")
 
 specfit_model = parse_yml(fitspec.format(*defaultTestCase))
 times = np.asarray(dataset_te.get_axis("time"))

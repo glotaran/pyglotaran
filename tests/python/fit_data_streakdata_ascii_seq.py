@@ -57,15 +57,15 @@ type: kinetic
 
 parameters: 
  - [1, {{vary: false}}]
- - 1
- - 1
- - 1
+ - [0, {{vary: false}}]
+ - [0, {{vary: false}}]
+ - [0, {{vary: false}}]
  - -83.0
- - {}
  - 1.5
+ - {}
  - 0.2
- - 0.02
  - 0.07
+ - 0.02
  - 0.00016
 
 irf:
@@ -106,24 +106,26 @@ datasets:
 '''
 
 # only the last 2 test strings work
-defaultTestCase = ("13200.0", "7")
-testCases = [("[13200.0, false]", "7"),
-             ("[13200.0, {vary: false}]", "7"),
-             ("[13200.0, {fit: false}]", "7"),
-             ("[13200.0, \"backsweep_period\", {vary: true}]", "backsweep_period"),
-             ("[13200.0, true]", "7")
-             ]
+defaultTestCase = ("[13200.0, {vary: false}]", "7")
+# not working test cases
+# ("[13200.0, false]", "7"),
+testCases = [("[13200.0, {vary: false}]", "7"),
+             ("[13200.0, \"backsweep_period\", {vary: false}]", "backsweep_period")]\
+# extra unused test cases
+             #("[13200.0, {fit: false}]", "7"),
+             #("[13200.0, true]", "7")
+             #]
 
 # comment these lines out for bug-free test case
-# for spec in testCases:
-#     specfit_model = parse_yml(fitspec.format(*spec))
-#     #  TODO: fix printing model
-#     # print(specfit_model)
-#     times = np.asarray(dataset_te.get_axis("time"))
-#     wavelengths = np.asarray(dataset_te.get_axis("spectral"))
-#     specfit_model.datasets['dataset1'].data = dataset_te
-#     specfit_result = specfit_model.fit()
-#     specfit_result.best_fit_parameter.pretty_print()
+for spec in testCases:
+    specfit_model = parse_yml(fitspec.format(*spec))
+    #  TODO: fix printing model
+    # print(specfit_model)
+    times = np.asarray(dataset_te.get_axis("time"))
+    wavelengths = np.asarray(dataset_te.get_axis("spectral"))
+    specfit_model.datasets['dataset1'].data = dataset_te
+    specfit_result = specfit_model.fit()
+    specfit_result.best_fit_parameter.pretty_print()
 
 specfit_model = parse_yml(fitspec.format(*defaultTestCase))
 times = np.asarray(dataset_te.get_axis("time"))
@@ -164,11 +166,14 @@ for i in range(3):
 spectra = specfit_result.e_matrix('dataset1')
 plt.subplot(3, 4, 7)
 plt.title('EAS')
+plt.axhline(0, color='gray', linewidth=0.2)
+# plt.axvline(0, color='gray')
 plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
 for i in range(spectra.shape[1]):
     plt.plot(wavelengths, spectra[:, i])
 plt.subplot(3, 4, 8)
 plt.title('norm EAS')
+plt.axhline(0, color='gray', linewidth=0.2)
 plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
 for i in range(spectra.shape[1]):
     scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))

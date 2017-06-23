@@ -1,5 +1,5 @@
 import numpy as np
-
+import collections
 
 class MatrixGroup(object):
     def __init__(self, matrix):
@@ -38,7 +38,7 @@ class MatrixGroup(object):
     def compartment_order(self):
         compartment_order = [c for cmat in self.matrices
                              for c in cmat.compartment_order()]
-        return list(set(compartment_order))
+        return list(collections.OrderedDict.fromkeys(compartment_order).keys())
 
     def shape(self):
         dim0 = sum([mat.shape()[0] for mat in self.matrices])

@@ -5,7 +5,6 @@ from .c_matrix_cython.c_matrix_cython import CMatrixCython
 from glotaran.fitmodel import parameter_map, parameter_idx_to_val, Matrix
 from glotaran.model import CompartmentConstraintType
 
-
 backend = CMatrixCython()
 
 
@@ -24,7 +23,7 @@ class KineticCMatrix(Matrix):
         self._set_compartment_order(model)
 
         self._initial_concentrations = None
-        self._collect_intital_concentration(model)
+        self._collect_initial_concentration(model)
 
     def compartment_order(self):
         return self._compartment_order
@@ -60,12 +59,12 @@ class KineticCMatrix(Matrix):
             self._megacomplex_scaling.append(scaling)
             self._k_matrices.append(model_k_matrix)
 
-    def _collect_intital_concentration(self, model):
+    def _collect_initial_concentration(self, model):
 
         if self.dataset.initial_concentration is None:
             return
         initial_concentrations = \
-            model.initial_concentration[self.dataset.initial_concentration]
+            model.initial_concentrations[self.dataset.initial_concentration]
 
         # The initial concentration vector has an element for each compartment
         # declared in the model. The current C Matrix must not necessary invole
@@ -75,7 +74,7 @@ class KineticCMatrix(Matrix):
         all_cmps = model.compartments
 
         self._initial_concentrations = \
-            [initial_concentrations[all_cmps.index(c)]
+            [initial_concentrations.parameter[all_cmps.index(c)]
              for c in self.compartment_order()]
 
     def calculate(self, c_matrix, compartment_order, parameter):
@@ -113,6 +112,7 @@ class KineticCMatrix(Matrix):
         constraint_idx = [k_matrix.compartment_map.index(c) for c in
                           constraint_compartments]
 
+        # TODO: do not delete column prior to c-matrix evaluation
         rates = np.delete(rates, constraint_idx)
         compartment_idxs = np.delete(compartment_idxs, constraint_idx)
 
@@ -157,7 +157,10 @@ class KineticCMatrix(Matrix):
 
         # get the eigenvectors and values
         eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
-        return(eigenvalues, eigenvectors)
+        # sort the eigenvector by the size of the eigenvalues
+        # idx = eigenvalues.argsort()  # reverse add [::-1]
+        # return(eigenvalues[idx], eigenvectors[:, idx])
+        return (eigenvalues, eigenvectors)
 
     def _calculate_irf_parameter(self, parameter):
 
@@ -213,7 +216,7 @@ class KineticCMatrix(Matrix):
         for i in range(eigenvectors.shape[0]):
             concentration_matrix[i, :] = eigenvectors[:, i] * gamma[i]
 
-        np.dot(c_matrix, concentration_matrix, out=c_matrix)
+        np.dot(np.copy(c_matrix), concentration_matrix, out=c_matrix)
 
     def time(self):
         return self.dataset.data.get_axis("time")
