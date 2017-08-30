@@ -7,6 +7,8 @@ from cycler import cycler
 from glotaran.dataio.wavelength_time_explicit_file import ExplicitFile
 from glotaran.specification_parser import parse_yml
 
+doGlobalAnalyis = False;
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 root_data_path = os.path.join(THIS_DIR, '..', 'resources', 'data')
 datapath_PAL_open = os.path.join(root_data_path, 'PAL_700_ma_tr2_gain50_10uW_590nmfilter_21C_400nm_AV_bc_sh_sel_620_830.ascii')
@@ -131,45 +133,46 @@ datasets:
 '''
 
 specfit_model1 = parse_yml(fitspec1.format('dataset1'))
-
 specfit_model1.datasets['dataset1'].data = dataset_PAL_open
 
-specfit_result1 = specfit_model1.fit()
-specfit_result1.best_fit_parameter.pretty_print()
-residual1 = specfit_result1.final_residual()
+if doGlobalAnalyis:
 
-plt.subplot(4, 4, 9)
-levels = np.linspace(0, max(dataset_PAL_open.data.flatten()), 10)
-cnt = plt.contourf(times1, wavelengths1, residual1, levels=levels, cmap="Greys")
-# This is the fix for the white lines between contour levels
-for c in cnt.collections:
-    c.set_edgecolor("face")
-plt.title('Residuals')
+    specfit_result1 = specfit_model1.fit()
+    specfit_result1.best_fit_parameter.pretty_print()
+    residual1 = specfit_result1.final_residual()
 
-concentrations = specfit_result1.c_matrix('dataset1')
-plt.subplot(4, 4, 10)
-plt.title('Concentrations Open')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-plt.plot(times1, concentrations[0])
+    plt.subplot(4, 4, 9)
+    levels = np.linspace(0, max(dataset_PAL_open.data.flatten()), 10)
+    cnt = plt.contourf(times1, wavelengths1, residual1, levels=levels, cmap="Greys")
+    # This is the fix for the white lines between contour levels
+    for c in cnt.collections:
+        c.set_edgecolor("face")
+    plt.title('Residuals')
 
-spectra = specfit_result1.e_matrix('dataset1')
-plt.subplot(4, 4, 11)
-plt.title('EAS Open')
-plt.axhline(0, color='gray', linewidth=0.2)
-# plt.axvline(0, color='gray')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-for i in range(spectra.shape[1]):
-    plt.plot(wavelengths1, spectra[:, i])
-plt.subplot(4, 4, 12)
-plt.title('norm EAS Open')
-plt.axhline(0, color='gray', linewidth=0.2)
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-for i in range(spectra.shape[1]):
-    scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
-    plt.plot(wavelengths1, spectra[:, i] / scale)
+    concentrations = specfit_result1.c_matrix('dataset1')
+    plt.subplot(4, 4, 10)
+    plt.title('Concentrations Open')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    plt.plot(times1, concentrations[0])
 
-plt.tight_layout()
-plt.show(block=False)
+    spectra = specfit_result1.e_matrix('dataset1')
+    plt.subplot(4, 4, 11)
+    plt.title('EAS Open')
+    plt.axhline(0, color='gray', linewidth=0.2)
+    # plt.axvline(0, color='gray')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    for i in range(spectra.shape[1]):
+        plt.plot(wavelengths1, spectra[:, i])
+    plt.subplot(4, 4, 12)
+    plt.title('norm EAS Open')
+    plt.axhline(0, color='gray', linewidth=0.2)
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    for i in range(spectra.shape[1]):
+        scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
+        plt.plot(wavelengths1, spectra[:, i] / scale)
+
+    plt.tight_layout()
+    plt.show(block=False)
 
 fitspec2 = '''
 type: kinetic
@@ -223,41 +226,140 @@ datasets:
 specfit_model2 = parse_yml(fitspec2.format('dataset2'))
 specfit_model2.datasets['dataset2'].data = dataset_PAL_closed
 
-specfit_result2 = specfit_model2.fit()
-specfit_result2.best_fit_parameter.pretty_print()
+if doGlobalAnalyis:
+    specfit_result2 = specfit_model2.fit()
+    specfit_result2.best_fit_parameter.pretty_print()
 
-residual2 = specfit_result2.final_residual()
+    residual2 = specfit_result2.final_residual()
 
-plt.subplot(4, 4, 13)
-levels = np.linspace(0, max(dataset_PAL_closed.data.flatten()), 10)
-cnt = plt.contourf(times2, wavelengths2, residual2, levels=levels, cmap="Greys")
-# This is the fix for the white lines between contour levels
-for c in cnt.collections:
-    c.set_edgecolor("face")
-plt.title('Residuals')
+    plt.subplot(4, 4, 13)
+    levels = np.linspace(0, max(dataset_PAL_closed.data.flatten()), 10)
+    cnt = plt.contourf(times2, wavelengths2, residual2, levels=levels, cmap="Greys")
+    # This is the fix for the white lines between contour levels
+    for c in cnt.collections:
+        c.set_edgecolor("face")
+    plt.title('Residuals')
 
-concentrations = specfit_result2.c_matrix('dataset2')
-plt.subplot(4, 4, 14)
-plt.title('Concentrations Closed')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-plt.plot(times2, concentrations[0])
+    concentrations = specfit_result2.c_matrix('dataset2')
+    plt.subplot(4, 4, 14)
+    plt.title('Concentrations Closed')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    plt.plot(times2, concentrations[0])
 
-spectra = specfit_result2.e_matrix('dataset2')
-plt.subplot(4, 4, 15)
-plt.title('EAS Closed')
-plt.axhline(0, color='gray', linewidth=0.2)
-# plt.axvline(0, color='gray')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-for i in range(spectra.shape[1]):
-    plt.plot(wavelengths2, spectra[:, i])
-plt.subplot(4, 4, 16)
-plt.title('norm EAS Closed')
-plt.axhline(0, color='gray', linewidth=0.2)
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-for i in range(spectra.shape[1]):
-    scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
-    plt.plot(wavelengths2, spectra[:, i] / scale)
+    spectra = specfit_result2.e_matrix('dataset2')
+    plt.subplot(4, 4, 15)
+    plt.title('EAS Closed')
+    plt.axhline(0, color='gray', linewidth=0.2)
+    # plt.axvline(0, color='gray')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    for i in range(spectra.shape[1]):
+        plt.plot(wavelengths2, spectra[:, i])
+    plt.subplot(4, 4, 16)
+    plt.title('norm EAS Closed')
+    plt.axhline(0, color='gray', linewidth=0.2)
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    for i in range(spectra.shape[1]):
+        scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
+        plt.plot(wavelengths2, spectra[:, i] / scale)
 
 
-plt.tight_layout()
-plt.show()
+    plt.tight_layout()
+    plt.show()
+
+fitspec_target = '''
+type: kinetic
+
+parameters: 
+ - 0.152
+ - 0.087
+ - 0.066
+ - 0.0005
+ - 0.014
+ - 0.0033
+ - 0.0029
+ - 0.0031
+ - 0.0036
+ - 0.0021
+ - [0.01, {{vary: true}}]
+ - [1, {{vary: false}}]
+ - [0, {{vary: false}}]
+ - [1, {{vary: true}}]
+ - [0, {{vary: false}}]
+ - [1, {{vary: true}}]
+ - [0, {{vary: false}}]
+ - 100
+ - 4.9
+ - 117
+ - 4.8
+ 
+irf:
+  - label: irf1
+    type: gaussian
+    center: 18
+    width: 19
+  - label: irf2
+    type: gaussian
+    center: 20
+    width: 21
+    
+compartments: [PS1_red, PS1_bulk, RP1, PS2_bulk, RP2]
+
+megacomplexes:
+    - label: mc1
+      k_matrices: [k1, k2]
+    - label: mc2
+      k_matrices: [k1, k3]      
+
+k_matrices:
+  - label: "k1"
+    matrix: {{
+      '("PS1_bulk","PS1_red")': 1,
+      '("PS1_red","PS1_bulk")': 2,
+      '("RP1","PS1_bulk")': 3,
+      '("PS1_red","PS1_red")': 4,
+      '("PS1_bulk","PS1_bulk")': 4
+    }}
+  - label: "k2"
+    matrix: {{
+      '("RP2","PS2_bulk")': 5,
+      '("PS2_bulk","RP2")': 6,
+      '("RP2","RP2")': 7,
+      '("PS2_bulk","PS2_bulk")': 4
+    }}
+  - label: "k3"
+    matrix: {{
+      '("RP2","PS2_bulk")': 8,
+      '("PS2_bulk","RP2")': 9,
+      '("RP2","RP2")': 10,
+      '("PS2_bulk","PS2_bulk")': 4
+    }}
+        
+initial_concentration: #equal to the total number of compartments
+  - label: inputD1
+    parameter: [11, 12, 13, 14, 15] 
+  - label: inputD2
+    parameter: [11, 12, 13, 16, 17] 
+    
+datasets:
+  - label: dataset1
+    type: spectral
+    initial_concentration: inputD1
+    megacomplexes: [mc1]
+    path: ''
+    irf: irf1
+  - label: dataset2
+    type: spectral
+    initial_concentration: inputD2
+    megacomplexes: [mc2]
+    path: ''
+    irf: irf2
+'''
+
+specfit_model_target = parse_yml(fitspec_target.format())
+specfit_model_target.datasets['dataset1'].data = dataset_PAL_open
+specfit_model_target.datasets['dataset2'].data = dataset_PAL_closed
+
+target_analysis_result = specfit_model_target.fit()
+target_analysis_result.best_fit_parameter.pretty_print()
+
+residual_target = target_analysis_result.final_residual()
