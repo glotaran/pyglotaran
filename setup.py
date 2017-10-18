@@ -80,7 +80,7 @@ setup(
               ],
     install_requires=[
         'numpy>=1.9.1',
-        'scipy>=0.15.1',
+        'scipy==0.19.1',
         'lmfit>=0.9.7',
         'pyyaml',
         'matplotlib',  # dependency introduced by glotaran.plotting
