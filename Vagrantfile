@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/xenial64"
   
   # Provisioning:
-  config.vm.provision :shell, path: "ubuntu-bootstrap.sh"
+  config.vm.provision :shell, privileged: false, path: "ubuntu-bootstrap.sh" 
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -67,12 +67,15 @@ Vagrant.configure(2) do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   sudo apt-get update
-  #   sudo apt-get install -y apache2
-  # SHELL
-    config.vm.provision "shell", run: "always", inline: <<-SHELL
-    jupyter notebook --notebook-dir=/vagrant/notebook --no-browser --ip=127.0.0.1 &
+   config.vm.provision "shell", privileged: false, inline: <<-SHELL
+     sudo apt-get update
+     sudo apt-get install -y apache2
+   SHELL
+   
+    config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
+    jupyter notebook --notebook-dir=/vagrant/tests/notebooks --no-browser --ip=0.0.0.0 &
+    sleep 3
+    jupyter notebook list
   SHELL
 end
 
