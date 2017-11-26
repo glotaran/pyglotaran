@@ -9,7 +9,7 @@ sudo apt-get install git-core -y
 git config --global color.ui true
 
 # Install deps
-sudo apt-get install python3 libfreetype6-dev libpng12-dev python-setuptools -y
+sudo apt-get install python3 libfreetype6-dev libpng12-dev python-setuptools python3-dev -y
 sudo apt-get install curl -y
 sudo apt-get install tmux -y
 sudo apt-get install build-essential gcc make g++ -y
