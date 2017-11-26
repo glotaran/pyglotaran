@@ -12,7 +12,7 @@ git config --global color.ui true
 sudo apt-get install python3 libfreetype6-dev libpng12-dev python-setuptools python3-dev -y
 sudo apt-get install curl -y
 sudo apt-get install tmux -y
-sudo apt-get install build-essential gcc make g++-y
+sudo apt-get install build-essential gcc make g++ -y
 
 cd ~
 wget https://bootstrap.pypa.io/get-pip.py
