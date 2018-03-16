@@ -7,7 +7,7 @@ from cycler import cycler
 from glotaran.dataio.wavelength_time_explicit_file import ExplicitFile
 from glotaran.specification_parser import parse_yml
 
-doGlobalAnalyis = True;
+doGlobalAnalyis = False;
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 root_data_path = os.path.join(THIS_DIR, '..', 'resources', 'data')
@@ -227,7 +227,7 @@ specfit_model2 = parse_yml(fitspec2.format('dataset2'))
 specfit_model2.datasets['dataset2'].data = dataset_PAL_closed
 
 if doGlobalAnalyis:
-    specfit_result2 = specfit_model2.fit()
+    specfit_result2 = specfit_model2.fit(nnls=True)
     specfit_result2.best_fit_parameter.pretty_print()
 
     residual2 = specfit_result2.final_residual()
@@ -256,7 +256,7 @@ if doGlobalAnalyis:
         plt.plot(wavelengths2, spectra[:, i])
     plt.subplot(4, 4, 16)
     plt.title('norm EAS Closed')
-    plt.axhline(0, color='gray', linewidth=0.2)
+    #plt.axhline(0, color='gray', linewidth=0.2)
     plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
     for i in range(spectra.shape[1]):
         scale = max(max(spectra[:, i]), abs(min(spectra[:, i])))
@@ -270,22 +270,22 @@ fitspec_target = '''
 type: kinetic
 
 parameters: 
- - 0.152
- - 0.087
- - 0.066
- - 0.0005
- - 0.014
- - 0.0033
- - 0.0029
- - 0.0031
- - 0.0036
- - 0.0021
+ - [0.152, {{"min":0}}]
+ - [0.087, {{"min":0}}]
+ - [0.066, {{"min":0}}]
+ - [0.0005, {{"min":0}}]
+ - [0.014, {{"min":0}}]
+ - [0.0033, {{"min":0}}]
+ - [0.0029, {{"min":0}}]
+ - [0.0031, {{"min":0}}]
+ - [0.0036, {{"min":0}}]
+ - [0.0021, {{"min":0}}]
  - [0.01, {{vary: true}}]
  - [1, {{vary: false}}]
  - [0, {{vary: false}}]
- - [1, {{vary: true}}]
+ - [1, {{vary: false}}]
  - [0, {{vary: false}}]
- - [1, {{vary: true}}]
+ - [1, {{vary: false}}]
  - [0, {{vary: false}}]
  - 100
  - 4.9
@@ -364,3 +364,36 @@ target_analysis_result = specfit_model_target.fit()
 target_analysis_result.best_fit_parameter.pretty_print()
 
 residual_target = target_analysis_result.final_residual()
+
+
+concentrations1 = target_analysis_result.c_matrix(**{'dataset':'dataset1'})
+plt.subplot(4, 4, 10)
+plt.title('Concentrations open')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+plt.plot(times1, concentrations1[0])
+concentrations2 = target_analysis_result.c_matrix(**{'dataset':'dataset2'})
+plt.subplot(4, 4, 14)
+plt.title('Concentrations Closed')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+plt.plot(times2, concentrations2[0])
+
+spectra1 = target_analysis_result.e_matrix(**{'dataset':'dataset1'})
+spectra2 = target_analysis_result.e_matrix(**{'dataset':'dataset2'})
+
+plt.subplot(4, 4, 12)
+plt.title('SAS Open')
+plt.axhline(0, color='gray', linewidth=0.2)
+plt.axvline(0, color='gray')
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+for i in range(spectra1.shape[1]):
+    plt.plot(wavelengths1, spectra1[:, i])
+plt.subplot(4, 4, 16)
+plt.title('SAS closed')
+plt.axhline(0, color='gray', linewidth=0.2)
+plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+for i in range(spectra2.shape[1]):
+    scale = max(max(spectra2[:, i]), abs(min(spectra2[:, i])))
+    plt.plot(wavelengths2, spectra2[:, i] / scale)
+
+plt.tight_layout()
+plt.show()
