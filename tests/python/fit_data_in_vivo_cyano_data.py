@@ -7,7 +7,7 @@ from cycler import cycler
 from glotaran.dataio.wavelength_time_explicit_file import ExplicitFile
 from glotaran.specification_parser import parse_yml
 
-doGlobalAnalyis = False;
+doGlobalAnalyis = True;
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 root_data_path = os.path.join(THIS_DIR, '..', 'resources', 'data')
@@ -359,6 +359,7 @@ specfit_model_target = parse_yml(fitspec_target.format())
 specfit_model_target.datasets['dataset1'].data = dataset_PAL_open
 specfit_model_target.datasets['dataset2'].data = dataset_PAL_closed
 
+print(specfit_model_target)
 target_analysis_result = specfit_model_target.fit()
 target_analysis_result.best_fit_parameter.pretty_print()
 
