@@ -58,7 +58,7 @@ class CompartmentConstraint(object):
             raise ValueError("Intervals must be of length 2")
         self._intervals = value
 
-    def applies(self, x, intervals):
+    def applies(self, x):
         """
         Returns true if x is in one of the intervals.
         Parameters
@@ -66,7 +66,7 @@ class CompartmentConstraint(object):
         x : point on the estimated axies
 
         """
-        return any(interval[0] <= x <= interval[1] for interval in intervals)
+        return any(interval[0] <= x <= interval[1] for interval in self.intervals)
 
     def type(self):
         """ """
