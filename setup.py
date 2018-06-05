@@ -10,6 +10,10 @@ setup(
     author_email='j.snellenburg@gmail.com',
 	url='https://github.com/glotaran/glotaran',
 	download_url = 'https://github.com/glotaran/glotaran/archive/0.0.1.tar.gz',
-	keywords = ['placeholder','testing','not-ready-for-use']
-    license='GPLv3'
+	keywords = ['placeholder','testing','not-ready-for-use'],
+	classifiers=(
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Operating System :: OS Independent",
+    )
 )
