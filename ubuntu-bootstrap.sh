@@ -9,7 +9,7 @@ sudo apt-get install git-core -y
 git config --global color.ui true
 
 # Install deps
-sudo apt-get install python3 libfreetype6-dev libpng12-dev python-setuptools python3-dev -y
+sudo apt-get install python3 libfreetype6-dev libpng-dev python-setuptools python3-dev -y
 sudo apt-get install curl -y
 sudo apt-get install tmux -y
 sudo apt-get install build-essential gcc make g++ -y
@@ -26,18 +26,22 @@ pip3 --version
 # sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose -y
 # sudo apt-get install python3-numpy python3-scipy python3-matplotlib ipython ipython3-notebook python3-pandas python3-nose -y
 
+# install dependencies
 sudo -H  pip3 install numpy 
 sudo -H  pip3 install scipy
-sudo -H  pip3 install lmfit 
-sudo -H  pip3 install jupyter
-sudo -H  pip3 install matplotlib
 sudo -H  pip3 install Cython
+
+# sudo -H  pip3 install lmfit 
+# sudo -H  pip3 install matplotlib
 # sudo setfacl -m user:1000:rwx /usr/local/bin
-sudo -H  pip3 install natsort
-sudo -H  pip3 install six
+# sudo -H  pip3 install natsort
+# sudo -H  pip3 install six
+
+# work dependency
+sudo -H  pip3 install jupyterlab
 
 # Install lmfit-varpro (not yet on PyPI - the Python Package Index)
-pip3 install --user git+https://github.com/glotaran/lmfit-varpro.git
+# pip3 install --user git+https://github.com/glotaran/lmfit-varpro.git
 
 # Workaround for Bug
 # sudo ln -s /usr/include/freetype2/ft2build.h /usr/include/ft2build.h
