@@ -1,0 +1,80 @@
+<!--
+Taken from:
+https://stackoverflow.com/questions/4814752/whats-the-best-way-to-check-if-a-website-is-up-or-not-via-javascript
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width, user-scalable=no">
+    <title>Jupyter in vagrant</title>
+    <script>
+    function check_available(){
+        let el=document.getElementById("check_pic");
+		// jupyter notebook image
+        //el.src="http://127.0.0.1:9999/static/base/images/logo.png?now="+Math.random();
+		
+		// jupyter lab image
+		el.src="http://localhost:9999/kernelspecs/python3/logo-64x64.png?now="+Math.random();
+    }
+
+    function check_success(){
+        let url = "http://127.0.0.1:9999";
+        window.location = url;
+        console.log("redirect now :) - url:"+url);
+    }
+    </script>
+    <style>
+        body{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3vmin;
+            margin: 0;
+            position: absolute;
+            }
+        li, footer{
+            font-size: 5vmin;
+            /* list-style: none; */
+            margin-bottom: .5em;
+        }
+        footer{
+            text-align: center;
+            align-self: flex-end;
+        }
+        h1{
+            font-size: 10vmin;
+            text-align: center;
+            margin: 0;
+        }
+        h3{
+            font-size: 8vmin;
+            text-align: left;
+            min-width: 100%;
+            margin-bottom: .5em;
+        }
+    </style>
+</head>
+<body>
+    <img style="visibility:hidden"
+         id='check_pic'
+         src="/images/powered_by.gif"
+         onabort="console.log('interrupted')"
+         onload="check_success()"
+         onerror="check_available()"
+    />
+    <h1>The Jupyter Server run by Vagrant can't be reached</h1>
+    <h3>Possible reasons are:</h3>
+    <ul>
+        <li>You didn't start Vagrant (vagrant up)</li>
+        <li>You started the wrong Vagrant</li>
+        <li>Vagrant didn't finish booting and starting the Jupyter Server yet</li>
+    </ul>
+    <footer>
+        Please visit
+        <a href="https://www.vagrantup.com/">Vagrant</a> or
+        <a href="https://github.com/glotaran/glotaran">glotaran</a> for help.
+    </footer>
+</body>
+</html>

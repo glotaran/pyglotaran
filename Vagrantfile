@@ -12,10 +12,10 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/xenial64"
-  
+  config.vm.box = "ubuntu/bionic64"
+
   # Provisioning:
-  config.vm.provision :shell, privileged: false, path: "ubuntu-bootstrap.sh" 
+  config.vm.provision :shell, privileged: false, path: "ubuntu-bootstrap.sh"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -25,7 +25,7 @@ Vagrant.configure(2) do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
-  config.vm.network "forwarded_port", guest: 8888, host: 8888
+  config.vm.network "forwarded_port", guest: 9999, host: 9999
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -49,7 +49,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     # vb.gui = true
-  
+
     # Customize the amount of memory on the VM:
     vb.memory = "2048"
   end
@@ -69,12 +69,10 @@ Vagrant.configure(2) do |config|
   # documentation for more information about their specific syntax and use.
    config.vm.provision "shell", privileged: false, inline: <<-SHELL
      sudo apt-get update
-     sudo apt-get install -y apache2
    SHELL
-   
+
     config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
-    jupyter notebook --notebook-dir=/vagrant/tests/notebooks --no-browser --ip=0.0.0.0 &
-    sleep 3
+    jupyter lab --config=/vagrant/.jupyter_config.py & sleep 3
     jupyter notebook list
   SHELL
 end
