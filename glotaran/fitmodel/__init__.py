@@ -1,3 +1,4 @@
+"""Glotarans fitmodel package"""
 import numpy as np
 
 from . import (matrix, matrix_group_generator, fitmodel)
