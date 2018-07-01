@@ -11,15 +11,20 @@ class GaussianIrf(Irf):
 
     Multiple center and multiple widths is Double-, Triple- , etc. Gaussian.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
 
-    label: label of the irf
-    center: one or more center of the irf as parameter indices
-    width: one or more widths of the gaussian as parameter index
-    center_dispersion: polynomial coefficients for the dispersion of the
+    label:
+        label of the irf
+    center:
+        one or more center of the irf as parameter indices
+    width:
+        one or more widths of the gaussian as parameter index
+    center_dispersion:
+        polynomial coefficients for the dispersion of the
         center as list of parameter indices. None for no dispersion.
-    width_dispersion: polynomial coefficients for the dispersion of the
+    width_dispersion:
+        polynomial coefficients for the dispersion of the
         width as parameter indices. None for no dispersion.
 
     """
