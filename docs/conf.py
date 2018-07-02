@@ -22,7 +22,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-import glotaran
+import glotaran # noqa:
 
 # -- General configuration ---------------------------------------------
 
@@ -50,8 +50,8 @@ numpydoc_class_members_toctree = True
 
 # taken from https://github.com/lmfit/lmfit-py/blob/master/doc/conf.py
 extlinks = {
-    'scipydoc' : ('https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html', 'scipy.'),
-    'numpydoc' : ('https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', 'numpy.'),
+    'scipydoc': ('https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html', 'scipy.'),# noqa:
+    'numpydoc': ('https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', 'numpy.'),# noqa:
     }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -68,8 +68,16 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'glotaran'
-copyright = u"2018, Joris Snellenburg, Joern Weissenborn, Stefan Schuetz, Sergey Laptenok, Ivo van Stokkum"
-author = u"Joris Snellenburg, Joern Weissenborn, Stefan Schuetz, Sergey Laptenok, Ivo van Stokkum"
+copyright = u"2018, Joris Snellenburg, " \
+            u"Joern Weissenborn, " \
+            u"Stefan Schuetz, " \
+            u"Sergey Laptenok, " \
+            u"Ivo van Stokkum"
+author = u"Joris Snellenburg, " \
+         u"Joern Weissenborn, " \
+         u"Stefan Schuetz, " \
+         u"Sergey Laptenok, " \
+         u"Ivo van Stokkum"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -153,7 +161,12 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'glotaran.tex',
      u'glotaran Documentation',
-     u'Joris Snellenburg, Joern Weissenborn, Stefan Schuetz, Sergey Laptenok, Ivo van Stokkum', 'manual'),
+     u'Joris Snellenburg, '
+     u'Joern Weissenborn, '
+     u'Stefan Schuetz, '
+     u'Sergey Laptenok, '
+     u'Ivo van Stokkum',
+     'manual'),
 ]
 
 
@@ -181,6 +194,3 @@ texinfo_documents = [
      'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

@@ -1,5 +1,6 @@
 import os
 import pkgutil
+import logging
 
 DOCS_DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATE_DIR = os.path.join(DOCS_DIR, "_templates")
@@ -51,7 +52,6 @@ def write_known_packages(child_packages, child_modules):
                                        child_modules_str=child_modules_str)
     with open(KNOWN_PACKAGES_PATH, "w") as doc:
         doc.write(template_str)
-
 
 
 if __name__ == "__main__":
