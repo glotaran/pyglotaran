@@ -23,6 +23,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 import glotaran # noqa:
+import docs # noqa:
 
 # -- General configuration ---------------------------------------------
 
@@ -114,7 +115,7 @@ todo_include_todos = False
 #
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
-    'navigation_depth': 5,
+    'navigation_depth': -1,
 }
 
 # Theme options are theme-specific and customize the look and feel of a

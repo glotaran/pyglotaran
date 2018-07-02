@@ -7,7 +7,7 @@
 
 .. automodule:: {{ fullname }}
 
-    {% if fullname in known_modules %}
+    {% if fullname in known_packages %}
 Submodules
 ----------
 

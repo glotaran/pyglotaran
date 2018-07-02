@@ -1,3 +1,8 @@
+..
+    Don't change api_documentation.rst since it changes will be overwritten.
+    If you want to change api_documentation.rst you have to make the changes in
+    api_documentation_template.rst .
+
 API Documentation
 =================
 

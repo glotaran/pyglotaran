@@ -4,23 +4,23 @@
 Installation
 ============
 
+..
+    Stable release
+    --------------
 
-Stable release
---------------
+    To install glotaran, run this command in your terminal:
 
-To install glotaran, run this command in your terminal:
+    .. code-block:: console
 
-.. code-block:: console
+        $ pip install glotaran
 
-    $ pip install glotaran
+    This is the preferred method to install glotaran, as it will always install the most recent stable release.
 
-This is the preferred method to install glotaran, as it will always install the most recent stable release.
-
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
+    If you don't have `pip`_ installed, this `Python installation guide`_ can guide
+    you through the process.
 
 .. _pip: https://pip.pypa.io
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
+    .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
 
 From sources
@@ -28,7 +28,19 @@ From sources
 
 The sources for glotaran can be downloaded from the `Github repo`_.
 
-You can either clone the public repository:
+First you have to install the Setup dependencies:
+
+.. code-block:: console
+
+    $ pip install -U numpy scipy Cython
+
+Afterwards you can simply use `pip`_ to install it directly from the `Github repo`_.
+
+.. code-block:: console
+
+    $ pip install git+https://github.com/glotaran/glotaran.git@develop
+
+Or you can either clone the public repository:
 
 .. code-block:: console
 
@@ -38,9 +50,9 @@ Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/glotaran/glotaran/tarball/master
+    $ curl  -OL https://github.com/glotaran/glotaran/tarball/develop
 
-Once you have a copy of the source, you can install it with:
+And once you have a copy of the source, you can install it with:
 
 .. code-block:: console
 
@@ -48,4 +60,4 @@ Once you have a copy of the source, you can install it with:
 
 
 .. _Github repo: https://github.com/glotaran/glotaran
-.. _tarball: https://github.com/glotaran/glotaran/tarball/master
+.. _tarball: https://github.com/glotaran/glotaran/tarball/develop

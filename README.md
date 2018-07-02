@@ -6,6 +6,7 @@ The Python implementation of the Glotaran core
 Requirements:
 
 * NumPy
+* SciPy
 * Cython
 
 In folder, run:
@@ -49,3 +50,7 @@ To update the glotaran-core installation on a vagrant box (without rebuilding it
     vagrant reload
 
 
+## Credits
+
+This package was partially created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and
+the [audreyr/cookiecutter-pypackage ](https://github.com/audreyr/cookiecutter-pypackage) project template.

@@ -41,6 +41,7 @@ Write Documentation
 glotaran could always use more documentation, whether as part of the
 official glotaran docs, in docstrings, or even on the web in blog posts,
 articles, and such.
+If you are writing docstrings please use the `NumPyDoc <https://numpydoc.readthedocs.io/en/latest/example.html/>`_ style to write them.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
@@ -64,11 +65,14 @@ Ready to contribute? Here's how to set up `glotaran` for local development.
 
     $ git clone git@github.com:your_name_here/glotaran.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtualenv. Assuming you have
+   `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_
+   installed, this is how you set up your fork for local development::
 
     $ mkvirtualenv glotaran
-    $ cd glotaran/
-    $ python setup.py develop
+    (glotaran)$ cd glotaran/
+    (glotaran)$ pip install -r requirements_dev.txt
+    (glotaran)$ pip install -e .
 
 4. Create a branch for local development::
 
@@ -80,10 +84,11 @@ Ready to contribute? Here's how to set up `glotaran` for local development.
    tests, including testing other Python versions with tox::
 
     $ flake8 glotaran tests
-    $ python setup.py test or py.test
-    $ tox
+    $ python setup.py test
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+..
+    Hopefully we can soon get all tests running with pytest and tox
+
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -102,16 +107,17 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 3.5 and 3.6, and for PyPy. Check
+3. The pull request should work for Python 3.6 and 3.7. Check
    https://travis-ci.org/glotaran/glotaran/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
-Tips
-----
+..
+    Tips
+    ----
 
-To run a subset of tests::
+    To run a subset of tests::
 
-$ py.test tests.test_glotaran
+    $ py.test tests.test_glotaran
 
 
 Deploying

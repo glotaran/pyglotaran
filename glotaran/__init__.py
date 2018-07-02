@@ -1,4 +1,4 @@
-## Glotaran package __init__.py
+# Glotaran package __init__.py
 
 from glotaran.specification_parser import parse_yml
 from glotaran.specification_parser import parse_file

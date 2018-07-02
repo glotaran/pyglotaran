@@ -34,13 +34,19 @@ goto end
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 
 
-if "%1" == "clean" (
+if "%1" == "clean_all" (
 	for /d %%i in (%BUILDDIR%\*) do rmdir /q /s %%i
 	del /q /s %BUILDDIR%\*
 	for /d %%i in (%API_TOCTREE_DIR%\*) do rmdir /q /s %%i
 	del /q /s %API_TOCTREE_DIR%\*
 	goto end
 )
+
+if "%1" == "api_docs" (
+    python generate_api_documentation.py
+	goto end
+)
+
 
 :end
 popd
