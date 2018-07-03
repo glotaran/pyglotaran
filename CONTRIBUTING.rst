@@ -73,7 +73,7 @@ Ready to contribute? Here's how to set up `glotaran` for local development.
 
     $mkvirtualenv glotaran
     (glotaran)$cd glotaran
-    (glotaran)$pip install -r requirements_dev.txt
+    (glotaran)$python -m pip install -r requirements_dev.txt
     (glotaran)$pip install -e .
 
 4. Create a branch for local development::
@@ -90,6 +90,8 @@ Ready to contribute? Here's how to set up `glotaran` for local development.
 
 ..
     Hopefully we can soon get all tests running with pytest and tox
+    $tox
+    $py.test
 
 
 6. Commit your changes and push your branch to GitHub::

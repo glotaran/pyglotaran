@@ -106,6 +106,6 @@ Just run the following commands and you are all set::
 
     (glotaran)$git clone https://github.com/<your_name_here>/glotaran.git
     (glotaran)$cd glotaran
-    (glotaran)$pip install -r requirements_dev.txt
+    (glotaran)$python -m pip install -r requirements_dev.txt
     (glotaran)$pip install -e .
 
