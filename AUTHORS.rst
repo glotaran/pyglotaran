@@ -9,7 +9,7 @@ Ivo van Stokkum <i.h.m.van.stokkum@vu.nl>
 Development Lead
 ----------------
 
-* Joris Snellenburg <j.snellenburg@vu.nl>
+* Joris Snellenburg <j.snellenburg@gmail.com>
 * Joern Weissenborn <joern.weissenborn@gmail.com>
 
 Contributors
