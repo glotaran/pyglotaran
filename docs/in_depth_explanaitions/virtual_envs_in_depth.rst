@@ -108,3 +108,4 @@ Just run the following commands and you are all set::
     (glotaran)$cd glotaran
     (glotaran)$pip install -r requirements_dev.txt
     (glotaran)$pip install -e .
+
