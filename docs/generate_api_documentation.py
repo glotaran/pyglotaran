@@ -15,11 +15,11 @@ The generation of the API is done by traversing the main package
 (see `write_api_documentation`, `api_documentation.rst` and
 `_templates/api_documentation_template.rst`).
 
-If the child module is also a package all its contained modules will be listed .
+If the child module is also a package all its contained modules will be listed
 (see `write_known_packages`, `known_packages.rst`, `_templates/known_packages_template.rst` and
-`_templates/autosummary/module.rst`)
+`_templates/autosummary/module.rst`).
 
-To understand how it works in detail the following links might be of help.
+To understand how it works in detail the following links might be of help:
 
 * `Sphinx Templating Docs <http://www.sphinx-doc.org/en/master/templating.html>`_
 
@@ -47,6 +47,26 @@ KNOWN_PACKAGES_TEMPLATE_PATH = os.path.join(TEMPLATE_DIR,
 
 KNOWN_PACKAGES_PATH = os.path.join(TEMPLATE_DIR,
                                    "known_packages.rst")
+
+
+def api_generation_logger(heading, msg):
+    """
+    Helper function to pretty log function output for debug purposes
+
+    Parameters
+    ----------
+    heading: str
+        Heading of the section which should be logged
+    msg: str
+        Message to be logged
+    """
+    heading_width = 50
+    decoration_str = "\n" + "#"*heading_width + "\n"
+    heading = "#" + heading.center(heading_width-2) + "#"
+    heading = "{decoration_str}{heading}{decoration_str}\n\n".format(decoration_str=decoration_str,
+                                                                     heading=heading
+                                                                     )
+    logging.info(heading+msg+"\n"*2)
 
 
 def traverse_package(package_path, project_root, child_modules=[], child_packages=[]):
@@ -94,6 +114,7 @@ def traverse_package(package_path, project_root, child_modules=[], child_package
     reference and not copied by value, as most other variables.
     Due to recursion all returned values, besides the most outer call, will be ignored.
     """
+    # taken from https://stackoverflow.com/questions/1707709/list-all-the-modules-that-are-part-of-a-python-package # noqa:
     for importer, modname, ispkg in pkgutil.iter_modules([package_path]):
         # print("Found submodule {} (is a package: {}) imported by {}".format(modname,
         #                                                                     ispkg,
@@ -106,11 +127,18 @@ def traverse_package(package_path, project_root, child_modules=[], child_package
             child_packages.append(import_path)
             traverse_package(submodule_path, project_root, child_modules, child_packages)
 
+    if os.path.split(package_path)[0] == project_root:
+        msg = "\n".join(child_modules)
+        api_generation_logger("CHILD_MODULES", msg)
+        msg = "\n".join(child_packages)
+        api_generation_logger("CHILD_PACKAGES", msg)
+
     return {"child_modules": child_modules,
             "child_packages": child_packages}
 
 
-def write_api_documentation(child_modules, api_documentation_template_path,
+def write_api_documentation(child_modules,
+                            api_documentation_template_path,
                             api_documentation_path):
     """
     Writes a list of all modules and packages which should be documented by
@@ -144,8 +172,11 @@ def write_api_documentation(child_modules, api_documentation_template_path,
     with open(api_documentation_path, "w") as doc:
         doc.write(template_str)
 
+    api_generation_logger("API_DOCUMENTATION", template_str)
 
-def write_known_packages(child_packages, child_modules, known_packages_template_path,
+
+def write_known_packages(child_packages, child_modules,
+                         known_packages_template_path,
                          known_packages_path):
     """
     Writes a list of all modules and packages which should be documented by
@@ -185,6 +216,8 @@ def write_known_packages(child_packages, child_modules, known_packages_template_
     with open(known_packages_path, "w") as doc:
         doc.write(template_str)
 
+    api_generation_logger("KNOWN_PACKAGES", template_str)
+
 
 if __name__ == "__main__":
     DOCS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -201,24 +234,19 @@ if __name__ == "__main__":
     KNOWN_PACKAGES_PATH = os.path.join(TEMPLATE_DIR,
                                        "known_packages.rst")
 
-    print_sep = "\n" + "#"*30 + "\n"
+    # uncomment the next line to log funtionoutput for debugging
+    # logging.basicConfig(filename='generate_api_documentation.log', level=logging.INFO)
     import glotaran
     PACKAGE_ROOT = glotaran.__path__[0]
     PROJECT_ROOT = os.path.split(PACKAGE_ROOT)[0]
     module_imports = traverse_package(PACKAGE_ROOT, PROJECT_ROOT)
     child_modules = module_imports["child_modules"]
     child_packages = module_imports["child_packages"]
-    #
-    # print(print_sep, "CHILD MODULES:", print_sep)
-    # for submodule in child_modules:
-    #     print(submodule)
-    #
-    # print(print_sep, "CHILD PACKAGES:", print_sep)
-    # for submodule in child_packages:
-    #     print(submodule)
 
-    write_api_documentation(child_modules, API_DOCUMENTATION_TEMPLATE_PATH,
+    write_api_documentation(child_modules,
+                            API_DOCUMENTATION_TEMPLATE_PATH,
                             API_DOCUMENTATION_PATH)
 
-    write_known_packages(child_packages, child_modules, KNOWN_PACKAGES_TEMPLATE_PATH,
+    write_known_packages(child_packages, child_modules,
+                         KNOWN_PACKAGES_TEMPLATE_PATH,
                          KNOWN_PACKAGES_PATH)

@@ -1,6 +1,9 @@
 "how to" in depth
 =================
 
+This section serves as a more complete guide for new developers, as well
+as place to put useful resources for fast lookup i.e. if you forgot an option for ``.. toctree::`` .
+
 .. toctree::
    :maxdepth: 2
 

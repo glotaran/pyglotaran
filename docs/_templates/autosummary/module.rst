@@ -8,8 +8,7 @@
 .. automodule:: {{ fullname }}
 
     {% if fullname in known_packages %}
-Submodules
-----------
+    .. rubric:: Submodules
 
     .. autosummary::
         {% for item in child_modules %}

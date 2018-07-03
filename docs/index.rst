@@ -2,7 +2,7 @@ Welcome to glotaran's documentation!
 ======================================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: USER DOCUMENTATION:
 
     readme
@@ -14,9 +14,9 @@ Welcome to glotaran's documentation!
     :maxdepth: 2
     :caption: SCIENTIFIC BACKGROUND:
 
-    scientific/abstract
-    scientific/scientific_background
-    scientific/experiments
+    scientific_docs/abstract
+    scientific_docs/scientific_background
+    scientific_docs/experiments
 
 .. toctree::
     :maxdepth: 2
