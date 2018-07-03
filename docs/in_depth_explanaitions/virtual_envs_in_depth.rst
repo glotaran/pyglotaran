@@ -98,10 +98,11 @@ Or to deactivate respectively::
     $deactivate
 
 
-setting up glotaran
+Setting up glotaran
 -------------------
 
-Once you got your environment running you can::
+Once you got your environment running you can start contributing to glotaran.
+Just run the following commands and you are all set::
 
     (glotaran)$git clone https://github.com/<your_name_here>/glotaran.git
     (glotaran)$cd glotaran
