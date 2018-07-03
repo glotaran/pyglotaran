@@ -7,4 +7,5 @@ as place to put useful resources for fast lookup i.e. if you forgot an option fo
 .. toctree::
    :maxdepth: 2
 
+   in_depth_explanaitions/virtual_envs_in_depth.rst
    in_depth_explanaitions/documentation_in_dephs.rst

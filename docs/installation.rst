@@ -44,7 +44,7 @@ Or you can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/glotaran/glotaran
+    $ git clone -b develop --single-branch git://github.com/glotaran/glotaran.git
 
 Or download the `tarball`_:
 

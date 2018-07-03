@@ -1,5 +1,5 @@
-# glotaran-core-python
-The Python implementation of the Glotaran core
+# Glotaran
+Global and target analysis software package based on Python
 
 ## Installation
 

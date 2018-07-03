@@ -16,7 +16,7 @@ Welcome to glotaran's documentation!
 
     scientific_docs/abstract
     scientific_docs/scientific_background
-    scientific_docs/experiments
+    scientific_docs/case_studies
 
 .. toctree::
     :maxdepth: 2

@@ -44,7 +44,7 @@ extensions = ['sphinx.ext.autodoc',
 autoclass_content = "both"
 autosummary_generate = True
 add_module_names = False
-autodoc_member_order = "bysource"
+# autodoc_member_order = "bysource"
 numpydoc_show_class_members = False
 numpydoc_class_members_toctree = True
 
@@ -71,13 +71,9 @@ master_doc = 'index'
 project = u'glotaran'
 copyright = u"2018, Joris Snellenburg, " \
             u"Joern Weissenborn, " \
-            u"Stefan Schuetz, " \
-            u"Sergey Laptenok, " \
             u"Ivo van Stokkum"
 author = u"Joris Snellenburg, " \
          u"Joern Weissenborn, " \
-         u"Stefan Schuetz, " \
-         u"Sergey Laptenok, " \
          u"Ivo van Stokkum"
 
 # The version info for the project you're documenting, acts as replacement
@@ -166,8 +162,6 @@ latex_documents = [
      u'glotaran Documentation',
      u'Joris Snellenburg, '
      u'Joern Weissenborn, '
-     u'Stefan Schuetz, '
-     u'Sergey Laptenok, '
      u'Ivo van Stokkum',
      'manual'),
 ]
@@ -194,6 +188,6 @@ texinfo_documents = [
      u'glotaran Documentation',
      author,
      'glotaran',
-     'One line description of project.',
+     'Global and target analysis software package based on Python',
      'Miscellaneous'),
 ]

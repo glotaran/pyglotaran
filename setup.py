@@ -59,7 +59,7 @@ else:
 
 setup(
     name="glotaran",
-    version="0.1.0",
+    version="0.0.1",
     description='The Glotaran fitting engine.',
     url='http://glotaran.org',
     classifiers=[
@@ -67,17 +67,15 @@ setup(
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Cython',
         'Topic :: Scientific'
     ],
-    author='Joris Snellenburg, Joern Weissenborn, Stefan Schuetz, Sergey Laptenok, Ivo van Stokkum',
-    author_email="""j.snellenburg@vu.nl,
-                    TODO-email-Joern,
-                    TODO-email-Stefan,
-                    TODO-email-Sergey,
-                    i.h.m.van.stokkum@vu.nl""",
+    author='Joris Snellenburg, Joern Weissenborn, Ivo van Stokkum',
+    author_email="""j.snellenburg@gmail.com,
+                    joern.weissenborn@gmail.com,
+                    i.h.m.van.stokkum@vu.nl """,
     license='GPLv3',
     packages=[
               'glotaran.dataio',

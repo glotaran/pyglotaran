@@ -3,12 +3,12 @@
 """
 Helper Module to generate the API documentation located at `docs/generate_api_documentation.py`.
 
-The functionality is available by calling ``make api_docs`` on posix system
-or ``make.bat api_docs`` on windows.
+The functionality is available by calling ``make api_docs`` on a Posix system
+or ``make.bat api_docs`` on Windows.
 
 If you add ``packages``, ``modules``, ``classes``, ``methods``, ``attributes``,
-``functions`` or ``exceptions``, you need might need to run ``make clean_all`` on posix system
-or ``make.bat clean_all`` on windows to see changes in the documentation.
+``functions`` or ``exceptions``, you need might need to run ``make clean_all`` on a Posix system
+or ``make.bat clean_all`` on Windows to see changes in the documentation.
 
 The generation of the API is done by traversing the main package
 `traverse_module` and listing all child modules for autosummary to process
@@ -49,7 +49,7 @@ KNOWN_PACKAGES_PATH = os.path.join(TEMPLATE_DIR,
                                    "known_packages.rst")
 
 
-def api_generation_logger(heading, msg):
+def generate_api_docs_logger(heading, msg):
     """
     Helper function to pretty log function output for debug purposes
 
@@ -64,8 +64,7 @@ def api_generation_logger(heading, msg):
     decoration_str = "\n" + "#"*heading_width + "\n"
     heading = "#" + heading.center(heading_width-2) + "#"
     heading = "{decoration_str}{heading}{decoration_str}\n\n".format(decoration_str=decoration_str,
-                                                                     heading=heading
-                                                                     )
+                                                                     heading=heading)
     logging.info(heading+msg+"\n"*2)
 
 
@@ -129,9 +128,9 @@ def traverse_package(package_path, project_root, child_modules=[], child_package
 
     if os.path.split(package_path)[0] == project_root:
         msg = "\n".join(child_modules)
-        api_generation_logger("CHILD_MODULES", msg)
+        generate_api_docs_logger("CHILD_MODULES", msg)
         msg = "\n".join(child_packages)
-        api_generation_logger("CHILD_PACKAGES", msg)
+        generate_api_docs_logger("CHILD_PACKAGES", msg)
 
     return {"child_modules": child_modules,
             "child_packages": child_packages}
@@ -172,7 +171,7 @@ def write_api_documentation(child_modules,
     with open(api_documentation_path, "w") as doc:
         doc.write(template_str)
 
-    api_generation_logger("API_DOCUMENTATION", template_str)
+    generate_api_docs_logger("API_DOCUMENTATION", template_str)
 
 
 def write_known_packages(child_packages, child_modules,
@@ -216,7 +215,7 @@ def write_known_packages(child_packages, child_modules,
     with open(known_packages_path, "w") as doc:
         doc.write(template_str)
 
-    api_generation_logger("KNOWN_PACKAGES", template_str)
+    generate_api_docs_logger("KNOWN_PACKAGES", template_str)
 
 
 if __name__ == "__main__":
