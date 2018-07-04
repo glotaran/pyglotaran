@@ -14,7 +14,7 @@ In folder, run:
 
 ## Vagrant
 
-The repository contains a Vagrantfile which sets up a [Vagrant](https://www.vagrantup.com/) box with included Jupyter Notebook.
+The repository contains a Vagrantfile which sets up a [Vagrant](https://www.vagrantup.com/) box with included Jupyter Lab.
 
 After installing [Vagrant](https://www.vagrantup.com/) simply go to the
 repository folder and issue
@@ -26,7 +26,7 @@ repository folder and issue
 
 Note: You will need [VirtualBox](https://www.virtualbox.org/) installed.
 
-After running `vagrant up`, open a browser and browse to `localhost:8888` (`127.0.0.1:8888`).
+After running `vagrant up`, open a browser and browse to `localhost:9999` (`127.0.0.1:9999`) or simply doubleclick `open_vagrant-jupyter.html`.
 
 To shut down the box, issue
 
