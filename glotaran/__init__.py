@@ -1,7 +1,9 @@
-## Glotaran package __init__.py
+# Glotaran package __init__.py
 
 from glotaran.specification_parser import parse_yml
 from glotaran.specification_parser import parse_file
+
+__version__ = '0.0.1'
 
 # Top level API
 # SeparableModel = separable_model.SeparableModel

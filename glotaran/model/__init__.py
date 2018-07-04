@@ -1,3 +1,4 @@
+"""Glotarans model package"""
 from . import (
                c_matrix,
                compartment_constraints,
