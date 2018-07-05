@@ -1,4 +1,7 @@
-[![Documentation Status](//readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
+
+[![Documentation Status](https://readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
+
+---
 
 # Glotaran
 Global and target analysis software package based on Python
