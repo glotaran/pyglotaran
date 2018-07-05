@@ -38,7 +38,7 @@ Afterwards you can simply use `pip`_ to install it directly from the `Github rep
 
 .. code-block:: console
 
-    $ pip install git+https://github.com/glotaran/glotaran.git@develop
+    $ pip install git+https://github.com/glotaran/glotaran.git@develop --process-dependency-links
 
 Or you can either clone the public repository:
 
