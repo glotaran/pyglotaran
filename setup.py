@@ -94,9 +94,9 @@ setup(
         'pyyaml',
         'matplotlib',  # dependency introduced by glotaran.plotting
         'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-        'lmfit-varpro'
+        'lmfit-varpro>=0.1.0'
     ],
-	dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro'],
+	dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.1.0'],
     cmdclass={"build_ext": build_ext, 'clean': CleanCommand},
     ext_modules=ext_modules,
     test_suite='nose.collector',
