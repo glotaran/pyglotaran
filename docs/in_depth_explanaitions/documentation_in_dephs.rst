@@ -113,12 +113,31 @@ Often used commands (for Windows replace ```make`` with ```make.bat``):
 Api Documentation Creation Helper
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. currentmodule:: docs
 
-.. automodule:: generate_api_documentation
+The helper Module to generate the API documentation is located at `docs/generate_api_documentation.py`.
 
-.. autofunction:: generate_api_documentation.traverse_package
+The functionality is available by calling ``make api_docs`` on a Posix system
+or ``make.bat api_docs`` on Windows.
 
-.. autofunction:: generate_api_documentation.write_api_documentation
+If you add ``packages``, ``modules``, ``classes``, ``methods``, ``attributes``,
+``functions`` or ``exceptions``, you might need to run ``make clean_all`` on a Posix system
+or ``make.bat clean_all`` on Windows to see changes in the documentation.
 
-.. autofunction:: generate_api_documentation.write_known_packages
+The generation of the API is done by traversing the main package
+`traverse_module` and listing all child modules for autosummary to process
+(see `write_api_documentation`, `api_documentation.rst` and
+`_templates/api_documentation_template.rst`).
+
+If the child module is also a package all its contained modules will be listed
+(see `write_known_packages`, `known_packages.rst`, `_templates/known_packages_template.rst` and
+`_templates/autosummary/module.rst`).
+
+To understand how it works in detail the following links might be of help:
+
+* `Sphinx Templating Docs <http://www.sphinx-doc.org/en/master/templating.html>`_
+
+* `Jinja Templating <http://jinja.pocoo.org/docs/2.10/templates/>`_
+
+* `Sphinx autosummary Docs <http://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html?highlight=autosummary%20>`_
+
+* `Sphinx autodoc Docs  <http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc>`_
