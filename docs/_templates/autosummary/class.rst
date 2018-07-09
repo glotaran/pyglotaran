@@ -3,6 +3,7 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
+    :show-inheritance:
     :members:
     :undoc-members:
     :inherited-members:
@@ -19,17 +20,6 @@
 
     {% endif %}
     {% endblock %}
-
-    {% block attributes_documentation %}
-    {% if attributes %}
-
-    .. rubric:: Attributes Documentation
-
-    {% endif %}
-    {% endblock %}
-
-
-
 
     {% if '__init__' in methods %}
         {% set caught_result = methods.remove('__init__') %}

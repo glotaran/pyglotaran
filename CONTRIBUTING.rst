@@ -41,7 +41,9 @@ Write Documentation
 glotaran could always use more documentation, whether as part of the
 official glotaran docs, in docstrings, or even on the web in blog posts,
 articles, and such.
-If you are writing docstrings please use the `NumPyDoc <https://numpydoc.readthedocs.io/en/latest/example.html/>`_ style to write them.
+If you are writing docstrings please use the
+`NumPyDoc <https://numpydoc.readthedocs.io/en/latest/example.html>`_
+style to write them.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~

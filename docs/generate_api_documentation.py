@@ -7,7 +7,7 @@ The functionality is available by calling ``make api_docs`` on a Posix system
 or ``make.bat api_docs`` on Windows.
 
 If you add ``packages``, ``modules``, ``classes``, ``methods``, ``attributes``,
-``functions`` or ``exceptions``, you need might need to run ``make clean_all`` on a Posix system
+``functions`` or ``exceptions``, you might need to run ``make clean_all`` on a Posix system
 or ``make.bat clean_all`` on Windows to see changes in the documentation.
 
 The generation of the API is done by traversing the main package

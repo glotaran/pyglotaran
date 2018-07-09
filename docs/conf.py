@@ -23,7 +23,6 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 import glotaran # noqa:
-import docs # noqa:
 
 # -- General configuration ---------------------------------------------
 

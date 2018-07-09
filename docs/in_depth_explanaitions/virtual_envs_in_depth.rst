@@ -52,7 +52,20 @@ Or to deactivate respectively::
     $source deactivate
 
 .. note::  On default Windows terminal (cmd/PS) you might need omit ``source`` and run
-           ``activate glotaran``/``deactivate`` instead.
+              ``activate glotaran``/``deactivate`` instead.
+
+.. note::  To easily manage your conda environments you can use the tool
+           `enboard <https://pypi.org/project/enboard/>`_ .
+
+           .. warning::
+                         If you want to use ``enboard`` with git bash on Windows,
+                         this won't work out of the box.
+                         You will have to edit your ``.bash_profile`` as follows::
+
+                             export CONDA_ROOT_DIR='/path/to/conda/windows/style' # i.e. mine is 'C:\Anaconda3'
+                             alias python='winpty python'
+                             alias enboard='winpty enboard'
+
 
 Using mkvirtualenv
 ------------------
