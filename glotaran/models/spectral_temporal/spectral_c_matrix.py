@@ -33,18 +33,18 @@ class SpectralCMatrix(Matrix):
         return (x.shape[0], len(self.compartment_order()))
 
     def calculate(self, c_matrix, compartment_order, parameter):
+
+        # We need the spectral shapes and axis to perform the calculations
         shapes = self._shapes
         x = self.dataset.data.spectral_axis
 
-        # we use ones, so that if no shape is defined for the compartment, its
-        # amplitude is 1.0 by convention.
-        i = 0
-        for c in compartment_order:
+        for (i, c) in enumerate(compartment_order):
             if c in shapes:
                 c_matrix[:, i] = self._calculate_shape(parameter, shapes[c], x)
             else:
+                # we use ones, so that if no shape is defined for the
+                # compartment, the  amplitude is 1.0 by convention.
                 c_matrix[:, i].fill(1.0)
-            i += 1
 
     def _calculate_shape(self, parameter, shape, x):
         if isinstance(shape, SpectralShapeGaussian):

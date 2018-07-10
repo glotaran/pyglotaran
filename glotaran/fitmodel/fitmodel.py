@@ -24,6 +24,10 @@ class FitModel(SeparableModel):
         result.fit(*args, **kwargs)
         return result
 
+    def eval(self, parameter, *args, **kwargs):
+
+        return super(FitModel, self).__init__(nnls, *arg, **kwargs)
+
     def result(self, nnls, *args, **kwargs):
         self._generator = MatrixGroupGenerator.for_model(self._model,
                                                          self._model.
@@ -65,12 +69,21 @@ class FitModel(SeparableModel):
 
     def e_matrix(self, parameter, *args, **kwargs):
 
+        # We don't have a way to construct a complete E matrix for the full
+        # problem yet.
         if "dataset" not in kwargs:
             raise Exception("'dataset' non specified in kwargs")
 
         parameter = parameter.valuesdict()
         dataset = self._model.datasets[kwargs["dataset"]]
-        x = kwargs["x"] if "x" in kwargs else 0
+
+        # A data object needs to be present to provide axies
+        if dataset.data is None:
+            raise Exception("No Data object present for dataset '{}'"
+                            .format(kwargs["dataset"]))
+
+        x = kwargs["x"] if "x" in kwargs else np.asarray([0])
+
         e_matrix = self._model.estimated_matrix()(x, dataset, self._model)
         return e_matrix.calculate_standalone(parameter)
 
