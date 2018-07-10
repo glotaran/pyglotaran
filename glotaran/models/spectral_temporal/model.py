@@ -129,7 +129,7 @@ class KineticModel(Model):
             s += "{}\n".format(shape)
         return s
 
-    def eval(self, dataset, axes, parameter=None):
+    def simulate(self, dataset, axes, parameter=None):
         data = SpectralTemporalDataset(dataset)
         if parameter is None:
             parameter = self.parameter.as_parameters_dict()

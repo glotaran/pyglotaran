@@ -1,3 +1,4 @@
+import numpy as np
 from lmfit_varpro import CompartmentEqualityConstraint, SeparableModel
 
 from .matrix_group_generator import MatrixGroupGenerator
@@ -23,10 +24,6 @@ class FitModel(SeparableModel):
 
         result.fit(*args, **kwargs)
         return result
-
-    def eval(self, parameter, *args, **kwargs):
-
-        return super(FitModel, self).__init__(nnls, *arg, **kwargs)
 
     def result(self, nnls, *args, **kwargs):
         self._generator = MatrixGroupGenerator.for_model(self._model,
