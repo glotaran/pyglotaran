@@ -78,6 +78,7 @@ setup(
                     i.h.m.van.stokkum@vu.nl """,
     license='GPLv3',
     packages=[
+              'glotaran',
               'glotaran.dataio',
               'glotaran.plotting',
               'glotaran.model',
