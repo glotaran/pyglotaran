@@ -131,8 +131,11 @@ class KineticModel(Model):
 
     def simulate(self, dataset, axes, parameter=None):
         data = SpectralTemporalDataset(dataset)
-        if parameter is None:
-            parameter = self.parameter.as_parameters_dict()
+        sim_parameter = self.parameter.as_parameters_dict().copy()
+        if parameter is not None:
+            for k, v in parameter.items():
+                k = "p_" + k.replace(".", "_")
+                sim_parameter[k].value = v
         for label, val in axes.items():
             data.set_axis(label, val)
         self.set_data(dataset, data)
@@ -140,7 +143,7 @@ class KineticModel(Model):
 
         kwargs = {}
         kwargs['dataset'] = dataset
-        data = fitmodel.eval(parameter, **kwargs)
+        data = fitmodel.eval(sim_parameter, **kwargs)
         self.datasets[dataset].data.data = data
 
     def c_matrix(self, parameter=None):

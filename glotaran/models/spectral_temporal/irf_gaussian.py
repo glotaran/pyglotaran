@@ -62,8 +62,6 @@ class GaussianIrf(Irf):
     def center(self, value):
         if not isinstance(value, list):
             value = [value]
-        if any(not isinstance(val, int) for val in value):
-            raise TypeError("Parameter indices must be integer.")
         self._center = value
 
     @property
@@ -74,8 +72,6 @@ class GaussianIrf(Irf):
     def center_dispersion(self, value):
         if not isinstance(value, list):
             value = [value]
-        if any(not isinstance(val, int) for val in value):
-            raise TypeError("Parameter indices must be integer.")
         self._center_dispersion = value
 
     @property
@@ -86,8 +82,6 @@ class GaussianIrf(Irf):
     def width(self, value):
         if not isinstance(value, list):
             value = [value]
-        if any(not isinstance(val, int) for val in value):
-            raise TypeError("Parameter indices must be integer.")
         self._width = value
 
     @property
@@ -98,8 +92,6 @@ class GaussianIrf(Irf):
     def width_dispersion(self, value):
         if not isinstance(value, list):
             value = [value]
-        if any(not isinstance(val, int) for val in value):
-            raise TypeError("Parameter indices must be integer.")
         self._width_dispersion = value
 
     @property

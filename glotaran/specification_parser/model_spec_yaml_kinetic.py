@@ -115,6 +115,10 @@ class KineticModelParser(ModelSpecParser):
                                                    backsweep=backsweep,
                                                    backsweep_period=backsweep_period,
                                                    ))
+                    return
+                if type is None:
+                    raise Exception("Irf Type not specified for IRF'{}'".format(label))
+                raise Exception("Unknown Irf Type '{}' for Irf '{}'".format(type, label))
 
     def get_shapes(self):
         if KineticKeys.SHAPES in self.spec:

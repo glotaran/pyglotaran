@@ -122,5 +122,4 @@ class KMatrix(object):
         return mat
 
     def __str__(self):
-        return "Label: {}\nMatrix:\n{}".format(self.label,
-                                               self.asarray())
+        return "Label: {}\nMatrix:\n".format(self.label)
