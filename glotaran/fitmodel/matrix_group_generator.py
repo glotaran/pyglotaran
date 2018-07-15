@@ -63,7 +63,7 @@ class MatrixGroupGenerator(object):
                 x = np.where(mat.dataset.data.get_estimated_axis() ==
                              mat.x)
                 slice = np.concatenate((slice,
-                                        mat.dataset.data.data[x, :].flatten()))
+                                        mat.dataset.data.get()[x, :].flatten()))
             dataset_group.append(slice)
         return dataset_group
 

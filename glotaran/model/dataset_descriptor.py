@@ -1,3 +1,5 @@
+import numpy as np
+
 from .compartment_constraints import CompartmentConstraint
 from .dataset import Dataset
 
@@ -171,3 +173,7 @@ class DatasetDescriptor(object):
             s += "\t\t- {}:{}\n".format(cmplx, scale)
 
         return s
+
+    def svd(self):
+        lsvd, svals, rsvd = np.linalg.svd(self.data.get())
+        return lsvd, svals, rsvd

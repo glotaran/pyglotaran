@@ -3,7 +3,7 @@ from lmfit_varpro import SeparableModelResult
 
 class Result(SeparableModelResult):
     def e_matrix(self, dataset, *args, **kwargs):
-        data = self.model._model.datasets[dataset].data.data
+        data = self.model._model.datasets[dataset].data.get()
         return super(Result, self).e_matrix(data, **{'dataset': dataset})
 
     def eval(self, dataset, *args, **kwargs):

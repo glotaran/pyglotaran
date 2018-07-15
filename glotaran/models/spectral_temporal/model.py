@@ -144,7 +144,7 @@ class KineticModel(Model):
         kwargs = {}
         kwargs['dataset'] = dataset
         data = fitmodel.eval(sim_parameter, **kwargs)
-        self.datasets[dataset].data.data = data
+        self.datasets[dataset].data.set(data)
 
     def c_matrix(self, parameter=None):
         if parameter is None:

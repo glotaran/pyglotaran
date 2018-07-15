@@ -79,13 +79,11 @@ class Dataset(object):
             raise ValueError("Axis must be list or ndarray of hashable values")
         self._axis[label] = axis
 
-    @property
-    def data(self):
+    def get(self):
         """nd.array of shape (M,N)"""
         return self._data
 
-    @data.setter
-    def data(self, data):
+    def set(self, data):
         """
 
         Parameters
