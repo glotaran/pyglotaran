@@ -22,7 +22,7 @@ class DatasetDescriptor:
                  megacomplex_scaling: Dict[str, List[str]],
                  scaling: str,
                  compartment_scaling: Dict[str, List[str]],
-                 compartement_constraints: List[CompartmentConstraint]):
+                 compartment_constraints: List[CompartmentConstraint]):
         """
 
         Parameters
@@ -45,7 +45,7 @@ class DatasetDescriptor:
         compartment_scaling: Dict[str: List[str]]
             The compartment scaling parameters
 
-        compartement_constraints: List[CompartmentConstraint] :
+        compartment_constraints: List[CompartmentConstraint] :
             A list of compartment constraints
 
         """
@@ -56,7 +56,7 @@ class DatasetDescriptor:
         self.megacomplex_scaling = megacomplex_scaling
         self.scaling = scaling
         self.data = None
-        self.compartment_constraints = compartement_constraints
+        self.compartment_constraints = compartment_constraints
 
     @property
     def label(self):
