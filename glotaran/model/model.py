@@ -30,9 +30,6 @@ class Model(object):
     def type_string(self):
         raise NotImplementedError
 
-    def eval(dataset, axies, parameter=None):
-        raise NotImplementedError
-
     def calculated_matrix(self):
         raise NotImplementedError
 
@@ -47,7 +44,8 @@ class Model(object):
             raise Exception("Model datasets not initialized")
         return self.fit_model().fit(nnls, *args, **kwargs)
 
-    def simulate(self, dataset, axes, parameter=None):
+    def simulate(self, dataset, axes, parameter=None, noise=False,
+                 noise_std_dev=1.0):
         data = self.dataset_descriptor_class()(dataset)
         sim_parameter = self.parameter.as_parameters_dict().copy()
         if parameter is not None:
@@ -61,6 +59,8 @@ class Model(object):
 
         kwargs = {}
         kwargs['dataset'] = dataset
+        kwargs['noise'] = noise
+        kwargs['noise_std_dev'] = noise_std_dev
         data = fitmodel.eval(sim_parameter, **kwargs)
         self.datasets[dataset].data.set(data)
 
