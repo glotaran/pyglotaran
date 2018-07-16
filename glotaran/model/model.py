@@ -39,10 +39,30 @@ class Model(object):
     def estimated_matrix(self):
         raise NotImplementedError
 
+    def dataset_descriptor_class(self):
+        raise NotImplementedError
+
     def fit(self, nnls=False, *args, **kwargs):
         if any([dset.data is None for _, dset in self.datasets.items()]):
             raise Exception("Model datasets not initialized")
         return self.fit_model().fit(nnls, *args, **kwargs)
+
+    def simulate(self, dataset, axes, parameter=None):
+        data = self.dataset_descriptor_class()(dataset)
+        sim_parameter = self.parameter.as_parameters_dict().copy()
+        if parameter is not None:
+            for k, v in parameter.items():
+                k = "p_" + k.replace(".", "_")
+                sim_parameter[k].value = v
+        for label, val in axes.items():
+            data.set_axis(label, val)
+        self.set_data(dataset, data)
+        fitmodel = FitModel(self)
+
+        kwargs = {}
+        kwargs['dataset'] = dataset
+        data = fitmodel.eval(sim_parameter, **kwargs)
+        self.datasets[dataset].data.set(data)
 
     def fit_model(self):
         return FitModel(self)
