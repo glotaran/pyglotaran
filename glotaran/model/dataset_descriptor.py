@@ -1,52 +1,79 @@
+"""Dataset Descriptor"""
+
+from typing import Dict, List, Tuple
 import numpy as np
 
 from .compartment_constraints import CompartmentConstraint
 from .dataset import Dataset
 
 
-class DatasetDescriptor(object):
-    """Class representing a dataset for fitting."""
+class DatasetDescriptor:
+    """Represents a dataset for fitting"""
 
-    def __init__(self, label, initial_concentration, megacomplexes,
-                 megacomplex_scaling, dataset_scaling, compartment_scaling,
-                 compartement_constraints):
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
+    # pylint: disable=attribute-defined-outside-init
+    # Datasets are complex.
+
+    def __init__(self,
+                 label: str,
+                 initial_concentration: str,
+                 megacomplexes: List[str],
+                 megacomplex_scaling: Dict[str: List[str]],
+                 scaling: str,
+                 compartment_scaling: Dict[str: List[str]],
+                 compartement_constraints: List[CompartmentConstraint]):
+        """
+
+        scaling: str :
+        ----------
+        label : str
+            The label of the dataset.
+
+        initial_concentration : str
+            The label of the initial concentration
+
+        megacomplexes : List[str]
+            A list of megacomplex labels
+
+        megacomplex_scaling : Dict[str: List[str]]
+            The megacomplex scaling parameters
+
+        scaling : str
+            The scaling parameter for the dataset
+
+        compartment_scaling: Dict[str: List[str]]
+            The compartment scaling parameters
+
+        compartement_constraints: List[CompartmentConstraint] :
+            A list of compartment constraints
+
+        """
         self.label = label
         self.initial_concentration = initial_concentration
         self.megacomplexes = megacomplexes
         self.compartment_scaling = compartment_scaling
         self.megacomplex_scaling = megacomplex_scaling
-        self.scaling = dataset_scaling
+        self.scaling = scaling
         self.data = None
         self.compartment_constraints = compartement_constraints
 
     @property
     def label(self):
-        """label of the dataset"""
+        """The label of the dataset"""
         return self._label
 
     @label.setter
     def label(self, value):
-        """
-
-        Parameters
-        ----------
-        value : label of the dataset
-        """
         self._label = value
 
     @property
     def compartment_constraints(self):
-        """a list of compartment constraints"""
+        """A list of compartment constraints"""
         return self._compartment_constraints
 
     @compartment_constraints.setter
     def compartment_constraints(self, value):
-        """
-
-        Parameters
-        ----------
-        value : a list of compartment constraints
-        """
         if not isinstance(value, list):
             value = [value]
         if any(not issubclass(type(val), CompartmentConstraint)
@@ -57,66 +84,42 @@ class DatasetDescriptor(object):
 
     @property
     def data(self):
-        """implementation of model.Dataset"""
+        """An implementation of model.Dataset"""
         return self._data
 
     @data.setter
     def data(self, data):
-        """
-
-        Parameters
-        ----------
-        data : implementation of model.Dataset
-        """
         if not isinstance(data, Dataset) and data is not None:
             raise TypeError
         self._data = data
 
     @property
     def initial_concentration(self):
-        """list of labels of initial concentrations"""
+        """A list of labels of initial concentrations"""
         return self._initial_concentration
 
     @initial_concentration.setter
     def initial_concentration(self, value):
-        """
-
-        Parameters
-        ----------
-        value : list of labels of initial concentrations
-        """
         self._initial_concentration = value
 
     @property
     def scaling(self):
-        """parameter to scale the datasets c matrix"""
+        """A parameter to scale the dataset"""
         return self._scaling
 
     @scaling.setter
     def scaling(self, scaling):
-        """
-
-        Parameters
-        ----------
-        scaling : parameter to scale the datasets c matrix
-        """
         if not isinstance(scaling, int) and scaling is not None:
             raise TypeError("Parameter index must be numerical")
         self._scaling = scaling
 
     @property
     def compartment_scaling(self):
-        """dict of compartment parameter pairs"""
+        """ A dictionary of compartment parameter pairs"""
         return self._compartment_scaling
 
     @compartment_scaling.setter
     def compartment_scaling(self, scaling):
-        """
-
-        Parameters
-        ----------
-        scaling : dict of compartment parameter pairs
-        """
         if not isinstance(scaling, dict):
             raise TypeError
         self._compartment_scaling = scaling
@@ -128,12 +131,6 @@ class DatasetDescriptor(object):
 
     @megacomplexes.setter
     def megacomplexes(self, megacomplex):
-        """
-
-        Parameters
-        ----------
-        megacomplex : list of megacomplex labels
-        """
         if not isinstance(megacomplex, list):
             megacomplex = [megacomplex]
         if any(not isinstance(m, str) for m in megacomplex):
@@ -142,38 +139,49 @@ class DatasetDescriptor(object):
 
     @property
     def megacomplex_scaling(self):
-        """dict of megacomplex paramater pairs"""
+        """A dictinary of megacomplex scaling parameters"""
         return self._megacomplex_scaling
 
     @megacomplex_scaling.setter
     def megacomplex_scaling(self, scaling):
-        """
-
-        Parameters
-        ----------
-        scaling : dict of megacomplex paramater pairs
-        """
         if not isinstance(scaling, dict):
             raise TypeError("Megacomplex Scaling must by dict, got"
                             "{}".format(type(scaling)))
         self._megacomplex_scaling = scaling
 
     def __str__(self):
-        s = "Dataset '{}'\n\n".format(self.label)
+        """ """
+        string = "Dataset '{}'\n\n".format(self.label)
 
-        s += "\tDataset Scaling: {}\n".format(self.scaling)
+        string += "\tDataset Scaling: {}\n".format(self.scaling)
 
-        s += "\tInitial Concentration: {}\n"\
+        string += "\tInitial Concentration: {}\n"\
             .format(self.initial_concentration)
 
-        s += "\tMegacomplexes: {}\n".format(self.megacomplexes)
+        string += "\tMegacomplexes: {}\n".format(self.megacomplexes)
 
-        s += "\tMega scalings:\n"
+        string += "\tMega scalings:\n"
         for cmplx, scale in self._megacomplex_scaling.items():
-            s += "\t\t- {}:{}\n".format(cmplx, scale)
+            string += "\t\t- {}:{}\n".format(cmplx, scale)
 
-        return s
+        return string
 
-    def svd(self):
-        lsvd, svals, rsvd = np.linalg.svd(self.data.get())
-        return lsvd, svals, rsvd
+    def svd(self) -> Tuple[np.array, np.array, np.array]:
+        """Returns the singular value decomposition of the dataset
+
+
+        Returns
+        -------
+        tuple :
+            (lsv, svals, rsv)
+
+            lsv : np.array
+                left singular values
+            svals : np.array
+                singular values
+            rsv : np.array
+                right singular values
+
+        """
+        lsv, svals, rsv = np.linalg.svd(self.data.get())
+        return lsv, svals, rsv
