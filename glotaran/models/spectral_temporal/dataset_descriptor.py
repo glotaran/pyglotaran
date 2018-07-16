@@ -1,9 +1,7 @@
 """Spectral Temporal Dataset Descriptor"""
 
 from typing import Dict, List
-from glotaran.model import DatasetDescriptor
-
-from .compartment_constraints import CompartmentConstraint
+from glotaran.model import DatasetDescriptor, CompartmentConstraint
 
 
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
