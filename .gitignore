@@ -1,5 +1,8 @@
 tests/resources/PE2017
 
+# Notebook
+*.ipynb
+
 # TIMP data
 *.RData
 *.Rhistory

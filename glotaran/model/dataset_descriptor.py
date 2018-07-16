@@ -19,13 +19,13 @@ class DatasetDescriptor:
                  label: str,
                  initial_concentration: str,
                  megacomplexes: List[str],
-                 megacomplex_scaling: Dict[str: List[str]],
+                 megacomplex_scaling: Dict[str, List[str]],
                  scaling: str,
-                 compartment_scaling: Dict[str: List[str]],
+                 compartment_scaling: Dict[str, List[str]],
                  compartement_constraints: List[CompartmentConstraint]):
         """
 
-        scaling: str :
+        Parameters
         ----------
         label : str
             The label of the dataset.

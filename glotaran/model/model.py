@@ -1,3 +1,4 @@
+from typing import List
 from collections import OrderedDict
 
 from glotaran.fitmodel import FitModel
@@ -110,6 +111,17 @@ class Model(object):
     def data(self):
         for _, d in self.datasets.items():
             yield d.data
+
+    def list_datasets(self) -> List[str]:
+        """Returns a list of all dataset labels
+
+        Returns
+        -------
+        labels : list(str)
+            List of dataset labels
+
+        """
+        return [label for label in self.datasets]
 
     @property
     def datasets(self):
