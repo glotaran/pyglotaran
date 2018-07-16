@@ -183,5 +183,5 @@ class DatasetDescriptor:
                 right singular values
 
         """
-        lsv, svals, rsv = np.linalg.svd(self.data.get())
+        lsv, svals, rsv = np.linalg.svd(self.data.get().T)
         return lsv, svals, rsv
