@@ -28,8 +28,8 @@ class MatrixGroupGenerator(object):
             self._add_dataset_to_group(model, dataset, xtol)
 
     def _add_dataset_to_group(self, model, dataset, xtol):
-        grouping_axis = dataset.data.get_calculated_axis() if self._calculated\
-                else dataset.data.get_estimated_axis()
+        grouping_axis = dataset.dataset.get_calculated_axis() if self._calculated\
+                else dataset.dataset.get_estimated_axis()
         for matrix in [self._matrix(x, dataset, model) for x
                        in grouping_axis]:
             self._add_matrix_to_group(matrix, xtol)
@@ -60,10 +60,10 @@ class MatrixGroupGenerator(object):
         for _, group in self._groups.items():
             slice = np.array([])
             for mat in group.matrices:
-                x = np.where(mat.dataset.data.get_estimated_axis() ==
+                x = np.where(mat.dataset.dataset.get_estimated_axis() ==
                              mat.x)
                 slice = np.concatenate((slice,
-                                        mat.dataset.data.get()[x, :].flatten()))
+                                        mat.dataset.dataset.get()[x, :].flatten()))
             dataset_group.append(slice)
         return dataset_group
 

@@ -29,14 +29,14 @@ class SpectralCMatrix(Matrix):
         return self._compartment_order
 
     def shape(self):
-        x = self.dataset.data.spectral_axis
+        x = self.dataset.dataset.spectral_axis
         return (x.shape[0], len(self.compartment_order()))
 
     def calculate(self, c_matrix, compartment_order, parameter):
 
         # We need the spectral shapes and axis to perform the calculations
         shapes = self._shapes
-        x = self.dataset.data.spectral_axis
+        x = self.dataset.dataset.spectral_axis
 
         for (i, c) in enumerate(compartment_order):
             if c in shapes:

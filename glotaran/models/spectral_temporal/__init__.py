@@ -4,7 +4,7 @@ from . import (
     spectral_shape_gaussian,
     k_matrix,
     megacomplex,
-    model,
+    model_kinetic,
 )
 
 # Dataset Descriptor
@@ -30,4 +30,4 @@ KineticMegacomplex = megacomplex.KineticMegacomplex
 
 # Model
 
-KineticModel = model.KineticModel
+KineticModel = model_kinetic.KineticModel

@@ -1,12 +1,12 @@
 """Glotaran Model"""
 
 
+from abc import ABC, abstractmethod
 from typing import List, Type, Dict, Generator
 from collections import OrderedDict
-from abc import ABC, abstractmethod
 import numpy as np
 
-from glotaran.fitmodel import FitModel, Result
+from glotaran.fitmodel import FitModel, Matrix, Result
 
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
@@ -47,31 +47,31 @@ class Model(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def calculated_matrix(self) -> np.array:
+    def calculated_matrix(self) -> Type[Matrix]:
         """Returns the calculated matrix.
 
         Returns
         -------
 
-        matrix : np.array
+        matrix : type(fitmodel.Matrix)
             Calculated Matrix
         """
         raise NotImplementedError
 
     @abstractmethod
-    def estimated_matrix(self) -> np.array:
+    def estimated_matrix(self) -> Type[Matrix]:
         """Returns the estimated matrix.
 
         Returns
         -------
 
-        matrix : np.array
+        matrix : type(fitmodel.Matrix)
             Estimated Matrix
         """
         raise NotImplementedError
 
     @abstractmethod
-    def dataset_descriptor_class(self) -> Type[DatasetDescriptor]:
+    def dataset_class(self) -> Type[DatasetDescriptor]:
         """Returns an implementation for model.DatasetDescriptor.
 
         Returns
@@ -83,7 +83,7 @@ class Model(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def fit_model_class(self):
+    def fit_model_class(self) -> Type[FitModel]:
         """Returns an implementation for fitmodel.FitModel.
 
         Returns
@@ -111,7 +111,7 @@ class Model(ABC):
         result : type(fitmodel.Result)
 
         """
-        if any([dset.data is None for _, dset in self.datasets.items()]):
+        if any([dset.dataset is None for _, dset in self.datasets.items()]):
             raise Exception("Model datasets not initialized")
         return self.fit_model().fit(nnls, *args, **kwargs)
 
@@ -139,7 +139,7 @@ class Model(ABC):
             (Default value = 1.0)
 
         """
-        data = self.dataset_descriptor_class()(dataset)
+        data = self.dataset_class()(dataset)
         sim_parameter = self.parameter.as_parameters_dict().copy()
         if parameter is not None:
             for k, val in parameter.items():
@@ -147,16 +147,16 @@ class Model(ABC):
                 sim_parameter[k].value = val
         for label, val in axis.items():
             data.set_axis(label, val)
-        self.set_data(dataset, data)
+        self.datasets[dataset].dataset = data
 
         kwargs = {}
         kwargs['dataset'] = dataset
         kwargs['noise'] = noise
         kwargs['noise_std_dev'] = noise_std_dev
         data = self.fit_model().eval(sim_parameter, **kwargs)
-        self.datasets[dataset].data.set(data)
+        self.get_dataset(dataset).set(data)
 
-    def fit_model(self):
+    def fit_model(self) -> FitModel:
         """Returns an instance of the models fitmodel.FitModel implementation.
 
         Returns
@@ -164,7 +164,7 @@ class Model(ABC):
 
         fitmodel : fitmodel.FitModel
         """
-        return FitModel(self)
+        return self.fit_model_class()(self)
 
     @property
     def compartments(self) -> List[str]:
@@ -216,7 +216,7 @@ class Model(ABC):
         else:
             self.megacomplexes = {megacomplex.label: megacomplex}
 
-    def data(self) -> Generator[DatasetDescriptor]:
+    def data(self) -> Generator[DatasetDescriptor, None, None]:
         """Gets all datasets as a generator.
 
         Returns
@@ -264,20 +264,37 @@ class Model(ABC):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
         self.datasets[dataset.label] = dataset
 
-    def set_data(self, label: str, data: Dataset):
-        """ Sets the Data of a DatasetDescriptor
+    def get_dataset(self, label: str) -> Dataset:
+        """ Sets the dataset of a DatasetDescriptor
 
         Parameters
         ----------
         label : str
             Label of the DatasetDescriptor
 
-        data : Dataset
+        Returns
+        -------
+        dataset : Dataset
             The Dataset
 
 
         """
-        self.datasets[label].data = data
+        return self.datasets[label].dataset
+
+    def set_dataset(self, label: str, dataset: Dataset):
+        """ Sets the dataset of a DatasetDescriptor
+
+        Parameters
+        ----------
+        label : str
+            Label of the DatasetDescriptor
+
+        dataset : Dataset
+            The Dataset
+
+
+        """
+        self.datasets[label].dataset = dataset
 
     @property
     def initial_concentrations(self) -> Dict[str, InitialConcentration]:

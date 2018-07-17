@@ -1,3 +1,7 @@
+"""Glotaran Dataset"""
+
+from typing import Tuple
+from copy import copy
 import numpy as np
 
 
@@ -79,8 +83,15 @@ class Dataset(object):
             raise ValueError("Axis must be list or ndarray of hashable values")
         self._axis[label] = axis
 
-    def get(self):
-        """nd.array of shape (M,N)"""
+    def get(self) -> np.array:
+        """nd.array of shape (M,N)
+
+        Returns
+        -------
+        data : np.array
+
+
+        """
         return self._data
 
     def set(self, data):
@@ -88,11 +99,8 @@ class Dataset(object):
 
         Parameters
         ----------
-        data : nd.array of shape (M,N)
+        data : np.array
 
-
-        Returns
-        -------
 
         """
         if not isinstance(data, np.ndarray):
@@ -100,6 +108,35 @@ class Dataset(object):
         if len(data.shape) is not 2:
             raise ValueError("Dataset must be 2-dimensional")
         self._data = data
+
+    def copy(self) -> 'Dataset':
+        """Returns a copy of the Dataset Object
+
+        Returns
+        -------
+        dataset : Dataset
+        """
+        return copy(self)
+
+    def svd(self) -> Tuple[np.array, np.array, np.array]:
+        """Returns the singular value decomposition of the dataset
+
+
+        Returns
+        -------
+        tuple :
+            (lsv, svals, rsv)
+
+            lsv : np.array
+                left singular values
+            svals : np.array
+                singular values
+            rsv : np.array
+                right singular values
+
+        """
+        lsv, svals, rsv = np.linalg.svd(self.get().T)
+        return lsv, svals, rsv
 
 
 def _hashable(value):

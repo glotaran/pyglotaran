@@ -61,6 +61,7 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
         """
         self.irf = irf
         self.shapes = shapes
+        self.dispersion_center = None
         super(SpectralTemporalDatasetDescriptor, self).\
             __init__(label,
                      initial_concentration,
@@ -87,6 +88,29 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     @shapes.setter
     def shapes(self, value):
         self._shapes = value
+
+    @property
+    def dispersion_center(self):
+        """ """
+        if self._dispersion_center is None:
+            return self.dataset.spectral_axis[0]
+        else:
+            return self._dispersion_center
+
+    @dispersion_center.setter
+    def dispersion_center(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+
+
+        Returns
+        -------
+
+        """
+        self._dispersion_center = value
 
     def __str__(self):
         return "{}\n\tIrf: {}".format(super(SpectralTemporalDatasetDescriptor, self)

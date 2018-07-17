@@ -55,7 +55,7 @@ class DatasetDescriptor:
         self.compartment_scaling = compartment_scaling
         self.megacomplex_scaling = megacomplex_scaling
         self.scaling = scaling
-        self.data = None
+        self.dataset = None
         self.compartment_constraints = compartment_constraints
 
     @property
@@ -83,12 +83,12 @@ class DatasetDescriptor:
         self._compartment_constraints = value
 
     @property
-    def data(self):
+    def dataset(self):
         """An implementation of model.Dataset"""
         return self._data
 
-    @data.setter
-    def data(self, data):
+    @dataset.setter
+    def dataset(self, data):
         if not isinstance(data, Dataset) and data is not None:
             raise TypeError
         self._data = data
@@ -165,23 +165,3 @@ class DatasetDescriptor:
             string += "\t\t- {}:{}\n".format(cmplx, scale)
 
         return string
-
-    def svd(self) -> Tuple[np.array, np.array, np.array]:
-        """Returns the singular value decomposition of the dataset
-
-
-        Returns
-        -------
-        tuple :
-            (lsv, svals, rsv)
-
-            lsv : np.array
-                left singular values
-            svals : np.array
-                singular values
-            rsv : np.array
-                right singular values
-
-        """
-        lsv, svals, rsv = np.linalg.svd(self.data.get().T)
-        return lsv, svals, rsv

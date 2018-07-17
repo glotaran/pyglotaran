@@ -15,7 +15,7 @@ class KineticCMatrix(Matrix):
 
         self._irf = None
         self._collect_irf(model)
-        self._disp_center = model.dispersion_center
+        self._disp_center = dataset.dispersion_center
 
         self._k_matrices = []
         self._megacomplex_scaling = []
@@ -117,7 +117,7 @@ class KineticCMatrix(Matrix):
         compartment_idxs = np.delete(compartment_idxs, constraint_idx)
 
         # get the time axis
-        time = self.dataset.data.get_axis("time")
+        time = self.dataset.dataset.get_axis("time")
 
         # calculate the c_matrix
         if self._irf is None:
@@ -214,7 +214,7 @@ class KineticCMatrix(Matrix):
         np.dot(np.copy(c_matrix), concentration_matrix, out=c_matrix)
 
     def time(self):
-        return self.dataset.data.get_axis("time")
+        return self.dataset.dataset.get_axis("time")
 
     def dataset_scaling(self, parameter):
         return parameter_idx_to_val(parameter, self.dataset.scaling) \

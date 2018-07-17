@@ -1,9 +1,17 @@
 # Glotaran package __init__.py
 
+Dataset = None
+Model = None
+
 from glotaran.specification_parser import parse_yml
 from glotaran.specification_parser import parse_file
+from glotaran import model
 
 __version__ = '0.0.1'
+
+Dataset = model.Dataset
+DatasetDescriptor = model.DatasetDescriptor
+Model = model.Model
 
 # Top level API
 # SeparableModel = separable_model.SeparableModel
