@@ -38,54 +38,57 @@ wavelengths2 = dataset_PAL_closed.get_axis("spectral")
 #     [ymin, ymax] = [min(dataset_te.get_axis("spec")),max(dataset_te.get_axis("spec"))]
 #     linear_range = [-20, 20]
 # print([xmin,xmax,ymin,ymax])
-plt.figure(figsize=(12, 8))
-plt.subplot(4, 4, 1)
-plt.title('PAL_open')
-plt.pcolormesh(times1, wavelengths1, dataset_PAL_open.data)
-plt.subplot(4, 4, 5)
-plt.title('PAL_closed')
-plt.pcolormesh(times2, wavelengths2, dataset_PAL_closed.data)
+plot = False
 
-rsvd1, svals1, lsvd1 = np.linalg.svd(dataset_PAL_open.data)
-rsvd2, svals2, lsvd2 = np.linalg.svd(dataset_PAL_closed.data)
-plt.subplot(4, 4, 2)
-plt.title('LSV PAL open')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())  # unsure why this is not working
-for i in range(4):
-    plt.plot(times1, lsvd1[i, :])
-plt.subplot(4, 4, 6)
-plt.title('LSV PAL closed')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())  # because here it works
-for i in range(4):
-    plt.plot(times2, lsvd2[i, :])
-# Plot singular values (SV)
-plt.subplot(4, 4, 3)
-plt.title('SVals PAL open')
-plt.plot(range(max(10, min(len(times1), len(wavelengths1)))), svals1, 'ro')
-plt.yscale('log')
-plt.subplot(4, 4, 7)
-plt.title('SVals PAL closed')
-plt.plot(range(max(10, min(len(times2), len(wavelengths2)))), svals2, 'ro')
-plt.yscale('log')
-# Plot right singular vectors (RSV, wavelengths, first 3)
-plt.subplot(4, 4, 4)
-plt.title('RSV PAL open')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-for i in range(4):
-    plt.plot(wavelengths1, rsvd1[:, i])
-plt.subplot(4, 4, 8)
-plt.title('RSV PAL closed')
-plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
-for i in range(4):
-    plt.plot(wavelengths2, rsvd2[:, i])
+if plot:
+    plt.figure(figsize=(12, 8))
+    plt.subplot(4, 4, 1)
+    plt.title('PAL_open')
+    plt.pcolormesh(times1, wavelengths1, dataset_PAL_open.data)
+    plt.subplot(4, 4, 5)
+    plt.title('PAL_closed')
+    plt.pcolormesh(times2, wavelengths2, dataset_PAL_closed.data)
 
-plt.tight_layout()
-plt.show(block=False)
+    rsvd1, svals1, lsvd1 = np.linalg.svd(dataset_PAL_open.data)
+    rsvd2, svals2, lsvd2 = np.linalg.svd(dataset_PAL_closed.data)
+    plt.subplot(4, 4, 2)
+    plt.title('LSV PAL open')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())  # unsure why this is not working
+    for i in range(4):
+        plt.plot(times1, lsvd1[i, :])
+    plt.subplot(4, 4, 6)
+    plt.title('LSV PAL closed')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())  # because here it works
+    for i in range(4):
+        plt.plot(times2, lsvd2[i, :])
+    # Plot singular values (SV)
+    plt.subplot(4, 4, 3)
+    plt.title('SVals PAL open')
+    plt.plot(range(max(10, min(len(times1), len(wavelengths1)))), svals1, 'ro')
+    plt.yscale('log')
+    plt.subplot(4, 4, 7)
+    plt.title('SVals PAL closed')
+    plt.plot(range(max(10, min(len(times2), len(wavelengths2)))), svals2, 'ro')
+    plt.yscale('log')
+    # Plot right singular vectors (RSV, wavelengths, first 3)
+    plt.subplot(4, 4, 4)
+    plt.title('RSV PAL open')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    for i in range(4):
+        plt.plot(wavelengths1, rsvd1[:, i])
+    plt.subplot(4, 4, 8)
+    plt.title('RSV PAL closed')
+    plt.rc('axes', prop_cycle=get_glotaran_default_colors_cycler())
+    for i in range(4):
+        plt.plot(wavelengths2, rsvd2[:, i])
+
+    plt.tight_layout()
+    plt.show(block=False)
 
 fitspec1 = '''
 type: kinetic
 
-parameters: 
+parameters:
  - [1, {{vary: false}}]
  - [0, {{vary: false}}]
  - [0, {{vary: false}}]
@@ -120,7 +123,7 @@ k_matrices:
 
 initial_concentration: #equal to the total number of compartments
   - label: inputD1
-    parameter: [1, 2, 3, 4] 
+    parameter: [1, 2, 3, 4]
 
 datasets:
   - label: {}
@@ -177,7 +180,7 @@ if doGlobalAnalyis:
 fitspec2 = '''
 type: kinetic
 
-parameters: 
+parameters:
  - nan
  - [1, {{vary: false}}]
  - [0, {{vary: false}}]
@@ -211,7 +214,7 @@ k_matrices:
 
 initial_concentration: #equal to the total number of compartments
   - label: inputD1
-    parameter: [2, 3, 4] 
+    parameter: [2, 3, 4]
 
 datasets:
   - label: {}
@@ -269,7 +272,7 @@ if doGlobalAnalyis:
 fitspec_target = '''
 type: kinetic
 
-parameters: 
+parameters:
  - [0.152, {{"min":0}}]
  - [0.087, {{"min":0}}]
  - [0.066, {{"min":0}}]
@@ -291,7 +294,7 @@ parameters:
  - 4.9
  - 117
  - 4.8
- 
+
 irf:
   - label: irf1
     type: gaussian
@@ -301,14 +304,14 @@ irf:
     type: gaussian
     center: 20
     width: 21
-    
+
 compartments: [PS1_red, PS1_bulk, RP1, PS2_bulk, RP2]
 
 megacomplexes:
     - label: mc1
       k_matrices: [k1, k2]
     - label: mc2
-      k_matrices: [k1, k3]      
+      k_matrices: [k1, k3]
 
 k_matrices:
   - label: "k1"
@@ -333,13 +336,13 @@ k_matrices:
       '("RP2","RP2")': 10,
       '("PS2_bulk","PS2_bulk")': 4
     }}
-        
+
 initial_concentration: #equal to the total number of compartments
   - label: inputD1
-    parameter: [11, 12, 13, 14, 15] 
+    parameter: [11, 12, 13, 14, 15]
   - label: inputD2
-    parameter: [11, 12, 13, 16, 17] 
-    
+    parameter: [11, 12, 13, 16, 17]
+
 datasets:
   - label: dataset1
     type: spectral

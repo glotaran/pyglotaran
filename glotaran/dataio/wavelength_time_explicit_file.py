@@ -182,7 +182,7 @@ class ExplicitFile(object):
             dataset = SpectralTemporalDataset(self._label)
             dataset.set_axis("time", self._times)
             dataset.set_axis("spectral", self._spectral_indices)
-        dataset.data = self._observations
+        dataset.set(self._observations)
         return dataset
 
     def _initialize_with_dataset(self, dataset):
