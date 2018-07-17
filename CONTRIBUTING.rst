@@ -76,7 +76,7 @@ Ready to contribute? Here's how to set up `glotaran` for local development.
     $mkvirtualenv glotaran
     (glotaran)$cd glotaran
     (glotaran)$python -m pip install -r requirements_dev.txt
-    (glotaran)$pip install -e .
+    (glotaran)$pip install -e . --process-dependency-links
 
 4. Create a branch for local development::
 
