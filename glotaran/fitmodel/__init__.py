@@ -1,11 +1,12 @@
 """Glotarans fitmodel package"""
 import numpy as np
 
-from . import (matrix, matrix_group_generator, fitmodel)
+from . import (matrix, matrix_group_generator, fitmodel, result)
 
 FitModel = fitmodel.FitModel
 MatrixGroupGenerator = matrix_group_generator.MatrixGroupGenerator
 Matrix = matrix.Matrix
+Result = result.Result
 
 
 def parameter_map(parameter):

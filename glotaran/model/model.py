@@ -1,9 +1,14 @@
-from typing import List
+"""Glotaran Model"""
+
+
+from typing import List, Type, Dict, Generator
 from collections import OrderedDict
+from abc import ABC, abstractmethod
+import numpy as np
 
-from glotaran.fitmodel import FitModel
+from glotaran.fitmodel import FitModel, Result
 
-from .compartment_constraints import CompartmentConstraint
+from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
@@ -13,63 +18,157 @@ from .parameter_group import ParameterGroup
 ROOT_BLOCK_LABEL = "p"
 
 
-class Model(object):
-    """
-    Model represents a global analysis model.
+class Model(ABC):
+    """Model represents a global analysis model."""
 
-    Consists of parameters, megacomplexes, relations and constraints.
-    """
-
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
+    # pylint: disable=attribute-defined-outside-init
+    # Models are complex.
     def __init__(self):
-
+        """ """
         self._compartments = None
         self._datasets = OrderedDict()
         self._initial_concentrations = None
         self._megacomplexes = {}
         self._parameter = None
 
-    def type_string(self):
+    @abstractmethod
+    def type_string(self) -> str:
+        """Returns a human readable string identifying the type of the model.
+
+        Returns
+        -------
+
+        type : str
+            Type of the Model
+
+        """
         raise NotImplementedError
 
-    def calculated_matrix(self):
+    @abstractmethod
+    def calculated_matrix(self) -> np.array:
+        """Returns the calculated matrix.
+
+        Returns
+        -------
+
+        matrix : np.array
+            Calculated Matrix
+        """
         raise NotImplementedError
 
-    def estimated_matrix(self):
+    @abstractmethod
+    def estimated_matrix(self) -> np.array:
+        """Returns the estimated matrix.
+
+        Returns
+        -------
+
+        matrix : np.array
+            Estimated Matrix
+        """
         raise NotImplementedError
 
-    def dataset_descriptor_class(self):
+    @abstractmethod
+    def dataset_descriptor_class(self) -> Type[DatasetDescriptor]:
+        """Returns an implementation for model.DatasetDescriptor.
+
+        Returns
+        -------
+
+        descriptor : type(model.DatasetDescriptor)
+            Implementation of model.DatasetDescriptor
+        """
         raise NotImplementedError
 
-    def fit(self, nnls=False, *args, **kwargs):
+    @abstractmethod
+    def fit_model_class(self):
+        """Returns an implementation for fitmodel.FitModel.
+
+        Returns
+        -------
+
+        fitmodel : type(fitmodel.FitModel)
+            Implementation of fitmodel.FitModel
+        """
+        raise NotImplementedError
+
+    def fit(self, *args, nnls=False, **kwargs) -> Type[Result]:
+        """ Fits the model and returns the result.
+
+        Parameters
+        ----------
+        nnls :
+            (Default value = False)
+        *args :
+
+        **kwargs :
+
+
+        Returns
+        -------
+        result : type(fitmodel.Result)
+
+        """
         if any([dset.data is None for _, dset in self.datasets.items()]):
             raise Exception("Model datasets not initialized")
         return self.fit_model().fit(nnls, *args, **kwargs)
 
-    def simulate(self, dataset, axes, parameter=None, noise=False,
-                 noise_std_dev=1.0):
+    def simulate(self,
+                 dataset: str,
+                 axis: Dict[str, np.array],
+                 parameter=None,
+                 noise=False,
+                 noise_std_dev=1.0,
+                 ):
+        """Simulates the model.
+
+        Parameters
+        ----------
+        dataset : str
+            Label of the dataset to simulate
+
+        axis : dict(str, np.array)
+            A dictory with axis
+        parameter :
+            (Default value = None)
+        noise :
+            (Default value = False)
+        noise_std_dev :
+            (Default value = 1.0)
+
+        """
         data = self.dataset_descriptor_class()(dataset)
         sim_parameter = self.parameter.as_parameters_dict().copy()
         if parameter is not None:
-            for k, v in parameter.items():
+            for k, val in parameter.items():
                 k = "p_" + k.replace(".", "_")
-                sim_parameter[k].value = v
-        for label, val in axes.items():
+                sim_parameter[k].value = val
+        for label, val in axis.items():
             data.set_axis(label, val)
         self.set_data(dataset, data)
-        fitmodel = FitModel(self)
 
         kwargs = {}
         kwargs['dataset'] = dataset
         kwargs['noise'] = noise
         kwargs['noise_std_dev'] = noise_std_dev
-        data = fitmodel.eval(sim_parameter, **kwargs)
+        data = self.fit_model().eval(sim_parameter, **kwargs)
         self.datasets[dataset].data.set(data)
 
     def fit_model(self):
+        """Returns an instance of the models fitmodel.FitModel implementation.
+
+        Returns
+        -------
+
+        fitmodel : fitmodel.FitModel
+        """
         return FitModel(self)
 
     @property
-    def compartments(self):
+    def compartments(self) -> List[str]:
+        """A list of compartment labels."""
         return self._compartments
 
     @compartments.setter
@@ -77,7 +176,8 @@ class Model(object):
         self._compartments = value
 
     @property
-    def parameter(self):
+    def parameter(self) -> ParameterGroup:
+        """The model parameters."""
         return self._parameter
 
     @parameter.setter
@@ -87,7 +187,8 @@ class Model(object):
         self._parameter = val
 
     @property
-    def megacomplexes(self):
+    def megacomplexes(self) -> Dict[str, Megacomplex]:
+        """A dictonary of megacomplexes."""
         return self._megacomplexes
 
     @megacomplexes.setter
@@ -98,7 +199,14 @@ class Model(object):
             raise TypeError("Megacomplexes must be subclass of 'Megacomplex'")
         self._megacomplexes = value
 
-    def add_megacomplex(self, megacomplex):
+    def add_megacomplex(self, megacomplex: Megacomplex):
+        """Adds a megacomplex to the model.
+
+        Parameters
+        ----------
+        megacomplex : Megacomplex
+
+        """
         if not issubclass(type(megacomplex), Megacomplex):
             raise TypeError("Megacomplexes must be subclass of 'Megacomplex'")
         if self.megacomplexes is not None:
@@ -108,23 +216,30 @@ class Model(object):
         else:
             self.megacomplexes = {megacomplex.label: megacomplex}
 
-    def data(self):
-        for _, d in self.datasets.items():
-            yield d.data
+    def data(self) -> Generator[DatasetDescriptor]:
+        """Gets all datasets as a generator.
+
+        Returns
+        -------
+
+        datasets : generator(DatasetDescriptor)
+        """
+        for _, dataset in self.datasets.items():
+            yield dataset.data
 
     def list_datasets(self) -> List[str]:
         """Returns a list of all dataset labels
 
         Returns
         -------
-        labels : list(str)
-            List of dataset labels
 
+        datasets : list(str)
         """
         return [label for label in self.datasets]
 
     @property
-    def datasets(self):
+    def datasets(self) -> Dict[str, DatasetDescriptor]:
+        """A dictonary of all datasets"""
         return self._datasets
 
     @datasets.setter
@@ -136,16 +251,37 @@ class Model(object):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
         self._datasets = value
 
-    def add_dataset(self, dataset):
+    def add_dataset(self, dataset: DatasetDescriptor):
+        """Adds a DatasetDescriptor to the model
+
+        Parameters
+        ----------
+        dataset : DatasetDescriptor
+
+
+        """
         if not issubclass(type(dataset), DatasetDescriptor):
             raise TypeError("Dataset must be subclass of 'DatasetDescriptor'")
         self.datasets[dataset.label] = dataset
 
-    def set_data(self, label, data):
+    def set_data(self, label: str, data: Dataset):
+        """ Sets the Data of a DatasetDescriptor
+
+        Parameters
+        ----------
+        label : str
+            Label of the DatasetDescriptor
+
+        data : Dataset
+            The Dataset
+
+
+        """
         self.datasets[label].data = data
 
     @property
-    def initial_concentrations(self):
+    def initial_concentrations(self) -> Dict[str, InitialConcentration]:
+        """A Dictoinary of the initial concentrations."""
         return self._initial_concentrations
 
     @initial_concentrations.setter
@@ -158,7 +294,15 @@ class Model(object):
                             " 'InitialConcentration'")
         self._initial_concentrations = value
 
-    def add_initial_concentration(self, initial_concentration):
+    def add_initial_concentration(self, initial_concentration: InitialConcentration):
+        """Adds an initial concentration to the model.
+
+        Parameters
+        ----------
+        initial_concentration : InitialConcentration
+
+
+        """
         if not isinstance(initial_concentration, InitialConcentration):
             raise TypeError("Initial concentrations must be instance of"
                             " 'InitialConcentration'")
@@ -170,30 +314,31 @@ class Model(object):
                                            initial_concentration}
 
     def __str__(self):
-        s = "Modeltype: {}\n\n".format(self.type_string())
+        """ """
+        string = "Modeltype: {}\n\n".format(self.type_string())
 
-        s += "Parameter\n---------\n{}\n".format(self.parameter)
+        string += "Parameter\n---------\n{}\n".format(self.parameter)
 
         if self.compartments is not None:
-            s += "\nCompartments\n-------------------------\n\n"
+            string += "\nCompartments\n-------------------------\n\n"
 
-            s += "{}\n".format(self.compartments)
+            string += "{}\n".format(self.compartments)
 
-        s += "\nMegacomplexes\n-------------\n\n"
+        string += "\nMegacomplexes\n-------------\n\n"
 
-        for m in self._megacomplexes:
-            s += "{}\n".format(self._megacomplexes[m])
+        for mcp in self._megacomplexes:
+            string += "{}\n".format(self._megacomplexes[mcp])
 
         if self.initial_concentrations is not None:
-            s += "\nInitital Concentrations\n-----------------------\n\n"
+            string += "\nInitital Concentrations\n-----------------------\n\n"
 
             for i in self._initial_concentrations:
-                s += "{}\n".format(self._initial_concentrations[i])
+                string += "{}\n".format(self._initial_concentrations[i])
 
         if self.datasets is not None:
-            s += "\nDatasets\n--------\n\n"
+            string += "\nDatasets\n--------\n\n"
 
-            for d in self._datasets:
-                s += "{}\n".format(self._datasets[d])
+            for data in self._datasets:
+                string += "{}\n".format(self._datasets[data])
 
-        return s
+        return string
