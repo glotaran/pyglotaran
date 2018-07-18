@@ -136,7 +136,7 @@ class Dataset(object):
 
         """
         lsv, svals, rsv = np.linalg.svd(self.get().T)
-        return lsv, svals, rsv
+        return lsv, svals, rsv.T
 
 
 def _hashable(value):
