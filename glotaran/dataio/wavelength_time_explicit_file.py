@@ -20,22 +20,22 @@ class ExplicitFile(object):
     """
     Abstract class representing either a time- or wavelength-explicit file.
     """
-    def __init__(self, file=None, *args, **kwargs):
+    def __init__(self, filepath, *args, **kwargs):
         self._file_data_format = None
         self._observations = []  # TODO: choose name: data_points, observations, data
         self._times = []
         self._spectral_indices = []
         self._label = ""
         self._comment = ""
-        if not file and 'dataset' in kwargs:
+        absfilepath = os.path.realpath(filepath)
+        if not filepath and 'dataset' in kwargs:
             self._initialize_with_dataset(kwargs.get('dataset'))
-        elif os.path.isfile(file):
-            self._file = file
+        elif os.path.isfile(filepath):
+            self._file = filepath
+        elif os.path.isfile(absfilepath):
+            self._file = absfilepath
         else:
-            raise DataRequired("Usage:"
-                               "\n1: ExplicitFile(path_to_ascii_file)"
-                               "\n2: ExplicitFile(dataset=my_dataset) #where my_dataset is instance of SpectralTemporalDataset")
-
+            raise Exception(f"Path does not exist: {filepath}, {absfilepath}")
 
     def get_explicit_axis(self):
         raise NotImplementedError

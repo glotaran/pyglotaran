@@ -5,7 +5,7 @@ Model = None
 
 from glotaran.specification_parser import parse_yml
 from glotaran.specification_parser import parse_file
-from glotaran import model
+from glotaran import dataio, model
 
 __version__ = '0.0.1'
 
@@ -22,6 +22,8 @@ Model = model.Model
 
 load = parse_file  # short for loadProtocol
 parse = parse_yml  # short for loadProtocol
+
+io = dataio
 
 # # user calls this object whatever
 # glotaran._loadProtocol()
