@@ -22,8 +22,6 @@ class InitialConcentration(object):
     def parameter(self, value):
         if not isinstance(value, list):
             value = [value]
-        if any(not isinstance(val, int) for val in value):
-            raise TypeError("Parameter must integer or list of integer")
         self._parameter = value
 
     def __str__(self):
