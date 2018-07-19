@@ -48,8 +48,10 @@ install:
   # making sure the latest version of lmfit-varpro will be installed
   - '%CMD_IN_ENV% python -m pip  --upgrade --no-deps --force-reinstall --no-cache-dir install git+https://github.com/glotaran/lmfit-varpro.git'
 
-build:
+  # build wheels for windows and sdist tarball
   - '%CMD_IN_ENV% python setup.py sdist bdist_wheel'
+
+build: none
 
 artifacts:
   - path: dist/*
