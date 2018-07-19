@@ -75,17 +75,17 @@ After you downloaded it you can simply install it with:
 
 * 64bit::
 
-    $pip install glotaran-0.0.1-cp36-cp36m-win_amd64.whl
+    $ pip install --upgrade --force-reinstall git+https://github.com/glotaran/lmfit-varpro.git
+    $ pip install glotaran-0.0.1-cp36-cp36m-win_amd64.whl
 
 * 32bit::
 
-    $pip install glotaran-0.0.1-cp36-cp36m-win32.whl
+    $ pip install --upgrade --force-reinstall git+https://github.com/glotaran/lmfit-varpro.git
+    $ pip install glotaran-0.0.1-cp36-cp36m-win32.whl
 
 
-.. note::  For the latest version of ``glotaran`` to run properly you should also update ``lmfit-varpro``.
-           To ensure that you have the latest version of ``lmfit-varpro`` run the following command::
-
-               $pip install --upgrade --force-reinstall git+https://github.com/glotaran/lmfit-varpro.git
+.. note::  The reinstallation of ``lmfit-varpro`` is to ensure that you have the latest version,
+           which is compatible with with the latest version of ``glotaran`` .
 
 .. _Cython: http://cython.org/
 .. _Wheel for Windows 64bit: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop/artifacts/dist%2Fglotaran-0.0.1-cp36-cp36m-win_amd64.whl
