@@ -14,6 +14,11 @@ environment:
       PYTHON_VERSION: 3.6
       PYTHON_ARCH: 64
 
+  matrix:
+    - PYTHON: C:\Python36
+      PYTHON_VERSION: 3.6
+      PYTHON_ARCH: 32
+
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
   - "ECHO \"%APPVEYOR_SCHEDULED_BUILD%\""
@@ -48,8 +53,8 @@ install:
   # making sure the latest version of lmfit-varpro will be installed
   - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/glotaran/lmfit-varpro.git'
 
-  # build wheels for windows and sdist tarball
-  - '%CMD_IN_ENV% python setup.py sdist bdist_wheel'
+  # build wheels for windows
+  - '%CMD_IN_ENV% python setup.py bdist_wheel'
 
 build: none
 
