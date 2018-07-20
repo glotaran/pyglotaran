@@ -68,8 +68,21 @@ it might not be possible for you to install it, if you are missing the needed C 
 
 Which is why we created a temporary workaround for you to still enjoy the latest version of ``glotaran``,
 until our build and deployment system is up and running.
-Depending on your Python architecture (32bit/64bit) you can download ``glotaran for Python 3.6`` at
-`Wheel for Windows 64bit`_ / `Wheel for Windows 32bit`_.
+Depending on your Python architecture (32bit/64bit) you can download ``glotaran for Python 3.6`` from our
+`buildserver`_ as follows.
+
+Once you are at the website of the `buildserver`_, you need to select the build job which did build the
+installer for you architecture (32bit/64bit).
+
+.. image:: images/appveyor_latest.jpg
+
+When you are that the page of the job you need to select the ``ARTIFACTS`` tab.
+
+.. image:: images/appveyor_artifact.jpg
+
+And finally download the installer.
+
+.. image:: images/appveyor_dl_wheel.jpg
 
 After you downloaded it you can simply install it with:
 
@@ -88,7 +101,6 @@ After you downloaded it you can simply install it with:
            which is compatible with with the latest version of ``glotaran`` .
 
 .. _Cython: http://cython.org/
-.. _Wheel for Windows 64bit: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop/artifacts/dist%2Fglotaran-0.0.1-cp36-cp36m-win_amd64.whl
-.. _Wheel for Windows 32bit: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop/artifacts/dist%2Fglotaran-0.0.1-cp36-cp36m-win32.whl
+.. _buildserver: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop
 .. _Github repo: https://github.com/glotaran/glotaran
 .. _tarball: https://github.com/glotaran/glotaran/tarball/develop
