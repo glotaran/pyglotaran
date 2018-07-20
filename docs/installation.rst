@@ -60,6 +60,35 @@ And once you have a copy of the source, you can install it with:
 
     $ python setup.py install
 
+Temporary workaround for Windows
+--------------------------------
 
+Since ``glotaran`` uses accelerator modules written in `Cython`_ for better peromance,
+it might not be possible for you to install it, if you are missing the needed C compiler.
+
+Which is why we created a temporary workaround for you to still enjoy the latest version of ``glotaran``,
+until our build and deployment system is up and running.
+Depending on your Python architecture (32bit/64bit) you can download ``glotaran for Python 3.6`` at
+`Wheel for Windows 64bit`_ / `Wheel for Windows 32bit`_.
+
+After you downloaded it you can simply install it with:
+
+* 64bit::
+
+    $ pip install --upgrade --force-reinstall git+https://github.com/glotaran/lmfit-varpro.git
+    $ pip install glotaran-0.0.1-cp36-cp36m-win_amd64.whl
+
+* 32bit::
+
+    $ pip install --upgrade --force-reinstall git+https://github.com/glotaran/lmfit-varpro.git
+    $ pip install glotaran-0.0.1-cp36-cp36m-win32.whl
+
+
+.. note::  The reinstallation of ``lmfit-varpro`` is to ensure that you have the latest version,
+           which is compatible with with the latest version of ``glotaran`` .
+
+.. _Cython: http://cython.org/
+.. _Wheel for Windows 64bit: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop/artifacts/dist%2Fglotaran-0.0.1-cp36-cp36m-win_amd64.whl
+.. _Wheel for Windows 32bit: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop/artifacts/dist%2Fglotaran-0.0.1-cp36-cp36m-win32.whl
 .. _Github repo: https://github.com/glotaran/glotaran
 .. _tarball: https://github.com/glotaran/glotaran/tarball/develop
