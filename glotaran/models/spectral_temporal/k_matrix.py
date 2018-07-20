@@ -122,30 +122,39 @@ class KMatrix(object):
         return mat
 
     def __str__(self):
+
+        longest = max([len(s) for s in self.compartment_map]) + 6
+        header = "compartment |"
+        if longest < len(header):
+            longest = len(header)
+
+        longest_h = max([len(f" __{c}__ |") for c in self.compartment_map]) + 3
+        longest_p = max([len(self.matrix[i]) for i in self.matrix]) + 3
+        if longest_p < longest_h:
+            longest_p = longest_h
+
         string = f"### {self.label}\n"
+        string += "\n"
         #  string += "```\n"
         #  string += f"\t"
-        header = " |"
-        header_sub = "-|"
+        header_sub = "|".rjust(longest, "-")
         for c in self.compartment_map:
-            header += f"{c}|"
-            header_sub += "-|"
+            header += f" __{c}__ |".rjust(longest_p)
+            header_sub += "|".rjust(longest_p, "-")
         string += header
         string += "\n"
         string += header_sub
         string += "\n"
         for c in self.compartment_map:
-            string += f"__{c}__ |"
+            string += f"__{c}__ |".rjust(longest)
             for c2 in self.compartment_map:
                 found = False
                 for index in self.matrix:
                     if index[0] == c and index[1] == c2:
                         found = True
-                        string += f"{self.matrix[index]} |"
+                        string += f" {self.matrix[index]} |".rjust(longest_p)
                 if not found:
-                    string += " |"
+                    string += " |".rjust(longest_p)
             string += "\n"
-        string += "\n"
-        string += "```\n"
         return string
 

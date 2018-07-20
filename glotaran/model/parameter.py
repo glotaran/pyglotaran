@@ -108,5 +108,5 @@ class Parameter(LmParameter):
 
     def __str__(self):
         """ """
-        return f"**{self.label}**:\t _Value_: {self.value}\t_Min_:" + \
+        return f"__{self.label}__:\t _Value_: {self.value}\t_Min_:" + \
                f" {self.min}\t_Max_: {self.max}\t_Vary_: {self.vary} _Fit_: {self.fit}"

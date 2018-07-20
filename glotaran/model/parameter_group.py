@@ -200,7 +200,7 @@ class ParameterGroup(OrderedDict):
         t = "".join(["  " for _ in range(self.get_nr_roots())])
         s = ""
         if self.label is not "p":
-            s += f"{t}* **{self.label}**:\n"
+            s += f"{t}* __{self.label}__:\n"
         for _, p in self._parameters.items():
             s += f"{t}  * {p}\n"
         for _, g in self.items():
