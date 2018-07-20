@@ -8,6 +8,7 @@ class Parameter(LmParameter):
     def __init__(self):
         self.index = -1
         self.fit = True
+        self.label = None
         super(Parameter, self).__init__()
 
     @property
@@ -34,7 +35,7 @@ class Parameter(LmParameter):
     @property
     def label(self):
         """Label of the parameter"""
-        return self.name
+        return self._label
 
     @label.setter
     def label(self, label):
@@ -50,7 +51,7 @@ class Parameter(LmParameter):
 
 
         """
-        self.name = label
+        self._label = label
 
     @property
     def fit(self):
@@ -105,12 +106,7 @@ class Parameter(LmParameter):
 
         LmParameter.value.fset(self, val)
 
-    def _str__(self):
+    def __str__(self):
         """ """
-        return 'Label: {}\tInitial Value: {}\tFit: {}\tVary: {}\tMin: {} Max: {}'\
-               .format(self.label,
-                       self.value,
-                       self.fit,
-                       self.vary,
-                       self.min,
-                       self.max)
+        return f"**{self.label}**:\t _Value_: {self.value}\t_Min_:" + \
+               f" {self.min}\t_Max_: {self.max}\t_Vary_: {self.vary} _Fit_: {self.fit}"

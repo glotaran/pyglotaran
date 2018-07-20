@@ -151,17 +151,17 @@ class DatasetDescriptor:
 
     def __str__(self):
         """ """
-        string = "Dataset '{}'\n\n".format(self.label)
+        string = "### _{}_\n\n".format(self.label)
 
-        string += "\tDataset Scaling: {}\n".format(self.scaling)
+        string += "* Dataset Scaling: {}\n".format(self.scaling)
 
-        string += "\tInitial Concentration: {}\n"\
+        string += "* Initial Concentration: {}\n"\
             .format(self.initial_concentration)
 
-        string += "\tMegacomplexes: {}\n".format(self.megacomplexes)
+        string += "* Megacomplexes: {}\n".format(self.megacomplexes)
 
-        string += "\tMega scalings:\n"
+        string += "* Megacomplex Scalings:\n"
         for cmplx, scale in self._megacomplex_scaling.items():
-            string += "\t\t- {}:{}\n".format(cmplx, scale)
+            string += "  * {}:{}\n".format(cmplx, scale)
 
         return string

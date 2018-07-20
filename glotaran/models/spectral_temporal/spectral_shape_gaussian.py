@@ -9,6 +9,9 @@ class SpectralShapeGaussian(SpectralShape):
         self.width = width
 
     def __str__(self):
-        return "Label: {} Type: Gaussian\tAmplitude: {}\tLocation: {}\t"\
-            "Width: {}"\
-            .format(self.label, self.amplitude, self.location, self.width)
+        string = super(SpectralShapeGaussian, self).__str__()
+        string += ", _Type_: Gaussian"
+        string += f", _Amplitude_: {self.amplitude}"
+        string += f", _Location_: {self.location}"
+        string += f", _Width_: {self.width}"
+        return string

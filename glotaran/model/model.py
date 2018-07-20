@@ -331,29 +331,30 @@ class Model(ABC):
                                            initial_concentration}
 
     def __str__(self):
-        """ """
-        string = "Modeltype: {}\n\n".format(self.type_string())
+        string = "# Model\n\n"
+        string += "_Type_: {}\n\n".format(self.type_string())
 
-        string += "Parameter\n---------\n{}\n".format(self.parameter)
+        string += "## Parameter\n{}\n".format(self.parameter)
 
         if self.compartments is not None:
-            string += "\nCompartments\n-------------------------\n\n"
+            string += "\n## Compartments\n\n"
 
-            string += "{}\n".format(self.compartments)
+            for c in self.compartments:
+                string += f"* {c}\n" 
 
-        string += "\nMegacomplexes\n-------------\n\n"
+        string += "\n## Megacomplexes\n\n"
 
         for mcp in self._megacomplexes:
             string += "{}\n".format(self._megacomplexes[mcp])
 
         if self.initial_concentrations is not None:
-            string += "\nInitital Concentrations\n-----------------------\n\n"
+            string += "\n## Initital Concentrations\n\n"
 
             for i in self._initial_concentrations:
                 string += "{}\n".format(self._initial_concentrations[i])
 
         if self.datasets is not None:
-            string += "\nDatasets\n--------\n\n"
+            string += "\n## Datasets\n\n"
 
             for data in self._datasets:
                 string += "{}\n".format(self._datasets[data])

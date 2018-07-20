@@ -113,6 +113,6 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
         self._dispersion_center = value
 
     def __str__(self):
-        return "{}\n\tIrf: {}".format(super(SpectralTemporalDatasetDescriptor, self)
-                                      .__str__(),
-                                      self.irf)
+        string = super(SpectralTemporalDatasetDescriptor, self).__str__()
+        string += f"* Irf: {self.irf}"
+        return string

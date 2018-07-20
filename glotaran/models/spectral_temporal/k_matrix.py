@@ -122,4 +122,26 @@ class KMatrix(object):
         return mat
 
     def __str__(self):
-        return "Label: {}\nMatrix:\n".format(self.label)
+        string = f"### {self.label}\n"
+        #  string += "```\n"
+        #  string += f"\t"
+        header = " |"
+        header_sub = "-|"
+        for c in self.compartment_map:
+            header += f"{c}|"
+            header_sub += "-|"
+        string += header
+        string += "\n"
+        string += header_sub
+        string += "\n"
+        for c in self.compartment_map:
+            string += f"__{c}__ |"
+            for c2 in self.compartment_map:
+                for index in self.matrix:
+                    if index[0] == c and index[1] == c2:
+                        string += f"{self.matrix[index]} |"
+            string += "\n"
+        string += "\n"
+        string += "```\n"
+        return string
+

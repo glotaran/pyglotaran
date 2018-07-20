@@ -25,5 +25,4 @@ class InitialConcentration(object):
         self._parameter = value
 
     def __str__(self):
-        return "Label: {}, Parameters, {}".format(self.label,
-                                                  self.parameter)
+        return f"* __{self.label}__: {self.parameter}"

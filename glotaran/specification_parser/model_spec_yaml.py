@@ -161,7 +161,7 @@ class ModelSpecParser(object):
         for item in items:
             if isinstance(item, dict):
                 label, items = list(item.items())[0]
-                leaf[label] = self.get_leaf(label, items)
+                leaf.add_group(self.get_leaf(label, items))
             elif isinstance(item, bool):
                 leaf.fit = item
             else:

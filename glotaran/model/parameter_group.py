@@ -12,6 +12,7 @@ class ParameterGroup(OrderedDict):
         self._label = label
         self._parameters = OrderedDict()
         self._fit = True
+        self._root = None
         super(ParameterGroup, self).__init__()
 
     def add_parameter(self, parameter):
@@ -55,7 +56,19 @@ class ParameterGroup(OrderedDict):
             raise TypeError("Leave must be glotaran.model.ParameterGroup")
         if not self.fit:
             group.fit = False
+        group.set_root(self)
         self[group.label] = group
+
+    def set_root(self, root):
+        self._root = root
+
+    def get_nr_roots(self):
+        n = 0
+        root = self._root
+        while root is not None:
+            n += 1
+            root = root._root
+        return n
 
     @property
     def fit(self):
@@ -184,7 +197,12 @@ class ParameterGroup(OrderedDict):
         return params
 
     def __str__(self):
-        s = "Label\tValue\tMin\tMax\tFix\n"
-        for _, p in self.as_parameters_dict().items():
-            s += "\t{}\n".format(p)
+        t = "".join(["  " for _ in range(self.get_nr_roots())])
+        s = ""
+        if self.label is not "p":
+            s += f"{t}* **{self.label}**:\n"
+        for _, p in self._parameters.items():
+            s += f"{t}  * {p}\n"
+        for _, g in self.items():
+            s += f"{g.__str__()}"
         return s
