@@ -76,7 +76,7 @@ installer for you architecture (32bit/64bit).
 
 .. image:: images/appveyor_latest.jpg
 
-When you are that the page of the job you need to select the ``ARTIFACTS`` tab.
+When you are at the page of the job you need to select the ``ARTIFACTS`` tab.
 
 .. image:: images/appveyor_artifact.jpg
 
@@ -98,7 +98,7 @@ After you downloaded it you can simply install it with:
 
 
 .. note::  The reinstallation of ``lmfit-varpro`` is to ensure that you have the latest version,
-           which is compatible with with the latest version of ``glotaran`` .
+           which is compatible with the latest version of ``glotaran`` .
 
 .. _Cython: http://cython.org/
 .. _buildserver: https://ci.appveyor.com/project/jsnel/glotaran/branch/develop
