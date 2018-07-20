@@ -53,5 +53,5 @@ class Parameter(LmParameter):
 
     def __str__(self):
         """ """
-        return f"__{self.label}__:\t _Value_: {self.value}\t_Min_:" + \
-               f" {self.min}\t_Max_: {self.max}\t_Vary_: {self.vary} _Fit_: {self.fit}"
+        return f"__{self.label}__: _Value_: {self.value}, Min_:" + \
+               f" {self.min}, _Max_: {self.max}, _Vary_: {self.vary}, _Fit_: {self.fit}"
