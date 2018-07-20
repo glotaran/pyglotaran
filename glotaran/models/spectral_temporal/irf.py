@@ -78,4 +78,4 @@ class Irf(object):
         raise NotImplementedError
 
     def __str__(self):
-        return f"* __{self.label}__: _Type_: {self.type_string()}"
+        return f"### _{self.label}_\n* _Type_: {self.type_string()}\n"

@@ -153,15 +153,19 @@ class DatasetDescriptor:
         """ """
         string = "### _{}_\n\n".format(self.label)
 
-        string += "* Dataset Scaling: {}\n".format(self.scaling)
+        string += "* _Dataset Scaling_: {}\n".format(self.scaling)
 
-        string += "* Initial Concentration: {}\n"\
+        string += "* _Initial Concentration_: {}\n"\
             .format(self.initial_concentration)
 
-        string += "* Megacomplexes: {}\n".format(self.megacomplexes)
+        string += "* _Megacomplexes_: {}\n".format(self.megacomplexes)
 
-        string += "* Megacomplex Scalings:\n"
-        for cmplx, scale in self._megacomplex_scaling.items():
-            string += "  * {}:{}\n".format(cmplx, scale)
+        string += "* _Megacomplex Scalings_:"
+        if self._megacomplex_scaling:
+            string += "\n"
+            for cmplx, scale in self._megacomplex_scaling.items():
+                string += "  * {}:{}\n".format(cmplx, scale)
+        else:
+            string += " None\n"
 
         return string

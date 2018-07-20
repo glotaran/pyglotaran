@@ -133,7 +133,7 @@ class KMatrix(object):
         if longest_p < longest_h:
             longest_p = longest_h
 
-        string = f"### {self.label}\n"
+        string = f"### _{self.label}_\n"
         string += "\n"
         #  string += "```\n"
         #  string += f"\t"

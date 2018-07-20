@@ -336,6 +336,12 @@ class Model(ABC):
 
         string += "## Parameter\n{}\n".format(self.parameter)
 
+        if self.datasets is not None:
+            string += "\n## Datasets\n\n"
+
+            for data in self._datasets:
+                string += "{}\n".format(self._datasets[data])
+
         if self.compartments is not None:
             string += "\n## Compartments\n\n"
 
@@ -352,11 +358,5 @@ class Model(ABC):
 
             for i in self._initial_concentrations:
                 string += "{}\n".format(self._initial_concentrations[i])
-
-        if self.datasets is not None:
-            string += "\n## Datasets\n\n"
-
-            for data in self._datasets:
-                string += "{}\n".format(self._datasets[data])
 
         return string

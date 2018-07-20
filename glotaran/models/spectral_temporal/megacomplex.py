@@ -23,5 +23,5 @@ class KineticMegacomplex(Megacomplex):
 
     def __str__(self):
         string = super(KineticMegacomplex, self).__str__()
-        string += f": _K-Matrices_: {self.k_matrices}\n"
+        string += f"* _K-Matrices_: {self.k_matrices}\n"
         return string
