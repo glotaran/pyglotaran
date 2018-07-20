@@ -137,9 +137,13 @@ class KMatrix(object):
         for c in self.compartment_map:
             string += f"__{c}__ |"
             for c2 in self.compartment_map:
+                found = False
                 for index in self.matrix:
                     if index[0] == c and index[1] == c2:
+                        found = True
                         string += f"{self.matrix[index]} |"
+                if not found:
+                    string += " |"
             string += "\n"
         string += "\n"
         string += "```\n"
