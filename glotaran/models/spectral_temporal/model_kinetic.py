@@ -91,17 +91,6 @@ class KineticModel(Model):
         """
         return SpectralTemporalDataset
 
-    def fit_model_class(self) -> Type[FitModel]:
-        """Returns an implementation for fitmodel.FitModel.
-
-        Returns
-        -------
-
-        fitmodel : type(fitmodel.FitModel)
-            Implementation of fitmodel.FitModel
-        """
-        return KineticFitModel
-
     def add_megacomplex(self, megacomplex: KineticMegacomplex):
         """Adds a kinetic megacomplex to the model.
 
