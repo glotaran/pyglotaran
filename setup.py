@@ -21,69 +21,68 @@ try:
     # https://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
     import numpy
     import scipy
-    try:
-        # TODO: include generated c and include switches if cython is not available ->
-        # https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
-        from Cython.Distutils import build_ext
+    # TODO: include generated c and include switches if cython is not available ->
+    # https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
+    from Cython.Distutils import build_ext
 
 
-        # TODO: 'win32' ok, else=linux/mac, what about 'win-amd64' and 'win-ia64'?
-        if sys.platform == 'win32':
-            c_matrix_path = "glotaran/models/spectral_temporal/c_matrix_cython"
-            ext_modules = [
-                Extension("c_matrix",
-                          ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx",
-                           "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
-                          include_dirs=[numpy.get_include(), scipy.get_include(),
-                                        "glotaran/models/spectral_temporal/c_matrix_cython"],
-                          extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                              "-fopenmp"],
-                          extra_link_args=['-fopenmp']),
-                Extension("c_matrix_gaussian_irf",
-                          ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx",
-                           "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
-                          include_dirs=[numpy.get_include(), scipy.get_include(),
-                                        "glotaran/models/spectral_temporal/c_matrix_cython"],
-                          extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                              "-fopenmp"],
-                          extra_link_args=['-fopenmp'])
-                          ]
-        else:
-            ext_modules = [
-                Extension("c_matrix",
-                          ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx",
-                           "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
-                          include_dirs=[numpy.get_include(), scipy.get_include()],
-                          libraries=["m"],
-                          extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                              "-fopenmp"],
-                          extra_link_args=['-fopenmp']),
-                Extension("c_matrix_gaussian_irf",
-                          ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx",
-                           "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
-                          include_dirs=[numpy.get_include(), scipy.get_include()],
-                          libraries=["m"],
-                          extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                              "-fopenmp"],
-                          extra_link_args=['-fopenmp'])
-                          ]
-    except ImportError:
+    # TODO: 'win32' ok, else=linux/mac, what about 'win-amd64' and 'win-ia64'?
+    if sys.platform == 'win32':
+        c_matrix_path = "glotaran/models/spectral_temporal/c_matrix_cython"
         ext_modules = [
             Extension("c_matrix",
-                      ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.c",
+                      ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx",
                        "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
-                      include_dirs=[numpy.get_include(), scipy.get_include()],
+                      include_dirs=[numpy.get_include(), scipy.get_include(),
+                                    "glotaran/models/spectral_temporal/c_matrix_cython"],
                       extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                           "-fopenmp"],
                       extra_link_args=['-fopenmp']),
             Extension("c_matrix_gaussian_irf",
-                      ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.c",
+                      ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx",
                        "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
-                      include_dirs=[numpy.get_include(), scipy.get_include()],
+                      include_dirs=[numpy.get_include(), scipy.get_include(),
+                                    "glotaran/models/spectral_temporal/c_matrix_cython"],
                       extra_compile_args=["-O3", "-ffast-math", "-march=native",
                                           "-fopenmp"],
                       extra_link_args=['-fopenmp'])
-        ]
+                      ]
+    else:
+        ext_modules = [
+            Extension("c_matrix",
+                      ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx",
+                       "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
+                      include_dirs=[numpy.get_include(), scipy.get_include()],
+                      libraries=["m"],
+                      extra_compile_args=["-O3", "-ffast-math", "-march=native",
+                                          "-fopenmp"],
+                      extra_link_args=['-fopenmp']),
+            Extension("c_matrix_gaussian_irf",
+                      ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx",
+                       "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
+                      include_dirs=[numpy.get_include(), scipy.get_include()],
+                      libraries=["m"],
+                      extra_compile_args=["-O3", "-ffast-math", "-march=native",
+                                          "-fopenmp"],
+                      extra_link_args=['-fopenmp'])
+                      ]
+    # except ImportError:
+    #     ext_modules = [
+    #         Extension("c_matrix",
+    #                   ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.c",
+    #                    "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
+    #                   include_dirs=[numpy.get_include(), scipy.get_include()],
+    #                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
+    #                                       "-fopenmp"],
+    #                   extra_link_args=['-fopenmp']),
+    #         Extension("c_matrix_gaussian_irf",
+    #                   ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.c",
+    #                    "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
+    #                   include_dirs=[numpy.get_include(), scipy.get_include()],
+    #                   extra_compile_args=["-O3", "-ffast-math", "-march=native",
+    #                                       "-fopenmp"],
+    #                   extra_link_args=['-fopenmp'])
+    #     ]
 except ImportError:
     # first run before the setup_requires will be installed
     ext_modules = []
