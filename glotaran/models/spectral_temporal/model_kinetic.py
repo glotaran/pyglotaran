@@ -9,9 +9,9 @@ from .dataset_descriptor import SpectralTemporalDatasetDescriptor
 from .irf import Irf
 from .fitmodel import KineticFitModel
 from .k_matrix import KMatrix
-from .kinetic_c_matrix import KineticCMatrix
+from .kinetic_matrix import KineticMatrix
 from .megacomplex import KineticMegacomplex
-from .spectral_c_matrix import SpectralCMatrix
+from .spectral_matrix import SpectralMatrix
 from .spectral_shape import SpectralShape
 
 
@@ -64,7 +64,7 @@ class KineticModel(Model):
         matrix : type(fitmodel.Matrix)
             Calculated Matrix
         """
-        return KineticCMatrix
+        return KineticMatrix
 
     def estimated_matrix(self) -> Type[Matrix]:
         """Returns the estimated matrix.
@@ -75,7 +75,7 @@ class KineticModel(Model):
         matrix : np.array
             Estimated Matrix
         """
-        return SpectralCMatrix
+        return SpectralMatrix
 
     def dataset_class(self) -> Type[SpectralTemporalDataset]:
         """Returns an implementation for model.Dataset

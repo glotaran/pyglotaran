@@ -18,7 +18,7 @@ class MatrixGroup(object):
         t_idx = 0
 
         for mat in self.matrices:
-            n_t = t_idx + mat.shape()[0]
+            n_t = t_idx + mat.shape[0]
             mat.calculate(matrix[t_idx:n_t, :], compartment_order,
                           parameter)
             t_idx = n_t
@@ -33,14 +33,14 @@ class MatrixGroup(object):
             t_idx += m.shape()[0]
 
     def sizes(self):
-        return [mat.shape()[0] for mat in self.matrices]
+        return [mat.shape[0] for mat in self.matrices]
 
     def compartment_order(self):
         compartment_order = [c for cmat in self.matrices
-                             for c in cmat.compartment_order()]
+                             for c in cmat.compartment_order]
         return list(collections.OrderedDict.fromkeys(compartment_order).keys())
 
     def shape(self):
-        dim0 = sum([mat.shape()[0] for mat in self.matrices])
+        dim0 = sum([mat.shape[0] for mat in self.matrices])
         dim1 = len(self.compartment_order())
         return (dim0, dim1)

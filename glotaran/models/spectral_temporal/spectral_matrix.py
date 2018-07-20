@@ -5,9 +5,9 @@ from glotaran.fitmodel import Matrix, parameter_idx_to_val
 from .spectral_shape_gaussian import SpectralShapeGaussian
 
 
-class SpectralCMatrix(Matrix):
+class SpectralMatrix(Matrix):
     def __init__(self, x, dataset, model):
-        super(SpectralCMatrix, self).__init__(x, dataset, model)
+        super(SpectralMatrix, self).__init__(x, dataset, model)
 
         self._shapes = {}
         self._collect_shapes(model)
@@ -25,12 +25,14 @@ class SpectralCMatrix(Matrix):
         for c, shape in self.dataset.shapes.items():
             self._shapes[c] = model.shapes[shape]
 
+    @property
     def compartment_order(self):
         return self._compartment_order
 
+    @property
     def shape(self):
         x = self.dataset.dataset.spectral_axis
-        return (x.shape[0], len(self.compartment_order()))
+        return (x.shape[0], len(self.compartment_order))
 
     def calculate(self, c_matrix, compartment_order, parameter):
 
