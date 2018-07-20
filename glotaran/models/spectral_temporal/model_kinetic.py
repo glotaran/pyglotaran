@@ -200,17 +200,17 @@ class KineticModel(Model):
 
     def __str__(self):
         string = super(KineticModel, self).__str__()
-        string += "\n# K-Matrices\n\n"
+        string += "\n## K-Matrices\n\n"
         for k in self.k_matrices:
             string += f"{self.k_matrices[k]}\n"
 
         if self.irfs:
-            string += "# IRFs\n\n"
+            string += "## IRFs\n\n"
             for irf in self.irfs:
                 string += f"{self.irfs[irf]}\n"
 
         if self.shapes:
-            string += "# Shapes\n\n"
+            string += "## Shapes\n\n"
             for _, shape in self.shapes.items():
                 string += f"{shape}\n"
         return string
