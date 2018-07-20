@@ -1,5 +1,6 @@
 from unittest import TestCase
 from copy import copy
+import math
 import numpy as np
 
 from lmfit import Parameters
@@ -9,9 +10,16 @@ from glotaran.specification_parser import parse_yml
 
 class TestKineticModel(TestCase):
 
-    def assertEpsilon(self, number, value, epsilon):
-        self.assertTrue(abs(number - value) < epsilon,
-                        msg='Want: {} Have: {}'.format(number, value))
+    def assertEpsilon(self, wanted_value, given_value):
+        min_want = np.min(np.abs(wanted_value))
+        epsilon = 10**(math.floor(math.log10(min_want)) - 3)
+        msg = 'Want: {} Have: {} with epsilon {}'.format(wanted_value, given_value, epsilon)
+        assert self.withinEpsilon(wanted_value, given_value), msg
+
+    def withinEpsilon(self, wanted_value, given_value):
+        min_want = np.min(np.abs(wanted_value))
+        epsilon = 10**(math.floor(math.log10(min_want)) - 3)
+        return np.any(np.abs(wanted_value - given_value) < epsilon)
 
     def test_one_component_one_channel(self):
         fitspec = '''
@@ -47,21 +55,20 @@ datasets:
         times = np.asarray(np.arange(0, 1500, 1.5))
         x = np.asarray([0])
 
-        wanted_params = Parameters()
-        wanted_params.add("p_1", 101e-3)
+        wanted_params = {"1": 101e-3}
 
         model = parse_yml(fitspec.format(initial_parameter))
 
         axies = {"time": times, "spectral": x}
 
-        model.eval('dataset1', axies, parameter=wanted_params)
+        model.simulate('dataset1', axies, parameter=wanted_params)
 
         result = model.fit()
 
         for i in range(len(wanted_params)):
-            self.assertEpsilon(wanted_params["p_{}".format(i+1)].value,
+            self.assertEpsilon(wanted_params["{}".format(i+1)],
                                result.best_fit_parameter["p_{}".format(i+1)]
-                               .value, 1e-6)
+                               )
 
     def test_one_component_one_channel_gaussian_irf(self):
         fitspec = '''
@@ -102,23 +109,20 @@ datasets:
         times = np.asarray(np.arange(-100, 1500, 1.5))
         x = np.asarray([0])
 
-        wanted_params = Parameters()
-        wanted_params.add("p_1", 101e-3)
-        wanted_params.add("p_2", 0.3)
-        wanted_params.add("p_3", 10)
+        wanted_params = {"1": 101e-3, "2": 0.3, "3": 10}
 
         model = parse_yml(fitspec.format(initial_parameter))
 
         axies = {"time": times, "spectral": x}
 
-        model.eval('dataset1', axies, parameter=wanted_params)
+        model.simulate('dataset1', axies, parameter=wanted_params)
 
         result = model.fit()
 
         for i in range(len(wanted_params)):
-            self.assertEpsilon(wanted_params["p_{}".format(i+1)].value,
+            self.assertEpsilon(wanted_params["{}".format(i+1)],
                                result.best_fit_parameter["p_{}".format(i+1)]
-                               .value, 1e-6)
+                               )
 
     def test_three_component_multi_channel(self):
         fitspec = '''
@@ -170,30 +174,27 @@ datasets:
 
 '''
 
-        wanted_params = [101e-3, 202e-4, 305e-5]
-        simparams = copy(wanted_params)
-        times = np.asarray(np.arange(0, 1500, 1.5))
-        x = np.arange(12820, 15120, 4.6)
+        initial_parameter = [300e-3, 500e-4, 700e-5]
         amps = [7, 3, 30, False]
         locations = [14700, 13515, 14180, False]
         delta = [400, 100, 300, False]
 
-        simparams.append({'shape': [False, {'amps': amps}, {'locs': locations},
-                         {'width': delta}]})
+        initial_parameter.append({'shape': [False, {'amps': amps}, {'locs': locations},
+                                 {'width': delta}]})
 
-        model = parse_yml(fitspec.format(simparams))
-
+        times = np.asarray(np.arange(-100, 1500, 1.5))
+        x = np.arange(12820, 15120, 4.6)
         axies = {"time": times, "spectral": x}
 
-        model.eval('dataset1', axies)
+        wanted_params = {"1": 101e-3, "2": 202e-4, "3": 305e-5}
 
-        model.parameter.get("1").value = 300e-3
-        model.parameter.get("2").value = 500e-4
-        model.parameter.get("3").value = 700e-5
+        model = parse_yml(fitspec.format(initial_parameter))
+
+        model.simulate('dataset1', axies, parameter=wanted_params)
 
         result = model.fit()
         result.best_fit_parameter.pretty_print()
-        for i in range(len(wanted_params)):
-            self.assertEpsilon(wanted_params[i],
-                               result.best_fit_parameter["p_{}".format(i+1)]
-                               .value, 1e-6)
+        for i in wanted_params:
+            param = wanted_params[i]
+            assert any([self.withinEpsilon(param, result.best_fit_parameter[j])
+                        for j in result.best_fit_parameter])
