@@ -11,6 +11,7 @@ set SOURCEDIR=.
 set BUILDDIR=_build
 set API_TOCTREE_DIR=api
 set SPHINXPROJ=glotaran
+set SPHINXOPTS=-W
 
 if "%1" == "" goto help
 

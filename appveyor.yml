@@ -7,7 +7,7 @@ environment:
   PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
 #  APPVEYOR_CACHE_SKIP_RESTORE: true
-  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  APPVEYOR_SAVE_CACHE_ON_ERROR: flase
 
   matrix:
     - PYTHON: C:\Python36-x64
@@ -35,11 +35,14 @@ cache:
   # Cache downloaded pip packages and built wheels.
   - '%LOCALAPPDATA%\pip\Cache\http'
   - '%LOCALAPPDATA%\pip\Cache\wheels'
+  # Cache Tox envs
+  - 'C:\projects\glotaran\.tox'
 
 
 install:
   # Show size of cache
   - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
+  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
   # set python path
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
 
@@ -52,10 +55,18 @@ install:
   # making sure the latest version of lmfit-varpro will be installed
   - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/glotaran/lmfit-varpro.git'
 
+  # install tox
+  - '%CMD_IN_ENV% python -m pip install -U tox coverage'
+
   # build wheels for windows
   - '%CMD_IN_ENV% python setup.py bdist_wheel'
 
 build: none
+
+test_script:
+  # delete old .coverage file
+  - coverage erase
+  - tox
 
 artifacts:
   - path: dist/*
@@ -71,3 +82,8 @@ on_finish:
   - if exist "%LOCALAPPDATA%\pip" C:\cygwin\bin\find "%LOCALAPPDATA%\pip" -type f -mtime +360 -delete
   - if exist "%LOCALAPPDATA%\pip" C:\cygwin\bin\find "%LOCALAPPDATA%\pip" -type f -size +10M -delete
   - if exist "%LOCALAPPDATA%\pip" C:\cygwin\bin\find "%LOCALAPPDATA%\pip" -empty -delete
+  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\find "C:\projects\glotaran\.tox" -type f -mtime +360 -delete
+  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\find "C:\projects\glotaran\.tox" -empty -delete
+  # Show size of cache
+  - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
+  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
