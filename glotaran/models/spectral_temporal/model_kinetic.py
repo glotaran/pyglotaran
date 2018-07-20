@@ -1,11 +1,14 @@
 """Glotaran Kinetic Model"""
 
 from typing import Type, Dict
-from glotaran.model import Model, DatasetDescriptor
+from glotaran.model import Model
+# unused import
+# from glotaran.model import DatasetDescriptor
 from glotaran.fitmodel import FitModel, Matrix
 
 from .dataset import SpectralTemporalDataset
-from .dataset_descriptor import SpectralTemporalDatasetDescriptor
+# unused import
+# from .dataset_descriptor import SpectralTemporalDatasetDescriptor
 from .irf import Irf
 from .fitmodel import KineticFitModel
 from .k_matrix import KMatrix
@@ -192,7 +195,7 @@ class KineticModel(Model):
             raise TypeError("Values must be subclass of 'Shape'")
         self._shapes = value
 
-    def add_shape(self, shape) -> SpectralShape:
+    def add_shape(self, shape: SpectralShape):
         """Adds a spectral shape to the model.
 
         Parameters
@@ -211,8 +214,8 @@ class KineticModel(Model):
             self.shapes[shape.label] = shape
 
     def __str__(self):
-        string = "{}\n\nK-Matrices\n----------\n\n".format(super(KineticModel,
-                                                            self).__str__())
+        string = "{}\n\nK-Matrices\n----------\n\n" \
+                 "".format(super(KineticModel, self).__str__())
         for k in self.k_matrices:
             string += "{}\n".format(self.k_matrices[k])
 

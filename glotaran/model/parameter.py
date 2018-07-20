@@ -93,7 +93,7 @@ class Parameter(LmParameter):
         if not isinstance(val, (int, float)):
                 try:
                     val = float(val)
-                except:
+                except ValueError:
                     raise Exception("Parameter Error: value must be numeric:"
                                     "{} Type: {}".format(val, type(val)))
 

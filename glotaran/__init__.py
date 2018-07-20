@@ -1,11 +1,13 @@
 # Glotaran package __init__.py
 
+# workaround to import Model and Dataset with
+# `from glotaran import Model`/`from glotaran import Dataset`
 Dataset = None
 Model = None
 
-from glotaran.specification_parser import parse_yml
-from glotaran.specification_parser import parse_file
-from glotaran import dataio, model
+from glotaran.specification_parser import parse_yml  # noqa: E402
+from glotaran.specification_parser import parse_file  # noqa: E402
+from glotaran import dataio, model  # noqa: E402
 
 __version__ = '0.0.1'
 
@@ -46,7 +48,8 @@ io = dataio
 # ## model evaluation
 #
 # glotaran.fit() #use lmfit to minimize
-# glotaran.calculate() #evaluate the current model at given timepoints and wavelengths and produce data object
+# evaluate the current model at given timepoints and wavelengths and produce data object
+# glotaran.calculate()
 #
 #
 # ## getting results

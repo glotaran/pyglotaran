@@ -1,7 +1,9 @@
 """Dataset Descriptor"""
 
-from typing import Dict, List, Tuple
-import numpy as np
+from typing import Dict, List
+# unused imports
+# from typing import Tuple
+# import numpy as np
 
 from .compartment_constraints import CompartmentConstraint
 from .dataset import Dataset

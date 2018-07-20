@@ -112,7 +112,7 @@ class ParameterGroup(OrderedDict):
             group = group[l]
         try:
             return group._parameters[label]
-        except:
+        except KeyError:
             raise Exception("Cannot find parameter "
                             "{}".format(".".join(path)+"."+label))
 

@@ -141,6 +141,7 @@ class Dataset(object):
 
 def _hashable(value):
     try:
+        # pointless statement
         {value: None}
         return True
     except:

@@ -11,7 +11,7 @@ class CMatrix(object):
         self.independent_axies = independent_axies
 
     def combine_megacomplex_matrices(self, c_matrix):
-        smaller, larger = None
+        smaller, larger = [None]*2
         if self.nr_compartments() > c_matrix.nr_compartments:
             smaller = c_matrix
             larger = self
@@ -30,7 +30,7 @@ class CMatrix(object):
 
     def combine_dataset_matrices(self, c_matrix, tolerance=0.1):
 
-        smaller, larger = None
+        smaller, larger = [None]*2
 
         if self.independent_axies.shape[0] > c_matrix.independent_axies[0]:
             smaller = c_matrix
@@ -53,8 +53,11 @@ class CMatrix(object):
         size_compartments = max([self.nr_compartments(),
                                  c_matrix.nr_compartments()])
 
+        # F841 local variable 'combined' is assigned to but never used
         combined = np.empty((size_x1_axies, size_x2_axies, size_compartments), dtype=np.float64)
 
+        # F841 local variable 'smaller_axis_val_tmp' is assigned to but never used
+        # F841 local variable 'tmp' is assigned to but never used
         for i in range(size_x1_axies):
             if i in range(larger.independent_axies):
                 smaller_axis_val_tmp = [val for val in
@@ -62,7 +65,6 @@ class CMatrix(object):
                                                              larger_axies[i]) <
                                         tolerance]
                 tmp = smaller
-
 
     def nr_compartments(self):
         return self.matrix.shape[2]

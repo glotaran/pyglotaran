@@ -1,6 +1,6 @@
 """Glotaran Kinetic Result"""
-
-import numpy as np
+# unused import
+# import numpy as np
 
 from glotaran.fitmodel import Result
 

@@ -13,7 +13,7 @@ class Matrix(ABC):
         self.calculate(matrix, self.compartment_order, parameter)
         return matrix
 
-    property
+    @property
     def compartment_order(self):
         raise NotImplementedError
 

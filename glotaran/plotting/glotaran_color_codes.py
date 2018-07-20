@@ -13,7 +13,7 @@ def rgb_to_hex(rgb_tuple):
 
 
 class GlotaranDefaultColorCode(Enum):
-    #Name	#Hex
+    # Name	#Hex
     black = '#000000'
     red = '#ff0000'
     blue = '#0000ff'
@@ -44,4 +44,3 @@ def get_glotaran_default_colors():
 
 def get_glotaran_default_colors_cycler():
     return cycler('color', [e.value for e in GlotaranDefaultColorCode])
-

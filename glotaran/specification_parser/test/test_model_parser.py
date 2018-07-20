@@ -10,10 +10,11 @@ from glotaran.model import (InitialConcentration,
                             EqualConstraint,
                             EqualAreaConstraint,
                             Parameter,
-                            FixedConstraint,
-                            BoundConstraint
                             )
-from os import getcwd
+
+# unused import
+# from glotaran.model import FixedConstraint, BoundConstraint
+# from os import getcwd
 from os.path import join, dirname, abspath
 import numpy as np
 

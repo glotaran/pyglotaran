@@ -1,9 +1,11 @@
 from unittest import TestCase
-from copy import copy
+# unused import
+# from copy import copy
 import math
 import numpy as np
 
-from lmfit import Parameters
+# unused import
+# from lmfit import Parameters
 
 from glotaran.specification_parser import parse_yml
 
