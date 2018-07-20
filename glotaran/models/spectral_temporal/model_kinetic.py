@@ -1,11 +1,10 @@
 """Glotaran Kinetic Model"""
 
 from typing import Type, Dict
-from glotaran.model import Model, DatasetDescriptor
+from glotaran.model import Model
 from glotaran.fitmodel import FitModel, Matrix
 
 from .dataset import SpectralTemporalDataset
-from .dataset_descriptor import SpectralTemporalDatasetDescriptor
 from .irf import Irf
 from .fitmodel import KineticFitModel
 from .k_matrix import KMatrix
@@ -43,17 +42,6 @@ class KineticModel(Model):
 
         """
         return "Kinetic"
-
-    def fit_model_class(self) -> Type[FitModel]:
-        """Returns a kinetic fitmodel.
-
-        Returns
-        -------
-
-        fitmodel : type(KineticFitModel)
-            Implementation of fitmodel.FitModel
-        """
-        return KineticFitModel
 
     def calculated_matrix(self) -> Type[Matrix]:
         """Returns Kinetic C the calculated matrix.
@@ -173,7 +161,7 @@ class KineticModel(Model):
         if self.irfs is None:
             self.irfs = {irf.label: irf}
         else:
-            if irf.label is None or irf.label is "":
+            if irf.label is None or irf.label == "":
                 raise Exception("Irf label empty")
             if irf.label in self.irfs:
                 raise Exception("Irf label must be unique")
@@ -211,48 +199,18 @@ class KineticModel(Model):
             self.shapes[shape.label] = shape
 
     def __str__(self):
-        string = "{}\n\nK-Matrices\n----------\n\n".format(super(KineticModel,
-                                                            self).__str__())
+        string = super(KineticModel, self).__str__()
+        string += "\n# K-Matrices\n\n"
         for k in self.k_matrices:
-            string += "{}\n".format(self.k_matrices[k])
+            string += f"{self.k_matrices[k]}\n"
 
-        string += "\n\nIRFs\n----\n\n"
-        for irf in self.irfs:
-            string += "{}\n".format(self.irfs[irf])
+        if self.irfs:
+            string += "# IRFs\n\n"
+            for irf in self.irfs:
+                string += f"{self.irfs[irf]}\n"
 
-        string += "\nShapes\n----\n\n"
-        for _, shape in self.shapes.items():
-            string += "{}\n".format(shape)
+        if self.shapes:
+            string += "# Shapes\n\n"
+            for _, shape in self.shapes.items():
+                string += f"{shape}\n"
         return string
-
-    #  def c_matrix(self, parameter=None):
-    #      """
-    #
-    #      Parameters
-    #      ----------
-    #      parameter :
-    #           (Default value = None)
-    #
-    #      Returns
-    #      -------
-    #
-    #      """
-    #      if parameter is None:
-    #          parameter = self.parameter.as_parameters_dict()
-    #      return self.fit_model().c_matrix(parameter)
-    #
-    #  def e_matrix(self, parameter=None):
-    #      """
-    #
-    #      Parameters
-    #      ----------
-    #      parameter :
-    #           (Default value = None)
-    #
-    #      Returns
-    #      -------
-    #
-    #      """
-    #      if parameter is None:
-    #          parameter = self.parameter.as_parameters_dict()
-    #      return self.fit_model().e_matrix(parameter)
