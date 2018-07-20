@@ -1,3 +1,5 @@
+""" Glotaran Parameter"""
+
 from math import isnan
 
 from lmfit import Parameter as LmParameter
@@ -12,89 +14,32 @@ class Parameter(LmParameter):
         super(Parameter, self).__init__()
 
     @property
-    def index(self):
-        """Index in the parameter tree"""
-        return self._index
-
-    @index.setter
-    def index(self, i):
-        """
-
-        Parameters
-        ----------
-        i : index
-
-
-        Returns
-        -------
-
-
-        """
-        self._index = i
-
-    @property
-    def label(self):
+    def label(self) -> str:
         """Label of the parameter"""
         return self._label
 
     @label.setter
-    def label(self, label):
-        """
-
-        Parameters
-        ----------
-        label : label of the parameter
-
-
-        Returns
-        -------
-
-
-        """
+    def label(self, label: str):
         self._label = label
 
     @property
     def fit(self):
-        """True or false"""
+        """Whether the paramater should be included in fit. Set false for e.g.
+        dormant parameter."""
         return self._fit
 
     @fit.setter
     def fit(self, value):
-        """
-
-        Parameters
-        ----------
-        value : true or false
-
-
-        Returns
-        -------
-
-
-        """
         if not isinstance(value, bool):
             raise TypeError("Fit must be True or False")
         self._fit = value
 
     @LmParameter.value.setter
     def value(self, val):
-        """
-
-        Parameters
-        ----------
-        val : value of the parameter
-
-
-        Returns
-        -------
-
-
-        """
-
         if not isinstance(val, (int, float)):
                 try:
                     val = float(val)
-                except:
+                except Exception:
                     raise Exception("Parameter Error: value must be numeric:"
                                     "{} Type: {}".format(val, type(val)))
 

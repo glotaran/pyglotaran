@@ -16,4 +16,4 @@ class Megacomplex(object):
         self._label = label
 
     def __str__(self):
-        return f"### {self.label}\n"
+        return f"* __{self.label}__\n"
