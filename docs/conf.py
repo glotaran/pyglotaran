@@ -50,8 +50,8 @@ numpydoc_class_members_toctree = True
 
 # taken from https://github.com/lmfit/lmfit-py/blob/master/doc/conf.py
 extlinks = {
-    'scipydoc': ('https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html', 'scipy.'),# noqa:
-    'numpydoc': ('https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', 'numpy.'),# noqa:
+    'scipydoc': ('https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html', 'scipy.'),  # noqa: E501
+    'numpydoc': ('https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html', 'numpy.'),  # noqa: E501
     }
 
 # Add any paths that contain templates here, relative to this directory.

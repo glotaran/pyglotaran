@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from setuptools import setup, find_packages ,Command
+from setuptools import setup, find_packages, Command
 from setuptools.extension import Extension
 
 
@@ -18,13 +18,13 @@ class CleanCommand(Command):
         for root, dirs, filenames in os.walk(os.path.abspath(".")):
             for dir in dirs:
                 if dir.endswith(("__pycache__", ".egg-info", ".pytest_cache")) and \
-                        not ".tox" in root:
+                        ".tox" not in root:
 
                     self._clean_tree.append(os.path.join(root, dir))
 
             for filename in filenames:
                 if filename.endswith((".pyc", ".pyd", ".tgz", ".egg-info")) and \
-                        not ".tox" in root and root not in self._clean_tree:
+                        ".tox" not in root and root not in self._clean_tree:
 
                     self._clean_tree.append(os.path.join(root, filename))
 
@@ -58,7 +58,9 @@ except ImportError:
     raise ImportError("To install glotaran you need to have following packages installed:\n"
                       "numpy>=1.9.1\n"
                       "scipy>=1.0.0\n"
-                      "Cython>=0.28.3\n")
+                      "Cython>=0.28.3\n"
+                      "You can install them by running:\n"
+                      "`pip install 'numpy>=1.9.1' 'scipy>=1.0.0' 'Cython>=0.28.3'`")
 
 setup_requires = [
     'numpy>=1.9.1',
@@ -99,7 +101,7 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
-    dependency_links=['https://github.com/s-weigand/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.1.0'],
+    dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.1.0'],  # noqa: E501
     cmdclass={'clean': CleanCommand},
     ext_modules=ext_modules,
     test_suite='glotaran',

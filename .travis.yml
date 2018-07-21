@@ -94,15 +94,14 @@ before_install:
   - python -m pip install -U pip>=9.0.1
 
 install:
-  - python -m pip install -U pip>=9.0.1 coveralls
+  - python coveralls
   - pip install -r requirements_dev.txt
 
 script:
   - pwd
   # making sure last version of lmfit-varpro is installed
-  - pip install --no-deps --no-cache-dir --ignore-installed git+https://github.com/s-weigand/lmfit-varpro.git
-#  - pip install --process-dependency-links .
-  - python setup.py install
+  - pip install --no-deps --no-cache-dir --ignore-installed git+https://github.com/glotaran/lmfit-varpro.git
+  - pip install --process-dependency-links .
   - py.test --cov=glotaran --cov-config .coveragerc glotaran
   - pip freeze
 

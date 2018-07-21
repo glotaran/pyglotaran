@@ -50,9 +50,6 @@ install:
   # calling pip with "%CMD_IN_ENV% python -m" prevents an access denied error
   - '%CMD_IN_ENV% python -m pip install -U pip setuptools wheel'
 
-  # install dependencies
-  # "Cython>=0.28.3"
-  - '%CMD_IN_ENV% python -m pip install -U "numpy>=1.9.1" "scipy>=1.0.0"'
   # making sure the latest version of lmfit-varpro will be installed
   - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/s-weigand/lmfit-varpro.git'
 
