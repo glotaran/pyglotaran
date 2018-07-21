@@ -86,13 +86,13 @@ initial_concentration: #equal to the total number of compartments
 k_matrices:
   - label: km1
     matrix: {
-      '("s1","s1")': 31,
-      '("s2","s1")': 32,
-      '("s1","s2")': 33,
-      '("s3","s1")': 34,
-      '("s1","s3")': 35,
-      '("s4","s1")': 36,
-      '("s1","s4")': 37,
+      '("s1","s1")': 1,
+      '("s2","s1")': 2,
+      '("s1","s2")': 3,
+      '("s3","s1")': 4,
+      '("s1","s3")': 5,
+      '("s4","s1")': 6,
+      '("s1","s4")': 7,
 }
 
 shapes:

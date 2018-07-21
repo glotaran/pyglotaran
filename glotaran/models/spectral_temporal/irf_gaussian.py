@@ -118,8 +118,11 @@ class GaussianIrf(Irf):
         return t
 
     def __str__(self):
-        s = """{} Center: {} Width: {} Center Dispersion: {} \
-Width Dispersion {} Scale: {}, Nomalize: {}"""
-        return s.format(super(GaussianIrf, self).__str__(), self.center,
-                        self.width, self.center_dispersion,
-                        self.width_dispersion, self.scale, self.normalize)
+        string = super(GaussianIrf, self).__str__()
+        string += f"* _Center_: {self.center}\n"
+        string += f"* _Width_: {self.width}\n"
+        string += f"* _Center Dispersion_: {self.center_dispersion}\n"
+        string += f"* _Width Dispersion_: {self.width_dispersion}\n"
+        string += f"* _Scale_: {self.scale}\n"
+        string += f"* _Nomalize_: {self.normalize}\n"
+        return string

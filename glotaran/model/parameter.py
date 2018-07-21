@@ -1,3 +1,5 @@
+""" Glotaran Parameter"""
+
 from math import isnan
 
 from lmfit import Parameter as LmParameter
@@ -8,92 +10,55 @@ class Parameter(LmParameter):
     def __init__(self):
         self.index = -1
         self.fit = True
+        self.label = None
         super(Parameter, self).__init__()
 
-    @property
-    def index(self):
-        """Index in the parameter tree"""
-        return self._index
+    @classmethod
+    def from_parameter(cls, label: str, parameter: LmParameter):
+        """Creates a parameter from an lmfit.Parameter
 
-    @index.setter
-    def index(self, i):
+        Parameter
+        ---------
+        label : str
+            Label of the parameter
+        parameter : lmfit.Parameter
+            lmfit.Parameter
         """
-
-        Parameters
-        ----------
-        i : index
-
-
-        Returns
-        -------
-
-
-        """
-        self._index = i
+        p = cls()
+        p.label = label
+        p.value = parameter.value
+        p.min = parameter.min
+        p.max = parameter.max
+        p.vary = parameter.vary
+        return p
 
     @property
-    def label(self):
+    def label(self) -> str:
         """Label of the parameter"""
-        return self.name
+        return self._label
 
     @label.setter
-    def label(self, label):
-        """
-
-        Parameters
-        ----------
-        label : label of the parameter
-
-
-        Returns
-        -------
-
-
-        """
-        self.name = label
+    def label(self, label: str):
+        self._label = label
 
     @property
     def fit(self):
-        """True or false"""
+        """Whether the paramater should be included in fit. Set false for e.g.
+        dormant parameter."""
         return self._fit
 
     @fit.setter
     def fit(self, value):
-        """
-
-        Parameters
-        ----------
-        value : true or false
-
-
-        Returns
-        -------
-
-
-        """
         if not isinstance(value, bool):
             raise TypeError("Fit must be True or False")
         self._fit = value
 
     @LmParameter.value.setter
     def value(self, val):
-        """
-
-        Parameters
-        ----------
-        val : value of the parameter
-
-
-        Returns
-        -------
-
-
-        """
-
         if not isinstance(val, (int, float)):
                 try:
                     val = float(val)
-                except ValueError:
+                except Exception:
                     raise Exception("Parameter Error: value must be numeric:"
                                     "{} Type: {}".format(val, type(val)))
 
@@ -105,12 +70,7 @@ class Parameter(LmParameter):
 
         LmParameter.value.fset(self, val)
 
-    def _str__(self):
+    def __str__(self):
         """ """
-        return 'Label: {}\tInitial Value: {}\tFit: {}\tVary: {}\tMin: {} Max: {}'\
-               .format(self.label,
-                       self.value,
-                       self.fit,
-                       self.vary,
-                       self.min,
-                       self.max)
+        return f"__{self.label}__: _Value_: {self.value}, _Min_:" + \
+               f" {self.min}, _Max_: {self.max}, _Vary_: {self.vary}, _Fit_: {self.fit}"

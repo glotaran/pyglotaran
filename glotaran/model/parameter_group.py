@@ -1,3 +1,6 @@
+"""Glotaran Parameter Group"""
+
+from typing import Generator, Tuple
 from collections import OrderedDict
 
 from lmfit import Parameters
@@ -8,22 +11,61 @@ from .parameter import Parameter
 class ParameterGroup(OrderedDict):
     """Represents are group of parameters. Can contain other groups, creating a
     tree-like hirachy."""
-    def __init__(self, label):
+    def __init__(self, label: str):
         self._label = label
         self._parameters = OrderedDict()
         self._fit = True
+        self._root = None
         super(ParameterGroup, self).__init__()
 
-    def add_parameter(self, parameter):
+    @classmethod
+    def from_parameter_dict(cls, parameter: Parameters):
+        """Creates a parameter group from an lmfit.Parameters dictionary
+
+        Parameter
+        ---------
+        parameter : lmfit.Parameters
+            lmfit.Parameters dictionary
+        """
+
+        root = cls("p")
+
+        for lbl, param in parameter.items():
+            lbl = lbl.split("_")
+            if len(lbl) is 2:
+                # it is a root param
+                param = Parameter.from_parameter(lbl.pop(), param)
+                root.add_parameter(param)
+                continue
+
+            # remove root
+            lbl.pop(0)
+
+            top = root
+            while len(lbl) is not 0:
+                group = lbl.pop(0)
+                if group in top:
+                    if len(lbl) is 1:
+                        param = Parameter.from_parameter(lbl.pop(), param)
+                        top[group].add_parameter(param)
+                    else:
+                        top = top[group]
+                else:
+                    group = ParameterGroup(group)
+                    top.add_group(group)
+                    if len(lbl) is 1:
+                        param = Parameter.from_parameter(lbl.pop(), param)
+                        group.add_parameter(param)
+                    else:
+                        top = group
+        return root
+
+    def add_parameter(self, parameter: Parameter):
         """
 
         Parameters
         ----------
-        parameter : instance of Parameter
-
-
-        Returns
-        -------
+        parameter : Parameter
 
         """
         if not isinstance(parameter, list):
@@ -39,23 +81,31 @@ class ParameterGroup(OrderedDict):
                 p.fit = False
             self._parameters[p.label] = p
 
-    def add_group(self, group):
+    def add_group(self, group: 'ParameterGroup'):
         """
 
         Parameters
         ----------
-        group : instance of ParameterGroup
-
-
-        Returns
-        -------
+        group : ParameterGroup
 
         """
         if not isinstance(group, ParameterGroup):
             raise TypeError("Leave must be glotaran.model.ParameterGroup")
         if not self.fit:
             group.fit = False
+        group.set_root(self)
         self[group.label] = group
+
+    def set_root(self, root):
+        self._root = root
+
+    def get_nr_roots(self):
+        n = 0
+        root = self._root
+        while root is not None:
+            n += 1
+            root = root._root
+        return n
 
     @property
     def fit(self):
@@ -64,17 +114,6 @@ class ParameterGroup(OrderedDict):
 
     @fit.setter
     def fit(self, value):
-        """
-
-        Parameters
-        ----------
-        value : True or False
-
-
-        Returns
-        -------
-
-        """
         for p in self.all_group():
             p.fit = value
         self._fit = value
@@ -86,27 +125,29 @@ class ParameterGroup(OrderedDict):
         """Label of the group """
         return self._label
 
-    def groups(self):
-        """Generator over all groups their subgroups"""
+    def groups(self) -> Generator['ParameterGroup', None, None]:
+        """Generator over all groups and their subgroups"""
         for group in self:
             for l in group.groups():
                 yield l
 
-    def get(self, label):
-        """
+    def get(self, label: str) -> Parameter:
+        """Gets a parameter by it label.
 
         Parameters
         ----------
-        label : label of the Parameter to get.
+        label : str
+            Label of the Parameter to get.
 
 
         Returns
         -------
-        parameter
+        parameter : Parameter
 
         """
         path = label.split(".")
         label = path.pop()
+        
         group = self
         for l in path:
             group = group[l]
@@ -116,43 +157,42 @@ class ParameterGroup(OrderedDict):
             raise Exception("Cannot find parameter "
                             "{}".format(".".join(path)+"."+label))
 
-    def get_by_index(self, idx):
-        """
+    def get_by_index(self, idx: int) -> Parameter:
+        """ Gets a parameter by its index. Only works for unlabeled parameters
+        in the root group.
 
         Parameters
         ----------
-        idx : index of the Parameter.
-
+        idx : int
+            Index of the parameter.
 
         Returns
         -------
-        parameter
+        parameter : Parameter
         """
         return [i for _, i in self._parameters.items()][idx-1]
 
-    def all_group(self):
-        """Generates all parameter within the group, but not in subgroups"""
+    def all_group(self) -> Generator[Parameter, None, None]:
+        """Generator returning all Parameter within the group, but not in subgroups"""
         for _, p in self._parameters.items():
             yield p
 
-    def all(self):
-        """Generates all parameters within the group and in subgroups"""
+    def all(self) -> Generator[Parameter, None, None]:
+        """Generator returning all parameters within the group and in subgroups"""
         for p in self.all_group():
             yield p
         for l in self:
             for p in l.all():
                 yield p
 
-    def all_with_label(self, root):
-        """
-        Same as all, but prepends tree hirachy to the parameter labels.
+    def all_with_label(self, root) -> Generator[Tuple[str, Parameter], None,
+                                                None]:
+        """ Same as all, but returns the labels relative to the given root
+        group.
         Parameters
         ----------
         root : label of the root group
 
-
-        Returns
-        -------
 
         """
         root = "{}_{}".format(root, self.label) if root is not None else \
@@ -163,18 +203,18 @@ class ParameterGroup(OrderedDict):
             for (lbl, p) in l.all_with_label(root):
                 yield (lbl, p)
 
-    def as_parameters_dict(self, only_fit=False):
+    def as_parameters_dict(self, only_fit=False) -> Parameters:
         """
         Creates a lmfit.Parameters dict.
         Parameters
         ----------
-        only_fit : if True, all parameters with fit = False will be filtered
-        out
-             (Default value = False)
+        only_fit : bool
+            (Default value = False)
+            if True, all parameters with fit = False will be filtered
 
         Returns
         -------
-        Parameters : instance of lmfit.Parameters
+        Parameters : lmfit.Parameters
         """
         params = Parameters()
         for (label, p) in self.all_with_label(None):
@@ -184,7 +224,12 @@ class ParameterGroup(OrderedDict):
         return params
 
     def __str__(self):
-        s = "Label\tValue\tMin\tMax\tFix\n"
-        for _, p in self.as_parameters_dict().items():
-            s += "\t{}\n".format(p)
+        t = "".join(["  " for _ in range(self.get_nr_roots())])
+        s = ""
+        if self.label is not "p":
+            s += f"{t}* __{self.label}__:\n"
+        for _, p in self._parameters.items():
+            s += f"{t}  * {p}\n"
+        for _, g in self.items():
+            s += f"{g.__str__()}"
         return s

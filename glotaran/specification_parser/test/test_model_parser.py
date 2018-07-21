@@ -155,10 +155,10 @@ class TestParser(TestCase):
         self.assertTrue("km1" in self.model.k_matrices)
         self.assertTrue(np.array_equal(self.model.k_matrices["km1"]
                                        .asarray(),
-                        np.array([[31, 33, 35, 37],
-                                 [32, 0, 0, 0],
-                                 [34, 0, 0, 0],
-                                 [36, 0, 0, 0]]
+                        np.array([[1, 3, 5, 7],
+                                  [2, 0, 0, 0],
+                                  [4, 0, 0, 0],
+                                  [6, 0, 0, 0]]
                                  )
                                       )
                         )

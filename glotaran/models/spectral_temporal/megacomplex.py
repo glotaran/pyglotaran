@@ -22,5 +22,6 @@ class KineticMegacomplex(Megacomplex):
         self._k_matrices = value
 
     def __str__(self):
-        return "{}\nK-Matrices: {}".format(super(KineticMegacomplex,
-                                           self).__str__(), self.k_matrices)
+        string = super(KineticMegacomplex, self).__str__()
+        string += f"* _K-Matrices_: {self.k_matrices}\n"
+        return string

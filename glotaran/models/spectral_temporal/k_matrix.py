@@ -122,4 +122,39 @@ class KMatrix(object):
         return mat
 
     def __str__(self):
-        return "Label: {}\nMatrix:\n".format(self.label)
+
+        longest = max([len(s) for s in self.compartment_map]) + 6
+        header = "compartment |"
+        if longest < len(header):
+            longest = len(header)
+
+        longest_h = max([len(f" __{c}__ |") for c in self.compartment_map]) + 3
+        longest_p = max([len(str(self.matrix[i])) for i in self.matrix]) + 3
+        if longest_p < longest_h:
+            longest_p = longest_h
+
+        string = f"### _{self.label}_\n"
+        string += "\n"
+        #  string += "```\n"
+        #  string += f"\t"
+        header_sub = "|".rjust(longest, "-")
+        for c in self.compartment_map:
+            header += f" __{c}__ |".rjust(longest_p)
+            header_sub += "|".rjust(longest_p, "-")
+        string += header
+        string += "\n"
+        string += header_sub
+        string += "\n"
+        for c in self.compartment_map:
+            string += f"__{c}__ |".rjust(longest)
+            for c2 in self.compartment_map:
+                found = False
+                for index in self.matrix:
+                    if index[0] == c and index[1] == c2:
+                        found = True
+                        string += f" {self.matrix[index]} |".rjust(longest_p)
+                if not found:
+                    string += " |".rjust(longest_p)
+            string += "\n"
+        return string
+

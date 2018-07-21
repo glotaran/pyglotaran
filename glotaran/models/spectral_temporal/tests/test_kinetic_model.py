@@ -66,11 +66,13 @@ datasets:
         model.simulate('dataset1', axies, parameter=wanted_params)
 
         result = model.fit()
+        got_params = result.best_fit_parameter
 
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params["{}".format(i+1)],
-                               result.best_fit_parameter["p_{}".format(i+1)]
+                               got_params.get(f"{i+1}").value
                                )
+
 
     def test_one_component_one_channel_gaussian_irf(self):
         fitspec = '''
@@ -120,10 +122,11 @@ datasets:
         model.simulate('dataset1', axies, parameter=wanted_params)
 
         result = model.fit()
+        got_params = result.best_fit_parameter
 
         for i in range(len(wanted_params)):
             self.assertEpsilon(wanted_params["{}".format(i+1)],
-                               result.best_fit_parameter["p_{}".format(i+1)]
+                               got_params.get(f"{i+1}").value
                                )
 
     def test_three_component_multi_channel(self):
@@ -195,8 +198,8 @@ datasets:
         model.simulate('dataset1', axies, parameter=wanted_params)
 
         result = model.fit()
-        result.best_fit_parameter.pretty_print()
+
         for i in wanted_params:
             param = wanted_params[i]
-            assert any([self.withinEpsilon(param, result.best_fit_parameter[j])
-                        for j in result.best_fit_parameter])
+            assert any([self.withinEpsilon(param, got.value)
+                        for got in result.best_fit_parameter.all()])
