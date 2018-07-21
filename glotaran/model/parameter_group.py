@@ -57,7 +57,7 @@ class ParameterGroup(OrderedDict):
                         param = Parameter.from_parameter(lbl.pop(), param)
                         group.add_parameter(param)
                     else:
-                        top = top[group]
+                        top = group
         return root
 
     def add_parameter(self, parameter: Parameter):

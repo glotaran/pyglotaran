@@ -106,7 +106,7 @@ class Result(SeparableModelResult):
         string += "\n"
 
         string += "\n"
-        string += "## Initial Fit Parameter\n\n"
+        string += "## Best Fit Parameter\n\n"
         string += f"{self.best_fit_parameter}"
         string += "\n"
 
