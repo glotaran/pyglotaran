@@ -94,7 +94,7 @@ before_install:
   - python -m pip install -U pip>=9.0.1
 
 install:
-  - python coveralls
+  - pip install coveralls
   - pip install -r requirements_dev.txt
 
 script:
