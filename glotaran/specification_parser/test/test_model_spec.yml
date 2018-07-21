@@ -7,7 +7,7 @@ options:
   parameter_ordering: relative #absolute, relative # maybe labeled
   temperature: 293
 
-compartments: [s1,s2,s3,s4]
+compartments: [s1,s2,s3,s4,osc1]
 
 # For each dataset either the relative path or absolute path can be given
 # The absolute path is OS dependent
@@ -94,6 +94,10 @@ k_matrices:
       '("s4","s1")': 6,
       '("s1","s4")': 7,
 }
+
+oscillations:
+  - label: "osc1"
+    frequency: 1
 
 shapes:
   - label: "shape1"

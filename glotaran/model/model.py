@@ -346,7 +346,7 @@ class Model(ABC):
             string += "\n## Compartments\n\n"
 
             for c in self.compartments:
-                string += f"* {c}\n" 
+                string += f"* {c}\n"
 
         string += "\n## Megacomplexes\n\n"
 
