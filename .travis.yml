@@ -1,0 +1,115 @@
+# travis
+sudo: false
+language: python
+cache: pip
+
+matrix:
+  fast_finish: true
+  include:
+    - python: 3.6
+      env: TOXENV=flake8
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
+      after_success:
+      # this prevents the tests to upload stuff to coveralls.io
+        - echo "done"
+
+    - python: 3.6
+      # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
+      env: TOXENV=docs
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
+      after_success:
+        # this prevents the tests to upload stuff to coveralls.io
+        - echo "done"
+
+    # LINUX
+    - python: "3.6"
+      env: linux-py36
+
+    - python: "3.7-dev"  # 3.7 development branch
+      env: linux-py37
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - echo "clean old c files"
+        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+        - echo "check clean old c files"
+        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
+
+    # OSX
+    - language: generic
+      python: 3.6
+      os: osx
+      env:
+        - osx-py36
+      before_install:
+        - echo "before_install"
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - conda update conda -y
+        - conda create -n py36 python=3.6 -y
+        - source activate py36
+        - python -m pip install -U pip>=9.0.1
+
+    - language: generic
+      python: 3.7
+      env: osx-py37
+      os: osx
+      before_install:
+        - echo "before_install"
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - conda update conda -y
+        - conda create -n py37 python=3.7 -y
+        - source activate py37
+        - python -m pip install -U pip>=9.0.1
+        - echo "clean old c files"
+        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+        - echo "check clean old c files"
+        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
+
+#    - python: 3.6
+#      env: win_coverage
+#      install:
+#        - pip install git+https://github.com/Robpol86/appveyor-artifacts.git coveralls
+#      script:
+#        - appveyor-artifacts -m download
+#      after_success:
+#        - coveralls
+#        - coverage erase
+
+before_install:
+  - echo "before_install"
+  - python -m pip install -U pip>=9.0.1
+
+install:
+  - python coveralls
+  - pip install -r requirements_dev.txt
+
+script:
+  - pwd
+  # making sure last version of lmfit-varpro is installed
+  - pip install --no-deps --no-cache-dir --ignore-installed git+https://github.com/glotaran/lmfit-varpro.git
+  - pip install --process-dependency-links .
+  - py.test --cov=glotaran --cov-config .coveragerc glotaran
+  - pip freeze
+
+after_success:
+  - coveralls
+  - coverage erase
+
+notifications:
+  slack:
+    rooms:
+      - secure: "pVrVDoJm9T5Zzz0GoxAY40RIVUccg8ObLmZJnHORnTEQddFg1AYgByd4nrBnpBmwOETg/bpDOvqXbwRuJWo3UJQjl0mxO3eH349ftjctxPTWp+601L6fCBgETArTayi3N//M2mmET2DEGCA9Oq4PFcoGGtUlLUcAGzrtuqM+sKxE/MMqk28EaV2vEjPifQJUKJ74huBXWvBjk1VhaSKdw71VrfF58VEsDACrIPgvbYdo6erkNj9F6CWD2vx/pm8uBcS4rGuTT98zfNnEx+Png85uZomsALhz8+jM8uCcpl6n6LJ+GI84OK7KNJdUAZTt7ylVxSpwPfsU/9KsFXFLPcMz7I8q/Z4HFFf+dBAv34DTnuLUKEmZ2cH8m56E0V0ky3PS9N59OOCXl8ys8GMqV65kbMeLfGzu8r0/06p2i4gTeO2YV9PzAGzeBmpFPlQtOAIV+VEa+1tJk5jxUTuHTMYCqp3aWObfbK7LVGilcfsBcrqjSV2S2yNCSUxSJ949/igUc6ZxMmSQ/wxOBWRSe3GEyxj3vZXvfjIV3y8Fjs3+CS47Vojx1/i6VjXAabJlDAbnNmm8oTSDJOT2fP1d9ukmxLOrmowc3fmX36fTpIBo1zpvODEiFYxa0UMioqj+8H7GC7Dw7KycRbWxP1Yxgx3VPR2wVbk0NA8wp37yfyo="

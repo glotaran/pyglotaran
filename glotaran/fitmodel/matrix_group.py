@@ -1,6 +1,7 @@
 import numpy as np
 import collections
 
+
 class MatrixGroup(object):
     def __init__(self, matrix):
         self.x = matrix.x

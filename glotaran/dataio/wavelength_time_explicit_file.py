@@ -1,6 +1,8 @@
 from glotaran.model import Dataset
 from glotaran.models.spectral_temporal.dataset import SpectralTemporalDataset
-from .spectral_timetrace import SpectralTimetrace, SpectralUnit
+from .spectral_timetrace import SpectralUnit
+# this import was unused and flake8 did complain, will leave it as comment
+# from .spectral_timetrace import SpectralTimetrace
 from enum import Enum
 import os.path
 import csv
@@ -13,8 +15,10 @@ class DataFileType(Enum):
     wavelength_explicit = "Wavelength explicit"
     # TODO: implement time_intervals
 
+
 class DataRequired(Exception):
     pass
+
 
 class ExplicitFile(object):
     """
@@ -59,7 +63,7 @@ class ExplicitFile(object):
         if not isinstance(type, DataFileType):
             raise TypeError("Export type not supported")
 
-        #self._dataset = dataset
+        # self._dataset = dataset
 
         comment = comment.splitlines()
         while len(comment) < 2:
@@ -87,8 +91,9 @@ class ExplicitFile(object):
 
         f.close()
 
-    def write(self, filename, overwrite=False, comment="", file_format="Time explicit", number_format="%.10e"):
-        #TODO: write a more elegant method
+    def write(self, filename, overwrite=False, comment="",
+              file_format="Time explicit", number_format="%.10e"):
+        # TODO: write a more elegant method
 
         if os.path.isfile(filename) and not overwrite:
             print('File {} already exists'.format(os.path.isfile(filename)))
@@ -98,16 +103,19 @@ class ExplicitFile(object):
 
         if file_format == "Wavelength explicit":
             wav = '\t'.join([repr(num) for num in self._spectral_indices])
-            header = comments + "Wavelength explicit\nIntervalnr {}".format(len(self._spectral_indices)) + "\n" + wav
+            header = comments + "Wavelength explicit\nIntervalnr {}" \
+                                "".format(len(self._spectral_indices)) + "\n" + wav
             raw_data = np.vstack((self._times.T, self._observations)).T
         elif file_format == "Time explicit":
             tim = '\t'.join([repr(num) for num in self._times])
-            header = comments + "Time explicit\nIntervalnr {}".format(len(self._times)) + "\n" + tim
+            header = comments + "Time explicit\nIntervalnr {}" \
+                                "".format(len(self._times)) + "\n" + tim
             raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
         else:
             raise NotImplementedError
 
-        np.savetxt(filename, raw_data, fmt=number_format, delimiter='\t', newline='\n', header=header, footer='', comments='')
+        np.savetxt(filename, raw_data, fmt=number_format, delimiter='\t', newline='\n',
+                   header=header, footer='', comments='')
 
     def read(self, label, spectral_unit=SpectralUnit.nm, time_unit="s"):
         if not os.path.isfile(self._file):
@@ -117,15 +125,18 @@ class ExplicitFile(object):
         with open(self._file) as f:
             f.readline()  # Read first line with comments (and discard for now)
             f.readline()  # Read second line with comments (and discard for now)
-            self._file_data_format = get_data_file_format(f.readline())  # TODO: what to do with return: None?
-            interval_nr = get_interval_number(f.readline().strip().lower()) # TODO: what to do with return: None?
+            # TODO: what to do with return: None?
+            self._file_data_format = get_data_file_format(f.readline())
+            # TODO: what to do with return: None?
+            interval_nr = get_interval_number(f.readline().strip().lower())
             all_data = []
             line = f.readline()
             while line:
-                all_data.append([float(i) for i in re.split("\s+|\t+|\s+\t+|\t+\s+|\u3000+", line.strip())])
-                #data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+", engine='python', header=None,
-                #                         index_col=False)
-                #all_data.append(data_block.values())
+                all_data.append([float(i) for i in re.split("\s+|\t+|\s+\t+|\t+\s+|\u3000+",
+                                                            line.strip())])
+                # data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+",
+                #                          engine='python', header=None, index_col=False)
+                # all_data.append(data_block.values())
                 line = f.readline()
             all_data = np.asarray(all_data)
 
@@ -136,7 +147,7 @@ class ExplicitFile(object):
             obs_idx = 0
 
             for item in [sl for sublist in all_data for sl in sublist]:
-                if item != item: #NaN was found
+                if item != item:  # NaN was found
                     ValueError()
                 if interval_counter < 0:
                     # print("explicit_axis {}: {}".format(interval_counter, item))
@@ -186,7 +197,7 @@ class ExplicitFile(object):
         return dataset
 
     def _initialize_with_dataset(self, dataset):
-        if isinstance(dataset,SpectralTemporalDataset):
+        if isinstance(dataset, SpectralTemporalDataset):
             self._times = dataset.get_axis("time")
             self._spectral_indices = dataset.get_axis("spectral")
             self._observations = dataset.data
@@ -226,8 +237,6 @@ class WavelengthExplicitFile(ExplicitFile):
 
     def wavelengths(self):
         return self.get_explicit_axis()
-
-
 
 
 class TimeExplicitFile(ExplicitFile):

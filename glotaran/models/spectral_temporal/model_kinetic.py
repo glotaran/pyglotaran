@@ -2,9 +2,11 @@
 
 from typing import Type, Dict
 from glotaran.model import Model
+
 from glotaran.fitmodel import FitModel, Matrix
 
 from .dataset import SpectralTemporalDataset
+
 from .irf import Irf
 from .fitmodel import KineticFitModel
 from .k_matrix import KMatrix
@@ -75,17 +77,6 @@ class KineticModel(Model):
             Implementation of model.Dataset
         """
         return SpectralTemporalDataset
-
-    def fit_model_class(self) -> Type[FitModel]:
-        """Returns an implementation for fitmodel.FitModel.
-
-        Returns
-        -------
-
-        fitmodel : type(fitmodel.FitModel)
-            Implementation of fitmodel.FitModel
-        """
-        return KineticFitModel
 
     def add_megacomplex(self, megacomplex: KineticMegacomplex):
         """Adds a kinetic megacomplex to the model.
@@ -180,7 +171,7 @@ class KineticModel(Model):
             raise TypeError("Values must be subclass of 'Shape'")
         self._shapes = value
 
-    def add_shape(self, shape) -> SpectralShape:
+    def add_shape(self, shape: SpectralShape):
         """Adds a spectral shape to the model.
 
         Parameters

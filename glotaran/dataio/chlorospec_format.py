@@ -2,7 +2,6 @@ from glotaran.models.spectral_temporal.dataset import SpectralTemporalDataset
 from natsort import natsorted
 from glob import glob
 import os
-from math import floor
 import numpy as np
 
 
@@ -62,7 +61,7 @@ class ChlorospecData(object):
 
         for idx, s in enumerate(sorted_sub_folders):
             sf = os.path.join(f, s)
-            times_path = os.path.join(sf,"times.bin")
+            times_path = os.path.join(sf, "times.bin")
             samples_path = os.path.join(sf, "spectra.bin")
             if os.path.isfile(times_path) and os.path.isfile(samples_path):
                 times = load_times(times_path)
@@ -84,14 +83,11 @@ class ChlorospecData(object):
 
     @staticmethod
     def valid_sub_folders_natural_sorted(path):
-        sub_folders = [f.path for f in os.scandir(path) if f.is_dir() and glob(os.path.join(f.path, '*.bin'))]
+        sub_folders = [f.path for f in os.scandir(path) if f.is_dir() and
+                       glob(os.path.join(f.path, '*.bin'))]
         return natsorted(sub_folders, key=lambda x: x.lower())
 
     @staticmethod
     def is_valid_path(path):
         return os.path.isdir(path) and \
                len(ChlorospecData.valid_sub_folders_natural_sorted(path)) > 0
-
-
-
-

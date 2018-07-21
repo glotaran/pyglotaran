@@ -47,11 +47,11 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.models.spectral_temporal.irf
     glotaran.models.spectral_temporal.irf_gaussian
     glotaran.models.spectral_temporal.k_matrix
-    glotaran.models.spectral_temporal.kinetic_c_matrix
+    glotaran.models.spectral_temporal.kinetic_matrix
     glotaran.models.spectral_temporal.megacomplex
     glotaran.models.spectral_temporal.model_kinetic
     glotaran.models.spectral_temporal.result
-    glotaran.models.spectral_temporal.spectral_c_matrix
+    glotaran.models.spectral_temporal.spectral_matrix
     glotaran.models.spectral_temporal.spectral_shape
     glotaran.models.spectral_temporal.spectral_shape_gaussian
     glotaran.plotting

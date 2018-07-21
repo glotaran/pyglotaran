@@ -12,7 +12,7 @@ class KMatrix(object):
         self.label = label
         self.matrix = matrix
         self._create_compartment_map(compartments)
-        #TODO temporary fix
+        # TODO temporary fix
         self._all_compartments = compartments
 
     @property

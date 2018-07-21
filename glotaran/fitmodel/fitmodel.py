@@ -63,7 +63,7 @@ class FitModel(SeparableModel):
              (Default value = False)
              Use Non-Linear Least Squares instead of variable projection.
         *args :
->
+
         **kwargs :
 
 

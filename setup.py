@@ -1,61 +1,81 @@
 import os
-import sys
+import shutil
 
-# TODO: bootstrap numpy ->
-# https://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
-import numpy
-import scipy
-# TODO: include generated c and include switches if cython is not available ->
-# https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
-from Cython.Distutils import build_ext
-from setuptools import setup, Command
+from setuptools import setup, find_packages, Command
 from setuptools.extension import Extension
 
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
-    user_options = []
+    user_options = [("all", "a", "")]
+
     def initialize_options(self):
-        pass
+        self.all = True
+        self._clean_tree = [
+            os.path.abspath("./build"),
+            os.path.abspath("./dist"),
+        ]
+        for root, dirs, filenames in os.walk(os.path.abspath(".")):
+            for dir in dirs:
+                if dir.endswith(("__pycache__", ".egg-info", ".pytest_cache")) and \
+                        ".tox" not in root:
+
+                    self._clean_tree.append(os.path.join(root, dir))
+
+            for filename in filenames:
+                if filename.endswith((".pyc", ".pyd", ".tgz", ".egg-info")) and \
+                        ".tox" not in root and root not in self._clean_tree:
+
+                    self._clean_tree.append(os.path.join(root, filename))
+
     def finalize_options(self):
         pass
+
     def run(self):
-        os.system('rm -vrf ./build ./dist ./*.pyc ./*.pyd ./*.tgz ./*.egg-info')
+        for clean_path in self._clean_tree:
+            try:
+                shutil.rmtree(clean_path)
+            except Exception:
+                pass
 
-# TODO: 'win32' ok, else=linux/mac, what about 'win-amd64' and 'win-ia64'?
-if sys.platform == 'win32':
+
+try:
+    import numpy
+    import scipy
     ext_modules = [
         Extension("c_matrix",
                   ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include()],
-                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                      "-fopenmp"],
-                  extra_link_args=['-fopenmp']),
+                  include_dirs=[numpy.get_include(), scipy.get_include(),
+                                "glotaran/models/spectral_temporal/c_matrix_cython"]),
         Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include()],
-                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                      "-fopenmp"],
-                  extra_link_args=['-fopenmp'])
-                  ]
-else:
-    ext_modules = [
-        Extension("c_matrix",
-                  ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include()],
-                  libraries=["m"],
-                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                      "-fopenmp"],
-                  extra_link_args=['-fopenmp']),
-        Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include()],
-                  libraries=["m"],
-                  extra_compile_args=["-O3", "-ffast-math", "-march=native",
-                                      "-fopenmp"],
-                  extra_link_args=['-fopenmp'])
+                  ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx",
+                   "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
+                  include_dirs=[numpy.get_include(), scipy.get_include(),
+                                "glotaran/models/spectral_temporal/c_matrix_cython"])
                   ]
 
+except ImportError:
+    raise ImportError("To install glotaran you need to have following packages installed:\n"
+                      "numpy>=1.9.1\n"
+                      "scipy>=1.0.0\n"
+                      "Cython>=0.28.3\n"
+                      "You can install them by running:\n"
+                      "`pip install 'numpy>=1.9.1' 'scipy>=1.0.0' 'Cython>=0.28.3'`")
+
+setup_requires = [
+    'numpy>=1.9.1',
+    'scipy>=1.0.0',
+    'Cython>=0.28.3',
+    'setuptools>=39.2.0'
+]
+install_requires = [
+    'lmfit>=0.9.7',
+    'pandas>=0.23.1',
+    'pyyaml',
+    'matplotlib',  # dependency introduced by glotaran.plotting
+    'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
+    'lmfit-varpro>=0.1.0'
+]
 
 setup(
     name="glotaran",
@@ -77,31 +97,16 @@ setup(
                     joern.weissenborn@gmail.com,
                     i.h.m.van.stokkum@vu.nl """,
     license='GPLv3',
-    packages=[
-              'glotaran',
-              'glotaran.dataio',
-              'glotaran.plotting',
-              'glotaran.model',
-              'glotaran.fitmodel',
-              'glotaran.models.spectral_temporal',
-              'glotaran.models.spectral_temporal.c_matrix_cython',
-              'glotaran.specification_parser'
-              ],
-    install_requires=[
-        'numpy>=1.9.1',
-        'scipy>=1.0.0',
-        'lmfit>=0.9.7',
-        'pandas>=0.23.1',
-        'pyyaml',
-        'matplotlib',  # dependency introduced by glotaran.plotting
-        'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-        'lmfit-varpro>=0.1.0'
-    ],
-	dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.1.0'],
-    cmdclass={"build_ext": build_ext, 'clean': CleanCommand},
+    python_requires=">=3.6",
+    packages=find_packages(),
+    setup_requires=setup_requires,
+    install_requires=setup_requires+install_requires,
+    dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.1.0'],  # noqa: E501
+    cmdclass={'clean': CleanCommand},
     ext_modules=ext_modules,
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    test_suite='glotaran',
+    tests_require=['pytest'],
+    zip_safe=False
 )
 
 #    package_data={'glotaran.models.kinetic.c_matrix_opencl':

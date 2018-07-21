@@ -138,4 +138,5 @@ class KineticModelParser(ModelSpecParser):
                                                                loc,
                                                                width))
 
+
 register_model_parser("kinetic", KineticModelParser)

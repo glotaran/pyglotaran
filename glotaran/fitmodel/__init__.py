@@ -21,6 +21,7 @@ def parameter_idx_to_val(parameter, index):
             index = int(index)
             if index == 0:
                 return index
-        except:
+        # if the string can't be casted to an int a ValueError will be raised
+        except ValueError:
             index = index.replace('.', '_')
     return parameter["p_{}".format(index)]
