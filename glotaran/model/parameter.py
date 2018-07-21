@@ -25,7 +25,6 @@ class Parameter(LmParameter):
             lmfit.Parameter
         """
         p = cls()
-        print(label)
         p.label = label
         p.value = parameter.value
         p.min = parameter.min
