@@ -65,6 +65,10 @@ test_script:
   - coverage erase
   - tox -e py36
 
+after_test:
+  # build wheels for windows
+  - '%CMD_IN_ENV% python setup.py bdist_wheel'
+
 artifacts:
   - path: dist/*
 
@@ -84,7 +88,3 @@ on_finish:
   # Show size of cache
   - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
   - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
-
-on_success:
-  # build wheels for windows
-  - '%CMD_IN_ENV% python setup.py bdist_wheel'
