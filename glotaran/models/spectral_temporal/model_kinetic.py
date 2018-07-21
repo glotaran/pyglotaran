@@ -67,6 +67,17 @@ class KineticModel(Model):
         """
         return SpectralMatrix
 
+    def fit_model_class(self) -> Type[FitModel]:
+        """Returns a kinetic fitmodel.
+
+        Returns
+        -------
+
+        fitmodel : type(KineticFitModel)
+            Implementation of fitmodel.FitModel
+        """
+        return KineticFitModel
+
     def dataset_class(self) -> Type[SpectralTemporalDataset]:
         """Returns an implementation for model.Dataset
 
