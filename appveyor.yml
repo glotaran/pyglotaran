@@ -56,9 +56,6 @@ install:
   # install tox
   - '%CMD_IN_ENV% python -m pip install -U tox coverage'
 
-  # build wheels for windows
-  - '%CMD_IN_ENV% python setup.py bdist_wheel'
-
 build: none
 
 test_script:
@@ -85,3 +82,9 @@ on_finish:
   # Show size of cache
   - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
   - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
+
+on_success:
+  # install dependencies
+  - '%CMD_IN_ENV% python -m pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"'
+  # build wheels for windows
+  - '%CMD_IN_ENV% python setup.py bdist_wheel'
