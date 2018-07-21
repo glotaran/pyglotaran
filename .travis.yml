@@ -8,71 +8,76 @@ matrix:
   include:
     - python: 3.6
       env: TOXENV=flake8
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
       after_success:
       # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
     - python: 3.6
-      #taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
-      branches:
-        only:
-          - master
-
-      env: tests-doc-creation
-      sudo: false
-      install:
-        - python -m pip install -U -r requirements_dev.txt
-        - python setup.py install
+      # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
+      env: TOXENV=docs
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
       script:
-        - cd docs; make clean_all html linkcheck
+        - tox
       after_success:
         # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
     # LINUX
     - python: "3.6"
-      env: TOXENV=py36
+      env: linux-py36
+
     - python: "3.7-dev"  # 3.7 development branch
-      env: TOXENV=py37
+      env: linux-py37
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - echo "clean old c files"
+        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+        - echo "check clean old c files"
+        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
 
     # OSX
     - language: generic
       python: 3.6
-      env: osx-py36
       os: osx
+      env:
+        - osx-py36
       before_install:
+        - echo "before_install"
         - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
         - bash miniconda.sh -b -p $HOME/miniconda
         - export PATH="$HOME/miniconda/bin:$PATH"
         - conda update conda -y
         - conda create -n py36 python=3.6 -y
-      install:
         - source activate py36
-        - python -m pip install -U pip>=8.1.2
-        - pip install tox coveralls
-        - pip uninstall -y virtualenv
-        - conda install -y --name py36 virtualenv
-        - pip freeze
-      script: tox -e py36
+        - python -m pip install -U pip>=9.0.1
 
-#    - language: generic
-#      python: 3.7
-#      env: osx-py37
-#      os: osx
-#      before_install:
-#        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-#        - bash miniconda.sh -b -p $HOME/miniconda
-#        - export PATH="$HOME/miniconda/bin:$PATH"
-#        - conda update conda -y
-#        - conda create -n py37 python=3.7 -y
-#      install:
-#        - source activate py37
-#        - python -m pip install -U pip>=8.1.2
-#        - pip install tox coveralls
-#        - pip uninstall -y virtualenv
-#        - conda install -y --name py37 virtualenv
-#        - pip freeze
-#      script: tox -e py37
+    - language: generic
+      python: 3.7
+      env: osx-py37
+      os: osx
+      before_install:
+        - echo "before_install"
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - conda update conda -y
+        - conda create -n py37 python=3.7 -y
+        - source activate py37
+        - python -m pip install -U pip>=9.0.1
+        - echo "clean old c files"
+        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+        - echo "check clean old c files"
+        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
 
 #    - python: 3.6
 #      env: win_coverage
@@ -84,15 +89,26 @@ matrix:
 #        - coveralls
 #        - coverage erase
 
-install:
-  - python -m pip install -U pip>=8.1.2
-  - pip install tox coveralls
+before_install:
+  - echo "before_install"
+  - python -m pip install -U pip>=9.0.1
 
-script: tox
+install:
+  - python -m pip install -U pip>=9.0.1 coveralls
+  - pip install -r requirements_dev.txt
+
+script:
+  - pwd
+  # making sure last version of lmfit-varpro is installed
+  - pip install --no-deps --no-cache-dir --ignore-installed git+https://github.com/s-weigand/lmfit-varpro.git
+#  - pip install --process-dependency-links .
+  - python setup.py install
+  - py.test --cov=glotaran --cov-config .coveragerc glotaran
+  - pip freeze
 
 after_success:
-    - coveralls
-    - coverage erase
+  - coveralls
+  - coverage erase
 
 notifications:
   slack:

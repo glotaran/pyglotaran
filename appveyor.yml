@@ -51,9 +51,10 @@ install:
   - '%CMD_IN_ENV% python -m pip install -U pip setuptools wheel'
 
   # install dependencies
-  - '%CMD_IN_ENV% python -m pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"'
+  # "Cython>=0.28.3"
+  - '%CMD_IN_ENV% python -m pip install -U "numpy>=1.9.1" "scipy>=1.0.0"'
   # making sure the latest version of lmfit-varpro will be installed
-  - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/glotaran/lmfit-varpro.git'
+  - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/s-weigand/lmfit-varpro.git'
 
   # install tox
   - '%CMD_IN_ENV% python -m pip install -U tox coverage'
@@ -66,7 +67,7 @@ build: none
 test_script:
   # delete old .coverage file
   - coverage erase
-  - tox
+  - tox -e py36
 
 artifacts:
   - path: dist/*
