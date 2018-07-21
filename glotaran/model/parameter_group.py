@@ -22,8 +22,8 @@ class ParameterGroup(OrderedDict):
     def from_parameter_dict(cls, parameter: Parameters):
         """Creates a parameter group from an lmfit.Parameters dictionary
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         parameter : lmfit.Parameters
             lmfit.Parameters dictionary
         """
@@ -147,7 +147,7 @@ class ParameterGroup(OrderedDict):
         """
         path = label.split(".")
         label = path.pop()
-        
+
         group = self
         for l in path:
             group = group[l]
@@ -206,6 +206,7 @@ class ParameterGroup(OrderedDict):
     def as_parameters_dict(self, only_fit=False) -> Parameters:
         """
         Creates a lmfit.Parameters dict.
+
         Parameters
         ----------
         only_fit : bool

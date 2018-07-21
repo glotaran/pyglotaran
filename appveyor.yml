@@ -53,11 +53,10 @@ install:
   # making sure the latest version of lmfit-varpro will be installed
   - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/s-weigand/lmfit-varpro.git'
 
+  # install dependencies
+  - '%CMD_IN_ENV% python -m pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"'
   # install tox
   - '%CMD_IN_ENV% python -m pip install -U tox coverage'
-
-  # build wheels for windows
-  - '%CMD_IN_ENV% python setup.py bdist_wheel'
 
 build: none
 
@@ -65,6 +64,10 @@ test_script:
   # delete old .coverage file
   - coverage erase
   - tox -e py36
+
+after_test:
+  # build wheels for windows
+  - '%CMD_IN_ENV% python setup.py bdist_wheel'
 
 artifacts:
   - path: dist/*
