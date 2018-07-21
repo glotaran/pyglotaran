@@ -13,6 +13,26 @@ class Parameter(LmParameter):
         self.label = None
         super(Parameter, self).__init__()
 
+    @classmethod
+    def from_parameter(cls, label: str, parameter: LmParameter):
+        """Creates a parameter from an lmfit.Parameter
+
+        Parameter
+        ---------
+        label : str
+            Label of the parameter
+        parameter : lmfit.Parameter
+            lmfit.Parameter
+        """
+        p = cls()
+        print(label)
+        p.label = label
+        p.value = parameter.value
+        p.min = parameter.min
+        p.max = parameter.max
+        p.vary = parameter.vary
+        return p
+
     @property
     def label(self) -> str:
         """Label of the parameter"""

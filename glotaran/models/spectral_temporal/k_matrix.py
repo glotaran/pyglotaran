@@ -129,7 +129,7 @@ class KMatrix(object):
             longest = len(header)
 
         longest_h = max([len(f" __{c}__ |") for c in self.compartment_map]) + 3
-        longest_p = max([len(self.matrix[i]) for i in self.matrix]) + 3
+        longest_p = max([len(str(self.matrix[i])) for i in self.matrix]) + 3
         if longest_p < longest_h:
             longest_p = longest_h
 

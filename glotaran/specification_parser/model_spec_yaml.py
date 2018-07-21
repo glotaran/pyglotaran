@@ -179,8 +179,16 @@ class ModelSpecParser(object):
             tmp = list(filter(filt, p))
             return tmp[0] if tmp else default
 
-        param.value = retrieve(lambda x: isinstance(x, (int, float)) and not
-                               isinstance(x, bool), 'nan')
+        def filt_float(x):
+            if isinstance(x, bool):
+                return False
+            try:
+                float(x)
+                return True
+            except Exception:
+                return False
+
+        param.value = retrieve(filt_float, 'nan')
         param.label = retrieve(lambda x: isinstance(x, str) and not
                                x == 'nan', None)
         param.fit = retrieve(lambda x: isinstance(x, bool), True)
