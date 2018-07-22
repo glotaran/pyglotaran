@@ -74,7 +74,7 @@ install_requires = [
     'pyyaml',
     'matplotlib',  # dependency introduced by glotaran.plotting
     'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-    'lmfit-varpro>=0.1.0'
+    'lmfit-varpro>=0.0.1'
 ]
 
 setup(
@@ -87,6 +87,7 @@ setup(
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Cython',
@@ -101,7 +102,7 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
-    dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.1.0'],  # noqa: E501
+    dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.0.1'],  # noqa: E501
     cmdclass={'clean': CleanCommand},
     ext_modules=ext_modules,
     test_suite='glotaran',
