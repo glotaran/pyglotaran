@@ -17,8 +17,8 @@ class Parameter(LmParameter):
     def from_parameter(cls, label: str, parameter: LmParameter):
         """Creates a parameter from an lmfit.Parameter
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         label : str
             Label of the parameter
         parameter : lmfit.Parameter
