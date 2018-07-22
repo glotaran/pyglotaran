@@ -293,8 +293,7 @@ class KineticMatrix(Matrix):
 
         """
 
-        initial_concentrations = \
-            parameter_map(parameter)(self._initial_concentrations)
+        initial_concentrations = [parameter.get(i) for i in self._initial_concentrations]
 
         initial_concentrations = \
             [initial_concentrations[compartment_order.index(c)] for c in
@@ -328,5 +327,4 @@ class KineticMatrix(Matrix):
         -------
 
         """
-        return parameter_idx_to_val(parameter, self.dataset.scaling) \
-            if self.dataset.scaling is not None else 1.0
+        return parameter.get(self.dataset.scaling) if self.dataset.scaling is not None else 1.0

@@ -54,7 +54,11 @@ class MatrixGroupGenerator:
         return gen
 
     @classmethod
-    def for_dataset(cls, model: 'glotaran.Model', dataset: str, matrix: Type[Matrix], calculated=False):
+    def for_dataset(cls,
+                    model: 'glotaran.Model',
+                    dataset: str,
+                    matrix: Type[Matrix],
+                    calculated=False):
         """ Creates matrix group generator for a dataset.
 
         Parameters
