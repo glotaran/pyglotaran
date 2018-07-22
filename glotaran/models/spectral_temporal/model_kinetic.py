@@ -146,7 +146,7 @@ class KineticModel(Model):
         if not isinstance(value, dict):
             raise TypeError("Irfs must be dict.")
         if any(issubclass(type(val), Irf) for val in value):
-            raise TypeError("K-Matrices must be subclass of 'KMatrix'")
+            raise TypeError("Irfs must be subclass of 'KMatrix'")
         self._irfs = value
 
     def add_irf(self, irf: Irf):

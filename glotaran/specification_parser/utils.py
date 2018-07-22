@@ -3,8 +3,8 @@ from itertools import chain
 
 def get_keys_from_object(obj, keys, start=0):
     if is_compact(obj):
-        keys = [i+start for i in range(len(keys))]
-        return tuple(list([obj[k] for k in keys]))
+        idx = [i+start for i in range(len(keys))]
+        return tuple(list([obj[i] if len(obj) > i else None for i in idx]))
     else:
         return tuple(list([obj[k] if k in obj else None for k in keys]))
 

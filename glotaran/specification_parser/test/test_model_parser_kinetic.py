@@ -24,7 +24,7 @@ THIS_DIR = dirname(abspath(__file__))
 class TestParser(TestCase):
 
     def setUp(self):
-        spec_path = join(THIS_DIR, 'test_model_spec.yml')
+        spec_path = join(THIS_DIR, 'test_model_spec_kinetic.yml')
         self.model = parse_file(spec_path)
 
     def test_print_model_spec(self):
@@ -32,7 +32,8 @@ class TestParser(TestCase):
 
     def test_compartments(self):
         self.assertTrue(isinstance(self.model.compartments, list))
-        self.assertEqual(self.model.compartments, ['s1', 's2', 's3', 's4'])
+        self.assertEqual(self.model.compartments, ['s1', 's2', 's3', 's4',
+                                                   'osc1'])
 
     def test_model_type(self):
         self.assertTrue(isinstance(self.model, KineticModel))
@@ -184,7 +185,7 @@ class TestParser(TestCase):
             megacomplex = self.model.megacomplexes[label]
             self.assertTrue(isinstance(megacomplex, KineticMegacomplex))
             self.assertTrue(megacomplex.label == label)
-            self.assertTrue(megacomplex.k_matrices == ["km{}".format(i)])
+            self.assertEqual(megacomplex.k_matrices, ["km{}".format(i)])
             i = i + 1
 
     def test_parameter(self):

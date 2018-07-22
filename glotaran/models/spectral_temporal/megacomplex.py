@@ -6,7 +6,9 @@ class KineticMegacomplex(Megacomplex):
     A KineticMegacomplex is a Megacomplex with one or more K-Matrix labels.
     """
     def __init__(self, label, k_matrices):
-        self.k_matrices = k_matrices
+        if not isinstance(k_matrices, list):
+            k_matrices = [k_matrices]
+        self._k_matrices = k_matrices
         super(KineticMegacomplex, self).__init__(label)
 
     @property

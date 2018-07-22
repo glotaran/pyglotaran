@@ -12,7 +12,7 @@ from glotaran.models.spectral_temporal import (KMatrix,
                                                SpectralShapeGaussian)
 
 
-class KineticKeys(object):
+class KineticKeys:
     AMPLITUDE = "amplitude"
     BACKSWEEP = "backsweep"
     BACKSWEEP_PERIOD = "backsweep_period"
@@ -55,15 +55,6 @@ class KineticModelParser(ModelSpecParser):
                                                  compartment_constraints, irf, shapes)
 
     def get_megacomplexes(self):
-        if KineticKeys.K_MATRICES not in self.spec:
-            raise Exception("No k-matrices defined")
-        for km in self.spec[KineticKeys.K_MATRICES]:
-            m = OrderedDict()
-            for i in km[KineticKeys.MATRIX]:
-                m[make_tuple(i)] = str(km[KineticKeys.MATRIX][i])
-            label = str(km[Keys.LABEL])
-            self.model.add_k_matrix(KMatrix(label, m,
-                                            self.model.compartments))
         for cmplx in self.spec[Keys.MEGACOMPLEXES]:
             (label, mat) = get_keys_from_object(cmplx, [Keys.LABEL,
                                                         KineticKeys.K_MATRICES]
@@ -73,6 +64,18 @@ class KineticModelParser(ModelSpecParser):
     def get_additionals(self):
         self.get_irfs()
         self.get_shapes()
+        self.get_k_matrices()
+
+    def get_k_matrices(self):
+        if KineticKeys.K_MATRICES not in self.spec:
+            return
+        for km in self.spec[KineticKeys.K_MATRICES]:
+            m = OrderedDict()
+            for i in km[KineticKeys.MATRIX]:
+                m[make_tuple(i)] = str(km[KineticKeys.MATRIX][i])
+            label = str(km[Keys.LABEL])
+            self.model.add_k_matrix(KMatrix(label, m,
+                                            self.model.compartments))
 
     def get_irfs(self):
         if KineticKeys.IRF in self.spec:
