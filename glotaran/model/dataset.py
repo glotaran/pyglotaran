@@ -141,8 +141,8 @@ class Dataset(object):
 
 def _hashable(value):
     try:
-        # pointless statement
+        # pylint: disable=pointless-statement
         {value: None}
         return True
-    except:
+    except Exception:
         return False

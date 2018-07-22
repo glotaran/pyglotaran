@@ -73,7 +73,6 @@ datasets:
                                got_params.get(f"{i+1}").value
                                )
 
-
     def test_one_component_one_channel_gaussian_irf(self):
         fitspec = '''
 type: kinetic

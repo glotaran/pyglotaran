@@ -157,4 +157,3 @@ class KMatrix(object):
                     string += " |".rjust(longest_p)
             string += "\n"
         return string
-
