@@ -9,6 +9,8 @@ class DOASMegacomplex(KineticMegacomplex):
     """Extends the glotaran.models.spectral_temporal.Megacomplex with
     oscillations"""
     def __init__(self, label, k_matrices: List[str], oscillations: List[str]):
+        print(label)
+        print(oscillations)
         if not isinstance(oscillations, list):
             oscillations = [oscillations]
         self._oscillations = oscillations

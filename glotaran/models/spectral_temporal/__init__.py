@@ -1,10 +1,11 @@
 from . import (
     dataset_descriptor,
     irf_gaussian,
-    spectral_shape_gaussian,
     k_matrix,
+    kinetic_matrix,
     megacomplex,
     model_kinetic,
+    spectral_shape_gaussian,
 )
 
 # Dataset Descriptor
@@ -19,6 +20,10 @@ GaussianIrf = irf_gaussian.GaussianIrf
 # Shapes
 
 SpectralShapeGaussian = spectral_shape_gaussian.SpectralShapeGaussian
+
+# Matrix
+
+KineticMatrix = kinetic_matrix.KineticMatrix
 
 # K Matrix
 

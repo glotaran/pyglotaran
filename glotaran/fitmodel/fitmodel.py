@@ -136,12 +136,16 @@ class FitModel(SeparableModel):
                                                    self._model.
                                                    calculated_matrix())
         else:
+            if self._generator is None:
+                self.init_generator()
             gen = self._generator
-            if gen is None:
-                gen = MatrixGroupGenerator.for_model(self._model,
-                                                     self._model.
-                                                     calculated_matrix())
         return gen.calculate(parameter)
+
+    def init_generator(self):
+        self._generator = MatrixGroupGenerator.for_model(self._model,
+                                                         self._model.
+                                                         calculated_matrix())
+
 
     def e_matrix(self, parameter, *args, **kwargs) -> np.array:
         """Implementation of SeparableModel.e_matrix.

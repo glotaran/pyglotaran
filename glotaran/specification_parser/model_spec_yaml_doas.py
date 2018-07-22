@@ -30,6 +30,8 @@ class DOASModelParser(KineticModelParser):
                                                       KineticKeys.K_MATRICES,
                                                       DOASKeys.OSCILLATIONS,
                                                       ])
+            mat = [] if mat is None else mat
+            osc = [] if osc is None else osc
             self.model.add_megacomplex(DOASMegacomplex(label, mat, osc))
 
     def get_oscillations(self):

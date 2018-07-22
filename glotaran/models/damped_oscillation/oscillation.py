@@ -28,6 +28,16 @@ class Oscillation:
         return self._compartment
 
     @property
+    def sin_compartment(self) -> str:
+        """The the sin target compartment of the oscillation"""
+        return f"{self._compartment}_sin"
+
+    @property
+    def cos_compartment(self) -> str:
+        """The the cos target compartment of the oscillation"""
+        return f"{self._compartment}_cos"
+
+    @property
     def frequency(self) -> str:
         """The frequency of the oscillation"""
         return self._frequency

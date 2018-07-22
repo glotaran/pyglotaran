@@ -41,7 +41,6 @@ class KineticMatrix(Matrix):
         self._k_matrices = []
         self._megacomplex_scaling = []
         self._collect_k_matrices(model)
-        self._set_compartment_order(model)
 
         self._initial_concentrations = None
         self._collect_initial_concentration(model)
@@ -50,22 +49,16 @@ class KineticMatrix(Matrix):
     def compartment_order(self) -> List[str]:
         """A list with compartment labels. The index of label indicates the
         index of the compartment in the matrix."""
-        return self._compartment_order
-
-    @property
-    def shape(self) -> Tuple[int, int]:
-        """The matrix dimensions as tuple(M, N)."""
-        return (self.time.shape[0], len(self._compartment_order))
-
-    def _set_compartment_order(self, model):
-        """Sets the compartment order to map compartment labels to indices in
-        the matrix"""
         compartment_order = [c for mat in self._k_matrices
                              for c in mat.compartment_map]
 
         compartment_order = list(set(compartment_order))
-        self._compartment_order = [c for c in model.compartments if c in
-                                   compartment_order]
+        return [c for c in self.model.compartments if c in compartment_order]
+
+    @property
+    def shape(self) -> Tuple[int, int]:
+        """The matrix dimensions as tuple(M, N)."""
+        return (self.time.shape[0], len(self.compartment_order))
 
     def _collect_irf(self, model):
         if self.dataset.irf is None:
@@ -125,6 +118,7 @@ class KineticMatrix(Matrix):
 
 
         Returns
+        ^
         -------
 
         """
@@ -233,10 +227,10 @@ class KineticMatrix(Matrix):
 
         Parameters
         ----------
-        parameter :
+        pUarameter :
 
 
-        Returns
+        Re[Eq       ]turns
         -------
 
         """

@@ -5,33 +5,32 @@ cimport cython
 import numpy as np
 cimport numpy as np
 
-from libc.math cimport exp, cos, sin
-from numpy.math cimport NAN
+cdef extern from "complex.h":
+    double complex exp(double complex)
 
-from cython.parallel import prange, parallel
 
 def __init__():
     np.import_array()
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calculateC(double[:, :] C, double[:] k, double[:] o, double[:] d, double[:] T):
-    I = T.shape[0]
-    J = k.shape[0]
-    K = o.shape[0]
-    cdef int i, j
-    cdef double t_i, k_j
-    with nogil, parallel(num_threads=4):
-        for i in prange(I, schedule=static):
-            t_i = T[i]
-            for j in range(J):
-                k_j = k[j]
-                C[i, j] = exp(k_j * t_i)
-    with nogil, parallel(num_threads=4):
-        for i in prange(I, schedule=static):
-            t_i = T[i]
-            for j in range(K):
-                o_j = o[j]
-                d_j = d[j]
-                C[i, J+j] = cos(o_j * t_i) * exp(-d_j * t_i)
-                C[i, J+K+j] = sin(o_j * t_i) * exp(-d_j * t_i)
+def calculateC(double[:, :] C, idxs, double[:] f, double[:] k, double[:] T, double scale):
+    nr_times = T.shape[0]
+    nr_comps = k.shape[0]
+    cdef int n_c, n_t, n_k
+    cdef double t_n, k_n
+    for n_k in range(nr_comps):
+        n_c_sin = idxs[n_k]
+        n_c_cos = idxs[n_k] + 1
+        k_n = k[n_k]
+        f_n = f[n_k]
+        for n_t in range(nr_times):
+            t_n = T[n_t]
+            osc = scale * exp(-k_n * t_n - 1j * f_n *t_n)
+            print("fff")
+            print(f_n)
+            print(t_n)
+            print(f_n*t_n)
+            print(exp(-1j* f_n*t_n))
+            C[n_t, n_c_sin] += np.real(osc)
+            C[n_t, n_c_cos] += np.imag(osc)
