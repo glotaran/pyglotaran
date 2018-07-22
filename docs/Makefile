@@ -13,7 +13,7 @@ ifeq ("$(IS_PROPER_PYTHON)","1")
 PYTHON_TO_USE=$(python3_sys_alias)
 .PHONY: which_python
 else
-$(error You need at least python 3.6 with glotaran installed to work on glotaran)
+$(error You need at least python 3.6 with glotaran installed to work on glotaran documentation)
 endif
 endif
 
@@ -40,7 +40,7 @@ clean_all:
 	rm -rf $(API_TOCTREE_DIR)/*
 
 api_docs:
-	python generate_api_documentation.py
+	$(PYTHON_TO_USE) generate_api_documentation.py
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
