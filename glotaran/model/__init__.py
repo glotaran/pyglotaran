@@ -1,6 +1,5 @@
 """Glotarans model package"""
 from . import (
-               c_matrix,
                compartment_constraints,
                dataset,
                dataset_descriptor,
@@ -12,10 +11,6 @@ from . import (
                parameter_group,
                )
 
-
-# C Matrix
-
-CMatrix = c_matrix.CMatrix
 
 # Compartment Constraints
 CompartmentConstraintType = compartment_constraints.CompartmentConstraintType
