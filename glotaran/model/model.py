@@ -6,14 +6,13 @@ from typing import List, Type, Dict, Generator
 from collections import OrderedDict
 import numpy as np
 
-from glotaran.fitmodel import FitModel, Matrix, Result
-
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
 from .parameter_group import ParameterGroup
 
+from glotaran.fitmodel import FitModel, Matrix, Result
 
 ROOT_BLOCK_LABEL = "p"
 

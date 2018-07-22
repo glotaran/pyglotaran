@@ -5,7 +5,7 @@ import numpy as np
 from lmfit_varpro import CompartmentEqualityConstraint, SeparableModel
 from lmfit import Parameters
 
-from glotaran import Model
+from glotaran.model.parameter_group import ParameterGroup
 
 from .matrix_group_generator import MatrixGroupGenerator
 from .result import Result
@@ -18,7 +18,7 @@ class FitModel(SeparableModel):
     # pylint: disable=arguments-differ
     # we do some convinince wrapping
 
-    def __init__(self, model: Model):
+    def __init__(self, model: 'glotaran.Model'):
         """
 
         Parameters
@@ -129,7 +129,7 @@ class FitModel(SeparableModel):
         -------
         matrix : np.array
         """
-        parameter = parameter.valuesdict()
+        parameter = ParameterGroup.from_parameter_dict(parameter)
         if "dataset" in kwargs:
             label = kwargs["dataset"]
             gen = MatrixGroupGenerator.for_dataset(self._model, label,
@@ -168,7 +168,7 @@ class FitModel(SeparableModel):
         if "dataset" not in kwargs:
             raise Exception("'dataset' non specified in kwargs")
 
-        parameter = parameter.valuesdict()
+        parameter = ParameterGroup.from_parameter_dict(parameter)
         dataset = self._model.datasets[kwargs["dataset"]]
 
         # A data object needs to be present to provide axies

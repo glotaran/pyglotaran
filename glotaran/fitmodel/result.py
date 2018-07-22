@@ -3,7 +3,7 @@
 import numpy as np
 from lmfit_varpro import SeparableModelResult
 
-from glotaran import Dataset, Model
+from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 
@@ -12,6 +12,7 @@ class Result(SeparableModelResult):
 
     @property
     def best_fit_parameter(self) -> ParameterGroup:
+        """The best fit parameters."""
         return ParameterGroup.from_parameter_dict(self._result.params)
 
     def estimated_matrix(self, dataset: str) -> np.array:
@@ -68,12 +69,14 @@ class Result(SeparableModelResult):
         return dataset
 
     @property
-    def model(self) -> Model:
+    def model(self) -> 'glotaran.Model':
         """The Glotaran Model used to fit the data."""
         return self.get_model().model
 
     def __str__(self):
         string = "# Fitresult\n\n"
+
+        # pylint: disable=invalid-name
 
         ll = 32
         lr = 13

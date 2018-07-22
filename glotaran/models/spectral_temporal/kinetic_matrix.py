@@ -5,7 +5,7 @@ import numpy as np
 import scipy.linalg
 import lmfit
 
-from glotaran.fitmodel import parameter_map, parameter_idx_to_val, Matrix
+from glotaran.fitmodel import Matrix
 from glotaran.model import CompartmentConstraintType, Model
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
@@ -128,10 +128,11 @@ class KineticMatrix(Matrix):
         -------
 
         """
+        print(parameter)
 
         for k_matrix, scale in self._k_matrices_and_scalings():
 
-            scale = parameter_idx_to_val(parameter, scale) if scale is not None else 1.0
+            scale = parameter.get(scale) if scale is not None else 1.0
             scale *= self._dataset_scaling(parameter)
 
             self._calculate_for_k_matrix(matrix, compartment_order, k_matrix,
@@ -164,7 +165,7 @@ class KineticMatrix(Matrix):
         # get constraint compartment indeces
         constraint_compartments = [c.compartment for c in
                                    self.dataset.compartment_constraints if
-                                   c.applies(self.x) and c.type() is not
+                                   c.applies(self.index) and c.type() is not
                                    CompartmentConstraintType.equal_area]
         constraint_idx = [k_matrix.compartment_map.index(c) for c in
                           constraint_compartments]
@@ -195,11 +196,11 @@ class KineticMatrix(Matrix):
         # Apply equal equal constraints
         for constrain in self.dataset.compartment_constraints:
             if constrain.type() is CompartmentConstraintType.equal and \
-              constrain.applies(self.x):
+              constrain.applies(self.index):
                 idx = compartment_order.index(constrain.compartment)
                 for target, param in constrain.targets_and_parameter:
                     t_idx = compartment_order.index(target)
-                    param = parameter_idx_to_val(parameter, param)
+                    param = parameter.get(param)
                     matrix[:, idx] += param * matrix[:, t_idx]
 
         if self._initial_concentrations is not None:
@@ -241,18 +242,18 @@ class KineticMatrix(Matrix):
 
         """
 
-        centers = np.asarray(parameter_map(parameter)(self._irf.center))
-        widths = np.asarray(parameter_map(parameter)(self._irf.width))
+        centers = np.asarray([parameter.get(i) for i in self._irf.center])
+        widths = np.asarray([parameter.get(i) for i in self._irf.width])
 
         center_dispersion = \
-            np.asarray(parameter_map(parameter)(self._irf.center_dispersion)) \
+            np.asarray([parameter.get(i) for i in self._irf.center_dispersion]) \
             if len(self._irf.center_dispersion) is not 0 else []
 
         width_dispersion = \
-            np.asarray(parameter_map(parameter)(self._irf.width_dispersion)) \
+            np.asarray([parameter.get(i) for i in self._irf.width_dispersion]) \
             if len(self._irf.width_dispersion) is not 0 else []
 
-        dist = (self.x - self._disp_center)/100
+        dist = (self.index - self._disp_center)/100
         if len(center_dispersion) is not 0:
             for i, disp in enumerate(center_dispersion):
                 centers = centers + disp * np.power(dist, i+1)
@@ -264,12 +265,11 @@ class KineticMatrix(Matrix):
         if len(self._irf.scale) is 0:
             scale = np.ones(centers.shape)
         else:
-            scale = np.asarray(parameter_map(parameter)(self._irf.scale))
+            scale = np.asarray([parameter.get(i) for i in self._irf.scale])
 
         backsweep = 1 if self._irf.backsweep else 0
 
-        backsweep_period = \
-            parameter_idx_to_val(parameter, self._irf.backsweep_period) \
+        backsweep_period = parameter.get(self._irf.backsweep_period) \
             if self._irf.backsweep else 0
 
         return centers, widths, scale, backsweep, backsweep_period

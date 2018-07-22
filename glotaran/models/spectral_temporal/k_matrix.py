@@ -1,10 +1,8 @@
 from collections import OrderedDict
 import numpy as np
 
-from glotaran.fitmodel import parameter_idx_to_val
 
-
-class KMatrix(object):
+class KMatrix:
     """
     A KMatrix has an label and a scipy.sparse matrix
     """
@@ -112,7 +110,7 @@ class KMatrix(object):
         for (to, fr), param in self.matrix.items():
             to_idx = self.compartment_map.index(to)
             fr_idx = self.compartment_map.index(fr)
-            param = parameter_idx_to_val(parameter, param)
+            param = parameter.get(param)
 
             if to_idx == fr_idx:
                 mat[to_idx, fr_idx] -= param

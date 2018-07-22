@@ -60,8 +60,9 @@ class KineticModelParser(ModelSpecParser):
         for km in self.spec[KineticKeys.K_MATRICES]:
             m = OrderedDict()
             for i in km[KineticKeys.MATRIX]:
-                m[make_tuple(i)] = km[KineticKeys.MATRIX][i]
-            self.model.add_k_matrix(KMatrix(km[Keys.LABEL], m,
+                m[make_tuple(i)] = str(km[KineticKeys.MATRIX][i])
+            label = str(km[Keys.LABEL])
+            self.model.add_k_matrix(KMatrix(label, m,
                                             self.model.compartments))
         for cmplx in self.spec[Keys.MEGACOMPLEXES]:
             (label, mat) = get_keys_from_object(cmplx, [Keys.LABEL,

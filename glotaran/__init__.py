@@ -2,8 +2,6 @@
 
 # workaround to import Model and Dataset with
 # `from glotaran import Model`/`from glotaran import Dataset`
-Dataset = None
-Model = None
 
 from glotaran.specification_parser import parse_yml  # noqa: E402
 from glotaran.specification_parser import parse_file  # noqa: E402
@@ -14,6 +12,7 @@ __version__ = '0.0.1'
 Dataset = model.Dataset
 DatasetDescriptor = model.DatasetDescriptor
 Model = model.Model
+ParameterGroup = model.ParameterGroup
 
 # Top level API
 # SeparableModel = separable_model.SeparableModel

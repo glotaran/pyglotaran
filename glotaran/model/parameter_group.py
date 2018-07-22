@@ -145,6 +145,10 @@ class ParameterGroup(OrderedDict):
         parameter : Parameter
 
         """
+
+        # sometimes the spec parser delivers the labels as int
+        label = str(label)
+
         path = label.split(".")
         label = path.pop()
 

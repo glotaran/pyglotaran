@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.fitmodel import Matrix, parameter_idx_to_val
+from glotaran.fitmodel import Matrix
 
 from .spectral_shape_gaussian import SpectralShapeGaussian
 
@@ -50,8 +50,10 @@ class SpectralMatrix(Matrix):
 
     def _calculate_shape(self, parameter, shape, x):
         if isinstance(shape, SpectralShapeGaussian):
-            amp = parameter_idx_to_val(parameter, shape.amplitude)
-            location = parameter_idx_to_val(parameter, shape.location)
-            width = parameter_idx_to_val(parameter, shape.width)
+            print(parameter)
+            amp = parameter.get(shape.amplitude)
+            location = parameter.get(shape.location)
+            width = parameter.get(shape.width)
             return amp * np.exp(-np.log(2) *
                                 np.square(2 * (x - location)/width))
+        raise ValueError(f"uknown shape '{type(shape)}'")
