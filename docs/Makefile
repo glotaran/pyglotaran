@@ -8,7 +8,7 @@ ifeq ("$(IS_PROPER_PYTHON)","1")
 PYTHON_TO_USE=$(python2_sys_alias)
 .PHONY: which_python
 else
-IS_PROPER_PYTHON = $(shell $(python2_sys_alias) -c 'from __future__ import print_function;import sys; print(int(sys.version_info >= (3,6)))')
+IS_PROPER_PYTHON = $(shell $(python3_sys_alias) -c 'from __future__ import print_function;import sys; print(int(sys.version_info >= (3,6)))')
 ifeq ("$(IS_PROPER_PYTHON)","1")
 PYTHON_TO_USE=$(python3_sys_alias)
 .PHONY: which_python
