@@ -4,10 +4,9 @@ from glotaran.models.damped_oscillation import (
     Oscillation)
 
 from .model_spec_yaml import (Keys,
-                              ModelSpecParser,
                               register_model_parser)
 from .model_spec_yaml_kinetic import KineticKeys, KineticModelParser
-from .utils import get_keys_from_object, retrieve_optional
+from .utils import get_keys_from_object
 
 
 class DOASKeys:

@@ -1,21 +1,13 @@
 from unittest import TestCase
-from math import isnan, isinf
 from glotaran.specification_parser import parse_file
 from glotaran.models.damped_oscillation import (DOASModel,
                                                 DOASMegacomplex,
                                                 Oscillation)
-from glotaran.model import (InitialConcentration,
-                            ZeroConstraint,
-                            EqualConstraint,
-                            EqualAreaConstraint,
-                            Parameter,
-                            )
 
 # unused import
 # from glotaran.model import FixedConstraint, BoundConstraint
 # from os import getcwd
 from os.path import join, dirname, abspath
-import numpy as np
 
 THIS_DIR = dirname(abspath(__file__))
 

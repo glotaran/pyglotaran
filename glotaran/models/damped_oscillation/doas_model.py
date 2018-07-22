@@ -46,4 +46,3 @@ class DOASModel(KineticModel):
             if oscillation.label in self.oscillations:
                 raise Exception("Oscillation labels must be unique")
             self.oscillations[oscillation.label] = oscillation
-
