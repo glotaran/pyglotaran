@@ -50,7 +50,6 @@ class SpectralMatrix(Matrix):
 
     def _calculate_shape(self, parameter, shape, x):
         if isinstance(shape, SpectralShapeGaussian):
-            print(parameter)
             amp = parameter.get(shape.amplitude)
             location = parameter.get(shape.location)
             width = parameter.get(shape.width)

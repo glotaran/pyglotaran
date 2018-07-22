@@ -128,7 +128,6 @@ class KineticMatrix(Matrix):
         -------
 
         """
-        print(parameter)
 
         for k_matrix, scale in self._k_matrices_and_scalings():
 
