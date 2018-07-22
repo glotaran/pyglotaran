@@ -23,7 +23,7 @@ class KineticResult(Result):
         """
         return self.estimated_matrix(dataset)
 
-    def concentraions(self, dataset: str) -> np.array:
+    def concentrations(self, dataset: str) -> np.array:
         """
 
         Parameters
@@ -34,7 +34,7 @@ class KineticResult(Result):
 
         Returns
         -------
-        concentraions : numpy.array
+        concentrations : numpy.array
             Concentrations
 
         """
