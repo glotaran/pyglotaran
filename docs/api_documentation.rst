@@ -27,7 +27,6 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.fitmodel.matrix_group_generator
     glotaran.fitmodel.result
     glotaran.model
-    glotaran.model.c_matrix
     glotaran.model.compartment_constraints
     glotaran.model.dataset
     glotaran.model.dataset_descriptor
