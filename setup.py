@@ -52,10 +52,10 @@ try:
                    "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
                                 "glotaran/models/spectral_temporal/c_matrix_cython"]),
-        Extension("c_matrix_damped_oscillation",
-                  ["glotaran/models/damped_oscillation/c_matrix_damped_oscillations.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/damped_oscillation"]),
+        #  Extension("c_matrix_damped_oscillation",
+        #            ["glotaran/models/damped_oscillation/c_matrix_damped_oscillations.pyx"],
+        #            include_dirs=[numpy.get_include(), scipy.get_include(),
+        #                          "glotaran/models/damped_oscillation"]),
                   ]
 
 except ImportError:

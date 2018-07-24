@@ -1,4 +1,4 @@
-type: damped_oscillation
+type: dampened_oscillation
 
 compartments: [os1]
 

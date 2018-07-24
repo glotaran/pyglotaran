@@ -5,6 +5,7 @@ from . import (
     kinetic_matrix,
     megacomplex,
     model_kinetic,
+    spectral_matrix,
     spectral_shape_gaussian,
 )
 
@@ -24,6 +25,7 @@ SpectralShapeGaussian = spectral_shape_gaussian.SpectralShapeGaussian
 # Matrix
 
 KineticMatrix = kinetic_matrix.KineticMatrix
+SpectralMatrix = spectral_matrix.SpectralMatrix
 
 # K Matrix
 
