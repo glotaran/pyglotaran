@@ -8,6 +8,14 @@
 # Glotaran
 Global and target analysis software package based on Python
 
+## Warning
+This project is still in its pre-alpha phase and undergoing rapid development, including changes to the core API, thus it is not production ready.
+
+Proceed at your own risk!
+
+## Additional warning for scientists
+The algorithms provided by this package still need to be validated and reviewed, pending the official release it should not be used in scientific publications.
+
 ## Installation
 
 Requirements:
