@@ -1,3 +1,4 @@
+[![latest release](https://pypip.in/version/glotaran/badge.svg)](https://pypi.org/project/glotaran/)
 [![Build Status](https://travis-ci.org/glotaran/glotaran.svg?branch=develop)](https://travis-ci.org/glotaran/glotaran)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/glotaran/glotaran?branch=develop&svg=true)](https://ci.appveyor.com/project/jsnel/glotaran?branch=develop)
 [![Documentation Status](https://readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
