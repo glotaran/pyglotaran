@@ -81,10 +81,15 @@ install_requires = [
     'lmfit-varpro>=0.0.1'
 ]
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name="glotaran",
     version='0.0.1',
     description='The Glotaran fitting engine.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='http://glotaran.org',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
