@@ -33,14 +33,10 @@ matrix:
 
     # LINUX
     - python: "3.6"
-      env:
-        - linux-py36
-        - DEPLOY_ALL=true
+      env: linux-py36
 
     - python: "3.7-dev"  # 3.7 development branch
-      env:
-        - linux-py37
-        - DEPLOY_WHEELS=true
+      env: linux-py37
       before_install:
         - echo "before_install"
         - python -m pip install -U pip>=9.0.1
@@ -55,7 +51,7 @@ matrix:
       os: osx
       env:
         - osx-py36
-        - DEPLOY_WHEELS=true
+        - DEPLOY_ALL=true
       before_install:
         - echo "before_install"
         - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
