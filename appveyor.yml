@@ -6,8 +6,14 @@ clone_depth: 50
 environment:
   global:
     TWINE_USERNAME: s-weigand
+############## TESTING #################
     TWINE_PASSWORD:
       secure: aG5EediuX5seSBgZv0Sfrbd6HezkrCa72DsrUiNp10M=
+############## TESTING #################
+############# PRODUCTION ###############
+#    TWINE_PASSWORD:
+#      secure: NJW504vIoTJBWb07NH1jACKHn3CLdLv/Rd8DmStmI0M=
+############# PRODUCTION ###############
 
   PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
@@ -70,11 +76,17 @@ test_script:
   - coverage erase
   - tox -e py36
 
-after_test:
+deploy_script:
   # build wheels for windows
   - '%CMD_IN_ENV% python setup.py bdist_wheel'
   - python -m pip install twine
-  - python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*.whl
+  # upload to PyPi
+############## TESTING #################
+  - if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*.whl)
+############## TESTING #################
+############# PRODUCTION ###############
+#  - if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing dist/*.whl)
+############# PRODUCTION ###############
 
 artifacts:
   - path: dist/*
