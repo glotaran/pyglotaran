@@ -4,8 +4,10 @@
 clone_depth: 50
 
 environment:
-  TWINE_USERNAME: s-weigand
-  TWINE_PASSWORD: aG5EediuX5seSBgZv0Sfrbd6HezkrCa72DsrUiNp10M=
+  global:
+    TWINE_USERNAME: s-weigand
+    TWINE_PASSWORD:
+      secure: aG5EediuX5seSBgZv0Sfrbd6HezkrCa72DsrUiNp10M=
 
   PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
