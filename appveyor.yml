@@ -4,6 +4,9 @@
 clone_depth: 50
 
 environment:
+  TWINE_USERNAME: s-weigand
+  TWINE_PASSWORD: aG5EediuX5seSBgZv0Sfrbd6HezkrCa72DsrUiNp10M=
+
   PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
 #  APPVEYOR_CACHE_SKIP_RESTORE: true
@@ -68,9 +71,12 @@ test_script:
 after_test:
   # build wheels for windows
   - '%CMD_IN_ENV% python setup.py bdist_wheel'
+  - python -m pip install twine
+  - python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*.whl
 
 artifacts:
   - path: dist/*
+    name: Wheels
 
 on_finish:
   # Remove old or huge cache files to hopefully not exceed the 1GB cache limit.

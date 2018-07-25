@@ -83,7 +83,7 @@ install_requires = [
 
 setup(
     name="glotaran",
-    version="0.0.1",
+    version='0.0.1',
     description='The Glotaran fitting engine.',
     url='http://glotaran.org',
     classifiers=[
