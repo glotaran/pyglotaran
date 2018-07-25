@@ -113,7 +113,6 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
-    dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.0.1'],  # noqa: E501
     cmdclass={'clean': CleanCommand},
     ext_modules=ext_modules,
     test_suite='glotaran',
