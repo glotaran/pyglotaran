@@ -95,7 +95,9 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Cython',
-        'Topic :: Scientific'
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Scientific/Engineering :: Chemistry',
     ],
     author='Joris Snellenburg, Joern Weissenborn, Ivo van Stokkum',
     author_email="""j.snellenburg@gmail.com,
