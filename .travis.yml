@@ -130,7 +130,7 @@ deploy:
     skip_cleanup: true
     on:
 ############# PRODUCTION ###############
-    branch: master
+      branch: master
 ############# PRODUCTION ###############
       tags: true
       repo: s-glotaran/glotaran
@@ -159,7 +159,7 @@ deploy:
     skip_cleanup: true
     on:
 ############# PRODUCTION ###############
-    branch: master
+      branch: master
 ############# PRODUCTION ###############
       tags: true
       repo: s-glotaran/glotaran
