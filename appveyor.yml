@@ -15,10 +15,10 @@ environment:
 #      secure: NJW504vIoTJBWb07NH1jACKHn3CLdLv/Rd8DmStmI0M=
 ############# PRODUCTION ###############
 
-  PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
+    PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
 #  APPVEYOR_CACHE_SKIP_RESTORE: true
-  APPVEYOR_SAVE_CACHE_ON_ERROR: flase
+    APPVEYOR_SAVE_CACHE_ON_ERROR: flase
 
   matrix:
     - PYTHON: C:\Python36-x64
@@ -27,6 +27,14 @@ environment:
 
     - PYTHON: C:\Python36
       PYTHON_VERSION: 3.6
+      PYTHON_ARCH: 32
+
+    - PYTHON: C:\Python37-x64
+      PYTHON_VERSION: 3.7
+      PYTHON_ARCH: 64
+
+    - PYTHON: C:\Python37
+      PYTHON_VERSION: 3.7
       PYTHON_ARCH: 32
 
 init:
@@ -46,43 +54,59 @@ cache:
   # Cache downloaded pip packages and built wheels.
   - '%LOCALAPPDATA%\pip\Cache\http'
   - '%LOCALAPPDATA%\pip\Cache\wheels'
-  # Cache Tox envs
-  - 'C:\projects\glotaran\.tox'
-
 
 install:
-  # Show size of cache
-  - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
-  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
   # set python path
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
 
+before_test:
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+  - python --version
+  # Show size of cache
+  - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
+  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
+
+  - "ECHO c_matrix*.c files before cleaning"
+  - C:\cygwin\bin\find . -name c_matrix*.c
+
+  # removed old c_matrix*.c files
+  - C:\cygwin\bin\find . -name c_matrix*.c -delete
+
+  - "ECHO c_matrix*.c files after cleaning"
+  - C:\cygwin\bin\find . -name c_matrix*.c
+
   # Upgrade to the latest pip.
-  # calling pip with "%CMD_IN_ENV% python -m" prevents an access denied error
-  - '%CMD_IN_ENV% python -m pip install -U pip setuptools wheel'
+  # calling pip with "python -m" prevents an access denied error
+  - python -m pip install -U pip setuptools wheel
+
+  # install all requirements
+  - pip install -U -r requirements_dev.txt
 
   # making sure the latest version of lmfit-varpro will be installed
-  - '%CMD_IN_ENV% python -m pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/s-weigand/lmfit-varpro.git'
+  # this can be droped when when lmfit-varpro is on PyPi and the required version gets updated
+  - pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/s-weigand/lmfit-varpro.git
 
-  # install dependencies
-  - '%CMD_IN_ENV% python -m pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"'
-  # install tox
-  - '%CMD_IN_ENV% python -m pip install -U tox coverage'
+  # install setup dependencies
+  - pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"
+  # install glotaran
+  - pip install .
+
 
 build: none
 
 test_script:
-  # delete old .coverage file
+  # making sure old .coverage file gets deleted
   - coverage erase
-  - tox -e py36
+  # run tests
+  - py.test --cov=glotaran --cov-config .coveragerc glotaran
 
 deploy_script:
   # build wheels for windows
-  - '%CMD_IN_ENV% python setup.py bdist_wheel'
+  - python setup.py bdist_wheel
   - python -m pip install twine
   # upload to PyPi
 ############## TESTING #################
-  - if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*.whl)
+  - 'if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*.whl)'
 ############## TESTING #################
 ############# PRODUCTION ###############
 #  - if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing dist/*.whl)
@@ -103,8 +127,5 @@ on_finish:
   - if exist "%LOCALAPPDATA%\pip" C:\cygwin\bin\find "%LOCALAPPDATA%\pip" -type f -mtime +360 -delete
   - if exist "%LOCALAPPDATA%\pip" C:\cygwin\bin\find "%LOCALAPPDATA%\pip" -type f -size +10M -delete
   - if exist "%LOCALAPPDATA%\pip" C:\cygwin\bin\find "%LOCALAPPDATA%\pip" -empty -delete
-  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\find "C:\projects\glotaran\.tox" -type f -mtime +360 -delete
-  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\find "C:\projects\glotaran\.tox" -empty -delete
   # Show size of cache
   - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
-  - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
