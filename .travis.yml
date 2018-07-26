@@ -133,7 +133,7 @@ deploy:
     branch: master
 ############# PRODUCTION ###############
       tags: true
-      repo: s-weigand/glotaran
+      repo: s-glotaran/glotaran
       # there can only a maximum one test with DEPLOY_ALL=true, since PyPi will throw an error
       # and make the fail if the file (mostly sdist) already exists on the server
       condition: "$DEPLOY_ALL = true"
@@ -162,7 +162,7 @@ deploy:
     branch: master
 ############# PRODUCTION ###############
       tags: true
-      repo: s-weigand/glotaran
+      repo: s-glotaran/glotaran
       # Wheels need to be generated for systems that might lack the compiler
       condition: "$DEPLOY_WHEELS = true"
 
