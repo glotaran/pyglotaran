@@ -40,10 +40,6 @@ matrix:
       before_install:
         - echo "before_install"
         - python -m pip install -U pip>=9.0.1
-        - echo "clean old c files"
-        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
-        - echo "check clean old c files"
-        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
 
     # OSX
     - language: generic
@@ -77,10 +73,6 @@ matrix:
         - conda create -n py37 python=3.7 -y
         - source activate py37
         - python -m pip install -U pip>=9.0.1
-        - echo "clean old c files"
-        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
-        - echo "check clean old c files"
-        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
 
 #    - python: 3.6
 #      env: win_coverage
@@ -94,6 +86,10 @@ matrix:
 
 before_install:
   - echo "before_install"
+  - echo "clean old c files"
+  - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+  - echo "check clean old c files"
+  - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
   - python -m pip install -U pip>=9.0.1
 
 install:
