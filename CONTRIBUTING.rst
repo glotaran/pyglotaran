@@ -137,4 +137,6 @@ $bumpversion patch # possible: major / minor / patch
 $git push
 $git push --tags
 
-Travis will then deploy to PyPI if tests pass.
+.. warning:: Don't forget to change the minimum version of ``limfir-varpro`` if needed.
+
+Travis and appveyor will then deploy to PyPI if tests pass.
