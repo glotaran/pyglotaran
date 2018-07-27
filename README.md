@@ -19,15 +19,11 @@ The algorithms provided by this package still need to be validated and reviewed,
 
 ## Installation
 
-Requirements:
+To install glotaran, run this command in your terminal:
 
-* NumPy
-* SciPy
-* Cython
+    pip install glotaran
 
-In folder, run:
-
-    python3 setup.py install
+This is the preferred method to install glotaran, as it will always install the most recent stable release.
 
 ## Vagrant
 
