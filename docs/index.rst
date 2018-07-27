@@ -31,6 +31,7 @@ Welcome to glotaran's documentation!
 
     authors
     history
+    credits
 
 Indices and tables
 ==================

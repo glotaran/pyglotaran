@@ -40,10 +40,6 @@ matrix:
       before_install:
         - echo "before_install"
         - python -m pip install -U pip>=9.0.1
-        - echo "clean old c files"
-        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
-        - echo "check clean old c files"
-        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
 
     # OSX
     - language: generic
@@ -51,6 +47,7 @@ matrix:
       os: osx
       env:
         - osx-py36
+        - DEPLOY_ALL=true
       before_install:
         - echo "before_install"
         - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
@@ -63,7 +60,9 @@ matrix:
 
     - language: generic
       python: 3.7
-      env: osx-py37
+      env:
+        - osx-py37
+        - DEPLOY_WHEELS=true
       os: osx
       before_install:
         - echo "before_install"
@@ -74,10 +73,6 @@ matrix:
         - conda create -n py37 python=3.7 -y
         - source activate py37
         - python -m pip install -U pip>=9.0.1
-        - echo "clean old c files"
-        - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
-        - echo "check clean old c files"
-        - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
 
 #    - python: 3.6
 #      env: win_coverage
@@ -94,6 +89,10 @@ before_install:
   - python -m pip install -U pip>=9.0.1
 
 install:
+  - echo "clean old c files"
+  - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+  - echo "check clean old c files"
+  - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
   - pip install coveralls
   - pip install -r requirements_dev.txt
 
@@ -108,6 +107,64 @@ script:
 after_success:
   - coveralls
   - coverage erase
+
+
+deploy:
+# full deploy with python 3.6, since the package is pure python
+  - provider: pypi
+    distributions: sdist bdist_wheel
+    user: s-weigand
+# if you just want to get used to workflow of publishing new versions
+# you can simply comment the lines between PRODUCTION and uncomment the
+# the ones between TESTING to use the PyPi testserver
+############# PRODUCTION ###############
+    password:
+      secure: p0SMZ1MY8xIHOFf77YHKrNEJlAdjlmtD/jzzOVsMEDz7HqUaAS7p1SjY6dogAMBBEhCPZkWxBpPe462iJ6TclW8iVDStXLKev8SgaP/E5qdlkQI1pQ2KzuLvNfdMlvWjj4zTvBOWUKCjhxfRsS3iCoiOy1gtx2xAY1YgGEXxRWhmvTpkCIfLiFCcnbIcB6gmO/vRYtp8EpKrDzMaAoCEy4aD7oMGcuTEh1PdMwcjSjeDPSJENkMx/aK7+NKlUF4XcP2KSgcxbUrpfY6c3nB5zeY38lek9nF8m1q/249XUFYQAGbPvb+NG/ha5WYyyppnbcspErOOaaZX9BpB8yAvIMcueT2hwkYuNSUDNc0ThDjn9eCWJQT8gwdY4WZfaR22eV4PJA5xISTzllzMiCRwZ0C5BNSBCWX3EVRigpTic5wZtDgKBqQnZ5LA5WZGvPCwOJvQKDj1SizaeoxRPmml2/nLf5azEwpIOE7wTFCq1Mkj7AOgyX5CuZzqvNCGDrKZQgB0G0Tc+/Hi+A0FBRDh9q/dZReWgn3ucdeAX66AF675x71C7w1/eN4PJcYBrCeCJnsLpKpNq2pPB/8ty/r2JkHO8dxMRxwil/n4puwTWd1dRVopvkQKbjaZpobKKlNqCe/1wKgYINxiyJDU1obu99JXlnpi5HGY0TYQVNTXtWU=
+############# PRODUCTION ###############
+
+############## TESTING #################
+#    server: https://test.pypi.org/legacy/
+#    password:
+#      secure: nIlz5Uyw6R+Mw63tc6jLjal6xq5pQ4zJV3ydeeC7Fge8yaAKyhO5lp5uq0zG9cfxyC12v8aTdVRCd4Qp19TI1XfKn3/TiaoxqddPlyishMrWEjVbCoMtV242kFlWQgiKwAHpvHakBsq8McCGYK9mMFGuWTvl2YZjXuGoXT9xO0hJ3FAonW1LQkROCD97P38ypcL4Cb4Cn+NlVDVBpyE/X/+w02BLkGIrwfRUTqMya8NWqXxwVI+akRvze0yQmZX1o1Jrk4x73hTdVrgh2zD01zac92p/mUPxtfMIwOK7g+GIeLYqWN/qfEfpx8BdJ8Hk4xy63NTFPsJIj/RHTCHLpyxfgFwAAuh3EhTcQEp4sCTzFToB7zTDReyFLT3Wzbq7hPoCmw6IUCK24diAHCQ/wO3Im1VlkPVcZ3+YdTsmE1aiuLtGCex4ahLwaFW9XE/Ok3RR6IUhpA4A5TmHuhv+FpjAvzfC80i6yp9yTB0QkMpTDpmX70mWL6lfwIfLFXsfiSJlc4xeVUC/wl+Dcp0uU9PmBEkTbYyaT2Xg9FxE0MXIzHaazm8gHW8flFwtX/Hmu77boG9W32wVwLeMhcPY3tnGq9H4hzwhhad7i1Ry9FZKD8YfBCroqefD9oPEfHCxFETOXtswMm/4bBm3gWcjiARMuSd3fHlq7yH+c6CtBYY=
+##############TESTING ##################
+    skip_cleanup: true
+    on:
+############# PRODUCTION ###############
+      branch: master
+############# PRODUCTION ###############
+      tags: true
+      repo: s-glotaran/glotaran
+      # there can only a maximum one test with DEPLOY_ALL=true, since PyPi will throw an error
+      # and make the fail if the file (mostly sdist) already exists on the server
+      condition: "$DEPLOY_ALL = true"
+
+
+# wheels deployment is needed for OsX
+  - provider: pypi
+    distributions: bdist_wheel
+    user: s-weigand
+# if you just want to get used to workflow of publishing new versions
+# you can simply comment the lines between PRODUCTION and uncomment the
+# the ones between TESTING to use the PyPi testserver
+############# PRODUCTION ###############
+    password:
+      secure: p0SMZ1MY8xIHOFf77YHKrNEJlAdjlmtD/jzzOVsMEDz7HqUaAS7p1SjY6dogAMBBEhCPZkWxBpPe462iJ6TclW8iVDStXLKev8SgaP/E5qdlkQI1pQ2KzuLvNfdMlvWjj4zTvBOWUKCjhxfRsS3iCoiOy1gtx2xAY1YgGEXxRWhmvTpkCIfLiFCcnbIcB6gmO/vRYtp8EpKrDzMaAoCEy4aD7oMGcuTEh1PdMwcjSjeDPSJENkMx/aK7+NKlUF4XcP2KSgcxbUrpfY6c3nB5zeY38lek9nF8m1q/249XUFYQAGbPvb+NG/ha5WYyyppnbcspErOOaaZX9BpB8yAvIMcueT2hwkYuNSUDNc0ThDjn9eCWJQT8gwdY4WZfaR22eV4PJA5xISTzllzMiCRwZ0C5BNSBCWX3EVRigpTic5wZtDgKBqQnZ5LA5WZGvPCwOJvQKDj1SizaeoxRPmml2/nLf5azEwpIOE7wTFCq1Mkj7AOgyX5CuZzqvNCGDrKZQgB0G0Tc+/Hi+A0FBRDh9q/dZReWgn3ucdeAX66AF675x71C7w1/eN4PJcYBrCeCJnsLpKpNq2pPB/8ty/r2JkHO8dxMRxwil/n4puwTWd1dRVopvkQKbjaZpobKKlNqCe/1wKgYINxiyJDU1obu99JXlnpi5HGY0TYQVNTXtWU=
+############# PRODUCTION ###############
+
+############## TESTING #################
+#    server: https://test.pypi.org/legacy/
+#    password:
+#      secure: nIlz5Uyw6R+Mw63tc6jLjal6xq5pQ4zJV3ydeeC7Fge8yaAKyhO5lp5uq0zG9cfxyC12v8aTdVRCd4Qp19TI1XfKn3/TiaoxqddPlyishMrWEjVbCoMtV242kFlWQgiKwAHpvHakBsq8McCGYK9mMFGuWTvl2YZjXuGoXT9xO0hJ3FAonW1LQkROCD97P38ypcL4Cb4Cn+NlVDVBpyE/X/+w02BLkGIrwfRUTqMya8NWqXxwVI+akRvze0yQmZX1o1Jrk4x73hTdVrgh2zD01zac92p/mUPxtfMIwOK7g+GIeLYqWN/qfEfpx8BdJ8Hk4xy63NTFPsJIj/RHTCHLpyxfgFwAAuh3EhTcQEp4sCTzFToB7zTDReyFLT3Wzbq7hPoCmw6IUCK24diAHCQ/wO3Im1VlkPVcZ3+YdTsmE1aiuLtGCex4ahLwaFW9XE/Ok3RR6IUhpA4A5TmHuhv+FpjAvzfC80i6yp9yTB0QkMpTDpmX70mWL6lfwIfLFXsfiSJlc4xeVUC/wl+Dcp0uU9PmBEkTbYyaT2Xg9FxE0MXIzHaazm8gHW8flFwtX/Hmu77boG9W32wVwLeMhcPY3tnGq9H4hzwhhad7i1Ry9FZKD8YfBCroqefD9oPEfHCxFETOXtswMm/4bBm3gWcjiARMuSd3fHlq7yH+c6CtBYY=
+##############TESTING ##################
+    skip_cleanup: true
+    on:
+############# PRODUCTION ###############
+      branch: master
+############# PRODUCTION ###############
+      tags: true
+      repo: s-glotaran/glotaran
+      # Wheels need to be generated for systems that might lack the compiler
+      condition: "$DEPLOY_WHEELS = true"
 
 notifications:
   slack:

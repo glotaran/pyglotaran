@@ -146,7 +146,6 @@ class FitModel(SeparableModel):
                                                          self._model.
                                                          calculated_matrix())
 
-
     def e_matrix(self, parameter, *args, **kwargs) -> np.array:
         """Implementation of SeparableModel.e_matrix.
 
