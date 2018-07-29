@@ -65,4 +65,4 @@ To update the glotaran-core installation on a vagrant box (without rebuilding it
 ## Credits
 
 The credits can be found in the documentations
-`credits section <https://glotaran.readthedocs.io/en/latest/credits.html>`_
+[credits section](https://glotaran.readthedocs.io/en/latest/credits.html)
