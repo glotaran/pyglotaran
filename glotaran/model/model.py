@@ -155,6 +155,23 @@ class Model(ABC):
         data = self.fit_model().eval(sim_parameter, **kwargs)
         self.get_dataset(dataset).set(data)
 
+    def concentrations(self, dataset: str) -> np.ndarray:
+        """Returns the precited concentrations for a dataset.
+
+        Parameters
+        ----------
+        dataset : str
+            Label of the dataset
+
+        Returns
+        -------
+        concentrations : numpy.ndarray
+        """
+        parameter = self.parameter.as_parameters_dict().copy()
+        kwargs = {}
+        kwargs['dataset'] = dataset
+        return self.fit_model().c_matrix(parameter, **kwargs)
+
     def fit_model(self) -> FitModel:
         """Returns an instance of the models fitmodel.FitModel implementation.
 

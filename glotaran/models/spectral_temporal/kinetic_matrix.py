@@ -302,7 +302,12 @@ class KineticMatrix(Matrix):
         for i in range(eigenvectors.shape[0]):
             concentration_matrix[i, :] = eigenvectors[:, i] * gamma[i]
 
-        np.dot(np.copy(c_matrix), concentration_matrix, out=c_matrix)
+        mask = [c in self.compartment_order for c in compartment_order]
+
+        temp = np.dot(np.copy(c_matrix[:, mask]), concentration_matrix)
+
+        for i, c in enumerate(self.compartment_order):
+            c_matrix[:, compartment_order.index(c)] = temp[:, i]
 
     @property
     def time(self):

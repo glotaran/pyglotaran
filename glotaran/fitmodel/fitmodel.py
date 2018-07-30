@@ -52,6 +52,12 @@ class FitModel(SeparableModel):
         -------
         data: list(np.array)
         """
+        if "dataset" in kwargs:
+            label = kwargs["dataset"]
+            gen = MatrixGroupGenerator.for_dataset(self._model, label,
+                                                   self._model.
+                                                   calculated_matrix())
+            return gen.create_dataset_group()
         return self._dataset_group
 
     def fit(self, *args, nnls=False, **kwargs) -> Result:
@@ -137,15 +143,14 @@ class FitModel(SeparableModel):
                                                    calculated_matrix())
         else:
             if self._generator is None:
-                self.init_generator()
+                self._init_generator()
             gen = self._generator
         return gen.calculate(parameter)
 
-    def init_generator(self):
+    def _init_generator(self):
         self._generator = MatrixGroupGenerator.for_model(self._model,
                                                          self._model.
                                                          calculated_matrix())
-
 
     def e_matrix(self, parameter, *args, **kwargs) -> np.array:
         """Implementation of SeparableModel.e_matrix.

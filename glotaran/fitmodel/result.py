@@ -64,6 +64,7 @@ class Result(SeparableModelResult):
 
         """
         data = np.asarray(self.eval(**{"dataset": dataset}))
+        print('hh')
         dataset = self.model.datasets[dataset].dataset.copy()
         dataset.set(data)
         return dataset

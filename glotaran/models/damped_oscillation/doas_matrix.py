@@ -4,10 +4,8 @@ from typing import List
 import numpy as np
 from scipy.special import erf
 
-from glotaran.model import CompartmentConstraintType, Model, ParameterGroup
+from glotaran.model import Model, ParameterGroup
 from glotaran.models.spectral_temporal import KineticMatrix
-
-from c_matrix_damped_oscillation import calculateC
 
 
 class DOASMatrix(KineticMatrix):
