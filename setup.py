@@ -52,10 +52,10 @@ try:
                    "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
                                 "glotaran/models/spectral_temporal/c_matrix_cython"]),
-        Extension("c_matrix_damped_oscillation",
-                  ["glotaran/models/damped_oscillation/c_matrix_damped_oscillations.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/damped_oscillation"]),
+        #  Extension("c_matrix_damped_oscillation",
+        #            ["glotaran/models/damped_oscillation/c_matrix_damped_oscillations.pyx"],
+        #            include_dirs=[numpy.get_include(), scipy.get_include(),
+        #                          "glotaran/models/damped_oscillation"]),
                   ]
 
 except ImportError:
@@ -81,10 +81,15 @@ install_requires = [
     'lmfit-varpro>=0.0.1'
 ]
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name="glotaran",
-    version="0.0.1",
+    version='0.0.1',
     description='The Glotaran fitting engine.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='http://glotaran.org',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -95,7 +100,9 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Cython',
-        'Topic :: Scientific'
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Scientific/Engineering :: Chemistry',
     ],
     author='Joris Snellenburg, Joern Weissenborn, Ivo van Stokkum',
     author_email="""j.snellenburg@gmail.com,
@@ -106,7 +113,6 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
-    dependency_links=['https://github.com/glotaran/lmfit-varpro/tarball/master#egg=lmfit-varpro-0.0.1'],  # noqa: E501
     cmdclass={'clean': CleanCommand},
     ext_modules=ext_modules,
     test_suite='glotaran',

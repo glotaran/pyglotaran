@@ -9,25 +9,20 @@ class SpectralMatrix(Matrix):
     def __init__(self, x, dataset, model):
         super(SpectralMatrix, self).__init__(x, dataset, model)
 
-        self._shapes = {}
-        self._collect_shapes(model)
+        self.shapes = {}
+        self.collect_shapes()
 
-        self._compartment_order = self.involved_compartments(model, dataset)
-
-    def involved_compartments(self, model, dataset):
-        cmplxs = [model.megacomplexes[c] for c in dataset.megacomplexes]
-        kmats = [model.k_matrices[k] for cmplx in cmplxs
-                 for k in cmplx.k_matrices]
-        return list(set([c for kmat in kmats for c in kmat.compartment_map]))
-
-    def _collect_shapes(self, model):
+    def collect_shapes(self):
 
         for c, shape in self.dataset.shapes.items():
-            self._shapes[c] = model.shapes[shape]
+            self.shapes[c] = self.model.shapes[shape]
 
     @property
     def compartment_order(self):
-        return self._compartment_order
+        cmplxs = [self.model.megacomplexes[c] for c in self.dataset.megacomplexes]
+        kmats = [self.model.k_matrices[k] for cmplx in cmplxs
+                 for k in cmplx.k_matrices]
+        return list(set([c for kmat in kmats for c in kmat.compartment_map]))
 
     @property
     def shape(self):
@@ -37,12 +32,11 @@ class SpectralMatrix(Matrix):
     def calculate(self, c_matrix, compartment_order, parameter):
 
         # We need the spectral shapes and axis to perform the calculations
-        shapes = self._shapes
         x = self.dataset.dataset.spectral_axis
 
         for (i, c) in enumerate(compartment_order):
-            if c in shapes:
-                c_matrix[:, i] = self._calculate_shape(parameter, shapes[c], x)
+            if c in self.shapes:
+                c_matrix[:, i] = self._calculate_shape(parameter, self.shapes[c], x)
             else:
                 # we use ones, so that if no shape is defined for the
                 # compartment, the  amplitude is 1.0 by convention.

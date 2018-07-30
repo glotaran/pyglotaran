@@ -1,3 +1,4 @@
+[![latest release](https://pypip.in/version/glotaran/badge.svg)](https://pypi.org/project/glotaran/)
 [![Build Status](https://travis-ci.org/glotaran/glotaran.svg?branch=develop)](https://travis-ci.org/glotaran/glotaran)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/glotaran/glotaran?branch=develop&svg=true)](https://ci.appveyor.com/project/jsnel/glotaran?branch=develop)
 [![Documentation Status](https://readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
@@ -8,17 +9,21 @@
 # Glotaran
 Global and target analysis software package based on Python
 
+## Warning
+This project is still in its pre-alpha phase and undergoing rapid development, including changes to the core API, thus it is not production ready.
+
+Proceed at your own risk!
+
+## Additional warning for scientists
+The algorithms provided by this package still need to be validated and reviewed, pending the official release it should not be used in scientific publications.
+
 ## Installation
 
-Requirements:
+To install glotaran, run this command in your terminal:
 
-* NumPy
-* SciPy
-* Cython
+    pip install glotaran
 
-In folder, run:
-
-    python3 setup.py install
+This is the preferred method to install glotaran, as it will always install the most recent stable release.
 
 ## Vagrant
 
@@ -59,5 +64,5 @@ To update the glotaran-core installation on a vagrant box (without rebuilding it
 
 ## Credits
 
-This package was partially created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and
-the [audreyr/cookiecutter-pypackage ](https://github.com/audreyr/cookiecutter-pypackage) project template.
+The credits can be found in the documentations
+[credits section](https://glotaran.readthedocs.io/en/latest/credits.html)

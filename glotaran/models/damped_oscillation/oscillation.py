@@ -46,3 +46,10 @@ class Oscillation:
     def rate(self) -> str:
         """The damping rate of the oscillation"""
         return self._rate
+
+    def __str__(self):
+        string = f"_{self.label}_:"
+        string += f" __Compartment__: {self.compartment}"
+        string += f" __Rate__: {self.rate}"
+        string += f" __Frequency__: {self.frequency}"
+        return string

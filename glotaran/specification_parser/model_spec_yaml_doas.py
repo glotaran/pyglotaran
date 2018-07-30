@@ -47,4 +47,4 @@ class DOASModelParser(KineticModelParser):
             self.model.add_oscillation(Oscillation(label, comp, freq, rate))
 
 
-register_model_parser("damped_oscillation", DOASModelParser)
+register_model_parser("dampened_oscillation", DOASModelParser)
