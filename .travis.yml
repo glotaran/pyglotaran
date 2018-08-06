@@ -94,7 +94,7 @@ install:
   - echo "check clean old c files"
   - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
   - pip install coveralls
-  - pip install -r requirements_dev.txt
+  - pip install -U -r requirements_dev.txt
 
 script:
   - pwd
