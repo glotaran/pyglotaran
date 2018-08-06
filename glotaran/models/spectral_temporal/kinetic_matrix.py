@@ -8,6 +8,8 @@ from glotaran.fitmodel import Matrix
 from glotaran.model import Model
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
+from .irf_gaussian import GaussianIrf
+from .irf_measured import MeasuredIrf
 from .k_matrix import KMatrix
 
 _BACKEND = CMatrixCython()
@@ -147,10 +149,7 @@ class KineticMatrix(Matrix):
         time = self.dataset.dataset.get_axis("time")
 
         # calculate the c_matrix
-        if self._irf is None:
-            _BACKEND.c_matrix(matrix, compartment_idxs, rates, time,
-                              scale)
-        else:
+        if isinstance(self._irf, GaussianIrf):
             centers, widths, irf_scale, backsweep, backsweep_period = \
                     self._calculate_irf_parameter(parameter)
             _BACKEND.c_matrix_gaussian_irf(matrix,
@@ -162,6 +161,17 @@ class KineticMatrix(Matrix):
                                            backsweep,
                                            backsweep_period,
                                            )
+
+        else:
+            _BACKEND.c_matrix(matrix, compartment_idxs, rates, time,
+                              scale)
+            if isinstance(self._irf, MeasuredIrf):
+                irf = self._irf.data
+                if len(irf.shape) == 2:
+                    idx = (np.abs(self.dataset.data.spectral_axis - self.index)).argmin()
+                    irf = irf[idx, :]
+                for i in range(matrix.shape[1]):
+                    matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
 
         if self._initial_concentration is not None:
             self._apply_initial_concentration_vector(matrix,
