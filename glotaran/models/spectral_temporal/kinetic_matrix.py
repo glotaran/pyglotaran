@@ -43,7 +43,7 @@ class KineticMatrix(Matrix):
         self._megacomplex_scaling = []
         self._collect_k_matrices(model)
 
-        self._initial_concentrations = None
+        self._initial_concentration = None
         self._collect_initial_concentration(model)
 
     @property
@@ -85,19 +85,8 @@ class KineticMatrix(Matrix):
     def _collect_initial_concentration(self, model):
         if self.dataset.initial_concentration is None:
             return
-        initial_concentrations = \
+        self._initial_concentration = \
             model.initial_concentrations[self.dataset.initial_concentration]
-
-        # The initial concentration vector has an element for each compartment
-        # declared in the model. The current C Matrix must not necessary invole
-        # all compartments, as well as the order of compartments can be
-        # different. Thus we shrink and reorder the concentration.
-
-        all_cmps = model.compartments
-
-        self._initial_concentrations = \
-            [initial_concentrations.parameter[all_cmps.index(c)]
-             for c in self.compartment_order]
 
     def calculate(self,
                   matrix: np.array,
@@ -147,8 +136,7 @@ class KineticMatrix(Matrix):
         # pylint: disable=too-many-arguments
 
         # calculate k_matrix eigenvectos
-        eigenvalues, eigenvectors = self._calculate_k_matrix_eigen(k_matrix,
-                                                                   parameter)
+        eigenvalues, _ = k_matrix.eigen(parameter)
         rates = -eigenvalues
 
         # we need this since the full c matrix can have more compartments then
@@ -197,44 +185,13 @@ class KineticMatrix(Matrix):
                     param = parameter.get(param)
                     matrix[:, idx] += param * matrix[:, t_idx]
 
-        if self._initial_concentrations is not None:
+        if self._initial_concentration is not None:
             self._apply_initial_concentration_vector(matrix,
                                                      k_matrix,
                                                      parameter,
                                                      compartment_order)
 
-    def _calculate_k_matrix_eigen(self, k_matrix, parameter):
-        """
-
-        Parameters
-        ----------
-        k_matrix :
-
-        parameter :
-
-
-        Returns
-        -------
-
-        """
-        # pylint: disable=no-self-use
-        k_matrix = k_matrix.full(parameter)
-        # get the eigenvectors and values
-        eigenvalues, eigenvectors = np.linalg.eig(k_matrix)
-        return (eigenvalues.real, eigenvectors.real)
-
     def _calculate_irf_parameter(self, parameter):
-        """
-
-        Parameters
-        ----------
-        pUarameter :
-
-
-        Re[Eq       ]turns
-        -------
-
-        """
 
         centers = np.asarray([parameter.get(i) for i in self._irf.center])
         widths = np.asarray([parameter.get(i) for i in self._irf.width])
@@ -327,7 +284,7 @@ class KineticMatrix(Matrix):
         mask = [c in self.compartment_order for c in compartment_order]
 
         temp = np.dot(np.copy(c_matrix[:, mask]),
-                      self._concentration_matrix(k_matrix, parameter, compartment_order))
+                      k_matrix.a_matrix(self._initial_concentration, parameter))
 
         for i, c in enumerate(self.compartment_order):
             c_matrix[:, compartment_order.index(c)] = temp[:, i]

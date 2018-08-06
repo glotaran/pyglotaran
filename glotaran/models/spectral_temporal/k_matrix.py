@@ -1,8 +1,11 @@
 """ Glotaran K-Matrix """
 
 from collections import OrderedDict
-from typing import List
+from typing import List, Tuple
 import numpy as np
+import scipy
+
+from glotaran.model import InitialConcentration, ParameterGroup
 
 
 class KMatrix:
@@ -170,6 +173,45 @@ class KMatrix:
                 mat[to_idx, fr_idx] += param
                 mat[fr_idx, fr_idx] -= param
         return mat
+
+    def eigen(self, parameter: ParameterGroup) -> Tuple[np.ndarray,
+                                                        np.ndarray]:
+        """ Returns the eigenvalues and eigenvectors of the k matrix.
+
+        Parameters
+        ----------
+        parameter : glotaran.model.ParameterGroup
+
+
+        Returns
+        -------
+        (eigenvalues, eigenvectos) : tuple(np.ndarray, np.ndarray)
+
+        """
+        matrix = self.full(parameter)
+        # get the eigenvectors and values
+        eigenvalues, eigenvectors = np.linalg.eig(matrix)
+        return (eigenvalues.real, eigenvectors.real)
+
+    def a_matrix(self,
+                 initial_concentration: InitialConcentration,
+                 parameter: ParameterGroup) -> np.ndarray:
+        initial_concentration = initial_concentration.parameter
+        initial_concentration = \
+            [initial_concentration[self._all_compartments.index(c)] for c in
+             self.compartment_map]
+        initial_concentration = [parameter.get(i) for i in initial_concentration]
+
+        _, eigenvectors = self.eigen(parameter)
+        gamma = np.matmul(scipy.linalg.inv(eigenvectors),
+                          initial_concentration)
+
+        a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
+
+        for i in range(eigenvectors.shape[0]):
+            a_matrix[i, :] = eigenvectors[:, i] * gamma[i]
+
+        return a_matrix
 
     def __str__(self):
         """ """

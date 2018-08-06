@@ -1,13 +1,19 @@
+""" Glotaran Initial Concentration"""
+
+from typing import List
+
+
 class InitialConcentration(object):
     """
-    An InitialConcentration constration has label and parameters.
+    An initial concentration vector.
     """
-    def __init__(self, label, parameter):
+    def __init__(self, label: str, parameter: List[str]):
         self.label = label
         self.parameter = parameter
 
     @property
-    def label(self):
+    def label(self) -> str:
+        """The label of the initial concentration"""
         return self._label
 
     @label.setter
@@ -15,7 +21,9 @@ class InitialConcentration(object):
         self._label = value
 
     @property
-    def parameter(self):
+    def parameter(self) -> List[str]:
+        """A list of parameters representing the concentrations of the
+        compartments."""
         return self._parameter
 
     @parameter.setter
