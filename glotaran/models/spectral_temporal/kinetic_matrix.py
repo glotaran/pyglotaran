@@ -225,43 +225,6 @@ class KineticMatrix(Matrix):
 
         return centers, widths, scale, backsweep, backsweep_period
 
-    def _concentration_matrix(self, k_matrix, parameter, compartment_order):
-        """
-
-        Parameters
-        ----------
-        c_matrix :
-
-        eigenvectors :
-
-        parameter :
-
-        compartment_order :
-
-
-        Returns
-        -------
-
-        """
-
-        initial_concentrations = [parameter.get(i) for i in self._initial_concentrations]
-
-        initial_concentrations = \
-            [initial_concentrations[compartment_order.index(c)] for c in
-             self.compartment_order]
-
-        _, eigenvectors = self._calculate_k_matrix_eigen(k_matrix, parameter)
-        gamma = np.matmul(scipy.linalg.inv(eigenvectors),
-                          initial_concentrations)
-
-        concentration_matrix = np.empty(eigenvectors.shape,
-                                        dtype=np.float64)
-
-        for i in range(eigenvectors.shape[0]):
-            concentration_matrix[i, :] = eigenvectors[:, i] * gamma[i]
-
-        return concentration_matrix
-
     def _apply_initial_concentration_vector(self, c_matrix, k_matrix,
                                             parameter, compartment_order):
         """
