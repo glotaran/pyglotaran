@@ -115,16 +115,13 @@ class KineticModel(Model):
             raise TypeError("K-Matrices must be subclass of 'KMatrix'")
         self._k_matrices = value
 
-    def add_k_matrix(self, k_matrix):
-        """
+    def add_k_matrix(self, k_matrix: KMatrix):
+        """Adds a K-Matrix to the model.
 
         Parameters
         ----------
-        k_matrix :
+        k_matrix : KMatrix
 
-
-        Returns
-        -------
 
         """
         if not issubclass(type(k_matrix), KMatrix):
@@ -199,6 +196,14 @@ class KineticModel(Model):
             if shape.label in self.shapes:
                 raise Exception("Shape labels must be unique")
             self.shapes[shape.label] = shape
+
+    def get_megacomplex_k_matrix(self, cmplx: str) -> KMatrix:
+        cmplx = self.megacomplexes[cmplx]
+        kmat = KMatrix.empty(cmplx.label, self.compartments)
+        for mat in cmplx.k_matrices:
+            kmat = kmat.combine(self.k_matrices[mat])
+        return kmat
+
 
     def __str__(self):
         string = super(KineticModel, self).__str__()

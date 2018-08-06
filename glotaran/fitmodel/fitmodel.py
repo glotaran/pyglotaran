@@ -147,6 +147,16 @@ class FitModel(SeparableModel):
             gen = self._generator
         return gen.calculate(parameter)
 
+    def get_calculated_matrix_group(self, dataset=None):
+        if dataset is None:
+            return MatrixGroupGenerator.for_model(self._model,
+                                                  self._model.
+                                                  calculated_matrix())
+
+        return MatrixGroupGenerator.for_dataset(self._model, dataset,
+                                                self._model.
+                                                calculated_matrix())
+
     def _init_generator(self):
         self._generator = MatrixGroupGenerator.for_model(self._model,
                                                          self._model.

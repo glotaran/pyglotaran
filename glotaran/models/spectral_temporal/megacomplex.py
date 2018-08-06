@@ -1,11 +1,27 @@
+""" Glotaran Kinetic Megacomplex """
+
+from typing import List, Union
+
 from glotaran.model.megacomplex import Megacomplex
 
 
 class KineticMegacomplex(Megacomplex):
-    """
-    A KineticMegacomplex is a Megacomplex with one or more K-Matrix labels.
-    """
-    def __init__(self, label, k_matrices):
+    """A Megacomplex with one or more K-Matrices."""
+    def __init__(self, label: str, k_matrices: Union[str, List[str]]):
+        """
+
+        Parameters
+        ----------
+        label: str
+            The label of the megacomplex.
+
+        k_matrices: list(str) :
+            A list of K-Matrix labels.
+
+        Returns
+        -------
+
+        """
         if not isinstance(k_matrices, list):
             k_matrices = [k_matrices]
         self._k_matrices = k_matrices
@@ -13,6 +29,7 @@ class KineticMegacomplex(Megacomplex):
 
     @property
     def k_matrices(self):
+        """ K-Matrices associated with the megacomplex."""
         return self._k_matrices
 
     @k_matrices.setter

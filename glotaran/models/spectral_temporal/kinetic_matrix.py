@@ -9,6 +9,7 @@ from glotaran.fitmodel import Matrix
 from glotaran.model import CompartmentConstraintType, Model
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
+from .k_matrix import KMatrix
 
 _BACKEND = CMatrixCython()
 
@@ -139,7 +140,7 @@ class KineticMatrix(Matrix):
     def _calculate_for_k_matrix(self,
                                 matrix: np.array,
                                 compartment_order: List[str],
-                                k_matrix: str,
+                                k_matrix: KMatrix,
                                 parameter: lmfit.Parameters,
                                 scale: str):
         # pylint: disable=too-many-locals
@@ -198,7 +199,7 @@ class KineticMatrix(Matrix):
 
         if self._initial_concentrations is not None:
             self._apply_initial_concentration_vector(matrix,
-                                                     eigenvectors,
+                                                     k_matrix,
                                                      parameter,
                                                      compartment_order)
 
@@ -267,8 +268,7 @@ class KineticMatrix(Matrix):
 
         return centers, widths, scale, backsweep, backsweep_period
 
-    def _apply_initial_concentration_vector(self, c_matrix, eigenvectors,
-                                            parameter, compartment_order):
+    def _concentration_matrix(self, k_matrix, parameter, compartment_order):
         """
 
         Parameters
@@ -293,6 +293,7 @@ class KineticMatrix(Matrix):
             [initial_concentrations[compartment_order.index(c)] for c in
              self.compartment_order]
 
+        _, eigenvectors = self._calculate_k_matrix_eigen(k_matrix, parameter)
         gamma = np.matmul(scipy.linalg.inv(eigenvectors),
                           initial_concentrations)
 
@@ -302,9 +303,31 @@ class KineticMatrix(Matrix):
         for i in range(eigenvectors.shape[0]):
             concentration_matrix[i, :] = eigenvectors[:, i] * gamma[i]
 
+        return concentration_matrix
+
+    def _apply_initial_concentration_vector(self, c_matrix, k_matrix,
+                                            parameter, compartment_order):
+        """
+
+        Parameters
+        ----------
+        c_matrix :
+
+        eigenvectors :
+
+        parameter :
+
+        compartment_order :
+
+
+        Returns
+        -------
+
+        """
         mask = [c in self.compartment_order for c in compartment_order]
 
-        temp = np.dot(np.copy(c_matrix[:, mask]), concentration_matrix)
+        temp = np.dot(np.copy(c_matrix[:, mask]),
+                      self._concentration_matrix(k_matrix, parameter, compartment_order))
 
         for i, c in enumerate(self.compartment_order):
             c_matrix[:, compartment_order.index(c)] = temp[:, i]
