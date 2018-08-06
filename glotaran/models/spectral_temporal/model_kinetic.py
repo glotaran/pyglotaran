@@ -204,7 +204,6 @@ class KineticModel(Model):
             kmat = kmat.combine(self.k_matrices[mat])
         return kmat
 
-
     def __str__(self):
         string = super(KineticModel, self).__str__()
         string += "\n## K-Matrices\n\n"
