@@ -1,6 +1,7 @@
 from . import (
     dataset_descriptor,
     irf_gaussian,
+    irf_measured,
     k_matrix,
     kinetic_matrix,
     megacomplex,
@@ -17,6 +18,7 @@ SpectralTemporalDatasetDescriptor = \
 # Irfs
 
 GaussianIrf = irf_gaussian.GaussianIrf
+MeasuredIrf = irf_measured.MeasuredIrf
 
 # Shapes
 

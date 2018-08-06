@@ -39,8 +39,9 @@ class GaussianIrf(Irf):
         self.width_dispersion = width_dispersion
         self.scale = scale
         self.normalize = normalize
-        super(GaussianIrf, self).__init__(label, backsweep=backsweep,
-                                          backsweep_period=backsweep_period)
+        self.backsweep = backsweep
+        self.backsweep_period = backsweep_period
+        super(GaussianIrf, self).__init__(label)
 
     @property
     def scale(self):
@@ -103,6 +104,50 @@ class GaussianIrf(Irf):
         if not isinstance(value, bool):
             raise TypeError("Normalize must be 'true' or 'false'.")
         self._normalize = value
+
+    @property
+    def backsweep(self):
+        """True or false """
+        return self._backsweep
+
+    @backsweep.setter
+    def backsweep(self, value):
+        """
+
+        Parameters
+        ----------
+        value : True or False
+
+
+        Returns
+        -------
+
+
+        """
+        if not isinstance(value, bool):
+            raise TypeError("Backsweep must be True or False")
+        self._backsweep = value
+
+    @property
+    def backsweep_period(self):
+        """Parameter Index"""
+        return self._backsweep_period
+
+    @backsweep_period.setter
+    def backsweep_period(self, value):
+        """
+
+        Parameters
+        ----------
+        value : Parameter Index
+
+
+        Returns
+        -------
+
+
+        """
+        self._backsweep_period = value
 
     def type_string(self):
         t = "'Gaussian'"

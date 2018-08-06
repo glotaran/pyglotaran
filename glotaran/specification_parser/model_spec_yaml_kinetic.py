@@ -9,6 +9,7 @@ from glotaran.models.spectral_temporal import (KMatrix,
                                                KineticMegacomplex,
                                                KineticModel,
                                                GaussianIrf,
+                                               MeasuredIrf,
                                                SpectralShapeGaussian)
 
 
@@ -23,6 +24,7 @@ class KineticKeys:
     K_MATRICES = "k_matrices"
     LOCATION = "location"
     MATRIX = 'matrix'
+    MEASURED = 'measured'
     NORMALIZE = 'normalize'
     SCALE = 'scale'
     SHAPE = 'shape'
@@ -82,7 +84,9 @@ class KineticModelParser(ModelSpecParser):
             for irf in self.spec[KineticKeys.IRF]:
                 (label, type) = get_keys_from_object(irf, [Keys.LABEL,
                                                            Keys.TYPE])
-                if type == KineticKeys.GAUSSIAN:
+                if type == KineticKeys.MEASURED:
+                    self.model.add_irf(MeasuredIrf(label))
+                elif type == KineticKeys.GAUSSIAN:
                     (center, width) = get_keys_from_object(irf,
                                                            [KineticKeys.CENTER,
                                                             KineticKeys.WIDTH],
