@@ -69,6 +69,8 @@ class MatrixGroup:
             n_t = t_idx + mat.shape[0]
             mat.calculate(matrix[t_idx:n_t, :], compartment_order,
                           parameter)
+            mat.apply_constraints(matrix[t_idx:n_t, :], compartment_order,
+                                  parameter)
             t_idx = n_t
 
         return matrix

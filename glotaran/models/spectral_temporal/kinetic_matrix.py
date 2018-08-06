@@ -5,7 +5,7 @@ import numpy as np
 import lmfit
 
 from glotaran.fitmodel import Matrix
-from glotaran.model import CompartmentConstraintType, Model
+from glotaran.model import Model
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
 from .k_matrix import KMatrix
@@ -143,18 +143,6 @@ class KineticMatrix(Matrix):
         compartment_idxs = [compartment_order.index(c) for c in
                             k_matrix.compartment_map]
 
-        # get constraint compartment indeces
-        constraint_compartments = [c.compartment for c in
-                                   self.dataset.compartment_constraints if
-                                   c.applies(self.index) and c.type() is not
-                                   CompartmentConstraintType.equal_area]
-        constraint_idx = [k_matrix.compartment_map.index(c) for c in
-                          constraint_compartments]
-
-        # TODO: do not delete column prior to c-matrix evaluation
-        rates = np.delete(rates, constraint_idx)
-        compartment_idxs = np.delete(compartment_idxs, constraint_idx)
-
         # get the time axis
         time = self.dataset.dataset.get_axis("time")
 
@@ -174,15 +162,6 @@ class KineticMatrix(Matrix):
                                            backsweep,
                                            backsweep_period,
                                            )
-        # Apply equal equal constraints
-        for constrain in self.dataset.compartment_constraints:
-            if constrain.type() is CompartmentConstraintType.equal and \
-              constrain.applies(self.index):
-                idx = compartment_order.index(constrain.compartment)
-                for target, param in constrain.targets_and_parameter:
-                    t_idx = compartment_order.index(target)
-                    param = parameter.get(param)
-                    matrix[:, idx] += param * matrix[:, t_idx]
 
         if self._initial_concentration is not None:
             self._apply_initial_concentration_vector(matrix,
