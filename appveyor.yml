@@ -12,7 +12,7 @@ environment:
 ############## TESTING #################
 ############# PRODUCTION ###############
     TWINE_PASSWORD:
-      secure: NJW504vIoTJBWb07NH1jACKHn3CLdLv/Rd8DmStmI0M=
+      secure: n0iiqKA7JDgOjmLvLhvBqQtDOepmCUMRBgPVnNNXlyY=
 ############# PRODUCTION ###############
 
     PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
@@ -109,7 +109,7 @@ deploy_script:
 #  - 'if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*.whl)'
 ############## TESTING #################
 ############# PRODUCTION ###############
-  - if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing dist/*.whl)
+  - 'if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing dist/*.whl)'
 ############# PRODUCTION ###############
 
 artifacts:
