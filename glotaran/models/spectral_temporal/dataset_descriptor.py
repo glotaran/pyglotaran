@@ -115,5 +115,9 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     def __str__(self):
         string = super(SpectralTemporalDatasetDescriptor, self).__str__()
         if self.irf:
-            string += f"* _Irf_: {self.irf}"
+            string += f"* _Irf_: {self.irf}\n"
+        if len(self.shapes):
+            string += f"* _Shapes_:\n"
+            for comp, shape in self.shapes.items():
+                string += f"  * __{comp}__: {shape}\n"
         return string
