@@ -186,7 +186,7 @@ class ParameterGroup(OrderedDict):
         for p in self.all_group():
             yield p
         for l in self:
-            for p in l.all():
+            for p in self[l].all():
                 yield p
 
     def all_with_label(self, root) -> Generator[Tuple[str, Parameter], None,
