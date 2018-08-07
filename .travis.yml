@@ -1,0 +1,172 @@
+# travis
+sudo: false
+language: python
+cache: pip
+
+matrix:
+  fast_finish: true
+  include:
+    - python: 3.6
+      env: TOXENV=flake8
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
+      after_success:
+      # this prevents the tests to upload stuff to coveralls.io
+        - echo "done"
+
+    - python: 3.6
+      # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
+      env: TOXENV=docs
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
+      after_success:
+        # this prevents the tests to upload stuff to coveralls.io
+        - echo "done"
+
+    # LINUX
+    - python: "3.6"
+      env: linux-py36
+
+    - python: "3.7-dev"  # 3.7 development branch
+      env: linux-py37
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+
+    # OSX
+    - language: generic
+      python: 3.6
+      os: osx
+      env:
+        - osx-py36
+        - DEPLOY_ALL=true
+      before_install:
+        - echo "before_install"
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - conda update conda -y
+        - conda create -n py36 python=3.6 -y
+        - source activate py36
+        - python -m pip install -U pip>=9.0.1
+
+    - language: generic
+      python: 3.7
+      env:
+        - osx-py37
+        - DEPLOY_WHEELS=true
+      os: osx
+      before_install:
+        - echo "before_install"
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - export PATH="$HOME/miniconda/bin:$PATH"
+        - conda update conda -y
+        - conda create -n py37 python=3.7 -y
+        - source activate py37
+        - python -m pip install -U pip>=9.0.1
+
+#    - python: 3.6
+#      env: win_coverage
+#      install:
+#        - pip install git+https://github.com/Robpol86/appveyor-artifacts.git coveralls
+#      script:
+#        - appveyor-artifacts -m download
+#      after_success:
+#        - coveralls
+#        - coverage erase
+
+before_install:
+  - echo "before_install"
+  - python -m pip install -U pip>=9.0.1
+
+install:
+  - echo "clean old c files"
+  - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
+  - echo "check clean old c files"
+  - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
+  - pip install coveralls
+  - pip install -U -r requirements_dev.txt
+
+script:
+  - pwd
+  # making sure last version of lmfit-varpro is installed
+  - pip install --no-deps --no-cache-dir --ignore-installed git+https://github.com/glotaran/lmfit-varpro.git
+  - pip install --process-dependency-links .
+  - py.test --cov=glotaran --cov-config .coveragerc glotaran
+  - pip freeze
+
+after_success:
+  - coveralls
+  - coverage erase
+
+
+deploy:
+# full deploy with python 3.6, since the package is pure python
+  - provider: pypi
+    distributions: sdist bdist_wheel
+    user: s-weigand
+# if you just want to get used to workflow of publishing new versions
+# you can simply comment the lines between PRODUCTION and uncomment the
+# the ones between TESTING to use the PyPi testserver
+############# PRODUCTION ###############
+    password:
+      secure: p0SMZ1MY8xIHOFf77YHKrNEJlAdjlmtD/jzzOVsMEDz7HqUaAS7p1SjY6dogAMBBEhCPZkWxBpPe462iJ6TclW8iVDStXLKev8SgaP/E5qdlkQI1pQ2KzuLvNfdMlvWjj4zTvBOWUKCjhxfRsS3iCoiOy1gtx2xAY1YgGEXxRWhmvTpkCIfLiFCcnbIcB6gmO/vRYtp8EpKrDzMaAoCEy4aD7oMGcuTEh1PdMwcjSjeDPSJENkMx/aK7+NKlUF4XcP2KSgcxbUrpfY6c3nB5zeY38lek9nF8m1q/249XUFYQAGbPvb+NG/ha5WYyyppnbcspErOOaaZX9BpB8yAvIMcueT2hwkYuNSUDNc0ThDjn9eCWJQT8gwdY4WZfaR22eV4PJA5xISTzllzMiCRwZ0C5BNSBCWX3EVRigpTic5wZtDgKBqQnZ5LA5WZGvPCwOJvQKDj1SizaeoxRPmml2/nLf5azEwpIOE7wTFCq1Mkj7AOgyX5CuZzqvNCGDrKZQgB0G0Tc+/Hi+A0FBRDh9q/dZReWgn3ucdeAX66AF675x71C7w1/eN4PJcYBrCeCJnsLpKpNq2pPB/8ty/r2JkHO8dxMRxwil/n4puwTWd1dRVopvkQKbjaZpobKKlNqCe/1wKgYINxiyJDU1obu99JXlnpi5HGY0TYQVNTXtWU=
+############# PRODUCTION ###############
+
+############## TESTING #################
+#    server: https://test.pypi.org/legacy/
+#    password:
+#      secure: nIlz5Uyw6R+Mw63tc6jLjal6xq5pQ4zJV3ydeeC7Fge8yaAKyhO5lp5uq0zG9cfxyC12v8aTdVRCd4Qp19TI1XfKn3/TiaoxqddPlyishMrWEjVbCoMtV242kFlWQgiKwAHpvHakBsq8McCGYK9mMFGuWTvl2YZjXuGoXT9xO0hJ3FAonW1LQkROCD97P38ypcL4Cb4Cn+NlVDVBpyE/X/+w02BLkGIrwfRUTqMya8NWqXxwVI+akRvze0yQmZX1o1Jrk4x73hTdVrgh2zD01zac92p/mUPxtfMIwOK7g+GIeLYqWN/qfEfpx8BdJ8Hk4xy63NTFPsJIj/RHTCHLpyxfgFwAAuh3EhTcQEp4sCTzFToB7zTDReyFLT3Wzbq7hPoCmw6IUCK24diAHCQ/wO3Im1VlkPVcZ3+YdTsmE1aiuLtGCex4ahLwaFW9XE/Ok3RR6IUhpA4A5TmHuhv+FpjAvzfC80i6yp9yTB0QkMpTDpmX70mWL6lfwIfLFXsfiSJlc4xeVUC/wl+Dcp0uU9PmBEkTbYyaT2Xg9FxE0MXIzHaazm8gHW8flFwtX/Hmu77boG9W32wVwLeMhcPY3tnGq9H4hzwhhad7i1Ry9FZKD8YfBCroqefD9oPEfHCxFETOXtswMm/4bBm3gWcjiARMuSd3fHlq7yH+c6CtBYY=
+##############TESTING ##################
+    skip_cleanup: true
+    on:
+############# PRODUCTION ###############
+      branch: master
+############# PRODUCTION ###############
+      tags: true
+      repo: s-glotaran/glotaran
+      # there can only a maximum one test with DEPLOY_ALL=true, since PyPi will throw an error
+      # and make the fail if the file (mostly sdist) already exists on the server
+      condition: "$DEPLOY_ALL = true"
+
+
+# wheels deployment is needed for OsX
+  - provider: pypi
+    distributions: bdist_wheel
+    user: s-weigand
+# if you just want to get used to workflow of publishing new versions
+# you can simply comment the lines between PRODUCTION and uncomment the
+# the ones between TESTING to use the PyPi testserver
+############# PRODUCTION ###############
+    password:
+      secure: p0SMZ1MY8xIHOFf77YHKrNEJlAdjlmtD/jzzOVsMEDz7HqUaAS7p1SjY6dogAMBBEhCPZkWxBpPe462iJ6TclW8iVDStXLKev8SgaP/E5qdlkQI1pQ2KzuLvNfdMlvWjj4zTvBOWUKCjhxfRsS3iCoiOy1gtx2xAY1YgGEXxRWhmvTpkCIfLiFCcnbIcB6gmO/vRYtp8EpKrDzMaAoCEy4aD7oMGcuTEh1PdMwcjSjeDPSJENkMx/aK7+NKlUF4XcP2KSgcxbUrpfY6c3nB5zeY38lek9nF8m1q/249XUFYQAGbPvb+NG/ha5WYyyppnbcspErOOaaZX9BpB8yAvIMcueT2hwkYuNSUDNc0ThDjn9eCWJQT8gwdY4WZfaR22eV4PJA5xISTzllzMiCRwZ0C5BNSBCWX3EVRigpTic5wZtDgKBqQnZ5LA5WZGvPCwOJvQKDj1SizaeoxRPmml2/nLf5azEwpIOE7wTFCq1Mkj7AOgyX5CuZzqvNCGDrKZQgB0G0Tc+/Hi+A0FBRDh9q/dZReWgn3ucdeAX66AF675x71C7w1/eN4PJcYBrCeCJnsLpKpNq2pPB/8ty/r2JkHO8dxMRxwil/n4puwTWd1dRVopvkQKbjaZpobKKlNqCe/1wKgYINxiyJDU1obu99JXlnpi5HGY0TYQVNTXtWU=
+############# PRODUCTION ###############
+
+############## TESTING #################
+#    server: https://test.pypi.org/legacy/
+#    password:
+#      secure: nIlz5Uyw6R+Mw63tc6jLjal6xq5pQ4zJV3ydeeC7Fge8yaAKyhO5lp5uq0zG9cfxyC12v8aTdVRCd4Qp19TI1XfKn3/TiaoxqddPlyishMrWEjVbCoMtV242kFlWQgiKwAHpvHakBsq8McCGYK9mMFGuWTvl2YZjXuGoXT9xO0hJ3FAonW1LQkROCD97P38ypcL4Cb4Cn+NlVDVBpyE/X/+w02BLkGIrwfRUTqMya8NWqXxwVI+akRvze0yQmZX1o1Jrk4x73hTdVrgh2zD01zac92p/mUPxtfMIwOK7g+GIeLYqWN/qfEfpx8BdJ8Hk4xy63NTFPsJIj/RHTCHLpyxfgFwAAuh3EhTcQEp4sCTzFToB7zTDReyFLT3Wzbq7hPoCmw6IUCK24diAHCQ/wO3Im1VlkPVcZ3+YdTsmE1aiuLtGCex4ahLwaFW9XE/Ok3RR6IUhpA4A5TmHuhv+FpjAvzfC80i6yp9yTB0QkMpTDpmX70mWL6lfwIfLFXsfiSJlc4xeVUC/wl+Dcp0uU9PmBEkTbYyaT2Xg9FxE0MXIzHaazm8gHW8flFwtX/Hmu77boG9W32wVwLeMhcPY3tnGq9H4hzwhhad7i1Ry9FZKD8YfBCroqefD9oPEfHCxFETOXtswMm/4bBm3gWcjiARMuSd3fHlq7yH+c6CtBYY=
+##############TESTING ##################
+    skip_cleanup: true
+    on:
+############# PRODUCTION ###############
+      branch: master
+############# PRODUCTION ###############
+      tags: true
+      repo: s-glotaran/glotaran
+      # Wheels need to be generated for systems that might lack the compiler
+      condition: "$DEPLOY_WHEELS = true"
+
+notifications:
+  slack:
+    rooms:
+      - secure: "pVrVDoJm9T5Zzz0GoxAY40RIVUccg8ObLmZJnHORnTEQddFg1AYgByd4nrBnpBmwOETg/bpDOvqXbwRuJWo3UJQjl0mxO3eH349ftjctxPTWp+601L6fCBgETArTayi3N//M2mmET2DEGCA9Oq4PFcoGGtUlLUcAGzrtuqM+sKxE/MMqk28EaV2vEjPifQJUKJ74huBXWvBjk1VhaSKdw71VrfF58VEsDACrIPgvbYdo6erkNj9F6CWD2vx/pm8uBcS4rGuTT98zfNnEx+Png85uZomsALhz8+jM8uCcpl6n6LJ+GI84OK7KNJdUAZTt7ylVxSpwPfsU/9KsFXFLPcMz7I8q/Z4HFFf+dBAv34DTnuLUKEmZ2cH8m56E0V0ky3PS9N59OOCXl8ys8GMqV65kbMeLfGzu8r0/06p2i4gTeO2YV9PzAGzeBmpFPlQtOAIV+VEa+1tJk5jxUTuHTMYCqp3aWObfbK7LVGilcfsBcrqjSV2S2yNCSUxSJ949/igUc6ZxMmSQ/wxOBWRSe3GEyxj3vZXvfjIV3y8Fjs3+CS47Vojx1/i6VjXAabJlDAbnNmm8oTSDJOT2fP1d9ukmxLOrmowc3fmX36fTpIBo1zpvODEiFYxa0UMioqj+8H7GC7Dw7KycRbWxP1Yxgx3VPR2wVbk0NA8wp37yfyo="
