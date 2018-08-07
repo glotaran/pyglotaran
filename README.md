@@ -6,10 +6,10 @@ Please do not try to install or use this package, it isn't meant to do anything 
 If you accidentally installed it, now is the time to uninstall it, and wait for the 1.0 or 2.0 release.
 =======
 [![latest release](https://pypip.in/version/glotaran/badge.svg)](https://pypi.org/project/glotaran/)
-[![Build Status](https://travis-ci.org/glotaran/glotaran.svg?branch=develop)](https://travis-ci.org/glotaran/glotaran)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/glotaran/glotaran?branch=develop&svg=true)](https://ci.appveyor.com/project/jsnel/glotaran?branch=develop)
+[![Build Status](https://travis-ci.org/glotaran/glotaran.svg?branch=master)](https://travis-ci.org/glotaran/glotaran)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/glotaran/glotaran?branch=master&svg=true)](https://ci.appveyor.com/project/glotaran/glotaran?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/glotaran/glotaran/badge.svg?branch=develop)](https://coveralls.io/github/glotaran/glotaran?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/glotaran/glotaran/badge.svg?branch=master)](https://coveralls.io/github/glotaran/glotaran?branch=master)
 
 ---
 

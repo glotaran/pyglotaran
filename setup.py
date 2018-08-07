@@ -80,7 +80,7 @@ install_requires = [
     'pyyaml',
     'matplotlib',  # dependency introduced by glotaran.plotting
     'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-    'lmfit-varpro>=0.0.1'
+    'lmfit-varpro>=0.0.2'
 ]
 
 with open("README.md", "r") as fh:
