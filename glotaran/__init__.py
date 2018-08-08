@@ -7,7 +7,7 @@ from glotaran.specification_parser import parse_yml  # noqa: E402
 from glotaran.specification_parser import parse_file  # noqa: E402
 from glotaran import dataio, model  # noqa: E402
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 Dataset = model.Dataset
 DatasetDescriptor = model.DatasetDescriptor

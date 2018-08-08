@@ -88,7 +88,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="glotaran",
-    version='0.0.6',
+    version='0.0.7',
     description='The Glotaran fitting engine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
