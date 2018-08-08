@@ -49,6 +49,8 @@ class KineticModelParser(ModelSpecParser):
             for shape in dataset_spec[KineticKeys.SHAPES]:
                 (c, s) = get_keys_from_object(shape, [Keys.COMPARTMENT,
                                                       KineticKeys.SHAPE])
+                if not isinstance(s, list):
+                    s = [s]
                 shapes[c] = s
 
         return SpectralTemporalDatasetDescriptor(label, initial_concentration,

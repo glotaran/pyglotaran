@@ -26,7 +26,7 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
                  compartment_scaling: Dict[str, List[str]],
                  compartment_constraints: List[CompartmentConstraint],
                  irf: str,
-                 shapes: Dict[str, str]):
+                 shapes: Dict[str, List[str]]):
         """
 
         Parameters
@@ -55,8 +55,8 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
         irf : str
             The label of the dataset's IRF
 
-        shapes : dict(str, str)
-            A dictory of comparment and shape label pairs
+        shapes : dict(str, list(str))
+            A dictory of comparment and shape labels
 
         """
         self.irf = irf
@@ -81,8 +81,8 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
         self._irf = irf
 
     @property
-    def shapes(self) -> Dict[str, str]:
-        """A dictory of comparment and shape label pairs"""
+    def shapes(self) -> Dict[str, List[str]]:
+        """A dictory of comparment and shape labels"""
         return self._shapes
 
     @shapes.setter

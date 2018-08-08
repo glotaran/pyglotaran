@@ -1,24 +1,45 @@
+"""Glotaran Spectral Matrix"""
+
+from typing import List
 import numpy as np
 
 from glotaran.fitmodel import Matrix
-
-from .spectral_shape_gaussian import SpectralShapeGaussian
+from glotaran.model import Model, ParameterGroup
 
 
 class SpectralMatrix(Matrix):
-    def __init__(self, x, dataset, model):
-        super(SpectralMatrix, self).__init__(x, dataset, model)
+    """Implementation of glotaran.fitmodel.Matrix for a spectral model."""
+    def __init__(self, index: float, dataset: str, model: Model):
+        """
+
+        Parameters
+        ----------
+        index : float
+            Point on the estimated axis the matrix calculated for
+
+        dataset : str
+            Dataset label of the dataset the matrix is calculated for
+
+        model : glotaran.Model
+            The model the matrix is calculated for
+
+
+        """
+        super(SpectralMatrix, self).__init__(index, dataset, model)
 
         self.shapes = {}
         self.collect_shapes()
 
     def collect_shapes(self):
-
-        for c, shape in self.dataset.shapes.items():
-            self.shapes[c] = self.model.shapes[shape]
+        """Collects all shapes for the matrix from dataset."""
+        for comp, shapes in self.dataset.shapes.items():
+            self.shapes[comp] = [self.model.shapes[s] for s in shapes]
 
     @property
     def compartment_order(self):
+        """A list with compartment labels. The index of label indicates the
+        index of the compartment in the matrix.
+        """
         cmplxs = [self.model.megacomplexes[c] for c in self.dataset.megacomplexes]
         kmats = [self.model.k_matrices[k] for cmplx in cmplxs
                  for k in cmplx.k_matrices]
@@ -26,27 +47,36 @@ class SpectralMatrix(Matrix):
 
     @property
     def shape(self):
-        x = self.dataset.dataset.spectral_axis
-        return (x.shape[0], len(self.compartment_order))
+        """The matrix dimensions as tuple(M, N)."""
+        axis = self.dataset.dataset.spectral_axis
+        return (axis.shape[0], len(self.compartment_order))
 
-    def calculate(self, c_matrix, compartment_order, parameter):
+    def calculate(self,
+                  matrix: np.ndarray,
+                  compartment_order: List[str],
+                  parameter: ParameterGroup):
+        """ Calculates the matrix.
 
+        Parameters
+        ----------
+        matrix : np.array
+            The preallocated matrix.
+
+        compartment_order : list(str)
+            A list of compartment labels to map compartments to indices in the
+            matrix.
+
+        parameter : glotaran.model.ParameterGroup
+
+        """
         # We need the spectral shapes and axis to perform the calculations
-        x = self.dataset.dataset.spectral_axis
+        axis = self.dataset.dataset.spectral_axis
 
-        for (i, c) in enumerate(compartment_order):
-            if c in self.shapes:
-                c_matrix[:, i] = self._calculate_shape(parameter, self.shapes[c], x)
+        for (i, comp) in enumerate(compartment_order):
+            if comp in self.shapes:
+                for shape in self.shapes[comp]:
+                    matrix[:, i] += shape.calculate(axis, parameter)
             else:
                 # we use ones, so that if no shape is defined for the
                 # compartment, the  amplitude is 1.0 by convention.
-                c_matrix[:, i].fill(1.0)
-
-    def _calculate_shape(self, parameter, shape, x):
-        if isinstance(shape, SpectralShapeGaussian):
-            amp = parameter.get(shape.amplitude)
-            location = parameter.get(shape.location)
-            width = parameter.get(shape.width)
-            return amp * np.exp(-np.log(2) *
-                                np.square(2 * (x - location)/width))
-        raise ValueError(f"uknown shape '{type(shape)}'")
+                matrix[:, i].fill(1.0)
