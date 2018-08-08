@@ -71,9 +71,9 @@ class TestParser(TestCase):
             if i is 1:
                 self.assertEqual(len(dataset.shapes), 2)
                 self.assertTrue("s1" in dataset.shapes)
-                self.assertEqual(dataset.shapes["s1"], "shape1")
+                self.assertEqual(dataset.shapes["s1"], ["shape1"])
                 self.assertTrue("s2" in dataset.shapes)
-                self.assertEqual(dataset.shapes["s2"], "shape2")
+                self.assertEqual(dataset.shapes["s2"], ["shape2"])
 
             else:
                 self.assertTrue(len(dataset.compartment_constraints) is 4)

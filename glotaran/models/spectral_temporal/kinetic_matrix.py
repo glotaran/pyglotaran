@@ -2,10 +2,9 @@
 
 from typing import List, Tuple
 import numpy as np
-import lmfit
 
 from glotaran.fitmodel import Matrix
-from glotaran.model import Model
+from glotaran.model import Model, ParameterGroup
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
 from .irf_gaussian import GaussianIrf
@@ -17,12 +16,12 @@ _BACKEND = CMatrixCython()
 
 class KineticMatrix(Matrix):
     """Implementation of fitmodel.Matrix for a kinetic model."""
-    def __init__(self, x: float, dataset: str, model: Model):
+    def __init__(self, index: float, dataset: str, model: Model):
         """
 
         Parameters
         ----------
-        x : float
+        index : float
             Point on the estimated axis the matrix calculated for
 
         dataset : str
@@ -34,7 +33,7 @@ class KineticMatrix(Matrix):
 
         """
 
-        super(KineticMatrix, self).__init__(x, dataset, model)
+        super(KineticMatrix, self).__init__(index, dataset, model)
 
         self._irf = None
         self._collect_irf(model)
@@ -92,7 +91,7 @@ class KineticMatrix(Matrix):
     def calculate(self,
                   matrix: np.array,
                   compartment_order: List[str],
-                  parameter: lmfit.Parameters):
+                  parameter: ParameterGroup):
         """ Calculates the matrix.
 
         Parameters
@@ -104,13 +103,7 @@ class KineticMatrix(Matrix):
             A list of compartment labels to map compartments to indices in the
             matrix.
 
-        parameter : lmfit.Parameters
-            A dictory of parameters.
-
-
-        Returns
-        ^
-        -------
+        parameter : glotaran.model.ParameterGroup
 
         """
 
@@ -131,7 +124,7 @@ class KineticMatrix(Matrix):
                                 matrix: np.array,
                                 compartment_order: List[str],
                                 k_matrix: KMatrix,
-                                parameter: lmfit.Parameters,
+                                parameter: ParameterGroup,
                                 scale: str):
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-arguments
@@ -215,46 +208,30 @@ class KineticMatrix(Matrix):
 
     def _apply_initial_concentration_vector(self, c_matrix, k_matrix,
                                             parameter, compartment_order):
-        """
-
-        Parameters
-        ----------
-        c_matrix :
-
-        eigenvectors :
-
-        parameter :
-
-        compartment_order :
-
-
-        Returns
-        -------
-
-        """
         mask = [c in self.compartment_order for c in compartment_order]
 
         temp = np.dot(np.copy(c_matrix[:, mask]),
                       k_matrix.a_matrix(self._initial_concentration, parameter))
 
-        for i, c in enumerate(self.compartment_order):
-            c_matrix[:, compartment_order.index(c)] = temp[:, i]
+        for i, comp in enumerate(self.compartment_order):
+            c_matrix[:, compartment_order.index(comp)] = temp[:, i]
 
     @property
-    def time(self):
+    def time(self) -> np.ndarray:
         """The time axis of the matrix """
         return self.dataset.dataset.get_axis("time")
 
-    def _dataset_scaling(self, parameter: lmfit.Parameters):
+    def _dataset_scaling(self, parameter: ParameterGroup) -> float:
         """Gets the dataset scaling value from the parameters.
 
         Parameters
         ----------
-        parameter :
+        parameter : glotaran.model.ParameterGroup
 
 
         Returns
         -------
+        scaling: float
 
         """
         return parameter.get(self.dataset.scaling) if self.dataset.scaling is not None else 1.0
