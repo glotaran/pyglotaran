@@ -89,10 +89,6 @@ before_install:
   - python -m pip install -U pip>=9.0.1
 
 install:
-  - echo "clean old c files"
-  - rm glotaran/models/spectral_temporal/c_matrix_cython/c_matrix*.c
-  - echo "check clean old c files"
-  - ls -la glotaran/models/spectral_temporal/c_matrix_cython/
   - pip install coveralls
   - pip install -U -r requirements_dev.txt
 
