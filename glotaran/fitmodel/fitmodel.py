@@ -114,7 +114,10 @@ class FitModel(SeparableModel):
                                      self.get_initial_fitting_parameter(),
                                      nnls,
                                      c_constraints,
-                                     *args, **kwargs)
+                                     *args,
+                                     nan_policy="omit",
+                                     **kwargs,
+                                     )
         return result
 
     def c_matrix(self, parameter: Parameters, *args, **kwargs) -> np.array:
