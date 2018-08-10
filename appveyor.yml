@@ -89,7 +89,7 @@ before_test:
   # install setup dependencies
   - pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"
   # install glotaran
-  - pip install .
+  - pip install -e .
 
 
 build: none
