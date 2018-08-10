@@ -81,15 +81,8 @@ before_test:
 
   # install all requirements
   - pip install -U -r requirements_dev.txt
-
-  # making sure the latest version of lmfit-varpro will be installed
-  # this can be droped when when lmfit-varpro is on PyPi and the required version gets updated
-  - pip install --upgrade --no-deps --force-reinstall --no-cache-dir git+https://github.com/glotaran/lmfit-varpro.git
-
-  # install setup dependencies
-  - pip install -U "numpy>=1.9.1" "scipy>=1.0.0" "Cython>=0.28.3"
   # install glotaran
-  - pip install .
+  - pip install -e .
 
 
 build: none

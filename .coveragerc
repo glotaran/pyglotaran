@@ -3,6 +3,7 @@ branch = True
 include = glotaran/*
 omit = setup.py
        */tests/*
+       */test/*
 
 [report]
 # Regexes for lines to exclude from consideration
