@@ -94,8 +94,6 @@ install:
 
 script:
   - pwd
-  # making sure last version of lmfit-varpro is installed
-  - pip install --no-deps --no-cache-dir --ignore-installed git+https://github.com/glotaran/lmfit-varpro.git
   - pip install -e .
   - py.test --cov=glotaran --cov-config .coveragerc glotaran
   - pip freeze
