@@ -236,8 +236,16 @@ class SdtFile(object):
                 data = data.reshape(-1, adc_re)
             self.data.append(data)
             # generate time axis
+            if isinstance(mi.tac_r, numpy.ndarray):
+                tac_r = mi.tac_r[0]
+            else:
+                tac_r = mi.tac_r
+            if isinstance(mi.tac_g, numpy.ndarray):
+                tac_g = mi.tac_g[0]
+            else:
+                tac_g = mi.tac_g
             t = numpy.arange(adc_re, dtype='float64')
-            t *= mi.tac_r / float(mi.tac_g * adc_re)
+            t *= tac_r / float(tac_g * adc_re)
             self.times.append(t)
             offset = bh.next_block_offs
 
