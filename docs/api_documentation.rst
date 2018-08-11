@@ -29,6 +29,9 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.analysis.variable_projection
     glotaran.dataio
     glotaran.dataio.chlorospec_format
+    glotaran.dataio.external_file_readers
+    glotaran.dataio.external_file_readers.sdt_reader
+    glotaran.dataio.file_readers
     glotaran.dataio.mlsd_file_format
     glotaran.dataio.spectral_timetrace
     glotaran.dataio.wavelength_time_explicit_file
