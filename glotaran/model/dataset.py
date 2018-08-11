@@ -1,5 +1,6 @@
-"""This package contains glotaran's dataset class."""
+"""This module contains glotaran's dataset class."""
 
+from typing import Tuple, List, Union
 from copy import copy
 import numpy as np
 
@@ -29,8 +30,8 @@ class Dataset:
         """
         return self._axis[label]
 
-    def set_axis(self, label: str, axis: np.ndarray):
-        """set_axis sets an axis by its label.
+    def set_axis(self, label: str, axis:  Union[List, np.ndarray]):
+        """
 
         Parameters
         ----------
@@ -61,6 +62,8 @@ class Dataset:
         Parameters
         ----------
         data : np.ndarray
+
+
         """
         if not isinstance(data, np.ndarray):
             raise TypeError("Data must be a nd array")
