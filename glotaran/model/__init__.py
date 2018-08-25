@@ -39,3 +39,15 @@ Model = model.Model
 
 Parameter = parameter.Parameter
 ParameterGroup = parameter_group.ParameterGroup
+
+
+# Decorators
+
+def glotaran_attribute(attrib):
+    name = attrib.__name__
+
+    def add_attrib(model, items):
+        setattr(model, name, items)
+
+    Model._attributes[name] = add_attrib
+    return attrib
