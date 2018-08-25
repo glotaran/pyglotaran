@@ -118,13 +118,6 @@ megacomplexes:
       k_matrices: km2
     - [cmplx3, [km3]]
 
-# put relations into parameters?
-relations:
-  - parameter: 86
-    to: {const: 0, 89: 1, 90: 1, 87: -1.0} #Theta86 = 0 +1*theta89 + 1*theta90 -1*theta87
-  - [87, {const: 2.6, 83: 1, 84: 1, 81: -1.0}]
-  - [89, 30] # equality
-
 parameters:
   - 4.13E-02 #p1
   - 1 #p2

@@ -4,6 +4,7 @@ from typing import Type, Dict
 from glotaran.model import Model
 
 from glotaran.fitmodel import FitModel, Matrix
+from glotaran.model.decorators import glotaran_model
 
 from .irf import Irf
 from .k_matrix import KMatrix
@@ -15,6 +16,7 @@ from .spectral_shape import SpectralShape
 from .spectral_temporal_dataset import SpectralTemporalDataset
 
 
+@glotaran_model
 class KineticModel(Model):
     """A kinetic model is an implementation for model.Model. It is used describe
     time dependend datasets.
@@ -32,7 +34,8 @@ class KineticModel(Model):
         self.shapes = {}
         super(KineticModel, self).__init__()
 
-    def type_string(self) -> str:
+    @staticmethod
+    def type_string() -> str:
         """Returns a human readable string identifying the type of the model.
 
         Returns
@@ -42,7 +45,7 @@ class KineticModel(Model):
             Type of the Model
 
         """
-        return "Kinetic"
+        return "kinetic"
 
     def calculated_matrix(self) -> Type[Matrix]:
         """Returns Kinetic C the calculated matrix.

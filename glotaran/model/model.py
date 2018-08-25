@@ -10,6 +10,7 @@ from glotaran.fitmodel import FitModel, Matrix, Result
 
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
+from .decorators import glotaran_attribute, glotaran_model
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
 from .parameter_group import ParameterGroup
@@ -17,8 +18,11 @@ from .parameter_group import ParameterGroup
 ROOT_BLOCK_LABEL = "p"
 
 
+@glotaran_model
 class Model(ABC):
     """Model represents a global analysis model."""
+
+    _attributes = {}
 
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
@@ -26,14 +30,25 @@ class Model(ABC):
     # Models are complex.
     def __init__(self):
         """ """
-        self._compartments = None
+        self._compartments = []
         self._datasets = OrderedDict()
-        self._initial_concentrations = None
+        self._initial_concentrations = {}
         self._megacomplexes = {}
-        self._parameter = None
 
+    @classmethod
+    def from_dict(cls, model_dict):
+        
+        model = cls()
+        for name, fun in cls._attributes.items():
+            if name in model_dict:
+                for item in model_dict[name]:
+                    getattr(model, fun)(item)
+
+        return model
+
+    @staticmethod
     @abstractmethod
-    def type_string(self) -> str:
+    def type_string() -> str:
         """Returns a human readable string identifying the type of the model.
 
         Returns
@@ -190,6 +205,10 @@ class Model(ABC):
     @compartments.setter
     def compartments(self, value):
         self._compartments = value
+
+    @glotaran_attribute("compartments")
+    def add_compartment(self, value):
+        self.compartments.append(value)
 
     @property
     def megacomplexes(self) -> Dict[str, Megacomplex]:
