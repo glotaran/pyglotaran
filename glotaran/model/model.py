@@ -191,17 +191,6 @@ class Model(ABC):
     def compartments(self, value):
         self._compartments = value
 
-    #  @property
-    #  def parameter(self) -> ParameterGroup:
-    #      """The model parameters."""
-    #      return self._parameter
-    #
-    #  @parameter.setter
-    #  def parameter(self, val):
-    #      if not isinstance(val, ParameterGroup):
-    #          raise TypeError
-    #      self._parameter = val
-
     @property
     def megacomplexes(self) -> Dict[str, Megacomplex]:
         """A dictonary of megacomplexes."""

@@ -72,7 +72,6 @@ class Parameter(LmParameter):
                     param.vary = options[Keys.VARY]
             return param
 
-
     @property
     def label(self) -> str:
         """Label of the parameter"""
