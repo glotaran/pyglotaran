@@ -7,6 +7,20 @@ import sys
 from setuptools import setup, find_packages, Command
 from setuptools.extension import Extension
 
+setup_requires = [
+    'numpy>=1.15.1',
+    'scipy>=1.1.0',
+    'Cython>=0.28.5',
+    'setuptools>=40.2.0'
+]
+install_requires = [
+    'lmfit>=0.9.11',
+    'pandas>=0.23.4',
+    'pyyaml>=3.13',
+    'matplotlib>=2.2.3',  # dependency introduced by glotaran.plotting
+    'natsort>=5.3.3',  # dependency introduced by glotaran.data.io.chlorospec_format
+    'lmfit-varpro>=0.0.5'
+]
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
@@ -62,27 +76,12 @@ try:
                   ]
 
 except ImportError:
-    raise ImportError("To install glotaran you need to have following packages installed:\n"
-                      "numpy>=1.9.1\n"
-                      "scipy>=1.0.0\n"
-                      "Cython>=0.28.3\n"
-                      "You can install them by running:\n"
-                      "`pip install 'numpy>=1.9.1' 'scipy>=1.0.0' 'Cython>=0.28.3'`")
-
-setup_requires = [
-    'numpy>=1.9.1',
-    'scipy>=1.0.0',
-    'Cython>=0.28.3',
-    'setuptools>=39.2.0'
-]
-install_requires = [
-    'lmfit>=0.9.7',
-    'pandas>=0.23.1',
-    'pyyaml',
-    'matplotlib',  # dependency introduced by glotaran.plotting
-    'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-    'typing_inspect',
-]
+    raise ImportError(f"To install glotaran you need to have following packages installed:\n"
+                      f"{setup_requires[0]}\n"
+                      f"{setup_requires[1]}\n"
+                      f"{setup_requires[2]}\n"
+                      f"You can install them by running:\n"
+                      f"`pip install '{setup_requires[0]}' '{setup_requires[1]}' '{setup_requires[2]}'`")
 
 # backport of dataclases only needed for python 3.6
 
