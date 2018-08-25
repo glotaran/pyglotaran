@@ -287,8 +287,8 @@ class ModelSpecParser(object):
 
     def parse(self):
         self.get_compartments()
-        self.get_parameters()
-        self.get_parameter_constraints()
+        #  self.get_parameters()
+        #  self.get_parameter_constraints()
         self.get_initial_concentrations()
         self.get_megacomplexes()
         self.get_datasets()

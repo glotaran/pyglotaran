@@ -24,7 +24,6 @@ class FitModel(SeparableModel):
         Parameters
         ----------
         model : glotaran.Model
-
         """
         self._model = model
         self._generator = None
@@ -35,22 +34,22 @@ class FitModel(SeparableModel):
         """The underlying glotaran.Model"""
         return self._model
 
-    def get_initial_fitting_parameter(self) -> Parameters:
-        """
-
-        Returns
-        -------
-        Parameters : lmfit.Parameters
-        """
-        return self._model.parameter.as_parameters_dict(only_fit=True)
-
-    def data(self, **kwargs) -> List[np.array]:
+    #  def get_initial_fitting_parameter(self) -> Parameters:
+    #      """
+    #
+    #      Returns
+    #      -------
+    #      Parameters : lmfit.Parameters
+    #      """
+    #      return self._parameter.as_parameters_dict(only_fit=True)
+    #
+    def data(self, **kwargs) -> List[np.ndarray]:
         """ Returns the data to fit.
 
 
         Returns
         -------
-        data: list(np.array)
+        data: list(np.ndarray)
         """
         if "dataset" in kwargs:
             label = kwargs["dataset"]
@@ -60,11 +59,12 @@ class FitModel(SeparableModel):
             return gen.create_dataset_group()
         return self._dataset_group
 
-    def fit(self, *args, nnls=False, **kwargs) -> Result:
+    def fit(self, parameter: ParameterGroup, *args, nnls=False, **kwargs) -> Result:
         """Fits the model.
 
         Parameters
         ----------
+        parameter: ParameterGroup
         nnls :
              (Default value = False)
              Use Non-Linear Least Squares instead of variable projection.
@@ -79,7 +79,7 @@ class FitModel(SeparableModel):
 
         """
 
-        result = self.result(nnls, *args, **kwargs)
+        result = self.result(parameter, nnls, *args, **kwargs)
 
         result.fit(*args, **kwargs)
         return result
@@ -88,11 +88,12 @@ class FitModel(SeparableModel):
         """Returns a Result class implementation. Meant to be overwritten."""
         return Result
 
-    def result(self, nnls: bool, *args, **kwargs) -> Result:
+    def result(self, parameter: ParameterGroup, nnls: bool, *args, **kwargs) -> Result:
         """Creates a Result object.
 
         Parameters
         ----------
+        parameter: ParameterGroup
         nnls : bool
              Use Non-Linear Least Squares instead of variable projection.
 
@@ -111,7 +112,7 @@ class FitModel(SeparableModel):
         self._dataset_group = self._generator.create_dataset_group()
         c_constraints = self._create_constraints()
         result = self.result_class()(self,
-                                     self.get_initial_fitting_parameter(),
+                                     parameter,
                                      nnls,
                                      c_constraints,
                                      *args,
@@ -151,6 +152,15 @@ class FitModel(SeparableModel):
         return gen.calculate(parameter)
 
     def get_calculated_matrix_group(self, dataset=None):
+        """get_calculated_matrix_group
+
+        Parameters
+        ----------
+        dataset
+
+        Returns
+        -------
+        """
         if dataset is None:
             return MatrixGroupGenerator.for_model(self._model,
                                                   self._model.

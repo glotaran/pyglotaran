@@ -1,7 +1,8 @@
 """Glotaran Parameter Group"""
 
-from typing import Generator, Tuple
+from typing import Generator, List, Tuple
 from collections import OrderedDict
+import yaml
 
 from lmfit import Parameters
 
@@ -59,6 +60,24 @@ class ParameterGroup(OrderedDict):
                     else:
                         top = group
         return root
+
+    @classmethod
+    def from_list(cls, parameter: List[object], label="p"):
+        root = cls(label)
+        for item in parameter:
+            if isinstance(item, dict):
+                label, items = list(item.items())[0]
+                root.add_group(cls.from_list(items, label=label))
+            elif isinstance(item, bool):
+                root.fit = item
+            else:
+                root.add_parameter(Parameter.from_list_or_value(item))
+        return root
+
+    @classmethod
+    def from_yaml(cls, yml: str):
+        items = yaml.load(yml)
+        return cls.from_list(items)
 
     def add_parameter(self, parameter: Parameter):
         """
@@ -207,7 +226,7 @@ class ParameterGroup(OrderedDict):
             for (lbl, p) in l.all_with_label(root):
                 yield (lbl, p)
 
-    def as_parameters_dict(self, only_fit=False) -> Parameters:
+    def as_parameter_dict(self, only_fit=False) -> Parameters:
         """
         Creates a lmfit.Parameters dict.
 

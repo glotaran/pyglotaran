@@ -6,13 +6,13 @@ from typing import List, Type, Dict, Generator
 from collections import OrderedDict
 import numpy as np
 
+from glotaran.fitmodel import FitModel, Matrix, Result
+
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
 from .parameter_group import ParameterGroup
-
-from glotaran.fitmodel import FitModel, Matrix, Result
 
 ROOT_BLOCK_LABEL = "p"
 
@@ -93,11 +93,12 @@ class Model(ABC):
         """
         raise NotImplementedError
 
-    def fit(self, *args, nnls=False, **kwargs) -> Type[Result]:
+    def fit(self, parameter: ParameterGroup, *args, nnls=False, **kwargs) -> Type[Result]:
         """ Fits the model and returns the result.
 
         Parameters
         ----------
+        parameter : ParameterGroup
         nnls :
             (Default value = False)
         *args :
@@ -112,12 +113,15 @@ class Model(ABC):
         """
         if any([dset.dataset is None for _, dset in self.datasets.items()]):
             raise Exception("Model datasets not initialized")
-        return self.fit_model().fit(nnls, *args, **kwargs)
+        return self.fit_model().fit(parameter.as_parameter_dict(only_fit=True),
+                                    *args,
+                                    nnls=nnls,
+                                    **kwargs)
 
     def simulate(self,
+                 parameter: ParameterGroup,
                  dataset: str,
-                 axis: Dict[str, np.array],
-                 parameter=None,
+                 axis: Dict[str, np.ndarray],
                  noise=False,
                  noise_std_dev=1.0,
                  ):
@@ -125,13 +129,13 @@ class Model(ABC):
 
         Parameters
         ----------
+        parameter : ParameterGroup
+            The parameters for the simulation.
         dataset : str
             Label of the dataset to simulate
 
-        axis : dict(str, np.array)
+        axis : dict(str, np.ndarray)
             A dictory with axis
-        parameter :
-            (Default value = None)
         noise :
             (Default value = False)
         noise_std_dev :
@@ -139,11 +143,7 @@ class Model(ABC):
 
         """
         data = self.dataset_class()(dataset)
-        sim_parameter = self.parameter.as_parameters_dict().copy()
-        if parameter is not None:
-            for k, val in parameter.items():
-                k = "p_" + k.replace(".", "_")
-                sim_parameter[k].value = val
+        parameter = parameter.as_parameter_dict()
         for label, val in axis.items():
             data.set_axis(label, val)
         self.datasets[dataset].dataset = data
@@ -152,10 +152,10 @@ class Model(ABC):
         kwargs['dataset'] = dataset
         kwargs['noise'] = noise
         kwargs['noise_std_dev'] = noise_std_dev
-        data = self.fit_model().eval(sim_parameter, **kwargs)
+        data = self.fit_model().eval(parameter, **kwargs)
         self.get_dataset(dataset).set(data)
 
-    def concentrations(self, dataset: str) -> np.ndarray:
+    def concentrations(self, parameter: ParameterGroup, dataset: str) -> np.ndarray:
         """Returns the precited concentrations for a dataset.
 
         Parameters
@@ -167,7 +167,7 @@ class Model(ABC):
         -------
         concentrations : numpy.ndarray
         """
-        parameter = self.parameter.as_parameters_dict().copy()
+        parameter = parameter.as_parameter_dict().copy()
         kwargs = {}
         kwargs['dataset'] = dataset
         return self.fit_model().c_matrix(parameter, **kwargs)
@@ -191,16 +191,16 @@ class Model(ABC):
     def compartments(self, value):
         self._compartments = value
 
-    @property
-    def parameter(self) -> ParameterGroup:
-        """The model parameters."""
-        return self._parameter
-
-    @parameter.setter
-    def parameter(self, val):
-        if not isinstance(val, ParameterGroup):
-            raise TypeError
-        self._parameter = val
+    #  @property
+    #  def parameter(self) -> ParameterGroup:
+    #      """The model parameters."""
+    #      return self._parameter
+    #
+    #  @parameter.setter
+    #  def parameter(self, val):
+    #      if not isinstance(val, ParameterGroup):
+    #          raise TypeError
+    #      self._parameter = val
 
     @property
     def megacomplexes(self) -> Dict[str, Megacomplex]:
@@ -350,7 +350,7 @@ class Model(ABC):
         string = "# Model\n\n"
         string += "_Type_: {}\n\n".format(self.type_string())
 
-        string += "## Parameter\n{}\n".format(self.parameter)
+        #  string += "## Parameter\n{}\n".format(self.parameter)
 
         if self.datasets is not None:
             string += "\n## Datasets\n\n"
@@ -361,8 +361,8 @@ class Model(ABC):
         if self.compartments is not None:
             string += "\n## Compartments\n\n"
 
-            for c in self.compartments:
-                string += f"* {c}\n"
+            for comp in self.compartments:
+                string += f"* {comp}\n"
 
         string += "\n## Megacomplexes\n\n"
 
