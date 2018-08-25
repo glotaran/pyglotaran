@@ -1,19 +1,19 @@
 from . import (
-    dataset_descriptor,
     irf_gaussian,
     irf_measured,
     k_matrix,
     kinetic_matrix,
-    megacomplex,
-    model_kinetic,
+    kinetic_megacomplex,
+    kinetic_model,
     spectral_matrix,
     spectral_shape_gaussian,
+    spectral_temporal_dataset_descriptor,
 )
 
 # Dataset Descriptor
 
 SpectralTemporalDatasetDescriptor = \
-    dataset_descriptor.SpectralTemporalDatasetDescriptor
+    spectral_temporal_dataset_descriptor.SpectralTemporalDatasetDescriptor
 
 # Irfs
 
@@ -35,8 +35,8 @@ KMatrix = k_matrix.KMatrix
 
 # Megacomplex
 
-KineticMegacomplex = megacomplex.KineticMegacomplex
+KineticMegacomplex = kinetic_megacomplex.KineticMegacomplex
 
 # Model
 
-KineticModel = model_kinetic.KineticModel
+KineticModel = kinetic_model.KineticModel
