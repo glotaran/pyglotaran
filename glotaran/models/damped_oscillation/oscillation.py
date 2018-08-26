@@ -5,8 +5,9 @@ class Oscillation:
     """A damped oscillation"""
     def __init__(self, label: str, compartment: str, frequency: str, rate: str):
         """
-        Parameter
-        ---------
+
+        Parameters
+        ----------
         frequency : str
             The frequency of the oscillation
         rate : str
