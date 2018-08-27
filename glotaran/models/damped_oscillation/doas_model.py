@@ -4,14 +4,12 @@ from typing import Dict, Type
 
 from glotaran.fitmodel import Matrix
 from glotaran.models.spectral_temporal import KineticModel
-from glotaran.models import glotaran_model
 
 from .doas_matrix import DOASMatrix
 from .doas_spectral_matrix import DOASSpectralMatrix
 from .oscillation import Oscillation
 
 
-@glotaran_model(attributes=[('oscillations', Oscillation)])
 class DOASModel(KineticModel):
     """Extends the kinetic model with damped oscillations."""
     def __init__(self):

@@ -29,6 +29,6 @@ class ModelItem():
     @classmethod
     def from_list(cls, item_list):
         params = [p for p in inspect.signature(cls.__init__).parameters]
-        if len(item_list) is not len(params):
+        if len(item_list) is not len,(params):
             raise MissingParameterException(params[len(item_list)])
         return cls(*item_list)

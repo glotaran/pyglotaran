@@ -16,7 +16,13 @@ from .spectral_shape import SpectralShape
 from .spectral_temporal_dataset import SpectralTemporalDataset
 
 
-@glotaran_model
+@glotaran_model('kinetic',
+                attributes={
+                    'megacomplex': KineticMegacomplex,
+                    'k_matrix': KMatrix,
+                    'irf': Irf,
+                },
+)
 class KineticModel(Model):
     """A kinetic model is an implementation for model.Model. It is used describe
     time dependend datasets.
@@ -27,12 +33,6 @@ class KineticModel(Model):
     # pylint: disable=too-many-arguments
     # pylint: disable=attribute-defined-outside-init
     # Models are complex.
-    def __init__(self):
-        """ """
-        self.k_matrices = {}
-        self.irfs = {}
-        self.shapes = {}
-        super(KineticModel, self).__init__()
 
     @staticmethod
     def type_string() -> str:
@@ -209,16 +209,16 @@ class KineticModel(Model):
     def __str__(self):
         string = super(KineticModel, self).__str__()
         string += "\n## K-Matrices\n\n"
-        for k in self.k_matrices:
-            string += f"{self.k_matrices[k]}\n"
-
-        if self.irfs:
-            string += "## IRFs\n\n"
-            for irf in self.irfs:
-                string += f"{self.irfs[irf]}\n"
-
-        if self.shapes:
-            string += "## Shapes\n\n"
-            for _, shape in self.shapes.items():
-                string += f"{shape}\n"
+        #  for k in self.k_matrices:
+        #      string += f"{self.k_matrices[k]}\n"
+        #
+        #  if self.irfs:
+        #      string += "## IRFs\n\n"
+        #      for irf in self.irf:
+        #          string += f"{self.irfs[irf]}\n"
+        #
+        #  if self.shape:
+        #      string += "## Shapes\n\n"
+        #      for _, shape in self.shapes.items():
+        #          string += f"{shape}\n"
         return string
