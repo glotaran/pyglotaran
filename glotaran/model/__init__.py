@@ -6,6 +6,8 @@ from . import (
                initial_concentration,
                megacomplex,
                model,
+               model_decorator,
+               model_item,
                parameter,
                parameter_group,
                )
@@ -43,11 +45,5 @@ ParameterGroup = parameter_group.ParameterGroup
 
 # Decorators
 
-def glotaran_attribute(attrib):
-    name = attrib.__name__
-
-    def add_attrib(model, items):
-        setattr(model, name, items)
-
-    Model._attributes[name] = add_attrib
-    return attrib
+glotaran_model = model_decorator.glotaran_model
+glotaran_model_item = model_item.glotaran_model_item
