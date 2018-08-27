@@ -32,6 +32,19 @@ def model():
         "test": {
             "t1": {'p1': "foo", 'p2': "baz"},
             "t2": ['hello', 'world'],
+        },
+        "dataset": {
+            "dataset1": {
+                "initial_concentration": 'j1',
+                "megacomplexes": ['m1', 'm2'],
+                "scale": "scale1",
+                "compartment_constraints": [
+                    {'type': 'zero',
+                     'compartment': 's',
+                     'interval': [(0,1)]},
+                ]
+            },
+            "dataset2": ['j2', ['m2'], 'scale2', None]
         }
     }
     return MockModel.from_dict(d)
@@ -46,6 +59,7 @@ def test_model_types(model):
 
 @pytest.mark.parametrize("attr",
                          [
+                             "dataset",
                              "megacomplex",
                              "initial_concentration",
                              "test"
@@ -72,3 +86,20 @@ def test_pars(model):
     assert 't2' in model.test
     assert model.get_test('t2').p1 == 'hello'
     assert model.get_test('t2').p2 == 'world'
+
+    assert 'dataset1' in model.dataset
+    assert model.get_dataset('dataset1').initial_concentration == 'j1'
+    assert model.get_dataset('dataset1').megacomplexes == ['m1', 'm2']
+    assert model.get_dataset('dataset1').scale == 'scale1'
+    assert len(model.get_dataset('dataset1').compartment_constraints) == 1
+
+    cons = model.get_dataset('dataset1').compartment_constraints[0]
+    assert cons.type == 'zero'
+    assert cons.compartment == 's'
+    assert cons.interval == [(0, 1)]
+
+    assert 'dataset2' in model.dataset
+    assert model.get_dataset('dataset2').initial_concentration == 'j2'
+    assert model.get_dataset('dataset2').megacomplexes == ['m2']
+    assert model.get_dataset('dataset2').scale == 'scale2'
+

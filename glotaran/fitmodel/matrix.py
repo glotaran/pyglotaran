@@ -4,7 +4,6 @@ from typing import List, Tuple
 from abc import ABC, abstractmethod
 import numpy as np
 
-from glotaran.model.compartment_constraints import CompartmentConstraintType
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.parameter_group import ParameterGroup
 
@@ -76,12 +75,12 @@ class Matrix(ABC):
         # get constraint compartment indeces
         constraints = [c for c in self.dataset.compartment_constraints
                        if c.applies(self.index)
-                       and c.type() is not CompartmentConstraintType.equal_area]
+                       and c.type is not "equal_area"]
         for constrain in constraints:
             idx = compartment_order.index(constrain.compartment)
 
             matrix[:, idx].fill(0.0)
-            if constrain.type() == CompartmentConstraintType.equal:
+            if constrain.type == 'equal':
                 for target, param in constrain.targets_and_parameter:
                     t_idx = compartment_order.index(target)
                     param = parameter.get(param)
