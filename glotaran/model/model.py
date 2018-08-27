@@ -10,7 +10,7 @@ from glotaran.fitmodel import FitModel, Matrix, Result
 
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
-from .decorators import glotaran_attribute, glotaran_model
+from .decorators import glotaran_model
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
 from .parameter_group import ParameterGroup
@@ -18,47 +18,44 @@ from .parameter_group import ParameterGroup
 ROOT_BLOCK_LABEL = "p"
 
 
-@glotaran_model
+@glotaran_model("base_model",
+    attributes={'initial_concentration': InitialConcentration,
+                'megacomplex': Megacomplex}
+)
 class Model(ABC):
     """Model represents a global analysis model."""
 
-    _attributes = {}
+    compartments: List[str] = []
+    _datasets = OrderedDict()
 
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
     # pylint: disable=attribute-defined-outside-init
     # Models are complex.
-    def __init__(self):
-        """ """
-        self._compartments = []
-        self._datasets = OrderedDict()
-        self._initial_concentrations = {}
-        self._megacomplexes = {}
 
     @classmethod
     def from_dict(cls, model_dict):
-        
+        print(cls)
+
         model = cls()
-        for name, fun in cls._attributes.items():
-            if name in model_dict:
-                for item in model_dict[name]:
-                    getattr(model, fun)(item)
+
+        model.compartments = model_dict['compartments']
+        del model_dict['compartments']
+
+        for name, attribute in list(model_dict.items()):
+            if hasattr(model, f'set_{name}'):
+                set = getattr(model, f'set_{name}')
+                item_cls = set.__func__.__annotations__['item']
+                for label, item in attribute.items():
+                    if isinstance(item, dict):
+                        item['label'] = label
+                        set(label, item_cls.from_dict(item))
+                    elif isinstance(item, list):
+                        item = [label] + item
+                        set(label, item_cls.from_list(item))
+                del model_dict[name]
 
         return model
-
-    @staticmethod
-    @abstractmethod
-    def type_string() -> str:
-        """Returns a human readable string identifying the type of the model.
-
-        Returns
-        -------
-
-        type : str
-            Type of the Model
-
-        """
-        raise NotImplementedError
 
     @abstractmethod
     def calculated_matrix(self) -> Type[Matrix]:
@@ -197,49 +194,6 @@ class Model(ABC):
         """
         return self.fit_model_class()(self)
 
-    @property
-    def compartments(self) -> List[str]:
-        """A list of compartment labels."""
-        return self._compartments
-
-    @compartments.setter
-    def compartments(self, value):
-        self._compartments = value
-
-    @glotaran_attribute("compartments")
-    def add_compartment(self, value):
-        self.compartments.append(value)
-
-    @property
-    def megacomplexes(self) -> Dict[str, Megacomplex]:
-        """A dictonary of megacomplexes."""
-        return self._megacomplexes
-
-    @megacomplexes.setter
-    def megacomplexes(self, value):
-        if not isinstance(value, dict):
-            raise TypeError("Megacomplexes must be dict.")
-        if any(not issubclass(type(value[val]), Megacomplex) for val in value):
-            raise TypeError("Megacomplexes must be subclass of 'Megacomplex'")
-        self._megacomplexes = value
-
-    def add_megacomplex(self, megacomplex: Megacomplex):
-        """Adds a megacomplex to the model.
-
-        Parameters
-        ----------
-        megacomplex : Megacomplex
-
-        """
-        if not issubclass(type(megacomplex), Megacomplex):
-            raise TypeError("Megacomplexes must be subclass of 'Megacomplex'")
-        if self.megacomplexes is not None:
-            if megacomplex.label in self.megacomplexes:
-                raise Exception("Megacomplex labels must be unique")
-            self.megacomplexes[megacomplex.label] = megacomplex
-        else:
-            self.megacomplexes = {megacomplex.label: megacomplex}
-
     def data(self) -> Generator[DatasetDescriptor, None, None]:
         """Gets all datasets as a generator.
 
@@ -320,45 +274,9 @@ class Model(ABC):
         """
         self.datasets[label].dataset = dataset
 
-    @property
-    def initial_concentrations(self) -> Dict[str, InitialConcentration]:
-        """A Dictoinary of the initial concentrations."""
-        return self._initial_concentrations
-
-    @initial_concentrations.setter
-    def initial_concentrations(self, value):
-        if not isinstance(value, dict):
-            raise TypeError("Initial concentrations must be dict.")
-        if any(not isinstance(value[val],
-                              InitialConcentration) for val in value):
-            raise TypeError("Initial concentrations must be instance of"
-                            " 'InitialConcentration'")
-        self._initial_concentrations = value
-
-    def add_initial_concentration(self, initial_concentration: InitialConcentration):
-        """Adds an initial concentration to the model.
-
-        Parameters
-        ----------
-        initial_concentration : InitialConcentration
-
-
-        """
-        if not isinstance(initial_concentration, InitialConcentration):
-            raise TypeError("Initial concentrations must be instance of"
-                            " 'InitialConcentration'")
-        if self.initial_concentrations is not None:
-            self.initial_concentrations[initial_concentration.label] =\
-                initial_concentration
-        else:
-            self.initial_concentrations = {initial_concentration.label:
-                                           initial_concentration}
-
     def __str__(self):
         string = "# Model\n\n"
-        string += "_Type_: {}\n\n".format(self.type_string())
-
-        #  string += "## Parameter\n{}\n".format(self.parameter)
+        string += "_Type_: {}\n\n".format(self.glotaran_model_type)
 
         if self.datasets is not None:
             string += "\n## Datasets\n\n"
@@ -374,13 +292,12 @@ class Model(ABC):
 
         string += "\n## Megacomplexes\n\n"
 
-        for mcp in self._megacomplexes:
-            string += "{}\n".format(self._megacomplexes[mcp])
+        for mcp in self.megacomplex:
+            string += "{}\n".format(self.megacomplex[mcp])
 
-        if self.initial_concentrations is not None:
-            string += "\n## Initital Concentrations\n\n"
+        string += "\n## Initital Concentrations\n\n"
 
-            for i in self._initial_concentrations:
-                string += "{}\n".format(self._initial_concentrations[i])
+        for i in self.initial_concentration:
+            string += "{}\n".format(self.initial_concentration[i])
 
         return string
