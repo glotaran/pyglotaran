@@ -3,9 +3,10 @@
 # workaround to import Model and Dataset with
 # `from glotaran import Model`/`from glotaran import Dataset`
 
-from glotaran.specification_parser import parse_yml  # noqa: E402
-from glotaran.specification_parser import parse_file  # noqa: E402
-from glotaran import dataio, model  # noqa: E402
+#  from glotaran.specification_parser import parse_yml  # noqa: E402
+#  from glotaran.specification_parser import parse_file  # noqa: E402
+#  from glotaran import dataio, model  # noqa: E402
+from glotaran import model  # noqa: E402
 
 __version__ = '0.0.8'
 
@@ -21,10 +22,10 @@ ParameterGroup = model.ParameterGroup
 # loadSomethingFromFile
 # Load Glotaran analysis protocol (*.gat or *.yml) from file
 
-load = parse_file  # short for loadProtocol
-parse = parse_yml  # short for loadProtocol
+#  load = parse_file  # short for loadProtocol
+#  parse = parse_yml  # short for loadProtocol
 
-io = dataio
+#  io = dataio
 
 # # user calls this object whatever
 # glotaran._loadProtocol()
