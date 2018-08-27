@@ -1,7 +1,7 @@
 """Glotaran Kinetic Fitmodel"""
 from glotaran.fitmodel import FitModel
 
-from .result import KineticResult
+from .kinetic_result import KineticResult
 
 
 class KineticFitModel(FitModel):

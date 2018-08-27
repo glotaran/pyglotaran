@@ -1,4 +1,4 @@
-from glotaran.models.spectral_temporal.dataset import SpectralTemporalDataset
+from glotaran.models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
 from natsort import natsorted
 from glob import glob
 import os

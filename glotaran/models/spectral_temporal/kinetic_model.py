@@ -5,15 +5,14 @@ from glotaran.model import Model
 
 from glotaran.fitmodel import FitModel, Matrix
 
-from .dataset import SpectralTemporalDataset
-
 from .irf import Irf
-from .fitmodel import KineticFitModel
 from .k_matrix import KMatrix
+from .kinetic_fitmodel import KineticFitModel
 from .kinetic_matrix import KineticMatrix
-from .megacomplex import KineticMegacomplex
+from .kinetic_megacomplex import KineticMegacomplex
 from .spectral_matrix import SpectralMatrix
 from .spectral_shape import SpectralShape
+from .spectral_temporal_dataset import SpectralTemporalDataset
 
 
 class KineticModel(Model):

@@ -7,7 +7,6 @@ from . import (
                megacomplex,
                model,
                parameter,
-               parameter_constraints,
                parameter_group,
                )
 
@@ -40,8 +39,3 @@ Model = model.Model
 
 Parameter = parameter.Parameter
 ParameterGroup = parameter_group.ParameterGroup
-
-# Parameter Constraint
-
-BoundConstraint = parameter_constraints.BoundConstraint
-FixedConstraint = parameter_constraints.FixedConstraint

@@ -34,30 +34,37 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.model.megacomplex
     glotaran.model.model
     glotaran.model.parameter
-    glotaran.model.parameter_constraints
     glotaran.model.parameter_group
     glotaran.models
+    glotaran.models.damped_oscillation
+    glotaran.models.damped_oscillation.doas_matrix
+    glotaran.models.damped_oscillation.doas_megacomplex
+    glotaran.models.damped_oscillation.doas_model
+    glotaran.models.damped_oscillation.doas_spectral_matrix
+    glotaran.models.damped_oscillation.oscillation
     glotaran.models.spectral_temporal
     glotaran.models.spectral_temporal.c_matrix_cython
     glotaran.models.spectral_temporal.c_matrix_cython.c_matrix_cython
-    glotaran.models.spectral_temporal.dataset
-    glotaran.models.spectral_temporal.dataset_descriptor
-    glotaran.models.spectral_temporal.fitmodel
     glotaran.models.spectral_temporal.irf
     glotaran.models.spectral_temporal.irf_gaussian
+    glotaran.models.spectral_temporal.irf_measured
     glotaran.models.spectral_temporal.k_matrix
+    glotaran.models.spectral_temporal.kinetic_fitmodel
     glotaran.models.spectral_temporal.kinetic_matrix
-    glotaran.models.spectral_temporal.megacomplex
-    glotaran.models.spectral_temporal.model_kinetic
-    glotaran.models.spectral_temporal.result
+    glotaran.models.spectral_temporal.kinetic_megacomplex
+    glotaran.models.spectral_temporal.kinetic_model
+    glotaran.models.spectral_temporal.kinetic_result
     glotaran.models.spectral_temporal.spectral_matrix
     glotaran.models.spectral_temporal.spectral_shape
     glotaran.models.spectral_temporal.spectral_shape_gaussian
+    glotaran.models.spectral_temporal.spectral_temporal_dataset
+    glotaran.models.spectral_temporal.spectral_temporal_dataset_descriptor
     glotaran.plotting
     glotaran.plotting.basic_plots
     glotaran.plotting.glotaran_color_codes
     glotaran.specification_parser
     glotaran.specification_parser.model_spec_yaml
+    glotaran.specification_parser.model_spec_yaml_doas
     glotaran.specification_parser.model_spec_yaml_kinetic
     glotaran.specification_parser.parser
     glotaran.specification_parser.utils
