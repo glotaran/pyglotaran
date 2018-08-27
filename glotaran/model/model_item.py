@@ -7,32 +7,40 @@ class MissingParameterException(Exception):
     pass
 
 
-def item_or_list_to_param(name, item, param_class):
-    islist = issubclass(param_class, List)
+def is_item_or_list_of(item_class):
+    print(item_class)
+    islist = issubclass(item_class, List)
     if islist:
-        param_class = param_class.__args__[0]
-    if not hasattr(param_class, "_glotaran_model_item"):
+        item_class = item_class.__args__[0]
+    return hasattr(item_class, "_glotaran_model_item")
+
+
+def item_or_list_to_param(name, item, item_class):
+    islist = issubclass(item_class, List)
+    if islist:
+        item_class = item_class.__args__[0]
+    if not hasattr(item_class, "_glotaran_model_item"):
         return item
     if not islist:
-        return item_to_param(name, item, param_class)
+        return item_to_param(name, item, item_class)
     for i in range(len(item)):
-        item[i] = item_to_param(name, item[i], param_class)
+        item[i] = item_to_param(name, item[i], item_class)
     return item
 
-def item_to_param(name, item, param_class):
-    is_typed = hasattr(param_class, "_glotaran_model_item_typed")
+def item_to_param(name, item, item_class):
+    is_typed = hasattr(item_class, "_glotaran_model_item_typed")
     if isinstance(item, dict):
         if is_typed:
             if 'type' not in item:
                 raise Exception(f"Missing type for attribute '{name}'")
             item_type = item['type']
 
-            if item_type not in param_class._glotaran_model_item_types:
+            if item_type not in item_class._glotaran_model_item_types:
                 raise Exception(f"Unknown type '{item_type}' "
                                 f"for attribute '{name}'")
-            param_class = \
-                param_class._glotaran_model_item_types[item_type]
-        return param_class.from_dict(item)
+            item_class = \
+                item_class._glotaran_model_item_types[item_type]
+        return item_class.from_dict(item)
     else:
         if is_typed:
             print(item)
@@ -40,31 +48,34 @@ def item_to_param(name, item, param_class):
                 raise Exception(f"Missing type for attribute '{name}'")
             item_type = item[1] if len(item) is not 1 else item[0]
 
-            if item_type not in param_class._glotaran_model_item_types:
+            if item_type not in item_class._glotaran_model_item_types:
                 raise Exception(f"Unknown type '{item_type}' "
                                 f"for attribute '{name}'")
-            param_class = \
-                param_class._glotaran_model_item_types[item_type]
-        return param_class.from_list(item)
+            item_class = \
+                item_class._glotaran_model_item_types[item_type]
+        return item_class.from_list(item)
 
 
 def glotaran_model_item(attributes={},
-                        parameter=[],
+                        validate_model=[],
+                        validate_parameter=[],
                         has_type=False,
                         no_label=False):
     def decorator(cls):
 
         # Set annotations for autocomplete and doc
-
+        validate_nested = []
         if not no_label:
             annotations = {'label': str}
         if has_type:
             annotations = {'type': str}
-        for name, aclass in attributes.items():
-            if isinstance(aclass, tuple):
-                (aclass, default) = aclass
+        for name, item_class in attributes.items():
+            if isinstance(item_class, tuple):
+                (item_class, default) = item_class
                 setattr(cls, name, default)
-            annotations[name] = aclass
+            annotations[name] = item_class
+            if is_item_or_list_of(item_class):
+                validate_nested.append(name)
         setattr(cls, '__annotations__', annotations)
 
         # We turn it into dataclass to get automagic inits
@@ -73,8 +84,8 @@ def glotaran_model_item(attributes={},
         # for nesting
         setattr(cls, '_glotaran_model_item', True)
 
-        # store the fit parameter for later sanity checking
-        setattr(cls, '_glotaran_fit_parameter', parameter)
+        # store for later sanity checking
+        setattr(cls, '_glotaran_validate_parameter', validate_parameter)
 
         # strore the number of attributes
         setattr(cls, '_glotaran_nr_attributes', len(attributes))
@@ -117,8 +128,39 @@ def glotaran_model_item(attributes={},
 
             return ncls(*item_list)
 
-
         setattr(cls, 'from_list', from_list)
+
+        def val_model(self, model,
+                      errors=[],
+                      validate_model=validate_model,
+                      validate_nested=validate_nested):
+            for validate in validate_model:
+                attribute = validate
+                if isinstance(validate, tuple):
+                    (attribute, validate) = validate
+                if validate not in model:
+                    errors.append(f"Model '{model.model_type}' has no attribute '{validate}'")
+                    continue
+
+                labels = getattr(self, attribute)
+                if not isinstance(labels, list):
+                    labels = [labels]
+
+                attr = getattr(model, attribute)
+                for label in labels:
+                    if label not in attr:
+                        errors.append(f"Missing '{attribute}' with label '{label}'")
+
+            for nested in validate_nested:
+                nested = getattr(self, nested)
+                if not isinstance(nested, list):
+                    nested = [nested]
+                for n in nested:
+                    n.validate(errors=errors)
+
+            return errors
+
+        setattr(cls, 'validate_model', validate_model)
         return cls
 
     return decorator
