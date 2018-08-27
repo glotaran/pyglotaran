@@ -15,10 +15,6 @@ from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
 from .parameter_group import ParameterGroup
 
-ROOT_BLOCK_LABEL = "p"
-
-
-
 
 class Model:
     """Model represents a global analysis model."""
@@ -197,3 +193,5 @@ class Model:
 
         """
         self.dataset[label].dataset = dataset
+
+

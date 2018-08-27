@@ -8,7 +8,7 @@ from glotaran.model import DatasetDescriptor, Model, glotaran_model, glotaran_mo
                         'p1': str,
                         'p2': str,
                      },
-                     parameter=['p2'])
+                     validate_parameter=['p2'])
 class MockAttr:
     pass
 
@@ -69,7 +69,7 @@ def test_model_attr(model, attr):
     assert hasattr(model, f'get_{attr}')
     assert hasattr(model, f'set_{attr}')
 
-def test_pars(model):
+def test_items(model):
     assert model.compartments == ['s1', 's2']
 
     assert 'm1' in model.megacomplex
