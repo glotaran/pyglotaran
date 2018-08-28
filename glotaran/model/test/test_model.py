@@ -75,6 +75,15 @@ def model_error():
     }
     return MockModel.from_dict(d)
 
+@pytest.fixture
+def parameter():
+    params = [
+        {"j": [
+            ["one", 1, {'fit': True, 'min':0, 'max':1, 'vary': false}],
+            ["zero", 0],
+        ],
+        "foo": 11
+
 def test_model_types(model):
     assert model.model_type == 'mock'
     assert model.dataset_type is DatasetDescriptor

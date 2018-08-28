@@ -1,6 +1,6 @@
 """Glotaran Parameter Group"""
 
-from typing import Generator, List, Tuple
+from typing import Dict, Generator, List, Tuple
 from collections import OrderedDict
 import yaml
 
@@ -62,12 +62,23 @@ class ParameterGroup(OrderedDict):
         return root
 
     @classmethod
+    def from_dict(cls, parameter: Dict[str, object], label="p"):
+        root = cls(label)
+        for label, item in parameter.items():
+            label = str(label)
+            if isinstance(item, dict):
+                root.add_group(cls.from_dict(item, label=label))
+            if isinstance(item, list):
+                root.add_group(cls.from_list(item, label=label))
+        return root
+
+    @classmethod
     def from_list(cls, parameter: List[object], label="p"):
         root = cls(label)
         for item in parameter:
             if isinstance(item, dict):
                 label, items = list(item.items())[0]
-                root.add_group(cls.from_list(items, label=label))
+                root.add_group(cls.from_dict(items, label=label))
             elif isinstance(item, bool):
                 root.fit = item
             else:
@@ -77,7 +88,11 @@ class ParameterGroup(OrderedDict):
     @classmethod
     def from_yaml(cls, yml: str):
         items = yaml.load(yml)
-        return cls.from_list(items)
+        if isinstance(items, list):
+            cls = cls.from_list(items)
+        else:
+            cls = cls.from_dict(items)
+        return cls
 
     def add_parameter(self, parameter: Parameter):
         """
