@@ -174,6 +174,31 @@ def glotaran_model_item(attributes={},
             return errors
 
         setattr(cls, 'validate_model', val_model)
+
+        def val_parameter(self, model, parameter, errors=[]):
+            attrs = getattr(cls, '_glotaran_attributes')
+            for attr in attrs:
+                item = getattr(self, attr)
+                if not hasattr(model, attr):
+                    if not isinstance(item, list):
+                        item = [item]
+                    if any([not isinstance(i, str) for i in item]):
+                        continue
+                    for label in item:
+                        if not parameter.has(label):
+                            errors.append(f"Missing parameter with label '{label}'")
+
+                else:
+                    nested = item
+                    if not isinstance(nested, list):
+                        nested = [nested]
+                    for n in nested:
+                        if hasattr(n, "_glotaran_model_item"):
+                            n.validate_parameter(model, parameter, errors=errors)
+
+            return errors
+
+        setattr(cls, 'validate_parameter', val_parameter)
         return cls
 
     return decorator

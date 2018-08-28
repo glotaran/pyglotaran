@@ -165,6 +165,13 @@ class ParameterGroup(OrderedDict):
             for l in group.groups():
                 yield l
 
+    def has(self, label: str) -> bool:
+        try:
+            self.get(label)
+            return True
+        except:
+            return False
+
     def get(self, label: str) -> Parameter:
         """Gets a parameter by it label.
 
