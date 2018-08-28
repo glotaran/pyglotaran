@@ -209,6 +209,20 @@ class Model:
     def valid(self):
         return len(self.errors()) is 0
 
+    def errors_parameter(self, parameter):
+        attrs = getattr(self, '_glotaran_model_attributes')
+
+        errors = []
+
+        for attr in attrs:
+            for _, item in getattr(self, attr).items():
+                item.validate_parameter(self, parameter, errors=errors)
+
+        return errors
+
+    def valid_parameter(self, parameter):
+        return len(self.errors_parameter(parameter)) is 0
+
     def __str__(self):
         attrs = getattr(self, '_glotaran_model_attributes')
         string = "# Model\n\n"

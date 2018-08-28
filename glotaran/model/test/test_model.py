@@ -1,7 +1,7 @@
 import pytest
 
 from glotaran.fitmodel import FitModel, Matrix, Result
-from glotaran.model import DatasetDescriptor, Model, glotaran_model, glotaran_model_item
+from glotaran.model import DatasetDescriptor, Model, ParameterGroup, glotaran_model, glotaran_model_item
 
 
 @glotaran_model_item(attributes={
@@ -31,7 +31,7 @@ def model():
         },
         "test": {
             "t1": {'p1': "foo", 'p2': "baz"},
-            "t2": ['hello', 'world'],
+            "t2": [6, 6],
         },
         "dataset": {
             "dataset1": {
@@ -56,8 +56,8 @@ def model_error():
         "compartment": ['NOT_S1', 's2'],
         "megacomplex": {"m1": [], "m2": []},
         "initial_concentration": {
-            "j4": [["1", "2"]],
-            "j2": {'parameters': ["3", "4"]},
+            "j4": [["5", "7"]],
+            "j2": {'parameters': ["i7", "i4"]},
         },
         "dataset": {
             "dataset1": {
@@ -77,12 +77,13 @@ def model_error():
 
 @pytest.fixture
 def parameter():
-    params = [
-        {"j": [
-            ["one", 1, {'fit': True, 'min':0, 'max':1, 'vary': false}],
-            ["zero", 0],
-        ],
-        "foo": 11
+    params = [1, 2, 3, 4,
+              ['foo', 3],
+              ['baz', 2],
+              ['scale1', 2],
+              ['scale2', 2],
+              ]
+    return ParameterGroup.from_list(params)
 
 def test_model_types(model):
     assert model.model_type == 'mock'
@@ -104,12 +105,17 @@ def test_model_attr(model, attr):
     assert hasattr(model, f'get_{attr}')
     assert hasattr(model, f'set_{attr}')
 
-def test_model_validity(model, model_error):
+def test_model_validity(model, model_error, parameter):
     print(model.errors())
+    print(model.errors_parameter(parameter))
     assert model.valid()
-    assert not model_error.valid()
+    assert model.valid_parameter(parameter)
     print(model_error.errors())
+    print(model_error.errors_parameter(parameter))
+    assert not model_error.valid()
     assert len(model_error.errors()) is 5
+    assert not model_error.valid_parameter(parameter)
+    assert len(model_error.errors_parameter(parameter)) is 5
 
 def test_items(model):
     assert model.compartment == ['s1', 's2']
@@ -126,8 +132,8 @@ def test_items(model):
     assert model.get_test('t1').p1 == 'foo'
     assert model.get_test('t1').p2 == 'baz'
     assert 't2' in model.test
-    assert model.get_test('t2').p1 == 'hello'
-    assert model.get_test('t2').p2 == 'world'
+    assert model.get_test('t2').p1 == 6
+    assert model.get_test('t2').p2 == 6
 
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').initial_concentration == 'j1'
