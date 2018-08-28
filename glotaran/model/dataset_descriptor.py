@@ -12,11 +12,10 @@ from .model_item import glotaran_model_item
 
 @glotaran_model_item(attributes={
                         'initial_concentration': str,
-                        'megacomplexes': List[str],
+                        'megacomplex': List[str],
                         'scale': (str, None),
                         'compartment_constraints': (List[CompartmentConstraint], None),
                      },
-                     validate_model=['initial_concentration']
                      )
 class DatasetDescriptor:
     """Represents a dataset for fitting

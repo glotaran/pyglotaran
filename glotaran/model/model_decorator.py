@@ -22,17 +22,26 @@ def glotaran_model(name,
         setattr(cls, 'calculated_matrix', calculated_matrix)
         setattr(cls, 'estimated_matrix', estimated_matrix)
 
-        setattr(cls, '__annotations__', {})
+        if not hasattr(cls, '__annotations__'):
+            setattr(cls, '__annotations__', {})
+
+        if not hasattr(cls, '_glotaran_model_attributes'):
+            setattr(cls, '_glotaran_model_attributes', {})
 
         # Set annotations and methods for attributes
 
-        # Add standart attributes
-        attributes['dataset'] = dataset_type
-        attributes['initial_concentration'] = InitialConcentration
-        attributes['megacomplex'] = megacomplex_type
+        # Add standart attributes if not present
+        if 'dataset' not in getattr(cls, '__annotations__') or dataset_type is not Dataset:
+            attributes['dataset'] = dataset_type
+        if 'initial_concentration' not in getattr(cls, '__annotations__'):
+            attributes['initial_concentration'] = InitialConcentration
+        if 'megacomplex' not in getattr(cls, '__annotations__') \
+                or megacomplex_type is not Megacomplex:
+            attributes['megacomplex'] = megacomplex_type
 
         for attr_name, attr_type in attributes.items():
             getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
+            getattr(cls, '_glotaran_model_attributes')[attr_name] = None
 
             def get_item(self, label: str, attr_name=attr_name):
                 return getattr(self, attr_name)[label]
@@ -43,7 +52,6 @@ def glotaran_model(name,
                          attr_name=attr_name,
                          attr_type=attr_type):
                 getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
-                print(attr_name)
                 if not isinstance(item, attr_type):
                     raise TypeError
                 getattr(self, attr_name)[label] = item
@@ -52,23 +60,10 @@ def glotaran_model(name,
 
         def init(self, cls=cls, attributes=attributes):
             for attr_name in attributes:
-                setattr(cls, attr_name, OrderedDict())
+                setattr(self, attr_name, OrderedDict())
             super(cls, self).__init__()
 
         setattr(cls, '__init__', init)
-
-        def string(self, attributes=attributes):
-            string = "# Model\n\n"
-            string += f"_Type_: {self.model_type}\n\n"
-
-            for attr in attributes:
-                string += f"## {attr}\n"
-
-                for label, item in getattr(self, attr).items():
-                    string += f'{item}\n'
-            return string
-
-        setattr(cls, '__str__', string)
 
         return cls
 

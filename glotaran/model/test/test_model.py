@@ -8,7 +8,7 @@ from glotaran.model import DatasetDescriptor, Model, glotaran_model, glotaran_mo
                         'p1': str,
                         'p2': str,
                      },
-                     validate_parameter=['p2'])
+                     )
 class MockAttr:
     pass
 
@@ -23,7 +23,7 @@ class MockModel(Model):
 @pytest.fixture
 def model():
     d = {
-        "compartments": ['s1', 's2'],
+        "compartment": ['s1', 's2'],
         "megacomplex": {"m1": [], "m2": []},
         "initial_concentration": {
             "j1": [["1", "2"]],
@@ -36,15 +36,41 @@ def model():
         "dataset": {
             "dataset1": {
                 "initial_concentration": 'j1',
-                "megacomplexes": ['m1', 'm2'],
+                "megacomplex": ['m1', 'm2'],
                 "scale": "scale1",
                 "compartment_constraints": [
                     {'type': 'zero',
-                     'compartment': 's',
+                     'compartment': 's1',
                      'interval': [(0,1)]},
                 ]
             },
             "dataset2": ['j2', ['m2'], 'scale2', None]
+        }
+    }
+    return MockModel.from_dict(d)
+
+
+@pytest.fixture
+def model_error():
+    d = {
+        "compartment": ['NOT_S1', 's2'],
+        "megacomplex": {"m1": [], "m2": []},
+        "initial_concentration": {
+            "j4": [["1", "2"]],
+            "j2": {'parameters': ["3", "4"]},
+        },
+        "dataset": {
+            "dataset1": {
+                "initial_concentration": 'j3',
+                "megacomplex": ['N1', 'N2'],
+                "scale": "scale1",
+                "compartment_constraints": [
+                    {'type': 'zero',
+                     'compartment': 's1',
+                     'interval': [(0,1)]},
+                ]
+            },
+            "dataset2": ['j2', ['mrX'], 'scale3', None]
         }
     }
     return MockModel.from_dict(d)
@@ -69,8 +95,15 @@ def test_model_attr(model, attr):
     assert hasattr(model, f'get_{attr}')
     assert hasattr(model, f'set_{attr}')
 
+def test_model_validity(model, model_error):
+    print(model.errors())
+    assert model.valid()
+    assert not model_error.valid()
+    print(model_error.errors())
+    assert len(model_error.errors()) is 5
+
 def test_items(model):
-    assert model.compartments == ['s1', 's2']
+    assert model.compartment == ['s1', 's2']
 
     assert 'm1' in model.megacomplex
     assert 'm2' in model.megacomplex
@@ -89,17 +122,17 @@ def test_items(model):
 
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').initial_concentration == 'j1'
-    assert model.get_dataset('dataset1').megacomplexes == ['m1', 'm2']
+    assert model.get_dataset('dataset1').megacomplex == ['m1', 'm2']
     assert model.get_dataset('dataset1').scale == 'scale1'
     assert len(model.get_dataset('dataset1').compartment_constraints) == 1
 
     cons = model.get_dataset('dataset1').compartment_constraints[0]
     assert cons.type == 'zero'
-    assert cons.compartment == 's'
+    assert cons.compartment == 's1'
     assert cons.interval == [(0, 1)]
 
     assert 'dataset2' in model.dataset
     assert model.get_dataset('dataset2').initial_concentration == 'j2'
-    assert model.get_dataset('dataset2').megacomplexes == ['m2']
+    assert model.get_dataset('dataset2').megacomplex == ['m2']
     assert model.get_dataset('dataset2').scale == 'scale2'
 
