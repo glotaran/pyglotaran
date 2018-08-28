@@ -19,7 +19,7 @@ from .parameter_group import ParameterGroup
 class Model:
     """Model represents a global analysis model."""
 
-    compartments: List[str]
+    compartment: List[str]
 
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
@@ -27,14 +27,15 @@ class Model:
     # Models are complex.
 
     def __init__(self):
-        self.compartments = []
+        self.compartment = []
 
     @classmethod
     def from_dict(cls, model_dict):
 
         model = cls()
-        model.compartments = model_dict['compartments']
-        del model_dict['compartments']
+        if 'compartment' in model_dict:
+            model.compartment = model_dict['compartment']
+            del model_dict['compartment']
 
         for name, attribute in list(model_dict.items()):
             if hasattr(model, f'set_{name}'):
@@ -194,4 +195,28 @@ class Model:
         """
         self.dataset[label].dataset = dataset
 
+    def errors(self):
+        attrs = getattr(self, '_glotaran_model_attributes')
 
+        errors = []
+
+        for attr in attrs:
+            for _, item in getattr(self, attr).items():
+                item.validate_model(self, errors=errors)
+
+        return errors
+
+    def valid(self):
+        return len(self.errors()) is 0
+
+    def __str__(self):
+        attrs = getattr(self, '_glotaran_model_attributes')
+        string = "# Model\n\n"
+        string += f"_Type_: {self.model_type}\n\n"
+
+        for attr in attrs:
+            string += f"## {attr}\n"
+
+            for label, item in getattr(self, attr).items():
+                string += f'{item}\n'
+        return string

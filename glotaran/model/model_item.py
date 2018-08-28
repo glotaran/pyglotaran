@@ -8,7 +8,8 @@ class MissingParameterException(Exception):
 
 
 def is_item_or_list_of(item_class):
-    print(item_class)
+    if not isinstance(item_class, type):
+        return False
     islist = issubclass(item_class, List)
     if islist:
         item_class = item_class.__args__[0]
@@ -43,7 +44,6 @@ def item_to_param(name, item, item_class):
         return item_class.from_dict(item)
     else:
         if is_typed:
-            print(item)
             if len(item) < 2 and len(item) is not 1:
                 raise Exception(f"Missing type for attribute '{name}'")
             item_type = item[1] if len(item) is not 1 else item[0]
@@ -57,18 +57,38 @@ def item_to_param(name, item, item_class):
 
 
 def glotaran_model_item(attributes={},
-                        validate_model=[],
-                        validate_parameter=[],
                         has_type=False,
                         no_label=False):
+    """glotaran_model_item adds the given attributes to the class and applies
+    the `dataclass` on it. Further it adds `from_dict` and `from_list`
+    classmethods for serialization. Also a `validate_model` and
+    `validate_parameter` method is created.
+
+    Classes with the glotaran_model_item decorator intended to be used in
+    glotaran models.
+
+    Parameters
+    ----------
+    attributes: Dict[str, type]
+        (default value = {})
+        A dictonary of attribute names and types.
+    has_type: bool
+        (default value = False)
+        If true, a type attribute will added. Used for model attributes, which
+        can have more then one type (e.g. compartment constraints)
+    no_label: bool
+        (default value = False)
+        If true no label attribute will be added. Use for nested items.
+    """
     def decorator(cls):
 
         # Set annotations for autocomplete and doc
         validate_nested = []
+        annotations = {}
         if not no_label:
-            annotations = {'label': str}
+            annotations['label'] = str
         if has_type:
-            annotations = {'type': str}
+            annotations['type'] = str
         for name, item_class in attributes.items():
             if isinstance(item_class, tuple):
                 (item_class, default) = item_class
@@ -85,7 +105,7 @@ def glotaran_model_item(attributes={},
         setattr(cls, '_glotaran_model_item', True)
 
         # store for later sanity checking
-        setattr(cls, '_glotaran_validate_parameter', validate_parameter)
+        setattr(cls, '_glotaran_attributes', [name for name in attributes])
 
         # strore the number of attributes
         setattr(cls, '_glotaran_nr_attributes', len(attributes))
@@ -130,37 +150,30 @@ def glotaran_model_item(attributes={},
 
         setattr(cls, 'from_list', from_list)
 
-        def val_model(self, model,
-                      errors=[],
-                      validate_model=validate_model,
-                      validate_nested=validate_nested):
-            for validate in validate_model:
-                attribute = validate
-                if isinstance(validate, tuple):
-                    (attribute, validate) = validate
-                if validate not in model:
-                    errors.append(f"Model '{model.model_type}' has no attribute '{validate}'")
-                    continue
+        def val_model(self, model, errors=[]):
+            attrs = getattr(cls, '_glotaran_attributes')
+            for attr in attrs:
+                item = getattr(self, attr)
+                if hasattr(model, attr):
+                    labels = item
+                    if not isinstance(labels, list):
+                        labels = [labels]
+                    model_attr = getattr(model, attr)
+                    for label in labels:
+                        if label not in model_attr:
+                            errors.append(f"Missing '{attr}' with label '{label}'")
 
-                labels = getattr(self, attribute)
-                if not isinstance(labels, list):
-                    labels = [labels]
-
-                attr = getattr(model, attribute)
-                for label in labels:
-                    if label not in attr:
-                        errors.append(f"Missing '{attribute}' with label '{label}'")
-
-            for nested in validate_nested:
-                nested = getattr(self, nested)
-                if not isinstance(nested, list):
-                    nested = [nested]
-                for n in nested:
-                    n.validate(errors=errors)
+                else:
+                    nested = item
+                    if not isinstance(nested, list):
+                        nested = [nested]
+                    for n in nested:
+                        if hasattr(n, "_glotaran_model_item"):
+                            n.validate_model(model, errors=errors)
 
             return errors
 
-        setattr(cls, 'validate_model', validate_model)
+        setattr(cls, 'validate_model', val_model)
         return cls
 
     return decorator
