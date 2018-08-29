@@ -1,5 +1,5 @@
 from typing import List
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import inspect
 
 
@@ -151,7 +151,7 @@ def glotaran_model_item(attributes={},
         setattr(cls, 'from_list', from_list)
 
         def val_model(self, model, errors=[]):
-            attrs = getattr(cls, '_glotaran_attributes')
+            attrs = getattr(self, '_glotaran_attributes')
             for attr in attrs:
                 item = getattr(self, attr)
                 if hasattr(model, attr):
@@ -176,7 +176,7 @@ def glotaran_model_item(attributes={},
         setattr(cls, 'validate_model', val_model)
 
         def val_parameter(self, model, parameter, errors=[]):
-            attrs = getattr(cls, '_glotaran_attributes')
+            attrs = getattr(self, '_glotaran_attributes')
             for attr in attrs:
                 item = getattr(self, attr)
                 if not hasattr(model, attr):
@@ -199,6 +199,36 @@ def glotaran_model_item(attributes={},
             return errors
 
         setattr(cls, 'validate_parameter', val_parameter)
+
+        def fill(self, model, parameter):
+
+            def convert(item):
+                if not isinstance(item, str):
+                    return item
+                if hasattr(item, "_glotaran_model_item"):
+                    return item.fill(model, parameter)
+                return parameter.get(item).value
+
+            replaced = {}
+            attrs = getattr(self, '_glotaran_attributes')
+            for attr in attrs:
+                item = getattr(self, attr)
+                if hasattr(model, attr):
+                    model_attr = getattr(model, attr)
+                    if isinstance(item, list):
+                        item = [model_attr[i].fill(model, parameter) for i in item]
+                    else:
+                        item = model_attr[item].fill(model, parameter)
+                elif isinstance(item, list):
+                    item = [convert(i) for i in item]
+                else:
+                    item = convert(item)
+                replaced[attr] = item
+            return replace(self, **replaced)
+
+        setattr(cls, 'fill', fill)
+
+
         return cls
 
     return decorator
