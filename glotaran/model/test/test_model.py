@@ -31,7 +31,7 @@ def model():
         },
         "test": {
             "t1": {'p1': "foo", 'p2': "baz"},
-            "t2": [6, 6],
+            "t2": ['9', '9'],
         },
         "dataset": {
             "dataset1": {
@@ -44,7 +44,7 @@ def model():
                      'interval': [(0,1)]},
                 ]
             },
-            "dataset2": ['j2', ['m2'], 'scale2', None]
+            "dataset2": ['j2', ['m2'], 'scale2', []]
         }
     }
     return MockModel.from_dict(d)
@@ -81,7 +81,8 @@ def parameter():
               ['foo', 3],
               ['baz', 2],
               ['scale1', 2],
-              ['scale2', 2],
+              ['scale2', 8],
+              4e2
               ]
     return ParameterGroup.from_list(params)
 
@@ -132,14 +133,16 @@ def test_items(model):
     assert model.get_test('t1').p1 == 'foo'
     assert model.get_test('t1').p2 == 'baz'
     assert 't2' in model.test
-    assert model.get_test('t2').p1 == 6
-    assert model.get_test('t2').p2 == 6
+    assert model.get_test('t2').p1 == '9'
+    assert model.get_test('t2').p2 == '9'
 
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').initial_concentration == 'j1'
     assert model.get_dataset('dataset1').megacomplex == ['m1', 'm2']
     assert model.get_dataset('dataset1').scale == 'scale1'
     assert len(model.get_dataset('dataset1').compartment_constraints) == 1
+    assert model.get_dataset('dataset1').compartment_constraints[0].type == 'zero'
+    assert model.get_dataset('dataset1').compartment_constraints[0].interval == [(0, 1)]
 
     cons = model.get_dataset('dataset1').compartment_constraints[0]
     assert cons.type == 'zero'
@@ -150,4 +153,29 @@ def test_items(model):
     assert model.get_dataset('dataset2').initial_concentration == 'j2'
     assert model.get_dataset('dataset2').megacomplex == ['m2']
     assert model.get_dataset('dataset2').scale == 'scale2'
+    assert len(model.get_dataset('dataset2').compartment_constraints) == 0
 
+
+def test_fill(model, parameter):
+    dataset = model.get_dataset('dataset1').fill(model, parameter)
+    assert dataset.initial_concentration.label == 'j1'
+    assert dataset.initial_concentration.parameters == [1, 2]
+    assert [cmplx.label for cmplx in dataset.megacomplex] == ['m1', 'm2']
+    assert dataset.scale == 2
+    assert len(dataset.compartment_constraints) == 1
+    assert dataset.compartment_constraints[0].type == 'zero'
+    assert dataset.compartment_constraints[0].interval == [(0, 1)]
+
+    dataset = model.get_dataset('dataset2').fill(model, parameter)
+    assert dataset.initial_concentration.label == 'j2'
+    assert dataset.initial_concentration.parameters == [3, 4]
+    assert [cmplx.label for cmplx in dataset.megacomplex] == ['m2']
+    assert dataset.scale == 8
+    assert len(dataset.compartment_constraints) == 0
+
+    t = model.get_test('t1').fill(model, parameter)
+    assert t.p1 == 3
+    assert t.p2 == 2
+    t = model.get_test('t2').fill(model, parameter)
+    assert t.p1 == 4e2
+    assert t.p2 == 4e2
