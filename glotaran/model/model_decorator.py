@@ -10,8 +10,8 @@ def glotaran_model(name,
                    dataset_type=DatasetDescriptor,
                    fitmodel_type=FitModel,
                    megacomplex_type=Megacomplex,
-                   calculated_matrix=Matrix,
-                   estimated_matrix=Matrix,
+                   calculated_matrix=None,
+                   estimated_matrix=None,
                    ):
 
     def decorator(cls):
@@ -19,8 +19,14 @@ def glotaran_model(name,
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
         setattr(cls, 'fitmodel_type', fitmodel_type)
-        setattr(cls, 'calculated_matrix', calculated_matrix)
-        setattr(cls, 'estimated_matrix', estimated_matrix)
+
+        def c_mat(self, c_mat=calculated_matrix):
+            return c_mat
+        setattr(cls, 'calculated_matrix', property(c_mat))
+
+        def e_mat(self, e_mat=estimated_matrix):
+            return e_mat
+        setattr(cls, 'estimated_matrix', property(e_mat))
 
         if not hasattr(cls, '__annotations__'):
             setattr(cls, '__annotations__', {})
@@ -31,7 +37,8 @@ def glotaran_model(name,
         # Set annotations and methods for attributes
 
         # Add standart attributes if not present
-        if 'dataset' not in getattr(cls, '__annotations__') or dataset_type is not Dataset:
+        if 'dataset' not in getattr(cls, '__annotations__') or \
+                dataset_type is not DatasetDescriptor:
             attributes['dataset'] = dataset_type
         if 'initial_concentration' not in getattr(cls, '__annotations__'):
             attributes['initial_concentration'] = InitialConcentration

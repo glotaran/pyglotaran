@@ -5,7 +5,7 @@ from copy import copy
 import numpy as np
 
 
-class Dataset(object):
+class Dataset:
     """Dataset encapsulates actual data and labeled axis. This class serves as
     base class for classes which wrap e.g. a CSV file.
 
@@ -17,37 +17,26 @@ class Dataset(object):
     -------
     """
 
-    def __init__(self, label):
-        self.label = label
+    def __init__(self):
         self._axis = {}
-
-    @property
-    def label(self):
-        """Label of the dataset """
-        return self._label
-
-    @label.setter
-    def label(self, label):
-        """
-
-        Parameters
-        ----------
-        label : Label of the Dataset
-
-
-        Returns
-        -------
-
-        """
-        self._label = label
+        self._estimated_axis = None
+        self._calculated_axis = None
 
     def get_estimated_axis(self):
         """Get the axis along the calculated matrices are grouped"""
-        raise NotImplementedError
+        return self._estimated_axis
+
+    def set_estimated_axis(self, label: str):
+        """Get the axis along the calculated matrices are grouped"""
+        self._estimated_axis = label
 
     def get_calculated_axis(self):
         """Get the axis along the estimated matrices are grouped"""
-        raise NotImplementedError
+        return self._calculated_axis
+
+    def set_calculated_axis(self, label):
+        """Get the axis along the estimated matrices are grouped"""
+        self._calculated_axis = label
 
     def get_axis(self, label):
         """
@@ -81,6 +70,8 @@ class Dataset(object):
             raise TypeError("Axis must be list or ndarray")
         if any(not _hashable(v) for v in axis):
             raise ValueError("Axis must be list or ndarray of hashable values")
+        if isinstance(axis, list):
+            axis = np.asarray(axis)
         self._axis[label] = axis
 
     def get(self) -> np.array:
