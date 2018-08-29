@@ -163,7 +163,7 @@ class Model:
         return [label for label in self.dataset]
 
 
-    def get_dataset(self, label: str) -> Dataset:
+    def get_data(self, label: str) -> Dataset:
         """ Sets the dataset of a DatasetDescriptor
 
         Parameters
@@ -180,7 +180,7 @@ class Model:
         """
         return self.dataset[label].dataset
 
-    def set_dataset(self, label: str, dataset: Dataset):
+    def set_data(self, label: str, dataset: Dataset):
         """ Sets the dataset of a DatasetDescriptor
 
         Parameters
