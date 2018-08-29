@@ -58,3 +58,27 @@ def calculate_group(group, model, parameter, matrix='calculated'):
                 full = np.concatenate((full, this_matrix), axis=1)
         result.append(full)
     return result
+
+
+def get_data_group(group):
+
+    result = []
+    for _, item in group.items():
+        full = None
+        for index, dataset_descriptor in item:
+
+            if dataset_descriptor.dataset is None:
+                raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
+
+            dataset = dataset_descriptor.dataset
+            axis = dataset.get_estimated_axis()
+            axis = dataset.get_axis(axis)
+            idx = np.where(axis == index)
+            dataset = dataset.get()[idx[0][0], :]
+
+            if full is None:
+                full = dataset
+            else:
+                full = np.append(full, dataset)
+        result.append(full)
+    return result

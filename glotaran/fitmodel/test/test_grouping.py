@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from glotaran.model import Dataset, Model, ParameterGroup, glotaran_model
-from glotaran.fitmodel.grouping import create_group, calculate_group
+from glotaran.fitmodel.grouping import create_group, calculate_group, get_data_group
 
 
 def calculate(dataset, index, axis):
@@ -24,6 +24,7 @@ class MockDataset(Dataset):
         self.set_axis('c', calc_axis)
         self.set_estimated_axis('e')
         self.set_calculated_axis('c')
+        self.set(np.ones((len(est_axis), len(calc_axis))))
 
 
 @glotaran_model('mock',
@@ -65,6 +66,10 @@ def test_single_dataset():
     print(result[0])
     assert result[0].shape == (2, 4)
 
+    data = get_data_group(group)
+    assert len(data) == 3
+    assert data[0].shape[0] == 4 
+
     group = create_group(model, group_axis='calculated')
     assert len(group) == 4
     assert [item[0][0] for _, item in group.items()] == [5, 7, 9, 12]
@@ -74,6 +79,7 @@ def test_single_dataset():
     assert len(result) == 4
     print(result[0])
     assert result[0].shape == (2, 3)
+
 
 def test_multi_dataset_no_overlap():
     model = MockModel.from_dict({
@@ -113,6 +119,11 @@ def test_multi_dataset_no_overlap():
     print(result[0])
     assert result[0].shape == (2, 2)
     assert result[3].shape == (2, 3)
+
+    data = get_data_group(group)
+    assert len(data) == 6
+    assert data[0].shape[0] == 2 
+    assert data[3].shape[0] == 3 
 
 
 def test_multi_dataset_overlap():
@@ -155,6 +166,12 @@ def test_multi_dataset_overlap():
     assert result[0].shape == (2, 2)
     assert result[1].shape == (2, 6)
     assert result[4].shape == (2, 4)
+
+    data = get_data_group(group)
+    assert len(data) == 5
+    assert data[0].shape[0] == 2 
+    assert data[1].shape[0] == 6 
+    assert data[4].shape[0] == 4
 
 def test_calculate():
     model = MockModel.from_dict({
