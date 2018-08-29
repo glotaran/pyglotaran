@@ -5,10 +5,12 @@ import numpy as np
 from lmfit_varpro import CompartmentEqualityConstraint, SeparableModel
 from lmfit import Parameters
 
-from glotaran.model.parameter_group import ParameterGroup
+from glotaran.model import ModelError, ParameterGroup
 
-from .matrix_group_generator import MatrixGroupGenerator
 from .result import Result
+
+
+from .grouping import create_group, calculate_group, get_data_group
 
 
 class FitModel(SeparableModel):
@@ -25,24 +27,19 @@ class FitModel(SeparableModel):
         ----------
         model : glotaran.Model
         """
+
+        if not model.valid():
+            raise ModelError(model)
+
+        self._group = create_group(model)
+        self._dataset_group = get_data_group(self._group)
         self._model = model
-        self._generator = None
-        self._dataset_group = None
 
     @property
     def model(self):
         """The underlying glotaran.Model"""
         return self._model
 
-    #  def get_initial_fitting_parameter(self) -> Parameters:
-    #      """
-    #
-    #      Returns
-    #      -------
-    #      Parameters : lmfit.Parameters
-    #      """
-    #      return self._parameter.as_parameters_dict(only_fit=True)
-    #
     def data(self, **kwargs) -> List[np.ndarray]:
         """ Returns the data to fit.
 
@@ -52,11 +49,9 @@ class FitModel(SeparableModel):
         data: list(np.ndarray)
         """
         if "dataset" in kwargs:
-            label = kwargs["dataset"]
-            gen = MatrixGroupGenerator.for_dataset(self._model, label,
-                                                   self._model.
-                                                   calculated_matrix())
-            return gen.create_dataset_group()
+            dataset = kwargs['dataset']
+            group = create_group(self._model, dataset=dataset)
+            return get_data_group(group)
         return self._dataset_group
 
     def fit(self, parameter: ParameterGroup, *args, nnls=False, **kwargs) -> Result:
@@ -76,6 +71,7 @@ class FitModel(SeparableModel):
         Returns
         -------
         result : Result
+
 
         """
 
@@ -106,10 +102,6 @@ class FitModel(SeparableModel):
         -------
         result : Result
         """
-        self._generator = MatrixGroupGenerator.for_model(self._model,
-                                                         self._model.
-                                                         calculated_matrix())
-        self._dataset_group = self._generator.create_dataset_group()
         c_constraints = self._create_constraints()
         result = self.result_class()(self,
                                      parameter,
@@ -139,41 +131,11 @@ class FitModel(SeparableModel):
         -------
         matrix : np.array
         """
-        parameter = ParameterGroup.from_parameter_dict(parameter)
         if "dataset" in kwargs:
-            label = kwargs["dataset"]
-            gen = MatrixGroupGenerator.for_dataset(self._model, label,
-                                                   self._model.
-                                                   calculated_matrix())
-        else:
-            if self._generator is None:
-                self._init_generator()
-            gen = self._generator
-        return gen.calculate(parameter)
-
-    def get_calculated_matrix_group(self, dataset=None):
-        """get_calculated_matrix_group
-
-        Parameters
-        ----------
-        dataset
-
-        Returns
-        -------
-        """
-        if dataset is None:
-            return MatrixGroupGenerator.for_model(self._model,
-                                                  self._model.
-                                                  calculated_matrix())
-
-        return MatrixGroupGenerator.for_dataset(self._model, dataset,
-                                                self._model.
-                                                calculated_matrix())
-
-    def _init_generator(self):
-        self._generator = MatrixGroupGenerator.for_model(self._model,
-                                                         self._model.
-                                                         calculated_matrix())
+            dataset = kwargs['dataset']
+            group = create_group(self._model, dataset=dataset)
+            return calculate_group(group, self._model, parameter)
+        return calculate_group(self._group, self._model, parameter)
 
     def e_matrix(self, parameter, *args, **kwargs) -> np.array:
         """Implementation of SeparableModel.e_matrix.
@@ -200,18 +162,9 @@ class FitModel(SeparableModel):
         if "dataset" not in kwargs:
             raise Exception("'dataset' non specified in kwargs")
 
-        parameter = ParameterGroup.from_parameter_dict(parameter)
-        dataset = self._model.datasets[kwargs["dataset"]]
-
-        # A data object needs to be present to provide axies
-        if dataset.dataset is None:
-            raise Exception("No Data object present for dataset '{}'"
-                            .format(kwargs["dataset"]))
-
-        axis = kwargs["axis"] if "axis" in kwargs else np.asarray([0])
-
-        e_matrix = self._model.estimated_matrix()(axis, dataset, self._model)
-        return e_matrix.calculate_standalone(parameter)
+        dataset = kwargs['dataset']
+        group = create_group(self._model, group_axis='calculated', dataset=dataset)
+        return calculate_group(group, self._model, parameter, matrix='estimated')
 
     def _create_constraints(self) -> List[CompartmentEqualityConstraint]:
         c_constraints = []

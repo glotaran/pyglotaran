@@ -7,8 +7,7 @@ from collections import OrderedDict
 import numpy as np
 import inspect
 
-from glotaran.fitmodel import FitModel, Matrix, Result
-
+from glotaran.fitmodel import FitModel, Result
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
