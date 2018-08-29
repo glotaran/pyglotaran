@@ -1,16 +1,19 @@
 """Glotarans model package"""
+ModelError = None
+ParameterGroup = None
+
 from . import (
-               compartment_constraints,
-               dataset,
-               dataset_descriptor,
-               initial_concentration,
-               megacomplex,
-               model,
-               model_decorator,
-               model_item,
-               parameter,
-               parameter_group,
-               )
+    compartment_constraints,
+    dataset,
+    dataset_descriptor,
+    initial_concentration,
+    megacomplex,
+    model,
+    model_decorator,
+    model_item,
+    parameter,
+    parameter_group,
+)
 
 
 # Compartment Constraints
@@ -46,3 +49,17 @@ ParameterGroup = parameter_group.ParameterGroup
 
 glotaran_model = model_decorator.glotaran_model
 glotaran_model_item = model_item.glotaran_model_item
+
+
+class ModelError(Exception):
+    def __init__(self, model):
+
+        msg = "Model Error\n"
+        msg += "-----------\n\n"
+        msg += "Please fix the following issues:\n"
+        for error in model.errors():
+            msg += f"* {error}\n"
+
+        # Call the base class constructor with the parameters it needs
+        super().__init__(msg)
+

@@ -125,6 +125,11 @@ def test_multi_dataset_no_overlap():
     assert data[0].shape[0] == 2 
     assert data[3].shape[0] == 3 
 
+    group = create_group(model, dataset='dataset1')
+    assert len(group) == 3
+    assert [item[0][0] for _, item in group.items()] == [1, 2, 3]
+    assert all([item[0][1].label == 'dataset1' for _, item in group.items()])
+
 
 def test_multi_dataset_overlap():
     model = MockModel.from_dict({

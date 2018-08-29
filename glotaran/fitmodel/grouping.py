@@ -1,9 +1,11 @@
 import numpy as np
 
-def create_group(model, group_axis='estimated', xtol=0.5):
+def create_group(model, group_axis='estimated', xtol=0.5, dataset=None):
     group = {}
 
     for _, dataset_descriptor in model.dataset.items():
+        if dataset is not None and not dataset_descriptor.label == dataset:
+            continue
         if dataset_descriptor.dataset is None:
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
         axis = dataset_descriptor.dataset.get_estimated_axis() if group_axis == 'estimated' \
