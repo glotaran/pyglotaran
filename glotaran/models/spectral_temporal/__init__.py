@@ -1,12 +1,11 @@
 from . import (
-    irf_gaussian,
-    irf_measured,
+    irf,
     k_matrix,
     kinetic_matrix,
     kinetic_megacomplex,
     kinetic_model,
     spectral_matrix,
-    spectral_shape_gaussian,
+    spectral_shape,
     spectral_temporal_dataset_descriptor,
 )
 
@@ -17,17 +16,19 @@ SpectralTemporalDatasetDescriptor = \
 
 # Irfs
 
-GaussianIrf = irf_gaussian.GaussianIrf
-MeasuredIrf = irf_measured.MeasuredIrf
+IrfGaussian = irf.IrfGaussian
+IrfMeasured = irf.IrfMeasured
 
 # Shapes
 
-SpectralShapeGaussian = spectral_shape_gaussian.SpectralShapeGaussian
+SpectralShapeGaussian = spectral_shape.SpectralShapeGaussian
+SpectralShapeOne = spectral_shape.SpectralShapeOne
+SpectralShapeZero = spectral_shape.SpectralShapeZero
 
 # Matrix
 
-KineticMatrix = kinetic_matrix.KineticMatrix
-SpectralMatrix = spectral_matrix.SpectralMatrix
+#  KineticMatrix = kinetic_matrix.KineticMatrix
+#  SpectralMatrix = spectral_matrix.SpectralMatrix
 
 # K Matrix
 

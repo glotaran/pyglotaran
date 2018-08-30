@@ -2,15 +2,10 @@
 
 from typing import List, Union
 
-#  from glotaran.model.decorators import glotaran_model_item
-from glotaran.model.megacomplex import Megacomplex
+from glotaran.model import glotaran_model_item
 
 
-#  @glotaran_model_item(attributes={'k_matrices': List[str]})
+@glotaran_model_item(attributes={'k_matrix': List[str]})
 class KineticMegacomplex:
     """A Megacomplex with one or more K-Matrices."""
-
-    def __str__(self):
-        string = super(KineticMegacomplex, self).__str__()
-        string += f"* _K-Matrices_: {self.k_matrices}\n"
-        return string
+    pass

@@ -7,170 +7,95 @@ from glotaran.fitmodel import Matrix
 from glotaran.model import Model, ParameterGroup
 
 from .c_matrix_cython.c_matrix_cython import CMatrixCython
-from .irf_gaussian import GaussianIrf
-from .irf_measured import MeasuredIrf
+from .irf import IrfGaussian, IrfMeasured
 from .k_matrix import KMatrix
 
 _BACKEND = CMatrixCython()
 
 
-class KineticMatrix(Matrix):
-    """Implementation of fitmodel.Matrix for a kinetic model."""
-    def __init__(self, index: float, dataset: str, model: Model):
-        """
+def calculate(self,
+              matrix: np.array,
+              compartment_order: List[str],
+              parameter: ParameterGroup):
+    """ Calculates the matrix.
 
-        Parameters
-        ----------
-        index : float
-            Point on the estimated axis the matrix calculated for
+    Parameters
+    ----------
+    matrix : np.array
+        The preallocated matrix.
 
-        dataset : str
-            Dataset label of the dataset the matrix is calculated for
+    compartment_order : list(str)
+        A list of compartment labels to map compartments to indices in the
+        matrix.
 
-        model : glotaran.Model
-            The model the matrix is calculated for
+    parameter : glotaran.model.ParameterGroup
 
+    """
 
-        """
+    for k_matrix, scale in self._k_matrices_and_scalings():
 
-        super(KineticMatrix, self).__init__(index, dataset, model)
+        scale = parameter.get(scale) if scale is not None else 1.0
+        scale *= self._dataset_scaling(parameter)
 
-        self._irf = None
-        self._collect_irf(model)
-        self._disp_center = dataset.dispersion_center
+        self._calculate_for_k_matrix(matrix, compartment_order, k_matrix,
+                                     parameter, scale)
 
-        self._k_matrices = []
-        self._megacomplex_scaling = []
-        self._collect_k_matrices(model)
+def _k_matrices_and_scalings(self):
+    """ Iterator of k matrices and scalings"""
+    for i in range(len(self._k_matrices)):
+        yield self._k_matrices[i], self._megacomplex_scaling[i]
 
-        self._initial_concentration = None
-        self._collect_initial_concentration(model)
+def _calculate_for_k_matrix(self,
+                            matrix: np.array,
+                            compartment_order: List[str],
+                            k_matrix: KMatrix,
+                            parameter: ParameterGroup,
+                            scale: str):
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-arguments
 
-    @property
-    def compartment_order(self) -> List[str]:
-        """A list with compartment labels. The index of label indicates the
-        index of the compartment in the matrix."""
-        compartment_order = [c for mat in self._k_matrices
-                             for c in mat.compartment_map]
+    # calculate k_matrix eigenvectos
+    eigenvalues, _ = k_matrix.eigen(parameter)
+    rates = -eigenvalues
 
-        compartment_order = list(set(compartment_order))
-        return [c for c in self.model.compartments if c in compartment_order]
+    # we need this since the full c matrix can have more compartments then
+    # the k matrix
+    compartment_idxs = [compartment_order.index(c) for c in
+                        k_matrix.compartment_map]
 
-    @property
-    def shape(self) -> Tuple[int, int]:
-        """The matrix dimensions as tuple(M, N)."""
-        return (self.time.shape[0], len(self.compartment_order))
+    # get the time axis
+    time = self.dataset.dataset.get_axis("time")
 
-    def _collect_irf(self, model):
-        if self.dataset.irf is None:
-            return
-        self._irf = model.irfs[self.dataset.irf]
+    # calculate the c_matrix
+    if isinstance(self._irf, GaussianIrf):
+        centers, widths, irf_scale, backsweep, backsweep_period = \
+                self._calculate_irf_parameter(parameter)
+        _BACKEND.c_matrix_gaussian_irf(matrix,
+                                       compartment_idxs,
+                                       rates,
+                                       time,
+                                       centers, widths,
+                                       scale * irf_scale,
+                                       backsweep,
+                                       backsweep_period,
+                                       )
 
-    def _collect_k_matrices(self, model):
-        for cmplx in [model.megacomplexes[mc] for mc in self.dataset.megacomplexes]:
-            model_k_matrix = None
-            for k_matrix_label in cmplx.k_matrices:
-                mat = model.k_matrices[k_matrix_label]
+    else:
+        _BACKEND.c_matrix(matrix, compartment_idxs, rates, time,
+                          scale)
+        if isinstance(self._irf, MeasuredIrf):
+            irf = self._irf.data
+            if len(irf.shape) == 2:
+                idx = (np.abs(self.dataset.data.spectral_axis - self.index)).argmin()
+                irf = irf[idx, :]
+            for i in range(matrix.shape[1]):
+                matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
 
-                # If multiple k matrices are present, we combine them
-                if model_k_matrix is None:
-                    model_k_matrix = mat
-                else:
-                    model_k_matrix = model_k_matrix.combine(mat)
-            scaling = self.dataset.megacomplex_scaling[cmplx.label] \
-                if cmplx.label in self.dataset.megacomplex_scaling else None
-            self._megacomplex_scaling.append(scaling)
-            self._k_matrices.append(model_k_matrix)
-
-    def _collect_initial_concentration(self, model):
-        if self.dataset.initial_concentration is None:
-            return
-        self._initial_concentration = \
-            model.initial_concentrations[self.dataset.initial_concentration]
-
-    def calculate(self,
-                  matrix: np.array,
-                  compartment_order: List[str],
-                  parameter: ParameterGroup):
-        """ Calculates the matrix.
-
-        Parameters
-        ----------
-        matrix : np.array
-            The preallocated matrix.
-
-        compartment_order : list(str)
-            A list of compartment labels to map compartments to indices in the
-            matrix.
-
-        parameter : glotaran.model.ParameterGroup
-
-        """
-
-        for k_matrix, scale in self._k_matrices_and_scalings():
-
-            scale = parameter.get(scale) if scale is not None else 1.0
-            scale *= self._dataset_scaling(parameter)
-
-            self._calculate_for_k_matrix(matrix, compartment_order, k_matrix,
-                                         parameter, scale)
-
-    def _k_matrices_and_scalings(self):
-        """ Iterator of k matrices and scalings"""
-        for i in range(len(self._k_matrices)):
-            yield self._k_matrices[i], self._megacomplex_scaling[i]
-
-    def _calculate_for_k_matrix(self,
-                                matrix: np.array,
-                                compartment_order: List[str],
-                                k_matrix: KMatrix,
-                                parameter: ParameterGroup,
-                                scale: str):
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-arguments
-
-        # calculate k_matrix eigenvectos
-        eigenvalues, _ = k_matrix.eigen(parameter)
-        rates = -eigenvalues
-
-        # we need this since the full c matrix can have more compartments then
-        # the k matrix
-        compartment_idxs = [compartment_order.index(c) for c in
-                            k_matrix.compartment_map]
-
-        # get the time axis
-        time = self.dataset.dataset.get_axis("time")
-
-        # calculate the c_matrix
-        if isinstance(self._irf, GaussianIrf):
-            centers, widths, irf_scale, backsweep, backsweep_period = \
-                    self._calculate_irf_parameter(parameter)
-            _BACKEND.c_matrix_gaussian_irf(matrix,
-                                           compartment_idxs,
-                                           rates,
-                                           time,
-                                           centers, widths,
-                                           scale * irf_scale,
-                                           backsweep,
-                                           backsweep_period,
-                                           )
-
-        else:
-            _BACKEND.c_matrix(matrix, compartment_idxs, rates, time,
-                              scale)
-            if isinstance(self._irf, MeasuredIrf):
-                irf = self._irf.data
-                if len(irf.shape) == 2:
-                    idx = (np.abs(self.dataset.data.spectral_axis - self.index)).argmin()
-                    irf = irf[idx, :]
-                for i in range(matrix.shape[1]):
-                    matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
-
-        if self._initial_concentration is not None:
-            self._apply_initial_concentration_vector(matrix,
-                                                     k_matrix,
-                                                     parameter,
-                                                     compartment_order)
+    if self._initial_concentration is not None:
+        self._apply_initial_concentration_vector(matrix,
+                                                 k_matrix,
+                                                 parameter,
+                                                 compartment_order)
 
     def _calculate_irf_parameter(self, parameter):
 

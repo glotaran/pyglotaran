@@ -46,9 +46,11 @@ def item_to_param(name, item, item_class):
         if is_typed:
             if len(item) < 2 and len(item) is not 1:
                 raise Exception(f"Missing type for attribute '{name}'")
-            item_type = item[1] if len(item) is not 1 else item[0]
+            item_type = item[1] if len(item) is not 1 and \
+                    hasattr(item_class,'label') else item[0]
 
             if item_type not in item_class._glotaran_model_item_types:
+                print(item)
                 raise Exception(f"Unknown type '{item_type}' "
                                 f"for attribute '{name}'")
             item_class = \
@@ -82,6 +84,11 @@ def glotaran_model_item(attributes={},
     """
     def decorator(cls):
 
+        # we don't leverage pythons default param mechanism, since this breaks
+        # inheritence of items
+        if not hasattr(cls, '_glotaran_attribute_defaults'):
+            setattr(cls, '_glotaran_attribute_defaults', {})
+
         # Set annotations for autocomplete and doc
         validate_nested = []
         annotations = {}
@@ -90,9 +97,12 @@ def glotaran_model_item(attributes={},
         if has_type:
             annotations['type'] = str
         for name, item_class in attributes.items():
-            if isinstance(item_class, tuple):
-                (item_class, default) = item_class
-                setattr(cls, name, default)
+            if isinstance(item_class, dict):
+                item_dict = item_class
+                item_class = item_dict.get('type', str)
+                if 'default' in item_dict:
+                    default = item_dict.get('default')
+                    getattr(cls, '_glotaran_attribute_defaults')[name] = default
             annotations[name] = item_class
             if is_item_or_list_of(item_class):
                 validate_nested.append(name)
@@ -107,9 +117,6 @@ def glotaran_model_item(attributes={},
         # store for later sanity checking
         setattr(cls, '_glotaran_attributes', [name for name in attributes])
 
-        # strore the number of attributes
-        setattr(cls, '_glotaran_nr_attributes', len(attributes))
-
         # now we want nice class methods for serializing
 
         @classmethod
@@ -120,9 +127,10 @@ def glotaran_model_item(attributes={},
                 if name == "self":
                     continue
                 if name not in item_dict:
-                    if param.default is param.empty:
-                        raise MissingParameterException(name)
-                    args.append(param.default)
+                    if name not in getattr(ncls, '_glotaran_attribute_defaults'):
+                        raise MissingParameterException(f"Missing parameter '{name} for item "
+                                                        f"'{ncls.__name__}'")
+                    args.append(getattr(ncls, '_glotaran_attribute_defaults')[name])
                 else:
                     item = item_dict[name]
                     item_class = param.annotation
@@ -135,12 +143,13 @@ def glotaran_model_item(attributes={},
         @classmethod
         def from_list(ncls, item_list):
             names = [n for n in
-                     inspect.signature(ncls.__init__).parameters]
+                     inspect.signature(ncls.__init__).parameters if not n == "self"]
             params = [p for _, p in
                       inspect.signature(ncls.__init__).parameters.items()]
             # params contains 'self'
             if len(item_list) is not len(params)-1:
-                raise MissingParameterException
+                raise MissingParameterException(f"To few or much parameters for '{ncls.__name__}'\n"
+                                                f" Got: {item_list}\nWant: {names}")
 
             for i in range(len(item_list)):
                 item_class = params[i].annotation

@@ -23,7 +23,7 @@ class ZeroConstraint:
 @glotaran_model_item(attributes={
                         'targets': List[str],
                         'parameters': List[str],
-                    }, has_type=True)
+                    }, has_type=True, no_label=True)
 class EqualConstraint(ZeroConstraint):
     """An equal constraint The compartments c matrix will be replaced with a sum
     of target compartments, each scaled by a parameter.
@@ -45,7 +45,7 @@ class EqualConstraint(ZeroConstraint):
 
 @glotaran_model_item(attributes={
                         'weight': str,
-                    }, has_type=True)
+                    }, has_type=True, no_label=True)
 class EqualAreaConstraint(EqualConstraint):
     """An equal area constraint adds a the differenc of the sum of a
     compartements in the e matrix in one ore more intervals to the scaled sum

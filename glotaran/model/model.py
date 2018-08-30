@@ -41,10 +41,32 @@ class Model:
                 set = getattr(model, f'set_{name}')
                 item_cls = set.__func__.__annotations__['item']
                 for label, item in attribute.items():
+                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
                     if isinstance(item, dict):
+                        if is_typed:
+                            if 'type' not in item:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item['type']
+
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
                         item['label'] = label
                         set(label, item_cls.from_dict(item))
                     elif isinstance(item, list):
+                        if is_typed:
+                            if len(item) < 2 and len(item) is not 1:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item[1] if len(item) is not 1 and \
+                                    hasattr(item_cls,'label') else item[0]
+
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
                         item = [label] + item
                         set(label, item_cls.from_list(item))
                 del model_dict[name]
