@@ -49,6 +49,7 @@ ParameterGroup = parameter_group.ParameterGroup
 
 glotaran_model = model_decorator.glotaran_model
 glotaran_model_item = model_item.glotaran_model_item
+glotaran_model_item_typed = model_item.glotaran_model_item_typed
 
 
 class ModelError(Exception):

@@ -1,0 +1,164 @@
+import pytest
+
+from glotaran.parse.parser import load_yml_file
+from glotaran.models.spectral_temporal import (KineticModel,
+                                               IrfGaussian,
+                                               SpectralShapeGaussian,
+                                               KineticMegacomplex)
+from glotaran.model import (InitialConcentration,
+                            ZeroConstraint,
+                            EqualConstraint,
+                            EqualAreaConstraint,
+                            )
+
+from os.path import join, dirname, abspath
+import numpy as np
+
+THIS_DIR = dirname(abspath(__file__))
+
+
+@pytest.fixture
+def model():
+    spec_path = join(THIS_DIR, 'test_model_spec_kinetic.yml')
+    return load_yml_file(spec_path)
+
+
+def test_correct_model(model):
+    assert isinstance(model, KineticModel)
+
+
+def test_compartments(model):
+    assert model.compartment == ['s1', 's2', 's3', 's4', 'osc1']
+
+
+def test_dataset(model):
+    assert len(model.dataset) == 2
+
+    assert 'dataset1' in model.dataset
+    dataset = model.dataset['dataset1']
+    assert dataset.label == 'dataset1'
+    assert dataset.megacomplex == ["cmplx1"]
+    assert dataset.initial_concentration == "inputD1"
+    assert dataset.irf == "irf1"
+    assert dataset.scale == 1
+
+    assert len(dataset.shape) == 2
+        #      self.assertTrue("s1" in dataset.shapes)
+        #      self.assertEqual(dataset.shapes["s1"], ["shape1"])
+        #      self.assertTrue("s2" in dataset.shapes)
+        #      self.assertEqual(dataset.shapes["s2"], ["shape2"])
+        #
+        #  else:
+        #      self.assertTrue(len(dataset.compartment_constraints) is 4)
+        #
+        #      self.assertTrue(any(isinstance(c, ZeroConstraint) for c in
+        #                          dataset.compartment_constraints))
+        #
+        #      zcs = [zc for zc in dataset.compartment_constraints
+        #             if isinstance(zc, ZeroConstraint)]
+        #      self.assertTrue(len(zcs) is 2)
+        #      for zc in zcs:
+        #          self.assertEqual(zc.compartment, 's1')
+        #          self.assertEqual(zc.intervals, [(1, 100), (2, 200)])
+        #
+        #      self.assertTrue(any(isinstance(c, EqualConstraint) for c in
+        #                          dataset.compartment_constraints))
+        #      ec = [ec for ec in dataset.compartment_constraints
+        #            if isinstance(ec, EqualConstraint)][0]
+        #      self.assertEqual(ec.compartment, 's2')
+        #      self.assertEqual(ec.intervals, [(60, 700)])
+        #      self.assertEqual(ec.targets, ['s1', 's2'])
+        #      self.assertEqual(ec.parameters, [54, 56])
+        #
+        #      self.assertTrue(any(isinstance(c, EqualAreaConstraint) for c in
+        #                          dataset.compartment_constraints))
+        #      eac = [eac for eac in dataset.compartment_constraints
+        #             if isinstance(eac, EqualAreaConstraint)][0]
+        #      self.assertEqual(eac.compartment, 's3')
+        #      self.assertEqual(eac.intervals, [(670, 810)])
+        #      self.assertEqual(eac.target, 's2')
+        #      self.assertEqual(eac.parameter, 55)
+        #      self.assertEqual(eac.weight, 0.0016)
+        #  i = i + 1
+
+
+def test_initial_concentration(model):
+    assert len(model.initial_concentration) == 2
+
+    i = 1
+    for _ in model.initial_concentration:
+        label = "inputD{}".format(i)
+        assert label in model.initial_concentration
+        initial_concentration = model.initial_concentration[label]
+        assert isinstance(initial_concentration, InitialConcentration)
+        assert initial_concentration.label == label
+        assert initial_concentration.parameters == [1, 2, 3]
+
+
+def test_irf(model):
+    assert len(model.irf) == 2
+
+    i = 1
+    for _ in model.irf:
+        label = "irf{}".format(i)
+        assert label in model.irf
+        irf = model.irf[label]
+        assert isinstance(irf, IrfGaussian)
+        assert irf.label == label
+        want = [1] if i is 1 else [1, 2]
+        assert irf.center == want
+        want = [2] if i is 1 else [3, 4]
+        assert irf.width == want
+        want = [3] if i is 1 else [5, 6]
+        assert irf.center_dispersion == want
+        want = [4] if i is 1 else [7, 8]
+        assert irf.width_dispersion == want
+        want = None if i is 1 else 9
+        assert irf.scale == want
+        assert not irf.normalize
+
+        if i is 2:
+            assert irf.backsweep
+            assert irf.backsweep_period, 55
+        else:
+            assert not irf.backsweep
+            assert irf.backsweep_period == None
+
+        i = i + 1
+
+
+#  def test_k_matrices(self):
+#      self.assertTrue("km1" in self.model.k_matrices)
+#      self.assertTrue(np.array_equal(self.model.k_matrices["km1"]
+#                                     .asarray(),
+#                      np.array([[1, 3, 5, 7],
+#                                [2, 0, 0, 0],
+#                                [4, 0, 0, 0],
+#                                [6, 0, 0, 0]]
+#                               )
+#                                    )
+#                      )
+#
+def test_shapes(model):
+
+    assert "shape1" in model.shape
+
+    shape = model.shape["shape1"]
+    assert isinstance(shape, SpectralShapeGaussian)
+    assert shape.amplitude == "shape.1"
+    assert shape.location == "shape.2"
+    assert shape.width == "shape.3"
+
+
+def test_megacomplexes(model):
+    assert len(model.megacomplex) is 3
+
+    i = 1
+    for _ in model.megacomplex:
+        label = "cmplx{}".format(i)
+        assert label in model.megacomplex
+        megacomplex = model.megacomplex[label]
+        assert isinstance(megacomplex, KineticMegacomplex)
+        assert megacomplex.label == label
+        assert megacomplex.k_matrix == ["km{}".format(i)]
+        i = i + 1

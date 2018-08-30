@@ -1,9 +1,13 @@
+from collections import OrderedDict
+from typing import List, Type, Dict, Generator
+
+from glotaran.fitmodel import FitModel, Result
+from glotaran.parse.register import register_model
+
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
 from .megacomplex import Megacomplex
-from glotaran.fitmodel import FitModel, Matrix, Result
-from collections import OrderedDict
-from typing import List, Type, Dict, Generator
+
 
 def glotaran_model(name,
                    attributes={},
@@ -58,8 +62,10 @@ def glotaran_model(name,
             def set_item(self, label: str, item: attr_type,
                          attr_name=attr_name,
                          attr_type=attr_type):
-                getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
-                if not isinstance(item, attr_type):
+
+                # TODO checked typed items
+                if not isinstance(item, attr_type) and \
+                        not hasattr(attr_type, "_glotaran_model_item_typed"):
                     raise TypeError
                 getattr(self, attr_name)[label] = item
 
@@ -71,6 +77,8 @@ def glotaran_model(name,
             super(cls, self).__init__()
 
         setattr(cls, '__init__', init)
+
+        register_model(name, cls)
 
         return cls
 

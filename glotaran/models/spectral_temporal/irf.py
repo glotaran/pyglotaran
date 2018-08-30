@@ -1,35 +1,71 @@
-class Irf(object):
-    """Represents an IRF."""
+import numpy as np
+from typing import List
+from glotaran.model import glotaran_model_item, glotaran_model_item_typed
 
-    def __init__(self, label):
-        self.label = label
+
+@glotaran_model_item(has_type=True)
+class IrfMeasured:
+    """A measured IRF."""
+
+    _data = None
 
     @property
-    def label(self):
-        """Label of the IRF"""
-        return self._label
+    def data(self) -> np.ndarray:
+        """Measured data."""
+        if self._data is None:
+            raise Exception(f"{self.label}: data not loaded")
+        return self._data
 
-    @label.setter
-    def label(self, value):
-        """
-
-        Parameters
-        ----------
-        value : label of the IRF
+    @data.setter
+    def data(self, value: np.ndarray):
+        self._data = value
 
 
-        Returns
-        -------
+@glotaran_model_item(attributes={
+    'center': str,
+    'width': str,
+    'dispersion_center': {'type': str, 'default': None},
+    'center_dispersion': {'type': List[str], 'default': None},
+    'width_dispersion': {'type': List[str], 'default': None},
+    'scale': {'type': str, 'default': None},
+    'normalize': {'type': bool, 'default': False},
+    'backsweep': {'type': bool, 'default': False},
+    'backsweep_period': {'type': str, 'default': None},
+}, has_type=True)
+class IrfGaussian:
+    """
+    Represents a gaussian IRF.
+
+    One width and one center is a single gauss.
+
+    One center and multiple widths is a multiple gaussian.
+
+    Multiple center and multiple widths is Double-, Triple- , etc. Gaussian.
+
+    Parameters
+    ----------
+
+    label:
+        label of the irf
+    center:
+        one or more center of the irf as parameter indices
+    width:
+        one or more widths of the gaussian as parameter index
+    center_dispersion:
+        polynomial coefficients for the dispersion of the
+        center as list of parameter indices. None for no dispersion.
+    width_dispersion:
+        polynomial coefficients for the dispersion of the
+        width as parameter indices. None for no dispersion.
+
+    """
+    pass
 
 
-        """
-        if not isinstance(value, str):
-            raise TypeError("Labels must be strings.")
-        self._label = value
-
-    def type_string(self):
-        """Identifies an implementation """
-        raise NotImplementedError
-
-    def __str__(self):
-        return f"### _{self.label}_\n* _Type_: {self.type_string()}\n"
+@glotaran_model_item_typed(types={
+    'gaussian': IrfGaussian,
+    'measured': IrfMeasured,
+})
+class Irf(object):
+    """Represents an IRF."""
+    pass
