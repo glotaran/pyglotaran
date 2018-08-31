@@ -1,14 +1,19 @@
+from typing import Dict, List, Tuple
 import pytest
 
 from glotaran.fitmodel import FitModel, Matrix, Result
 from glotaran.model import DatasetDescriptor, Model, ParameterGroup, glotaran_model, glotaran_model_item
 
 
-@glotaran_model_item(attributes={
-                        'p1': str,
-                        'p2': str,
-                     },
-                     )
+@glotaran_model_item(
+    attributes={
+        'param': str,
+        'megacomplex': str,
+        'param_list': List[str],
+        'default': {'type': int, 'default': 42},
+        'complex': {'type': Dict[Tuple[str, str], str], 'check': ('compartment', 'parameter')},
+    },
+)
 class MockAttr:
     pass
 
@@ -30,8 +35,12 @@ def model():
             "j2": {'parameters': ["3", "4"]},
         },
         "test": {
-            "t1": {'p1': "foo", 'p2': "baz"},
-            "t2": ['9', '9'],
+            "t1": {'param': "foo",
+                   'megacomplex': "m1",
+                   'param_list': ["bar", "baz"],
+                   'complex': {('s1', 's2'): "baz"},
+                    },
+            "t2": ['baz', 'm2', ['foo'], 7, {}],
         },
         "dataset": {
             "dataset1": {
@@ -59,6 +68,13 @@ def model_error():
             "j4": [["5", "7"]],
             "j2": {'parameters': ["i7", "i4"]},
         },
+        "test": {
+            "t1": {'param': "fool",
+                   'megacomplex': "mX",
+                   'param_list': ["bar", "bay"],
+                   'complex': {('s1', 's3'): "boz"},
+                   },
+                },
         "dataset": {
             "dataset1": {
                 "initial_concentration": 'j3',
@@ -79,6 +95,7 @@ def model_error():
 def parameter():
     params = [1, 2, 3, 4,
               ['foo', 3],
+              ['bar', 4],
               ['baz', 2],
               ['scale1', 2],
               ['scale2', 8],
@@ -90,8 +107,6 @@ def test_model_types(model):
     assert model.model_type == 'mock'
     assert model.dataset_type is DatasetDescriptor
     assert model.fitmodel_type is FitModel
-    assert model.calculated_matrix is Matrix
-    assert model.estimated_matrix is Matrix
 
 
 @pytest.mark.parametrize("attr",
@@ -114,9 +129,9 @@ def test_model_validity(model, model_error, parameter):
     print(model_error.errors())
     print(model_error.errors_parameter(parameter))
     assert not model_error.valid()
-    assert len(model_error.errors()) is 5
+    assert len(model_error.errors()) is 8
     assert not model_error.valid_parameter(parameter)
-    assert len(model_error.errors_parameter(parameter)) is 5
+    assert len(model_error.errors_parameter(parameter)) is 8
 
 def test_items(model):
     assert model.compartment == ['s1', 's2']
@@ -130,11 +145,19 @@ def test_items(model):
     assert model.get_initial_concentration('j2').parameters == ['3', '4']
 
     assert 't1' in model.test
-    assert model.get_test('t1').p1 == 'foo'
-    assert model.get_test('t1').p2 == 'baz'
+    t = model.get_test('t1')
+    assert t.param == "foo"
+    assert t.megacomplex == 'm1'
+    assert t.param_list == ["bar", "baz"]
+    assert t.default == 42
+    assert t.complex == {('s1', 's2'): "baz"}
     assert 't2' in model.test
-    assert model.get_test('t2').p1 == '9'
-    assert model.get_test('t2').p2 == '9'
+    t = model.get_test('t2')
+    assert t.param == "baz"
+    assert t.megacomplex == 'm2'
+    assert t.param_list == ["foo"]
+    assert t.default == 7
+    assert t.complex == {}
 
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').initial_concentration == 'j1'
@@ -174,8 +197,14 @@ def test_fill(model, parameter):
     assert len(dataset.compartment_constraints) == 0
 
     t = model.get_test('t1').fill(model, parameter)
-    assert t.p1 == 3
-    assert t.p2 == 2
+    assert t.param == 3
+    assert t.megacomplex.label == 'm1'
+    assert t.param_list == [4, 2]
+    assert t.default == 42
+    assert t.complex == {('s1', 's2'): 2}
     t = model.get_test('t2').fill(model, parameter)
-    assert t.p1 == 4e2
-    assert t.p2 == 4e2
+    assert t.param == 2
+    assert t.megacomplex.label == 'm2'
+    assert t.param_list == [3]
+    assert t.default == 7
+    assert t.complex == {}
