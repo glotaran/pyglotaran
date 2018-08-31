@@ -23,6 +23,7 @@ def _yml_tuple_constructor(loader, node):
 
     value = loader.construct_scalar(node)
     # remove the ( ) from the string
+    print(value)
     tup_elements = value[1:-1].split(',')
     # remove the last element if the tuple was written as (x,b,)
     if tup_elements[-1] == '':
@@ -34,8 +35,7 @@ def _yml_tuple_constructor(loader, node):
 # !tuple is my own tag name, I think you could choose anything you want
 yaml.add_constructor(u'!tuple', _yml_tuple_constructor)
 # this is to spot the strings written as tuple in the yaml
-yaml.add_implicit_resolver(u'!tuple', re.compile(r"\(([^,\W]{,},){,}[^,\W]*\)"))
-
+yaml.add_implicit_resolver(u'!tuple', re.compile(r"\((.*?,.*?)\)"))
 
 def parse_yml_file(fname: str) -> Dict:
     """parse_yml_file reads the given file and parses its content as YML.

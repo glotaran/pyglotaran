@@ -3,10 +3,11 @@
 from typing import Dict, List
 from glotaran.model import DatasetDescriptor, glotaran_model_item
 
+from .spectral_shape import DatasetShape
 
 @glotaran_model_item(attributes={
     'irf': {'type': str, 'default': None},
-    'shape': {'type': Dict[str, List[str]], 'default': None}},
+    'shape': {'type': List[DatasetShape], 'default': None}},
 )
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     """SpectralTemporalDatasetDescriptor is an implementation of
