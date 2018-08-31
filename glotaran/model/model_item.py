@@ -2,6 +2,7 @@ from typing import List
 from dataclasses import dataclass, replace
 import inspect
 
+from .validator import Validator
 
 class MissingParameterException(Exception):
     pass
@@ -27,6 +28,7 @@ def item_or_list_to_param(name, item, item_class):
     for i in range(len(item)):
         item[i] = item_to_param(name, item[i], item_class)
     return item
+
 
 def item_to_param(name, item, item_class):
     is_typed = hasattr(item_class, "_glotaran_model_item_typed")
@@ -56,6 +58,30 @@ def item_to_param(name, item, item_class):
             item_class = \
                 item_class._glotaran_model_item_types[item_type]
         return item_class.from_list(item)
+
+
+def check_model(attribute: str):
+    def check(item, model):
+        missing = []
+        if not isinstance(item, (list, tuple, set)):
+            item = [item]
+        for i in item:
+            if not parameter.has(i):
+                missing.append(i)
+        return missing
+    return check
+
+
+def check_parameter():
+    def check(item, parameter):
+        missing = []
+        if not isinstance(item, (list, tuple, set)):
+            item = [item]
+        for i in item:
+            if not parameter.has(i):
+                missing.append(i)
+        return missing
+    return check
 
 
 def glotaran_model_item(attributes={},
@@ -103,9 +129,12 @@ def glotaran_model_item(attributes={},
                 if 'default' in item_dict:
                     default = item_dict.get('default')
                     getattr(cls, '_glotaran_attribute_defaults')[name] = default
+            else:
+                attributes[name] = {'type': item_class}
             annotations[name] = item_class
             if is_item_or_list_of(item_class):
                 validate_nested.append(name)
+
         setattr(cls, '__annotations__', annotations)
 
         # We turn it into dataclass to get automagic inits
@@ -159,59 +188,29 @@ def glotaran_model_item(attributes={},
 
         setattr(cls, 'from_list', from_list)
 
-        def val_model(self, model, errors=[]):
-            attrs = getattr(self, '_glotaran_attributes')
-            for attr in attrs:
-                item = getattr(self, attr)
-                if hasattr(model, attr):
-                    labels = item
-                    if not isinstance(labels, list):
-                        labels = [labels]
-                    model_attr = getattr(model, attr)
-                    for label in labels:
-                        if label not in model_attr:
-                            errors.append(f"Missing '{attr}' with label '{label}'")
+        validator = Validator(attributes)
 
-                else:
-                    nested = item
-                    if not isinstance(nested, list):
-                        nested = [nested]
-                    for n in nested:
-                        if hasattr(n, "_glotaran_model_item"):
-                            n.validate_model(model, errors=errors)
-
-            return errors
+        def val_model(self, model, errors=[], validator=validator):
+            return validator.val_model(self, model, errors)
 
         setattr(cls, 'validate_model', val_model)
 
-        def val_parameter(self, model, parameter, errors=[]):
-            attrs = getattr(self, '_glotaran_attributes')
-            for attr in attrs:
-                item = getattr(self, attr)
-                if not hasattr(model, attr):
-                    if not isinstance(item, list):
-                        item = [item]
-                    if any([not isinstance(i, str) for i in item]):
-                        continue
-                    for label in item:
-                        if not parameter.has(label):
-                            errors.append(f"Missing parameter with label '{label}'")
-
-                else:
-                    nested = item
-                    if not isinstance(nested, list):
-                        nested = [nested]
-                    for n in nested:
-                        if hasattr(n, "_glotaran_model_item"):
-                            n.validate_parameter(model, parameter, errors=errors)
-
-            return errors
-
+        def val_parameter(self, model, parameter, errors=[],
+                          validator=validator):
+            return validator.val_parameter(self, model, parameter, errors)
         setattr(cls, 'validate_parameter', val_parameter)
 
         def fill(self, model, parameter):
 
             def convert(item):
+                if isinstance(item, dict):
+                    cp = item.copy()
+                    for k, v in item.items():
+                        if isinstance(v, list):
+                            cp[k] = [convert(i) for i in v]
+                        else:
+                            cp[k] = convert(v)
+                    return cp
                 if not isinstance(item, str):
                     return item
                 if hasattr(item, "_glotaran_model_item"):
