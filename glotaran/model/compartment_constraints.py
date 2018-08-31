@@ -44,6 +44,8 @@ class EqualConstraint(ZeroConstraint):
 
 
 @glotaran_model_item(attributes={
+                        'targets': List[str],
+                        'parameters': List[str],
                         'weight': str,
                     }, has_type=True, no_label=True)
 class EqualAreaConstraint(EqualConstraint):

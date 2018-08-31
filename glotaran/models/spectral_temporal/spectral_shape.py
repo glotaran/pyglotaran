@@ -82,3 +82,11 @@ class SpectralShapeZero:
 class SpectralShape:
     """Base class for spectral shapes"""
     pass
+
+
+@glotaran_model_item(attributes={
+    'compartment': str,
+    'shape': str,
+}, no_label=True)
+class DatasetShape:
+    pass

@@ -26,6 +26,7 @@ def item_or_list_to_param(name, item, item_class):
     if not islist:
         return item_to_param(name, item, item_class)
     for i in range(len(item)):
+        print(item)
         item[i] = item_to_param(name, item[i], item_class)
     return item
 
@@ -58,30 +59,6 @@ def item_to_param(name, item, item_class):
             item_class = \
                 item_class._glotaran_model_item_types[item_type]
         return item_class.from_list(item)
-
-
-def check_model(attribute: str):
-    def check(item, model):
-        missing = []
-        if not isinstance(item, (list, tuple, set)):
-            item = [item]
-        for i in item:
-            if not parameter.has(i):
-                missing.append(i)
-        return missing
-    return check
-
-
-def check_parameter():
-    def check(item, parameter):
-        missing = []
-        if not isinstance(item, (list, tuple, set)):
-            item = [item]
-        for i in item:
-            if not parameter.has(i):
-                missing.append(i)
-        return missing
-    return check
 
 
 def glotaran_model_item(attributes={},

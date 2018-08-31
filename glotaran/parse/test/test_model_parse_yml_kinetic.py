@@ -43,43 +43,42 @@ def test_dataset(model):
     assert dataset.scale == 1
 
     assert len(dataset.shape) == 2
-        #      self.assertTrue("s1" in dataset.shapes)
-        #      self.assertEqual(dataset.shapes["s1"], ["shape1"])
-        #      self.assertTrue("s2" in dataset.shapes)
-        #      self.assertEqual(dataset.shapes["s2"], ["shape2"])
-        #
-        #  else:
-        #      self.assertTrue(len(dataset.compartment_constraints) is 4)
-        #
-        #      self.assertTrue(any(isinstance(c, ZeroConstraint) for c in
-        #                          dataset.compartment_constraints))
-        #
-        #      zcs = [zc for zc in dataset.compartment_constraints
-        #             if isinstance(zc, ZeroConstraint)]
-        #      self.assertTrue(len(zcs) is 2)
-        #      for zc in zcs:
-        #          self.assertEqual(zc.compartment, 's1')
-        #          self.assertEqual(zc.intervals, [(1, 100), (2, 200)])
-        #
-        #      self.assertTrue(any(isinstance(c, EqualConstraint) for c in
-        #                          dataset.compartment_constraints))
-        #      ec = [ec for ec in dataset.compartment_constraints
-        #            if isinstance(ec, EqualConstraint)][0]
-        #      self.assertEqual(ec.compartment, 's2')
-        #      self.assertEqual(ec.intervals, [(60, 700)])
-        #      self.assertEqual(ec.targets, ['s1', 's2'])
-        #      self.assertEqual(ec.parameters, [54, 56])
-        #
-        #      self.assertTrue(any(isinstance(c, EqualAreaConstraint) for c in
-        #                          dataset.compartment_constraints))
-        #      eac = [eac for eac in dataset.compartment_constraints
-        #             if isinstance(eac, EqualAreaConstraint)][0]
-        #      self.assertEqual(eac.compartment, 's3')
-        #      self.assertEqual(eac.intervals, [(670, 810)])
-        #      self.assertEqual(eac.target, 's2')
-        #      self.assertEqual(eac.parameter, 55)
-        #      self.assertEqual(eac.weight, 0.0016)
-        #  i = i + 1
+    assert dataset.shape[0].compartment == 's1'
+    assert dataset.shape[0].shape == "shape1"
+    assert dataset.shape[1].compartment == 's2'
+    assert dataset.shape[1].shape == "shape2"
+
+    dataset = model.dataset['dataset2']
+    assert len(dataset.compartment_constraints) == 4
+
+    assert any(isinstance(c, ZeroConstraint) for c in
+               dataset.compartment_constraints)
+
+    zcs = [zc for zc in dataset.compartment_constraints
+           if zc.type == 'zero']
+    assert len(zcs) == 2
+    for zc in zcs:
+        assert zc.compartment == 's1'
+        assert zc.interval == [(1, 100), (2, 200)]
+
+    assert any(isinstance(c, EqualConstraint) for c in
+               dataset.compartment_constraints)
+    ec = [ec for ec in dataset.compartment_constraints
+          if isinstance(ec, EqualConstraint)][0]
+    assert ec.compartment == 's2'
+    assert ec.interval == [(60, 700)]
+    assert ec.targets == ['s1', 's2']
+    assert ec.parameters == [54, 56]
+
+    assert any(isinstance(c, EqualAreaConstraint) for c in
+               dataset.compartment_constraints)
+    eac = [eac for eac in dataset.compartment_constraints
+           if isinstance(eac, EqualAreaConstraint)][0]
+    assert eac.compartment == 's3'
+    assert eac.interval == [(670, 810)]
+    assert eac.targets == 's2'
+    assert eac.parameters == 55
+    assert eac.weight == 0.0016
 
 
 def test_initial_concentration(model):
@@ -127,18 +126,15 @@ def test_irf(model):
         i = i + 1
 
 
-#  def test_k_matrices(self):
-#      self.assertTrue("km1" in self.model.k_matrices)
-#      self.assertTrue(np.array_equal(self.model.k_matrices["km1"]
-#                                     .asarray(),
-#                      np.array([[1, 3, 5, 7],
-#                                [2, 0, 0, 0],
-#                                [4, 0, 0, 0],
-#                                [6, 0, 0, 0]]
-#                               )
-#                                    )
-#                      )
-#
+def test_k_matrices(model):
+    assert "km1" in model.k_matrix
+    print(model.k_matrix['km1'])
+    assert np.array_equal(model.k_matrix["km1"].asarray(model.compartment),
+                          np.asarray([[1, 3, 5, 7],
+                                      [2, 0, 0, 0],
+                                      [4, 0, 0, 0],
+                                      [6, 0, 0, 0]]))
+
 def test_shapes(model):
 
     assert "shape1" in model.shape
