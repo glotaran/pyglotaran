@@ -6,14 +6,12 @@ import numpy as np
 from glotaran.fitmodel import Matrix
 from glotaran.model import Model, ParameterGroup
 
-from .kinetic_matrix_no_irf import kinetic_matrix_no_irf
+from kinetic_matrix_no_irf import calc_kinetic_matrix_no_irf
 from .irf import IrfGaussian, IrfMeasured
 from .k_matrix import KMatrix
 
-_BACKEND = CMatrixCython()
 
-
-def calculate_kinetic_matrix(dataset, compartments, index, axis)
+def calculate_kinetic_matrix(dataset, compartments, index, axis):
     """ Calculates the matrix.
 
     Parameters
