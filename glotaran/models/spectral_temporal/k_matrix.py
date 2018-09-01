@@ -87,10 +87,10 @@ class KMatrix:
 
     def asarray(self, compartments) -> np.ndarray:
         """ Depricated, only used for testing"""
- 
+
         compartments = [c for c in compartments if c in self.involved_compartments()]
         size = len(compartments)
-        array = np.zeros((size, size), dtype=np.int32)
+        array = np.zeros((size, size), dtype=np.float64)
         # Matrix is a dict
         for index in self.matrix:
             i = compartments.index(index[0])
@@ -155,20 +155,32 @@ class KMatrix:
         (eigenvalues, eigenvectos) : tuple(np.ndarray, np.ndarray)
 
         """
-        matrix = self.full(compartments)
-        # get the eigenvectors and values
-        eigenvalues, eigenvectors = scipy.linalg.eig(matrix)
+        # We take the transpose to be consistent with timp
+        matrix = self.full(compartments).T
+        # get the eigenvectors and values, we take the left ones to have
+        # computation consistent with TIMP
+        eigenvalues, eigenvectors = scipy.linalg.eig(matrix, left=True,
+                                                     right=False)
         return (eigenvalues.real, eigenvectors.real)
+
+    def gamma(self,
+              compartments,
+              eigenvectors,
+              initial_concentration: InitialConcentration) -> np.ndarray:
+        k_compartments = [c for c in compartments if c in self.involved_compartments()]
+        initial_concentration = \
+            [initial_concentration.parameters[compartments.index(c)]
+             for c in k_compartments]
+        eigenvectors = scipy.linalg.inv(eigenvectors)
+        gamma = np.matmul(eigenvectors, initial_concentration)
+
+        return gamma
 
     def a_matrix(self,
                  compartments,
                  initial_concentration: InitialConcentration) -> np.ndarray:
-        k_compartments = [c for c in compartments if c in self.involved_compartments()]
-        initial_concentration = \
-            [initial_concentration.parameters[compartments.index(c)] 
-             for c in k_compartments]
         eigenvalues, eigenvectors = self.eigen(compartments)
-        gamma = np.matmul(scipy.linalg.inv(eigenvectors), initial_concentration)
+        gamma = self.gamma(compartments, eigenvectors, initial_concentration)
 
         a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
 
