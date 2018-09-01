@@ -25,8 +25,8 @@ class IrfMeasured:
     'center': str,
     'width': str,
     'dispersion_center': {'type': str, 'default': None},
-    'center_dispersion': {'type': List[str], 'default': None},
-    'width_dispersion': {'type': List[str], 'default': None},
+    'center_dispersion': {'type': List[str], 'default': []},
+    'width_dispersion': {'type': List[str], 'default': []},
     'scale': {'type': str, 'default': None},
     'normalize': {'type': bool, 'default': False},
     'backsweep': {'type': bool, 'default': False},
@@ -59,7 +59,27 @@ class IrfGaussian:
         width as parameter indices. None for no dispersion.
 
     """
-    pass
+    def parameter(self, index):
+
+        dist = (index - self.dispersion_center) if self.dispersion is not None else 0
+        centers = self.center if isinstance(self.center, list) else [self.center]
+        if len(self.center_dispersion) is not 0:
+            for i, disp in enumerate(self.center_dispersion):
+                centers = centers + disp * np.power(dist, i+1)
+
+        widths = self.width if isinstance(self.width, list) else [self.width]
+        if len(self.width_dispersion) is not 0:
+            for i, disp in enumerate(self.width_dispersion):
+                widths = widths + disp * np.power(dist, i+1)
+
+        scale = self.scale if self.scale is not None else 1
+
+        backsweep = 1 if self.backsweep else 0
+
+        backsweep_period = self._irf.backsweep_period
+
+        return centers, widths, scale, backsweep, backsweep_period
+
 
 
 @glotaran_model_item_typed(types={
