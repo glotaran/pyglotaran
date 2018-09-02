@@ -11,7 +11,7 @@ def get_pixel_map(array: Union[None, np.ndarray]=None,
                   shape: Union[set, tuple, list]=None,
                   x_index: int=0, y_index: int=1,
                   transposed: bool=False)\
-        -> Union[Tuple[Tuple], Tuple[Tuple, Tuple]]:
+        -> Union[Tuple[tuple], Tuple[tuple, tuple]]:
     """
 
     Parameters

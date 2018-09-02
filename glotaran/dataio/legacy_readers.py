@@ -11,7 +11,7 @@ import pandas as pd
 
 def FLIM_legacy_to_df(file_path: str, zero_pad: bool=False,
                       traces_only=True) \
-        -> Union[Tuple[pd.DataFrame, Tuple], Tuple[Dict[str, pd.DataFrame], Tuple]]:
+        -> Union[Tuple[pd.DataFrame, tuple], Tuple[Dict[str, pd.DataFrame], tuple]]:
     """
     File reader for FLIM data saved with `glotaran 1.5`.
 
