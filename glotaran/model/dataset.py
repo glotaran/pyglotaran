@@ -1,9 +1,16 @@
-"""This module contains glotaran's dataset class."""
+"""Glotaran Dataset"""
 
-from typing import Tuple, List, Union
 from copy import copy
+from typing import Callable, List, Tuple, Union
+import warnings
+
 import numpy as np
 
+class DimensionalityError(Exception):
+    """
+    Custom exception if data have the wrong dimensionality
+    """
+    pass
 
 class Dataset:
     """Dataset is a small interface which dataset/-file implementations can
@@ -16,7 +23,7 @@ class Dataset:
     def __init__(self):
         self._axis = {}
 
-    def get_axis(self, label: str) -> np.ndarray:
+    def get_axis(self, axis_label: str) -> np.ndarray:
         """get_axis gets an axis by its label.
 
         Parameters
@@ -28,9 +35,9 @@ class Dataset:
         -------
         axis : np.ndarray
         """
-        return self._axis[label]
+        return self._axis[axis_label]
 
-    def set_axis(self, label: str, axis:  Union[List, np.ndarray]):
+    def set_axis(self, axis_label: str, axis:  Union[list, tuple, np.ndarray]):
         """
 
         Parameters
@@ -39,13 +46,13 @@ class Dataset:
             The label of the axis.
         axis : np.ndarray
         """
-        if not isinstance(axis, np.ndarray):
-            raise TypeError("Axis must be of type numpy.ndarray")
+        if not isinstance(axis, (list, tuple, np.ndarray)):
+            raise TypeError(f"Axis must be list, tuple or ndarray, got {type(axis)} instead.")
         if any(not _hashable(v) for v in axis):
             raise ValueError("Axis elements must be hashable.")
         if isinstance(axis, list):
             axis = np.asarray(axis)
-        self._axis[label] = axis
+        self._axis[axis_label] = axis
 
     def data(self) -> np.array:
         """Data returns the actual data of the dataset.
@@ -61,18 +68,19 @@ class Dataset:
 
         Parameters
         ----------
-        data : np.ndarray
-
+        data: np.ndarray
+            Data of the dataset as np.ndarray of shape (M,N)
 
         """
         if not isinstance(data, np.ndarray):
-            raise TypeError("Data must be a nd array")
+            raise TypeError("The data needs to be a ndarray")
         if len(data.shape) is not 2:
-            raise ValueError("Dataset must be 2-dimensional")
+            raise DimensionalityError("The data needs to be 2-dimensional")
         self._data = data
 
     def copy(self) -> 'Dataset':
-        """Returns a copy of the Dataset Object
+        """
+        Returns a copy of the Dataset Object
 
         Returns
         -------
