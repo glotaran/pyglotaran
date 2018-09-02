@@ -9,7 +9,7 @@ from ..legacy_readers import FLIM_legacy_to_df
 from ..mapper import get_pixel_map
 from ...model.dataset import DimensionalityError
 from ...model.specialized_datasets import FLIMDataset
-from ...models.spectral_temporal.dataset import SpectralTemporalDataset
+from ...models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
 from . import TEMPORAL_DATA, FLIM_DATA
 
 

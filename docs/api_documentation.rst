@@ -32,6 +32,8 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.dataio.external_file_readers
     glotaran.dataio.external_file_readers.sdt_reader
     glotaran.dataio.file_readers
+    glotaran.dataio.legacy_readers
+    glotaran.dataio.mapper
     glotaran.dataio.mlsd_file_format
     glotaran.dataio.spectral_timetrace
     glotaran.dataio.wavelength_time_explicit_file
@@ -45,6 +47,7 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.model.model_item_validator
     glotaran.model.parameter
     glotaran.model.parameter_group
+    glotaran.model.specialized_datasets
     glotaran.models
     glotaran.models.damped_oscillation
     glotaran.models.damped_oscillation.doas_matrix

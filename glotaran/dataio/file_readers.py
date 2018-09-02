@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from .external_file_readers.sdt_reader import SdtFile
 from .mapper import get_pixel_map
-from ..models.spectral_temporal.dataset import SpectralTemporalDataset
+from ..models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
 from ..model.specialized_datasets import FLIMDataset
 from ..model.dataset import DimensionalityError
 

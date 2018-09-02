@@ -32,8 +32,8 @@ def FLIM_legacy_to_df(file_path: str, zero_pad: bool=False,
     Returns
     -------
     Union[Tuple[pd.DataFrame, Tuple], Tuple[Dict[str, pd.DataFrame], Tuple]]
-        pd.DataFrame with selected pixels time traces or dict with pixels time traces and intesity map
-        (see `traces_only`) and original shape of the data
+        pd.DataFrame with selected pixels time traces or dict with pixels time traces and
+        intesity map (see `traces_only`) and original shape of the data
 
 
     """

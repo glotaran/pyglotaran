@@ -118,7 +118,7 @@ class SpectralTemporalDataset(Dataset):
 
     @property
     def spectral_axis(self, unit: str=None):
-        """the spectral axies """
+        """the spectral axis """
         return self.get_axis("spectral")
 
     @spectral_axis.setter
@@ -126,9 +126,9 @@ class SpectralTemporalDataset(Dataset):
         self.set_axis("spectral", value)
 
     def get_estimated_axis(self):
-        """ """
+        """the spectral axis """
         return self.spectral_axis
 
     def get_calculated_axis(self):
-        """ """
+        """the time axis  """
         return self.time_axis
