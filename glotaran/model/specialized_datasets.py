@@ -8,10 +8,10 @@ from typing import Callable, List, Tuple, Union
 
 import numpy as np
 
-from .dataset import HighDimentionalDataset
+from .dataset import HighDimensionalDataset
 
 
-class FLIMDataset(HighDimentionalDataset):
+class FLIMDataset(HighDimensionalDataset):
     """
     Custom Data set for FLIM data
     """

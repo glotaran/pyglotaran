@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 
+
 class DimensionalityError(Exception):
     """
     Custom exception if data have the wrong dimensionality
@@ -59,7 +60,7 @@ class Dataset:
 
         Returns
         -------
-        data : np.ndarray
+        data: np.ndarray
         """
         return self._data
 
