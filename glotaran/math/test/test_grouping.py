@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from glotaran.fitmodel.grouping import create_group, calculate_group, get_data_group
+from glotaran.math.grouping import create_group, calculate_group, get_data_group
 from glotaran.model import ParameterGroup
 
 from .mock import MockDataset, MockModel

@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from glotaran.fitmodel.simulation import simulate
+from glotaran.math.simulation import simulate
 from glotaran.model import ParameterGroup
 
 from .mock import MockDataset, MockModel

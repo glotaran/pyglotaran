@@ -1,7 +1,6 @@
 """Glotaran Fitmodel Result"""
 
 import numpy as np
-from lmfit_varpro import SeparableModelResult
 
 from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup

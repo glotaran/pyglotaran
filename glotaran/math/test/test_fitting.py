@@ -2,8 +2,8 @@ import pytest
 from typing import List
 import numpy as np
 
-from glotaran.fitmodel.simulation import simulate
-from glotaran.fitmodel.fitting import fit
+from glotaran.math.simulation import simulate
+from glotaran.math.fitting import fit
 
 from glotaran.model import DatasetDescriptor, Model, ParameterGroup, glotaran_model_item, glotaran_model
 
