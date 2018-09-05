@@ -78,7 +78,10 @@ class ParameterGroup(OrderedDict):
         for item in parameter:
             if isinstance(item, dict):
                 label, items = list(item.items())[0]
-                root.add_group(cls.from_dict(items, label=label))
+                if isinstance(items, dict):
+                    root.add_group(cls.from_dict(items, label=label))
+                else: 
+                    root.add_group(cls.from_list(items, label=label))
             elif isinstance(item, bool):
                 root.fit = item
             else:

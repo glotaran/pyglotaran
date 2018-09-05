@@ -7,8 +7,10 @@ from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 
-class Result(SeparableModelResult):
+class Result:
     """The result of fit."""
+    def __init__(self, result):
+        self._result = result
 
     @property
     def best_fit_parameter(self) -> ParameterGroup:

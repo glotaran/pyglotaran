@@ -19,24 +19,6 @@ class Dataset:
 
     def __init__(self):
         self._axis = {}
-        self._estimated_axis = None
-        self._calculated_axis = None
-
-    def get_estimated_axis(self):
-        """Get the axis along the calculated matrices are grouped"""
-        return self._estimated_axis
-
-    def set_estimated_axis(self, label: str):
-        """Get the axis along the calculated matrices are grouped"""
-        self._estimated_axis = label
-
-    def get_calculated_axis(self):
-        """Get the axis along the estimated matrices are grouped"""
-        return self._calculated_axis
-
-    def set_calculated_axis(self, label):
-        """Get the axis along the estimated matrices are grouped"""
-        self._calculated_axis = label
 
     def get_axis(self, label):
         """

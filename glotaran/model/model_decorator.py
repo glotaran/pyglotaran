@@ -16,6 +16,8 @@ def glotaran_model(name,
                    megacomplex_type=Megacomplex,
                    calculated_matrix=None,
                    estimated_matrix=None,
+                   calculated_axis=None,
+                   estimated_axis=None,
                    ):
 
     def decorator(cls):
@@ -27,10 +29,12 @@ def glotaran_model(name,
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
         setattr(cls, 'calculated_matrix', property(c_mat))
+        setattr(cls, 'calculated_axis', calculated_axis)
 
         def e_mat(self, e_mat=estimated_matrix):
             return e_mat
         setattr(cls, 'estimated_matrix', property(e_mat))
+        setattr(cls, 'estimated_axis', estimated_axis)
 
         if not hasattr(cls, '__annotations__'):
             setattr(cls, '__annotations__', {})
