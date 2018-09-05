@@ -98,42 +98,6 @@ class Model:
                                    nnls=nnls,
                                    **kwargs)
 
-    def simulate(self,
-                 parameter: ParameterGroup,
-                 dataset: str,
-                 axis: Dict[str, np.ndarray],
-                 noise=False,
-                 noise_std_dev=1.0,
-                 ):
-        """Simulates the model.
-
-        Parameters
-        ----------
-        parameter : ParameterGroup
-            The parameters for the simulation.
-        dataset : str
-            Label of the dataset to simulate
-
-        axis : dict(str, np.ndarray)
-            A dictory with axis
-        noise :
-            (Default value = False)
-        noise_std_dev :
-            (Default value = 1.0)
-
-        """
-        data = self.dataset_type(dataset)
-        parameter = parameter.as_parameter_dict()
-        for label, val in axis.items():
-            data.set_axis(label, val)
-        self.datasets[dataset].dataset = data
-
-        kwargs = {}
-        kwargs['dataset'] = dataset
-        kwargs['noise'] = noise
-        kwargs['noise_std_dev'] = noise_std_dev
-        data = self.fit_model().eval(parameter, **kwargs)
-        self.get_dataset(dataset).set(data)
 
     def concentrations(self, parameter: ParameterGroup, dataset: str) -> np.ndarray:
         """Returns the precited concentrations for a dataset.

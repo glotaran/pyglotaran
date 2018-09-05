@@ -39,7 +39,7 @@ def model():
                    'megacomplex': "m1",
                    'param_list': ["bar", "baz"],
                    'complex': {('s1', 's2'): "baz"},
-                    },
+                   },
             "t2": ['baz', 'm2', ['foo'], 7, {}],
         },
         "dataset": {
