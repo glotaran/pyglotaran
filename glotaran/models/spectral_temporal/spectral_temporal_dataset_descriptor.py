@@ -7,7 +7,7 @@ from .spectral_shape import DatasetShape
 
 @glotaran_model_item(attributes={
     'irf': {'type': str, 'default': None},
-    'shape': {'type': List[DatasetShape], 'default': None}},
+    'shapes': {'type': Dict[str, str], 'check': ('compartment', 'shape')},
 )
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     """SpectralTemporalDatasetDescriptor is an implementation of

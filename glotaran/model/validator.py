@@ -58,7 +58,7 @@ def val_model_attr(labels, model, attr, errors):
         labels = [labels]
     model_attr = getattr(model, attr)
     for label in labels:
-        if label not in model_attr:
+        if label not in model_attr and label is not None:
             errors.append(f"Missing '{attr}' with label '{label}'")
 
 

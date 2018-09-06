@@ -8,6 +8,7 @@ import numpy as np
 import inspect
 
 from glotaran.math.fitresult import Result
+from glotaran.math.simulation import simulate
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
@@ -72,6 +73,10 @@ class Model:
                 del model_dict[name]
 
         return model
+
+    def simulate(self, dataset: str, parameter: ParameterGroup, axis: Dict[str, np.ndarray]):
+        data = simulate(self, parameter, dataset, axis)
+        self.set_data(dataset, data)
 
     def fit(self, parameter: ParameterGroup, *args, nnls=False, **kwargs) -> Type[Result]:
         """ Fits the model and returns the result.

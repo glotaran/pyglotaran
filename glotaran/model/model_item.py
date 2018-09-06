@@ -121,8 +121,11 @@ def glotaran_model_item(attributes={},
         setattr(cls, '_glotaran_model_item', True)
 
         # store for later sanity checking
-        setattr(cls, '_glotaran_attributes', [name for name in attributes])
-
+        if not hasattr(cls, '_glotaran_attributes'):
+            setattr(cls, '_glotaran_attributes', [])
+        for name in attributes:
+            if name not in getattr(cls, '_glotaran_attributes'):
+                getattr(cls, '_glotaran_attributes').append(name)
         # now we want nice class methods for serializing
 
         @classmethod
@@ -196,13 +199,16 @@ def glotaran_model_item(attributes={},
 
             replaced = {}
             attrs = getattr(self, '_glotaran_attributes')
+            print(attrs)
             for attr in attrs:
                 item = getattr(self, attr)
+                print(item)
                 if hasattr(model, attr):
+                    print('model_attr')
                     model_attr = getattr(model, attr)
                     if isinstance(item, list):
                         item = [model_attr[i].fill(model, parameter) for i in item]
-                    else:
+                    elif item is not None:
                         item = model_attr[item].fill(model, parameter)
                 elif isinstance(item, list):
                     item = [convert(i) for i in item]
