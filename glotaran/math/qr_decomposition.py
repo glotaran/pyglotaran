@@ -3,7 +3,6 @@ import scipy.linalg.lapack as lapack
 
 def qr_residual(A, B):
 
-    A = A.T
 
     # Kaufman Q2 step 3
     qr, tau, _, _ = lapack.dgeqrf(A)

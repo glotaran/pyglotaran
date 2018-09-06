@@ -1,8 +1,4 @@
-"""Glotarans fitmodel package"""
+"""Glotaran Math Package
 
-from . import (matrix, matrix_group_generator, fitmodel, result)
-
-FitModel = fitmodel.FitModel
-MatrixGroupGenerator = matrix_group_generator.MatrixGroupGenerator
-Matrix = matrix.Matrix
-Result = result.Result
+This package contains fucntion for simulating and fitting models.
+"""

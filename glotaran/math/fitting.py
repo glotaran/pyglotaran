@@ -4,17 +4,18 @@ import numpy as np
 from glotaran.model import ParameterGroup
 from .grouping import create_group, calculate_group, get_data_group
 from .qr_decomposition import qr_residual
-from .result import Result
+from .fitresult import Result
 
 
 def fit(model, parameter):
 
     group = create_group(model)
     data = get_data_group(model, group)
+
     def residual(parameter, group, model, data, **kwargs):
         parameter = ParameterGroup.from_parameter_dict(parameter)
-        group = calculate_group(group, model, parameter)
-        res = [qr_residual(group[i], data[i]) for i in range(len(group))]
+        res = np.concatenate([qr_residual(matrix, data[i]) for i, matrix in
+                              calculate_group(group, model, parameter)])
         return res
 
     parameter = parameter.as_parameter_dict(only_fit=True)
@@ -27,4 +28,5 @@ def fit(model, parameter):
         scale_covar=True, nan_policy='omit',
         reduce_fcn=None,
         **{})
-    return Result(minimizer.minimize())
+    return Result(minimizer.minimize(method='least_squares',
+                                     verbose=2))

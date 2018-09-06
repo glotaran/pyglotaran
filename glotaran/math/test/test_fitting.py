@@ -19,8 +19,8 @@ def calculate_kinetic(dataset, compartments, index, axis):
 
     array = np.exp(np.outer(axis, kinpar))
     OLD_KIN = kinpar
-    OLD_MAT = array.T
-    return (compartments, array.T)
+    OLD_MAT = array
+    return (compartments, array)
 
 
 def calculate_spectral_simple(dataset, compartments, axis):
@@ -48,7 +48,6 @@ def calculate_spectral_gauss(dataset, compartments, axis):
 })
 class DecayDatasetDescriptor(DatasetDescriptor):
     pass
-
 
 @glotaran_model_item(attributes={
     'kinetic': List[str],
@@ -178,8 +177,11 @@ class MultichannelMulticomponentDecay:
     })
 
 
-@pytest.mark.parametrize("suite", [OneCompartmentDecay, TwoCompartmentDecay,
-                                   MultichannelMulticomponentDecay])
+@pytest.mark.parametrize("suite", [
+    OneCompartmentDecay,
+    TwoCompartmentDecay,
+    MultichannelMulticomponentDecay
+])
 def test_fitting(suite):
     model = suite.model
     sim_model = suite.sim_model
@@ -209,3 +211,7 @@ def test_fitting(suite):
     for param in result.best_fit_parameter.all():
         assert np.allclose(param.value, wanted.get(param.label).value,
                            rtol=1e-1)
+
+
+if __name__ == '__main__':
+    pytest.main(__file__)

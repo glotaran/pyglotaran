@@ -7,7 +7,7 @@ from glotaran.model import ParameterGroup
 from .mock import MockDataset, MockModel
 
 
-def test_single_dataset():
+def test_simulate_dataset():
     model = MockModel.from_dict({
         "compartment": ["s1", "s2"],
         "initial_concentration": {

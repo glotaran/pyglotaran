@@ -23,7 +23,8 @@ def calculate_group(group, model, parameter):
     if model.calculated_matrix is None:
         raise Exception("Missing function for calculated matrix.")
 
-    result = []
+    i = 0
+    datasets = {}
     for _, item in group.items():
         full = None
         full_compartments = None
@@ -31,10 +32,13 @@ def calculate_group(group, model, parameter):
 
             if dataset_descriptor.dataset is None:
                 raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
-
             axis = dataset_descriptor.dataset.get_axis(model.calculated_axis)
+            if dataset_descriptor.label not in datasets:
+                dataset_descriptor = dataset_descriptor.fill(model, parameter)
+                datasets[dataset_descriptor.label] = dataset_descriptor
+            else:
+                dataset_descriptor = datasets[dataset_descriptor.label]
 
-            dataset_descriptor = dataset_descriptor.fill(model, parameter)
 
             (compartments, this_matrix) = model.calculated_matrix(dataset_descriptor,
                                                                   model.compartment,
@@ -57,8 +61,9 @@ def calculate_group(group, model, parameter):
                     this_matrix = reshape
 
                 full = np.concatenate((full, this_matrix), axis=1)
-        result.append(full)
-    return result
+
+        yield (i, full)
+        i += 1
 
 
 def get_data_group(model, group):
