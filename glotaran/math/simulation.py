@@ -4,6 +4,17 @@ import numpy as np
 from glotaran.model.dataset import Dataset
 
 
+def dot(e, c):
+    dim1 = len(c)
+    dim2 = c[0][1].shape[0]
+    res = np.empty((dim1, dim2), dtype=np.float64)
+
+    for i in range(len(c)):
+        res[i, :] = np.dot(c[i][1], e[i, :])
+
+    return res
+
+
 def simulate(model: "glotaran.model.Model",
              parameter: "glotaran.model.ParameterGroup",
              dataset: str,
@@ -48,8 +59,7 @@ def simulate(model: "glotaran.model.Model",
     compartments = calculated_matrix[0][0]
     estimated_matrix = model.estimated_matrix(filled_dataset, compartments, estimated_axis)
 
-    result = np.asarray([np.dot(estimated_matrix[i, :], c[1])
-                         for i, c in enumerate(calculated_matrix)])
+    result = dot(estimated_matrix, calculated_matrix)
 
     if noise:
         if noise_seed is not None:

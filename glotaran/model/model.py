@@ -7,7 +7,7 @@ from collections import OrderedDict
 import numpy as np
 import inspect
 
-from glotaran.fitmodel import FitModel, Result
+from glotaran.math.fitresult import Result
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
 from .initial_concentration import InitialConcentration
@@ -115,16 +115,6 @@ class Model:
         kwargs = {}
         kwargs['dataset'] = dataset
         return self.fit_model().c_matrix(parameter, **kwargs)
-
-    def fitmodel(self) -> FitModel:
-        """Returns an instance of the models fitmodel.FitModel implementation.
-
-        Returns
-        -------
-
-        fitmodel : fitmodel.FitModel
-        """
-        return self.fitmodel_type(self)
 
     def data(self) -> Generator[DatasetDescriptor, None, None]:
         """Gets all datasets as a generator.

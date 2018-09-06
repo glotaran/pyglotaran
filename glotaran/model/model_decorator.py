@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import List, Type, Dict, Generator
 
-from glotaran.fitmodel import FitModel, Result
+from glotaran.math.fitresult import Result
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
@@ -12,7 +12,6 @@ from .megacomplex import Megacomplex
 def glotaran_model(name,
                    attributes={},
                    dataset_type=DatasetDescriptor,
-                   fitmodel_type=FitModel,
                    megacomplex_type=Megacomplex,
                    calculated_matrix=None,
                    estimated_matrix=None,
@@ -24,7 +23,6 @@ def glotaran_model(name,
 
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
-        setattr(cls, 'fitmodel_type', fitmodel_type)
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
