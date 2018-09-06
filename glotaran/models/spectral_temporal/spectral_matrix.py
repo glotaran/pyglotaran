@@ -3,14 +3,10 @@
 from typing import List
 import numpy as np
 
-from glotaran.fitmodel import Matrix
 from glotaran.model import Model, ParameterGroup
 
 
-def calculate_spectral_matrix(self,
-                              dataset,
-                              index,
-                              axis):
+def calculate_spectral_matrix(dataset, compartments, axis):
     """ Calculates the matrix.
 
     Parameters
@@ -26,8 +22,11 @@ def calculate_spectral_matrix(self,
 
     """
 
-    compartments = []
-    matrix = np.zeros((len(dataset.shapes), axis.shape[0]))
-    for i, shape in enumerate(dataset.shapes):
-        compartments.append(shape.compartment)
-        matrix[:, i] += shape.calculate(axis)
+    shape_compartments = [s.compartment for s in dataset.shapes]
+    compartments = [c for c in compartments if c in shape_compartments]
+    matrix = np.zeros((len(compartments), axis.size))
+    for i, comp in enumerate(compartments):
+        shapes = [s.shape for s in dataset.shapes if s.compartment == comp]
+        for shape in shapes:
+            matrix[:, i] += shape.calculate(axis)
+    return matrix

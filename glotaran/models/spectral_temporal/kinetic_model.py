@@ -2,18 +2,15 @@
 
 from typing import Type, Dict
 from glotaran.model import Model
-
-from glotaran.fitmodel import FitModel, Matrix
 from glotaran.model import glotaran_model
 
 from .irf import Irf
 from .k_matrix import KMatrix
-from .kinetic_fitmodel import KineticFitModel
-#  from .kinetic_matrix import KineticMatrix
 from .kinetic_megacomplex import KineticMegacomplex
-#  from .spectral_matrix import SpectralMatrix
 from .spectral_shape import SpectralShape
 from .spectral_temporal_dataset_descriptor import SpectralTemporalDatasetDescriptor
+from .kinetic_matrix import calculate_kinetic_matrix
+from .spectral_matrix import calculate_spectral_matrix
 
 
 @glotaran_model('kinetic',
@@ -24,6 +21,11 @@ from .spectral_temporal_dataset_descriptor import SpectralTemporalDatasetDescrip
                 },
                 dataset_type=SpectralTemporalDatasetDescriptor,
                 megacomplex_type=KineticMegacomplex,
+                calculated_matrix=calculate_kinetic_matrix,
+                calculated_axis='time',
+                estimated_matrix=calculate_spectral_matrix,
+                estimated_axis='spectral',
+
 )
 class KineticModel(Model):
     """A kinetic model is an implementation for model.Model. It is used describe
