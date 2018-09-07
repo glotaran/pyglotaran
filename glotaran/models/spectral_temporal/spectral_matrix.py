@@ -22,11 +22,13 @@ def calculate_spectral_matrix(dataset, compartments, axis):
 
     """
 
-    shape_compartments = [s.compartment for s in dataset.shapes]
+    shape_compartments = [s for s in dataset.shapes]
     compartments = [c for c in compartments if c in shape_compartments]
     matrix = np.zeros((len(compartments), axis.size))
     for i, comp in enumerate(compartments):
-        shapes = [s.shape for s in dataset.shapes if s.compartment == comp]
+        shapes = dataset.shapes[comp]
+        if not isinstance(shapes, list):
+            shapes = [shapes]
         for shape in shapes:
             matrix[:, i] += shape.calculate(axis)
     return matrix

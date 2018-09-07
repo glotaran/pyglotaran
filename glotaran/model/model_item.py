@@ -122,10 +122,9 @@ def glotaran_model_item(attributes={},
 
         # store for later sanity checking
         if not hasattr(cls, '_glotaran_attributes'):
-            setattr(cls, '_glotaran_attributes', [])
-        for name in attributes:
-            if name not in getattr(cls, '_glotaran_attributes'):
-                getattr(cls, '_glotaran_attributes').append(name)
+            setattr(cls, '_glotaran_attributes', {})
+        for name, opts in attributes.items():
+            getattr(cls, '_glotaran_attributes')[name] = opts
         # now we want nice class methods for serializing
 
         @classmethod
@@ -182,7 +181,12 @@ def glotaran_model_item(attributes={},
 
         def fill(self, model, parameter):
 
-            def convert(item):
+            def convert_list_or_scalar(item):
+                if isinstance(item, list):
+                    return [convert(i) for i in item]
+                return convert(item)
+
+            def convert(item, target=None):
                 if isinstance(item, dict):
                     cp = item.copy()
                     for k, v in item.items():
@@ -197,23 +201,36 @@ def glotaran_model_item(attributes={},
                     return item.fill(model, parameter)
                 return parameter.get(item).value
 
+            def fill_item_or_list(item, attr):
+                model_attr = getattr(model, attr)
+                if isinstance(item, list):
+                    return [model_attr[i].fill(model, parameter) for i in item]
+                return model_attr[item].fill(model, parameter)
+
             replaced = {}
             attrs = getattr(self, '_glotaran_attributes')
-            print(attrs)
-            for attr in attrs:
+            print("attrs", attrs)
+            for attr, opts in attrs.items():
                 item = getattr(self, attr)
+                print("attr", attr, opts)
                 print(item)
-                if hasattr(model, attr):
-                    print('model_attr')
-                    model_attr = getattr(model, attr)
-                    if isinstance(item, list):
-                        item = [model_attr[i].fill(model, parameter) for i in item]
-                    elif item is not None:
-                        item = model_attr[item].fill(model, parameter)
-                elif isinstance(item, list):
-                    item = [convert(i) for i in item]
+                if item is None:
+                    continue
+                if 'target' in opts:
+                    target = opts['target'][1]
+                    print('target', target)
+                    nitem = {}
+                    for k, v in item.items():
+                        if target == 'parameter':
+                            nitem[k] = convert_list_or_scalar(v)
+                        else:
+                            nitem[k] = fill_item_or_list(v, target)
+                    item = nitem
+
+                elif hasattr(model, attr):
+                    item = fill_item_or_list(item, attr)
                 else:
-                    item = convert(item)
+                    item = convert_list_or_scalar(item)
                 replaced[attr] = item
             return replace(self, **replaced)
 
