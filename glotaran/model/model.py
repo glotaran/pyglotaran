@@ -75,8 +75,7 @@ class Model:
         return model
 
     def simulate(self, dataset: str, parameter: ParameterGroup, axis: Dict[str, np.ndarray]):
-        data = simulate(self, parameter, dataset, axis)
-        self.set_data(dataset, data)
+        return simulate(self, parameter, dataset, axis)
 
     def fit(self, parameter: ParameterGroup, *args, nnls=False, **kwargs) -> Type[Result]:
         """ Fits the model and returns the result.

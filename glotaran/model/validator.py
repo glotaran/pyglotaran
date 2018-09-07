@@ -7,7 +7,9 @@ class Validator:
     def val_model(self, model_item, model, errors=[]):
         for attr, opts in self._attributes.items():
             item = getattr(model_item, attr)
-            if 'check' in opts:
+            if item is None:
+                continue
+            if 'target' in opts:
                 val_model_opts(item, model, opts, errors)
             elif hasattr(model, attr):
                 val_model_attr(item, model, attr, errors)
@@ -19,7 +21,9 @@ class Validator:
     def val_parameter(self, model_item, model, parameter, errors=[]):
         for attr, opts in self._attributes.items():
             item = getattr(model_item, attr)
-            if 'check' in opts:
+            if item is None:
+                continue
+            if 'target' in opts:
                 val_parameter_opts(item, parameter, opts, errors)
             if not hasattr(model, attr):
                 val_parameter(item, parameter, errors)
@@ -30,9 +34,9 @@ class Validator:
 
 
 def val_model_opts(item, model, opts, errors):
-    check = opts['check']
-    if isinstance(check, tuple):
-        (k_check, v_check) = check
+    target = opts['target']
+    if isinstance(target, tuple):
+        (k_check, v_check) = target
         for k, v in item.items():
             if not k_check == 'parameter':
                 model_attr = getattr(model, k_check)
@@ -47,10 +51,10 @@ def val_model_opts(item, model, opts, errors):
                 for i in v:
                     if i not in model_attr:
                         errors.append(f"Missing '{v_check}' with label '{i}'")
-    elif not check == 'parameter':
-        model_attr = getattr(model, check)
+    elif not target == 'parameter':
+        model_attr = getattr(model, target)
         if item not in model_attr:
-            errors.append(f"Missing '{check}' with label '{item}'")
+            errors.append(f"Missing '{target}' with label '{item}'")
 
 
 def val_model_attr(labels, model, attr, errors):
@@ -71,9 +75,9 @@ def val_model_nested(nested, model, errors):
 
 
 def val_parameter_opts(item, parameter, opts, errors):
-    check = opts['check']
-    if isinstance(check, tuple):
-        (k_check, v_check) = check
+    target = opts['target']
+    if isinstance(target, tuple):
+        (k_check, v_check) = target
         for k, v in item.items():
             if k_check == 'parameter':
                 if not isinstance(k, (list, tuple, set)):
@@ -87,7 +91,7 @@ def val_parameter_opts(item, parameter, opts, errors):
                 for i in v:
                     if not parameter.has(i):
                         errors.append(f"Missing parameter with label '{i}'")
-    elif check == 'parameter':
+    elif target == 'parameter':
         if not parameter.has(item):
             errors.append(f"Missing parameter with label '{item}'")
 

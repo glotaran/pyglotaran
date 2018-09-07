@@ -10,7 +10,7 @@ from glotaran.model import InitialConcentration, ParameterGroup, glotaran_model_
 
 @glotaran_model_item(
     attributes={
-        'matrix': {'type': Dict[Tuple[str, str], str], 'check': ('compartment', 'parameter')},
+        'matrix': {'type': Dict[Tuple[str, str], str], 'target': ('compartment', 'parameter')},
     },
 )
 class KMatrix:

@@ -6,11 +6,14 @@ from glotaran.model.dataset import Dataset
 
 def dot(e, c):
     dim1 = len(c)
-    dim2 = c[0][1].shape[0]
+    dim2 = c[0][1].shape[1]
     res = np.empty((dim1, dim2), dtype=np.float64)
-
+    print(np.dot(e[0, :], c[0][1]).shape)
+    print(res.shape)
+    print(c[0][1].shape)
+    print(res[0, :].shape)
     for i in range(len(c)):
-        res[i, :] = np.dot(c[i][1], e[i, :])
+        res[i, :] = np.dot(e[i, :], c[i][1])
 
     return res
 

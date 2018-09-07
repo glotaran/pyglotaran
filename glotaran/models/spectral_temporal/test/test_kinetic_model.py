@@ -41,7 +41,7 @@ class OneComponentOneChannel:
             'dataset1': {
                 'initial_concentration': 'j1',
                 'megacomplex': ['mc1'],
-                'shapes': [['s1', 'sh1']]
+                'shapes': {'s1': 'sh1'}
             },
         },
     })
@@ -74,7 +74,7 @@ def test_kinetic_model(suite):
 
     data = sim_model.simulate('dataset1', wanted, suite.axis)
 
-    assert model.get_data('dataset1').get().shape == \
+    assert data.get().shape == \
         (suite.axis['spectral'].size, suite.axis['time'].size)
 
     model.set_data('dataset1', data)
