@@ -8,13 +8,8 @@ def dot(e, c):
     dim1 = len(c)
     dim2 = c[0][1].shape[1]
     res = np.empty((dim1, dim2), dtype=np.float64)
-    print(np.dot(e[0, :], c[0][1]).shape)
-    print(res.shape)
-    print(c[0][1].shape)
-    print(res[0, :].shape)
     for i in range(len(c)):
         res[i, :] = np.dot(e[i, :], c[i][1])
-
     return res
 
 
@@ -61,6 +56,10 @@ def simulate(model: "glotaran.model.Model",
 
     compartments = calculated_matrix[0][0]
     estimated_matrix = model.estimated_matrix(filled_dataset, compartments, estimated_axis)
+    print("e_shape", estimated_matrix.shape)
+    print("e_shape", estimated_matrix[:, 0])
+    print("c_shape", calculated_matrix[0][1].shape)
+    print("c_shape", calculated_matrix[0][1][0, :])
 
     result = dot(estimated_matrix, calculated_matrix)
 

@@ -1,18 +1,14 @@
 """Glotaran Model"""
 
 
-from abc import ABC, abstractmethod
 from typing import List, Type, Dict, Generator
-from collections import OrderedDict
 import numpy as np
-import inspect
 
 from glotaran.math.fitresult import Result
+from glotaran.math.fitting import fit
 from glotaran.math.simulation import simulate
 from .dataset import Dataset
 from .dataset_descriptor import DatasetDescriptor
-from .initial_concentration import InitialConcentration
-from .megacomplex import Megacomplex
 from .parameter_group import ParameterGroup
 
 
@@ -77,7 +73,7 @@ class Model:
     def simulate(self, dataset: str, parameter: ParameterGroup, axis: Dict[str, np.ndarray]):
         return simulate(self, parameter, dataset, axis)
 
-    def fit(self, parameter: ParameterGroup, *args, nnls=False, **kwargs) -> Type[Result]:
+    def fit(self, parameter: ParameterGroup, *args, **kwargs) -> Type[Result]:
         """ Fits the model and returns the result.
 
         Parameters
@@ -95,12 +91,10 @@ class Model:
         result : type(fitmodel.Result)
 
         """
-        if any([dset.dataset is None for _, dset in self.datasets.items()]):
+        if any([dset.dataset is None for _, dset in self.dataset.items()]):
             raise Exception("Model datasets not initialized")
-        return self.fitmodel().fit(parameter.as_parameter_dict(only_fit=True),
-                                   *args,
-                                   nnls=nnls,
-                                   **kwargs)
+        print(parameter)
+        return fit(self, parameter)
 
 
     def concentrations(self, parameter: ParameterGroup, dataset: str) -> np.ndarray:

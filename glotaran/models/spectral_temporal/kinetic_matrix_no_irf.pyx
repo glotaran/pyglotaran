@@ -25,4 +25,4 @@ def calc_kinetic_matrix_no_irf(double[:, :] matrix,
         r_n = rates[n_r]
         for n_t in range(nr_times):
             t_n = times[n_t]
-            matrix[n_t, n_r] += scale * exp(r_n * t_n)
+            matrix[n_r, n_t] += scale * exp(r_n * t_n)

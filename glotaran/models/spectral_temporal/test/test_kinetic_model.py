@@ -79,7 +79,7 @@ def test_kinetic_model(suite):
 
     model.set_data('dataset1', data)
 
-    result = fit(model, initial)
+    result = model.fit(initial)
     print(result.best_fit_parameter)
 
     for param in result.best_fit_parameter.all():

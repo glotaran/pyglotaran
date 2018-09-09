@@ -1,7 +1,7 @@
 from lmfit import Minimizer
 
 import numpy as np
-from glotaran.model import ParameterGroup
+from glotaran.model.parameter_group import ParameterGroup
 from .grouping import create_group, calculate_group, get_data_group
 from .qr_decomposition import qr_residual
 from .fitresult import Result
@@ -14,7 +14,7 @@ def fit(model, parameter):
 
     def residual(parameter, group, model, data, **kwargs):
         parameter = ParameterGroup.from_parameter_dict(parameter)
-        res = np.concatenate([qr_residual(matrix, data[i]) for i, matrix in
+        res = np.concatenate([qr_residual(matrix.T, data[i]) for i, matrix in
                               calculate_group(group, model, parameter)])
         return res
 
