@@ -153,7 +153,7 @@ class MultichannelMulticomponentDecay:
     c_axis = np.arange(0, 150, 1.5)
 
     sim_model = GaussianDecayModel.from_dict({
-        'compartment': ["s1", "s2"],
+        'compartment': ["s1", "s2", "s3", "s4", "s5", "s6"],
         'dataset': {
             'dataset1': {
                 'initial_concentration': [],
@@ -166,7 +166,7 @@ class MultichannelMulticomponentDecay:
         }
     })
     model = DecayModel.from_dict({
-        'compartment': ["s1", "s2"],
+        'compartment': ["s1", "s2", "s3", "s4", "s5"],
         'dataset': {
             'dataset1': {
                 'initial_concentration': [],
@@ -211,6 +211,12 @@ def test_fitting(suite):
     for param in result.best_fit_parameter.all():
         assert np.allclose(param.value, wanted.get(param.label).value,
                            rtol=1e-1)
+
+    resultdata = result.get_dataset("dataset1")
+    assert np.array_equal(data.get_axis('c'), resultdata.data.get_axis('c'))
+    assert np.array_equal(data.get_axis('e'), resultdata.data.get_axis('e'))
+    assert data.get().shape == resultdata.data.get().shape
+    assert np.allclose(data.get(), resultdata.data.get())
 
 
 if __name__ == '__main__':

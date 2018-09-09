@@ -29,8 +29,7 @@ class ParameterGroup(OrderedDict):
             lmfit.Parameters dictionary
         """
 
-        root = cls("p")
-
+        root = cls(None)
         for lbl, param in parameter.items():
             lbl = lbl.split("_")
             if len(lbl) is 2:
@@ -233,8 +232,7 @@ class ParameterGroup(OrderedDict):
             for p in self[l].all():
                 yield p
 
-    def all_with_label(self, root) -> Generator[Tuple[str, Parameter], None,
-                                                None]:
+    def all_with_label(self, root=None, seperator=".") -> Generator[Tuple[str, Parameter], None, None]:
         """ Same as all, but returns the labels relative to the given root
         group.
         Parameters
@@ -243,12 +241,11 @@ class ParameterGroup(OrderedDict):
 
 
         """
-        root = "{}_{}".format(root, self.label) if root is not None else \
-            self.label
+        root = f"{root}{self.label}{seperator}" if root is not None else ""
         for label, p in self._parameters.items():
-            yield ("{}_{}".format(root, label), p)
+            yield (f"{root}{label}", p)
         for _, l in self.items():
-            for (lbl, p) in l.all_with_label(root):
+            for (lbl, p) in l.all_with_label(root=root, seperator=seperator):
                 yield (lbl, p)
 
     def as_parameter_dict(self, only_fit=False) -> Parameters:
@@ -266,8 +263,8 @@ class ParameterGroup(OrderedDict):
         Parameters : lmfit.Parameters
         """
         params = Parameters()
-        for (label, p) in self.all_with_label(None):
-            p.name = label
+        for (label, p) in self.all_with_label(seperator="_"):
+            p.name = "_" + label
             if not only_fit or p.fit:
                 params.add(p)
         return params

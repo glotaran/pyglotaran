@@ -1,78 +1,30 @@
 """Glotaran Fitmodel Result"""
 
 import numpy as np
+from dataclasses import dataclass
+from typing import List
+
 
 from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 
-class Result:
+class FitResult:
     """The result of fit."""
-    def __init__(self, result):
-        self._result = result
+    def __init__(self,
+                 lm_result,
+                 dataset_results,
+                 ):
+        self._lm_result = lm_result
+        self._dataset_results = dataset_results
 
     @property
     def best_fit_parameter(self) -> ParameterGroup:
         """The best fit parameters."""
-        return ParameterGroup.from_parameter_dict(self._result.params)
+        return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
-    def estimated_matrix(self, dataset: str) -> np.array:
-        """Returns the estimated matrix of the model.
-
-        Parameters
-        ----------
-        dataset: str
-            Label of the dataset.
-
-
-        Returns
-        -------
-        e_matrix: np.array
-            Estimated Matrix
-
-        """
-        return np.asarray(self.e_matrix(**{"dataset": dataset}))
-
-    def calculated_matrix(self, dataset: str) -> np.array:
-        """Returns the calculated matrix of the model.
-
-        Parameters
-        ----------
-        dataset: str
-            Label of the dataset.
-
-
-        Returns
-        -------
-        c_matrix: np.array
-            Calculated Matrix
-
-        """
-        return np.asarray(self.c_matrix(**{"dataset": dataset}))
-
-    def fitted_data(self, dataset: str) -> Dataset:
-        """Returns the fitted dataset.
-
-        Parameters
-        ----------
-        dataset: str
-            Label of the dataset.
-
-
-        Returns
-        -------
-        fitted_dataset: glotaran.Dataset
-
-        """
-        data = np.asarray(self.eval(**{"dataset": dataset}))
-        dataset = self.model.datasets[dataset].dataset.copy()
-        dataset.set(data)
-        return dataset
-
-    @property
-    def model(self) -> 'glotaran.Model':
-        """The Glotaran Model used to fit the data."""
-        return self.get_model().model
+    def get_dataset(self, label: str):
+        return self._dataset_results[label]
 
     def __str__(self):
         string = "# Fitresult\n\n"
@@ -91,22 +43,22 @@ class Result:
         string += "\n"
 
         string += "Number of residual evaluation |".rjust(ll)
-        string += f"{self._result.nfev} |".rjust(lr)
+        string += f"{self._lm_result.nfev} |".rjust(lr)
         string += "\n"
         string += "Number of variables |".rjust(ll)
-        string += f"{self._result.nvarys} |".rjust(lr)
+        string += f"{self._lm_result.nvarys} |".rjust(lr)
         string += "\n"
         string += "Number of datapoints |".rjust(ll)
-        string += f"{self._result.ndata} |".rjust(lr)
+        string += f"{self._lm_result.ndata} |".rjust(lr)
         string += "\n"
         string += "Negrees of freedom |".rjust(ll)
-        string += f"{self._result.nfree} |".rjust(lr)
+        string += f"{self._lm_result.nfree} |".rjust(lr)
         string += "\n"
         string += "Chi Square |".rjust(ll)
-        string += f"{self._result.chisqr:.6f} |".rjust(lr)
+        string += f"{self._lm_result.chisqr:.6f} |".rjust(lr)
         string += "\n"
         string += "Reduced Chi Square |".rjust(ll)
-        string += f"{self._result.redchi:.6f} |".rjust(lr)
+        string += f"{self._lm_result.redchi:.6f} |".rjust(lr)
         string += "\n"
 
         string += "\n"
@@ -115,3 +67,12 @@ class Result:
         string += "\n"
 
         return string
+
+
+@dataclass
+class DatasetResult:
+    label: str
+    compartments: List[str]
+    calculated_matrix: np.ndarray
+    estimated_matrix: np.ndarray
+    data: Dataset

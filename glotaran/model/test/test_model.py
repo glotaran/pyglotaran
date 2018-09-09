@@ -1,7 +1,6 @@
 from typing import Dict, List, Tuple
 import pytest
 
-from glotaran.fitmodel import FitModel, Matrix, Result
 from glotaran.model import DatasetDescriptor, Model, ParameterGroup, glotaran_model, glotaran_model_item
 
 
@@ -11,7 +10,7 @@ from glotaran.model import DatasetDescriptor, Model, ParameterGroup, glotaran_mo
         'megacomplex': str,
         'param_list': List[str],
         'default': {'type': int, 'default': 42},
-        'complex': {'type': Dict[Tuple[str, str], str], 'check': ('compartment', 'parameter')},
+        'complex': {'type': Dict[Tuple[str, str], str], 'target': ('compartment', 'parameter')},
     },
 )
 class MockAttr:
@@ -106,7 +105,6 @@ def parameter():
 def test_model_types(model):
     assert model.model_type == 'mock'
     assert model.dataset_type is DatasetDescriptor
-    assert model.fitmodel_type is FitModel
 
 
 @pytest.mark.parametrize("attr",

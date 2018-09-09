@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import List, Type, Dict, Generator
 
-from glotaran.math.fitresult import Result
+from glotaran.math.fitresult import FitResult
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
@@ -36,9 +36,15 @@ def glotaran_model(name,
 
         if not hasattr(cls, '__annotations__'):
             setattr(cls, '__annotations__', {})
+        else:
+            setattr(cls, '__annotations__',
+                getattr(cls, '__annotations__').copy())
 
         if not hasattr(cls, '_glotaran_model_attributes'):
             setattr(cls, '_glotaran_model_attributes', {})
+        else:
+            setattr(cls, '_glotaran_model_attributes',
+                getattr(cls, '_glotaran_model_attributes').copy())
 
         # Set annotations and methods for attributes
 

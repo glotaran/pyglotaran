@@ -34,10 +34,10 @@ def test_single_dataset():
     assert [item[0][0] for _, item in group.items()] == [1, 2, 3]
     assert all([item[0][1].label == 'dataset1' for _, item in group.items()])
 
-    result = calculate_group(group, model, parameter)
+    result = list(calculate_group(group, model, parameter))
     assert len(result) == 3
     print(result[0])
-    assert result[0].shape == (2, 4)
+    assert result[0][1].shape == (2, 4)
 
     data = get_data_group(model, group)
     assert len(data) == 3
@@ -78,11 +78,11 @@ def test_multi_dataset_no_overlap():
     assert [item[0][1].label for _, item in group.items()] == \
         ['dataset1' for _ in range(3)] + ['dataset2' for _ in range(3)]
 
-    result = calculate_group(group, model, parameter)
+    result = list(calculate_group(group, model, parameter))
     assert len(result) == 6
     print(result[0])
-    assert result[0].shape == (2, 2)
-    assert result[3].shape == (2, 3)
+    assert result[0][1].shape == (2, 2)
+    assert result[3][1].shape == (2, 3)
 
     data = get_data_group(model, group)
     assert len(data) == 6
@@ -130,12 +130,12 @@ def test_multi_dataset_overlap():
     assert group[1][1][1].label == 'dataset2'
     assert group[9][0][1].label == 'dataset2'
 
-    result = calculate_group(group, model, parameter)
+    result = list(calculate_group(group, model, parameter))
     assert len(result) == 5
     print(result[0])
-    assert result[0].shape == (2, 2)
-    assert result[1].shape == (2, 6)
-    assert result[4].shape == (2, 4)
+    assert result[0][1].shape == (2, 2)
+    assert result[1][1].shape == (2, 6)
+    assert result[4][1].shape == (2, 4)
 
     data = get_data_group(model, group)
     assert len(data) == 5
