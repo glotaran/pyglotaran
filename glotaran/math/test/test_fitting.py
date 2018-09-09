@@ -17,7 +17,7 @@ def calculate_kinetic(dataset, compartments, index, axis):
     if np.array_equal(kinpar, OLD_KIN):
         return (compartments, OLD_MAT)
 
-    array = np.exp(np.outer(axis, kinpar))
+    array = np.exp(np.outer(axis, kinpar)).T
     OLD_KIN = kinpar
     OLD_MAT = array
     return (compartments, array)

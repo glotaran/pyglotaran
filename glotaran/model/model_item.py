@@ -91,6 +91,9 @@ def glotaran_model_item(attributes={},
         # inheritence of items
         if not hasattr(cls, '_glotaran_attribute_defaults'):
             setattr(cls, '_glotaran_attribute_defaults', {})
+        else:
+            setattr(cls, '_glotaran_attribute_defaults',
+                    getattr(cls, '_glotaran_attribute_defaults').copy())
 
         # Set annotations for autocomplete and doc
         validate_nested = []
@@ -123,6 +126,9 @@ def glotaran_model_item(attributes={},
         # store for later sanity checking
         if not hasattr(cls, '_glotaran_attributes'):
             setattr(cls, '_glotaran_attributes', {})
+        else:
+            setattr(cls, '_glotaran_attributes',
+                    getattr(cls, '_glotaran_attributes').copy())
         for name, opts in attributes.items():
             getattr(cls, '_glotaran_attributes')[name] = opts
         # now we want nice class methods for serializing
@@ -209,16 +215,12 @@ def glotaran_model_item(attributes={},
 
             replaced = {}
             attrs = getattr(self, '_glotaran_attributes')
-            print("attrs", attrs)
             for attr, opts in attrs.items():
                 item = getattr(self, attr)
-                print("attr", attr, opts)
-                print(item)
                 if item is None:
                     continue
                 if 'target' in opts:
                     target = opts['target'][1]
-                    print('target', target)
                     nitem = {}
                     for k, v in item.items():
                         if target == 'parameter':
