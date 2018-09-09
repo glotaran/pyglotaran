@@ -3,22 +3,11 @@ from typing import List
 from glotaran.model import glotaran_model_item, glotaran_model_item_typed
 
 
-@glotaran_model_item(has_type=True)
+@glotaran_model_item(attributes={
+    'irfdata': {'type': np.ndarray, 'default': None},
+}, has_type=True)
 class IrfMeasured:
     """A measured IRF."""
-
-    _data = None
-
-    @property
-    def data(self) -> np.ndarray:
-        """Measured data."""
-        if self._data is None:
-            raise Exception(f"{self.label}: data not loaded")
-        return self._data
-
-    @data.setter
-    def data(self, value: np.ndarray):
-        self._data = value
 
 
 @glotaran_model_item(attributes={
@@ -61,7 +50,7 @@ class IrfGaussian:
     """
     def parameter(self, index):
 
-        dist = (index - self.dispersion_center) if self.dispersion is not None else 0
+        dist = (index - self.dispersion_center) if self.dispersion_center is not None else 0
         centers = self.center if isinstance(self.center, list) else [self.center]
         if len(self.center_dispersion) is not 0:
             for i, disp in enumerate(self.center_dispersion):
@@ -76,9 +65,9 @@ class IrfGaussian:
 
         backsweep = 1 if self.backsweep else 0
 
-        backsweep_period = self._irf.backsweep_period
+        backsweep_period = self.backsweep_period if backsweep else 0
 
-        return centers, widths, scale, backsweep, backsweep_period
+        return centers[0], widths[0], scale, backsweep, backsweep_period
 
 
 

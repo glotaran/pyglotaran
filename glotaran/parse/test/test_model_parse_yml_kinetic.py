@@ -42,11 +42,9 @@ def test_dataset(model):
     assert dataset.irf == "irf1"
     assert dataset.scale == 1
 
-    assert len(dataset.shape) == 2
-    assert dataset.shape[0].compartment == 's1'
-    assert dataset.shape[0].shape == "shape1"
-    assert dataset.shape[1].compartment == 's2'
-    assert dataset.shape[1].shape == "shape2"
+    assert len(dataset.shapes) == 2
+    assert dataset.shapes['s1'] == "shape1"
+    assert dataset.shapes['s2'] == "shape2"
 
     dataset = model.dataset['dataset2']
     assert len(dataset.compartment_constraints) == 4

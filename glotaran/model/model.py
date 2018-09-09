@@ -4,7 +4,7 @@
 from typing import List, Type, Dict, Generator
 import numpy as np
 
-from glotaran.math.fitresult import Result
+from glotaran.math.fitresult import FitResult
 from glotaran.math.fitting import fit
 from glotaran.math.simulation import simulate
 from .dataset import Dataset
@@ -73,7 +73,7 @@ class Model:
     def simulate(self, dataset: str, parameter: ParameterGroup, axis: Dict[str, np.ndarray]):
         return simulate(self, parameter, dataset, axis)
 
-    def fit(self, parameter: ParameterGroup, *args, **kwargs) -> Type[Result]:
+    def fit(self, parameter: ParameterGroup, *args, **kwargs) -> Type[FitResult]:
         """ Fits the model and returns the result.
 
         Parameters
@@ -93,7 +93,6 @@ class Model:
         """
         if any([dset.dataset is None for _, dset in self.dataset.items()]):
             raise Exception("Model datasets not initialized")
-        print(parameter)
         return fit(self, parameter)
 
 

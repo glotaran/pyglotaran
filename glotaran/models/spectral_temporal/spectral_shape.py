@@ -26,9 +26,10 @@ class SpectralShapeGaussian:
         shape: numpy.ndarray
 
         """
-        return self.amplitude * np.exp(-np.log(2) * \
+        matrix = self.amplitude * np.exp(-np.log(2) * \
                 np.square(2 * (axis - self.location)/self.width))
-
+        print(matrix.shape)
+        return matrix
 
 @glotaran_model_item(attributes={
 }, has_type=True)

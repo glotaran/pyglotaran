@@ -97,12 +97,12 @@ def _calculate_for_k_matrix(dataset, compartments, index, axis, k_matrix, scale)
     else:
         calc_kinetic_matrix_no_irf(matrix, rates, axis, scale)
         if isinstance(dataset.irf, IrfMeasured):
-            irf = dataset.irf.data
+            irf = dataset.irf.irfdata
             if len(irf.shape) == 2:
                 idx = (np.abs(dataset.data.get_axis("spectral") - index)).argmin()
                 irf = irf[idx, :]
-            for i in range(matrix.shape[1]):
-                matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
+            for i in range(matrix.shape[0]):
+                matrix[i, :] = np.convolve(matrix[i, :], irf, mode="same")
 
     # apply initial concentration vector
     matrix = np.dot(k_matrix.a_matrix(compartments,

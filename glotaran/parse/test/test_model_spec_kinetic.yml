@@ -8,10 +8,9 @@ dataset:
     initial_concentration: inputD1 # refers to the first element in the absorption_vectors list
     irf: irf1
     scale: 1 # scale dataset with parameter 78
-    shape:
-      - compartment: s1
-        shape: shape1
-      - [s2, shape2]
+    shapes:
+      s1: shape1
+      s2: shape2
   dataset2:
     megacomplex: [cmplx2]
     initial_concentration: inputD2

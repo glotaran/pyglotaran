@@ -44,7 +44,7 @@ class KMatrix:
         compartments : list(str)
             A list of all compartments in the model.
         """
-        return cls(label, OrderedDict() )
+        return cls(label, OrderedDict())
 
     def involved_compartments(self) -> List[str]:
         """ A list of all compartments in the matrix. """
