@@ -18,6 +18,33 @@ matrix:
       # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
+    - python: 3.6
+      # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
+      env: TOXENV=docs
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
+      after_success:
+        # this prevents the tests to upload stuff to coveralls.io
+        - echo "done"
+
+    - python: 3.6
+      # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
+      env: TOXENV=docs-links
+      before_install:
+        - echo "before_install"
+        - python -m pip install -U pip>=9.0.1
+        - pip install tox
+      script:
+        - tox
+      after_success:
+        # this prevents the tests to upload stuff to coveralls.io
+        - echo "done"
+
+
     # LINUX
     - python: "3.6"
       env: linux-py36
@@ -56,21 +83,6 @@ matrix:
         - conda create -n py37 python=3.7 -y
         - source activate py37
 
-  allow_failures:
-
-    - python: 3.6
-      # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
-      env: TOXENV=docs
-      before_install:
-        - echo "before_install"
-        - python -m pip install -U pip>=9.0.1
-        - pip install tox
-      script:
-        - tox
-      after_success:
-        # this prevents the tests to upload stuff to coveralls.io
-        - echo "done"
-
 #    - python: 3.6
 #      env: win_coverage
 #      install:
@@ -80,6 +92,10 @@ matrix:
 #      after_success:
 #        - coveralls
 #        - coverage erase
+
+  allow_failures:
+  #      this test is allowed to fail since it uses external resources
+    - env: TOXENV=docs-links
 
 install:
   - pip install coveralls
