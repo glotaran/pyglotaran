@@ -9,13 +9,13 @@ import pandas as pd
 from .external_file_readers.sdt_reader import SdtFile
 from .mapper import get_pixel_map
 from ..models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
-from ..model.specialized_datasets import FLIMDataset
+from glotaran.dataio.specialized_datasets import FLIMDataset
 from ..model.dataset import DimensionalityError
 
 
-def df_to_SpectralTemporalDataset(input_df: pd.DataFrame, dataset_label: str,
-                                  time_unit: str= "s", spectral_unit: str="nm",
-                                  swap_axis: bool=False) \
+def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame, dataset_label: str,
+                                         time_unit: str= "s", spectral_unit: str="nm",
+                                         swap_axis: bool=False) \
         -> SpectralTemporalDataset:
     """
     Uses a pd.DataFrame to generate a SpectralTemporalDataset from it.
@@ -27,7 +27,7 @@ def df_to_SpectralTemporalDataset(input_df: pd.DataFrame, dataset_label: str,
 
     Parameters
     ----------
-    input_df: pd.DataFrame
+    input_dataframe: pd.DataFrame
         DataFrame containing the data and axes used to generate the SpectralTemporalDataset.
         If the DataFrame isn't time explicit (index=wavelength axis, columns=time axis),
         but wavelength explicit use `swap_axis=True` to get the proper SpectralTemporalDataset.
@@ -63,10 +63,10 @@ def df_to_SpectralTemporalDataset(input_df: pd.DataFrame, dataset_label: str,
     read_sdt
     """
     if swap_axis:
-        input_df = input_df.T
+        input_dataframe = input_dataframe.T
     STDataset = SpectralTemporalDataset(dataset_label, time_unit, spectral_unit)
     try:
-        time_axis = pd.to_numeric(np.array(input_df.columns))
+        time_axis = pd.to_numeric(np.array(input_dataframe.columns))
     except ValueError:
         time_axis = "columns" if not swap_axis else "index"
         raise ValueError(f"The {time_axis} of the DataFrame needs to be convertible "
@@ -75,25 +75,25 @@ def df_to_SpectralTemporalDataset(input_df: pd.DataFrame, dataset_label: str,
     # but ensuring it will prevent problems with string escaping if the
     # dataframe gets saved
     try:
-        spectral_axis = pd.to_numeric(np.array(input_df.index))
+        spectral_axis = pd.to_numeric(np.array(input_dataframe.index))
     except ValueError:
         spectral_axis = "index" if not swap_axis else "columns"
         raise ValueError(f"The {spectral_axis} of the DataFrame needs to be convertible "
                          f"to numeric values.")
     STDataset.time_axis = time_axis
     STDataset.spectral_axis = spectral_axis
-    STDataset.data = input_df.values
+    STDataset.data = input_dataframe.values
     return STDataset
 
 
-def df_to_FLIMDataset(input_df: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
-                      dataset_label: str,
-                      mapper_function: Callable[[np.ndarray],
-                                                Union[List[tuple],
-                                                      Tuple[tuple],
-                                                      np.ndarray]],
-                      orig_shape: tuple, orig_time_axis_index: int=2,
-                      time_unit: str= "s", swap_axis: bool=False) \
+def dataframe_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
+                             dataset_label: str,
+                             mapper_function: Callable[[np.ndarray],
+                                                       Union[List[tuple],
+                                                             Tuple[tuple],
+                                                             np.ndarray]],
+                             orig_shape: tuple, orig_time_axis_index: int=2,
+                             time_unit: str= "s", swap_axis: bool=False) \
         -> FLIMDataset:
     """
     Uses a pd.DataFrame to generate a FLIMDataset from it.
@@ -105,7 +105,7 @@ def df_to_FLIMDataset(input_df: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
 
     Parameters
     ----------
-    input_df: Union[pd.DataFrame, Dict[str, pd.DataFrame]]
+    input_dataframe: Union[pd.DataFrame, Dict[str, pd.DataFrame]]
         DataFrame containing the data and axes used to generate the FLIMDataset.
 
         Or dict with the keys 'time_traces' and 'intensity_map',
@@ -154,32 +154,32 @@ def df_to_FLIMDataset(input_df: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
     FLIM_legacy_to_df
     """
     is_legacy = False
-    if isinstance(input_df, dict) and list(input_df.keys()) == ['time_traces',
-                                                                'intensity_map']:
+    if isinstance(input_dataframe, dict) and list(input_dataframe.keys()) == ['time_traces',
+                                                                              'intensity_map']:
         is_legacy = True
-        intensity_map = input_df['intensity_map'].values
-        input_df = input_df['time_traces']
+        intensity_map = input_dataframe['intensity_map'].values
+        input_dataframe = input_dataframe['time_traces']
     if swap_axis:
-        input_df = input_df.T
+        input_dataframe = input_dataframe.T
     flim_dataset = FLIMDataset(dataset_label, mapper_function, orig_shape, time_unit)
     try:
-        time_axis = pd.to_numeric(np.array(input_df.columns))
+        time_axis = pd.to_numeric(np.array(input_dataframe.columns))
     except ValueError:
         time_axis = "columns" if not swap_axis else "index"
         raise ValueError(f"The {time_axis} of the DataFrame needs to be convertible "
                          f"to numeric values.")
     flim_dataset.time_axis = time_axis
-    flim_dataset.pixel_axis = np.array(input_df.index)
-    flim_dataset.data = input_df.values
+    flim_dataset.pixel_axis = np.array(input_dataframe.index)
+    flim_dataset.data = input_dataframe.values
     if not is_legacy:
-        intensity_map = input_df.values.reshape(orig_shape).sum(axis=orig_time_axis_index)
+        intensity_map = input_dataframe.values.reshape(orig_shape).sum(axis=orig_time_axis_index)
     flim_dataset.intensity_map = intensity_map
     return flim_dataset
 
 
-def sdt_to_df(file_path: str, index: Union[list, np.ndarray, tuple]=None,
-              dataset_index: int=None,
-              mapper_function: Callable[[np.ndarray], Tuple[tuple]]=None) \
+def sdt_to_dataframe(file_path: str, index: Union[list, np.ndarray, tuple]=None,
+                     dataset_index: int=None,
+                     mapper_function: Callable[[np.ndarray], Tuple[tuple]]=None) \
         -> Tuple[pd.DataFrame, tuple]:
     """
     Reads and `*.sdt` file and returns a pd.DataFrame.
@@ -353,26 +353,27 @@ def read_sdt(file_path: str, dataset_label: str, index: Union[list, np.ndarray]=
                          f"this value isn't supported. The supported values are "
                          f"{repr(supported_type_of_data)}.")
     if type_of_data == "flim":
-        data_df, orig_shape = sdt_to_df(file_path=file_path, dataset_index=dataset_index,
-                                        mapper_function=get_pixel_map)
+        data_dataframe, orig_shape = sdt_to_dataframe(file_path=file_path,
+                                                      dataset_index=dataset_index,
+                                                      mapper_function=get_pixel_map)
     else:
-        data_df, orig_shape = sdt_to_df(file_path=file_path, index=index,
-                                        dataset_index=dataset_index)
+        data_dataframe, orig_shape = sdt_to_dataframe(file_path=file_path, index=index,
+                                                      dataset_index=dataset_index)
     if return_dataframe:
-        return data_df
+        return data_dataframe
     else:
         if type_of_data == "flim":
-            dataset = df_to_FLIMDataset(input_df=data_df,
-                                        dataset_label=dataset_label,
-                                        mapper_function=get_pixel_map,
-                                        orig_shape=orig_shape,
-                                        orig_time_axis_index=orig_time_axis_index,
-                                        time_unit=time_unit,
-                                        swap_axis=swap_axis)
+            dataset = dataframe_to_FLIMDataset(input_dataframe=data_dataframe,
+                                               dataset_label=dataset_label,
+                                               mapper_function=get_pixel_map,
+                                               orig_shape=orig_shape,
+                                               orig_time_axis_index=orig_time_axis_index,
+                                               time_unit=time_unit,
+                                               swap_axis=swap_axis)
         else:
-            dataset = df_to_SpectralTemporalDataset(input_df=data_df,
-                                                    dataset_label=dataset_label,
-                                                    time_unit=time_unit,
-                                                    spectral_unit=spectral_unit,
-                                                    swap_axis=swap_axis)
+            dataset = dataframe_to_SpectralTemporalDataset(input_dataframe=data_dataframe,
+                                                           dataset_label=dataset_label,
+                                                           time_unit=time_unit,
+                                                           spectral_unit=spectral_unit,
+                                                           swap_axis=swap_axis)
         return dataset
