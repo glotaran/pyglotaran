@@ -51,6 +51,7 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.models.damped_oscillation.oscillation
     glotaran.models.spectral_temporal
 <<<<<<< HEAD
+<<<<<<< HEAD
     glotaran.models.spectral_temporal.c_matrix_cython
     glotaran.models.spectral_temporal.c_matrix_cython.c_matrix_cython
     glotaran.models.spectral_temporal.irf
@@ -60,6 +61,10 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.models.spectral_temporal.initial_concentration
     glotaran.models.spectral_temporal.irf
 >>>>>>> fixed flake8 errors
+=======
+    glotaran.models.spectral_temporal.initial_concentration
+    glotaran.models.spectral_temporal.irf
+>>>>>>> c40a2b13b38b7801860ef69cb361f1e037aea3cd
     glotaran.models.spectral_temporal.k_matrix
     glotaran.models.spectral_temporal.kinetic_fitmodel
     glotaran.models.spectral_temporal.kinetic_matrix
@@ -68,6 +73,7 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.models.spectral_temporal.kinetic_result
     glotaran.models.spectral_temporal.spectral_matrix
     glotaran.models.spectral_temporal.spectral_shape
+<<<<<<< HEAD
 <<<<<<< HEAD
     glotaran.models.spectral_temporal.spectral_shape_gaussian
     glotaran.models.spectral_temporal.spectral_temporal_dataset
@@ -91,3 +97,13 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.plotting.basic_plots
     glotaran.plotting.glotaran_color_codes
 >>>>>>> fixed flake8 errors
+=======
+    glotaran.models.spectral_temporal.spectral_temporal_dataset
+    glotaran.models.spectral_temporal.spectral_temporal_dataset_descriptor
+    glotaran.parse
+    glotaran.parse.parser
+    glotaran.parse.register
+    glotaran.plotting
+    glotaran.plotting.basic_plots
+    glotaran.plotting.glotaran_color_codes
+>>>>>>> c40a2b13b38b7801860ef69cb361f1e037aea3cd
