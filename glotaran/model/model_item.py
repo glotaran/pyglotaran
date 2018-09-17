@@ -2,6 +2,7 @@
 
 from typing import Dict, List
 import inspect
+from typing_inspect import get_origin
 from dataclasses import dataclass, replace
 
 
@@ -12,17 +13,24 @@ class MissingParameterException(Exception):
     pass
 
 
+def _is_list_type(item_class):
+    org = get_origin(item_class)
+    if org is None:
+        return False
+    return issubclass(org, List)
+
+
 def is_item_or_list_of(item_class):
     if not isinstance(item_class, type):
         return False
-    islist = issubclass(item_class, List)
+    islist = _is_list_type(item_class)
     if islist:
         item_class = item_class.__args__[0]
     return hasattr(item_class, "_glotaran_model_item")
 
 
 def item_or_list_to_param(name, item, item_class):
-    islist = issubclass(item_class, List)
+    islist = _is_list_type(item_class)
     if islist:
         item_class = item_class.__args__[0]
     if not hasattr(item_class, "_glotaran_model_item"):
@@ -30,7 +38,6 @@ def item_or_list_to_param(name, item, item_class):
     if not islist:
         return item_to_param(name, item, item_class)
     for i in range(len(item)):
-        print(item)
         item[i] = item_to_param(name, item[i], item_class)
     return item
 

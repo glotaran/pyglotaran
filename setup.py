@@ -81,6 +81,7 @@ install_requires = [
     'pyyaml',
     'matplotlib',  # dependency introduced by glotaran.plotting
     'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
+    'typing_inspect',
 ]
 
 # backport of dataclases only needed for python 3.6
