@@ -35,7 +35,7 @@ matrix:
     - python: "3.6"
       env: linux-py36
 
-    - python: "3.7"  # 3.7 development branch
+    - python: "3.7-dev"  # 3.7 development branch
       env: linux-py37
       before_install:
         - echo "before_install"
