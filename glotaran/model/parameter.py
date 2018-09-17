@@ -51,9 +51,9 @@ class Parameter(LmParameter):
 
             def retrieve(filt, default):
                 tmp = list(filter(filt, parameter))
-                if len(tmp) is not 0: 
+                if len(tmp) is not 0:
                     parameter.remove(tmp[0])
-                    return tmp[0] 
+                    return tmp[0]
                 else:
                     return default
 

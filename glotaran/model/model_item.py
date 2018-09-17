@@ -1,8 +1,12 @@
+"""This package contains the glotaran model item decorator."""
+
 from typing import Dict, List
-from dataclasses import dataclass, replace
 import inspect
+from dataclasses import dataclass, replace
+
 
 from .model_item_validator import Validator
+
 
 class MissingParameterException(Exception):
     pass
@@ -50,7 +54,7 @@ def item_to_param(name, item, item_class):
             if len(item) < 2 and len(item) is not 1:
                 raise Exception(f"Missing type for attribute '{name}'")
             item_type = item[1] if len(item) is not 1 and \
-                    hasattr(item_class,'label') else item[0]
+                hasattr(item_class, 'label') else item[0]
 
             if item_type not in item_class._glotaran_model_item_types:
                 print(item)
@@ -162,8 +166,8 @@ def model_item(attributes={},
                       inspect.signature(ncls.__init__).parameters.items()]
             # params contains 'self'
             if len(item_list) is not len(params)-1:
-                raise MissingParameterException(f"To few or much parameters for '{ncls.__name__}'\n"
-                                                f" Got: {item_list}\nWant: {names}")
+                raise MissingParameterException(f"To few or much parameters for '{ncls.__name__}'"
+                                                f"\nGot: {item_list}\nWant: {names}")
 
             for i in range(len(item_list)):
                 item_class = params[i].annotation
@@ -237,7 +241,6 @@ def model_item(attributes={},
             return replace(self, **replaced)
 
         setattr(cls, 'fill', fill)
-
 
         return cls
 

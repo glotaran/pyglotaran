@@ -1,5 +1,4 @@
 import pytest
-import math
 import numpy as np
 
 from glotaran.model import ParameterGroup

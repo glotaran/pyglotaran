@@ -1,6 +1,5 @@
 """Glotaran Kinetic Model"""
 
-from typing import Type, Dict
 from glotaran.model import BaseModel
 from glotaran.model import model
 

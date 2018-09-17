@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.model import Dataset, BaseModel, ParameterGroup, model
+from glotaran.model import Dataset, BaseModel, model
 
 
 def calculate_c(dataset, compartments, index, axis):

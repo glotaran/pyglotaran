@@ -1,7 +1,7 @@
 """This package contains glotarans base model."""
 
 
-from typing import List, Type, Dict, Generator
+from typing import List, Dict
 import numpy as np
 
 from glotaran.analysis.fitresult import FitResult
@@ -9,7 +9,6 @@ from glotaran.analysis.fitting import fit
 from glotaran.analysis.simulation import simulate
 
 from .dataset import Dataset
-from .dataset_descriptor import DatasetDescriptor
 from .parameter_group import ParameterGroup
 
 
@@ -79,7 +78,7 @@ class BaseModel:
                             if len(item) < 2 and len(item) is not 1:
                                 raise Exception(f"Missing type for attribute '{name}'")
                             item_type = item[1] if len(item) is not 1 and \
-                                    hasattr(item_cls,'label') else item[0]
+                                hasattr(item_cls, 'label') else item[0]
 
                             if item_type not in item_cls._glotaran_model_item_types:
                                 raise Exception(f"Unknown type '{item_type}' "
@@ -122,7 +121,6 @@ class BaseModel:
         """
         return fit(self, parameter, data, verbose=verbose, max_fnev=max_fnev)
 
-
     def calculated_matrix(self,
                           dataset: str,
                           parameter: ParameterGroup,
@@ -136,7 +134,7 @@ class BaseModel:
             Label of the dataset
         parameter : ParameterGroup
             The parameter for the prediction
-        index : int 
+        index : int
             The index on the estimated axis,
         axis : numpy.ndarray
             The calculated axis.

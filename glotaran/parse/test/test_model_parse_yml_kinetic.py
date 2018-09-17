@@ -119,7 +119,7 @@ def test_irf(model):
             assert irf.backsweep_period, 55
         else:
             assert not irf.backsweep
-            assert irf.backsweep_period == None
+            assert irf.backsweep_period is not None
 
         i = i + 1
 
@@ -132,6 +132,7 @@ def test_k_matrices(model):
                                       [2, 0, 0, 0],
                                       [4, 0, 0, 0],
                                       [6, 0, 0, 0]]))
+
 
 def test_shapes(model):
 

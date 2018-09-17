@@ -25,7 +25,7 @@ class ZeroConstraint:
         applies : bool
 
         """
-        return any(interval[0] <= x <= interval[1] for interval in self.intervals)
+        return any(interval[0] <= index <= interval[1] for interval in self.intervals)
 
 
 @model_item(

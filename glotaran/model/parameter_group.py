@@ -79,7 +79,7 @@ class ParameterGroup(OrderedDict):
                 label, items = list(item.items())[0]
                 if isinstance(items, dict):
                     root.add_group(cls.from_dict(items, label=label))
-                else: 
+                else:
                     root.add_group(cls.from_list(items, label=label))
             elif isinstance(item, bool):
                 root.fit = item
@@ -171,7 +171,7 @@ class ParameterGroup(OrderedDict):
         try:
             self.get(label)
             return True
-        except:
+        except Exception:
             return False
 
     def get(self, label: str) -> Parameter:
@@ -232,7 +232,9 @@ class ParameterGroup(OrderedDict):
             for p in self[l].all():
                 yield p
 
-    def all_with_label(self, root=None, seperator=".") -> Generator[Tuple[str, Parameter], None, None]:
+    def all_with_label(self,
+                       root=None,
+                       seperator=".") -> Generator[Tuple[str, Parameter], None, None]:
         """ Same as all, but returns the labels relative to the given root
         group.
         Parameters

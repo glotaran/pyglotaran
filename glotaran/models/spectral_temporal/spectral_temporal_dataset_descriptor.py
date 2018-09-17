@@ -1,6 +1,6 @@
 """Spectral Temporal Dataset Descriptor"""
 
-from typing import Dict, List
+from typing import Dict
 from glotaran.model import DatasetDescriptor, model_item
 
 

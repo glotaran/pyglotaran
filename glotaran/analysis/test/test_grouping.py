@@ -1,5 +1,3 @@
-import pytest
-import numpy as np
 
 from glotaran.analysis.grouping import create_group, calculate_group, create_data_group
 from glotaran.model import ParameterGroup
