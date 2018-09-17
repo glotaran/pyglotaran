@@ -125,14 +125,13 @@ class TwoCompartmentDecay:
 
 
 class MultichannelMulticomponentDecay:
-    wanted = [.006667, 0.00333, 0.00035, 0.0303, 0.000909, .006667,
+    wanted = [.006667, 0.00333, 0.00035, 0.0303, 0.000909,
               {'loc': [
                   ['1', 14705, {'fit': False}],
                   ['2', 13513, {'fit': False}],
                   ['3', 14492, {'fit': False}],
                   ['4', 14388, {'fit': False}],
                   ['5', 14184, {'fit': False}],
-                  ['6', 13986, {'fit': False}],
               ]},
               {'amp': [
                   ['1', 1, {'fit': False}],
@@ -140,7 +139,6 @@ class MultichannelMulticomponentDecay:
                   ['3', 10, {'fit': False}],
                   ['4', 100, {'fit': False}],
                   ['5', 1000, {'fit': False}],
-                  ['6', 10000, {'fit': False}],
               ]},
               {'del': [
                   ['1', 400, {'fit': False}],
@@ -148,7 +146,6 @@ class MultichannelMulticomponentDecay:
                   ['3', 300, {'fit': False}],
                   ['4', 200, {'fit': False}],
                   ['5', 350, {'fit': False}],
-                  ['6', 330, {'fit': False}],
               ]},
               ]
     initial = [.005, 0.003, 0.00022, 0.0300, 0.000888]
@@ -157,15 +154,15 @@ class MultichannelMulticomponentDecay:
     c_axis = np.arange(0, 150, 1.5)
 
     sim_model = GaussianDecayModel.from_dict({
-        'compartment': ["s1", "s2", "s3", "s4", "s5", "s6"],
+        'compartment': ["s1", "s2", "s3", "s4", "s5"],
         'dataset': {
             'dataset1': {
                 'initial_concentration': [],
                 'megacomplex': [],
-                'kinetic': ['1', '2', '3', '4', '5', '6'],
-                'location': ['loc.1', 'loc.2', 'loc.3', 'loc.4', 'loc.5', 'loc.6'],
-                'delta': ['del.1', 'del.2', 'del.3', 'del.4', 'del.5', 'del.6'],
-                'amplitude': ['amp.1', 'amp.2', 'amp.3', 'amp.4', 'amp.5', 'amp.6'],
+                'kinetic': ['1', '2', '3', '4', '5'],
+                'location': ['loc.1', 'loc.2', 'loc.3', 'loc.4', 'loc.5'],
+                'delta': ['del.1', 'del.2', 'del.3', 'del.4', 'del.5'],
+                'amplitude': ['amp.1', 'amp.2', 'amp.3', 'amp.4', 'amp.5'],
             }
         }
     })
