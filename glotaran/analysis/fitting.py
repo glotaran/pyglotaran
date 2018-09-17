@@ -14,7 +14,7 @@ from .fitresult import DatasetResult, FitResult
 
 def residul_variable_projection(parameter: ParameterGroup,
                                 group: Group,
-                                model: 'glotaran.model.Model',
+                                model: 'glotaran.model.BaseModel',
                                 data: Dict[str, Dataset],
                                 data_group: List[np.ndarray],
                                 **kwargs) -> np.ndarray:
@@ -24,7 +24,7 @@ def residul_variable_projection(parameter: ParameterGroup,
     ----------
     parameter : Parameter
     Group: dict(any, tuple(any, DatasetDescriptor))
-    model : 'glotaran.model.Model'
+    model : 'glotaran.model.BaseModel'
     data : dict(str, glotaran.model.dataset.Dataset)
         A dictionary of dataset labels and Datasets.
     data_group : List[np.ndarray]
@@ -39,7 +39,7 @@ def residul_variable_projection(parameter: ParameterGroup,
     return res
 
 
-def fit(model: 'glotaran.model.Model',
+def fit(model: object,
         parameter: ParameterGroup,
         data: Dict[str, Dataset],
         verbose: int = 2,
@@ -48,7 +48,7 @@ def fit(model: 'glotaran.model.Model',
 
     Parameters
     ----------
-    model : glotaran.model.Model
+    model :
         The Model to fit.
     parameter : ParameterGroup
         The initial fit parameter.
