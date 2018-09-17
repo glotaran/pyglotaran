@@ -5,29 +5,18 @@ from typing import Dict, List, Tuple
 import numpy as np
 import scipy
 
-from glotaran.model import InitialConcentration, ParameterGroup, glotaran_model_item
+from glotaran.model import ParameterGroup, model_item
+
+from .initial_concentration import InitialConcentration
 
 
-@glotaran_model_item(
+@model_item(
     attributes={
         'matrix': {'type': Dict[Tuple[str, str], str], 'target': ('compartment', 'parameter')},
     },
 )
 class KMatrix:
-    """ A K-Matrix represents a first order differental system.
-
-        Parameters
-        ----------
-        label : str
-            Label of the K-Matrix
-
-        matrix : OrderedDict(tuple(str, str), str)
-            Dictonary with the matrix entries in 'to-from' notation.
-
-        compartments : list(str)
-            A list of all compartments in the model.
-
-        """
+    """ A K-Matrix represents a first order differental system."""
 
     @classmethod
     def empty(cls, label: str, compartments: List[str]):
@@ -85,7 +74,7 @@ class KMatrix:
         return KMatrix("{}+{}".format(self.label, k_matrix.label),
                        combined_matrix, self._all_compartments)
 
-    def asarray(self, compartments) -> np.ndarray:
+    def asarray(self, compartments: List[str]) -> np.ndarray:
         """ Depricated, only used for testing"""
 
         compartments = [c for c in compartments if c in self.involved_compartments()]
@@ -98,7 +87,7 @@ class KMatrix:
             array[i, j] = self.matrix[index]
         return array
 
-    def full(self, compartments):
+    def full(self, compartments: List[str]):
         """[ 0 k3
           k1 k2]
 
@@ -141,8 +130,7 @@ class KMatrix:
                 mat[fr_idx, fr_idx] -= param
         return mat
 
-    def eigen(self, compartments) -> Tuple[np.ndarray,
-                                                        np.ndarray]:
+    def eigen(self, compartments: List[str]) -> Tuple[np.ndarray, np.ndarray]:
         """ Returns the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
@@ -163,10 +151,10 @@ class KMatrix:
                                                      right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def gamma(self,
-              compartments,
-              eigenvectors,
-              initial_concentration: InitialConcentration) -> np.ndarray:
+    def _gamma(self,
+               compartments,
+               eigenvectors,
+               initial_concentration: InitialConcentration) -> np.ndarray:
         k_compartments = [c for c in compartments if c in self.involved_compartments()]
         initial_concentration = \
             [initial_concentration.parameters[compartments.index(c)]
@@ -177,10 +165,10 @@ class KMatrix:
         return gamma
 
     def a_matrix(self,
-                 compartments,
+                 compartments: List[str],
                  initial_concentration: InitialConcentration) -> np.ndarray:
         eigenvalues, eigenvectors = self.eigen(compartments)
-        gamma = self.gamma(compartments, eigenvectors, initial_concentration)
+        gamma = self._gamma(compartments, eigenvectors, initial_concentration)
 
         a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
 

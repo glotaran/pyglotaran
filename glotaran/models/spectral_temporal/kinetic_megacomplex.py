@@ -1,11 +1,10 @@
-""" Glotaran Kinetic Megacomplex """
+"""This package contains the kinetic megacomplex item."""
 
-from typing import List, Union
+from typing import List
 
-from glotaran.model import glotaran_model_item
+from glotaran.model import model_item
 
 
-@glotaran_model_item(attributes={'k_matrix': List[str]})
+@model_item(attributes={'k_matrix': List[str]})
 class KineticMegacomplex:
     """A Megacomplex with one or more K-Matrices."""
-    pass

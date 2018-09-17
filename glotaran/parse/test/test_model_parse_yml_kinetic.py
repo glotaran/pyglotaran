@@ -1,12 +1,12 @@
 import pytest
 
 from glotaran.parse.parser import load_yml_file
-from glotaran.models.spectral_temporal import (KineticModel,
+from glotaran.models.spectral_temporal import (InitialConcentration,
+                                               KineticModel,
                                                IrfGaussian,
                                                SpectralShapeGaussian,
                                                KineticMegacomplex)
-from glotaran.model import (InitialConcentration,
-                            ZeroConstraint,
+from glotaran.model import (ZeroConstraint,
                             EqualConstraint,
                             EqualAreaConstraint,
                             )

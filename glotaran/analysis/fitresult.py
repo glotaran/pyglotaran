@@ -1,20 +1,42 @@
-"""Glotaran Fitmodel Result"""
+"""This package contains the FitResult object"""
 
 import numpy as np
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
+from lmfit.minimizer import MinimizerResult
 
 
 from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 
+@dataclass
+class DatasetResult:
+    """DatasetResult holds the fitresults for the data."""
+    label: str
+    compartments: List[str]
+    non_linear_matrix: np.ndarray
+    conditionally_non_linear_parameter: np.ndarray
+    data: Dataset
+
+
 class FitResult:
-    """The result of fit."""
+    """The result of a fit."""
+
     def __init__(self,
-                 lm_result,
-                 dataset_results,
+                 lm_result: MinimizerResult,
+                 dataset_results: Dict[str, DatasetResult],
                  ):
+        """
+
+        Parameters
+        ----------
+        lm_result: MinimizerResult
+        dataset_results: dict(str, DatasetResult)
+
+        Returns
+        -------
+        """
         self._lm_result = lm_result
         self._dataset_results = dataset_results
 
@@ -24,6 +46,18 @@ class FitResult:
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
     def get_dataset(self, label: str):
+        """get_dataset returns the DatasetResult for the given dataset.
+
+        Parameters
+        ----------
+        label : str
+            The label of the dataset.
+
+        Returns
+        -------
+        dataset_result: DatasetResult
+            The result for the dataset.
+        """
         return self._dataset_results[label]
 
     def __str__(self):
@@ -67,12 +101,3 @@ class FitResult:
         string += "\n"
 
         return string
-
-
-@dataclass
-class DatasetResult:
-    label: str
-    compartments: List[str]
-    calculated_matrix: np.ndarray
-    estimated_matrix: np.ndarray
-    data: Dataset

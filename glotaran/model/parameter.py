@@ -1,4 +1,4 @@
-""" Glotaran Parameter"""
+"""This package contains glotarans parameter class"""
 
 from typing import List, Union
 from math import isnan

@@ -2,13 +2,14 @@ import pytest
 from typing import List
 import numpy as np
 
-from glotaran.math.simulation import simulate
-from glotaran.math.fitting import fit
+from glotaran.analysis.simulation import simulate
+from glotaran.analysis.fitting import fit
 
-from glotaran.model import DatasetDescriptor, Model, ParameterGroup, glotaran_model_item, glotaran_model
+from glotaran.model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
 
 OLD_MAT = None
 OLD_KIN = []
+
 
 def calculate_kinetic(dataset, compartments, index, axis):
     global OLD_MAT
@@ -27,6 +28,7 @@ def calculate_spectral_simple(dataset, compartments, axis):
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
     return array.T
 
+
 def calculate_spectral_gauss(dataset, compartments, axis):
     location = np.asarray(dataset.location)
     amp = np.asarray(dataset.amplitude)
@@ -43,13 +45,13 @@ def calculate_spectral_gauss(dataset, compartments, axis):
     return array
 
 
-@glotaran_model_item(attributes={
+@model_item(attributes={
     'kinetic': List[str],
 })
 class DecayDatasetDescriptor(DatasetDescriptor):
     pass
 
-@glotaran_model_item(attributes={
+@model_item(attributes={
     'kinetic': List[str],
     'location': List[str],
     'amplitude': List[str],
@@ -59,24 +61,24 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     pass
 
 
-@glotaran_model('one_channel',
-                dataset_type=DecayDatasetDescriptor,
-                calculated_matrix=calculate_kinetic,
-                calculated_axis='c',
-                estimated_matrix=calculate_spectral_simple,
-                estimated_axis='e'
-                )
-class DecayModel(Model):
+@model('one_channel',
+       dataset_type=DecayDatasetDescriptor,
+       calculated_matrix=calculate_kinetic,
+       calculated_axis='c',
+       estimated_matrix=calculate_spectral_simple,
+       estimated_axis='e'
+       )
+class DecayModel(BaseModel):
     pass
 
-@glotaran_model('multi_channel',
-                dataset_type=GaussianShapeDecayDatasetDescriptor,
-                calculated_matrix=calculate_kinetic,
-                calculated_axis='c',
-                estimated_matrix=calculate_spectral_gauss,
-                estimated_axis='e'
-                )
-class GaussianDecayModel(Model):
+@model('multi_channel',
+       dataset_type=GaussianShapeDecayDatasetDescriptor,
+       calculated_matrix=calculate_kinetic,
+       calculated_axis='c',
+       estimated_matrix=calculate_spectral_gauss,
+       estimated_axis='e'
+       )
+class GaussianDecayModel(BaseModel):
     pass
 
 
@@ -199,13 +201,13 @@ def test_fitting(suite):
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
 
-    data = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
+    dataset = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
 
-    assert data.get().shape == (est_axis.size, cal_axis.size)
+    assert dataset.data().shape == (est_axis.size, cal_axis.size)
 
-    model.set_data('dataset1', data)
+    data = {'dataset1': dataset}
 
-    result = fit(model, initial)
+    result = fit(model, initial, data)
     print(result.best_fit_parameter)
 
     for param in result.best_fit_parameter.all():
@@ -213,10 +215,10 @@ def test_fitting(suite):
                            rtol=1e-1)
 
     resultdata = result.get_dataset("dataset1")
-    assert np.array_equal(data.get_axis('c'), resultdata.data.get_axis('c'))
-    assert np.array_equal(data.get_axis('e'), resultdata.data.get_axis('e'))
-    assert data.get().shape == resultdata.data.get().shape
-    assert np.allclose(data.get(), resultdata.data.get())
+    assert np.array_equal(dataset.get_axis('c'), resultdata.data.get_axis('c'))
+    assert np.array_equal(dataset.get_axis('e'), resultdata.data.get_axis('e'))
+    assert dataset.data().shape == resultdata.data.data().shape
+    assert np.allclose(dataset.data(), resultdata.data.data())
 
 
 if __name__ == '__main__':

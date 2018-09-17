@@ -1,65 +1,24 @@
-"""Dataset Descriptor"""
+"""This package contains glotarans dataset descriptor."""
 
 from typing import Dict, List
-# unused imports
-# from typing import Tuple
-# import numpy as np
 
 from .compartment_constraints import CompartmentConstraint
 from .dataset import Dataset
-from .model_item import glotaran_model_item
+from .model_item import model_item
 
 
-@glotaran_model_item(attributes={
-                        'initial_concentration': str,
-                        'megacomplex': List[str],
-                        'scale': {'type': str, 'default': None},
-                        'compartment_constraints': {
-                            'type': List[CompartmentConstraint],
-                            'default': None},
-                     },
-                     )
+@model_item(attributes={
+    'megacomplex': List[str],
+    'scale': {'type': str, 'default': None},
+    'compartment_constraints': {
+        'type': List[CompartmentConstraint],
+        'default': None},
+})
 class DatasetDescriptor:
-    """Represents a dataset for fitting
+    """A dataset descriptor describes a dataset in terms of a glotaran model.
+    It contains references to model items which describe the physical model for
+    a given dataset.
 
-    Parameters
-    ----------
-    label : str
-        The label of the dataset.
-
-    initial_concentration : str
-        The label of the initial concentration
-
-    megacomplexes : List[str]
-        A list of megacomplex labels
-
-    megacomplex_scaling : Dict[str: List[str]]
-        The megacomplex scaling parameters
-
-    scaling : str
-        The scaling parameter for the dataset
-
-    compartment_scaling: Dict[str: List[str]]
-        The compartment scaling parameters
-
-    compartment_constraints: List[CompartmentConstraint] :
-        A list of compartment constraints
-
+    A general dataset describtor assigns one or more megacomplexes, a scale
+    parameter and a set of compartment constrains to a dataset.
     """
-    _data = None
-
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-arguments
-    # pylint: disable=attribute-defined-outside-init
-    # Datasets are complex.
-
-    @property
-    def dataset(self):
-        """An implementation of model.Dataset"""
-        return self._data
-
-    @dataset.setter
-    def dataset(self, data):
-        if not isinstance(data, Dataset) and data is not None:
-            raise TypeError
-        self._data = data

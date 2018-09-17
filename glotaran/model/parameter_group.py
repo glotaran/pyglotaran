@@ -1,4 +1,4 @@
-"""Glotaran Parameter Group"""
+"""This package contains glotarans parameter group class"""
 
 from typing import Dict, Generator, List, Tuple
 from collections import OrderedDict

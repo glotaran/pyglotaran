@@ -1,8 +1,8 @@
-from typing import List
+from typing import Dict, List
 from dataclasses import dataclass, replace
 import inspect
 
-from .validator import Validator
+from .model_item_validator import Validator
 
 class MissingParameterException(Exception):
     pass
@@ -61,10 +61,10 @@ def item_to_param(name, item, item_class):
         return item_class.from_list(item)
 
 
-def glotaran_model_item(attributes={},
-                        has_type=False,
-                        no_label=False):
-    """glotaran_model_item adds the given attributes to the class and applies
+def model_item(attributes={},
+               has_type=False,
+               no_label=False):
+    """The model_item decorator adds the given attributes to the class and applies
     the `dataclass` on it. Further it adds `from_dict` and `from_list`
     classmethods for serialization. Also a `validate_model` and
     `validate_parameter` method is created.
@@ -244,7 +244,17 @@ def glotaran_model_item(attributes={},
     return decorator
 
 
-def glotaran_model_item_typed(types={}):
+def model_item_typed(types: Dict[str, any]={}):
+    """The model_item_typed decorator adds attributes to the class to enable
+    the glotaran model parser to infer the correct class an item when there
+    are multiple variants. See package glotaran.model.compartment_constraints
+    for an example.
+
+    Parameters
+    ----------
+    types : dict(str, any)
+        A dictonary of types and options.
+    """
 
     def decorator(cls):
 

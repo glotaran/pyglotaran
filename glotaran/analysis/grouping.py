@@ -1,14 +1,46 @@
+"""This package contains functions for creating and calculationg groups."""
 import numpy as np
 
-def create_group(model, xtol=0.5, dataset=None):
+from typing import Dict, Generator, List, Tuple
+
+from glotaran.model.dataset import Dataset
+from glotaran.model.dataset_descriptor import DatasetDescriptor
+from glotaran.model.parameter_group import ParameterGroup
+
+Group = Dict[any, Tuple[any, DatasetDescriptor]]
+
+
+def create_group(model: 'glotaran.model.Model',
+                 data: Dict[str, Dataset],
+                 xtol: float = 0.5,
+                 dataset: str = None,
+                 ) -> Group:
+    """create_group creates a calculation group for a model along the estimated
+    axis.
+
+    Parameters
+    ----------
+    model : glotaran.model.Model
+        The model to group.
+    data : dict(str, glotaran.model.dataset.Dataset)
+    xtol : float
+        The grouping tolerance.
+    dataset : str
+        (default = None)
+        If not None, the group will be created only for the given dataset.
+
+    Returns
+    -------
+    group : dict(any, tuple()any, DatasetDescriptor))
+    """
     group = {}
 
     for _, dataset_descriptor in model.dataset.items():
         if dataset is not None and not dataset_descriptor.label == dataset:
             continue
-        if dataset_descriptor.dataset is None:
+        if dataset_descriptor.label not in data:
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
-        axis = dataset_descriptor.dataset.get_axis(model.estimated_axis)
+        axis = data[dataset_descriptor.label].get_axis(model.estimated_axis)
         for index in axis:
             group_index = index if not any(abs(index-val) < xtol for val in group) \
                 else [val for val in group if abs(index-val) < xtol][0]
@@ -18,7 +50,24 @@ def create_group(model, xtol=0.5, dataset=None):
     return group
 
 
-def calculate_group(group, model, parameter):
+def calculate_group(group: Group,
+                    model: 'glotaran.model.Model',
+                    parameter: ParameterGroup,
+                    data: Dict[str, Dataset],
+                    ) -> Generator[Tuple[int, np.ndarray], None, None]:
+    """calculate_group calculates a group.
+
+    Parameters
+    ----------
+    group : dict(any, tuple()any, DatasetDescriptor))
+    model : glotaran.model.Model
+    parameter : ParameterGroup
+    data : dict(str, glotaran.model.dataset.Dataset)
+
+    Yields
+    ------
+    (index, array) : tuple(int, np.ndarray)
+    """
 
     if model.calculated_matrix is None:
         raise Exception("Missing function for calculated matrix.")
@@ -30,15 +79,14 @@ def calculate_group(group, model, parameter):
         full_compartments = None
         for index, dataset_descriptor in item:
 
-            if dataset_descriptor.dataset is None:
+            if dataset_descriptor.label not in data:
                 raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
-            axis = dataset_descriptor.dataset.get_axis(model.calculated_axis)
+            axis = data[dataset_descriptor.label].get_axis(model.calculated_axis)
             if dataset_descriptor.label not in datasets:
                 dataset_descriptor = dataset_descriptor.fill(model, parameter)
                 datasets[dataset_descriptor.label] = dataset_descriptor
             else:
                 dataset_descriptor = datasets[dataset_descriptor.label]
-
 
             (compartments, this_matrix) = model.calculated_matrix(dataset_descriptor,
                                                                   model.compartment,
@@ -66,20 +114,34 @@ def calculate_group(group, model, parameter):
         i += 1
 
 
-def get_data_group(model, group):
+def create_data_group(model: 'glotaran.model.Model',
+                      group: Group,
+                      data: Dict[str, Dataset]) -> List[np.ndarray]:
+    """create_data_group returns the datagroup for the model.
+
+    Parameters
+    ----------
+    model : glotaran.model.Model
+    group : dict(any, tuple(any, DatasetDescriptor))
+    data : dict(str, glotaran.model.dataset.Dataset)
+
+    Returns
+    -------
+    datagroup : list(np.ndarray)
+    """
 
     result = []
     for _, item in group.items():
         full = None
         for index, dataset_descriptor in item:
 
-            if dataset_descriptor.dataset is None:
+            if dataset_descriptor.label not in data:
                 raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
 
-            dataset = dataset_descriptor.dataset
-            axis = dataset_descriptor.dataset.get_axis(model.estimated_axis)
+            dataset = data[dataset_descriptor.label]
+            axis = dataset.get_axis(model.estimated_axis)
             idx = np.where(axis == index)
-            dataset = dataset.get()[idx[0][0], :]
+            dataset = dataset.data()[idx[0][0], :]
 
             if full is None:
                 full = dataset

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-from glotaran.model import InitialConcentration, ParameterGroup
-from glotaran.models.spectral_temporal import KMatrix
+from glotaran.model import ParameterGroup
+from glotaran.models.spectral_temporal import InitialConcentration, KMatrix
 
 
 class SequentialModel:
@@ -173,8 +173,8 @@ def test_matrix(matrix):
     assert np.allclose(vals, matrix.wanted_eigen_vals)
     assert np.allclose(vec, matrix.wanted_eigen_vec)
 
-    print(mat.gamma(matrix.compartments, vec, con))
-    assert np.allclose(mat.gamma(matrix.compartments, vec, con), matrix.wanted_gamma)
+    print(mat._gamma(matrix.compartments, vec, con))
+    assert np.allclose(mat._gamma(matrix.compartments, vec, con), matrix.wanted_gamma)
 
     print(mat.a_matrix(matrix.compartments, con))
     assert np.allclose(mat.a_matrix(matrix.compartments, con), matrix.wanted_a_matrix)

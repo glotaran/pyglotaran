@@ -399,14 +399,14 @@ def test_kinetic_model(suite):
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
 
-    data = sim_model.simulate('dataset1', wanted, suite.axis)
+    dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
-    assert data.get().shape == \
+    assert dataset.data().shape == \
         (suite.axis['spectral'].size, suite.axis['time'].size)
 
-    model.set_data('dataset1', data)
+    data = {'dataset1': dataset}
 
-    result = model.fit(initial)
+    result = model.fit(initial, data)
     print(result.best_fit_parameter)
 
     for label, param in result.best_fit_parameter.all_with_label():
@@ -414,7 +414,7 @@ def test_kinetic_model(suite):
                            rtol=1e-1)
 
     resultdata = result.get_dataset("dataset1")
-    assert np.array_equal(data.get_axis('time'), resultdata.data.get_axis('time'))
-    assert np.array_equal(data.get_axis('spectral'), resultdata.data.get_axis('spectral'))
-    assert data.get().shape == resultdata.data.get().shape
-    assert np.allclose(data.get(), resultdata.data.get())
+    assert np.array_equal(dataset.get_axis('time'), resultdata.data.get_axis('time'))
+    assert np.array_equal(dataset.get_axis('spectral'), resultdata.data.get_axis('spectral'))
+    assert dataset.data().shape == resultdata.data.data().shape
+    assert np.allclose(dataset.data(), resultdata.data.data())

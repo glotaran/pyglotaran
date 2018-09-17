@@ -1,15 +1,15 @@
-"""Glotarans model package"""
-ModelError = None
-ParameterGroup = None
+"""Glotaran Model Package
+
+This package contains the Glotaran's base model object, the model decorators and
+common model items.
+"""
 
 from . import (
+    base_model,
     compartment_constraints,
     dataset,
     dataset_descriptor,
-    initial_concentration,
-    megacomplex,
     model,
-    model_decorator,
     model_item,
     parameter,
     parameter_group,
@@ -27,17 +27,9 @@ EqualAreaConstraint = compartment_constraints.EqualAreaConstraint
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 Dataset = dataset.Dataset
 
-# Initial Concentration
+# BaseModel
 
-InitialConcentration = initial_concentration.InitialConcentration
-
-# Megacomplex
-
-Megacomplex = megacomplex.Megacomplex
-
-# Model
-
-Model = model.Model
+BaseModel = base_model.BaseModel
 
 # Parameter
 
@@ -47,9 +39,9 @@ ParameterGroup = parameter_group.ParameterGroup
 
 # Decorators
 
-glotaran_model = model_decorator.glotaran_model
-glotaran_model_item = model_item.glotaran_model_item
-glotaran_model_item_typed = model_item.glotaran_model_item_typed
+model = model.model
+model_item_typed = model_item.model_item_typed
+model_item = model_item.model_item
 
 
 class ModelError(Exception):
@@ -63,4 +55,3 @@ class ModelError(Exception):
 
         # Call the base class constructor with the parameters it needs
         super().__init__(msg)
-
