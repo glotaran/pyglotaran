@@ -1,16 +1,19 @@
-import numpy as np
+"""This package contains irf items."""
+
 from typing import List
-from glotaran.model import glotaran_model_item, glotaran_model_item_typed
+import numpy as np
+
+from glotaran.model import model_item, model_item_typed
 
 
-@glotaran_model_item(attributes={
+@model_item(attributes={
     'irfdata': {'type': np.ndarray, 'default': None},
 }, has_type=True)
 class IrfMeasured:
     """A measured IRF."""
 
 
-@glotaran_model_item(attributes={
+@model_item(attributes={
     'center': str,
     'width': str,
     'dispersion_center': {'type': str, 'default': None},
@@ -71,10 +74,9 @@ class IrfGaussian:
 
 
 
-@glotaran_model_item_typed(types={
+@model_item_typed(types={
     'gaussian': IrfGaussian,
     'measured': IrfMeasured,
 })
 class Irf(object):
     """Represents an IRF."""
-    pass

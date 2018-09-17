@@ -1,4 +1,5 @@
 from . import (
+    initial_concentration,
     irf,
     k_matrix,
     kinetic_matrix,
@@ -13,6 +14,10 @@ from . import (
 
 SpectralTemporalDatasetDescriptor = \
     spectral_temporal_dataset_descriptor.SpectralTemporalDatasetDescriptor
+
+# Initial Concentration
+
+InitialConcentration = initial_concentration.InitialConcentration
 
 # Irfs
 

@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from glotaran.math.simulation import simulate
+from glotaran.analysis.simulation import simulate
 from glotaran.model import ParameterGroup
 
 from .mock import MockDataset, MockModel
@@ -33,10 +33,10 @@ def test_simulate_dataset():
     data = simulate(model, parameter, 'dataset1', {'e': est_axis, 'c': cal_axis})
     assert np.array_equal(data.get_axis("c"), cal_axis)
     assert np.array_equal(data.get_axis("e"), est_axis)
-    assert data.get().shape == (4, 3)
-    assert np.array_equal(data.get(), np.asarray([
-        [4, 4, 4],
-        [4, 4, 4],
-        [4, 4, 4],
-        [4, 4, 4],
+    assert data.data().shape == (4, 3)
+    assert np.array_equal(data.data(), np.asarray([
+        [2, 4, 6],
+        [4, 10, 16],
+        [6, 16, 26],
+        [8, 22, 36],
     ]))

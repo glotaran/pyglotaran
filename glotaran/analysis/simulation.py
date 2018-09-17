@@ -1,3 +1,4 @@
+"""This package contains functions for simulationg a model."""
 from typing import Dict
 import numpy as np
 
@@ -61,6 +62,6 @@ def simulate(model: "glotaran.model.Model",
     data = Dataset()
     data.set_axis(model.calculated_axis, calculated_axis)
     data.set_axis(model.estimated_axis, estimated_axis)
-    data.set(result)
+    data.set_data(result)
 
     return data

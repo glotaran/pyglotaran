@@ -12,7 +12,6 @@ __version__ = '0.0.8'
 
 Dataset = model.Dataset
 DatasetDescriptor = model.DatasetDescriptor
-Model = model.Model
 ParameterGroup = model.ParameterGroup
 
 # Top level API

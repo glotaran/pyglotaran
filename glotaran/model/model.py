@@ -1,208 +1,85 @@
-"""Glotaran Model"""
-
-
+from collections import OrderedDict
 from typing import List, Type, Dict, Generator
-import numpy as np
 
-from glotaran.math.fitresult import FitResult
-from glotaran.math.fitting import fit
-from glotaran.math.simulation import simulate
-from .dataset import Dataset
+from glotaran.analysis.fitresult import FitResult
+from glotaran.parse.register import register_model
+
 from .dataset_descriptor import DatasetDescriptor
-from .parameter_group import ParameterGroup
 
 
-class Model:
-    """Model represents a global analysis model."""
+def model(name,
+          attributes={},
+          dataset_type=DatasetDescriptor,
+          megacomplex_type=None,
+          calculated_matrix=None,
+          estimated_matrix=None,
+          calculated_axis=None,
+          estimated_axis=None,
+          ):
 
-    compartment: List[str]
+    def decorator(cls):
 
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-arguments
-    # pylint: disable=no-member
-    # Models are complex.
+        setattr(cls, 'model_type', name)
+        setattr(cls, 'dataset_type', dataset_type)
 
-    def __init__(self):
-        self.compartment = []
+        def c_mat(self, c_mat=calculated_matrix):
+            return c_mat
+        setattr(cls, 'calculated_matrix', property(c_mat))
+        setattr(cls, 'calculated_axis', calculated_axis)
 
-    @classmethod
-    def from_dict(cls, model_dict):
+        def e_mat(self, e_mat=estimated_matrix):
+            return e_mat
+        setattr(cls, 'estimated_matrix', property(e_mat))
+        setattr(cls, 'estimated_axis', estimated_axis)
 
-        model = cls()
-        if 'compartment' in model_dict:
-            model.compartment = model_dict['compartment']
-            del model_dict['compartment']
+        if not hasattr(cls, '__annotations__'):
+            setattr(cls, '__annotations__', {})
+        else:
+            setattr(cls, '__annotations__',
+                getattr(cls, '__annotations__').copy())
 
-        for name, attribute in list(model_dict.items()):
-            if hasattr(model, f'set_{name}'):
-                set = getattr(model, f'set_{name}')
-                item_cls = set.__func__.__annotations__['item']
-                for label, item in attribute.items():
-                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-                    if isinstance(item, dict):
-                        if is_typed:
-                            if 'type' not in item:
-                                raise Exception(f"Missing type for attribute '{name}'")
-                            item_type = item['type']
+        if not hasattr(cls, '_glotaran_model_attributes'):
+            setattr(cls, '_glotaran_model_attributes', {})
+        else:
+            setattr(cls, '_glotaran_model_attributes',
+                getattr(cls, '_glotaran_model_attributes').copy())
 
-                            if item_type not in item_cls._glotaran_model_item_types:
-                                raise Exception(f"Unknown type '{item_type}' "
-                                                f"for attribute '{name}'")
-                            item_cls = \
-                                item_cls._glotaran_model_item_types[item_type]
-                        item['label'] = label
-                        set(label, item_cls.from_dict(item))
-                    elif isinstance(item, list):
-                        if is_typed:
-                            if len(item) < 2 and len(item) is not 1:
-                                raise Exception(f"Missing type for attribute '{name}'")
-                            item_type = item[1] if len(item) is not 1 and \
-                                    hasattr(item_cls,'label') else item[0]
+        # Add standard attributes if not present
+        attributes['megacomplex'] = megacomplex_type
+        attributes['dataset'] = dataset_type
 
-                            if item_type not in item_cls._glotaran_model_item_types:
-                                raise Exception(f"Unknown type '{item_type}' "
-                                                f"for attribute '{name}'")
-                            item_cls = \
-                                item_cls._glotaran_model_item_types[item_type]
-                        item = [label] + item
-                        set(label, item_cls.from_list(item))
-                del model_dict[name]
+        # Set annotations and methods for attributes
 
-        return model
+        for attr_name, attr_type in attributes.items():
+            getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
+            getattr(cls, '_glotaran_model_attributes')[attr_name] = None
 
-    def simulate(self, dataset: str, parameter: ParameterGroup, axis: Dict[str, np.ndarray]):
-        return simulate(self, parameter, dataset, axis)
+            def get_item(self, label: str, attr_name=attr_name):
+                return getattr(self, attr_name)[label]
 
-    def fit(self, parameter: ParameterGroup, *args, **kwargs) -> Type[FitResult]:
-        """ Fits the model and returns the result.
+            setattr(cls, f"get_{attr_name}", get_item)
 
-        Parameters
-        ----------
-        parameter : ParameterGroup
-        nnls :
-            (Default value = False)
-        *args :
+            def set_item(self, label: str, item: attr_type,
+                         attr_name=attr_name,
+                         attr_type=attr_type):
 
-        **kwargs :
+                # TODO checked typed items
+                if not isinstance(item, attr_type) and \
+                        not hasattr(attr_type, "_glotaran_model_item_typed"):
+                    raise TypeError
+                getattr(self, attr_name)[label] = item
 
+            setattr(cls, f"set_{attr_name}", set_item)
 
-        Returns
-        -------
-        result : type(fitmodel.Result)
+        def init(self, cls=cls, attributes=attributes):
+            for attr_name in attributes:
+                setattr(self, attr_name, OrderedDict())
+            super(cls, self).__init__()
 
-        """
-        if any([dset.dataset is None for _, dset in self.dataset.items()]):
-            raise Exception("Model datasets not initialized")
-        return fit(self, parameter)
+        setattr(cls, '__init__', init)
 
+        register_model(name, cls)
 
-    def concentrations(self, parameter: ParameterGroup, dataset: str) -> np.ndarray:
-        """Returns the precited concentrations for a dataset.
+        return cls
 
-        Parameters
-        ----------
-        dataset : str
-            Label of the dataset
-
-        Returns
-        -------
-        concentrations : numpy.ndarray
-        """
-        parameter = parameter.as_parameter_dict().copy()
-        kwargs = {}
-        kwargs['dataset'] = dataset
-        return self.fit_model().c_matrix(parameter, **kwargs)
-
-    def data(self) -> Generator[DatasetDescriptor, None, None]:
-        """Gets all datasets as a generator.
-
-        Returns
-        -------
-
-        datasets : generator(DatasetDescriptor)
-        """
-        for _, dataset in self.dataset.items():
-            yield dataset.data
-
-    def list_datasets(self) -> List[str]:
-        """Returns a list of all dataset labels
-
-        Returns
-        -------
-
-        datasets : list(str)
-        """
-        return [label for label in self.dataset]
-
-
-    def get_data(self, label: str) -> Dataset:
-        """ Sets the dataset of a DatasetDescriptor
-
-        Parameters
-        ----------
-        label : str
-            Label of the DatasetDescriptor
-
-        Returns
-        -------
-        dataset : Dataset
-            The Dataset
-
-
-        """
-        return self.dataset[label].dataset
-
-    def set_data(self, label: str, dataset: Dataset):
-        """ Sets the dataset of a DatasetDescriptor
-
-        Parameters
-        ----------
-        label : str
-            Label of the DatasetDescriptor
-
-        dataset : Dataset
-            The Dataset
-
-
-        """
-        self.dataset[label].dataset = dataset
-
-    def errors(self):
-        attrs = getattr(self, '_glotaran_model_attributes')
-
-        errors = []
-
-        for attr in attrs:
-            for _, item in getattr(self, attr).items():
-                item.validate_model(self, errors=errors)
-
-        return errors
-
-    def valid(self):
-        return len(self.errors()) is 0
-
-    def errors_parameter(self, parameter):
-        attrs = getattr(self, '_glotaran_model_attributes')
-
-        errors = []
-
-        for attr in attrs:
-            for _, item in getattr(self, attr).items():
-                item.validate_parameter(self, parameter, errors=errors)
-
-        return errors
-
-    def valid_parameter(self, parameter):
-        return len(self.errors_parameter(parameter)) is 0
-
-    def __str__(self):
-        attrs = getattr(self, '_glotaran_model_attributes')
-        string = "# Model\n\n"
-        string += f"_Type_: {self.model_type}\n\n"
-
-        for attr in attrs:
-            string += f"## {attr}\n"
-
-            for label, item in getattr(self, attr).items():
-                string += f'{item}\n'
-        return string
+    return decorator

@@ -1,10 +1,11 @@
 """Spectral Temporal Dataset Descriptor"""
 
 from typing import Dict, List
-from glotaran.model import DatasetDescriptor, glotaran_model_item
+from glotaran.model import DatasetDescriptor, model_item
 
 
-@glotaran_model_item(attributes={
+@model_item(attributes={
+    'initial_concentration': {'type': str, 'default': None},
     'irf': {'type': str, 'default': None},
     'shapes': {'type': Dict[str, str], 'target': ('compartment', 'shape'), 'default': None},
 })

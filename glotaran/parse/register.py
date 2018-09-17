@@ -1,19 +1,19 @@
 """A register for models"""
 
 
-from glotaran.model.model import Model
+from glotaran.model.base_model import BaseModel
 
 _model_register = {}
 
 
-def register_model(model_type: str, model: Model):
+def register_model(model_type: str, model: BaseModel):
     """register_model registers a model.
 
     Parameters
     ----------
     model_type : str
         model_type is type of the model.
-    model : Model
+    model : glotaran.model.base_model
         model is the model to be registered.
     """
     _model_register[model_type] = model
@@ -34,7 +34,7 @@ def known_model(model_type: str) -> bool:
     return model_type in _model_register
 
 
-def get_model(model_type: str) -> Model:
+def get_model(model_type: str) -> BaseModel:
     """get_model gets a model from the register.
 
     Parameters
@@ -44,6 +44,6 @@ def get_model(model_type: str) -> Model:
 
     Returns
     -------
-    model : Model
+    model : glotaran.model.base_model
     """
     return _model_register[model_type]

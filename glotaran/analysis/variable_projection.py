@@ -1,3 +1,4 @@
+"""This package contains functions for variable projection."""
 import scipy.linalg.lapack as lapack
 
 

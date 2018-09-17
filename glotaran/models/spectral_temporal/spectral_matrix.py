@@ -3,8 +3,6 @@
 from typing import List
 import numpy as np
 
-from glotaran.model import Model, ParameterGroup
-
 
 def calculate_spectral_matrix(dataset, compartments, axis):
     """ Calculates the matrix.
