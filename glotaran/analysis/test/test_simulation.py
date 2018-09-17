@@ -4,7 +4,7 @@ import numpy as np
 from glotaran.analysis.simulation import simulate
 from glotaran.model import ParameterGroup
 
-from .mock import MockDataset, MockModel
+from .mock import MockModel
 
 
 def test_simulate_dataset():

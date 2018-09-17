@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import scipy
 
-from glotaran.model import ParameterGroup, model_item
+from glotaran.model import model_item
 
 from .initial_concentration import InitialConcentration
 

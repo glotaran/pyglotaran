@@ -22,6 +22,7 @@ from glotaran.model import (
 class MockAttr:
     pass
 
+
 @model_item()
 class MockMegacomplex:
     pass
@@ -111,17 +112,15 @@ def test_model_types(model):
     assert model.dataset_type is DatasetDescriptor
 
 
-@pytest.mark.parametrize("attr",
-                         [
-                             "dataset",
-                             "megacomplex",
-                             "test"
-])
+@pytest.mark.parametrize(
+    "attr",
+    ["dataset",
+     "megacomplex",
+     "test"])
 def test_model_attr(model, attr):
     assert hasattr(model, attr)
     assert hasattr(model, f'get_{attr}')
     assert hasattr(model, f'set_{attr}')
-
 
 
 def test_model_validity(model, model_error, parameter):

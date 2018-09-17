@@ -37,6 +37,7 @@ yaml.add_constructor(u'!tuple', _yml_tuple_constructor)
 # this is to spot the strings written as tuple in the yaml
 yaml.add_implicit_resolver(u'!tuple', re.compile(r"\((.*?,.*?)\)"))
 
+
 def parse_yml_file(fname: str) -> Dict:
     """parse_yml_file reads the given file and parses its content as YML.
 
@@ -64,7 +65,6 @@ def parse_yml(data: str):
         return yaml.load(data)
     except Exception as e:
         raise e
-
 
 
 def parse_spec(spec: Dict):

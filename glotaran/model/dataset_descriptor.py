@@ -1,9 +1,8 @@
 """This package contains glotarans dataset descriptor."""
 
-from typing import Dict, List
+from typing import List
 
 from .compartment_constraints import CompartmentConstraint
-from .dataset import Dataset
 from .model_item import model_item
 
 

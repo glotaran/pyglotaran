@@ -1,6 +1,5 @@
 """This package contains glotaran's dataset class."""
 
-from typing import Tuple
 from copy import copy
 import numpy as np
 

@@ -73,7 +73,6 @@ class IrfGaussian:
         return centers[0], widths[0], scale, backsweep, backsweep_period
 
 
-
 @model_item_typed(types={
     'gaussian': IrfGaussian,
     'measured': IrfMeasured,

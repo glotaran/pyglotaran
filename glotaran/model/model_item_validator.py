@@ -1,5 +1,6 @@
 """This package contains glotarans model item validator."""
 
+
 class Validator:
     def __init__(self, attributes):
         self._attributes = attributes

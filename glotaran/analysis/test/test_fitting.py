@@ -51,6 +51,7 @@ def calculate_spectral_gauss(dataset, compartments, axis):
 class DecayDatasetDescriptor(DatasetDescriptor):
     pass
 
+
 @model_item(attributes={
     'kinetic': List[str],
     'location': List[str],
@@ -70,6 +71,7 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
        )
 class DecayModel(BaseModel):
     pass
+
 
 @model('multi_channel',
        dataset_type=GaussianShapeDecayDatasetDescriptor,

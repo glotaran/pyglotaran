@@ -1,14 +1,10 @@
 """ Glotaran Kinetic Matrix """
 
-from typing import List, Tuple
 import numpy as np
-
-from glotaran.model import ParameterGroup
 
 from kinetic_matrix_no_irf import calc_kinetic_matrix_no_irf
 from kinetic_matrix_gaussian_irf import calc_kinetic_matrix_gaussian_irf
 from .irf import IrfGaussian, IrfMeasured
-from .k_matrix import KMatrix
 
 
 def calculate_kinetic_matrix(dataset, all_compartments, index, axis):
@@ -49,7 +45,8 @@ def calculate_kinetic_matrix(dataset, all_compartments, index, axis):
                     matrix[compartments.index(comp), :] += \
                         this_matrix[this_compartments.index(comp), :]
                 else:
-                    matrix = np.concatenate((matrix, this_matrix[this_compartments.index(comp), :]))
+                    matrix = np.concatenate((matrix,
+                                             this_matrix[this_compartments.index(comp), :]))
     return (compartments, matrix)
 
 

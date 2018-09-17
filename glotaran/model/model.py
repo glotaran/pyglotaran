@@ -1,7 +1,6 @@
 from collections import OrderedDict
-from typing import List, Type, Dict, Generator
+from typing import Dict
 
-from glotaran.analysis.fitresult import FitResult
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
@@ -36,13 +35,13 @@ def model(name,
             setattr(cls, '__annotations__', {})
         else:
             setattr(cls, '__annotations__',
-                getattr(cls, '__annotations__').copy())
+                    getattr(cls, '__annotations__').copy())
 
         if not hasattr(cls, '_glotaran_model_attributes'):
             setattr(cls, '_glotaran_model_attributes', {})
         else:
             setattr(cls, '_glotaran_model_attributes',
-                getattr(cls, '_glotaran_model_attributes').copy())
+                    getattr(cls, '_glotaran_model_attributes').copy())
 
         # Add standard attributes if not present
         attributes['megacomplex'] = megacomplex_type

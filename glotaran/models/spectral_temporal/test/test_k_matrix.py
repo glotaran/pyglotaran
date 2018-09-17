@@ -143,13 +143,12 @@ class ParallelModelWithEquilibria:
     ])
 
 
-@pytest.mark.parametrize("matrix",
-                         [
-                             SequentialModel,
-                             SequentialModelWithBacktransfer,
-                             ParallelModel,
-                             ParallelModelWithEquilibria
-])
+@pytest.mark.parametrize(
+    "matrix",
+    [SequentialModel,
+     SequentialModelWithBacktransfer,
+     ParallelModel,
+     ParallelModelWithEquilibria])
 def test_matrix(matrix):
 
     params = ParameterGroup.from_list(matrix.params)

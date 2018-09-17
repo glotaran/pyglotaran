@@ -2,6 +2,7 @@
 # It is not meant to be usuable in any way as of yet.
 import os
 import shutil
+import sys
 
 from setuptools import setup, find_packages, Command
 from setuptools.extension import Extension
@@ -80,8 +81,12 @@ install_requires = [
     'pyyaml',
     'matplotlib',  # dependency introduced by glotaran.plotting
     'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-    'lmfit-varpro>=0.0.5'
 ]
+
+# backport of dataclases only needed for python 3.6
+
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    install_requires.append('dataclasses>=0.6')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
