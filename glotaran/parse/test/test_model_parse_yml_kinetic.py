@@ -119,7 +119,7 @@ def test_irf(model):
             assert irf.backsweep_period, 55
         else:
             assert not irf.backsweep
-            assert irf.backsweep_period is not None
+            assert irf.backsweep_period is None
 
         i = i + 1
 
