@@ -48,7 +48,7 @@ def fit(model: 'glotaran.model.Model',
 
     Parameters
     ----------
-    model :'glotaran.model.Model
+    model : glotaran.model.Model
         The Model to fit.
     parameter : ParameterGroup
         The initial fit parameter.
