@@ -1,0 +1,78 @@
+type: kinetic
+
+compartment: [s1,s2,s3,s4,osc1]
+
+dataset:
+  dataset1:
+    megacomplex: [cmplx1]
+    initial_concentration: inputD1 # refers to the first element in the absorption_vectors list
+    irf: irf1
+    scale: 1 # scale dataset with parameter 78
+    shapes:
+      s1: shape1
+      s2: shape2
+  dataset2:
+    megacomplex: [cmplx2]
+    initial_concentration: inputD2
+    irf: irf2
+    scale: 2 # scale dataset with parameter 78
+    compartment_constraints:
+      - type: zero
+        compartment: s1
+        interval: [!tuple '(1,100)', !tuple '(2,200)']
+      - [zero, s1, [!tuple '(1,100)', !tuple '(2,200)']]
+      - type: equal
+        compartment: s2
+        interval: [!tuple '(60, 700)']
+        targets: [s1, s2]
+        parameters: [54, 56] # usually fixed
+      - type: equal_area
+        compartment: s3
+        interval: [!tuple '(670, 810)']
+        targets: s2
+        parameters: 55 # usually fixed
+        weight: 0.0016
+        # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
+
+irf: #specific to kinetic or spectro_temporal model
+  irf1:
+    type: gaussian
+    center: [1]
+    width: [2]
+    center_dispersion: [3] # dispersion is of 1st order
+    width_dispersion: [4] # dispersion is of 1st order
+  irf2: [gaussian, [1, 2], [3,4], 3, [5,6], [7,8], 9, false, true, 55] # compact
+
+initial_concentration: #equal to the total number of compartments
+  inputD1:
+    parameters: [1,2,3] #these are indices in the total prameter vector
+  inputD2:
+    parameters: [1,2,3]
+
+# Convention matrix notation column = source, row = target compartment
+# (2,1) means from 1 to 2
+k_matrix:
+  km1:
+    matrix: {
+      !tuple '(s1,s1)': 1,
+      !tuple '(s2,s1)': 2,
+      !tuple '(s1,s2)': 3,
+      !tuple '(s3,s1)': 4,
+      !tuple '(s1,s3)': 5,
+      !tuple '(s4,s1)': 6,
+      !tuple '(s1,s4)': 7,
+}
+
+shape:
+  shape1:
+    type: "gaussian"
+    amplitude: shape.1
+    location: shape.2
+    width: shape.3
+
+megacomplex:
+  cmplx1:
+      k_matrix: [km1] # A megacomplex has one or more k-matrices
+  cmplx2:
+      k_matrix: [km2]
+  cmplx3: [[km3]]

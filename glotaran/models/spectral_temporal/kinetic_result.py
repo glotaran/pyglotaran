@@ -1,10 +1,10 @@
 """Glotaran Kinetic Result"""
 import numpy as np
 
-from glotaran.fitmodel import Result
+from glotaran.analysis.fitresult import FitResult
 
 
-class KineticResult(Result):
+class KineticResult(FitResult):
     """The result of kinetic model fit"""
 
     def species_associated_spectra(self, dataset: str) -> np.array:

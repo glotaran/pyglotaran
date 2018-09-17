@@ -1,6 +1,6 @@
-"""Glotaran Parameter Group"""
+"""This package contains glotarans parameter group class"""
 
-from typing import Generator, List, Tuple
+from typing import Dict, Generator, List, Tuple
 from collections import OrderedDict
 import yaml
 
@@ -29,8 +29,7 @@ class ParameterGroup(OrderedDict):
             lmfit.Parameters dictionary
         """
 
-        root = cls("p")
-
+        root = cls(None)
         for lbl, param in parameter.items():
             lbl = lbl.split("_")
             if len(lbl) is 2:
@@ -62,12 +61,26 @@ class ParameterGroup(OrderedDict):
         return root
 
     @classmethod
+    def from_dict(cls, parameter: Dict[str, object], label="p"):
+        root = cls(label)
+        for label, item in parameter.items():
+            label = str(label)
+            if isinstance(item, dict):
+                root.add_group(cls.from_dict(item, label=label))
+            if isinstance(item, list):
+                root.add_group(cls.from_list(item, label=label))
+        return root
+
+    @classmethod
     def from_list(cls, parameter: List[object], label="p"):
         root = cls(label)
         for item in parameter:
             if isinstance(item, dict):
                 label, items = list(item.items())[0]
-                root.add_group(cls.from_list(items, label=label))
+                if isinstance(items, dict):
+                    root.add_group(cls.from_dict(items, label=label))
+                else:
+                    root.add_group(cls.from_list(items, label=label))
             elif isinstance(item, bool):
                 root.fit = item
             else:
@@ -77,7 +90,11 @@ class ParameterGroup(OrderedDict):
     @classmethod
     def from_yaml(cls, yml: str):
         items = yaml.load(yml)
-        return cls.from_list(items)
+        if isinstance(items, list):
+            cls = cls.from_list(items)
+        else:
+            cls = cls.from_dict(items)
+        return cls
 
     def add_parameter(self, parameter: Parameter):
         """
@@ -150,6 +167,13 @@ class ParameterGroup(OrderedDict):
             for l in group.groups():
                 yield l
 
+    def has(self, label: str) -> bool:
+        try:
+            self.get(label)
+            return True
+        except Exception:
+            return False
+
     def get(self, label: str) -> Parameter:
         """Gets a parameter by it label.
 
@@ -208,8 +232,9 @@ class ParameterGroup(OrderedDict):
             for p in self[l].all():
                 yield p
 
-    def all_with_label(self, root) -> Generator[Tuple[str, Parameter], None,
-                                                None]:
+    def all_with_label(self,
+                       root=None,
+                       seperator=".") -> Generator[Tuple[str, Parameter], None, None]:
         """ Same as all, but returns the labels relative to the given root
         group.
         Parameters
@@ -218,12 +243,11 @@ class ParameterGroup(OrderedDict):
 
 
         """
-        root = "{}_{}".format(root, self.label) if root is not None else \
-            self.label
+        root = f"{root}{self.label}{seperator}" if root is not None else ""
         for label, p in self._parameters.items():
-            yield ("{}_{}".format(root, label), p)
+            yield (f"{root}{label}", p)
         for _, l in self.items():
-            for (lbl, p) in l.all_with_label(root):
+            for (lbl, p) in l.all_with_label(root=root, seperator=seperator):
                 yield (lbl, p)
 
     def as_parameter_dict(self, only_fit=False) -> Parameters:
@@ -241,8 +265,8 @@ class ParameterGroup(OrderedDict):
         Parameters : lmfit.Parameters
         """
         params = Parameters()
-        for (label, p) in self.all_with_label(None):
-            p.name = label
+        for (label, p) in self.all_with_label(seperator="_"):
+            p.name = "_" + label
             if not only_fit or p.fit:
                 params.add(p)
         return params

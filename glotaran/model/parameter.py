@@ -1,4 +1,4 @@
-""" Glotaran Parameter"""
+"""This package contains glotarans parameter class"""
 
 from typing import List, Union
 from math import isnan
@@ -7,6 +7,7 @@ from lmfit import Parameter as LmParameter
 
 
 class Keys:
+    FIT = "fit"
     MIN = "min"
     MAX = "max"
     EXPR = "expr"
@@ -15,10 +16,10 @@ class Keys:
 
 class Parameter(LmParameter):
     """Wrapper for lmfit parameter."""
-    def __init__(self):
+    def __init__(self, label=None):
         self.index = -1
         self.fit = True
-        self.label = None
+        self.label = label
         super(Parameter, self).__init__()
 
     @classmethod
@@ -32,8 +33,7 @@ class Parameter(LmParameter):
         parameter : lmfit.Parameter
             lmfit.Parameter
         """
-        p = cls()
-        p.label = label
+        p = cls(label=label)
         p.value = parameter.value
         p.min = parameter.min
         p.max = parameter.max
@@ -41,8 +41,9 @@ class Parameter(LmParameter):
         return p
 
     @classmethod
-    def from_list_or_value(cls, parameter: Union[int, float, List[object]]):
-            param = cls()
+    def from_list_or_value(cls, parameter: Union[int, float, List[object]],
+                           label=None):
+            param = cls(label=label)
 
             if isinstance(parameter, (int, float)):
                 param.value = parameter
@@ -50,22 +51,24 @@ class Parameter(LmParameter):
 
             def retrieve(filt, default):
                 tmp = list(filter(filt, parameter))
-                return tmp[0] if tmp else default
+                if len(tmp) is not 0:
+                    parameter.remove(tmp[0])
+                    return tmp[0]
+                else:
+                    return default
 
-            def filt_num(x):
-                return isinstance(x, (int, float)) and not isinstance(x, bool)
-
-            param.value = retrieve(filt_num, 'nan')
-            param.label = retrieve(lambda x: isinstance(x, str) and not
-                                   x == 'nan', None)
-            param.fit = retrieve(lambda x: isinstance(x, bool), True)
             options = retrieve(lambda x: isinstance(x, dict), None)
 
+            param.label = parameter[0] if len(parameter) is not 1 else label
+            param.value = float(parameter[0] if len(parameter) is 1 else parameter[1])
+
             if options is not None:
+                if Keys.FIT in options:
+                    param.fit = options[Keys.FIT]
                 if Keys.MAX in options:
-                    param.max = options[Keys.MAX]
+                    param.max = float(options[Keys.MAX])
                 if Keys.MIN in options:
-                    param.min = options[Keys.MIN]
+                    param.min = float(options[Keys.MIN])
                 if Keys.EXPR in options:
                     param.expr = options[Keys.EXPR]
                 if Keys.VARY in options:

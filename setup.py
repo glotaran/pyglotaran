@@ -2,6 +2,7 @@
 # It is not meant to be usuable in any way as of yet.
 import os
 import shutil
+import sys
 
 from setuptools import setup, find_packages, Command
 from setuptools.extension import Extension
@@ -45,15 +46,15 @@ try:
     import numpy
     import scipy
     ext_modules = [
-        Extension("c_matrix",
-                  ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix.pyx"],
+        Extension("kinetic_matrix_no_irf",
+                  ["glotaran/models/spectral_temporal/kinetic_matrix_no_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/spectral_temporal/c_matrix_cython"]),
-        Extension("c_matrix_gaussian_irf",
-                  ["glotaran/models/spectral_temporal/c_matrix_cython/c_matrix_gaussian_irf.pyx",
-                   "glotaran/models/spectral_temporal/c_matrix_cython/erfce.c"],
+                                "glotaran/models/spectral_temporal"]),
+        Extension("kinetic_matrix_gaussian_irf",
+                  ["glotaran/models/spectral_temporal/erfce.c",
+                   "glotaran/models/spectral_temporal/kinetic_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/spectral_temporal/c_matrix_cython"]),
+                                "glotaran/models/spectral_temporal"]),
         #  Extension("c_matrix_damped_oscillation",
         #            ["glotaran/models/damped_oscillation/c_matrix_damped_oscillations.pyx"],
         #            include_dirs=[numpy.get_include(), scipy.get_include(),
@@ -80,8 +81,13 @@ install_requires = [
     'pyyaml',
     'matplotlib',  # dependency introduced by glotaran.plotting
     'natsort',  # dependency introduced by glotaran.data.io.chlorospec_format
-    'lmfit-varpro>=0.0.5'
+    'typing_inspect',
 ]
+
+# backport of dataclases only needed for python 3.6
+
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    install_requires.append('dataclasses>=0.6')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()

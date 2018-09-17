@@ -1,107 +1,66 @@
-"""Glotaran Dataset"""
+"""This package contains glotaran's dataset class."""
 
-from typing import Tuple
 from copy import copy
 import numpy as np
 
 
-class Dataset(object):
-    """Dataset encapsulates actual data and labeled axis. This class serves as
-    base class for classes which wrap e.g. a CSV file.
+class Dataset:
+    """Dataset is a small interface which dataset/-file implementations can
+    fullfill in order to be consumable for glotaran.
 
-    Parameters
-    ----------
-    label : Label of the Datasets
-
-    Returns
-    -------
+    The Datasetclass is contains a very simple implementation used for
+    simulatind data.
     """
 
-    def __init__(self, label):
-        self.label = label
+    def __init__(self):
         self._axis = {}
 
-    @property
-    def label(self):
-        """Label of the dataset """
-        return self._label
-
-    @label.setter
-    def label(self, label):
-        """
+    def get_axis(self, label: str) -> np.ndarray:
+        """get_axis gets an axis by its label.
 
         Parameters
         ----------
-        label : Label of the Dataset
-
-
-        Returns
-        -------
-
-        """
-        self._label = label
-
-    def get_estimated_axis(self):
-        """Get the axis along the calculated matrices are grouped"""
-        raise NotImplementedError
-
-    def get_calculated_axis(self):
-        """Get the axis along the estimated matrices are grouped"""
-        raise NotImplementedError
-
-    def get_axis(self, label):
-        """
-
-        Parameters
-        ----------
-        label : label of the axis
-
+        label : str
+            The label of the axis.
 
         Returns
         -------
-        axis: list or np.ndarray
+        axis : np.ndarray
         """
         return self._axis[label]
 
-    def set_axis(self, label, axis):
-        """
+    def set_axis(self, label: str, axis: np.ndarray):
+        """set_axis sets an axis by its label.
 
         Parameters
         ----------
-        label : label of the axis
-
-        axis: list or np.ndarray
-
-
-        Returns
-        -------
-
+        label : str
+            The label of the axis.
+        axis : np.ndarray
         """
-        if not isinstance(axis, (list, np.ndarray)):
-            raise TypeError("Axis must be list or ndarray")
+        if not isinstance(axis, np.ndarray):
+            raise TypeError("Axis must be of type numpy.ndarray")
         if any(not _hashable(v) for v in axis):
-            raise ValueError("Axis must be list or ndarray of hashable values")
+            raise ValueError("Axis elements must be hashable.")
+        if isinstance(axis, list):
+            axis = np.asarray(axis)
         self._axis[label] = axis
 
-    def get(self) -> np.array:
-        """nd.array of shape (M,N)
+    def data(self) -> np.array:
+        """Data returns the actual data of the dataset.
 
         Returns
         -------
-        data : np.array
-
-
+        data : np.ndarray
         """
         return self._data
 
-    def set(self, data):
-        """
+    def set_data(self, data: np.ndarray):
+        """set_data sets the actual data of the dataset.
 
         Parameters
         ----------
-        data : np.array
-
-
+        data : np.ndarray
         """
         if not isinstance(data, np.ndarray):
             raise TypeError("Data must be a nd array")
@@ -117,26 +76,6 @@ class Dataset(object):
         dataset : Dataset
         """
         return copy(self)
-
-    def svd(self) -> Tuple[np.array, np.array, np.array]:
-        """Returns the singular value decomposition of the dataset
-
-
-        Returns
-        -------
-        tuple :
-            (lsv, svals, rsv)
-
-            lsv : np.array
-                left singular values
-            svals : np.array
-                singular values
-            rsv : np.array
-                right singular values
-
-        """
-        lsv, svals, rsv = np.linalg.svd(self.get().T)
-        return lsv, svals, rsv.T
 
 
 def _hashable(value):

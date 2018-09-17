@@ -1,35 +1,22 @@
 """ Glotaran K-Matrix """
 
 from collections import OrderedDict
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 import numpy as np
 import scipy
 
-from glotaran.model import InitialConcentration, ParameterGroup
+from glotaran.model import model_item
+
+from .initial_concentration import InitialConcentration
 
 
+@model_item(
+    attributes={
+        'matrix': {'type': Dict[Tuple[str, str], str], 'target': ('compartment', 'parameter')},
+    },
+)
 class KMatrix:
     """ A K-Matrix represents a first order differental system."""
-    def __init__(self, label: str, matrix: OrderedDict, compartments: List[str]):
-        """
-
-        Parameters
-        ----------
-        label : str
-            Label of the K-Matrix
-
-        matrix : OrderedDict(tuple(str, str), str)
-            Dictonary with the matrix entries in 'to-from' notation.
-
-        compartments : list(str)
-            A list of all compartments in the model.
-
-        """
-        self.label = label
-        self.matrix = matrix
-        self._create_compartment_map(compartments)
-        # We keep track of all compartments to combine later.
-        self._all_compartments = compartments
 
     @classmethod
     def empty(cls, label: str, compartments: List[str]):
@@ -46,29 +33,8 @@ class KMatrix:
         compartments : list(str)
             A list of all compartments in the model.
         """
-        return cls(label, OrderedDict(), compartments)
+        return cls(label, OrderedDict())
 
-    @property
-    def label(self) -> str:
-        """ Label of the K-Matrix"""
-        return self._label
-
-    @label.setter
-    def label(self, value: str):
-        self._label = value
-
-    @property
-    def matrix(self) -> OrderedDict:
-        """ Dictonary with the matrix entries in 'to-from' notation. """
-        return self._matrix
-
-    @matrix.setter
-    def matrix(self, value: OrderedDict):
-        if not isinstance(value, OrderedDict):
-            raise TypeError("Matrix must be OrderedDict like {(1,2):value}")
-        self._matrix = value
-
-    @property
     def involved_compartments(self) -> List[str]:
         """ A list of all compartments in the matrix. """
         compartments = []
@@ -78,16 +44,6 @@ class KMatrix:
 
         compartments = list(set(compartments))
         return compartments
-
-    @property
-    def compartment_map(self):
-        """ A list of all compartments in the matrix. Index in the list
-        correlates to index in the matrix."""
-        return self._compartment_map
-
-    def _create_compartment_map(self, compartments):
-        self._compartment_map = [c for c in compartments if c in
-                                 self.involved_compartments]
 
     def combine(self, k_matrix: "KMatrix") -> "KMatrix":
         """ Creates a combined matrix.
@@ -118,19 +74,20 @@ class KMatrix:
         return KMatrix("{}+{}".format(self.label, k_matrix.label),
                        combined_matrix, self._all_compartments)
 
-    def asarray(self) -> np.ndarray:
+    def asarray(self, compartments: List[str]) -> np.ndarray:
         """ Depricated, only used for testing"""
-        compartment_map = self.compartment_map
-        size = len(compartment_map)
-        array = np.zeros((size, size), dtype=np.int32)
+
+        compartments = [c for c in compartments if c in self.involved_compartments()]
+        size = len(compartments)
+        array = np.zeros((size, size), dtype=np.float64)
         # Matrix is a dict
         for index in self.matrix:
-            i = compartment_map.index(index[0])
-            j = compartment_map.index(index[1])
+            i = compartments.index(index[0])
+            j = compartments.index(index[1])
             array[i, j] = self.matrix[index]
-        return np.array(array, copy=True)
+        return array
 
-    def full(self, parameter):
+    def full(self, compartments: List[str]):
         """[ 0 k3
           k1 k2]
 
@@ -159,13 +116,12 @@ class KMatrix:
         -------
 
         """
-
-        size = len(self.compartment_map)
+        compartments = [c for c in compartments if c in self.involved_compartments()]
+        size = len(compartments)
         mat = np.zeros((size, size), np.float64)
         for (to_comp, from_comp), param in self.matrix.items():
-            to_idx = self.compartment_map.index(to_comp)
-            fr_idx = self.compartment_map.index(from_comp)
-            param = parameter.get(param)
+            to_idx = compartments.index(to_comp)
+            fr_idx = compartments.index(from_comp)
 
             if to_idx == fr_idx:
                 mat[to_idx, fr_idx] -= param
@@ -174,8 +130,7 @@ class KMatrix:
                 mat[fr_idx, fr_idx] -= param
         return mat
 
-    def eigen(self, parameter: ParameterGroup) -> Tuple[np.ndarray,
-                                                        np.ndarray]:
+    def eigen(self, compartments: List[str]) -> Tuple[np.ndarray, np.ndarray]:
         """ Returns the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
@@ -188,23 +143,32 @@ class KMatrix:
         (eigenvalues, eigenvectos) : tuple(np.ndarray, np.ndarray)
 
         """
-        matrix = self.full(parameter)
-        # get the eigenvectors and values
-        eigenvalues, eigenvectors = np.linalg.eig(matrix)
+        # We take the transpose to be consistent with timp
+        matrix = self.full(compartments).T
+        # get the eigenvectors and values, we take the left ones to have
+        # computation consistent with TIMP
+        eigenvalues, eigenvectors = scipy.linalg.eig(matrix, left=True,
+                                                     right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def a_matrix(self,
-                 initial_concentration: InitialConcentration,
-                 parameter: ParameterGroup) -> np.ndarray:
-        initial_concentration = initial_concentration.parameter
+    def _gamma(self,
+               compartments,
+               eigenvectors,
+               initial_concentration: InitialConcentration) -> np.ndarray:
+        k_compartments = [c for c in compartments if c in self.involved_compartments()]
         initial_concentration = \
-            [initial_concentration[self._all_compartments.index(c)] for c in
-             self.compartment_map]
-        initial_concentration = [parameter.get(i) for i in initial_concentration]
+            [initial_concentration.parameters[compartments.index(c)]
+             for c in k_compartments]
+        eigenvectors = scipy.linalg.inv(eigenvectors)
+        gamma = np.matmul(eigenvectors, initial_concentration)
 
-        _, eigenvectors = self.eigen(parameter)
-        gamma = np.matmul(scipy.linalg.inv(eigenvectors),
-                          initial_concentration)
+        return gamma
+
+    def a_matrix(self,
+                 compartments: List[str],
+                 initial_concentration: InitialConcentration) -> np.ndarray:
+        eigenvalues, eigenvectors = self.eigen(compartments)
+        gamma = self._gamma(compartments, eigenvectors, initial_concentration)
 
         a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
 
@@ -212,41 +176,3 @@ class KMatrix:
             a_matrix[i, :] = eigenvectors[:, i] * gamma[i]
 
         return a_matrix
-
-    def __str__(self):
-        """ """
-
-        longest = max([len(s) for s in self.compartment_map]) + 6
-        header = "compartment |"
-        if longest < len(header):
-            longest = len(header)
-
-        longest_h = max([len(f" __{c}__ |") for c in self.compartment_map]) + 3
-        longest_p = max([len(str(self.matrix[i])) for i in self.matrix]) + 3
-        if longest_p < longest_h:
-            longest_p = longest_h
-
-        string = f"### _{self.label}_\n"
-        string += "\n"
-        #  string += "```\n"
-        #  string += f"\t"
-        header_sub = "|".rjust(longest, "-")
-        for comp in self.compartment_map:
-            header += f" __{comp}__ |".rjust(longest_p)
-            header_sub += "|".rjust(longest_p, "-")
-        string += header
-        string += "\n"
-        string += header_sub
-        string += "\n"
-        for comp in self.compartment_map:
-            string += f"__{comp}__ |".rjust(longest)
-            for comp2 in self.compartment_map:
-                found = False
-                for index in self.matrix:
-                    if index[0] == comp and index[1] == comp2:
-                        found = True
-                        string += f" {self.matrix[index]} |".rjust(longest_p)
-                if not found:
-                    string += " |".rjust(longest_p)
-            string += "\n"
-        return string
