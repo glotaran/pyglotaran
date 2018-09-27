@@ -53,14 +53,14 @@ def model():
         "dataset": {
             "dataset1": {
                 "megacomplex": ['m1', 'm2'],
-                "scale": "scale1",
+                "scale": "scale_1",
                 "compartment_constraints": [
                     {'type': 'zero',
                      'compartment': 's1',
                      'interval': [(0, 1)]},
                 ]
             },
-            "dataset2": [['m2'], 'scale2', []]
+            "dataset2": [['m2'], 'scale_2', []]
         }
     }
     return MockModel.from_dict(d)
@@ -77,18 +77,18 @@ def model_error():
                    'param_list': ["bar", "bay"],
                    'complex': {('s1', 's3'): "boz"},
                    },
-                },
+        },
         "dataset": {
             "dataset1": {
                 "megacomplex": ['N1', 'N2'],
-                "scale": "scale1",
+                "scale": "scale_1",
                 "compartment_constraints": [
                     {'type': 'zero',
                      'compartment': 's1',
                      'interval': [(0, 1)]},
                 ]
             },
-            "dataset2": [['mrX'], 'scale3', None]
+            "dataset2": [['mrX'], 'scale_3', None]
         }
     }
     return MockModel.from_dict(d)
@@ -100,8 +100,8 @@ def parameter():
               ['foo', 3],
               ['bar', 4],
               ['baz', 2],
-              ['scale1', 2],
-              ['scale2', 8],
+              ['scale_1', 2],
+              ['scale_2', 8],
               4e2
               ]
     return ParameterGroup.from_list(params)
@@ -159,7 +159,7 @@ def test_items(model):
 
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').megacomplex == ['m1', 'm2']
-    assert model.get_dataset('dataset1').scale == 'scale1'
+    assert model.get_dataset('dataset1').scale == 'scale_1'
     assert len(model.get_dataset('dataset1').compartment_constraints) == 1
     assert model.get_dataset('dataset1').compartment_constraints[0].type == 'zero'
     assert model.get_dataset('dataset1').compartment_constraints[0].interval == [(0, 1)]
@@ -171,7 +171,7 @@ def test_items(model):
 
     assert 'dataset2' in model.dataset
     assert model.get_dataset('dataset2').megacomplex == ['m2']
-    assert model.get_dataset('dataset2').scale == 'scale2'
+    assert model.get_dataset('dataset2').scale == 'scale_2'
     assert len(model.get_dataset('dataset2').compartment_constraints) == 0
 
 
