@@ -383,11 +383,14 @@ class ThreeComponentSequential:
     ThreeComponentSequential,
 ])
 def test_kinetic_model(suite):
-    model = suite.model
-    sim_model = suite.sim_model
 
+    model = suite.model
     print(model.errors())
     assert model.valid()
+
+    sim_model = suite.sim_model
+    print(sim_model.errors())
+    assert sim_model.valid()
 
     wanted = suite.wanted
     print(sim_model.errors_parameter(wanted))

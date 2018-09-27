@@ -192,6 +192,9 @@ def test_fitting(suite):
     print(model.errors())
     assert model.valid()
 
+    print(sim_model.errors())
+    assert sim_model.valid()
+
     wanted = ParameterGroup.from_list(suite.wanted)
     print(sim_model.errors_parameter(wanted))
     assert sim_model.valid_parameter(wanted)
