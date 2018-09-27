@@ -47,6 +47,7 @@ def val_model_opts(item, model, opts, errors):
                     if i not in model_attr:
                         errors.append(f"Missing '{k_check}' with label '{i}'")
             if not v_check == 'parameter':
+                model_attr = getattr(model, v_check)
                 if not isinstance(v, (list, tuple, set)):
                     v = [v]
                 for i in v:
