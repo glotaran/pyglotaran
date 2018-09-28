@@ -24,13 +24,14 @@ dataset:
       - type: equal
         compartment: s2
         interval: [!tuple '(60, 700)']
-        targets: [s1, s2]
-        parameters: [54, 56] # usually fixed
+        targets:
+          s1: 54
+          s2: 56
       - type: equal_area
         compartment: s3
         interval: [!tuple '(670, 810)']
-        targets: s2
-        parameters: 55 # usually fixed
+        targets:
+          s2: 55 # usually fixed
         weight: 0.0016
         # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 

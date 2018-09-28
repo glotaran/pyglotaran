@@ -12,12 +12,12 @@ from .variable_projection import qr_residual, qr_coefficents
 from .fitresult import DatasetResult, FitResult
 
 
-def residul_variable_projection(parameter: ParameterGroup,
-                                group: Group,
-                                model: 'glotaran.model.BaseModel',
-                                data: Dict[str, Dataset],
-                                data_group: List[np.ndarray],
-                                **kwargs) -> np.ndarray:
+def residual_variable_projection(parameter: ParameterGroup,
+                                 group: Group,
+                                 model: 'glotaran.model.BaseModel',
+                                 data: Dict[str, Dataset],
+                                 data_group: List[np.ndarray],
+                                 **kwargs) -> np.ndarray:
     """residul_variable_projection returns the variable projection residual.
 
     Parameters
@@ -72,7 +72,7 @@ def fit(model: object,
 
     def residual_proxy(parameter, group, model, data, data_group, **kwargs):
         parameter = ParameterGroup.from_parameter_dict(parameter)
-        return residul_variable_projection(parameter, group, model, data, data_group, **kwargs)
+        return residual_variable_projection(parameter, group, model, data, data_group, **kwargs)
 
     parameter = parameter.as_parameter_dict(only_fit=True)
     minimizer = Minimizer(

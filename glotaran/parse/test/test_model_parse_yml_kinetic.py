@@ -65,8 +65,7 @@ def test_dataset(model):
           if isinstance(ec, EqualConstraint)][0]
     assert ec.compartment == 's2'
     assert ec.interval == [(60, 700)]
-    assert ec.targets == ['s1', 's2']
-    assert ec.parameters == [54, 56]
+    assert ec.targets == {'s1': 54, 's2': 56}
 
     assert any(isinstance(c, EqualAreaConstraint) for c in
                dataset.compartment_constraints)
@@ -74,8 +73,7 @@ def test_dataset(model):
            if isinstance(eac, EqualAreaConstraint)][0]
     assert eac.compartment == 's3'
     assert eac.interval == [(670, 810)]
-    assert eac.targets == 's2'
-    assert eac.parameters == 55
+    assert eac.targets == {'s2': 55}
     assert eac.weight == 0.0016
 
 

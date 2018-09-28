@@ -93,6 +93,8 @@ def calculate_group(group: Group,
                                                                   index,
                                                                   axis)
 
+            apply_constraints(dataset_descriptor, compartments, this_matrix, index)
+
             if full is None:
                 full = this_matrix
                 full_compartments = compartments
@@ -156,7 +158,8 @@ def apply_constraints(dataset, compartments: List[str], matrix: np.ndarray, inde
         return
 
     for constraint in dataset.compartment_constraints:
-        if not constraint.applies(index):
+
+        if not constraint.applies(index) or constraint.type == 'equal_area':
             continue
 
         idx = compartments.index(constraint.compartment)
@@ -165,4 +168,3 @@ def apply_constraints(dataset, compartments: List[str], matrix: np.ndarray, inde
             for target, param in constraint.targets.items():
                 t_idx = compartments.index(target)
                 matrix[idx, :] += param * matrix[t_idx, :]
-

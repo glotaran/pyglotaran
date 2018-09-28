@@ -2,7 +2,7 @@ import numpy as np
 from glotaran.analysis.grouping import apply_constraints
 from glotaran.model import ParameterGroup
 
-from .mock import MockDataset, MockModel
+from .mock import MockModel
 
 
 def test_zero_and_only():
