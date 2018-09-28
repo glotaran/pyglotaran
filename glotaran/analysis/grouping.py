@@ -149,3 +149,20 @@ def create_data_group(model: 'glotaran.model.Model',
                 full = np.append(full, dataset)
         result.append(full)
     return result
+
+
+def apply_constraints(dataset, compartments: List[str], matrix: np.ndarray, index):
+    if dataset.compartment_constraints is None:
+        return
+
+    for constraint in dataset.compartment_constraints:
+        if not constraint.applies(index):
+            continue
+
+        idx = compartments.index(constraint.compartment)
+        matrix[idx, :].fill(0.0)
+        if constraint.type == 'equal':
+            for target, param in constraint.targets.items():
+                t_idx = compartments.index(target)
+                matrix[idx, :] += param * matrix[t_idx, :]
+

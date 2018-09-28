@@ -2,8 +2,8 @@
 
 
 class Validator:
-    def __init__(self, attributes):
-        self._attributes = attributes
+    def __init__(self, model_item):
+        self._attributes = getattr(model_item, '_glotaran_attributes')
 
     def val_model(self, model_item, model, errors=[]):
         for attr, opts in self._attributes.items():
@@ -26,8 +26,8 @@ class Validator:
                 continue
             if 'target' in opts:
                 val_parameter_opts(item, parameter, opts, errors)
-            if not hasattr(model, attr):
-                val_parameter(item, parameter, errors)
+            elif hasattr(model, attr):
+                continue
             else:
                 val_parameter_nested(item, model, parameter, errors)
 
@@ -111,6 +111,8 @@ def val_parameter(item, parameter, errors):
 def val_parameter_nested(nested, model, parameter, errors):
     if not isinstance(nested, list):
         nested = [nested]
-    for n in nested:
-        if hasattr(n, "_glotaran_model_item"):
-            n.validate_parameter(model, parameter, errors=errors)
+    for item in nested:
+        if hasattr(item, "_glotaran_model_item"):
+            item.validate_parameter(model, parameter, errors=errors)
+        else:
+            val_parameter(item, parameter, errors)

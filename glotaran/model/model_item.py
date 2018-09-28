@@ -64,7 +64,6 @@ def item_to_param(name, item, item_class):
                 hasattr(item_class, 'label') else item[0]
 
             if item_type not in item_class._glotaran_model_item_types:
-                print(item)
                 raise Exception(f"Unknown type '{item_type}' "
                                 f"for attribute '{name}'")
             item_class = \
@@ -107,7 +106,6 @@ def model_item(attributes={},
                     getattr(cls, '_glotaran_attribute_defaults').copy())
 
         # Set annotations for autocomplete and doc
-        validate_nested = []
         annotations = {}
         if not no_label:
             annotations['label'] = str
@@ -123,8 +121,6 @@ def model_item(attributes={},
             else:
                 attributes[name] = {'type': item_class}
             annotations[name] = item_class
-            if is_item_or_list_of(item_class):
-                validate_nested.append(name)
 
         setattr(cls, '__annotations__', annotations)
 
@@ -184,7 +180,7 @@ def model_item(attributes={},
 
         setattr(cls, 'from_list', from_list)
 
-        validator = Validator(attributes)
+        validator = Validator(cls)
 
         def val_model(self, model, errors=[], validator=validator):
             return validator.val_model(self, model, errors)
@@ -212,10 +208,10 @@ def model_item(attributes={},
                         else:
                             cp[k] = convert(v)
                     return cp
-                if not isinstance(item, str):
-                    return item
                 if hasattr(item, "_glotaran_model_item"):
                     return item.fill(model, parameter)
+                if not isinstance(item, str):
+                    return item
                 return parameter.get(item).value
 
             def fill_item_or_list(item, attr):
@@ -241,6 +237,8 @@ def model_item(attributes={},
                     item = nitem
 
                 elif hasattr(model, attr):
+                    if attr == 'compartment':
+                        continue
                     item = fill_item_or_list(item, attr)
                 else:
                     item = convert_list_or_scalar(item)
