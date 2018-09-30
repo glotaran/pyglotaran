@@ -4,8 +4,8 @@ from typing import Dict, List
 import numpy as np
 from lmfit import Minimizer
 
-from glotaran.datasets.dataset import Dataset
-from glotaran.model.parameter_group import ParameterGroup
+from ..datasets.dataset import Dataset
+from ..model.parameter_group import ParameterGroup
 
 from .grouping import Group, create_group, calculate_group, create_data_group
 from .variable_projection import qr_residual, qr_coefficents
@@ -14,7 +14,7 @@ from .fitresult import DatasetResult, FitResult
 
 def residul_variable_projection(parameter: ParameterGroup,
                                 group: Group,
-                                model: 'glotaran.model.BaseModel',
+                                model,  # temp doc fix : 'glotaran.model.BaseModel',
                                 data: Dict[str, Dataset],
                                 data_group: List[np.ndarray],
                                 **kwargs) -> np.ndarray:

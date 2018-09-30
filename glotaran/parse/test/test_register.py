@@ -1,4 +1,5 @@
 from glotaran.model import BaseModel, model
+# from glotaran.model.model import model
 
 from glotaran.parse import register
 

@@ -5,8 +5,8 @@ import numpy as np
 from glotaran.datasets.dataset import Dataset
 
 
-def simulate(model: "glotaran.model.Model",
-             parameter: "glotaran.model.ParameterGroup",
+def simulate(model,  # temp doc fix : "glotaran.model.Model",
+             parameter,  # temp doc fix : "glotaran.model.ParameterGroup",
              dataset: str,
              axis: Dict[str, np.ndarray],
              noise=False,

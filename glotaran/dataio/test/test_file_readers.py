@@ -67,8 +67,8 @@ def test_sdt_to_df__errors_and_warnings(monkeypatch):
                         self.data = np.array([0, 0])
 
                         m.setattr(sdt_reader.SdtFile,
-                          "__init__",
-                          mocked_SdtFile.__init__)
+                                  "__init__",
+                                  mocked_SdtFile.__init__)
                 sdt_to_dataframe(TEMPORAL_DATA["sdt"], index=[0, 1])
 
 

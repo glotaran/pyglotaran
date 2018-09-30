@@ -47,7 +47,7 @@ def FLIM_legacy_to_dataframe(file_path: str, zero_pad: bool=False,
         orig_shape = (*x_y_shape, int(lines[4].rstrip()))
         nr_of_time_traces = int(lines[5].rstrip())
     time_traces = pd.read_csv(file_path, skiprows=6, nrows=nr_of_time_traces,
-                              index_col=0, sep="\s+")
+                              index_col=0, sep=r"\s+")
 
     if zero_pad:
         zero_padded = pd.DataFrame(np.zeros((np.prod(x_y_shape), orig_shape[-1]),
@@ -56,7 +56,7 @@ def FLIM_legacy_to_dataframe(file_path: str, zero_pad: bool=False,
         time_traces = zero_padded.add(time_traces)
 
     intensity_map = pd.read_csv(file_path, skiprows=6 + nr_of_time_traces + 2,
-                                sep="\s+", names=np.arange(x_y_shape[1]))
+                                sep=r"\s+", names=np.arange(x_y_shape[1]))
 
     time_traces.columns = pd.to_numeric(time_traces.columns)*1e-9
 

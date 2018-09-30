@@ -10,7 +10,7 @@ from glotaran.model.parameter_group import ParameterGroup
 Group = Dict[any, Tuple[any, DatasetDescriptor]]
 
 
-def create_group(model: 'glotaran.model.Model',
+def create_group(model,  # temp doc fix : 'glotaran.model.Model',
                  data: Dict[str, Dataset],
                  xtol: float = 0.5,
                  dataset: str = None,
@@ -51,7 +51,7 @@ def create_group(model: 'glotaran.model.Model',
 
 
 def calculate_group(group: Group,
-                    model: 'glotaran.model.Model',
+                    model,  # temp doc fix : 'glotaran.model.Model',
                     parameter: ParameterGroup,
                     data: Dict[str, Dataset],
                     ) -> Generator[Tuple[int, np.ndarray], None, None]:
@@ -114,7 +114,7 @@ def calculate_group(group: Group,
         i += 1
 
 
-def create_data_group(model: 'glotaran.model.Model',
+def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                       group: Group,
                       data: Dict[str, Dataset]) -> List[np.ndarray]:
     """create_data_group returns the datagroup for the model.

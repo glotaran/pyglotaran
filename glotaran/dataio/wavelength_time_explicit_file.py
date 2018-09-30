@@ -132,7 +132,7 @@ class ExplicitFile(object):
             all_data = []
             line = f.readline()
             while line:
-                all_data.append([float(i) for i in re.split("\s+|\t+|\s+\t+|\t+\s+|\u3000+",
+                all_data.append([float(i) for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+",
                                                             line.strip())])
                 # data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+",
                 #                          engine='python', header=None, index_col=False)

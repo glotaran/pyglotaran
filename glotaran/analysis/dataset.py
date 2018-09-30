@@ -3,11 +3,12 @@
 from typing import Tuple
 import numpy as np
 
-from glotaran.datasets.dataset import Dataset
+from ..datasets.dataset import Dataset
 
 
 def dataset_svd(dataset: Dataset) -> Tuple[np.array, np.array, np.array]:
-    """Returns the singular value decomposition of a dataset.
+    """
+    Returns the singular value decomposition of a dataset.
 
     Parameters
     ----------

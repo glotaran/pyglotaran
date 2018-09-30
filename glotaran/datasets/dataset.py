@@ -12,6 +12,7 @@ class DimensionalityError(Exception):
     """
     pass
 
+
 class Dataset:
     """Dataset is a small interface which dataset/-file implementations can
     fullfill in order to be consumable for glotaran.
