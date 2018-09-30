@@ -8,6 +8,7 @@ from glotaran.model import (
     model,
     model_item,
 )
+# from glotaran.model.model import model
 
 
 @model_item(

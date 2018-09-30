@@ -7,7 +7,7 @@ from glotaran.analysis.fitresult import FitResult
 class KineticResult(FitResult):
     """The result of kinetic model fit"""
 
-    def species_associated_spectra(self, dataset: str) -> np.array:
+    def species_associated_spectra(self, dataset: str) -> np.ndarray:
         """
 
         Parameters
@@ -18,12 +18,12 @@ class KineticResult(FitResult):
 
         Returns
         -------
-        das : numpy.array
+        das : np.ndarray
             Decay Associated Spectra
         """
         return self.estimated_matrix(dataset)
 
-    def decay_associated_spectra(self, dataset: str) -> np.array:
+    def decay_associated_spectra(self, dataset: str) -> np.ndarray:
         """
 
         Parameters
@@ -34,7 +34,7 @@ class KineticResult(FitResult):
 
         Returns
         -------
-        das : numpy.array
+        das : np.ndarray
             Decay Associated Spectra
         """
         initial_concentration = \
@@ -51,7 +51,7 @@ class KineticResult(FitResult):
             mat.a_matrix(initial_concentration, self.best_fit_parameter),
         )
 
-    def concentrations(self, dataset: str) -> np.array:
+    def concentrations(self, dataset: str) -> np.ndarray:
         """
 
         Parameters
@@ -62,7 +62,7 @@ class KineticResult(FitResult):
 
         Returns
         -------
-        concentrations : numpy.array
+        concentrations : np.ndarray
             Concentrations
 
         """

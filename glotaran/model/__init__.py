@@ -7,14 +7,13 @@ common model items.
 from . import (
     base_model,
     compartment_constraints,
-    dataset,
     dataset_descriptor,
     model,
     model_item,
     parameter,
     parameter_group,
 )
-
+from ..datasets import dataset
 
 # Compartment Constraints
 CompartmentConstraint = compartment_constraints.CompartmentConstraint

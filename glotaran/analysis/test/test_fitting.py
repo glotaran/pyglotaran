@@ -5,7 +5,8 @@ import numpy as np
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.fitting import fit
 
-from glotaran.model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
+from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
+# from ...model.model import model
 
 OLD_MAT = None
 OLD_KIN = []

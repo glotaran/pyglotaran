@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e 
+set -e
 
 sudo apt-get update -y
 sudo apt-get upgrade -y
@@ -17,7 +17,7 @@ sudo apt-get install build-essential gcc make g++ -y
 cd ~
 wget https://bootstrap.pypa.io/get-pip.py
 sudo -H python3 get-pip.py
-python3 --version 
+python3 --version
 pip3 --version
 
 # sudo setfacl -m user:1000:rwx /usr/local/lib/python3.5/dist-packages
@@ -27,11 +27,11 @@ pip3 --version
 # sudo apt-get install python3-numpy python3-scipy python3-matplotlib ipython ipython3-notebook python3-pandas python3-nose -y
 
 # install dependencies
-sudo -H  pip3 install numpy 
+sudo -H  pip3 install numpy
 sudo -H  pip3 install scipy
 sudo -H  pip3 install Cython
 
-# sudo -H  pip3 install lmfit 
+# sudo -H  pip3 install lmfit
 # sudo -H  pip3 install matplotlib
 # sudo setfacl -m user:1000:rwx /usr/local/bin
 # sudo -H  pip3 install natsort

@@ -1,5 +1,5 @@
 from glotaran.model import Dataset
-from glotaran.models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
+from glotaran.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from .spectral_timetrace import SpectralUnit
 # this import was unused and flake8 did complain, will leave it as comment
 # from .spectral_timetrace import SpectralTimetrace
@@ -132,7 +132,7 @@ class ExplicitFile(object):
             all_data = []
             line = f.readline()
             while line:
-                all_data.append([float(i) for i in re.split("\s+|\t+|\s+\t+|\t+\s+|\u3000+",
+                all_data.append([float(i) for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+",
                                                             line.strip())])
                 # data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+",
                 #                          engine='python', header=None, index_col=False)

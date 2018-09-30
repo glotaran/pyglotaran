@@ -2,11 +2,12 @@
 from typing import Dict
 import numpy as np
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
+from glotaran.model.parameter_group import ParameterGroup
 
 
-def simulate(model: "glotaran.model.Model",
-             parameter: "glotaran.model.ParameterGroup",
+def simulate(model,  # temp doc fix : "glotaran.model.Model",
+             parameter: ParameterGroup,
              dataset: str,
              axis: Dict[str, np.ndarray],
              noise=False,
@@ -22,12 +23,13 @@ def simulate(model: "glotaran.model.Model",
     dataset : str
         Label of the dataset to simulate
 
-    axis : dict(str, np.ndarray)
+    axis : Dict[str, np.ndarray]
         A dictory with axis
-    noise :
+    noise : bool
         (Default value = False)
-    noise_std_dev :
+    noise_std_dev : float
         (Default value = 1.0)
+    noise_seed : default None
 
     """
 
