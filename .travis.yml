@@ -94,7 +94,7 @@ matrix:
 
   allow_failures:
   #      this test is allowed to fail since it uses external resources
-    - env: TOXENV=docs-links
+    - env: docs-linkcheck
 
 install:
   - pip install coveralls
