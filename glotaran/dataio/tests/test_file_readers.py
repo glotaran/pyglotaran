@@ -2,14 +2,18 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import glotaran.dataio.external_file_readers.sdt_reader
-from ..file_readers import sdt_to_dataframe, dataframe_to_SpectralTemporalDataset, \
-    dataframe_to_FLIMDataset, read_sdt
+from ..external_file_readers import sdt_reader
+from ..file_readers import (
+    sdt_to_dataframe,
+    dataframe_to_SpectralTemporalDataset,
+    dataframe_to_FLIMDataset,
+    read_sdt,
+)
 from ..legacy_readers import FLIM_legacy_to_dataframe
 from ..mapper import get_pixel_map
-from ...model.dataset import DimensionalityError
-from glotaran.dataio.specialized_datasets import FLIMDataset
-from ...models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
+from ...datasets.dataset import DimensionalityError
+from ...datasets.specialized_datasets import FLIMDataset
+from ...datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from . import TEMPORAL_DATA, FLIM_DATA
 
 
@@ -62,7 +66,7 @@ def test_sdt_to_df__errors_and_warnings(monkeypatch):
                         self.times = [0, 0]
                         self.data = np.array([0, 0])
 
-                m.setattr(glotaran.dataio.external_file_readers.sdt_reader.SdtFile,
+                        m.setattr(sdt_reader.SdtFile,
                           "__init__",
                           mocked_SdtFile.__init__)
                 sdt_to_dataframe(TEMPORAL_DATA["sdt"], index=[0, 1])
@@ -97,19 +101,18 @@ def test_sdt_to_df__flim():
             "wl": [10, 20]})
 ])
 def test_df_to_SpectralTemporalDataset(swap_axis, result_dict, time_unit, spectral_unit):
-    result = SpectralTemporalDataset("result", time_unit=time_unit)
+    result = SpectralTemporalDataset(time_unit=time_unit)
     result.time_axis = np.array(result_dict["time_axis"])
     result.spectral_axis = np.array(result_dict["wl"])
     result.data = np.array(result_dict["data"])
     test_df = pd.DataFrame([[1, 2], [3, 4]], index=[100, 200], columns=[10, 20])
-    test_dataset = dataframe_to_SpectralTemporalDataset(test_df, dataset_label="test",
+    test_dataset = dataframe_to_SpectralTemporalDataset(test_df,
                                                         time_unit=time_unit,
                                                         spectral_unit=spectral_unit,
                                                         swap_axis=swap_axis)
     assert np.all(test_dataset.data == result.data)
     assert np.all(test_dataset.time_axis == result.time_axis)
     assert np.all(test_dataset.spectral_axis == result.spectral_axis)
-    assert test_dataset.label == "test"
     assert test_dataset.time_unit == time_unit
     assert test_dataset.spectral_unit == spectral_unit
 
@@ -122,13 +125,13 @@ def test_df_to_SpectralTemporalDataset__exceptions(swap_axis):
                        match=f"The columns of the DataFrame needs to be convertible "
                              f"to numeric values."):
         test_df = pd.DataFrame([[0, 0], [0, 0]], columns=["foo", "bar"], index=[1, 2])
-        dataframe_to_SpectralTemporalDataset(test_df, "test", swap_axis=swap_axis)
+        dataframe_to_SpectralTemporalDataset(test_df, swap_axis=swap_axis)
 
     with pytest.raises(ValueError,
                        match=f"The index of the DataFrame needs to be convertible "
                              f"to numeric values."):
         test_df = pd.DataFrame([[0, 0], [0, 0]], index=["foo", "bar"], columns=[1, 2])
-        dataframe_to_SpectralTemporalDataset(test_df, "test", swap_axis=swap_axis)
+        dataframe_to_SpectralTemporalDataset(test_df, swap_axis=swap_axis)
 
 
 @pytest.mark.parametrize("is_legacy", [
@@ -158,7 +161,7 @@ def test_df_to_FLIMDataset(is_legacy, swap_axis, time_unit):
     else:
         test_df = test_df
 
-    test_dataset = dataframe_to_FLIMDataset(test_df, dataset_label="test",
+    test_dataset = dataframe_to_FLIMDataset(test_df,
                                             mapper_function=get_pixel_map,
                                             orig_shape=orig_shape,
                                             time_unit=time_unit,
@@ -169,7 +172,6 @@ def test_df_to_FLIMDataset(is_legacy, swap_axis, time_unit):
     assert np.allclose(test_dataset.time_axis, np.array(result_df.columns))
     assert test_dataset.orig_shape == orig_shape
     assert test_dataset.data.shape == result_df.values.shape
-    assert test_dataset.label == "test"
     assert test_dataset.time_unit == time_unit
 
 
@@ -182,7 +184,7 @@ def test_df_to_FLIMDataset__exceptions(swap_axis, index, columns, error_str):
                        match=f"The {error_str} of the DataFrame needs to be convertible "
                              f"to numeric values."):
         test_df = pd.DataFrame([[0, 0], [0, 0]], index=index, columns=columns)
-        dataframe_to_FLIMDataset(test_df, "test", mapper_function=get_pixel_map,
+        dataframe_to_FLIMDataset(test_df, mapper_function=get_pixel_map,
                                  orig_shape=(2, 2), swap_axis=swap_axis)
 
 
@@ -202,7 +204,7 @@ def test_df_to_FLIMDataset__exceptions(swap_axis, index, columns, error_str):
 def test_read_sdt(type_of_data, test_file_path, result_file_path, index, return_dataframe,
                   time_unit, spectral_unit):
 
-    test_dataset = read_sdt(file_path=test_file_path, dataset_label="test", index=index,
+    test_dataset = read_sdt(file_path=test_file_path, index=index,
                             type_of_data=type_of_data, time_unit=time_unit,
                             return_dataframe=return_dataframe, spectral_unit=spectral_unit)
     if type_of_data == "flim":
@@ -227,7 +229,6 @@ def test_read_sdt(type_of_data, test_file_path, result_file_path, index, return_
     if not return_dataframe:
         assert test_dataset.data.shape == result_traces.values.shape
         assert np.allclose(test_dataset.time_axis, np.array(result_traces.columns))
-        assert test_dataset.label == "test"
         assert test_dataset.time_unit == time_unit
     else:
         assert isinstance(test_dataset, pd.DataFrame)
@@ -240,4 +241,4 @@ def test_read_sdt__exceptions():
                        match=f"The entered value of `type_of_data` was 'not_supported', "
                              f"this value isn't supported. The supported values are "
                              f"\['st', 'flim'\]."):
-        read_sdt("test_df", "test", type_of_data='not_supported')
+        read_sdt("test_df", type_of_data='not_supported')

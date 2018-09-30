@@ -3,7 +3,7 @@
 from typing import Tuple
 import numpy as np
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 
 
 def dataset_svd(dataset: Dataset) -> Tuple[np.array, np.array, np.array]:

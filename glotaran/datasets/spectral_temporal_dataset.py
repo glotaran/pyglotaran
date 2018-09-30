@@ -2,7 +2,7 @@ from typing import Union, List
 
 import numpy as np
 
-from glotaran.model import Dataset
+from ..model import Dataset
 
 
 class SpectralTemporalDataset(Dataset):
@@ -11,10 +11,10 @@ class SpectralTemporalDataset(Dataset):
     Provides a time and a spectral axis.
     """
 
-    def __init__(self, label: str, time_unit: str="s", spectral_unit: str="nm"):
+    def __init__(self, time_unit: str="s", spectral_unit: str="nm"):
         self.time_unit = time_unit
         self.spectral_unit = spectral_unit
-        super(SpectralTemporalDataset, self).__init__(label)
+        super(SpectralTemporalDataset, self).__init__()
 
     _time_units = {
         "h":   3600,

@@ -2,7 +2,7 @@
 from typing import Dict
 import numpy as np
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 
 
 def simulate(model: "glotaran.model.Model",

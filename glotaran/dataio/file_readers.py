@@ -8,13 +8,14 @@ import numpy as np
 import pandas as pd
 from .external_file_readers.sdt_reader import SdtFile
 from .mapper import get_pixel_map
-from ..models.spectral_temporal.spectral_temporal_dataset import SpectralTemporalDataset
-from glotaran.dataio.specialized_datasets import FLIMDataset
-from ..model.dataset import DimensionalityError
+from ..datasets.spectral_temporal_dataset import SpectralTemporalDataset
+from ..datasets.specialized_datasets import FLIMDataset
+from ..datasets.dataset import DimensionalityError
 
 
-def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame, dataset_label: str,
-                                         time_unit: str= "s", spectral_unit: str="nm",
+def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
+                                         time_unit: str= "s",
+                                         spectral_unit: str="nm",
                                          swap_axis: bool=False) \
         -> SpectralTemporalDataset:
     """
@@ -31,9 +32,6 @@ def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame, dataset_
         DataFrame containing the data and axes used to generate the SpectralTemporalDataset.
         If the DataFrame isn't time explicit (index=wavelength axis, columns=time axis),
         but wavelength explicit use `swap_axis=True` to get the proper SpectralTemporalDataset.
-
-    dataset_label: str
-        Label for the SpectralTemporalDataset.
 
     time_unit: str: {'h', 'm', 's', 'ms', 'us', 'ns', 'ps', 'fs'}, default 's'
         Unit the time axis values were saved in.
@@ -64,7 +62,7 @@ def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame, dataset_
     """
     if swap_axis:
         input_dataframe = input_dataframe.T
-    STDataset = SpectralTemporalDataset(dataset_label, time_unit, spectral_unit)
+    STDataset = SpectralTemporalDataset(time_unit, spectral_unit)
     try:
         time_axis = pd.to_numeric(np.array(input_dataframe.columns))
     except ValueError:
@@ -87,7 +85,6 @@ def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame, dataset_
 
 
 def dataframe_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
-                             dataset_label: str,
                              mapper_function: Callable[[np.ndarray],
                                                        Union[List[tuple],
                                                              Tuple[tuple],
@@ -113,9 +110,6 @@ def dataframe_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
 
         If the DataFrame isn't time explicit (index=pixel axis, columns=time axis),
         but pixel explicit use `swap_axis=True` to get the proper FLIMDataset.
-
-    dataset_label: str
-        Label for the FLIMDataset.
 
     mapper_function: Callable[[np.ndarray], Union[List[tuple], Tuple[tuple], np.ndarray]]
 
@@ -161,7 +155,7 @@ def dataframe_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
         input_dataframe = input_dataframe['time_traces']
     if swap_axis:
         input_dataframe = input_dataframe.T
-    flim_dataset = FLIMDataset(dataset_label, mapper_function, orig_shape, time_unit)
+    flim_dataset = FLIMDataset(mapper_function, orig_shape, time_unit)
     try:
         time_axis = pd.to_numeric(np.array(input_dataframe.columns))
     except ValueError:
@@ -271,7 +265,7 @@ def sdt_to_dataframe(file_path: str, index: Union[list, np.ndarray, tuple]=None,
     return pd.DataFrame(data, index=index, columns=times), orig_shape
 
 
-def read_sdt(file_path: str, dataset_label: str, index: Union[list, np.ndarray]=None,
+def read_sdt(file_path: str, index: Union[list, np.ndarray]=None,
              type_of_data: str = "st", time_unit: str= "s", swap_axis: bool=False,
              dataset_index: int=None, return_dataframe: bool=False,
              orig_time_axis_index: int = 2, spectral_unit: str="nm") \
@@ -284,9 +278,6 @@ def read_sdt(file_path: str, dataset_label: str, index: Union[list, np.ndarray]=
     ----------
     file_path: str
         Path to the sdt file which should be read.
-
-    dataset_label: str
-        Label wich will be used for the dataset
 
     index: list, np.ndarray
         This is only needed if `type_of_data=="st"`, since `*.sdt` files,
@@ -364,7 +355,6 @@ def read_sdt(file_path: str, dataset_label: str, index: Union[list, np.ndarray]=
     else:
         if type_of_data == "flim":
             dataset = dataframe_to_FLIMDataset(input_dataframe=data_dataframe,
-                                               dataset_label=dataset_label,
                                                mapper_function=get_pixel_map,
                                                orig_shape=orig_shape,
                                                orig_time_axis_index=orig_time_axis_index,
@@ -372,7 +362,6 @@ def read_sdt(file_path: str, dataset_label: str, index: Union[list, np.ndarray]=
                                                swap_axis=swap_axis)
         else:
             dataset = dataframe_to_SpectralTemporalDataset(input_dataframe=data_dataframe,
-                                                           dataset_label=dataset_label,
                                                            time_unit=time_unit,
                                                            spectral_unit=spectral_unit,
                                                            swap_axis=swap_axis)

@@ -3,7 +3,7 @@ import numpy as np
 
 from typing import Dict, Generator, List, Tuple
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.parameter_group import ParameterGroup
 

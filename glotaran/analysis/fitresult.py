@@ -6,7 +6,7 @@ from typing import Dict, List
 from lmfit.minimizer import MinimizerResult
 
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 

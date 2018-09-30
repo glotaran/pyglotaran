@@ -8,7 +8,7 @@ from typing import Callable, List, Tuple, Union
 
 import numpy as np
 
-from glotaran.model.dataset import Dataset
+from .dataset import Dataset
 
 
 class HighDimensionalDataset(Dataset):
@@ -16,7 +16,7 @@ class HighDimensionalDataset(Dataset):
     Baseclass for high dimensional data like FLIM
     """
 
-    def __init__(self, label: str,
+    def __init__(self,
                  mapper: Callable[[np.ndarray],
                                   Union[List[Union[list, tuple]],
                                         np.ndarray,
@@ -27,12 +27,10 @@ class HighDimensionalDataset(Dataset):
         Parameters
         ----------
 
-        label: str
-            Label of the dataset
         mapper
         orig_shape
         """
-        super().__init__(label)
+        super().__init__()
         self._mapper = mapper
         self._orig_shape = orig_shape
 
@@ -101,7 +99,7 @@ class FLIMDataset(HighDimensionalDataset):
         "fs":  1e-15,
     }
 
-    def __init__(self, label: str,
+    def __init__(self,
                  mapper: Callable[[np.ndarray],
                                   Union[List[tuple],
                                         Tuple[tuple],
@@ -111,14 +109,12 @@ class FLIMDataset(HighDimensionalDataset):
 
         Parameters
         ----------
-        label: str
-            Label of the dataset
         mapper: Callable[[np.ndarray],  Union[List[tuple],
         Tuple[tuple], np.ndarray ]]
 
         orig_shape: tuple
         """
-        super().__init__(label, mapper, orig_shape)
+        super().__init__(mapper, orig_shape)
         self._intensity_map = None
         self.mapper = mapper
         self.orig_shape = orig_shape

@@ -18,8 +18,9 @@ install_requires = [
     'pandas>=0.23.4',
     'pyyaml>=3.13',
     'matplotlib>=2.2.3',  # dependency introduced by glotaran.plotting
-    'natsort>=5.3.3',  # dependency introduced by glotaran.data.io.chlorospec_format
-    'lmfit-varpro>=0.0.5'
+    'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
+    'lmfit-varpro>=0.0.5',
+    'typing_inspect>=0.3.1',
 ]
 
 class CleanCommand(Command):

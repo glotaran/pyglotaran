@@ -4,7 +4,7 @@ from typing import Dict, List
 import numpy as np
 from lmfit import Minimizer
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 from .grouping import Group, create_group, calculate_group, create_data_group
