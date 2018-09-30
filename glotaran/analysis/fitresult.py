@@ -32,7 +32,7 @@ class FitResult:
         Parameters
         ----------
         lm_result: MinimizerResult
-        dataset_results: dict(str, DatasetResult)
+        dataset_results: Dict[str, DatasetResult]
 
         Returns
         -------

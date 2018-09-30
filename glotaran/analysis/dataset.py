@@ -6,7 +6,7 @@ import numpy as np
 from ..datasets.dataset import Dataset
 
 
-def dataset_svd(dataset: Dataset) -> Tuple[np.array, np.array, np.array]:
+def dataset_svd(dataset: Dataset) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Returns the singular value decomposition of a dataset.
 
@@ -19,11 +19,11 @@ def dataset_svd(dataset: Dataset) -> Tuple[np.array, np.array, np.array]:
     tuple :
         (lsv, svals, rsv)
 
-        lsv : np.array
+        lsv : np.ndarray
             left singular values
-        svals : np.array
+        svals : np.ndarray
             singular values
-        rsv : np.array
+        rsv : np.ndarray
             right singular values
 
     """

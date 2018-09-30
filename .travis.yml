@@ -7,39 +7,38 @@ matrix:
   fast_finish: true
   include:
     - python: 3.6
-      env: TOXENV=flake8
+      env: flake8
       before_install:
         - echo "before_install"
-        - python -m pip install -U pip>=9.0.1
-        - pip install tox
+        - python -m pip install -U pip>=9.0.1 flake8
       script:
-        - tox
+        - flake8 glotaran
       after_success:
       # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
     - python: 3.6
       # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
-      env: TOXENV=docs
+      env: docs-creation
       before_install:
-        - echo "before_install"
-        - python -m pip install -U pip>=9.0.1
-        - pip install tox
+      - echo "before_install"
+      - python -m pip install -r requirements_dev.txt
+      - pip install -e .
       script:
-        - tox
+        - make --directory=docs clean_all html
       after_success:
         # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
     - python: 3.6
       # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
-      env: TOXENV=docs-links
+      env: docs-linkcheck
       before_install:
         - echo "before_install"
-        - python -m pip install -U pip>=9.0.1
-        - pip install tox
+        - python -m pip install -r requirements_dev.txt
+        - pip install -e .
       script:
-        - tox
+      - make --directory=docs clean_all linkcheck
       after_success:
         # this prevents the tests to upload stuff to coveralls.io
         - echo "done"

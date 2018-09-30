@@ -22,7 +22,7 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
     ----------
     model : glotaran.model.Model
         The model to group.
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset]
     xtol : float
         The grouping tolerance.
     dataset : str
@@ -59,10 +59,10 @@ def calculate_group(group: Group,
 
     Parameters
     ----------
-    group : dict(any, tuple()any, DatasetDescriptor))
+    group : Dict[any, Tuple[any, DatasetDescriptor]]
     model : glotaran.model.Model
     parameter : ParameterGroup
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset]
 
     Yields
     ------
@@ -123,7 +123,7 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
     ----------
     model : glotaran.model.Model
     group : dict(any, tuple(any, DatasetDescriptor))
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset])
 
     Returns
     -------

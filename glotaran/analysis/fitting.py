@@ -22,24 +22,24 @@ def residul_variable_projection(parameter: ParameterGroup,
 
     Parameters
     ----------
-    parameter : Parameter
-    Group: dict(any, tuple(any, DatasetDescriptor))
-    model : 'glotaran.model.BaseModel'
-    data : dict(str, glotaran.model.dataset.Dataset)
+    parameter : ParameterGroup
+    group: Dict[any, Tuple[any, DatasetDescriptor]]
+    model : glotaran.model.BaseModel
+    data : Dict[str, Dataset]
         A dictionary of dataset labels and Datasets.
     data_group : List[np.ndarray]
     **kwargs
 
     Returns
     -------
-    residual: ndarray
+    residual: np.ndarray
     """
     res = np.concatenate([qr_residual(matrix.T, data_group[i]) for i, matrix in
                           calculate_group(group, model, parameter, data)])
     return res
 
 
-def fit(model: object,
+def fit(model,  # temp doc fix : 'glotaran.model.BaseModel',
         parameter: ParameterGroup,
         data: Dict[str, Dataset],
         verbose: int = 2,
@@ -48,11 +48,11 @@ def fit(model: object,
 
     Parameters
     ----------
-    model :
+    model : glotaran.model.BaseModel
         The Model to fit.
     parameter : ParameterGroup
         The initial fit parameter.
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset],
         A dictionary of dataset labels and Datasets.
     verbose : int
         (optional default=2)
