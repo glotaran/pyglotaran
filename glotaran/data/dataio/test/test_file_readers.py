@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..external_file_readers import sdt_reader
+from glotaran.data.external_file_readers import sdt_reader
 from ..file_readers import (
     sdt_to_dataframe,
     dataframe_to_SpectralTemporalDataset,
@@ -11,9 +11,9 @@ from ..file_readers import (
 )
 from ..legacy_readers import FLIM_legacy_to_dataframe
 from ..mapper import get_pixel_map
-from ...datasets.dataset import DimensionalityError
-from ...datasets.specialized_datasets import FLIMDataset
-from ...datasets.spectral_temporal_dataset import SpectralTemporalDataset
+from glotaran.model.dataset import DimensionalityError
+from glotaran.data.datasets.specialized_datasets import FLIMDataset
+from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from . import TEMPORAL_DATA, FLIM_DATA
 
 

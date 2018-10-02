@@ -35,7 +35,6 @@ def FLIM_legacy_to_dataframe(file_path: str, zero_pad: bool=False,
         pd.DataFrame with selected pixels time traces or dict with pixels time traces and
         intesity map (see `traces_only`) and original shape of the data
 
-
     """
     with open(file_path) as FLIM:
         lines = [next(FLIM) for x in range(6)]

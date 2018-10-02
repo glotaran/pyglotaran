@@ -2,7 +2,7 @@ from typing import Union, List
 
 import numpy as np
 
-from ..model import Dataset
+from glotaran.model import Dataset
 
 
 class SpectralTemporalDataset(Dataset):
