@@ -3,14 +3,14 @@ import numpy as np
 
 from typing import Dict, Generator, List, Tuple
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.parameter_group import ParameterGroup
 
 Group = Dict[any, Tuple[any, DatasetDescriptor]]
 
 
-def create_group(model: 'glotaran.model.Model',
+def create_group(model,  # temp doc fix : 'glotaran.model.Model',
                  data: Dict[str, Dataset],
                  xtol: float = 0.5,
                  dataset: str = None,
@@ -22,7 +22,7 @@ def create_group(model: 'glotaran.model.Model',
     ----------
     model : glotaran.model.Model
         The model to group.
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset]
     xtol : float
         The grouping tolerance.
     dataset : str
@@ -51,7 +51,7 @@ def create_group(model: 'glotaran.model.Model',
 
 
 def calculate_group(group: Group,
-                    model: 'glotaran.model.Model',
+                    model,  # temp doc fix : 'glotaran.model.Model',
                     parameter: ParameterGroup,
                     data: Dict[str, Dataset],
                     ) -> Generator[Tuple[int, np.ndarray], None, None]:
@@ -59,10 +59,10 @@ def calculate_group(group: Group,
 
     Parameters
     ----------
-    group : dict(any, tuple()any, DatasetDescriptor))
+    group : Dict[any, Tuple[any, DatasetDescriptor]]
     model : glotaran.model.Model
     parameter : ParameterGroup
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset]
 
     Yields
     ------
@@ -116,7 +116,7 @@ def calculate_group(group: Group,
         i += 1
 
 
-def create_data_group(model: 'glotaran.model.Model',
+def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                       group: Group,
                       data: Dict[str, Dataset]) -> List[np.ndarray]:
     """create_data_group returns the datagroup for the model.
@@ -125,7 +125,7 @@ def create_data_group(model: 'glotaran.model.Model',
     ----------
     model : glotaran.model.Model
     group : dict(any, tuple(any, DatasetDescriptor))
-    data : dict(str, glotaran.model.dataset.Dataset)
+    data : Dict[str, Dataset])
 
     Returns
     -------

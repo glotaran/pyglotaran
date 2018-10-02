@@ -2,6 +2,7 @@
 
 from glotaran.model import BaseModel
 from glotaran.model import model
+# from glotaran.model.model import model
 
 from .initial_concentration import InitialConcentration
 from .irf import Irf

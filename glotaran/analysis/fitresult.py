@@ -6,7 +6,7 @@ from typing import Dict, List
 from lmfit.minimizer import MinimizerResult
 
 
-from glotaran.model.dataset import Dataset
+from glotaran.datasets.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 
@@ -32,7 +32,7 @@ class FitResult:
         Parameters
         ----------
         lm_result: MinimizerResult
-        dataset_results: dict(str, DatasetResult)
+        dataset_results: Dict[str, DatasetResult]
 
         Returns
         -------

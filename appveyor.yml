@@ -6,16 +6,10 @@ clone_depth: 50
 environment:
   global:
     TWINE_USERNAME: s-weigand
-############## TESTING #################
-#    TWINE_PASSWORD:
-#      secure: aG5EediuX5seSBgZv0Sfrbd6HezkrCa72DsrUiNp10M=
-############## TESTING #################
-############# PRODUCTION ###############
     TWINE_PASSWORD:
       secure: n0iiqKA7JDgOjmLvLhvBqQtDOepmCUMRBgPVnNNXlyY=
-############# PRODUCTION ###############
 
-    PYTEST: py.tests -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
+    PYTEST: py.test -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
 #  APPVEYOR_CACHE_SKIP_RESTORE: true
     APPVEYOR_SAVE_CACHE_ON_ERROR: flase
@@ -66,21 +60,9 @@ before_test:
   - if exist "%LOCALAPPDATA%\pip\Cache" C:\cygwin\bin\du -hs "%LOCALAPPDATA%\pip\Cache"
   - if exist "C:\projects\glotaran\.tox" C:\cygwin\bin\du -hs "C:\projects\glotaran\.tox"
 
-  - "ECHO c_matrix*.c files before cleaning"
-  - C:\cygwin\bin\find . -name c_matrix*.c
-
-  # removed old c_matrix*.c files
-  - C:\cygwin\bin\find . -name c_matrix*.c -delete
-
-  - "ECHO c_matrix*.c files after cleaning"
-  - C:\cygwin\bin\find . -name c_matrix*.c
-
-  # Upgrade to the latest pip.
-  # calling pip with "python -m" prevents an access denied error
-  - python -m pip install -U pip setuptools wheel
-
   # install all requirements
-  - pip install -U -r requirements_dev.txt
+  # calling pip with "python -m" prevents an access denied error
+  - python -m pip install -U -r requirements_dev.txt
   # install glotaran
   - pip install -e .
 
@@ -98,12 +80,7 @@ deploy_script:
   - python setup.py bdist_wheel
   - python -m pip install twine
   # upload to PyPi
-############## TESTING #################
-#  - 'if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*.whl)'
-############## TESTING #################
-############# PRODUCTION ###############
   - 'if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing dist/*.whl)'
-############# PRODUCTION ###############
 
 artifacts:
   - path: dist/*

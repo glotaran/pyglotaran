@@ -120,11 +120,13 @@ def traverse_package(package_path, project_root, child_modules=[], child_package
         #                                                                     importer))
         submodule_path = os.path.abspath(os.path.join(package_path, modname))
         import_path = submodule_path.replace(project_root, "").replace(os.sep, ".")[1:]
-        child_modules.append(import_path)
+        if not "test" in import_path:
+            child_modules.append(import_path)
 
-        if ispkg:
-            child_packages.append(import_path)
-            traverse_package(submodule_path, project_root, child_modules, child_packages)
+            if ispkg:
+                child_packages.append(import_path)
+                traverse_package(submodule_path, project_root, child_modules,
+                                 child_packages)
 
     if os.path.split(package_path)[0] == project_root:
         msg = "\n".join(child_modules)
