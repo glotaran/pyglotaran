@@ -81,7 +81,7 @@ class ExplicitFile(object):
 
         f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
 
-        datawriter = csv.writer(f, delimiter='\t')
+        datawriter = csv.writer(f, delimiter=r'\t')
 
         datawriter.writerow(self.get_explicit_axis())
 

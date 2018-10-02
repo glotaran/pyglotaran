@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 
-def FLIM_legacy_to_dataframe(file_path: str, zero_pad: bool=False,
+def FLIM_legacy_to_DataFrame(file_path: str, zero_pad: bool=False,
                              traces_only=True) \
         -> Union[Tuple[pd.DataFrame, tuple], Tuple[Dict[str, pd.DataFrame], tuple]]:
     """
