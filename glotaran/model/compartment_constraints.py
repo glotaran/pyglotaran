@@ -1,7 +1,31 @@
 """This package contains compartment constraint items."""
 
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from .model_item import model_item, model_item_typed
+
+
+@model_item(
+    attributes={
+        'compartment': str,
+        'interval': List[Tuple[any, any]],
+    }, has_type=True, no_label=True)
+class OnlyConstraint:
+    """A only constraint sets the calculated matrix row of a compartment to 0
+    outside the given intervals. """
+    def applies(self, index: any) -> bool:
+        """
+        Returns true if the indexx is in one of the intervals.
+
+        Parameters
+        ----------
+        index : any
+
+        Returns
+        -------
+        applies : bool
+
+        """
+        return not any(interval[0] <= index <= interval[1] for interval in self.interval)
 
 
 @model_item(
@@ -25,13 +49,12 @@ class ZeroConstraint:
         applies : bool
 
         """
-        return any(interval[0] <= index <= interval[1] for interval in self.intervals)
+        return any(interval[0] <= index <= interval[1] for interval in self.interval)
 
 
 @model_item(
     attributes={
-        'targets': List[str],
-        'parameters': List[str],
+        'targets': {'type': Dict[str, str], 'target': ('compartment', 'parameter')},
     }, has_type=True, no_label=True)
 class EqualConstraint(ZeroConstraint):
     """An equal constraint replaces the compartments calculated matrix row a sum
@@ -39,15 +62,10 @@ class EqualConstraint(ZeroConstraint):
 
     C[compartment] = p1 * C[target1] + p2 * C[target2] + ...
     """
-    def parameter_and_targets(self):
-        """generates traget and parameter pairs """
-        for i in range(len(self.parameters)):
-            yield self.parameters[i], self.targets[i]
 
 
 @model_item(attributes={
-    'targets': List[str],
-    'parameters': List[str],
+    'targets': {'type': Dict[str, str], 'target': ('compartment', 'parameter')},
     'weight': str,
 }, has_type=True, no_label=True)
 class EqualAreaConstraint(EqualConstraint):
@@ -68,6 +86,7 @@ class EqualAreaConstraint(EqualConstraint):
 
 
 @model_item_typed(types={
+    'only': OnlyConstraint,
     'zero': ZeroConstraint,
     'equal': EqualConstraint,
     'equal_area': EqualAreaConstraint,

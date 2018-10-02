@@ -93,6 +93,8 @@ def calculate_group(group: Group,
                                                                   index,
                                                                   axis)
 
+            apply_constraints(dataset_descriptor, compartments, this_matrix, index)
+
             if full is None:
                 full = this_matrix
                 full_compartments = compartments
@@ -149,3 +151,20 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                 full = np.append(full, dataset)
         result.append(full)
     return result
+
+
+def apply_constraints(dataset, compartments: List[str], matrix: np.ndarray, index):
+    if dataset.compartment_constraints is None:
+        return
+
+    for constraint in dataset.compartment_constraints:
+
+        if not constraint.applies(index) or constraint.type == 'equal_area':
+            continue
+
+        idx = compartments.index(constraint.compartment)
+        matrix[idx, :].fill(0.0)
+        if constraint.type == 'equal':
+            for target, param in constraint.targets.items():
+                t_idx = compartments.index(target)
+                matrix[idx, :] += param * matrix[t_idx, :]
