@@ -1,5 +1,5 @@
 from glotaran.model import Dataset
-from glotaran.datasets.spectral_temporal_dataset import SpectralTemporalDataset
+from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from .spectral_timetrace import SpectralUnit
 # this import was unused and flake8 did complain, will leave it as comment
 # from .spectral_timetrace import SpectralTimetrace
@@ -81,7 +81,7 @@ class ExplicitFile(object):
 
         f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
 
-        datawriter = csv.writer(f, delimiter='\t')
+        datawriter = csv.writer(f, delimiter=r'\t')
 
         datawriter.writerow(self.get_explicit_axis())
 

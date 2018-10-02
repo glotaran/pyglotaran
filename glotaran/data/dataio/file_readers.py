@@ -6,14 +6,14 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from .external_file_readers.sdt_reader import SdtFile
+from glotaran.data.external_file_readers.sdt_reader import SdtFile
 from .mapper import get_pixel_map
-from ..datasets.spectral_temporal_dataset import SpectralTemporalDataset
-from ..datasets.specialized_datasets import FLIMDataset
-from ..datasets.dataset import DimensionalityError
+from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
+from glotaran.data.datasets.specialized_datasets import FLIMDataset
+from glotaran.model.dataset import DimensionalityError
 
 
-def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
+def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
                                          time_unit: str= "s",
                                          spectral_unit: str="nm",
                                          swap_axis: bool=False) \
@@ -84,7 +84,7 @@ def dataframe_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
     return STDataset
 
 
-def dataframe_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
+def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
                              mapper_function: Callable[[np.ndarray],
                                                        Union[List[tuple],
                                                              Tuple[tuple],
@@ -171,7 +171,7 @@ def dataframe_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
     return flim_dataset
 
 
-def sdt_to_dataframe(file_path: str, index: Union[list, np.ndarray, tuple]=None,
+def sdt_to_DataFrame(file_path: str, index: Union[list, np.ndarray, tuple]=None,
                      dataset_index: int=None,
                      mapper_function: Callable[[np.ndarray], Tuple[tuple]]=None) \
         -> Tuple[pd.DataFrame, tuple]:
@@ -344,24 +344,24 @@ def read_sdt(file_path: str, index: Union[list, np.ndarray]=None,
                          f"this value isn't supported. The supported values are "
                          f"{repr(supported_type_of_data)}.")
     if type_of_data == "flim":
-        data_dataframe, orig_shape = sdt_to_dataframe(file_path=file_path,
+        data_dataframe, orig_shape = sdt_to_DataFrame(file_path=file_path,
                                                       dataset_index=dataset_index,
                                                       mapper_function=get_pixel_map)
     else:
-        data_dataframe, orig_shape = sdt_to_dataframe(file_path=file_path, index=index,
+        data_dataframe, orig_shape = sdt_to_DataFrame(file_path=file_path, index=index,
                                                       dataset_index=dataset_index)
     if return_dataframe:
         return data_dataframe
     else:
         if type_of_data == "flim":
-            dataset = dataframe_to_FLIMDataset(input_dataframe=data_dataframe,
+            dataset = DataFrame_to_FLIMDataset(input_dataframe=data_dataframe,
                                                mapper_function=get_pixel_map,
                                                orig_shape=orig_shape,
                                                orig_time_axis_index=orig_time_axis_index,
                                                time_unit=time_unit,
                                                swap_axis=swap_axis)
         else:
-            dataset = dataframe_to_SpectralTemporalDataset(input_dataframe=data_dataframe,
+            dataset = DataFrame_to_SpectralTemporalDataset(input_dataframe=data_dataframe,
                                                            time_unit=time_unit,
                                                            spectral_unit=spectral_unit,
                                                            swap_axis=swap_axis)

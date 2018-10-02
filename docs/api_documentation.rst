@@ -22,23 +22,24 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.analysis.grouping
     glotaran.analysis.simulation
     glotaran.analysis.variable_projection
-    glotaran.dataio
-    glotaran.dataio.chlorospec_format
-    glotaran.dataio.external_file_readers
-    glotaran.dataio.external_file_readers.sdt_reader
-    glotaran.dataio.file_readers
-    glotaran.dataio.legacy_readers
-    glotaran.dataio.mapper
-    glotaran.dataio.mlsd_file_format
-    glotaran.dataio.spectral_timetrace
-    glotaran.dataio.wavelength_time_explicit_file
-    glotaran.datasets
-    glotaran.datasets.dataset
-    glotaran.datasets.specialized_datasets
-    glotaran.datasets.spectral_temporal_dataset
+    glotaran.data
+    glotaran.data.dataio
+    glotaran.data.dataio.chlorospec_format
+    glotaran.data.dataio.file_readers
+    glotaran.data.dataio.legacy_readers
+    glotaran.data.dataio.mapper
+    glotaran.data.dataio.mlsd_file_format
+    glotaran.data.dataio.spectral_timetrace
+    glotaran.data.dataio.wavelength_time_explicit_file
+    glotaran.data.datasets
+    glotaran.data.datasets.specialized_datasets
+    glotaran.data.datasets.spectral_temporal_dataset
+    glotaran.data.external_file_readers
+    glotaran.data.external_file_readers.sdt_reader
     glotaran.model
     glotaran.model.base_model
     glotaran.model.compartment_constraints
+    glotaran.model.dataset
     glotaran.model.dataset_descriptor
     glotaran.model.model
     glotaran.model.model_item

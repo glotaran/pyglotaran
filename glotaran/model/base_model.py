@@ -8,7 +8,7 @@ from glotaran.analysis.fitresult import FitResult
 from glotaran.analysis.fitting import fit
 from glotaran.analysis.simulation import simulate
 
-from glotaran.datasets.dataset import Dataset
+from glotaran.model.dataset import Dataset
 from .parameter_group import ParameterGroup
 
 

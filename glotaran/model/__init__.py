@@ -13,7 +13,7 @@ from . import (
     parameter,
     parameter_group,
 )
-from ..datasets import dataset
+from glotaran.model import dataset
 
 # Compartment Constraints
 CompartmentConstraint = compartment_constraints.CompartmentConstraint

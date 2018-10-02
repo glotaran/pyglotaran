@@ -8,7 +8,7 @@ from typing import Callable, List, Tuple, Union
 
 import numpy as np
 
-from .dataset import Dataset
+from glotaran.model.dataset import Dataset
 
 
 class HighDimensionalDataset(Dataset):
