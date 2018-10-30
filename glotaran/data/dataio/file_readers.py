@@ -14,9 +14,9 @@ from glotaran.model.dataset import DimensionalityError
 
 
 def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
-                                         time_unit: str= "s",
-                                         spectral_unit: str="nm",
-                                         swap_axis: bool=False) \
+                                         time_unit: str = "s",
+                                         spectral_unit: str = "nm",
+                                         swap_axis: bool = False) \
         -> SpectralTemporalDataset:
     """
     Uses a pd.DataFrame to generate a SpectralTemporalDataset from it.
@@ -89,8 +89,8 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
                                                        Union[List[tuple],
                                                              Tuple[tuple],
                                                              np.ndarray]],
-                             orig_shape: tuple, orig_time_axis_index: int=2,
-                             time_unit: str= "s", swap_axis: bool=False) \
+                             orig_shape: tuple, orig_time_axis_index: int = 2,
+                             time_unit: str = "s", swap_axis: bool = False) \
         -> FLIMDataset:
     """
     Uses a pd.DataFrame to generate a FLIMDataset from it.
@@ -171,9 +171,9 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
     return flim_dataset
 
 
-def sdt_to_DataFrame(file_path: str, index: Union[list, np.ndarray, tuple]=None,
-                     dataset_index: int=None,
-                     mapper_function: Callable[[np.ndarray], Tuple[tuple]]=None) \
+def sdt_to_DataFrame(file_path: str, index: Union[list, np.ndarray, tuple] = None,
+                     dataset_index: int = None,
+                     mapper_function: Callable[[np.ndarray], Tuple[tuple]] = None) \
         -> Tuple[pd.DataFrame, tuple]:
     """
     Reads and `*.sdt` file and returns a pd.DataFrame.
@@ -265,10 +265,10 @@ def sdt_to_DataFrame(file_path: str, index: Union[list, np.ndarray, tuple]=None,
     return pd.DataFrame(data, index=index, columns=times), orig_shape
 
 
-def read_sdt(file_path: str, index: Union[list, np.ndarray]=None,
-             type_of_data: str = "st", time_unit: str= "s", swap_axis: bool=False,
-             dataset_index: int=None, return_dataframe: bool=False,
-             orig_time_axis_index: int = 2, spectral_unit: str="nm") \
+def read_sdt(file_path: str, index: Union[list, np.ndarray] = None,
+             type_of_data: str = "st", time_unit: str = "s", swap_axis: bool = False,
+             dataset_index: int = None, return_dataframe: bool = False,
+             orig_time_axis_index: int = 2, spectral_unit: str = "nm") \
         -> Union[pd.DataFrame, SpectralTemporalDataset, FLIMDataset]:
     """
     Reads a `*.sdt` file and returns a pd.DataFrame (`return_dataframe==True`), a

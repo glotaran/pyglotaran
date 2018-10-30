@@ -11,7 +11,7 @@ class SpectralTemporalDataset(Dataset):
     Provides a time and a spectral axis.
     """
 
-    def __init__(self, time_unit: str="s", spectral_unit: str="nm"):
+    def __init__(self, time_unit: str = "s", spectral_unit: str = "nm"):
         self.time_unit = time_unit
         self.spectral_unit = spectral_unit
         super(SpectralTemporalDataset, self).__init__()
@@ -51,7 +51,7 @@ class SpectralTemporalDataset(Dataset):
                              "{}".format(value, self.supported_time_units))
         self._time_unit = value
 
-    def get_time_axis(self, unit: str=None) -> Union[List, np.ndarray]:
+    def get_time_axis(self, unit: str = None) -> Union[List, np.ndarray]:
         """
         Returns the time axis, does unit conversion if necessary
 
@@ -117,7 +117,7 @@ class SpectralTemporalDataset(Dataset):
         return [conversion/v for v in self.get_axis("spectral")]
 
     @property
-    def spectral_axis(self, unit: str=None):
+    def spectral_axis(self, unit: str = None):
         """the spectral axis """
         return self.get_axis("spectral")
 

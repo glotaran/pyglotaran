@@ -252,7 +252,7 @@ def model_item(attributes={},
     return decorator
 
 
-def model_item_typed(types: Dict[str, any]={}):
+def model_item_typed(types: Dict[str, any] = {}):
     """The model_item_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class an item when there
     are multiple variants. See package glotaran.model.compartment_constraints
