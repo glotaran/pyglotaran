@@ -48,7 +48,10 @@ matrix:
     - python: "3.6"
       env: linux-py36
 
-    - python: "3.7-dev"  # 3.7 development branch
+    - language: python
+      sudo: required
+      dist: xenial
+      python: "3.7"
       env: linux-py37
 
     # OSX
