@@ -8,7 +8,7 @@
 #  from glotaran import dataio, model  # noqa: E402
 from . import model  # noqa: E402
 
-__version__ = '0.0.9'
+__version__ = '0.0.10'
 
 Dataset = model.Dataset
 DatasetDescriptor = model.DatasetDescriptor
