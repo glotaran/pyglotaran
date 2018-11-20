@@ -18,7 +18,7 @@ from . import TEMPORAL_DATA, FLIM_DATA
 
 
 def test_sdt_to_df__temporal():
-    result_df = pd.read_csv(TEMPORAL_DATA["csv"], skiprows=1, sep="\s+",
+    result_df = pd.read_csv(TEMPORAL_DATA["csv"], skiprows=1, sep=r"\s+",
                             dtype={"Delay": np.float, "Data": np.uint16})
     result_df.Delay = result_df.Delay * 1e-9
     test_df, orig_shape = sdt_to_DataFrame(TEMPORAL_DATA["sdt"], index=[1])
@@ -35,7 +35,7 @@ def test_sdt_to_df__errors_and_warnings(monkeypatch):
                                          "indices supplied are 2."):
         sdt_to_DataFrame(TEMPORAL_DATA["sdt"], index=[1, 2])
 
-    def bad_mapper(array: np.ndarray=None):
+    def bad_mapper(array: np.ndarray = None):
         return ((0,), (0,))
 
     with pytest.raises(ValueError,
@@ -217,7 +217,7 @@ def test_read_sdt(type_of_data, test_file_path, result_file_path, index, return_
             assert np.all(test_dataset.intensity_map == result_intensity_map)
             assert test_dataset.orig_shape == orig_shape
     else:
-        result_df = pd.read_csv(result_file_path, skiprows=1, sep="\s+",
+        result_df = pd.read_csv(result_file_path, skiprows=1, sep=r"\s+",
                                 dtype={"Delay": np.float, "Data": np.uint16})
         result_df.Delay = result_df.Delay * 1e-9
         result_traces = pd.DataFrame([result_df.Data.values], columns=result_df.Delay)
@@ -238,7 +238,7 @@ def test_read_sdt(type_of_data, test_file_path, result_file_path, index, return_
 
 def test_read_sdt__exceptions():
     with pytest.raises(ValueError,
-                       match=f"The entered value of `type_of_data` was 'not_supported', "
-                             f"this value isn't supported. The supported values are "
-                             f"\['st', 'flim'\]."):
+                       match=r"The entered value of `type_of_data` was 'not_supported', "
+                             r"this value isn't supported. The supported values are "
+                             r"\['st', 'flim'\]."):
         read_sdt("test_df", type_of_data='not_supported')

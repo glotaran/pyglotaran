@@ -104,7 +104,7 @@ class FLIMDataset(HighDimensionalDataset):
                                   Union[List[tuple],
                                         Tuple[tuple],
                                         np.ndarray]],
-                 orig_shape: tuple, time_unit: str="s"):
+                 orig_shape: tuple, time_unit: str = "s"):
         """
 
         Parameters
