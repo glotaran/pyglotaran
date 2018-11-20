@@ -9,10 +9,10 @@ from . import LEGACY_FILES
 @pytest.mark.parametrize("zero_pad", [True, False])
 @pytest.mark.parametrize("traces_only", [True, False])
 def test_FLIM_legacy_to_df(zero_pad, traces_only):
-    time_traces_result = pd.read_csv(LEGACY_FILES["flim_traces"], sep="\s+",
+    time_traces_result = pd.read_csv(LEGACY_FILES["flim_traces"], sep=r"\s+",
                                      index_col=0)
     time_traces_result.columns = pd.to_numeric(time_traces_result.columns)*1e-9
-    intensity_map_result = pd.read_csv(LEGACY_FILES["flim_map"], sep="\s+",
+    intensity_map_result = pd.read_csv(LEGACY_FILES["flim_map"], sep=r"\s+",
                                        names=np.arange(64))
     flim_data, orig_shape = FLIM_legacy_to_DataFrame(LEGACY_FILES["flim_file"],
                                                      traces_only=traces_only)

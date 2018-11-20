@@ -47,7 +47,7 @@ def plot_data_overview(times, spectral_indices, data):
     ax1.set_xlim([xmin, xmax])
     ax1.set_ylim([ymin, ymax])
     ax1.set_xlabel('Times (ps)')
-    ax1.set_ylabel('$Wavenumber\ [\ cm^{-1}\ ]$')
+    ax1.set_ylabel(r'$Wavenumber\ [\ cm^{-1}\ ]$')
 
     plt.tight_layout()
     plot_data(ax1, times, spectral_indices, data)
@@ -55,7 +55,7 @@ def plot_data_overview(times, spectral_indices, data):
     ax3.set_xlim([xmin, xmax])
     # ax2.set_ylim([ymin, ymax])
     ax3.set_xlabel('Times (ps)')
-    ax3.set_ylabel('$Wavenumber\ [\ cm^{-1}\ ]$')
+    ax3.set_ylabel(r'$Wavenumber\ [\ cm^{-1}\ ]$')
     plot_trace(ax3, times, V1[0, :].T)
 
     # ax2.set_ylim([xmin, xmax])
