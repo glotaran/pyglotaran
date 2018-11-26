@@ -18,6 +18,7 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
 
     Parameters
     ----------
+    model: The model to simulate
     parameter : ParameterGroup
         The parameters for the simulation.
     dataset : str

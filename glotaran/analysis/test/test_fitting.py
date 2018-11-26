@@ -218,10 +218,11 @@ def test_fitting(suite):
                            rtol=1e-1)
 
     resultdata = result.get_dataset("dataset1")
-    assert np.array_equal(dataset.get_axis('c'), resultdata.data.get_axis('c'))
-    assert np.array_equal(dataset.get_axis('e'), resultdata.data.get_axis('e'))
-    assert dataset.data().shape == resultdata.data.data().shape
-    assert np.allclose(dataset.data(), resultdata.data.data())
+    assert np.array_equal(dataset.get_axis('c'), resultdata.get_axis('c'))
+    assert np.array_equal(dataset.get_axis('e'), resultdata.get_axis('e'))
+    assert dataset.data().shape == resultdata.data().shape
+    print(dataset.data()[0, 0], resultdata.data()[0, 0])
+    assert np.allclose(dataset.data(), resultdata.data())
 
 
 if __name__ == '__main__':

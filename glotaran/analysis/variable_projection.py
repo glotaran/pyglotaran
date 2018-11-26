@@ -1,5 +1,12 @@
 """This package contains functions for variable projection."""
-import scipy.linalg.lapack as lapack
+from typing import Dict, List
+import numpy as np
+from scipy.linalg import lapack
+
+from glotaran.model.dataset import Dataset
+from glotaran.model.parameter_group import ParameterGroup
+
+from .grouping import Group, calculate_group
 
 
 def qr_residual(A, B):
@@ -36,3 +43,59 @@ def qr_coefficents(A, B):
 
     P, _ = lapack.dtrtrs(qr, B)
     return P
+
+
+def residual_variable_projection(parameter: ParameterGroup,
+                                 group: Group,
+                                 model,  # temp doc fix : 'glotaran.model.BaseModel',
+                                 data: Dict[str, Dataset],
+                                 data_group: List[np.ndarray],
+                                 **kwargs) -> np.ndarray:
+    """residul_variable_projection returns the variable projection residual.
+
+    Parameters
+    ----------
+    parameter : ParameterGroup
+    group: Dict[any, Tuple[any, DatasetDescriptor]]
+    model : glotaran.model.BaseModel
+    data : Dict[str, Dataset]
+        A dictionary of dataset labels and Datasets.
+    data_group : List[np.ndarray]
+    **kwargs
+
+    Returns
+    -------
+    residual: np.ndarray
+    """
+    res = np.concatenate([qr_residual(matrix.T, data_group[i]) for i, matrix, _, _ in
+                          calculate_group(group, model, parameter, data)])
+    return res
+
+
+def clp_variable_projection(parameter: ParameterGroup,
+                            group: Group,
+                            model,  # temp doc fix : 'glotaran.model.BaseModel',
+                            data: Dict[str, Dataset],
+                            data_group: List[np.ndarray],
+                            ) -> np.ndarray:
+    """residul_variable_projection returns the variable projection residual.
+
+    Parameters
+    ----------
+    parameter : ParameterGroup
+    group: Dict[any, Tuple[any, DatasetDescriptor]]
+    model : glotaran.model.BaseModel
+    data : Dict[str, Dataset]
+        A dictionary of dataset labels and Datasets.
+    data_group : List[np.ndarray]
+    **kwargs
+
+    Returns
+    -------
+    residual: np.ndarray
+    """
+    res = {}
+    for i, matrix, clp, datasets in calculate_group(group, model, parameter, data):
+        res[i] = (datasets, clp, qr_coefficents(matrix.T,
+                                                data_group[i])[:len(clp)])
+    return res

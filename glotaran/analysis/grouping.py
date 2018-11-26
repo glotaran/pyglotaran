@@ -76,11 +76,15 @@ def calculate_group(group: Group,
     datasets = {}
     for _, item in group.items():
         full = None
-        full_compartments = None
+        full_clp = None
+        dataset_labels = []
         for index, dataset_descriptor in item:
 
             if dataset_descriptor.label not in data:
                 raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
+
+            dataset_labels.append(dataset_descriptor.label)
+
             axis = data[dataset_descriptor.label].get_axis(model.calculated_axis)
             if dataset_descriptor.label not in datasets:
                 dataset_descriptor = dataset_descriptor.fill(model, parameter)
@@ -88,31 +92,31 @@ def calculate_group(group: Group,
             else:
                 dataset_descriptor = datasets[dataset_descriptor.label]
 
-            (compartments, this_matrix) = model.calculated_matrix(dataset_descriptor,
-                                                                  model.compartment,
-                                                                  index,
-                                                                  axis)
+            (clp, this_matrix) = model.calculated_matrix(dataset_descriptor,
+                                                         model.compartment,
+                                                         index,
+                                                         axis)
 
-            apply_constraints(dataset_descriptor, compartments, this_matrix, index)
+            #  apply_constraints(dataset_descriptor, clp, this_matrix, index)
 
             if full is None:
                 full = this_matrix
-                full_compartments = compartments
+                full_clp = clp
             else:
-                if not compartments == full_compartments:
-                    for comp in compartments:
-                        if comp not in full_compartments:
-                            full_compartments.append(comp)
+                if not clp == full_clp:
+                    for comp in clp:
+                        if comp not in full_clp:
+                            full_clp.append(comp)
                             full = np.concatenate((full, np.zeros((full.shape[1]))))
-                    reshape = np.zeros((len(full_compartments), this_matrix.shape[1]))
-                    for i, comp in enumerate(full_compartments):
-                        reshape[i, :] = this_matrix[compartments.index(comp), :] \
-                                if comp in compartments else np.zeros((this_matrix.shape[1]))
+                    reshape = np.zeros((len(full_clp), this_matrix.shape[1]))
+                    for i, comp in enumerate(full_clp):
+                        reshape[i, :] = this_matrix[clp.index(comp), :] \
+                                if comp in clp else np.zeros((this_matrix.shape[1]))
                     this_matrix = reshape
 
                 full = np.concatenate((full, this_matrix), axis=1)
 
-        yield (i, full)
+        yield (i, full, full_clp, dataset_labels)
         i += 1
 
 

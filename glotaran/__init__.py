@@ -6,6 +6,11 @@
 #  from glotaran.specification_parser import parse_yml  # noqa: E402
 #  from glotaran.specification_parser import parse_file  # noqa: E402
 #  from glotaran import dataio, model  # noqa: E402
+
+from .analysis import dataset
+
+dataset_svd = dataset.dataset_svd
+
 from . import model  # noqa: E402
 
 __version__ = '0.0.10'
@@ -13,6 +18,18 @@ __version__ = '0.0.10'
 Dataset = model.Dataset
 DatasetDescriptor = model.DatasetDescriptor
 ParameterGroup = model.ParameterGroup
+
+from .models import spectral_temporal  # noqa: E402
+
+
+KineticModel = spectral_temporal.KineticModel
+
+from .parse import parser  # noqa: E402
+
+
+load_yml = parser.load_yml
+load_yml_file = parser.load_yml_file
+
 
 # Top level API
 # SeparableModel = separable_model.SeparableModel

@@ -416,7 +416,7 @@ def test_kinetic_model(suite):
                            rtol=1e-1)
 
     resultdata = result.get_dataset("dataset1")
-    assert np.array_equal(dataset.get_axis('time'), resultdata.data.get_axis('time'))
-    assert np.array_equal(dataset.get_axis('spectral'), resultdata.data.get_axis('spectral'))
-    assert dataset.data().shape == resultdata.data.data().shape
-    assert np.allclose(dataset.data(), resultdata.data.data())
+    assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
+    assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
+    assert dataset.data().shape == resultdata.data().shape
+    assert np.allclose(dataset.data(), resultdata.data())

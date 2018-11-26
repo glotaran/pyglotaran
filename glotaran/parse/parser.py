@@ -23,7 +23,6 @@ def _yml_tuple_constructor(loader, node):
 
     value = loader.construct_scalar(node)
     # remove the ( ) from the string
-    print(value)
     tup_elements = value[1:-1].split(',')
     # remove the last element if the tuple was written as (x,b,)
     if tup_elements[-1] == '':

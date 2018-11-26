@@ -43,37 +43,41 @@ class Parameter(LmParameter):
     @classmethod
     def from_list_or_value(cls, parameter: Union[int, float, List[object]],
                            label=None):
-            param = cls(label=label)
 
-            if isinstance(parameter, (int, float)):
-                param.value = parameter
-                return param
+        if not isinstance(parameter, list):
+            parameter = [parameter]
 
-            def retrieve(filt, default):
-                tmp = list(filter(filt, parameter))
-                if len(tmp) is not 0:
-                    parameter.remove(tmp[0])
-                    return tmp[0]
-                else:
-                    return default
+        param = cls(label=label)
 
-            options = retrieve(lambda x: isinstance(x, dict), None)
-
-            param.label = parameter[0] if len(parameter) is not 1 else label
-            param.value = float(parameter[0] if len(parameter) is 1 else parameter[1])
-
-            if options is not None:
-                if Keys.FIT in options:
-                    param.fit = options[Keys.FIT]
-                if Keys.MAX in options:
-                    param.max = float(options[Keys.MAX])
-                if Keys.MIN in options:
-                    param.min = float(options[Keys.MIN])
-                if Keys.EXPR in options:
-                    param.expr = options[Keys.EXPR]
-                if Keys.VARY in options:
-                    param.vary = options[Keys.VARY]
+        if isinstance(parameter, (int, float)):
+            param.value = parameter
             return param
+
+        def retrieve(filt, default):
+            tmp = list(filter(filt, parameter))
+            if len(tmp) is not 0:
+                parameter.remove(tmp[0])
+                return tmp[0]
+            else:
+                return default
+
+        options = retrieve(lambda x: isinstance(x, dict), None)
+
+        param.label = parameter[0] if len(parameter) is not 1 else label
+        param.value = float(parameter[0] if len(parameter) is 1 else parameter[1])
+
+        if options is not None:
+            if Keys.FIT in options:
+                param.fit = options[Keys.FIT]
+            if Keys.MAX in options:
+                param.max = float(options[Keys.MAX])
+            if Keys.MIN in options:
+                param.min = float(options[Keys.MIN])
+            if Keys.EXPR in options:
+                param.expr = options[Keys.EXPR]
+            if Keys.VARY in options:
+                param.vary = options[Keys.VARY]
+        return param
 
     @property
     def label(self) -> str:

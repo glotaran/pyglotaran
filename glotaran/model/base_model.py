@@ -91,14 +91,39 @@ class BaseModel:
 
         return model
 
-    def simulate(self, dataset: str, parameter: ParameterGroup, axis: Dict[str, np.ndarray]):
-        return simulate(self, parameter, dataset, axis)
+    def simulate(self,
+                 dataset: str,
+                 parameter: ParameterGroup,
+                 axis: Dict[str, np.ndarray],
+                 noise=False,
+                 noise_std_dev=1.0,
+                 noise_seed=None,
+                 ):
+        """Simulates the model.
+
+        Parameters
+        ----------
+        dataset : str
+            Label of the dataset to simulate
+        parameter : ParameterGroup
+            The parameters for the simulation.
+        axis : Dict[str, np.ndarray]
+            A dictory with axis
+        noise : bool
+            (Default value = False)
+        noise_std_dev : float
+            (Default value = 1.0)
+        noise_seed : default None
+
+        """
+        return simulate(self, parameter, dataset, axis, noise=noise,
+                        noise_std_dev=noise_std_dev, noise_seed=noise_seed)
 
     def fit(self,
             parameter: ParameterGroup,
             data: Dict[str, Dataset],
             verbose: int = 2,
-            max_fnev: int = None,) -> FitResult:
+            max_nfev: int = None,) -> FitResult:
         """fit performs a fit of the model.
 
         Parameters
@@ -119,7 +144,7 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        return fit(self, parameter, data, verbose=verbose, max_fnev=max_fnev)
+        return fit(self, parameter, data, verbose=verbose, max_nfev=max_nfev)
 
     def calculated_matrix(self,
                           dataset: str,
