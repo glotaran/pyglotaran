@@ -9,13 +9,8 @@ from .mock import MockModel
 
 def test_simulate_dataset():
     model = MockModel.from_dict({
-        "compartment": ["s1", "s2"],
-        "initial_concentration": {
-            "j1": [["1", "2"]]
-        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": 'j1',
                 "megacomplex": [],
             },
         }

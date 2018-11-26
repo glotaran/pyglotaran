@@ -4,7 +4,8 @@ from ...model import Dataset, BaseModel, model
 # from ...model.model import model
 
 
-def calculate_c(dataset, compartments, index, axis):
+def calculate_c(dataset, index, axis):
+    compartments = ['s1', 's2']
     r_compartments = []
     array = np.zeros((len(compartments), axis.shape[0]))
 
@@ -15,8 +16,8 @@ def calculate_c(dataset, compartments, index, axis):
     return (r_compartments, array)
 
 
-def calculate_e(dataset, compartments, axis):
-    return calculate_c(dataset, compartments, 0, axis)[1].T
+def calculate_e(dataset, axis):
+    return calculate_c(dataset, 0, axis)[1].T
 
 
 class MockDataset(Dataset):

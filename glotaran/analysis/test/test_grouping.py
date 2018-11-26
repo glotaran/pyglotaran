@@ -7,13 +7,8 @@ from .mock import MockDataset, MockModel
 
 def test_single_dataset():
     model = MockModel.from_dict({
-        "compartment": ["s1", "s2"],
-        "initial_concentration": {
-            "j1": [["1", "2"]]
-        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": 'j1',
                 "megacomplex": [],
             },
         }
@@ -44,17 +39,11 @@ def test_single_dataset():
 
 def test_multi_dataset_no_overlap():
     model = MockModel.from_dict({
-        "compartment": ["s1", "s2"],
-        "initial_concentration": {
-            "j1": [["1", "2"]]
-        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": 'j1',
                 "megacomplex": [],
             },
             "dataset2": {
-                "initial_concentration": 'j1',
                 "megacomplex": [],
             },
         }
@@ -102,17 +91,11 @@ def test_multi_dataset_no_overlap():
 
 def test_multi_dataset_overlap():
     model = MockModel.from_dict({
-        "compartment": ["s1", "s2"],
-        "initial_concentration": {
-            "j1": [["1", "2"]]
-        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": 'j1',
                 "megacomplex": [],
             },
             "dataset2": {
-                "initial_concentration": 'j1',
                 "megacomplex": [],
             },
         }

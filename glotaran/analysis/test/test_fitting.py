@@ -12,10 +12,11 @@ OLD_MAT = None
 OLD_KIN = []
 
 
-def calculate_kinetic(dataset, compartments, index, axis):
+def calculate_kinetic(dataset, index, axis):
     global OLD_MAT
     global OLD_KIN
     kinpar = -1 * np.array(dataset.kinetic)
+    compartments = [f's{i+1}' for i in range(len(kinpar))]
     if np.array_equal(kinpar, OLD_KIN):
         return (compartments, OLD_MAT)
 
@@ -25,12 +26,14 @@ def calculate_kinetic(dataset, compartments, index, axis):
     return (compartments, array)
 
 
-def calculate_spectral_simple(dataset, compartments, axis):
+def calculate_spectral_simple(dataset, axis):
+    kinpar = -1 * np.array(dataset.kinetic)
+    compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
     return array.T
 
 
-def calculate_spectral_gauss(dataset, compartments, axis):
+def calculate_spectral_gauss(dataset, axis):
     location = np.asarray(dataset.location)
     amp = np.asarray(dataset.amplitude)
     delta = np.asarray(dataset.delta)
