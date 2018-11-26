@@ -227,14 +227,16 @@ def model_item(attributes={},
                 if item is None:
                     continue
                 if 'target' in opts:
-                    target = opts['target'][1]
-                    nitem = {}
-                    for k, v in item.items():
-                        if target == 'parameter':
-                            nitem[k] = convert_list_or_scalar(v)
-                        else:
-                            nitem[k] = fill_item_or_list(v, target)
-                    item = nitem
+                    target = opts['target']
+                    if isinstance(target, tuple):
+                        target = target[1]
+                        nitem = {}
+                        for k, v in item.items():
+                            if target == 'parameter':
+                                nitem[k] = convert_list_or_scalar(v)
+                            else:
+                                nitem[k] = fill_item_or_list(v, target)
+                        item = nitem
 
                 elif hasattr(model, attr):
                     if attr == 'compartment':

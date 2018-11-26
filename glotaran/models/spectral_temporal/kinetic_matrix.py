@@ -7,7 +7,7 @@ from kinetic_matrix_gaussian_irf import calc_kinetic_matrix_gaussian_irf
 from .irf import IrfGaussian, IrfMeasured
 
 
-def calculate_kinetic_matrix(dataset, all_compartments, index, axis):
+def calculate_kinetic_matrix(dataset, index, axis):
     """ Calculates the matrix.
 
     Parameters
@@ -29,7 +29,6 @@ def calculate_kinetic_matrix(dataset, all_compartments, index, axis):
     for k_matrix in _collect_k_matrices(dataset):
         (this_compartments, this_matrix) = _calculate_for_k_matrix(
             dataset,
-            all_compartments,
             index,
             axis,
             k_matrix,
@@ -62,12 +61,12 @@ def _collect_k_matrices(dataset):
         yield full_k_matrix
 
 
-def _calculate_for_k_matrix(dataset, compartments, index, axis, k_matrix, scale):
+def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-arguments
 
     # we might have more compartments in the model then in the k matrix
-    compartments = [comp for comp in compartments
+    compartments = [comp for comp in dataset.initial_concentration.compartments
                     if comp in k_matrix.involved_compartments()]
 
     # the rates are the eigenvalues of the k matrix

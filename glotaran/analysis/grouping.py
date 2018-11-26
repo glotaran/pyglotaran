@@ -93,7 +93,6 @@ def calculate_group(group: Group,
                 dataset_descriptor = datasets[dataset_descriptor.label]
 
             (clp, this_matrix) = model.calculated_matrix(dataset_descriptor,
-                                                         model.compartment,
                                                          index,
                                                          axis)
 

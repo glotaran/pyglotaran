@@ -19,11 +19,12 @@ class BaseModel:
     implementations will need.
     """
 
-    compartment: List[str]
+    #  compartment: List[str]
     """A list of compartments."""
 
     def __init__(self):
-        self.compartment = []
+        pass
+        #  self.compartment = []
 
     @classmethod
     def from_dict(cls, model_dict: Dict):

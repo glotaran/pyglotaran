@@ -88,7 +88,6 @@ class FitResult:
 
         calculated_matrix = \
             [self.model.calculated_matrix(filled_dataset,
-                                          self.model.compartment,
                                           index,
                                           calculated_axis)
              for index in estimated_axis]

@@ -44,7 +44,6 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
     estimated_axis = axis[model.estimated_axis]
 
     calculated_matrix = [model.calculated_matrix(filled_dataset,
-                                                 model.compartment,
                                                  index,
                                                  calculated_axis)
                          for index in estimated_axis]

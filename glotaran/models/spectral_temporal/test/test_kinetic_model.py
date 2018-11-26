@@ -7,9 +7,12 @@ from glotaran.models.spectral_temporal import KineticModel
 
 class OneComponentOneChannel:
     model = KineticModel.from_dict({
-        'compartment': ['s1'],
         'initial_concentration': {
-            'j1': [['2']]
+            'j1': {
+                'compartments': ['s1'],
+                'parameters': ['2']
+            },
+
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},
@@ -25,9 +28,11 @@ class OneComponentOneChannel:
         },
     })
     sim_model = KineticModel.from_dict({
-        'compartment': ['s1'],
         'initial_concentration': {
-            'j1': [['2']]
+            'j1': {
+                'compartments': ['s1'],
+                'parameters': ['2']
+            },
         },
         'shape': {'sh1': ['one']},
         'megacomplex': {
@@ -55,9 +60,11 @@ class OneComponentOneChannel:
 
 class OneComponentOneChannelGaussianIrf:
     model = KineticModel.from_dict({
-        'compartment': ['s1'],
         'initial_concentration': {
-            'j1': [['2']]
+            'j1': {
+                'compartments': ['s1'],
+                'parameters': ['2']
+            },
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},
@@ -77,9 +84,11 @@ class OneComponentOneChannelGaussianIrf:
         },
     })
     sim_model = KineticModel.from_dict({
-        'compartment': ['s1'],
         'initial_concentration': {
-            'j1': [['4']]
+            'j1': {
+                'compartments': ['s1'],
+                'parameters': ['4']
+            },
         },
         'shape': {'sh1': ['one']},
         'megacomplex': {
@@ -111,9 +120,11 @@ class OneComponentOneChannelGaussianIrf:
 
 class OneComponentOneChannelMeasuredIrf:
     model = KineticModel.from_dict({
-        'compartment': ['s1'],
         'initial_concentration': {
-            'j1': [['2']]
+            'j1': {
+                'compartments': ['s1'],
+                'parameters': ['2']
+            },
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},
@@ -133,9 +144,11 @@ class OneComponentOneChannelMeasuredIrf:
         },
     })
     sim_model = KineticModel.from_dict({
-        'compartment': ['s1'],
         'initial_concentration': {
-            'j1': [['2']]
+            'j1': {
+                'compartments': ['s1'],
+                'parameters': ['2']
+            },
         },
         'shape': {'sh1': ['one']},
         'megacomplex': {
@@ -174,9 +187,11 @@ class OneComponentOneChannelMeasuredIrf:
 
 class ThreeComponentParallel:
     model = KineticModel.from_dict({
-        'compartment': ['s1', 's2', 's3'],
         'initial_concentration': {
-            'j1': [['j.1', 'j.1', 'j.1']]
+            'j1': {
+                'compartments': ['s1', 's2', 's3'],
+                'parameters': ['j.1', 'j.1', 'j.1']
+            },
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},
@@ -200,9 +215,11 @@ class ThreeComponentParallel:
         },
     })
     sim_model = KineticModel.from_dict({
-        'compartment': ['s1', 's2', 's3'],
         'initial_concentration': {
-            'j1': [['j.1', 'j.1', 'j.1']]
+            'j1': {
+                'compartments': ['s1', 's2', 's3'],
+                'parameters': ['j.1', 'j.1', 'j.1']
+            },
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},
@@ -274,9 +291,11 @@ class ThreeComponentParallel:
 
 class ThreeComponentSequential:
     model = KineticModel.from_dict({
-        'compartment': ['s1', 's2', 's3'],
         'initial_concentration': {
-            'j1': [['j.1', 'j.0', 'j.0']]
+            'j1': {
+                'compartments': ['s1', 's2', 's3'],
+                'parameters': ['j.1', 'j.0', 'j.0']
+            },
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},
@@ -300,9 +319,11 @@ class ThreeComponentSequential:
         },
     })
     sim_model = KineticModel.from_dict({
-        'compartment': ['s1', 's2', 's3'],
         'initial_concentration': {
-            'j1': [['j.1', 'j.0', 'j.0']]
+            'j1': {
+                'compartments': ['s1', 's2', 's3'],
+                'parameters': ['j.1', 'j.0', 'j.0']
+            },
         },
         'megacomplex': {
             'mc1': {'k_matrix': ['k1']},

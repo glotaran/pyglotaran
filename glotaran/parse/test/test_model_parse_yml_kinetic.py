@@ -27,10 +27,6 @@ def test_correct_model(model):
     assert isinstance(model, KineticModel)
 
 
-def test_compartments(model):
-    assert model.compartment == ['s1', 's2', 's3', 's4', 'osc1']
-
-
 def test_dataset(model):
     assert len(model.dataset) == 2
 
@@ -85,6 +81,7 @@ def test_initial_concentration(model):
         label = "inputD{}".format(i)
         assert label in model.initial_concentration
         initial_concentration = model.initial_concentration[label]
+        assert initial_concentration.compartments == ['s1', 's2', 's3']
         assert isinstance(initial_concentration, InitialConcentration)
         assert initial_concentration.label == label
         assert initial_concentration.parameters == [1, 2, 3]
@@ -125,7 +122,7 @@ def test_irf(model):
 def test_k_matrices(model):
     assert "km1" in model.k_matrix
     print(model.k_matrix['km1'])
-    assert np.array_equal(model.k_matrix["km1"].asarray(model.compartment),
+    assert np.array_equal(model.k_matrix["km1"].asarray(['s1', 's2', 's3', 's4']),
                           np.asarray([[1, 3, 5, 7],
                                       [2, 0, 0, 0],
                                       [4, 0, 0, 0],

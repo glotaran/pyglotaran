@@ -12,7 +12,7 @@ from .initial_concentration import InitialConcentration
 
 @model_item(
     attributes={
-        'matrix': {'type': Dict[Tuple[str, str], str], 'target': ('compartment', 'parameter')},
+        'matrix': {'type': Dict[Tuple[str, str], str], 'target': (None, 'parameter')},
     },
 )
 class KMatrix:

@@ -39,21 +39,21 @@ def val_model_opts(item, model, opts, errors):
     if isinstance(target, tuple):
         (k_check, v_check) = target
         for k, v in item.items():
-            if not k_check == 'parameter':
+            if not k_check == 'parameter' and k_check is not None:
                 model_attr = getattr(model, k_check)
                 if not isinstance(k, (list, tuple, set)):
                     k = [k]
                 for i in k:
                     if i not in model_attr:
                         errors.append(f"Missing '{k_check}' with label '{i}'")
-            if not v_check == 'parameter':
+            if not v_check == 'parameter' and v_check is not None:
                 model_attr = getattr(model, v_check)
                 if not isinstance(v, (list, tuple, set)):
                     v = [v]
                 for i in v:
                     if i not in model_attr:
                         errors.append(f"Missing '{v_check}' with label '{i}'")
-    elif not target == 'parameter':
+    elif not target == 'parameter' and target is not None:
         model_attr = getattr(model, target)
         if item not in model_attr:
             errors.append(f"Missing '{target}' with label '{item}'")

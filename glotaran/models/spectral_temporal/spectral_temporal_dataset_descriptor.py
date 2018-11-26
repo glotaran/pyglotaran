@@ -7,7 +7,7 @@ from glotaran.model import DatasetDescriptor, model_item
 @model_item(attributes={
     'initial_concentration': {'type': str, 'default': None},
     'irf': {'type': str, 'default': None},
-    'shapes': {'type': Dict[str, str], 'target': ('compartment', 'shape'), 'default': None},
+    'shapes': {'type': Dict[str, str], 'target': (None, 'shape'), 'default': None},
 })
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     """SpectralTemporalDatasetDescriptor is an implementation of

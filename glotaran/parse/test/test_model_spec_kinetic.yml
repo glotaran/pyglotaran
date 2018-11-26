@@ -1,6 +1,5 @@
 type: kinetic
 
-compartment: [s1,s2,s3,s4,osc1]
 
 dataset:
   dataset1:
@@ -46,8 +45,10 @@ irf: #specific to kinetic or spectro_temporal model
 
 initial_concentration: #equal to the total number of compartments
   inputD1:
+    compartments: [s1,s2,s3]
     parameters: [1,2,3] #these are indices in the total prameter vector
   inputD2:
+    compartments: [s1,s2,s3]
     parameters: [1,2,3]
 
 # Convention matrix notation column = source, row = target compartment

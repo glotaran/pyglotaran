@@ -155,7 +155,7 @@ def test_matrix(matrix):
 
     mat = KMatrix("", matrix.matrix).fill(None, params)
 
-    con = InitialConcentration("", matrix.jvec).fill(None, params)
+    con = InitialConcentration("", matrix.compartments, matrix.jvec).fill(None, params)
 
     for comp in matrix.compartments:
         assert comp in mat.involved_compartments()
