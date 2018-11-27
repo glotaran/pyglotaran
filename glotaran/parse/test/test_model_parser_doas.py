@@ -1,8 +1,6 @@
 import pytest
 from glotaran.parse.parser import load_yml_file
-from glotaran.models.damped_oscillation import (DOASModel,
-                                                DOASMegacomplex,
-                                                Oscillation)
+from glotaran.models.doas import (DOASModel, DOASMegacomplex, Oscillation)
 
 # unused import
 # from glotaran.model import FixedConstraint, BoundConstraint
@@ -23,16 +21,15 @@ def test_correct_model(model):
 
 
 def test_oscillation(model):
-    assert len(model.oscillations) == 2
+    assert len(model.oscillation) == 2
 
     i = 1
-    for _ in model.oscillations:
+    for _ in model.oscillation:
         label = "osc{}".format(i)
-        assert label in model.oscillations
-        oscillation = model.oscillations[label]
+        assert label in model.oscillation
+        oscillation = model.oscillation[label]
         assert isinstance(oscillation, Oscillation)
         assert oscillation.label == label
-        assert oscillation.compartment == f"os{i}"
         assert oscillation.frequency == i
         assert oscillation.rate == 2+i
 
@@ -40,19 +37,19 @@ def test_oscillation(model):
 
 
 def test_megacomplexes(model):
-    assert len(model.megacomplexes) == 4
+    assert len(model.megacomplex) == 4
 
     i = 1
-    for _ in model.megacomplexes:
+    for _ in model.megacomplex:
         label = "cmplx{}".format(i)
-        assert label in model.megacomplexes
-        megacomplex = model.megacomplexes[label]
+        assert label in model.megacomplex
+        megacomplex = model.megacomplex[label]
         assert isinstance(megacomplex, DOASMegacomplex)
         assert megacomplex.label == label
-        assert megacomplex.k_matrices == ["km{}".format(i)]
+        assert megacomplex.k_matrix == ["km{}".format(i)]
         if i is 2:
-            assert megacomplex.oscillations == ["osc1"]
+            assert megacomplex.oscillation == ["osc1"]
         if i is 4:
-            assert megacomplex.oscillations == ["osc2"]
+            assert megacomplex.oscillation == ["osc2"]
 
         i = i + 1

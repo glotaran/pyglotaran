@@ -20,9 +20,11 @@ DatasetDescriptor = model.DatasetDescriptor
 ParameterGroup = model.ParameterGroup
 
 from .models import spectral_temporal  # noqa: E402
-
-
 KineticModel = spectral_temporal.KineticModel
+
+from .models import doas  # noqa: E402
+DOASModel = doas.DOASModel
+
 
 from .parse import parser  # noqa: E402
 

@@ -10,7 +10,7 @@ from .oscillation import Oscillation
 
 
 @model(
-    'kinetic',
+    'doas',
     attributes={
         'oscillation': Oscillation,
     },
