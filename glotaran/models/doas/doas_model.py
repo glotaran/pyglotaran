@@ -5,7 +5,7 @@ from glotaran.models.spectral_temporal import KineticModel, SpectralTemporalData
 
 from .doas_megacomplex import DOASMegacomplex
 from .doas_matrix import calculate_doas_matrix
-#  from .doas_spectral_matrix import calculate_doas_spectral_matrix
+from .doas_spectral_matrix import calculate_doas_spectral_matrix
 from .oscillation import Oscillation
 
 
@@ -18,7 +18,7 @@ from .oscillation import Oscillation
     megacomplex_type=DOASMegacomplex,
     calculated_matrix=calculate_doas_matrix,
     calculated_axis='time',
-    #  estimated_matrix=calculate_doas_spectral_matrix,
+    estimated_matrix=calculate_doas_spectral_matrix,
     estimated_axis='spectral',
 )
 class DOASModel(KineticModel):

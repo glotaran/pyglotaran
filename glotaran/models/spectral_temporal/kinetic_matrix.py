@@ -8,25 +8,18 @@ from .irf import IrfGaussian, IrfMeasured
 
 
 def calculate_kinetic_matrix(dataset, index, axis):
-    """ Calculates the matrix.
-
-    Parameters
-    ----------
-    matrix : np.array
-        The preallocated matrix.
-
-    compartment_order : list(str)
-        A list of compartment labels to map compartments to indices in the
-        matrix.
-
-    parameter : glotaran.model.ParameterGroup
-
-    """
 
     scale = dataset.scale if dataset.scale is not None else 1.0
     compartments = None
     matrix = None
     for k_matrix in _collect_k_matrices(dataset):
+
+        if k_matrix is None:
+            continue
+
+        if dataset.initial_concentration is None:
+            raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
+
         (this_compartments, this_matrix) = _calculate_for_k_matrix(
             dataset,
             index,
@@ -74,7 +67,7 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
 
     # init the matrix
     size = (len(rates), axis.shape[0])
-    matrix = np.zeros(size)
+    matrix = np.zeros(size, dtype=np.float64)
 
     # calculate the c_matrix
     if isinstance(dataset.irf, IrfGaussian):
