@@ -284,7 +284,7 @@ class ThreeComponentParallel:
         'j': [['1', 1, {'vary': False}]],
     })
 
-    time = np.asarray(np.arange(-10, 100, 1.5))
+    time = np.arange(-10, 100, 1.5)
     spectral = np.arange(600, 750, 1)
     axis = {"time": time, "spectral": spectral}
 
@@ -396,12 +396,149 @@ class ThreeComponentSequential:
     axis = {"time": time, "spectral": spectral}
 
 
+class IrfDispersion:
+    model = KineticModel.from_dict({
+        'initial_concentration': {
+            'j1': {
+                'compartments': ['s1', 's2', 's3', 's4'],
+                'parameters': ['j.1', 'j.0', 'j.0', 'j.0']
+            },
+        },
+        'megacomplex': {
+            'mc1': {'k_matrix': ['k1']},
+        },
+        'k_matrix': {
+            "k1": {'matrix': {
+                ("s2", "s1"): 'kinetic.1',
+                ("s3", "s2"): 'kinetic.2',
+                ("s4", "s3"): 'kinetic.3',
+                ("s4", "s4"): 'kinetic.4',
+            }}
+        },
+        'irf': {
+            'irf1': {
+                'type': 'gaussian',
+                'center': 'irf.center',
+                'width': 'irf.width',
+                'dispersion_center': 'irf.centerdisp',
+                'center_dispersion': ['irf.dispcenter'],
+            },
+        },
+        'dataset': {
+            'dataset1': {
+                'initial_concentration': 'j1',
+                'irf': 'irf1',
+                'megacomplex': ['mc1'],
+            },
+        },
+    })
+    sim_model = KineticModel.from_dict({
+        'initial_concentration': {
+            'j1': {
+                'compartments': ['s1', 's2', 's3', 's4'],
+                'parameters': ['j.1', 'j.0', 'j.0', 'j.0']
+            },
+        },
+        'megacomplex': {
+            'mc1': {'k_matrix': ['k1']},
+        },
+        'k_matrix': {
+            "k1": {'matrix': {
+                ("s2", "s1"): 'kinetic.1',
+                ("s3", "s2"): 'kinetic.2',
+                ("s4", "s3"): 'kinetic.3',
+                ("s4", "s4"): 'kinetic.4',
+            }}
+        },
+        'shape': {
+            'sh1': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.1",
+                'location': "shape.locs.1",
+                'width': "shape.width.1",
+            },
+            'sh2': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.2",
+                'location': "shape.locs.2",
+                'width': "shape.width.2",
+            },
+            'sh3': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.3",
+                'location': "shape.locs.3",
+                'width': "shape.width.3",
+            },
+            'sh4': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.4",
+                'location': "shape.locs.4",
+                'width': "shape.width.4",
+            },
+        },
+        'irf': {
+            'irf1': {
+                'type': 'gaussian',
+                'center': 'irf.center',
+                'width': 'irf.width',
+                'dispersion_center': 'irf.centerdisp',
+                'center_dispersion': ['irf.dispcenter'],
+            },
+        },
+        'dataset': {
+            'dataset1': {
+                'initial_concentration': 'j1',
+                'irf': 'irf1',
+                'megacomplex': ['mc1'],
+                'shapes': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3', 's4': 'sh4'}
+            },
+        },
+    })
+
+    initial = ParameterGroup.from_dict({
+        'j': [
+            ['1', 1, {'vary': False}],
+            ['0', 0, {'vary': False}],
+        ],
+        'kinetic': [
+            ["1", 1, {"min": 0}],
+            ["2", 0.4, {"min": 0}],
+            ["3", 0.05, {"min": 0}],
+            ["4", 0.009, {"min": 0}],
+        ],
+        'irf': [['center', 0.5],
+                ['width', 0.3],
+                ['centerdisp', 400, {'vary': False}],
+                ['dispcenter', 25]],
+    })
+    wanted = ParameterGroup.from_dict({
+        'j': [
+            ['1', 1, {'vary': False}],
+            ['0', 0, {'vary': False}],
+        ],
+        'kinetic': [
+            ["1", 0.8, {"min": 0}],
+            ["2", 0.2, {"min": 0}],
+            ["3", 0.08, {"min": 0}],
+            ["4", 0.01, {"min": 0}],
+        ],
+
+        'shape': {'amps': [2, 4, 5, 8], 'locs': [320, 380, 420, 460], 'width': [30, 20, 10, 40]},
+        'irf': [['center', 0.3], ['width', 0.1], ['centerdisp', 400], ['dispcenter', 20]],
+    })
+
+    time = np.arange(-1, 60, 0.1)
+    spectral = np.arange(300, 500, 1)
+    axis = {"time": time, "spectral": spectral}
+
+
 @pytest.mark.parametrize("suite", [
     OneComponentOneChannel,
     OneComponentOneChannelGaussianIrf,
     OneComponentOneChannelMeasuredIrf,
     ThreeComponentParallel,
     ThreeComponentSequential,
+    IrfDispersion,
 ])
 def test_kinetic_model(suite):
 

@@ -53,14 +53,19 @@ class IrfGaussian:
     """
     def parameter(self, index):
 
-        dist = (index - self.dispersion_center) if self.dispersion_center is not None else 0
         centers = self.center if isinstance(self.center, list) else [self.center]
         if len(self.center_dispersion) is not 0:
+            if self.dispersion_center is None:
+                raise Exception(f'No dispersion center defined for irf "{self.label}"')
+            dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.center_dispersion):
-                centers = centers + disp * np.power(dist, i+1)
+                centers += disp * np.power(dist, i+1)
 
         widths = self.width if isinstance(self.width, list) else [self.width]
         if len(self.width_dispersion) is not 0:
+            if self.dispersion_center is None:
+                raise Exception(f'No dispersion center defined for irf "{self.label}"')
+            dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i+1)
 
