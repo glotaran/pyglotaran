@@ -1,9 +1,10 @@
 """Glotaran DOAS Matrix"""
 
 import numpy as np
-#  from scipy.special import erf
+from scipy.special import erf
 #
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
+from glotaran.models.spectral_temporal.irf import IrfGaussian
 
 
 def calculate_doas_matrix(dataset, index, axis):
@@ -20,22 +21,23 @@ def calculate_doas_matrix(dataset, index, axis):
         clp.append(f'{osc.label}_cos')
         if dataset.irf is None:
             osc = scale * np.exp(-osc.rate * axis - 1j * osc.frequency * axis)
-    #      else:
-    #          centers, width, irf_scale, backsweep, backsweep_period = \
-    #                  self._calculate_irf_parameter(parameter)
-    #          d = width * width
-    #          k = (rate + 1j * freq)
-    #
-    #          a = np.exp((-1 * self.time + 0.5 * d * k) * k)
-    #          b = 1 + erf((self.time - d * k) / (np.sqrt(2) * width))
-    #          osc = a * b
+        elif isinstance(dataset.irf, IrfGaussian):
+            centers, width, irf_scale, backsweep, backsweep_period = \
+                    dataset.irf.parameter(index)
+            axis = axis - centers
+            d = width * width
+            k = (osc.rate + 1j * osc.frequency)
+
+            a = np.exp((-1 * axis + 0.5 * d * k) * k)
+            b = 1 + erf((axis - d * k) / (np.sqrt(2) * width))
+            osc = a * b
         matrix[idx, :] = osc.real
         matrix[idx + 1, :] = osc.imag
         idx += 2
 
     kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(dataset, index, axis)
     if kinetic_matrix is not None:
-        clp = kinetic_clp + clp
+        clp = clp + kinetic_clp
         matrix = np.concatenate((matrix, kinetic_matrix))
     return (clp, matrix)
 

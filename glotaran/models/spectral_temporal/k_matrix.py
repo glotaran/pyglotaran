@@ -140,7 +140,7 @@ class KMatrix:
 
         Returns
         -------
-        (eigenvalues, eigenvectos) : tuple(np.ndarray, np.ndarray)
+        (eigenvalues, eigenvectors) : tuple(np.ndarray, np.ndarray)
 
         """
         # We take the transpose to be consistent with timp

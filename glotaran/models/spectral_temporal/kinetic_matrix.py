@@ -94,8 +94,9 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
                 matrix[i, :] = np.convolve(matrix[i, :], irf, mode="same")
 
     # apply initial concentration vector
-    matrix = np.dot(k_matrix.a_matrix(compartments,
-                                      dataset.initial_concentration), matrix)
+    matrix = np.matmul(
+        k_matrix.a_matrix(compartments, dataset.initial_concentration).T,
+        matrix)
 
     # done
     return (compartments, matrix)

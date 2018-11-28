@@ -18,7 +18,8 @@ def calculate_spectral_matrix(dataset, axis):
     parameter : glotaran.model.ParameterGroup
 
     """
-
+    if dataset.initial_concentration is None:
+        return None
     shape_compartments = [s for s in dataset.shapes]
     compartments = [c for c in dataset.initial_concentration.compartments
                     if c in shape_compartments]

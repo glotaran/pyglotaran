@@ -28,7 +28,6 @@ class SpectralShapeGaussian:
         """
         matrix = self.amplitude * np.exp(
             -np.log(2) * np.square(2 * (axis - self.location)/self.width))
-        print(matrix.shape)
         return matrix
 
 

@@ -6,7 +6,7 @@ from glotaran.models.doas import DOASModel
 from glotaran.models.doas.doas_matrix import calculate_doas_matrix
 
 
-def test_one_oscillation():
+class OneOscillation():
     sim_model = DOASModel.from_dict({
         'oscillation': {
             'osc1': {'frequency': 'osc.freq', 'rate': 'osc.rate'}
@@ -30,9 +30,6 @@ def test_one_oscillation():
         }
     })
 
-    print(sim_model.errors())
-    assert sim_model.valid()
-
     model = DOASModel.from_dict({
         'oscillation': {
             'osc1': {'frequency': 'osc.freq', 'rate': 'osc.rate'}
@@ -47,66 +44,160 @@ def test_one_oscillation():
         }
     })
 
-    print(model.errors())
-    assert model.valid()
-
     wanted_parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 500],
-            ['rate', 0.1],
+            ['freq', 5],
+            ['rate', 1],
         ],
         'shape': {'amps': [7], 'locs': [5], 'width': [4]},
     })
 
-    print(sim_model.errors_parameter(wanted_parameter))
-    assert sim_model.valid_parameter(wanted_parameter)
-
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 300],
-            ['rate', 0.3],
+            ['freq', 30],
+            ['rate', 3],
         ],
     })
 
-    print(model.errors_parameter(parameter))
-    assert model.valid_parameter(parameter)
-
-    dataset = sim_model.dataset['dataset1'].fill(sim_model, wanted_parameter)
-    time = np.arange(0, 300)
+    time = np.arange(0, 3, 0.01)
     spectral = np.arange(0, 10)
     axis = {'time': time, 'spectral': spectral}
 
-    clp, matrix = calculate_doas_matrix(dataset, 0, time)
+    wanted_clp = ['osc1_sin', 'osc1_cos']
+    wanted_shape = (2, 300)
 
-    print(matrix.shape)
-    assert matrix.shape == (2, 300)
 
-    print(clp)
-    assert clp == ['osc1_sin', 'osc1_cos']
+class OneOscillationWithIrf():
+    sim_model = DOASModel.from_dict({
+        'oscillation': {
+            'osc1': {'frequency': 'osc.freq', 'rate': 'osc.rate'}
+        },
+        'megacomplex': {
+            'm1': {'oscillation': ['osc1']}
+        },
+        'shape': {
+            'sh1': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.1",
+                'location': "shape.locs.1",
+                'width': "shape.width.1",
+            },
+        },
+        'irf': {
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+        },
+        'dataset': {
+            'dataset1': {
+                'megacomplex': ['m1'],
+                'shapes': {'osc1': 'sh1'},
+                'irf': 'irf1',
+            }
+        }
+    })
 
-    dataset = sim_model.simulate('dataset1', wanted_parameter, axis)
-    print(dataset.data())
+    model = DOASModel.from_dict({
+        'oscillation': {
+            'osc1': {'frequency': 'osc.freq', 'rate': 'osc.rate'}
+        },
+        'megacomplex': {
+            'm1': {'oscillation': ['osc1']}
+        },
+        'irf': {
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+        },
+        'dataset': {
+            'dataset1': {
+                'megacomplex': ['m1'],
+                'irf': 'irf1',
+            }
+        }
+    })
 
-    assert dataset.data().shape == \
-        (axis['spectral'].size, axis['time'].size)
+    wanted_parameter = ParameterGroup.from_dict({
+        'osc': [
+            ['freq', 5],
+            ['rate', 1],
+        ],
+        'shape': {'amps': [7], 'locs': [5], 'width': [4]},
+        'irf': [['center', 0.3], ['width', 0.1]],
+    })
 
-    data = {'dataset1': dataset}
+    parameter = ParameterGroup.from_dict({
+        'osc': [
+            ['freq', 30],
+            ['rate', 3],
+        ],
+        'irf': [['center', 0.5], ['width', 0.2]],
+    })
 
-    result = model.fit(parameter, data)
-    print(result.best_fit_parameter)
+    time = np.arange(0, 3, 0.01)
+    spectral = np.arange(0, 10)
+    axis = {'time': time, 'spectral': spectral}
 
-    for label, param in result.best_fit_parameter.all_with_label():
-        assert np.allclose(param.value, parameter.get(label).value,
-                           rtol=1e-1)
+    wanted_clp = ['osc1_sin', 'osc1_cos']
+    wanted_shape = (2, 300)
 
-    resultdata = result.get_dataset("dataset1")
-    assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
-    assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
-    assert dataset.data().shape == resultdata.data().shape
-    assert np.allclose(dataset.data(), resultdata.data())
-    assert False
 
-def test_one_oscillation_two_compartment():
+class OneOscillationWithSequentialModel():
+    sim_model = DOASModel.from_dict({
+        'initial_concentration': {
+            'j1': {
+                'compartments': ['s1', 's2'],
+                'parameters': ['j.1', 'j.0']
+            },
+        },
+        'k_matrix': {
+            "k1": {'matrix': {
+                ("s2", "s1"): 'kinetic.1',
+                ("s2", "s2"): 'kinetic.2',
+            }}
+        },
+        'oscillation': {
+            'osc1': {'frequency': 'osc.freq', 'rate': 'osc.rate'}
+        },
+        'megacomplex': {
+            'm1': {
+                'k_matrix': ['k1'],
+                'oscillation': ['osc1'],
+            }
+        },
+        'shape': {
+            'sh1': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.1",
+                'location': "shape.locs.1",
+                'width': "shape.width.1",
+            },
+            'sh2': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.2",
+                'location': "shape.locs.2",
+                'width': "shape.width.2",
+            },
+            'sh3': {
+                'type': "gaussian",
+                'amplitude': "shape.amps.3",
+                'location': "shape.locs.3",
+                'width': "shape.width.3",
+            },
+        },
+        'irf': {
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+        },
+        'dataset': {
+            'dataset1': {
+                'initial_concentration': 'j1',
+                'megacomplex': ['m1'],
+                'shapes': {
+                    'osc1': 'sh1',
+                    's1': 'sh2',
+                    's2': 'sh3',
+                },
+                'irf': 'irf1',
+            }
+        }
+    })
+
     model = DOASModel.from_dict({
         'initial_concentration': {
             'j1': {
@@ -127,43 +218,108 @@ def test_one_oscillation_two_compartment():
             'm1': {
                 'k_matrix': ['k1'],
                 'oscillation': ['osc1'],
-            },
+            }
+        },
+        'irf': {
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
         },
         'dataset': {
             'dataset1': {
                 'initial_concentration': 'j1',
-                'megacomplex': ['m1']
+                'megacomplex': ['m1'],
+                'irf': 'irf1',
             }
         }
     })
 
-    print(model.errors())
-    assert model.valid()
+    wanted_parameter = ParameterGroup.from_dict({
+        'j': [
+            ['1', 1, {'vary': False}],
+            ['0', 0, {'vary': False}],
+        ],
+        'kinetic': [
+            ["1", 0.2, {"min": 0}],
+            ["2", 0.01, {"min": 0}],
+        ],
+        'osc': [
+            ['freq', 5],
+            ['rate', 1],
+        ],
+        'shape': {'amps': [0.007, 2, 4], 'locs': [5, 2, 8], 'width': [4, 2, 3]},
+        'irf': [['center', 0.3], ['width', 0.1]],
+    })
+
     parameter = ParameterGroup.from_dict({
         'j': [
             ['1', 1, {'vary': False}],
             ['0', 0, {'vary': False}],
         ],
         'kinetic': [
-            ["1", 300e-3, {"min": 0}],
-            ["2", 500e-4, {"min": 0}],
+            ["1", 3, {"min": 0}],
+            ["2", 0.05, {"min": 0}],
         ],
         'osc': [
-            ['freq', 0.5],
-            ['rate', 200e-2],
-        ]
+            ['freq', 3],
+            ['rate', 0.3],
+        ],
+        'irf': [['center', 0.5], ['width', 0.3]],
     })
 
-    print(model.errors_parameter(parameter))
-    assert model.valid_parameter(parameter)
+    time = np.arange(0, 6, 0.01)
+    spectral = np.arange(0, 10)
+    axis = {'time': time, 'spectral': spectral}
 
-    dataset = model.dataset['dataset1'].fill(model, parameter)
-    axis = np.arange(0, 300.0)
+    wanted_clp = ['osc1_sin', 'osc1_cos', 's1', 's2']
+    wanted_shape = (4, 600)
 
-    clp, matrix = calculate_doas_matrix(dataset, 0, axis)
+
+@pytest.mark.parametrize("suite", [
+    OneOscillation,
+    OneOscillationWithIrf,
+    OneOscillationWithSequentialModel,
+])
+def test_doas_model(suite):
+
+    print(suite.sim_model.errors())
+    assert suite.sim_model.valid()
+
+    print(suite.model.errors())
+    assert suite.model.valid()
+
+    print(suite.sim_model.errors_parameter(suite.wanted_parameter))
+    assert suite.sim_model.valid_parameter(suite.wanted_parameter)
+
+    print(suite.model.errors_parameter(suite.parameter))
+    assert suite.model.valid_parameter(suite.parameter)
+
+    dataset = suite.sim_model.dataset['dataset1'].fill(suite.sim_model, suite.wanted_parameter)
+
+    clp, matrix = calculate_doas_matrix(dataset, 0, suite.time)
 
     print(matrix.shape)
-    assert matrix.shape == (4, 300)
+    assert matrix.shape == suite.wanted_shape
 
     print(clp)
-    assert clp == ['s1', 's2', 'osc1_sin', 'osc1_cos']
+    assert clp == suite.wanted_clp
+
+    dataset = suite.sim_model.simulate('dataset1', suite.wanted_parameter,
+                                       suite.axis)
+    print(dataset.data())
+
+    assert dataset.data().shape == \
+        (suite.axis['spectral'].size, suite.axis['time'].size)
+
+    data = {'dataset1': dataset}
+
+    result = suite.model.fit(suite.parameter, data)
+    print(result.best_fit_parameter)
+
+    for label, param in result.best_fit_parameter.all_with_label():
+        assert np.allclose(param.value, suite.wanted_parameter.get(label).value,
+                           rtol=1e-1)
+
+    resultdata = result.get_dataset("dataset1")
+    assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
+    assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
+    assert dataset.data().shape == resultdata.data().shape
+    assert np.allclose(dataset.data(), resultdata.data())
