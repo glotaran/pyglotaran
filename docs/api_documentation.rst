@@ -47,12 +47,12 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.model.parameter
     glotaran.model.parameter_group
     glotaran.models
-    glotaran.models.damped_oscillation
-    glotaran.models.damped_oscillation.doas_matrix
-    glotaran.models.damped_oscillation.doas_megacomplex
-    glotaran.models.damped_oscillation.doas_model
-    glotaran.models.damped_oscillation.doas_spectral_matrix
-    glotaran.models.damped_oscillation.oscillation
+    glotaran.models.doas
+    glotaran.models.doas.doas_matrix
+    glotaran.models.doas.doas_megacomplex
+    glotaran.models.doas.doas_model
+    glotaran.models.doas.doas_spectral_matrix
+    glotaran.models.doas.oscillation
     glotaran.models.spectral_temporal
     glotaran.models.spectral_temporal.initial_concentration
     glotaran.models.spectral_temporal.irf
