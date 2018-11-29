@@ -374,8 +374,8 @@ class ThreeComponentSequential:
     initial = ParameterGroup.from_dict({
         'kinetic': [
             ["1", 101e-4, {"min": 0}],
-            ["2", 202e-3, {"min": 0}],
-            ["3", 101e-1, {"min": 0}],
+            ["2", 302e-3, {"min": 0}],
+            ["3", 201e-2, {"min": 0}],
         ],
         'irf': [['center', 0], ['width', 5]],
         'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
