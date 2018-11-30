@@ -46,7 +46,7 @@ class OneOscillation():
 
     wanted_parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 5],
+            ['freq', 25.5],
             ['rate', 1],
         ],
         'shape': {'amps': [7], 'locs': [5], 'width': [4]},
@@ -54,7 +54,7 @@ class OneOscillation():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 30],
+            ['freq', 160],
             ['rate', 3],
         ],
     })
@@ -115,7 +115,7 @@ class OneOscillationWithIrf():
 
     wanted_parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 5],
+            ['freq', 25.5],
             ['rate', 1],
         ],
         'shape': {'amps': [7], 'locs': [5], 'width': [4]},
@@ -124,7 +124,7 @@ class OneOscillationWithIrf():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 30],
+            ['freq', 16],
             ['rate', 3],
         ],
         'irf': [['center', 0.5], ['width', 0.2]],
@@ -242,7 +242,7 @@ class OneOscillationWithSequentialModel():
             ["2", 0.01, {"min": 0}],
         ],
         'osc': [
-            ['freq', 5],
+            ['freq', 25.5],
             ['rate', 1],
         ],
         'shape': {'amps': [0.007, 2, 4], 'locs': [5, 2, 8], 'width': [4, 2, 3]},
@@ -259,7 +259,7 @@ class OneOscillationWithSequentialModel():
             ["2", 0.05, {"min": 0}],
         ],
         'osc': [
-            ['freq', 3],
+            ['freq', 16],
             ['rate', 0.3],
         ],
         'irf': [['center', 0.5], ['width', 0.3]],

@@ -19,14 +19,18 @@ def calculate_doas_matrix(dataset, index, axis):
     for osc in oscillations:
         clp.append(f'{osc.label}_sin')
         clp.append(f'{osc.label}_cos')
+
+        # convert from cm^-1 to ps^-1
+        frequency = osc.frequency * 0.03 * 2 * np.pi
+
         if dataset.irf is None:
-            osc = scale * np.exp(-osc.rate * axis - 1j * osc.frequency * axis)
+            osc = scale * np.exp(-osc.rate * axis - 1j * frequency * axis)
         elif isinstance(dataset.irf, IrfGaussian):
             centers, width, irf_scale, backsweep, backsweep_period = \
                     dataset.irf.parameter(index)
             axis = axis - centers
             d = width * width
-            k = (osc.rate + 1j * osc.frequency)
+            k = (osc.rate + 1j * frequency)
 
             a = np.exp((-1 * axis + 0.5 * d * k) * k)
             b = 1 + erf((axis - d * k) / (np.sqrt(2) * width))

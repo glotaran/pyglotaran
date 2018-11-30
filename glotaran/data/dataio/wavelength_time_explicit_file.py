@@ -117,11 +117,10 @@ class ExplicitFile(object):
         np.savetxt(filename, raw_data, fmt=number_format, delimiter='\t', newline='\n',
                    header=header, footer='', comments='')
 
-    def read(self, label, spectral_unit=SpectralUnit.nm, time_unit="s"):
+    def read(self, spectral_unit=SpectralUnit.nm, time_unit="s"):
         if not os.path.isfile(self._file):
             raise Exception("File does not exist.")
 
-        self._label = label
         with open(self._file) as f:
             f.readline()  # Read first line with comments (and discard for now)
             f.readline()  # Read second line with comments (and discard for now)
@@ -186,14 +185,14 @@ class ExplicitFile(object):
             dataset = Dataset(self._label)
             pass
         elif self._file_data_format == DataFileType.time_explicit:
-            dataset = SpectralTemporalDataset(self._label)
+            dataset = SpectralTemporalDataset()
             dataset.set_axis("spectral", self._spectral_indices)
             dataset.set_axis("time", self._times)
         elif self._file_data_format == DataFileType.time_explicit:
             dataset = SpectralTemporalDataset(self._label)
             dataset.set_axis("time", self._times)
             dataset.set_axis("spectral", self._spectral_indices)
-        dataset.set(self._observations)
+        dataset.set_data(self._observations)
         return dataset
 
     def _initialize_with_dataset(self, dataset):
