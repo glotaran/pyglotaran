@@ -9,6 +9,7 @@ from glotaran.model.parameter_group import ParameterGroup
 
 
 from .grouping import create_group, create_data_group
+from .grouping import calculate_group_item
 from .variable_projection import clp_variable_projection, residual_variable_projection
 
 
@@ -169,8 +170,10 @@ class FitResult:
 
     def _residual(self, parameter):
         parameter = ParameterGroup.from_parameter_dict(parameter)
-        return residual_variable_projection(parameter, self.group, self.model,
-                                            self.data, self.data_group)
+        items = self.group.values()
+        return np.concatenate([residual_variable_projection(
+            calculate_group_item(item, self.model, parameter, self.data)[0],
+            self.data_group[i]) for i, item in enumerate(items)])
 
     def __str__(self):
         string = "# Fitresult\n\n"

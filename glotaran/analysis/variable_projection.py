@@ -45,12 +45,34 @@ def qr_coefficents(A, B):
     return P
 
 
-def residual_variable_projection(parameter: ParameterGroup,
-                                 group: Group,
-                                 model,  # temp doc fix : 'glotaran.model.BaseModel',
-                                 data: Dict[str, Dataset],
-                                 data_group: List[np.ndarray],
-                                 **kwargs) -> np.ndarray:
+#  def residual_variable_projection(parameter: ParameterGroup,
+#                                   group: Group,
+#                                   model,  # temp doc fix : 'glotaran.model.BaseModel',
+#                                   data: Dict[str, Dataset],
+#                                   data_group: List[np.ndarray],
+#                                   **kwargs) -> np.ndarray:
+#      """residul_variable_projection returns the variable projection residual.
+#
+#      Parameters
+#      ----------
+#      parameter : ParameterGroup
+#      group: Dict[any, Tuple[any, DatasetDescriptor]]
+#      model : glotaran.model.BaseModel
+#      data : Dict[str, Dataset]
+#          A dictionary of dataset labels and Datasets.
+#      data_group : List[np.ndarray]
+#      **kwargs
+#
+#      Returns
+#      -------
+#      residual: np.ndarray
+#      """
+#      res = np.concatenate([qr_residual(matrix.T, data_group[i]) for i, matrix, _, _ in
+#                            calculate_group(group, model, parameter, data)])
+#      return res
+
+
+def residual_variable_projection(matrix, data) -> np.ndarray:
     """residul_variable_projection returns the variable projection residual.
 
     Parameters
@@ -67,9 +89,7 @@ def residual_variable_projection(parameter: ParameterGroup,
     -------
     residual: np.ndarray
     """
-    res = np.concatenate([qr_residual(matrix.T, data_group[i]) for i, matrix, _, _ in
-                          calculate_group(group, model, parameter, data)])
-    return res
+    return qr_residual(matrix.T, data)
 
 
 def clp_variable_projection(parameter: ParameterGroup,
