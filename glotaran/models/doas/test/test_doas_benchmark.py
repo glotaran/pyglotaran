@@ -47,5 +47,4 @@ def test_doas_benchmark(benchmark):
     time = np.arange(0, 6, 0.001)
     dataset = model.dataset['dataset1'].fill(model, parameter)
 
-    # benchmark something
     benchmark(calculate_doas_matrix, dataset, 0, time)

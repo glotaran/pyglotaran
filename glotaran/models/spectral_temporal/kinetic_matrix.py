@@ -71,13 +71,13 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
 
     # calculate the c_matrix
     if isinstance(dataset.irf, IrfGaussian):
-        centers, widths, irf_scale, backsweep, backsweep_period = \
+        center, width, irf_scale, backsweep, backsweep_period = \
                 dataset.irf.parameter(index)
         calc_kinetic_matrix_gaussian_irf(matrix,
                                          rates,
                                          axis,
-                                         centers,
-                                         widths,
+                                         center,
+                                         width,
                                          scale * irf_scale,
                                          backsweep,
                                          backsweep_period,

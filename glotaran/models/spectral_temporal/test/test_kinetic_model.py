@@ -368,9 +368,6 @@ class ThreeComponentSequential:
         },
     })
 
-    amps = [3, 1, 5, False]
-    locations = [620, 670, 720, False]
-    delta = [10, 30, 50, False]
     initial = ParameterGroup.from_dict({
         'kinetic': [
             ["1", 101e-4, {"min": 0}],

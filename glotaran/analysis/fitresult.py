@@ -83,7 +83,6 @@ class FitResult:
         calculated_matrix = [c[1] for c in calculated_matrix]
         return clp_labels, calculated_matrix
 
-
     def get_clp(self, label):
         filled_dataset = self.model.dataset[label].fill(self.model,
                                                         self.best_fit_parameter)
@@ -102,7 +101,6 @@ class FitResult:
 
         dim1 = len(calculated_matrix)
         dim2 = len(clp_labels)
-
 
         clp = np.empty((dim1, dim2), dtype=np.float64)
 
