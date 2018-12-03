@@ -5,7 +5,10 @@ from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
 
-def test_kinetic_benchmark(benchmark):
+from .test_kinetic_model import ThreeComponentSequential
+
+
+def test_kinetic_matrix_benchmark(benchmark):
     model = KineticModel.from_dict({
         'initial_concentration': {
             'j1': {
@@ -47,3 +50,32 @@ def test_kinetic_benchmark(benchmark):
     time = np.asarray(np.arange(-10, 100, 0.02))
 
     benchmark(calculate_kinetic_matrix, dataset, 0, time)
+
+def test_kinetic_fitting(benchmark):
+
+    suite = ThreeComponentSequential
+    model = suite.model
+    print(model.errors())
+    assert model.valid()
+
+    sim_model = suite.sim_model
+    print(sim_model.errors())
+    assert sim_model.valid()
+
+    wanted = suite.wanted
+    print(sim_model.errors_parameter(wanted))
+    print(wanted)
+    assert sim_model.valid_parameter(wanted)
+
+    initial = suite.initial
+    print(model.errors_parameter(initial))
+    assert model.valid_parameter(initial)
+
+    dataset = sim_model.simulate('dataset1', wanted, suite.axis)
+
+    assert dataset.data().shape == \
+        (suite.axis['spectral'].size, suite.axis['time'].size)
+
+    data = {'dataset1': dataset}
+
+    benchmark(model.fit, initial, data)
