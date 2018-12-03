@@ -66,6 +66,56 @@ class FitResult:
         """The best fit parameters."""
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
+    def get_concentrations(self, label):
+        filled_dataset = self.model.dataset[label].fill(self.model,
+                                                        self.best_fit_parameter)
+        dataset = self.data[label]
+
+        calculated_axis = dataset.get_axis(self.model.calculated_axis)
+        estimated_axis = dataset.get_axis(self.model.estimated_axis)
+
+        calculated_matrix = \
+            [self.model.calculated_matrix(filled_dataset,
+                                          index,
+                                          calculated_axis)
+             for index in estimated_axis]
+        clp_labels = calculated_matrix[0][0]
+        calculated_matrix = [c[1] for c in calculated_matrix]
+        return clp_labels, calculated_matrix
+
+
+    def get_clp(self, label):
+        filled_dataset = self.model.dataset[label].fill(self.model,
+                                                        self.best_fit_parameter)
+        dataset = self.data[label]
+
+        calculated_axis = dataset.get_axis(self.model.calculated_axis)
+        estimated_axis = dataset.get_axis(self.model.estimated_axis)
+
+        calculated_matrix = \
+            [self.model.calculated_matrix(filled_dataset,
+                                          index,
+                                          calculated_axis)
+             for index in estimated_axis]
+
+        clp_labels = calculated_matrix[0][0]
+
+        dim1 = len(calculated_matrix)
+        dim2 = len(clp_labels)
+
+
+        clp = np.empty((dim1, dim2), dtype=np.float64)
+
+        all_idx = [i for i in self.group]
+
+        i = 0
+        for idx in estimated_axis:
+            idx = (np.abs(all_idx - idx)).argmin()
+            _, labels, all_clp = self._clp[idx]
+            clp[i, :] = np.asarray([all_clp[labels.index(c)] for c in clp_labels])
+            i += 1
+        return clp_labels, clp
+
     def get_dataset(self, label: str):
         """get_dataset returns the DatasetResult for the given dataset.
 
