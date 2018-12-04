@@ -5,7 +5,6 @@ from typing import List, Dict
 import numpy as np
 
 from glotaran.analysis.fitresult import FitResult
-from glotaran.analysis.fitting import fit
 from glotaran.analysis.simulation import simulate
 
 from glotaran.model.dataset import Dataset
@@ -124,7 +123,9 @@ class BaseModel:
             parameter: ParameterGroup,
             data: Dict[str, Dataset],
             verbose: int = 2,
-            max_nfev: int = None,) -> FitResult:
+            max_nfev: int = None,
+            nr_worker: int = 1,
+            ) -> FitResult:
         """fit performs a fit of the model.
 
         Parameters
@@ -145,7 +146,9 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        return fit(self, parameter, data, verbose=verbose, max_nfev=max_nfev)
+        result = FitResult(self, data, parameter, False)
+        result.minimize(verbose=verbose, max_nfev=max_nfev, nr_worker=nr_worker)
+        return result
 
     def calculated_matrix(self,
                           dataset: str,

@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.fitting import fit
+from glotaran.analysis.fitresult import FitResult
 
 from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
 # from ...model.model import model
@@ -213,7 +213,8 @@ def test_fitting(suite):
 
     data = {'dataset1': dataset}
 
-    result = fit(model, initial, data)
+    result = FitResult(model, data, initial, False)
+    result.minimize()
     print(result.best_fit_parameter)
 
     for param in result.best_fit_parameter.all():

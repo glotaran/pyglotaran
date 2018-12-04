@@ -1,5 +1,6 @@
 """This package contains the FitResult object"""
 
+import multiprocessing
 import numpy as np
 from lmfit.minimizer import Minimizer
 
@@ -40,8 +41,9 @@ class FitResult:
         self.nnls = nnls
         self._lm_result = None
         self._clp = None
+        self._pool = None
 
-    def minimize(self, verbose: int = 2, max_nfev: int = None):
+    def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
         parameter = self.initital_parameter.as_parameter_dict(only_fit=True)
         minimizer = Minimizer(
             self._residual,
@@ -54,9 +56,19 @@ class FitResult:
             reduce_fcn=None,
             **{})
 
+        multicore = nr_worker > 1
+
+        if multicore:
+            nr_worker = min(nr_worker, multiprocessing.cpu_count())
+            self._init_worker_pool(nr_worker)
+
         self._lm_result = minimizer.minimize(method='least_squares',
                                              verbose=verbose,
                                              max_nfev=max_nfev)
+
+        if multicore:
+            self._close_worker_pool()
+
         if not self.nnls and self._clp is None:
             self._clp = clp_variable_projection(self.best_fit_parameter,
                                                 self.group, self.model,
@@ -169,11 +181,38 @@ class FitResult:
         return dataset
 
     def _residual(self, parameter):
-        parameter = ParameterGroup.from_parameter_dict(parameter)
-        items = self.group.values()
-        return np.concatenate([residual_variable_projection(
-            calculate_group_item(item, self.model, parameter, self.data)[0],
-            self.data_group[i]) for i, item in enumerate(items)])
+        residuals = None
+        if self._pool is None:
+            parameter = ParameterGroup.from_parameter_dict(parameter)
+            items = self.group.values()
+            residuals = [residual_variable_projection(
+                calculate_group_item(item, self.model, parameter, self.data)[0],
+                self.data_group[i]) for i, item in enumerate(items)]
+        else:
+            jobs = [(i, parameter) for i, _ in enumerate(self.group)]
+            residuals = self._pool.map(worker_fun, jobs)
+
+        return np.concatenate(residuals)
+
+    def _init_worker_pool(self, nr_worker):
+
+        def init_worker(items, model, data, data_group):
+            global worker_items, worker_model, worker_data, worker_data_group
+            worker_items = items
+            worker_model = model
+            worker_data = data
+            worker_data_group = data_group
+
+        self._pool = multiprocessing.Pool(nr_worker,
+                                          initializer=init_worker,
+                                          initargs=(list(self.group.values()),
+                                                    self.model,
+                                                    self.data,
+                                                    self.data_group))
+
+    def _close_worker_pool(self):
+        self._pool.close()
+        self._pool = None
 
     def __str__(self):
         string = "# Fitresult\n\n"
@@ -216,3 +255,12 @@ class FitResult:
         string += "\n"
 
         return string
+
+
+def worker_fun(job):
+    (i, parameter) = job
+    parameter = ParameterGroup.from_parameter_dict(parameter)
+    #  print("WORKER READY", type(worker_items))
+    return residual_variable_projection(
+        calculate_group_item(worker_items[i], worker_model, parameter, worker_data)[0],
+        worker_data_group[i])
