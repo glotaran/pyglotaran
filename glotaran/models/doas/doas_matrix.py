@@ -35,7 +35,9 @@ def calculate_doas_matrix(dataset, index, axis):
             d = width * width
             k = (osc.rate + 1j * frequency)
 
-            a = np.exp((-1 * axis + 0.5 * d * k) * k)
+            a = (-1 * axis + 0.5 * d * k) * k
+            a = np.minimum(a, 709)
+            a = np.exp(a)
             b = 1 + erf((axis - d * k) / (np.sqrt(2) * width))
             osc = a * b
         matrix[idx, :] = osc.real
