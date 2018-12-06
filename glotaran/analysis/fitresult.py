@@ -46,7 +46,7 @@ class FitResult:
     def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
         minimizer = Minimizer(
-            self._residual,
+            self._flat_residual,
             parameter,
             fcn_args=[],
             fcn_kws=None,
@@ -190,7 +190,6 @@ class FitResult:
     def _residual(self, parameter):
         residuals = None
         if self._pool is None:
-            parameter = ParameterGroup.from_parameter_dict(parameter)
             items = self.group.values()
             residuals = [residual_variable_projection(
                 calculate_group_item(item, self.model, parameter, self.data)[0],
@@ -201,8 +200,9 @@ class FitResult:
 
         return np.asarray(residuals)
 
-    def _flat_residual(self):
-        return np.concatenate(self._residual)
+    def _flat_residual(self, parameter):
+        parameter = ParameterGroup.from_parameter_dict(parameter)
+        return np.concatenate(self._residual(parameter))
 
     def _init_worker_pool(self, nr_worker):
 
@@ -269,7 +269,6 @@ class FitResult:
 
 def worker_fun(job):
     (i, parameter) = job
-    parameter = ParameterGroup.from_parameter_dict(parameter)
     return residual_variable_projection(
         calculate_group_item(worker_items[i], worker_model, parameter, worker_data)[0],
         worker_data_group[i])
