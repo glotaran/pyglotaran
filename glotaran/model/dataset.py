@@ -1,7 +1,7 @@
 """Glotaran Dataset"""
 
 from copy import copy
-from typing import Union
+from typing import Tuple, Union
 
 import numpy as np
 
@@ -96,6 +96,30 @@ class Dataset:
         dataset : Dataset
         """
         return copy(self)
+
+    def svd(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Returns the singular value decomposition of a dataset.
+
+        Parameters
+        ----------
+        dataset : glotaran.model.dataset.Dataset
+
+        Returns
+        -------
+        tuple :
+            (lsv, svals, rsv)
+
+            lsv : np.ndarray
+                left singular values
+            svals : np.ndarray
+                singular values
+            rsv : np.ndarray
+                right singular values
+
+        """
+        lsv, svals, rsv = np.linalg.svd(self.data().T)
+        return lsv, svals, rsv.T
 
 
 def _hashable(value):

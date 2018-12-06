@@ -50,8 +50,8 @@ class OneComponentOneChannel:
         },
     })
 
-    initial = ParameterGroup.from_list([101e-4, [1, {'vary': False}]])
-    wanted = ParameterGroup.from_list([101e-3, [1, {'vary': False}]])
+    initial = ParameterGroup.from_list([101e-4, [1, {'vary': False, 'non-negative': False}]])
+    wanted = ParameterGroup.from_list([101e-3, [1, {'vary': False, 'non-negative': False}]])
 
     time = np.asarray(np.arange(0, 50, 1.5))
     spectral = np.asarray([0])
@@ -110,8 +110,10 @@ class OneComponentOneChannelGaussianIrf:
         },
     })
 
-    initial = ParameterGroup.from_list([101e-4, 0, 5, [1, {'vary': False}]])
-    wanted = ParameterGroup.from_list([101e-3, 0.3, 10, [1, {'vary': False}]])
+    initial = ParameterGroup.from_list([101e-4, 0.1, 5,
+                                        [1, {'vary': False, 'non-negative': False}]])
+    wanted = ParameterGroup.from_list([101e-3, 0.3, 10,
+                                       [1, {'vary': False, 'non-negative': False}]])
 
     time = np.asarray(np.arange(-10, 50, 1.5))
     spectral = np.asarray([0])
@@ -170,8 +172,8 @@ class OneComponentOneChannelMeasuredIrf:
         },
     })
 
-    initial = ParameterGroup.from_list([101e-4, [1, {'vary': False}]])
-    wanted = ParameterGroup.from_list([101e-3, [1, {'vary': False}]])
+    initial = ParameterGroup.from_list([101e-4, [1, {'vary': False, 'non-negative': False}]])
+    wanted = ParameterGroup.from_list([101e-3, [1, {'vary': False, 'non-negative': False}]])
 
     time = np.asarray(np.arange(-10, 50, 1.5))
     spectral = np.asarray([0])
@@ -266,12 +268,12 @@ class ThreeComponentParallel:
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 300e-3, {"min": 0}],
-            ["2", 500e-4, {"min": 0}],
-            ["3", 700e-5, {"min": 0}],
+            ["1", 300e-3],
+            ["2", 500e-4],
+            ["3", 700e-5],
         ],
-        'irf': [['center', 0], ['width', 5]],
-        'j': [['1', 1, {'vary': False}]],
+        'irf': [['center', 0.1], ['width', 5]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}]],
     })
     wanted = ParameterGroup.from_dict({
         'kinetic': [
@@ -281,7 +283,7 @@ class ThreeComponentParallel:
         ],
         'shape': {'amps': [7, 3, 30], 'locs': [620, 670, 720], 'width': [10, 30, 50]},
         'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False}]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}]],
     })
 
     time = np.arange(-10, 100, 1.5)
@@ -370,22 +372,24 @@ class ThreeComponentSequential:
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 101e-4, {"min": 0}],
-            ["2", 302e-3, {"min": 0}],
-            ["3", 201e-2, {"min": 0}],
+            ["1", 201e-2],
+            ["2", 302e-3],
+            ["3", 101e-4],
         ],
-        'irf': [['center', 0], ['width', 5]],
-        'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
+        'irf': [['center', 0.2], ['width', 5]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}],
+              ['0', 0, {'vary': False, 'non-negative': False}]],
     })
     wanted = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 501e-4],
+            ["1", 501e-2],
             ["2", 202e-3],
-            ["3", 105e-2],
+            ["3", 105e-4],
         ],
         'shape': {'amps': [3, 1, 5], 'locs': [620, 670, 720], 'width': [10, 30, 50]},
         'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}],
+              ['0', 0, {'vary': False, 'non-negative': False}]],
     })
 
     time = np.asarray(np.arange(-10, 100, 1.5))
@@ -494,14 +498,14 @@ class IrfDispersion:
 
     initial = ParameterGroup.from_dict({
         'j': [
-            ['1', 1, {'vary': False}],
-            ['0', 0, {'vary': False}],
+            ['1', 1, {'vary': False, 'non-negative': False}],
+            ['0', 0, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 1, {"min": 0}],
-            ["2", 0.4, {"min": 0}],
-            ["3", 0.05, {"min": 0}],
-            ["4", 0.009, {"min": 0}],
+            ["1", 1],
+            ["2", 0.4],
+            ["3", 0.05],
+            ["4", 0.009],
         ],
         'irf': [['center', 0.5],
                 ['width', 0.3],
@@ -510,14 +514,14 @@ class IrfDispersion:
     })
     wanted = ParameterGroup.from_dict({
         'j': [
-            ['1', 1, {'vary': False}],
-            ['0', 0, {'vary': False}],
+            ['1', 1, {'vary': False, 'non-negative': False}],
+            ['0', 0, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 0.8, {"min": 0}],
-            ["2", 0.2, {"min": 0}],
-            ["3", 0.08, {"min": 0}],
-            ["4", 0.01, {"min": 0}],
+            ["1", 0.8],
+            ["2", 0.2],
+            ["3", 0.08],
+            ["4", 0.01],
         ],
 
         'shape': {'amps': [2, 4, 5, 8], 'locs': [320, 380, 420, 460], 'width': [30, 20, 10, 40]},
@@ -574,4 +578,4 @@ def test_kinetic_model(suite):
     assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
     assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
     assert dataset.data().shape == resultdata.data().shape
-    assert np.allclose(dataset.data(), resultdata.data())
+    assert np.allclose(dataset.data(), resultdata.data(), rtol=1e-2)

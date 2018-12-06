@@ -37,14 +37,14 @@ class FitResult:
         self.group = create_group(model, data)
         self.data = data
         self.data_group = create_data_group(model, self.group, data)
-        self.initital_parameter = initital_parameter
+        self.initial_parameter = initital_parameter
         self.nnls = nnls
         self._lm_result = None
         self._clp = None
         self._pool = None
 
     def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
-        parameter = self.initital_parameter.as_parameter_dict(only_fit=True)
+        parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
         minimizer = Minimizer(
             self._residual,
             parameter,
@@ -79,7 +79,7 @@ class FitResult:
         """The best fit parameters."""
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
-    def get_concentrations(self, label):
+    def get_calculated_matrix(self, label):
         filled_dataset = self.model.dataset[label].fill(self.model,
                                                         self.best_fit_parameter)
         dataset = self.data[label]
@@ -180,6 +180,13 @@ class FitResult:
         dataset.set_data(result)
         return dataset
 
+    def final_residual(self):
+        return self._residual(self.best_fit_parameter)
+
+    def final_residual_svd(self):
+        lsv, svals, rsv = np.linalg.svd(self.final_residual().T)
+        return lsv, svals, rsv.T
+
     def _residual(self, parameter):
         residuals = None
         if self._pool is None:
@@ -192,7 +199,10 @@ class FitResult:
             jobs = [(i, parameter) for i, _ in enumerate(self.group)]
             residuals = self._pool.map(worker_fun, jobs)
 
-        return np.concatenate(residuals)
+        return np.asarray(residuals)
+
+    def _flat_residual(self):
+        return np.concatenate(self._residual)
 
     def _init_worker_pool(self, nr_worker):
 
@@ -260,7 +270,6 @@ class FitResult:
 def worker_fun(job):
     (i, parameter) = job
     parameter = ParameterGroup.from_parameter_dict(parameter)
-    #  print("WORKER READY", type(worker_items))
     return residual_variable_projection(
         calculate_group_item(worker_items[i], worker_model, parameter, worker_data)[0],
         worker_data_group[i])

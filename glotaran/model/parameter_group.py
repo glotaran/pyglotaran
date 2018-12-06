@@ -1,7 +1,9 @@
 """This package contains glotarans parameter group class"""
 
 from typing import Dict, Generator, List, Tuple
+import copy
 from collections import OrderedDict
+from math import log
 import yaml
 
 from lmfit import Parameters
@@ -267,8 +269,17 @@ class ParameterGroup(OrderedDict):
         params = Parameters()
         for (label, p) in self.all_with_label(seperator="_"):
             p.name = "_" + label
-            if not only_fit or p.fit:
-                params.add(p)
+            if p.non_neg:
+                p = copy.deepcopy(p)
+                if p.value == 1 or p.value == 0:
+                    p.value = 1e-10
+                else:
+                    try:
+                        p.value = log(p.value)
+                    except Exception:
+                        raise Exception("Could not take log of parameter"
+                                        f" '{label}' with value '{p.value}'")
+            params.add(p)
         return params
 
     def __str__(self):

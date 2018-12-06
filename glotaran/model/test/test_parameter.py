@@ -34,27 +34,27 @@ def test_param_label():
 
 def test_param_options():
     params = """
-    - ["5", 1, {fit: false, min: -1, max: 1, vary: false}]
-    - ["6", 4e2, {fit: true, min: -7e2, max: 8e2, vary: true}]
+    - ["5", 1, {non-negative: false, min: -1, max: 1, vary: false}]
+    - ["6", 4e2, {non-negativ: true, min: -7e2, max: 8e2, vary: true}]
     - ["7", 2e4]
     """
 
     params = ParameterGroup.from_yaml(params)
 
     assert params.get("5").value == 1.0
-    assert not params.get("5").fit
+    assert not params.get("5").non_neg
     assert params.get("5").min == -1
     assert params.get("5").max == 1
     assert not params.get("5").vary
 
     assert params.get("6").value == 4e2
-    assert params.get("6").fit
+    assert params.get("6").non_neg
     assert params.get("6").min == -7e2
     assert params.get("6").max == 8e2
     assert params.get("6").vary
 
     assert params.get("7").value == 2e4
-    assert params.get("7").fit
+    assert params.get("7").non_neg
     assert params.get("7").min == float('-inf')
     assert params.get("7").max == float('inf')
     assert params.get("7").vary

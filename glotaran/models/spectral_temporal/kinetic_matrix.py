@@ -12,7 +12,7 @@ def calculate_kinetic_matrix(dataset, index, axis):
     scale = dataset.scale if dataset.scale is not None else 1.0
     compartments = None
     matrix = None
-    for k_matrix in _collect_k_matrices(dataset):
+    for _, k_matrix in dataset.get_k_matrices():
 
         if k_matrix is None:
             continue
@@ -40,18 +40,6 @@ def calculate_kinetic_matrix(dataset, index, axis):
                     matrix = np.concatenate((matrix,
                                              this_matrix[this_compartments.index(comp), :]))
     return (compartments, matrix)
-
-
-def _collect_k_matrices(dataset):
-    for cmplx in dataset.megacomplex:
-        full_k_matrix = None
-        for k_matrix in cmplx.k_matrix:
-            if full_k_matrix is None:
-                full_k_matrix = k_matrix
-            # If multiple k matrices are present, we combine them
-            else:
-                full_k_matrix = full_k_matrix.combine(k_matrix)
-        yield full_k_matrix
 
 
 def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
@@ -95,7 +83,7 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
 
     # apply initial concentration vector
     matrix = np.matmul(
-        k_matrix.a_matrix(compartments, dataset.initial_concentration).T,
+        k_matrix.a_matrix(dataset.initial_concentration).T,
         matrix)
 
     # done

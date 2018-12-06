@@ -172,8 +172,8 @@ def test_matrix(matrix):
     assert np.allclose(vals, matrix.wanted_eigen_vals)
     assert np.allclose(vec, matrix.wanted_eigen_vec)
 
-    print(mat._gamma(matrix.compartments, vec, con))
-    assert np.allclose(mat._gamma(matrix.compartments, vec, con), matrix.wanted_gamma)
+    print(mat._gamma(vec, con))
+    assert np.allclose(mat._gamma(vec, con), matrix.wanted_gamma)
 
-    print(mat.a_matrix(matrix.compartments, con))
-    assert np.allclose(mat.a_matrix(matrix.compartments, con), matrix.wanted_a_matrix)
+    print(mat.a_matrix(con))
+    assert np.allclose(mat.a_matrix(con), matrix.wanted_a_matrix)

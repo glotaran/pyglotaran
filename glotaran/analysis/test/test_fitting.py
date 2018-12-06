@@ -139,10 +139,10 @@ class MultichannelMulticomponentDecay:
               ]},
               {'amp': [
                   ['1', 1, {'fit': False}],
-                  ['2', 0.1, {'fit': False}],
+                  ['2', 2, {'fit': False}],
                   ['3', 10, {'fit': False}],
                   ['4', 100, {'fit': False}],
-                  ['5', 1000, {'fit': False}],
+                  ['5', 10, {'fit': False}],
               ]},
               {'del': [
                   ['1', 400, {'fit': False}],

@@ -152,9 +152,10 @@ class KMatrix:
         return (eigenvalues.real, eigenvectors.real)
 
     def _gamma(self,
-               compartments,
                eigenvectors,
                initial_concentration: InitialConcentration) -> np.ndarray:
+        compartments = [c for c in initial_concentration.compartments
+                        if c in self.involved_compartments()]
         k_compartments = [c for c in compartments if c in self.involved_compartments()]
         initial_concentration = \
             [initial_concentration.parameters[compartments.index(c)]
@@ -165,10 +166,9 @@ class KMatrix:
         return gamma
 
     def a_matrix(self,
-                 compartments: List[str],
                  initial_concentration: InitialConcentration) -> np.ndarray:
-        eigenvalues, eigenvectors = self.eigen(compartments)
-        gamma = self._gamma(compartments, eigenvectors, initial_concentration)
+        eigenvalues, eigenvectors = self.eigen(initial_concentration.compartments)
+        gamma = self._gamma(eigenvectors, initial_concentration)
 
         a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
 

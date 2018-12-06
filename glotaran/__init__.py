@@ -7,10 +7,6 @@
 #  from glotaran.specification_parser import parse_file  # noqa: E402
 #  from glotaran import dataio, model  # noqa: E402
 
-from .analysis import dataset
-
-dataset_svd = dataset.dataset_svd
-
 from . import model  # noqa: E402
 
 __version__ = '0.0.10'

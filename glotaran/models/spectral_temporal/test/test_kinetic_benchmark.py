@@ -41,9 +41,9 @@ def test_kinetic_matrix(benchmark):
     })
     parameter = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 101e-4, {"min": 0}],
-            ["2", 302e-3, {"min": 0}],
-            ["3", 201e-2, {"min": 0}],
+            ["1", 101e-4],
+            ["2", 302e-3],
+            ["3", 201e-2],
         ],
         'irf': [['center', 0], ['width', 5]],
         'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
@@ -72,12 +72,13 @@ def test_kinetic_fitting_one_core(benchmark):
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 501e-4, {"min": 0}],
-            ["2", 202e-3, {"min": 0}],
-            ["3", 105e-2, {"min": 0}],
+            ["1", 501e-2],
+            ["2", 202e-3],
+            ["3", 105e-4],
         ],
         'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}],
+              ['0', 0, {'vary': False, 'non-negative': False}]],
     })
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
@@ -92,6 +93,7 @@ def test_kinetic_fitting_one_core(benchmark):
     data = {'dataset1': dataset}
 
     benchmark(model.fit, initial, data)
+    print(initial)
 
 
 @pytest.mark.skipif(cpu_count() < 2,
@@ -114,12 +116,13 @@ def test_kinetic_fitting_2_core(benchmark):
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 501e-4, {"min": 0}],
-            ["2", 202e-3, {"min": 0}],
-            ["3", 105e-2, {"min": 0}],
+            ["1", 501e-2],
+            ["2", 202e-3],
+            ["3", 105e-4],
         ],
         'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}],
+              ['0', 0, {'vary': False, 'non-negative': False}]],
     })
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
@@ -156,12 +159,13 @@ def test_kinetic_fitting_4_core(benchmark):
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 501e-4, {"min": 0}],
-            ["2", 202e-3, {"min": 0}],
-            ["3", 105e-2, {"min": 0}],
+            ["1", 501e-2],
+            ["2", 202e-3],
+            ["3", 105e-4],
         ],
         'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}],
+              ['0', 0, {'vary': False, 'non-negative': False}]],
     })
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
@@ -198,12 +202,13 @@ def test_kinetic_fitting_8_core(benchmark):
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 501e-4, {"min": 0}],
-            ["2", 202e-3, {"min": 0}],
-            ["3", 105e-2, {"min": 0}],
+            ["1", 501e-2],
+            ["2", 202e-3],
+            ["3", 105e-4],
         ],
         'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False}], ['0', 0, {'vary': False}]],
+        'j': [['1', 1, {'vary': False, 'non-negative': False}],
+              ['0', 0, {'vary': False, 'non-negative': False}]],
     })
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)

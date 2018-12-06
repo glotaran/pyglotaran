@@ -47,7 +47,7 @@ class OneOscillation():
     wanted_parameter = ParameterGroup.from_dict({
         'osc': [
             ['freq', 25.5],
-            ['rate', 1],
+            ['rate', 0.1],
         ],
         'shape': {'amps': [7], 'locs': [5], 'width': [4]},
     })
@@ -116,7 +116,7 @@ class OneOscillationWithIrf():
     wanted_parameter = ParameterGroup.from_dict({
         'osc': [
             ['freq', 25.5],
-            ['rate', 1],
+            ['rate', 0.1],
         ],
         'shape': {'amps': [7], 'locs': [5], 'width': [4]},
         'irf': [['center', 0.3], ['width', 0.1]],
@@ -125,7 +125,7 @@ class OneOscillationWithIrf():
     parameter = ParameterGroup.from_dict({
         'osc': [
             ['freq', 16],
-            ['rate', 3],
+            ['rate', 0.3],
         ],
         'irf': [['center', 0.5], ['width', 0.2]],
     })
@@ -234,29 +234,29 @@ class OneOscillationWithSequentialModel():
 
     wanted_parameter = ParameterGroup.from_dict({
         'j': [
-            ['1', 1, {'vary': False}],
-            ['0', 0, {'vary': False}],
+            ['1', 1, {'vary': False, 'non-negative': False}],
+            ['0', 0, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 0.2, {"min": 0}],
-            ["2", 0.01, {"min": 0}],
+            ["1", 0.2],
+            ["2", 0.01],
         ],
         'osc': [
             ['freq', 25.5],
-            ['rate', 1],
+            ['rate', 0.1],
         ],
-        'shape': {'amps': [0.007, 2, 4], 'locs': [5, 2, 8], 'width': [4, 2, 3]},
-        'irf': [['center', 0.3], ['width', 0.1]],
+        'shape': {'amps': [0.07, 2, 4], 'locs': [5, 2, 8], 'width': [4, 2, 3]},
+        'irf': [['center', 0.3], ['width', 0.5]],
     })
 
     parameter = ParameterGroup.from_dict({
         'j': [
-            ['1', 1, {'vary': False}],
-            ['0', 0, {'vary': False}],
+            ['1', 1, {'vary': False, 'non-negative': False}],
+            ['0', 0, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 3, {"min": 0}],
-            ["2", 0.05, {"min": 0}],
+            ["1", 0.3],
+            ["2", 0.05],
         ],
         'osc': [
             ['freq', 16],
@@ -265,7 +265,7 @@ class OneOscillationWithSequentialModel():
         'irf': [['center', 0.5], ['width', 0.3]],
     })
 
-    time = np.arange(0, 6, 0.01)
+    time = np.arange(-1, 5, 0.01)
     spectral = np.arange(0, 10)
     axis = {'time': time, 'spectral': spectral}
 
@@ -309,6 +309,7 @@ def test_doas_model(suite):
     assert dataset.data().shape == \
         (suite.axis['spectral'].size, suite.axis['time'].size)
 
+    print(suite.parameter)
     data = {'dataset1': dataset}
 
     result = suite.model.fit(suite.parameter, data)
