@@ -181,18 +181,13 @@ class ExplicitFile(object):
         return self.dataset()
 
     def dataset(self):
-        if not self._file_data_format:
-            dataset = Dataset(self._label)
-            pass
-        elif self._file_data_format == DataFileType.time_explicit:
-            dataset = SpectralTemporalDataset()
-            dataset.set_axis("spectral", self._spectral_indices)
-            dataset.set_axis("time", self._times)
-        elif self._file_data_format == DataFileType.time_explicit:
-            dataset = SpectralTemporalDataset(self._label)
-            dataset.set_axis("time", self._times)
-            dataset.set_axis("spectral", self._spectral_indices)
-        dataset.set_data(self._observations)
+        dataset = SpectralTemporalDataset()
+        dataset.set_axis("time", self._times)
+        dataset.set_axis("spectral", self._spectral_indices)
+        if self._file_data_format == DataFileType.time_explicit:
+            dataset.set_data(self._observations)
+        else:
+            dataset.set_data(self._observations.T)
         return dataset
 
     def _initialize_with_dataset(self, dataset):
