@@ -54,6 +54,7 @@ def test_kinetic_matrix(benchmark):
     benchmark(calculate_kinetic_matrix, dataset, 0, time)
 
 
+@pytest.mark.skip()
 def test_kinetic_fitting_one_core(benchmark):
 
     suite = ThreeComponentSequential
@@ -96,6 +97,7 @@ def test_kinetic_fitting_one_core(benchmark):
     print(initial)
 
 
+@pytest.mark.skip()
 @pytest.mark.skipif(cpu_count() < 2,
                     reason="Not enough cores available")
 def test_kinetic_fitting_2_core(benchmark):
@@ -139,6 +141,7 @@ def test_kinetic_fitting_2_core(benchmark):
     benchmark(model.fit, initial, data, nr_worker=2)
 
 
+@pytest.mark.skip()
 @pytest.mark.skipif(cpu_count() < 4,
                     reason="Not enough cores available")
 def test_kinetic_fitting_4_core(benchmark):
@@ -182,6 +185,7 @@ def test_kinetic_fitting_4_core(benchmark):
     benchmark(model.fit, initial, data, nr_worker=4)
 
 
+@pytest.mark.skip()
 @pytest.mark.skipif(cpu_count() < 8,
                     reason="Not enough cores available")
 def test_kinetic_fitting_8_core(benchmark):
