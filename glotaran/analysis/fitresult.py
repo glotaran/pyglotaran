@@ -121,7 +121,10 @@ class FitResult:
 
         i = 0
         for idx in estimated_axis:
-            idx = (np.abs(all_idx - idx)).argmin()
+            if isinstance(idx, (int, float)):
+                idx = (np.abs(all_idx - idx)).argmin()
+            else:
+                idx = all_idx.index(idx)
             _, labels, all_clp = self._clp[idx]
             clp[i, :] = np.asarray([all_clp[labels.index(c)] for c in clp_labels])
             i += 1

@@ -78,9 +78,9 @@ def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
         spectral_axis = "index" if not swap_axis else "columns"
         raise ValueError(f"The {spectral_axis} of the DataFrame needs to be convertible "
                          f"to numeric values.")
-    STDataset.time_axis = time_axis
-    STDataset.spectral_axis = spectral_axis
-    STDataset.data = input_dataframe.values
+    STDataset.set_axis('time', time_axis)
+    STDataset.set_axis('spectral', spectral_axis)
+    STDataset.set_data(input_dataframe.values)
     return STDataset
 
 
@@ -162,9 +162,9 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
         time_axis = "columns" if not swap_axis else "index"
         raise ValueError(f"The {time_axis} of the DataFrame needs to be convertible "
                          f"to numeric values.")
-    flim_dataset.time_axis = time_axis
+    flim_dataset.set_axis('time', time_axis)
     flim_dataset.pixel_axis = np.array(input_dataframe.index)
-    flim_dataset.data = input_dataframe.values
+    flim_dataset.set_data(input_dataframe.values)
     if not is_legacy:
         intensity_map = input_dataframe.values.reshape(orig_shape).sum(axis=orig_time_axis_index)
     flim_dataset.intensity_map = intensity_map

@@ -42,12 +42,18 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
         axis = data[dataset_descriptor.label].get_axis(model.estimated_axis)
         for index in axis:
-            group_index = index if not any(abs(index-val) < xtol for val in group) \
-                else [val for val in group if abs(index-val) < xtol][0]
+            group_index = index if not any(_is_close(index, val, xtol) for val in group) \
+                else [val for val in group if _is_close(index, val, xtol)][0]
             if group_index not in group:
                 group[group_index] = []
             group[group_index].append((index, dataset_descriptor))
     return group
+
+
+def _is_close(a, b, xtol):
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return abs(a - b) < xtol
+    return a == b
 
 
 def calculate_group_item(item,
@@ -150,9 +156,9 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                 raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
 
             dataset = data[dataset_descriptor.label]
-            axis = dataset.get_axis(model.estimated_axis)
-            idx = np.where(axis == index)
-            dataset = dataset.data()[idx[0][0], :]
+            axis = list(dataset.get_axis(model.estimated_axis))
+            idx = axis.index(index)
+            dataset = dataset.data()[idx, :]
 
             if full is None:
                 full = dataset
