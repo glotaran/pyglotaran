@@ -142,6 +142,7 @@ class FitResult:
         Returns
         -------
         dataset_result: DatasetResult
+        print(a_matrix)
             The result for the dataset.
         """
         filled_dataset = self.model.dataset[label].fill(self.model,

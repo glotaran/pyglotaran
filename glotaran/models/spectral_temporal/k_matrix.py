@@ -175,9 +175,10 @@ class KMatrix:
 
     def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
         if self.is_unibranched(initial_concentration.compartments):
-            return self.a_matrix_unibranch(initial_concentration)
+            a_matrix = self.a_matrix_unibranch(initial_concentration)
         else:
-            return self.a_matrix_non_unibranch(initial_concentration)
+            a_matrix = self.a_matrix_non_unibranch(initial_concentration)
+        return a_matrix
 
     def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
         eigenvalues, eigenvectors = self.eigen(initial_concentration.compartments)
@@ -202,7 +203,7 @@ class KMatrix:
             if i > j:
                 continue
             a_matrix[i, j] = np.prod([rates[m] for m in range(j)]) / \
-                    np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
+                np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
         return a_matrix
 
     def is_unibranched(self, compartments):

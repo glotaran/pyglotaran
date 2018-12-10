@@ -178,6 +178,7 @@ def test_matrix_non_unibranch(matrix):
     print(mat.a_matrix_non_unibranch(con))
     assert np.allclose(mat.a_matrix_non_unibranch(con), matrix.wanted_a_matrix)
 
+
 def test_unibranched():
 
     compartments = ['s1', 's2', 's3']
