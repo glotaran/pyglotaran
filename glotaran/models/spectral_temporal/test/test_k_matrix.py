@@ -149,7 +149,7 @@ class ParallelModelWithEquilibria:
      SequentialModelWithBacktransfer,
      ParallelModel,
      ParallelModelWithEquilibria])
-def test_matrix(matrix):
+def test_matrix_non_unibranch(matrix):
 
     params = ParameterGroup.from_list(matrix.params)
 
@@ -160,8 +160,8 @@ def test_matrix(matrix):
     for comp in matrix.compartments:
         assert comp in mat.involved_compartments()
 
-    print(mat.asarray(matrix.compartments))
-    assert np.array_equal(mat.asarray(matrix.compartments), matrix.wanted_array)
+    print(mat.reduced(matrix.compartments))
+    assert np.array_equal(mat.reduced(matrix.compartments), matrix.wanted_array)
 
     print(mat.full(matrix.compartments).T)
     assert np.allclose(mat.full(matrix.compartments), matrix.wanted_full)
@@ -175,5 +175,38 @@ def test_matrix(matrix):
     print(mat._gamma(vec, con))
     assert np.allclose(mat._gamma(vec, con), matrix.wanted_gamma)
 
-    print(mat.a_matrix(con))
-    assert np.allclose(mat.a_matrix(con), matrix.wanted_a_matrix)
+    print(mat.a_matrix_non_unibranch(con))
+    assert np.allclose(mat.a_matrix_non_unibranch(con), matrix.wanted_a_matrix)
+
+def test_unibranched():
+
+    compartments = ['s1', 's2', 's3']
+    matrix = {
+        ('s2', 's1'): "1",
+        ('s3', 's2'): "2",
+        ('s2', 's2'): "2",
+        ('s3', 's3'): "3",
+    }
+
+    mat = KMatrix("", matrix).fill(None, ParameterGroup.from_list([3, 4, 5, 1, 0]))
+
+    assert not mat.is_unibranched(compartments)
+    matrix = {
+        ('s2', 's1'): "1",
+        ('s2', 's2'): "2",
+    }
+
+    params = ParameterGroup.from_list([0.55, 0.0404, 1, 0])
+    mat = KMatrix("", matrix).fill(None, params)
+    assert mat.is_unibranched(compartments)
+
+    jvec = ["3", "4"]
+    con = InitialConcentration("", compartments, jvec).fill(None, params)
+
+    wanted_a_matrix = np.asarray([
+        [1, -1.079278],
+        [0, 1.079278],
+    ])
+
+    print(mat.a_matrix_unibranch(con))
+    assert np.allclose(mat.a_matrix_unibranch(con), wanted_a_matrix)

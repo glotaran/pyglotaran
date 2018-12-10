@@ -1,6 +1,7 @@
 """ Glotaran K-Matrix """
 
 from collections import OrderedDict
+import itertools
 from typing import Dict, List, Tuple
 import numpy as np
 import scipy
@@ -74,8 +75,8 @@ class KMatrix:
         return KMatrix("{}+{}".format(self.label, k_matrix.label),
                        combined_matrix, self._all_compartments)
 
-    def asarray(self, compartments: List[str]) -> np.ndarray:
-        """ Depricated, only used for testing"""
+    def reduced(self, compartments: List[str]) -> np.ndarray:
+        """ """
 
         compartments = [c for c in compartments if c in self.involved_compartments()]
         size = len(compartments)
@@ -151,6 +152,13 @@ class KMatrix:
                                                      right=False)
         return (eigenvalues.real, eigenvectors.real)
 
+    def rates(self, compartments):
+        if self.is_unibranched(compartments):
+            return np.diag(self.full(compartments)).copy()
+        else:
+            rates, _ = self.eigen(compartments)
+            return rates
+
     def _gamma(self,
                eigenvectors,
                initial_concentration: InitialConcentration) -> np.ndarray:
@@ -165,8 +173,13 @@ class KMatrix:
 
         return gamma
 
-    def a_matrix(self,
-                 initial_concentration: InitialConcentration) -> np.ndarray:
+    def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
+        if self.is_unibranched(initial_concentration.compartments):
+            return self.a_matrix_unibranch(initial_concentration)
+        else:
+            return self.a_matrix_non_unibranch(initial_concentration)
+
+    def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
         eigenvalues, eigenvectors = self.eigen(initial_concentration.compartments)
         gamma = self._gamma(eigenvectors, initial_concentration)
 
@@ -176,3 +189,25 @@ class KMatrix:
             a_matrix[i, :] = eigenvectors[:, i] * gamma[i]
 
         return a_matrix
+
+    def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.array:
+        compartments = [c for c in initial_concentration.compartments
+                        if c in self.involved_compartments()]
+        matrix = self.full(compartments).T
+        rates = np.diag(matrix)
+
+        a_matrix = np.zeros(matrix.shape, dtype=np.float64)
+        a_matrix[0, 0] = 1.0
+        for i, j in itertools.product(range(rates.size), range(1, rates.size)):
+            if i > j:
+                continue
+            a_matrix[i, j] = np.prod([rates[m] for m in range(j)]) / \
+                    np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
+        return a_matrix
+
+    def is_unibranched(self, compartments):
+        matrix = self.reduced(compartments)
+        for i in range(matrix.shape[1]):
+            if not np.nonzero(matrix[:, i])[0].size == 1:
+                return False
+        return True

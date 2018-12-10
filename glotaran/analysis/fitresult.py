@@ -45,12 +45,13 @@ class FitResult:
 
     def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
+        self._old = parameter
         minimizer = Minimizer(
             self._flat_residual,
             parameter,
             fcn_args=[],
             fcn_kws=None,
-            iter_cb=None,
+            iter_cb=self._iter_cb,
             scale_covar=True,
             nan_policy='omit',
             reduce_fcn=None,
@@ -182,6 +183,9 @@ class FitResult:
         dataset.set_axis(self.model.estimated_axis, estimated_axis)
         dataset.set_data(result)
         return dataset
+
+    def _iter_cb(self, params, i, resid, *args, **kws):
+        pass
 
     def final_residual(self):
         return self._residual(self.best_fit_parameter)

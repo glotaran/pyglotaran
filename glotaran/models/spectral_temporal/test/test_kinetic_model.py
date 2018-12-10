@@ -376,7 +376,7 @@ class ThreeComponentSequential:
             ["2", 302e-3],
             ["3", 101e-4],
         ],
-        'irf': [['center', 0.2], ['width', 5]],
+        'irf': [['center', 0.2], ['width', 7]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}],
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
@@ -421,8 +421,8 @@ class IrfDispersion:
                 'type': 'gaussian',
                 'center': 'irf.center',
                 'width': 'irf.width',
-                'dispersion_center': 'irf.centerdisp',
-                'center_dispersion': ['irf.dispcenter'],
+                'dispersion_center': 'irf.dispcenter',
+                'center_dispersion': ['irf.centerdisp'],
             },
         },
         'dataset': {
@@ -482,8 +482,8 @@ class IrfDispersion:
                 'type': 'gaussian',
                 'center': 'irf.center',
                 'width': 'irf.width',
-                'dispersion_center': 'irf.centerdisp',
-                'center_dispersion': ['irf.dispcenter'],
+                'dispersion_center': 'irf.dispcenter',
+                'center_dispersion': ['irf.centerdisp'],
             },
         },
         'dataset': {
@@ -509,8 +509,8 @@ class IrfDispersion:
         ],
         'irf': [['center', 0.5],
                 ['width', 0.3],
-                ['centerdisp', 400, {'vary': False}],
-                ['dispcenter', 25]],
+                ['dispcenter', 400, {'vary': False}],
+                ['centerdisp', 25]],
     })
     wanted = ParameterGroup.from_dict({
         'j': [
@@ -525,10 +525,10 @@ class IrfDispersion:
         ],
 
         'shape': {'amps': [2, 4, 5, 8], 'locs': [320, 380, 420, 460], 'width': [30, 20, 10, 40]},
-        'irf': [['center', 0.3], ['width', 0.1], ['centerdisp', 400], ['dispcenter', 20]],
+        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 20]],
     })
 
-    time = np.arange(-1, 60, 0.1)
+    time = np.arange(-1, 30, 0.01)
     spectral = np.arange(300, 500, 1)
     axis = {"time": time, "spectral": spectral}
 

@@ -51,7 +51,7 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
                     if comp in k_matrix.involved_compartments()]
 
     # the rates are the eigenvalues of the k matrix
-    rates, _ = k_matrix.eigen(compartments)
+    rates = k_matrix.rates(compartments)
 
     # init the matrix
     size = (len(rates), axis.shape[0])
