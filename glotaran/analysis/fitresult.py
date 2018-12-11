@@ -22,6 +22,7 @@ class FitResult:
                  data,
                  initital_parameter,
                  nnls,
+                 atol=0,
                  ):
         """
 
@@ -34,7 +35,7 @@ class FitResult:
         -------
         """
         self.model = model
-        self.group = create_group(model, data)
+        self.group = create_group(model, data, atol)
         self.data = data
         self.data_group = create_data_group(model, self.group, data)
         self.initial_parameter = initital_parameter

@@ -18,12 +18,8 @@ class BaseModel:
     implementations will need.
     """
 
-    #  compartment: List[str]
-    """A list of compartments."""
-
     def __init__(self):
         pass
-        #  self.compartment = []
 
     @classmethod
     def from_dict(cls, model_dict: Dict):
@@ -40,11 +36,6 @@ class BaseModel:
         """
 
         model = cls()
-
-        # first get the compartments.
-        if 'compartment' in model_dict:
-            model.compartment = model_dict['compartment']
-            del model_dict['compartment']
 
         # iterate over items
         for name, attribute in list(model_dict.items()):
@@ -125,6 +116,7 @@ class BaseModel:
             verbose: int = 2,
             max_nfev: int = None,
             nr_worker: int = 1,
+            group_atol: int = 0,
             ) -> FitResult:
         """fit performs a fit of the model.
 
@@ -146,7 +138,7 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        result = FitResult(self, data, parameter, False)
+        result = FitResult(self, data, parameter, False, atol=group_atol)
         result.minimize(verbose=verbose, max_nfev=max_nfev, nr_worker=nr_worker)
         return result
 

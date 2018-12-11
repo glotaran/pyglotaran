@@ -113,7 +113,7 @@ def test_multi_dataset_overlap():
         'dataset2': MockDataset([1.4, 2.4, 3.4, 9], [5, 7, 9, 12]),
     }
 
-    group = create_group(model, data)
+    group = create_group(model, data, atol=5e-1)
     assert len(group) == 5
     assert group[0][0][1].label == 'dataset1'
     assert group[1][0][1].label == 'dataset1'

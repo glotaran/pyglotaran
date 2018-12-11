@@ -8,7 +8,6 @@ from glotaran.model import (
     model,
     model_item,
 )
-# from glotaran.model.model import model
 
 
 @model_item(
@@ -17,7 +16,7 @@ from glotaran.model import (
         'megacomplex': str,
         'param_list': List[str],
         'default': {'type': int, 'default': 42},
-        'complex': {'type': Dict[Tuple[str, str], str], 'target': ('compartment', 'parameter')},
+        'complex': {'type': Dict[Tuple[str, str], str], 'target': (None, 'parameter')},
     },
 )
 class MockAttr:
@@ -37,7 +36,6 @@ class MockModel(BaseModel):
 @pytest.fixture
 def model():
     d = {
-        "compartment": ['s1', 's2'],
         "megacomplex": {"m1": [], "m2": []},
         "initial_concentration": {
             "j1": [["1", "2"]],
@@ -55,11 +53,11 @@ def model():
             "dataset1": {
                 "megacomplex": ['m1', 'm2'],
                 "scale": "scale_1",
-                "compartment_constraints": [
-                    {'type': 'zero',
-                     'compartment': 's1',
-                     'interval': [(0, 1)]},
-                ]
+                #  "compartment_constraints": [
+                #      {'type': 'zero',
+                #       'compartment': 's1',
+                #       'interval': [(0, 1)]},
+                #  ]
             },
             "dataset2": [['m2'], 'scale_2', []]
         }
@@ -70,7 +68,6 @@ def model():
 @pytest.fixture
 def model_error():
     d = {
-        "compartment": ['NOT_S1', 's2'],
         "megacomplex": {"m1": [], "m2": []},
         "test": {
             "t1": {'param': "fool",
@@ -83,11 +80,11 @@ def model_error():
             "dataset1": {
                 "megacomplex": ['N1', 'N2'],
                 "scale": "scale_1",
-                "compartment_constraints": [
-                    {'type': 'zero',
-                     'compartment': 's1',
-                     'interval': [(0, 1)]},
-                ]
+                #  "compartment_constraints": [
+                #      {'type': 'zero',
+                #       'compartment': 's1',
+                #       'interval': [(0, 1)]},
+                #  ]
             },
             "dataset2": [['mrX'], 'scale_3', None]
         }
@@ -132,13 +129,12 @@ def test_model_validity(model, model_error, parameter):
     print(model_error.errors())
     print(model_error.errors_parameter(parameter))
     assert not model_error.valid()
-    assert len(model_error.errors()) is 7
+    assert len(model_error.errors()) is 4
     assert not model_error.valid_parameter(parameter)
     assert len(model_error.errors_parameter(parameter)) is 4
 
 
 def test_items(model):
-    assert model.compartment == ['s1', 's2']
 
     assert 'm1' in model.megacomplex
     assert 'm2' in model.megacomplex
@@ -161,33 +157,20 @@ def test_items(model):
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').megacomplex == ['m1', 'm2']
     assert model.get_dataset('dataset1').scale == 'scale_1'
-    assert len(model.get_dataset('dataset1').compartment_constraints) == 1
-    assert model.get_dataset('dataset1').compartment_constraints[0].type == 'zero'
-    assert model.get_dataset('dataset1').compartment_constraints[0].interval == [(0, 1)]
-
-    cons = model.get_dataset('dataset1').compartment_constraints[0]
-    assert cons.type == 'zero'
-    assert cons.compartment == 's1'
-    assert cons.interval == [(0, 1)]
 
     assert 'dataset2' in model.dataset
     assert model.get_dataset('dataset2').megacomplex == ['m2']
     assert model.get_dataset('dataset2').scale == 'scale_2'
-    assert len(model.get_dataset('dataset2').compartment_constraints) == 0
 
 
 def test_fill(model, parameter):
     dataset = model.get_dataset('dataset1').fill(model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ['m1', 'm2']
     assert dataset.scale == 2
-    assert len(dataset.compartment_constraints) == 1
-    assert dataset.compartment_constraints[0].type == 'zero'
-    assert dataset.compartment_constraints[0].interval == [(0, 1)]
 
     dataset = model.get_dataset('dataset2').fill(model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ['m2']
     assert dataset.scale == 8
-    assert len(dataset.compartment_constraints) == 0
 
     t = model.get_test('t1').fill(model, parameter)
     assert t.param == 3

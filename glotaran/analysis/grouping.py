@@ -1,7 +1,8 @@
 """This package contains functions for creating and calculationg groups."""
-import numpy as np
 
 from typing import Dict, Generator, List, Tuple
+
+import numpy as np
 
 from glotaran.model.dataset import Dataset
 from glotaran.model.dataset_descriptor import DatasetDescriptor
@@ -12,7 +13,7 @@ Group = Dict[any, Tuple[any, DatasetDescriptor]]
 
 def create_group(model,  # temp doc fix : 'glotaran.model.Model',
                  data: Dict[str, Dataset],
-                 xtol: float = 0.5,
+                 atol: float = 0.0,
                  dataset: str = None,
                  ) -> Group:
     """create_group creates a calculation group for a model along the estimated
@@ -23,10 +24,9 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
     model : glotaran.model.Model
         The model to group.
     data : Dict[str, Dataset]
-    xtol : float
+    atol : float (default = 0.0)
         The grouping tolerance.
-    dataset : str
-        (default = None)
+    dataset : str (default = None)
         If not None, the group will be created only for the given dataset.
 
     Returns
@@ -43,8 +43,8 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
         axis = data[dataset_descriptor.label].get_axis(model.estimated_axis)
         for index in axis:
             if model.allow_grouping:
-                group_index = index if not any(_is_close(index, val, xtol) for val in group) \
-                    else [val for val in group if _is_close(index, val, xtol)][0]
+                group_index = index if not any(_is_close(index, val, atol) for val in group) \
+                    else [val for val in group if _is_close(index, val, atol)][0]
                 if group_index not in group:
                     group[group_index] = []
                 group[group_index].append((index, dataset_descriptor))
@@ -54,10 +54,11 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
     return group
 
 
-def _is_close(a, b, xtol):
-    if np.issubdtype(a, np.number) and np.issubdtype(b, np.number):
-        return abs(a - b) < xtol
-    return a == b
+def _is_close(a, b, atol):
+    try:
+        return np.all(np.isclose(a, b, atol=atol))
+    except Exception:
+        return False
 
 
 def calculate_group_item(item,
