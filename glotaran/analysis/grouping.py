@@ -42,11 +42,15 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
         axis = data[dataset_descriptor.label].get_axis(model.estimated_axis)
         for index in axis:
-            group_index = index if not any(_is_close(index, val, xtol) for val in group) \
-                else [val for val in group if _is_close(index, val, xtol)][0]
-            if group_index not in group:
-                group[group_index] = []
-            group[group_index].append((index, dataset_descriptor))
+            if model.allow_grouping:
+                group_index = index if not any(_is_close(index, val, xtol) for val in group) \
+                    else [val for val in group if _is_close(index, val, xtol)][0]
+                if group_index not in group:
+                    group[group_index] = []
+                group[group_index].append((index, dataset_descriptor))
+            else:
+                group_index = f'{dataset_descriptor.label}_{index}'
+                group[group_index] = [(index, dataset_descriptor)]
     return group
 
 

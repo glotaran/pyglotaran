@@ -14,12 +14,14 @@ def model(name,
           estimated_matrix=None,
           calculated_axis=None,
           estimated_axis=None,
+          allow_grouping=True,
           ):
 
     def decorator(cls):
 
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
+        setattr(cls, 'allow_grouping', allow_grouping)
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
