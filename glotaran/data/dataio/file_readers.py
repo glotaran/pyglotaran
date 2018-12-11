@@ -7,9 +7,8 @@ import warnings
 import numpy as np
 import pandas as pd
 from glotaran.data.external_file_readers.sdt_reader import SdtFile
-from .mapper import get_pixel_map
 from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
-from glotaran.data.datasets.specialized_datasets import FLIMDataset
+from glotaran.data.datasets.flim_dataset import FLIMDataset, get_pixel_map
 from glotaran.model.dataset import DimensionalityError
 
 

@@ -122,7 +122,7 @@ def test_irf(model):
 def test_k_matrices(model):
     assert "km1" in model.k_matrix
     print(model.k_matrix['km1'])
-    assert np.array_equal(model.k_matrix["km1"].asarray(['s1', 's2', 's3', 's4']),
+    assert np.array_equal(model.k_matrix["km1"].reduced(['s1', 's2', 's3', 's4']),
                           np.asarray([[1, 3, 5, 7],
                                       [2, 0, 0, 0],
                                       [4, 0, 0, 0],

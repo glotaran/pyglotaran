@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ..mapper import get_pixel_map
+from glotaran.data.datasets.flim_dataset import get_pixel_map
 
 
 @pytest.mark.parametrize("is_array", [True, False])

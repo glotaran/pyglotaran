@@ -51,7 +51,7 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
 
 
 def _is_close(a, b, xtol):
-    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+    if np.issubdtype(a, np.number) and np.issubdtype(b, np.number):
         return abs(a - b) < xtol
     return a == b
 
