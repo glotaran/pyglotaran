@@ -23,6 +23,8 @@ class IrfMeasured:
     'normalize': {'type': bool, 'default': False},
     'backsweep': {'type': bool, 'default': False},
     'backsweep_period': {'type': str, 'default': None},
+    'coherent_artifact': {'type': bool, 'default': False},
+    'coherent_artifact_order': {'type': int, 'default': 1},
 }, has_type=True)
 class IrfGaussian:
     """
@@ -71,11 +73,39 @@ class IrfGaussian:
 
         scale = self.scale if self.scale is not None else 1
 
+        if self.normalize:
+            scale /= np.sqrt(2 * np.pi * widths[0] * widths[0])
+
         backsweep = 1 if self.backsweep else 0
 
         backsweep_period = self.backsweep_period if backsweep else 0
 
         return centers[0], widths[0], scale, backsweep, backsweep_period
+
+    def calculate_coherent_artifact(self, index, axis):
+        if not 1 <= self.coherent_artifact_order <= 3:
+            raise Exception("Coherent artifact order must be between in [1,3]")
+
+        center, width, scale, _, _ = self.parameter(index)
+
+        matrix = np.zeros((self.coherent_artifact_order, axis.size), dtype=np.float64)
+
+        irf = np.exp(-1 * (axis - center)**2 / (2 * width**2))
+        matrix[0, :] = irf
+
+        if self.coherent_artifact_order > 1:
+            matrix[1, :] = irf * (center - axis) / width**2
+
+        if self.coherent_artifact_order > 2:
+            matrix[2, :] = irf * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
+
+        matrix *= scale
+
+        return self.clp_labels(), matrix
+
+    def clp_labels(self):
+        return [f'{self.label}_coherent_artifact_{i}'
+                for i in range(1, self.coherent_artifact_order + 1)]
 
 
 @model_item_typed(types={

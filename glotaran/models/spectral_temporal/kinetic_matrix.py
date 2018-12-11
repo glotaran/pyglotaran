@@ -45,11 +45,20 @@ def calculate_kinetic_matrix(dataset, index, axis):
         baseline = np.zeros((1, axis.size), dtype=np.float64)
         baseline.fill(dataset.baseline)
         if matrix is None:
-            compartments = baseline_compartment
+            compartments = [baseline_compartment]
             matrix = baseline
         else:
             compartments.append(baseline_compartment)
             matrix = np.concatenate((matrix, baseline))
+
+    if isinstance(dataset.irf, IrfGaussian) and dataset.irf.coherent_artifact:
+        irf_compartments, irf_matrix = dataset.irf.calculate_coherent_artifact(index, axis)
+        if matrix is None:
+            compartments = irf_compartments
+            matrix = baseline
+        else:
+            compartments += irf_compartments
+            matrix = np.concatenate((matrix, irf_matrix))
 
     return (compartments, matrix)
 
