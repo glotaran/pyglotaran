@@ -110,27 +110,25 @@ class FitResult:
 
         return clp_labels, concentrations
 
-    def get_clp(self):
+    def get_clp(self, dataset):
 
-        all_clp_labels = []
-        for labels in self._clp_labels.values():
-            for label in labels:
-                if label not in all_clp_labels:
-                    all_clp_labels.append(label)
+        indices = self._get_group_indices(dataset)
+
+        clp_labels = []
+        for idx in indices:
+            for label in self._original_clp[idx][self._get_dataset_idx(idx, dataset)]:
+                if label not in clp_labels:
+                    clp_labels.append(label)
 
         dim1 = len(self._clp)
-        dim2 = len(all_clp_labels)
+        dim2 = len(clp_labels)
 
         clp = np.empty((dim1, dim2), dtype=np.float64)
 
-        axis = []
-        i = 0
-        for index, labels in self._clp_labels.items():
-            idx = [all_clp_labels.index(label) for label in labels]
-            clp[i, idx] = self._clp[index]
-            axis.append(index)
-            i += 1
-        return all_clp_labels, clp, axis
+        for i, index in enumerate(indices):
+            idx = [self._clp_labels[index].index(label) for label in clp_labels]
+            clp[i, :] = self._clp[index][idx]
+        return clp_labels, clp
 
     def get_fitted_dataset(self, label: str):
         """get_dataset returns the DatasetResult for the given dataset.

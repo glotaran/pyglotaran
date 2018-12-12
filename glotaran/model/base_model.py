@@ -138,7 +138,7 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        result = FitResult(self, data, parameter, False, atol=group_atol)
+        result = self.fit_result_class(self, data, parameter, False, atol=group_atol)
         result.minimize(verbose=verbose, max_nfev=max_nfev, nr_worker=nr_worker)
         return result
 

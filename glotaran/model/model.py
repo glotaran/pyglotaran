@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from typing import Dict
 
+from glotaran.analysis.fitresult import FitResult
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
@@ -14,6 +15,7 @@ def model(name,
           estimated_matrix=None,
           calculated_axis=None,
           estimated_axis=None,
+          fit_result_class=FitResult,
           allow_grouping=True,
           ):
 
@@ -22,6 +24,7 @@ def model(name,
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
         setattr(cls, 'allow_grouping', allow_grouping)
+        setattr(cls, 'fit_result_class', fit_result_class)
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
