@@ -1,3 +1,4 @@
+import numpy as np
 
 from glotaran.analysis.grouping import create_group, calculate_group, create_data_group
 from glotaran.model import ParameterGroup
@@ -30,11 +31,11 @@ def test_single_dataset():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 3
     print(result[0])
-    assert result[0][1].shape == (2, 4)
+    assert result[0][1][0].shape == (2, 4)
 
     data = create_data_group(model, group, data)
     assert len(data) == 3
-    assert data[0].shape[0] == 4
+    assert data[1].shape[0] == 4
 
 
 def test_multi_dataset_no_overlap():
@@ -70,13 +71,13 @@ def test_multi_dataset_no_overlap():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 6
     print(result[0])
-    assert result[0][1].shape == (2, 2)
-    assert result[3][1].shape == (2, 3)
+    assert np.concatenate(result[0][1], axis=1).shape == (2, 2)
+    assert np.concatenate(result[3][1], axis=1).shape == (2, 3)
 
     data = create_data_group(model, group, data)
     assert len(data) == 6
-    assert data[0].shape[0] == 2
-    assert data[3].shape[0] == 3
+    assert data[1].shape[0] == 2
+    assert data[4].shape[0] == 3
 
     data = {
         'dataset1': MockDataset([1, 2, 3], [5, 7]),
@@ -123,12 +124,12 @@ def test_multi_dataset_overlap():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 5
     print(result[0])
-    assert result[0][1].shape == (2, 2)
-    assert result[1][1].shape == (2, 6)
-    assert result[4][1].shape == (2, 4)
+    assert np.concatenate(result[0][1], axis=1).shape == (2, 2)
+    assert np.concatenate(result[1][1], axis=1).shape == (2, 6)
+    assert np.concatenate(result[4][1], axis=1).shape == (2, 4)
 
     data = create_data_group(model, group, data)
     assert len(data) == 5
     assert data[0].shape[0] == 2
     assert data[1].shape[0] == 6
-    assert data[4].shape[0] == 4
+    assert data[9].shape[0] == 4

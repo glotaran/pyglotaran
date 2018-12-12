@@ -319,7 +319,7 @@ def test_doas_model(suite):
         assert np.allclose(param.value, suite.wanted_parameter.get(label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_dataset("dataset1")
+    resultdata = result.get_fitted_dataset("dataset1")
     assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
     assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
     assert dataset.data().shape == resultdata.data().shape

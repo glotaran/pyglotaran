@@ -221,7 +221,7 @@ def test_fitting(suite):
         assert np.allclose(param.value, wanted.get(param.label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_dataset("dataset1")
+    resultdata = result.get_fitted_dataset("dataset1")
     assert np.array_equal(dataset.get_axis('c'), resultdata.get_axis('c'))
     assert np.array_equal(dataset.get_axis('e'), resultdata.get_axis('e'))
     assert dataset.data().shape == resultdata.data().shape

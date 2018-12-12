@@ -10,6 +10,7 @@ from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_m
 from .test_kinetic_model import ThreeComponentSequential
 
 
+@pytest.mark.skip()
 def test_kinetic_matrix(benchmark):
     model = KineticModel.from_dict({
         'initial_concentration': {
@@ -54,7 +55,7 @@ def test_kinetic_matrix(benchmark):
     benchmark(calculate_kinetic_matrix, dataset, 0, time)
 
 
-@pytest.mark.skip()
+#  @pytest.mark.skip()
 def test_kinetic_fitting_one_core(benchmark):
 
     suite = ThreeComponentSequential

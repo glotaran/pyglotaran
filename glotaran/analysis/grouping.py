@@ -72,14 +72,14 @@ def calculate_group_item(item,
 
     full = None
     full_clp = None
-    dataset_labels = []
+    original_clp = []
     for index, dataset_descriptor in item:
 
         if dataset_descriptor.label not in data:
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
         dataset_descriptor = dataset_descriptor.fill(model, parameter)
 
-        dataset_labels.append(dataset_descriptor.label)
+        #  dataset_labels.append(dataset_descriptor.label)
 
         axis = data[dataset_descriptor.label].get_axis(model.calculated_axis)
 
@@ -87,10 +87,10 @@ def calculate_group_item(item,
                                                      index,
                                                      axis)
 
-        #  apply_constraints(dataset_descriptor, clp, this_matrix, index)
+        original_clp.append(clp)
 
         if full is None:
-            full = this_matrix
+            full = [this_matrix]
             full_clp = clp
         else:
             if not clp == full_clp:
@@ -104,9 +104,10 @@ def calculate_group_item(item,
                             if comp in clp else np.zeros((this_matrix.shape[1]))
                 this_matrix = reshape
 
-            full = np.concatenate((full, this_matrix), axis=1)
+            #  full = np.concatenate((full, this_matrix), axis=1)
+            full.append(this_matrix)
 
-    return (full, full_clp, dataset_labels)
+    return (full, full_clp, original_clp)
 
 
 def calculate_group(group: Group,
@@ -152,8 +153,8 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
     datagroup : list(np.ndarray)
     """
 
-    result = []
-    for _, item in group.items():
+    result = {}
+    for i, item in group.items():
         full = None
         for index, dataset_descriptor in item:
 
@@ -169,7 +170,7 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                 full = dataset
             else:
                 full = np.append(full, dataset)
-        result.append(full)
+        result[i] = full
     return result
 
 
