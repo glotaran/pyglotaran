@@ -208,7 +208,7 @@ class FitResult:
         return residual
 
     def final_residual_svd(self, dataset):
-        lsv, svals, rsv = np.linalg.svd(self.final_residual(dataset).T)
+        lsv, svals, rsv = np.linalg.svd(self.final_residual(dataset))
         return lsv, svals, rsv.T
 
     def _calculate_residual(self, parameter):

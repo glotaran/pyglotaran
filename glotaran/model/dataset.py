@@ -148,7 +148,7 @@ class Dataset:
                 right singular values
 
         """
-        lsv, svals, rsv = np.linalg.svd(self.data().T)
+        lsv, svals, rsv = np.linalg.svd(self.data())
         return lsv, svals, rsv.T
 
 
