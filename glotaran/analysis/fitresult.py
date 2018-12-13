@@ -82,6 +82,38 @@ class FitResult:
                                                 self.data, self._data_group)
 
     @property
+    def nfev(self):
+        return self._lm_result.nfev
+
+    @property
+    def nvars(self):
+        return self._lm_result.nvarys
+
+    @property
+    def ndata(self):
+        return self._lm_result.ndata
+
+    @property
+    def nfree(self):
+        return self._lm_result.nfree
+
+    @property
+    def chisqr(self):
+        return self._lm_result.chisqr
+
+    @property
+    def red_chisqr(self):
+        return self._lm_result.redchi
+
+    @property
+    def var_names(self):
+        return self._lm_result.var_names
+
+    @property
+    def covar(self):
+        return self._lm_result.covar
+
+    @property
     def best_fit_parameter(self) -> ParameterGroup:
         """The best fit parameters."""
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
