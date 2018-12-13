@@ -217,7 +217,7 @@ class FLIMDataset(HighDimensionalDataset):
                 indices.append(i)
 
         data = self.data()
-        cut_data = data[indices, :]
+        cut_data = data[:, indices]
 
         time = self.get_axis("time")
         orig_shape = (lower_right[0] - upper_left[0], upper_left[1] - lower_right[1], time.size)
