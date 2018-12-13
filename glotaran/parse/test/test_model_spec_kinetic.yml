@@ -15,22 +15,16 @@ dataset:
     initial_concentration: inputD2
     irf: irf2
     scale: 2 # scale dataset with parameter 78
-    compartment_constraints:
+    spectral_constraints:
       - type: zero
         compartment: s1
         interval: [!tuple '(1,100)', !tuple '(2,200)']
       - [zero, s1, [!tuple '(1,100)', !tuple '(2,200)']]
-      - type: equal
-        compartment: s2
-        interval: [!tuple '(60, 700)']
-        targets:
-          s1: 54
-          s2: 56
       - type: equal_area
         compartment: s3
         interval: [!tuple '(670, 810)']
-        targets:
-          s2: 55 # usually fixed
+        target: s2
+        parameter: 55 # usually fixed
         weight: 0.0016
         # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
 

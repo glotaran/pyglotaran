@@ -1,15 +1,15 @@
 import pytest
 
 from glotaran.parse.parser import load_yml_file
-from glotaran.models.spectral_temporal import (InitialConcentration,
-                                               KineticModel,
-                                               IrfGaussian,
-                                               SpectralShapeGaussian,
-                                               KineticMegacomplex)
-from glotaran.model import (ZeroConstraint,
-                            EqualConstraint,
-                            EqualAreaConstraint,
-                            )
+from glotaran.models.spectral_temporal import (
+    InitialConcentration,
+    KineticModel,
+    IrfGaussian,
+    SpectralShapeGaussian,
+    KineticMegacomplex,
+    ZeroConstraint,
+    EqualAreaConstraint,
+)
 
 from os.path import join, dirname, abspath
 import numpy as np
@@ -43,33 +43,26 @@ def test_dataset(model):
     assert dataset.shapes['s2'] == "shape2"
 
     dataset = model.dataset['dataset2']
-    assert len(dataset.compartment_constraints) == 4
+    assert len(dataset.spectral_constraints) == 3
 
     assert any(isinstance(c, ZeroConstraint) for c in
-               dataset.compartment_constraints)
+               dataset.spectral_constraints)
 
-    zcs = [zc for zc in dataset.compartment_constraints
+    zcs = [zc for zc in dataset.spectral_constraints
            if zc.type == 'zero']
     assert len(zcs) == 2
     for zc in zcs:
         assert zc.compartment == 's1'
         assert zc.interval == [(1, 100), (2, 200)]
 
-    assert any(isinstance(c, EqualConstraint) for c in
-               dataset.compartment_constraints)
-    ec = [ec for ec in dataset.compartment_constraints
-          if isinstance(ec, EqualConstraint)][0]
-    assert ec.compartment == 's2'
-    assert ec.interval == [(60, 700)]
-    assert ec.targets == {'s1': 54, 's2': 56}
-
     assert any(isinstance(c, EqualAreaConstraint) for c in
-               dataset.compartment_constraints)
-    eac = [eac for eac in dataset.compartment_constraints
+               dataset.spectral_constraints)
+    eac = [eac for eac in dataset.spectral_constraints
            if isinstance(eac, EqualAreaConstraint)][0]
     assert eac.compartment == 's3'
     assert eac.interval == [(670, 810)]
-    assert eac.targets == {'s2': 55}
+    assert eac.target == 's2'
+    assert eac.parameter == 55
     assert eac.weight == 0.0016
 
 

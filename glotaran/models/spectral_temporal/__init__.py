@@ -4,6 +4,7 @@ from . import (
     k_matrix,
     kinetic_megacomplex,
     kinetic_model,
+    spectral_constraints,
     spectral_shape,
     spectral_temporal_dataset_descriptor,
 )
@@ -39,3 +40,8 @@ KineticMegacomplex = kinetic_megacomplex.KineticMegacomplex
 # Model
 
 KineticModel = kinetic_model.KineticModel
+
+# Spectral Constraints
+SpectralConstraint = spectral_constraints.SpectralConstraint
+ZeroConstraint = spectral_constraints.ZeroConstraint
+EqualAreaConstraint = spectral_constraints.EqualAreaConstraint
