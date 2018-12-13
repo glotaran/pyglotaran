@@ -1,9 +1,9 @@
 """This package contains the FitResult object"""
 
 import multiprocessing
+
 import numpy as np
 from lmfit.minimizer import Minimizer
-
 
 from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
@@ -12,6 +12,7 @@ from glotaran.model.parameter_group import ParameterGroup
 from .grouping import create_group, create_data_group
 from .grouping import calculate_group_item
 from .variable_projection import clp_variable_projection, residual_variable_projection
+from .nnls import residual_nnls
 
 
 class FitResult:
@@ -204,11 +205,19 @@ class FitResult:
                 self._concentrations[index], self._clp_labels[index], self._original_clp[index] = \
                     calculate_group_item(item, self.model, parameter, self.data)
                 concentration = np.concatenate(self._concentrations[index], axis=0)
-                self._clp[index], self._residuals[index] = \
-                    residual_variable_projection(
-                        concentration,
-                        self._data_group[index]
-                    )
+
+                if self.nnls:
+                    self._clp[index], self._residuals[index] = \
+                        residual_nnls(
+                            concentration,
+                            self._data_group[index]
+                        )
+                else:
+                    self._clp[index], self._residuals[index] = \
+                        residual_variable_projection(
+                            concentration,
+                            self._data_group[index]
+                        )
                 residuals.append(self._residuals[index])
         else:
             jobs = [(i, parameter) for i, _ in enumerate(self._group)]

@@ -272,7 +272,7 @@ class ThreeComponentParallel:
             ["2", 500e-4],
             ["3", 700e-5],
         ],
-        'irf': [['center', 0.1], ['width', 5]],
+        'irf': [['center', 1.1], ['width', 5]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}]],
     })
     wanted = ParameterGroup.from_dict({
@@ -282,7 +282,7 @@ class ThreeComponentParallel:
             ["3", 305e-5],
         ],
         'shape': {'amps': [7, 3, 30], 'locs': [620, 670, 720], 'width': [10, 30, 50]},
-        'irf': [['center', 0.3], ['width', 7.8]],
+        'irf': [['center', 1.3], ['width', 7.8]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}]],
     })
 
@@ -376,7 +376,7 @@ class ThreeComponentSequential:
             ["2", 302e-3],
             ["3", 101e-4],
         ],
-        'irf': [['center', 0.2], ['width', 7]],
+        'irf': [['center', 1.2], ['width', 7]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}],
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
@@ -387,12 +387,12 @@ class ThreeComponentSequential:
             ["3", 105e-4],
         ],
         'shape': {'amps': [3, 1, 5], 'locs': [620, 670, 720], 'width': [10, 30, 50]},
-        'irf': [['center', 0.3], ['width', 7.8]],
+        'irf': [['center', 1.3], ['width', 7.8]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}],
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
 
-    time = np.asarray(np.arange(-10, 100, 1.5))
+    time = np.asarray(np.arange(-10, 50, 0.5))
     spectral = np.arange(600, 750, 1)
     axis = {"time": time, "spectral": spectral}
 
@@ -541,7 +541,8 @@ class IrfDispersion:
     ThreeComponentSequential,
     IrfDispersion,
 ])
-def test_kinetic_model(suite):
+@pytest.mark.parametrize("nnls", [True, False])
+def test_kinetic_model(suite, nnls):
 
     model = suite.model
     print(model.errors())
@@ -567,7 +568,7 @@ def test_kinetic_model(suite):
 
     data = {'dataset1': dataset}
 
-    result = model.fit(initial, data)
+    result = model.fit(initial, data, nnls=nnls)
     print(result.best_fit_parameter)
 
     for label, param in result.best_fit_parameter.all_with_label():

@@ -113,6 +113,7 @@ class BaseModel:
     def fit(self,
             parameter: ParameterGroup,
             data: Dict[str, Dataset],
+            nnls: bool = False,
             verbose: int = 2,
             max_nfev: int = None,
             nr_worker: int = 1,
@@ -138,7 +139,7 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        result = self.fit_result_class(self, data, parameter, False, atol=group_atol)
+        result = self.fit_result_class(self, data, parameter, nnls, atol=group_atol)
         result.minimize(verbose=verbose, max_nfev=max_nfev, nr_worker=nr_worker)
         return result
 
