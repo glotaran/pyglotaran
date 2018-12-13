@@ -190,8 +190,8 @@ class FLIMDataset(HighDimensionalDataset):
         return self.time_axis
 
     def cut(self,
-            upper_left: Tuple[int, int],
-            lower_right: Tuple[int, int],
+            lower_left: Tuple[int, int],
+            upper_right: Tuple[int, int],
             transform_pixel: bool = False,
             ) -> "FLIMDataset":
         """
@@ -213,26 +213,29 @@ class FLIMDataset(HighDimensionalDataset):
         """
         indices = []
         for i, (x, y) in enumerate(self.pixel_axis):
-            if upper_left[0] <= x < lower_right[0] and lower_right[1] <= y < upper_left[1]:
+            if lower_left[0] <= x < upper_right[0] and lower_left[1] <= y < upper_right[1]:
                 indices.append(i)
 
         data = self.data()
         cut_data = data[:, indices]
 
         time = self.get_axis("time")
-        orig_shape = (lower_right[0] - upper_left[0], upper_left[1] - lower_right[1], time.size)
+        orig_shape = (time.size, upper_right[0] - lower_left[0], upper_right[1] - lower_left[1])
         flim_dataset = FLIMDataset(get_pixel_map, orig_shape, self.time_unit)
 
         pixel = self.pixel_axis[indices]
 
         if transform_pixel:
             for i, pxl in enumerate(pixel):
-                pixel[i] = (pxl[0] - upper_left[0], pxl[1] - lower_right[1])
+                pixel[i] = (pxl[0] - lower_left[0], pxl[1] - lower_left[1])
 
         flim_dataset.set_axis('time', time)
         flim_dataset.set_axis('pixel', pixel)
         flim_dataset.set_data(cut_data)
 
-        intensity_map = cut_data.reshape(orig_shape).sum(axis=2)
+        print(cut_data.shape)
+        print(orig_shape)
+        print(cut_data.reshape(orig_shape).shape)
+        intensity_map = cut_data.reshape(orig_shape).sum(axis=0)
         flim_dataset.intensity_map = intensity_map
         return flim_dataset
