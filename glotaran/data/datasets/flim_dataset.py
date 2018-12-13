@@ -233,9 +233,6 @@ class FLIMDataset(HighDimensionalDataset):
         flim_dataset.set_axis('pixel', pixel)
         flim_dataset.set_data(cut_data)
 
-        print(cut_data.shape)
-        print(orig_shape)
-        print(cut_data.reshape(orig_shape).shape)
         intensity_map = cut_data.reshape(orig_shape).sum(axis=0)
         flim_dataset.intensity_map = intensity_map
         return flim_dataset

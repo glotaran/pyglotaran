@@ -12,7 +12,7 @@ class DOASFitResult(KineticFitResult):
         oscillations = []
 
         for cmplx in dataset.megacomplex:
-            for osc in cmplx.oscillations:
+            for osc in cmplx.oscillation:
                 if osc.label not in oscillations:
                     oscillations.append(osc.label)
 
@@ -32,7 +32,7 @@ class DOASFitResult(KineticFitResult):
         oscillations = []
 
         for cmplx in dataset.megacomplex:
-            for osc in cmplx.oscillations:
+            for osc in cmplx.oscillation:
                 if osc.label not in oscillations:
                     oscillations.append(osc.label)
 
