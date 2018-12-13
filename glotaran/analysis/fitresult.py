@@ -205,7 +205,6 @@ class FitResult:
         for i, index in enumerate(indices):
             residual[:, i] = self._residuals[index][self._get_dataset_idx(index, dataset)]
 
-
         return residual
 
     def final_residual_svd(self, dataset):
