@@ -6,6 +6,7 @@ from glotaran.model import DatasetDescriptor, model_item
 
 from .spectral_constraints import SpectralConstraint
 
+
 @model_item(attributes={
     'initial_concentration': {'type': str, 'default': None},
     'irf': {'type': str, 'default': None},

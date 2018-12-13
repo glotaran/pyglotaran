@@ -1,6 +1,6 @@
 """This package contains compartment constraint items."""
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 from glotaran.model.model_item import model_item, model_item_typed
 
 
