@@ -89,6 +89,12 @@ def calculate_group_item(item,
 
         original_clp.append(clp)
 
+        weight = data[dataset_descriptor.label].get_weight()
+        if weight is not None:
+            idx = np.where(axis == index)[0][0]
+            for i in range(this_matrix.shape[1]):
+                this_matrix[:, i] = np.multiply(this_matrix[:, i], weight[:, idx])
+
         if full is None:
             full = [this_matrix]
             full_clp = clp
@@ -165,7 +171,7 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
             dataset = data[dataset_descriptor.label]
             axis = list(dataset.get_axis(model.estimated_axis))
             idx = axis.index(index)
-            dataset = dataset.data()[:, idx]
+            dataset = dataset.data(weighted=True)[:, idx]
 
             if full is None:
                 full = dataset

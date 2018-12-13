@@ -96,6 +96,8 @@ class FitResult:
                 if label not in clp_labels:
                     clp_labels.append(label)
 
+        weight = self.data[dataset].get_weight()
+
         dim1 = self.data[dataset].get_axis(self.model.estimated_axis).size
         dim2 = self.data[dataset].get_axis(self.model.calculated_axis).size
         dim3 = len(clp_labels)
@@ -105,6 +107,9 @@ class FitResult:
         for i, index in enumerate(indices):
             dataset_idx = self._get_dataset_idx(index, dataset)
             concentration = self._concentrations[index][dataset_idx]
+            if weight is not None:
+                for j in range(concentration.shape[1]):
+                    concentration[:, j] = np.multiply(concentration[:, j], 1/weight[:, i])
             labels = self._clp_labels[index]
             idx = [labels.index(label) for label in clp_labels]
             concentrations[i, :, :] = concentration[:, idx]
@@ -180,6 +185,16 @@ class FitResult:
         pass
 
     def final_residual(self, dataset):
+
+        residual = self.final_weighted_residual(dataset)
+
+        weight = self.data[dataset].get_weight()
+        if weight is not None:
+            residual = np.multiply(residual, 1/weight)
+
+        return residual
+
+    def final_weighted_residual(self, dataset):
         indices = self._get_group_indices(dataset)
 
         dim1 = self.data[dataset].get_axis(self.model.calculated_axis).size
@@ -189,6 +204,7 @@ class FitResult:
 
         for i, index in enumerate(indices):
             residual[:, i] = self._residuals[index][self._get_dataset_idx(index, dataset)]
+
 
         return residual
 
