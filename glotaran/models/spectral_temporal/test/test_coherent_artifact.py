@@ -52,4 +52,4 @@ def test_coherent_artifact():
     for i in range(1, 4):
         assert compartments[i] == f'irf1_coherent_artifact_{i}'
 
-    assert matrix.shape == (4, time.size)
+    assert matrix.shape == (time.size, 4)

@@ -50,11 +50,11 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
 
     estimated_matrix = model.estimated_matrix(filled_dataset, estimated_axis)
 
-    dim1 = len(calculated_matrix)
-    dim2 = calculated_matrix[0][1].shape[1]
+    dim1 = calculated_matrix[0][1].shape[0]
+    dim2 = len(calculated_matrix)
     result = np.empty((dim1, dim2), dtype=np.float64)
-    for i in range(dim1):
-        result[i, :] = np.dot(estimated_matrix[i, :], calculated_matrix[i][1])
+    for i in range(dim2):
+        result[:, i] = np.dot(calculated_matrix[i][1], estimated_matrix[:, i])
 
     if noise:
         if noise_seed is not None:

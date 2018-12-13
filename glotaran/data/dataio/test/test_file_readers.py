@@ -109,7 +109,7 @@ def test_df_to_SpectralTemporalDataset(swap_axis, result_dict, time_unit, spectr
                                                         time_unit=time_unit,
                                                         spectral_unit=spectral_unit,
                                                         swap_axis=swap_axis)
-    assert np.all(test_dataset.data() == result.data)
+    assert np.all(test_dataset.data().T == result.data)
     assert np.all(test_dataset.time_axis == result.time_axis)
     assert np.all(test_dataset.spectral_axis == result.spectral_axis)
     assert test_dataset.time_unit == time_unit
@@ -170,7 +170,7 @@ def test_df_to_FLIMDataset(is_legacy, swap_axis, time_unit):
     assert np.all(test_dataset.intensity_map == result_intensity_map)
     assert np.allclose(test_dataset.time_axis, np.array(result_df.columns))
     assert test_dataset.orig_shape == orig_shape
-    assert test_dataset.data().shape == result_df.values.shape
+    assert test_dataset.data().T.shape == result_df.values.shape
     assert test_dataset.time_unit == time_unit
 
 
@@ -222,11 +222,11 @@ def test_read_sdt(type_of_data, test_file_path, result_file_path, index, return_
         result_traces = pd.DataFrame([result_df.Data.values], columns=result_df.Delay)
         if not return_dataframe:
             assert isinstance(test_dataset, SpectralTemporalDataset)
-            assert np.all(test_dataset.data()[0] == result_df.Data.values)
+            assert np.all(test_dataset.data().T[0] == result_df.Data.values)
             assert test_dataset.spectral_unit == spectral_unit
 
     if not return_dataframe:
-        assert test_dataset.data().shape == result_traces.values.shape
+        assert test_dataset.data().T.shape == result_traces.values.shape
         assert np.allclose(test_dataset.time_axis, np.array(result_traces.columns))
         assert test_dataset.time_unit == time_unit
     else:

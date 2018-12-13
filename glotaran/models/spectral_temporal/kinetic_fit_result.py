@@ -32,7 +32,7 @@ class KineticFitResult(FitResult):
 
         a_matrix = k_matrix.a_matrix(dataset.initial_concentration)
 
-        das = np.dot(clp[:, idx], a_matrix)
+        das = np.dot(clp[:, idx], a_matrix.T)
 
         return compartments, das
 

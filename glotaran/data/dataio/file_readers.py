@@ -79,7 +79,7 @@ def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
                          f"to numeric values.")
     STDataset.set_axis('time', time_axis)
     STDataset.set_axis('spectral', spectral_axis)
-    STDataset.set_data(input_dataframe.values)
+    STDataset.set_data(input_dataframe.values.T)
     return STDataset
 
 
@@ -163,7 +163,7 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
                          f"to numeric values.")
     flim_dataset.set_axis('time', time_axis)
     flim_dataset.pixel_axis = np.array(input_dataframe.index)
-    flim_dataset.set_data(input_dataframe.values)
+    flim_dataset.set_data(input_dataframe.values.T)
     if not is_legacy:
         intensity_map = input_dataframe.values.reshape(orig_shape).sum(axis=orig_time_axis_index)
     flim_dataset.intensity_map = intensity_map

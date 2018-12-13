@@ -10,7 +10,7 @@ from glotaran.models.spectral_temporal.irf import IrfGaussian
 def calculate_doas_matrix(dataset, index, axis):
 
     oscillations = _collect_oscillations(dataset)
-    matrix = np.zeros((len(2 * oscillations), axis.size), dtype=np.float64)
+    matrix = np.zeros((axis.size, len(2 * oscillations)), dtype=np.float64)
     clp = []
     frequencies = []
     rates = []
@@ -40,28 +40,14 @@ def calculate_doas_matrix(dataset, index, axis):
             a = np.exp(a)
             b = 1 + erf((axis - d * k) / (np.sqrt(2) * width))
             osc = a * b
-        matrix[idx, :] = osc.real
-        matrix[idx + 1, :] = osc.imag
+        matrix[:, idx] = osc.real
+        matrix[:, idx + 1] = osc.imag
         idx += 2
-
-    #  if dataset.irf is None:
-    #      raise Exception
-    #  elif isinstance(dataset.irf, IrfGaussian):
-    #      center, width, irf_scale, _, _ = dataset.irf.parameter(index)
-    #      calc_doas_matrix_gaussian_irf(matrix,
-    #                                    np.asarray(rates, dtype=np.float64),
-    #                                    np.asarray(frequencies, dtype=np.float64),
-    #                                    axis,
-    #                                    center,
-    #                                    width,
-    #                                    scale)
-    #  else:
-    #      raise Exception(f'Unknown irf type "{type(dataset.irf)}"')
 
     kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(dataset, index, axis)
     if kinetic_matrix is not None:
         clp = clp + kinetic_clp
-        matrix = np.concatenate((matrix, kinetic_matrix))
+        matrix = np.concatenate((matrix, kinetic_matrix), axis=1)
     return (clp, matrix)
 
 

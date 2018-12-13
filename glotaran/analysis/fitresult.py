@@ -96,8 +96,8 @@ class FitResult:
                     clp_labels.append(label)
 
         dim1 = self.data[dataset].get_axis(self.model.estimated_axis).size
-        dim2 = len(clp_labels)
-        dim3 = self.data[dataset].get_axis(self.model.calculated_axis).size
+        dim2 = self.data[dataset].get_axis(self.model.calculated_axis).size
+        dim3 = len(clp_labels)
 
         concentrations = np.empty((dim1, dim2, dim3), dtype=np.float64)
 
@@ -106,7 +106,7 @@ class FitResult:
             concentration = self._concentrations[index][dataset_idx]
             labels = self._clp_labels[index]
             idx = [labels.index(label) for label in clp_labels]
-            concentrations[i, :, :] = concentration[idx, :]
+            concentrations[i, :, :] = concentration[:, idx]
 
         return clp_labels, concentrations
 
@@ -149,15 +149,17 @@ class FitResult:
         calculated_axis = dataset.get_axis(self.model.calculated_axis)
         estimated_axis = dataset.get_axis(self.model.estimated_axis)
 
-        result = np.zeros((estimated_axis.size, calculated_axis.size), dtype=np.float64)
+        result = np.zeros((calculated_axis.size, estimated_axis.size), dtype=np.float64)
 
         indices = self._get_group_indices(label)
         for i, index in enumerate(indices):
 
             dataset_idx = self._get_dataset_idx(index, label)
 
-            result[i, :] = np.dot(self._clp[index],
-                                  self._concentrations[index][dataset_idx])
+            result[:, i] = np.dot(
+                self._concentrations[index][dataset_idx],
+                self._clp[index],
+            )
 
         dataset = Dataset()
         dataset.set_axis(self.model.calculated_axis, calculated_axis)
@@ -179,13 +181,13 @@ class FitResult:
     def final_residual(self, dataset):
         indices = self._get_group_indices(dataset)
 
-        dim1 = len(indices)
-        dim2 = self.data[dataset].get_axis(self.model.calculated_axis).size
+        dim1 = self.data[dataset].get_axis(self.model.calculated_axis).size
+        dim2 = len(indices)
 
         residual = np.zeros((dim1, dim2), dtype=np.float64)
 
         for i, index in enumerate(indices):
-            residual[i, :] = self._residuals[index][self._get_dataset_idx(index, dataset)]
+            residual[:, i] = self._residuals[index][self._get_dataset_idx(index, dataset)]
 
         return residual
 
@@ -201,8 +203,7 @@ class FitResult:
             for index, item in self._group.items():
                 self._concentrations[index], self._clp_labels[index], self._original_clp[index] = \
                     calculate_group_item(item, self.model, parameter, self.data)
-                concentration = np.concatenate(self._concentrations[index],
-                                               axis=1).T
+                concentration = np.concatenate(self._concentrations[index], axis=0)
                 self._clp[index], self._residuals[index] = \
                     residual_variable_projection(
                         concentration,

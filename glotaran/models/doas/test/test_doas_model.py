@@ -64,7 +64,7 @@ class OneOscillation():
     axis = {'time': time, 'spectral': spectral}
 
     wanted_clp = ['osc1_sin', 'osc1_cos']
-    wanted_shape = (2, 300)
+    wanted_shape = (300, 2)
 
 
 class OneOscillationWithIrf():
@@ -135,7 +135,7 @@ class OneOscillationWithIrf():
     axis = {'time': time, 'spectral': spectral}
 
     wanted_clp = ['osc1_sin', 'osc1_cos']
-    wanted_shape = (2, 300)
+    wanted_shape = (300, 2)
 
 
 class OneOscillationWithSequentialModel():
@@ -270,7 +270,7 @@ class OneOscillationWithSequentialModel():
     axis = {'time': time, 'spectral': spectral}
 
     wanted_clp = ['osc1_sin', 'osc1_cos', 's1', 's2']
-    wanted_shape = (4, 600)
+    wanted_shape = (600, 4)
 
 
 @pytest.mark.parametrize("suite", [
@@ -307,7 +307,7 @@ def test_doas_model(suite):
     print(dataset.data())
 
     assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
+        (suite.axis['time'].size, suite.axis['spectral'].size)
 
     print(suite.parameter)
     data = {'dataset1': dataset}

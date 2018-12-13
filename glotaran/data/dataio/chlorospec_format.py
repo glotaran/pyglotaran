@@ -78,7 +78,7 @@ class ChlorospecData(object):
         dataset = SpectralTemporalDataset(self._label)
         dataset.set_axis("time", all_times)
         dataset.set_axis("spectral", wavelengths)
-        dataset.data = data
+        dataset.data = data.T
         return dataset
 
     @staticmethod

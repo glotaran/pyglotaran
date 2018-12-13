@@ -85,12 +85,7 @@ def test_kinetic_fitting_one_core(benchmark):
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
 
-    #  suite.axis["time"] = np.arange(-10, 50, 5.0)
-
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
-
-    assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
 
     data = {'dataset1': dataset}
 

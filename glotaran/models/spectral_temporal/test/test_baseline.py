@@ -42,5 +42,5 @@ def test_baseline():
     assert len(compartments) == 2
     assert compartments[1] == 'dataset1_baseline'
 
-    assert matrix.shape == (2, time.size)
-    assert np.all(matrix[1, :] == 42)
+    assert matrix.shape == (time.size, 2)
+    assert np.all(matrix[:, 1] == 42)

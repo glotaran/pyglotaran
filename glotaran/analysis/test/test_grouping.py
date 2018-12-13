@@ -31,7 +31,7 @@ def test_single_dataset():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 3
     print(result[0])
-    assert result[0][1][0].shape == (2, 4)
+    assert result[0][1][0].shape == (4, 2)
 
     data = create_data_group(model, group, data)
     assert len(data) == 3
@@ -71,8 +71,8 @@ def test_multi_dataset_no_overlap():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 6
     print(result[0])
-    assert np.concatenate(result[0][1], axis=1).shape == (2, 2)
-    assert np.concatenate(result[3][1], axis=1).shape == (2, 3)
+    assert np.concatenate(result[0][1], axis=0).shape == (2, 2)
+    assert np.concatenate(result[3][1], axis=0).shape == (3, 2)
 
     data = create_data_group(model, group, data)
     assert len(data) == 6
@@ -124,9 +124,9 @@ def test_multi_dataset_overlap():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 5
     print(result[0])
-    assert np.concatenate(result[0][1], axis=1).shape == (2, 2)
-    assert np.concatenate(result[1][1], axis=1).shape == (2, 6)
-    assert np.concatenate(result[4][1], axis=1).shape == (2, 4)
+    assert np.concatenate(result[0][1], axis=0).shape == (2, 2)
+    assert np.concatenate(result[1][1], axis=0).shape == (6, 2)
+    assert np.concatenate(result[4][1], axis=0).shape == (4, 2)
 
     data = create_data_group(model, group, data)
     assert len(data) == 5

@@ -20,7 +20,7 @@ def calculate_kinetic(dataset, index, axis):
     if np.array_equal(kinpar, OLD_KIN):
         return (compartments, OLD_MAT)
 
-    array = np.exp(np.outer(axis, kinpar)).T
+    array = np.exp(np.outer(axis, kinpar))
     OLD_KIN = kinpar
     OLD_MAT = array
     return (compartments, array)
@@ -30,7 +30,7 @@ def calculate_spectral_simple(dataset, axis):
     kinpar = -1 * np.array(dataset.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
-    return array.T
+    return array
 
 
 def calculate_spectral_gauss(dataset, axis):
@@ -38,10 +38,10 @@ def calculate_spectral_gauss(dataset, axis):
     amp = np.asarray(dataset.amplitude)
     delta = np.asarray(dataset.delta)
 
-    array = np.empty((axis.size, location.size), dtype=np.float64)
+    array = np.empty((location.size, axis.size), dtype=np.float64)
 
     for i in range(location.size):
-        array[:, i] = amp[i] * np.exp(
+        array[i, :] = amp[i] * np.exp(
             -np.log(2) * np.square(
                 2 * (axis - location[i])/delta[i]
             )
@@ -209,7 +209,7 @@ def test_fitting(suite):
 
     dataset = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
 
-    assert dataset.data().shape == (est_axis.size, cal_axis.size)
+    assert dataset.data().shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
 

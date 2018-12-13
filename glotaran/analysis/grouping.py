@@ -97,10 +97,11 @@ def calculate_group_item(item,
                 for comp in clp:
                     if comp not in full_clp:
                         full_clp.append(comp)
-                        full = np.concatenate((full, np.zeros((full.shape[1]))))
-                reshape = np.zeros((len(full_clp), this_matrix.shape[1]))
+                        full = np.concatenate(
+                            (full, np.zeros((full.shape[0]))), axis=1)
+                reshape = np.zeros((this_matrix.shape[0], len(full_clp)))
                 for i, comp in enumerate(full_clp):
-                    reshape[i, :] = this_matrix[clp.index(comp), :] \
+                    reshape[:, i] = this_matrix[:, clp.index(comp)] \
                             if comp in clp else np.zeros((this_matrix.shape[1]))
                 this_matrix = reshape
 
@@ -164,7 +165,7 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
             dataset = data[dataset_descriptor.label]
             axis = list(dataset.get_axis(model.estimated_axis))
             idx = axis.index(index)
-            dataset = dataset.data()[idx, :]
+            dataset = dataset.data()[:, idx]
 
             if full is None:
                 full = dataset

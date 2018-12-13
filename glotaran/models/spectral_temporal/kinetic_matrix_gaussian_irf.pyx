@@ -37,11 +37,11 @@ def calc_kinetic_matrix_gaussian_irf(double[:, :] matrix,
             beta = (t_n - center) / (width * sqrt2)
             thresh = beta - alpha
             if thresh < -1 :
-                matrix[n_r, n_t] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
+                matrix[n_t, n_r] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
             else:
-                matrix[n_r, n_t] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
+                matrix[n_t, n_r] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
             if backsweep != 0:
                 x1 = exp(-r_n * (t_n - center + backsweep_period))
                 x2 = exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
                 x3 = exp(-r_n * backsweep_period)
-                matrix[n_r, n_t] += (x1 + x2) / (1 - x3)
+                matrix[n_t, n_r] += (x1 + x2) / (1 - x3)
