@@ -158,7 +158,7 @@ class FitResult:
                 if label not in clp_labels:
                     clp_labels.append(label)
 
-        dim1 = len(self._clp)
+        dim1 = len(indices)
         dim2 = len(clp_labels)
 
         clp = np.empty((dim1, dim2), dtype=np.float64)
@@ -218,24 +218,17 @@ class FitResult:
 
     def final_residual(self, dataset):
 
-        residual = self.final_weighted_residual(dataset)
+        fitted_data = self.get_fitted_dataset(dataset).data()
+        dataset = self.data[dataset].data()
 
-        weight = self.data[dataset].get_weight()
-        if weight is not None:
-            residual = np.multiply(residual, 1/weight)
-
-        return residual
+        return np.abs(fitted_data - dataset)
 
     def final_weighted_residual(self, dataset):
-        indices = self._get_group_indices(dataset)
 
-        dim1 = self.data[dataset].get_axis(self.model.calculated_axis).size
-        dim2 = len(indices)
-
-        residual = np.zeros((dim1, dim2), dtype=np.float64)
-
-        for i, index in enumerate(indices):
-            residual[:, i] = self._residuals[index][self._get_dataset_idx(index, dataset)]
+        residual = self.final_residual()
+        weight = self.data[dataset].get_weight()
+        if weight is not None:
+            residual = np.multiply(residual, weight)
 
         return residual
 
