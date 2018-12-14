@@ -78,7 +78,7 @@ class EqualAreaConstraint(ZeroConstraint):
     'only': OnlyConstraint,
     'zero': ZeroConstraint,
     'equal_area': EqualAreaConstraint,
-})
+}, no_label=True)
 class SpectralConstraint:
     """A compartment constraint is applied on one compartment on one or many
     intervals on the estimated axies type.

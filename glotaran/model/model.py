@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Dict
+from typing import Dict, List
 
 from glotaran.analysis.fitresult import FitResult
 from glotaran.parse.register import register_model
@@ -55,29 +55,50 @@ def model(name,
         # Set annotations and methods for attributes
 
         for attr_name, attr_type in attributes.items():
-            getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
+            if getattr(attr_type, '_glotaran_has_label'):
+                getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
+            else:
+                getattr(cls, '__annotations__')[attr_name] = List[attr_type]
             getattr(cls, '_glotaran_model_attributes')[attr_name] = None
 
-            def get_item(self, label: str, attr_name=attr_name):
-                return getattr(self, attr_name)[label]
+            if getattr(attr_type, '_glotaran_has_label'):
 
-            setattr(cls, f"get_{attr_name}", get_item)
+                def get_item(self, label: str, attr_name=attr_name):
+                    return getattr(self, attr_name)[label]
 
-            def set_item(self, label: str, item: attr_type,
-                         attr_name=attr_name,
-                         attr_type=attr_type):
+                setattr(cls, f"get_{attr_name}", get_item)
 
-                # TODO checked typed items
-                if not isinstance(item, attr_type) and \
-                        not hasattr(attr_type, "_glotaran_model_item_typed"):
-                    raise TypeError
-                getattr(self, attr_name)[label] = item
+                def set_item(self, label: str, item: attr_type,
+                             attr_name=attr_name,
+                             attr_type=attr_type):
 
-            setattr(cls, f"set_{attr_name}", set_item)
+                    # TODO checked typed items
+                    if not isinstance(item, attr_type) and \
+                            not hasattr(attr_type, "_glotaran_model_item_typed"):
+                        raise TypeError
+                    getattr(self, attr_name)[label] = item
+
+                setattr(cls, f"set_{attr_name}", set_item)
+
+            else:
+                def add_item(self, item: attr_type,
+                             attr_name=attr_name,
+                             attr_type=attr_type):
+
+                    # TODO checked typed items
+                    if not isinstance(item, attr_type) and \
+                            not hasattr(attr_type, "_glotaran_model_item_typed"):
+                        raise TypeError
+                    getattr(self, attr_name).append(item)
+
+                setattr(cls, f"add_{attr_name}", add_item)
 
         def init(self, cls=cls, attributes=attributes):
-            for attr_name in attributes:
-                setattr(self, attr_name, OrderedDict())
+            for attr_name, attr_item in attributes.items():
+                if getattr(attr_item, '_glotaran_has_label'):
+                    setattr(self, attr_name, OrderedDict())
+                else:
+                    setattr(self, attr_name, [])
             super(cls, self).__init__()
 
         setattr(cls, '__init__', init)
