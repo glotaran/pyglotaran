@@ -6,7 +6,8 @@ from glotaran.analysis.simulation import simulate
 from glotaran.analysis.fitresult import FitResult
 
 from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
-# from ...model.model import model
+
+from .mock import MockMegacomplex
 
 OLD_MAT = None
 OLD_KIN = []
@@ -71,7 +72,8 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
        calculated_matrix=calculate_kinetic,
        calculated_axis='c',
        estimated_matrix=calculate_spectral_simple,
-       estimated_axis='e'
+       estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class DecayModel(BaseModel):
     pass
@@ -82,7 +84,8 @@ class DecayModel(BaseModel):
        calculated_matrix=calculate_kinetic,
        calculated_axis='c',
        estimated_matrix=calculate_spectral_gauss,
-       estimated_axis='e'
+       estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class GaussianDecayModel(BaseModel):
     pass

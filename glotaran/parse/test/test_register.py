@@ -1,12 +1,8 @@
 from glotaran.model import BaseModel, model
-# from glotaran.model.model import model
 
 from glotaran.parse import register
 
-
-@model('mock')
-class MockModel(BaseModel):
-    pass
+from glotaran.analysis.test.mock import MockModel
 
 
 def test_register():

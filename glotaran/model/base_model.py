@@ -220,8 +220,13 @@ class BaseModel:
         errors = []
 
         for attr in attrs:
-            for _, item in getattr(self, attr).items():
-                item.validate_model(self, errors=errors)
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    item.validate_model(self, errors=errors)
+            else:
+                for _, item in attr.items():
+                    item.validate_model(self, errors=errors)
 
         return errors
 
@@ -251,8 +256,13 @@ class BaseModel:
         errors = []
 
         for attr in attrs:
-            for _, item in getattr(self, attr).items():
-                item.validate_parameter(self, parameter, errors=errors)
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    item.validate_parameter(self, parameter, errors=errors)
+            else:
+                for _, item in attr.items():
+                    item.validate_parameter(self, parameter, errors=errors)
 
         return errors
 

@@ -1,12 +1,5 @@
 # Glotaran package __init__.py
 
-# workaround to import Model and Dataset with
-# `from glotaran import Model`/`from glotaran import Dataset`
-
-#  from glotaran.specification_parser import parse_yml  # noqa: E402
-#  from glotaran.specification_parser import parse_file  # noqa: E402
-#  from glotaran import dataio, model  # noqa: E402
-
 from . import model  # noqa: E402
 
 __version__ = '0.0.10'
@@ -24,10 +17,11 @@ DOASModel = doas.DOASModel
 
 from .parse import parser  # noqa: E402
 
-
 load_yml = parser.load_yml
 load_yml_file = parser.load_yml_file
 
+from .data import dataio  # noqa: E402
+io = dataio
 
 # Top level API
 # SeparableModel = separable_model.SeparableModel

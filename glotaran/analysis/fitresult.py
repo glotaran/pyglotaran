@@ -53,7 +53,7 @@ class FitResult:
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
         self._old = parameter
         minimizer = Minimizer(
-            self._flat_residual,
+            self._calculate_residual,
             parameter,
             fcn_args=[],
             fcn_kws=None,
@@ -237,6 +237,7 @@ class FitResult:
         return lsv, svals, rsv.T
 
     def _calculate_residual(self, parameter):
+        parameter = ParameterGroup.from_parameter_dict(parameter)
         residuals = None
         if self._pool is None:
 
@@ -263,11 +264,11 @@ class FitResult:
             jobs = [(i, parameter) for i, _ in enumerate(self._group)]
             residuals = self._pool.map(worker_fun, jobs)
 
-        return np.asarray(residuals)
+        additionals = self.model.additional_residual_function(
+            self.model, self._clp, self._concentrations) \
+            if self.model.additional_residual_function is not None else []
 
-    def _flat_residual(self, parameter):
-        parameter = ParameterGroup.from_parameter_dict(parameter)
-        return np.concatenate(self._calculate_residual(parameter))
+        return np.concatenate(residuals + additionals)
 
     def _init_worker_pool(self, nr_worker):
 

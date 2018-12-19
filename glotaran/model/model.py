@@ -15,6 +15,8 @@ def model(name,
           estimated_matrix=None,
           calculated_axis=None,
           estimated_axis=None,
+          constrain_calculated_matrix_function=None,
+          additional_residual_function=None,
           fit_result_class=FitResult,
           allow_grouping=True,
           ):
@@ -23,8 +25,12 @@ def model(name,
 
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
-        setattr(cls, 'allow_grouping', allow_grouping)
         setattr(cls, 'fit_result_class', fit_result_class)
+        setattr(cls, 'constrain_calculated_matrix_function',
+                constrain_calculated_matrix_function)
+        setattr(cls, 'additional_residual_function',
+                additional_residual_function)
+        setattr(cls, 'allow_grouping', allow_grouping)
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
