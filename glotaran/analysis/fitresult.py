@@ -53,6 +53,7 @@ class FitResult:
     def from_parameter(cls, model, data, parameter, nnls=False, atol=0):
         cls = cls(model, data, parameter, nnls, atol=atol)
         cls._calculate_residual(parameter)
+        return cls
 
     def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
