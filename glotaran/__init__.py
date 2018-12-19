@@ -25,6 +25,10 @@ load_yml_file = parser.load_yml_file
 from .data import dataio  # noqa: E402
 io = dataio
 
+
+def load_result(model, data, parameter, nnls=False, atol=0):
+    return model.fit_result_class.from_parameter(model, data, parameter, nnls, atol)
+
 # Top level API
 # SeparableModel = separable_model.SeparableModel
 # SeparableModelResult = result.SeparableModelResult
