@@ -7,4 +7,4 @@ from glotaran.analysis.test.mock import MockModel
 
 def test_register():
     assert register.known_model('mock')
-    assert register.get_model('mock') is MockModel
+    assert issubclass(register.get_model('mock'), MockModel)

@@ -8,6 +8,8 @@ Dataset = model.Dataset
 DatasetDescriptor = model.DatasetDescriptor
 ParameterGroup = model.ParameterGroup
 
+read_parameter_csv = ParameterGroup.from_csv
+
 from .models import spectral_temporal  # noqa: E402
 KineticModel = spectral_temporal.KineticModel
 
