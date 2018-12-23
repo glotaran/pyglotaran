@@ -22,6 +22,7 @@ install_requires = [
     'typing_inspect>=0.3.1',
 ]
 
+
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
     user_options = [("all", "a", "")]
@@ -81,7 +82,8 @@ except ImportError:
                       f"{setup_requires[1]}\n"
                       f"{setup_requires[2]}\n"
                       f"You can install them by running:\n"
-                      f"`pip install '{setup_requires[0]}' '{setup_requires[1]}' '{setup_requires[2]}'`")
+                      f"`pip install '{setup_requires[0]}' '{setup_requires[1]}' "
+                      f"'{setup_requires[2]}'`")
 
 # backport of dataclases only needed for python 3.6
 
