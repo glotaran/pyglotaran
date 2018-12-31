@@ -5,7 +5,7 @@ from glotaran.models.doas import DOASModel
 from glotaran.models.doas.doas_matrix import calculate_doas_matrix
 
 
-def test_doas_benchmark(benchmark):
+def test_doas_matrix_benchmark(benchmark):
     model = DOASModel.from_dict({
         'initial_concentration': {
             'j1': {

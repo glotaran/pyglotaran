@@ -372,19 +372,19 @@ class ThreeComponentSequential:
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 201e-2],
-            ["2", 302e-3],
-            ["3", 101e-4],
+            ["1", 201e-3],
+            ["2", 302e-4],
+            ["3", 101e-5],
         ],
-        'irf': [['center', 1.2], ['width', 7]],
+        'irf': [['center', 1.2], ['width', 7.5]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}],
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
     wanted = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 501e-2],
-            ["2", 202e-3],
-            ["3", 105e-4],
+            ["1", 501e-3],
+            ["2", 202e-4],
+            ["3", 105e-5],
         ],
         'shape': {'amps': [3, 1, 5], 'locs': [620, 670, 720], 'width': [10, 30, 50]},
         'irf': [['center', 1.3], ['width', 7.8]],
@@ -510,7 +510,7 @@ class IrfDispersion:
         'irf': [['center', 0.5],
                 ['width', 0.3],
                 ['dispcenter', 400, {'vary': False}],
-                ['centerdisp', 25]],
+                ['centerdisp', 0.25]],
     })
     wanted = ParameterGroup.from_dict({
         'j': [
@@ -525,7 +525,7 @@ class IrfDispersion:
         ],
 
         'shape': {'amps': [2, 4, 5, 8], 'locs': [320, 380, 420, 460], 'width': [30, 20, 10, 40]},
-        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 20]],
+        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.2]],
     })
 
     time = np.arange(-1, 30, 0.01)
@@ -568,7 +568,7 @@ def test_kinetic_model(suite, nnls):
 
     data = {'dataset1': dataset}
 
-    result = model.fit(initial, data, nnls=nnls)
+    result = model.fit(initial, data, nnls=nnls, max_nfev=20)
     print(result.best_fit_parameter)
 
     for label, param in result.best_fit_parameter.all_with_label():
