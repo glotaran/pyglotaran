@@ -3,14 +3,14 @@ import numpy as np
 import pytest
 
 from glotaran import ParameterGroup
-from glotaran.models.spectral_temporal import KineticModel
+from glotaran.models.spectral_temporal import KineticFitResult, KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
 
 from .test_kinetic_model import ThreeComponentSequential
 
 
-def test_kinetic_matrix(benchmark):
+def test_kinetic_matrix_benchmark(benchmark):
     model = KineticModel.from_dict({
         'initial_concentration': {
             'j1': {
@@ -54,8 +54,8 @@ def test_kinetic_matrix(benchmark):
     benchmark(calculate_kinetic_matrix, dataset, 0, time)
 
 
-@pytest.mark.skip()
-def test_kinetic_fitting_one_core(benchmark):
+@pytest.mark.parametrize("nnls", [True, False])
+def test_kinetic_residual_benchmark(benchmark, nnls):
 
     suite = ThreeComponentSequential
     model = suite.model
@@ -84,17 +84,11 @@ def test_kinetic_fitting_one_core(benchmark):
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
 
-    #  suite.axis["time"] = np.arange(-10, 50, 5.0)
-
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
-
-    assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
 
     data = {'dataset1': dataset}
 
-    benchmark(model.fit, initial, data)
-    print(initial)
+    benchmark(KineticFitResult.from_parameter, model, data, initial, nnls=nnls, atol=0)
 
 
 @pytest.mark.skip()

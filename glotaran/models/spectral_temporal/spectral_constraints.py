@@ -1,7 +1,8 @@
 """This package contains compartment constraint items."""
 
-from typing import Dict, List, Tuple
-from .model_item import model_item, model_item_typed
+from typing import List, Tuple
+
+from glotaran.model.model_item import model_item, model_item_typed
 
 
 @model_item(
@@ -52,23 +53,12 @@ class ZeroConstraint:
         return any(interval[0] <= index <= interval[1] for interval in self.interval)
 
 
-@model_item(
-    attributes={
-        'targets': {'type': Dict[str, str], 'target': ('compartment', 'parameter')},
-    }, has_type=True, no_label=True)
-class EqualConstraint(ZeroConstraint):
-    """An equal constraint replaces the compartments calculated matrix row a sum
-    of target compartments rows, each scaled by a parameter.
-
-    C[compartment] = p1 * C[target1] + p2 * C[target2] + ...
-    """
-
-
 @model_item(attributes={
-    'targets': {'type': Dict[str, str], 'target': ('compartment', 'parameter')},
+    'target': str,
+    'parameter': str,
     'weight': str,
 }, has_type=True, no_label=True)
-class EqualAreaConstraint(EqualConstraint):
+class EqualAreaConstraint(ZeroConstraint):
     """An equal area constraint adds a the differenc of the sum of a
     compartements in the e matrix in one ore more intervals to the scaled sum
     of the e matrix of one or more target compartmants to resiudal. The additional
@@ -88,10 +78,9 @@ class EqualAreaConstraint(EqualConstraint):
 @model_item_typed(types={
     'only': OnlyConstraint,
     'zero': ZeroConstraint,
-    'equal': EqualConstraint,
     'equal_area': EqualAreaConstraint,
-})
-class CompartmentConstraint:
+}, no_label=True)
+class SpectralConstraint:
     """A compartment constraint is applied on one compartment on one or many
     intervals on the estimated axies type.
 

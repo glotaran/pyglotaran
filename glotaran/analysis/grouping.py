@@ -72,41 +72,51 @@ def calculate_group_item(item,
 
     full = None
     full_clp = None
-    dataset_labels = []
+    original_clp = []
     for index, dataset_descriptor in item:
 
         if dataset_descriptor.label not in data:
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
         dataset_descriptor = dataset_descriptor.fill(model, parameter)
 
-        dataset_labels.append(dataset_descriptor.label)
+        #  dataset_labels.append(dataset_descriptor.label)
 
         axis = data[dataset_descriptor.label].get_axis(model.calculated_axis)
 
-        (clp, this_matrix) = model.calculated_matrix(dataset_descriptor,
-                                                     index,
-                                                     axis)
+        (clp, this_matrix) = model.calculated_matrix(dataset_descriptor, index, axis)
 
-        #  apply_constraints(dataset_descriptor, clp, this_matrix, index)
+        if model.constrain_calculated_matrix_function is not None:
+            (clp, this_matrix) = \
+                model.constrain_calculated_matrix_function(model, clp, this_matrix)
+
+        original_clp.append(clp)
+
+        weight = data[dataset_descriptor.label].get_weight()
+        if weight is not None:
+            idx = np.where(axis == index)[0][0]
+            for i in range(this_matrix.shape[1]):
+                this_matrix[:, i] = np.multiply(this_matrix[:, i], weight[:, idx])
 
         if full is None:
-            full = this_matrix
+            full = [this_matrix]
             full_clp = clp
         else:
             if not clp == full_clp:
                 for comp in clp:
                     if comp not in full_clp:
                         full_clp.append(comp)
-                        full = np.concatenate((full, np.zeros((full.shape[1]))))
-                reshape = np.zeros((len(full_clp), this_matrix.shape[1]))
+                        full = np.concatenate(
+                            (full, np.zeros((full.shape[0]))), axis=1)
+                reshape = np.zeros((this_matrix.shape[0], len(full_clp)))
                 for i, comp in enumerate(full_clp):
-                    reshape[i, :] = this_matrix[clp.index(comp), :] \
+                    reshape[:, i] = this_matrix[:, clp.index(comp)] \
                             if comp in clp else np.zeros((this_matrix.shape[1]))
                 this_matrix = reshape
 
-            full = np.concatenate((full, this_matrix), axis=1)
+            #  full = np.concatenate((full, this_matrix), axis=1)
+            full.append(this_matrix)
 
-    return (full, full_clp, dataset_labels)
+    return (full, full_clp, original_clp)
 
 
 def calculate_group(group: Group,
@@ -152,8 +162,8 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
     datagroup : list(np.ndarray)
     """
 
-    result = []
-    for _, item in group.items():
+    result = {}
+    for i, item in group.items():
         full = None
         for index, dataset_descriptor in item:
 
@@ -163,13 +173,13 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
             dataset = data[dataset_descriptor.label]
             axis = list(dataset.get_axis(model.estimated_axis))
             idx = axis.index(index)
-            dataset = dataset.data()[idx, :]
+            dataset = dataset.data(weighted=True)[:, idx]
 
             if full is None:
                 full = dataset
             else:
                 full = np.append(full, dataset)
-        result.append(full)
+        result[i] = full
     return result
 
 

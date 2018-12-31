@@ -23,6 +23,8 @@ class Dataset:
 
     def __init__(self):
         self._axis = {}
+        self._data = None
+        self._weight = None
 
     def get_axis(self, axis_label: str) -> np.ndarray:
         """get_axis gets an axis by its axis_label.
@@ -56,7 +58,7 @@ class Dataset:
             axis = np.asarray(axis)
         self._axis[axis_label] = axis
 
-    def data(self) -> np.ndarray:
+    def data(self, weighted=False) -> np.ndarray:
         """
         Data of the dataset as np.ndarray of shape (M,N).
         This corresponds to a measurement with M indices (i.e. wavelength, pixel)
@@ -67,6 +69,8 @@ class Dataset:
         data: np.ndarray
             Data of the dataset as np.ndarray of shape (M,N)
         """
+        if weighted and self._weight is not None:
+            return np.multiply(self._data, self._weight)
         return self._data
 
     def set_data(self, data: np.ndarray):
@@ -86,6 +90,32 @@ class Dataset:
         if len(data.shape) is not 2:
             raise DimensionalityError("The data needs to be 2-dimensional")
         self._data = data
+
+    def has_weight(self) -> bool:
+        """
+        Returns wether the dataset contains a weight matrix.
+
+        Returns
+        -------
+        has_weight : bool
+        """
+        return self._weight is not None
+
+    def get_weight(self) -> np.ndarray:
+        """
+        Returns the weight matrix of the daraset.
+
+        Returns
+        -------
+        weight : np.ndarray
+        """
+        return self._weight
+
+    def set_weight(self, weight: np.ndarray):
+        if not weight.shape == self._data.shape:
+            raise Exception(f"Dimension of weight matrix '{weight.shape}' do not match "
+                            f"shape of data '{self._data.shape}'")
+        self._weight = weight
 
     def copy(self) -> 'Dataset':
         """
@@ -118,7 +148,7 @@ class Dataset:
                 right singular values
 
         """
-        lsv, svals, rsv = np.linalg.svd(self.data().T)
+        lsv, svals, rsv = np.linalg.svd(self.data())
         return lsv, svals, rsv.T
 
 

@@ -184,9 +184,9 @@ class ExplicitFile(object):
         dataset.set_axis("time", self._times)
         dataset.set_axis("spectral", self._spectral_indices)
         if self._file_data_format == DataFileType.time_explicit:
-            dataset.set_data(self._observations)
-        else:
             dataset.set_data(self._observations.T)
+        else:
+            dataset.set_data(self._observations)
         return dataset
 
     def _initialize_with_dataset(self, dataset):

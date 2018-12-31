@@ -6,7 +6,8 @@ from glotaran.analysis.simulation import simulate
 from glotaran.analysis.fitresult import FitResult
 
 from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
-# from ...model.model import model
+
+from .mock import MockMegacomplex
 
 OLD_MAT = None
 OLD_KIN = []
@@ -20,7 +21,7 @@ def calculate_kinetic(dataset, index, axis):
     if np.array_equal(kinpar, OLD_KIN):
         return (compartments, OLD_MAT)
 
-    array = np.exp(np.outer(axis, kinpar)).T
+    array = np.exp(np.outer(axis, kinpar))
     OLD_KIN = kinpar
     OLD_MAT = array
     return (compartments, array)
@@ -30,7 +31,7 @@ def calculate_spectral_simple(dataset, axis):
     kinpar = -1 * np.array(dataset.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
-    return array.T
+    return array
 
 
 def calculate_spectral_gauss(dataset, axis):
@@ -38,10 +39,10 @@ def calculate_spectral_gauss(dataset, axis):
     amp = np.asarray(dataset.amplitude)
     delta = np.asarray(dataset.delta)
 
-    array = np.empty((axis.size, location.size), dtype=np.float64)
+    array = np.empty((location.size, axis.size), dtype=np.float64)
 
     for i in range(location.size):
-        array[:, i] = amp[i] * np.exp(
+        array[i, :] = amp[i] * np.exp(
             -np.log(2) * np.square(
                 2 * (axis - location[i])/delta[i]
             )
@@ -71,7 +72,8 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
        calculated_matrix=calculate_kinetic,
        calculated_axis='c',
        estimated_matrix=calculate_spectral_simple,
-       estimated_axis='e'
+       estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class DecayModel(BaseModel):
     pass
@@ -82,7 +84,8 @@ class DecayModel(BaseModel):
        calculated_matrix=calculate_kinetic,
        calculated_axis='c',
        estimated_matrix=calculate_spectral_gauss,
-       estimated_axis='e'
+       estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class GaussianDecayModel(BaseModel):
     pass
@@ -131,25 +134,25 @@ class TwoCompartmentDecay:
 class MultichannelMulticomponentDecay:
     wanted = [.006667, 0.00333, 0.00035, 0.0303, 0.000909,
               {'loc': [
-                  ['1', 14705, {'fit': False}],
-                  ['2', 13513, {'fit': False}],
-                  ['3', 14492, {'fit': False}],
-                  ['4', 14388, {'fit': False}],
-                  ['5', 14184, {'fit': False}],
+                  ['1', 14705],
+                  ['2', 13513],
+                  ['3', 14492],
+                  ['4', 14388],
+                  ['5', 14184],
               ]},
               {'amp': [
-                  ['1', 1, {'fit': False}],
-                  ['2', 2, {'fit': False}],
-                  ['3', 10, {'fit': False}],
-                  ['4', 100, {'fit': False}],
-                  ['5', 10, {'fit': False}],
+                  ['1', 1],
+                  ['2', 2],
+                  ['3', 5],
+                  ['4', 20],
+                  ['5', 10],
               ]},
               {'del': [
-                  ['1', 400, {'fit': False}],
-                  ['2', 1000, {'fit': False}],
-                  ['3', 300, {'fit': False}],
-                  ['4', 200, {'fit': False}],
-                  ['5', 350, {'fit': False}],
+                  ['1', 400],
+                  ['2', 1000],
+                  ['3', 300],
+                  ['4', 200],
+                  ['5', 350],
               ]},
               ]
     initial = [.005, 0.003, 0.00022, 0.0300, 0.000888]
@@ -209,7 +212,7 @@ def test_fitting(suite):
 
     dataset = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
 
-    assert dataset.data().shape == (est_axis.size, cal_axis.size)
+    assert dataset.data().shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
 
@@ -221,7 +224,7 @@ def test_fitting(suite):
         assert np.allclose(param.value, wanted.get(param.label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_dataset("dataset1")
+    resultdata = result.get_fitted_dataset("dataset1")
     assert np.array_equal(dataset.get_axis('c'), resultdata.get_axis('c'))
     assert np.array_equal(dataset.get_axis('e'), resultdata.get_axis('e'))
     assert dataset.data().shape == resultdata.data().shape

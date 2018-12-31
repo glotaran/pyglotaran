@@ -1,6 +1,7 @@
 """Spectral Temporal Dataset Descriptor"""
 
 from typing import Dict
+
 from glotaran.model import DatasetDescriptor, model_item
 
 
@@ -20,11 +21,4 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
 
     def get_k_matrices(self):
         for cmplx in self.megacomplex:
-            full_k_matrix = None
-            for k_matrix in cmplx.k_matrix:
-                if full_k_matrix is None:
-                    full_k_matrix = k_matrix
-                # If multiple k matrices are present, we combine them
-                else:
-                    full_k_matrix = full_k_matrix.combine(k_matrix)
-            yield (cmplx.label, full_k_matrix)
+            yield (cmplx.label, cmplx.get_k_matrix())

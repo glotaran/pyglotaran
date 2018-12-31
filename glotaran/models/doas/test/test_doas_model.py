@@ -64,7 +64,7 @@ class OneOscillation():
     axis = {'time': time, 'spectral': spectral}
 
     wanted_clp = ['osc1_sin', 'osc1_cos']
-    wanted_shape = (2, 300)
+    wanted_shape = (300, 2)
 
 
 class OneOscillationWithIrf():
@@ -135,7 +135,7 @@ class OneOscillationWithIrf():
     axis = {'time': time, 'spectral': spectral}
 
     wanted_clp = ['osc1_sin', 'osc1_cos']
-    wanted_shape = (2, 300)
+    wanted_shape = (300, 2)
 
 
 class OneOscillationWithSequentialModel():
@@ -270,7 +270,7 @@ class OneOscillationWithSequentialModel():
     axis = {'time': time, 'spectral': spectral}
 
     wanted_clp = ['osc1_sin', 'osc1_cos', 's1', 's2']
-    wanted_shape = (4, 600)
+    wanted_shape = (600, 4)
 
 
 @pytest.mark.parametrize("suite", [
@@ -307,7 +307,7 @@ def test_doas_model(suite):
     print(dataset.data())
 
     assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
+        (suite.axis['time'].size, suite.axis['spectral'].size)
 
     print(suite.parameter)
     data = {'dataset1': dataset}
@@ -319,7 +319,7 @@ def test_doas_model(suite):
         assert np.allclose(param.value, suite.wanted_parameter.get(label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_dataset("dataset1")
+    resultdata = result.get_fitted_dataset("dataset1")
     assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
     assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
     assert dataset.data().shape == resultdata.data().shape

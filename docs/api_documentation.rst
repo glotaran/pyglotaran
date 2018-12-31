@@ -16,10 +16,9 @@ The API Documentation for glotaran is automatically created from its docstrings.
     :toctree: api
 
     glotaran.analysis
-    glotaran.analysis.dataset
     glotaran.analysis.fitresult
-    glotaran.analysis.fitting
     glotaran.analysis.grouping
+    glotaran.analysis.nnls
     glotaran.analysis.simulation
     glotaran.analysis.variable_projection
     glotaran.data
@@ -27,18 +26,17 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.data.dataio.chlorospec_format
     glotaran.data.dataio.file_readers
     glotaran.data.dataio.legacy_readers
-    glotaran.data.dataio.mapper
     glotaran.data.dataio.mlsd_file_format
     glotaran.data.dataio.spectral_timetrace
     glotaran.data.dataio.wavelength_time_explicit_file
     glotaran.data.datasets
-    glotaran.data.datasets.specialized_datasets
+    glotaran.data.datasets.flim_dataset
+    glotaran.data.datasets.high_dimensional_dataset
     glotaran.data.datasets.spectral_temporal_dataset
     glotaran.data.external_file_readers
     glotaran.data.external_file_readers.sdt_reader
     glotaran.model
     glotaran.model.base_model
-    glotaran.model.compartment_constraints
     glotaran.model.dataset
     glotaran.model.dataset_descriptor
     glotaran.model.model
@@ -48,20 +46,26 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.model.parameter_group
     glotaran.models
     glotaran.models.doas
+    glotaran.models.doas.doas_fit_result
     glotaran.models.doas.doas_matrix
     glotaran.models.doas.doas_megacomplex
     glotaran.models.doas.doas_model
     glotaran.models.doas.doas_spectral_matrix
     glotaran.models.doas.oscillation
+    glotaran.models.flim
+    glotaran.models.flim.flim_model
     glotaran.models.spectral_temporal
     glotaran.models.spectral_temporal.initial_concentration
     glotaran.models.spectral_temporal.irf
     glotaran.models.spectral_temporal.k_matrix
+    glotaran.models.spectral_temporal.kinetic_fit_result
     glotaran.models.spectral_temporal.kinetic_matrix
     glotaran.models.spectral_temporal.kinetic_megacomplex
     glotaran.models.spectral_temporal.kinetic_model
     glotaran.models.spectral_temporal.kinetic_result
+    glotaran.models.spectral_temporal.spectral_constraints
     glotaran.models.spectral_temporal.spectral_matrix
+    glotaran.models.spectral_temporal.spectral_relations
     glotaran.models.spectral_temporal.spectral_shape
     glotaran.models.spectral_temporal.spectral_temporal_dataset_descriptor
     glotaran.parse

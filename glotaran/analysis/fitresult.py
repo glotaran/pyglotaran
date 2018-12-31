@@ -1,9 +1,9 @@
 """This package contains the FitResult object"""
 
 import multiprocessing
+
 import numpy as np
 from lmfit.minimizer import Minimizer
-
 
 from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
@@ -12,6 +12,7 @@ from glotaran.model.parameter_group import ParameterGroup
 from .grouping import create_group, create_data_group
 from .grouping import calculate_group_item
 from .variable_projection import clp_variable_projection, residual_variable_projection
+from .nnls import residual_nnls
 
 
 class FitResult:
@@ -35,20 +36,29 @@ class FitResult:
         -------
         """
         self.model = model
-        self.group = create_group(model, data, atol)
         self.data = data
-        self.data_group = create_data_group(model, self.group, data)
         self.initial_parameter = initital_parameter
         self.nnls = nnls
+        self._group = create_group(model, data, atol)
+        self._data_group = create_data_group(model, self._group, data)
         self._lm_result = None
-        self._clp = None
+        self._clp = {}
+        self._original_clp = {}
+        self._clp_labels = {}
+        self._concentrations = {}
+        self._residuals = {}
         self._pool = None
+
+    @classmethod
+    def from_parameter(cls, model, data, parameter, nnls=False, atol=0):
+        cls = cls(model, data, parameter, nnls, atol=atol)
+        cls._calculate_residual(parameter)
+        return cls
 
     def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
-        self._old = parameter
         minimizer = Minimizer(
-            self._flat_residual,
+            self._calculate_residual,
             parameter,
             fcn_args=[],
             fcn_kws=None,
@@ -73,66 +83,99 @@ class FitResult:
 
         if not self.nnls and self._clp is None:
             self._clp = clp_variable_projection(self.best_fit_parameter,
-                                                self.group, self.model,
-                                                self.data, self.data_group)
+                                                self._group, self.model,
+                                                self.data, self._data_group)
+
+    @property
+    def nfev(self):
+        return self._lm_result.nfev
+
+    @property
+    def nvars(self):
+        return self._lm_result.nvarys
+
+    @property
+    def ndata(self):
+        return self._lm_result.ndata
+
+    @property
+    def nfree(self):
+        return self._lm_result.nfree
+
+    @property
+    def chisqr(self):
+        return self._lm_result.chisqr
+
+    @property
+    def red_chisqr(self):
+        return self._lm_result.redchi
+
+    @property
+    def var_names(self):
+        return self._lm_result.var_names
+
+    @property
+    def covar(self):
+        return self._lm_result.covar
 
     @property
     def best_fit_parameter(self) -> ParameterGroup:
         """The best fit parameters."""
+        if self._lm_result is None:
+            return self.initial_parameter
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
-    def get_calculated_matrix(self, label):
-        filled_dataset = self.model.dataset[label].fill(self.model,
-                                                        self.best_fit_parameter)
-        dataset = self.data[label]
+    def get_concentrations(self, dataset):
 
-        calculated_axis = dataset.get_axis(self.model.calculated_axis)
-        estimated_axis = dataset.get_axis(self.model.estimated_axis)
+        indices = self._get_group_indices(dataset)
 
-        calculated_matrix = \
-            [self.model.calculated_matrix(filled_dataset,
-                                          index,
-                                          calculated_axis)
-             for index in estimated_axis]
-        clp_labels = calculated_matrix[0][0]
-        calculated_matrix = [c[1] for c in calculated_matrix]
-        return clp_labels, calculated_matrix
+        clp_labels = []
+        for idx in indices:
+            for label in self._original_clp[idx][self._get_dataset_idx(idx, dataset)]:
+                if label not in clp_labels:
+                    clp_labels.append(label)
 
-    def get_clp(self, label):
-        filled_dataset = self.model.dataset[label].fill(self.model,
-                                                        self.best_fit_parameter)
-        dataset = self.data[label]
+        weight = self.data[dataset].get_weight()
 
-        calculated_axis = dataset.get_axis(self.model.calculated_axis)
-        estimated_axis = dataset.get_axis(self.model.estimated_axis)
+        dim1 = self.data[dataset].get_axis(self.model.estimated_axis).size
+        dim2 = self.data[dataset].get_axis(self.model.calculated_axis).size
+        dim3 = len(clp_labels)
 
-        calculated_matrix = \
-            [self.model.calculated_matrix(filled_dataset,
-                                          index,
-                                          calculated_axis)
-             for index in estimated_axis]
+        concentrations = np.empty((dim1, dim2, dim3), dtype=np.float64)
 
-        clp_labels = calculated_matrix[0][0]
+        for i, index in enumerate(indices):
+            dataset_idx = self._get_dataset_idx(index, dataset)
+            concentration = self._concentrations[index][dataset_idx]
+            if weight is not None:
+                for j in range(concentration.shape[1]):
+                    concentration[:, j] = np.multiply(concentration[:, j], 1/weight[:, i])
+            labels = self._clp_labels[index]
+            idx = [labels.index(label) for label in clp_labels]
+            concentrations[i, :, :] = concentration[:, idx]
 
-        dim1 = len(calculated_matrix)
+        return clp_labels, concentrations
+
+    def get_clp(self, dataset):
+
+        indices = self._get_group_indices(dataset)
+
+        clp_labels = []
+        for idx in indices:
+            for label in self._original_clp[idx][self._get_dataset_idx(idx, dataset)]:
+                if label not in clp_labels:
+                    clp_labels.append(label)
+
+        dim1 = len(indices)
         dim2 = len(clp_labels)
 
         clp = np.empty((dim1, dim2), dtype=np.float64)
 
-        all_idx = [i for i in self.group]
-
-        i = 0
-        for idx in estimated_axis:
-            if isinstance(idx, (int, float)):
-                idx = (np.abs(all_idx - idx)).argmin()
-            else:
-                idx = all_idx.index(idx)
-            _, labels, all_clp = self._clp[idx]
-            clp[i, :] = np.asarray([all_clp[labels.index(c)] for c in clp_labels])
-            i += 1
+        for i, index in enumerate(indices):
+            idx = [self._clp_labels[index].index(label) for label in clp_labels]
+            clp[i, :] = self._clp[index][idx]
         return clp_labels, clp
 
-    def get_dataset(self, label: str):
+    def get_fitted_dataset(self, label: str):
         """get_dataset returns the DatasetResult for the given dataset.
 
         Parameters
@@ -146,72 +189,94 @@ class FitResult:
         print(a_matrix)
             The result for the dataset.
         """
-        filled_dataset = self.model.dataset[label].fill(self.model,
-                                                        self.best_fit_parameter)
         dataset = self.data[label]
 
         calculated_axis = dataset.get_axis(self.model.calculated_axis)
         estimated_axis = dataset.get_axis(self.model.estimated_axis)
 
-        calculated_matrix = \
-            [self.model.calculated_matrix(filled_dataset,
-                                          index,
-                                          calculated_axis)
-             for index in estimated_axis]
+        result = np.zeros((calculated_axis.size, estimated_axis.size), dtype=np.float64)
 
-        clp_labels = calculated_matrix[0][0]
+        indices = self._get_group_indices(label)
+        for i, index in enumerate(indices):
 
-        dim1 = len(calculated_matrix)
-        dim2 = len(clp_labels)
+            dataset_idx = self._get_dataset_idx(index, label)
 
-        calculated_matrix = [c[1] for c in calculated_matrix]
-        estimated_matrix = np.empty((dim1, dim2), dtype=np.float64)
+            result[:, i] = np.dot(
+                self._concentrations[index][dataset_idx],
+                self._clp[index],
+            )
 
-        all_idx = [i for i in self.group]
-
-        i = 0
-        for idx in estimated_axis:
-            idx = (np.abs(all_idx - idx)).argmin()
-            _, labels, clp = self._clp[idx]
-            estimated_matrix[i, :] = np.asarray([clp[labels.index(c)] for c in clp_labels])
-            i += 1
-
-        dim2 = calculated_matrix[0].shape[1]
-        result = np.zeros((dim1, dim2), dtype=np.float64)
-        for i in range(dim1):
-            result[i, :] = np.dot(estimated_matrix[i, :], calculated_matrix[i])
         dataset = Dataset()
         dataset.set_axis(self.model.calculated_axis, calculated_axis)
         dataset.set_axis(self.model.estimated_axis, estimated_axis)
         dataset.set_data(result)
         return dataset
 
+    def _get_group_indices(self, dataset_label):
+        return [index for index, item in self._group.items()
+                if dataset_label in [val[1].label for val in item]]
+
+    def _get_dataset_idx(self, index, dataset):
+            datasets = [val[1].label for val in self._group[index]]
+            return datasets.index(dataset)
+
     def _iter_cb(self, params, i, resid, *args, **kws):
         pass
 
-    def final_residual(self):
-        return self._residual(self.best_fit_parameter)
+    def final_residual(self, dataset):
 
-    def final_residual_svd(self):
-        lsv, svals, rsv = np.linalg.svd(self.final_residual().T)
+        fitted_data = self.get_fitted_dataset(dataset).data()
+        dataset = self.data[dataset].data()
+
+        return np.abs(fitted_data - dataset)
+
+    def final_weighted_residual(self, dataset):
+
+        residual = self.final_residual()
+        weight = self.data[dataset].get_weight()
+        if weight is not None:
+            residual = np.multiply(residual, weight)
+
+        return residual
+
+    def final_residual_svd(self, dataset):
+        lsv, svals, rsv = np.linalg.svd(self.final_residual(dataset))
         return lsv, svals, rsv.T
 
-    def _residual(self, parameter):
+    def _calculate_residual(self, parameter):
+        if not isinstance(parameter, ParameterGroup):
+            parameter = ParameterGroup.from_parameter_dict(parameter)
         residuals = None
         if self._pool is None:
-            items = self.group.values()
-            residuals = [residual_variable_projection(
-                calculate_group_item(item, self.model, parameter, self.data)[0],
-                self.data_group[i]) for i, item in enumerate(items)]
+
+            residuals = []
+            for index, item in self._group.items():
+                self._concentrations[index], self._clp_labels[index], self._original_clp[index] = \
+                    calculate_group_item(item, self.model, parameter, self.data)
+                concentration = np.concatenate(self._concentrations[index], axis=0)
+
+                if self.nnls:
+                    self._clp[index], self._residuals[index] = \
+                        residual_nnls(
+                            concentration,
+                            self._data_group[index]
+                        )
+                else:
+                    self._clp[index], self._residuals[index] = \
+                        residual_variable_projection(
+                            concentration,
+                            self._data_group[index]
+                        )
+                residuals.append(self._residuals[index])
         else:
-            jobs = [(i, parameter) for i, _ in enumerate(self.group)]
+            jobs = [(i, parameter) for i, _ in enumerate(self._group)]
             residuals = self._pool.map(worker_fun, jobs)
 
-        return np.asarray(residuals)
+        additionals = self.model.additional_residual_function(
+            self.model, self._clp, self._concentrations) \
+            if self.model.additional_residual_function is not None else []
 
-    def _flat_residual(self, parameter):
-        parameter = ParameterGroup.from_parameter_dict(parameter)
-        return np.concatenate(self._residual(parameter))
+        return np.concatenate(residuals + additionals)
 
     def _init_worker_pool(self, nr_worker):
 
@@ -224,10 +289,10 @@ class FitResult:
 
         self._pool = multiprocessing.Pool(nr_worker,
                                           initializer=init_worker,
-                                          initargs=(list(self.group.values()),
+                                          initargs=(list(self._group.values()),
                                                     self.model,
                                                     self.data,
-                                                    self.data_group))
+                                                    self._data_group))
 
     def _close_worker_pool(self):
         self._pool.close()

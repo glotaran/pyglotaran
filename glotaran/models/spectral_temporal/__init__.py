@@ -2,8 +2,10 @@ from . import (
     initial_concentration,
     irf,
     k_matrix,
+    kinetic_fit_result,
     kinetic_megacomplex,
     kinetic_model,
+    spectral_constraints,
     spectral_shape,
     spectral_temporal_dataset_descriptor,
 )
@@ -12,6 +14,10 @@ from . import (
 
 SpectralTemporalDatasetDescriptor = \
     spectral_temporal_dataset_descriptor.SpectralTemporalDatasetDescriptor
+
+# Fit Result
+
+KineticFitResult = kinetic_fit_result.KineticFitResult
 
 # Initial Concentration
 
@@ -39,3 +45,8 @@ KineticMegacomplex = kinetic_megacomplex.KineticMegacomplex
 # Model
 
 KineticModel = kinetic_model.KineticModel
+
+# Spectral Constraints
+SpectralConstraint = spectral_constraints.SpectralConstraint
+ZeroConstraint = spectral_constraints.ZeroConstraint
+EqualAreaConstraint = spectral_constraints.EqualAreaConstraint

@@ -42,14 +42,15 @@ class BaseModel:
 
             # we determine if we the item is known by the model by looking for
             # a setter with same name.
+
             if hasattr(model, f'set_{name}'):
 
                 # get the set function
                 set = getattr(model, f'set_{name}')
 
                 # we retrieve the actual class from the signature
-                item_cls = set.__func__.__annotations__['item']
                 for label, item in attribute.items():
+                    item_cls = set.__func__.__annotations__['item']
                     is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
                     if isinstance(item, dict):
                         if is_typed:
@@ -78,6 +79,42 @@ class BaseModel:
                                 item_cls._glotaran_model_item_types[item_type]
                         item = [label] + item
                         set(label, item_cls.from_list(item))
+                del model_dict[name]
+
+            elif hasattr(model, f'add_{name}'):
+
+                # get the set function
+                add = getattr(model, f'add_{name}')
+
+                # we retrieve the actual class from the signature
+                for item in attribute:
+                    item_cls = add.__func__.__annotations__['item']
+                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+                    if isinstance(item, dict):
+                        if is_typed:
+                            if 'type' not in item:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item['type']
+
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
+                        add(item_cls.from_dict(item))
+                    elif isinstance(item, list):
+                        if is_typed:
+                            if len(item) < 2 and len(item) is not 1:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item[1] if len(item) is not 1 and \
+                                hasattr(item_cls, 'label') else item[0]
+
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
+                        add(item_cls.from_list(item))
                 del model_dict[name]
 
         return model
@@ -113,6 +150,7 @@ class BaseModel:
     def fit(self,
             parameter: ParameterGroup,
             data: Dict[str, Dataset],
+            nnls: bool = False,
             verbose: int = 2,
             max_nfev: int = None,
             nr_worker: int = 1,
@@ -138,7 +176,7 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        result = FitResult(self, data, parameter, False, atol=group_atol)
+        result = self.fit_result_class(self, data, parameter, nnls, atol=group_atol)
         result.minimize(verbose=verbose, max_nfev=max_nfev, nr_worker=nr_worker)
         return result
 
@@ -182,8 +220,13 @@ class BaseModel:
         errors = []
 
         for attr in attrs:
-            for _, item in getattr(self, attr).items():
-                item.validate_model(self, errors=errors)
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    item.validate_model(self, errors=errors)
+            else:
+                for _, item in attr.items():
+                    item.validate_model(self, errors=errors)
 
         return errors
 
@@ -213,8 +256,13 @@ class BaseModel:
         errors = []
 
         for attr in attrs:
-            for _, item in getattr(self, attr).items():
-                item.validate_parameter(self, parameter, errors=errors)
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    item.validate_parameter(self, parameter, errors=errors)
+            else:
+                for _, item in attr.items():
+                    item.validate_parameter(self, parameter, errors=errors)
 
         return errors
 

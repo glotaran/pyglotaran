@@ -53,13 +53,8 @@ def model():
             "dataset1": {
                 "megacomplex": ['m1', 'm2'],
                 "scale": "scale_1",
-                #  "compartment_constraints": [
-                #      {'type': 'zero',
-                #       'compartment': 's1',
-                #       'interval': [(0, 1)]},
-                #  ]
             },
-            "dataset2": [['m2'], 'scale_2', []]
+            "dataset2": [['m2'], 'scale_2']
         }
     }
     return MockModel.from_dict(d)
@@ -80,13 +75,8 @@ def model_error():
             "dataset1": {
                 "megacomplex": ['N1', 'N2'],
                 "scale": "scale_1",
-                #  "compartment_constraints": [
-                #      {'type': 'zero',
-                #       'compartment': 's1',
-                #       'interval': [(0, 1)]},
-                #  ]
             },
-            "dataset2": [['mrX'], 'scale_3', None]
+            "dataset2": [['mrX'], 'scale_3']
         }
     }
     return MockModel.from_dict(d)

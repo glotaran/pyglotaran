@@ -88,16 +88,16 @@ class IrfGaussian:
 
         center, width, scale, _, _ = self.parameter(index)
 
-        matrix = np.zeros((self.coherent_artifact_order, axis.size), dtype=np.float64)
+        matrix = np.zeros((axis.size, self.coherent_artifact_order), dtype=np.float64)
 
         irf = np.exp(-1 * (axis - center)**2 / (2 * width**2))
-        matrix[0, :] = irf
+        matrix[:, 0] = irf
 
         if self.coherent_artifact_order > 1:
-            matrix[1, :] = irf * (center - axis) / width**2
+            matrix[:, 1] = irf * (center - axis) / width**2
 
         if self.coherent_artifact_order > 2:
-            matrix[2, :] = irf * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
+            matrix[:, 2] = irf * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
 
         matrix *= scale
 

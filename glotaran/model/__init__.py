@@ -6,7 +6,6 @@ common model items.
 
 from . import (
     base_model,
-    compartment_constraints,
     dataset_descriptor,
     model,
     model_item,
@@ -14,12 +13,6 @@ from . import (
     parameter_group,
 )
 from glotaran.model import dataset
-
-# Compartment Constraints
-CompartmentConstraint = compartment_constraints.CompartmentConstraint
-ZeroConstraint = compartment_constraints.ZeroConstraint
-EqualConstraint = compartment_constraints.EqualConstraint
-EqualAreaConstraint = compartment_constraints.EqualAreaConstraint
 
 # Dataset
 

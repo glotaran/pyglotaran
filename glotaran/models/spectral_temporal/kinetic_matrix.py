@@ -34,22 +34,22 @@ def calculate_kinetic_matrix(dataset, index, axis):
         else:
             for comp in this_compartments:
                 if comp in compartments:
-                    matrix[compartments.index(comp), :] += \
-                        this_matrix[this_compartments.index(comp), :]
+                    matrix[:, compartments.index(comp)] += \
+                            this_matrix[:, this_compartments.index(comp)]
                 else:
-                    matrix = np.concatenate((matrix,
-                                             this_matrix[this_compartments.index(comp), :]))
+                    matrix = np.concatenate(
+                        (matrix, this_matrix[:, this_compartments.index(comp)]), axis=1)
 
     if dataset.baseline is not None:
         baseline_compartment = f'{dataset.label}_baseline'
-        baseline = np.zeros((1, axis.size), dtype=np.float64)
+        baseline = np.zeros((axis.size, 1), dtype=np.float64)
         baseline.fill(dataset.baseline)
         if matrix is None:
             compartments = [baseline_compartment]
             matrix = baseline
         else:
             compartments.append(baseline_compartment)
-            matrix = np.concatenate((matrix, baseline))
+            matrix = np.concatenate((matrix, baseline), axis=1)
 
     if isinstance(dataset.irf, IrfGaussian) and dataset.irf.coherent_artifact:
         irf_compartments, irf_matrix = dataset.irf.calculate_coherent_artifact(index, axis)
@@ -58,7 +58,7 @@ def calculate_kinetic_matrix(dataset, index, axis):
             matrix = baseline
         else:
             compartments += irf_compartments
-            matrix = np.concatenate((matrix, irf_matrix))
+            matrix = np.concatenate((matrix, irf_matrix), axis=1)
 
     return (compartments, matrix)
 
@@ -75,7 +75,7 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
     rates = k_matrix.rates(compartments)
 
     # init the matrix
-    size = (len(rates), axis.shape[0])
+    size = (axis.size, rates.size)
     matrix = np.zeros(size, dtype=np.float64)
 
     # calculate the c_matrix
@@ -99,13 +99,14 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
             if len(irf.shape) == 2:
                 idx = (np.abs(dataset.data.get_axis("spectral") - index)).argmin()
                 irf = irf[idx, :]
-            for i in range(matrix.shape[0]):
-                matrix[i, :] = np.convolve(matrix[i, :], irf, mode="same")
+            for i in range(matrix.shape[1]):
+                matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
 
     # apply initial concentration vector
     matrix = np.matmul(
-        k_matrix.a_matrix(dataset.initial_concentration).T,
-        matrix)
+        matrix,
+        k_matrix.a_matrix(dataset.initial_concentration),
+    )
 
     # done
     return (compartments, matrix)

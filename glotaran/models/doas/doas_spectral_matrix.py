@@ -14,7 +14,7 @@ def calculate_doas_spectral_matrix(dataset, axis):
     for osc in oscillations:
         all_oscillations.append(osc)
         all_oscillations.append(osc)
-    matrix = np.ones((axis.size, len(all_oscillations)))
+    matrix = np.ones((len(all_oscillations), axis.size), dtype=np.float64)
     for i, osc in enumerate(all_oscillations):
         if osc.label not in dataset.shapes:
             raise Exception(f'No shape for oscillation "{osc.label}"')
@@ -22,11 +22,11 @@ def calculate_doas_spectral_matrix(dataset, axis):
         if not isinstance(shapes, list):
             shapes = [shapes]
         for shape in shapes:
-            matrix[:, i] *= shape.calculate(axis)
+            matrix[i, :] *= shape.calculate(axis)
 
     spectral_matrix = calculate_spectral_matrix(dataset, axis)
 
     if spectral_matrix is not None:
-        matrix = np.concatenate((matrix, spectral_matrix), axis=1)
+        matrix = np.concatenate((matrix, spectral_matrix), axis=0)
 
     return matrix
