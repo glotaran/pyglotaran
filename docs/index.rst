@@ -5,7 +5,6 @@ Welcome to glotaran's documentation!
     :maxdepth: 1
     :caption: USER DOCUMENTATION:
 
-    readme
     installation
     usage
     api_documentation
