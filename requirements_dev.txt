@@ -5,11 +5,11 @@ wheel>=0.30.0
 # needed to release new versions
 bumpversion==0.5.3
 
- # glotaran setup dependencies
-numpy>=1.15.4
-scipy>=1.1.0
-Cython>=0.29
-setuptools>=40.4.3
+# glotaran setup dependencies
+numpy==1.15.4
+scipy==1.1.0
+Cython==0.29.2
+setuptools==40.4.3
 
 # documentation dependencies
 Sphinx>=1.7.5
