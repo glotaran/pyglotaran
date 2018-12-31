@@ -37,7 +37,6 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.data.external_file_readers.sdt_reader
     glotaran.model
     glotaran.model.base_model
-    glotaran.model.compartment_constraints
     glotaran.model.dataset
     glotaran.model.dataset_descriptor
     glotaran.model.model
@@ -64,7 +63,9 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.models.spectral_temporal.kinetic_megacomplex
     glotaran.models.spectral_temporal.kinetic_model
     glotaran.models.spectral_temporal.kinetic_result
+    glotaran.models.spectral_temporal.spectral_constraints
     glotaran.models.spectral_temporal.spectral_matrix
+    glotaran.models.spectral_temporal.spectral_relations
     glotaran.models.spectral_temporal.spectral_shape
     glotaran.models.spectral_temporal.spectral_temporal_dataset_descriptor
     glotaran.parse

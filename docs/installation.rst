@@ -5,8 +5,29 @@ Installation
 ============
 
 
+Prerequisites
+-------------
+
+* Python 3.6 or later
+
+Windows
++++++++
+
+The easiest way of getting Python (and some basic tools to work with it) in Windows is to use `Anaconda <https://www.anaconda.com/>`_, which provides python.
+
+You will need a terminal for the installation. One is provided by *Anaconda* and is called *Anaconda Console*. You can find it in the start menu.
+
+.. note::
+
+   If you use a Windows Shell like cmd.exe or PowerShell, you might have to prefix '$PATH_TO_ANACONDA/' to all commands (e.g. *C:/Anaconda/pip.exe* instead of *pip*)
+
 Stable release
 --------------
+
+.. warning::
+
+   pyglotaran is early development, so for the moment stable releases are sparse and outdated.
+   We try to keep the master code stable, so please install from source for now.
 
 To install glotaran, run this command in your terminal:
 
@@ -27,38 +48,41 @@ you through the process.
 From sources
 ------------
 
-The sources for glotaran can be downloaded from the `Github repo`_.
+First you have to install or update some dependencies.
 
-First you have to install the Setup dependencies:
-
-.. code-block:: console
-
-    $ pip install -U numpy scipy Cython
-
-Afterwards you can simply use `pip`_ to install it directly from the `Github repo`_.
+Within a terminal:
 
 .. code-block:: console
 
-    $ pip install git+https://github.com/glotaran/glotaran.git@develop --process-dependency-links
+   $ pip install -U numpy scipy Cython
 
-Or you can either clone the public repository:
-
-.. code-block:: console
-
-    $ git clone -b develop --single-branch git://github.com/glotaran/glotaran.git
-
-Or download the `tarball`_:
+Alternatively, for Anaconda users:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/glotaran/glotaran/tarball/develop
+   $ conda update numpy scipy Cython
 
-And once you have a copy of the source, you can install it with:
+Afterwards you can simply use `pip`_ to install it directly from `Github`_.
 
 .. code-block:: console
 
-    $ python setup.py install
+   $ pip install git+https://github.com/glotaran/glotaran.git
 
+For updating glotaran, just re-run the command above.
 
-.. _Github repo: https://github.com/glotaran/glotaran
-.. _tarball: https://github.com/glotaran/glotaran/tarball/develop
+If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preffered):
+
+.. code-block:: console
+
+   $ git clone https://github.com/glotaran/glotaran.git
+
+Within a terminal, navigate to directory where you have unpacked or cloned the code and enter
+
+.. code-block:: console
+
+   $ pip install -e .
+
+For updating, simply download and unpack the newest version (or run ``$ git pull`` in glotaran directory if you used `git`_) and and re-run the command above.
+
+.. _Github: https://github.com/glotaran/glotaran
+.. _git: https://git-scm.com/
