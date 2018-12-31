@@ -116,6 +116,6 @@ class Parameter(LmParameter):
 
     def __str__(self):
         """ """
-        return f"__{self.label}__: _Value_: {self.value}, _Min_:" + \
+        return f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.stderr}, _Min_:" + \
                f" {self.min}, _Max_: {self.max}, _Vary_: {self.vary}," + \
-               f"_Non-Negative_: {self.non_neg}"
+               f" _Non-Negative_: {self.non_neg}"

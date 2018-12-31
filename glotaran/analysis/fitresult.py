@@ -49,11 +49,16 @@ class FitResult:
         self._residuals = {}
         self._pool = None
 
+    @classmethod
+    def from_parameter(cls, model, data, parameter, nnls=False, atol=0):
+        cls = cls(model, data, parameter, nnls, atol=atol)
+        cls._calculate_residual(parameter)
+        return cls
+
     def minimize(self, verbose: int = 2, max_nfev: int = None, nr_worker: int = 1):
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
-        self._old = parameter
         minimizer = Minimizer(
-            self._flat_residual,
+            self._calculate_residual,
             parameter,
             fcn_args=[],
             fcn_kws=None,
@@ -116,6 +121,8 @@ class FitResult:
     @property
     def best_fit_parameter(self) -> ParameterGroup:
         """The best fit parameters."""
+        if self._lm_result is None:
+            return self.initial_parameter
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
     def get_concentrations(self, dataset):
@@ -237,6 +244,8 @@ class FitResult:
         return lsv, svals, rsv.T
 
     def _calculate_residual(self, parameter):
+        if not isinstance(parameter, ParameterGroup):
+            parameter = ParameterGroup.from_parameter_dict(parameter)
         residuals = None
         if self._pool is None:
 
@@ -263,11 +272,11 @@ class FitResult:
             jobs = [(i, parameter) for i, _ in enumerate(self._group)]
             residuals = self._pool.map(worker_fun, jobs)
 
-        return np.asarray(residuals)
+        additionals = self.model.additional_residual_function(
+            self.model, self._clp, self._concentrations) \
+            if self.model.additional_residual_function is not None else []
 
-    def _flat_residual(self, parameter):
-        parameter = ParameterGroup.from_parameter_dict(parameter)
-        return np.concatenate(self._calculate_residual(parameter))
+        return np.concatenate(residuals + additionals)
 
     def _init_worker_pool(self, nr_worker):
 

@@ -2,6 +2,7 @@ from . import (
     initial_concentration,
     irf,
     k_matrix,
+    kinetic_fit_result,
     kinetic_megacomplex,
     kinetic_model,
     spectral_constraints,
@@ -13,6 +14,10 @@ from . import (
 
 SpectralTemporalDatasetDescriptor = \
     spectral_temporal_dataset_descriptor.SpectralTemporalDatasetDescriptor
+
+# Fit Result
+
+KineticFitResult = kinetic_fit_result.KineticFitResult
 
 # Initial Concentration
 

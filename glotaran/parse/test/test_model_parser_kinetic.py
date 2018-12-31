@@ -43,12 +43,16 @@ def test_dataset(model):
     assert dataset.shapes['s2'] == "shape2"
 
     dataset = model.dataset['dataset2']
-    assert len(dataset.spectral_constraints) == 3
+
+
+def test_spectral_constraints(model):
+    print(model.spectral_constraints)
+    assert len(model.spectral_constraints) == 3
 
     assert any(isinstance(c, ZeroConstraint) for c in
-               dataset.spectral_constraints)
+               model.spectral_constraints)
 
-    zcs = [zc for zc in dataset.spectral_constraints
+    zcs = [zc for zc in model.spectral_constraints
            if zc.type == 'zero']
     assert len(zcs) == 2
     for zc in zcs:
@@ -56,14 +60,25 @@ def test_dataset(model):
         assert zc.interval == [(1, 100), (2, 200)]
 
     assert any(isinstance(c, EqualAreaConstraint) for c in
-               dataset.spectral_constraints)
-    eac = [eac for eac in dataset.spectral_constraints
+               model.spectral_constraints)
+    eac = [eac for eac in model.spectral_constraints
            if isinstance(eac, EqualAreaConstraint)][0]
     assert eac.compartment == 's3'
     assert eac.interval == [(670, 810)]
     assert eac.target == 's2'
     assert eac.parameter == 55
     assert eac.weight == 0.0016
+
+
+def test_spectral_relations(model):
+    print(model.spectral_relations)
+    assert len(model.spectral_relations) == 1
+
+    rel = model.spectral_relations[0]
+
+    assert rel.compartment == 's1'
+    assert rel.target == 's2'
+    assert rel.interval == [(1, 100), (2, 200)]
 
 
 def test_initial_concentration(model):

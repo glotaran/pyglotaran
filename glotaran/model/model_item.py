@@ -105,6 +105,8 @@ def model_item(attributes={},
             setattr(cls, '_glotaran_attribute_defaults',
                     getattr(cls, '_glotaran_attribute_defaults').copy())
 
+        setattr(cls, '_glotaran_has_label', not no_label)
+
         # Set annotations for autocomplete and doc
         annotations = {}
         if not no_label:
@@ -254,7 +256,7 @@ def model_item(attributes={},
     return decorator
 
 
-def model_item_typed(types: Dict[str, any] = {}):
+def model_item_typed(types: Dict[str, any] = {}, no_label=False):
     """The model_item_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class an item when there
     are multiple variants. See package glotaran.model.compartment_constraints
@@ -271,6 +273,8 @@ def model_item_typed(types: Dict[str, any] = {}):
         setattr(cls, '_glotaran_model_item', True)
         setattr(cls, '_glotaran_model_item_typed', True)
         setattr(cls, '_glotaran_model_item_types', types)
+
+        setattr(cls, '_glotaran_has_label', not no_label)
 
         return cls
 
