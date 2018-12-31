@@ -85,6 +85,7 @@ def model(name,
                     getattr(self, attr_name)[label] = item
 
                 setattr(cls, f"set_{attr_name}", set_item)
+                setattr(cls, attr_name, {})
 
             else:
                 def add_item(self, item: attr_type,
@@ -98,6 +99,7 @@ def model(name,
                     getattr(self, attr_name).append(item)
 
                 setattr(cls, f"add_{attr_name}", add_item)
+                setattr(cls, attr_name, [])
 
         def init(self, cls=cls, attributes=attributes):
             for attr_name, attr_item in attributes.items():
