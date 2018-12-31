@@ -28,9 +28,11 @@ class MockDataset(Dataset):
         self.set_axis('c', np.asarray(calc_axis))
         self.set_data(np.ones((len(calc_axis), len(est_axis))))
 
+
 @model_item()
 class MockMegacomplex:
     pass
+
 
 @model('mock',
        calculated_matrix=calculate_c,

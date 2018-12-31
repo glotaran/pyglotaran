@@ -55,7 +55,7 @@ def calculate_doas_matrix(dataset, index, axis):
                                 frequency_max: {frequency_max}
                                 delta_min: {delta_min}
                                 nonfinite timpoints: {axis[idx]}
-                                
+
                                 """)
             osc = a * b
         matrix[:, idx] = osc.real

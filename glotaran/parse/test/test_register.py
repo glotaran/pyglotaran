@@ -9,7 +9,8 @@ from glotaran.parse import register
 class MockMegacomplex:
     pass
 
-@model('regeister_mock',
+
+@model('register_mock',
        megacomplex_type=MockMegacomplex,
        )
 class MockModel(BaseModel):
@@ -17,5 +18,5 @@ class MockModel(BaseModel):
 
 
 def test_register():
-    assert register.known_model('regeister_mock')
-    assert issubclass(register.get_model('regeister_mock'), MockModel)
+    assert register.known_model('register_mock')
+    assert issubclass(register.get_model('register_mock'), MockModel)

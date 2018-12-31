@@ -146,7 +146,6 @@ class ParameterGroup(OrderedDict):
                         top = group
         return root
 
-
     def write_csv(self, filename: str):
         with open(filename, mode='w') as parameter_file:
             parameter_writer = csv.writer(parameter_file, delimiter='\t')
