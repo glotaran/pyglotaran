@@ -60,7 +60,7 @@ Alternatively, for Anaconda users:
 
 .. code-block:: console
 
-   $ conda update numpy scipy Cython
+   $ conda install numpy scipy Cython
 
 Afterwards you can simply use `pip`_ to install it directly from `Github`_.
 
