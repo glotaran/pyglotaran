@@ -71,3 +71,20 @@ class KineticFitResult(FitResult):
         idx = [labels.index(label) for label in irf.clp_labels()]
 
         return irf.clp_labels(), clp[:, idx]
+
+    def get_centered_times(self, dataset):
+        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
+
+        time = self.data[dataset.label].get_axis('time')
+        spectral = self.data[dataset.label].get_axis('spectral')
+
+        dim1 = spectral.size
+        dim2 = time.size
+
+        times = np.zeros((dim1, dim2), dtype=np.float64)
+
+        for i, index in enumerate(spectral):
+            center, _, _, _, _ = dataset.irf.parameter(index)
+            times[i, :] = time - center
+
+        return times

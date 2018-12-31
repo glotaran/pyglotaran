@@ -83,9 +83,11 @@ def calculate_group_item(item,
 
         axis = data[dataset_descriptor.label].get_axis(model.calculated_axis)
 
-        (clp, this_matrix) = model.calculated_matrix(dataset_descriptor,
-                                                     index,
-                                                     axis)
+        (clp, this_matrix) = model.calculated_matrix(dataset_descriptor, index, axis)
+
+        if model.constrain_calculated_matrix_function is not None:
+            (clp, this_matrix) = \
+                model.constrain_calculated_matrix_function(model, clp, this_matrix)
 
         original_clp.append(clp)
 

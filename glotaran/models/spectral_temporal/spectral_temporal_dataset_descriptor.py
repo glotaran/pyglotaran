@@ -1,10 +1,8 @@
 """Spectral Temporal Dataset Descriptor"""
 
-from typing import Dict, List
+from typing import Dict
 
 from glotaran.model import DatasetDescriptor, model_item
-
-from .spectral_constraints import SpectralConstraint
 
 
 @model_item(attributes={
@@ -12,9 +10,6 @@ from .spectral_constraints import SpectralConstraint
     'irf': {'type': str, 'default': None},
     'baseline': {'type': str, 'default': None},
     'shapes': {'type': Dict[str, str], 'target': (None, 'shape'), 'default': None},
-    'spectral_constraints': {
-        'type': List[SpectralConstraint],
-        'default': None},
 })
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     """SpectralTemporalDatasetDescriptor is an implementation of

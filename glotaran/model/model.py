@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Dict
+from typing import Dict, List
 
 from glotaran.analysis.fitresult import FitResult
 from glotaran.parse.register import register_model
@@ -15,6 +15,8 @@ def model(name,
           estimated_matrix=None,
           calculated_axis=None,
           estimated_axis=None,
+          constrain_calculated_matrix_function=None,
+          additional_residual_function=None,
           fit_result_class=FitResult,
           allow_grouping=True,
           ):
@@ -23,8 +25,12 @@ def model(name,
 
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
-        setattr(cls, 'allow_grouping', allow_grouping)
         setattr(cls, 'fit_result_class', fit_result_class)
+        setattr(cls, 'constrain_calculated_matrix_function',
+                constrain_calculated_matrix_function)
+        setattr(cls, 'additional_residual_function',
+                additional_residual_function)
+        setattr(cls, 'allow_grouping', allow_grouping)
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
@@ -55,29 +61,52 @@ def model(name,
         # Set annotations and methods for attributes
 
         for attr_name, attr_type in attributes.items():
-            getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
+            if getattr(attr_type, '_glotaran_has_label'):
+                getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
+            else:
+                getattr(cls, '__annotations__')[attr_name] = List[attr_type]
             getattr(cls, '_glotaran_model_attributes')[attr_name] = None
 
-            def get_item(self, label: str, attr_name=attr_name):
-                return getattr(self, attr_name)[label]
+            if getattr(attr_type, '_glotaran_has_label'):
 
-            setattr(cls, f"get_{attr_name}", get_item)
+                def get_item(self, label: str, attr_name=attr_name):
+                    return getattr(self, attr_name)[label]
 
-            def set_item(self, label: str, item: attr_type,
-                         attr_name=attr_name,
-                         attr_type=attr_type):
+                setattr(cls, f"get_{attr_name}", get_item)
 
-                # TODO checked typed items
-                if not isinstance(item, attr_type) and \
-                        not hasattr(attr_type, "_glotaran_model_item_typed"):
-                    raise TypeError
-                getattr(self, attr_name)[label] = item
+                def set_item(self, label: str, item: attr_type,
+                             attr_name=attr_name,
+                             attr_type=attr_type):
 
-            setattr(cls, f"set_{attr_name}", set_item)
+                    # TODO checked typed items
+                    if not isinstance(item, attr_type) and \
+                            not hasattr(attr_type, "_glotaran_model_item_typed"):
+                        raise TypeError
+                    getattr(self, attr_name)[label] = item
+
+                setattr(cls, f"set_{attr_name}", set_item)
+                setattr(cls, attr_name, {})
+
+            else:
+                def add_item(self, item: attr_type,
+                             attr_name=attr_name,
+                             attr_type=attr_type):
+
+                    # TODO checked typed items
+                    if not isinstance(item, attr_type) and \
+                            not hasattr(attr_type, "_glotaran_model_item_typed"):
+                        raise TypeError
+                    getattr(self, attr_name).append(item)
+
+                setattr(cls, f"add_{attr_name}", add_item)
+                setattr(cls, attr_name, [])
 
         def init(self, cls=cls, attributes=attributes):
-            for attr_name in attributes:
-                setattr(self, attr_name, OrderedDict())
+            for attr_name, attr_item in attributes.items():
+                if getattr(attr_item, '_glotaran_has_label'):
+                    setattr(self, attr_name, OrderedDict())
+                else:
+                    setattr(self, attr_name, [])
             super(cls, self).__init__()
 
         setattr(cls, '__init__', init)

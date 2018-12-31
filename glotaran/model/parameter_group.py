@@ -1,12 +1,14 @@
 """This package contains glotarans parameter group class"""
 
 from typing import Dict, Generator, List, Tuple
-import copy
+import csv
 from collections import OrderedDict
+import copy
+from lmfit import Parameters
 from math import log
+import pandas as pd
 import yaml
 
-from lmfit import Parameters
 
 from .parameter import Parameter
 
@@ -17,7 +19,6 @@ class ParameterGroup(OrderedDict):
     def __init__(self, label: str):
         self._label = label
         self._parameters = OrderedDict()
-        self._fit = True
         self._root = None
         super(ParameterGroup, self).__init__()
 
@@ -83,8 +84,6 @@ class ParameterGroup(OrderedDict):
                     root.add_group(cls.from_dict(items, label=label))
                 else:
                     root.add_group(cls.from_list(items, label=label))
-            elif isinstance(item, bool):
-                root.fit = item
             else:
                 root.add_parameter(Parameter.from_list_or_value(item))
         return root
@@ -97,6 +96,67 @@ class ParameterGroup(OrderedDict):
         else:
             cls = cls.from_dict(items)
         return cls
+
+    @classmethod
+    def from_csv(cls, filename):
+        root = cls('p')
+        df = pd.read_csv(filename, sep='\t')
+
+        for i, label in enumerate(df['label']):
+            label = label.split('.')
+            if len(label) == 1:
+                p = Parameter(label=label.pop())
+                p.value = df['value'][i]
+                p.stderr = df['stderr'][i]
+                p.min = df['min'][i]
+                p.max = df['max'][i]
+                p.vary = df['vary'][i]
+                p.non_neg = df['non-negative'][i]
+                root.add_parameter(p)
+                continue
+
+            top = root
+            while len(label) is not 0:
+                group = label.pop(0)
+                if group in top:
+                    if len(label) is 1:
+                        p = Parameter(label=label.pop())
+                        p.value = df['value'][i]
+                        p.stderr = df['stderr'][i]
+                        p.min = df['min'][i]
+                        p.max = df['max'][i]
+                        p.vary = df['vary'][i]
+                        p.non_neg = df['non-negative'][i]
+                        top[group].add_parameter(p)
+                    else:
+                        top = top[group]
+                else:
+                    group = ParameterGroup(group)
+                    top.add_group(group)
+                    if len(label) is 1:
+                        p = Parameter(label=label.pop())
+                        p.value = df['value'][i]
+                        p.stderr = df['stderr'][i]
+                        p.min = df['min'][i]
+                        p.max = df['max'][i]
+                        p.vary = df['vary'][i]
+                        p.non_neg = df['non-negative'][i]
+                        group.add_parameter(p)
+                    else:
+                        top = group
+        return root
+
+    def write_csv(self, filename: str):
+        with open(filename, mode='w') as parameter_file:
+            parameter_writer = csv.writer(parameter_file, delimiter='\t')
+            parameter_writer.writerow(
+                ['label', 'value', 'stderr', 'min', 'max', 'vary', 'non-negative']
+            )
+
+            for (label, p) in self.all_with_label():
+                parameter_writer.writerow(
+                    [label, p.value, p.stderr, p.min, p.max, p.vary, p.non_neg]
+                )
 
     def add_parameter(self, parameter: Parameter):
         """
@@ -115,8 +175,6 @@ class ParameterGroup(OrderedDict):
             p.index = len(self._parameters) + 1
             if p.label is None:
                 p.label = "{}".format(p.index)
-            if not self.fit:
-                p.fit = False
             self._parameters[p.label] = p
 
     def add_group(self, group: 'ParameterGroup'):
@@ -129,8 +187,6 @@ class ParameterGroup(OrderedDict):
         """
         if not isinstance(group, ParameterGroup):
             raise TypeError("Leave must be glotaran.model.ParameterGroup")
-        if not self.fit:
-            group.fit = False
         group.set_root(self)
         self[group.label] = group
 
@@ -144,19 +200,6 @@ class ParameterGroup(OrderedDict):
             n += 1
             root = root._root
         return n
-
-    @property
-    def fit(self):
-        """Indicates if the group should be filtered out of the fitting process"""
-        return self._fit
-
-    @fit.setter
-    def fit(self, value):
-        for p in self.all_group():
-            p.fit = value
-        self._fit = value
-        for _, l in self.items():
-            l.fit = value
 
     @property
     def label(self):

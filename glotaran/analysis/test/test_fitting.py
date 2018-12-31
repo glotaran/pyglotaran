@@ -6,7 +6,8 @@ from glotaran.analysis.simulation import simulate
 from glotaran.analysis.fitresult import FitResult
 
 from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
-# from ...model.model import model
+
+from .mock import MockMegacomplex
 
 OLD_MAT = None
 OLD_KIN = []
@@ -71,7 +72,8 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
        calculated_matrix=calculate_kinetic,
        calculated_axis='c',
        estimated_matrix=calculate_spectral_simple,
-       estimated_axis='e'
+       estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class DecayModel(BaseModel):
     pass
@@ -82,7 +84,8 @@ class DecayModel(BaseModel):
        calculated_matrix=calculate_kinetic,
        calculated_axis='c',
        estimated_matrix=calculate_spectral_gauss,
-       estimated_axis='e'
+       estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class GaussianDecayModel(BaseModel):
     pass
@@ -131,25 +134,25 @@ class TwoCompartmentDecay:
 class MultichannelMulticomponentDecay:
     wanted = [.006667, 0.00333, 0.00035, 0.0303, 0.000909,
               {'loc': [
-                  ['1', 14705, {'fit': False}],
-                  ['2', 13513, {'fit': False}],
-                  ['3', 14492, {'fit': False}],
-                  ['4', 14388, {'fit': False}],
-                  ['5', 14184, {'fit': False}],
+                  ['1', 14705],
+                  ['2', 13513],
+                  ['3', 14492],
+                  ['4', 14388],
+                  ['5', 14184],
               ]},
               {'amp': [
-                  ['1', 1, {'fit': False}],
-                  ['2', 2, {'fit': False}],
-                  ['3', 10, {'fit': False}],
-                  ['4', 100, {'fit': False}],
-                  ['5', 10, {'fit': False}],
+                  ['1', 1],
+                  ['2', 2],
+                  ['3', 5],
+                  ['4', 20],
+                  ['5', 10],
               ]},
               {'del': [
-                  ['1', 400, {'fit': False}],
-                  ['2', 1000, {'fit': False}],
-                  ['3', 300, {'fit': False}],
-                  ['4', 200, {'fit': False}],
-                  ['5', 350, {'fit': False}],
+                  ['1', 400],
+                  ['2', 1000],
+                  ['3', 300],
+                  ['4', 200],
+                  ['5', 350],
               ]},
               ]
     initial = [.005, 0.003, 0.00022, 0.0300, 0.000888]

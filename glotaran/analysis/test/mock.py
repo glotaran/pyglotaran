@@ -1,6 +1,6 @@
 import numpy as np
 
-from ...model import Dataset, BaseModel, model
+from ...model import Dataset, BaseModel, model, model_item
 # from ...model.model import model
 
 
@@ -29,11 +29,17 @@ class MockDataset(Dataset):
         self.set_data(np.ones((len(calc_axis), len(est_axis))))
 
 
+@model_item()
+class MockMegacomplex:
+    pass
+
+
 @model('mock',
        calculated_matrix=calculate_c,
        calculated_axis='c',
        estimated_matrix=calculate_e,
        estimated_axis='e',
+       megacomplex_type=MockMegacomplex,
        )
 class MockModel(BaseModel):
     pass
