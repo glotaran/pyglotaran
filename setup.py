@@ -70,10 +70,6 @@ try:
                    "glotaran/models/spectral_temporal/kinetic_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
                                 "glotaran/models/spectral_temporal"]),
-        Extension("doas_matrix_gaussian_irf",
-                  ["glotaran/models/doas/doas_matrix_gaussian_irf.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/doas"]),
         ]
 
 except ImportError:
