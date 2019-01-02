@@ -68,11 +68,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'glotaran'
-copyright = u"2018, Joris Snellenburg, " \
-            u"Joern Weissenborn, " \
+copyright = u"2018, Joern Weissenborn, " \
+            u"Joris Snellenburg, " \
             u"Ivo van Stokkum"
-author = u"Joris Snellenburg, " \
-         u"Joern Weissenborn, " \
+author = u"Joern Weissenborn, " \
+         u"Joris Snellenburg, " \
          u"Ivo van Stokkum"
 
 # The version info for the project you're documenting, acts as replacement

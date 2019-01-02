@@ -109,9 +109,9 @@ setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Topic :: Scientific/Engineering :: Chemistry',
     ],
-    author='Joris Snellenburg, Joern Weissenborn, Ivo van Stokkum',
-    author_email="""j.snellenburg@gmail.com,
-                    joern.weissenborn@gmail.com,
+    author='Joern Weissenborn, Joris Snellenburg, Ivo van Stokkum',
+    author_email="""joern.weissenborn@gmail.com,
+                    j.snellenburg@gmail.com
                     i.h.m.van.stokkum@vu.nl """,
     license='GPLv3',
     python_requires=">=3.6",
