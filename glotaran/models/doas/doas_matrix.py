@@ -33,14 +33,14 @@ def calculate_doas_matrix(dataset, index, axis):
         elif isinstance(dataset.irf, IrfGaussian):
             centers, width, irf_scale, backsweep, backsweep_period = \
                     dataset.irf.parameter(index)
-            axis = axis - centers
+            shifted_axis = axis - centers
             d = width * width
             k = (osc.rate + 1j * frequency)
 
-            a = (-1 * axis + 0.5 * d * k) * k
+            a = (-1 * shifted_axis + 0.5 * d * k) * k
             a = np.minimum(a, 709)
             a = np.exp(a)
-            b = 1 + erf((axis - d * k) / (np.sqrt(2) * width))
+            b = 1 + erf((shifted_axis - d * k) / (np.sqrt(2) * width))
             if not all(np.isfinite(a)):
                 raise Exception("Non numeric values in term 'a' for oscillation with frequency"
                                 f"'{osc.frequency}', '{osc.rates}'")
