@@ -17,7 +17,12 @@ class KineticFitResult(FitResult):
                 if compartment not in compartments:
                     compartments.append(compartment)
         idx = [labels.index(compartment) for compartment in compartments]
-        return compartments, clp[:, idx]
+        if dataset.baseline is not None:
+            baseline_label = f"{dataset.label}_baseline"
+            compartments.append(baseline_label)
+            idx.append(labels.index(baseline_label))
+        sas = clp[:, idx]
+        return compartments, sas
 
     def get_das(self, dataset, megacomplex):
         labels, clp = self.get_clp(dataset)
