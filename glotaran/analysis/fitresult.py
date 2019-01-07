@@ -241,7 +241,7 @@ class FitResult:
 
     def final_residual_svd(self, dataset):
         lsv, svals, rsv = np.linalg.svd(self.final_residual(dataset))
-        return lsv, svals, rsv.T
+        return lsv, svals, rsv
 
     def _calculate_residual(self, parameter):
         if not isinstance(parameter, ParameterGroup):
