@@ -12,12 +12,10 @@ from . import (
     parameter,
     parameter_group,
 )
-from glotaran.model import dataset
 
 # Dataset
 
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
-Dataset = dataset.Dataset
 
 # BaseModel
 

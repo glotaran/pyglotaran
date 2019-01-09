@@ -9,21 +9,11 @@ from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, m
 
 from .mock import MockMegacomplex
 
-OLD_MAT = None
-OLD_KIN = []
-
 
 def calculate_kinetic(dataset, index, axis):
-    global OLD_MAT
-    global OLD_KIN
     kinpar = -1 * np.array(dataset.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
-    if np.array_equal(kinpar, OLD_KIN):
-        return (compartments, OLD_MAT)
-
     array = np.exp(np.outer(axis, kinpar))
-    OLD_KIN = kinpar
-    OLD_MAT = array
     return (compartments, array)
 
 
@@ -203,33 +193,37 @@ def test_fitting(suite):
     assert sim_model.valid()
 
     wanted = ParameterGroup.from_list(suite.wanted)
+    print(wanted)
     print(sim_model.errors_parameter(wanted))
     assert sim_model.valid_parameter(wanted)
 
     initial = ParameterGroup.from_list(suite.initial)
+    print(initial)
     print(model.errors_parameter(initial))
     assert model.valid_parameter(initial)
 
     dataset = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
+    print(dataset)
 
-    assert dataset.data().shape == (cal_axis.size, est_axis.size)
+    assert dataset.shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
 
     result = FitResult(model, data, initial, False)
     result.minimize()
     print(result.best_fit_parameter)
+    print(result.data['dataset1'])
 
     for param in result.best_fit_parameter.all():
         assert np.allclose(param.value, wanted.get(param.label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_fitted_dataset("dataset1")
-    assert np.array_equal(dataset.get_axis('c'), resultdata.get_axis('c'))
-    assert np.array_equal(dataset.get_axis('e'), resultdata.get_axis('e'))
-    assert dataset.data().shape == resultdata.data().shape
-    print(dataset.data()[0, 0], resultdata.data()[0, 0])
-    assert np.allclose(dataset.data(), resultdata.data())
+    resultdata = result.data["dataset1"]
+    assert np.array_equal(dataset.c, resultdata.c)
+    assert np.array_equal(dataset.e, resultdata.e)
+    assert dataset.data.shape == resultdata.data.shape
+    print(dataset.data[0, 0], resultdata.data[0, 0])
+    assert np.allclose(dataset.data, resultdata.data)
 
 
 if __name__ == '__main__':

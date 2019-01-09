@@ -54,7 +54,7 @@ class OneOscillation():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 160],
+            ['freq', 16],
             ['rate', 3],
         ],
     })
@@ -304,9 +304,9 @@ def test_doas_model(suite):
 
     dataset = suite.sim_model.simulate('dataset1', suite.wanted_parameter,
                                        suite.axis)
-    print(dataset.data())
+    print(dataset)
 
-    assert dataset.data().shape == \
+    assert dataset.shape == \
         (suite.axis['time'].size, suite.axis['spectral'].size)
 
     print(suite.parameter)
@@ -319,8 +319,8 @@ def test_doas_model(suite):
         assert np.allclose(param.value, suite.wanted_parameter.get(label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_fitted_dataset("dataset1")
-    assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
-    assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
-    assert dataset.data().shape == resultdata.data().shape
-    assert np.allclose(dataset.data(), resultdata.data())
+    resultdata = result.data["dataset1"]
+    assert np.array_equal(dataset['time'], resultdata['time'])
+    assert np.array_equal(dataset['spectral'], resultdata['spectral'])
+    assert dataset.shape == resultdata.data.shape
+    assert np.allclose(dataset, resultdata.fitted_data)

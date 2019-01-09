@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 
 from glotaran import ParameterGroup
-from glotaran.models.spectral_temporal import KineticFitResult, KineticModel
+from glotaran.analysis.fitresult import FitResult
+from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
 
@@ -87,8 +88,9 @@ def test_kinetic_residual_benchmark(benchmark, nnls):
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
     data = {'dataset1': dataset}
+    print(data)
 
-    benchmark(KineticFitResult.from_parameter, model, data, initial, nnls=nnls, atol=0)
+    benchmark(FitResult.from_parameter, model, data, initial, nnls=nnls, atol=0)
 
 
 @pytest.mark.skip()

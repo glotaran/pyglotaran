@@ -1,12 +1,9 @@
-from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
-from .spectral_timetrace import SpectralUnit
-# this import was unused and flake8 did complain, will leave it as comment
-# from .spectral_timetrace import SpectralTimetrace
 from enum import Enum
 import os.path
 import csv
 import re
 import numpy as np
+import xarray as xr
 
 
 class DataFileType(Enum):
@@ -116,7 +113,7 @@ class ExplicitFile(object):
         np.savetxt(filename, raw_data, fmt=number_format, delimiter='\t', newline='\n',
                    header=header, footer='', comments='')
 
-    def read(self, spectral_unit=SpectralUnit.nm, time_unit="s"):
+    def read(self):
         if not os.path.isfile(self._file):
             raise Exception("File does not exist.")
 
@@ -180,21 +177,11 @@ class ExplicitFile(object):
         return self.dataset()
 
     def dataset(self):
-        dataset = SpectralTemporalDataset()
-        dataset.set_axis("time", self._times)
-        dataset.set_axis("spectral", self._spectral_indices)
+        data = self._observations
         if self._file_data_format == DataFileType.time_explicit:
-            dataset.set_data(self._observations.T)
-        else:
-            dataset.set_data(self._observations)
-        return dataset
-
-    def _initialize_with_dataset(self, dataset):
-        if isinstance(dataset, SpectralTemporalDataset):
-            self._times = dataset.get_axis("time")
-            self._spectral_indices = dataset.get_axis("spectral")
-            self._observations = dataset.data
-            self._file = "SpectralTemporalDataset"
+            data = data.T
+        return xr.DataArray(
+            data, coords=[('time', self._times), ('spectral', self._spectral_indices)])
 
 
 class WavelengthExplicitFile(ExplicitFile):

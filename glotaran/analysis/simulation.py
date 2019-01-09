@@ -1,8 +1,8 @@
 """This package contains functions for simulationg a model."""
 from typing import Dict
 import numpy as np
+import xarray as xr
 
-from glotaran.model.dataset import Dataset
 from glotaran.model.parameter_group import ParameterGroup
 
 
@@ -60,9 +60,8 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
         if noise_seed is not None:
             np.random.seed(noise_seed)
         result = np.random.normal(result, noise_std_dev)
-    data = Dataset()
-    data.set_axis(model.calculated_axis, calculated_axis)
-    data.set_axis(model.estimated_axis, estimated_axis)
-    data.set_data(result)
+    data = xr.DataArray(result, coords=[
+        (model.calculated_axis, calculated_axis), (model.estimated_axis, estimated_axis)
+    ])
 
     return data

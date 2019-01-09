@@ -1,13 +1,13 @@
 """This package contains glotarans base model."""
 
 
-from typing import List, Dict
+from typing import List, Dict, Union
 import numpy as np
+import xarray as xr
 
 from glotaran.analysis.fitresult import FitResult
 from glotaran.analysis.simulation import simulate
 
-from glotaran.model.dataset import Dataset
 from .parameter_group import ParameterGroup
 
 
@@ -149,11 +149,10 @@ class BaseModel:
 
     def fit(self,
             parameter: ParameterGroup,
-            data: Dict[str, Dataset],
+            data: Dict[str, Union[xr.Dataset, xr.DataArray]],
             nnls: bool = False,
             verbose: int = 2,
             max_nfev: int = None,
-            nr_worker: int = 1,
             group_atol: int = 0,
             ) -> FitResult:
         """fit performs a fit of the model.
@@ -176,8 +175,8 @@ class BaseModel:
         result: FitResult
             The result of the fit.
         """
-        result = self.fit_result_class(self, data, parameter, nnls, atol=group_atol)
-        result.minimize(verbose=verbose, max_nfev=max_nfev, nr_worker=nr_worker)
+        result = FitResult(self, data, parameter, nnls, atol=group_atol)
+        result.minimize(verbose=verbose, max_nfev=max_nfev)
         return result
 
     def calculated_matrix(self,

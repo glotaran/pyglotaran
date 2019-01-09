@@ -26,10 +26,10 @@ def test_simulate_dataset():
     cal_axis = np.asarray([2, 2, 2])
 
     data = simulate(model, parameter, 'dataset1', {'e': est_axis, 'c': cal_axis})
-    assert np.array_equal(data.get_axis("c"), cal_axis)
-    assert np.array_equal(data.get_axis("e"), est_axis)
-    assert data.data().shape == (3, 4)
-    assert np.array_equal(data.data(), np.asarray([
+    assert np.array_equal(data["c"], cal_axis)
+    assert np.array_equal(data["e"], est_axis)
+    assert data.shape == (3, 4)
+    assert np.array_equal(data, np.asarray([
         [2, 4, 6],
         [4, 10, 16],
         [6, 16, 26],

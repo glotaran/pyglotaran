@@ -9,7 +9,13 @@ import pandas as pd
 from glotaran.data.external_file_readers.sdt_reader import SdtFile
 from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from glotaran.data.datasets.flim_dataset import FLIMDataset, get_pixel_map
-from glotaran.model.dataset import DimensionalityError
+
+
+class DimensionalityError(Exception):
+    """
+    Custom exception if data have the wrong dimensionality
+    """
+    pass
 
 
 def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,

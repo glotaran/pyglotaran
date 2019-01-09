@@ -5,12 +5,12 @@ import pytest
 from glotaran.data.external_file_readers import sdt_reader
 from ..file_readers import (
     sdt_to_DataFrame,
+    DimensionalityError,
     DataFrame_to_SpectralTemporalDataset,
     DataFrame_to_FLIMDataset,
     read_sdt,
 )
 from ..legacy_readers import FLIM_legacy_to_DataFrame
-from glotaran.model.dataset import DimensionalityError
 from glotaran.data.datasets.flim_dataset import FLIMDataset, get_pixel_map
 from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from . import TEMPORAL_DATA, FLIM_DATA

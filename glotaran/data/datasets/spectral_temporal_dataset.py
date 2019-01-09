@@ -2,10 +2,8 @@ from typing import Union, List
 
 import numpy as np
 
-from glotaran.model import Dataset
 
-
-class SpectralTemporalDataset(Dataset):
+class SpectralTemporalDataset:
     """
     Implementation of model.Dataset for spectral and temporal models.
     Provides a time and a spectral axis.

@@ -8,10 +8,8 @@ from typing import Callable, List, Tuple, Union
 
 import numpy as np
 
-from glotaran.model.dataset import Dataset
 
-
-class HighDimensionalDataset(Dataset):
+class HighDimensionalDataset:
     """
     Baseclass for high dimensional data like FLIM
     """
