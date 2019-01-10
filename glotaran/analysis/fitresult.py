@@ -151,9 +151,9 @@ class FitResult:
                 dataset = self.data[dataset.label]
                 if 'residual' not in dataset:
                     dataset['residual'] = dataset.data.copy()
-                size = dataset.coords[self.model.calculated_axis].size
-                dataset.residual.loc[{self.model.estimated_axis: i}] = residual[start:size]
-                start += size
+                end = dataset.coords[self.model.calculated_axis].size + start
+                dataset.residual.loc[{self.model.estimated_axis: i}] = residual[start:end]
+                start += end
 
                 if 'clp' not in dataset:
                     dim1 = dataset.coords[self.model.estimated_axis].size
