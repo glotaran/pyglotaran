@@ -1,9 +1,8 @@
-from glotaran.model import Dataset
-# from .spectral_timetrace import SpectralTimetrace, SpectralUnit
 from enum import Enum
 import os.path
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 
 class DataFileType(Enum):
@@ -94,13 +93,8 @@ class MLSDFile(object):
             self.read_data(f)
 
     def dataset(self):
-        dataset = Dataset(self._label)
-        if not self._file_data_format:
-            return None
-        elif self._file_data_format == DataFileType.mlsd_mulheim:
-            dataset.set_axis("spec", self._spectral_indices)
-            dataset.set_axis("time", self._times)
-        dataset.data = self._observations
+        dataset = xr.DataArray(self._observations, coords=[
+            ('spectral', self._spectral_indices), ('time', self._times)])
         return dataset
 
     def read_comment(self, f):

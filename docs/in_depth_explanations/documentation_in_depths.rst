@@ -67,9 +67,10 @@ Useful resources:
     * `Sphinx reST Docs <http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
     * `Sphinx/reST Memo <https://rest-sphinx-memo.readthedocs.io/en/latest/index.html>`_
     * `reST Cheatsheet <https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst>`_
-    * `Restructured Text (reST) and Sphinx CheatSheet <https://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html>`_
     * `Read the Docs Sphinx Theme <https://sphinx-rtd-theme.readthedocs.io/en/latest/>`_
     * `Sphinx Configuration <http://www.sphinx-doc.org/en/master/usage/configuration.html>`_
+
+    .. * `Restructured Text (reST) and Sphinx CheatSheet <https://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html>`_
 
 Often used commands (for Windows replace ```make`` with ```make.bat``):
     * ``(glotaran)$make html``
