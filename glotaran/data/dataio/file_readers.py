@@ -6,6 +6,8 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import xarray as xr
+
 from glotaran.data.external_file_readers.sdt_reader import SdtFile
 from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from glotaran.data.datasets.flim_dataset import FLIMDataset, get_pixel_map
@@ -67,7 +69,6 @@ def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
     """
     if swap_axis:
         input_dataframe = input_dataframe.T
-    STDataset = SpectralTemporalDataset(time_unit, spectral_unit)
     try:
         time_axis = pd.to_numeric(np.array(input_dataframe.columns))
     except ValueError:
@@ -83,10 +84,10 @@ def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
         spectral_axis = "index" if not swap_axis else "columns"
         raise ValueError(f"The {spectral_axis} of the DataFrame needs to be convertible "
                          f"to numeric values.")
-    STDataset.set_axis('time', time_axis)
-    STDataset.set_axis('spectral', spectral_axis)
-    STDataset.set_data(input_dataframe.values.T)
-    return STDataset
+
+    STDataset = xr.DataArray(input_dataframe.values.T,
+                             coords=[('time', time_axis), ('spectral', spectral_axis)])
+    return STDataset.to_dataset("data")
 
 
 def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.DataFrame]],
@@ -160,19 +161,26 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
         input_dataframe = input_dataframe['time_traces']
     if swap_axis:
         input_dataframe = input_dataframe.T
-    flim_dataset = FLIMDataset(mapper_function, orig_shape, time_unit)
     try:
         time_axis = pd.to_numeric(np.array(input_dataframe.columns))
     except ValueError:
         time_axis = "columns" if not swap_axis else "index"
         raise ValueError(f"The {time_axis} of the DataFrame needs to be convertible "
                          f"to numeric values.")
-    flim_dataset.set_axis('time', time_axis)
-    flim_dataset.pixel_axis = np.array(input_dataframe.index)
-    flim_dataset.set_data(input_dataframe.values.T)
+    pixel_axis = np.array(input_dataframe.index)
+    flim_dataset = xr.Dataset({'data': (['time', 'pixel'], input_dataframe.values.T)},
+                                coords={'time': time_axis,
+                                        'pixel': pixel_axis,
+                                        'orig_shape': list(orig_shape),
+                                        'time_unit': time_unit,
+                                       })
+    #  flim_dataset = flim_dataset.to_dataset(name='data')
+    pixel_axis = np.asarray([[p[0] for p in pixel_axis], [p[1] for p in pixel_axis]])
+    flim_dataset['x'] = list(set(pixel_axis[0]))
+    flim_dataset['y'] = list(set(pixel_axis[1]))
     if not is_legacy:
         intensity_map = input_dataframe.values.reshape(orig_shape).sum(axis=orig_time_axis_index)
-    flim_dataset.intensity_map = intensity_map
+    flim_dataset['intensity_map'] = (('x', 'y'), intensity_map)
     return flim_dataset
 
 
