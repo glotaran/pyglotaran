@@ -39,7 +39,7 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
         if dataset is not None and not dataset_descriptor.label == dataset:
             continue
         if dataset_descriptor.label not in data:
-            raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
+            raise Exception(f"Missing data for dataset '{dataset_descriptor.label}'")
         axis = data[dataset_descriptor.label][model.estimated_axis].values
         for index in axis:
             if model.allow_grouping:

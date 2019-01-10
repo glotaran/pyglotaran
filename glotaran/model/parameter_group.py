@@ -89,6 +89,12 @@ class ParameterGroup(OrderedDict):
         return root
 
     @classmethod
+    def from_yaml_file(cls, fname: str):
+        with open(fname) as f:
+            cls = cls.from_yaml(f)
+        return cls
+
+    @classmethod
     def from_yaml(cls, yml: str):
         items = yaml.load(yml)
         if isinstance(items, list):
