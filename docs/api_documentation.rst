@@ -37,7 +37,6 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.data.external_file_readers.sdt_reader
     glotaran.model
     glotaran.model.base_model
-    glotaran.model.dataset
     glotaran.model.dataset_descriptor
     glotaran.model.model
     glotaran.model.model_item

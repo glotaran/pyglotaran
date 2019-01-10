@@ -563,7 +563,7 @@ def test_kinetic_model(suite, nnls):
 
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
-    assert dataset.data().shape == \
+    assert dataset.shape == \
         (suite.axis['time'].size, suite.axis['spectral'].size)
 
     data = {'dataset1': dataset}
@@ -575,8 +575,9 @@ def test_kinetic_model(suite, nnls):
         assert np.allclose(param.value, wanted.get(label).value,
                            rtol=1e-1)
 
-    resultdata = result.get_fitted_dataset("dataset1")
-    assert np.array_equal(dataset.get_axis('time'), resultdata.get_axis('time'))
-    assert np.array_equal(dataset.get_axis('spectral'), resultdata.get_axis('spectral'))
-    assert dataset.data().shape == resultdata.data().shape
-    assert np.allclose(dataset.data(), resultdata.data(), rtol=1e-2)
+    resultdata = result.data["dataset1"]
+    assert np.array_equal(dataset['time'], resultdata['time'])
+    assert np.array_equal(dataset['spectral'], resultdata['spectral'])
+    assert dataset.data.shape == resultdata.data.shape
+    assert dataset.data.shape == resultdata.fitted_data.shape
+    assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)

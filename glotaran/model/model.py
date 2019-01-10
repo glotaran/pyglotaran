@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from typing import Dict, List
 
-from glotaran.analysis.fitresult import FitResult
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
@@ -17,7 +16,7 @@ def model(name,
           estimated_axis=None,
           constrain_calculated_matrix_function=None,
           additional_residual_function=None,
-          fit_result_class=FitResult,
+          finalize_result_function=None,
           allow_grouping=True,
           ):
 
@@ -25,7 +24,7 @@ def model(name,
 
         setattr(cls, 'model_type', name)
         setattr(cls, 'dataset_type', dataset_type)
-        setattr(cls, 'fit_result_class', fit_result_class)
+        setattr(cls, 'finalize_result', finalize_result_function)
         setattr(cls, 'constrain_calculated_matrix_function',
                 constrain_calculated_matrix_function)
         setattr(cls, 'additional_residual_function',

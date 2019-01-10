@@ -4,8 +4,6 @@ from . import model  # noqa: E402
 
 __version__ = '0.0.10'
 
-Dataset = model.Dataset
-DatasetDescriptor = model.DatasetDescriptor
 ParameterGroup = model.ParameterGroup
 
 read_parameter_csv = ParameterGroup.from_csv
@@ -25,9 +23,11 @@ load_yml_file = parser.load_yml_file
 from .data import dataio  # noqa: E402
 io = dataio
 
+from .analysis.fitresult import FitResult  # noqa: E402
+
 
 def load_result(model, data, parameter, nnls=False, atol=0):
-    return model.fit_result_class.from_parameter(model, data, parameter, nnls, atol)
+    return FitResult.from_parameter(model, data, parameter, nnls, atol)
 
 # Top level API
 # SeparableModel = separable_model.SeparableModel

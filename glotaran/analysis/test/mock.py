@@ -1,7 +1,6 @@
 import numpy as np
 
-from ...model import Dataset, BaseModel, model, model_item
-# from ...model.model import model
+from ...model import BaseModel, model, model_item
 
 
 def calculate_c(dataset, index, axis):
@@ -18,15 +17,6 @@ def calculate_c(dataset, index, axis):
 
 def calculate_e(dataset, axis):
     return calculate_c(dataset, 0, axis)[1].T
-
-
-class MockDataset(Dataset):
-
-    def __init__(self, est_axis, calc_axis):
-        super(MockDataset, self).__init__()
-        self.set_axis('e', np.asarray(est_axis))
-        self.set_axis('c', np.asarray(calc_axis))
-        self.set_data(np.ones((len(calc_axis), len(est_axis))))
 
 
 @model_item()

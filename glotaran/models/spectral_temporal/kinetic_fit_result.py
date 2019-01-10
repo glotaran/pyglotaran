@@ -1,95 +1,72 @@
 import numpy as np
+import xarray as xr
 
 from glotaran.analysis.fitresult import FitResult
 
 from .irf import IrfGaussian
 
 
-class KineticFitResult(FitResult):
+def finalize_kinetic_result(model, result: FitResult):
 
-    def get_sas(self, dataset):
-        labels, clp = self.get_clp(dataset)
+    for label, dataset in result.data.items():
 
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
+        dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
+
+        # get_sas
+
         compartments = []
-        for _, matrix in dataset.get_k_matrices():
+        for _, matrix in dataset_descriptor.get_k_matrices():
+            if matrix is None:
+                continue
             for compartment in matrix.involved_compartments():
                 if compartment not in compartments:
                     compartments.append(compartment)
-        idx = [labels.index(compartment) for compartment in compartments]
-        if dataset.baseline is not None:
-            baseline_label = f"{dataset.label}_baseline"
-            compartments.append(baseline_label)
-            idx.append(labels.index(baseline_label))
-        sas = clp[:, idx]
-        return compartments, sas
+        dataset.coords['species'] = compartments
+        dataset['species_associated_spectra'] = ((result.model.estimated_axis, 'species',),
+                                                 dataset.clp.sel(clp_label=compartments).values)
+        dataset['species_concentration'] = (
+            (model.estimated_axis, model.calculated_axis, 'species',),
+            dataset.concentration.sel(clp_label=compartments).values)
+        if dataset_descriptor.baseline is not None:
+            dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
-    def get_das(self, dataset, megacomplex):
-        labels, clp = self.get_clp(dataset)
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
-        megacomplex = self.model.megacomplex[megacomplex].fill(self.model, self.best_fit_parameter)
+        # get_das
+        all_das = []
+        all_das_labels = []
+        for megacomplex in dataset_descriptor.megacomplex:
 
-        k_matrix = megacomplex.get_k_matrix()
+            k_matrix = megacomplex.get_k_matrix()
+            if k_matrix is None:
+                continue
 
-        compartments = dataset.initial_concentration.compartments
+            compartments = dataset_descriptor.initial_concentration.compartments
 
-        idx = [labels.index(compartment) for compartment in compartments]
+            compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
 
-        a_matrix = k_matrix.a_matrix(dataset.initial_concentration)
+            a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
 
-        das = np.dot(clp[:, idx], a_matrix.T)
+            das = np.dot(dataset.species_associated_spectra.sel(species=compartments), a_matrix.T)
 
-        return compartments, das
+            all_das_labels.append(megacomplex.label)
+            all_das.append(
+                xr.DataArray(das, coords=[dataset.coords[model.estimated_axis],
+                                          ('compartment', compartments)]))
 
-    def get_coherent_artifact(self, dataset):
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
-        irf = dataset.irf
+        if all_das:
+            dataset.coords['megacomplex'] = all_das_labels
+            dataset['decay_associated_spectra'] = xr.concat(all_das, 'megacomplex')
 
-        if not isinstance(irf, IrfGaussian) or not irf.coherent_artifact:
-            return None
+        # get_coherent artifact
+        irf = dataset_descriptor.irf
 
-        labels = irf.clp_labels()
-
-        time = self.data[dataset.label].get_axis('time')
-        spectral = self.data[dataset.label].get_axis('spectral')
-
-        dim1 = len(labels)
-        dim2 = spectral.size
-        dim3 = time.size
-
-        matrix = np.zeros((dim1, dim2, dim3), dtype=np.float64)
-
-        for i, index in enumerate(spectral):
-            _, matrix[:, i, :] = irf.calculate_coherent_artifact(index, time)
-
-        return labels, matrix
-
-    def get_coherent_artifact_clp(self, dataset):
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
-        irf = dataset.irf
-
-        if not isinstance(irf, IrfGaussian) or not irf.coherent_artifact:
-            return None
-
-        labels, clp = self.get_clp(dataset)
-
-        idx = [labels.index(label) for label in irf.clp_labels()]
-
-        return irf.clp_labels(), clp[:, idx]
-
-    def get_centered_times(self, dataset):
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
-
-        time = self.data[dataset.label].get_axis('time')
-        spectral = self.data[dataset.label].get_axis('spectral')
-
-        dim1 = spectral.size
-        dim2 = time.size
-
-        times = np.zeros((dim1, dim2), dtype=np.float64)
-
-        for i, index in enumerate(spectral):
-            center, _, _, _, _ = dataset.irf.parameter(index)
-            times[i, :] = time - center
-
-        return times
+        if isinstance(irf, IrfGaussian) and irf.coherent_artifact:
+            dataset.coords['coherent_artifact_order'] = \
+                    list(range(0, irf.coherent_artifact_order+1))
+            dataset['irf_concentration'] = (
+                (model.estimated_axis, model.calculated_axis, 'coherent_artifact_order'),
+                dataset.concentration.sel(clp_label=irf.clp_labels()).values
+            )
+            dataset['irf_associated_spectra'] = (
+                (model.estimated_axis, 'coherent_artifact_order'),
+                dataset.clp.sel(clp_label=irf.clp_labels()).values
+            )

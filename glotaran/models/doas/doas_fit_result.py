@@ -1,47 +1,50 @@
 import numpy as np
 
-from glotaran.models.spectral_temporal.kinetic_fit_result import KineticFitResult
+from glotaran.analysis.fitresult import FitResult
+from glotaran.models.spectral_temporal.kinetic_fit_result import finalize_kinetic_result
 
 
-class DOASFitResult(KineticFitResult):
+def finalize_doas_result(model, result: FitResult):
 
-    def get_doas(self, dataset):
-        labels, clp = self.get_clp(dataset)
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
+    finalize_kinetic_result(model, result)
+
+    for label, dataset in result.data.items():
+
+        dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
+
+        # get_doas
 
         oscillations = []
 
-        for cmplx in dataset.megacomplex:
+        for cmplx in dataset_descriptor.megacomplex:
             for osc in cmplx.oscillation:
                 if osc.label not in oscillations:
                     oscillations.append(osc.label)
 
-        dim1 = clp.shape[0]
+        dim1 = dataset.coords[model.estimated_axis].size
         dim2 = len(oscillations)
         doas = np.zeros((dim1, dim2), dtype=np.float64)
-        for i, osc in enumerate(oscillations):
-            sin = clp[:, labels.index(f'{osc}_sin')]
-            cos = clp[:, labels.index(f'{osc}_cos')]
-            doas[:, i] = np.sqrt(sin*sin+cos*cos)
-        return oscillations, doas
-
-    def get_phase(self, dataset):
-        labels, clp = self.get_clp(dataset)
-        dataset = self.model.dataset[dataset].fill(self.model, self.best_fit_parameter)
-
-        oscillations = []
-
-        for cmplx in dataset.megacomplex:
-            for osc in cmplx.oscillation:
-                if osc.label not in oscillations:
-                    oscillations.append(osc.label)
-
-        dim1 = clp.shape[0]
-        dim2 = len(oscillations)
         phase = np.zeros((dim1, dim2), dtype=np.float64)
         for i, osc in enumerate(oscillations):
-            sin = clp[:, labels.index(f'{osc}_sin')]
-            cos = clp[:, labels.index(f'{osc}_cos')]
+            sin = dataset.clp.sel(clp_label=f'{osc}_sin')
+            cos = dataset.clp.sel(clp_label=f'{osc}_cos')
+            doas[:, i] = np.sqrt(sin*sin+cos*cos)
             phase[:, i] = np.unwrap(np.arctan2(cos, sin))
 
-        return oscillations, phase
+        dataset.coords['oscillation'] = oscillations
+
+        dataset['dampened_oscillation_associated_spectra'] = (
+            (model.estimated_axis, 'oscillation'), doas)
+
+        dataset['dampened_oscillation_phase'] = (
+            (model.estimated_axis, 'oscillation'), phase)
+
+        dataset['dampened_oscillation_concentration_sin'] = (
+            (model.estimated_axis, model.calculated_axis, 'oscillation'),
+            dataset.concentration.sel(clp_label=[f'{osc}_sin' for osc in oscillations])
+        )
+
+        dataset['dampened_oscillation_concentration_cos'] = (
+            (model.estimated_axis, model.calculated_axis, 'oscillation'),
+            dataset.concentration.sel(clp_label=[f'{osc}_cos' for osc in oscillations])
+        )

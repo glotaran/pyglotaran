@@ -1,10 +1,10 @@
 """This package contains functions for creating and calculationg groups."""
 
-from typing import Dict, Generator, List, Tuple
+from typing import Dict, Generator, List, Tuple, Union
 
 import numpy as np
+import xarray as xr
 
-from glotaran.model.dataset import Dataset
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.parameter_group import ParameterGroup
 
@@ -12,7 +12,7 @@ Group = Dict[any, Tuple[any, DatasetDescriptor]]
 
 
 def create_group(model,  # temp doc fix : 'glotaran.model.Model',
-                 data: Dict[str, Dataset],
+                 data: Dict[str, Union[xr.Dataset, xr.DataArray]],
                  atol: float = 0.0,
                  dataset: str = None,
                  ) -> Group:
@@ -39,8 +39,8 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
         if dataset is not None and not dataset_descriptor.label == dataset:
             continue
         if dataset_descriptor.label not in data:
-            raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
-        axis = data[dataset_descriptor.label].get_axis(model.estimated_axis)
+            raise Exception(f"Missing data for dataset '{dataset_descriptor.label}'")
+        axis = data[dataset_descriptor.label][model.estimated_axis].values
         for index in axis:
             if model.allow_grouping:
                 group_index = index if not any(_is_close(index, val, atol) for val in group) \
@@ -64,65 +64,75 @@ def _is_close(a, b, atol):
 def calculate_group_item(item,
                          model,  # temp doc fix : 'glotaran.model.Model',
                          parameter: ParameterGroup,
-                         data: Dict[str, Dataset],
+                         data: Dict[str, Union[xr.Dataset, xr.DataArray]],
                          ) -> Generator[Tuple[int, np.ndarray], None, None]:
 
     if model.calculated_matrix is None:
         raise Exception("Missing function for calculated matrix.")
 
-    full = None
     full_clp = None
-    original_clp = []
+    full_matrix = None
     for index, dataset_descriptor in item:
 
         if dataset_descriptor.label not in data:
             raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
         dataset_descriptor = dataset_descriptor.fill(model, parameter)
 
-        #  dataset_labels.append(dataset_descriptor.label)
+        dataset = data[dataset_descriptor.label]
+        axis = dataset.coords[model.calculated_axis].values
 
-        axis = data[dataset_descriptor.label].get_axis(model.calculated_axis)
+        (clp, matrix) = model.calculated_matrix(dataset_descriptor, index, axis)
 
-        (clp, this_matrix) = model.calculated_matrix(dataset_descriptor, index, axis)
+        if 'concentration' not in dataset:
+            dataset.coords['clp_label'] = clp
+            dataset['concentration'] = (
+                (
+                    model.estimated_axis,
+                    model.calculated_axis,
+                    'clp_label',
+                ),
+                np.zeros((
+                    dataset.coords[model.estimated_axis].size,
+                    axis.size,
+                    len(clp),
+                ), dtype=np.float64))
+        dataset.concentration.loc[{model.estimated_axis: index}] = matrix
 
         if model.constrain_calculated_matrix_function is not None:
-            (clp, this_matrix) = \
-                model.constrain_calculated_matrix_function(model, clp, this_matrix)
+            (clp, matrix) = \
+                model.constrain_calculated_matrix_function(model, clp, matrix)
 
-        original_clp.append(clp)
+        if 'weight' in dataset:
+            for i in range(matrix.shape[1]):
+                matrix[:, i] = np.multiply(
+                    matrix[:, i], dataset.weight.sel({model.estimated_axis, index})
+                )
 
-        weight = data[dataset_descriptor.label].get_weight()
-        if weight is not None:
-            idx = np.where(axis == index)[0][0]
-            for i in range(this_matrix.shape[1]):
-                this_matrix[:, i] = np.multiply(this_matrix[:, i], weight[:, idx])
-
-        if full is None:
-            full = [this_matrix]
+        if full_matrix is None:
+            full_matrix = matrix
             full_clp = clp
         else:
             if not clp == full_clp:
                 for comp in clp:
                     if comp not in full_clp:
                         full_clp.append(comp)
-                        full = np.concatenate(
-                            (full, np.zeros((full.shape[0]))), axis=1)
-                reshape = np.zeros((this_matrix.shape[0], len(full_clp)))
+                        full_matrix = np.concatenate(
+                            (full_matrix, np.zeros((full_matrix.shape[0]))), axis=1)
+                reshape = np.zeros((matrix.shape[0], len(full_clp)))
                 for i, comp in enumerate(full_clp):
-                    reshape[:, i] = this_matrix[:, clp.index(comp)] \
-                            if comp in clp else np.zeros((this_matrix.shape[1]))
-                this_matrix = reshape
+                    reshape[:, i] = matrix[:, clp.index(comp)] \
+                            if comp in clp else np.zeros((matrix.shape[1]))
+                matrix = reshape
 
-            #  full = np.concatenate((full, this_matrix), axis=1)
-            full.append(this_matrix)
+            full_matrix = np.concatenate([full_matrix, matrix], axis=0)
 
-    return (full, full_clp, original_clp)
+    return (full_clp, full_matrix)
 
 
 def calculate_group(group: Group,
                     model,  # temp doc fix : 'glotaran.model.Model',
                     parameter: ParameterGroup,
-                    data: Dict[str, Dataset],
+                    data: Dict[str, Union[xr.Dataset, xr.DataArray]],
                     ) -> Generator[Tuple[int, np.ndarray], None, None]:
     """calculate_group calculates a group.
 
@@ -148,7 +158,8 @@ def calculate_group(group: Group,
 
 def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                       group: Group,
-                      data: Dict[str, Dataset]) -> List[np.ndarray]:
+                      data: Dict[str, Union[xr.Dataset, xr.DataArray]],
+                      ) -> List[np.ndarray]:
     """create_data_group returns the datagroup for the model.
 
     Parameters
@@ -171,10 +182,8 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
                 raise Exception("Missing data for dataset '{dataset_descriptor.label}'")
 
             dataset = data[dataset_descriptor.label]
-            axis = list(dataset.get_axis(model.estimated_axis))
-            idx = axis.index(index)
-            dataset = dataset.data(weighted=True)[:, idx]
-
+            dataset = dataset.weighted_data if 'weighted_data' in dataset else dataset.data
+            dataset = dataset.sel({model.estimated_axis: index}).values
             if full is None:
                 full = dataset
             else:

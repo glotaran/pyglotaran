@@ -1,9 +1,10 @@
 import numpy as np
+import xarray as xr
 
 from glotaran.analysis.grouping import create_group, calculate_group, create_data_group
 from glotaran.model import ParameterGroup
 
-from .mock import MockDataset, MockModel
+from .mock import MockModel
 
 
 def test_single_dataset():
@@ -21,7 +22,10 @@ def test_single_dataset():
     print(model.errors_parameter(parameter))
     assert model.valid_parameter(parameter)
 
-    data = {'dataset1': MockDataset([1, 2, 3], [5, 7, 9, 12])}
+    data = {'dataset1': xr.DataArray(
+        np.ones((3, 4)),
+        coords=[('e', [1, 2, 3]), ('c', [5, 7, 9, 12])]
+    ).to_dataset(name="data")}
 
     group = create_group(model, data)
     assert len(group) == 3
@@ -31,7 +35,7 @@ def test_single_dataset():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 3
     print(result[0])
-    assert result[0][1][0].shape == (4, 2)
+    assert result[0][2].shape == (4, 2)
 
     data = create_data_group(model, group, data)
     assert len(data) == 3
@@ -58,8 +62,14 @@ def test_multi_dataset_no_overlap():
     assert model.valid_parameter(parameter)
 
     data = {
-        'dataset1': MockDataset([1, 2, 3], [5, 7]),
-        'dataset2': MockDataset([4, 5, 6], [5, 7, 9]),
+        'dataset1': xr.DataArray(
+            np.ones((3, 2)),
+            coords=[('e', [1, 2, 3]), ('c', [5, 7])]
+        ).to_dataset(name="data"),
+        'dataset2': xr.DataArray(
+            np.ones((3, 3)),
+            coords=[('e', [4, 5, 6]), ('c', [5, 7, 9])]
+        ).to_dataset(name="data"),
     }
 
     group = create_group(model, data)
@@ -71,8 +81,8 @@ def test_multi_dataset_no_overlap():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 6
     print(result[0])
-    assert np.concatenate(result[0][1], axis=0).shape == (2, 2)
-    assert np.concatenate(result[3][1], axis=0).shape == (3, 2)
+    assert result[0][2].shape == (2, 2)
+    assert result[3][2].shape == (3, 2)
 
     data = create_data_group(model, group, data)
     assert len(data) == 6
@@ -80,8 +90,14 @@ def test_multi_dataset_no_overlap():
     assert data[4].shape[0] == 3
 
     data = {
-        'dataset1': MockDataset([1, 2, 3], [5, 7]),
-        'dataset2': MockDataset([4, 5, 6], [5, 7, 9]),
+        'dataset1': xr.DataArray(
+            np.ones((3, 2)),
+            coords=[('e', [1, 2, 3]), ('c', [5, 7])]
+        ).to_dataset(name="data"),
+        'dataset2': xr.DataArray(
+            np.ones((3, 3)),
+            coords=[('e', [4, 5, 6]), ('c', [5, 7, 9])]
+        ).to_dataset(name="data"),
     }
 
     group = create_group(model, data, dataset='dataset1')
@@ -110,8 +126,14 @@ def test_multi_dataset_overlap():
     assert model.valid_parameter(parameter)
 
     data = {
-        'dataset1': MockDataset([0, 1, 2, 3], [5, 7]),
-        'dataset2': MockDataset([1.4, 2.4, 3.4, 9], [5, 7, 9, 12]),
+        'dataset1': xr.DataArray(
+            np.ones((4, 2)),
+            coords=[('e', [0, 1, 2, 3]), ('c', [5, 7])]
+        ).to_dataset(name="data"),
+        'dataset2': xr.DataArray(
+            np.ones((4, 4)),
+            coords=[('e', [1.4, 2.4, 3.4, 9]), ('c', [5, 7, 9, 12])]
+        ).to_dataset(name="data"),
     }
 
     group = create_group(model, data, atol=5e-1)
@@ -124,9 +146,10 @@ def test_multi_dataset_overlap():
     result = list(calculate_group(group, model, parameter, data))
     assert len(result) == 5
     print(result[0])
-    assert np.concatenate(result[0][1], axis=0).shape == (2, 2)
-    assert np.concatenate(result[1][1], axis=0).shape == (6, 2)
-    assert np.concatenate(result[4][1], axis=0).shape == (4, 2)
+    print(result[1])
+    assert result[0][2].shape == (2, 2)
+    assert result[1][2].shape == (6, 2)
+    assert result[4][2].shape == (4, 2)
 
     data = create_data_group(model, group, data)
     assert len(data) == 5

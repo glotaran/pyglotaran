@@ -7,7 +7,7 @@ from glotaran.model import model, BaseModel
 from .initial_concentration import InitialConcentration
 from .irf import Irf
 from .k_matrix import KMatrix
-from .kinetic_fit_result import KineticFitResult
+from .kinetic_fit_result import finalize_kinetic_result
 from .kinetic_megacomplex import KineticMegacomplex
 from .spectral_constraints import (
     SpectralConstraint,
@@ -81,7 +81,7 @@ def apply_equality_constraints(model, clp_labels, clp, concentrations):
     calculated_axis='time',
     estimated_matrix=calculate_spectral_matrix,
     estimated_axis='spectral',
-    fit_result_class=KineticFitResult
+    finalize_result_function=finalize_kinetic_result
 )
 class KineticModel(BaseModel):
     """
