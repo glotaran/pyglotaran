@@ -1,14 +1,14 @@
 """This package contains glotarans parameter group class"""
 
-from typing import Dict, Generator, List, Tuple
+import copy
 import csv
 from collections import OrderedDict
-import copy
-from lmfit import Parameters
 from math import log
+from typing import Dict, Generator, List, Tuple
+
 import pandas as pd
 import yaml
-
+from lmfit import Parameters
 
 from .parameter import Parameter
 
@@ -150,12 +150,12 @@ class ParameterGroup(OrderedDict):
         with open(filename, mode='w') as parameter_file:
             parameter_writer = csv.writer(parameter_file, delimiter='\t')
             parameter_writer.writerow(
-                ['label', 'value', 'stderr', 'min', 'max', 'vary', 'non-negative']
+                ['label', 'value', 'min', 'max', 'vary', 'non-negative', 'stderr']
             )
 
             for (label, p) in self.all_with_label():
                 parameter_writer.writerow(
-                    [label, p.value, p.stderr, p.min, p.max, p.vary, p.non_neg]
+                    [label, p.value, p.min, p.max, p.vary, p.non_neg, p.stderr]
                 )
 
     def add_parameter(self, parameter: Parameter):
