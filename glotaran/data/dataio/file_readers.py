@@ -169,11 +169,11 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
                          f"to numeric values.")
     pixel_axis = np.array(input_dataframe.index)
     flim_dataset = xr.Dataset({'data': (['time', 'pixel'], input_dataframe.values.T)},
-                                coords={'time': time_axis,
-                                        'pixel': pixel_axis,
-                                        'orig_shape': list(orig_shape),
-                                        'time_unit': time_unit,
-                                       })
+                              coords={'time': time_axis,
+                                      'pixel': pixel_axis,
+                                      'orig_shape': list(orig_shape),
+                                      'time_unit': time_unit,
+                                      })
     #  flim_dataset = flim_dataset.to_dataset(name='data')
     pixel_axis = np.asarray([[p[0] for p in pixel_axis], [p[1] for p in pixel_axis]])
     flim_dataset['x'] = list(set(pixel_axis[0]))

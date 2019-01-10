@@ -19,7 +19,7 @@ class FitResult:
     """The result of a fit."""
 
     def __init__(self,
-                 model: "glotaran.model.BaseModel",
+                 model: typing.Type["glotaran.model.BaseModel"],
                  data: typing.Union[xr.DataArray, xr.Dataset],
                  initital_parameter: ParameterGroup,
                  nnls: bool,

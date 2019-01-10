@@ -12,7 +12,7 @@ from ..file_readers import (
     read_sdt,
 )
 from ..legacy_readers import FLIM_legacy_to_DataFrame
-from glotaran.data.datasets.flim_dataset import FLIMDataset, get_pixel_map
+from glotaran.data.datasets.flim_dataset import get_pixel_map
 from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from . import TEMPORAL_DATA, FLIM_DATA
 
