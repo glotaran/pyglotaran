@@ -73,7 +73,7 @@ class KMatrix:
         for entry in self.matrix:
             combined_matrix[entry] = self.matrix[entry]
         return KMatrix("{}+{}".format(self.label, k_matrix.label),
-                       combined_matrix, self._all_compartments)
+                       combined_matrix)
 
     def reduced(self, compartments: List[str]) -> np.ndarray:
         """ """
