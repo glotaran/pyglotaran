@@ -5,6 +5,14 @@ import numpy as np
 
 from glotaran.model import model_item, model_item_typed
 
+class IrfException(Exception):
+    def __init__(self, irf, msg):
+        self.irf = irf.label
+        self.msg = msg
+
+    def __str__(self):
+        return f"Irf '{self.irf.label}' error: {self.msg}"
+
 
 @model_item(attributes={
     'irfdata': {'type': np.ndarray, 'default': None},
@@ -58,7 +66,7 @@ class IrfGaussian:
         centers = self.center if isinstance(self.center, list) else [self.center]
         if len(self.center_dispersion) is not 0:
             if self.dispersion_center is None:
-                raise Exception(f'No dispersion center defined for irf "{self.label}"')
+                raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
             dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i+1)
@@ -66,25 +74,38 @@ class IrfGaussian:
         widths = self.width if isinstance(self.width, list) else [self.width]
         if len(self.width_dispersion) is not 0:
             if self.dispersion_center is None:
-                raise Exception(f'No dispersion center defined for irf "{self.label}"')
+                raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
             dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i+1)
 
-        scale = self.scale if self.scale is not None else 1
+        len_centers = len(centers)
+        len_widths = len(widths)
+        if not len_centers == len_widths:
+            if not min(len_centers, len_widths) == 1:
+                raise IrfException(f'len(centers) ({len_centers}) not equal '
+                                   f'len(widths) ({len_widths}) none of is 1.')
+            if len_centers == 1:
+                centers = [centers[0] for _ in range(len_widths)]
+                len_centers = len_widths
+            else:
+                widths = [widths[0] for _ in range(len_centers)]
+                len_widths = len_centers
 
+        scale = self.scale if self.scale is not None else [1 for _ in centers]
+        scale = scale if isinstance(scale, list) else [scale]
         if self.normalize:
-            scale /= np.sqrt(2 * np.pi * widths[0] * widths[0])
+            scale /= np.sqrt(2 * np.pi * np.asarray(widths)**2)
 
         backsweep = 1 if self.backsweep else 0
 
         backsweep_period = self.backsweep_period if backsweep else 0
 
-        return centers[0], widths[0], scale, backsweep, backsweep_period
+        return centers, widths, scale, backsweep, backsweep_period
 
     def calculate_coherent_artifact(self, index, axis):
         if not 1 <= self.coherent_artifact_order <= 3:
-            raise Exception("Coherent artifact order must be between in [1,3]")
+            raise IrfException(self, "Coherent artifact order must be between in [1,3]")
 
         center, width, scale, _, _ = self.parameter(index)
 

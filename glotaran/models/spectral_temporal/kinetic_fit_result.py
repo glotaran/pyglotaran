@@ -8,7 +8,8 @@ from .irf import IrfGaussian
 
 def finalize_kinetic_result(model, result: FitResult):
 
-    for label, dataset in result.data.items():
+    for label in result.model.dataset:
+        dataset = result.data[label]
 
         dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
 

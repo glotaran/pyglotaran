@@ -22,7 +22,7 @@ class BaseModel:
         pass
 
     @classmethod
-    def from_dict(cls, model_dict: Dict):
+    def from_dict(cls, model_dict: Dict, library: Dict = {}):
         """from_dict creates a model from a dictionary.
 
         Parameters

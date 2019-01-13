@@ -8,7 +8,8 @@ def finalize_doas_result(model, result: FitResult):
 
     finalize_kinetic_result(model, result)
 
-    for label, dataset in result.data.items():
+    for label in result.model.dataset:
+        dataset = result.data[label]
 
         dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
 

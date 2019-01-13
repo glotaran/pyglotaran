@@ -175,7 +175,8 @@ class FitResult:
         return np.concatenate(residuals + additionals)
 
     def _finalize(self):
-        for label, dataset in self.data.items():
+        for label in self.model.dataset:
+            dataset = self.data[label]
 
             if 'weight' in dataset:
                 dataset['weighted_residual'] = dataset.residual

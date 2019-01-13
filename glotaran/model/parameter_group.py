@@ -5,6 +5,7 @@ import csv
 from collections import OrderedDict
 from math import log
 from typing import Dict, Generator, List, Tuple
+from os.path import isfile
 
 import pandas as pd
 import yaml
@@ -96,6 +97,8 @@ class ParameterGroup(OrderedDict):
 
     @classmethod
     def from_yaml(cls, yml: str):
+        if isinstance(yml, str) and isfile(yml):
+            return cls.from_yaml_file(yml)
         items = yaml.load(yml)
         if isinstance(items, list):
             cls = cls.from_list(items)

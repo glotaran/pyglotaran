@@ -32,13 +32,16 @@ def calculate_kinetic_matrix(dataset, index, axis):
             compartments = this_compartments
             matrix = this_matrix
         else:
-            for comp in this_compartments:
+            new_compartments = \
+                    compartments + [c for c in this_compartments if c not in compartments]
+            new_matrix = np.zeros((axis.size, len(new_compartments)), dtype=np.float64)
+            for i, comp in enumerate(new_compartments):
                 if comp in compartments:
-                    matrix[:, compartments.index(comp)] += \
-                            this_matrix[:, this_compartments.index(comp)]
-                else:
-                    matrix = np.concatenate(
-                        (matrix, this_matrix[:, this_compartments.index(comp)]), axis=1)
+                    new_matrix[:, i] += matrix[:, compartments.index(comp)]
+                if comp in this_compartments:
+                    new_matrix[:, i] += this_matrix[:, this_compartments.index(comp)]
+            compartments = new_compartments
+            matrix = new_matrix
 
     if dataset.baseline is not None:
         baseline_compartment = f'{dataset.label}_baseline'
@@ -82,15 +85,16 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
     if isinstance(dataset.irf, IrfGaussian):
         center, width, irf_scale, backsweep, backsweep_period = \
                 dataset.irf.parameter(index)
-        calc_kinetic_matrix_gaussian_irf(matrix,
-                                         rates,
-                                         axis,
-                                         center,
-                                         width,
-                                         scale * irf_scale,
-                                         backsweep,
-                                         backsweep_period,
-                                         )
+        for i in range(len(center)):
+            calc_kinetic_matrix_gaussian_irf(matrix,
+                                             rates,
+                                             axis,
+                                             center[i],
+                                             width[i],
+                                             scale * irf_scale[i],
+                                             backsweep,
+                                             backsweep_period,
+                                             )
 
     else:
         calc_kinetic_matrix_no_irf(matrix, rates, axis, scale)
