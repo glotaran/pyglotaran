@@ -140,7 +140,7 @@ def calculate_group(group: Group,
     ----------
     group : Dict[any, Tuple[any, DatasetDescriptor]]
     model : glotaran.model.Model
-    parameter : ParameterGroup
+    parameter : glotaran.model.ParameterGroup
     data : Dict[str, Dataset]
 
     Yields

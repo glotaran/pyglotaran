@@ -16,17 +16,33 @@ from .nnls import residual_nnls
 
 
 class FitResult:
-    """The result of a fit."""
 
     def __init__(self,
                  model: typing.Type["glotaran.model.BaseModel"],
-                 data: typing.Union[xr.DataArray, xr.Dataset],
+                 data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                  initital_parameter: ParameterGroup,
                  nnls: bool,
                  atol: float = 0,
                  ):
+        """The result of a fit.
+
+        Parameters
+        ----------
+        model :  glotaran.model.BaseModel
+            A subclass of :class:`glotaran.model.BaseModel`
+        data : dict(str, union(xr.Dataset, xr.DataArray))
+            A dictonary containing all datasets with their labels as keys.
+        initital_parameter : glotaran.parameter.ParameterGroup
+            The initital fit parameter,
+        nnls : bool, optional
+            (default = False)
+            If `True` non-linear least squaes optimizing is used instead of variable projection.
+        atol : float, optional
+            (default = 0)
+            The tolerance for grouping datasets along the estimated axis.
+        """
         self.model = model
-        self.data = {}
+        self._data = {}
         for label, dataset in data.items():
             if model.calculated_axis not in dataset.dims:
                 raise Exception("Missing coordinates for dimension "
@@ -41,21 +57,63 @@ class FitResult:
 
             if 'weight' in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
-            self.data[label] = dataset.transpose(model.calculated_axis, model.estimated_axis)
-        self.initial_parameter = initital_parameter
-        self.nnls = nnls
-        self._group = create_group(model, self.data, atol)
-        self._data_group = create_data_group(model, self._group, self.data)
+            self._data[label] = dataset.transpose(model.calculated_axis, model.estimated_axis)
+        self._initial_parameter = initital_parameter
+        self._nnls = nnls
+        self._group = create_group(model, self._data, atol)
+        self._data_group = create_data_group(model, self._group, self._data)
         self._lm_result = None
+        self.debug = {}
 
     @classmethod
-    def from_parameter(cls, model, data, parameter, nnls=False, atol=0):
+    def from_parameter(cls,
+                       model: typing.Type["glotaran.model.BaseModel"],
+                       data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
+                       parameter: ParameterGroup,
+                       nnls: bool,
+                       atol: float = 0,
+                       ) -> 'FitResult':
+        """Creates a :attr:`FitResult` from parameters without optimization.
+
+        Parameters
+        ----------
+        model :  glotaran.model.BaseModel
+            A subclass of :class:`glotaran.model.BaseModel`
+        data : dict(str, union(xr.Dataset, xr.DataArray))
+            A dictonary containing all datasets with their labels as keys.
+        parameter : glotaran.model.ParameterGroup
+            The parameter,
+        nnls : bool, optional
+            (default = False)
+            If `True` non-linear least squaes optimizing is used instead of variable projection.
+        atol : float, optional
+            (default = 0)
+            The tolerance for grouping datasets along the estimated axis.
+
+        Returns
+        -------
+        result : FitResult
+        """
         cls = cls(model, data, parameter, nnls, atol=atol)
         cls._calculate_residual(parameter)
         cls._finalize()
         return cls
 
-    def minimize(self, verbose: int = 2, max_nfev: int = None):
+    def optimize(self, verbose: bool = True, max_nfev: int = None):
+        """Optimizes the parameter.
+
+        Parameters
+        ----------
+        verbose : bool, optional
+            (default = True)
+            If `True` feedback is printed at every iteration.
+        max_nfev : int, optional
+            (default = None)
+            Maximum number of function evaluations. `None` for unlimited.
+
+        Returns
+        -------
+        """
         parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
         minimizer = Minimizer(
             self._calculate_residual,
@@ -67,7 +125,7 @@ class FitResult:
             nan_policy='omit',
             reduce_fcn=None,
             **{})
-
+        verbose = 2 if verbose else 0
         self._lm_result = minimizer.minimize(method='least_squares',
                                              verbose=verbose,
                                              max_nfev=max_nfev)
@@ -75,43 +133,76 @@ class FitResult:
         self._finalize()
 
     @property
-    def nfev(self):
-        return self._lm_result.nfev
+    def nnls(self) -> bool:
+        """bool: If `True` non-linear least squaes optimizing is used instead of variable
+        projection."""
+        return self._nnls
 
     @property
-    def nvars(self):
-        return self._lm_result.nvarys
+    def data(self) -> typing.Dict[str, xr.Dataset]:
+        """dict(str, xarray.Dataset): The resulting data as a dictionary of `xarray.Dataset`.
+
+        Note
+        ----
+        The actual content of the data depends on the actual model and can be found in the
+        documentation for the model.
+        """
+        return self._data
 
     @property
-    def ndata(self):
-        return self._lm_result.ndata
+    def nfev(self) -> int:
+        """int: The number of function evaluations."""
+        return self._lm_result.nfev if self._lm_result else None
 
     @property
-    def nfree(self):
-        return self._lm_result.nfree
+    def nvars(self) -> int:
+        """int: Number of variables in fit."""
+        return self._lm_result.nvarys if self._lm_result else None
 
     @property
-    def chisqr(self):
-        return self._lm_result.chisqr
+    def ndata(self) -> int:
+        """int: Number of data points."""
+        return self._lm_result.ndata if self._lm_result else None
 
     @property
-    def red_chisqr(self):
-        return self._lm_result.redchi
+    def nfree(self) -> int:
+        """int: Degrees of freedom in fit. """
+        return self._lm_result.nfree if self._lm_result else None
 
     @property
-    def var_names(self):
-        return self._lm_result.var_names
+    def chisqr(self) -> float:
+        """float: The chi-square of the fit """
+        return self._lm_result.chisqr if self._lm_result else None
 
     @property
-    def covar(self):
-        return self._lm_result.covar
+    def red_chisqr(self) -> float:
+        """float: The reduced chi-square of the fit."""
+        return self._lm_result.redchi if self._lm_result else None
+
+    @property
+    def var_names(self) -> typing.List[str]:
+        """list(str): Ordered list of variable parameter names used in optimization, and
+        useful for understanding the values in :attr:`covar`."""
+        return [n.replace('_', '.') for n in self._lm_result.var_names] \
+            if self._lm_result else None
+
+    @property
+    def covar(self) -> np.ndarray:
+        """np.ndarray: Covariance matrix from minimization, with rows and columns
+        corresponding to :attr:`var_names`."""
+        return self._lm_result.covar if self._lm_result else None
 
     @property
     def best_fit_parameter(self) -> ParameterGroup:
-        """The best fit parameters."""
+        """glotaran.model.ParameterGroup: The best fit parameters."""
         if self._lm_result is None:
             return self.initial_parameter
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
+
+    @property
+    def initial_parameter(self) -> ParameterGroup:
+        """glotaran.model.ParameterGroup: The initital fit parameter"""
+        return self._initial_parameter
 
     def _get_group_indices(self, dataset_label):
         return [index for index, item in self._group.items()
@@ -131,7 +222,7 @@ class FitResult:
 
         residuals = []
         for index, item in self._group.items():
-            clp_labels, matrix = calculate_group_item(item, self.model, parameter, self.data)
+            clp_labels, matrix = calculate_group_item(item, self.model, parameter, self._data)
 
             clp = None
             residual = None
@@ -145,10 +236,11 @@ class FitResult:
                         matrix,
                         self._data_group[index]
                     )
+            self.debug[index] = (matrix, residual)
 
             start = 0
             for i, dataset in item:
-                dataset = self.data[dataset.label]
+                dataset = self._data[dataset.label]
                 if 'residual' not in dataset:
                     dataset['residual'] = dataset.data.copy()
                 end = dataset.coords[self.model.calculated_axis].size + start
@@ -176,7 +268,7 @@ class FitResult:
 
     def _finalize(self):
         for label in self.model.dataset:
-            dataset = self.data[label]
+            dataset = self._data[label]
 
             if 'weight' in dataset:
                 dataset['weighted_residual'] = dataset.residual

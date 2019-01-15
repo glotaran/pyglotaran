@@ -172,7 +172,7 @@ class ParameterGroup(OrderedDict):
 
         Parameters
         ----------
-        parameter : Parameter
+        parameter : glotaran.model.Parameter
 
         """
         if not isinstance(parameter, list):
@@ -191,11 +191,11 @@ class ParameterGroup(OrderedDict):
 
         Parameters
         ----------
-        group : ParameterGroup
+        group : glotaran.model.ParameterGroup
 
         """
         if not isinstance(group, ParameterGroup):
-            raise TypeError("Leave must be glotaran.model.ParameterGroup")
+            raise TypeError("Group must be glotaran.model.ParameterGroup")
         group.set_root(self)
         self[group.label] = group
 
@@ -239,7 +239,7 @@ class ParameterGroup(OrderedDict):
 
         Returns
         -------
-        parameter : Parameter
+        parameter : glotaran.model.Parameter
 
         """
 
@@ -269,7 +269,7 @@ class ParameterGroup(OrderedDict):
 
         Returns
         -------
-        parameter : Parameter
+        parameter : glotaran.model.Parameter
         """
         return [i for _, i in self._parameters.items()][idx-1]
 

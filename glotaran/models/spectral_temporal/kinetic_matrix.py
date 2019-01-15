@@ -12,7 +12,7 @@ def calculate_kinetic_matrix(dataset, index, axis):
     scale = dataset.scale if dataset.scale is not None else 1.0
     compartments = None
     matrix = None
-    for _, k_matrix in dataset.get_k_matrices():
+    for cmplx_scale, k_matrix in dataset.get_k_matrices():
 
         if k_matrix is None:
             continue
@@ -25,7 +25,7 @@ def calculate_kinetic_matrix(dataset, index, axis):
             index,
             axis,
             k_matrix,
-            scale,
+            cmplx_scale * scale,
         )
 
         if matrix is None:

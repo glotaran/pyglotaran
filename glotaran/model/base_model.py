@@ -1,7 +1,7 @@
 """This package contains glotarans base model."""
 
 
-from typing import List, Dict, Union
+import typing
 import numpy as np
 import xarray as xr
 
@@ -18,12 +18,9 @@ class BaseModel:
     implementations will need.
     """
 
-    def __init__(self):
-        pass
-
     @classmethod
-    def from_dict(cls, model_dict: Dict, library: Dict = {}):
-        """from_dict creates a model from a dictionary.
+    def from_dict(cls, model_dict: typing.Dict):
+        """Creates a model from a dictionary.
 
         Parameters
         ----------
@@ -122,97 +119,81 @@ class BaseModel:
     def simulate(self,
                  dataset: str,
                  parameter: ParameterGroup,
-                 axis: Dict[str, np.ndarray],
-                 noise=False,
-                 noise_std_dev=1.0,
-                 noise_seed=None,
-                 ):
+                 axis: typing.Dict[str, np.ndarray],
+                 noise: bool = False,
+                 noise_std_dev: float = 1.0,
+                 noise_seed: int = None,
+                 ) -> xr.DataArray:
         """Simulates the model.
 
         Parameters
         ----------
         dataset : str
             Label of the dataset to simulate
-        parameter : ParameterGroup
+        parameter : glotaran.model.ParameterGroup
             The parameters for the simulation.
         axis : Dict[str, np.ndarray]
             A dictory with axis
-        noise : bool
-            (Default value = False)
+        noise : bool, optional
+            (Default = False)
+            If `True` noise is added to the simulated data.
         noise_std_dev : float
             (Default value = 1.0)
-        noise_seed : default None
+            the standart deviation of the noise.
+        noise_seed : int, optional
+            Seed for the noise.
 
+        Returns
+        -------
+        data: xr.DataArray
         """
         return simulate(self, parameter, dataset, axis, noise=noise,
                         noise_std_dev=noise_std_dev, noise_seed=noise_seed)
 
     def fit(self,
             parameter: ParameterGroup,
-            data: Dict[str, Union[xr.Dataset, xr.DataArray]],
+            data: typing.Dict[str, typing.Union[xr.Dataset, xr.DataArray]],
             nnls: bool = False,
-            verbose: int = 2,
+            verbose: bool = True,
             max_nfev: int = None,
             group_atol: int = 0,
             ) -> FitResult:
-        """fit performs a fit of the model.
+        """Performs a fit of the model.
 
         Parameters
         ----------
-        parameter : ParameterGroup
-            The initial fit parameter.
-        data : dict(str, glotaran.model.dataset.Dataset)
-            A dictionary of dataset labels and Datasets.
-        verbose : int
-            (optional default=2)
-            Set 0 for no log output, 1 for only result and 2 for full verbosity
-        max_fnev : int
-            (optional default=None)
-            The maximum number of function evaluations, default None.
+        data : dict(str, union(xr.Dataset, xr.DataArray))
+            A dictonary containing all datasets with their labels as keys.
+        parameter : glotaran.model.ParameterGroup
+            The parameter,
+        nnls : bool, optional
+            (default = False)
+            If `True` non-linear least squaes optimizing is used instead of variable projection.
+        verbose : bool, optional
+            (default = True)
+            If `True` feedback is printed at every iteration.
+        max_nfev : int, optional
+            (default = None)
+            Maximum number of function evaluations. `None` for unlimited.
+        group_atol : float, optional
+            (default = 0)
+            The tolerance for grouping datasets along the estimated axis.
 
         Returns
         -------
-        result: FitResult
+        result: glotaran.analysis.fitresult.FitResult 
             The result of the fit.
         """
         result = FitResult(self, data, parameter, nnls, atol=group_atol)
-        result.minimize(verbose=verbose, max_nfev=max_nfev)
+        result.optimize(verbose=verbose, max_nfev=max_nfev)
         return result
 
-    def calculated_matrix(self,
-                          dataset: str,
-                          parameter: ParameterGroup,
-                          index: any,
-                          axis: np.ndarray) -> np.ndarray:
-        """calculated_matrix returns the calculated matrix for a dataset.
-
-        Parameters
-        ----------
-        dataset : str
-            Label of the dataset
-        parameter : ParameterGroup
-            The parameter for the prediction
-        index : int
-            The index on the estimated axis,
-        axis : numpy.ndarray
-            The calculated axis.
+    def errors(self) -> typing.List[str]:
+        """Returns a list of errors in the model.
 
         Returns
         -------
-        calculated_matrix : numpy.ndarray
-        """
-        filled_dataset = self.dataset[dataset].fill(self, parameter)
-        return self.calculated_matrix(filled_dataset,
-                                      self.compartment,
-                                      index,
-                                      axis)
-
-    def errors(self) -> List[str]:
-        """errors returns a list of errors in the model.
-
-        Returns
-        -------
-        errors : List[str]
+        errors : list(str)
         """
         attrs = getattr(self, '_glotaran_model_attributes')
 
@@ -239,16 +220,16 @@ class BaseModel:
         """
         return len(self.errors()) is 0
 
-    def errors_parameter(self, parameter: ParameterGroup) -> List[str]:
-        """errors_parameter returns a list of missing parameters.
+    def errors_parameter(self, parameter: ParameterGroup) -> typing.List[str]:
+        """Returns a list of missing parameters.
 
         Parameters
         ----------
-        parameter : ParameterGroup
+        parameter : glotaran.model.ParameterGroup
 
         Returns
         -------
-        errors : List[str]
+        errors : list(str)
         """
         attrs = getattr(self, '_glotaran_model_attributes')
 
@@ -258,19 +239,19 @@ class BaseModel:
             attr = getattr(self, attr)
             if isinstance(attr, list):
                 for item in attr:
-                    item.validate_parameter(self, parameter, errors=errors)
+                    item.validate_model(self, errors=errors)
             else:
                 for _, item in attr.items():
-                    item.validate_parameter(self, parameter, errors=errors)
+                    item.validate_model(self, errors=errors)
 
         return errors
 
-    def valid_parameter(self, parameter):
+    def valid_parameter(self, parameter: ParameterGroup) -> bool:
         """valid checks the parameter for errors.
 
         Parameters
         ----------
-        parameter : ParameterGroup
+        parameter : glotaran.model.ParameterGroup
 
         Returns
         -------

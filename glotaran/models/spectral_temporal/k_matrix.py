@@ -150,6 +150,10 @@ class KMatrix:
         # computation consistent with TIMP
         eigenvalues, eigenvectors = scipy.linalg.eig(matrix, left=True,
                                                      right=False)
+        #  eigenvalues = eigenvalues.real
+        #  eigenvectors = eigenvectors.real
+        #  sorted = eigenvalues.argsort()
+        #  return (eigenvalues[sorted], eigenvectors[sorted])
         return (eigenvalues.real, eigenvectors.real)
 
     def rates(self, compartments):
@@ -164,12 +168,12 @@ class KMatrix:
                initial_concentration: InitialConcentration) -> np.ndarray:
         compartments = [c for c in initial_concentration.compartments
                         if c in self.involved_compartments()]
-        k_compartments = [c for c in compartments if c in self.involved_compartments()]
         initial_concentration = \
-            [initial_concentration.parameters[compartments.index(c)]
-             for c in k_compartments]
-        eigenvectors = scipy.linalg.inv(eigenvectors)
-        gamma = np.matmul(eigenvectors, initial_concentration)
+            [initial_concentration.parameters[initial_concentration.compartments.index(c)]
+             for c in compartments]
+        #  eigenvectors = scipy.linalg.inv(eigenvectors)
+        #  gamma = np.matmul(eigenvectors, initial_concentration)
+        gamma = scipy.linalg.solve(eigenvectors, initial_concentration)
 
         return gamma
 

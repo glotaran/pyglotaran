@@ -21,4 +21,5 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
 
     def get_k_matrices(self):
         for cmplx in self.megacomplex:
-            yield (cmplx.label, cmplx.get_k_matrix())
+            scale = cmplx.scale if cmplx.scale is not None else 1.0
+            yield (scale, cmplx.get_k_matrix())

@@ -19,11 +19,10 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
     Parameters
     ----------
     model: The model to simulate
-    parameter : ParameterGroup
+    parameter : glotaran.model.ParameterGroup
         The parameters for the simulation.
     dataset : str
         Label of the dataset to simulate
-
     axis : Dict[str, np.ndarray]
         A dictory with axis
     noise : bool
@@ -35,7 +34,7 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
     """
 
     if model.estimated_matrix is None:
-        raise Exception("Cannot simulate models without function estimated matrix.")
+        raise Exception("Cannot simulate models without implementation for estimated matrix.")
 
     filled_dataset = model.dataset[dataset].fill(model, parameter)
 

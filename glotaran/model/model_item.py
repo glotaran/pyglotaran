@@ -123,6 +123,8 @@ def model_item(attributes={},
             else:
                 attributes[name] = {'type': item_class}
             annotations[name] = item_class
+        for name in annotations:
+            setattr(cls, name, None)
 
         setattr(cls, '__annotations__', annotations)
 
