@@ -22,7 +22,6 @@ from glotaran.model import (
 class MockAttr:
     pass
 
-
 @model_item()
 class MockMegacomplex:
     pass
@@ -37,10 +36,6 @@ class MockModel(BaseModel):
 def model():
     d = {
         "megacomplex": {"m1": [], "m2": []},
-        "initial_concentration": {
-            "j1": [["1", "2"]],
-            "j2": {'parameters': ["3", "4"]},
-        },
         "test": {
             "t1": {'param': "foo",
                    'megacomplex': "m1",
