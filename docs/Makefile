@@ -19,7 +19,7 @@ endif
 
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -W
+SPHINXOPTS    = -aE
 SPHINXBUILD   = $(PYTHON_TO_USE) -msphinx
 SPHINXPROJ    = glotaran
 SOURCEDIR     = .

@@ -8,9 +8,38 @@
 API Documentation
 =================
 
-The API Documentation for glotaran is automatically created from its docstrings.
-
 .. currentmodule:: glotaran
+
+Analysis
+--------
+
+.. autosummary::
+    :toctree: api
+
+    glotaran.analysis.fitresult.FitResult
+
+Model
+-----
+
+.. autosummary::
+    :toctree: api
+
+    glotaran.model.BaseModel
+    glotaran.model.Parameter
+    glotaran.model.ParameterGroup
+
+Models
+------
+
+Kinetic Model
++++++++++++++
+
+.. autosummary::
+   :toctree: api
+
+   glotaran.models.spectral_temporal.KineticModel
+   glotaran.models.spectral_temporal.KineticMegacomplex
+
 
 .. autosummary::
     :toctree: api
