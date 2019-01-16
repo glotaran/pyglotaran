@@ -21,3 +21,7 @@ class KineticMegacomplex:
             else:
                 full_k_matrix = full_k_matrix.combine(k_matrix)
         return full_k_matrix
+
+    @property
+    def involved_compartments(self):
+        return self.get_k_matrix().involved_compartments()

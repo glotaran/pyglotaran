@@ -68,7 +68,6 @@ Kinetic Model
     glotaran.model.base_model
     glotaran.model.dataset_descriptor
     glotaran.model.model
-    glotaran.model.model_attribute
     glotaran.model.model_item
     glotaran.model.model_item_validator
     glotaran.model.parameter

@@ -63,7 +63,6 @@ class FitResult:
         self._group = create_group(model, self._data, atol)
         self._data_group = create_data_group(model, self._group, self._data)
         self._lm_result = None
-        self.debug = {}
 
     @classmethod
     def from_parameter(cls,
@@ -236,7 +235,6 @@ class FitResult:
                         matrix,
                         self._data_group[index]
                     )
-            self.debug[index] = (matrix, residual)
 
             start = 0
             for i, dataset in item:
@@ -274,6 +272,17 @@ class FitResult:
                 dataset['weighted_residual'] = dataset.residual
                 dataset.residual = np.multiply(dataset.weighted_residual, dataset.weight**-1)
 
+            l, v, r = np.linalg.svd(dataset.residual)
+
+            dataset['residual_right_singular_vectors'] = \
+                ((self.model.calculated_axis, 'left_singular_value_index'), l)
+
+            dataset['residual_right_singular_vectors'] = \
+                ((self.model.estimated_axis, 'right_singular_value_index'), r)
+
+            dataset['residual_singular_values'] = \
+                ((self.model.estimated_axis, 'singular_value_index'), r)
+
             # reconstruct fitted data
 
             dataset['fitted_data'] = dataset.data - dataset.residual
@@ -284,7 +293,6 @@ class FitResult:
     def __str__(self):
         string = "# Fitresult\n\n"
 
-        # pylint: disable=invalid-name
 
         ll = 32
         lr = 13

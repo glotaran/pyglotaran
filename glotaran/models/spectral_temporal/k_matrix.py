@@ -171,29 +171,22 @@ class KMatrix:
         initial_concentration = \
             [initial_concentration.parameters[initial_concentration.compartments.index(c)]
              for c in compartments]
-        #  eigenvectors = scipy.linalg.inv(eigenvectors)
-        #  gamma = np.matmul(eigenvectors, initial_concentration)
-        gamma = scipy.linalg.solve(eigenvectors, initial_concentration)
 
-        return gamma
+        gamma = scipy.linalg.solve(eigenvectors, initial_concentration)
+        return np.diag(gamma)
 
     def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        if self.is_unibranched(initial_concentration.compartments):
-            a_matrix = self.a_matrix_unibranch(initial_concentration)
-        else:
-            a_matrix = self.a_matrix_non_unibranch(initial_concentration)
-        return a_matrix
+        return self.a_matrix_unibranch(initial_concentration) \
+            if self.is_unibranched(initial_concentration.compartments) \
+            else self.a_matrix_non_unibranch(initial_concentration)
 
     def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
         eigenvalues, eigenvectors = self.eigen(initial_concentration.compartments)
         gamma = self._gamma(eigenvectors, initial_concentration)
 
-        a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
+        a_matrix = eigenvectors @ gamma
 
-        for i in range(eigenvectors.shape[0]):
-            a_matrix[i, :] = eigenvectors[:, i] * gamma[i]
-
-        return a_matrix
+        return a_matrix.T
 
     def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.array:
         compartments = [c for c in initial_concentration.compartments

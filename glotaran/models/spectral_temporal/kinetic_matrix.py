@@ -12,20 +12,22 @@ def calculate_kinetic_matrix(dataset, index, axis):
     scale = dataset.scale if dataset.scale is not None else 1.0
     compartments = None
     matrix = None
-    for cmplx_scale, k_matrix in dataset.get_k_matrices():
+    for _, k_matrix in dataset.get_k_matrices():
 
         if k_matrix is None:
             continue
 
         if dataset.initial_concentration is None:
             raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
+        initial_concentration = dataset.initial_concentration.normalized(dataset)
 
         (this_compartments, this_matrix) = _calculate_for_k_matrix(
             dataset,
             index,
             axis,
             k_matrix,
-            cmplx_scale * scale,
+            scale,
+            initial_concentration
         )
 
         if matrix is None:
@@ -66,12 +68,12 @@ def calculate_kinetic_matrix(dataset, index, axis):
     return (compartments, matrix)
 
 
-def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
+def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale, initial_concentration):
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-arguments
 
     # we might have more compartments in the model then in the k matrix
-    compartments = [comp for comp in dataset.initial_concentration.compartments
+    compartments = [comp for comp in initial_concentration.compartments
                     if comp in k_matrix.involved_compartments()]
 
     # the rates are the eigenvalues of the k matrix
@@ -106,11 +108,8 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
             for i in range(matrix.shape[1]):
                 matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
 
-    # apply initial concentration vector
-    matrix = np.matmul(
-        matrix,
-        k_matrix.a_matrix(dataset.initial_concentration),
-    )
+    # apply A matrix
+    matrix = matrix @ k_matrix.a_matrix(initial_concentration)
 
     # done
     return (compartments, matrix)

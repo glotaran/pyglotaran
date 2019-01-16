@@ -67,6 +67,11 @@ def get_pixel_map(array: Union[None, np.ndarray] = None,
 class FLIMDataset(HighDimensionalDataset):
     """
     Custom Data set for FLIM data
+
+    Attributes
+    ----------
+    fy: int
+        fuckyou
     """
 
     _time_units = {

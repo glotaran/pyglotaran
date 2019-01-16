@@ -128,6 +128,21 @@ class IrfGaussian:
         return [f'{self.label}_coherent_artifact_{i}'
                 for i in range(1, self.coherent_artifact_order + 1)]
 
+    def calculate(self, index, axis):
+        center, width, scale, _, _ = self.parameter(index)
+        irf = scale[0] * np.exp(-1 * (axis - center[0])**2 / (2 * width[0]**2))
+        if len(center) > 1:
+            for i in range(1, len(center)):
+                irf += scale[i] * np.exp(-1 * (axis - center[i])**2 / (2 * width[i]**2))
+        return irf
+
+    def calculate_dispersion(self, axis):
+        dispersion = []
+        for index in axis:
+            center, _, _, _, _ = self.parameter(index)
+            dispersion.append(center)
+        return np.asarray(dispersion).T
+
 
 @model_item_typed(types={
     'gaussian': IrfGaussian,
