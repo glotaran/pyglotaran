@@ -64,6 +64,8 @@ Kinetic Model
     glotaran.data.datasets.spectral_temporal_dataset
     glotaran.data.external_file_readers
     glotaran.data.external_file_readers.sdt_reader
+    glotaran.examples
+    glotaran.examples.sequential
     glotaran.model
     glotaran.model.base_model
     glotaran.model.dataset_descriptor

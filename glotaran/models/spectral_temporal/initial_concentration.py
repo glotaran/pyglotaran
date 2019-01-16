@@ -12,7 +12,7 @@ from glotaran.model import model_item, DatasetDescriptor
 )
 class InitialConcentration:
     """An initial concentration describes the population of the compartments at
-    the beginning of an experiement."""
+    the beginning of an experiment."""
 
     def normalized(self, dataset: DatasetDescriptor) -> 'InitialConcentration':
         parameters = self.parameters

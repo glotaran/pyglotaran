@@ -38,6 +38,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.napoleon',
               'sphinx.ext.extlinks',
+              'sphinx.ext.intersphinx',
+              'IPython.sphinxext.ipython_console_highlighting',
+              'IPython.sphinxext.ipython_directive',
               'm2r']
 
 autoclass_content = "both"
@@ -47,6 +50,10 @@ add_module_names = False
 numpydoc_show_class_members = False
 numpydoc_class_members_toctree = True
 
+intersphinx_mapping = {
+    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'xarray': ('http://xarray.pydata.org/en/stable/', None),
+}
 
 # taken from https://github.com/lmfit/lmfit-py/blob/master/doc/conf.py
 extlinks = {

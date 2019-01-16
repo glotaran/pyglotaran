@@ -63,4 +63,4 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
         (model.calculated_axis, calculated_axis), (model.estimated_axis, estimated_axis)
     ])
 
-    return data
+    return data.to_dataset(name="data")

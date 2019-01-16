@@ -11,6 +11,7 @@ ParameterGroup = model.ParameterGroup
 
 read_parameter_csv = ParameterGroup.from_csv
 read_parameter_yaml = ParameterGroup.from_yaml
+read_parameter_yaml_file = ParameterGroup.from_yaml_file
 
 from .models import spectral_temporal  # noqa: E402
 KineticModel = spectral_temporal.KineticModel
