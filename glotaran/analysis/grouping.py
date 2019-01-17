@@ -108,6 +108,9 @@ def calculate_group_item(item,
                     matrix[:, i], dataset.weight.sel({model.estimated_axis, index})
                 )
 
+        if dataset_descriptor.scale:
+            matrix *= dataset_descriptor.scale
+
         if full_matrix is None:
             full_matrix = matrix
             full_clp = clp

@@ -9,7 +9,6 @@ from .irf import IrfGaussian, IrfMeasured
 
 def calculate_kinetic_matrix(dataset, index, axis):
 
-    scale = dataset.scale if dataset.scale is not None else 1.0
     compartments = None
     matrix = None
     for _, k_matrix in dataset.get_k_matrices():
@@ -26,7 +25,6 @@ def calculate_kinetic_matrix(dataset, index, axis):
             index,
             axis,
             k_matrix,
-            scale,
             initial_concentration
         )
 
@@ -68,7 +66,7 @@ def calculate_kinetic_matrix(dataset, index, axis):
     return (compartments, matrix)
 
 
-def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale, initial_concentration):
+def _calculate_for_k_matrix(dataset, index, axis, k_matrix, initial_concentration):
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-arguments
 
@@ -85,21 +83,24 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale, initial_conce
 
     # calculate the c_matrix
     if isinstance(dataset.irf, IrfGaussian):
+
         center, width, irf_scale, backsweep, backsweep_period = \
                 dataset.irf.parameter(index)
+
         for i in range(len(center)):
             calc_kinetic_matrix_gaussian_irf(matrix,
                                              rates,
                                              axis,
                                              center[i],
                                              width[i],
-                                             scale * irf_scale[i],
+                                             irf_scale[i],
                                              backsweep,
                                              backsweep_period,
                                              )
+        matrix /= np.sum(irf_scale)
 
     else:
-        calc_kinetic_matrix_no_irf(matrix, rates, axis, scale)
+        calc_kinetic_matrix_no_irf(matrix, rates, axis)
         if isinstance(dataset.irf, IrfMeasured):
             irf = dataset.irf.irfdata
             if len(irf.shape) == 2:

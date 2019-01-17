@@ -9,17 +9,13 @@ import xarray as xr
 class DataFileType(Enum):
     time_explicit = "Time explicit"
     wavelength_explicit = "Wavelength explicit"
-    # TODO: implement time_intervals
-
-
-class DataRequired(Exception):
-    pass
 
 
 class ExplicitFile(object):
     """
     Abstract class representing either a time- or wavelength-explicit file.
     """
+    # TODO: implement time_intervals
     def __init__(self, filepath, *args, **kwargs):
         self._file_data_format = None
         self._observations = []  # TODO: choose name: data_points, observations, data
@@ -181,7 +177,8 @@ class ExplicitFile(object):
         if self._file_data_format == DataFileType.time_explicit:
             data = data.T
         return xr.DataArray(
-            data, coords=[('time', self._times), ('spectral', self._spectral_indices)])
+            data, coords=[('time', self._times), ('spectral', self._spectral_indices)]
+        ).to_dataset(name='data')
 
 
 class WavelengthExplicitFile(ExplicitFile):

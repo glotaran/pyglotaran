@@ -274,7 +274,7 @@ class FitResult:
 
             l, v, r = np.linalg.svd(dataset.residual)
 
-            dataset['residual_right_singular_vectors'] = \
+            dataset['residual_left_singular_vectors'] = \
                 ((self.model.calculated_axis, 'left_singular_value_index'), l)
 
             dataset['residual_right_singular_vectors'] = \

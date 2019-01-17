@@ -94,8 +94,6 @@ class IrfGaussian:
 
         scale = self.scale if self.scale is not None else [1 for _ in centers]
         scale = scale if isinstance(scale, list) else [scale]
-        if self.normalize:
-            scale /= np.sqrt(2 * np.pi * np.asarray(widths)**2)
 
         backsweep = 1 if self.backsweep else 0
 
