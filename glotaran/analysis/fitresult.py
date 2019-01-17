@@ -151,7 +151,7 @@ class FitResult:
     @property
     def nfev(self) -> int:
         """int: The number of function evaluations."""
-        return self._lm_result.nfev if self._lm_result else None
+        return self._lm_result.nfev if self._lm_result else 0
 
     @property
     def nvars(self) -> int:
@@ -171,12 +171,12 @@ class FitResult:
     @property
     def chisqr(self) -> float:
         """float: The chi-square of the fit """
-        return self._lm_result.chisqr if self._lm_result else None
+        return self._lm_result.chisqr if self._lm_result else 0
 
     @property
     def red_chisqr(self) -> float:
         """float: The reduced chi-square of the fit."""
-        return self._lm_result.redchi if self._lm_result else None
+        return self._lm_result.redchi if self._lm_result else 0
 
     @property
     def var_names(self) -> typing.List[str]:
@@ -293,7 +293,6 @@ class FitResult:
     def __str__(self):
         string = "# Fitresult\n\n"
 
-
         ll = 32
         lr = 13
 
@@ -306,22 +305,22 @@ class FitResult:
         string += "\n"
 
         string += "Number of residual evaluation |".rjust(ll)
-        string += f"{self._lm_result.nfev} |".rjust(lr)
+        string += f"{self.nfev} |".rjust(lr)
         string += "\n"
         string += "Number of variables |".rjust(ll)
-        string += f"{self._lm_result.nvarys} |".rjust(lr)
+        string += f"{self.nvars} |".rjust(lr)
         string += "\n"
         string += "Number of datapoints |".rjust(ll)
-        string += f"{self._lm_result.ndata} |".rjust(lr)
+        string += f"{self.ndata} |".rjust(lr)
         string += "\n"
         string += "Negrees of freedom |".rjust(ll)
-        string += f"{self._lm_result.nfree} |".rjust(lr)
+        string += f"{self.nfree} |".rjust(lr)
         string += "\n"
         string += "Chi Square |".rjust(ll)
-        string += f"{self._lm_result.chisqr:.6f} |".rjust(lr)
+        string += f"{self.chisqr:.6f} |".rjust(lr)
         string += "\n"
         string += "Reduced Chi Square |".rjust(ll)
-        string += f"{self._lm_result.redchi:.6f} |".rjust(lr)
+        string += f"{self.red_chisqr:.9f} |".rjust(lr)
         string += "\n"
 
         string += "\n"

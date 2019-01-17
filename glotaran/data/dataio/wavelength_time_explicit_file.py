@@ -271,3 +271,34 @@ def get_data_file_format(line):
     else:
         NotImplementedError()
     return data_file_format
+
+
+def read_ascii_time_trace(fname: str) -> xr.Dataset:
+    """Reads an ascii file in wavelength- or time-explicit format.
+
+    See [1] for documentation of this format.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the ascii file.
+
+    Returns
+    -------
+    dataset : xr.Dataset
+
+    Notes
+    -----
+    .. [1] http://glotaran.org/wiki/doku.php?id=file_formats
+    """
+
+    data_file_format = None
+    with open(fname) as f:
+        f.readline()  # Read first line with comments (and discard for now)
+        f.readline()  # Read second line with comments (and discard for now)
+        data_file_format = get_data_file_format(f.readline())
+
+    data_file = WavelengthExplicitFile(fname) if data_file_format is \
+        DataFileType.wavelength_explicit else TimeExplicitFile(fname)
+
+    return data_file.read()
