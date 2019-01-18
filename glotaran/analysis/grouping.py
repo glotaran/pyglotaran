@@ -98,10 +98,6 @@ def calculate_group_item(item,
                 ), dtype=np.float64))
         dataset.concentration.loc[{model.estimated_axis: index}] = matrix
 
-        if model.constrain_calculated_matrix_function is not None:
-            (clp, matrix) = \
-                model.constrain_calculated_matrix_function(model, clp, matrix)
-
         if 'weight' in dataset:
             for i in range(matrix.shape[1]):
                 matrix[:, i] = np.multiply(
@@ -128,6 +124,12 @@ def calculate_group_item(item,
                 matrix = reshape
 
             full_matrix = np.concatenate([full_matrix, matrix], axis=0)
+
+    # Apply constraints
+
+    if model.constrain_calculated_matrix_function is not None:
+        (full_clp, full_matrix) = \
+            model.constrain_calculated_matrix_function(full_clp, full_matrix, index)
 
     return (full_clp, full_matrix)
 

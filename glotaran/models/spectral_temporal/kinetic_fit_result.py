@@ -4,6 +4,7 @@ import xarray as xr
 from glotaran.analysis.fitresult import FitResult
 
 from .irf import IrfGaussian
+from .spectral_constraints import OnlyConstraint, ZeroConstraint
 
 
 def finalize_kinetic_result(model, result: FitResult):
@@ -25,6 +26,21 @@ def finalize_kinetic_result(model, result: FitResult):
         dataset.coords['species'] = compartments
         dataset['species_associated_spectra'] = ((result.model.estimated_axis, 'species',),
                                                  dataset.clp.sel(clp_label=compartments).values)
+
+        for constraint in model.spectral_constraints:
+            if isinstance(constraint, (OnlyConstraint, ZeroConstraint)):
+                idx = [index for index in dataset.spectral if constraint.applies(index)]
+                dataset.species_associated_spectra\
+                    .loc[{'species': constraint.compartment, 'spectral': idx}] \
+                    = np.zeros((len(idx)))
+
+        for relation in model.spectral_relations:
+            idx = [index for index in dataset.spectral if relation.applies(index)]
+            dataset.species_associated_spectra\
+                .loc[{'species': constraint.compartment, 'spectral': idx}] \
+                = dataset.species_associated_spectra\
+                .sel({'species': constraint.target, 'spectral': idx}) * relation.parameter
+
         dataset['species_concentration'] = (
             (model.estimated_axis, model.calculated_axis, 'species',),
             dataset.concentration.sel(clp_label=compartments).values)
@@ -67,7 +83,8 @@ def finalize_kinetic_result(model, result: FitResult):
                 dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
 
                 if irf.dispersion_center:
-                    for i, dispersion in enumerate(irf.calculate_dispersion(dataset.coords['spectral'].values)):
+                    for i, dispersion in enumerate(
+                            irf.calculate_dispersion(dataset.coords['spectral'].values)):
                         dataset[f'center_dispersion_{i+1}'] = (('spectral', dispersion))
 
                 if irf.coherent_artifact:

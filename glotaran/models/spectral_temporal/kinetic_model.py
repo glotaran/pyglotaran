@@ -1,5 +1,6 @@
 """Glotaran Kinetic Model"""
 
+import typing
 import numpy as np
 
 from glotaran.model import model, BaseModel
@@ -10,59 +11,21 @@ from .k_matrix import KMatrix
 from .kinetic_fit_result import finalize_kinetic_result
 from .kinetic_megacomplex import KineticMegacomplex
 from .spectral_constraints import (
-    SpectralConstraint,
-    OnlyConstraint,
-    ZeroConstraint,
-    EqualAreaConstraint,
-)
-from .spectral_relations import SpectralRelation
+    SpectralConstraint, apply_spectral_constraints, spectral_constraint_residual)
+from .spectral_relations import SpectralRelation, apply_spectral_relations
 from .spectral_shape import SpectralShape
 from .spectral_temporal_dataset_descriptor import SpectralTemporalDatasetDescriptor
 from .kinetic_matrix import calculate_kinetic_matrix
 from .spectral_matrix import calculate_spectral_matrix
 
 
-def apply_spectral_constraints_and_relations(model, index, clp_labels, matrix):
-
-    for constraint in model.spectral_constraint:
-
-        if constraint.applies(index):
-
-            if isinstance(constraint, (OnlyConstraint, ZeroConstraint)):
-                idx = clp_labels.index(constraint.compartment)
-                del clp_labels[idx]
-
-                matrix = np.delete(matrix, idx, axis=1)
-
-    for relation in model.spectral_relations:
-        if relation.applies(index):
-            idx = clp_labels.index(relation.compartment)
-            target = clp_labels.index(relation.target)
-            del clp_labels[idx]
-
-            matrix[:, target] += relation.parameter * matrix[:, idx]
-            matrix = np.delete(matrix, idx, axis=1)
-
+def apply_kinetic_model_constraints(model: typing.Type['KineticModel'],
+                                    clp_labels: typing.List[str],
+                                    matrix: np.ndarray,
+                                    index: float):
+    clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
+    clp_labels, matrix = apply_spectral_relations(model, clp_labels, matrix, index)
     return clp_labels, matrix
-
-
-def apply_equality_constraints(model, clp_labels, clp, concentrations):
-    for constraint in model.spectral_constraint:
-            residuals = []
-            if isinstance(constraint, EqualAreaConstraint):
-                residual = []
-                for index in clp:
-                    if constraint.applies(index):
-                        labels = clp_labels[index]
-                        idx = labels.index(constraint.compartment)
-                        target = labels.index(constraint.target)
-                        residual.append(
-                            np.abs(
-                                clp[index[idx] - clp[index][target]]
-                            )
-                        )
-                residuals.append(residual)
-            return residuals
 
 
 @model(
@@ -81,7 +44,9 @@ def apply_equality_constraints(model, clp_labels, clp, concentrations):
     calculated_axis='time',
     estimated_matrix=calculate_spectral_matrix,
     estimated_axis='spectral',
-    finalize_result_function=finalize_kinetic_result
+    finalize_result_function=finalize_kinetic_result,
+    constrain_calculated_matrix_function=apply_spectral_constraints,
+    additional_residual_function=spectral_constraint_residual,
 )
 class KineticModel(BaseModel):
     """

@@ -1,14 +1,14 @@
 """This package contains compartment constraint items."""
 
-from typing import List, Tuple
+import typing
+import numpy as np
 
-from glotaran.model.model_item import model_item, model_item_typed
-
+from glotaran.model import model_item, model_item_typed
 
 @model_item(
     attributes={
         'compartment': str,
-        'interval': List[Tuple[any, any]],
+        'interval': typing.List[typing.Tuple[float, float]],
     }, has_type=True, no_label=True)
 class OnlyConstraint:
     """A only constraint sets the calculated matrix row of a compartment to 0
@@ -26,13 +26,17 @@ class OnlyConstraint:
         applies : bool
 
         """
-        return not any(interval[0] <= index <= interval[1] for interval in self.interval)
+        def applies(interval):
+            return not interval[0] <= index <= interval[1]
+        if isinstance(self.interval, tuple):
+            return applies(self.interval)
+        return not any([applies(i) for i in self.interval])
 
 
 @model_item(
     attributes={
         'compartment': str,
-        'interval': List[Tuple[any, any]],
+        'interval': typing.List[typing.Tuple[float, float]],
     }, has_type=True, no_label=True)
 class ZeroConstraint:
     """A zero constraint sets the calculated matrix row of a compartment to 0
@@ -50,7 +54,11 @@ class ZeroConstraint:
         applies : bool
 
         """
-        return any(interval[0] <= index <= interval[1] for interval in self.interval)
+        def applies(interval):
+            return interval[0] <= index <= interval[1]
+        if isinstance(self.interval, tuple):
+            return applies(self.interval)
+        return any([applies(i) for i in self.interval])
 
 
 @model_item(attributes={
@@ -88,3 +96,33 @@ class SpectralConstraint:
     the respective classes for details.
     """
     pass
+
+
+def apply_spectral_constraints(
+        model: typing.Type['glotaran.models.spectral_temporal.KineticModel'],
+        clp_labels: typing.List[str],
+        matrix: np.ndarray,
+        index: float):
+    for constraint in model.spectral_constraints:
+        if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
+            idx = [not label == constraint.compartment for label in clp_labels]
+            clp_labels = [label for label in clp_labels if not label == constraint.compartment]
+            matrix = matrix[:, idx]
+    return (clp_labels, matrix)
+
+
+def spectral_constraint_residual(
+        model: typing.Type['glotaran.models.spectral_temporal.KineticModel'],
+        clp_labels: typing.List[str],
+        clp: np.ndarray,
+        matrix: np.ndarray,
+        index: float):
+    residual = []
+    for constraint in model.spectral_constraints:
+        if isinstance(constraint, EqualAreaConstraint) and constraint.applies(index):
+            source_idx = clp_labels.index(constraint.compartment)
+            target_idx = clp_labels.index(constraint.target)
+            residual.append(
+                (clp[source_idx] - constraint.parameter * clp[target_idx]) * constraint.weight
+            )
+    return residual

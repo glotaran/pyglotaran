@@ -253,14 +253,15 @@ class FitResult:
                         np.zeros((dim1, dim2), dtype=np.float64)
                     )
                 dataset.clp.loc[{self.model.estimated_axis: i}] = \
-                    np.array([clp[clp_labels.index(i)] for i in
-                             dataset.coords['clp_label'].values])
+                    np.array([clp[clp_labels.index(i)] if i in clp_labels else None
+                              for i in dataset.coords['clp_label'].values])
+
+            if self.model.additional_residual_function:
+                additionals = self.model.additional_residual_function(
+                    clp_labels, clp, matrix, parameter)
+                residual = np.concatenate((residual, additionals))
 
             residuals.append(residual)
-
-        additionals = self.model.additional_residual_function(
-            self.model, self._clp, self._concentrations) \
-            if self.model.additional_residual_function is not None else []
 
         return np.concatenate(residuals + additionals)
 
