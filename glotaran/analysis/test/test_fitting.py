@@ -205,12 +205,12 @@ def test_fitting(suite):
     dataset = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
     print(dataset)
 
-    assert dataset.shape == (cal_axis.size, est_axis.size)
+    assert dataset.data.shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
 
     result = FitResult(model, data, initial, False)
-    result.minimize()
+    result.optimize()
     print(result.best_fit_parameter)
     print(result.data['dataset1'])
 

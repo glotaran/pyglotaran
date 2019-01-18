@@ -15,10 +15,7 @@ def __init__():
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def calc_kinetic_matrix_no_irf(double[:, :] matrix,
-                               double[:] rates,
-                               double[:] times,
-                               double scale):
+def calc_kinetic_matrix_no_irf(double[:, :] matrix, double[:] rates, double[:] times,):
     nr_times = times.shape[0]
     nr_rates = rates.shape[0]
     cdef int n_t, n_r

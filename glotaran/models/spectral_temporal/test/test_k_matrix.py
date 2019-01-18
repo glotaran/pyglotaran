@@ -30,7 +30,7 @@ class SequentialModel:
         [-0.7335341, 1],
     ])
 
-    wanted_gamma = [1.47134, 1.079278]
+    wanted_gamma = np.diag([1.47134, 1.079278])
 
     wanted_a_matrix = np.asarray([
         [1, -1.079278],
@@ -65,7 +65,7 @@ class SequentialModelWithBacktransfer:
         [0.7288318, -0.9780806],
     ])
 
-    wanted_gamma = [-1.19068, -0.8872538]
+    wanted_gamma = np.diag([-1.19068, -0.8872538])
 
     wanted_a_matrix = np.asarray([
         [0.8152501, -0.8678057],
@@ -99,7 +99,7 @@ class ParallelModel:
         [0, 1],
     ])
 
-    wanted_gamma = [1, 1]
+    wanted_gamma = np.diag([1, 1])
 
     wanted_a_matrix = np.asarray([
         [1, 0],
@@ -135,7 +135,7 @@ class ParallelModelWithEquilibria:
         [0.7180595, -0.9793676],
     ])
 
-    wanted_gamma = [-0.940184, -1.710398]
+    wanted_gamma = np.diag([-0.940184, -1.710398])
 
     wanted_a_matrix = np.asarray([
         [0.6543509, -0.6751081],

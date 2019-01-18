@@ -263,7 +263,7 @@ class FitResult:
 
             residuals.append(residual)
 
-        return np.concatenate(residuals + additionals)
+        return np.concatenate(residuals)
 
     def _finalize(self):
         for label in self.model.dataset:

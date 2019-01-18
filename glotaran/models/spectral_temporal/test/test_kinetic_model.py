@@ -563,7 +563,7 @@ def test_kinetic_model(suite, nnls):
 
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
-    assert dataset.shape == \
+    assert dataset.data.shape == \
         (suite.axis['time'].size, suite.axis['spectral'].size)
 
     data = {'dataset1': dataset}

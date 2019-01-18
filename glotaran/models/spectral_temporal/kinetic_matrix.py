@@ -67,8 +67,6 @@ def calculate_kinetic_matrix(dataset, index, axis):
 
 
 def _calculate_for_k_matrix(dataset, index, axis, k_matrix, initial_concentration):
-    # pylint: disable=too-many-locals
-    # pylint: disable=too-many-arguments
 
     # we might have more compartments in the model then in the k matrix
     compartments = [comp for comp in initial_concentration.compartments

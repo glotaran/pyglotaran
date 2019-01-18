@@ -54,8 +54,8 @@ class OneOscillation():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 16],
-            ['rate', 3],
+            ['freq', 20],
+            ['rate', 0.3],
         ],
     })
 
@@ -124,10 +124,10 @@ class OneOscillationWithIrf():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 16],
-            ['rate', 0.3],
+            ['freq', 25],
+            ['rate', 0.2],
         ],
-        'irf': [['center', 0.5], ['width', 0.2]],
+        'irf': [['center', 0.4], ['width', 0.1]],
     })
 
     time = np.arange(0, 3, 0.01)
@@ -246,7 +246,7 @@ class OneOscillationWithSequentialModel():
             ['rate', 0.1],
         ],
         'shape': {'amps': [0.07, 2, 4], 'locs': [5, 2, 8], 'width': [4, 2, 3]},
-        'irf': [['center', 0.3], ['width', 0.5]],
+        'irf': [['center', 0.3], ['width', 0.1]],
     })
 
     parameter = ParameterGroup.from_dict({
@@ -259,10 +259,10 @@ class OneOscillationWithSequentialModel():
             ["2", 0.05],
         ],
         'osc': [
-            ['freq', 16],
+            ['freq', 20],
             ['rate', 0.3],
         ],
-        'irf': [['center', 0.5], ['width', 0.3]],
+        'irf': [['center', 0.5], ['width', 0.1]],
     })
 
     time = np.arange(-1, 5, 0.01)
@@ -306,13 +306,14 @@ def test_doas_model(suite):
                                        suite.axis)
     print(dataset)
 
-    assert dataset.shape == \
+    assert dataset.data.shape == \
         (suite.axis['time'].size, suite.axis['spectral'].size)
 
     print(suite.parameter)
+    print(suite.wanted_parameter)
     data = {'dataset1': dataset}
 
-    result = suite.model.fit(suite.parameter, data)
+    result = suite.model.fit(suite.parameter, data, max_nfev=50)
     print(result.best_fit_parameter)
 
     for label, param in result.best_fit_parameter.all_with_label():
@@ -322,5 +323,5 @@ def test_doas_model(suite):
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset['time'], resultdata['time'])
     assert np.array_equal(dataset['spectral'], resultdata['spectral'])
-    assert dataset.shape == resultdata.data.shape
-    assert np.allclose(dataset, resultdata.fitted_data)
+    assert dataset.data.shape == resultdata.fitted_data.shape
+    assert np.allclose(dataset.data, resultdata.fitted_data)

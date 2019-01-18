@@ -50,7 +50,6 @@ def calculate_doas_matrix(dataset, index, axis):
                                     f"'{osc.frequency}', '{osc.rates}'")
                 if not all(np.isfinite(b)):
                     idx = np.where(np.logical_not(np.isfinite(b)))[0]
-
                     raise Exception(f"""Non numeric values in term 'b' for oscillation '{osc.label}':
                                     frequency: {frequency}
                                     rate: {osc.rate}
@@ -58,11 +57,9 @@ def calculate_doas_matrix(dataset, index, axis):
                                     width: {widths[i]}
                                     frequency_max: {frequency_max}
                                     delta_min: {delta_min}
-                                    nonfinite timpoints: {axis[idx]}
-
-                                    """)
+                                    nonfinite timpoints: {axis[idx]} """)
                 osc += a * b * scales[i]
-        osc /= np.sum(scales)
+            osc /= np.sum(scales)
         matrix[:, idx] = osc.real
         matrix[:, idx + 1] = osc.imag
         idx += 2
