@@ -123,29 +123,23 @@ class BaseModel:
                  noise: bool = False,
                  noise_std_dev: float = 1.0,
                  noise_seed: int = None,
-                 ) -> xr.DataArray:
+                 ) -> xr.Dataset:
         """Simulates the model.
 
         Parameters
         ----------
-        dataset : str
+        dataset :
             Label of the dataset to simulate
-        parameter : glotaran.model.ParameterGroup
+        parameter :
             The parameters for the simulation.
         axis : Dict[str, np.ndarray]
             A dictory with axis
-        noise : bool, optional
-            (Default = False)
+        noise :
             If `True` noise is added to the simulated data.
-        noise_std_dev : float
-            (Default value = 1.0)
+        noise_std_dev :
             the standart deviation of the noise.
-        noise_seed : int, optional
+        noise_seed :
             Seed for the noise.
-
-        Returns
-        -------
-        data: xr.DataArray
         """
         return simulate(self, parameter, dataset, axis, noise=noise,
                         noise_std_dev=noise_std_dev, noise_seed=noise_seed)
@@ -162,39 +156,30 @@ class BaseModel:
 
         Parameters
         ----------
-        data : dict(str, union(xr.Dataset, xr.DataArray))
+        data :
             A dictonary containing all datasets with their labels as keys.
         parameter : glotaran.model.ParameterGroup
             The parameter,
-        nnls : bool, optional
+        nnls :
             (default = False)
             If `True` non-linear least squaes optimizing is used instead of variable projection.
-        verbose : bool, optional
+        verbose :
             (default = True)
             If `True` feedback is printed at every iteration.
-        max_nfev : int, optional
+        max_nfev :
             (default = None)
             Maximum number of function evaluations. `None` for unlimited.
-        group_atol : float, optional
+        group_atol :
             (default = 0)
             The tolerance for grouping datasets along the estimated axis.
 
-        Returns
-        -------
-        result: glotaran.analysis.fitresult.FitResult 
-            The result of the fit.
         """
         result = FitResult(self, data, parameter, nnls, atol=group_atol)
         result.optimize(verbose=verbose, max_nfev=max_nfev)
         return result
 
     def errors(self) -> typing.List[str]:
-        """Returns a list of errors in the model.
-
-        Returns
-        -------
-        errors : list(str)
-        """
+        """Returns a list of errors in the model."""
         attrs = getattr(self, '_glotaran_model_attributes')
 
         errors = []
@@ -211,13 +196,7 @@ class BaseModel:
         return errors
 
     def valid(self) -> bool:
-        """valid checks the model for errors.
-
-        Returns
-        -------
-        valid : bool
-            False if at least one error in the model, else True.
-        """
+        """valid checks the model for errors.  """
         return len(self.errors()) is 0
 
     def errors_parameter(self, parameter: ParameterGroup) -> typing.List[str]:
@@ -225,11 +204,8 @@ class BaseModel:
 
         Parameters
         ----------
-        parameter : glotaran.model.ParameterGroup
-
-        Returns
-        -------
-        errors : list(str)
+        parameter :
+            The parameter to validate
         """
         attrs = getattr(self, '_glotaran_model_attributes')
 
@@ -251,12 +227,8 @@ class BaseModel:
 
         Parameters
         ----------
-        parameter : glotaran.model.ParameterGroup
-
-        Returns
-        -------
-        valid : bool
-            False if at least one error in the parameter, else True.
+        parameter :
+            The parameter to validate
         """
         return len(self.errors_parameter(parameter)) is 0
 

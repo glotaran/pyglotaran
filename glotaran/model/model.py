@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from typing import Dict, List
+import functools
 
 from glotaran.parse.register import register_model
 
@@ -30,6 +31,14 @@ def model(name,
         setattr(cls, 'additional_residual_function',
                 additional_residual_function)
         setattr(cls, 'allow_grouping', allow_grouping)
+        cls.__doc__ += '''
+        
+        Attributes
+        ----------
+        allow_grouping:
+            Indicates if the model is allowed to group data along the estimated_axis.
+
+        '''
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
@@ -42,7 +51,9 @@ def model(name,
         setattr(cls, 'estimated_axis', estimated_axis)
 
         if not hasattr(cls, '__annotations__'):
-            setattr(cls, '__annotations__', {})
+            setattr(cls, '__annotations__', {
+                'allow_grouping': bool,
+            })
         else:
             setattr(cls, '__annotations__',
                     getattr(cls, '__annotations__').copy())
@@ -68,36 +79,17 @@ def model(name,
 
             if getattr(attr_type, '_glotaran_has_label'):
 
-                def get_item(self, label: str, attr_name=attr_name):
-                    return getattr(self, attr_name)[label]
+                get_item = _create_get_func(cls, attr_name, attr_type)
+                setattr(cls, get_item.__name__, get_item)
 
-                setattr(cls, f"get_{attr_name}", get_item)
-
-                def set_item(self, label: str, item: attr_type,
-                             attr_name=attr_name,
-                             attr_type=attr_type):
-
-                    # TODO checked typed items
-                    if not isinstance(item, attr_type) and \
-                            not hasattr(attr_type, "_glotaran_model_item_typed"):
-                        raise TypeError
-                    getattr(self, attr_name)[label] = item
-
-                setattr(cls, f"set_{attr_name}", set_item)
+                set_item = _create_set_func(cls, attr_name, attr_type)
+                setattr(cls, set_item.__name__, set_item)
                 setattr(cls, attr_name, {})
 
             else:
-                def add_item(self, item: attr_type,
-                             attr_name=attr_name,
-                             attr_type=attr_type):
 
-                    # TODO checked typed items
-                    if not isinstance(item, attr_type) and \
-                            not hasattr(attr_type, "_glotaran_model_item_typed"):
-                        raise TypeError
-                    getattr(self, attr_name).append(item)
-
-                setattr(cls, f"add_{attr_name}", add_item)
+                add_item = _create_add_func(cls, attr_name, attr_type)
+                setattr(cls, add_item.__name__, add_item)
                 setattr(cls, attr_name, [])
 
         def init(self, cls=cls, attributes=attributes):
@@ -115,3 +107,86 @@ def model(name,
         return cls
 
     return decorator
+
+
+def _create_add_func(cls, name, type):
+
+    def add_item(self, item):
+
+        # TODO checked typed items
+        if not isinstance(item, type) and \
+                not hasattr(type, "_glotaran_model_item_typed"):
+            raise TypeError
+        getattr(self, name).append(item)
+
+    add_item.__annotations__ = {
+        'item': type,
+    }
+    add_item.__name__ = f'add_{name}'
+    add_item.__qualname__ = cls.__name__ + '.' + add_item.__name__
+    add_item.__module__ = cls.__module__
+    add_item.__doc__ = f'''
+    Adds an `{type.__name__}` object.
+
+    Parameters
+    ----------
+    item :
+        The `{type.__name__}` item.
+    '''
+
+    return add_item
+
+
+def _create_get_func(cls, name, type):
+
+    def get_item(self, label):
+        return getattr(self, name)[label]
+
+    get_item.__annotations__ = {
+        'label': str,
+        'return': type,
+    }
+    get_item.__name__ = f'get_{name}'
+    get_item.__qualname__ = cls.__qualname__ + '.' + get_item.__name__
+    get_item.__module__ = cls.__module__
+    get_item.__doc__ = f'''
+    Returns the `{type.__name__}` object with the given label.
+
+    Parameters
+    ----------
+    label :
+        The label of the `{type.__name__}` object.
+    '''
+
+    return get_item
+
+
+def _create_set_func(cls, name, type):
+
+    def set_item(self, label, item):
+
+        # TODO checked typed items
+        if not isinstance(item, type) and \
+                not hasattr(type, "_glotaran_model_item_typed"):
+            raise TypeError
+        getattr(self, name)[label] = item
+
+    set_item.__annotations__ = {
+        'label': str,
+        'item': type,
+    }
+    set_item.__name__ = f'set_{name}'
+    set_item.__qualname__ = cls.__qualname__ + '.' + set_item.__name__
+    set_item.__module__ = cls.__module__
+    set_item.__doc__ = f'''
+    Sets the `{type.__name__}` object with the given label with to the item.
+
+    Parameters
+    ----------
+    label :
+        The label of the `{type.__name__}` object.
+    item :
+        The `{type.__name__}` item.
+    '''
+
+    return set_item

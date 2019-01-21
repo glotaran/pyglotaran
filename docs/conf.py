@@ -39,6 +39,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.extlinks',
               'sphinx.ext.intersphinx',
+              'sphinx_autodoc_typehints',
               'IPython.sphinxext.ipython_console_highlighting',
               'IPython.sphinxext.ipython_directive',
               'm2r']

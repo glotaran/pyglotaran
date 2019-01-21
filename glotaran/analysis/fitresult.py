@@ -6,6 +6,7 @@ import numpy as np
 import xarray as xr
 from lmfit.minimizer import Minimizer
 
+import glotaran
 from glotaran.model.parameter_group import ParameterGroup
 
 
