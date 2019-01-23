@@ -6,7 +6,7 @@ import numpy as np
 import xarray as xr
 from lmfit.minimizer import Minimizer
 
-import glotaran
+import glotaran  # noqa F01
 from glotaran.model.parameter_group import ParameterGroup
 
 
@@ -58,7 +58,10 @@ class FitResult:
 
             if 'weight' in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
-            self._data[label] = dataset.transpose(model.calculated_axis, model.estimated_axis)
+            self._data[label] = dataset.transpose(model.calculated_axis, model.estimated_axis,
+                                                  *[dim for dim in dataset.dims
+                                                    if dim is not model.calculated_axis and
+                                                    dim is not model.estimated_axis])
         self._initial_parameter = initital_parameter
         self._nnls = nnls
         self._group = create_group(model, self._data, atol)
@@ -244,7 +247,7 @@ class FitResult:
                     dataset['residual'] = dataset.data.copy()
                 end = dataset.coords[self.model.calculated_axis].size + start
                 dataset.residual.loc[{self.model.estimated_axis: i}] = residual[start:end]
-                start += end
+                start = end
 
                 if 'clp' not in dataset:
                     dim1 = dataset.coords[self.model.estimated_axis].size

@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from typing import Dict, List
-import functools
 
 from glotaran.parse.register import register_model
 
@@ -32,7 +31,7 @@ def model(name,
                 additional_residual_function)
         setattr(cls, 'allow_grouping', allow_grouping)
         cls.__doc__ += '''
-        
+
         Attributes
         ----------
         allow_grouping:

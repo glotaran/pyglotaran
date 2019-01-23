@@ -24,4 +24,4 @@ class KineticMegacomplex:
 
     @property
     def involved_compartments(self):
-        return self.get_k_matrix().involved_compartments()
+        return self.get_k_matrix().involved_compartments() if self.get_k_matrix() else []

@@ -14,6 +14,16 @@ from lmfit import Parameters
 from .parameter import Parameter
 
 
+class ParameterNotFoundException(Exception):
+    """Raised when a Parameter is not found in the Group."""
+    def __init__(self, path, label):
+        self._path = path,
+        self._label = label
+
+    def __str__(self):
+        return f"Cannot find parameter {'.'.join(self._path)}.{self._label}"
+
+
 class ParameterGroup(OrderedDict):
     """Represents are group of parameters. Can contain other groups, creating a
     tree-like hirachy."""
@@ -251,12 +261,14 @@ class ParameterGroup(OrderedDict):
 
         group = self
         for l in path:
-            group = group[l]
+            try:
+                group = group[l]
+            except KeyError:
+                raise ParameterNotFoundException(path, label)
         try:
             return group._parameters[label]
         except KeyError:
-            raise Exception("Cannot find parameter "
-                            "{}".format(".".join(path)+"."+label))
+            raise ParameterNotFoundException(path, label)
 
     def get_by_index(self, idx: int) -> Parameter:
         """ Gets a parameter by its index. Only works for unlabeled parameters

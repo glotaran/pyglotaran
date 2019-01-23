@@ -116,11 +116,11 @@ def calculate_group_item(item,
                     if comp not in full_clp:
                         full_clp.append(comp)
                         full_matrix = np.concatenate(
-                            (full_matrix, np.zeros((full_matrix.shape[0]))), axis=1)
+                            (full_matrix, np.zeros((full_matrix.shape[0], 1))), axis=1)
                 reshape = np.zeros((matrix.shape[0], len(full_clp)))
                 for i, comp in enumerate(full_clp):
                     reshape[:, i] = matrix[:, clp.index(comp)] \
-                            if comp in clp else np.zeros((matrix.shape[1]))
+                            if comp in clp else np.zeros((matrix.shape[0]))
                 matrix = reshape
 
             full_matrix = np.concatenate([full_matrix, matrix], axis=0)

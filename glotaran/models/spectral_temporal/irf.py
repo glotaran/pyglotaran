@@ -5,6 +5,7 @@ import numpy as np
 
 from glotaran.model import model_item, model_item_typed
 
+
 class IrfException(Exception):
     def __init__(self, irf, msg):
         self.irf = irf.label

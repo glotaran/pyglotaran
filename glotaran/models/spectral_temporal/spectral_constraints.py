@@ -5,6 +5,7 @@ import numpy as np
 
 from glotaran.model import model_item, model_item_typed
 
+
 @model_item(
     attributes={
         'compartment': str,
