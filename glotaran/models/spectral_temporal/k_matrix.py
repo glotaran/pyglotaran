@@ -7,13 +7,14 @@ import numpy as np
 import scipy
 
 from glotaran.model import model_item
+from glotaran.parameter import Parameter
 
 from .initial_concentration import InitialConcentration
 
 
 @model_item(
     attributes={
-        'matrix': {'type': Dict[Tuple[str, str], str], 'target': (None, 'parameter')},
+        'matrix': {'type': Dict[Tuple[str, str], Parameter]},
     },
 )
 class KMatrix:
@@ -206,6 +207,6 @@ class KMatrix:
     def is_unibranched(self, compartments):
         matrix = self.reduced(compartments)
         for i in range(matrix.shape[1]):
-            if not np.nonzero(matrix[:, i])[0].size == 1:
+            if not np.nonzero(matrix[:, i])[0].size == 1 or i is not 0 and matrix[i-1, i] == 0:
                 return False
         return True

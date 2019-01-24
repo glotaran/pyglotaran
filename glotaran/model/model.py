@@ -27,7 +27,7 @@ def model(name,
         setattr(cls, 'finalize_result', finalize_result_function)
         setattr(cls, 'constrain_calculated_matrix_function',
                 constrain_calculated_matrix_function)
-        setattr(cls, 'additional_residual_function',
+        setattr(cls, 'additional_penalty_function',
                 additional_penalty_function)
         setattr(cls, 'allow_grouping', allow_grouping)
         if not cls.__doc__:

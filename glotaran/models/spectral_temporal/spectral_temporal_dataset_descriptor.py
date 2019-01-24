@@ -3,12 +3,13 @@
 from typing import Dict
 
 from glotaran.model import DatasetDescriptor, model_item
+from glotaran.parameter import Parameter
 
 
 @model_item(attributes={
     'initial_concentration': {'type': str, 'default': None},
     'irf': {'type': str, 'default': None},
-    'baseline': {'type': str, 'default': None},
+    'baseline': {'type': Parameter, 'default': None},
     'shapes': {'type': Dict[str, str], 'target': (None, 'shape'), 'default': None},
 })
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):

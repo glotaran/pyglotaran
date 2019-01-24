@@ -3,12 +3,13 @@
 from typing import List
 import numpy as np
 from glotaran.model import model_item, model_item_typed
+from glotaran.parameter import Parameter
 
 
 @model_item(attributes={
-    'amplitude': List[str],
-    'location': List[str],
-    'width': List[str],
+    'amplitude': List[Parameter],
+    'location': List[Parameter],
+    'width': List[Parameter],
 }, has_type=True)
 class SpectralShapeGaussian:
     """A gaussian spectral shape"""

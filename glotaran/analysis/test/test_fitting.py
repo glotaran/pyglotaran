@@ -5,7 +5,8 @@ import numpy as np
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.fitresult import FitResult
 
-from ...model import DatasetDescriptor, BaseModel, ParameterGroup, model_item, model
+from glotaran.model import DatasetDescriptor, BaseModel, model_item, model
+from glotaran.parameter import Parameter, ParameterGroup
 
 from .mock import MockMegacomplex
 
@@ -41,17 +42,17 @@ def calculate_spectral_gauss(dataset, axis):
 
 
 @model_item(attributes={
-    'kinetic': List[str],
+    'kinetic': List[Parameter],
 })
 class DecayDatasetDescriptor(DatasetDescriptor):
     pass
 
 
 @model_item(attributes={
-    'kinetic': List[str],
-    'location': List[str],
-    'amplitude': List[str],
-    'delta': List[str],
+    'kinetic': List[Parameter],
+    'location': List[Parameter],
+    'amplitude': List[Parameter],
+    'delta': List[Parameter],
 })
 class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     pass

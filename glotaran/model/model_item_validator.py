@@ -1,5 +1,7 @@
 """This package contains glotarans model item validator."""
 
+from glotaran.parameter import parameter
+
 
 class Validator:
     def __init__(self, model_item):
@@ -101,11 +103,11 @@ def val_parameter_opts(item, parameter, opts, errors):
 def val_parameter(item, parameter, errors):
     if not isinstance(item, list):
         item = [item]
-    if any([not isinstance(i, str) for i in item]):
+    if any([not isinstance(i, Parameter) for i in item]):
         return
-    for label in item:
-        if not parameter.has(label):
-            errors.append(f"Missing parameter with label '{label}'")
+    for p in item:
+        if not parameter.has(p.label):
+            errors.append(f"Missing parameter with label '{p.label}'")
 
 
 def val_parameter_nested(nested, model, parameter, errors):

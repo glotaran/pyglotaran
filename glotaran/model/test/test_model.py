@@ -7,20 +7,21 @@ from glotaran.model import (
     model,
     model_item,
 )
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameter, ParameterGroup
 
 
 @model_item(
     attributes={
-        'param': str,
+        'param': Parameter,
         'megacomplex': str,
-        'param_list': List[str],
+        'param_list': List[Parameter],
         'default': {'type': int, 'default': 42},
-        'complex': {'type': Dict[Tuple[str, str], str], 'target': (None, 'parameter')},
+        'complex': {'type': Dict[Tuple[str, str], Parameter]},
     },
 )
 class MockAttr:
     pass
+
 
 @model_item()
 class MockMegacomplex:
@@ -126,26 +127,27 @@ def test_items(model):
 
     assert 't1' in model.test
     t = model.get_test('t1')
-    assert t.param == "foo"
+    assert t.param.full_label == "foo"
     assert t.megacomplex == 'm1'
-    assert t.param_list == ["bar", "baz"]
+    assert [p.full_label for p in t.param_list] == ["bar", "baz"]
     assert t.default == 42
-    assert t.complex == {('s1', 's2'): "baz"}
+    assert ('s1', 's2') in t.complex
+    assert t.complex[('s1', 's2')].full_label == "baz"
     assert 't2' in model.test
     t = model.get_test('t2')
-    assert t.param == "baz"
+    assert t.param.full_label == "baz"
     assert t.megacomplex == 'm2'
-    assert t.param_list == ["foo"]
+    assert [p.full_label for p in t.param_list] == ["foo"]
     assert t.default == 7
     assert t.complex == {}
 
     assert 'dataset1' in model.dataset
     assert model.get_dataset('dataset1').megacomplex == ['m1', 'm2']
-    assert model.get_dataset('dataset1').scale == 'scale_1'
+    assert model.get_dataset('dataset1').scale.full_label == 'scale_1'
 
     assert 'dataset2' in model.dataset
     assert model.get_dataset('dataset2').megacomplex == ['m2']
-    assert model.get_dataset('dataset2').scale == 'scale_2'
+    assert model.get_dataset('dataset2').scale.full_label == 'scale_2'
 
 
 def test_fill(model, parameter):

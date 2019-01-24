@@ -3,11 +3,12 @@
 from typing import List
 
 from glotaran.model import model_item
+from glotaran.parameter import Parameter
 
 
 @model_item(attributes={
     'k_matrix': {'type': List[str], 'default': []},
-    'scale': {'type': str, 'default': None},
+    'scale': {'type': Parameter, 'default': None},
 })
 class KineticMegacomplex:
     """A Megacomplex with one or more K-Matrices."""

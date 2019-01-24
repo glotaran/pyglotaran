@@ -5,10 +5,11 @@ from typing import List
 import numpy as np
 
 from glotaran.model import model_item, DatasetDescriptor
+from glotaran.parameter import Parameter
 
 
 @model_item(
-    attributes={'compartments': {'type': List[str], 'target': None}, 'parameters': List[str]}
+    attributes={'compartments': {'type': List[str], 'target': None}, 'parameters': List[Parameter]}
 )
 class InitialConcentration:
     """An initial concentration describes the population of the compartments at

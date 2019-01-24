@@ -2,7 +2,7 @@
 import numpy as np
 
 from glotaran.analysis.simulation import simulate
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 from .mock import MockModel
 

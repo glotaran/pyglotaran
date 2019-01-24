@@ -17,11 +17,8 @@ from .parameter import Parameter
 class ParameterNotFoundException(Exception):
     """Raised when a Parameter is not found in the Group."""
     def __init__(self, path, label):
-        self._path = path,
-        self._label = label
-
-    def __str__(self):
-        return f"Cannot find parameter {'.'.join(self._path)}.{self._label}"
+        super(ParameterNotFoundException, self).__init__(
+            f"Cannot find parameter {'.'.join(path)}.{label}")
 
 
 class ParameterGroup(OrderedDict):

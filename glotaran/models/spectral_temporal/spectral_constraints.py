@@ -4,6 +4,7 @@ import typing
 import numpy as np
 
 from glotaran.model import model_item, model_item_typed
+from glotaran.parameter import Parameter
 
 
 @model_item(
@@ -64,7 +65,7 @@ class ZeroConstraint:
 
 @model_item(attributes={
     'target': str,
-    'parameter': str,
+    'parameter': Parameter,
     'weight': str,
 }, has_type=True, no_label=True)
 class EqualAreaConstraint(ZeroConstraint):

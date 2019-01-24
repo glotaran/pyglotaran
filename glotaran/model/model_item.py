@@ -5,19 +5,19 @@ import inspect
 from typing_inspect import get_origin
 from dataclasses import dataclass, replace
 
+from glotaran.parameter import Parameter
 
 from .model_item_validator import Validator
 
 
-class MissingParameterException(Exception):
-    pass
-
-
 def _is_list_type(item_class):
-    org = get_origin(item_class)
-    if org is None:
-        return False
-    return issubclass(org, List)
+    return issubclass(item_class.__origin__, List) if \
+        hasattr(item_class, '__origin__') else False
+
+
+def _is_dict(item_class):
+    return issubclass(item_class.__origin__, Dict) if \
+        hasattr(item_class, '__origin__') else False
 
 
 def is_item_or_list_of(item_class):
@@ -29,16 +29,28 @@ def is_item_or_list_of(item_class):
     return hasattr(item_class, "_glotaran_model_item")
 
 
-def item_or_list_to_param(name, item, item_class):
+def item_or_list_to_arg(name, item, item_class):
     islist = _is_list_type(item_class)
     if islist:
         item_class = item_class.__args__[0]
-    if not hasattr(item_class, "_glotaran_model_item"):
-        return item
-    if not islist:
-        return item_to_param(name, item, item_class)
-    for i in range(len(item)):
-        item[i] = item_to_param(name, item[i], item_class)
+    if item_class is Parameter:
+        if islist:
+            item = [Parameter(full_label=i) for i in item]
+        else:
+            item = Parameter(full_label=item)
+    elif hasattr(item_class, "_glotaran_model_item"):
+        if not islist:
+            item = item_to_param(name, item, item_class)
+        else:
+            item = [item_to_param(name, i, item_class) for i in item]
+    elif _is_dict(item_class):
+        v_class = item_class.__args__[1]
+        islist = _is_list_type(v_class)
+        if islist:
+            v_class = v_class.__args__[0]
+        if v_class is Parameter:
+            for k, v in item.items():
+                item[k] = Parameter(full_label=v)
     return item
 
 
@@ -153,13 +165,13 @@ def model_item(attributes={},
                     continue
                 if name not in item_dict:
                     if name not in getattr(ncls, '_glotaran_attribute_defaults'):
-                        raise MissingParameterException(f"Missing parameter '{name} for item "
-                                                        f"'{ncls.__name__}'")
+                        raise Exception(f"Missing parameter '{name} for item "
+                                        f"'{ncls.__name__}'")
                     args.append(getattr(ncls, '_glotaran_attribute_defaults')[name])
                 else:
                     item = item_dict[name]
                     item_class = param.annotation
-                    args.append(item_or_list_to_param(name, item, item_class))
+                    args.append(item_or_list_to_arg(name, item, item_class))
 
             return ncls(*args)
 
@@ -172,13 +184,14 @@ def model_item(attributes={},
             params = [p for _, p in
                       inspect.signature(ncls.__init__).parameters.items()]
             # params contains 'self'
-            if len(item_list) is not len(params)-1:
-                raise MissingParameterException(f"To few or much parameters for '{ncls.__name__}'"
-                                                f"\nGot: {item_list}\nWant: {names}")
+            params = params[1:]
+            if len(item_list) is not len(params):
+                raise Exception(f"To few or much parameters for '{ncls.__name__}'"
+                                f"\nGot: {item_list}\nWant: {names}")
 
             for i in range(len(item_list)):
                 item_class = params[i].annotation
-                item_list[i] = item_or_list_to_param(names[i], item_list[i], item_class)
+                item_list[i] = item_or_list_to_arg(names[i], item_list[i], item_class)
 
             return ncls(*item_list)
 
@@ -211,12 +224,12 @@ def model_item(attributes={},
                             cp[k] = [convert(i) for i in v]
                         else:
                             cp[k] = convert(v)
-                    return cp
-                if hasattr(item, "_glotaran_model_item"):
-                    return item.fill(model, parameter)
-                if not isinstance(item, str):
-                    return item
-                return parameter.get(item).value
+                    item = cp
+                elif hasattr(item, "_glotaran_model_item"):
+                    item = item.fill(model, parameter)
+                elif isinstance(item, Parameter):
+                    item = parameter.get(item.full_label).value
+                return item
 
             def fill_item_or_list(item, attr):
                 model_attr = getattr(model, attr)

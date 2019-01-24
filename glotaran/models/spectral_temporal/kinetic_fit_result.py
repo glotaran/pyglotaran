@@ -16,16 +16,10 @@ def finalize_kinetic_result(model, result: FitResult):
 
         # get_sas
 
-        compartments = []
-        for _, matrix in dataset_descriptor.get_k_matrices():
-            if matrix is None:
-                continue
-            for compartment in matrix.involved_compartments():
-                if compartment not in compartments:
-                    compartments.append(compartment)
-        dataset.coords['species'] = compartments
-        dataset['species_associated_spectra'] = ((result.model.estimated_axis, 'species',),
-                                                 dataset.clp.sel(clp_label=compartments).values)
+        dataset.coords['species'] = dataset_descriptor.initial_concentration.compartments
+        dataset['species_associated_spectra'] = \
+            ((result.model.estimated_axis, 'species',),
+             dataset.clp.sel(clp_label=dataset_descriptor.initial_concentration.compartments))
 
         for constraint in model.spectral_constraints:
             if isinstance(constraint, (OnlyConstraint, ZeroConstraint)):
@@ -35,28 +29,27 @@ def finalize_kinetic_result(model, result: FitResult):
                     = np.zeros((len(idx)))
 
         for relation in model.spectral_relations:
-            relation = relation.fill(model, result.best_fit_parameter)
-            idx = [index.value for index in dataset.spectral if relation.applies(index)]
-            all_idx = np.array(result.global_clp.keys())
-            clp = []
-            for i in idx:
-                j = (all_idx - i).argmin()
-                print(
-                    j,
-                    relation.parameter
-                )
-                clp.append(
-                    result.global_clp[j].sel(clp_label=relation.target).value *
-                    relation.parameter
-                )
+            if relation.compartment in dataset_descriptor.initial_concentration.compartments:
+                relation = relation.fill(model, result.best_fit_parameter)
+                idx = [index.values for index in dataset.spectral if relation.applies(index)]
+                all_idx = np.asarray(list(result.global_clp.keys()))
+                clp = []
+                for i in idx:
+                    j = np.abs(all_idx - i).argmin()
+                    j = all_idx[j]
+                    clp.append(
+                        result.global_clp[j].sel(clp_label=relation.target).values *
+                        relation.parameter
+                    )
                 sas = xr.DataArray(clp, coords=[('spectral', idx)])
 
-            dataset.species_associated_spectra\
-                .loc[{'species': relation.compartment, 'spectral': idx}] = sas
+                dataset.species_associated_spectra\
+                    .loc[{'species': relation.compartment, 'spectral': idx}] = sas
 
         dataset['species_concentration'] = (
             (model.estimated_axis, model.calculated_axis, 'species',),
-            dataset.concentration.sel(clp_label=compartments).values)
+            dataset.concentration.sel(
+                clp_label=dataset_descriptor.initial_concentration.compartments).values)
         if dataset_descriptor.baseline is not None:
             dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 

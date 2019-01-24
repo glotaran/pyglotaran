@@ -18,17 +18,13 @@ class BaseModel:
     """
 
     @classmethod
-    def from_dict(cls, model_dict: typing.Dict):
+    def from_dict(cls, model_dict: typing.Dict) -> typing.Type['BaseModel']:
         """Creates a model from a dictionary.
 
         Parameters
         ----------
-        model_dict : dict
+        model_dict :
             Dictionary containing the model.
-
-        Returns
-        -------
-        model : The parsed model.
         """
 
         model = cls()
@@ -178,8 +174,8 @@ class BaseModel:
         return result
 
     def result_from_parameter(self,
-                              data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                               parameter: ParameterGroup,
+                              data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                               nnls: bool = False, group_atol: float = 0.0
                               )-> FitResult:
         """Loads a result from parameters without going any optimization.

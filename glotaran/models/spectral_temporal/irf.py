@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 
 from glotaran.model import model_item, model_item_typed
+from glotaran.parameter import Parameter
 
 
 class IrfException(Exception):
@@ -23,15 +24,15 @@ class IrfMeasured:
 
 
 @model_item(attributes={
-    'center': str,
-    'width': str,
-    'dispersion_center': {'type': str, 'default': None},
-    'center_dispersion': {'type': List[str], 'default': []},
-    'width_dispersion': {'type': List[str], 'default': []},
-    'scale': {'type': str, 'default': None},
+    'center': List[Parameter],
+    'width': List[Parameter],
+    'dispersion_center': {'type': Parameter, 'default': None},
+    'center_dispersion': {'type': List[Parameter], 'default': []},
+    'width_dispersion': {'type': List[Parameter], 'default': []},
+    'scale': {'type': List[Parameter], 'default': None},
     'normalize': {'type': bool, 'default': False},
     'backsweep': {'type': bool, 'default': False},
-    'backsweep_period': {'type': str, 'default': None},
+    'backsweep_period': {'type': Parameter, 'default': None},
     'coherent_artifact': {'type': bool, 'default': False},
     'coherent_artifact_order': {'type': int, 'default': 1},
 }, has_type=True)

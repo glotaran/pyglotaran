@@ -16,10 +16,11 @@ class Keys:
 
 class Parameter(LmParameter):
     """Wrapper for lmfit parameter."""
-    def __init__(self, label=None):
+    def __init__(self, label=None, full_label=None):
         self.index = -1
         self._non_neg = True
         self.label = label
+        self.full_label = full_label
         super(Parameter, self).__init__(user_data={'non_neg': True})
 
     @classmethod

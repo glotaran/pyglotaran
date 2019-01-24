@@ -2,7 +2,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.grouping import create_group, calculate_group, create_data_group
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 from .mock import MockModel
 

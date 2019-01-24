@@ -4,14 +4,15 @@ import typing
 import numpy as np
 
 from glotaran.model import model_item
+from glotaran.parameter import Parameter
 
 
 @model_item(
     attributes={
         'compartment': str,
         'target': str,
-        'parameter': str,
-        'interval': typing.List[typing.Tuple[any, any]],
+        'parameter': Parameter,
+        'interval': typing.List[typing.Tuple[float, float]],
     }, no_label=True)
 class SpectralRelation:
     def applies(self, index: any) -> bool:
