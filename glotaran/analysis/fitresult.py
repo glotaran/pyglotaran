@@ -7,7 +7,7 @@ import xarray as xr
 from lmfit.minimizer import Minimizer
 
 import glotaran  # noqa F01
-from glotaran.model.parameter_group import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 
 from .grouping import create_group, create_data_group
@@ -56,7 +56,7 @@ class FitResult:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            if 'weight' in dataset:
+            if 'weight' in dataset and 'weighted_data' not in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
             self._data[label] = dataset.transpose(model.calculated_axis, model.estimated_axis,
                                                   *[dim for dim in dataset.dims
@@ -67,6 +67,7 @@ class FitResult:
         self._group = create_group(model, self._data, atol)
         self._data_group = create_data_group(model, self._group, self._data)
         self._lm_result = None
+        self._global_clp = {}
 
     @classmethod
     def from_parameter(cls,
@@ -207,6 +208,12 @@ class FitResult:
         """glotaran.model.ParameterGroup: The initital fit parameter"""
         return self._initial_parameter
 
+    @property
+    def global_clp(self) -> typing.Dict[any, xr.DataArray]:
+        """A dictonary of the global condionally linear parameter with the index on the global
+        estimated axis as keys."""
+        return self._global_clp
+
     def _get_group_indices(self, dataset_label):
         return [index for index, item in self._group.items()
                 if dataset_label in [val[1].label for val in item]]
@@ -223,7 +230,7 @@ class FitResult:
         if not isinstance(parameter, ParameterGroup):
             parameter = ParameterGroup.from_parameter_dict(parameter)
 
-        residuals = []
+        penalty = []
         for index, item in self._group.items():
             clp_labels, matrix = calculate_group_item(item, self.model, parameter, self._data)
 
@@ -239,6 +246,8 @@ class FitResult:
                         matrix,
                         self._data_group[index]
                     )
+
+            self._global_clp[index] = xr.DataArray(clp, coords=[('clp_label', clp_labels)])
 
             start = 0
             for i, dataset in item:
@@ -260,14 +269,14 @@ class FitResult:
                     np.array([clp[clp_labels.index(i)] if i in clp_labels else None
                               for i in dataset.coords['clp_label'].values])
 
-            if self.model.additional_residual_function:
-                additionals = self.model.additional_residual_function(
-                    clp_labels, clp, matrix, parameter)
+            if self.model.additional_penalty_function:
+                additionals = self.model.additional_penalty_function(
+                    parameter, clp_labels, clp, matrix, parameter)
                 residual = np.concatenate((residual, additionals))
 
-            residuals.append(residual)
+            penalty.append(residual)
 
-        return np.concatenate(residuals)
+        return np.concatenate(penalty)
 
     def _finalize(self):
         for label in self.model.dataset:

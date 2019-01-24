@@ -5,6 +5,8 @@ import re
 import numpy as np
 import xarray as xr
 
+from .prepare_dataset import prepare_dataset
+
 
 class DataFileType(Enum):
     time_explicit = "Time explicit"
@@ -176,9 +178,9 @@ class ExplicitFile(object):
         data = self._observations
         if self._file_data_format == DataFileType.time_explicit:
             data = data.T
-        return xr.DataArray(
+        return prepare_dataset(xr.DataArray(
             data, coords=[('time', self._times), ('spectral', self._spectral_indices)]
-        ).to_dataset(name='data')
+        ).to_dataset(name='data'))
 
 
 class WavelengthExplicitFile(ExplicitFile):

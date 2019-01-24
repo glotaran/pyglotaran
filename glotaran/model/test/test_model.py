@@ -4,10 +4,10 @@ import pytest
 from glotaran.model import (
     BaseModel,
     DatasetDescriptor,
-    ParameterGroup,
     model,
     model_item,
 )
+from glotaran.parameter import ParameterGroup
 
 
 @model_item(

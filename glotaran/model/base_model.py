@@ -7,8 +7,7 @@ import xarray as xr
 
 from glotaran.analysis.fitresult import FitResult
 from glotaran.analysis.simulation import simulate
-
-from .parameter_group import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 
 class BaseModel:
@@ -144,15 +143,15 @@ class BaseModel:
         return simulate(self, parameter, dataset, axis, noise=noise,
                         noise_std_dev=noise_std_dev, noise_seed=noise_seed)
 
-    def fit(self,
-            parameter: ParameterGroup,
-            data: typing.Dict[str, typing.Union[xr.Dataset, xr.DataArray]],
-            nnls: bool = False,
-            verbose: bool = True,
-            max_nfev: int = None,
-            group_atol: int = 0,
-            ) -> FitResult:
-        """Performs a fit of the model.
+    def optimize(self,
+                 parameter: ParameterGroup,
+                 data: typing.Dict[str, typing.Union[xr.Dataset, xr.DataArray]],
+                 nnls: bool = False,
+                 verbose: bool = True,
+                 max_nfev: int = None,
+                 group_atol: int = 0,
+                 ) -> FitResult:
+        """Optimizes the parameter for this model.
 
         Parameters
         ----------
@@ -177,6 +176,35 @@ class BaseModel:
         result = FitResult(self, data, parameter, nnls, atol=group_atol)
         result.optimize(verbose=verbose, max_nfev=max_nfev)
         return result
+
+    def result_from_parameter(self,
+                              data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
+                              parameter: ParameterGroup,
+                              nnls: bool = False, group_atol: float = 0.0
+                              )-> FitResult:
+        """Loads a result from parameters without going any optimization.
+
+        Parameters
+        ----------
+        data :
+            A dictonary containing all datasets with their labels as keys.
+        parameter : glotaran.model.ParameterGroup
+            The parameter,
+        nnls :
+            (default = False)
+            If `True` non-linear least squaes optimizing is used instead of variable projection.
+        verbose :
+            (default = True)
+            If `True` feedback is printed at every iteration.
+        max_nfev :
+            (default = None)
+            Maximum number of function evaluations. `None` for unlimited.
+        group_atol :
+            (default = 0)
+            The tolerance for grouping datasets along the estimated axis.
+
+        """
+        return FitResult.from_parameter(self, data, parameter, nnls, group_atol)
 
     def errors(self) -> typing.List[str]:
         """Returns a list of errors in the model."""

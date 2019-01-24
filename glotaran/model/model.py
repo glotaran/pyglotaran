@@ -15,7 +15,7 @@ def model(name,
           calculated_axis=None,
           estimated_axis=None,
           constrain_calculated_matrix_function=None,
-          additional_residual_function=None,
+          additional_penalty_function=None,
           finalize_result_function=None,
           allow_grouping=True,
           ):
@@ -28,8 +28,10 @@ def model(name,
         setattr(cls, 'constrain_calculated_matrix_function',
                 constrain_calculated_matrix_function)
         setattr(cls, 'additional_residual_function',
-                additional_residual_function)
+                additional_penalty_function)
         setattr(cls, 'allow_grouping', allow_grouping)
+        if not cls.__doc__:
+            cls.__doc__ = ""
         cls.__doc__ += '''
 
         Attributes

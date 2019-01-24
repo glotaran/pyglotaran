@@ -3,11 +3,12 @@
 from typing import List
 
 from .model_item import model_item
+from glotaran.parameter import Parameter
 
 
 @model_item(attributes={
     'megacomplex': List[str],
-    'scale': {'type': str, 'default': None},
+    'scale': {'type': Parameter, 'default': None},
 })
 class DatasetDescriptor:
     """A dataset descriptor describes a dataset in terms of a glotaran model.

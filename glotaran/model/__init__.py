@@ -9,8 +9,6 @@ from . import (
     dataset_descriptor,
     model,
     model_item,
-    parameter,
-    parameter_group,
 )
 
 # Dataset
@@ -20,12 +18,6 @@ DatasetDescriptor = dataset_descriptor.DatasetDescriptor
 # BaseModel
 
 BaseModel = base_model.BaseModel
-
-# Parameter
-
-Parameter = parameter.Parameter
-ParameterGroup = parameter_group.ParameterGroup
-
 
 # Decorators
 

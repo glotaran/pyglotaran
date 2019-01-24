@@ -35,11 +35,24 @@ def finalize_kinetic_result(model, result: FitResult):
                     = np.zeros((len(idx)))
 
         for relation in model.spectral_relations:
-            idx = [index for index in dataset.spectral if relation.applies(index)]
+            relation = relation.fill(model, result.best_fit_parameter)
+            idx = [index.value for index in dataset.spectral if relation.applies(index)]
+            all_idx = np.array(result.global_clp.keys())
+            clp = []
+            for i in idx:
+                j = (all_idx - i).argmin()
+                print(
+                    j,
+                    relation.parameter
+                )
+                clp.append(
+                    result.global_clp[j].sel(clp_label=relation.target).value *
+                    relation.parameter
+                )
+                sas = xr.DataArray(clp, coords=[('spectral', idx)])
+
             dataset.species_associated_spectra\
-                .loc[{'species': constraint.compartment, 'spectral': idx}] \
-                = dataset.species_associated_spectra\
-                .sel({'species': constraint.target, 'spectral': idx}) * relation.parameter
+                .loc[{'species': relation.compartment, 'spectral': idx}] = sas
 
         dataset['species_concentration'] = (
             (model.estimated_axis, model.calculated_axis, 'species',),

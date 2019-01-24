@@ -1,4 +1,4 @@
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 
 def test_param_array():

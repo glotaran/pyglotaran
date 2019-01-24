@@ -97,33 +97,3 @@ class SpectralConstraint:
     the respective classes for details.
     """
     pass
-
-
-def apply_spectral_constraints(
-        model: typing.Type['glotaran.models.spectral_temporal.KineticModel'],
-        clp_labels: typing.List[str],
-        matrix: np.ndarray,
-        index: float):
-    for constraint in model.spectral_constraints:
-        if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
-            idx = [not label == constraint.compartment for label in clp_labels]
-            clp_labels = [label for label in clp_labels if not label == constraint.compartment]
-            matrix = matrix[:, idx]
-    return (clp_labels, matrix)
-
-
-def spectral_constraint_residual(
-        model: typing.Type['glotaran.models.spectral_temporal.KineticModel'],
-        clp_labels: typing.List[str],
-        clp: np.ndarray,
-        matrix: np.ndarray,
-        index: float):
-    residual = []
-    for constraint in model.spectral_constraints:
-        if isinstance(constraint, EqualAreaConstraint) and constraint.applies(index):
-            source_idx = clp_labels.index(constraint.compartment)
-            target_idx = clp_labels.index(constraint.target)
-            residual.append(
-                (clp[source_idx] - constraint.parameter * clp[target_idx]) * constraint.weight
-            )
-    return residual

@@ -3,11 +3,11 @@
 import typing
 import xarray as xr
 
-from . import model  # noqa: E402
+from . import model, parameter  # noqa: E402
 
 __version__ = '0.0.10'
 
-ParameterGroup = model.ParameterGroup
+ParameterGroup = parameter.ParameterGroup
 
 read_parameter_csv = ParameterGroup.from_csv
 read_parameter_yaml = ParameterGroup.from_yaml
@@ -25,22 +25,8 @@ from .parse import parser  # noqa: E402
 load_yml = parser.load_yml
 load_yml_file = parser.load_yml_file
 
-from .data import dataio  # noqa: E402
-io = dataio
 
-from .analysis.fitresult import FitResult  # noqa: E402
-
-
-def load_result(model: typing.Type[model.BaseModel],
-                data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
-                parameter: ParameterGroup, nnls: bool = False, atol: float = 0.0
-                )-> FitResult:
-    return FitResult.from_parameter(model, data, parameter, nnls, atol)
-
-
-def load_library_file(filename: str) -> typing.Dict[str, any]:
-    return parser.parse_yml_file(filename)
-
+from . import io, report
 # Top level API
 # SeparableModel = separable_model.SeparableModel
 # SeparableModelResult = result.SeparableModelResult

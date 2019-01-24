@@ -3,7 +3,7 @@ from typing import Dict
 import numpy as np
 import xarray as xr
 
-from glotaran.model.parameter_group import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 
 def simulate(model,  # temp doc fix : "glotaran.model.Model",

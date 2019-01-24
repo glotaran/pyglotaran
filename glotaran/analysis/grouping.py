@@ -6,7 +6,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model.dataset_descriptor import DatasetDescriptor
-from glotaran.model.parameter_group import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 Group = Dict[any, Tuple[any, DatasetDescriptor]]
 
@@ -129,7 +129,7 @@ def calculate_group_item(item,
 
     if model.constrain_calculated_matrix_function is not None:
         (full_clp, full_matrix) = \
-            model.constrain_calculated_matrix_function(full_clp, full_matrix, index)
+            model.constrain_calculated_matrix_function(parameter, full_clp, full_matrix, index)
 
     return (full_clp, full_matrix)
 
