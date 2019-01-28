@@ -1,6 +1,6 @@
 """This package contains glotarans parameter class"""
 
-from typing import List, Union
+import typing
 from math import isnan, exp
 
 from lmfit import Parameter as LmParameter
@@ -35,16 +35,18 @@ class Parameter(LmParameter):
             lmfit.Parameter
         """
         p = cls(label=label)
-        p.min = parameter.min
-        p.max = parameter.max
         p.vary = parameter.vary
         p.non_neg = parameter.user_data['non_neg']
         p.value = exp(parameter.value) if p.non_neg else parameter.value
+        p.min = exp(parameter.min if p.non_neg else parameter.min)
+        p.max = exp(parameter.max if p.non_neg else parameter.max)
         return p
 
     @classmethod
-    def from_list_or_value(cls, parameter: Union[int, float, List[object]],
-                           label=None):
+    def from_list_or_value(cls,
+                           parameter: typing.Union[int, float, typing.List],
+                           default_options: typing.Dict = None,
+                           label: str = None):
 
         if not isinstance(parameter, list):
             parameter = [parameter]
@@ -67,18 +69,24 @@ class Parameter(LmParameter):
         param.label = parameter[0] if len(parameter) is not 1 else label
         param.value = float(parameter[0] if len(parameter) is 1 else parameter[1])
 
-        if options is not None:
-            if Keys.NON_NEG in options:
-                param.non_neg = options[Keys.NON_NEG]
-            if Keys.MAX in options:
-                param.max = float(options[Keys.MAX])
-            if Keys.MIN in options:
-                param.min = float(options[Keys.MIN])
-            if Keys.EXPR in options:
-                param.expr = options[Keys.EXPR]
-            if Keys.VARY in options:
-                param.vary = options[Keys.VARY]
+        if default_options:
+            param._set_options_from_dict(default_options)
+
+        if options:
+            param._set_options_from_dict(options)
         return param
+
+    def _set_options_from_dict(self, options: typing.Dict):
+        if Keys.NON_NEG in options:
+            self.non_neg = options[Keys.NON_NEG]
+        if Keys.MAX in options:
+            self.max = float(options[Keys.MAX])
+        if Keys.MIN in options:
+            self.min = float(options[Keys.MIN])
+        if Keys.EXPR in options:
+            self.expr = options[Keys.EXPR]
+        if Keys.VARY in options:
+            self.vary = options[Keys.VARY]
 
     @property
     def label(self) -> str:

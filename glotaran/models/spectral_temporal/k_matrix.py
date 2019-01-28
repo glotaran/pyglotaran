@@ -135,15 +135,6 @@ class KMatrix:
     def eigen(self, compartments: List[str]) -> Tuple[np.ndarray, np.ndarray]:
         """ Returns the eigenvalues and eigenvectors of the k matrix.
 
-        Parameters
-        ----------
-        parameter : glotaran.model.ParameterGroup
-
-
-        Returns
-        -------
-        (eigenvalues, eigenvectors) : tuple(np.ndarray, np.ndarray)
-
         """
         # We take the transpose to be consistent with timp
         matrix = self.full(compartments).T

@@ -9,7 +9,11 @@ from glotaran.parameter import Parameter
 
 
 @model_item(
-    attributes={'compartments': {'type': List[str], 'target': None}, 'parameters': List[Parameter]}
+    attributes={
+        'compartments': List[str],
+        'parameters': List[Parameter],
+        'exclude_from_normalize': {'type': List[str], 'default': []},
+    }
 )
 class InitialConcentration:
     """An initial concentration describes the population of the compartments at
@@ -21,5 +25,6 @@ class InitialConcentration:
             scale = [megacomplex.scale if c in megacomplex.involved_compartments and
                      megacomplex.scale else 1 for c in self.compartments]
             parameters = np.multiply(parameters, scale)
-        parameters /= np.sum(parameters)
+        idx = [c not in self.exclude_from_normalize for c in self.compartments]
+        parameters[idx] /= np.sum(parameters[idx])
         return replace(self, parameters=parameters)

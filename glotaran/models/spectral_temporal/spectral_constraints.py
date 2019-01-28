@@ -29,7 +29,7 @@ class OnlyConstraint:
 
         """
         def applies(interval):
-            return not interval[0] <= index <= interval[1]
+            return interval[0] <= index <= interval[1]
         if isinstance(self.interval, tuple):
             return applies(self.interval)
         return not any([applies(i) for i in self.interval])

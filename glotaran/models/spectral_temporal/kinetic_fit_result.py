@@ -21,12 +21,18 @@ def finalize_kinetic_result(model, result: FitResult):
             ((result.model.estimated_axis, 'species',),
              dataset.clp.sel(clp_label=dataset_descriptor.initial_concentration.compartments))
 
+        if dataset_descriptor.baseline is not None:
+            dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
+
         for constraint in model.spectral_constraints:
             if isinstance(constraint, (OnlyConstraint, ZeroConstraint)):
                 idx = [index for index in dataset.spectral if constraint.applies(index)]
-                dataset.species_associated_spectra\
-                    .loc[{'species': constraint.compartment, 'spectral': idx}] \
-                    = np.zeros((len(idx)))
+                if constraint.compartment in dataset.coords['species']:
+                    dataset.species_associated_spectra\
+                        .loc[{'species': constraint.compartment, 'spectral': idx}] \
+                        = np.zeros((len(idx)))
+                if constraint.compartment == f"{dataset_descriptor.label}_baseline":
+                    dataset.baseline.loc[{'spectral': idx}] = np.zeros((len(idx)))
 
         for relation in model.spectral_relations:
             if relation.compartment in dataset_descriptor.initial_concentration.compartments:
@@ -50,8 +56,6 @@ def finalize_kinetic_result(model, result: FitResult):
             (model.estimated_axis, model.calculated_axis, 'species',),
             dataset.concentration.sel(
                 clp_label=dataset_descriptor.initial_concentration.compartments).values)
-        if dataset_descriptor.baseline is not None:
-            dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
         # get_das
         all_das = []

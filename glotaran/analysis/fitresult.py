@@ -118,7 +118,7 @@ class FitResult:
         Returns
         -------
         """
-        parameter = self.initial_parameter.as_parameter_dict(only_fit=True)
+        parameter = self.initial_parameter.as_parameter_dict()
         minimizer = Minimizer(
             self._calculate_residual,
             parameter,

@@ -77,8 +77,8 @@ def apply_kinetic_model_constraints(
         clp_labels: typing.List[str],
         matrix: np.ndarray,
         index: float):
-    clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
     clp_labels, matrix = apply_spectral_relations(model, parameter, clp_labels, matrix, index)
+    clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
     return clp_labels, matrix
 
 

@@ -30,6 +30,7 @@ class IrfMeasured:
     'center_dispersion': {'type': List[Parameter], 'default': []},
     'width_dispersion': {'type': List[Parameter], 'default': []},
     'scale': {'type': List[Parameter], 'default': None},
+    'model_dispersion_with_wavenumber': {'type': bool, 'default': False},
     'normalize': {'type': bool, 'default': False},
     'backsweep': {'type': bool, 'default': False},
     'backsweep_period': {'type': Parameter, 'default': None},
@@ -66,10 +67,12 @@ class IrfGaussian:
     def parameter(self, index):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
+        dist = (1e3 / index - 1e3 / self.dispersion_center) \
+            if self.model_dispersion_with_wavenumber else (index - self.dispersion_center)/100
+
         if len(self.center_dispersion) is not 0:
             if self.dispersion_center is None:
                 raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
-            dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i+1)
 
@@ -77,7 +80,6 @@ class IrfGaussian:
         if len(self.width_dispersion) is not 0:
             if self.dispersion_center is None:
                 raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
-            dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i+1)
 

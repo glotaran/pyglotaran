@@ -59,6 +59,18 @@ def test_param_options():
     assert params.get("7").max == float('inf')
     assert params.get("7").vary
 
+def test_param_block_options():
+    params = """
+    block:
+        - 1.0
+        - [3.4, {vary: true}]
+        - {vary: false}
+    """
+
+    params = ParameterGroup.from_yaml(params)
+    assert not params.get("block.1").vary
+    assert params.get("block.2").vary
+
 
 def test_nested_param_list():
     params = """

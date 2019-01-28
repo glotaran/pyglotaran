@@ -1,14 +1,15 @@
 """This package contains glotarans parameter group class"""
 
-import copy
-import csv
 from collections import OrderedDict
 from math import log
-from typing import Dict, Generator, List, Tuple
 from os.path import isfile
-
+from typing import Dict, Generator, List, Tuple
+import copy
+import csv
+import numpy as np
 import pandas as pd
 import yaml
+
 from lmfit import Parameters
 
 from .parameter import Parameter
@@ -85,15 +86,17 @@ class ParameterGroup(OrderedDict):
     @classmethod
     def from_list(cls, parameter: List[object], label="p"):
         root = cls(label)
+
+        # get defaults
+        defaults = None
         for item in parameter:
             if isinstance(item, dict):
-                label, items = list(item.items())[0]
-                if isinstance(items, dict):
-                    root.add_group(cls.from_dict(items, label=label))
-                else:
-                    root.add_group(cls.from_list(items, label=label))
-            else:
-                root.add_parameter(Parameter.from_list_or_value(item))
+                defaults = item
+                break
+
+        for item in parameter:
+            if isinstance(item, (float, int, list)):
+                root.add_parameter(Parameter.from_list_or_value(item, default_options=defaults))
         return root
 
     @classmethod
@@ -313,7 +316,7 @@ class ParameterGroup(OrderedDict):
             for (lbl, p) in l.all_with_label(root=root, seperator=seperator):
                 yield (lbl, p)
 
-    def as_parameter_dict(self, only_fit=False) -> Parameters:
+    def as_parameter_dict(self) -> Parameters:
         """
         Creates a lmfit.Parameters dict.
 
@@ -334,9 +337,15 @@ class ParameterGroup(OrderedDict):
                 p = copy.deepcopy(p)
                 if p.value == 1 or p.value == 0:
                     p.value = 1e-10
+                if p.min == 1 or p.min == 0:
+                    p.min = 1e-10
+                if p.max == 1 or p.max == 0:
+                    p.max = 1e-10
                 else:
                     try:
                         p.value = log(p.value)
+                        p.min = log(p.min) if np.isfinite(p.min) else p.min
+                        p.max = log(p.max) if np.isfinite(p.max) else p.max
                     except Exception:
                         raise Exception("Could not take log of parameter"
                                         f" '{label}' with value '{p.value}'")

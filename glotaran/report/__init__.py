@@ -1,3 +1,6 @@
 from . import (
-    svd
+    svd,
+    doas,
+    kinetic,
+    result,
 )

@@ -43,10 +43,9 @@ def calculate_kinetic_matrix(dataset, index, axis):
             compartments = new_compartments
             matrix = new_matrix
 
-    if dataset.baseline is not None:
+    if dataset.baseline:
         baseline_compartment = f'{dataset.label}_baseline'
-        baseline = np.zeros((axis.size, 1), dtype=np.float64)
-        baseline.fill(dataset.baseline)
+        baseline = np.ones((axis.size, 1), dtype=np.float64)
         if matrix is None:
             compartments = [baseline_compartment]
             matrix = baseline
