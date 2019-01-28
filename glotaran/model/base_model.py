@@ -256,14 +256,29 @@ class BaseModel:
         """
         return len(self.errors_parameter(parameter)) is 0
 
-    def __str__(self):
+    def mprint(self, parameter: ParameterGroup = None, initial: ParameterGroup = None):
         attrs = getattr(self, '_glotaran_model_attributes')
         string = "# Model\n\n"
         string += f"_Type_: {self.model_type}\n\n"
 
         for attr in attrs:
-            string += f"## {attr}\n"
+            items = getattr(self, attr)
+            if not items:
+                continue
 
-            for label, item in getattr(self, attr).items():
-                string += f'{item}\n'
+            string += f"## {attr.replace('_', ' ').title()}\n"
+            string += "\n"
+
+            if isinstance(items, dict):
+                items = items.values()
+            for item in items:
+                item_str = item.mprint(parameter=parameter, initial=initial).split('\n')
+                string += f'* {item_str[0]}\n'
+                for s in item_str[1:]:
+                    string += f"  {s}\n"
+            string += "\n"
         return string
+
+
+    def __str__(self):
+        return self.mprint()

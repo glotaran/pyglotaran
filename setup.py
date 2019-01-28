@@ -20,7 +20,6 @@ install_requires = [
     'xarray>=0.11.2',
     'matplotlib>=2.2.3',  # dependency introduced by glotaran.plotting
     'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
-    'typing_inspect>=0.3.1',
 ]
 
 

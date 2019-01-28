@@ -59,6 +59,7 @@ def test_param_options():
     assert params.get("7").max == float('inf')
     assert params.get("7").vary
 
+
 def test_param_block_options():
     params = """
     block:

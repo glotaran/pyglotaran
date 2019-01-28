@@ -1,6 +1,6 @@
 """This package contains glotarans model item validator."""
 
-from glotaran.parameter import parameter
+from glotaran.parameter import Parameter
 
 
 class Validator:

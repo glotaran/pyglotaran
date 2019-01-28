@@ -2,10 +2,10 @@
 
 from typing import Dict, List
 import inspect
-from typing_inspect import get_origin
+import functools
 from dataclasses import dataclass, replace
 
-from glotaran.parameter import Parameter
+from glotaran.parameter import Parameter, ParameterGroup
 
 from .model_item_validator import Validator
 
@@ -266,6 +266,10 @@ def model_item(attributes={},
 
         setattr(cls, 'fill', fill)
 
+        mprint = _create_mprint_func(cls)
+        setattr(cls, 'mprint', mprint)
+        setattr(cls, '__str__', functools.wraps(cls.__str__)(mprint))
+
         return cls
 
     return decorator
@@ -294,3 +298,67 @@ def model_item_typed(types: Dict[str, any] = {}, no_label=False):
         return cls
 
     return decorator
+
+
+def _create_mprint_func(cls):
+
+    def mprint_item(self, parameter: ParameterGroup = None, initial: ParameterGroup = None):
+        s = "\n"
+        if self._glotaran_has_label:
+            s = f"**{self.label}**"
+
+            if hasattr(self, 'type'):
+                s += f" ({self.type})"
+            s += ":\n"
+        elif hasattr(self, 'type'):
+            s = f"**{self.type}**:\n"
+
+        attrs = []
+        for name in self._glotaran_attributes:
+            value = getattr(self, name)
+            if not value:
+                continue
+            a = f"* *{name.replace('_', ' ').title()}*: "
+
+            def format_parameter(param):
+                s = f"{param.full_label}"
+                if parameter:
+                    p = parameter.get(param.full_label)
+                    s += f": **{p.value}**"
+                    if not p.vary:
+                        s += " (fixed)"
+                    elif initial:
+                        i = initial.get(param.full_label)
+                        s += f" (initial: {i.value})"
+                return s
+
+            if isinstance(value, Parameter):
+                a += format_parameter(value)
+            elif isinstance(value, list) and all(isinstance(v, Parameter) for v in value):
+                a += f"[{', '.join([format_parameter(v) for v in value])}]"
+            elif isinstance(value, dict):
+                a += "\n"
+                for k, v in value.items():
+                    a += f"  * *{k}*: "
+                    if isinstance(v, Parameter):
+                        a += format_parameter(v)
+                    else:
+                        a += f"{v}"
+                    a += "\n"
+            else:
+                a += f"{value}"
+            attrs.append(a)
+        s += "\n".join(attrs)
+        return s
+
+    mprint_item.__annotations__ = {
+        'return': str,
+    }
+    mprint_item.__name__ = f'mprint'
+    mprint_item.__qualname__ = cls.__qualname__ + '.' + mprint_item.__name__
+    mprint_item.__module__ = cls.__module__
+    mprint_item.__doc__ = f'''
+    Returns a string with the item formatted in markdown.
+    '''
+
+    return mprint_item
