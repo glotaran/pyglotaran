@@ -95,6 +95,11 @@ class ParameterGroup(OrderedDict):
                 break
 
         for item in parameter:
+            if isinstance(item, str):
+                try:
+                    item = float(item)
+                except Exception:
+                    pass
             if isinstance(item, (float, int, list)):
                 root.add_parameter(Parameter.from_list_or_value(item, default_options=defaults))
         return root

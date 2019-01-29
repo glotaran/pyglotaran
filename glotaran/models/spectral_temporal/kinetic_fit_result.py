@@ -21,7 +21,7 @@ def finalize_kinetic_result(model, result: FitResult):
             ((result.model.estimated_axis, 'species',),
              dataset.clp.sel(clp_label=dataset_descriptor.initial_concentration.compartments))
 
-        if dataset_descriptor.baseline is not None:
+        if dataset_descriptor.baseline:
             dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
         for constraint in model.spectral_constraints:

@@ -40,6 +40,7 @@ class Parameter(LmParameter):
         p.value = exp(parameter.value) if p.non_neg else parameter.value
         p.min = exp(parameter.min if p.non_neg else parameter.min)
         p.max = exp(parameter.max if p.non_neg else parameter.max)
+        p.stderr = parameter.stderr
         return p
 
     @classmethod

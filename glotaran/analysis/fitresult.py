@@ -160,7 +160,7 @@ class FitResult:
 
     @property
     def nvars(self) -> int:
-        """int: Number of variables in fit."""
+        """int: Number of variables in optimization."""
         return self._lm_result.nvarys if self._lm_result else None
 
     @property
@@ -170,17 +170,22 @@ class FitResult:
 
     @property
     def nfree(self) -> int:
-        """int: Degrees of freedom in fit. """
+        """int: Degrees of freedom in optimization. """
         return self._lm_result.nfree if self._lm_result else None
 
     @property
     def chisqr(self) -> float:
-        """float: The chi-square of the fit """
+        """float: The chi-square of the optimization """
         return self._lm_result.chisqr if self._lm_result else 0
 
     @property
     def red_chisqr(self) -> float:
-        """float: The reduced chi-square of the fit."""
+        """float: The reduced chi-square of the optimization."""
+        return self._lm_result.redchi if self._lm_result else 0
+
+    @property
+    def root_mean_sqare_error(self) -> float:
+        """float: The root mean square error the optimization."""
         return self._lm_result.redchi if self._lm_result else 0
 
     @property

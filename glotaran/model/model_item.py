@@ -325,11 +325,15 @@ def _create_mprint_func(cls):
                 if parameter:
                     p = parameter.get(param.full_label)
                     s += f": **{p.value}**"
-                    if not p.vary:
-                        s += " (fixed)"
-                    elif initial:
-                        i = initial.get(param.full_label)
-                        s += f" (initial: {i.value})"
+                    if p.vary:
+                        err = p.stderr if p.stderr else 0
+                        s += f" *(StdErr: {err:.0e}"
+                        if initial:
+                            i = initial.get(param.full_label)
+                            s += f" ,initial: {i.value}"
+                        s += ")*"
+                    else:
+                        s += " *(fixed)*"
                 return s
 
             if isinstance(value, Parameter):
