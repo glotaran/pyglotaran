@@ -67,8 +67,10 @@ class IrfGaussian:
     def parameter(self, index):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
-        dist = (1e3 / index - 1e3 / self.dispersion_center) \
-            if self.model_dispersion_with_wavenumber else (index - self.dispersion_center)/100
+        
+        if self.dispersion_center:
+            dist = (1e3 / index - 1e3 / self.dispersion_center) \
+                if self.model_dispersion_with_wavenumber else (index - self.dispersion_center)/100
 
         if len(self.center_dispersion) is not 0:
             if self.dispersion_center is None:
