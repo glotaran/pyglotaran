@@ -42,7 +42,7 @@ sim_model = gta.KineticModel.from_dict({
         },
     },
     'irf': {
-        'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+        'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
     },
     'dataset': {
         'dataset1': {

@@ -2,6 +2,11 @@
 Usage
 =====
 
+.. warning::
+
+   pyglotaran is in very early stage of development. You should not use it for
+   actual science at the moment.
+
 To start using glotaran in your project, you have to import it first:
 
 .. ipython::

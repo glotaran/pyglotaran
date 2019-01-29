@@ -50,30 +50,26 @@ Kinetic Model
     glotaran.analysis.nnls
     glotaran.analysis.simulation
     glotaran.analysis.variable_projection
-    glotaran.data
-    glotaran.data.dataio
-    glotaran.data.dataio.chlorospec_format
-    glotaran.data.dataio.file_readers
-    glotaran.data.dataio.legacy_readers
-    glotaran.data.dataio.mlsd_file_format
-    glotaran.data.dataio.spectral_timetrace
-    glotaran.data.dataio.wavelength_time_explicit_file
-    glotaran.data.datasets
-    glotaran.data.datasets.flim_dataset
-    glotaran.data.datasets.high_dimensional_dataset
-    glotaran.data.datasets.spectral_temporal_dataset
-    glotaran.data.external_file_readers
-    glotaran.data.external_file_readers.sdt_reader
+    glotaran.dashboard
+    glotaran.dashboard.intensity_map_browser
     glotaran.examples
     glotaran.examples.sequential
+    glotaran.io
+    glotaran.io.chlorospec_format
+    glotaran.io.external_file_readers
+    glotaran.io.external_file_readers.sdt_reader
+    glotaran.io.file_readers
+    glotaran.io.legacy_readers
+    glotaran.io.mlsd_file_format
+    glotaran.io.prepare_dataset
+    glotaran.io.spectral_timetrace
+    glotaran.io.wavelength_time_explicit_file
     glotaran.model
     glotaran.model.base_model
     glotaran.model.dataset_descriptor
     glotaran.model.model
     glotaran.model.model_item
     glotaran.model.model_item_validator
-    glotaran.model.parameter
-    glotaran.model.parameter_group
     glotaran.models
     glotaran.models.doas
     glotaran.models.doas.doas_fit_result
@@ -98,9 +94,18 @@ Kinetic Model
     glotaran.models.spectral_temporal.spectral_relations
     glotaran.models.spectral_temporal.spectral_shape
     glotaran.models.spectral_temporal.spectral_temporal_dataset_descriptor
+    glotaran.parameter
+    glotaran.parameter.parameter
+    glotaran.parameter.parameter_group
     glotaran.parse
     glotaran.parse.parser
     glotaran.parse.register
     glotaran.plotting
     glotaran.plotting.basic_plots
     glotaran.plotting.glotaran_color_codes
+    glotaran.report
+    glotaran.report.doas
+    glotaran.report.kinetic
+    glotaran.report.result
+    glotaran.report.saveable
+    glotaran.report.svd

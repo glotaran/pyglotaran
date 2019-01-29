@@ -7,9 +7,9 @@ from glotaran.parameter import Parameter
 
 
 @model_item(attributes={
-    'amplitude': List[Parameter],
-    'location': List[Parameter],
-    'width': List[Parameter],
+    'amplitude': Parameter,
+    'location': Parameter,
+    'width': Parameter,
 }, has_type=True)
 class SpectralShapeGaussian:
     """A gaussian spectral shape"""

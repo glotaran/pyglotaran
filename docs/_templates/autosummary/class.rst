@@ -14,6 +14,7 @@
     .. rubric:: Attributes Summary
 
     .. autosummary::
+       :toctree:
     {% for item in attributes %}
         ~{{ item }}
     {%- endfor %}

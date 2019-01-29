@@ -268,7 +268,7 @@ def model_item(attributes={},
 
         mprint = _create_mprint_func(cls)
         setattr(cls, 'mprint', mprint)
-        setattr(cls, '__str__', functools.wraps(cls.__str__)(mprint))
+        #  setattr(cls, '__str__', functools.wraps(cls.__str__)(mprint))
 
         return cls
 
@@ -358,7 +358,7 @@ def _create_mprint_func(cls):
     mprint_item.__annotations__ = {
         'return': str,
     }
-    mprint_item.__name__ = f'mprint'
+    mprint_item.__name__ = 'mprint'
     mprint_item.__qualname__ = cls.__qualname__ + '.' + mprint_item.__name__
     mprint_item.__module__ = cls.__module__
     mprint_item.__doc__ = f'''
