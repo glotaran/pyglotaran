@@ -13,9 +13,11 @@ from glotaran.parameter import Parameter
 class KineticMegacomplex:
     """A Megacomplex with one or more K-Matrices."""
 
-    def get_k_matrix(self):
+    def full_k_matrix(self, model=None):
         full_k_matrix = None
         for k_matrix in self.k_matrix:
+            if model:
+                k_matrix = model.k_matrix[k_matrix]
             if full_k_matrix is None:
                 full_k_matrix = k_matrix
             # If multiple k matrices are present, we combine them
@@ -25,4 +27,4 @@ class KineticMegacomplex:
 
     @property
     def involved_compartments(self):
-        return self.get_k_matrix().involved_compartments() if self.get_k_matrix() else []
+        return self.full_k_matrix().involved_compartments() if self.full_k_matrix() else []

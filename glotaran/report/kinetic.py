@@ -16,7 +16,7 @@ def decay_associated_spectra(result: FitResult, dataset: str) -> hv.Curve:
     for m in megacomplexes[1:]:
         curve += hv.Curve(result.data[dataset].decay_associated_spectra.sel(megacomplex=m))\
             .groupby('compartment').overlay()
-    return curve.opts(title=f'DAS {dataset}', legend_position='bottom_right')
+    return curve.opts(title=f'DAS {dataset}')
 
 
 @saveable
@@ -28,21 +28,20 @@ def irf_dispersion(result: FitResult, dataset: str) -> hv.Curve:
     for m in megacomplexes[1:]:
         curve += hv.Curve(result.data[dataset].decay_associated_spectra.sel(megacomplex=m))\
             .groupby('compartment').overlay()
-    return curve.opts(label=f'IrfDispersion {dataset}', legend_position='bottom_right')
+    return curve.opts(label=f'IrfDispersion {dataset}')
 
 
 @saveable
 def species_concentration(result: FitResult, dataset: str, index: float) -> hv.Curve:
     return hv.Curve(
         result.data[dataset].species_concentration.sel(spectral=index, method='nearest'))\
-        .groupby('species').overlay().opts(title=f'Concentration {dataset}',
-                                           legend_position='bottom_right')
+        .groupby('species').overlay().opts(title=f'Concentration {dataset}')
 
 
 @saveable
 def species_associated_spectra(result: FitResult, dataset: str) -> hv.Curve:
     return hv.Curve(result.data[dataset].species_associated_spectra)\
-        .groupby('species').overlay().opts(title=f'SAS {dataset}', legend_position='bottom_right')
+        .groupby('species').overlay().opts(title=f'SAS {dataset}')
 
 
 @saveable

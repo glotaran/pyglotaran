@@ -11,14 +11,14 @@ def calculate_kinetic_matrix(dataset, index, axis):
 
     compartments = None
     matrix = None
+
+    if dataset.initial_concentration is None:
+        raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
+    initial_concentration = dataset.initial_concentration.normalized(dataset)
     for _, k_matrix in dataset.get_k_matrices():
 
         if k_matrix is None:
             continue
-
-        if dataset.initial_concentration is None:
-            raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
-        initial_concentration = dataset.initial_concentration.normalized(dataset)
 
         (this_compartments, this_matrix) = _calculate_for_k_matrix(
             dataset,
@@ -72,7 +72,7 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, initial_concentratio
                     if comp in k_matrix.involved_compartments()]
 
     # the rates are the eigenvalues of the k matrix
-    rates = k_matrix.rates(compartments)
+    rates = k_matrix.rates(initial_concentration)
 
     # init the matrix
     size = (axis.size, rates.size)

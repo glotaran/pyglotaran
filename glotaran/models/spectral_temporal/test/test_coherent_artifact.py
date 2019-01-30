@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 

@@ -13,14 +13,14 @@ from .saveable import saveable
 def dampened_oscillation_associated_spectra(result: FitResult, dataset: str) -> hv.Curve:
     curve = hv.Curve(result.data[dataset].dampened_oscillation_associated_spectra)\
         .groupby('oscillation').overlay()
-    return curve.opts(title=f'DOAS {dataset}', legend_position='bottom_right')
+    return curve.opts(title=f'DOAS {dataset}')
 
 
 @saveable
 def dampened_oscillation_phase(result: FitResult, dataset: str) -> hv.Curve:
     curve = hv.Curve(result.data[dataset].dampened_oscillation_phase)\
         .groupby('oscillation').overlay()
-    return curve.opts(title=f'Phase {dataset}', legend_position='bottom_right')
+    return curve.opts(title=f'Phase {dataset}')
 
 
 @saveable

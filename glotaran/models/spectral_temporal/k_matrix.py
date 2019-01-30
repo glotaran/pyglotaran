@@ -76,6 +76,20 @@ class KMatrix:
         return KMatrix("{}+{}".format(self.label, k_matrix.label),
                        combined_matrix)
 
+    def matrix_as_markdown(self, compartments: List[str] = None) -> np.ndarray:
+        """ """
+
+        compartments = [c for c in compartments if c in self.involved_compartments()] \
+            if compartments else self.involved_compartments()
+        size = len(compartments)
+        array = np.zeros((size, size), dtype=np.object)
+        # Matrix is a dict
+        for index in self.matrix:
+            i = compartments.index(index[0])
+            j = compartments.index(index[1])
+            array[i, j] = self.matrix[index].full_label
+        return array
+
     def reduced(self, compartments: List[str]) -> np.ndarray:
         """ """
 
@@ -148,11 +162,11 @@ class KMatrix:
         #  return (eigenvalues[sorted], eigenvectors[sorted])
         return (eigenvalues.real, eigenvectors.real)
 
-    def rates(self, compartments):
-        if self.is_unibranched(compartments):
-            return np.diag(self.full(compartments)).copy()
+    def rates(self, initial_concentration):
+        if self.is_unibranched(initial_concentration):
+            return np.diag(self.full(initial_concentration.compartments)).copy()
         else:
-            rates, _ = self.eigen(compartments)
+            rates, _ = self.eigen(initial_concentration.compartments)
             return rates
 
     def _gamma(self,
@@ -169,7 +183,7 @@ class KMatrix:
 
     def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
         return self.a_matrix_unibranch(initial_concentration) \
-            if self.is_unibranched(initial_concentration.compartments) \
+            if self.is_unibranched(initial_concentration) \
             else self.a_matrix_non_unibranch(initial_concentration)
 
     def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
@@ -195,8 +209,12 @@ class KMatrix:
                 np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
         return a_matrix
 
-    def is_unibranched(self, compartments):
-        matrix = self.reduced(compartments)
+    def is_unibranched(self, initial_concentration):
+        if not np.sum(
+            [initial_concentration.parameters[initial_concentration.compartments.index(c)]
+             for c in self.involved_compartments()]) == 1:
+            return False
+        matrix = self.reduced(initial_concentration.compartments)
         for i in range(matrix.shape[1]):
             if not np.nonzero(matrix[:, i])[0].size == 1 or i is not 0 and matrix[i-1, i] == 0:
                 return False

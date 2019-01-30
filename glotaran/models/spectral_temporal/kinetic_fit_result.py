@@ -62,7 +62,7 @@ def finalize_kinetic_result(model, result: FitResult):
         all_das_labels = []
         for megacomplex in dataset_descriptor.megacomplex:
 
-            k_matrix = megacomplex.get_k_matrix()
+            k_matrix = megacomplex.full_k_matrix()
             if k_matrix is None:
                 continue
 

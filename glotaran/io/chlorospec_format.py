@@ -1,8 +1,8 @@
-from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from natsort import natsorted
 from glob import glob
 import os
 import numpy as np
+import xarray as xr
 
 
 def load_samples(samples_path):
@@ -75,10 +75,7 @@ class ChlorospecData(object):
                 else:
                     data = np.concatenate((data, samples.T), 1)
         wavelengths = np.linspace(159.735, 1047.157, data.shape[0])
-        dataset = SpectralTemporalDataset(self._label)
-        dataset.set_axis("time", all_times)
-        dataset.set_axis("spectral", wavelengths)
-        dataset.data = data.T
+        dataset = xr.DataArray(data, coords=[('time', all_times), ('spectral', wavelengths)])
         return dataset
 
     @staticmethod

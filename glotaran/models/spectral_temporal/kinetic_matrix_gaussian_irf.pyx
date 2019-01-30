@@ -24,6 +24,7 @@ def calc_kinetic_matrix_gaussian_irf(double[:, :] matrix,
                                      double scale,
                                      int backsweep,
                                      double backsweep_period):
+    """Calculates a kinetic matrix with a gaussian irf."""
     nr_times = times.shape[0]
     nr_rates = rates.shape[0]
     sqrt2 = sqrt(2)

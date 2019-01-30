@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import KineticModel
 
 

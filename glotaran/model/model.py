@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from typing import Dict, List
+from functools import wraps
 
 from glotaran.parse.register import register_model
 
@@ -30,16 +31,6 @@ def model(name,
         setattr(cls, 'additional_penalty_function',
                 additional_penalty_function)
         setattr(cls, 'allow_grouping', allow_grouping)
-        if not cls.__doc__:
-            cls.__doc__ = ""
-        cls.__doc__ += '''
-
-        Attributes
-        ----------
-        allow_grouping:
-            Indicates if the model is allowed to group data along the estimated_axis.
-
-        '''
 
         def c_mat(self, c_mat=calculated_matrix):
             return c_mat
@@ -93,13 +84,7 @@ def model(name,
                 setattr(cls, add_item.__name__, add_item)
                 setattr(cls, attr_name, [])
 
-        def init(self, cls=cls, attributes=attributes):
-            for attr_name, attr_item in attributes.items():
-                if getattr(attr_item, '_glotaran_has_label'):
-                    setattr(self, attr_name, OrderedDict())
-                else:
-                    setattr(self, attr_name, [])
-            super(cls, self).__init__()
+        init = _create_init_func(cls, attributes)
 
         setattr(cls, '__init__', init)
 
@@ -108,6 +93,22 @@ def model(name,
         return cls
 
     return decorator
+
+
+def _create_init_func(cls, attributes):
+
+    def __init__(self):
+        for attr_name, attr_item in attributes.items():
+            if getattr(attr_item, '_glotaran_has_label'):
+                setattr(self, attr_name, OrderedDict())
+            else:
+                setattr(self, attr_name, [])
+        super(cls, self).__init__()
+
+    __init__.__qualname__ = cls.__name__ + '.' + __init__.__name__
+    __init__.__module__ = cls.__module__
+
+    return __init__
 
 
 def _create_add_func(cls, name, type):

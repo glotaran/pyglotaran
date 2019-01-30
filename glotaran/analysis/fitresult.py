@@ -186,7 +186,7 @@ class FitResult:
     @property
     def root_mean_sqare_error(self) -> float:
         """float: The root mean square error the optimization."""
-        return self._lm_result.redchi if self._lm_result else 0
+        return np.sqrt(self.red_chisqr)
 
     @property
     def var_names(self) -> typing.List[str]:
@@ -341,10 +341,13 @@ class FitResult:
         string += "Reduced Chi Square |".rjust(ll)
         string += f"{self.red_chisqr:.9f} |".rjust(lr)
         string += "\n"
-
+        string += "Root Mean Square Error".rjust(ll)
+        string += f"{self.root_mean_sqare_error:.9f} |".rjust(lr)
         string += "\n"
-        string += "## Best Fit Parameter\n\n"
-        string += f"{self.best_fit_parameter}"
-        string += "\n"
+        #
+        #  string += "\n"
+        #  string += "## Best Fit Parameter\n\n"
+        #  string += f"{self.best_fit_parameter}"
+        #  string += "\n"
 
         return string

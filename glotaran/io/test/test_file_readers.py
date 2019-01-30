@@ -3,7 +3,7 @@ import pandas as pd
 import xarray as xr
 import pytest
 
-from glotaran.data.external_file_readers import sdt_reader
+from glotaran.io.external_file_readers import sdt_reader
 from ..file_readers import (
     sdt_to_DataFrame,
     DimensionalityError,
@@ -12,8 +12,6 @@ from ..file_readers import (
     read_sdt,
 )
 from ..legacy_readers import FLIM_legacy_to_DataFrame
-from glotaran.data.datasets.flim_dataset import get_pixel_map
-from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
 from . import TEMPORAL_DATA, FLIM_DATA
 
 
@@ -102,18 +100,17 @@ def test_sdt_to_df__flim():
             "wl": [10, 20]})
 ])
 def test_df_to_SpectralTemporalDataset(swap_axis, result_dict, time_unit, spectral_unit):
-    result = SpectralTemporalDataset(time_unit=time_unit)
-    result.time_axis = np.array(result_dict["time_axis"])
-    result.spectral_axis = np.array(result_dict["wl"])
-    result.data = np.array(result_dict["data"])
+    result_time_axis = np.array(result_dict["time_axis"])
+    result_spectral_axis = np.array(result_dict["wl"])
+    result_data = np.array(result_dict["data"])
     test_df = pd.DataFrame([[1, 2], [3, 4]], index=[100, 200], columns=[10, 20])
     test_dataset = DataFrame_to_SpectralTemporalDataset(test_df,
                                                         time_unit=time_unit,
                                                         spectral_unit=spectral_unit,
                                                         swap_axis=swap_axis)
-    assert np.all(test_dataset.data().T == result.data)
-    assert np.all(test_dataset.time_axis == result.time_axis)
-    assert np.all(test_dataset.spectral_axis == result.spectral_axis)
+    assert np.all(test_dataset.data().T == result_data)
+    assert np.all(test_dataset.time_axis == result_time_axis)
+    assert np.all(test_dataset.spectral_axis == result_spectral_axis)
     assert test_dataset.time_unit == time_unit
     assert test_dataset.spectral_unit == spectral_unit
 

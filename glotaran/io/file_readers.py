@@ -8,9 +8,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from glotaran.data.external_file_readers.sdt_reader import SdtFile
-from glotaran.data.datasets.spectral_temporal_dataset import SpectralTemporalDataset
-from glotaran.data.datasets.flim_dataset import FLIMDataset, get_pixel_map
+from glotaran.io.external_file_readers.sdt_reader import SdtFile
 
 
 class DimensionalityError(Exception):
@@ -24,7 +22,7 @@ def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
                                          time_unit: str = "s",
                                          spectral_unit: str = "nm",
                                          swap_axis: bool = False) \
-        -> SpectralTemporalDataset:
+        -> xr.Dataset:
     """
     Uses a pd.DataFrame to generate a SpectralTemporalDataset from it.
     The basic assumption is that the pd.DataFrame is time explicit (index=wavelength axis,
@@ -59,7 +57,7 @@ def DataFrame_to_SpectralTemporalDataset(input_dataframe: pd.DataFrame,
 
     Returns
     -------
-    SpectralTemporalDataset
+    dataset:
         Dataset containing the values and axis from input_df.
 
     See Also
@@ -97,7 +95,7 @@ def DataFrame_to_FLIMDataset(input_dataframe: Union[pd.DataFrame, Dict[str, pd.D
                                                              np.ndarray]],
                              orig_shape: tuple, orig_time_axis_index: int = 2,
                              time_unit: str = "s", swap_axis: bool = False) \
-        -> FLIMDataset:
+        -> xr.Dataset:
     """
     Uses a pd.DataFrame to generate a FLIMDataset from it.
     The basic assumption is that the pd.DataFrame is time explicit (index=pixel axis,
@@ -282,7 +280,7 @@ def read_sdt(file_path: str, index: Union[list, np.ndarray] = None,
              type_of_data: str = "st", time_unit: str = "s", swap_axis: bool = False,
              dataset_index: int = None, return_dataframe: bool = False,
              orig_time_axis_index: int = 2, spectral_unit: str = "nm") \
-        -> Union[pd.DataFrame, SpectralTemporalDataset, FLIMDataset]:
+        -> Union[pd.DataFrame, xr.Dataset]:
     """
     Reads a `*.sdt` file and returns a pd.DataFrame (`return_dataframe==True`), a
     SpectralTemporalDataset (`type_of_data=='st'`) or a FLIMDataset (`type_of_data=='flim'`).
@@ -359,7 +357,7 @@ def read_sdt(file_path: str, index: Union[list, np.ndarray] = None,
     if type_of_data == "flim":
         data_dataframe, orig_shape = sdt_to_DataFrame(file_path=file_path,
                                                       dataset_index=dataset_index,
-                                                      mapper_function=get_pixel_map)
+                                                      mapper_function=None)
     else:
         data_dataframe, orig_shape = sdt_to_DataFrame(file_path=file_path, index=index,
                                                       dataset_index=dataset_index)
@@ -368,7 +366,7 @@ def read_sdt(file_path: str, index: Union[list, np.ndarray] = None,
     else:
         if type_of_data == "flim":
             dataset = DataFrame_to_FLIMDataset(input_dataframe=data_dataframe,
-                                               mapper_function=get_pixel_map,
+                                               mapper_function=None,
                                                orig_shape=orig_shape,
                                                orig_time_axis_index=orig_time_axis_index,
                                                time_unit=time_unit,
