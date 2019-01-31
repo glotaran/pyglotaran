@@ -3,7 +3,6 @@ import pytest
 
 from glotaran.model import (
     BaseModel,
-    DatasetDescriptor,
     model,
     model_item,
 )
@@ -93,7 +92,6 @@ def parameter():
 
 def test_model_types(model):
     assert model.model_type == 'mock'
-    assert model.dataset_type is DatasetDescriptor
 
 
 @pytest.mark.parametrize(
@@ -108,6 +106,7 @@ def test_model_attr(model, attr):
 
 
 def test_model_validity(model, model_error, parameter):
+    print(model.test['t1'])
     print(model.errors())
     print(model.errors_parameter(parameter))
     assert model.valid()
@@ -115,7 +114,7 @@ def test_model_validity(model, model_error, parameter):
     print(model_error.errors())
     print(model_error.errors_parameter(parameter))
     assert not model_error.valid()
-    assert len(model_error.errors()) is 4
+    assert len(model_error.errors()) is 3
     assert not model_error.valid_parameter(parameter)
     assert len(model_error.errors_parameter(parameter)) is 4
 

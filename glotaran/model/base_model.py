@@ -111,6 +111,11 @@ class BaseModel:
 
         return model
 
+    @property
+    def model_type(self) -> str:
+        """The type of the model."""
+        return self._model_type
+
     def simulate(self,
                  dataset: str,
                  parameter: ParameterGroup,
@@ -212,15 +217,15 @@ class BaseModel:
             attr = getattr(self, attr)
             if isinstance(attr, list):
                 for item in attr:
-                    item.validate_model(self, errors=errors)
+                    item.missing_model_items(self, missing=errors)
             else:
                 for _, item in attr.items():
-                    item.validate_model(self, errors=errors)
+                    item.missing_model_items(self, missing=errors)
 
         return errors
 
     def valid(self) -> bool:
-        """valid checks the model for errors.  """
+        """Checks the model for errors.  """
         return len(self.errors()) is 0
 
     def errors_parameter(self, parameter: ParameterGroup) -> typing.List[str]:
@@ -239,15 +244,15 @@ class BaseModel:
             attr = getattr(self, attr)
             if isinstance(attr, list):
                 for item in attr:
-                    item.validate_model(self, errors=errors)
+                    item.missing_parameter(self, parameter, missing=errors)
             else:
                 for _, item in attr.items():
-                    item.validate_model(self, errors=errors)
+                    item.missing_parameter(self, parameter, missing=errors)
 
         return errors
 
     def valid_parameter(self, parameter: ParameterGroup) -> bool:
-        """valid checks the parameter for errors.
+        """Checks missing parameters.
 
         Parameters
         ----------
@@ -256,7 +261,18 @@ class BaseModel:
         """
         return len(self.errors_parameter(parameter)) is 0
 
-    def mprint(self, parameter: ParameterGroup = None, initial: ParameterGroup = None):
+    def mprint(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+        """Formats the model as Markdown string.
+
+        Parameters will be included if given.
+
+        Parameters
+        ----------
+        parameter :
+            Parameter to include.
+        initial : ParameterGroup
+            Initial values por the parameters.
+        """
         attrs = getattr(self, '_glotaran_model_attributes')
         string = "# Model\n\n"
         string += f"_Type_: {self.model_type}\n\n"
@@ -278,7 +294,6 @@ class BaseModel:
                     string += f"  {s}\n"
             string += "\n"
         return string
-
 
     def __str__(self):
         return self.mprint()

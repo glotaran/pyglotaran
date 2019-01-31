@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def calculate_spectral_matrix(dataset, axis):
+def calculate_spectral_matrix(model, dataset, axis):
     """ Calculates the matrix.
 
     Parameters

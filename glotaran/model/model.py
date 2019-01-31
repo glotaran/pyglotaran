@@ -1,10 +1,9 @@
-from collections import OrderedDict
-from typing import Dict, List
-from functools import wraps
+import typing
 
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
+from .util import wrap_func_as_method
 
 
 def model(name,
@@ -23,32 +22,23 @@ def model(name,
 
     def decorator(cls):
 
-        setattr(cls, 'model_type', name)
-        setattr(cls, 'dataset_type', dataset_type)
-        setattr(cls, 'finalize_result', finalize_result_function)
-        setattr(cls, 'constrain_calculated_matrix_function',
+        setattr(cls, '_model_type', name)
+        setattr(cls, '_finalize_result', finalize_result_function)
+        setattr(cls, '_constrain_calculated_matrix_function',
                 constrain_calculated_matrix_function)
-        setattr(cls, 'additional_penalty_function',
+        setattr(cls, '_additional_penalty_function',
                 additional_penalty_function)
-        setattr(cls, 'allow_grouping', allow_grouping)
+        setattr(cls, '_allow_grouping', allow_grouping)
 
-        def c_mat(self, c_mat=calculated_matrix):
-            return c_mat
-        setattr(cls, 'calculated_matrix', property(c_mat))
+        if calculated_matrix:
+            c_mat = wrap_func_as_method(cls, name='calculated_matrix')(calculated_matrix)
+            setattr(cls, 'calculated_matrix', c_mat)
         setattr(cls, 'calculated_axis', calculated_axis)
 
-        def e_mat(self, e_mat=estimated_matrix):
-            return e_mat
-        setattr(cls, 'estimated_matrix', property(e_mat))
+        if estimated_matrix:
+            e_mat = wrap_func_as_method(cls, name='estimated_matrix')(estimated_matrix)
+            setattr(cls, 'estimated_matrix', e_mat)
         setattr(cls, 'estimated_axis', estimated_axis)
-
-        if not hasattr(cls, '__annotations__'):
-            setattr(cls, '__annotations__', {
-                'allow_grouping': bool,
-            })
-        else:
-            setattr(cls, '__annotations__',
-                    getattr(cls, '__annotations__').copy())
 
         if not hasattr(cls, '_glotaran_model_attributes'):
             setattr(cls, '_glotaran_model_attributes', {})
@@ -56,36 +46,29 @@ def model(name,
             setattr(cls, '_glotaran_model_attributes',
                     getattr(cls, '_glotaran_model_attributes').copy())
 
-        # Add standard attributes if not present
         attributes['megacomplex'] = megacomplex_type
         attributes['dataset'] = dataset_type
 
         # Set annotations and methods for attributes
 
         for attr_name, attr_type in attributes.items():
-            if getattr(attr_type, '_glotaran_has_label'):
-                getattr(cls, '__annotations__')[attr_name] = Dict[str, attr_type]
-            else:
-                getattr(cls, '__annotations__')[attr_name] = List[attr_type]
             getattr(cls, '_glotaran_model_attributes')[attr_name] = None
 
-            if getattr(attr_type, '_glotaran_has_label'):
+            attr_prop = _create_property_for_attribute(cls, attr_name, attr_type)
+            setattr(cls, attr_name, attr_prop)
 
+            if getattr(attr_type, '_glotaran_has_label'):
                 get_item = _create_get_func(cls, attr_name, attr_type)
                 setattr(cls, get_item.__name__, get_item)
-
                 set_item = _create_set_func(cls, attr_name, attr_type)
                 setattr(cls, set_item.__name__, set_item)
-                setattr(cls, attr_name, {})
 
             else:
-
                 add_item = _create_add_func(cls, attr_name, attr_type)
                 setattr(cls, add_item.__name__, add_item)
                 setattr(cls, attr_name, [])
 
         init = _create_init_func(cls, attributes)
-
         setattr(cls, '__init__', init)
 
         register_model(name, cls)
@@ -97,98 +80,91 @@ def model(name,
 
 def _create_init_func(cls, attributes):
 
+    @wrap_func_as_method(cls)
     def __init__(self):
         for attr_name, attr_item in attributes.items():
             if getattr(attr_item, '_glotaran_has_label'):
-                setattr(self, attr_name, OrderedDict())
+                setattr(self, f'_{attr_name}', {})
             else:
-                setattr(self, attr_name, [])
+                setattr(self, f'_{attr_name}', [])
         super(cls, self).__init__()
-
-    __init__.__qualname__ = cls.__name__ + '.' + __init__.__name__
-    __init__.__module__ = cls.__module__
 
     return __init__
 
 
 def _create_add_func(cls, name, type):
 
-    def add_item(self, item):
+    @wrap_func_as_method(cls, name=f'add_{name}')
+    def add_item(self, item: type):
+        f'''Adds an `{type.__name__}` object.
 
-        # TODO checked typed items
-        if not isinstance(item, type) and \
-                not hasattr(type, "_glotaran_model_item_typed"):
-            raise TypeError
-        getattr(self, name).append(item)
+        Parameters
+        ----------
+        item :
+            The `{type.__name__}` item.
+        '''
 
-    add_item.__annotations__ = {
-        'item': type,
-    }
-    add_item.__name__ = f'add_{name}'
-    add_item.__qualname__ = cls.__name__ + '.' + add_item.__name__
-    add_item.__module__ = cls.__module__
-    add_item.__doc__ = f'''
-    Adds an `{type.__name__}` object.
-
-    Parameters
-    ----------
-    item :
-        The `{type.__name__}` item.
-    '''
+        if not isinstance(item, type):
+            if not hasattr(type, "_glotaran_model_item_typed") or \
+               not isinstance(item, tuple(getattr(type, '_glotaran_model_item_types').values())):
+                raise TypeError
+        getattr(self, f'_{name}').append(item)
 
     return add_item
 
 
 def _create_get_func(cls, name, type):
 
-    def get_item(self, label):
-        return getattr(self, name)[label]
+    @wrap_func_as_method(cls, name=f'get_{name}')
+    def get_item(self, label: str) -> type:
+        f'''
+        Returns the `{type.__name__}` object with the given label.
 
-    get_item.__annotations__ = {
-        'label': str,
-        'return': type,
-    }
-    get_item.__name__ = f'get_{name}'
-    get_item.__qualname__ = cls.__qualname__ + '.' + get_item.__name__
-    get_item.__module__ = cls.__module__
-    get_item.__doc__ = f'''
-    Returns the `{type.__name__}` object with the given label.
-
-    Parameters
-    ----------
-    label :
-        The label of the `{type.__name__}` object.
-    '''
+        Parameters
+        ----------
+        label :
+            The label of the `{type.__name__}` object.
+        '''
+        return getattr(self, f'_{name}')[label]
 
     return get_item
 
 
 def _create_set_func(cls, name, type):
 
-    def set_item(self, label, item):
+    @wrap_func_as_method(cls, name=f'set_{name}')
+    def set_item(self, label: str, item: type):
+        f'''
+        Sets the `{type.__name__}` object with the given label with to the item.
 
-        # TODO checked typed items
-        if not isinstance(item, type) and \
-                not hasattr(type, "_glotaran_model_item_typed"):
-            raise TypeError
-        getattr(self, name)[label] = item
+        Parameters
+        ----------
+        label :
+            The label of the `{type.__name__}` object.
+        item :
+            The `{type.__name__}` item.
+        '''
 
-    set_item.__annotations__ = {
-        'label': str,
-        'item': type,
-    }
-    set_item.__name__ = f'set_{name}'
-    set_item.__qualname__ = cls.__qualname__ + '.' + set_item.__name__
-    set_item.__module__ = cls.__module__
-    set_item.__doc__ = f'''
-    Sets the `{type.__name__}` object with the given label with to the item.
-
-    Parameters
-    ----------
-    label :
-        The label of the `{type.__name__}` object.
-    item :
-        The `{type.__name__}` item.
-    '''
+        if not isinstance(item, type):
+            if not hasattr(type, "_glotaran_model_item_typed") or \
+               not isinstance(item, tuple(getattr(type, '_glotaran_model_item_types').values())):
+                raise TypeError
+        getattr(self, f'_{name}')[label] = item
 
     return set_item
+
+
+def _create_property_for_attribute(cls, name, type):
+
+    return_type = typing.Dict[str, type] if hasattr(type, '_glotaran_has_label') \
+            else typing.List[type]
+
+    doc_type = 'dictonary' if hasattr(type, '_glotaran_has_label') else 'list'
+
+    @property
+    @wrap_func_as_method(cls, name=f'{name}')
+    def attribute(self) -> return_type:
+        f'''A {doc_type} containing {type.__name__}'''
+        return getattr(self, f'_{name}')
+
+    return attribute

@@ -7,7 +7,7 @@ from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_m
 from glotaran.models.spectral_temporal.irf import IrfGaussian
 
 
-def calculate_doas_matrix(dataset, index, axis):
+def calculate_doas_matrix(model, dataset, index, axis):
 
     oscillations = _collect_oscillations(dataset)
     matrix = np.zeros((axis.size, len(2 * oscillations)), dtype=np.float64)
@@ -50,9 +50,9 @@ def calculate_doas_matrix(dataset, index, axis):
                                     f"'{osc.frequency}', '{osc.rates}'")
                 if not all(np.isfinite(b)):
                     idx = np.where(np.logical_not(np.isfinite(b)))[0]
-                    raise Exception(f"""Non numeric values in term 'b' for oscillation '{osc.label}':
+                    raise Exception(f"""Non numeric values in term 'b' for oscillation '{oscillation.label}':
                                     frequency: {frequency}
-                                    rate: {osc.rate}
+                                    rate: {oscillation.rate}
                                     center: {centers[i]}
                                     width: {widths[i]}
                                     frequency_max: {frequency_max}
@@ -64,7 +64,7 @@ def calculate_doas_matrix(dataset, index, axis):
         matrix[:, idx + 1] = osc.imag
         idx += 2
 
-    kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(dataset, index, axis)
+    kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(model, dataset, index, axis)
     if kinetic_matrix is not None:
         clp = clp + kinetic_clp
         matrix = np.concatenate((matrix, kinetic_matrix), axis=1)

@@ -18,7 +18,7 @@ class ExplicitFile(object):
     Abstract class representing either a time- or wavelength-explicit file.
     """
     # TODO: implement time_intervals
-    def __init__(self, filepath, *args, **kwargs):
+    def __init__(self, filepath: str = None, dataset: xr.DataArray = None):
         self._file_data_format = None
         self._observations = []  # TODO: choose name: data_points, observations, data
         self._times = []
@@ -26,8 +26,11 @@ class ExplicitFile(object):
         self._label = ""
         self._comment = ""
         absfilepath = os.path.realpath(filepath)
-        if not filepath and 'dataset' in kwargs:
-            self._initialize_with_dataset(kwargs.get('dataset'))
+        if dataset is not None:
+            self._observations = np.array(dataset.values).T
+            self._times = np.array(dataset.coords['time'])
+            self._spectral_indices = np.array(dataset.coords['spectral'])
+            self._file = filepath
         elif os.path.isfile(filepath):
             self._file = filepath
         elif os.path.isfile(absfilepath):
@@ -85,22 +88,22 @@ class ExplicitFile(object):
 
         f.close()
 
-    def write(self, filename, overwrite=False, comment="",
-              file_format="Time explicit", number_format="%.10e"):
+    def write(self, overwrite=False, comment="",
+              file_format="TimeExplicit", number_format="%.10e"):
         # TODO: write a more elegant method
 
-        if os.path.isfile(filename) and not overwrite:
-            print('File {} already exists'.format(os.path.isfile(filename)))
+        if os.path.isfile(self._file) and not overwrite:
+            print('File {} already exists'.format(os.path.isfile(self._file)))
             raise Exception("File already exist.")
 
         comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
 
-        if file_format == "Wavelength explicit":
+        if file_format == "WavelengthExplicit":
             wav = '\t'.join([repr(num) for num in self._spectral_indices])
             header = comments + "Wavelength explicit\nIntervalnr {}" \
                                 "".format(len(self._spectral_indices)) + "\n" + wav
             raw_data = np.vstack((self._times.T, self._observations)).T
-        elif file_format == "Time explicit":
+        elif file_format == "TimeExplicit":
             tim = '\t'.join([repr(num) for num in self._times])
             header = comments + "Time explicit\nIntervalnr {}" \
                                 "".format(len(self._times)) + "\n" + tim
@@ -108,7 +111,7 @@ class ExplicitFile(object):
         else:
             raise NotImplementedError
 
-        np.savetxt(filename, raw_data, fmt=number_format, delimiter='\t', newline='\n',
+        np.savetxt(self._file, raw_data, fmt=number_format, delimiter='\t', newline='\n',
                    header=header, footer='', comments='')
 
     def read(self):
@@ -300,7 +303,24 @@ def read_ascii_time_trace(fname: str) -> xr.Dataset:
         f.readline()  # Read second line with comments (and discard for now)
         data_file_format = get_data_file_format(f.readline())
 
-    data_file = WavelengthExplicitFile(fname) if data_file_format is \
+    data_file = WavelengthExplicitFile(filepath=fname) if data_file_format is \
         DataFileType.wavelength_explicit else TimeExplicitFile(fname)
 
     return data_file.read()
+
+
+def write_ascii_time_trace(filename: str,
+                           dataset: xr.DataArray,
+                           overwrite=False,
+                           comment="",
+                           file_format="TimeExplicit",
+                           number_format="%.10e"):
+    data_file = \
+        TimeExplicitFile(filepath=filename, dataset=dataset) if file_format is "TimeExplicit" \
+        else WavelengthExplicitFile(filepath=filename, dataset=dataset)
+    data_file.write(overwrite=overwrite,
+                    comment=comment,
+                    file_format=file_format,
+                    number_format=number_format)
+
+

@@ -7,7 +7,7 @@ from glotaran.models.spectral_temporal.spectral_matrix import calculate_spectral
 from .doas_matrix import _collect_oscillations
 
 
-def calculate_doas_spectral_matrix(dataset, axis):
+def calculate_doas_spectral_matrix(model, dataset, axis):
 
     oscillations = _collect_oscillations(dataset)
     all_oscillations = []

@@ -274,8 +274,8 @@ class FitResult:
                     np.array([clp[clp_labels.index(i)] if i in clp_labels else None
                               for i in dataset.coords['clp_label'].values])
 
-            if self.model.additional_penalty_function:
-                additionals = self.model.additional_penalty_function(
+            if callable(self.model._additional_penalty_function):
+                additionals = self.model._additional_penalty_function(
                     parameter, clp_labels, clp, matrix, parameter)
                 residual = np.concatenate((residual, additionals))
 
@@ -306,10 +306,10 @@ class FitResult:
 
             dataset['fitted_data'] = dataset.data - dataset.residual
 
-        if callable(self.model.finalize_result):
-            self.model.finalize_result(self)
+        if callable(self.model._finalize_result):
+            self.model._finalize_result(self)
 
-    def __str__(self):
+    def mprint(self, with_model=True):
         string = "# Fitresult\n\n"
 
         ll = 32
@@ -336,13 +336,13 @@ class FitResult:
         string += f"{self.nfree} |".rjust(lr)
         string += "\n"
         string += "Chi Square |".rjust(ll)
-        string += f"{self.chisqr:.6f} |".rjust(lr)
+        string += f"{self.chisqr:.2e} |".rjust(lr)
         string += "\n"
         string += "Reduced Chi Square |".rjust(ll)
-        string += f"{self.red_chisqr:.9f} |".rjust(lr)
+        string += f"{self.red_chisqr:.2e} |".rjust(lr)
         string += "\n"
-        string += "Root Mean Square Error".rjust(ll)
-        string += f"{self.root_mean_sqare_error:.9f} |".rjust(lr)
+        string += "Root Mean Square Error |".rjust(ll)
+        string += f"{self.root_mean_sqare_error:.2e} |".rjust(lr)
         string += "\n"
         #
         #  string += "\n"
@@ -350,4 +350,12 @@ class FitResult:
         #  string += f"{self.best_fit_parameter}"
         #  string += "\n"
 
+        if with_model:
+
+            string += "\n\n" + self.model.mprint(parameter=self.best_fit_parameter,
+                                                 initial=self.initial_parameter)
+
         return string
+
+    def __str__(self):
+        return self.mprint(with_model=False)

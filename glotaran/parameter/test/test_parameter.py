@@ -1,3 +1,5 @@
+import numpy as np
+
 from glotaran.parameter import ParameterGroup
 
 
@@ -35,7 +37,7 @@ def test_param_label():
 def test_param_options():
     params = """
     - ["5", 1, {non-negative: false, min: -1, max: 1, vary: false}]
-    - ["6", 4e2, {non-negativ: true, min: -7e2, max: 8e2, vary: true}]
+    - ["6", 4e2, {non-negative: true, min: -7e2, max: 8e2, vary: true}]
     - ["7", 2e4]
     """
 
@@ -54,7 +56,7 @@ def test_param_options():
     assert params.get("6").vary
 
     assert params.get("7").value == 2e4
-    assert params.get("7").non_neg
+    assert not params.get("7").non_neg
     assert params.get("7").min == float('-inf')
     assert params.get("7").max == float('inf')
     assert params.get("7").vary
@@ -114,3 +116,27 @@ def test_nested_param_group():
     assert len(list(group.all())) is 3
     assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 4)]
     assert [p.value for p in group.all()] == list(range(7, 10))
+
+
+def test_non_negative():
+
+    params = """
+    - ["neg", -1]
+    - ["negmax", -1, {max=0}]
+    - ["nonneg1", 1, {non-negative: True}]
+    - ["nonneg2", 2, {non-negative: True}]
+    - ["nonnegmin", 6, {non-negative: True, min: 2}]
+    """
+    params = ParameterGroup.from_yaml(params)
+    result = ParameterGroup.from_parameter_dict(params.as_parameter_dict())
+    print(params)
+    params.as_parameter_dict().pretty_print()
+    print(result)
+
+    for label, p in params.all_with_label():
+        print(label)
+        r = result.get(label)
+        assert r.non_neg == p.non_neg
+        assert np.allclose(r.value, p.value)
+        assert np.allclose(r.min, p.min)
+        assert np.allclose(r.max, p.max)

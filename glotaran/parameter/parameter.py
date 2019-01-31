@@ -1,7 +1,7 @@
 """This package contains glotarans parameter class"""
 
 import typing
-from math import isnan, exp
+import numpy as np
 
 from lmfit import Parameter as LmParameter
 
@@ -18,10 +18,10 @@ class Parameter(LmParameter):
     """Wrapper for lmfit parameter."""
     def __init__(self, label=None, full_label=None):
         self.index = -1
-        self._non_neg = True
+        self._non_neg = False
         self.label = label
         self.full_label = full_label
-        super(Parameter, self).__init__(user_data={'non_neg': True})
+        super(Parameter, self).__init__(user_data={'non_neg': self._non_neg})
 
     @classmethod
     def from_parameter(cls, label: str, parameter: LmParameter):
@@ -37,9 +37,11 @@ class Parameter(LmParameter):
         p = cls(label=label)
         p.vary = parameter.vary
         p.non_neg = parameter.user_data['non_neg']
-        p.value = exp(parameter.value) if p.non_neg else parameter.value
-        p.min = exp(parameter.min if p.non_neg else parameter.min)
-        p.max = exp(parameter.max if p.non_neg else parameter.max)
+        p.value = np.exp(parameter.value) if p.non_neg else parameter.value
+        p.min = \
+            np.exp(parameter.min) if p.non_neg and np.isfinite(parameter.min) else parameter.min
+        p.max = \
+            np.exp(parameter.max) if p.non_neg and np.isfinite(parameter.max) else parameter.max
         p.stderr = parameter.stderr
         return p
 
@@ -92,7 +94,7 @@ class Parameter(LmParameter):
     @property
     def label(self) -> str:
         """Label of the parameter"""
-        return self._label
+        return self._label if self._label else self.full_label
 
     @label.setter
     def label(self, label: str):
@@ -118,9 +120,6 @@ class Parameter(LmParameter):
 
         if isinstance(val, int):
             val = float(val)
-
-        if isnan(val):
-            self.vary = False
 
         LmParameter.value.fset(self, val)
 

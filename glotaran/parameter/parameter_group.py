@@ -340,12 +340,12 @@ class ParameterGroup(OrderedDict):
             p.name = "_" + label
             if p.non_neg:
                 p = copy.deepcopy(p)
-                if p.value == 1 or p.value == 0:
-                    p.value = 1e-10
-                if p.min == 1 or p.min == 0:
-                    p.min = 1e-10
-                if p.max == 1 or p.max == 0:
-                    p.max = 1e-10
+                if p.value == 1:
+                    p.value += 1e-10
+                if p.min == 1:
+                    p.min += 1e-10
+                if p.max == 1:
+                    p.max += 1e-10
                 else:
                     try:
                         p.value = log(p.value)

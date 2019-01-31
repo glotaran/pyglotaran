@@ -7,7 +7,7 @@ from kinetic_matrix_gaussian_irf import calc_kinetic_matrix_gaussian_irf
 from .irf import IrfGaussian, IrfMeasured
 
 
-def calculate_kinetic_matrix(dataset, index, axis):
+def calculate_kinetic_matrix(model, dataset, index, axis):
 
     compartments = None
     matrix = None

@@ -42,7 +42,7 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
             raise Exception(f"Missing data for dataset '{dataset_descriptor.label}'")
         axis = data[dataset_descriptor.label][model.estimated_axis].values
         for index in axis:
-            if model.allow_grouping:
+            if model._allow_grouping:
                 group_index = index if not any(_is_close(index, val, atol) for val in group) \
                     else [val for val in group if _is_close(index, val, atol)][0]
                 if group_index not in group:
@@ -127,9 +127,9 @@ def calculate_group_item(item,
 
     # Apply constraints
 
-    if model.constrain_calculated_matrix_function is not None:
+    if callable(model._constrain_calculated_matrix_function):
         (full_clp, full_matrix) = \
-            model.constrain_calculated_matrix_function(parameter, full_clp, full_matrix, index)
+            model._constrain_calculated_matrix_function(parameter, full_clp, full_matrix, index)
 
     return (full_clp, full_matrix)
 

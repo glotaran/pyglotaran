@@ -1,86 +1,14 @@
 """This package contains the glotaran model item decorator."""
 
-from typing import Dict, List
+import typing
 import inspect
-import functools
 from dataclasses import dataclass, replace
 
+import glotaran
 from glotaran.parameter import Parameter, ParameterGroup
 
 from .model_item_validator import Validator
-
-
-def _is_list_type(item_class):
-    return issubclass(item_class.__origin__, List) if \
-        hasattr(item_class, '__origin__') else False
-
-
-def _is_dict(item_class):
-    return issubclass(item_class.__origin__, Dict) if \
-        hasattr(item_class, '__origin__') else False
-
-
-def is_item_or_list_of(item_class):
-    if not isinstance(item_class, type):
-        return False
-    islist = _is_list_type(item_class)
-    if islist:
-        item_class = item_class.__args__[0]
-    return hasattr(item_class, "_glotaran_model_item")
-
-
-def item_or_list_to_arg(name, item, item_class):
-    islist = _is_list_type(item_class)
-    if islist:
-        item_class = item_class.__args__[0]
-    if item_class is Parameter:
-        if islist:
-            item = [Parameter(full_label=i) for i in item]
-        else:
-            item = Parameter(full_label=item)
-    elif hasattr(item_class, "_glotaran_model_item"):
-        if not islist:
-            item = item_to_param(name, item, item_class)
-        else:
-            item = [item_to_param(name, i, item_class) for i in item]
-    elif _is_dict(item_class):
-        v_class = item_class.__args__[1]
-        islist = _is_list_type(v_class)
-        if islist:
-            v_class = v_class.__args__[0]
-        if v_class is Parameter:
-            for k, v in item.items():
-                item[k] = Parameter(full_label=v)
-    return item
-
-
-def item_to_param(name, item, item_class):
-    is_typed = hasattr(item_class, "_glotaran_model_item_typed")
-    if isinstance(item, dict):
-        if is_typed:
-            if 'type' not in item:
-                raise Exception(f"Missing type for attribute '{name}'")
-            item_type = item['type']
-
-            if item_type not in item_class._glotaran_model_item_types:
-                raise Exception(f"Unknown type '{item_type}' "
-                                f"for attribute '{name}'")
-            item_class = \
-                item_class._glotaran_model_item_types[item_type]
-        return item_class.from_dict(item)
-    else:
-        if is_typed:
-            if len(item) < 2 and len(item) is not 1:
-                raise Exception(f"Missing type for attribute '{name}'")
-            item_type = item[1] if len(item) is not 1 and \
-                hasattr(item_class, 'label') else item[0]
-
-            if item_type not in item_class._glotaran_model_item_types:
-                raise Exception(f"Unknown type '{item_type}' "
-                                f"for attribute '{name}'")
-            item_class = \
-                item_class._glotaran_model_item_types[item_type]
-        return item_class.from_list(item)
+from .util import item_or_list_to_arg, wrap_func_as_method
 
 
 def model_item(attributes={},
@@ -154,116 +82,18 @@ def model_item(attributes={},
                     getattr(cls, '_glotaran_attributes').copy())
         for name, opts in attributes.items():
             getattr(cls, '_glotaran_attributes')[name] = opts
-        # now we want nice class methods for serializing
 
-        @classmethod
-        def from_dict(ncls, item_dict):
-            params = inspect.signature(ncls.__init__).parameters
-            args = []
-            for name, param in params.items():
-                if name == "self":
-                    continue
-                if name not in item_dict:
-                    if name not in getattr(ncls, '_glotaran_attribute_defaults'):
-                        raise Exception(f"Missing parameter '{name} for item "
-                                        f"'{ncls.__name__}'")
-                    args.append(getattr(ncls, '_glotaran_attribute_defaults')[name])
-                else:
-                    item = item_dict[name]
-                    item_class = param.annotation
-                    args.append(item_or_list_to_arg(name, item, item_class))
-
-            return ncls(*args)
-
+        from_dict = _create_from_dict_func(cls)
         setattr(cls, 'from_dict', from_dict)
 
-        @classmethod
-        def from_list(ncls, item_list):
-            names = [n for n in
-                     inspect.signature(ncls.__init__).parameters if not n == "self"]
-            params = [p for _, p in
-                      inspect.signature(ncls.__init__).parameters.items()]
-            # params contains 'self'
-            params = params[1:]
-            if len(item_list) is not len(params):
-                raise Exception(f"To few or much parameters for '{ncls.__name__}'"
-                                f"\nGot: {item_list}\nWant: {names}")
-
-            for i in range(len(item_list)):
-                item_class = params[i].annotation
-                item_list[i] = item_or_list_to_arg(names[i], item_list[i], item_class)
-
-            return ncls(*item_list)
-
+        from_list = _create_from_list_func(cls)
         setattr(cls, 'from_list', from_list)
 
-        validator = Validator(cls)
+        val_model, val_parameter = _create_validation_funcs(cls)
+        setattr(cls, 'missing_model_items', val_model)
+        setattr(cls, 'missing_parameter', val_parameter)
 
-        def val_model(self, model, errors=[], validator=validator):
-            return validator.val_model(self, model, errors)
-
-        setattr(cls, 'validate_model', val_model)
-
-        def val_parameter(self, model, parameter, errors=[],
-                          validator=validator):
-            return validator.val_parameter(self, model, parameter, errors)
-        setattr(cls, 'validate_parameter', val_parameter)
-
-        def fill(self, model, parameter):
-
-            def convert_list_or_scalar(item):
-                if isinstance(item, list):
-                    return [convert(i) for i in item]
-                return convert(item)
-
-            def convert(item, target=None):
-                if isinstance(item, dict):
-                    cp = item.copy()
-                    for k, v in item.items():
-                        if isinstance(v, list):
-                            cp[k] = [convert(i) for i in v]
-                        else:
-                            cp[k] = convert(v)
-                    item = cp
-                elif hasattr(item, "_glotaran_model_item"):
-                    item = item.fill(model, parameter)
-                elif isinstance(item, Parameter):
-                    item = parameter.get(item.full_label).value
-                return item
-
-            def fill_item_or_list(item, attr):
-                model_attr = getattr(model, attr)
-                if isinstance(item, list):
-                    return [model_attr[i].fill(model, parameter) for i in item]
-                return model_attr[item].fill(model, parameter)
-
-            replaced = {}
-            attrs = getattr(self, '_glotaran_attributes')
-            for attr, opts in attrs.items():
-                item = getattr(self, attr)
-                if item is None:
-                    continue
-                if 'target' in opts:
-                    target = opts['target']
-                    if isinstance(target, tuple):
-                        target = target[1]
-                        nitem = {}
-                        for k, v in item.items():
-                            if target == 'parameter':
-                                nitem[k] = convert_list_or_scalar(v)
-                            else:
-                                nitem[k] = fill_item_or_list(v, target)
-                        item = nitem
-
-                elif hasattr(model, attr):
-                    if attr == 'compartment':
-                        continue
-                    item = fill_item_or_list(item, attr)
-                else:
-                    item = convert_list_or_scalar(item)
-                replaced[attr] = item
-            return replace(self, **replaced)
-
+        fill = _create_fill_func(cls)
         setattr(cls, 'fill', fill)
 
         mprint = _create_mprint_func(cls)
@@ -275,7 +105,7 @@ def model_item(attributes={},
     return decorator
 
 
-def model_item_typed(types: Dict[str, any] = {}, no_label=False):
+def model_item_typed(types: typing.Dict[str, any] = {}, no_label=False):
     """The model_item_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class an item when there
     are multiple variants. See package glotaran.model.compartment_constraints
@@ -300,9 +130,186 @@ def model_item_typed(types: Dict[str, any] = {}, no_label=False):
     return decorator
 
 
+def _create_from_dict_func(cls):
+
+        @classmethod
+        @wrap_func_as_method(cls)
+        def from_list(ncls, values: typing.Dict) -> cls:
+            f"""Creates an instance of {cls.__name__} from a dictonary of values.
+
+            Intended only for internal use.
+
+            Parameters
+            ----------
+            values :
+                A list of values.
+            """
+            params = inspect.signature(ncls.__init__).parameters
+            args = []
+            for name, param in params.items():
+                if name == "self":
+                    continue
+                if name not in values:
+                    if name not in getattr(ncls, '_glotaran_attribute_defaults'):
+                        raise Exception(f"Missing parameter '{name} for item "
+                                        f"'{ncls.__name__}'")
+                    args.append(getattr(ncls, '_glotaran_attribute_defaults')[name])
+                else:
+                    item = values[name]
+                    item_class = param.annotation
+                    item = item_or_list_to_arg(name, item, item_class)
+                    args.append(item)
+
+            return ncls(*args)
+        return from_list
+
+
+def _create_from_list_func(cls):
+
+        @classmethod
+        @wrap_func_as_method(cls)
+        def from_list(ncls, values: typing.List) -> cls:
+            f"""Creates an instance of {cls.__name__} from a list of values. Intended only for internal use.
+
+            Parameters
+            ----------
+            values :
+                A list of values.
+            """
+            names = [n for n in
+                     inspect.signature(ncls.__init__).parameters if not n == "self"]
+            params = [p for _, p in
+                      inspect.signature(ncls.__init__).parameters.items()]
+            # params contains 'self'
+            params = params[1:]
+            if len(values) is not len(params):
+                raise Exception(f"To few or much parameters for '{ncls.__name__}'"
+                                f"\nGot: {values}\nWant: {names}")
+
+            for i in range(len(values)):
+                item_class = params[i].annotation
+                values[i] = item_or_list_to_arg(names[i], values[i], item_class)
+
+            return ncls(*values)
+        return from_list
+
+
+def _create_validation_funcs(cls):
+
+    validator = Validator(cls)
+
+    @wrap_func_as_method(cls)
+    def missing_model_items(self, model: 'glotaran.model.BaseModel',
+                            missing: typing.List[str] = []) -> typing.List[str]:
+        f"""Creates a list of model items needed by this instance of {cls.__name__} not present in a model.
+
+        Parameters
+        ----------
+        model :
+            The model to validate.
+        missing :
+            A list the missing will be appended to.
+        """
+        return validator.val_model(self, model, missing)
+
+    @wrap_func_as_method(cls)
+    def missing_parameter(self, model: 'glotaran.model.BaseModel',
+                          parameter: ParameterGroup,
+                          missing: typing.List[str] = []) -> typing.List[str]:
+        f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
+        set of parameters.
+
+        Parameters
+        ----------
+        model :
+            The model to validate.
+        parameter :
+            The parameter to validate.
+        missing :
+            A list the missing will be appended to.
+        """
+
+        return validator.val_parameter(self, model, parameter, missing)
+
+    return missing_model_items, missing_parameter
+
+
+def _create_fill_func(cls):
+
+    @wrap_func_as_method(cls)
+    def fill(self, model: 'glotaran.model.BaseModel', parameter: ParameterGroup) -> cls:
+        """Returns a copy of the {cls._name} instance with all members which are Parameters are
+        replaced by the value of the corresponding parameter in the parameter group.
+
+        Parameters
+        ----------
+        model :
+            A glotaran model.
+        parameter : ParameterGroup
+            The parameter group to fill from.
+        """
+
+        def convert_list_or_scalar(item):
+            if isinstance(item, list):
+                return [convert(i) for i in item]
+            return convert(item)
+
+        def convert(item, target=None):
+            if isinstance(item, dict):
+                cp = item.copy()
+                for k, v in item.items():
+                    if isinstance(v, list):
+                        cp[k] = [convert(i) for i in v]
+                    else:
+                        cp[k] = convert(v)
+                item = cp
+            elif hasattr(item, "_glotaran_model_item"):
+                item = item.fill(model, parameter)
+            elif isinstance(item, Parameter):
+                item = parameter.get(item.full_label).value
+            return item
+
+        def fill_item_or_list(item, attr):
+            model_attr = getattr(model, attr)
+            if isinstance(item, list):
+                return [model_attr[i].fill(model, parameter) for i in item]
+            return model_attr[item].fill(model, parameter)
+
+        replaced = {}
+        attrs = getattr(self, '_glotaran_attributes')
+        for attr, opts in attrs.items():
+            item = getattr(self, attr)
+            if item is None:
+                continue
+            if 'target' in opts:
+                target = opts['target']
+                if isinstance(target, tuple):
+                    target = target[1]
+                    nitem = {}
+                    for k, v in item.items():
+                        if target == 'parameter':
+                            nitem[k] = convert_list_or_scalar(v)
+                        else:
+                            nitem[k] = fill_item_or_list(v, target)
+                    item = nitem
+
+            elif hasattr(model, attr):
+                if attr == 'compartment':
+                    continue
+                item = fill_item_or_list(item, attr)
+            else:
+                item = convert_list_or_scalar(item)
+            replaced[attr] = item
+        return replace(self, **replaced)
+    return fill
+
+
 def _create_mprint_func(cls):
 
-    def mprint_item(self, parameter: ParameterGroup = None, initial: ParameterGroup = None):
+    @wrap_func_as_method(cls, name='mprint')
+    def mprint_item(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+        f'''Returns a string with the {cls.__name__} formatted in markdown.'''
+
         s = "\n"
         if self._glotaran_has_label:
             s = f"**{self.label}**"
@@ -354,15 +361,4 @@ def _create_mprint_func(cls):
             attrs.append(a)
         s += "\n".join(attrs)
         return s
-
-    mprint_item.__annotations__ = {
-        'return': str,
-    }
-    mprint_item.__name__ = 'mprint'
-    mprint_item.__qualname__ = cls.__qualname__ + '.' + mprint_item.__name__
-    mprint_item.__module__ = cls.__module__
-    mprint_item.__doc__ = f'''
-    Returns a string with the item formatted in markdown.
-    '''
-
     return mprint_item
