@@ -7,15 +7,20 @@ from kinetic_matrix_gaussian_irf import calc_kinetic_matrix_gaussian_irf
 from .irf import IrfGaussian, IrfMeasured
 
 
-def calculate_kinetic_matrix(model, dataset, index, axis):
+def calculate_kinetic_matrix(dataset, index, axis):
 
     compartments = None
     matrix = None
+    k_matrices = dataset.get_k_matrices()
+
+    if len(k_matrices) == 0:
+        return (None, None)
 
     if dataset.initial_concentration is None:
         raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
     initial_concentration = dataset.initial_concentration.normalized(dataset)
-    for _, k_matrix in dataset.get_k_matrices():
+
+    for k_matrix in k_matrices:
 
         if k_matrix is None:
             continue

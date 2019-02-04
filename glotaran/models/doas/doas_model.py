@@ -7,7 +7,7 @@ from glotaran.models.spectral_temporal.kinetic_model import (
     spectral_constraint_penalty
 )
 
-from .doas_fit_result import finalize_doas_result
+from .doas_result import finalize_doas_result
 from .doas_megacomplex import DOASMegacomplex
 from .doas_matrix import calculate_doas_matrix
 from .doas_spectral_matrix import calculate_doas_spectral_matrix

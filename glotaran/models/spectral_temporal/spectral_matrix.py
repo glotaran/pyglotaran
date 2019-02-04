@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def calculate_spectral_matrix(model, dataset, axis):
+def calculate_spectral_matrix(dataset, axis):
     """ Calculates the matrix.
 
     Parameters
@@ -20,12 +20,12 @@ def calculate_spectral_matrix(model, dataset, axis):
     """
     if dataset.initial_concentration is None:
         return None
-    shape_compartments = [s for s in dataset.shapes]
+    shape_compartments = [s for s in dataset.shape]
     compartments = [c for c in dataset.initial_concentration.compartments
                     if c in shape_compartments]
     matrix = np.zeros((len(compartments), axis.size))
     for i, comp in enumerate(compartments):
-        shapes = dataset.shapes[comp]
+        shapes = dataset.shape[comp]
         if not isinstance(shapes, list):
             shapes = [shapes]
         for shape in shapes:

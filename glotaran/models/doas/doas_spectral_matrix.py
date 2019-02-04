@@ -7,7 +7,7 @@ from glotaran.models.spectral_temporal.spectral_matrix import calculate_spectral
 from .doas_matrix import _collect_oscillations
 
 
-def calculate_doas_spectral_matrix(model, dataset, axis):
+def calculate_doas_spectral_matrix(dataset, axis):
 
     oscillations = _collect_oscillations(dataset)
     all_oscillations = []
@@ -16,9 +16,9 @@ def calculate_doas_spectral_matrix(model, dataset, axis):
         all_oscillations.append(osc)
     matrix = np.ones((len(all_oscillations), axis.size), dtype=np.float64)
     for i, osc in enumerate(all_oscillations):
-        if osc.label not in dataset.shapes:
+        if osc.label not in dataset.shape:
             raise Exception(f'No shape for oscillation "{osc.label}"')
-        shapes = dataset.shapes[osc.label]
+        shapes = dataset.shape[osc.label]
         if not isinstance(shapes, list):
             shapes = [shapes]
         for shape in shapes:

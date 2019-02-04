@@ -17,7 +17,7 @@ class IrfException(Exception):
 
 
 @model_item(properties={
-    'irfdata': {'type': np.ndarray, 'default': None},
+    'irfdata': {'type': np.ndarray, 'allow_none': True},
 }, has_type=True)
 class IrfMeasured:
     """A measured IRF."""
@@ -26,16 +26,16 @@ class IrfMeasured:
 @model_item(properties={
     'center': List[Parameter],
     'width': List[Parameter],
-    'dispersion_center': {'type': Parameter, 'default': None},
+    'dispersion_center': {'type': Parameter, 'allow_none': True},
     'center_dispersion': {'type': List[Parameter], 'default': []},
     'width_dispersion': {'type': List[Parameter], 'default': []},
-    'scale': {'type': List[Parameter], 'default': None},
+    'scale': {'type': List[Parameter], 'allow_none': True},
     'model_dispersion_with_wavenumber': {'type': bool, 'default': False},
     'normalize': {'type': bool, 'default': False},
     'backsweep': {'type': bool, 'default': False},
-    'backsweep_period': {'type': Parameter, 'default': None},
+    'backsweep_period': {'type': Parameter, 'allow_none': True},
     'coherent_artifact': {'type': bool, 'default': False},
-    'coherent_artifact_order': {'type': int, 'default': 1},
+    'coherent_artifact_order': {'type': int, 'allow_none': True},
 }, has_type=True)
 class IrfGaussian:
     """

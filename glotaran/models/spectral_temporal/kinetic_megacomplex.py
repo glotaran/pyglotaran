@@ -8,7 +8,7 @@ from glotaran.parameter import Parameter
 
 @model_item(properties={
     'k_matrix': {'type': List[str], 'default': []},
-    'scale': {'type': Parameter, 'default': None},
+    'scale': {'type': Parameter, 'allow_none': True},
 })
 class KineticMegacomplex:
     """A Megacomplex with one or more K-Matrices."""

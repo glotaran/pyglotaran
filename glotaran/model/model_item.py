@@ -145,7 +145,7 @@ def _create_from_dict_func(cls):
 
             for name in ncls._glotaran_properties:
                 if name not in values:
-                    if not getattr(ncls, name).allow_none and not getattr(item, name):
+                    if not getattr(ncls, name).allow_none and getattr(item, name) is None:
                         raise Exception(f"Missing Property '{name}' For Item '{ncls.__name__}'")
                 else:
                     setattr(item, name, values[name])
@@ -218,7 +218,7 @@ def _create_fill_func(cls):
         parameter : ParameterGroup
             The parameter group to fill from.
         """
-        item = copy.copy(self)
+        item = copy.deepcopy(self)
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)

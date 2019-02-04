@@ -14,6 +14,9 @@ def finalize_kinetic_result(model, result: Result):
 
         dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
 
+        if not dataset_descriptor.get_k_matrices():
+            continue
+
         # get_sas
 
         dataset.coords['species'] = dataset_descriptor.initial_concentration.compartments

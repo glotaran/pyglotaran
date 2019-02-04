@@ -1,7 +1,7 @@
 """This package contains the intial concentration item."""
-from dataclasses import replace
 
-from typing import List
+import copy
+import typing
 import numpy as np
 
 from glotaran.model import model_item, DatasetDescriptor
@@ -10,9 +10,9 @@ from glotaran.parameter import Parameter
 
 @model_item(
     properties={
-        'compartments': List[str],
-        'parameters': List[Parameter],
-        'exclude_from_normalize': {'type': List[str], 'default': []},
+        'compartments': typing.List[str],
+        'parameters': typing.List[Parameter],
+        'exclude_from_normalize': {'type': typing.List[str], 'default': []},
     }
 )
 class InitialConcentration:
@@ -27,4 +27,7 @@ class InitialConcentration:
             parameters = np.multiply(parameters, scale)
         idx = [c not in self.exclude_from_normalize for c in self.compartments]
         parameters[idx] /= np.sum(parameters[idx])
-        return replace(self, parameters=parameters)
+        new = copy.deepcopy(self)
+        for i, value in enumerate(parameters):
+            new.parameters[i].value = value
+        return new

@@ -19,7 +19,7 @@ class ModelProperty(property):
             if value is None and not self._allow_none:
                 raise Exception(
                     f"Property '{name}' of '{cls.__name__}' is not allowed to set to None.")
-            if self._is_parameter:
+            if self._is_parameter and value is not None:
                 if self._is_parameter_value and isinstance(value, str):
                     value = Parameter(full_label=value)
                 elif self._is_parameter_list and all(isinstance(v, str) for v in value):
@@ -44,10 +44,17 @@ class ModelProperty(property):
 
     def validate(self, value, model, parameter=None) -> typing.List[str]:
 
+        if value is None and self.allow_none:
+            return []
+
         missing_model = []
         if hasattr(model, self._name):
             if isinstance(value, list):
                 for item in value:
+                    if item not in getattr(model, self._name):
+                        missing_model.append((self._name, item))
+            elif isinstance(value, dict):
+                for item in value.values():
                     if item not in getattr(model, self._name):
                         missing_model.append((self._name, item))
             else:
@@ -75,7 +82,10 @@ class ModelProperty(property):
 
     def fill(self, value, model, parameter):
 
-        if self._is_parameter and value is not None:
+        if value is None:
+            return None
+
+        if self._is_parameter:
 
             if self._is_parameter_value:
                 value.set_from_group(parameter)
@@ -91,6 +101,10 @@ class ModelProperty(property):
         elif hasattr(model, self._name):
             if isinstance(value, list):
                 value = [getattr(model, self._name)[v].fill(model, parameter) for v in value]
+            elif isinstance(value, dict):
+                value = \
+                    {k: getattr(model, self._name)[v].fill(model, parameter)
+                     for (k, v) in value.items()}
             else:
                 value = getattr(model, self._name)[value].fill(model, parameter)
 
