@@ -1,14 +1,13 @@
 """This package contains compartment constraint items."""
 
 import typing
-import numpy as np
 
 from glotaran.model import model_item, model_item_typed
 from glotaran.parameter import Parameter
 
 
 @model_item(
-    attributes={
+    properties={
         'compartment': str,
         'interval': typing.List[typing.Tuple[float, float]],
     }, has_type=True, no_label=True)
@@ -36,7 +35,7 @@ class OnlyConstraint:
 
 
 @model_item(
-    attributes={
+    properties={
         'compartment': str,
         'interval': typing.List[typing.Tuple[float, float]],
     }, has_type=True, no_label=True)
@@ -63,7 +62,7 @@ class ZeroConstraint:
         return any([applies(i) for i in self.interval])
 
 
-@model_item(attributes={
+@model_item(properties={
     'target': str,
     'parameter': Parameter,
     'weight': str,

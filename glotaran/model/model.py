@@ -1,170 +1,262 @@
+"""This package contains glotarans base model."""
+
+
 import typing
+import numpy as np
+import xarray as xr
 
-from glotaran.parse.register import register_model
-
-from .dataset_descriptor import DatasetDescriptor
-from .util import wrap_func_as_method
-
-
-def model(name,
-          attributes={},
-          dataset_type=DatasetDescriptor,
-          megacomplex_type=None,
-          calculated_matrix=None,
-          estimated_matrix=None,
-          calculated_axis=None,
-          estimated_axis=None,
-          constrain_calculated_matrix_function=None,
-          additional_penalty_function=None,
-          finalize_result_function=None,
-          allow_grouping=True,
-          ):
-
-    def decorator(cls):
-
-        setattr(cls, '_model_type', name)
-        setattr(cls, '_finalize_result', finalize_result_function)
-        setattr(cls, '_constrain_calculated_matrix_function',
-                constrain_calculated_matrix_function)
-        setattr(cls, '_additional_penalty_function',
-                additional_penalty_function)
-        setattr(cls, '_allow_grouping', allow_grouping)
-
-        if calculated_matrix:
-            c_mat = wrap_func_as_method(cls, name='calculated_matrix')(calculated_matrix)
-            setattr(cls, 'calculated_matrix', c_mat)
-        setattr(cls, 'calculated_axis', calculated_axis)
-
-        if estimated_matrix:
-            e_mat = wrap_func_as_method(cls, name='estimated_matrix')(estimated_matrix)
-            setattr(cls, 'estimated_matrix', e_mat)
-        setattr(cls, 'estimated_axis', estimated_axis)
-
-        if not hasattr(cls, '_glotaran_model_attributes'):
-            setattr(cls, '_glotaran_model_attributes', {})
-        else:
-            setattr(cls, '_glotaran_model_attributes',
-                    getattr(cls, '_glotaran_model_attributes').copy())
-
-        attributes['megacomplex'] = megacomplex_type
-        attributes['dataset'] = dataset_type
-
-        # Set annotations and methods for attributes
-
-        for attr_name, attr_type in attributes.items():
-            getattr(cls, '_glotaran_model_attributes')[attr_name] = None
-
-            attr_prop = _create_property_for_attribute(cls, attr_name, attr_type)
-            setattr(cls, attr_name, attr_prop)
-
-            if getattr(attr_type, '_glotaran_has_label'):
-                get_item = _create_get_func(cls, attr_name, attr_type)
-                setattr(cls, get_item.__name__, get_item)
-                set_item = _create_set_func(cls, attr_name, attr_type)
-                setattr(cls, set_item.__name__, set_item)
-
-            else:
-                add_item = _create_add_func(cls, attr_name, attr_type)
-                setattr(cls, add_item.__name__, add_item)
-                setattr(cls, attr_name, [])
-
-        init = _create_init_func(cls, attributes)
-        setattr(cls, '__init__', init)
-
-        register_model(name, cls)
-
-        return cls
-
-    return decorator
+from glotaran.analysis.fitresult import FitResult
+from glotaran.analysis.simulation import simulate
+from glotaran.parameter import ParameterGroup
 
 
-def _create_init_func(cls, attributes):
+class Model:
+    """Model contains basic functions for model."""
 
-    @wrap_func_as_method(cls)
-    def __init__(self):
-        for attr_name, attr_item in attributes.items():
-            if getattr(attr_item, '_glotaran_has_label'):
-                setattr(self, f'_{attr_name}', {})
-            else:
-                setattr(self, f'_{attr_name}', [])
-        super(cls, self).__init__()
-
-    return __init__
-
-
-def _create_add_func(cls, name, type):
-
-    @wrap_func_as_method(cls, name=f'add_{name}')
-    def add_item(self, item: type):
-        f'''Adds an `{type.__name__}` object.
+    @classmethod
+    def from_dict(cls, model_dict: typing.Dict) -> typing.Type['BaseModel']:
+        """Creates a model from a dictionary.
 
         Parameters
         ----------
-        item :
-            The `{type.__name__}` item.
-        '''
+        model_dict :
+            Dictionary containing the model.
+        """
 
-        if not isinstance(item, type):
-            if not hasattr(type, "_glotaran_model_item_typed") or \
-               not isinstance(item, tuple(getattr(type, '_glotaran_model_item_types').values())):
-                raise TypeError
-        getattr(self, f'_{name}').append(item)
+        model = cls()
 
-    return add_item
+        # iterate over items
+        for name, attribute in list(model_dict.items()):
 
+            # we determine if we the item is known by the model by looking for
+            # a setter with same name.
 
-def _create_get_func(cls, name, type):
+            if hasattr(model, f'set_{name}'):
 
-    @wrap_func_as_method(cls, name=f'get_{name}')
-    def get_item(self, label: str) -> type:
-        f'''
-        Returns the `{type.__name__}` object with the given label.
+                # get the set function
+                set = getattr(model, f'set_{name}')
 
-        Parameters
-        ----------
-        label :
-            The label of the `{type.__name__}` object.
-        '''
-        return getattr(self, f'_{name}')[label]
+                # we retrieve the actual class from the signature
+                for label, item in attribute.items():
+                    item_cls = set.__func__.__annotations__['item']
+                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+                    if isinstance(item, dict):
+                        if is_typed:
+                            if 'type' not in item:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item['type']
 
-    return get_item
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
+                        item['label'] = label
+                        set(label, item_cls.from_dict(item))
+                    elif isinstance(item, list):
+                        if is_typed:
+                            if len(item) < 2 and len(item) is not 1:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item[1] if len(item) is not 1 and \
+                                hasattr(item_cls, 'label') else item[0]
 
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
+                        item = [label] + item
+                        set(label, item_cls.from_list(item))
+                del model_dict[name]
 
-def _create_set_func(cls, name, type):
+            elif hasattr(model, f'add_{name}'):
 
-    @wrap_func_as_method(cls, name=f'set_{name}')
-    def set_item(self, label: str, item: type):
-        f'''
-        Sets the `{type.__name__}` object with the given label with to the item.
+                # get the set function
+                add = getattr(model, f'add_{name}')
 
-        Parameters
-        ----------
-        label :
-            The label of the `{type.__name__}` object.
-        item :
-            The `{type.__name__}` item.
-        '''
+                # we retrieve the actual class from the signature
+                for item in attribute:
+                    item_cls = add.__func__.__annotations__['item']
+                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+                    if isinstance(item, dict):
+                        if is_typed:
+                            if 'type' not in item:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item['type']
 
-        if not isinstance(item, type):
-            if not hasattr(type, "_glotaran_model_item_typed") or \
-               not isinstance(item, tuple(getattr(type, '_glotaran_model_item_types').values())):
-                raise TypeError
-        getattr(self, f'_{name}')[label] = item
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
+                        add(item_cls.from_dict(item))
+                    elif isinstance(item, list):
+                        if is_typed:
+                            if len(item) < 2 and len(item) is not 1:
+                                raise Exception(f"Missing type for attribute '{name}'")
+                            item_type = item[1] if len(item) is not 1 and \
+                                hasattr(item_cls, 'label') else item[0]
 
-    return set_item
+                            if item_type not in item_cls._glotaran_model_item_types:
+                                raise Exception(f"Unknown type '{item_type}' "
+                                                f"for attribute '{name}'")
+                            item_cls = \
+                                item_cls._glotaran_model_item_types[item_type]
+                        add(item_cls.from_list(item))
+                del model_dict[name]
 
-
-def _create_property_for_attribute(cls, name, type):
-
-    return_type = typing.Dict[str, type] if hasattr(type, '_glotaran_has_label') \
-            else typing.List[type]
-
-    doc_type = 'dictonary' if hasattr(type, '_glotaran_has_label') else 'list'
+        return model
 
     @property
-    @wrap_func_as_method(cls, name=f'{name}')
-    def attribute(self) -> return_type:
-        f'''A {doc_type} containing {type.__name__}'''
-        return getattr(self, f'_{name}')
+    def model_type(self) -> str:
+        """The type of the model."""
+        return self._model_type
 
-    return attribute
+    def simulate(self,
+                 dataset: str,
+                 parameter: ParameterGroup,
+                 axis: typing.Dict[str, np.ndarray],
+                 noise: bool = False,
+                 noise_std_dev: float = 1.0,
+                 noise_seed: int = None,
+                 ) -> xr.Dataset:
+        """Simulates the model.
+
+        Parameters
+        ----------
+        dataset :
+            Label of the dataset to simulate
+        parameter :
+            The parameters for the simulation.
+        axis : Dict[str, np.ndarray]
+            A dictory with axis
+        noise :
+            If `True` noise is added to the simulated data.
+        noise_std_dev :
+            the standart deviation of the noise.
+        noise_seed :
+            Seed for the noise.
+        """
+        return simulate(self, parameter, dataset, axis, noise=noise,
+                        noise_std_dev=noise_std_dev, noise_seed=noise_seed)
+
+    def optimize(self,
+                 parameter: ParameterGroup,
+                 data: typing.Dict[str, typing.Union[xr.Dataset, xr.DataArray]],
+                 nnls: bool = False,
+                 verbose: bool = True,
+                 max_nfev: int = None,
+                 group_atol: int = 0,
+                 ) -> FitResult:
+        """Optimizes the parameter for this model.
+
+        Parameters
+        ----------
+        data :
+            A dictonary containing all datasets with their labels as keys.
+        parameter : glotaran.model.ParameterGroup
+            The parameter,
+        nnls :
+            (default = False)
+            If `True` non-linear least squaes optimizing is used instead of variable projection.
+        verbose :
+            (default = True)
+            If `True` feedback is printed at every iteration.
+        max_nfev :
+            (default = None)
+            Maximum number of function evaluations. `None` for unlimited.
+        group_atol :
+            (default = 0)
+            The tolerance for grouping datasets along the estimated axis.
+
+        """
+        result = FitResult(self, data, parameter, nnls, atol=group_atol)
+        result.optimize(verbose=verbose, max_nfev=max_nfev)
+        return result
+
+    def result_from_parameter(self,
+                              parameter: ParameterGroup,
+                              data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
+                              nnls: bool = False, group_atol: float = 0.0
+                              )-> FitResult:
+        """Loads a result from parameters without going any optimization.
+
+        Parameters
+        ----------
+        data :
+            A dictonary containing all datasets with their labels as keys.
+        parameter : glotaran.model.ParameterGroup
+            The parameter,
+        nnls :
+            (default = False)
+            If `True` non-linear least squaes optimizing is used instead of variable projection.
+        verbose :
+            (default = True)
+            If `True` feedback is printed at every iteration.
+        max_nfev :
+            (default = None)
+            Maximum number of function evaluations. `None` for unlimited.
+        group_atol :
+            (default = 0)
+            The tolerance for grouping datasets along the estimated axis.
+
+        """
+        return FitResult.from_parameter(self, data, parameter, nnls, group_atol)
+
+    def validate(self, parameter: ParameterGroup = None) -> typing.List[str]:
+        """Returns a list of errors in the model."""
+        attrs = getattr(self, '_glotaran_model_attributes')
+
+        errors = []
+
+        for attr in attrs:
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    errors += item.validate(self, parameter=parameter)
+            else:
+                for _, item in attr.items():
+                    errors += item.validate(self, parameter=parameter)
+
+        return errors
+
+    def valid(self, parameter: ParameterGroup = None) -> bool:
+        """Checks the model for errors.  """
+        return len(self.validate(parameter)) is 0
+
+    def mprint(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+        """Formats the model as Markdown string.
+
+        Parameters will be included if given.
+
+        Parameters
+        ----------
+        parameter :
+            Parameter to include.
+        initial : ParameterGroup
+            Initial values por the parameters.
+        """
+        attrs = getattr(self, '_glotaran_model_attributes')
+        string = "# Model\n\n"
+        string += f"_Type_: {self.model_type}\n\n"
+
+        for attr in attrs:
+            items = getattr(self, attr)
+            if not items:
+                continue
+
+            string += f"## {attr.replace('_', ' ').title()}\n"
+            string += "\n"
+
+            if isinstance(items, dict):
+                items = items.values()
+            for item in items:
+                item_str = item.mprint(parameter=parameter, initial=initial).split('\n')
+                string += f'* {item_str[0]}\n'
+                for s in item_str[1:]:
+                    string += f"  {s}\n"
+            string += "\n"
+        return string
+
+    def __str__(self):
+        return self.mprint()

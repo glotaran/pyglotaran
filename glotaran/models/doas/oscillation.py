@@ -5,7 +5,7 @@ from glotaran.parameter import Parameter
 
 
 @model_item(
-    attributes={
+    properties={
         'frequency': Parameter,
         'rate': Parameter,
     })

@@ -9,7 +9,7 @@ from glotaran.parameter import Parameter
 
 
 @model_item(
-    attributes={
+    properties={
         'compartments': List[str],
         'parameters': List[Parameter],
         'exclude_from_normalize': {'type': List[str], 'default': []},

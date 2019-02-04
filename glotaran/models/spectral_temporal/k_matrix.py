@@ -13,7 +13,7 @@ from .initial_concentration import InitialConcentration
 
 
 @model_item(
-    attributes={
+    properties={
         'matrix': {'type': Dict[Tuple[str, str], Parameter]},
     },
 )

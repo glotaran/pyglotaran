@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple
 import pytest
 
 from glotaran.model import (
-    BaseModel,
+    Model,
     model,
     model_item,
 )
@@ -10,11 +10,11 @@ from glotaran.parameter import Parameter, ParameterGroup
 
 
 @model_item(
-    attributes={
+    properties={
         'param': Parameter,
         'megacomplex': str,
         'param_list': List[Parameter],
-        'default': {'type': int, 'default': 42},
+        'default_item': {'type': int, 'default': 42},
         'complex': {'type': Dict[Tuple[str, str], Parameter]},
     },
 )
@@ -28,7 +28,7 @@ class MockMegacomplex:
 
 
 @model('mock', attributes={"test": MockAttr}, megacomplex_type=MockMegacomplex)
-class MockModel(BaseModel):
+class MockModel(Model):
     pass
 
 
@@ -107,16 +107,16 @@ def test_model_attr(model, attr):
 
 def test_model_validity(model, model_error, parameter):
     print(model.test['t1'])
-    print(model.errors())
-    print(model.errors_parameter(parameter))
+    print(model.validate())
+    print(model.validate(parameter))
     assert model.valid()
-    assert model.valid_parameter(parameter)
-    print(model_error.errors())
-    print(model_error.errors_parameter(parameter))
+    assert model.valid(parameter)
+    print(model_error.validate())
+    print(model_error.validate(parameter))
     assert not model_error.valid()
-    assert len(model_error.errors()) is 3
-    assert not model_error.valid_parameter(parameter)
-    assert len(model_error.errors_parameter(parameter)) is 4
+    assert len(model_error.validate()) is 4
+    assert not model_error.valid(parameter)
+    assert len(model_error.validate(parameter)) is 8
 
 
 def test_items(model):
@@ -129,7 +129,7 @@ def test_items(model):
     assert t.param.full_label == "foo"
     assert t.megacomplex == 'm1'
     assert [p.full_label for p in t.param_list] == ["bar", "baz"]
-    assert t.default == 42
+    assert t.default_item == 42
     assert ('s1', 's2') in t.complex
     assert t.complex[('s1', 's2')].full_label == "baz"
     assert 't2' in model.test
@@ -137,7 +137,7 @@ def test_items(model):
     assert t.param.full_label == "baz"
     assert t.megacomplex == 'm2'
     assert [p.full_label for p in t.param_list] == ["foo"]
-    assert t.default == 7
+    assert t.default_item == 7
     assert t.complex == {}
 
     assert 'dataset1' in model.dataset
@@ -162,11 +162,11 @@ def test_fill(model, parameter):
     assert t.param == 3
     assert t.megacomplex.label == 'm1'
     assert t.param_list == [4, 2]
-    assert t.default == 42
+    assert t.default_item == 42
     assert t.complex == {('s1', 's2'): 2}
     t = model.get_test('t2').fill(model, parameter)
     assert t.param == 2
     assert t.megacomplex.label == 'm2'
     assert t.param_list == [3]
-    assert t.default == 7
+    assert t.default_item == 7
     assert t.complex == {}

@@ -3,7 +3,7 @@
 import typing
 import numpy as np
 
-from glotaran.model import model, BaseModel
+from glotaran.model import model, Model
 from glotaran.parameter import ParameterGroup
 
 from .initial_concentration import InitialConcentration
@@ -102,7 +102,7 @@ def apply_kinetic_model_constraints(
     constrain_calculated_matrix_function=apply_kinetic_model_constraints,
     additional_penalty_function=spectral_constraint_penalty
 )
-class KineticModel(BaseModel):
+class KineticModel(Model):
     """
     A kinetic model is an implementation for model.Model. It is used describe
     time dependend datasets.

@@ -1,14 +1,13 @@
 """ Glotaran Spectral Relation """
 
 import typing
-import numpy as np
 
 from glotaran.model import model_item
 from glotaran.parameter import Parameter
 
 
 @model_item(
-    attributes={
+    properties={
         'compartment': str,
         'target': str,
         'parameter': Parameter,

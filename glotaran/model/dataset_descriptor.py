@@ -6,7 +6,7 @@ from .model_item import model_item
 from glotaran.parameter import Parameter
 
 
-@model_item(attributes={
+@model_item(properties={
     'megacomplex': List[str],
     'scale': {'type': Parameter, 'default': None},
 })

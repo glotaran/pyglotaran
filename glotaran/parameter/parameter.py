@@ -5,6 +5,8 @@ import numpy as np
 
 from lmfit import Parameter as LmParameter
 
+import glotaran
+
 
 class Keys:
     MIN = "min"
@@ -79,6 +81,16 @@ class Parameter(LmParameter):
             param._set_options_from_dict(options)
         return param
 
+    def set_from_group(self, group: 'glotaran.parameter.ParameterGroup'):
+        p = group.get(self.full_label)
+        self.vary = p.vary
+        self.value = p.value
+        self.min = p.min
+        self.max = p.max
+        self.expr = p.expr
+        self.stderr = p.stderr
+        self.non_neg = p.non_neg
+
     def _set_options_from_dict(self, options: typing.Dict):
         if Keys.NON_NEG in options:
             self.non_neg = options[Keys.NON_NEG]
@@ -99,6 +111,15 @@ class Parameter(LmParameter):
     @label.setter
     def label(self, label: str):
         self._label = label
+
+    @property
+    def full_label(self) -> str:
+        """The label of the parameter with its path in a parameter group prepended."""
+        return self._full_label
+
+    @full_label.setter
+    def full_label(self, full_label: str):
+        self._full_label = full_label
 
     @property
     def non_neg(self) -> bool:

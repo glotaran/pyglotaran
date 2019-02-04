@@ -16,14 +16,14 @@ class IrfException(Exception):
         return f"Irf '{self.irf.label}' error: {self.msg}"
 
 
-@model_item(attributes={
+@model_item(properties={
     'irfdata': {'type': np.ndarray, 'default': None},
 }, has_type=True)
 class IrfMeasured:
     """A measured IRF."""
 
 
-@model_item(attributes={
+@model_item(properties={
     'center': List[Parameter],
     'width': List[Parameter],
     'dispersion_center': {'type': Parameter, 'default': None},
@@ -67,7 +67,7 @@ class IrfGaussian:
     def parameter(self, index):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
-        
+
         if self.dispersion_center:
             dist = (1e3 / index - 1e3 / self.dispersion_center) \
                 if self.model_dispersion_with_wavenumber else (index - self.dispersion_center)/100

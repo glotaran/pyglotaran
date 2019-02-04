@@ -5,7 +5,7 @@ from typing import Dict
 from glotaran.model import DatasetDescriptor, model_item
 
 
-@model_item(attributes={
+@model_item(properties={
     'initial_concentration': {'type': str, 'default': None},
     'irf': {'type': str, 'default': None},
     'baseline': {'type': True, 'default': None},

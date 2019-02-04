@@ -6,7 +6,7 @@ from glotaran.model import model_item
 from glotaran.parameter import Parameter
 
 
-@model_item(attributes={
+@model_item(properties={
     'k_matrix': {'type': List[str], 'default': []},
     'scale': {'type': Parameter, 'default': None},
 })

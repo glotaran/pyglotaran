@@ -1,12 +1,11 @@
 """This package contains the spectral shape item."""
 
-from typing import List
 import numpy as np
 from glotaran.model import model_item, model_item_typed
 from glotaran.parameter import Parameter
 
 
-@model_item(attributes={
+@model_item(properties={
     'amplitude': Parameter,
     'location': Parameter,
     'width': Parameter,
@@ -32,7 +31,7 @@ class SpectralShapeGaussian:
         return matrix
 
 
-@model_item(attributes={
+@model_item(properties={
 }, has_type=True)
 class SpectralShapeOne:
     """A gaussian spectral shape"""
@@ -53,7 +52,7 @@ class SpectralShapeOne:
         return np.ones((axis.shape[0]))
 
 
-@model_item(attributes={
+@model_item(properties={
 }, has_type=True)
 class SpectralShapeZero:
     """A gaussian spectral shape"""
