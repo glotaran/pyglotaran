@@ -1,11 +1,11 @@
 import numpy as np
 import scipy
 
-from glotaran.analysis.fitresult import FitResult
+from glotaran.analysis.result import Result
 from glotaran.models.spectral_temporal.kinetic_fit_result import finalize_kinetic_result
 
 
-def finalize_doas_result(model, result: FitResult):
+def finalize_doas_result(model, result: Result):
 
     finalize_kinetic_result(model, result)
 

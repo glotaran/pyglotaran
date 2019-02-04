@@ -16,10 +16,10 @@ from .variable_projection import residual_variable_projection
 from .nnls import residual_nnls
 
 
-class FitResult:
+class Result:
 
     def __init__(self,
-                 model: typing.Type["glotaran.model.BaseModel"],
+                 model: typing.Type["glotaran.model.Model"],
                  data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                  initital_parameter: ParameterGroup,
                  nnls: bool,
@@ -42,7 +42,7 @@ class FitResult:
             (default = 0)
             The tolerance for grouping datasets along the estimated axis.
         """
-        self.model = model
+        self._model = model
         self._data = {}
         for label, dataset in data.items():
             if model.calculated_axis not in dataset.dims:
@@ -71,12 +71,12 @@ class FitResult:
 
     @classmethod
     def from_parameter(cls,
-                       model: typing.Type["glotaran.model.BaseModel"],
+                       model: typing.Type["glotaran.model.Model"],
                        data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                        parameter: ParameterGroup,
                        nnls: bool,
                        atol: float = 0,
-                       ) -> 'FitResult':
+                       ) -> 'Result':
         """Creates a :attr:`FitResult` from parameters without optimization.
 
         Parameters
@@ -137,14 +137,19 @@ class FitResult:
         self._finalize()
 
     @property
+    def model(self) -> typing.Type['glotaran.model.Model']:
+        """The model for analysis."""
+        return self._model
+
+    @property
     def nnls(self) -> bool:
-        """bool: If `True` non-linear least squaes optimizing is used instead of variable
+        """If `True` non-linear least squaes optimizing is used instead of variable
         projection."""
         return self._nnls
 
     @property
     def data(self) -> typing.Dict[str, xr.Dataset]:
-        """dict(str, xarray.Dataset): The resulting data as a dictionary of `xarray.Dataset`.
+        """The resulting data as a dictionary of `xarray.Dataset`.
 
         Note
         ----
@@ -155,62 +160,62 @@ class FitResult:
 
     @property
     def nfev(self) -> int:
-        """int: The number of function evaluations."""
+        """The number of function evaluations."""
         return self._lm_result.nfev if self._lm_result else 0
 
     @property
     def nvars(self) -> int:
-        """int: Number of variables in optimization."""
+        """Number of variables in optimization."""
         return self._lm_result.nvarys if self._lm_result else None
 
     @property
     def ndata(self) -> int:
-        """int: Number of data points."""
+        """Number of data points."""
         return self._lm_result.ndata if self._lm_result else None
 
     @property
     def nfree(self) -> int:
-        """int: Degrees of freedom in optimization. """
+        """Degrees of freedom in optimization. """
         return self._lm_result.nfree if self._lm_result else None
 
     @property
     def chisqr(self) -> float:
-        """float: The chi-square of the optimization """
+        """The chi-square of the optimization """
         return self._lm_result.chisqr if self._lm_result else 0
 
     @property
     def red_chisqr(self) -> float:
-        """float: The reduced chi-square of the optimization."""
+        """The reduced chi-square of the optimization."""
         return self._lm_result.redchi if self._lm_result else 0
 
     @property
     def root_mean_sqare_error(self) -> float:
-        """float: The root mean square error the optimization."""
+        """The root mean square error the optimization."""
         return np.sqrt(self.red_chisqr)
 
     @property
     def var_names(self) -> typing.List[str]:
-        """list(str): Ordered list of variable parameter names used in optimization, and
+        """Ordered list of variable parameter names used in optimization, and
         useful for understanding the values in :attr:`covar`."""
         return [n.replace('_', '.') for n in self._lm_result.var_names] \
             if self._lm_result else None
 
     @property
     def covar(self) -> np.ndarray:
-        """np.ndarray: Covariance matrix from minimization, with rows and columns
+        """Covariance matrix from minimization, with rows and columns
         corresponding to :attr:`var_names`."""
         return self._lm_result.covar if self._lm_result else None
 
     @property
     def best_fit_parameter(self) -> ParameterGroup:
-        """glotaran.model.ParameterGroup: The best fit parameters."""
+        """The best fit parameters."""
         if self._lm_result is None:
             return self.initial_parameter
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
 
     @property
     def initial_parameter(self) -> ParameterGroup:
-        """glotaran.model.ParameterGroup: The initital fit parameter"""
+        """The initital fit parameter"""
         return self._initial_parameter
 
     @property

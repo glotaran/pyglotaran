@@ -11,7 +11,7 @@ def register_model(model_type: str, model: Model):
 
     Parameters
     ----------
-    model_type : 
+    model_type :
         model_type is type of the model.
     model :
         model is the model to be registered.

@@ -32,11 +32,13 @@ def model(name,
 
         if calculated_matrix:
             c_mat = wrap_func_as_method(cls, name='calculated_matrix')(calculated_matrix)
+            c_mat = staticmethod(c_mat)
             setattr(cls, 'calculated_matrix', c_mat)
         setattr(cls, 'calculated_axis', calculated_axis)
 
         if estimated_matrix:
             e_mat = wrap_func_as_method(cls, name='estimated_matrix')(estimated_matrix)
+            e_mat = staticmethod(e_mat)
             setattr(cls, 'estimated_matrix', e_mat)
         setattr(cls, 'estimated_axis', estimated_axis)
 

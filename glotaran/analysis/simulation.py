@@ -1,15 +1,15 @@
-"""This package contains functions for simulationg a model."""
-from typing import Dict
+"""This package contains functions for simulating a model."""
+import typing
 import numpy as np
 import xarray as xr
 
 from glotaran.parameter import ParameterGroup
 
 
-def simulate(model,  # temp doc fix : "glotaran.model.Model",
+def simulate(model: typing.Type['glotaran.model.Model'],
              parameter: ParameterGroup,
              dataset: str,
-             axis: Dict[str, np.ndarray],
+             axis: typing.Dict[str, np.ndarray],
              noise=False,
              noise_std_dev=1.0,
              noise_seed=None,
@@ -18,19 +18,20 @@ def simulate(model,  # temp doc fix : "glotaran.model.Model",
 
     Parameters
     ----------
-    model: The model to simulate
-    parameter : glotaran.model.ParameterGroup
+    model :
+        The model to simulate
+    parameter :
         The parameters for the simulation.
-    dataset : str
+    dataset :
         Label of the dataset to simulate
-    axis : Dict[str, np.ndarray]
+    axis :
         A dictory with axis
-    noise : bool
-        (Default value = False)
-    noise_std_dev : float
-        (Default value = 1.0)
-    noise_seed : default None
-
+    noise :
+        Add noise to the simulation.
+    noise_std_dev :
+        The standard devition for noise simulation.
+    noise_seed :
+        The seed for the noise simulation.
     """
 
     if model.estimated_matrix is None:

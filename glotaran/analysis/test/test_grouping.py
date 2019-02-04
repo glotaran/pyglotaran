@@ -15,12 +15,12 @@ def test_single_dataset():
             },
         }
     })
-    print(model.errors())
+    print(model.validate())
     assert model.valid()
 
     parameter = ParameterGroup.from_list([1, 10])
-    print(model.errors_parameter(parameter))
-    assert model.valid_parameter(parameter)
+    print(model.validate(parameter))
+    assert model.valid(parameter)
 
     data = {'dataset1': xr.DataArray(
         np.ones((3, 4)),
@@ -54,12 +54,12 @@ def test_multi_dataset_no_overlap():
         }
     })
 
-    print(model.errors())
+    print(model.validate())
     assert model.valid()
 
     parameter = ParameterGroup.from_list([1, 10])
-    print(model.errors_parameter(parameter))
-    assert model.valid_parameter(parameter)
+    print(model.validate(parameter))
+    assert model.valid(parameter)
 
     data = {
         'dataset1': xr.DataArray(
@@ -118,12 +118,12 @@ def test_multi_dataset_overlap():
         }
     })
 
-    print(model.errors())
+    print(model.validate())
     assert model.valid()
 
     parameter = ParameterGroup.from_list([1, 10])
-    print(model.errors_parameter(parameter))
-    assert model.valid_parameter(parameter)
+    print(model.validate(parameter))
+    assert model.valid(parameter)
 
     data = {
         'dataset1': xr.DataArray(

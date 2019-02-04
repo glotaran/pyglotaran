@@ -19,11 +19,12 @@ class Keys:
 class Parameter(LmParameter):
     """Wrapper for lmfit parameter."""
     def __init__(self, label=None, full_label=None):
+        super(Parameter, self).__init__(
+            user_data={'non_neg': False, 'full_label': full_label})
         self.index = -1
         self._non_neg = False
         self.label = label
-        self.full_label = full_label
-        super(Parameter, self).__init__(user_data={'non_neg': self._non_neg})
+        self._full_label = full_label
 
     @classmethod
     def from_parameter(cls, label: str, parameter: LmParameter):
@@ -39,6 +40,7 @@ class Parameter(LmParameter):
         p = cls(label=label)
         p.vary = parameter.vary
         p.non_neg = parameter.user_data['non_neg']
+        p.full_label = parameter.user_data['full_label']
         p.value = np.exp(parameter.value) if p.non_neg else parameter.value
         p.min = \
             np.exp(parameter.min) if p.non_neg and np.isfinite(parameter.min) else parameter.min
@@ -120,6 +122,7 @@ class Parameter(LmParameter):
     @full_label.setter
     def full_label(self, full_label: str):
         self._full_label = full_label
+        self.user_data['full_label'] = full_label
 
     @property
     def non_neg(self) -> bool:

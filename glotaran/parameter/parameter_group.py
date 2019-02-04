@@ -198,7 +198,8 @@ class ParameterGroup(OrderedDict):
         for p in parameter:
             p.index = len(self._parameters) + 1
             if p.label is None:
-                p.label = "{}".format(p.index)
+                p.label = f"{p.index}"
+            p.full_label = f'{self.label}.{p.label}' if self.label else p.label
             self._parameters[p.label] = p
 
     def add_group(self, group: 'ParameterGroup'):

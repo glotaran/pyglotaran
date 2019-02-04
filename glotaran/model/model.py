@@ -5,7 +5,7 @@ import typing
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.fitresult import FitResult
+from glotaran.analysis.result import Result
 from glotaran.analysis.simulation import simulate
 from glotaran.parameter import ParameterGroup
 
@@ -147,7 +147,7 @@ class Model:
                  verbose: bool = True,
                  max_nfev: int = None,
                  group_atol: int = 0,
-                 ) -> FitResult:
+                 ) -> Result:
         """Optimizes the parameter for this model.
 
         Parameters
@@ -170,7 +170,7 @@ class Model:
             The tolerance for grouping datasets along the estimated axis.
 
         """
-        result = FitResult(self, data, parameter, nnls, atol=group_atol)
+        result = Result(self, data, parameter, nnls, atol=group_atol)
         result.optimize(verbose=verbose, max_nfev=max_nfev)
         return result
 
@@ -178,7 +178,7 @@ class Model:
                               parameter: ParameterGroup,
                               data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                               nnls: bool = False, group_atol: float = 0.0
-                              )-> FitResult:
+                              )-> Result:
         """Loads a result from parameters without going any optimization.
 
         Parameters
@@ -201,7 +201,7 @@ class Model:
             The tolerance for grouping datasets along the estimated axis.
 
         """
-        return FitResult.from_parameter(self, data, parameter, nnls, group_atol)
+        return Result.from_parameter(self, data, parameter, nnls, group_atol)
 
     def validate(self, parameter: ParameterGroup = None) -> typing.List[str]:
         """Returns a list of errors in the model."""

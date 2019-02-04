@@ -1,7 +1,7 @@
 import holoviews as hv
 import xarray as xr
 
-from glotaran.analysis.fitresult import FitResult
+from glotaran.analysis.result import Result
 from glotaran.io import prepare_dataset
 
 from .saveable import saveable
@@ -14,7 +14,7 @@ def dataset(dataset: xr.Dataset, nr_svals: int, log_scale_time: bool = False):
 
 
 @saveable
-def residual(result: FitResult, dataset: str, nr_svals: int, log_scale_time: bool = False):
+def residual(result: Result, dataset: str, nr_svals: int, log_scale_time: bool = False):
     dataset = result.data[dataset]
     return _svd(dataset, 'residual', nr_svals, log_scale_time)
 

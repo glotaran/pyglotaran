@@ -1,10 +1,10 @@
 
 import holoviews as hv
 
-from glotaran.analysis.fitresult import FitResult
+from glotaran.analysis.result import Result
 
 
-def parameter(result: FitResult) -> hv.Curve:
+def parameter(result: Result) -> hv.Curve:
     labels = []
     initials = []
     optimized = []
@@ -16,7 +16,7 @@ def parameter(result: FitResult) -> hv.Curve:
         .options(max_rows=len(labels), max_value_len=100)
 
 
-def result(result: FitResult) -> hv.Curve:
+def result(result: Result) -> hv.Curve:
     labels = [
         "Non-linear least squares",
         "Number Function Evaluations",

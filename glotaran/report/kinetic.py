@@ -2,13 +2,13 @@ import typing
 import functools
 import holoviews as hv
 
-from glotaran.analysis.fitresult import FitResult
+from glotaran.analysis.result import Result
 
 from .saveable import saveable
 
 
 @saveable
-def decay_associated_spectra(result: FitResult, dataset: str) -> hv.Curve:
+def decay_associated_spectra(result: Result, dataset: str) -> hv.Curve:
     megacomplexes = result.data[dataset].coords['megacomplex'].values
     curve = \
         hv.Curve(result.data[dataset].decay_associated_spectra.sel(megacomplex=megacomplexes[0]))\
@@ -20,7 +20,7 @@ def decay_associated_spectra(result: FitResult, dataset: str) -> hv.Curve:
 
 
 @saveable
-def irf_dispersion(result: FitResult, dataset: str) -> hv.Curve:
+def irf_dispersion(result: Result, dataset: str) -> hv.Curve:
     megacomplexes = result.data[dataset].coords['megacomplex'].values
     curve = \
         hv.Curve(result.data[dataset].decay_associated_spectra.sel(megacomplex=megacomplexes[0]))\
@@ -32,20 +32,20 @@ def irf_dispersion(result: FitResult, dataset: str) -> hv.Curve:
 
 
 @saveable
-def species_concentration(result: FitResult, dataset: str, index: float) -> hv.Curve:
+def species_concentration(result: Result, dataset: str, index: float) -> hv.Curve:
     return hv.Curve(
         result.data[dataset].species_concentration.sel(spectral=index, method='nearest'))\
         .groupby('species').overlay().opts(title=f'Concentration {dataset}')
 
 
 @saveable
-def species_associated_spectra(result: FitResult, dataset: str) -> hv.Curve:
+def species_associated_spectra(result: Result, dataset: str) -> hv.Curve:
     return hv.Curve(result.data[dataset].species_associated_spectra)\
         .groupby('species').overlay().opts(title=f'SAS {dataset}')
 
 
 @saveable
-def dataset(result: FitResult, dataset: str):
+def dataset(result: Result, dataset: str):
     layout = species_concentration(result, dataset, 0)
     layout += species_associated_spectra(result, dataset)
     layout += decay_associated_spectra(result, dataset)

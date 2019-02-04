@@ -1,17 +1,14 @@
 # Glotaran package __init__.py
 
-import typing
-import xarray as xr
-
-from . import model, parameter  # noqa: E402
+from . import model, parameter, io, report  # noqa: F401
 
 __version__ = '0.0.10'
 
 ParameterGroup = parameter.ParameterGroup
 
-read_parameter_csv = ParameterGroup.from_csv
-read_parameter_yaml = ParameterGroup.from_yaml
-read_parameter_yaml_file = ParameterGroup.from_yaml_file
+read_parameter_from_csv_file = ParameterGroup.from_csv
+read_parameter_from_yml = ParameterGroup.from_yaml
+read_parameter_from_yml_file = ParameterGroup.from_yaml_file
 
 from .models import spectral_temporal  # noqa: E402
 KineticModel = spectral_temporal.KineticModel
@@ -22,71 +19,5 @@ DOASModel = doas.DOASModel
 
 from .parse import parser  # noqa: E402
 
-load_yml = parser.load_yml
-load_yml_file = parser.load_yml_file
-
-
-from . import io, report
-# Top level API
-# SeparableModel = separable_model.SeparableModel
-# SeparableModelResult = result.SeparableModelResult
-
-# loadSomethingFromFile
-# Load Glotaran analysis protocol (*.gat or *.yml) from file
-
-#  load = parse_file  # short for loadProtocol
-#  parse = parse_yml  # short for loadProtocol
-
-#  io = dataio
-
-# # user calls this object whatever
-# glotaran._loadProtocol()
-# glotaran._loadProtocolFromFile() #or path
-# glotaran._loadProtocolFromString()
-#
-# # data file vs dataset ??
-# glotaran.add_dataset()
-# glotaran._add_dataset_from_file() #or path
-# glotaran._add_dataset_from_clipboard()
-#
-# glotaran.read_data_file
-# glotaran.read_multiple_data_files
-#
-# # model specification
-#
-# glotaran.free_parameter('parameter')
-# glotaran.free_parameter_for_dataset(parameter, index)
-#
-# ## model evaluation
-#
-# glotaran.fit() #use lmfit to minimize
-# evaluate the current model at given timepoints and wavelengths and produce data object
-# glotaran.calculate()
-#
-#
-# ## getting results
-#
-# glotaran.parameters
-# glotaran.get_fitted_parameters
-#
-# glotaran.das
-# glotaran.get_decay_associated_spectra
-#
-# glotaran.eas
-# glotaran.get_evolution_associated_spectra
-#
-# glotaran.sas
-# glotaran.get_species_associated_spectra
-#
-# glotaran.concentrations
-# glotaran.get_concentrations
-#
-# glotaran.residuals
-# glotaran.get_residuals
-# glotaran.get_residuals_for_dataset(index i)
-#
-# glotaran.plot_das
-# glotaran.plot_eas
-# glotaran.plot_sas
-# glotaran.plot_concentrations
-# glotaran.plot_spectra
+read_model_from_yml = parser.load_yml
+read_model_from_yml_file = parser.load_yml_file

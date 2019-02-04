@@ -57,7 +57,7 @@ class ModelProperty(property):
             [f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model]
 
         missing_parameter = []
-        if parameter is not None and self._is_parameter:
+        if parameter is not None and self._is_parameter and value is not None:
             if self._is_parameter_value:
                 if not parameter.has(value.full_label):
                     missing_parameter.append(value.full_label)
@@ -75,7 +75,7 @@ class ModelProperty(property):
 
     def fill(self, value, model, parameter):
 
-        if self._is_parameter:
+        if self._is_parameter and value is not None:
 
             if self._is_parameter_value:
                 value.set_from_group(parameter)

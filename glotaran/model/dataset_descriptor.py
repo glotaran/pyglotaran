@@ -8,7 +8,7 @@ from glotaran.parameter import Parameter
 
 @model_item(properties={
     'megacomplex': List[str],
-    'scale': {'type': Parameter, 'default': None},
+    'scale': {'type': Parameter, 'default': None, 'allow_none': True},
 })
 class DatasetDescriptor:
     """A dataset descriptor describes a dataset in terms of a glotaran model.
