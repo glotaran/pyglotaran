@@ -68,13 +68,15 @@ class KMatrix:
         if not isinstance(k_matrix, KMatrix):
             raise TypeError("K-Matrices can only be combined with other"
                             "K-Matrices.")
-        combined_matrix = OrderedDict()
+        combined_matrix = {}
         for entry in k_matrix.matrix:
             combined_matrix[entry] = k_matrix.matrix[entry]
         for entry in self.matrix:
             combined_matrix[entry] = self.matrix[entry]
-        return KMatrix("{}+{}".format(self.label, k_matrix.label),
-                       combined_matrix)
+        combined = KMatrix()
+        combined.label = f"{self.label}+{k_matrix.label}"
+        combined.matrix = combined_matrix
+        return combined
 
     def matrix_as_markdown(self, compartments: List[str] = None) -> np.ndarray:
         """ """
