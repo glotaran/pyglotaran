@@ -105,7 +105,7 @@ def _create_add_func(cls, name, type):
 
         if not isinstance(item, type):
             if not hasattr(type, "_glotaran_model_attribute_typed") or \
-               not isinstance(item, getattr(type, '_glotaran_model_attribute_types').values()):
+               not isinstance(item, tuple(type._glotaran_model_attribute_types.values())):
                 raise TypeError
         getattr(self, f'_{name}').append(item)
     return add_item
