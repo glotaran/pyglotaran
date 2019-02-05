@@ -31,7 +31,7 @@ def read_sdt(file_path: str,
         which only contain spectral temporal data, lack the spectral information.
         Thus for the spectral axis data need to be given by the user.
 
-    flim: 
+    flim:
         Set true if reading a result from a FLIM measurement.
 
     dataset_index: int: default 0

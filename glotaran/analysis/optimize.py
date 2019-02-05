@@ -45,7 +45,8 @@ def optimize(result: 'glotaran.analysis.Result', verbose: bool = True, max_nfev:
     result.finalize(lm_result)
 
 
-def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters], result: 'glotaran.analysis.Result'):
+def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters],
+                       result: 'glotaran.analysis.Result'):
 
     if not isinstance(parameter, ParameterGroup):
         parameter = ParameterGroup.from_parameter_dict(parameter)
@@ -97,4 +98,3 @@ def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters]
         penalty.append(residual)
 
     return np.concatenate(penalty)
-

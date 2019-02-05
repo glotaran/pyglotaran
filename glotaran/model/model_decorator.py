@@ -145,7 +145,7 @@ def _create_set_func(cls, name, type):
 
         if not isinstance(item, type):
             if not hasattr(type, "_glotaran_model_attribute_typed") or \
-               not isinstance(item, tuple(getattr(type, '_glotaran_model_attribute_types').values())):
+               not isinstance(item, tuple(type._glotaran_model_attribute_types.values())):
                 raise TypeError
         getattr(self, f'_{name}')[label] = item
 

@@ -10,10 +10,8 @@ import glotaran  # noqa F01
 from glotaran.parameter import ParameterGroup
 
 
-from .grouping import create_group, create_data_group, calculate_group_item
-from .nnls import residual_nnls
+from .grouping import create_group, create_data_group
 from .optimize import calculate_residual
-from .variable_projection import residual_variable_projection
 
 
 class Result:

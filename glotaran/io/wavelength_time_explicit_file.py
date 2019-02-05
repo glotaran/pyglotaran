@@ -322,5 +322,3 @@ def write_ascii_time_trace(filename: str,
                     comment=comment,
                     file_format=file_format,
                     number_format=number_format)
-
-

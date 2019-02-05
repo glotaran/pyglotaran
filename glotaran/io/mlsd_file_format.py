@@ -6,6 +6,7 @@ import xarray as xr
 
 from .prepare_dataset import prepare_dataset
 
+
 class DataFileType(Enum):
     mlsd_mulheim = "MLSD Mulheim"
 

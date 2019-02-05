@@ -11,8 +11,8 @@ from .util import wrap_func_as_method
 
 
 def model_attribute(properties={},
-               has_type=False,
-               no_label=False):
+                    has_type=False,
+                    no_label=False):
     """The model_attribute decorator adds the given attributes to the class and applies
     the `dataclass` on it. Further it adds `from_dict` and `from_list`
     classmethods for serialization. Also a `validate_model` and
