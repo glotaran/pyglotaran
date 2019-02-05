@@ -52,10 +52,8 @@ def model(name,
         attributes['dataset'] = dataset_type
 
         # Set annotations and methods for attributes
-
         for attr_name, attr_type in attributes.items():
             getattr(cls, '_glotaran_model_attributes')[attr_name] = None
-
             attr_prop = _create_property_for_attribute(cls, attr_name, attr_type)
             setattr(cls, attr_name, attr_prop)
 
@@ -68,7 +66,6 @@ def model(name,
             else:
                 add_item = _create_add_func(cls, attr_name, attr_type)
                 setattr(cls, add_item.__name__, add_item)
-                setattr(cls, attr_name, [])
 
         init = _create_init_func(cls, attributes)
         setattr(cls, '__init__', init)
@@ -107,11 +104,10 @@ def _create_add_func(cls, name, type):
         '''
 
         if not isinstance(item, type):
-            if not hasattr(type, "_glotaran_model_item_typed") or \
-               not isinstance(item, tuple(getattr(type, '_glotaran_model_item_types').values())):
+            if not hasattr(type, "_glotaran_model_attribute_typed") or \
+               not isinstance(item, getattr(type, '_glotaran_model_attribute_types').values()):
                 raise TypeError
         getattr(self, f'_{name}').append(item)
-
     return add_item
 
 
@@ -148,8 +144,8 @@ def _create_set_func(cls, name, type):
         '''
 
         if not isinstance(item, type):
-            if not hasattr(type, "_glotaran_model_item_typed") or \
-               not isinstance(item, tuple(getattr(type, '_glotaran_model_item_types').values())):
+            if not hasattr(type, "_glotaran_model_attribute_typed") or \
+               not isinstance(item, tuple(getattr(type, '_glotaran_model_attribute_types').values())):
                 raise TypeError
         getattr(self, f'_{name}')[label] = item
 
@@ -161,7 +157,7 @@ def _create_property_for_attribute(cls, name, type):
     return_type = typing.Dict[str, type] if hasattr(type, '_glotaran_has_label') \
             else typing.List[type]
 
-    doc_type = 'dictonary' if hasattr(type, '_glotaran_has_label') else 'list'
+    doc_type = 'dictionary' if hasattr(type, '_glotaran_has_label') else 'list'
 
     @property
     @wrap_func_as_method(cls, name=f'{name}')

@@ -24,7 +24,7 @@ def test_baseline():
             'dataset1': {
                 'initial_concentration': 'j1',
                 'megacomplex': ['mc1'],
-                'baseline': '3',
+                'baseline': True,
             },
         },
     })
@@ -43,4 +43,4 @@ def test_baseline():
     assert compartments[1] == 'dataset1_baseline'
 
     assert matrix.shape == (time.size, 2)
-    assert np.all(matrix[:, 1] == 42)
+    assert np.all(matrix[:, 1] == 1)

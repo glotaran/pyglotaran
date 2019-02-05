@@ -4,12 +4,12 @@ import pytest
 from glotaran.model import (
     Model,
     model,
-    model_item,
+    model_attribute,
 )
 from glotaran.parameter import Parameter, ParameterGroup
 
 
-@model_item(
+@model_attribute(
     properties={
         'param': Parameter,
         'megacomplex': str,
@@ -22,7 +22,7 @@ class MockAttr:
     pass
 
 
-@model_item()
+@model_attribute()
 class MockMegacomplex:
     pass
 

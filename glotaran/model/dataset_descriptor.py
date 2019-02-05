@@ -2,11 +2,11 @@
 
 from typing import List
 
-from .model_item import model_item
+from .model_attribute import model_attribute
 from glotaran.parameter import Parameter
 
 
-@model_item(properties={
+@model_attribute(properties={
     'megacomplex': List[str],
     'scale': {'type': Parameter, 'default': None, 'allow_none': True},
 })

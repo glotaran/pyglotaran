@@ -6,13 +6,13 @@ from typing import Dict, List, Tuple
 import numpy as np
 import scipy
 
-from glotaran.model import model_item
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 from .initial_concentration import InitialConcentration
 
 
-@model_item(
+@model_attribute(
     properties={
         'matrix': {'type': Dict[Tuple[str, str], Parameter]},
     },
@@ -156,10 +156,6 @@ class KMatrix:
         # computation consistent with TIMP
         eigenvalues, eigenvectors = scipy.linalg.eig(matrix, left=True,
                                                      right=False)
-        #  eigenvalues = eigenvalues.real
-        #  eigenvectors = eigenvectors.real
-        #  sorted = eigenvalues.argsort()
-        #  return (eigenvalues[sorted], eigenvectors[sorted])
         return (eigenvalues.real, eigenvectors.real)
 
     def rates(self, initial_concentration):
@@ -216,6 +212,6 @@ class KMatrix:
             return False
         matrix = self.reduced(initial_concentration.compartments)
         for i in range(matrix.shape[1]):
-            if not np.nonzero(matrix[:, i])[0].size == 1 or i is not 0 and matrix[i-1, i] == 0:
+            if not np.nonzero(matrix[:, i])[0].size == 1 or i is not 0 and matrix[i, i-1] == 0:
                 return False
         return True

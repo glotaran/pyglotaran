@@ -2,11 +2,11 @@
 
 from typing import List
 
-from glotaran.model import model_item
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 
-@model_item(properties={
+@model_attribute(properties={
     'k_matrix': {'type': List[str], 'default': []},
     'scale': {'type': Parameter, 'allow_none': True},
 })

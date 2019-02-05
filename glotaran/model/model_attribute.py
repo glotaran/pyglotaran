@@ -10,15 +10,15 @@ from .model_property import ModelProperty
 from .util import wrap_func_as_method
 
 
-def model_item(properties={},
+def model_attribute(properties={},
                has_type=False,
                no_label=False):
-    """The model_item decorator adds the given attributes to the class and applies
+    """The model_attribute decorator adds the given attributes to the class and applies
     the `dataclass` on it. Further it adds `from_dict` and `from_list`
     classmethods for serialization. Also a `validate_model` and
     `validate_parameter` method is created.
 
-    Classes with the glotaran_model_item decorator intended to be used in
+    Classes with the glotaran_model_attribute decorator intended to be used in
     glotaran models.
 
     Parameters
@@ -37,7 +37,7 @@ def model_item(properties={},
     def decorator(cls):
 
         setattr(cls, '_glotaran_has_label', not no_label)
-        setattr(cls, '_glotaran_model_item', True)
+        setattr(cls, '_glotaran_model_attribute', True)
 
         # store for later sanity checking
         if not hasattr(cls, '_glotaran_properties'):
@@ -92,8 +92,8 @@ def model_item(properties={},
     return decorator
 
 
-def model_item_typed(types: typing.Dict[str, any] = {}, no_label=False):
-    """The model_item_typed decorator adds attributes to the class to enable
+def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
+    """The model_attribute_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class an item when there
     are multiple variants. See package glotaran.model.compartment_constraints
     for an example.
@@ -106,9 +106,9 @@ def model_item_typed(types: typing.Dict[str, any] = {}, no_label=False):
 
     def decorator(cls):
 
-        setattr(cls, '_glotaran_model_item', True)
-        setattr(cls, '_glotaran_model_item_typed', True)
-        setattr(cls, '_glotaran_model_item_types', types)
+        setattr(cls, '_glotaran_model_attribute', True)
+        setattr(cls, '_glotaran_model_attribute_typed', True)
+        setattr(cls, '_glotaran_model_attribute_types', types)
 
         setattr(cls, '_glotaran_has_label', not no_label)
 

@@ -6,13 +6,13 @@ from .util import wrap_func_as_method
 
 
 class ModelProperty(property):
-    def __init__(self, cls, name, type, doc, default, allow_none):
+    def __init__(self, cls, name, prop_type, doc, default, allow_none):
 
         self._name = name
         self._allow_none = allow_none
-        self._determine_if_parameter(type)
+        self._determine_if_parameter(prop_type)
 
-        set_type = type if not self._is_parameter else typing.Union[str, type]
+        set_type = prop_type if not self._is_parameter else typing.Union[str, prop_type]
 
         @wrap_func_as_method(cls, name=name)
         def setter(that_self, value: set_type):
@@ -30,7 +30,7 @@ class ModelProperty(property):
             setattr(that_self, f'_{self._name}', value)
 
         @wrap_func_as_method(cls, name=name)
-        def getter(that_self) -> type:
+        def getter(that_self) -> prop_type:
             value = getattr(that_self, f'_{self._name}')
             if value is None:
                 value = default

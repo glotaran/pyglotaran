@@ -4,6 +4,8 @@ import os
 import numpy as np
 import xarray as xr
 
+from .prepare_dataset import prepare_dataset
+
 
 def load_samples(samples_path):
     with open(samples_path, 'rb') as f:
@@ -38,9 +40,8 @@ class ChlorospecData(object):
 
     def __init__(self, folder, debug=False):
         self._data_folder = folder
-        self._label = ""
 
-    def read(self, label):
+    def read(self):
         if not os.path.isdir(self._data_folder):
             raise Exception("Data folder does not exist.")
         if not ChlorospecData.is_valid_path(self._data_folder):
@@ -52,7 +53,6 @@ class ChlorospecData(object):
         # if not self._file_data_format:
         #    ImportError
 
-        self._label = label
         f = self._data_folder
         sorted_sub_folders = ChlorospecData.valid_sub_folders_natural_sorted(f)
         t0 = 0
@@ -76,7 +76,7 @@ class ChlorospecData(object):
                     data = np.concatenate((data, samples.T), 1)
         wavelengths = np.linspace(159.735, 1047.157, data.shape[0])
         dataset = xr.DataArray(data, coords=[('time', all_times), ('spectral', wavelengths)])
-        return dataset
+        return prepare_dataset(dataset)
 
     @staticmethod
     def valid_sub_folders_natural_sorted(path):

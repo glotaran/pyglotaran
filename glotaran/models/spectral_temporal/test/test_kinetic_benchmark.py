@@ -2,8 +2,8 @@ from multiprocessing import cpu_count
 import numpy as np
 import pytest
 
-from glotaran import ParameterGroup
-from glotaran.analysis.fitresult import FitResult
+from glotaran.parameter import ParameterGroup
+from glotaran.analysis.result import Result
 from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
@@ -30,7 +30,7 @@ def test_kinetic_matrix_benchmark(benchmark):
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -60,17 +60,10 @@ def test_kinetic_residual_benchmark(benchmark, nnls):
 
     suite = ThreeComponentSequential
     model = suite.model
-    print(model.errors())
-    assert model.valid()
 
     sim_model = suite.sim_model
-    print(sim_model.errors())
-    assert sim_model.valid()
 
     wanted = suite.wanted
-    print(sim_model.errors_parameter(wanted))
-    print(wanted)
-    assert sim_model.valid_parameter(wanted)
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
@@ -82,144 +75,9 @@ def test_kinetic_residual_benchmark(benchmark, nnls):
         'j': [['1', 1, {'vary': False, 'non-negative': False}],
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
-    print(model.errors_parameter(initial))
-    assert model.valid_parameter(initial)
 
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
     data = {'dataset1': dataset}
-    print(data)
 
-    benchmark(FitResult.from_parameter, model, data, initial, nnls=nnls, atol=0)
-
-
-@pytest.mark.skip()
-@pytest.mark.skipif(cpu_count() < 2,
-                    reason="Not enough cores available")
-def test_kinetic_fitting_2_core(benchmark):
-
-    suite = ThreeComponentSequential
-    model = suite.model
-    print(model.errors())
-    assert model.valid()
-
-    sim_model = suite.sim_model
-    print(sim_model.errors())
-    assert sim_model.valid()
-
-    wanted = suite.wanted
-    print(sim_model.errors_parameter(wanted))
-    print(wanted)
-    assert sim_model.valid_parameter(wanted)
-
-    initial = ParameterGroup.from_dict({
-        'kinetic': [
-            ["1", 501e-2],
-            ["2", 202e-3],
-            ["3", 105e-4],
-        ],
-        'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False, 'non-negative': False}],
-              ['0', 0, {'vary': False, 'non-negative': False}]],
-    })
-    print(model.errors_parameter(initial))
-    assert model.valid_parameter(initial)
-
-    #  suite.axis["time"] = np.arange(-10, 50, 5.0)
-
-    dataset = sim_model.simulate('dataset1', wanted, suite.axis)
-
-    assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
-
-    data = {'dataset1': dataset}
-
-    benchmark(model.fit, initial, data, nr_worker=2)
-
-
-@pytest.mark.skip()
-@pytest.mark.skipif(cpu_count() < 4,
-                    reason="Not enough cores available")
-def test_kinetic_fitting_4_core(benchmark):
-
-    suite = ThreeComponentSequential
-    model = suite.model
-    print(model.errors())
-    assert model.valid()
-
-    sim_model = suite.sim_model
-    print(sim_model.errors())
-    assert sim_model.valid()
-
-    wanted = suite.wanted
-    print(sim_model.errors_parameter(wanted))
-    print(wanted)
-    assert sim_model.valid_parameter(wanted)
-
-    initial = ParameterGroup.from_dict({
-        'kinetic': [
-            ["1", 501e-2],
-            ["2", 202e-3],
-            ["3", 105e-4],
-        ],
-        'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False, 'non-negative': False}],
-              ['0', 0, {'vary': False, 'non-negative': False}]],
-    })
-    print(model.errors_parameter(initial))
-    assert model.valid_parameter(initial)
-
-    #  suite.axis["time"] = np.arange(-10, 50, 5.0)
-
-    dataset = sim_model.simulate('dataset1', wanted, suite.axis)
-
-    assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
-
-    data = {'dataset1': dataset}
-
-    benchmark(model.fit, initial, data, nr_worker=4)
-
-
-@pytest.mark.skip()
-@pytest.mark.skipif(cpu_count() < 8,
-                    reason="Not enough cores available")
-def test_kinetic_fitting_8_core(benchmark):
-
-    suite = ThreeComponentSequential
-    model = suite.model
-    print(model.errors())
-    assert model.valid()
-
-    sim_model = suite.sim_model
-    print(sim_model.errors())
-    assert sim_model.valid()
-
-    wanted = suite.wanted
-    print(sim_model.errors_parameter(wanted))
-    print(wanted)
-    assert sim_model.valid_parameter(wanted)
-
-    initial = ParameterGroup.from_dict({
-        'kinetic': [
-            ["1", 501e-2],
-            ["2", 202e-3],
-            ["3", 105e-4],
-        ],
-        'irf': [['center', 0.3], ['width', 7.8]],
-        'j': [['1', 1, {'vary': False, 'non-negative': False}],
-              ['0', 0, {'vary': False, 'non-negative': False}]],
-    })
-    print(model.errors_parameter(initial))
-    assert model.valid_parameter(initial)
-
-    #  suite.axis["time"] = np.arange(-10, 50, 1.0)
-
-    dataset = sim_model.simulate('dataset1', wanted, suite.axis)
-
-    assert dataset.data().shape == \
-        (suite.axis['spectral'].size, suite.axis['time'].size)
-
-    data = {'dataset1': dataset}
-
-    benchmark(model.fit, initial, data, nr_worker=8)
+    benchmark(Result.from_parameter, model, data, initial, nnls=nnls, atol=0)

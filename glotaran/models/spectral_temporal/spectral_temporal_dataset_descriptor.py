@@ -2,10 +2,10 @@
 
 from typing import Dict
 
-from glotaran.model import DatasetDescriptor, model_item
+from glotaran.model import DatasetDescriptor, model_attribute
 
 
-@model_item(properties={
+@model_attribute(properties={
     'initial_concentration': {'type': str, 'allow_none': True},
     'irf': {'type': str, 'allow_none': True},
     'baseline': {'type': bool, 'allow_none': True},

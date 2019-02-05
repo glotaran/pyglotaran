@@ -3,7 +3,7 @@
 from typing import List
 import numpy as np
 
-from glotaran.model import model_item, model_item_typed
+from glotaran.model import model_attribute, model_attribute_typed
 from glotaran.parameter import Parameter
 
 
@@ -16,14 +16,14 @@ class IrfException(Exception):
         return f"Irf '{self.irf.label}' error: {self.msg}"
 
 
-@model_item(properties={
+@model_attribute(properties={
     'irfdata': {'type': np.ndarray, 'allow_none': True},
 }, has_type=True)
 class IrfMeasured:
     """A measured IRF."""
 
 
-@model_item(properties={
+@model_attribute(properties={
     'center': List[Parameter],
     'width': List[Parameter],
     'dispersion_center': {'type': Parameter, 'allow_none': True},
@@ -149,7 +149,7 @@ class IrfGaussian:
         return np.asarray(dispersion).T
 
 
-@model_item_typed(types={
+@model_attribute_typed(types={
     'gaussian': IrfGaussian,
     'measured': IrfMeasured,
 })

@@ -4,11 +4,11 @@ import copy
 import typing
 import numpy as np
 
-from glotaran.model import model_item, DatasetDescriptor
+from glotaran.model import model_attribute, DatasetDescriptor
 from glotaran.parameter import Parameter
 
 
-@model_item(
+@model_attribute(
     properties={
         'compartments': typing.List[str],
         'parameters': typing.List[Parameter],

@@ -2,11 +2,11 @@
 
 import typing
 
-from glotaran.model import model_item, model_item_typed
+from glotaran.model import model_attribute, model_attribute_typed
 from glotaran.parameter import Parameter
 
 
-@model_item(
+@model_attribute(
     properties={
         'compartment': str,
         'interval': typing.List[typing.Tuple[float, float]],
@@ -34,7 +34,7 @@ class OnlyConstraint:
         return not any([applies(i) for i in self.interval])
 
 
-@model_item(
+@model_attribute(
     properties={
         'compartment': str,
         'interval': typing.List[typing.Tuple[float, float]],
@@ -62,7 +62,7 @@ class ZeroConstraint:
         return any([applies(i) for i in self.interval])
 
 
-@model_item(properties={
+@model_attribute(properties={
     'target': str,
     'parameter': Parameter,
     'weight': str,
@@ -84,7 +84,7 @@ class EqualAreaConstraint(ZeroConstraint):
     pass
 
 
-@model_item_typed(types={
+@model_attribute_typed(types={
     'only': OnlyConstraint,
     'zero': ZeroConstraint,
     'equal_area': EqualAreaConstraint,

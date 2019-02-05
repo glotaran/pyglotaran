@@ -8,7 +8,7 @@ from . import (
     dataset_descriptor,
     model,
     model_decorator,
-    model_item,
+    model_attribute,
 )
 
 # Dataset
@@ -22,5 +22,5 @@ Model = model.Model
 # Decorators
 
 model = model_decorator.model
-model_item_typed = model_item.model_item_typed
-model_item = model_item.model_item
+model_attribute_typed = model_attribute.model_attribute_typed
+model_attribute = model_attribute.model_attribute

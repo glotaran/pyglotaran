@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from .prepare_dataset import prepare_dataset
 
 class DataFileType(Enum):
     mlsd_mulheim = "MLSD Mulheim"
@@ -95,6 +96,7 @@ class MLSDFile(object):
     def dataset(self):
         dataset = xr.DataArray(self._observations, coords=[
             ('spectral', self._spectral_indices), ('time', self._times)])
+        dataset = prepare_dataset(dataset)
         return dataset
 
     def read_comment(self, f):

@@ -38,9 +38,9 @@ def test_dataset(model):
     assert dataset.irf == "irf1"
     assert dataset.scale == 1
 
-    assert len(dataset.shapes) == 2
-    assert dataset.shapes['s1'] == "shape1"
-    assert dataset.shapes['s2'] == "shape2"
+    assert len(dataset.shape) == 2
+    assert dataset.shape['s1'] == "shape1"
+    assert dataset.shape['s2'] == "shape2"
 
     dataset = model.dataset['dataset2']
 
@@ -113,7 +113,7 @@ def test_irf(model):
         assert irf.center_dispersion == want
         want = [4] if i is 1 else [7, 8]
         assert irf.width_dispersion == want
-        want = None if i is 1 else 9
+        want = None if i is 1 else [9]
         assert irf.scale == want
         assert not irf.normalize
 
@@ -143,9 +143,9 @@ def test_shapes(model):
 
     shape = model.shape["shape1"]
     assert isinstance(shape, SpectralShapeGaussian)
-    assert shape.amplitude == "shape.1"
-    assert shape.location == "shape.2"
-    assert shape.width == "shape.3"
+    assert shape.amplitude.full_label == "shape.1"
+    assert shape.location.full_label == "shape.2"
+    assert shape.width.full_label == "shape.3"
 
 
 def test_megacomplexes(model):

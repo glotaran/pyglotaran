@@ -39,18 +39,18 @@ class Model:
                 # we retrieve the actual class from the signature
                 for label, item in attribute.items():
                     item_cls = set.__func__.__annotations__['item']
-                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+                    is_typed = hasattr(item_cls, "_glotaran_model_attribute_typed")
                     if isinstance(item, dict):
                         if is_typed:
                             if 'type' not in item:
                                 raise Exception(f"Missing type for attribute '{name}'")
                             item_type = item['type']
 
-                            if item_type not in item_cls._glotaran_model_item_types:
+                            if item_type not in item_cls._glotaran_model_attribute_types:
                                 raise Exception(f"Unknown type '{item_type}' "
                                                 f"for attribute '{name}'")
                             item_cls = \
-                                item_cls._glotaran_model_item_types[item_type]
+                                item_cls._glotaran_model_attribute_types[item_type]
                         item['label'] = label
                         set(label, item_cls.from_dict(item))
                     elif isinstance(item, list):
@@ -60,11 +60,11 @@ class Model:
                             item_type = item[1] if len(item) is not 1 and \
                                 hasattr(item_cls, 'label') else item[0]
 
-                            if item_type not in item_cls._glotaran_model_item_types:
+                            if item_type not in item_cls._glotaran_model_attribute_types:
                                 raise Exception(f"Unknown type '{item_type}' "
                                                 f"for attribute '{name}'")
                             item_cls = \
-                                item_cls._glotaran_model_item_types[item_type]
+                                item_cls._glotaran_model_attribute_types[item_type]
                         item = [label] + item
                         set(label, item_cls.from_list(item))
                 del model_dict[name]
@@ -77,18 +77,18 @@ class Model:
                 # we retrieve the actual class from the signature
                 for item in attribute:
                     item_cls = add.__func__.__annotations__['item']
-                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+                    is_typed = hasattr(item_cls, "_glotaran_model_attribute_typed")
                     if isinstance(item, dict):
                         if is_typed:
                             if 'type' not in item:
                                 raise Exception(f"Missing type for attribute '{name}'")
                             item_type = item['type']
 
-                            if item_type not in item_cls._glotaran_model_item_types:
+                            if item_type not in item_cls._glotaran_model_attribute_types:
                                 raise Exception(f"Unknown type '{item_type}' "
                                                 f"for attribute '{name}'")
                             item_cls = \
-                                item_cls._glotaran_model_item_types[item_type]
+                                item_cls._glotaran_model_attribute_types[item_type]
                         add(item_cls.from_dict(item))
                     elif isinstance(item, list):
                         if is_typed:
@@ -97,11 +97,11 @@ class Model:
                             item_type = item[1] if len(item) is not 1 and \
                                 hasattr(item_cls, 'label') else item[0]
 
-                            if item_type not in item_cls._glotaran_model_item_types:
+                            if item_type not in item_cls._glotaran_model_attribute_types:
                                 raise Exception(f"Unknown type '{item_type}' "
                                                 f"for attribute '{name}'")
                             item_cls = \
-                                item_cls._glotaran_model_item_types[item_type]
+                                item_cls._glotaran_model_attribute_types[item_type]
                         add(item_cls.from_list(item))
                 del model_dict[name]
 
