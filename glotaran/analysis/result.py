@@ -4,16 +4,16 @@ import typing
 
 import numpy as np
 import xarray as xr
-from lmfit.minimizer import Minimizer
+import lmfit
 
 import glotaran  # noqa F01
 from glotaran.parameter import ParameterGroup
 
 
-from .grouping import create_group, create_data_group
-from .grouping import calculate_group_item
-from .variable_projection import residual_variable_projection
+from .grouping import create_group, create_data_group, calculate_group_item
 from .nnls import residual_nnls
+from .optimize import calculate_residual
+from .variable_projection import residual_variable_projection
 
 
 class Result:
@@ -99,42 +99,9 @@ class Result:
         result : FitResult
         """
         cls = cls(model, data, parameter, nnls, atol=atol)
-        cls._calculate_residual(parameter)
-        cls._finalize()
+        calculate_residual(parameter, cls)
+        cls.finalize()
         return cls
-
-    def optimize(self, verbose: bool = True, max_nfev: int = None):
-        """Optimizes the parameter.
-
-        Parameters
-        ----------
-        verbose : bool, optional
-            (default = True)
-            If `True` feedback is printed at every iteration.
-        max_nfev : int, optional
-            (default = None)
-            Maximum number of function evaluations. `None` for unlimited.
-
-        Returns
-        -------
-        """
-        parameter = self.initial_parameter.as_parameter_dict()
-        minimizer = Minimizer(
-            self._calculate_residual,
-            parameter,
-            fcn_args=[],
-            fcn_kws=None,
-            iter_cb=self._iter_cb,
-            scale_covar=True,
-            nan_policy='omit',
-            reduce_fcn=None,
-            **{})
-        verbose = 2 if verbose else 0
-        self._lm_result = minimizer.minimize(method='least_squares',
-                                             verbose=verbose,
-                                             max_nfev=max_nfev)
-
-        self._finalize()
 
     @property
     def model(self) -> typing.Type['glotaran.model.Model']:
@@ -224,71 +191,21 @@ class Result:
         estimated axis as keys."""
         return self._global_clp
 
-    def _get_group_indices(self, dataset_label):
-        return [index for index, item in self._group.items()
-                if dataset_label in [val[1].label for val in item]]
+    @property
+    def data_groups(self) -> typing.Dict[any, np.ndarray]:
+        """A dictonary of the data groups along the estimated axis."""
+        return self._data_group
 
-    def _get_dataset_idx(self, index, dataset):
-            datasets = [val[1].label for val in self._group[index]]
-            return datasets.index(dataset)
+    @property
+    def groups(self) -> typing.Dict[any, typing.List[typing.Tuple[any, str]]]:
+        """A dictonary of the dataset_descriptor groups along the estimated axis."""
+        return self._group
 
-    def _iter_cb(self, params, i, resid, *args, **kws):
-        pass
+    def finalize(self, lm_result: lmfit.minimizer.MinimizerResult = None):
 
-    def _calculate_residual(self, parameter):
+        if lm_result:
+            self._lm_result = lm_result
 
-        if not isinstance(parameter, ParameterGroup):
-            parameter = ParameterGroup.from_parameter_dict(parameter)
-
-        penalty = []
-        for index, item in self._group.items():
-            clp_labels, matrix = calculate_group_item(item, self.model, parameter, self._data)
-
-            clp = None
-            residual = None
-            if self.nnls:
-                clp, residual = residual_nnls(
-                        matrix,
-                        self._data_group[index]
-                    )
-            else:
-                clp, residual = residual_variable_projection(
-                        matrix,
-                        self._data_group[index]
-                    )
-
-            self._global_clp[index] = xr.DataArray(clp, coords=[('clp_label', clp_labels)])
-
-            start = 0
-            for i, dataset in item:
-                dataset = self._data[dataset.label]
-                if 'residual' not in dataset:
-                    dataset['residual'] = dataset.data.copy()
-                end = dataset.coords[self.model.calculated_axis].size + start
-                dataset.residual.loc[{self.model.estimated_axis: i}] = residual[start:end]
-                start = end
-
-                if 'clp' not in dataset:
-                    dim1 = dataset.coords[self.model.estimated_axis].size
-                    dim2 = dataset.coords['clp_label'].size
-                    dataset['clp'] = (
-                        (self.model.estimated_axis, 'clp_label'),
-                        np.zeros((dim1, dim2), dtype=np.float64)
-                    )
-                dataset.clp.loc[{self.model.estimated_axis: i}] = \
-                    np.array([clp[clp_labels.index(i)] if i in clp_labels else None
-                              for i in dataset.coords['clp_label'].values])
-
-            if callable(self.model._additional_penalty_function):
-                additionals = self.model._additional_penalty_function(
-                    parameter, clp_labels, clp, matrix, parameter)
-                residual = np.concatenate((residual, additionals))
-
-            penalty.append(residual)
-
-        return np.concatenate(penalty)
-
-    def _finalize(self):
         for label in self.model.dataset:
             dataset = self._data[label]
 

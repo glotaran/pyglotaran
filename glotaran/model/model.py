@@ -7,6 +7,7 @@ import xarray as xr
 
 from glotaran.analysis.result import Result
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.optimize import optimize
 from glotaran.parameter import ParameterGroup
 
 
@@ -171,7 +172,7 @@ class Model:
 
         """
         result = Result(self, data, parameter, nnls, atol=group_atol)
-        result.optimize(verbose=verbose, max_nfev=max_nfev)
+        optimize(result, verbose=verbose, max_nfev=max_nfev)
         return result
 
     def result_from_parameter(self,
