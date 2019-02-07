@@ -1,5 +1,5 @@
 import numpy as np
-import scipy
+from scipy import fftpack
 
 from glotaran.analysis.result import Result
 from glotaran.models.spectral_temporal.kinetic_fit_result import finalize_kinetic_result
@@ -56,7 +56,7 @@ def finalize_doas_result(model, result: Result):
     power = dataset.residual_left_singular_vectors.isel(left_singular_value_index=0).values[:-1]
     power = power[time_diff < time_diff.mean()]
 
-    power = scipy.fftpack.fft(power, n=1024, axis=0)
+    power = fftpack.fft(power, n=1024, axis=0)
 
     power = np.abs(power)/power.size
 

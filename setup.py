@@ -9,7 +9,7 @@ from setuptools.extension import Extension
 
 setup_requires = [
     'numpy>=1.15.1',
-    'scipy>=1.1.0',
+    'scipy>=1.2.0',
     'Cython>=0.28.5',
     'setuptools>=40.2.0'
 ]
