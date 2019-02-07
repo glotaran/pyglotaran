@@ -94,23 +94,23 @@ def finalize_kinetic_result(model, result: Result):
 
         if isinstance(irf, IrfGaussian):
 
-                index = irf.dispersion_center if irf.dispersion_center \
-                     else dataset.coords['spectral'].min().values
-                dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
+            index = irf.dispersion_center if irf.dispersion_center \
+                 else dataset.coords['spectral'].min().values
+            dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
 
-                if irf.dispersion_center:
-                    for i, dispersion in enumerate(
-                            irf.calculate_dispersion(dataset.coords['spectral'].values)):
-                        dataset[f'center_dispersion_{i+1}'] = (('spectral', dispersion))
+            if irf.dispersion_center:
+                for i, dispersion in enumerate(
+                        irf.calculate_dispersion(dataset.coords['spectral'].values)):
+                    dataset[f'center_dispersion_{i+1}'] = (('spectral', dispersion))
 
-                if irf.coherent_artifact:
-                    dataset.coords['coherent_artifact_order'] = \
-                            list(range(0, irf.coherent_artifact_order+1))
-                    dataset['irf_concentration'] = (
-                        (model.estimated_axis, model.calculated_axis, 'coherent_artifact_order'),
-                        dataset.concentration.sel(clp_label=irf.clp_labels()).values
-                    )
-                    dataset['irf_associated_spectra'] = (
-                        (model.estimated_axis, 'coherent_artifact_order'),
-                        dataset.clp.sel(clp_label=irf.clp_labels()).values
-                    )
+            if irf.coherent_artifact:
+                dataset.coords['coherent_artifact_order'] = \
+                        list(range(0, irf.coherent_artifact_order+1))
+                dataset['irf_concentration'] = (
+                    (model.estimated_axis, model.calculated_axis, 'coherent_artifact_order'),
+                    dataset.concentration.sel(clp_label=irf.clp_labels()).values
+                )
+                dataset['irf_associated_spectra'] = (
+                    (model.estimated_axis, 'coherent_artifact_order'),
+                    dataset.clp.sel(clp_label=irf.clp_labels()).values
+                )

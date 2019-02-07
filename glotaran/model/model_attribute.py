@@ -119,63 +119,63 @@ def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
 
 def _create_init_func(cls):
 
-        @classmethod
-        @wrap_func_as_method(cls)
-        def __init__(self):
-            for attr in self._glotaran_properties:
-                setattr(self, f'_{attr}', None)
-        return __init__
+    @classmethod
+    @wrap_func_as_method(cls)
+    def __init__(self):
+        for attr in self._glotaran_properties:
+            setattr(self, f'_{attr}', None)
+    return __init__
 
 
 def _create_from_dict_func(cls):
 
-        @classmethod
-        @wrap_func_as_method(cls)
-        def from_dict(ncls, values: typing.Dict) -> cls:
-            f"""Creates an instance of {cls.__name__} from a dictonary of values.
+    @classmethod
+    @wrap_func_as_method(cls)
+    def from_dict(ncls, values: typing.Dict) -> cls:
+        f"""Creates an instance of {cls.__name__} from a dictonary of values.
 
-            Intended only for internal use.
+        Intended only for internal use.
 
-            Parameters
-            ----------
-            values :
-                A list of values.
-            """
-            item = ncls()
+        Parameters
+        ----------
+        values :
+            A list of values.
+        """
+        item = ncls()
 
-            for name in ncls._glotaran_properties:
-                if name not in values:
-                    if not getattr(ncls, name).allow_none and getattr(item, name) is None:
-                        raise Exception(f"Missing Property '{name}' For Item '{ncls.__name__}'")
-                else:
-                    setattr(item, name, values[name])
+        for name in ncls._glotaran_properties:
+            if name not in values:
+                if not getattr(ncls, name).allow_none and getattr(item, name) is None:
+                    raise Exception(f"Missing Property '{name}' For Item '{ncls.__name__}'")
+            else:
+                setattr(item, name, values[name])
 
-            return item
-        return from_dict
+        return item
+    return from_dict
 
 
 def _create_from_list_func(cls):
 
-        @classmethod
-        @wrap_func_as_method(cls)
-        def from_list(ncls, values: typing.List) -> cls:
-            f"""Creates an instance of {cls.__name__} from a list of values. Intended only for internal use.
+    @classmethod
+    @wrap_func_as_method(cls)
+    def from_list(ncls, values: typing.List) -> cls:
+        f"""Creates an instance of {cls.__name__} from a list of values. Intended only for internal use.
 
-            Parameters
-            ----------
-            values :
-                A list of values.
-            """
-            item = ncls()
-            if len(values) is not len(ncls._glotaran_properties):
-                raise Exception(f"To few or much parameters for '{ncls.__name__}'"
-                                f"\nGot: {values}\nWant: {ncls._glotaran_properties}")
+        Parameters
+        ----------
+        values :
+            A list of values.
+        """
+        item = ncls()
+        if len(values) is not len(ncls._glotaran_properties):
+            raise Exception(f"To few or much parameters for '{ncls.__name__}'"
+                            f"\nGot: {values}\nWant: {ncls._glotaran_properties}")
 
-            for i, name in enumerate(ncls._glotaran_properties):
-                setattr(item, name, values[i])
+        for i, name in enumerate(ncls._glotaran_properties):
+            setattr(item, name, values[i])
 
-            return item
-        return from_list
+        return item
+    return from_list
 
 
 def _create_validation_func(cls):

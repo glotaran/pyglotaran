@@ -44,7 +44,7 @@ class ParameterGroup(OrderedDict):
         root = cls(None)
         for lbl, param in parameter.items():
             lbl = lbl.split("_")
-            if len(lbl) is 2:
+            if len(lbl) == 2:
                 # it is a root param
                 param = Parameter.from_parameter(lbl.pop(), param)
                 root.add_parameter(param)
@@ -54,10 +54,10 @@ class ParameterGroup(OrderedDict):
             lbl.pop(0)
 
             top = root
-            while len(lbl) is not 0:
+            while len(lbl) != 0:
                 group = lbl.pop(0)
                 if group in top:
-                    if len(lbl) is 1:
+                    if len(lbl) == 1:
                         param = Parameter.from_parameter(lbl.pop(), param)
                         top[group].add_parameter(param)
                     else:
@@ -65,7 +65,7 @@ class ParameterGroup(OrderedDict):
                 else:
                     group = ParameterGroup(group)
                     top.add_group(group)
-                    if len(lbl) is 1:
+                    if len(lbl) == 1:
                         param = Parameter.from_parameter(lbl.pop(), param)
                         group.add_parameter(param)
                     else:
@@ -140,10 +140,10 @@ class ParameterGroup(OrderedDict):
                 continue
 
             top = root
-            while len(label) is not 0:
+            while len(label) != 0:
                 group = label.pop(0)
                 if group in top:
-                    if len(label) is 1:
+                    if len(label) == 1:
                         p = Parameter(label=label.pop())
                         p.value = df['value'][i]
                         p.stderr = df['stderr'][i]
@@ -157,7 +157,7 @@ class ParameterGroup(OrderedDict):
                 else:
                     group = ParameterGroup(group)
                     top.add_group(group)
-                    if len(label) is 1:
+                    if len(label) == 1:
                         p = Parameter(label=label.pop())
                         p.value = df['value'][i]
                         p.stderr = df['stderr'][i]
@@ -361,7 +361,7 @@ class ParameterGroup(OrderedDict):
     def __str__(self):
         t = "".join(["  " for _ in range(self.get_nr_roots())])
         s = ""
-        if self.label is not "p":
+        if self.label != "p":
             s += f"{t}* __{self.label}__:\n"
         for _, p in self._parameters.items():
             s += f"{t}  * {p}\n"

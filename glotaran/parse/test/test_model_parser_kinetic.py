@@ -105,19 +105,19 @@ def test_irf(model):
         irf = model.irf[label]
         assert isinstance(irf, IrfGaussian)
         assert irf.label == label
-        want = [1] if i is 1 else [1, 2]
+        want = [1] if i == 1 else [1, 2]
         assert irf.center == want
-        want = [2] if i is 1 else [3, 4]
+        want = [2] if i == 1 else [3, 4]
         assert irf.width == want
-        want = [3] if i is 1 else [5, 6]
+        want = [3] if i == 1 else [5, 6]
         assert irf.center_dispersion == want
-        want = [4] if i is 1 else [7, 8]
+        want = [4] if i == 1 else [7, 8]
         assert irf.width_dispersion == want
-        want = None if i is 1 else [9]
+        want = None if i == 1 else [9]
         assert irf.scale == want
         assert not irf.normalize
 
-        if i is 2:
+        if i == 2:
             assert irf.backsweep
             assert irf.backsweep_period, 55
         else:
@@ -149,7 +149,7 @@ def test_shapes(model):
 
 
 def test_megacomplexes(model):
-    assert len(model.megacomplex) is 3
+    assert len(model.megacomplex) == 3
 
     i = 1
     for _ in model.megacomplex:

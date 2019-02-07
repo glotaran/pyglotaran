@@ -14,7 +14,7 @@ def test_param_array():
 
     params = ParameterGroup.from_yaml(params)
 
-    assert len(list(params.all())) is 5
+    assert len(list(params.all())) == 5
 
     assert [p.label for p in params.all()] == [f"{i}" for i in range(1, 6)]
     assert [p.value for p in params.all()] == list(range(1, 6))[::-1]
@@ -29,7 +29,7 @@ def test_param_label():
 
     params = ParameterGroup.from_yaml(params)
 
-    assert len(list(params.all())) is 3
+    assert len(list(params.all())) == 3
     assert [p.label for p in params.all()] == [f"{i}" for i in range(5, 2, -1)]
     assert [p.value for p in params.all()] == list(range(1, 4))
 
@@ -88,13 +88,13 @@ def test_nested_param_list():
 
     params = ParameterGroup.from_yaml(params)
 
-    assert len(list(params.all())) is 5
+    assert len(list(params.all())) == 5
     group = params['kinetic']
-    assert len(list(group.all())) is 3
+    assert len(list(group.all())) == 3
     assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 4)]
     assert [p.value for p in group.all()] == list(range(3, 6))
     group = params['j']
-    assert len(list(group.all())) is 2
+    assert len(list(group.all())) == 2
     assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 3)]
     assert [p.value for p in group.all()] == list(range(7, 9))
 
@@ -109,11 +109,11 @@ def test_nested_param_group():
     """
 
     params = ParameterGroup.from_yaml(params)
-    assert len(list(params.all())) is 3
+    assert len(list(params.all())) == 3
     group = params['kinetic']
-    assert len(list(group.all())) is 3
+    assert len(list(group.all())) == 3
     group = group['j']
-    assert len(list(group.all())) is 3
+    assert len(list(group.all())) == 3
     assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 4)]
     assert [p.value for p in group.all()] == list(range(7, 10))
 

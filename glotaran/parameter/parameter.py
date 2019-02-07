@@ -66,15 +66,15 @@ class Parameter(LmParameter):
 
         def retrieve(filt, default):
             tmp = list(filter(filt, parameter))
-            if len(tmp) is not 0:
+            if len(tmp) != 0:
                 parameter.remove(tmp[0])
                 return tmp[0]
             else:
                 return default
         options = retrieve(lambda x: isinstance(x, dict), None)
 
-        param.label = parameter[0] if len(parameter) is not 1 else label
-        param.value = float(parameter[0] if len(parameter) is 1 else parameter[1])
+        param.label = parameter[0] if len(parameter) != 1 else label
+        param.value = float(parameter[0] if len(parameter) == 1 else parameter[1])
 
         if default_options:
             param._set_options_from_dict(default_options)
@@ -136,11 +136,11 @@ class Parameter(LmParameter):
     @LmParameter.value.setter
     def value(self, val):
         if not isinstance(val, (int, float)):
-                try:
-                    val = float(val)
-                except Exception:
-                    raise Exception("Parameter Error: value must be numeric:"
-                                    "{} Type: {}".format(val, type(val)))
+            try:
+                val = float(val)
+            except Exception:
+                raise Exception("Parameter Error: value must be numeric:"
+                                "{} Type: {}".format(val, type(val)))
 
         if isinstance(val, int):
             val = float(val)

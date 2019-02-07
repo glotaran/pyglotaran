@@ -47,9 +47,9 @@ def test_megacomplexes(model):
         assert isinstance(megacomplex, DOASMegacomplex)
         assert megacomplex.label == label
         assert megacomplex.k_matrix == ["km{}".format(i)]
-        if i is 2:
+        if i == 2:
             assert megacomplex.oscillation == ["osc1"]
-        if i is 4:
+        if i == 4:
             assert megacomplex.oscillation == ["osc2"]
 
         i = i + 1

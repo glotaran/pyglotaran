@@ -72,14 +72,14 @@ class IrfGaussian:
             dist = (1e3 / index - 1e3 / self.dispersion_center) \
                 if self.model_dispersion_with_wavenumber else (index - self.dispersion_center)/100
 
-        if len(self.center_dispersion) is not 0:
+        if len(self.center_dispersion) != 0:
             if self.dispersion_center is None:
                 raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i+1)
 
         widths = self.width if isinstance(self.width, list) else [self.width]
-        if len(self.width_dispersion) is not 0:
+        if len(self.width_dispersion) != 0:
             if self.dispersion_center is None:
                 raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
             for i, disp in enumerate(self.width_dispersion):

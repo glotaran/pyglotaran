@@ -81,7 +81,7 @@ def read_sdt(file_path: str,
 
     if flim:
 
-        if orig_time_axis_index is not 2:
+        if orig_time_axis_index != 2:
             np.swapaxes(data, 2, orig_time_axis_index)
 
         full_data = xr.DataArray(data, coords={'time': times}, dims=['x', 'y', 'time'])

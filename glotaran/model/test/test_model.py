@@ -114,9 +114,9 @@ def test_model_validity(model, model_error, parameter):
     print(model_error.validate())
     print(model_error.validate(parameter))
     assert not model_error.valid()
-    assert len(model_error.validate()) is 4
+    assert len(model_error.validate()) == 4
     assert not model_error.valid(parameter)
-    assert len(model_error.validate(parameter)) is 8
+    assert len(model_error.validate(parameter)) == 8
 
 
 def test_items(model):

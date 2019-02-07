@@ -238,6 +238,6 @@ class KMatrix:
             return False
         matrix = self.reduced(initial_concentration.compartments)
         for i in range(matrix.shape[1]):
-            if not np.nonzero(matrix[:, i])[0].size == 1 or i is not 0 and matrix[i, i-1] == 0:
+            if not np.nonzero(matrix[:, i])[0].size == 1 or i != 0 and matrix[i, i-1] == 0:
                 return False
         return True

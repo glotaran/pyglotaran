@@ -56,9 +56,9 @@ class Model:
                         set(label, item_cls.from_dict(item))
                     elif isinstance(item, list):
                         if is_typed:
-                            if len(item) < 2 and len(item) is not 1:
+                            if len(item) < 2 and len(item) != 1:
                                 raise Exception(f"Missing type for attribute '{name}'")
-                            item_type = item[1] if len(item) is not 1 and \
+                            item_type = item[1] if len(item) != 1 and \
                                 hasattr(item_cls, 'label') else item[0]
 
                             if item_type not in item_cls._glotaran_model_attribute_types:
@@ -93,9 +93,9 @@ class Model:
                         add(item_cls.from_dict(item))
                     elif isinstance(item, list):
                         if is_typed:
-                            if len(item) < 2 and len(item) is not 1:
+                            if len(item) < 2 and len(item) != 1:
                                 raise Exception(f"Missing type for attribute '{name}'")
-                            item_type = item[1] if len(item) is not 1 and \
+                            item_type = item[1] if len(item) != 1 and \
                                 hasattr(item_cls, 'label') else item[0]
 
                             if item_type not in item_cls._glotaran_model_attribute_types:
@@ -179,7 +179,7 @@ class Model:
                               parameter: ParameterGroup,
                               data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                               nnls: bool = False, group_atol: float = 0.0
-                              )-> Result:
+                              ) -> Result:
         """Loads a result from parameters without going any optimization.
 
         Parameters
@@ -223,7 +223,7 @@ class Model:
 
     def valid(self, parameter: ParameterGroup = None) -> bool:
         """Checks the model for errors.  """
-        return len(self.validate(parameter)) is 0
+        return len(self.validate(parameter)) == 0
 
     def mprint(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
         """Formats the model as Markdown string.

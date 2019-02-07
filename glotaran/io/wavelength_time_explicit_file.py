@@ -316,7 +316,7 @@ def write_ascii_time_trace(filename: str,
                            file_format="TimeExplicit",
                            number_format="%.10e"):
     data_file = \
-        TimeExplicitFile(filepath=filename, dataset=dataset) if file_format is "TimeExplicit" \
+        TimeExplicitFile(filepath=filename, dataset=dataset) if file_format == "TimeExplicit" \
         else WavelengthExplicitFile(filepath=filename, dataset=dataset)
     data_file.write(overwrite=overwrite,
                     comment=comment,
