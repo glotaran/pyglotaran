@@ -18,7 +18,6 @@ install_requires = [
     'pandas>=0.23.4',
     'pyyaml>=3.13',
     'xarray>=0.11.2',
-    'matplotlib>=2.2.3',  # dependency introduced by glotaran.plotting
     'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
 ]
 
