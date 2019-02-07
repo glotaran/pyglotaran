@@ -17,12 +17,15 @@ def finalize_kinetic_result(model, result: Result):
         if not dataset_descriptor.get_k_matrices():
             continue
 
+        compartments = dataset_descriptor.initial_concentration.compartments
+
+        compartments = [c for c in compartments if c in dataset_descriptor.compartments()]
         # get_sas
 
-        dataset.coords['species'] = dataset_descriptor.initial_concentration.compartments
+        dataset.coords['species'] = compartments
         dataset['species_associated_spectra'] = \
             ((result.model.estimated_axis, 'species',),
-             dataset.clp.sel(clp_label=dataset_descriptor.initial_concentration.compartments))
+             dataset.clp.sel(clp_label=compartments))
 
         if dataset_descriptor.baseline:
             dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
@@ -58,7 +61,7 @@ def finalize_kinetic_result(model, result: Result):
         dataset['species_concentration'] = (
             (model.estimated_axis, model.calculated_axis, 'species',),
             dataset.concentration.sel(
-                clp_label=dataset_descriptor.initial_concentration.compartments).values)
+                clp_label=compartments).values)
 
         # get_das
         all_das = []

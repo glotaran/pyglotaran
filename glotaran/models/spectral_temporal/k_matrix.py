@@ -78,7 +78,9 @@ class KMatrix:
         combined.matrix = combined_matrix
         return combined
 
-    def matrix_as_markdown(self, compartments: List[str] = None) -> np.ndarray:
+    def matrix_as_markdown(self, compartments: List[str] = None,
+                           fill_parameter: bool = False,
+                           ) -> np.ndarray:
         """ """
 
         compartments = [c for c in compartments if c in self.involved_compartments()] \
@@ -89,8 +91,35 @@ class KMatrix:
         for index in self.matrix:
             i = compartments.index(index[0])
             j = compartments.index(index[1])
-            array[i, j] = self.matrix[index].full_label
-        return array
+            array[i, j] = \
+                self.matrix[index].full_label if not fill_parameter else self.matrix[index].value
+        return self._array_as_markdown(array, compartments, compartments)
+
+    def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> np.ndarray:
+        """ """
+        compartments = [c for c in initial_concentration.compartments
+                        if c in self.involved_compartments()]
+        return self._array_as_markdown(self.a_matrix(initial_concentration).T,
+                                       compartments,
+                                       self.rates(initial_concentration),
+                                       )
+
+    @staticmethod
+    def _array_as_markdown(array, row_header, column_header):
+        markdown = "| compartment | "
+        markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str)
+                                else e for e in column_header])
+        markdown += "\n|"
+        markdown += "|".join(['---' for _ in range(len(column_header)+1)])
+        markdown += "\n"
+
+        for i, row in enumerate(array):
+            markdown += f"| {row_header[i]} | " if isinstance(row_header[i], str) \
+                else f"| {row_header[i]:.4e} | "
+            markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str) else e for e in row])
+            markdown += "|\n"
+
+        return markdown
 
     def reduced(self, compartments: List[str]) -> np.ndarray:
         """ """
@@ -105,8 +134,10 @@ class KMatrix:
             array[i, j] = self.matrix[index]
         return array
 
-    def full(self, compartments: List[str]):
-        """[ 0 k3
+    def full(self, compartments: List[str]) -> np.ndarray:
+        """
+
+        [ 0 k3
           k1 k2]
 
         translates to
@@ -124,14 +155,6 @@ class KMatrix:
 
         [-k1     k3       [S1]
         k1  -k2-k3]    [S2]
-
-        Parameters
-        ----------
-        parameter :
-
-
-        Returns
-        -------
 
         """
         compartments = [c for c in compartments if c in self.involved_compartments()]
@@ -160,7 +183,7 @@ class KMatrix:
                                                      right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def rates(self, initial_concentration):
+    def rates(self, initial_concentration: InitialConcentration) -> np.ndarray:
         if self.is_unibranched(initial_concentration):
             return np.diag(self.full(initial_concentration.compartments)).copy()
         else:
@@ -168,8 +191,9 @@ class KMatrix:
             return rates
 
     def _gamma(self,
-               eigenvectors,
-               initial_concentration: InitialConcentration) -> np.ndarray:
+               eigenvectors: np.ndarray,
+               initial_concentration: InitialConcentration,
+               ) -> np.ndarray:
         compartments = [c for c in initial_concentration.compartments
                         if c in self.involved_compartments()]
         initial_concentration = \
@@ -207,7 +231,7 @@ class KMatrix:
                 np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
         return a_matrix
 
-    def is_unibranched(self, initial_concentration):
+    def is_unibranched(self, initial_concentration: InitialConcentration) -> bool:
         if not np.sum(
             [initial_concentration.parameters[initial_concentration.compartments.index(c)]
              for c in self.involved_compartments()]) == 1:

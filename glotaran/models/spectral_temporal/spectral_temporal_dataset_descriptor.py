@@ -21,3 +21,9 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
 
     def get_k_matrices(self):
         return [mat for mat in [cmplx.full_k_matrix() for cmplx in self.megacomplex] if mat]
+
+    def compartments(self):
+        compartments = []
+        for k in self.get_k_matrices():
+            compartments += k.involved_compartments()
+        return list(set(compartments))

@@ -1,6 +1,6 @@
 # Glotaran package __init__.py
 
-from . import model, parameter, io, report  # noqa: F401
+from . import model, parameter, io  # noqa: F401
 
 __version__ = '0.0.10'
 

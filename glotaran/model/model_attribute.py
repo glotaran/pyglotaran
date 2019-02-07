@@ -255,13 +255,13 @@ def _create_mprint_func(cls):
                 s = f"{param.full_label}"
                 if parameter:
                     p = parameter.get(param.full_label)
-                    s += f": **{p.value}**"
+                    s += f": **{p.value:.5e}**"
                     if p.vary:
                         err = p.stderr if p.stderr else 0
                         s += f" *(StdErr: {err:.0e}"
                         if initial:
                             i = initial.get(param.full_label)
-                            s += f" ,initial: {i.value}"
+                            s += f" ,initial: {i.value:.5e}"
                         s += ")*"
                     else:
                         s += " *(fixed)*"
