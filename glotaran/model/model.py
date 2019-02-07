@@ -15,7 +15,7 @@ class Model:
     """Model contains basic functions for model."""
 
     @classmethod
-    def from_dict(cls, model_dict: typing.Dict) -> typing.Type['BaseModel']:
+    def from_dict(cls, model_dict: typing.Dict) -> typing.Type['Model']:
         """Creates a model from a dictionary.
 
         Parameters

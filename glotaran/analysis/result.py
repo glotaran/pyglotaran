@@ -27,16 +27,16 @@ class Result:
 
         Parameters
         ----------
-        model :  glotaran.model.BaseModel
-            A subclass of :class:`glotaran.model.BaseModel`
-        data : dict(str, union(xr.Dataset, xr.DataArray))
+        model :
+            A subclass of :class:`glotaran.model.Model`
+        data :
             A dictonary containing all datasets with their labels as keys.
         initital_parameter : glotaran.parameter.ParameterGroup
             The initital fit parameter,
-        nnls : bool, optional
+        nnls :
             (default = False)
             If `True` non-linear least squaes optimizing is used instead of variable projection.
-        atol : float, optional
+        atol :
             (default = 0)
             The tolerance for grouping datasets along the estimated axis.
         """
@@ -79,16 +79,16 @@ class Result:
 
         Parameters
         ----------
-        model :  glotaran.model.BaseModel
-            A subclass of :class:`glotaran.model.BaseModel`
+        model :
+            A subclass of :class:`glotaran.model.Model`
         data : dict(str, union(xr.Dataset, xr.DataArray))
             A dictonary containing all datasets with their labels as keys.
-        parameter : glotaran.model.ParameterGroup
+        parameter :
             The parameter,
-        nnls : bool, optional
+        nnls :
             (default = False)
             If `True` non-linear least squaes optimizing is used instead of variable projection.
-        atol : float, optional
+        atol :
             (default = 0)
             The tolerance for grouping datasets along the estimated axis.
 
