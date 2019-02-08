@@ -23,7 +23,7 @@ def calculate_spectral_simple(dataset, axis):
     kinpar = -1 * np.array(dataset.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
-    return array
+    return compartments, array.T
 
 
 def calculate_spectral_gauss(dataset, axis):
@@ -39,7 +39,8 @@ def calculate_spectral_gauss(dataset, axis):
                 2 * (axis - location[i])/delta[i]
             )
         )
-    return array
+    compartments = [f's{i+1}' for i in range(location.size)]
+    return compartments, array.T
 
 
 @model_attribute(properties={

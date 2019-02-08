@@ -19,7 +19,7 @@ def calculate_spectral_matrix(dataset, axis):
 
     """
     if dataset.initial_concentration is None:
-        return None
+        return None, None
     shape_compartments = [s for s in dataset.shape]
     compartments = [c for c in dataset.initial_concentration.compartments
                     if c in shape_compartments]

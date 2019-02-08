@@ -28,5 +28,6 @@ def calculate_doas_spectral_matrix(dataset, axis):
 
     if spectral_matrix is not None:
         matrix = np.concatenate((matrix, spectral_matrix), axis=1)
+        all_oscillations += spectral_clp
 
-    return oscillations + spectral_clp, matrix
+    return all_oscillations, matrix

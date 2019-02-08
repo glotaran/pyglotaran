@@ -16,7 +16,7 @@ def calculate_c(dataset, index, axis):
 
 
 def calculate_e(dataset, axis):
-    return calculate_c(dataset, 0, axis)[1].T
+    return calculate_c(dataset, 0, axis)
 
 
 @model_attribute()
