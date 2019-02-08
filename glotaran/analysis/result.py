@@ -217,7 +217,7 @@ class Result:
                 ((self.model.calculated_axis, 'left_singular_value_index'), l)
 
             dataset['residual_right_singular_vectors'] = \
-                ((self.model.estimated_axis, 'right_singular_value_index'), r)
+                (('right_singular_value_index', self.model.estimated_axis), r)
 
             dataset['residual_singular_values'] = \
                 ((self.model.estimated_axis, 'singular_value_index'), r)
