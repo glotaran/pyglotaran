@@ -2,7 +2,7 @@ import numpy as np
 from scipy import fftpack
 
 from glotaran.analysis.result import Result
-from glotaran.models.spectral_temporal.kinetic_fit_result import finalize_kinetic_result
+from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_result
 
 
 def finalize_doas_result(model, result: Result):

@@ -48,7 +48,7 @@ sim_model = gta.KineticModel.from_dict({
         'dataset1': {
             'initial_concentration': 'j1',
             'megacomplex': ['m1'],
-            'shapes': {
+            'shape': {
                 's1': 'sh1',
                 's2': 'sh2',
                 's3': 'sh3',

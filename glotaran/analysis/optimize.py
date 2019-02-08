@@ -55,6 +55,11 @@ def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters]
     for index, item in result.groups.items():
         clp_labels, matrix = calculate_group_item(item, result.model, parameter, result.data)
 
+        for i, row in enumerate(matrix.T):
+            if not np.isfinite(matrix).all():
+                raise Exception(f"Matrix is not finite at clp {clp_labels[i]}"
+                                f"\n\nCurrent Parameter:\n\n{parameter}")
+
         clp = None
         residual = None
         if result.nnls:

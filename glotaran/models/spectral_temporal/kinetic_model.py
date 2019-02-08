@@ -9,7 +9,7 @@ from glotaran.parameter import ParameterGroup
 from .initial_concentration import InitialConcentration
 from .irf import Irf
 from .k_matrix import KMatrix
-from .kinetic_fit_result import finalize_kinetic_result
+from .kinetic_result import finalize_kinetic_result
 from .kinetic_megacomplex import KineticMegacomplex
 from .spectral_constraints import (
     SpectralConstraint, OnlyConstraint, ZeroConstraint, EqualAreaConstraint)
