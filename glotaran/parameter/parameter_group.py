@@ -1,5 +1,3 @@
-"""This package contains glotarans parameter group class"""
-
 from collections import OrderedDict
 from math import log
 from os.path import isfile
@@ -37,7 +35,7 @@ class ParameterGroup(OrderedDict):
 
         Parameters
         ----------
-        parameter : lmfit.Parameters
+        parameter :
             lmfit.Parameters dictionary
         """
 
@@ -249,7 +247,7 @@ class ParameterGroup(OrderedDict):
 
         Parameters
         ----------
-        label : str
+        label :
             Label of the Parameter to get.
 
 

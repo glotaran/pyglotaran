@@ -10,17 +10,7 @@ Welcome to pyglotaran's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-.. automodule:: glotaran
-   :members:
-   :undoc-members:
-
-.. autoclass:: KineticModel
-   :members:
-   :inherited-members:
-
-.. autoclass:: glotaran.models.spectral_temporal.KineticMegacomplex
-   :members:
+   api_documentation
 
 Models
 ------
