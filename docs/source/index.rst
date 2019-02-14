@@ -10,13 +10,16 @@ Welcome to pyglotaran's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   introduction
+   installation
+
+.. toctree::
+   :maxdepth: 1
+   :caption: User Documentation:
+
+   user_documentation/quickstart
    api_documentation
 
-Models
-------
-
-Kinetic Model
-+++++++++++++
 
 Indices and tables
 ==================

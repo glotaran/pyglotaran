@@ -12,6 +12,8 @@ The API Documentation for glotaran is automatically created from its docstrings.
 
 .. currentmodule:: glotaran
 
+.. automodule:: glotaran
+
 .. autosummary::
     :toctree: api
 

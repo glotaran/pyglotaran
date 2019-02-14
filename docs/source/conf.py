@@ -57,7 +57,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'numpydoc',
-    #  'sphinx_autodoc_typehints',
+    'sphinx_autodoc_typehints',
+    'IPython.sphinxext.ipython_directive',
+    'IPython.sphinxext.ipython_console_highlighting',
 ]
 
 autoclass_content = "both"
@@ -220,3 +222,5 @@ intersphinx_mapping = {
     'xarray': ('http://xarray.pydata.org/en/stable/', None),
     'https://docs.python.org/': None
 }
+
+ipython_savefig_dir = 'images/plot'

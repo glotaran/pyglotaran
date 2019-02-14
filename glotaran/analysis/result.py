@@ -199,6 +199,19 @@ class Result:
         """A dictonary of the dataset_descriptor groups along the estimated axis."""
         return self._group
 
+    def get_dataset(self, dataset_label: str) -> xr.Dataset:
+        """Returns the result dataset for the given dataset label.
+
+        Parameters
+        ----------
+        dataset_label :
+            The label of the dataset.
+        """
+        try:
+            return self.data[dataset_label]
+        except KeyError:
+            raise Exception(f"Unknown dataset '{dataset_label}'")
+
     def finalize(self, lm_result: lmfit.minimizer.MinimizerResult = None):
 
         if lm_result:
@@ -229,7 +242,7 @@ class Result:
         if callable(self.model._finalize_result):
             self.model._finalize_result(self)
 
-    def mprint(self, with_model=True):
+    def markdown(self, with_model=True):
         string = "# Fitresult\n\n"
 
         ll = 32
@@ -278,4 +291,4 @@ class Result:
         return string
 
     def __str__(self):
-        return self.mprint(with_model=False)
+        return self.markdown(with_model=False)

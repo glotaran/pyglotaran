@@ -356,7 +356,7 @@ class ParameterGroup(OrderedDict):
             params.add(p)
         return params
 
-    def __str__(self):
+    def markdown(self):
         t = "".join(["  " for _ in range(self.get_nr_roots())])
         s = ""
         if self.label != "p":
@@ -366,3 +366,6 @@ class ParameterGroup(OrderedDict):
         for _, g in self.items():
             s += f"{g.__str__()}"
         return s
+
+    def __str__(self):
+        return self.markdown()

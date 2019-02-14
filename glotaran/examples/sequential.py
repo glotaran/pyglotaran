@@ -76,11 +76,25 @@ wanted_parameter = gta.ParameterGroup.from_dict({
     'irf': [['center', 0.3], ['width', 0.1]],
     })
 
+parameter = gta.ParameterGroup.from_dict({
+    'j': [
+            ['1', 1, {'vary': False, 'non-negative': False}],
+            ['0', 0, {'vary': False, 'non-negative': False}],
+        ],
+    'kinetic': [
+        ["1", 0.5],
+        ["2", 0.3],
+        ["3", 0.1],
+    ],
+    'irf': [['center', 0.3], ['width', 0.1]],
+    })
+
 _time = np.arange(-1, 20, 0.01)
 _spectral = np.arange(600, 700, 1.4)
 
 dataset = sim_model.simulate('dataset1', wanted_parameter,
-                             {'time': _time, 'spectral': _spectral}, noise=True)
+                             {'time': _time, 'spectral': _spectral},
+                             noise=True, noise_std_dev=1e-2)
 
 model = gta.KineticModel.from_dict({
     'initial_concentration': {
@@ -113,16 +127,3 @@ model = gta.KineticModel.from_dict({
         }
     }
 })
-
-parameter = gta.ParameterGroup.from_dict({
-    'j': [
-            ['1', 1, {'vary': False, 'non-negative': False}],
-            ['0', 0, {'vary': False, 'non-negative': False}],
-        ],
-    'kinetic': [
-        ["1", 5],
-        ["2", 0.3],
-        ["3", 0.1],
-    ],
-    'irf': [['center', 0.3], ['width', 0.1]],
-    })

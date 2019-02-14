@@ -204,8 +204,16 @@ class Model:
         """
         return Result.from_parameter(self, data, parameter, nnls, group_atol)
 
-    def validate(self, parameter: ParameterGroup = None) -> typing.List[str]:
-        """Returns a list of errors in the model."""
+    def validate(self, parameter: ParameterGroup = None) -> str:
+        """
+        Returns a string listing all problems in the model and missing parameters if specified.
+
+        Parameters
+        ----------
+
+        parameter :
+            The parameter to validate.
+        """
         attrs = getattr(self, '_glotaran_model_attributes')
 
         errors = []
@@ -218,24 +226,30 @@ class Model:
             else:
                 for _, item in attr.items():
                     errors += item.validate(self, parameter=parameter)
-
-        return errors
+        result = ""
+        if errors:
+            result = f"Your model has {len(errors)} problems:\n"
+            for e in errors:
+                result += f"\n * {e}"
+        else:
+            result = "Your model is valid."
+        return result
 
     def valid(self, parameter: ParameterGroup = None) -> bool:
         """Checks the model for errors.  """
         return len(self.validate(parameter)) == 0
 
-    def mprint(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+    def markdown(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
         """Formats the model as Markdown string.
 
-        Parameters will be included if given.
+        Parameters will be included if specified.
 
         Parameters
         ----------
         parameter :
             Parameter to include.
         initial : ParameterGroup
-            Initial values por the parameters.
+            Initial values for the parameters.
         """
         attrs = getattr(self, '_glotaran_model_attributes')
         string = "# Model\n\n"
@@ -260,4 +274,4 @@ class Model:
         return string
 
     def __str__(self):
-        return self.mprint()
+        return self.markdown()
