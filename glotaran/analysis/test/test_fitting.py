@@ -62,10 +62,10 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
 
 @model('one_channel',
        dataset_type=DecayDatasetDescriptor,
-       calculated_matrix=calculate_kinetic,
-       calculated_axis='c',
-       estimated_matrix=calculate_spectral_simple,
-       estimated_axis='e',
+       matrix=calculate_kinetic,
+       matrix_dimension='c',
+       global_matrix=calculate_spectral_simple,
+       global_dimension='e',
        megacomplex_type=MockMegacomplex,
        )
 class DecayModel(Model):
@@ -74,10 +74,10 @@ class DecayModel(Model):
 
 @model('multi_channel',
        dataset_type=GaussianShapeDecayDatasetDescriptor,
-       calculated_matrix=calculate_kinetic,
-       calculated_axis='c',
-       estimated_matrix=calculate_spectral_gauss,
-       estimated_axis='e',
+       matrix=calculate_kinetic,
+       matrix_dimension='c',
+       global_matrix=calculate_spectral_gauss,
+       global_dimension='e',
        megacomplex_type=MockMegacomplex,
        )
 class GaussianDecayModel(Model):

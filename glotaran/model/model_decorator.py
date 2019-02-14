@@ -10,11 +10,11 @@ def model(name,
           attributes={},
           dataset_type=DatasetDescriptor,
           megacomplex_type=None,
-          calculated_matrix=None,
-          estimated_matrix=None,
-          calculated_axis=None,
-          estimated_axis=None,
-          constrain_calculated_matrix_function=None,
+          matrix=None,
+          global_matrix=None,
+          matrix_dimension=None,
+          global_dimension=None,
+          constrain_matrix_function=None,
           additional_penalty_function=None,
           finalize_result_function=None,
           allow_grouping=True,
@@ -24,23 +24,23 @@ def model(name,
 
         setattr(cls, '_model_type', name)
         setattr(cls, '_finalize_result', finalize_result_function)
-        setattr(cls, '_constrain_calculated_matrix_function',
-                constrain_calculated_matrix_function)
+        setattr(cls, '_constrain_matrix_function',
+                constrain_matrix_function)
         setattr(cls, '_additional_penalty_function',
                 additional_penalty_function)
         setattr(cls, '_allow_grouping', allow_grouping)
 
-        if calculated_matrix:
-            c_mat = wrap_func_as_method(cls, name='calculated_matrix')(calculated_matrix)
+        if matrix:
+            c_mat = wrap_func_as_method(cls, name='matrix')(matrix)
             c_mat = staticmethod(c_mat)
-            setattr(cls, 'calculated_matrix', c_mat)
-        setattr(cls, 'calculated_axis', calculated_axis)
+            setattr(cls, 'matrix', c_mat)
+        setattr(cls, 'matrix_dimension', matrix_dimension)
 
-        if estimated_matrix:
-            e_mat = wrap_func_as_method(cls, name='estimated_matrix')(estimated_matrix)
+        if global_matrix:
+            e_mat = wrap_func_as_method(cls, name='global_matrix')(global_matrix)
             e_mat = staticmethod(e_mat)
-            setattr(cls, 'estimated_matrix', e_mat)
-        setattr(cls, 'estimated_axis', estimated_axis)
+            setattr(cls, 'global_matrix', e_mat)
+        setattr(cls, 'global_dimension', global_dimension)
 
         if not hasattr(cls, '_glotaran_model_attributes'):
             setattr(cls, '_glotaran_model_attributes', {})

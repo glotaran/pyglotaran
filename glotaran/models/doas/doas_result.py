@@ -23,7 +23,7 @@ def finalize_doas_result(model, result: Result):
                 if osc.label not in oscillations:
                     oscillations.append(osc.label)
 
-        dim1 = dataset.coords[model.estimated_axis].size
+        dim1 = dataset.coords[model.global_dimension].size
         dim2 = len(oscillations)
         doas = np.zeros((dim1, dim2), dtype=np.float64)
         phase = np.zeros((dim1, dim2), dtype=np.float64)
@@ -36,18 +36,18 @@ def finalize_doas_result(model, result: Result):
         dataset.coords['oscillation'] = oscillations
 
         dataset['dampened_oscillation_associated_spectra'] = (
-            (model.estimated_axis, 'oscillation'), doas)
+            (model.global_dimension, 'oscillation'), doas)
 
         dataset['dampened_oscillation_phase'] = (
-            (model.estimated_axis, 'oscillation'), phase)
+            (model.global_dimension, 'oscillation'), phase)
 
         dataset['dampened_oscillation_concentration_sin'] = (
-            (model.estimated_axis, model.calculated_axis, 'oscillation'),
+            (model.global_dimension, model.matrix_dimension, 'oscillation'),
             dataset.concentration.sel(clp_label=[f'{osc}_sin' for osc in oscillations])
         )
 
         dataset['dampened_oscillation_concentration_cos'] = (
-            (model.estimated_axis, model.calculated_axis, 'oscillation'),
+            (model.global_dimension, model.matrix_dimension, 'oscillation'),
             dataset.concentration.sel(clp_label=[f'{osc}_cos' for osc in oscillations])
         )
 

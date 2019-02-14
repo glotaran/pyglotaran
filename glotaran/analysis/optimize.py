@@ -80,18 +80,18 @@ def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters]
             dataset = result._data[dataset.label]
             if 'residual' not in dataset:
                 dataset['residual'] = dataset.data.copy()
-            end = dataset.coords[result.model.calculated_axis].size + start
-            dataset.residual.loc[{result.model.estimated_axis: i}] = residual[start:end]
+            end = dataset.coords[result.model.matrix_dimension].size + start
+            dataset.residual.loc[{result.model.global_dimension: i}] = residual[start:end]
             start = end
 
             if 'clp' not in dataset:
-                dim1 = dataset.coords[result.model.estimated_axis].size
+                dim1 = dataset.coords[result.model.global_dimension].size
                 dim2 = dataset.coords['clp_label'].size
                 dataset['clp'] = (
-                    (result.model.estimated_axis, 'clp_label'),
+                    (result.model.global_dimension, 'clp_label'),
                     np.zeros((dim1, dim2), dtype=np.float64)
                 )
-            dataset.clp.loc[{result.model.estimated_axis: i}] = \
+            dataset.clp.loc[{result.model.global_dimension: i}] = \
                 np.array([clp[clp_labels.index(i)] if i in clp_labels else None
                           for i in dataset.coords['clp_label'].values])
 

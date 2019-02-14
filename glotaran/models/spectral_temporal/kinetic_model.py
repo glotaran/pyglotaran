@@ -94,12 +94,12 @@ def apply_kinetic_model_constraints(
     },
     dataset_type=SpectralTemporalDatasetDescriptor,
     megacomplex_type=KineticMegacomplex,
-    calculated_matrix=calculate_kinetic_matrix,
-    calculated_axis='time',
-    estimated_matrix=calculate_spectral_matrix,
-    estimated_axis='spectral',
+    matrix=calculate_kinetic_matrix,
+    matrix_dimension='time',
+    global_matrix=calculate_spectral_matrix,
+    global_dimension='spectral',
     finalize_result_function=finalize_kinetic_result,
-    constrain_calculated_matrix_function=apply_kinetic_model_constraints,
+    constrain_matrix_function=apply_kinetic_model_constraints,
     additional_penalty_function=spectral_constraint_penalty
 )
 class KineticModel(Model):

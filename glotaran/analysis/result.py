@@ -38,28 +38,28 @@ class Result:
             If `True` non-linear least squaes optimizing is used instead of variable projection.
         atol :
             (default = 0)
-            The tolerance for grouping datasets along the estimated axis.
+            The tolerance for grouping datasets along the global axis.
         """
         self._model = model
         self._data = {}
         for label, dataset in data.items():
-            if model.calculated_axis not in dataset.dims:
+            if model.matrix_dimension not in dataset.dims:
                 raise Exception("Missing coordinates for dimension "
-                                f"'{model.calculated_axis}' in data for dataset "
+                                f"'{model.matrix_dimension}' in data for dataset "
                                 f"'{label}'")
-            if model.estimated_axis not in dataset.dims:
+            if model.global_dimension not in dataset.dims:
                 raise Exception("Missing coordinates for dimension "
-                                f"'{model.estimated_axis}' in data for dataset "
+                                f"'{model.global_dimension}' in data for dataset "
                                 f"'{label}'")
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
             if 'weight' in dataset and 'weighted_data' not in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
-            self._data[label] = dataset.transpose(model.calculated_axis, model.estimated_axis,
+            self._data[label] = dataset.transpose(model.matrix_dimension, model.global_dimension,
                                                   *[dim for dim in dataset.dims
-                                                    if dim is not model.calculated_axis and
-                                                    dim is not model.estimated_axis])
+                                                    if dim is not model.matrix_dimension and
+                                                    dim is not model.global_dimension])
         self._initial_parameter = initital_parameter
         self._nnls = nnls
         self._group = create_group(model, self._data, atol)
@@ -90,7 +90,7 @@ class Result:
             If `True` non-linear least squaes optimizing is used instead of variable projection.
         atol :
             (default = 0)
-            The tolerance for grouping datasets along the estimated axis.
+            The tolerance for grouping datasets along the global axis.
 
         Returns
         -------
@@ -186,17 +186,17 @@ class Result:
     @property
     def global_clp(self) -> typing.Dict[any, xr.DataArray]:
         """A dictonary of the global condionally linear parameter with the index on the global
-        estimated axis as keys."""
+        global axis as keys."""
         return self._global_clp
 
     @property
     def data_groups(self) -> typing.Dict[any, np.ndarray]:
-        """A dictonary of the data groups along the estimated axis."""
+        """A dictonary of the data groups along the global axis."""
         return self._data_group
 
     @property
     def groups(self) -> typing.Dict[any, typing.List[typing.Tuple[any, str]]]:
-        """A dictonary of the dataset_descriptor groups along the estimated axis."""
+        """A dictonary of the dataset_descriptor groups along the global axis."""
         return self._group
 
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
@@ -227,13 +227,13 @@ class Result:
             l, v, r = np.linalg.svd(dataset.residual)
 
             dataset['residual_left_singular_vectors'] = \
-                ((self.model.calculated_axis, 'left_singular_value_index'), l)
+                ((self.model.matrix_dimension, 'left_singular_value_index'), l)
 
             dataset['residual_right_singular_vectors'] = \
-                (('right_singular_value_index', self.model.estimated_axis), r)
+                (('right_singular_value_index', self.model.global_dimension), r)
 
             dataset['residual_singular_values'] = \
-                ((self.model.estimated_axis, 'singular_value_index'), r)
+                ((self.model.global_dimension, 'singular_value_index'), r)
 
             # reconstruct fitted data
 

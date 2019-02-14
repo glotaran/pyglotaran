@@ -11,9 +11,9 @@ from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_m
     'flim',
     dataset_type=SpectralTemporalDatasetDescriptor,
     megacomplex_type=KineticMegacomplex,
-    calculated_matrix=calculate_kinetic_matrix,
-    calculated_axis='time',
-    estimated_axis='pixel',
+    matrix=calculate_kinetic_matrix,
+    matrix_dimension='time',
+    global_dimension='pixel',
     allow_grouping=False,
 )
 class FLIMModel(KineticModel):

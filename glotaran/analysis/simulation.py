@@ -36,60 +36,55 @@ def simulate(model: typing.Type['glotaran.model.Model'],
         The seed for the noise simulation.
     """
 
-    if model.estimated_matrix is None and clp is None:
-        raise Exception("Cannot simulate models without implementation for estimated matrix"
+    if model.global_matrix is None and clp is None:
+        raise Exception("Cannot simulate models without implementation for global matrix"
                         " and no clp given.")
 
     filled_dataset = model.dataset[dataset].fill(model, parameter)
 
-    calculated_axis = axis[model.calculated_axis]
+    matrix_dimension = axis[model.matrix_dimension]
 
-    estimated_axis = axis[model.estimated_axis]
+    global_dimension = axis[model.global_dimension]
 
-    calculated_matrix = [model.calculated_matrix(filled_dataset,
-                                                 index,
-                                                 calculated_axis)
-                         for index in estimated_axis]
-    if callable(model._constrain_calculated_matrix_function):
-        calculated_matrix = [model._constrain_calculated_matrix_function(parameter,
-                                                                         clp, mat,
-                                                                         estimated_axis[i])
-                             for i, (clp, mat) in enumerate(calculated_matrix)]
-    calculated_matrix = [xr.DataArray(mat, coords=[(model.calculated_axis, calculated_axis),
-                                                   ('clp_label', clp_label)])
-                         for clp_label, mat in calculated_matrix]
+    matrix = [model.matrix(filled_dataset, index, matrix_dimension) for index in global_dimension]
+    if callable(model._constrain_matrix_function):
+        matrix = [model._constrain_matrix_function(parameter, clp, mat, global_dimension[i])
+                  for i, (clp, mat) in enumerate(matrix)]
+    matrix = [xr.DataArray(mat, coords=[(model.matrix_dimension, matrix_dimension),
+                                        ('clp_label', clp_label)])
+              for clp_label, mat in matrix]
 
     if clp:
-        if clp.shape[0] != estimated_axis.size:
+        if clp.shape[0] != global_dimension.size:
             raise ValueError(f"Size of dimension 0 of clp ({clp.shape[0]}) != size of axis"
-                             f" '{model.estimated_axis}' ({estimated_axis.size})")
+                             f" '{model.global_dimension}' ({global_dimension.size})")
         if isinstance(clp, xr.DataArray):
-            if model.estimated_axis not in clp.coords:
-                raise ValueError(f"Missing coordinate '{model.estimated_axis}' in clp.")
+            if model.global_dimension not in clp.coords:
+                raise ValueError(f"Missing coordinate '{model.global_dimension}' in clp.")
             if 'clp_label' not in clp.coords:
                 raise ValueError(f"Missing coordinate 'clp_label' in clp.")
         else:
             if 'clp_label' not in axis:
                 raise ValueError("Missing axis 'clp_label'")
-            clp = xr.DataArray(clp, coords=[(model.estimated_axis, estimated_axis),
+            clp = xr.DataArray(clp, coords=[(model.global_dimension, global_dimension),
                                             ('clp_label', axis['clp_label'])])
     else:
-        clp_labels, clp = model.estimated_matrix(filled_dataset, estimated_axis)
-        clp = xr.DataArray(clp, coords=[(model.estimated_axis, estimated_axis),
+        clp_labels, clp = model.global_matrix(filled_dataset, global_dimension)
+        clp = xr.DataArray(clp, coords=[(model.global_dimension, global_dimension),
                                         ('clp_label', clp_labels)])
 
-    dim1 = calculated_axis.size
-    dim2 = estimated_axis.size
+    dim1 = matrix_dimension.size
+    dim2 = global_dimension.size
     result = np.empty((dim1, dim2), dtype=np.float64)
     for i in range(dim2):
-        result[:, i] = np.dot(calculated_matrix[i], clp[i])
+        result[:, i] = np.dot(matrix[i], clp[i])
 
     if noise:
         if noise_seed is not None:
             np.random.seed(noise_seed)
         result = np.random.normal(result, noise_std_dev)
     data = xr.DataArray(result, coords=[
-        (model.calculated_axis, calculated_axis), (model.estimated_axis, estimated_axis)
+        (model.matrix_dimension, matrix_dimension), (model.global_dimension, global_dimension)
     ])
 
     return data.to_dataset(name="data")

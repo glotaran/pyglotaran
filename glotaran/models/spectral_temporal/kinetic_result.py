@@ -24,7 +24,7 @@ def finalize_kinetic_result(model, result: Result):
 
         dataset.coords['species'] = compartments
         dataset['species_associated_spectra'] = \
-            ((result.model.estimated_axis, 'species',),
+            ((result.model.global_dimension, 'species',),
              dataset.clp.sel(clp_label=compartments))
 
         if dataset_descriptor.baseline:
@@ -59,7 +59,7 @@ def finalize_kinetic_result(model, result: Result):
                     .loc[{'species': relation.compartment, 'spectral': idx}] = sas
 
         dataset['species_concentration'] = (
-            (model.estimated_axis, model.calculated_axis, 'species',),
+            (model.global_dimension, model.matrix_dimension, 'species',),
             dataset.concentration.sel(
                 clp_label=compartments).values)
 
@@ -82,7 +82,7 @@ def finalize_kinetic_result(model, result: Result):
 
             all_das_labels.append(megacomplex.label)
             all_das.append(
-                xr.DataArray(das, coords=[dataset.coords[model.estimated_axis],
+                xr.DataArray(das, coords=[dataset.coords[model.global_dimension],
                                           ('compartment', compartments)]))
 
         if all_das:
@@ -107,10 +107,10 @@ def finalize_kinetic_result(model, result: Result):
                 dataset.coords['coherent_artifact_order'] = \
                         list(range(0, irf.coherent_artifact_order+1))
                 dataset['irf_concentration'] = (
-                    (model.estimated_axis, model.calculated_axis, 'coherent_artifact_order'),
+                    (model.global_dimension, model.matrix_dimension, 'coherent_artifact_order'),
                     dataset.concentration.sel(clp_label=irf.clp_labels()).values
                 )
                 dataset['irf_associated_spectra'] = (
-                    (model.estimated_axis, 'coherent_artifact_order'),
+                    (model.global_dimension, 'coherent_artifact_order'),
                     dataset.clp.sel(clp_label=irf.clp_labels()).values
                 )

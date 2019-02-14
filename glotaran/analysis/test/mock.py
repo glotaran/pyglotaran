@@ -25,10 +25,10 @@ class MockMegacomplex:
 
 
 @model('mock',
-       calculated_matrix=calculate_c,
-       calculated_axis='c',
-       estimated_matrix=calculate_e,
-       estimated_axis='e',
+       matrix=calculate_c,
+       matrix_dimension='c',
+       global_matrix=calculate_e,
+       global_dimension='e',
        megacomplex_type=MockMegacomplex,
        )
 class MockModel(Model):

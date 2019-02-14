@@ -16,7 +16,7 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
                  atol: float = 0.0,
                  dataset: str = None,
                  ) -> Group:
-    """create_group creates a calculation group for a model along the estimated
+    """create_group creates a calculation group for a model along the global
     axis.
 
     Parameters
@@ -40,7 +40,7 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
             continue
         if dataset_descriptor.label not in data:
             raise Exception(f"Missing data for dataset '{dataset_descriptor.label}'")
-        axis = data[dataset_descriptor.label][model.estimated_axis].values
+        axis = data[dataset_descriptor.label][model.global_dimension].values
         for index in axis:
             if model._allow_grouping:
                 group_index = index if not any(_is_close(index, val, atol) for val in group) \
@@ -67,7 +67,7 @@ def calculate_group_item(item,
                          data: Dict[str, Union[xr.Dataset, xr.DataArray]],
                          ) -> Generator[Tuple[int, np.ndarray], None, None]:
 
-    if model.calculated_matrix is None:
+    if model.matrix is None:
         raise Exception("Missing function for calculated matrix.")
 
     full_clp = None
@@ -79,29 +79,29 @@ def calculate_group_item(item,
         dataset_descriptor = dataset_descriptor.fill(model, parameter)
 
         dataset = data[dataset_descriptor.label]
-        axis = dataset.coords[model.calculated_axis].values
+        axis = dataset.coords[model.matrix_dimension].values
 
-        (clp, matrix) = model.calculated_matrix(dataset_descriptor, index, axis)
+        (clp, matrix) = model.matrix(dataset_descriptor, index, axis)
 
         if 'concentration' not in dataset:
             dataset.coords['clp_label'] = clp
             dataset['concentration'] = (
                 (
-                    model.estimated_axis,
-                    model.calculated_axis,
+                    model.global_dimension,
+                    model.matrix_dimension,
                     'clp_label',
                 ),
                 np.zeros((
-                    dataset.coords[model.estimated_axis].size,
+                    dataset.coords[model.global_dimension].size,
                     axis.size,
                     len(clp),
                 ), dtype=np.float64))
-        dataset.concentration.loc[{model.estimated_axis: index}] = matrix
+        dataset.concentration.loc[{model.global_dimension: index}] = matrix
 
         if 'weight' in dataset:
             for i in range(matrix.shape[1]):
                 matrix[:, i] = np.multiply(
-                    matrix[:, i], dataset.weight.sel({model.estimated_axis, index})
+                    matrix[:, i], dataset.weight.sel({model.global_dimension, index})
                 )
 
         if dataset_descriptor.scale:
@@ -127,9 +127,9 @@ def calculate_group_item(item,
 
     # Apply constraints
 
-    if callable(model._constrain_calculated_matrix_function):
+    if callable(model._constrain_matrix_function):
         (full_clp, full_matrix) = \
-            model._constrain_calculated_matrix_function(parameter, full_clp, full_matrix, index)
+            model._constrain_matrix_function(parameter, full_clp, full_matrix, index)
 
     return (full_clp, full_matrix)
 
@@ -188,7 +188,7 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
 
             dataset = data[dataset_descriptor.label]
             dataset = dataset.weighted_data if 'weighted_data' in dataset else dataset.data
-            dataset = dataset.sel({model.estimated_axis: index}).values
+            dataset = dataset.sel({model.global_dimension: index}).values
             if full is None:
                 full = dataset
             else:

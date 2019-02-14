@@ -158,17 +158,13 @@ class Model:
         parameter : glotaran.model.ParameterGroup
             The parameter,
         nnls :
-            (default = False)
             If `True` non-linear least squaes optimizing is used instead of variable projection.
         verbose :
-            (default = True)
             If `True` feedback is printed at every iteration.
         max_nfev :
-            (default = None)
             Maximum number of function evaluations. `None` for unlimited.
         group_atol :
-            (default = 0)
-            The tolerance for grouping datasets along the estimated axis.
+            The tolerance for grouping datasets along the global axis.
 
         """
         result = Result(self, data, parameter, nnls, atol=group_atol)
@@ -199,7 +195,7 @@ class Model:
             Maximum number of function evaluations. `None` for unlimited.
         group_atol :
             (default = 0)
-            The tolerance for grouping datasets along the estimated axis.
+            The tolerance for grouping datasets along the global axis.
 
         """
         return Result.from_parameter(self, data, parameter, nnls, group_atol)
