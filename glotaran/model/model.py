@@ -237,7 +237,7 @@ class Model:
 
     def valid(self, parameter: ParameterGroup = None) -> bool:
         """Checks the model for errors.  """
-        return len(self.validate(parameter)) == 0
+        return self.validate(parameter) == "Your model is valid."
 
     def markdown(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
         """Formats the model as Markdown string.
