@@ -35,8 +35,8 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf $(API_TOCTREE_DIR)/*
 
-api_docs:
-	sphinx-apidoc -o $(API_TOCTREE_DIR) ../glotaran
+api_doc:
+	$(PYTHON_TO_USE) $(SOURCEDIR)/generate_api_doc.py
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

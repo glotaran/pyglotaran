@@ -25,9 +25,9 @@ To understand how it works in detail the following links might be of help:
 
 * `Jinja Templating <http://jinja.pocoo.org/docs/2.10/templates/>`_
 
-* `Sphinx autosummary Docs <http://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html?highlight=autosummary%20>`_
+* `Sphinx autosummary Docs <http://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html?highlight=autosummary%20>`_ # noqa E501
 
-* `Sphinx autodoc Docs  <http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc>`_
+* `Sphinx autodoc Docs  <http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc>`_ # noqa E501
 """
 
 import os
@@ -40,7 +40,7 @@ TEMPLATE_DIR = os.path.join(DOCS_DIR, "_templates")
 API_DOCUMENTATION_TEMPLATE_PATH = os.path.join(TEMPLATE_DIR,
                                                "api_documentation_template.rst")
 API_DOCUMENTATION_PATH = os.path.join(DOCS_DIR,
-                                      "api_documentation.rst")
+                                      "user_documentation", "api_documentation.rst")
 
 KNOWN_PACKAGES_TEMPLATE_PATH = os.path.join(TEMPLATE_DIR,
                                             "known_packages_template.rst")
@@ -120,7 +120,7 @@ def traverse_package(package_path, project_root, child_modules=[], child_package
         #                                                                     importer))
         submodule_path = os.path.abspath(os.path.join(package_path, modname))
         import_path = submodule_path.replace(project_root, "").replace(os.sep, ".")[1:]
-        if not "test" in import_path:
+        if "test" not in import_path:
             child_modules.append(import_path)
 
             if ispkg:
@@ -221,19 +221,6 @@ def write_known_packages(child_packages, child_modules,
 
 
 if __name__ == "__main__":
-    DOCS_DIR = os.path.abspath(os.path.dirname(__file__))
-    TEMPLATE_DIR = os.path.join(DOCS_DIR, "_templates")
-
-    API_DOCUMENTATION_TEMPLATE_PATH = os.path.join(TEMPLATE_DIR,
-                                                   "api_documentation_template.rst")
-    API_DOCUMENTATION_PATH = os.path.join(DOCS_DIR,
-                                          "api_documentation.rst")
-
-    KNOWN_PACKAGES_TEMPLATE_PATH = os.path.join(TEMPLATE_DIR,
-                                                "known_packages_template.rst")
-
-    KNOWN_PACKAGES_PATH = os.path.join(TEMPLATE_DIR,
-                                       "known_packages.rst")
 
     # uncomment the next line to log funtionoutput for debugging
     # logging.basicConfig(filename='generate_api_documentation.log', level=logging.INFO)
@@ -243,7 +230,6 @@ if __name__ == "__main__":
     module_imports = traverse_package(PACKAGE_ROOT, PROJECT_ROOT)
     child_modules = module_imports["child_modules"]
     child_packages = module_imports["child_packages"]
-
     write_api_documentation(child_modules,
                             API_DOCUMENTATION_TEMPLATE_PATH,
                             API_DOCUMENTATION_PATH)
