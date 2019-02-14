@@ -107,16 +107,16 @@ def test_model_attr(model, attr):
 
 def test_model_validity(model, model_error, parameter):
     print(model.test['t1'])
-    print(model.validate())
-    print(model.validate(parameter))
+    print(model.problem_list())
+    print(model.problem_list(parameter))
     assert model.valid()
     assert model.valid(parameter)
-    print(model_error.validate())
-    print(model_error.validate(parameter))
+    print(model_error.problem_list())
+    print(model_error.problem_list(parameter))
     assert not model_error.valid()
-    assert len(model_error.validate()) == 4
+    assert len(model_error.problem_list()) == 4
     assert not model_error.valid(parameter)
-    assert len(model_error.validate(parameter)) == 8
+    assert len(model_error.problem_list(parameter)) == 8
 
 
 def test_items(model):

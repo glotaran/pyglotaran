@@ -204,6 +204,30 @@ class Model:
         """
         return Result.from_parameter(self, data, parameter, nnls, group_atol)
 
+    def problem_list(self, parameter: ParameterGroup = None) -> typing.List[str]:
+        """
+        Returns a list with all problems in the model and missing parameters if specified.
+
+        Parameters
+        ----------
+
+        parameter :
+            The parameter to validate.
+        """
+        problems = []
+
+        attrs = getattr(self, '_glotaran_model_attributes')
+        for attr in attrs:
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    problems += item.validate(self, parameter=parameter)
+            else:
+                for _, item in attr.items():
+                    problems += item.validate(self, parameter=parameter)
+
+        return problems
+
     def validate(self, parameter: ParameterGroup = None) -> str:
         """
         Returns a string listing all problems in the model and missing parameters if specified.
@@ -214,30 +238,20 @@ class Model:
         parameter :
             The parameter to validate.
         """
-        attrs = getattr(self, '_glotaran_model_attributes')
-
-        errors = []
-
-        for attr in attrs:
-            attr = getattr(self, attr)
-            if isinstance(attr, list):
-                for item in attr:
-                    errors += item.validate(self, parameter=parameter)
-            else:
-                for _, item in attr.items():
-                    errors += item.validate(self, parameter=parameter)
         result = ""
-        if errors:
-            result = f"Your model has {len(errors)} problems:\n"
-            for e in errors:
-                result += f"\n * {e}"
+
+        problems = self.problem_list(parameter)
+        if problems:
+            result = f"Your model has {len(problems)} problems:\n"
+            for p in problems:
+                result += f"\n * {p}"
         else:
             result = "Your model is valid."
         return result
 
     def valid(self, parameter: ParameterGroup = None) -> bool:
         """Checks the model for errors.  """
-        return self.validate(parameter) == "Your model is valid."
+        return len(self.problem_list(parameter)) == 0
 
     def markdown(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
         """Formats the model as Markdown string.
