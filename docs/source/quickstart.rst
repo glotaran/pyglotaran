@@ -37,17 +37,37 @@ Now we can plot some time traces.
 
 .. ipython::
 
-   @savefig plot_usage_dataset_traces.png width=8in
    In [1]: plot_data = dataset.data.sel(spectral=[620, 630, 650], method='nearest')
-      ...: plot_data.plot.line(x='time', aspect=2, size=5);
+
+   @savefig plot_usage_dataset_traces.png width=8in
+   In [1]: plot_data.plot.line(x='time', aspect=2, size=5);
 
 We can also plot spectra at different times.
 
 .. ipython::
 
-   @savefig plot_usage_dataset_spectra.png width=8in
    In [1]: plot_data = dataset.data.sel(time=[1, 10, 20], method='nearest')
-      ...: plot_data.plot.line(x='spectral', aspect=2, size=5);
+
+   @savefig plot_usage_dataset_spectra.png width=8in
+   In [1]: plot_data.plot.line(x='spectral', aspect=2, size=5);
+
+To get an idea about how to model your data, you should inspect the singular
+value decomposition. Pyglotaran has a function to calculate it (among other
+things).
+
+.. ipython:: python
+
+   dataset = gta.io.prepare_dataset(dataset)
+   dataset
+
+First, take a look at the first 10 singular values:
+
+.. ipython::
+
+   In [1]: plot_data = dataset.data_singular_values.sel(singular_value_index=range(0, 10))
+
+   @savefig quickstart_data_singular_values.png width=8in
+   In [1]: plot_data.plot(yscale='log', marker='o', linewidth=0, aspect=2, size=5);
 
 To analyze our data, we need to create a model. Create a file called `model.py`
 in your working directory and fill it with the following:
@@ -214,15 +234,17 @@ the residual.
 
 .. ipython::
 
-   @savefig plot_quickstart_lsv.png width=8in
    In [1]: plot_data = result_dataset.residual_left_singular_vectors.sel(left_singular_value_index=0)
-      ...: plot_data.plot.line(x='time', aspect=2, size=5);
+
+   @savefig plot_quickstart_lsv.png width=8in
+   In [1]: plot_data.plot.line(x='time', aspect=2, size=5);
 
 .. ipython::
 
-   @savefig plot_quickstart_rsv.png width=8in
    In [1]: plot_data = result_dataset.residual_right_singular_vectors.sel(right_singular_value_index=0)
-      ...: plot_data.plot.line(x='spectral', aspect=2, size=5);
+
+   @savefig plot_quickstart_rsv.png width=8in
+   In [1]: plot_data.plot.line(x='spectral', aspect=2, size=5);
 
 Finally, you can save your result.
 
