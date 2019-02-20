@@ -1,28 +1,94 @@
-import typing
+"""The model decorator."""
 
+import typing
+import numpy as np
+
+from glotaran.analysis.result import Result
+from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model
 
 from .dataset_descriptor import DatasetDescriptor
+from .model import Model
 from .util import wrap_func_as_method
 
 
-def model(name,
-          attributes={},
-          dataset_type=DatasetDescriptor,
-          megacomplex_type=None,
-          matrix=None,
-          global_matrix=None,
-          matrix_dimension=None,
-          global_dimension=None,
-          constrain_matrix_function=None,
-          additional_penalty_function=None,
-          finalize_result_function=None,
-          allow_grouping=True,
-          ):
+MatrixFunction = typing.Callable[
+    [typing.Type[DatasetDescriptor], typing.Any, np.ndarray],
+    typing.Tuple[typing.List[str], np.ndarray]]
+"""A `MatrixFunction` calculates the matrix for a model."""
+
+GlobalMatrixFunction = typing.Callable[
+    [typing.Type[DatasetDescriptor], np.ndarray],
+    typing.Tuple[typing.List[str], np.ndarray]]
+"""A `GlobalMatrixFunction` calculates the global matrix for a model."""
+
+ConstrainMatrixFunction = typing.Callable[
+    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, float],
+    typing.Tuple[typing.List[str], np.ndarray]]
+"""A `ConstrainMatrixFunction` applies constraints on a matrix."""
+
+FinalizeFunction = typing.Callable[
+    [typing.Type[Model], Result], None]
+"""A `FinalizeFunction` gets called after optimization."""
+
+PenaltyFunction = typing.Callable[
+    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, float],
+    np.ndarray]
+"""A `PenaltyFunction` calculates additional penalties for the optimization."""
+
+
+def model(model_type: str,
+          attributes: typing.Dict[str, typing.Any] = {},
+          dataset_type: typing.Type[DatasetDescriptor] = DatasetDescriptor,
+          megacomplex_type: typing.Any = None,
+          matrix: MatrixFunction = None,
+          global_matrix: GlobalMatrixFunction = None,
+          matrix_dimension: str = None,
+          global_dimension: str = None,
+          constrain_matrix_function: ConstrainMatrixFunction = None,
+          additional_penalty_function: PenaltyFunction = None,
+          finalize_result_function: FinalizeFunction = None,
+          allow_grouping: bool = True,
+          ) -> typing.Callable:
+    """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
+    It creates properties for the given attributes as well as functions to add access them. Also it
+    adds the functions (e.g. for `matrix`) to the model ansures they are added wrapped in a correct
+    way.
+
+    Parameters
+    ----------
+    model_type :
+        Human readable string used by the parser to identify the correct model.
+    attributes :
+        A dictionary of attribute names and types. All types must be decorated with the
+        :func:`glotaran.model.model_attribute` decorator.
+    dataset_type :
+     A subclass of :class:`DatasetDescriptor`
+    megacomplex_type :
+        A class for the model megacomplexes. The class must be decorated with the
+        :func:`glotaran.model.model_attribute` decorator.
+    matrix :
+        A function to calculate the matrix for the model.
+    global_matrix :
+        A function to calculate the global matrix for the model.
+    matrix_dimension :
+        The name of model matrix row dimension.
+    global_dimension :
+        The name of model global matrix row dimension.
+    constrain_matrix_function :
+        A function to constrain the global matrix for the model.
+    None
+    additional_penalty_function : PenaltyFunction
+        A function to calculate additional penalties when optimizing the model.
+    finalize_result_function :
+        A function to finalize a result after optimization.
+    allow_grouping :
+        If `True`, datasets can can be grouped along the global dimension.
+    """
 
     def decorator(cls):
 
-        setattr(cls, '_model_type', name)
+        setattr(cls, '_model_type', model_type)
         setattr(cls, '_finalize_result', finalize_result_function)
         setattr(cls, '_constrain_matrix_function',
                 constrain_matrix_function)
@@ -70,7 +136,7 @@ def model(name,
         init = _create_init_func(cls, attributes)
         setattr(cls, '__init__', init)
 
-        register_model(name, cls)
+        register_model(model_type, cls)
 
         return cls
 

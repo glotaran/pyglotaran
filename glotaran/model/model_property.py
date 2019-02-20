@@ -1,3 +1,5 @@
+"""The model property class."""
+
 import typing
 
 from glotaran.parameter import Parameter

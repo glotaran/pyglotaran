@@ -213,6 +213,19 @@ class Result:
             raise Exception(f"Unknown dataset '{dataset_label}'")
 
     def finalize(self, lm_result: lmfit.minimizer.MinimizerResult = None):
+        """Finalizes the result. Calculates the unweighted residual (if applicable), the residual
+        svd and calls the model's finalize function.
+
+        Note
+        ----
+
+        This function is intended for internal use and should not be called by users.
+
+        Parameters
+        ----------
+        lm_result :
+            The result of the optimization with `lmfit`.
+        """
 
         if lm_result:
             self._lm_result = lm_result
@@ -242,7 +255,14 @@ class Result:
         if callable(self.model._finalize_result):
             self.model._finalize_result(self)
 
-    def markdown(self, with_model=True):
+    def markdown(self, with_model=True) -> str:
+        """Formats the model as a markdown text.
+
+        Parameters
+        ----------
+        with_model :
+            If `True`, the model will be printed together with the initial and optimized parameter.
+        """
         string = "# Fitresult\n\n"
 
         ll = 32

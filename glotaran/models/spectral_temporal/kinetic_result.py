@@ -1,13 +1,15 @@
 import numpy as np
 import xarray as xr
 
+import glotaran
 from glotaran.analysis.result import Result
 
 from .irf import IrfGaussian
 from .spectral_constraints import OnlyConstraint, ZeroConstraint
 
 
-def finalize_kinetic_result(model, result: Result):
+def finalize_kinetic_result(
+        model: 'glotaran.models.spectral_temporal.KineticModel', result: Result):
 
     for label in result.model.dataset:
         dataset = result.data[label]

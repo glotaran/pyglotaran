@@ -1,4 +1,4 @@
-"""This package contains glotarans base model."""
+"""A base class for global analysis models."""
 
 
 import typing
@@ -12,7 +12,7 @@ from glotaran.parameter import ParameterGroup
 
 
 class Model:
-    """Model contains basic functions for model."""
+    """A base class for global analysis models."""
 
     @classmethod
     def from_dict(cls, model_dict: typing.Dict) -> typing.Type['Model']:
@@ -110,13 +110,14 @@ class Model:
 
     @property
     def model_type(self) -> str:
-        """The type of the model."""
+        """The type of the model as human readable string."""
         return self._model_type
 
     def simulate(self,
                  dataset: str,
                  parameter: ParameterGroup,
-                 axis: typing.Dict[str, np.ndarray],
+                 axes: typing.Dict[str, np.ndarray] = None,
+                 clp: typing.Union[np.ndarray, xr.DataArray] = None,
                  noise: bool = False,
                  noise_std_dev: float = 1.0,
                  noise_seed: int = None,
@@ -126,19 +127,21 @@ class Model:
         Parameters
         ----------
         dataset :
-            Label of the dataset to simulate
+            Label of the dataset to simulate.
         parameter :
             The parameters for the simulation.
-        axis : Dict[str, np.ndarray]
-            A dictory with axis
+        axes :
+            A dictory with axes for simulation.
+        clp :
+            Conditionaly linear parameter. Will be used instead of `model.global_matrix` if given.
         noise :
             If `True` noise is added to the simulated data.
         noise_std_dev :
-            the standart deviation of the noise.
+            The standart deviation of the noise.
         noise_seed :
             Seed for the noise.
         """
-        return simulate(self, parameter, dataset, axis, noise=noise,
+        return simulate(self, parameter, dataset, axes=axes, clp=clp, noise=noise,
                         noise_std_dev=noise_std_dev, noise_seed=noise_seed)
 
     def optimize(self,
@@ -156,7 +159,7 @@ class Model:
         data :
             A dictonary containing all datasets with their labels as keys.
         parameter : glotaran.model.ParameterGroup
-            The parameter,
+            The initial parameter.
         nnls :
             If `True` non-linear least squaes optimizing is used instead of variable projection.
         verbose :
@@ -164,8 +167,7 @@ class Model:
         max_nfev :
             Maximum number of function evaluations. `None` for unlimited.
         group_atol :
-            The tolerance for grouping datasets along the global axis.
-
+            The tolerance for grouping datasets along the global dimension.
         """
         result = Result(self, data, parameter, nnls, atol=group_atol)
         optimize(result, verbose=verbose, max_nfev=max_nfev)
@@ -176,26 +178,18 @@ class Model:
                               data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
                               nnls: bool = False, group_atol: float = 0.0
                               ) -> Result:
-        """Loads a result from parameters without going any optimization.
+        """Loads a result from parameters without optimization.
 
         Parameters
         ----------
         data :
             A dictonary containing all datasets with their labels as keys.
         parameter : glotaran.model.ParameterGroup
-            The parameter,
+            The parameter.
         nnls :
-            (default = False)
             If `True` non-linear least squaes optimizing is used instead of variable projection.
-        verbose :
-            (default = True)
-            If `True` feedback is printed at every iteration.
-        max_nfev :
-            (default = None)
-            Maximum number of function evaluations. `None` for unlimited.
         group_atol :
-            (default = 0)
-            The tolerance for grouping datasets along the global axis.
+            The tolerance for grouping datasets along the global axes.
 
         """
         return Result.from_parameter(self, data, parameter, nnls, group_atol)
@@ -246,7 +240,14 @@ class Model:
         return result
 
     def valid(self, parameter: ParameterGroup = None) -> bool:
-        """Checks the model for errors.  """
+        """Returns `True` if the number problems in the model is 0, else `False`
+
+        Parameters
+        ----------
+
+        parameter :
+            The parameter to validate.
+        """
         return len(self.problem_list(parameter)) == 0
 
     def markdown(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
@@ -258,7 +259,7 @@ class Model:
         ----------
         parameter :
             Parameter to include.
-        initial : ParameterGroup
+        initial :
             Initial values for the parameters.
         """
         attrs = getattr(self, '_glotaran_model_attributes')

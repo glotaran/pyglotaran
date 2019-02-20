@@ -1,4 +1,4 @@
-"""This package contains the glotaran model item decorator."""
+"""The model attribute decorator."""
 
 import copy
 import typing
@@ -10,29 +10,34 @@ from .model_property import ModelProperty
 from .util import wrap_func_as_method
 
 
-def model_attribute(properties={},
-                    has_type=False,
-                    no_label=False):
-    """The model_attribute decorator adds the given attributes to the class and applies
-    the `dataclass` on it. Further it adds `from_dict` and `from_list`
-    classmethods for serialization. Also a `validate_model` and
-    `validate_parameter` method is created.
+def model_attribute(
+        properties: typing.Union[typing.Any, typing.Dict[str, typing.Dict[str, typing.Any]]] = {},
+        has_type: bool = False,
+        no_label: bool = False) -> typing.Callable:
+    """The `@model_attribute` decorator adds the given properties to the class. Further it adds
+    classmethods for deserialization, validation and printing.
 
-    Classes with the glotaran_model_attribute decorator intended to be used in
-    glotaran models.
+    By default, a `label` property is added.
+
+    The `properties` dictionary contains the name of the properties as keys. The values must be
+    either a `type` or dictionary with the following values:
+
+    * type: a `type` (required)
+    * doc: a string for documentation (optional)
+    * default: a default value (optional)
+    * allow_none: if `True`, the property can be set to None (optional)
+
+    Classes with the `model_attribute` decorator intended to be used in glotaran models.
 
     Parameters
     ----------
-    attributes: Dict[str, type]
-        (default value = {})
-        A dictonary of attribute names and types.
-    has_type: bool
-        (default value = False)
-        If true, a type attribute will added. Used for model attributes, which
-        can have more then one type (e.g. compartment constraints)
-    no_label: bool
-        (default value = False)
-        If true no label attribute will be added. Use for nested items.
+    properties :
+        A dictionary of property names and options.
+    has_type:
+        If true, a type property will added. Used for model attributes, which
+        can have more then one type.
+    no_label:
+        If true no label property will be added.
     """
     def decorator(cls):
 
@@ -94,14 +99,15 @@ def model_attribute(properties={},
 
 def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
     """The model_attribute_typed decorator adds attributes to the class to enable
-    the glotaran model parser to infer the correct class an item when there
-    are multiple variants. See package glotaran.model.compartment_constraints
-    for an example.
+    the glotaran model parser to infer the correct class for an item when there
+    are multiple variants.
 
     Parameters
     ----------
-    types : dict(str, any)
-        A dictonary of types and options.
+    types :
+        A dictionary of types and options.
+    no_label:
+        If `True` no label property will be added.
     """
 
     def decorator(cls):
@@ -132,7 +138,7 @@ def _create_from_dict_func(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def from_dict(ncls, values: typing.Dict) -> cls:
-        f"""Creates an instance of {cls.__name__} from a dictonary of values.
+        f"""Creates an instance of {cls.__name__} from a dictionary of values.
 
         Intended only for internal use.
 

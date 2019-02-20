@@ -16,17 +16,17 @@ def simulate(model: typing.Type['glotaran.model.Model'],
              noise_std_dev=1.0,
              noise_seed=None,
              ):
-    """Simulates the model.
+    """Simulates a model.
 
     Parameters
     ----------
     model :
-        The model to simulate
+        The model to simulate.
     parameter :
         The parameters for the simulation.
     dataset :
         Label of the dataset to simulate
-    axis :
+    axes :
         A dictory with axes for simulation.
     clp :
         Conditionaly linear parameter. Will be used instead of `model.global_matrix` if given.

@@ -24,7 +24,7 @@ def apply_spectral_constraints(
         model: typing.Type['KineticModel'],
         clp_labels: typing.List[str],
         matrix: np.ndarray,
-        index: float):
+        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
     for constraint in model.spectral_constraints:
         if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
             idx = [not label == constraint.compartment for label in clp_labels]
@@ -39,7 +39,7 @@ def spectral_constraint_penalty(
         clp_labels: typing.List[str],
         clp: np.ndarray,
         matrix: np.ndarray,
-        index: float):
+        index: float) -> np.ndarray:
     residual = []
     for constraint in model.spectral_constraints:
         if isinstance(constraint, EqualAreaConstraint) and constraint.applies(index):
@@ -57,7 +57,7 @@ def apply_spectral_relations(
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         matrix: np.ndarray,
-        index: float):
+        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
     for relation in model.spectral_relations:
         if relation.applies(index):
             relation = relation.fill(model, parameter)
