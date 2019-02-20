@@ -1,4 +1,4 @@
-"""This package contains functions for simulating a model."""
+"""Functions for simulating a global analysis model."""
 
 import typing
 import numpy as np
@@ -10,7 +10,7 @@ from glotaran.parameter import ParameterGroup
 def simulate(model: typing.Type['glotaran.model.Model'],
              parameter: ParameterGroup,
              dataset: str,
-             axis: typing.Dict[str, np.ndarray],
+             axes: typing.Dict[str, np.ndarray] = None,
              clp: typing.Union[np.ndarray, xr.DataArray] = None,
              noise=False,
              noise_std_dev=1.0,
@@ -27,7 +27,9 @@ def simulate(model: typing.Type['glotaran.model.Model'],
     dataset :
         Label of the dataset to simulate
     axis :
-        A dictory with axis
+        A dictory with axes for simulation.
+    clp :
+        Conditionaly linear parameter. Will be used instead of `model.global_matrix` if given.
     noise :
         Add noise to the simulation.
     noise_std_dev :
@@ -42,9 +44,9 @@ def simulate(model: typing.Type['glotaran.model.Model'],
 
     filled_dataset = model.dataset[dataset].fill(model, parameter)
 
-    matrix_dimension = axis[model.matrix_dimension]
+    matrix_dimension = axes[model.matrix_dimension]
 
-    global_dimension = axis[model.global_dimension]
+    global_dimension = axes[model.global_dimension]
 
     matrix = [model.matrix(filled_dataset, index, matrix_dimension) for index in global_dimension]
     if callable(model._constrain_matrix_function):
@@ -64,10 +66,10 @@ def simulate(model: typing.Type['glotaran.model.Model'],
             if 'clp_label' not in clp.coords:
                 raise ValueError(f"Missing coordinate 'clp_label' in clp.")
         else:
-            if 'clp_label' not in axis:
+            if 'clp_label' not in axes:
                 raise ValueError("Missing axis 'clp_label'")
             clp = xr.DataArray(clp, coords=[(model.global_dimension, global_dimension),
-                                            ('clp_label', axis['clp_label'])])
+                                            ('clp_label', axes['clp_label'])])
     else:
         clp_labels, clp = model.global_matrix(filled_dataset, global_dimension)
         clp = xr.DataArray(clp, coords=[(model.global_dimension, global_dimension),

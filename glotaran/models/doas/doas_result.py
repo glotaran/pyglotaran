@@ -12,7 +12,7 @@ def finalize_doas_result(model, result: Result):
     for label in result.model.dataset:
         dataset = result.data[label]
 
-        dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
+        dataset_descriptor = result.model.dataset[label].fill(model, result.optimized_parameter)
 
         # get_doas
 

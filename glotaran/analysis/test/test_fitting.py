@@ -212,10 +212,10 @@ def test_fitting(suite):
 
     result = Result(model, data, initial, False)
     optimize(result)
-    print(result.best_fit_parameter)
+    print(result.optimized_parameter)
     print(result.data['dataset1'])
 
-    for param in result.best_fit_parameter.all():
+    for param in result.optimized_parameter.all():
         assert np.allclose(param.value, wanted.get(param.full_label).value,
                            rtol=1e-1)
 

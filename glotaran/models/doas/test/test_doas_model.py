@@ -314,9 +314,9 @@ def test_doas_model(suite):
     data = {'dataset1': dataset}
 
     result = suite.model.optimize(suite.parameter, data, max_nfev=50)
-    print(result.best_fit_parameter)
+    print(result.optimized_parameter)
 
-    for label, param in result.best_fit_parameter.all_with_label():
+    for label, param in result.optimized_parameter.all_with_label():
         assert np.allclose(param.value, suite.wanted_parameter.get(label).value,
                            rtol=1e-1)
 

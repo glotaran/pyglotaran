@@ -1,4 +1,4 @@
-"""This package contains the FitResult object"""
+"""The result class for global analysis."""
 
 import typing
 
@@ -23,7 +23,7 @@ class Result:
                  nnls: bool,
                  atol: float = 0,
                  ):
-        """The result of a fit.
+        """The result of a global analysis.
 
         Parameters
         ----------
@@ -75,7 +75,7 @@ class Result:
                        nnls: bool,
                        atol: float = 0,
                        ) -> 'Result':
-        """Creates a :attr:`FitResult` from parameters without optimization.
+        """Creates a :class:`Result` from parameters without optimization.
 
         Parameters
         ----------
@@ -86,15 +86,9 @@ class Result:
         parameter :
             The parameter,
         nnls :
-            (default = False)
             If `True` non-linear least squaes optimizing is used instead of variable projection.
         atol :
-            (default = 0)
             The tolerance for grouping datasets along the global axis.
-
-        Returns
-        -------
-        result : FitResult
         """
         cls = cls(model, data, parameter, nnls, atol=atol)
         calculate_residual(parameter, cls)
@@ -114,7 +108,7 @@ class Result:
 
     @property
     def data(self) -> typing.Dict[str, xr.Dataset]:
-        """The resulting data as a dictionary of `xarray.Dataset`.
+        """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
         Note
         ----
@@ -130,32 +124,38 @@ class Result:
 
     @property
     def nvars(self) -> int:
-        """Number of variables in optimization."""
+        """Number of variables in optimization :math:`N_{vars}`"""
         return self._lm_result.nvarys if self._lm_result else None
 
     @property
     def ndata(self) -> int:
-        """Number of data points."""
+        """Number of data points :math:`N`."""
         return self._lm_result.ndata if self._lm_result else None
 
     @property
     def nfree(self) -> int:
-        """Degrees of freedom in optimization. """
+        """Degrees of freedom in optimization :math:`N - N_{vars}`."""
         return self._lm_result.nfree if self._lm_result else None
 
     @property
     def chisqr(self) -> float:
-        """The chi-square of the optimization """
+        """The chi-square of the optimization
+        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`.""" # noqa w605
         return self._lm_result.chisqr if self._lm_result else 0
 
     @property
     def red_chisqr(self) -> float:
-        """The reduced chi-square of the optimization."""
+        """The reduced chi-square of the optimization
+        :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
+        """ # noqa w605
         return self._lm_result.redchi if self._lm_result else 0
 
     @property
     def root_mean_sqare_error(self) -> float:
-        """The root mean square error the optimization."""
+        """
+        The root mean square error the optimization
+        :math:`rms = \sqrt{\chi^2_{red}}`
+        """ # noqa w605
         return np.sqrt(self.red_chisqr)
 
     @property
@@ -172,8 +172,8 @@ class Result:
         return self._lm_result.covar if self._lm_result else None
 
     @property
-    def best_fit_parameter(self) -> ParameterGroup:
-        """The best fit parameters."""
+    def optimized_parameter(self) -> ParameterGroup:
+        """The optimized parameters."""
         if self._lm_result is None:
             return self.initial_parameter
         return ParameterGroup.from_parameter_dict(self._lm_result.params)
@@ -184,18 +184,18 @@ class Result:
         return self._initial_parameter
 
     @property
-    def global_clp(self) -> typing.Dict[any, xr.DataArray]:
+    def global_clp(self) -> typing.Dict[typing.Any, xr.DataArray]:
         """A dictonary of the global condionally linear parameter with the index on the global
-        global axis as keys."""
+        dimension as keys."""
         return self._global_clp
 
     @property
-    def data_groups(self) -> typing.Dict[any, np.ndarray]:
+    def data_groups(self) -> typing.Dict[typing.Any, np.ndarray]:
         """A dictonary of the data groups along the global axis."""
         return self._data_group
 
     @property
-    def groups(self) -> typing.Dict[any, typing.List[typing.Tuple[any, str]]]:
+    def groups(self) -> typing.Dict[typing.Any, typing.List[typing.Tuple[typing.Any, str]]]:
         """A dictonary of the dataset_descriptor groups along the global axis."""
         return self._group
 
@@ -277,15 +277,9 @@ class Result:
         string += "Root Mean Square Error |".rjust(ll)
         string += f"{self.root_mean_sqare_error:.2e} |".rjust(lr)
         string += "\n"
-        #
-        #  string += "\n"
-        #  string += "## Best Fit Parameter\n\n"
-        #  string += f"{self.best_fit_parameter}"
-        #  string += "\n"
 
         if with_model:
-
-            string += "\n\n" + self.model.mprint(parameter=self.best_fit_parameter,
+            string += "\n\n" + self.model.mprint(parameter=self.optimized_parameter,
                                                  initial=self.initial_parameter)
 
         return string

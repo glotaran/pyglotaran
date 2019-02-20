@@ -219,7 +219,7 @@ Now we have everything together to optimize our parameters.
 
    result = model.optimize(parameter, {'dataset1': dataset})
    print(result)
-   print(result.best_fit_parameter)
+   print(result.optimized_parameter)
 
 You can get the resulting data for your dataset with `result.get_dataset`.
 

@@ -1,6 +1,8 @@
+"""Functions for optimization."""
+
+import typing
 import lmfit
 import numpy as np
-import typing
 import xarray as xr
 
 import glotaran
@@ -16,15 +18,12 @@ def optimize(result: 'glotaran.analysis.Result', verbose: bool = True, max_nfev:
 
     Parameters
     ----------
-    verbose : bool, optional
-        (default = True)
+    result :
+        The global analysis result.
+    verbose :
         If `True` feedback is printed at every iteration.
-    max_nfev : int, optional
-        (default = None)
+    max_nfev :
         Maximum number of function evaluations. `None` for unlimited.
-
-    Returns
-    -------
     """
     parameter = result.initial_parameter.as_parameter_dict()
     minimizer = lmfit.Minimizer(
@@ -46,7 +45,16 @@ def optimize(result: 'glotaran.analysis.Result', verbose: bool = True, max_nfev:
 
 
 def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters],
-                       result: 'glotaran.analysis.Result'):
+                       result: 'glotaran.analysis.Result') -> np.ndarray:
+    """Calculates the residual and fills the global analysis result with data.
+
+    Parameters
+    ----------
+    parameter :
+        The parameter for optimization.
+    result :
+        The global analysis result.
+    """
 
     if not isinstance(parameter, ParameterGroup):
         parameter = ParameterGroup.from_parameter_dict(parameter)

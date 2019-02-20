@@ -12,7 +12,7 @@ def finalize_kinetic_result(model, result: Result):
     for label in result.model.dataset:
         dataset = result.data[label]
 
-        dataset_descriptor = result.model.dataset[label].fill(model, result.best_fit_parameter)
+        dataset_descriptor = result.model.dataset[label].fill(model, result.optimized_parameter)
 
         if not dataset_descriptor.get_k_matrices():
             continue
@@ -42,7 +42,7 @@ def finalize_kinetic_result(model, result: Result):
 
         for relation in model.spectral_relations:
             if relation.compartment in dataset_descriptor.initial_concentration.compartments:
-                relation = relation.fill(model, result.best_fit_parameter)
+                relation = relation.fill(model, result.optimized_parameter)
                 idx = [index.values for index in dataset.spectral if relation.applies(index)]
                 all_idx = np.asarray(list(result.global_clp.keys()))
                 clp = []
