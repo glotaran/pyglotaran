@@ -16,8 +16,8 @@ def test_param_array():
 
     assert len(list(params.all())) == 5
 
-    assert [p.label for p in params.all()] == [f"{i}" for i in range(1, 6)]
-    assert [p.value for p in params.all()] == list(range(1, 6))[::-1]
+    assert [p.label for _, p in params.all()] == [f"{i}" for i in range(1, 6)]
+    assert [p.value for _, p in params.all()] == list(range(1, 6))[::-1]
 
 
 def test_param_label():
@@ -30,8 +30,8 @@ def test_param_label():
     params = ParameterGroup.from_yaml(params)
 
     assert len(list(params.all())) == 3
-    assert [p.label for p in params.all()] == [f"{i}" for i in range(5, 2, -1)]
-    assert [p.value for p in params.all()] == list(range(1, 4))
+    assert [p.label for _, p in params.all()] == [f"{i}" for i in range(5, 2, -1)]
+    assert [p.value for _, p in params.all()] == list(range(1, 4))
 
 
 def test_param_options():
@@ -91,12 +91,12 @@ def test_nested_param_list():
     assert len(list(params.all())) == 5
     group = params['kinetic']
     assert len(list(group.all())) == 3
-    assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 4)]
-    assert [p.value for p in group.all()] == list(range(3, 6))
+    assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
+    assert [p.value for _, p in group.all()] == list(range(3, 6))
     group = params['j']
     assert len(list(group.all())) == 2
-    assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 3)]
-    assert [p.value for p in group.all()] == list(range(7, 9))
+    assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 3)]
+    assert [p.value for _, p in group.all()] == list(range(7, 9))
 
 
 def test_nested_param_group():
@@ -114,8 +114,8 @@ def test_nested_param_group():
     assert len(list(group.all())) == 3
     group = group['j']
     assert len(list(group.all())) == 3
-    assert [p.label for p in group.all()] == [f"{i}" for i in range(1, 4)]
-    assert [p.value for p in group.all()] == list(range(7, 10))
+    assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
+    assert [p.value for _, p in group.all()] == list(range(7, 10))
 
 
 def test_non_negative():
@@ -133,7 +133,7 @@ def test_non_negative():
     params.as_parameter_dict().pretty_print()
     print(result)
 
-    for label, p in params.all_with_label():
+    for label, p in params.all():
         print(label)
         r = result.get(label)
         assert r.non_neg == p.non_neg

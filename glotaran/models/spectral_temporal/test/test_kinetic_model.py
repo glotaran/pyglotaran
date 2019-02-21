@@ -573,7 +573,7 @@ def test_kinetic_model(suite, nnls):
     result = model.optimize(initial, data, nnls=nnls, max_nfev=20)
     print(result.optimized_parameter)
 
-    for label, param in result.optimized_parameter.all_with_label():
+    for label, param in result.optimized_parameter.all():
         assert np.allclose(param.value, wanted.get(label).value,
                            rtol=1e-1)
 

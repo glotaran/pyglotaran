@@ -215,7 +215,7 @@ def test_fitting(suite):
     print(result.optimized_parameter)
     print(result.data['dataset1'])
 
-    for param in result.optimized_parameter.all():
+    for _, param in result.optimized_parameter.all():
         assert np.allclose(param.value, wanted.get(param.full_label).value,
                            rtol=1e-1)
 
@@ -225,7 +225,3 @@ def test_fitting(suite):
     assert dataset.data.shape == resultdata.data.shape
     print(dataset.data[0, 0], resultdata.data[0, 0])
     assert np.allclose(dataset.data, resultdata.data)
-
-
-if __name__ == '__main__':
-    pytest.main(__file__)
