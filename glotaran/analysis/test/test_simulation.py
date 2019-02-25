@@ -2,7 +2,7 @@
 import numpy as np
 
 from glotaran.analysis.simulation import simulate
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
 from .mock import MockModel
 
@@ -15,12 +15,12 @@ def test_simulate_dataset():
             },
         }
     })
-    print(model.errors())
+    print(model.validate())
     assert model.valid()
 
     parameter = ParameterGroup.from_list([1, 1])
-    print(model.errors_parameter(parameter))
-    assert model.valid_parameter(parameter)
+    print(model.validate(parameter))
+    assert model.valid(parameter)
 
     est_axis = np.asarray([1, 1, 1, 1])
     cal_axis = np.asarray([2, 2, 2])
@@ -28,8 +28,8 @@ def test_simulate_dataset():
     data = simulate(model, parameter, 'dataset1', {'e': est_axis, 'c': cal_axis})
     assert np.array_equal(data["c"], cal_axis)
     assert np.array_equal(data["e"], est_axis)
-    assert data.shape == (3, 4)
-    assert np.array_equal(data, np.asarray([
+    assert data.data.shape == (3, 4)
+    assert np.array_equal(data.data, np.asarray([
         [2, 4, 6],
         [4, 10, 16],
         [6, 16, 26],

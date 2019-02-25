@@ -9,23 +9,28 @@ from .irf import IrfGaussian, IrfMeasured
 
 def calculate_kinetic_matrix(dataset, index, axis):
 
-    scale = dataset.scale if dataset.scale is not None else 1.0
     compartments = None
     matrix = None
-    for _, k_matrix in dataset.get_k_matrices():
+    k_matrices = dataset.get_k_matrices()
+
+    if len(k_matrices) == 0:
+        return (None, None)
+
+    if dataset.initial_concentration is None:
+        raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
+    initial_concentration = dataset.initial_concentration.normalized(dataset)
+
+    for k_matrix in k_matrices:
 
         if k_matrix is None:
             continue
-
-        if dataset.initial_concentration is None:
-            raise Exception(f'No initial concentration specified in dataset "{dataset.label}"')
 
         (this_compartments, this_matrix) = _calculate_for_k_matrix(
             dataset,
             index,
             axis,
             k_matrix,
-            scale,
+            initial_concentration
         )
 
         if matrix is None:
@@ -43,10 +48,9 @@ def calculate_kinetic_matrix(dataset, index, axis):
             compartments = new_compartments
             matrix = new_matrix
 
-    if dataset.baseline is not None:
+    if dataset.baseline:
         baseline_compartment = f'{dataset.label}_baseline'
-        baseline = np.zeros((axis.size, 1), dtype=np.float64)
-        baseline.fill(dataset.baseline)
+        baseline = np.ones((axis.size, 1), dtype=np.float64)
         if matrix is None:
             compartments = [baseline_compartment]
             matrix = baseline
@@ -66,16 +70,14 @@ def calculate_kinetic_matrix(dataset, index, axis):
     return (compartments, matrix)
 
 
-def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
-    # pylint: disable=too-many-locals
-    # pylint: disable=too-many-arguments
+def _calculate_for_k_matrix(dataset, index, axis, k_matrix, initial_concentration):
 
     # we might have more compartments in the model then in the k matrix
-    compartments = [comp for comp in dataset.initial_concentration.compartments
+    compartments = [comp for comp in initial_concentration.compartments
                     if comp in k_matrix.involved_compartments()]
 
     # the rates are the eigenvalues of the k matrix
-    rates = k_matrix.rates(compartments)
+    rates = k_matrix.rates(initial_concentration)
 
     # init the matrix
     size = (axis.size, rates.size)
@@ -83,21 +85,24 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
 
     # calculate the c_matrix
     if isinstance(dataset.irf, IrfGaussian):
+
         center, width, irf_scale, backsweep, backsweep_period = \
                 dataset.irf.parameter(index)
+
         for i in range(len(center)):
             calc_kinetic_matrix_gaussian_irf(matrix,
                                              rates,
                                              axis,
                                              center[i],
                                              width[i],
-                                             scale * irf_scale[i],
+                                             irf_scale[i],
                                              backsweep,
                                              backsweep_period,
                                              )
+        matrix /= np.sum(irf_scale)
 
     else:
-        calc_kinetic_matrix_no_irf(matrix, rates, axis, scale)
+        calc_kinetic_matrix_no_irf(matrix, rates, axis)
         if isinstance(dataset.irf, IrfMeasured):
             irf = dataset.irf.irfdata
             if len(irf.shape) == 2:
@@ -106,11 +111,8 @@ def _calculate_for_k_matrix(dataset, index, axis, k_matrix, scale):
             for i in range(matrix.shape[1]):
                 matrix[:, i] = np.convolve(matrix[:, i], irf, mode="same")
 
-    # apply initial concentration vector
-    matrix = np.matmul(
-        matrix,
-        k_matrix.a_matrix(dataset.initial_concentration),
-    )
+    # apply A matrix
+    matrix = matrix @ k_matrix.a_matrix(initial_concentration)
 
     # done
     return (compartments, matrix)

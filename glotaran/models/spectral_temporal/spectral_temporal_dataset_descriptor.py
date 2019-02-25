@@ -2,14 +2,14 @@
 
 from typing import Dict
 
-from glotaran.model import DatasetDescriptor, model_item
+from glotaran.model import DatasetDescriptor, model_attribute
 
 
-@model_item(attributes={
-    'initial_concentration': {'type': str, 'default': None},
-    'irf': {'type': str, 'default': None},
-    'baseline': {'type': str, 'default': None},
-    'shapes': {'type': Dict[str, str], 'target': (None, 'shape'), 'default': None},
+@model_attribute(properties={
+    'initial_concentration': {'type': str, 'allow_none': True},
+    'irf': {'type': str, 'allow_none': True},
+    'baseline': {'type': bool, 'allow_none': True},
+    'shape': {'type': Dict[str, str], 'allow_none': True},
 })
 class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     """SpectralTemporalDatasetDescriptor is an implementation of
@@ -20,5 +20,10 @@ class SpectralTemporalDatasetDescriptor(DatasetDescriptor):
     """
 
     def get_k_matrices(self):
-        for cmplx in self.megacomplex:
-            yield (cmplx.label, cmplx.get_k_matrix())
+        return [mat for mat in [cmplx.full_k_matrix() for cmplx in self.megacomplex] if mat]
+
+    def compartments(self):
+        compartments = []
+        for k in self.get_k_matrices():
+            compartments += k.involved_compartments()
+        return list(set(compartments))

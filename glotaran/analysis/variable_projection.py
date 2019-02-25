@@ -1,20 +1,24 @@
-"""This package contains functions for variable projection."""
+"""Functions for calculating conditionaly linear parameters and residual with the variable
+projection method."""
+
+import typing
 import numpy as np
 from scipy.linalg import lapack
 
 
-def residual_variable_projection(matrix: np.array, data: np.array) -> np.array:
-    """residul_variable_projection returns the variable projection residual.
+def residual_variable_projection(matrix: np.ndarray, data: np.ndarray) \
+        -> typing.Tuple[typing.List[str], np.ndarray]:
+    """Calculates the conditionaly linear parameters and residual with the variable projection
+    method.
 
     Parameters
     ----------
-    matrix: np.array
-    data: np.array
-
-    Returns
-    -------
-    residual: np.array
+    matrix :
+        The model matrix.
+    data : np.ndarray
+        The data to analyze.
     """
+    # TODO: Reference Kaufman paper
 
     # Kaufman Q2 step 3
     qr, tau, _, _ = lapack.dgeqrf(matrix)

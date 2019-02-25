@@ -1,11 +1,11 @@
-from glotaran.model import BaseModel, model, model_item
+from glotaran.model import Model, model, model_attribute
 
 from glotaran.parse import register
 
 #  from glotaran.analysis.test.mock import MockModel
 
 
-@model_item()
+@model_attribute()
 class MockMegacomplex:
     pass
 
@@ -13,7 +13,7 @@ class MockMegacomplex:
 @model('register_mock',
        megacomplex_type=MockMegacomplex,
        )
-class MockModel(BaseModel):
+class MockModel(Model):
     pass
 
 

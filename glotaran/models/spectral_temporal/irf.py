@@ -3,7 +3,9 @@
 from typing import List
 import numpy as np
 
-from glotaran.model import model_item, model_item_typed
+from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.parameter import Parameter
+
 
 class IrfException(Exception):
     def __init__(self, irf, msg):
@@ -14,25 +16,26 @@ class IrfException(Exception):
         return f"Irf '{self.irf.label}' error: {self.msg}"
 
 
-@model_item(attributes={
-    'irfdata': {'type': np.ndarray, 'default': None},
+@model_attribute(properties={
+    'irfdata': {'type': np.ndarray, 'allow_none': True},
 }, has_type=True)
 class IrfMeasured:
     """A measured IRF."""
 
 
-@model_item(attributes={
-    'center': str,
-    'width': str,
-    'dispersion_center': {'type': str, 'default': None},
-    'center_dispersion': {'type': List[str], 'default': []},
-    'width_dispersion': {'type': List[str], 'default': []},
-    'scale': {'type': str, 'default': None},
+@model_attribute(properties={
+    'center': List[Parameter],
+    'width': List[Parameter],
+    'dispersion_center': {'type': Parameter, 'allow_none': True},
+    'center_dispersion': {'type': List[Parameter], 'default': []},
+    'width_dispersion': {'type': List[Parameter], 'default': []},
+    'scale': {'type': List[Parameter], 'allow_none': True},
+    'model_dispersion_with_wavenumber': {'type': bool, 'default': False},
     'normalize': {'type': bool, 'default': False},
     'backsweep': {'type': bool, 'default': False},
-    'backsweep_period': {'type': str, 'default': None},
+    'backsweep_period': {'type': Parameter, 'allow_none': True},
     'coherent_artifact': {'type': bool, 'default': False},
-    'coherent_artifact_order': {'type': int, 'default': 1},
+    'coherent_artifact_order': {'type': int, 'allow_none': True},
 }, has_type=True)
 class IrfGaussian:
     """
@@ -64,18 +67,21 @@ class IrfGaussian:
     def parameter(self, index):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
-        if len(self.center_dispersion) is not 0:
+
+        if self.dispersion_center:
+            dist = (1e3 / index - 1e3 / self.dispersion_center) \
+                if self.model_dispersion_with_wavenumber else (index - self.dispersion_center)/100
+
+        if len(self.center_dispersion) != 0:
             if self.dispersion_center is None:
                 raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
-            dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i+1)
 
         widths = self.width if isinstance(self.width, list) else [self.width]
-        if len(self.width_dispersion) is not 0:
+        if len(self.width_dispersion) != 0:
             if self.dispersion_center is None:
                 raise IrfException(self, f'No dispersion center defined for irf "{self.label}"')
-            dist = (index - self.dispersion_center)/100
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i+1)
 
@@ -94,8 +100,6 @@ class IrfGaussian:
 
         scale = self.scale if self.scale is not None else [1 for _ in centers]
         scale = scale if isinstance(scale, list) else [scale]
-        if self.normalize:
-            scale /= np.sqrt(2 * np.pi * np.asarray(widths)**2)
 
         backsweep = 1 if self.backsweep else 0
 
@@ -110,17 +114,18 @@ class IrfGaussian:
         center, width, scale, _, _ = self.parameter(index)
 
         matrix = np.zeros((axis.size, self.coherent_artifact_order), dtype=np.float64)
+        for i in range(len(center)):
 
-        irf = np.exp(-1 * (axis - center)**2 / (2 * width**2))
-        matrix[:, 0] = irf
+            irf = np.exp(-1 * (axis - center[i])**2 / (2 * width[i]**2))
+            matrix[:, 0] = irf * scale[i]
 
-        if self.coherent_artifact_order > 1:
-            matrix[:, 1] = irf * (center - axis) / width**2
+            if self.coherent_artifact_order > 1:
+                matrix[:, 1] = irf * (center[i] - axis) / width[i]**2
 
-        if self.coherent_artifact_order > 2:
-            matrix[:, 2] = irf * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
-
-        matrix *= scale
+            if self.coherent_artifact_order > 2:
+                matrix[:, 2] = \
+                    irf * (center[i]**2 - width[i]**2 - 2 * center[i] * axis + axis**2) \
+                    / width[i]**4
 
         return self.clp_labels(), matrix
 
@@ -128,8 +133,23 @@ class IrfGaussian:
         return [f'{self.label}_coherent_artifact_{i}'
                 for i in range(1, self.coherent_artifact_order + 1)]
 
+    def calculate(self, index, axis):
+        center, width, scale, _, _ = self.parameter(index)
+        irf = scale[0] * np.exp(-1 * (axis - center[0])**2 / (2 * width[0]**2))
+        if len(center) > 1:
+            for i in range(1, len(center)):
+                irf += scale[i] * np.exp(-1 * (axis - center[i])**2 / (2 * width[i]**2))
+        return irf
 
-@model_item_typed(types={
+    def calculate_dispersion(self, axis):
+        dispersion = []
+        for index in axis:
+            center, _, _, _, _ = self.parameter(index)
+            dispersion.append(center)
+        return np.asarray(dispersion).T
+
+
+@model_attribute_typed(types={
     'gaussian': IrfGaussian,
     'measured': IrfMeasured,
 })

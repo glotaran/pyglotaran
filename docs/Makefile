@@ -19,15 +19,11 @@ endif
 
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -W
+SPHINXOPTS    =
 SPHINXBUILD   = $(PYTHON_TO_USE) -msphinx
-SPHINXPROJ    = glotaran
-SOURCEDIR     = .
-BUILDDIR      = _build
-API_TOCTREE_DIR	= api
-
-which_python:
-	@echo You are using python at: $(shell which $(PYTHON_TO_USE))
+SOURCEDIR     = source
+BUILDDIR      = build
+API_TOCTREE_DIR	= $(SOURCEDIR)/user_documentation/api
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -35,12 +31,12 @@ help:
 
 .PHONY: help Makefile
 
-clean_all:
+clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf $(API_TOCTREE_DIR)/*
 
-api_docs:
-	$(PYTHON_TO_USE) generate_api_documentation.py
+api_doc:
+	$(PYTHON_TO_USE) $(SOURCEDIR)/generate_api_doc.py
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

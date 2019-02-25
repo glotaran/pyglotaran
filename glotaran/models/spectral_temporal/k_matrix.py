@@ -6,14 +6,15 @@ from typing import Dict, List, Tuple
 import numpy as np
 import scipy
 
-from glotaran.model import model_item
+from glotaran.model import model_attribute
+from glotaran.parameter import Parameter
 
 from .initial_concentration import InitialConcentration
 
 
-@model_item(
-    attributes={
-        'matrix': {'type': Dict[Tuple[str, str], str], 'target': (None, 'parameter')},
+@model_attribute(
+    properties={
+        'matrix': {'type': Dict[Tuple[str, str], Parameter]},
     },
 )
 class KMatrix:
@@ -67,13 +68,58 @@ class KMatrix:
         if not isinstance(k_matrix, KMatrix):
             raise TypeError("K-Matrices can only be combined with other"
                             "K-Matrices.")
-        combined_matrix = OrderedDict()
+        combined_matrix = {}
         for entry in k_matrix.matrix:
             combined_matrix[entry] = k_matrix.matrix[entry]
         for entry in self.matrix:
             combined_matrix[entry] = self.matrix[entry]
-        return KMatrix("{}+{}".format(self.label, k_matrix.label),
-                       combined_matrix)
+        combined = KMatrix()
+        combined.label = f"{self.label}+{k_matrix.label}"
+        combined.matrix = combined_matrix
+        return combined
+
+    def matrix_as_markdown(self, compartments: List[str] = None,
+                           fill_parameter: bool = False,
+                           ) -> np.ndarray:
+        """ """
+
+        compartments = [c for c in compartments if c in self.involved_compartments()] \
+            if compartments else self.involved_compartments()
+        size = len(compartments)
+        array = np.zeros((size, size), dtype=np.object)
+        # Matrix is a dict
+        for index in self.matrix:
+            i = compartments.index(index[0])
+            j = compartments.index(index[1])
+            array[i, j] = \
+                self.matrix[index].full_label if not fill_parameter else self.matrix[index].value
+        return self._array_as_markdown(array, compartments, compartments)
+
+    def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> np.ndarray:
+        """ """
+        compartments = [c for c in initial_concentration.compartments
+                        if c in self.involved_compartments()]
+        return self._array_as_markdown(self.a_matrix(initial_concentration).T,
+                                       compartments,
+                                       self.rates(initial_concentration),
+                                       )
+
+    @staticmethod
+    def _array_as_markdown(array, row_header, column_header):
+        markdown = "| compartment | "
+        markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str)
+                                else e for e in column_header])
+        markdown += "\n|"
+        markdown += "|".join(['---' for _ in range(len(column_header)+1)])
+        markdown += "\n"
+
+        for i, row in enumerate(array):
+            markdown += f"| {row_header[i]} | " if isinstance(row_header[i], str) \
+                else f"| {row_header[i]:.4e} | "
+            markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str) else e for e in row])
+            markdown += "|\n"
+
+        return markdown
 
     def reduced(self, compartments: List[str]) -> np.ndarray:
         """ """
@@ -88,8 +134,10 @@ class KMatrix:
             array[i, j] = self.matrix[index]
         return array
 
-    def full(self, compartments: List[str]):
-        """[ 0 k3
+    def full(self, compartments: List[str]) -> np.ndarray:
+        """
+
+        [ 0 k3
           k1 k2]
 
         translates to
@@ -107,14 +155,6 @@ class KMatrix:
 
         [-k1     k3       [S1]
         k1  -k2-k3]    [S2]
-
-        Parameters
-        ----------
-        parameter :
-
-
-        Returns
-        -------
 
         """
         compartments = [c for c in compartments if c in self.involved_compartments()]
@@ -134,15 +174,6 @@ class KMatrix:
     def eigen(self, compartments: List[str]) -> Tuple[np.ndarray, np.ndarray]:
         """ Returns the eigenvalues and eigenvectors of the k matrix.
 
-        Parameters
-        ----------
-        parameter : glotaran.model.ParameterGroup
-
-
-        Returns
-        -------
-        (eigenvalues, eigenvectors) : tuple(np.ndarray, np.ndarray)
-
         """
         # We take the transpose to be consistent with timp
         matrix = self.full(compartments).T
@@ -152,44 +183,38 @@ class KMatrix:
                                                      right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def rates(self, compartments):
-        if self.is_unibranched(compartments):
-            return np.diag(self.full(compartments)).copy()
+    def rates(self, initial_concentration: InitialConcentration) -> np.ndarray:
+        if self.is_unibranched(initial_concentration):
+            return np.diag(self.full(initial_concentration.compartments)).copy()
         else:
-            rates, _ = self.eigen(compartments)
+            rates, _ = self.eigen(initial_concentration.compartments)
             return rates
 
     def _gamma(self,
-               eigenvectors,
-               initial_concentration: InitialConcentration) -> np.ndarray:
+               eigenvectors: np.ndarray,
+               initial_concentration: InitialConcentration,
+               ) -> np.ndarray:
         compartments = [c for c in initial_concentration.compartments
                         if c in self.involved_compartments()]
-        k_compartments = [c for c in compartments if c in self.involved_compartments()]
         initial_concentration = \
-            [initial_concentration.parameters[compartments.index(c)]
-             for c in k_compartments]
-        eigenvectors = scipy.linalg.inv(eigenvectors)
-        gamma = np.matmul(eigenvectors, initial_concentration)
+            [initial_concentration.parameters[initial_concentration.compartments.index(c)]
+             for c in compartments]
 
-        return gamma
+        gamma = scipy.linalg.solve(eigenvectors, initial_concentration)
+        return np.diag(gamma)
 
     def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        if self.is_unibranched(initial_concentration.compartments):
-            a_matrix = self.a_matrix_unibranch(initial_concentration)
-        else:
-            a_matrix = self.a_matrix_non_unibranch(initial_concentration)
-        return a_matrix
+        return self.a_matrix_unibranch(initial_concentration) \
+            if self.is_unibranched(initial_concentration) \
+            else self.a_matrix_non_unibranch(initial_concentration)
 
     def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
         eigenvalues, eigenvectors = self.eigen(initial_concentration.compartments)
         gamma = self._gamma(eigenvectors, initial_concentration)
 
-        a_matrix = np.empty(eigenvectors.shape, dtype=np.float64)
+        a_matrix = eigenvectors @ gamma
 
-        for i in range(eigenvectors.shape[0]):
-            a_matrix[i, :] = eigenvectors[:, i] * gamma[i]
-
-        return a_matrix
+        return a_matrix.T
 
     def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.array:
         compartments = [c for c in initial_concentration.compartments
@@ -206,9 +231,13 @@ class KMatrix:
                 np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
         return a_matrix
 
-    def is_unibranched(self, compartments):
-        matrix = self.reduced(compartments)
+    def is_unibranched(self, initial_concentration: InitialConcentration) -> bool:
+        if not np.sum(
+            [initial_concentration.parameters[initial_concentration.compartments.index(c)]
+             for c in self.involved_compartments()]) == 1:
+            return False
+        matrix = self.reduced(initial_concentration.compartments)
         for i in range(matrix.shape[1]):
-            if not np.nonzero(matrix[:, i])[0].size == 1:
+            if not np.nonzero(matrix[:, i])[0].size == 1 or i != 0 and matrix[i, i-1] == 0:
                 return False
         return True

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import KineticModel
 
 
@@ -45,7 +45,7 @@ class OneComponentOneChannel:
             'dataset1': {
                 'initial_concentration': 'j1',
                 'megacomplex': ['mc1'],
-                'shapes': {'s1': 'sh1'}
+                'shape': {'s1': 'sh1'}
             },
         },
     })
@@ -73,7 +73,7 @@ class OneComponentOneChannelGaussianIrf:
             "k1": {'matrix': {("s1", "s1"): '1', }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': '2', 'width': '3'},
+            'irf1': {'type': 'gaussian', 'center': ['2'], 'width': ['3']},
         },
         'dataset': {
             'dataset1': {
@@ -98,14 +98,14 @@ class OneComponentOneChannelGaussianIrf:
             "k1": {'matrix': {("s1", "s1"): '1', }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': '2', 'width': '3'},
+            'irf1': {'type': 'gaussian', 'center': ['2'], 'width': ['3']},
         },
         'dataset': {
             'dataset1': {
                 'initial_concentration': 'j1',
                 'irf': 'irf1',
                 'megacomplex': ['mc1'],
-                'shapes': {'s1': 'sh1'}
+                'shape': {'s1': 'sh1'}
             },
         },
     })
@@ -167,7 +167,7 @@ class OneComponentOneChannelMeasuredIrf:
                 'initial_concentration': 'j1',
                 'irf': 'irf1',
                 'megacomplex': ['mc1'],
-                'shapes': {'s1': 'sh1'}
+                'shape': {'s1': 'sh1'}
             },
         },
     })
@@ -206,7 +206,7 @@ class ThreeComponentParallel:
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -254,14 +254,14 @@ class ThreeComponentParallel:
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
                 'initial_concentration': 'j1',
                 'irf': 'irf1',
                 'megacomplex': ['mc1'],
-                'shapes': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3'}
+                'shape': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3'}
             },
         },
     })
@@ -272,14 +272,14 @@ class ThreeComponentParallel:
             ["2", 500e-4],
             ["3", 700e-5],
         ],
-        'irf': [['center', 1.1], ['width', 5]],
+        'irf': [['center', 1.3], ['width', 7.8]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}]],
     })
     wanted = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 101e-3],
-            ["2", 202e-4],
-            ["3", 305e-5],
+            ["1", 301e-3],
+            ["2", 502e-4],
+            ["3", 705e-5],
         ],
         'shape': {'amps': [7, 3, 30], 'locs': [620, 670, 720], 'width': [10, 30, 50]},
         'irf': [['center', 1.3], ['width', 7.8]],
@@ -310,7 +310,7 @@ class ThreeComponentSequential:
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -358,25 +358,26 @@ class ThreeComponentSequential:
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
                 'initial_concentration': 'j1',
                 'irf': 'irf1',
                 'megacomplex': ['mc1'],
-                'shapes': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3'}
+                'shape': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3'}
             },
         },
     })
 
     initial = ParameterGroup.from_dict({
         'kinetic': [
-            ["1", 201e-3],
-            ["2", 302e-4],
-            ["3", 101e-5],
+            ["1", 501e-3],
+            ["2", 202e-4],
+            ["3", 105e-5],
+            {'non-negative': True},
         ],
-        'irf': [['center', 1.2], ['width', 7.5]],
+        'irf': [['center', 1.3], ['width', 7.8]],
         'j': [['1', 1, {'vary': False, 'non-negative': False}],
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
@@ -392,8 +393,8 @@ class ThreeComponentSequential:
               ['0', 0, {'vary': False, 'non-negative': False}]],
     })
 
-    time = np.asarray(np.arange(-10, 50, 0.5))
-    spectral = np.arange(600, 750, 1)
+    time = np.asarray(np.arange(-10, 50, 1.0))
+    spectral = np.arange(600, 750, 5.0)
     axis = {"time": time, "spectral": spectral}
 
 
@@ -419,8 +420,8 @@ class IrfDispersion:
         'irf': {
             'irf1': {
                 'type': 'gaussian',
-                'center': 'irf.center',
-                'width': 'irf.width',
+                'center': ['irf.center'],
+                'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
                 'center_dispersion': ['irf.centerdisp'],
             },
@@ -480,8 +481,8 @@ class IrfDispersion:
         'irf': {
             'irf1': {
                 'type': 'gaussian',
-                'center': 'irf.center',
-                'width': 'irf.width',
+                'center': ['irf.center'],
+                'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
                 'center_dispersion': ['irf.centerdisp'],
             },
@@ -491,7 +492,7 @@ class IrfDispersion:
                 'initial_concentration': 'j1',
                 'irf': 'irf1',
                 'megacomplex': ['mc1'],
-                'shapes': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3', 's4': 'sh4'}
+                'shape': {'s1': 'sh1', 's2': 'sh2', 's3': 'sh3', 's4': 'sh4'}
             },
         },
     })
@@ -506,9 +507,10 @@ class IrfDispersion:
             ["2", 0.4],
             ["3", 0.05],
             ["4", 0.009],
+            {'non-negative': True}
         ],
-        'irf': [['center', 0.5],
-                ['width', 0.3],
+        'irf': [['center', 0.3],
+                ['width', 0.1],
                 ['dispcenter', 400, {'vary': False}],
                 ['centerdisp', 0.25]],
     })
@@ -518,18 +520,18 @@ class IrfDispersion:
             ['0', 0, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 0.8],
-            ["2", 0.2],
-            ["3", 0.08],
-            ["4", 0.01],
+            ["1", 1],
+            ["2", 0.4],
+            ["3", 0.05],
+            ["4", 0.009],
         ],
 
         'shape': {'amps': [2, 4, 5, 8], 'locs': [320, 380, 420, 460], 'width': [30, 20, 10, 40]},
-        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.2]],
+        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.25]],
     })
 
     time = np.arange(-1, 30, 0.01)
-    spectral = np.arange(300, 500, 1)
+    spectral = np.arange(300, 500, 5)
     axis = {"time": time, "spectral": spectral}
 
 
@@ -545,33 +547,33 @@ class IrfDispersion:
 def test_kinetic_model(suite, nnls):
 
     model = suite.model
-    print(model.errors())
+    print(model.validate())
     assert model.valid()
 
     sim_model = suite.sim_model
-    print(sim_model.errors())
+    print(sim_model.validate())
     assert sim_model.valid()
 
     wanted = suite.wanted
-    print(sim_model.errors_parameter(wanted))
+    print(sim_model.validate(wanted))
     print(wanted)
-    assert sim_model.valid_parameter(wanted)
+    assert sim_model.valid(wanted)
 
     initial = suite.initial
-    print(model.errors_parameter(initial))
-    assert model.valid_parameter(initial)
+    print(model.validate(initial))
+    assert model.valid(initial)
 
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
-    assert dataset.shape == \
+    assert dataset.data.shape == \
         (suite.axis['time'].size, suite.axis['spectral'].size)
 
     data = {'dataset1': dataset}
 
-    result = model.fit(initial, data, nnls=nnls, max_nfev=20)
-    print(result.best_fit_parameter)
+    result = model.optimize(initial, data, nnls=nnls, max_nfev=20)
+    print(result.optimized_parameter)
 
-    for label, param in result.best_fit_parameter.all_with_label():
+    for label, param in result.optimized_parameter.all():
         assert np.allclose(param.value, wanted.get(label).value,
                            rtol=1e-1)
 

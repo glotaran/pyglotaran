@@ -1,14 +1,15 @@
 """This package contains compartment constraint items."""
 
-from typing import List, Tuple
+import typing
 
-from glotaran.model.model_item import model_item, model_item_typed
+from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.parameter import Parameter
 
 
-@model_item(
-    attributes={
+@model_attribute(
+    properties={
         'compartment': str,
-        'interval': List[Tuple[any, any]],
+        'interval': typing.List[typing.Tuple[float, float]],
     }, has_type=True, no_label=True)
 class OnlyConstraint:
     """A only constraint sets the calculated matrix row of a compartment to 0
@@ -26,13 +27,17 @@ class OnlyConstraint:
         applies : bool
 
         """
-        return not any(interval[0] <= index <= interval[1] for interval in self.interval)
+        def applies(interval):
+            return interval[0] <= index <= interval[1]
+        if isinstance(self.interval, tuple):
+            return applies(self.interval)
+        return not any([applies(i) for i in self.interval])
 
 
-@model_item(
-    attributes={
+@model_attribute(
+    properties={
         'compartment': str,
-        'interval': List[Tuple[any, any]],
+        'interval': typing.List[typing.Tuple[float, float]],
     }, has_type=True, no_label=True)
 class ZeroConstraint:
     """A zero constraint sets the calculated matrix row of a compartment to 0
@@ -50,12 +55,16 @@ class ZeroConstraint:
         applies : bool
 
         """
-        return any(interval[0] <= index <= interval[1] for interval in self.interval)
+        def applies(interval):
+            return interval[0] <= index <= interval[1]
+        if isinstance(self.interval, tuple):
+            return applies(self.interval)
+        return any([applies(i) for i in self.interval])
 
 
-@model_item(attributes={
+@model_attribute(properties={
     'target': str,
-    'parameter': str,
+    'parameter': Parameter,
     'weight': str,
 }, has_type=True, no_label=True)
 class EqualAreaConstraint(ZeroConstraint):
@@ -75,7 +84,7 @@ class EqualAreaConstraint(ZeroConstraint):
     pass
 
 
-@model_item_typed(types={
+@model_attribute_typed(types={
     'only': OnlyConstraint,
     'zero': ZeroConstraint,
     'equal_area': EqualAreaConstraint,

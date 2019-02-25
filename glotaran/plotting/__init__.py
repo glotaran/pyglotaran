@@ -1,1 +1,0 @@
-"""Glotarans plotting package"""

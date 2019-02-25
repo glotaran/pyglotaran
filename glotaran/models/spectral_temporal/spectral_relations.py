@@ -1,21 +1,22 @@
 """ Glotaran Spectral Relation """
 
-from typing import List, Tuple
+import typing
 
-from glotaran.model import model_item
+from glotaran.model import model_attribute
+from glotaran.parameter import Parameter
 
 
-@model_item(
-    attributes={
+@model_attribute(
+    properties={
         'compartment': str,
         'target': str,
-        'parameter': str,
-        'interval': List[Tuple[any, any]],
+        'parameter': Parameter,
+        'interval': typing.List[typing.Tuple[float, float]],
     }, no_label=True)
 class SpectralRelation:
     def applies(self, index: any) -> bool:
         """
-        Returns true if the indexx is in one of the intervals.
+        Returns true if the index is in one of the intervals.
 
         Parameters
         ----------

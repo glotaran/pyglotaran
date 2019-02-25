@@ -1,4 +1,1 @@
-"""Glotaran Analysis Package
-
-This package contains functions for model simulation and fitting.
-"""
+"""This package contains functions for model simulation and fitting."""

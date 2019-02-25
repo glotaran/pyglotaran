@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import InitialConcentration, KMatrix
 
 
@@ -30,7 +30,7 @@ class SequentialModel:
         [-0.7335341, 1],
     ])
 
-    wanted_gamma = [1.47134, 1.079278]
+    wanted_gamma = np.diag([1.47134, 1.079278])
 
     wanted_a_matrix = np.asarray([
         [1, -1.079278],
@@ -65,7 +65,7 @@ class SequentialModelWithBacktransfer:
         [0.7288318, -0.9780806],
     ])
 
-    wanted_gamma = [-1.19068, -0.8872538]
+    wanted_gamma = np.diag([-1.19068, -0.8872538])
 
     wanted_a_matrix = np.asarray([
         [0.8152501, -0.8678057],
@@ -99,7 +99,7 @@ class ParallelModel:
         [0, 1],
     ])
 
-    wanted_gamma = [1, 1]
+    wanted_gamma = np.diag([1, 1])
 
     wanted_a_matrix = np.asarray([
         [1, 0],
@@ -135,7 +135,7 @@ class ParallelModelWithEquilibria:
         [0.7180595, -0.9793676],
     ])
 
-    wanted_gamma = [-0.940184, -1.710398]
+    wanted_gamma = np.diag([-0.940184, -1.710398])
 
     wanted_a_matrix = np.asarray([
         [0.6543509, -0.6751081],
@@ -153,9 +153,16 @@ def test_matrix_non_unibranch(matrix):
 
     params = ParameterGroup.from_list(matrix.params)
 
-    mat = KMatrix("", matrix.matrix).fill(None, params)
+    mat = KMatrix()
+    mat.label = ""
+    mat.matrix = matrix.matrix
+    mat = mat.fill(None, params)
 
-    con = InitialConcentration("", matrix.compartments, matrix.jvec).fill(None, params)
+    con = InitialConcentration()
+    con.label = ""
+    con.compartments = matrix.compartments
+    con.parameters = matrix.jvec
+    con = con.fill(None, params)
 
     for comp in matrix.compartments:
         assert comp in mat.involved_compartments()
@@ -189,20 +196,42 @@ def test_unibranched():
         ('s3', 's3'): "3",
     }
 
-    mat = KMatrix("", matrix).fill(None, ParameterGroup.from_list([3, 4, 5, 1, 0]))
+    params = ParameterGroup.from_list([3, 4, 5, 1, 0])
+    mat = KMatrix()
+    mat.label = ""
+    mat.matrix = matrix
+    mat = mat.fill(None, params)
 
-    assert not mat.is_unibranched(compartments)
+    jvec = ["4", "5", "5"]
+    con = InitialConcentration()
+    con.label = ""
+    con.compartments = compartments
+    con.parameters = jvec
+    con = con.fill(None, params)
+
+    assert not mat.is_unibranched(con)
+
     matrix = {
         ('s2', 's1'): "1",
         ('s2', 's2'): "2",
     }
 
+    compartments = ['s1', 's2']
     params = ParameterGroup.from_list([0.55, 0.0404, 1, 0])
-    mat = KMatrix("", matrix).fill(None, params)
-    assert mat.is_unibranched(compartments)
+    mat = KMatrix()
+    mat.label = ""
+    mat.matrix = matrix
+    mat = mat.fill(None, params)
 
     jvec = ["3", "4"]
-    con = InitialConcentration("", compartments, jvec).fill(None, params)
+    con = InitialConcentration()
+    con.label = ""
+    con.compartments = compartments
+    con.parameters = jvec
+    con = con.fill(None, params)
+
+    print(mat.reduced(compartments))
+    assert mat.is_unibranched(con)
 
     wanted_a_matrix = np.asarray([
         [1, -1.079278],

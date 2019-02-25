@@ -1,6 +1,6 @@
 import numpy as np
 
-from ...model import BaseModel, model, model_item
+from glotaran.model import Model, model, model_attribute
 
 
 def calculate_c(dataset, index, axis):
@@ -16,20 +16,20 @@ def calculate_c(dataset, index, axis):
 
 
 def calculate_e(dataset, axis):
-    return calculate_c(dataset, 0, axis)[1].T
+    return calculate_c(dataset, 0, axis)
 
 
-@model_item()
+@model_attribute()
 class MockMegacomplex:
     pass
 
 
 @model('mock',
-       calculated_matrix=calculate_c,
-       calculated_axis='c',
-       estimated_matrix=calculate_e,
-       estimated_axis='e',
+       matrix=calculate_c,
+       matrix_dimension='c',
+       global_matrix=calculate_e,
+       global_dimension='e',
        megacomplex_type=MockMegacomplex,
        )
-class MockModel(BaseModel):
+class MockModel(Model):
     pass

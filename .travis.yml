@@ -25,7 +25,7 @@ matrix:
       - python -m pip install -r requirements_dev.txt
       - pip install -e .
       script:
-        - make --directory=docs clean_all html
+        - make --directory=docs clean html
       after_success:
         # this prevents the tests to upload stuff to coveralls.io
         - echo "done"

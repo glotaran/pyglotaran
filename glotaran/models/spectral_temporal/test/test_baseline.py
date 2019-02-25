@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.model import ParameterGroup
+from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
@@ -24,7 +24,7 @@ def test_baseline():
             'dataset1': {
                 'initial_concentration': 'j1',
                 'megacomplex': ['mc1'],
-                'baseline': '3',
+                'baseline': True,
             },
         },
     })
@@ -43,4 +43,4 @@ def test_baseline():
     assert compartments[1] == 'dataset1_baseline'
 
     assert matrix.shape == (time.size, 2)
-    assert np.all(matrix[:, 1] == 42)
+    assert np.all(matrix[:, 1] == 1)

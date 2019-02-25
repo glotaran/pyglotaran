@@ -1,48 +1,52 @@
-"""This package contains functions for creating and calculationg groups."""
+"""Functions for creating and calculating global analysis groups."""
 
-from typing import Dict, Generator, List, Tuple, Union
+import typing
 
 import numpy as np
 import xarray as xr
 
+import glotaran
 from glotaran.model.dataset_descriptor import DatasetDescriptor
-from glotaran.model.parameter_group import ParameterGroup
+from glotaran.parameter import ParameterGroup
 
-Group = Dict[any, Tuple[any, DatasetDescriptor]]
+Group = typing.Dict[typing.Any, typing.List[typing.Tuple[typing.Any, DatasetDescriptor]]]
+"""A global analysis group is a dictonary which keys are indices in the global dimension and its
+values are `GroupItem`s"""
+
+GroupItem = typing.List[typing.Tuple[typing.Any, DatasetDescriptor]]
+"""A global analysis group item is a list of tuples containing an indix on the global dimension and
+a :class:`glotaran.model.DatasetDescriptor`"""
 
 
-def create_group(model,  # temp doc fix : 'glotaran.model.Model',
-                 data: Dict[str, Union[xr.Dataset, xr.DataArray]],
+def create_group(model: 'glotaran.model.Model',
+                 data: typing.Dict[str, xr.Dataset],
                  atol: float = 0.0,
-                 dataset: str = None,
                  ) -> Group:
-    """create_group creates a calculation group for a model along the estimated
-    axis.
+    """Creates a global analysis group for a model along the global dimension.
 
     Parameters
     ----------
-    model : glotaran.model.Model
-        The model to group.
-    data : Dict[str, Dataset]
-    atol : float (default = 0.0)
+    model :
+        The global analysis model.
+    data :
+        The data to analyze.
+    atol :
         The grouping tolerance.
-    dataset : str (default = None)
-        If not None, the group will be created only for the given dataset.
-
-    Returns
-    -------
-    group : dict(any, tuple()any, DatasetDescriptor))
     """
-    group = {}
 
-    for _, dataset_descriptor in model.dataset.items():
-        if dataset is not None and not dataset_descriptor.label == dataset:
-            continue
+    def _is_close(a, b, atol):
+        try:
+            return np.all(np.isclose(a, b, atol=atol))
+        except Exception:
+            return False
+
+    group = {}
+    for dataset_descriptor in model.dataset.values():
         if dataset_descriptor.label not in data:
             raise Exception(f"Missing data for dataset '{dataset_descriptor.label}'")
-        axis = data[dataset_descriptor.label][model.estimated_axis].values
+        axis = data[dataset_descriptor.label][model.global_dimension].values
         for index in axis:
-            if model.allow_grouping:
+            if model._allow_grouping:
                 group_index = index if not any(_is_close(index, val, atol) for val in group) \
                     else [val for val in group if _is_close(index, val, atol)][0]
                 if group_index not in group:
@@ -54,21 +58,26 @@ def create_group(model,  # temp doc fix : 'glotaran.model.Model',
     return group
 
 
-def _is_close(a, b, atol):
-    try:
-        return np.all(np.isclose(a, b, atol=atol))
-    except Exception:
-        return False
-
-
-def calculate_group_item(item,
-                         model,  # temp doc fix : 'glotaran.model.Model',
+def calculate_group_item(item: GroupItem,
+                         model: 'glotaran.model.Model',
                          parameter: ParameterGroup,
-                         data: Dict[str, Union[xr.Dataset, xr.DataArray]],
-                         ) -> Generator[Tuple[int, np.ndarray], None, None]:
+                         data: typing.Dict[str, xr.Dataset],
+                         ) -> typing.Tuple[typing.List[str], np.ndarray]:
+    """Calculates the matrix for the group item and returns a Tuple containing a list of
+    conditionaly linear parameters and he resulting matrix.
 
-    if model.calculated_matrix is None:
-        raise Exception("Missing function for calculated matrix.")
+    Parameters
+    ----------
+    item :
+        The item to calculate.
+    parameter :
+        The parameter for the calculation.
+    data : typing.Dict[str, xr.Dataset]
+        The data to analyze.
+    """
+
+    if model.matrix is None:
+        raise Exception("Missing function for calculating the model matrix.")
 
     full_clp = None
     full_matrix = None
@@ -79,34 +88,33 @@ def calculate_group_item(item,
         dataset_descriptor = dataset_descriptor.fill(model, parameter)
 
         dataset = data[dataset_descriptor.label]
-        axis = dataset.coords[model.calculated_axis].values
+        axis = dataset.coords[model.matrix_dimension].values
 
-        (clp, matrix) = model.calculated_matrix(dataset_descriptor, index, axis)
+        (clp, matrix) = model.matrix(dataset_descriptor, index, axis)
 
         if 'concentration' not in dataset:
             dataset.coords['clp_label'] = clp
             dataset['concentration'] = (
                 (
-                    model.estimated_axis,
-                    model.calculated_axis,
+                    model.global_dimension,
+                    model.matrix_dimension,
                     'clp_label',
                 ),
                 np.zeros((
-                    dataset.coords[model.estimated_axis].size,
+                    dataset.coords[model.global_dimension].size,
                     axis.size,
                     len(clp),
                 ), dtype=np.float64))
-        dataset.concentration.loc[{model.estimated_axis: index}] = matrix
-
-        if model.constrain_calculated_matrix_function is not None:
-            (clp, matrix) = \
-                model.constrain_calculated_matrix_function(model, clp, matrix)
+        dataset.concentration.loc[{model.global_dimension: index}] = matrix
 
         if 'weight' in dataset:
             for i in range(matrix.shape[1]):
                 matrix[:, i] = np.multiply(
-                    matrix[:, i], dataset.weight.sel({model.estimated_axis, index})
+                    matrix[:, i], dataset.weight.sel({model.global_dimension, index})
                 )
+
+        if dataset_descriptor.scale:
+            matrix *= dataset_descriptor.scale
 
         if full_matrix is None:
             full_matrix = matrix
@@ -117,60 +125,38 @@ def calculate_group_item(item,
                     if comp not in full_clp:
                         full_clp.append(comp)
                         full_matrix = np.concatenate(
-                            (full_matrix, np.zeros((full_matrix.shape[0]))), axis=1)
+                            (full_matrix, np.zeros((full_matrix.shape[0], 1))), axis=1)
                 reshape = np.zeros((matrix.shape[0], len(full_clp)))
                 for i, comp in enumerate(full_clp):
                     reshape[:, i] = matrix[:, clp.index(comp)] \
-                            if comp in clp else np.zeros((matrix.shape[1]))
+                            if comp in clp else np.zeros((matrix.shape[0]))
                 matrix = reshape
 
             full_matrix = np.concatenate([full_matrix, matrix], axis=0)
 
+    # Apply constraints
+
+    if callable(model._constrain_matrix_function):
+        (full_clp, full_matrix) = \
+            model._constrain_matrix_function(parameter, full_clp, full_matrix, index)
+
     return (full_clp, full_matrix)
 
 
-def calculate_group(group: Group,
-                    model,  # temp doc fix : 'glotaran.model.Model',
-                    parameter: ParameterGroup,
-                    data: Dict[str, Union[xr.Dataset, xr.DataArray]],
-                    ) -> Generator[Tuple[int, np.ndarray], None, None]:
-    """calculate_group calculates a group.
-
-    Parameters
-    ----------
-    group : Dict[any, Tuple[any, DatasetDescriptor]]
-    model : glotaran.model.Model
-    parameter : ParameterGroup
-    data : Dict[str, Dataset]
-
-    Yields
-    ------
-    (index, array) : tuple(int, np.ndarray)
-    """
-
-    i = 0
-
-    for _, item in group.items():
-
-        yield (i,) + calculate_group_item(item, model, parameter, data)
-        i += 1
-
-
-def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
+def create_data_group(model: 'glotaran.model.Model',
                       group: Group,
-                      data: Dict[str, Union[xr.Dataset, xr.DataArray]],
-                      ) -> List[np.ndarray]:
-    """create_data_group returns the datagroup for the model.
+                      data: typing.Dict[str, xr.Dataset],
+                      ) -> typing.List[np.ndarray]:
+    """Creates a group of data for global analysis.
 
     Parameters
     ----------
-    model : glotaran.model.Model
-    group : dict(any, tuple(any, DatasetDescriptor))
-    data : Dict[str, Dataset])
-
-    Returns
-    -------
-    datagroup : list(np.ndarray)
+    model :
+        The global analysis model.
+    group :
+        The analysis group to create the datagroup for.
+    data :
+        The data to analyze.
     """
 
     result = {}
@@ -183,27 +169,10 @@ def create_data_group(model,  # temp doc fix : 'glotaran.model.Model',
 
             dataset = data[dataset_descriptor.label]
             dataset = dataset.weighted_data if 'weighted_data' in dataset else dataset.data
-            dataset = dataset.sel({model.estimated_axis: index}).values
+            dataset = dataset.sel({model.global_dimension: index}).values
             if full is None:
                 full = dataset
             else:
                 full = np.append(full, dataset)
         result[i] = full
     return result
-
-
-def apply_constraints(dataset, compartments: List[str], matrix: np.ndarray, index):
-    if dataset.compartment_constraints is None:
-        return
-
-    for constraint in dataset.compartment_constraints:
-
-        if not constraint.applies(index) or constraint.type == 'equal_area':
-            continue
-
-        idx = compartments.index(constraint.compartment)
-        matrix[idx, :].fill(0.0)
-        if constraint.type == 'equal':
-            for target, param in constraint.targets.items():
-                t_idx = compartments.index(target)
-                matrix[idx, :] += param * matrix[t_idx, :]

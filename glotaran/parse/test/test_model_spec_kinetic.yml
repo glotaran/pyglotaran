@@ -4,32 +4,31 @@ type: kinetic
 dataset:
   dataset1:
     megacomplex: [cmplx1]
-    initial_concentration: inputD1 # refers to the first element in the absorption_vectors list
+    initial_concentration: inputD1
     irf: irf1
-    scale: 1 # scale dataset with parameter 78
-    shapes:
+    scale: 1
+    shape:
       s1: shape1
       s2: shape2
   dataset2:
     megacomplex: [cmplx2]
     initial_concentration: inputD2
     irf: irf2
-    scale: 2 # scale dataset with parameter 78
-        # The area under the spectrum of the 3rd component parameter 55 times the area under the 1st component, from wavelength 670 to 810 is added as penalty to the residual with weight 0.0016
+    scale: 2
 
-irf: #specific to kinetic or spectro_temporal model
+irf:
   irf1:
     type: gaussian
     center: [1]
     width: [2]
-    center_dispersion: [3] # dispersion is of 1st order
-    width_dispersion: [4] # dispersion is of 1st order
-  irf2: [gaussian, [1, 2], [3,4], 3, [5,6], [7,8], 9, false, true, 55, true, 3] # compact
+    center_dispersion: [3]
+    width_dispersion: [4]
+  irf2: [gaussian, [1, 2], [3,4], 3, [5,6], [7,8], [9], false, false, true, 55, true, 3] # compact
 
-initial_concentration: #equal to the total number of compartments
+initial_concentration:
   inputD1:
     compartments: [s1,s2,s3]
-    parameters: [1,2,3] #these are indices in the total prameter vector
+    parameters: [1,2,3]
   inputD2:
     compartments: [s1,s2,s3]
     parameters: [1,2,3]
@@ -60,7 +59,7 @@ megacomplex:
       k_matrix: [km1] # A megacomplex has one or more k-matrices
   cmplx2:
       k_matrix: [km2]
-  cmplx3: [[km3]]
+  cmplx3: [[km3], None]
 
 spectral_constraints:
   - type: zero
@@ -71,7 +70,7 @@ spectral_constraints:
     compartment: s3
     interval: [!tuple '(670, 810)']
     target: s2
-    parameter: 55 # usually fixed
+    parameter: 55
     weight: 0.0016
 
 spectral_relations:

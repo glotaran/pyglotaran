@@ -9,7 +9,7 @@ from setuptools.extension import Extension
 
 setup_requires = [
     'numpy>=1.15.1',
-    'scipy>=1.1.0',
+    'scipy>=1.2.0',
     'Cython>=0.28.5',
     'setuptools>=40.2.0'
 ]
@@ -18,9 +18,7 @@ install_requires = [
     'pandas>=0.23.4',
     'pyyaml>=3.13',
     'xarray>=0.11.2',
-    'matplotlib>=2.2.3',  # dependency introduced by glotaran.plotting
     'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
-    'typing_inspect>=0.3.1',
 ]
 
 

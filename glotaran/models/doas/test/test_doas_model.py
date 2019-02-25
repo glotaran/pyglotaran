@@ -25,7 +25,7 @@ class OneOscillation():
         'dataset': {
             'dataset1': {
                 'megacomplex': ['m1'],
-                'shapes': {'osc1': 'sh1'}
+                'shape': {'osc1': 'sh1'}
             }
         }
     })
@@ -54,8 +54,8 @@ class OneOscillation():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 16],
-            ['rate', 3],
+            ['freq', 20],
+            ['rate', 0.3],
         ],
     })
 
@@ -84,12 +84,12 @@ class OneOscillationWithIrf():
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
                 'megacomplex': ['m1'],
-                'shapes': {'osc1': 'sh1'},
+                'shape': {'osc1': 'sh1'},
                 'irf': 'irf1',
             }
         }
@@ -103,7 +103,7 @@ class OneOscillationWithIrf():
             'm1': {'oscillation': ['osc1']}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -115,7 +115,7 @@ class OneOscillationWithIrf():
 
     wanted_parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 25.5],
+            ['freq', 25],
             ['rate', 0.1],
         ],
         'shape': {'amps': [7], 'locs': [5], 'width': [4]},
@@ -124,10 +124,10 @@ class OneOscillationWithIrf():
 
     parameter = ParameterGroup.from_dict({
         'osc': [
-            ['freq', 16],
-            ['rate', 0.3],
+            ['freq', 25],
+            ['rate', 0.1],
         ],
-        'irf': [['center', 0.5], ['width', 0.2]],
+        'irf': [['center', 0.3], ['width', 0.1]],
     })
 
     time = np.arange(0, 3, 0.01)
@@ -182,13 +182,13 @@ class OneOscillationWithSequentialModel():
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
                 'initial_concentration': 'j1',
                 'megacomplex': ['m1'],
-                'shapes': {
+                'shape': {
                     'osc1': 'sh1',
                     's1': 'sh2',
                     's2': 'sh3',
@@ -221,7 +221,7 @@ class OneOscillationWithSequentialModel():
             }
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
+            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -242,11 +242,11 @@ class OneOscillationWithSequentialModel():
             ["2", 0.01],
         ],
         'osc': [
-            ['freq', 25.5],
+            ['freq', 25],
             ['rate', 0.1],
         ],
         'shape': {'amps': [0.07, 2, 4], 'locs': [5, 2, 8], 'width': [4, 2, 3]},
-        'irf': [['center', 0.3], ['width', 0.5]],
+        'irf': [['center', 0.3], ['width', 0.1]],
     })
 
     parameter = ParameterGroup.from_dict({
@@ -255,14 +255,14 @@ class OneOscillationWithSequentialModel():
             ['0', 0, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 0.3],
-            ["2", 0.05],
+            ["1", 0.2],
+            ["2", 0.01],
         ],
         'osc': [
-            ['freq', 16],
-            ['rate', 0.3],
+            ['freq', 25],
+            ['rate', 0.1],
         ],
-        'irf': [['center', 0.5], ['width', 0.3]],
+        'irf': [['center', 0.3], ['width', 0.1]],
     })
 
     time = np.arange(-1, 5, 0.01)
@@ -280,17 +280,17 @@ class OneOscillationWithSequentialModel():
 ])
 def test_doas_model(suite):
 
-    print(suite.sim_model.errors())
+    print(suite.sim_model.validate())
     assert suite.sim_model.valid()
 
-    print(suite.model.errors())
+    print(suite.model.validate())
     assert suite.model.valid()
 
-    print(suite.sim_model.errors_parameter(suite.wanted_parameter))
-    assert suite.sim_model.valid_parameter(suite.wanted_parameter)
+    print(suite.sim_model.validate(suite.wanted_parameter))
+    assert suite.sim_model.valid(suite.wanted_parameter)
 
-    print(suite.model.errors_parameter(suite.parameter))
-    assert suite.model.valid_parameter(suite.parameter)
+    print(suite.model.validate(suite.parameter))
+    assert suite.model.valid(suite.parameter)
 
     dataset = suite.sim_model.dataset['dataset1'].fill(suite.sim_model, suite.wanted_parameter)
 
@@ -306,21 +306,22 @@ def test_doas_model(suite):
                                        suite.axis)
     print(dataset)
 
-    assert dataset.shape == \
+    assert dataset.data.shape == \
         (suite.axis['time'].size, suite.axis['spectral'].size)
 
     print(suite.parameter)
+    print(suite.wanted_parameter)
     data = {'dataset1': dataset}
 
-    result = suite.model.fit(suite.parameter, data)
-    print(result.best_fit_parameter)
+    result = suite.model.optimize(suite.parameter, data, max_nfev=50)
+    print(result.optimized_parameter)
 
-    for label, param in result.best_fit_parameter.all_with_label():
+    for label, param in result.optimized_parameter.all():
         assert np.allclose(param.value, suite.wanted_parameter.get(label).value,
                            rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset['time'], resultdata['time'])
     assert np.array_equal(dataset['spectral'], resultdata['spectral'])
-    assert dataset.shape == resultdata.data.shape
-    assert np.allclose(dataset, resultdata.fitted_data)
+    assert dataset.data.shape == resultdata.fitted_data.shape
+    assert np.allclose(dataset.data, resultdata.fitted_data)
