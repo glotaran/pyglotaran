@@ -1,4 +1,4 @@
-"""This package contains glotarans parameter class"""
+"""The parameter class."""
 
 import typing
 import numpy as np
@@ -9,6 +9,7 @@ import glotaran
 
 
 class Keys:
+    """Keys for parameter options."""
     MIN = "min"
     MAX = "max"
     NON_NEG = "non-negative"
@@ -17,25 +18,36 @@ class Keys:
 
 
 class Parameter(LmParameter):
-    """Wrapper for lmfit parameter."""
-    def __init__(self, label=None, full_label=None):
+    """A parameter for optimization."""
+
+    def __init__(self, label: str = None, full_label: str = None):
+        """
+
+        Parameters
+        ----------
+        label :
+            The label of the parameter.
+        full_label : str
+            The label of the parameter with its path in a paramter group prepended.
+        """
+
         super(Parameter, self).__init__(
             user_data={'non_neg': False, 'full_label': full_label})
-        self.index = -1
+
         self._non_neg = False
         self.label = label
         self._full_label = full_label
 
     @classmethod
-    def from_parameter(cls, label: str, parameter: LmParameter):
-        """Creates a parameter from an lmfit.Parameter
+    def from_parameter(cls, label: str, parameter: LmParameter) -> 'Parameter':
+        """Creates a :class:`Parameter` from a `lmfit.Parameter`
 
         Parameters
         ----------
         label : str
-            Label of the parameter
+            The label of the parameter.
         parameter : lmfit.Parameter
-            lmfit.Parameter
+            The `lmfit.Parameter`.
         """
         p = cls(label=label)
         p.vary = parameter.vary
@@ -51,30 +63,41 @@ class Parameter(LmParameter):
 
     @classmethod
     def from_list_or_value(cls,
-                           parameter: typing.Union[int, float, typing.List],
+                           value: typing.Union[int, float, typing.List],
                            default_options: typing.Dict = None,
-                           label: str = None):
+                           label: str = None) -> 'Parameter':
+        """Creates a parameter from a list or numeric value.
 
-        if not isinstance(parameter, list):
-            parameter = [parameter]
+        Parameters
+        ----------
+        value :
+            The list or numeric value.
+        default_options :
+            A dictonary of default options.
+        label :
+            The label of the parameter.
+        """
+
+        if not isinstance(value, list):
+            value = [value]
 
         param = cls(label=label)
 
-        if isinstance(parameter, (int, float)):
-            param.value = parameter
+        if isinstance(value, (int, float)):
+            param.value = value
             return param
 
         def retrieve(filt, default):
-            tmp = list(filter(filt, parameter))
+            tmp = list(filter(filt, value))
             if len(tmp) != 0:
-                parameter.remove(tmp[0])
+                value.remove(tmp[0])
                 return tmp[0]
             else:
                 return default
         options = retrieve(lambda x: isinstance(x, dict), None)
 
-        param.label = parameter[0] if len(parameter) != 1 else label
-        param.value = float(parameter[0] if len(parameter) == 1 else parameter[1])
+        param.label = value[0] if len(value) != 1 else label
+        param.value = float(value[0] if len(value) == 1 else value[1])
 
         if default_options:
             param._set_options_from_dict(default_options)
@@ -84,6 +107,19 @@ class Parameter(LmParameter):
         return param
 
     def set_from_group(self, group: 'glotaran.parameter.ParameterGroup'):
+        """Sets all values of the parameter to the values of the conrresoping parameter in the group.
+
+        Notes
+        -----
+
+        For internal use.
+
+        Parameters
+        ----------
+        group :
+            The :class:`glotaran.parameter.ParameterGroup`.
+        """
+
         p = group.get(self.full_label)
         self.vary = p.vary
         self.value = p.value
@@ -126,6 +162,11 @@ class Parameter(LmParameter):
 
     @property
     def non_neg(self) -> bool:
+        """Indicates if the parameter is non-negativ.
+
+        If true, the parameter will be transformed with :math:`p' = \log{p}` and
+        :math:`p = \exp{p'}`.
+        """
         return self._non_neg
 
     @non_neg.setter

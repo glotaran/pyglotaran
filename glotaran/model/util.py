@@ -9,8 +9,8 @@ def wrap_func_as_method(cls: typing.Any,
                         doc: str = None) -> typing.Callable:
     """A decorator to wrap a function as class method.
 
-    Note
-    ----
+    Notes
+    -----
 
     Only for internal use.
 

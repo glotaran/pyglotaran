@@ -110,8 +110,8 @@ class Result:
     def data(self) -> typing.Dict[str, xr.Dataset]:
         """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
-        Note
-        ----
+        Notes
+        -----
         The actual content of the data depends on the actual model and can be found in the
         documentation for the model.
         """
@@ -216,8 +216,8 @@ class Result:
         """Finalizes the result. Calculates the unweighted residual (if applicable), the residual
         svd and calls the model's finalize function.
 
-        Note
-        ----
+        Notes
+        -----
 
         This function is intended for internal use and should not be called by users.
 

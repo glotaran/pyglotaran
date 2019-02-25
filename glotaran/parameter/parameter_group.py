@@ -370,8 +370,9 @@ class ParameterGroup(dict):
         """
         Creates a lmfit.Parameters dictionary from the group.
 
-        Note
-        ----
+        Notes
+        -----
+
         Only for internal use.
         """
 
