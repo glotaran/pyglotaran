@@ -166,7 +166,7 @@ class Parameter(LmParameter):
 
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
-        """
+        """  # noqa w605
         return self._non_neg
 
     @non_neg.setter
