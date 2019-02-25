@@ -114,7 +114,7 @@ class ExplicitFile(object):
         np.savetxt(self._file, raw_data, fmt=number_format, delimiter='\t', newline='\n',
                    header=header, footer='', comments='')
 
-    def read(self):
+    def read(self, prepare: bool = True):
         if not os.path.isfile(self._file):
             raise Exception("File does not exist.")
 
@@ -175,15 +175,17 @@ class ExplicitFile(object):
                 NotImplementedError()
                 pass
 
-        return self.dataset()
+        return self.dataset(prepare=prepare)
 
-    def dataset(self):
+    def dataset(self, prepare: bool = True):
         data = self._observations
         if self._file_data_format == DataFileType.time_explicit:
             data = data.T
-        return prepare_dataset(xr.DataArray(
-            data, coords=[('time', self._times), ('spectral', self._spectral_indices)]
-        ).to_dataset(name='data'))
+        dataset = xr.DataArray(
+            data, coords=[('time', self._times), ('spectral', self._spectral_indices)])
+        if prepare:
+            dataset = prepare_dataset(dataset)
+        return dataset
 
 
 class WavelengthExplicitFile(ExplicitFile):
@@ -278,7 +280,7 @@ def get_data_file_format(line):
     return data_file_format
 
 
-def read_ascii_time_trace(fname: str) -> xr.Dataset:
+def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
     """Reads an ascii file in wavelength- or time-explicit format.
 
     See [1] for documentation of this format.
@@ -306,7 +308,7 @@ def read_ascii_time_trace(fname: str) -> xr.Dataset:
     data_file = WavelengthExplicitFile(filepath=fname) if data_file_format is \
         DataFileType.wavelength_explicit else TimeExplicitFile(fname)
 
-    return data_file.read()
+    return data_file.read(prepare=prepare)
 
 
 def write_ascii_time_trace(filename: str,
