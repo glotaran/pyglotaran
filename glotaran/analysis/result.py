@@ -299,8 +299,8 @@ class Result:
         string += "\n"
 
         if with_model:
-            string += "\n\n" + self.model.mprint(parameter=self.optimized_parameter,
-                                                 initial=self.initial_parameter)
+            string += "\n\n" + self.model.markdown(parameter=self.optimized_parameter,
+                                                   initial=self.initial_parameter)
 
         return string
 
