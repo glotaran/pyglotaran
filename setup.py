@@ -16,7 +16,7 @@ setup_requires = [
 install_requires = [
     'lmfit>=0.9.11',
     'pandas>=0.23.4',
-    'pyyaml>=3.13',
+    'pyyaml>=3.0,<=5.0',
     'xarray>=0.11.2',
     'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
 ]
