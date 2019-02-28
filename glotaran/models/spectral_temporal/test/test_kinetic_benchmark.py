@@ -1,4 +1,5 @@
 import numpy as np
+import xarray as xr
 import pytest
 
 from glotaran.parameter import ParameterGroup
@@ -50,8 +51,9 @@ def test_kinetic_matrix_benchmark(benchmark):
     })
     dataset = model.dataset['dataset1'].fill(model, parameter)
     time = np.asarray(np.arange(-10, 100, 0.02))
+    data = xr.DataArray(time, coords=[('time', time)])
 
-    benchmark(calculate_kinetic_matrix, dataset, 0, time)
+    benchmark(calculate_kinetic_matrix, dataset, data, 0)
 
 
 @pytest.mark.parametrize("nnls", [True, False])

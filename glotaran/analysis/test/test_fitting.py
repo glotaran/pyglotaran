@@ -12,7 +12,8 @@ from glotaran.parameter import Parameter, ParameterGroup
 from .mock import MockMegacomplex
 
 
-def calculate_kinetic(dataset, index, axis):
+def calculate_kinetic(dataset, data, index):
+    axis = data.coords['c']
     kinpar = -1 * np.array(dataset.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.exp(np.outer(axis, kinpar))

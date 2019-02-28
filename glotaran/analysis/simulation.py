@@ -45,10 +45,16 @@ def simulate(model: typing.Type['glotaran.model.Model'],
     filled_dataset = model.dataset[dataset].fill(model, parameter)
 
     matrix_dimension = axes[model.matrix_dimension]
-
     global_dimension = axes[model.global_dimension]
 
-    matrix = [model.matrix(filled_dataset, index, matrix_dimension) for index in global_dimension]
+    dim1 = matrix_dimension.size
+    dim2 = global_dimension.size
+    result = xr.DataArray(np.empty((dim1, dim2), dtype=np.float64),
+                          coords=[(model.matrix_dimension, matrix_dimension),
+                                  (model.global_dimension, global_dimension)])
+    result = result.to_dataset(name='data')
+
+    matrix = [model.matrix(filled_dataset, result, index) for index in global_dimension]
     if callable(model._constrain_matrix_function):
         matrix = [model._constrain_matrix_function(parameter, clp, mat, global_dimension[i])
                   for i, (clp, mat) in enumerate(matrix)]
@@ -74,19 +80,12 @@ def simulate(model: typing.Type['glotaran.model.Model'],
         clp_labels, clp = model.global_matrix(filled_dataset, global_dimension)
         clp = xr.DataArray(clp, coords=[(model.global_dimension, global_dimension),
                                         ('clp_label', clp_labels)])
-
-    dim1 = matrix_dimension.size
-    dim2 = global_dimension.size
-    result = np.empty((dim1, dim2), dtype=np.float64)
     for i in range(dim2):
-        result[:, i] = np.dot(matrix[i], clp[i])
+        result.data[:, i] = np.dot(matrix[i], clp[i])
 
     if noise:
         if noise_seed is not None:
             np.random.seed(noise_seed)
-        result = np.random.normal(result, noise_std_dev)
-    data = xr.DataArray(result, coords=[
-        (model.matrix_dimension, matrix_dimension), (model.global_dimension, global_dimension)
-    ])
+        result.data = np.random.normal(result.data, noise_std_dev)
 
-    return data.to_dataset(name="data")
+    return result

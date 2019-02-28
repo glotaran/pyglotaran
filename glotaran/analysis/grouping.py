@@ -90,7 +90,7 @@ def calculate_group_item(item: GroupItem,
         dataset = data[dataset_descriptor.label]
         axis = dataset.coords[model.matrix_dimension].values
 
-        (clp, matrix) = model.matrix(dataset_descriptor, index, axis)
+        (clp, matrix) = model.matrix(dataset_descriptor, dataset, index)
 
         if 'concentration' not in dataset:
             dataset.coords['clp_label'] = clp

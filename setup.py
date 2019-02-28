@@ -4,8 +4,7 @@ import os
 import shutil
 import sys
 
-from setuptools import setup, find_packages, Command
-from setuptools.extension import Extension
+from setuptools import find_packages, Command
 
 setup_requires = [
     'numpy>=1.15.1',
@@ -59,9 +58,11 @@ class CleanCommand(Command):
 try:
     import numpy
     import scipy
+    from numpy.distutils.core import setup, Extension
+
     ext_modules = [
-        Extension("kinetic_matrix_no_irf",
-                  ["glotaran/models/spectral_temporal/kinetic_matrix_no_irf.pyx"],
+        Extension(name="kinetic_matrix_no_irf",
+                  sources=["glotaran/models/spectral_temporal/kinetic_matrix_no_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
                                 "glotaran/models/spectral_temporal"]),
         Extension("kinetic_matrix_gaussian_irf",
@@ -69,6 +70,15 @@ try:
                    "glotaran/models/spectral_temporal/kinetic_matrix_gaussian_irf.pyx"],
                   include_dirs=[numpy.get_include(), scipy.get_include(),
                                 "glotaran/models/spectral_temporal"]),
+        Extension(name="doas_matrix_faddeva",
+                  sources=["glotaran/models/doas/doas_matrix_faddeva.pyx"],
+                  include_dirs=[numpy.get_include(), scipy.get_include(),
+                                "glotaran/models/doas"]),
+        Extension(name="scalTOMS680",
+                  sources=["glotaran/models/doas/scalTOMS680.pyf",
+                           "glotaran/models/doas/scalTOMS680.f"],
+                  include_dirs=[numpy.get_include(), scipy.get_include(),
+                                "glotaran/models/doas"]),
         ]
 
 except ImportError:
@@ -80,10 +90,67 @@ except ImportError:
                       f"`pip install '{setup_requires[0]}' '{setup_requires[1]}' "
                       f"'{setup_requires[2]}'`")
 
-# backport of dataclases only needed for python 3.6
 
-if sys.version_info.major == 3 and sys.version_info.minor == 6:
-    install_requires.append('dataclasses>=0.6')
+# Patch for np.distutil which has broken cython support.
+# See https://stackoverflow.com/questions/37178055/attributeerror-list-object-has-no-attribute-rfind-using-petsc4py # noqa e501
+from numpy.distutils.misc_util import appendpath  # noqa402
+from numpy.distutils import log  # noqa402
+from numpy.distutils.command import build_src # noqa402
+from os.path import join as pjoin, dirname  # noqa402
+from distutils.dep_util import newer_group  # noqa402
+from distutils.errors import DistutilsError  # noqa402
+
+import Cython.Compiler.Main  # noqa402
+build_src.Pyrex = Cython
+build_src.have_pyrex = True
+
+
+def have_pyrex():
+    import sys  # noqa402
+    try:
+        import Cython.Compiler.Main
+        sys.modules['Pyrex'] = Cython
+        sys.modules['Pyrex.Compiler'] = Cython.Compiler
+        sys.modules['Pyrex.Compiler.Main'] = Cython.Compiler.Main
+        return True
+    except ImportError:
+        return False
+
+
+build_src.have_pyrex = have_pyrex
+
+
+def generate_a_pyrex_source(self, base, ext_name, source, extension):
+    ''' Monkey patch for numpy build_src.build_src method
+    Uses Cython instead of Pyrex.
+    Assumes Cython is present
+    '''
+    if self.inplace:
+        target_dir = dirname(base)
+    else:
+        target_dir = appendpath(self.build_src, dirname(base))
+    target_file = pjoin(target_dir, ext_name + '.c')
+    depends = [source] + extension.depends
+    if self.force or newer_group(depends, target_file, 'newer'):
+        import Cython.Compiler.Main
+        log.info(f"cythonc:> {target_file}")
+        self.mkpath(target_dir)
+        options = Cython.Compiler.Main.CompilationOptions(
+            defaults=Cython.Compiler.Main.default_options,
+            include_path=extension.include_dirs,
+            output_file=target_file)
+        cython_result = Cython.Compiler.Main.compile(source, options=options)
+        if cython_result.num_errors != 0:
+            raise DistutilsError(
+                f"{cython_result.num_errors} errors while compiling {source} with Cython")
+    return target_file
+
+
+build_src.build_src.generate_a_pyrex_source = generate_a_pyrex_source
+########################
+# END additionnal code #
+########################
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -117,7 +184,7 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
-    cmdclass={'clean': CleanCommand},
+    #  cmdclass={'clean': CleanCommand},
     ext_modules=ext_modules,
     test_suite='glotaran',
     tests_require=['pytest'],

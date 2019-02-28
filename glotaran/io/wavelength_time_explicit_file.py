@@ -5,7 +5,7 @@ import re
 import numpy as np
 import xarray as xr
 
-from .prepare_dataset import prepare_dataset
+from .prepare_dataset import prepare_time_trace_dataset
 
 
 class DataFileType(Enum):
@@ -184,7 +184,7 @@ class ExplicitFile(object):
         dataset = xr.DataArray(
             data, coords=[('time', self._times), ('spectral', self._spectral_indices)])
         if prepare:
-            dataset = prepare_dataset(dataset)
+            dataset = prepare_time_trace_dataset(dataset)
         return dataset
 
 

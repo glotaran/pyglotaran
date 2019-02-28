@@ -2,6 +2,7 @@
 
 import typing
 import numpy as np
+import xarray as xr
 
 from glotaran.analysis.result import Result
 from glotaran.parameter import ParameterGroup
@@ -13,7 +14,7 @@ from .util import wrap_func_as_method
 
 
 MatrixFunction = typing.Callable[
-    [typing.Type[DatasetDescriptor], typing.Any, np.ndarray],
+    [typing.Type[DatasetDescriptor], xr.Dataset, typing.Any],
     typing.Tuple[typing.List[str], np.ndarray]]
 """A `MatrixFunction` calculates the matrix for a model."""
 

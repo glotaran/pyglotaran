@@ -7,7 +7,7 @@ import numpy as np
 import xarray as xr
 
 from .external_file_formats.sdt_file import SdtFile
-from .prepare_dataset import prepare_dataset
+from .prepare_dataset import prepare_time_trace_dataset
 
 
 def read_sdt(file_path: str,
@@ -95,5 +95,5 @@ def read_sdt(file_path: str,
         if not index:
             index = np.array(range(data[0]))
         data = xr.DataArray(data.T, coords=[('time', times), ('spectral', index)])
-        data = prepare_dataset(data)
+        data = prepare_time_trace_dataset(data)
     return data

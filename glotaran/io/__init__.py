@@ -6,7 +6,7 @@ from . import (
     sdt_file_reader
 )
 
-prepare_dataset = prepare_dataset.prepare_dataset
+prepare_time_trace_dataset = prepare_dataset.prepare_time_trace_dataset
 
 read_ascii_time_trace = wavelength_time_explicit_file.read_ascii_time_trace
 write_ascii_time_trace = wavelength_time_explicit_file.write_ascii_time_trace

@@ -1,0 +1,19 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module scalTOMS680
+    interface
+        subroutine scalwofz(xi,yi,u,v,flag,scalarg,scalargflag)
+            double precision intent(in) :: xi
+            double precision intent(in) :: yi
+            double precision intent(out) :: u
+            double precision intent(out) :: v
+            logical intent(out) :: flag
+            double precision precision intent(in) :: scalarg
+            logical intent(out) :: scalargflag
+        end subroutine scalwofz
+    end interface
+end python module scalTOMS680
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

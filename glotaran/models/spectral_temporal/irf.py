@@ -16,11 +16,9 @@ class IrfException(Exception):
         return f"Irf '{self.irf.label}' error: {self.msg}"
 
 
-@model_attribute(properties={
-    'irfdata': {'type': np.ndarray, 'allow_none': True},
-}, has_type=True)
+@model_attribute(has_type=True)
 class IrfMeasured:
-    """A measured IRF."""
+    """A measured IRF. The data must be supplied by the dataset."""
 
 
 @model_attribute(properties={

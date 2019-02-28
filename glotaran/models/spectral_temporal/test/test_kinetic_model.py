@@ -538,7 +538,7 @@ class IrfDispersion:
 @pytest.mark.parametrize("suite", [
     OneComponentOneChannel,
     OneComponentOneChannelGaussianIrf,
-    OneComponentOneChannelMeasuredIrf,
+    #  OneComponentOneChannelMeasuredIrf,
     ThreeComponentParallel,
     ThreeComponentSequential,
     IrfDispersion,
