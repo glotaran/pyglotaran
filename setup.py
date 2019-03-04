@@ -17,6 +17,8 @@ install_requires = [
     'pandas>=0.23.4',
     'pyyaml>=3.0,<=5.0',
     'xarray>=0.11.2',
+    'netCDF4>=1.4.2'
+    'click>=7.0'
     'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
 ]
 
@@ -155,6 +157,11 @@ build_src.build_src.generate_a_pyrex_source = generate_a_pyrex_source
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+entry_points = """
+    [console_scripts]
+    glotaran=glotaran.cli.main:glotaran
+"""
+
 setup(
     name="glotaran",
     version='0.0.10',
@@ -184,12 +191,9 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
-    #  cmdclass={'clean': CleanCommand},
+    entry_points=entry_points,
     ext_modules=ext_modules,
     test_suite='glotaran',
     tests_require=['pytest'],
     zip_safe=False
 )
-
-#    package_data={'glotaran.models.kinetic.c_matrix_opencl':
-#                  ['*.cl']},

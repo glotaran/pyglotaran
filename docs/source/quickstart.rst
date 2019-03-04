@@ -57,7 +57,7 @@ things).
 
 .. ipython:: python
 
-   dataset = gta.io.prepare_dataset(dataset)
+   dataset = gta.io.prepare_time_trace_dataset(dataset)
    dataset
 
 First, take a look at the first 10 singular values:

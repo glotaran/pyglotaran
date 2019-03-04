@@ -22,6 +22,9 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.analysis.result
     glotaran.analysis.simulation
     glotaran.analysis.variable_projection
+    glotaran.cli
+    glotaran.cli.main
+    glotaran.cli.util
     glotaran.examples
     glotaran.examples.sequential
     glotaran.io

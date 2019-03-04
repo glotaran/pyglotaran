@@ -86,6 +86,7 @@ def simulate(model: typing.Type['glotaran.model.Model'],
     if noise:
         if noise_seed is not None:
             np.random.seed(noise_seed)
-        result.data = np.random.normal(result.data, noise_std_dev)
+        result['data'] = ((model.matrix_dimension, model.global_dimension),
+                          np.random.normal(result.data, noise_std_dev))
 
     return result

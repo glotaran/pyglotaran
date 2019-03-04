@@ -1,6 +1,7 @@
 """The result class for global analysis."""
 
 import typing
+import os
 
 import numpy as np
 import xarray as xr
@@ -255,6 +256,45 @@ class Result:
         if callable(self.model._finalize_result):
             self.model._finalize_result(self)
 
+    def save(self,  path: str) -> typing.List[str]:
+        """Saves the result to given folder.
+
+        Returns a list with paths of all saved items.
+
+        The following files are saved:
+
+        * `result.md`: The result with the model formatted as markdown text.
+        * `optimized_parameter.csv`: The optimized parameter as csv file.
+        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+
+        Parameters
+        ----------
+        path :
+            The path to the folder in which to save the result.
+        """
+        if not os.path.exists(path):
+            os.makedirs(path)
+        elif not os.path.isdir(path):
+            raise Exception(f"The path '{path}' is not a directory.")
+
+        paths = []
+
+        md_path = os.path.join(path, 'result.md')
+        with open(md_path, 'w') as f:
+            f.write(self.markdown())
+        paths.append(md_path)
+
+        csv_path = os.path.join(path, 'optimized_parameter.csv')
+        self.optimized_parameter.to_csv(csv_path)
+        paths.append(csv_path)
+
+        for label, data in self.data.items():
+            nc_path = os.path.join(path, f"{label}.nc")
+            data.to_netcdf(nc_path, engine='netcdf4')
+            paths.append(nc_path)
+
+        return paths
+
     def markdown(self, with_model=True) -> str:
         """Formats the model as a markdown text.
 
@@ -263,12 +303,11 @@ class Result:
         with_model :
             If `True`, the model will be printed together with the initial and optimized parameter.
         """
-        string = "# Fitresult\n\n"
 
         ll = 32
         lr = 13
 
-        string += "Optimization Result".ljust(ll-1)
+        string = "Optimization Result".ljust(ll-1)
         string += "|"
         string += "|".rjust(lr)
         string += "\n"
