@@ -54,7 +54,7 @@ def print_model(parameter: str, model: str):
 @click.option('--out', '-o', default=None, help='(optional) Path to an output directory.')
 @click.option('--nfev', '-n', default=None,
               help='(optional) Maximum number of function evaluations.', show_default=True)
-@click.option('--nnls', is_flag=True, flag_value=False,
+@click.option('--nnls', is_flag=True,
               help='Use non-negative least squares.', show_default=True)
 @click.argument("model")
 @click.pass_context
@@ -88,7 +88,7 @@ def optimize(ctx, parameter: str, out: str, nfev: int, nnls: bool, model: str):
     echo(f"Use NNLS: {nnls}")
     echo(f"Max Nr Function Evaluations: {nfev}")
     try:
-        result = model.optimize(parameter, datasets, max_nfev=nfev, nnls=nnls)
+        result = model.optimize(parameter, datasets, max_nfev=int(nfev), nnls=nnls)
         echo('Optimization successfull.')
         echo(result.markdown(with_model=False))
         echo('Optimized Parameter:')
