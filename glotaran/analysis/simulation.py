@@ -8,8 +8,8 @@ from glotaran.parameter import ParameterGroup
 
 
 def simulate(model: typing.Type['glotaran.model.Model'],
-             parameter: ParameterGroup,
              dataset: str,
+             parameter: ParameterGroup,
              axes: typing.Dict[str, np.ndarray] = None,
              clp: typing.Union[np.ndarray, xr.DataArray] = None,
              noise=False,
@@ -62,7 +62,7 @@ def simulate(model: typing.Type['glotaran.model.Model'],
                                         ('clp_label', clp_label)])
               for clp_label, mat in matrix]
 
-    if clp:
+    if clp is not None:
         if clp.shape[0] != global_dimension.size:
             raise ValueError(f"Size of dimension 0 of clp ({clp.shape[0]}) != size of axis"
                              f" '{model.global_dimension}' ({global_dimension.size})")
@@ -81,7 +81,7 @@ def simulate(model: typing.Type['glotaran.model.Model'],
         clp = xr.DataArray(clp, coords=[(model.global_dimension, global_dimension),
                                         ('clp_label', clp_labels)])
     for i in range(dim2):
-        result.data[:, i] = np.dot(matrix[i], clp[i])
+        result.data[:, i] = np.dot(matrix[i], clp[i].sel(clp_label=matrix[i].coords['clp_label']))
 
     if noise:
         if noise_seed is not None:

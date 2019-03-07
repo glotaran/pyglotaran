@@ -141,7 +141,7 @@ class Model:
         noise_seed :
             Seed for the noise.
         """
-        return simulate(self, parameter, dataset, axes=axes, clp=clp, noise=noise,
+        return simulate(self, dataset, parameter, axes=axes, clp=clp, noise=noise,
                         noise_std_dev=noise_std_dev, noise_seed=noise_seed)
 
     def optimize(self,
