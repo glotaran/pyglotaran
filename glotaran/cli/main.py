@@ -7,15 +7,16 @@ from click import confirm, echo, pause, prompt
 import glotaran as gta
 
 from . import util
+from .glotaran_click_group import GlotaranClickGroup
 
 
-@click.group()
+@click.group(cls=GlotaranClickGroup)
 @click.version_option(version=gta.__version__)
 def glotaran():
     pass
 
 
-@click.command(short_help='Validates a model file.')
+@glotaran.command(short_help='Validates a model file.',help_priority=2)
 @click.option('--parameter', '-p', default=None, type=click.Path(exists=True, dir_okay=False),
               help='(optional) Path to parameter file.')
 @click.argument("model", type=click.Path(exists=True, dir_okay=False))
@@ -32,7 +33,7 @@ def validate(parameter: str, model: str):
     echo(model.validate(parameter=parameter))
 
 
-@click.command(name='print', short_help="Prints a model as markdown.")
+@glotaran.command(name='print', short_help="Prints a model as markdown.", help_priority=3)
 @click.option('--parameter', '-p', default=None, type=click.Path(exists=True, dir_okay=False),
               help='(optional) Path to parameter file.')
 @click.argument("model", type=click.Path(exists=True, dir_okay=False))
@@ -48,9 +49,10 @@ def print_model(parameter: str, model: str):
     echo(model.markdown(parameter=parameter))
 
 
-@click.command(
+@glotaran.command(
     name='optimize',
     short_help="Optimizes a model.",
+    help_priority=1,
 )
 @click.option('--parameter', '-p', required=True, type=click.Path(exists=True, dir_okay=False),
               help='Path to parameter file.')
@@ -71,7 +73,11 @@ def print_model(parameter: str, model: str):
 @click.argument("model", type=click.Path(exists=True, dir_okay=False))
 def optimize(parameter: str, datatype: str, data: typing.List[str],
              out: str, nfev: int, nnls: bool, yes: bool, model: str):
-    """Optimizes a model."""
+    """Optimizes a model.
+    e.g.:
+    glotaran optimize --
+    
+    """
     echo(f"Optimizing model in file: '{model}'")
 
     model = util.load_model_file(model, verbose=True)
@@ -123,7 +129,7 @@ def optimize(parameter: str, datatype: str, data: typing.List[str],
         echo('All done, have a nice day!')
 
 
-@click.command(name='export', short_help="Exports data from netCDF4 to ASCII.")
+@glotaran.command(name='export', short_help="Exports data from netCDF4 to ASCII.", help_priority=4)
 @click.option('--name', '-n', default=None, type=str, show_default=True,
               help='Name of the datagroup to export.')
 @click.option('--select', '-s', default=None, type=(str, util.VALORRANGEORLIST), show_default=True,
@@ -209,7 +215,7 @@ def export(filename: str, select, out: str, name: str):
                     else:
                         cont = False
                         if choice == 'yes':
-                            util.write(data, out)
+                            util.write_data(data, out)
     echo('Good-bye, have a nice day!')
 
 
