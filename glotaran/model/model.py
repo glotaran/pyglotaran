@@ -6,6 +6,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.result import Result
+from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.optimize import optimize
 from glotaran.parameter import ParameterGroup
@@ -150,7 +151,7 @@ class Model:
                  nnls: bool = False,
                  verbose: bool = True,
                  max_nfev: int = None,
-                 group_atol: int = 0,
+                 group_tolerance: int = 0,
                  ) -> Result:
         """Optimizes the parameter for this model.
 
@@ -166,10 +167,12 @@ class Model:
             If `True` feedback is printed at every iteration.
         max_nfev :
             Maximum number of function evaluations. `None` for unlimited.
-        group_atol :
+        group_tolerance :
             The tolerance for grouping datasets along the global dimension.
         """
-        result = Result(self, data, parameter, nnls, atol=group_atol)
+        scheme = Scheme(model=self, parameter=parameter, data=data,
+                        nnls=nnls, group_tolerance=group_tolerance)
+        result = Result(scheme)
         optimize(result, verbose=verbose, max_nfev=max_nfev)
         return result
 

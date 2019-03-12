@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.result import Result
 
@@ -204,14 +205,15 @@ def test_fitting(suite):
     print(model.validate(initial))
     assert model.valid(initial)
 
-    dataset = simulate(sim_model, wanted, 'dataset1', {'e': est_axis, 'c': cal_axis})
+    dataset = simulate(sim_model, 'dataset1', wanted, {'e': est_axis, 'c': cal_axis})
     print(dataset)
 
     assert dataset.data.shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
+    scheme = Scheme(model=model, parameter=initial, data=data)
 
-    result = Result(model, data, initial, False)
+    result = Result(scheme)
     optimize(result)
     print(result.optimized_parameter)
     print(result.data['dataset1'])

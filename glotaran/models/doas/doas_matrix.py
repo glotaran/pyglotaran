@@ -1,8 +1,7 @@
 """Glotaran DOAS Matrix"""
 
 import numpy as np
-from scipy.special import erf
-#
+
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 from glotaran.models.spectral_temporal.irf import IrfGaussian
 

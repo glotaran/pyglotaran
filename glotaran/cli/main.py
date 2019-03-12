@@ -2,7 +2,7 @@ import typing
 import sys
 
 import click
-from click import confirm, echo, pause, prompt
+from click import echo, pause, prompt
 
 import glotaran as gta
 
@@ -16,7 +16,7 @@ def glotaran():
     pass
 
 
-@glotaran.command(short_help='Validates a model file.',help_priority=2)
+@glotaran.command(short_help='Validates a model file.', help_priority=2)
 @click.option('--parameter', '-p', default=None, type=click.Path(exists=True, dir_okay=False),
               help='(optional) Path to parameter file.')
 @click.argument("model", type=click.Path(exists=True, dir_okay=False))
@@ -76,7 +76,7 @@ def optimize(parameter: str, datatype: str, data: typing.List[str],
     """Optimizes a model.
     e.g.:
     glotaran optimize --
-    
+
     """
     echo(f"Optimizing model in file: '{model}'")
 

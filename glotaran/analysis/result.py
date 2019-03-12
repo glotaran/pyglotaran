@@ -12,18 +12,13 @@ from glotaran.parameter import ParameterGroup
 
 
 from .grouping import create_group, create_data_group
+from .scheme import Scheme
 from .optimize import calculate_residual
 
 
 class Result:
 
-    def __init__(self,
-                 model: typing.Type["glotaran.model.Model"],
-                 data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
-                 initital_parameter: ParameterGroup,
-                 nnls: bool,
-                 atol: float = 0,
-                 ):
+    def __init__(self, scheme: Scheme):
         """The result of a global analysis.
 
         Parameters
@@ -41,30 +36,10 @@ class Result:
             (default = 0)
             The tolerance for grouping datasets along the global axis.
         """
-        self._model = model
-        self._data = {}
-        for label, dataset in data.items():
-            if model.matrix_dimension not in dataset.dims:
-                raise Exception("Missing coordinates for dimension "
-                                f"'{model.matrix_dimension}' in data for dataset "
-                                f"'{label}'")
-            if model.global_dimension not in dataset.dims:
-                raise Exception("Missing coordinates for dimension "
-                                f"'{model.global_dimension}' in data for dataset "
-                                f"'{label}'")
-            if isinstance(dataset, xr.DataArray):
-                dataset = dataset.to_dataset(name="data")
-
-            if 'weight' in dataset and 'weighted_data' not in dataset:
-                dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
-            self._data[label] = dataset.transpose(model.matrix_dimension, model.global_dimension,
-                                                  *[dim for dim in dataset.dims
-                                                    if dim is not model.matrix_dimension and
-                                                    dim is not model.global_dimension])
-        self._initial_parameter = initital_parameter
-        self._nnls = nnls
-        self._group = create_group(model, self._data, atol)
-        self._data_group = create_data_group(model, self._group, self._data)
+        self._scheme = scheme
+        self._data = scheme.prepared_data()
+        self._group = create_group(scheme.model, scheme.data, scheme.group_tolerance)
+        self._data_group = create_data_group(scheme.model, self._group, self._data)
         self._lm_result = None
         self._global_clp = {}
 
@@ -91,21 +66,28 @@ class Result:
         atol :
             The tolerance for grouping datasets along the global axis.
         """
-        cls = cls(model, data, parameter, nnls, atol=atol)
+        scheme = Scheme(model=model, parameter=parameter, data=data,
+                        nnls=nnls, group_tolerance=atol)
+        cls = cls(scheme)
         calculate_residual(parameter, cls)
         cls.finalize()
         return cls
 
     @property
+    def scheme(self) -> Scheme:
+        """The scheme for analysis."""
+        return self._scheme
+
+    @property
     def model(self) -> typing.Type['glotaran.model.Model']:
         """The model for analysis."""
-        return self._model
+        return self._scheme.model
 
     @property
     def nnls(self) -> bool:
         """If `True` non-linear least squaes optimizing is used instead of variable
         projection."""
-        return self._nnls
+        return self._scheme.nnls
 
     @property
     def data(self) -> typing.Dict[str, xr.Dataset]:
@@ -182,7 +164,7 @@ class Result:
     @property
     def initial_parameter(self) -> ParameterGroup:
         """The initital fit parameter"""
-        return self._initial_parameter
+        return self._scheme.parameter
 
     @property
     def global_clp(self) -> typing.Dict[typing.Any, xr.DataArray]:

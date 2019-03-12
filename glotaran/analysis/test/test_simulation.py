@@ -25,7 +25,7 @@ def test_simulate_dataset():
     est_axis = np.asarray([1, 1, 1, 1])
     cal_axis = np.asarray([2, 2, 2])
 
-    data = simulate(model, parameter, 'dataset1', {'e': est_axis, 'c': cal_axis})
+    data = simulate(model, 'dataset1', parameter, {'e': est_axis, 'c': cal_axis})
     assert np.array_equal(data["c"], cal_axis)
     assert np.array_equal(data["e"], est_axis)
     assert data.data.shape == (3, 4)
