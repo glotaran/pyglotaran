@@ -1,5 +1,7 @@
 import functools
+import pathlib
 import typing
+import yaml
 import xarray as xr
 import numpy as np
 
@@ -33,6 +35,74 @@ class Scheme:
         self.group_tolerance = group_tolerance
         self.nnls = nnls
         self.nfev = nfev
+
+    @classmethod
+    def from_yml_file(cls, filename: str) -> 'Scheme':
+
+        try:
+            with open(filename) as f:
+                try:
+                    scheme = yaml.load(f)
+                except Exception as e:
+                    raise Exception(f"Error parsing scheme: {e}")
+        except Exception as e:
+            raise Exception(f"Error opening scheme: {e}")
+
+        if 'model' not in scheme:
+            raise Exception('Model file not specified.')
+
+        try:
+            model = glotaran.read_model_from_yml_file(scheme['model'])
+        except Exception as e:
+            raise Exception(f"Error loading model: {e}")
+
+        if 'parameter' not in scheme:
+            raise Exception('Parameter file not specified.')
+
+        path = pathlib.Path(scheme['parameter'])
+        fmt = path.suffix[1:] if path.suffix != '' else 'yml'
+        if 'parameter_format' in scheme:
+            fmt = scheme['parameter_format']
+        try:
+            if fmt == 'csv':
+                parameter = glotaran.read_parameter_from_csv_file(path)
+            elif fmt == 'yml' or 'yaml':
+                parameter = glotaran.read_parameter_from_yml_file(path)
+            else:
+                raise Exception(
+                    f"Unknown parameter format '{fmt}', known formats are [yml, yaml, csv]")
+        except Exception as e:
+            raise Exception(f"Error loading parameter: {e}")
+
+        if 'data' not in scheme:
+            raise Exception('No data specified.')
+
+        data = {}
+        for label, path in scheme['data'].items():
+            path = pathlib.Path(path)
+
+            fmt = path.suffix[1:] if path.suffix != '' else 'nc'
+            if 'dataset_format' in scheme:
+                fmt = scheme['dataset_format']
+
+            try:
+                if fmt == 'ascii':
+                    data[label] = glotaran.io.read_ascii_time_trace(path)
+                elif fmt == 'nc':
+                    data[label] = xr.open_dataset(path)
+                elif fmt == 'sdt':
+                    data[label] = glotaran.io.read_sdt_data(fmt)
+                else:
+                    raise Exception(
+                        f"Unknown dataset format '{fmt}', known formats are [ascii, nc, sdt]")
+            except Exception as e:
+                raise Exception(f"Error loading dataset '{label}': {e}")
+
+        nnls = scheme.get('nnls', False)
+        nfev = scheme.get('nfev', None)
+        group_tolerance = scheme.get('group_tolerance', 0.0)
+        return cls(model=model, parameter=parameter, data=data,
+                   nnls=nnls, nfev=nfev, group_tolerance=group_tolerance)
 
     @property
     def model(self) -> 'glotaran.model.Model':

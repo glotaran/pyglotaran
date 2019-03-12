@@ -50,8 +50,6 @@ def parse_yml_file(fname: str) -> Dict:
     content : Dict
         The content of the file as dictionary.
     """
-    if not os.path.isfile(fname):
-        raise Exception("File does not exist.")
 
     with open(fname) as f:
         spec = parse_yml(f)
