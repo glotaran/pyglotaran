@@ -6,6 +6,7 @@ import copy
 import csv
 import numpy as np
 import pandas as pd
+import pathlib
 import typing
 import yaml
 
@@ -130,6 +131,24 @@ class ParameterGroup(dict):
             if isinstance(item, (float, int, list)):
                 root.add_parameter(Parameter.from_list_or_value(item, default_options=defaults))
         return root
+
+    @classmethod
+    def known_formats(cls) -> typing.Dict[str, typing.Callable]:
+        return {
+            'csv': cls.from_csv,
+            'yml': cls.from_yaml_file,
+            'yaml': cls.from_yaml_file,
+        }
+
+    @classmethod
+    def from_file(cls, filepath: str, format: str = None):
+        if format is None:
+            path = pathlib.Path(filepath)
+            format = path.suffix[1:] if path.suffix != '' else 'yml'
+        if format not in cls.known_formats():
+            raise Exception(f"Unknown parameter format '{format}'. "
+                            f"Valid Formats are {cls.known_formats().keys()}.")
+        return cls.known_formats()[format](filepath)
 
     @classmethod
     def from_yaml_file(cls, filepath: str) -> "ParameterGroup":

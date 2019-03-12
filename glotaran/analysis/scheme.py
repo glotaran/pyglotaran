@@ -59,18 +59,10 @@ class Scheme:
         if 'parameter' not in scheme:
             raise Exception('Parameter file not specified.')
 
-        path = pathlib.Path(scheme['parameter'])
-        fmt = path.suffix[1:] if path.suffix != '' else 'yml'
-        if 'parameter_format' in scheme:
-            fmt = scheme['parameter_format']
+        path = scheme['parameter']
+        fmt = scheme.get('parameter_format', None)
         try:
-            if fmt == 'csv':
-                parameter = glotaran.read_parameter_from_csv_file(path)
-            elif fmt == 'yml' or 'yaml':
-                parameter = glotaran.read_parameter_from_yml_file(path)
-            else:
-                raise Exception(
-                    f"Unknown parameter format '{fmt}', known formats are [yml, yaml, csv]")
+            parameter = glotaran.parameter.ParameterGroup.from_file(path, fmt)
         except Exception as e:
             raise Exception(f"Error loading parameter: {e}")
 
@@ -191,3 +183,15 @@ class Scheme:
                   if dim is not self.model.matrix_dimension
                   and dim is not self.model.global_dimension])
         return data
+
+    def markdown(self):
+        s = self.model.markdown(parameter=self.parameter)
+
+        s += "\n\n"
+        s += "__Scheme__\n\n"
+
+        s += f"* *nnls*: {self.nnls}\n"
+        s += f"* *nfev*: {self.nfev}\n"
+        s += f"* *group_tolerance*: {self.group_tolerance}\n"
+
+        return s

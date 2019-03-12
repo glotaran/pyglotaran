@@ -2,7 +2,6 @@
 
 from typing import Dict
 import yaml
-import os
 import re
 from .register import get_model, known_model
 

@@ -6,47 +6,47 @@ from click import echo, pause, prompt
 
 import glotaran as gta
 
-from . import util
-from .glotaran_click_group import GlotaranClickGroup
+from .commands import util
+from .commands.print import print_cmd
+from .commands.validate import validate_cmd
 
 
-@click.group(cls=GlotaranClickGroup)
+class Cli(click.Group):
+
+    def __init__(self, *args, **kwargs):
+        self.help_priorities = {}
+        super(Cli, self).__init__(*args, **kwargs)
+
+    def get_help(self, ctx):
+        self.list_commands = self.list_commands_for_help
+        return super(Cli, self).get_help(ctx)
+
+    def list_commands_for_help(self, ctx):
+        """reorder the list of commands when listing the help"""
+        commands = super(Cli, self).list_commands(ctx)
+        return (c[1] for c in sorted(
+            (self.help_priorities.get(command, 1), command)
+            for command in commands))
+
+    def command(self, *args, **kwargs):
+        """Behaves the same as `click.Group.command()` except capture
+        a priority for listing command names in help.
+        """
+        help_priority = kwargs.pop('help_priority', 1)
+        help_priorities = self.help_priorities
+
+        def decorator(f):
+            cmd = super(Cli, self).command(*args, **kwargs)(f)
+            help_priorities[cmd.name] = help_priority
+            return cmd
+
+        return decorator
+
+
+@click.group(cls=Cli)
 @click.version_option(version=gta.__version__)
 def glotaran():
     pass
-
-
-@glotaran.command(short_help='Validates a model file.', help_priority=2)
-@click.option('--parameter', '-p', default=None, type=click.Path(exists=True, dir_okay=False),
-              help='(optional) Path to parameter file.')
-@click.argument("model", type=click.Path(exists=True, dir_okay=False))
-def validate(parameter: str, model: str):
-    """Validates a model file and optionally a parameter file."""
-    echo(f"Validating model in file: '{model}'")
-
-    model = util.load_model_file(model, verbose=True)
-
-    if parameter is not None:
-        echo(f"Validating parameter in file: '{parameter}'")
-        parameter = util.load_parameter_file(parameter, verbose=True)
-
-    echo(model.validate(parameter=parameter))
-
-
-@glotaran.command(name='print', short_help="Prints a model as markdown.", help_priority=3)
-@click.option('--parameter', '-p', default=None, type=click.Path(exists=True, dir_okay=False),
-              help='(optional) Path to parameter file.')
-@click.argument("model", type=click.Path(exists=True, dir_okay=False))
-def print_model(parameter: str, model: str):
-    """Parses a model file and prints the result as a Markdown formatted string. A parameter file
-    can be included optionally."""
-
-    model = util.load_model_file(model)
-
-    if parameter is not None:
-        parameter = util.load_parameter_file(parameter)
-
-    echo(model.markdown(parameter=parameter))
 
 
 @glotaran.command(
@@ -219,8 +219,10 @@ def export(filename: str, select, out: str, name: str):
     echo('Good-bye, have a nice day!')
 
 
-glotaran.add_command(validate)
-glotaran.add_command(print_model)
+glotaran.add_command(glotaran.command(
+    name='validate', short_help='Validates a model file.', help_priority=2)(validate_cmd))
+glotaran.add_command(glotaran.command(
+    name='print', short_help="Prints a model as markdown.", help_priority=3)(print_cmd))
 glotaran.add_command(optimize)
 glotaran.add_command(export)
 

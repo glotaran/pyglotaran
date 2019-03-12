@@ -8,26 +8,52 @@ from click import echo, prompt
 import glotaran as gta
 
 
+def signature(cmd):
+    cmd = click.option('--model', '-m', default=None, type=click.Path(exists=True, dir_okay=False),
+                       help='Path to model file.')(cmd)
+    cmd = click.option('--parameter', '-p',
+                       default=None,
+                       type=click.Path(exists=True, dir_okay=False),
+                       help='(optional) Path to parameter file.'
+                       )(cmd)
+    cmd = click.argument("scheme",
+                         type=click.Path(exists=True, dir_okay=False),
+                         required=False
+                         )(cmd)
+    return cmd
+
+
+def _load_file(filename, loader, name, verbose):
+    try:
+        if verbose:
+            echo(f"Parsing {name} file '{filename}'... ", nl=False)
+        result = loader(filename)
+        if verbose:
+            echo("Success")
+        return result
+    except Exception as e:
+        if verbose:
+            echo(message="Error", err=True)
+        else:
+            echo(message=f"Error parsing {name} file: \n", err=True)
+        echo(message=e, err=True)
+        sys.exit(1)
+
+
+def load_scheme_file(filename, verbose=False):
+    return _load_file(filename, gta.analysis.scheme.Scheme.from_yml_file, 'scheme', verbose)
+
+
 def load_model_file(filename, verbose=False):
-    try:
-        model = gta.read_model_from_yml_file(filename)
-        if verbose:
-            echo("Model parsing successfull.")
-        return model
-    except Exception as e:
-        echo(message=f"Error parsing model file: \n\n{e}", err=True)
-        sys.exit(1)
+    return _load_file(filename, gta.read_model_from_yml_file, 'model', verbose)
 
 
-def load_parameter_file(filename, verbose=False):
-    try:
-        parameter = gta.read_parameter_from_yml_file(filename)
-        if verbose:
-            echo("Parameter parsing successfull.")
-        return parameter
-    except Exception as e:
-        echo(message=f"Error parsing parameter file: \n\n{e}", err=True)
-        sys.exit(1)
+def load_parameter_file(filename, fmt=None, verbose=False):
+
+    def loader(filename):
+        return gta.parameter.ParameterGroup.from_file(filename, format=fmt)
+
+    return _load_file(filename, loader, 'parameter', verbose)
 
 
 file_readers = {
