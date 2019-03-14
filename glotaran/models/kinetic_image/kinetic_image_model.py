@@ -1,3 +1,5 @@
+import numpy as np
+
 from glotaran.model import model
 from glotaran.models.spectral_temporal import (
     KineticModel,
@@ -5,16 +7,22 @@ from glotaran.models.spectral_temporal import (
     SpectralTemporalDatasetDescriptor,
 )
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
+from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_result
+
+
+def kinetic_image_matrix(dataset: SpectralTemporalDatasetDescriptor, axis: np.ndarray):
+    return calculate_kinetic_matrix(dataset, axis, 0)
 
 
 @model(
-    'flim',
+    'kinetic_image',
     dataset_type=SpectralTemporalDatasetDescriptor,
     megacomplex_type=KineticMegacomplex,
-    matrix=calculate_kinetic_matrix,
+    matrix=kinetic_image_matrix,
     matrix_dimension='time',
     global_dimension='pixel',
     allow_grouping=False,
+    finalize_result_function=finalize_kinetic_result,
 )
-class FLIMModel(KineticModel):
-    """Extends the kinetic model with damped oscillations."""
+class KineticImageModel(KineticModel):
+    """."""

@@ -37,10 +37,10 @@ def finalize_kinetic_result(
                 idx = [index for index in dataset.spectral if constraint.applies(index)]
                 if constraint.compartment in dataset.coords['species']:
                     dataset.species_associated_spectra\
-                        .loc[{'species': constraint.compartment, 'spectral': idx}] \
+                        .loc[{'species': constraint.compartment, model.global_dimension: idx}] \
                         = np.zeros((len(idx)))
                 if constraint.compartment == f"{dataset_descriptor.label}_baseline":
-                    dataset.baseline.loc[{'spectral': idx}] = np.zeros((len(idx)))
+                    dataset.baseline.loc[{model.global_dimension: idx}] = np.zeros((len(idx)))
 
         for relation in model.spectral_relations:
             if relation.compartment in dataset_descriptor.initial_concentration.compartments:
@@ -55,10 +55,10 @@ def finalize_kinetic_result(
                         result.global_clp[j].sel(clp_label=relation.target).values *
                         relation.parameter
                     )
-                sas = xr.DataArray(clp, coords=[('spectral', idx)])
+                sas = xr.DataArray(clp, coords=[(model.global_dimension, idx)])
 
                 dataset.species_associated_spectra\
-                    .loc[{'species': relation.compartment, 'spectral': idx}] = sas
+                    .loc[{'species': relation.compartment, model.global_dimension: idx}] = sas
 
         dataset['species_concentration'] = (
             (model.global_dimension, model.matrix_dimension, 'species',),
@@ -97,13 +97,13 @@ def finalize_kinetic_result(
         if isinstance(irf, IrfGaussian):
 
             index = irf.dispersion_center if irf.dispersion_center \
-                 else dataset.coords['spectral'].min().values
+                 else dataset.coords[model.global_dimension].min().values
             dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
 
             if irf.dispersion_center:
                 for i, dispersion in enumerate(
                         irf.calculate_dispersion(dataset.coords['spectral'].values)):
-                    dataset[f'center_dispersion_{i+1}'] = (('spectral', dispersion))
+                    dataset[f'center_dispersion_{i+1}'] = ((model.global_dimension, dispersion))
 
             if irf.coherent_artifact:
                 dataset.coords['coherent_artifact_order'] = \

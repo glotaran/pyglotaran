@@ -177,11 +177,29 @@ class Scheme:
 
             if 'weight' in dataset and 'weighted_data' not in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
-            data[label] = dataset.transpose(
-                self.model.matrix_dimension, self.model.global_dimension,
-                *[dim for dim in dataset.dims
-                  if dim is not self.model.matrix_dimension
-                  and dim is not self.model.global_dimension])
+
+            # This protects transposing when getting data with svd in it
+
+            if 'data_singular_values' in dataset:
+                if dataset.coords['right_singular_value_index'].size != \
+                  dataset.coords[self.model.global_dimension].size:
+                    dataset = dataset.rename(
+                        right_singular_value_index='right_singular_value_indexTMP')
+                    dataset = dataset.rename(
+                        left_singular_value_index='right_singular_value_index')
+                    dataset = dataset.rename(
+                        right_singular_value_indexTMP='left_singular_value_index')
+                    dataset = dataset.rename(
+                        right_singular_vectors='right_singular_value_vectorsTMP')
+                    dataset = dataset.rename(
+                        left_singular_value_vectors='right_singular_value_vectors')
+                    dataset = dataset.rename(
+                        right_singular_value_vectorsTMP='left_singular_value_vectors')
+            new_dims = [self.model.matrix_dimension, self.model.global_dimension]
+            new_dims += [dim for dim in dataset.dims
+                         if dim != self.model.matrix_dimension
+                         and dim != self.model.global_dimension]
+            data[label] = dataset.transpose(*new_dims)
         return data
 
     def markdown(self):

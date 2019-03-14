@@ -14,6 +14,11 @@ from .util import wrap_func_as_method
 
 
 MatrixFunction = typing.Callable[
+    [typing.Type[DatasetDescriptor], xr.Dataset],
+    typing.Tuple[typing.List[str], np.ndarray]]
+"""A `MatrixFunction` calculates the matrix for a model."""
+
+IndexDependedMatrixFunction = typing.Callable[
     [typing.Type[DatasetDescriptor], xr.Dataset, typing.Any],
     typing.Tuple[typing.List[str], np.ndarray]]
 """A `MatrixFunction` calculates the matrix for a model."""
@@ -42,7 +47,7 @@ def model(model_type: str,
           attributes: typing.Dict[str, typing.Any] = {},
           dataset_type: typing.Type[DatasetDescriptor] = DatasetDescriptor,
           megacomplex_type: typing.Any = None,
-          matrix: MatrixFunction = None,
+          matrix: typing.Union[MatrixFunction, IndexDependedMatrixFunction] = None,
           global_matrix: GlobalMatrixFunction = None,
           matrix_dimension: str = None,
           global_dimension: str = None,

@@ -1,6 +1,7 @@
 """A base class for global analysis models."""
 
 
+import inspect
 import typing
 import numpy as np
 import xarray as xr
@@ -108,6 +109,10 @@ class Model:
                 del model_dict[name]
 
         return model
+
+    @property
+    def index_depended_matrix(self):
+        return len(inspect.signature(self.matrix).parameters) == 3
 
     @property
     def model_type(self) -> str:

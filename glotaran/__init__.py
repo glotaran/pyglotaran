@@ -16,6 +16,9 @@ KineticModel = spectral_temporal.KineticModel
 from .models import doas  # noqa: E402
 DOASModel = doas.DOASModel
 
+from .models import kinetic_image  # noqa: E402
+KineticImageModel = kinetic_image.KineticImageModel
+
 
 from .parse import parser  # noqa: E402
 

@@ -141,14 +141,14 @@ class ParameterGroup(dict):
         }
 
     @classmethod
-    def from_file(cls, filepath: str, format: str = None):
-        if format is None:
+    def from_file(cls, filepath: str, fmt: str = None):
+        if fmt is None:
             path = pathlib.Path(filepath)
-            format = path.suffix[1:] if path.suffix != '' else 'yml'
-        if format not in cls.known_formats():
+            fmt = path.suffix[1:] if path.suffix != '' else 'yml'
+        if fmt not in cls.known_formats():
             raise Exception(f"Unknown parameter format '{format}'. "
                             f"Valid Formats are {cls.known_formats().keys()}.")
-        return cls.known_formats()[format](filepath)
+        return cls.known_formats()[fmt](filepath)
 
     @classmethod
     def from_yaml_file(cls, filepath: str) -> "ParameterGroup":

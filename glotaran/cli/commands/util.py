@@ -1,6 +1,4 @@
 import sys
-from pathlib import Path
-import xarray as xr
 
 import click
 from click import echo, prompt
@@ -8,7 +6,7 @@ from click import echo, prompt
 import glotaran as gta
 
 
-def signature(cmd):
+def signature_analysis(cmd):
     cmd = click.option('--model', '-m', default=None, type=click.Path(exists=True, dir_okay=False),
                        help='Path to model file.')(cmd)
     cmd = click.option('--parameter', '-p',
@@ -26,7 +24,7 @@ def signature(cmd):
 def _load_file(filename, loader, name, verbose):
     try:
         if verbose:
-            echo(f"Parsing {name} file '{filename}'... ", nl=False)
+            echo(f"Loading {name} file '{filename}'... ", nl=False)
         result = loader(filename)
         if verbose:
             echo("Success")
@@ -51,34 +49,17 @@ def load_model_file(filename, verbose=False):
 def load_parameter_file(filename, fmt=None, verbose=False):
 
     def loader(filename):
-        return gta.parameter.ParameterGroup.from_file(filename, format=fmt)
+        return gta.parameter.ParameterGroup.from_file(filename, fmt=fmt)
 
     return _load_file(filename, loader, 'parameter', verbose)
 
 
-file_readers = {
-    'ascii': gta.io.read_ascii_time_trace,
-    'sdt': gta.io.read_sdt_data,
-    'nc': xr.open_dataset,
-}
+def load_dataset_file(filename, fmt=None, verbose=False):
 
+    def loader(filename):
+        return gta.io.read_data_file(filename, fmt=fmt)
 
-def load_dataset(path, dtype=None):
-    path = Path(path)
-    if dtype is None:
-        dtype = path.suffix[1:]
-    if dtype not in file_readers:
-        echo(f"Unknown file type '{dtype}'."
-             f"Supported file types are {list(file_readers.keys())}.", err=True)
-        sys.exit(1)
-
-    try:
-        dataset = file_readers[dtype](path)
-        echo("Dataset loading successfull.")
-        return dataset
-    except Exception as e:
-        echo(message=f"Error loading dataset file: \n\n{e}", err=True)
-        sys.exit(1)
+    return _load_file(filename, loader, 'parameter', verbose)
 
 
 def select_name(filename, dataset):

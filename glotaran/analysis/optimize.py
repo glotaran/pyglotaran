@@ -60,8 +60,14 @@ def calculate_residual(parameter: typing.Union[ParameterGroup, lmfit.Parameters]
         parameter = ParameterGroup.from_parameter_dict(parameter)
 
     penalty = []
-    for index, item in result.groups.items():
+
+    if not result.model.index_depended_matrix:
+        item = list(result.groups.values())[0]
         clp_labels, matrix = calculate_group_item(item, result.model, parameter, result.data)
+
+    for index, item in result.groups.items():
+        if result.model.index_depended_matrix:
+            clp_labels, matrix = calculate_group_item(item, result.model, parameter, result.data)
 
         for i, row in enumerate(matrix.T):
             if not np.isfinite(matrix).all():

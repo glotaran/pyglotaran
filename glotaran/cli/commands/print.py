@@ -3,7 +3,7 @@ import click
 from . import util
 
 
-@util.signature
+@util.signature_analysis
 def print_cmd(parameter: str, model: str, scheme: str):
     """Parses scheme, a model or a parameter file and prints the result as a Markdown formatted
     string."""

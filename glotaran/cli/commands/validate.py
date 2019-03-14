@@ -3,7 +3,7 @@ import click
 from . import util
 
 
-@util.signature
+@util.signature_analysis
 def validate_cmd(parameter: str, model: str, scheme: str):
     """Validates a model file and optionally a parameter file."""
 

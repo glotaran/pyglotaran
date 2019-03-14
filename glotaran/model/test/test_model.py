@@ -27,7 +27,15 @@ class MockMegacomplex:
     pass
 
 
-@model('mock', attributes={"test": MockAttr}, megacomplex_type=MockMegacomplex)
+def matrix_fun(dataset, axis):
+    pass
+
+
+def matrix_fun_index(dataset, axis, index):
+    pass
+
+
+@model('mock', attributes={"test": MockAttr}, megacomplex_type=MockMegacomplex, matrix=matrix_fun)
 class MockModel(Model):
     pass
 
@@ -90,8 +98,11 @@ def parameter():
     return ParameterGroup.from_list(params)
 
 
-def test_model_types(model):
+def test_model_misc(model):
     assert model.model_type == 'mock'
+    assert not model.index_depended_matrix
+    model.matrix = matrix_fun_index
+    assert model.index_depended_matrix
 
 
 @pytest.mark.parametrize(
