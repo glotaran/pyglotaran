@@ -1,9 +1,9 @@
 import numpy as np
-import xarray as xr
 import pytest
 
 from glotaran.parameter import ParameterGroup
-from glotaran.analysis.result import Result
+from glotaran.analysis.scheme import Scheme
+from glotaran.analysis.optimizer import Optimizer
 from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
@@ -51,9 +51,8 @@ def test_kinetic_matrix_benchmark(benchmark):
     })
     dataset = model.dataset['dataset1'].fill(model, parameter)
     time = np.asarray(np.arange(-10, 100, 0.02))
-    data = xr.DataArray(time, coords=[('time', time)])
 
-    benchmark(calculate_kinetic_matrix, dataset, data, 0)
+    benchmark(calculate_kinetic_matrix, dataset, time, 0)
 
 
 @pytest.mark.parametrize("nnls", [True, False])
@@ -80,5 +79,7 @@ def test_kinetic_residual_benchmark(benchmark, nnls):
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
     data = {'dataset1': dataset}
+    scheme = Scheme(model=model, parameter=initial, data=data, nnls=nnls)
+    optimizer = Optimizer(scheme)
 
-    benchmark(Result.from_parameter, model, data, initial, nnls=nnls, atol=0)
+    benchmark(optimizer._calculate_penalty, initial)

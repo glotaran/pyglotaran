@@ -7,7 +7,7 @@ from kinetic_matrix_gaussian_irf import calc_kinetic_matrix_gaussian_irf
 from .irf import IrfGaussian, IrfMeasured
 
 
-def calculate_kinetic_matrix(dataset_descriptor, dataset, index):
+def calculate_kinetic_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
 
     compartments = None
     matrix = None
@@ -28,10 +28,11 @@ def calculate_kinetic_matrix(dataset_descriptor, dataset, index):
 
         (this_compartments, this_matrix) = _calculate_for_k_matrix(
             dataset_descriptor,
-            dataset,
+            axis,
             index,
             k_matrix,
-            initial_concentration
+            initial_concentration,
+            irf
         )
 
         if matrix is None:
@@ -51,7 +52,7 @@ def calculate_kinetic_matrix(dataset_descriptor, dataset, index):
 
     if dataset_descriptor.baseline:
         baseline_compartment = f'{dataset_descriptor.label}_baseline'
-        baseline = np.ones((dataset.coords['time'].size, 1), dtype=np.float64)
+        baseline = np.ones((axis.size, 1), dtype=np.float64)
         if matrix is None:
             compartments = [baseline_compartment]
             matrix = baseline
@@ -62,7 +63,7 @@ def calculate_kinetic_matrix(dataset_descriptor, dataset, index):
     if isinstance(dataset_descriptor.irf, IrfGaussian) \
        and dataset_descriptor.irf.coherent_artifact:
         irf_compartments, irf_matrix = \
-                dataset_descriptor.irf.calculate_coherent_artifact(index, dataset.coords['time'])
+                dataset_descriptor.irf.calculate_coherent_artifact(index, axis)
         if matrix is None:
             compartments = irf_compartments
             matrix = baseline
@@ -73,7 +74,7 @@ def calculate_kinetic_matrix(dataset_descriptor, dataset, index):
     return (compartments, matrix)
 
 
-def _calculate_for_k_matrix(dataset_descriptor, dataset, index, k_matrix, initial_concentration):
+def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix, initial_concentration, irf):
 
     # we might have more compartments in the model then in the k matrix
     compartments = [comp for comp in initial_concentration.compartments
@@ -83,7 +84,7 @@ def _calculate_for_k_matrix(dataset_descriptor, dataset, index, k_matrix, initia
     rates = k_matrix.rates(initial_concentration)
 
     # init the matrix
-    axis = dataset.coords['time'].values
+    axis = axis
     size = (axis.size, rates.size)
     matrix = np.zeros(size, dtype=np.float64)
 
@@ -108,7 +109,7 @@ def _calculate_for_k_matrix(dataset_descriptor, dataset, index, k_matrix, initia
     else:
         calc_kinetic_matrix_no_irf(matrix, rates, axis)
         if isinstance(dataset_descriptor.irf, IrfMeasured):
-            irf = dataset.irf
+            irf = irf
             if len(irf.shape) == 2:
                 irf = irf.sel({irf.dims[1]: index}, method='nearest')
             for i in range(matrix.shape[1]):

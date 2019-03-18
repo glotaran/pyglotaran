@@ -1,5 +1,4 @@
 import numpy as np
-import xarray as xr
 
 from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import KineticModel
@@ -38,8 +37,7 @@ def test_baseline():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset['dataset1'].fill(model, parameter)
-    data = xr.DataArray(time, coords=[('time', time)])
-    compartments, matrix = calculate_kinetic_matrix(dataset, data, 0)
+    compartments, matrix = calculate_kinetic_matrix(dataset, time, 0)
 
     assert len(compartments) == 2
     assert compartments[1] == 'dataset1_baseline'

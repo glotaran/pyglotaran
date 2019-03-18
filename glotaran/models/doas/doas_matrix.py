@@ -8,9 +8,7 @@ from glotaran.models.spectral_temporal.irf import IrfGaussian
 from doas_matrix_faddeva import calc_doas_matrix_faddeva
 
 
-def calculate_doas_matrix(dataset_descriptor, dataset, index):
-
-    axis = dataset.coords['time'].values
+def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
 
     oscillations = _collect_oscillations(dataset_descriptor)
 
@@ -54,7 +52,7 @@ def calculate_doas_matrix(dataset_descriptor, dataset, index):
                                          centers[i], widths[i], scales[i])
             matrix /= np.sum(scales)
 
-    kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(dataset_descriptor, dataset, index)
+    kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(dataset_descriptor, axis, index, irf)
     if kinetic_matrix is not None:
         clp = clp + kinetic_clp
         matrix = np.concatenate((matrix, kinetic_matrix), axis=1)

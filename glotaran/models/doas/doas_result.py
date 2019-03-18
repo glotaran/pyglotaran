@@ -1,18 +1,23 @@
+import typing
 import numpy as np
+import xarray as xr
 from scipy import fftpack
 
-from glotaran.analysis.result import Result
-from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_result
+import glotaran
+from glotaran.parameter import ParameterGroup
+from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_data
 
 
-def finalize_doas_result(model, result: Result):
+def finalize_doas_data(model: 'glotaran.models.doas.DoasModel',
+                       global_clp: typing.Dict[str, np.ndarray],
+                       parameter: ParameterGroup, data: typing.Dict[str, xr.Dataset],):
 
-    finalize_kinetic_result(model, result)
+    finalize_kinetic_data(model, global_clp, parameter, data)
 
-    for label in result.model.dataset:
-        dataset = result.data[label]
+    for label in model.dataset:
+        dataset = data[label]
 
-        dataset_descriptor = result.model.dataset[label].fill(model, result.optimized_parameter)
+        dataset_descriptor = model.dataset[label].fill(model, parameter)
 
         # get_doas
 
@@ -41,14 +46,14 @@ def finalize_doas_result(model, result: Result):
         dataset['dampened_oscillation_phase'] = (
             (model.global_dimension, 'oscillation'), phase)
 
-        dataset['dampened_oscillation_concentration_sin'] = (
+        dataset['dampened_oscillation_sin'] = (
             (model.global_dimension, model.matrix_dimension, 'oscillation'),
-            dataset.concentration.sel(clp_label=[f'{osc}_sin' for osc in oscillations])
+            dataset.matrix.sel(clp_label=[f'{osc}_sin' for osc in oscillations])
         )
 
-        dataset['dampened_oscillation_concentration_cos'] = (
+        dataset['dampened_oscillation_cos'] = (
             (model.global_dimension, model.matrix_dimension, 'oscillation'),
-            dataset.concentration.sel(clp_label=[f'{osc}_cos' for osc in oscillations])
+            dataset.matrix.sel(clp_label=[f'{osc}_cos' for osc in oscillations])
         )
 
     time_diff = np.diff(dataset.time, n=1, axis=0)

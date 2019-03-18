@@ -4,8 +4,7 @@ import numpy as np
 
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.result import Result
+from glotaran.analysis.optimizer import Optimizer
 
 from glotaran.model import DatasetDescriptor, Model, model_attribute, model
 from glotaran.parameter import Parameter, ParameterGroup
@@ -13,9 +12,8 @@ from glotaran.parameter import Parameter, ParameterGroup
 from .mock import MockMegacomplex
 
 
-def calculate_kinetic(dataset, data, index):
-    axis = data.coords['c']
-    kinpar = -1 * np.array(dataset.kinetic)
+def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
+    kinpar = -1 * np.array(dataset_descriptor.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.exp(np.outer(axis, kinpar))
     return (compartments, array)
@@ -213,8 +211,8 @@ def test_fitting(suite):
     data = {'dataset1': dataset}
     scheme = Scheme(model=model, parameter=initial, data=data)
 
-    result = Result(scheme)
-    optimize(result)
+    optimizer = Optimizer(scheme)
+    result = optimizer.optimize()
     print(result.optimized_parameter)
     print(result.data['dataset1'])
 

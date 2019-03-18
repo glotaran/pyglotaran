@@ -9,7 +9,7 @@ import xarray as xr
 from glotaran.analysis.result import Result
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.optimize import optimize
+from glotaran.analysis.optimizer import Optimizer
 from glotaran.parameter import ParameterGroup
 
 
@@ -176,9 +176,9 @@ class Model:
             The tolerance for grouping datasets along the global dimension.
         """
         scheme = Scheme(model=self, parameter=parameter, data=data,
-                        nnls=nnls, group_tolerance=group_tolerance)
-        result = Result(scheme)
-        optimize(result, verbose=verbose, max_nfev=max_nfev)
+                        nnls=nnls, group_tolerance=group_tolerance, nfev=max_nfev)
+        optimizer = Optimizer(scheme)
+        result = optimizer.optimize()
         return result
 
     def result_from_parameter(self,

@@ -1,5 +1,4 @@
 import numpy as np
-import xarray as xr
 
 from glotaran import ParameterGroup
 from glotaran.models.doas import DOASModel
@@ -47,6 +46,5 @@ def test_doas_matrix_benchmark(benchmark):
     })
     time = np.arange(0, 6, 0.001)
     dataset = model.dataset['dataset1'].fill(model, parameter)
-    data = xr.DataArray(time, coords=[('time', time)])
 
-    benchmark(calculate_doas_matrix, dataset, data, 0)
+    benchmark(calculate_doas_matrix, dataset, time, 0)

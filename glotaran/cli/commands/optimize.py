@@ -65,10 +65,17 @@ def optimize_cmd(datatype: str, data: typing.List[str], out: str, nfev: int, nnl
 
     if yes or click.confirm('Do you want to start optimization?', abort=True, default=True):
         try:
-            click.echo('Starting optimization.')
-            result = gta.analysis.result.Result(scheme)
-            gta.analysis.optimize.optimize(result, max_nfev=scheme.nfev)
-            click.echo('Optimization successfull.')
+            click.echo('Preparing optimization...', nl=False)
+            optimizer = gta.analysis.optimizer.Optimizer(scheme)
+            click.echo(' Success')
+        except Exception as e:
+            click.echo(" Error")
+            click.echo(e, err=True)
+            sys.exit(1)
+        try:
+            click.echo('Optimizing...')
+            result = optimizer.optimize()
+            click.echo('Optimization done.')
             click.echo(result.markdown(with_model=False))
             click.echo('Optimized Parameter:')
             click.echo(result.optimized_parameter.markdown())

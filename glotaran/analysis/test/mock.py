@@ -3,10 +3,9 @@ import numpy as np
 from glotaran.model import Model, model, model_attribute
 
 
-def calculate_c(dataset_descriptor, dataset, index):
+def calculate_c(dataset_descriptor=None, axis=None, index=None):
     compartments = ['s1', 's2']
     r_compartments = []
-    axis = dataset.coords['c']
     array = np.zeros((axis.shape[0], len(compartments)))
 
     for i in range(len(compartments)):

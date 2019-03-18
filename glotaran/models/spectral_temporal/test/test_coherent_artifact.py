@@ -1,5 +1,4 @@
 import numpy as np
-import xarray as xr
 
 from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal import KineticModel
@@ -46,9 +45,8 @@ def test_coherent_artifact():
     ])
 
     time = np.asarray(np.arange(0, 50, 1.5))
-    data = xr.DataArray(time, coords=[('time', time)])
     dataset = model.dataset['dataset1'].fill(model, parameter)
-    compartments, matrix = calculate_kinetic_matrix(dataset, data, 0)
+    compartments, matrix = calculate_kinetic_matrix(dataset, time, 0)
 
     assert len(compartments) == 4
     for i in range(1, 4):

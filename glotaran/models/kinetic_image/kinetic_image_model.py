@@ -7,11 +7,12 @@ from glotaran.models.spectral_temporal import (
     SpectralTemporalDatasetDescriptor,
 )
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
-from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_result
+from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_data
 
 
-def kinetic_image_matrix(dataset: SpectralTemporalDatasetDescriptor, axis: np.ndarray):
-    return calculate_kinetic_matrix(dataset, axis, 0)
+def kinetic_image_matrix(dataset_descriptor: SpectralTemporalDatasetDescriptor = None,
+                         axis: np.ndarray = None):
+    return calculate_kinetic_matrix(dataset_descriptor, axis, 0)
 
 
 @model(
@@ -22,7 +23,7 @@ def kinetic_image_matrix(dataset: SpectralTemporalDatasetDescriptor, axis: np.nd
     matrix_dimension='time',
     global_dimension='pixel',
     allow_grouping=False,
-    finalize_result_function=finalize_kinetic_result,
+    finalize_data_function=finalize_kinetic_data,
 )
 class KineticImageModel(KineticModel):
     """."""

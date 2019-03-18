@@ -1,7 +1,8 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.grouping import create_group, calculate_group_item, create_data_group
+from glotaran.analysis.optimizer import Optimizer
+from glotaran.analysis.scheme import Scheme
 from glotaran.parameter import ParameterGroup
 
 from .mock import MockModel
@@ -27,19 +28,22 @@ def test_single_dataset():
         coords=[('e', [1, 2, 3]), ('c', [5, 7, 9, 12])]
     ).to_dataset(name="data")}
 
-    group = create_group(model, data)
+    scheme = Scheme(model, parameter, data)
+    optimizer = Optimizer(scheme)
+    group = optimizer._global_problem
     assert len(group) == 3
-    assert [item[0][0] for _, item in group.items()] == [1, 2, 3]
-    assert all([item[0][1].label == 'dataset1' for _, item in group.items()])
+    assert list(group.keys()) == [f"dataset1_{i}" for i in [1, 2, 3]]
+    assert all([p.dataset_descriptor.label == 'dataset1' for p in group.values()])
 
-    result = [calculate_group_item(item, model, parameter, data) for item in group.values()]
+    optimizer._create_calculate_penalty_job(parameter)
+    result = [m.compute() for m in optimizer.matrices.values()]
     assert len(result) == 3
     print(result[0])
-    assert result[0][1].shape == (4, 2)
+    assert result[0].shape == (4, 2)
 
-    data = create_data_group(model, group, data)
+    data = optimizer._global_data
     assert len(data) == 3
-    assert data[1].shape[0] == 4
+    assert list(data.values())[1].compute().shape[0] == 4
 
 
 def test_multi_dataset_no_overlap():
@@ -72,33 +76,25 @@ def test_multi_dataset_no_overlap():
         ).to_dataset(name="data"),
     }
 
-    group = create_group(model, data)
+    scheme = Scheme(model, parameter, data)
+    optimizer = Optimizer(scheme)
+    group = optimizer._global_problem
     assert len(group) == 6
-    assert [item[0][0] for _, item in group.items()] == [1, 2, 3, 4, 5, 6]
-    assert [item[0][1].label for _, item in group.items()] == \
+    assert [problem[0][0] for problem in group.values()] == [1, 2, 3, 4, 5, 6]
+    assert [problem[0][1].label for problem in group.values()] == \
         ['dataset1' for _ in range(3)] + ['dataset2' for _ in range(3)]
 
-    result = [calculate_group_item(item, model, parameter, data) for item in group.values()]
+    optimizer._create_calculate_penalty_job(parameter)
+    result = [m.compute() for mat in optimizer.matrices.values() for m in mat]
     assert len(result) == 6
     print(result[0])
-    assert result[0][1].shape == (2, 2)
-    assert result[3][1].shape == (3, 2)
+    assert result[0].shape == (2, 2)
+    assert result[3].shape == (3, 2)
 
-    data = create_data_group(model, group, data)
+    data = optimizer._global_data
     assert len(data) == 6
-    assert data[1].shape[0] == 2
-    assert data[4].shape[0] == 3
-
-    data = {
-        'dataset1': xr.DataArray(
-            np.ones((3, 2)),
-            coords=[('e', [1, 2, 3]), ('c', [5, 7])]
-        ).to_dataset(name="data"),
-        'dataset2': xr.DataArray(
-            np.ones((3, 3)),
-            coords=[('e', [4, 5, 6]), ('c', [5, 7, 9])]
-        ).to_dataset(name="data"),
-    }
+    assert list(data.values())[1].compute().shape[0] == 2
+    assert list(data.values())[4].compute().shape[0] == 3
 
 
 def test_multi_dataset_overlap():
@@ -131,23 +127,27 @@ def test_multi_dataset_overlap():
         ).to_dataset(name="data"),
     }
 
-    group = create_group(model, data, atol=5e-1)
+    scheme = Scheme(model, parameter, data, group_tolerance=5e-1)
+    optimizer = Optimizer(scheme)
+    group = optimizer._global_problem
     assert len(group) == 5
     assert group[0][0][1].label == 'dataset1'
     assert group[1][0][1].label == 'dataset1'
     assert group[1][1][1].label == 'dataset2'
     assert group[9][0][1].label == 'dataset2'
 
-    result = [calculate_group_item(item, model, parameter, data) for item in group.values()]
+    optimizer._create_calculate_penalty_job(parameter)
+    print(optimizer.matrices)
+    result = [m.compute() for m in optimizer.full_matrices.values()]
     assert len(result) == 5
     print(result[0])
     print(result[1])
-    assert result[0][1].shape == (2, 2)
-    assert result[1][1].shape == (6, 2)
-    assert result[4][1].shape == (4, 2)
+    assert result[0].shape == (2, 2)
+    assert result[1].shape == (6, 2)
+    assert result[4].shape == (4, 2)
 
-    data = create_data_group(model, group, data)
+    data = [d.compute() for d in optimizer._global_data.values()]
     assert len(data) == 5
     assert data[0].shape[0] == 2
     assert data[1].shape[0] == 6
-    assert data[9].shape[0] == 4
+    assert data[4].shape[0] == 4

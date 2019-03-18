@@ -296,7 +296,7 @@ def test_doas_model(suite):
     dataset = suite.sim_model.dataset['dataset1'].fill(suite.sim_model, suite.wanted_parameter)
     data = xr.DataArray(suite.axis['time'], coords=[('time', suite.axis['time'])])
 
-    clp, matrix = calculate_doas_matrix(dataset, data, 0)
+    clp, matrix = calculate_doas_matrix(dataset, suite.axis['time'], 0)
 
     print(matrix.shape)
     assert matrix.shape == suite.wanted_shape

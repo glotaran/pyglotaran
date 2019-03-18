@@ -53,7 +53,7 @@ def model(model_type: str,
           global_dimension: str = None,
           constrain_matrix_function: ConstrainMatrixFunction = None,
           additional_penalty_function: PenaltyFunction = None,
-          finalize_result_function: FinalizeFunction = None,
+          finalize_data_function: FinalizeFunction = None,
           allow_grouping: bool = True,
           ) -> typing.Callable:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
@@ -86,8 +86,8 @@ def model(model_type: str,
     None
     additional_penalty_function : PenaltyFunction
         A function to calculate additional penalties when optimizing the model.
-    finalize_result_function :
-        A function to finalize a result after optimization.
+    finalize_data_function :
+        A function to finalize data after optimization.
     allow_grouping :
         If `True`, datasets can can be grouped along the global dimension.
     """
@@ -95,12 +95,12 @@ def model(model_type: str,
     def decorator(cls):
 
         setattr(cls, '_model_type', model_type)
-        setattr(cls, '_finalize_result', finalize_result_function)
-        setattr(cls, '_constrain_matrix_function',
+        setattr(cls, 'finalize_data', finalize_data_function)
+        setattr(cls, 'constrain_matrix_function',
                 constrain_matrix_function)
-        setattr(cls, '_additional_penalty_function',
+        setattr(cls, 'additional_penalty_function',
                 additional_penalty_function)
-        setattr(cls, '_allow_grouping', allow_grouping)
+        setattr(cls, 'allow_grouping', allow_grouping)
 
         if matrix:
             c_mat = wrap_func_as_method(cls, name='matrix')(matrix)

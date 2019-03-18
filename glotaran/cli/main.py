@@ -44,7 +44,8 @@ class Cli(click.Group):
 @click.version_option(version=gta.__version__)
 def glotaran():
     pass
-#glotaran.command(name='export', short_help="Exports data from netCDF4 to ASCII.", help_priority=4)
+#  glotaran.command(name='export',
+#  short_help="Exports data from netCDF4 to ASCII.", help_priority=4)
 
 
 glotaran.add_command(glotaran.command(

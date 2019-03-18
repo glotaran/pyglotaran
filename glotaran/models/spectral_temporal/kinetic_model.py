@@ -9,7 +9,7 @@ from glotaran.parameter import ParameterGroup
 from .initial_concentration import InitialConcentration
 from .irf import Irf
 from .k_matrix import KMatrix
-from .kinetic_result import finalize_kinetic_result
+from .kinetic_result import finalize_kinetic_data
 from .kinetic_megacomplex import KineticMegacomplex
 from .spectral_constraints import (
     SpectralConstraint, OnlyConstraint, ZeroConstraint, EqualAreaConstraint)
@@ -98,7 +98,7 @@ def apply_kinetic_model_constraints(
     matrix_dimension='time',
     global_matrix=calculate_spectral_matrix,
     global_dimension='spectral',
-    finalize_result_function=finalize_kinetic_result,
+    finalize_data_function=finalize_kinetic_data,
     constrain_matrix_function=apply_kinetic_model_constraints,
     additional_penalty_function=spectral_constraint_penalty
 )

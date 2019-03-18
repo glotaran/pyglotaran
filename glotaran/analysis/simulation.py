@@ -54,9 +54,10 @@ def simulate(model: typing.Type['glotaran.model.Model'],
                                   (model.global_dimension, global_dimension)])
     result = result.to_dataset(name='data')
 
-    matrix = [model.matrix(filled_dataset, result, index) for index in global_dimension]
-    if callable(model._constrain_matrix_function):
-        matrix = [model._constrain_matrix_function(parameter, clp, mat, global_dimension[i])
+    matrix = [model.matrix(dataset_descriptor=filled_dataset, axis=matrix_dimension, index=index)
+              for index in global_dimension]
+    if callable(model.constrain_matrix_function):
+        matrix = [model.constrain_matrix_function(parameter, clp, mat, global_dimension[i])
                   for i, (clp, mat) in enumerate(matrix)]
     matrix = [xr.DataArray(mat, coords=[(model.matrix_dimension, matrix_dimension),
                                         ('clp_label', clp_label)])
