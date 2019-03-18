@@ -341,7 +341,7 @@ class Optimizer:
                 (('right_singular_value_index', self._scheme.model.global_dimension), r)
 
             dataset['residual_singular_values'] = \
-                ((self._scheme.model.global_dimension, 'singular_value_index'), r)
+                (('singular_value_index'), v)
 
             # reconstruct fitted data
 
