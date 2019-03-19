@@ -13,7 +13,7 @@ setup_requires = [
     'setuptools>=40.2.0'
 ]
 install_requires = [
-    'lmfit>=0.9.11',
+    'lmfit>=0.9.12',
     'pandas>=0.23.4',
     'pyyaml>=3.0,<=5.0',
     'xarray>=0.11.2',

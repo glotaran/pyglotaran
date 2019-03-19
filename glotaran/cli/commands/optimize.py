@@ -31,7 +31,8 @@ def optimize_cmd(datatype: str, data: typing.List[str], out: str, nfev: int, nnl
     """
     if scheme is not None:
         scheme = util.load_scheme_file(scheme, verbose=True)
-
+        if nfev is not None:
+            scheme.nfev = nfev
     else:
         if model is None:
             click.echo('Error: Neither scheme nor model specified', err=True)
