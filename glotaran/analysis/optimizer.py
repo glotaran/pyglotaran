@@ -145,9 +145,11 @@ class Optimizer:
         self._optimal_parameter = ParameterGroup.from_parameter_dict(lm_result.params)
         self._calculate_result()
 
+        covar = lm_result.covar if hasattr(lm_result, 'covar') else None
+
         return Result(self._scheme, self._result_data, self._optimal_parameter,
                       lm_result.nfev, lm_result.nvarys, lm_result.ndata, lm_result.nfree,
-                      lm_result.chisqr, lm_result.redchi, lm_result.var_names, lm_result.covar)
+                      lm_result.chisqr, lm_result.redchi, lm_result.var_names, covar)
 
     def _analyze_matrix_function(self):
         self._matrix_function = self._scheme.model.matrix
