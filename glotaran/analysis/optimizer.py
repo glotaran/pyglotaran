@@ -180,7 +180,8 @@ class Optimizer:
                                 [Problem(index, dataset_descriptor, self._matrix_axis[label])]
                     else:
                         # known index
-                        self._global_problem[problem_index[0]]\
+                        idx = list(self._global_problem.keys())[problem_index[0]]
+                        self._global_problem[idx]\
                             .append(Problem(index, dataset_descriptor, self._matrix_axis[label]))
                 else:
                     self._global_problem[f"{label}_{index}"] =\

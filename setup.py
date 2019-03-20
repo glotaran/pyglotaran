@@ -1,8 +1,5 @@
-# This is just a placeholder setup.py to claim the glotaran name on PyPI
-# It is not meant to be usuable in any way as of yet.
 import os
 import shutil
-import sys
 
 from setuptools import find_packages, Command
 
@@ -17,6 +14,7 @@ install_requires = [
     'pandas>=0.23.4',
     'pyyaml>=3.0,<=5.0',
     'xarray>=0.11.2',
+    'dask>=1.1.4',
     'netCDF4>=1.4.2',
     'click>=7.0',
     'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format

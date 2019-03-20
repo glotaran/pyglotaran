@@ -22,7 +22,7 @@ class ParameterNotFoundException(Exception):
 
 class ParameterGroup(dict):
 
-    def __init__(self, label: str):
+    def __init__(self, label: str = None):
         """Represents are group of parameters. Can contain other groups, creating a
         tree-like hirachy.
 
