@@ -283,7 +283,7 @@ class Optimizer:
                             if p.dataset_descriptor.label == label:
                                 matrix.append(matrices[index][i])
                                 if clp_label is None:
-                                    clp_label = clp_label[index][i]
+                                    clp_label = clp_labels[index][i]
                     else:
                         if problem.dataset_descriptor.label == label:
                             matrix.append(matrices[index])
@@ -305,27 +305,32 @@ class Optimizer:
                 ), matrix)
 
             residual = []
-            clp = []
+            dim1 = dataset.coords[self._scheme.model.global_dimension].size
+            dim2 = dataset.coords['clp_label'].size
+            dataset['clp'] = (
+                (self._scheme.model.global_dimension, 'clp_label'),
+                np.zeros((dim1, dim2), dtype=np.float64))
             for index, problem in self._global_problem.items():
                 if isinstance(problem, list):
                     for i, p in enumerate(problem):
                         start = 0
                         if p.dataset_descriptor.label == label:
                             end = start + dataset.coords[self._scheme.model.matrix_dimension].size
-                            clp.append(
-                                full_clp[index][[full_clp_label.index(c) for c in clp_label]])
+                            dataset.clp.loc[{self._scheme.model.global_dimension: p.index}] = \
+                                np.array([full_clp[index][full_clp_label[index].index(i)]
+                                          if i in full_clp_label[index] else None
+                                          for i in dataset.coords['clp_label'].values])
                             residual.append(residuals[index][start:end])
                         else:
-                            start += self._result_data[p.dataset_descriptor]\
+                            start += self._result_data[p.dataset_descriptor.label]\
                                     .coords[self._scheme.model.matrix_dimension].size
                 else:
                     if problem.dataset_descriptor.label == label:
-                        clp.append(full_clp[index])
+                        dataset.clp.loc[{self._scheme.model.global_dimension: index}] = \
+                            np.array([full_clp[index][full_clp_label[index].index(i)]
+                                      if i in full_clp_label[index] else None
+                                      for i in dataset.coords['clp_label'].values])
                         residual.append(residuals[index])
-            dataset['clp'] = ((
-                (self._scheme.model.global_dimension),
-                ('clp_label')
-            ), clp)
             dataset['residual'] = ((
                 (self._scheme.model.matrix_dimension),
                 (self._scheme.model.global_dimension),
