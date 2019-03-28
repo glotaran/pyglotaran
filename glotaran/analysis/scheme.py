@@ -74,8 +74,8 @@ class Scheme:
             path = pathlib.Path(path)
 
             fmt = path.suffix[1:] if path.suffix != '' else 'nc'
-            if 'dataset_format' in scheme:
-                fmt = scheme['dataset_format']
+            if 'data_format' in scheme:
+                fmt = scheme['data_format']
 
             try:
                 if fmt == 'ascii':

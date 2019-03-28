@@ -43,7 +43,10 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
         args[k] = v
     if index is not None:
         args['index'] = index
-    return ds.delayed(matrix_function, nout=2)(**args)
+    clp_label, matrix = ds.delayed(matrix_function, nout=2)(**args)
+    if dataset_descriptor.scale is not None:
+        matrix *= dataset_descriptor.scale
+    return clp_label, matrix
 
 
 def _calculate_problem(matrix_function, problem, extra):
@@ -312,8 +315,8 @@ class Optimizer:
                 np.zeros((dim1, dim2), dtype=np.float64))
             for index, problem in self._global_problem.items():
                 if isinstance(problem, list):
+                    start = 0
                     for i, p in enumerate(problem):
-                        start = 0
                         if p.dataset_descriptor.label == label:
                             end = start + dataset.coords[self._scheme.model.matrix_dimension].size
                             dataset.clp.loc[{self._scheme.model.global_dimension: p.index}] = \
@@ -326,7 +329,7 @@ class Optimizer:
                                     .coords[self._scheme.model.matrix_dimension].size
                 else:
                     if problem.dataset_descriptor.label == label:
-                        dataset.clp.loc[{self._scheme.model.global_dimension: index}] = \
+                        dataset.clp.loc[{self._scheme.model.global_dimension: problem.index}] = \
                             np.array([full_clp[index][full_clp_label[index].index(i)]
                                       if i in full_clp_label[index] else None
                                       for i in dataset.coords['clp_label'].values])
@@ -339,6 +342,9 @@ class Optimizer:
             if 'weight' in dataset:
                 dataset['weighted_residual'] = dataset.residual
                 dataset.residual = np.multiply(dataset.weighted_residual, dataset.weight**-1)
+
+            size = dataset.residual.shape[0] * dataset.residual.shape[1]
+            dataset.attrs['root_mean_square_error'] = np.sqrt((dataset.residual**2).sum()/size)
 
             l, v, r = np.linalg.svd(dataset.residual)
 
