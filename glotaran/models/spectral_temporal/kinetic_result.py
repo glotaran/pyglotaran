@@ -125,8 +125,7 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
                             all_das[i].rename(component=f"component_{label}")
                     dataset[f'a_matrix_{label}'] = all_a_matrix[i] \
                         .rename(component=f"component_{label}")
-                    dataset[f'k_matrix_{label}'] = all_k_matrix[i] \
-                        .rename(component=f"component_{label}")
+                    dataset[f'k_matrix_{label}'] = all_k_matrix[i]
 
         # get_coherent artifact
         irf = dataset_descriptor.irf
