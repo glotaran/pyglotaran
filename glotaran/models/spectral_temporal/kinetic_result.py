@@ -115,10 +115,15 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
                                              ('from_species', compartments)]))
 
         if all_das:
-            dataset.coords['megacomplex'] = all_das_labels
-            dataset['decay_associated_spectra'] = xr.concat(all_das, 'megacomplex')
-            dataset['a_matrix'] = xr.concat(all_a_matrix, 'megacomplex')
-            dataset['k_matrix'] = xr.concat(all_k_matrix, 'megacomplex')
+            if len(all_das) == 1:
+                dataset['decay_associated_spectra'] = all_das[0]
+                dataset['a_matrix'] = all_a_matrix[0]
+                dataset['k_matrix'] = all_k_matrix[0]
+            else:
+                for i, label in enumerate(all_das_labels):
+                    dataset[f'decay_associated_spectra_{label}'] = all_das[i]
+                    dataset[f'a_matrix_{label}'] = all_a_matrix[i]
+                    dataset[f'k_matrix_{label}'] = all_k_matrix[i]
 
         # get_coherent artifact
         irf = dataset_descriptor.irf
