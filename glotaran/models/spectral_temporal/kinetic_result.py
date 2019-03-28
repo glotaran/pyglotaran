@@ -121,9 +121,12 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
                 dataset['k_matrix'] = all_k_matrix[0]
             else:
                 for i, label in enumerate(all_das_labels):
-                    dataset[f'decay_associated_spectra_{label}'] = all_das[i]
-                    dataset[f'a_matrix_{label}'] = all_a_matrix[i]
-                    dataset[f'k_matrix_{label}'] = all_k_matrix[i]
+                    dataset[f'decay_associated_spectra_{label}'] = \
+                            all_das[i].rename(component=f"component_{label}")
+                    dataset[f'a_matrix_{label}'] = all_a_matrix[i] \
+                        .rename(component=f"component_{label}")
+                    dataset[f'k_matrix_{label}'] = all_k_matrix[i] \
+                        .rename(component=f"component_{label}")
 
         # get_coherent artifact
         irf = dataset_descriptor.irf
