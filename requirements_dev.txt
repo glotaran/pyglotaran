@@ -9,7 +9,7 @@ bumpversion==0.5.3
 numpy==1.15.4
 scipy==1.2.0
 Cython==0.29.2
-setuptools==40.6.3
+setuptools==41.0.0
 
 # documentation dependencies
 Sphinx>=1.8.0
