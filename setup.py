@@ -4,7 +4,7 @@ import shutil
 from setuptools import find_packages, Command
 
 setup_requires = [
-    'numpy>=1.15.1',
+    'numpy>=1.16.2',
     'scipy>=1.2.0',
     'Cython>=0.28.5',
     'setuptools>=40.2.0'
@@ -13,7 +13,7 @@ install_requires = [
     'lmfit>=0.9.12',
     'pandas>=0.23.4',
     'pyyaml>=3.0,<=5.0',
-    'xarray>=0.11.2',
+    'xarray>=0.12.1',
     'dask>=1.1.4',
     'netCDF4>=1.4.2',
     'click>=7.0',
