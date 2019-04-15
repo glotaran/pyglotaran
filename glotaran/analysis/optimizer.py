@@ -344,7 +344,8 @@ class Optimizer:
                 dataset.residual = np.multiply(dataset.weighted_residual, dataset.weight**-1)
 
             size = dataset.residual.shape[0] * dataset.residual.shape[1]
-            dataset.attrs['root_mean_square_error'] = np.sqrt((dataset.residual**2).sum()/size)
+            dataset.attrs['root_mean_square_error'] = \
+                np.sqrt((dataset.residual**2).sum()/size).values
 
             l, v, r = np.linalg.svd(dataset.residual)
 
