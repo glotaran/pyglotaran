@@ -36,7 +36,7 @@ class Parameter(LmParameter):
 
         self._non_neg = False
         self.label = label
-        self._full_label = full_label
+        self.full_label = full_label
 
     @classmethod
     def from_parameter(cls, label: str, parameter: LmParameter) -> 'Parameter':
@@ -144,20 +144,19 @@ class Parameter(LmParameter):
     @property
     def label(self) -> str:
         """Label of the parameter"""
-        return self._label if self._label else self.full_label
+        return self.user_data['label']
 
     @label.setter
     def label(self, label: str):
-        self._label = label
+        self.user_data['label'] = label
 
     @property
     def full_label(self) -> str:
         """The label of the parameter with its path in a parameter group prepended."""
-        return self._full_label
+        return self.user_data['full_label']
 
     @full_label.setter
     def full_label(self, full_label: str):
-        self._full_label = full_label
         self.user_data['full_label'] = full_label
 
     @property

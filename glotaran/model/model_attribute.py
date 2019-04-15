@@ -86,6 +86,12 @@ def model_attribute(
         validate = _create_validation_func(cls)
         setattr(cls, 'validate', validate)
 
+        get_state = _create_get_state_func(cls)
+        setattr(cls, '__getstate__', get_state)
+
+        set_state = _create_set_state_func(cls)
+        setattr(cls, '__setstate__', set_state)
+
         fill = _create_fill_func(cls)
         setattr(cls, 'fill', fill)
 
@@ -232,6 +238,26 @@ def _create_fill_func(cls):
             setattr(item, name, value)
         return item
     return fill
+
+
+def _create_get_state_func(cls):
+
+    @wrap_func_as_method(cls)
+    def get_state(self) -> cls:
+        return tuple(
+            getattr(self, name) for name in self._glotaran_properties
+        )
+    return get_state
+
+
+def _create_set_state_func(cls):
+
+    @wrap_func_as_method(cls)
+    def set_state(self, state) -> cls:
+        for i, name in enumerate(self._glotaran_properties):
+            setattr(self, name, state[i])
+
+    return set_state
 
 
 def _create_mprint_func(cls):

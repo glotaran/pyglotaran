@@ -16,8 +16,8 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
     clp = []
     if not len(oscillations) == 0:
         for oscillation in oscillations:
-            clp.append(f'{oscillation.label}_sin')
             clp.append(f'{oscillation.label}_cos')
+            clp.append(f'{oscillation.label}_sin')
 
         delta = np.abs(axis[1:] - axis[:-1])
         delta_min = delta[np.argmin(delta)]
@@ -43,6 +43,8 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
 
             rates = np.array([osc.rate for osc in oscillations])
             frequencies = np.array([osc.frequency * 0.03 * 2 * np.pi for osc in oscillations])
+            print(frequencies)
+            print(rates)
 
             over_max = frequencies >= frequency_max
             frequencies[over_max] = np.mod(frequencies[over_max], frequency_max)

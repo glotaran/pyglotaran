@@ -1,8 +1,11 @@
 import collections
+import itertools
 import inspect
 import numpy as np
 import dask as ds
 import dask.array as da
+import dask.bag as db
+import dask.distributed as dd
 import xarray as xr
 import lmfit
 
@@ -14,7 +17,21 @@ from .nnls import residual_nnls
 from .variable_projection import residual_variable_projection
 
 
-Problem = collections.namedtuple('Problem', 'index dataset_descriptor axis')
+class ParameterServer:
+
+    def __init__(self):
+        self.parameter = None
+
+    def update(self, parameter):
+        self.parameter = parameter
+
+    def get(self):
+        return self.parameter
+
+
+
+LabelAndMatrix = collections.namedtuple('LabelAndMatrix', 'clp_label matrix')
+ClpAndResidual = collections.namedtuple('ClpAndResidual', 'clp residual')
 
 
 def _fill_problem(problem, model, parameter):
@@ -34,6 +51,22 @@ def _fill_problem(problem, model, parameter):
     )
 
 
+def _findOverlap(a, b, rtol=1e-05, atol=1e-08):
+    ovr_a = []
+    ovr_b = []
+    start_b = 0
+    for i, ai in enumerate(a):
+        for j, bj in itertools.islice(enumerate(b), start_b, None):
+            if np.isclose(ai, bj, rtol=rtol, atol=atol, equal_nan=False):
+                ovr_a.append(i)
+                ovr_b.append(j)
+            elif bj > ai:  # (more than tolerance)
+                break  # all the rest will be farther away
+            else:  # bj < ai (more than tolerance)
+                start_b += 1  # ignore further tests of this item
+    return (ovr_a, ovr_b)
+
+
 def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=None):
     args = {
         'dataset_descriptor': dataset_descriptor,
@@ -43,13 +76,13 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
         args[k] = v
     if index is not None:
         args['index'] = index
-    clp_label, matrix = ds.delayed(matrix_function, nout=2)(**args)
+    clp_label, matrix = matrix_function(**args)
     if dataset_descriptor.scale is not None:
         matrix *= dataset_descriptor.scale
-    return clp_label, matrix
+    return LabelAndMatrix(clp_label, matrix)
 
 
-def _calculate_problem(matrix_function, problem, extra):
+def _calculate_problem_(matrix_function, problem, extra):
     if isinstance(problem, list):
         clp_labels = []
         matrices = []
@@ -63,13 +96,57 @@ def _calculate_problem(matrix_function, problem, extra):
         matrix_function, problem.dataset_descriptor, problem.axis, extra, index=problem.index)
 
 
+@ds.delayed
+def _get_dataset_descriptor(dataset_descriptor, model, parameter_server):
+    parameter = ParameterGroup.from_parameter_dict(parameter_server.get().result())
+    return dataset_descriptor.fill(model, parameter)
+
+
+def _calculate_grouped_matrices(problem, matrix_function=None, dataset_descriptors=None, extra={}):
+    if len(problem.descriptors) == 1:
+        descriptor = problem.descriptors[0]
+        dataset_descriptor = dataset_descriptors[descriptor.dataset]
+        return _calculate_matrix(
+            matrix_function, dataset_descriptor, descriptor.axis, extra, index=descriptor.index)
+    clp_labels = []
+    matrices = []
+    for descriptor in problem.descriptors:
+        dataset_descriptor = dataset_descriptors[descriptor.dataset]
+        clp, matrix = _calculate_matrix(
+            matrix_function, dataset_descriptor, descriptor.axis, extra, index=descriptor.index)
+        clp_labels.append(clp)
+        matrices.append(matrix)
+    return LabelAndMatrix(clp_labels, matrices)
+
+
 @ds.delayed(nout=2)
 def _apply_constraints(constrain_function, parameter, index, clp, matrix):
     return constrain_function(parameter, clp, matrix, index)
 
 
-@ds.delayed(nout=2)
-def _combine_matrices(all_clp, matrices):
+def _optimize(penalty_job, initial_parameter, parameter_server, nfev, verbose=True):
+    def residual(parameter):
+        parameter_server.update(parameter).result()
+        return penalty_job.compute()
+
+    minimizer = lmfit.Minimizer(
+        residual,
+        initial_parameter,
+        fcn_args=None,
+        fcn_kws=None,
+        iter_cb=None,
+        scale_covar=True,
+        nan_policy='omit',
+        reduce_fcn=None,
+        **{})
+    verbose = 2 if verbose else 0
+    lm_result = minimizer.minimize(
+        method='least_squares', verbose=verbose, max_nfev=nfev)
+
+
+
+def _combine_matrices(label_and_matrices):
+    (all_clp, matrices) = label_and_matrices
     masks = []
     full_clp = None
     for clp in all_clp:
@@ -92,12 +169,12 @@ def _combine_matrices(all_clp, matrices):
         matrix[start:end, masks[i]] = m
         start = end
 
-    return full_clp, matrix
+    return LabelAndMatrix(full_clp, matrix)
 
 
-@ds.delayed(nout=2)
-def _calculate_residual(residual_function, matrix, data):
-    return residual_function(matrix, data)
+def _calculate_residual(problem, label_and_matrix, residual_function=None):
+    clp, residual = residual_function(label_and_matrix.matrix, problem.data)
+    return ClpAndResidual(clp, residual)
 
 
 @ds.delayed
@@ -121,47 +198,124 @@ class Optimizer:
         self.full_clp_label = {}
         self.full_matrices = {}
         self.residual = {}
+        self._grouped = self._scheme.model.allow_grouping and len(self._scheme.data) != 1
         self._global_data = {}
         self._global_problem = {}
         self._matrix_axis = {}
         self._matrix_extra = {}
         self._analyze_matrix_function()
-        self._create_global_problem()
-        self._create_global_data()
+        #  self._create_global_problem()
+        #  self._create_global_data()
 
     def optimize(self, verbose=True):
         parameter = self._scheme.parameter.as_parameter_dict()
-        minimizer = lmfit.Minimizer(
-            self._calculate_penalty,
-            parameter,
-            fcn_args=None,
-            fcn_kws=None,
-            iter_cb=None,
-            scale_covar=True,
-            nan_policy='omit',
-            reduce_fcn=None,
-            **{})
-        verbose = 2 if verbose else 0
-        lm_result = minimizer.minimize(
-            method='least_squares', verbose=verbose, max_nfev=self._scheme.nfev)
 
-        self._optimal_parameter = ParameterGroup.from_parameter_dict(lm_result.params)
-        self._calculate_result()
+        client = dd.get_client()
+        parameter_server = client.submit(ParameterServer, actor=True).result()
+        bag = self._create_bag()
+        client.persist(bag)
 
-        covar = lm_result.covar if hasattr(lm_result, 'covar') else None
+        lams = self._create_index_dependend_matrix_job(bag, parameter_server)
 
-        return Result(self._scheme, self._result_data, self._optimal_parameter,
-                      lm_result.nfev, lm_result.nvarys, lm_result.ndata, lm_result.nfree,
-                      lm_result.chisqr, lm_result.redchi, lm_result.var_names, covar)
+        penalty_job = self._create_residual_job(bag, lams)
+
+        client.submit(
+            _optimize, penalty_job, parameter, self._scheme.nfev, verbose
+        ).result()
+
+        #  self._optimal_parameter = ParameterGroup.from_parameter_dict(lm_result.params)
+        #  self._calculate_result()
+        #
+        #  covar = lm_result.covar if hasattr(lm_result, 'covar') else None
+        #
+        #  return Result(self._scheme, self._result_data, self._optimal_parameter,
+        #                lm_result.nfev, lm_result.nvarys, lm_result.ndata, lm_result.nfree,
+        #                lm_result.chisqr, lm_result.redchi, lm_result.var_names, covar)
 
     def _analyze_matrix_function(self):
         self._matrix_function = self._scheme.model.matrix
         signature = inspect.signature(self._matrix_function).parameters
         self._index_dependend = 'index' in signature
 
+    def _create_bag(self):
+        return self._create_grouped_bag()
+
+    def _create_grouped_bag(self):
+        bag = None
+        full_axis = None
+        for label in self._scheme.model.dataset:
+            dataset = self._scheme.data[label]
+            global_axis = dataset.coords[self._scheme.model.global_dimension].values
+            model_axis = dataset.coords[self._scheme.model.matrix_dimension].values
+            if bag is None:
+                bag = collections.deque(
+                    Problem(dataset.data.isel({self._scheme.model.global_dimension: i}),
+                            [ProblemDescriptor(label, value, model_axis)])
+                    for i, value in enumerate(global_axis)
+                )
+                full_axis = collections.deque(global_axis)
+            else:
+                i1, i2 = _findOverlap(full_axis, global_axis, atol=0.1)
+
+                for i, j in enumerate(i1):
+                    bag[j] = Problem(
+                        da.concatenate([bag[j][0], dataset.data.isel(
+                            {self._scheme.model.global_dimension: i2[i]})]),
+                        bag[j][1] + [ProblemDescriptor(label,
+                                                       global_axis[i2[i]], model_axis)]
+                    )
+
+                for i in range(0, i2[0]):
+                    full_axis.appendleft(global_axis[i2[i]])
+                    bag.appendleft(Problem(
+                        dataset.data.isel({self._scheme.model.global_dimension: i2[i]}),
+                        [ProblemDescriptor(label, global_axis[i], model_axis)]
+                    ))
+
+                for i in range(i2[-1]+1, len(global_axis)):
+                    full_axis.append(global_axis[i])
+                    bag.append(Problem(
+                        dataset.data.isel({self._scheme.model.global_dimension: i2[i]}),
+                        [ProblemDescriptor(label, global_axis[i], model_axis)]
+                    ))
+
+        return db.from_sequence(bag)
+
+    def _create_dataset_descriptor_futures(self, parameter_server):
+        futures = {}
+        for label, dataset in self._scheme.model.dataset.items():
+            futures[label] = _get_dataset_descriptor(dataset, self._scheme.model, parameter_server)
+        return futures
+
+    def _create_index_dependend_matrix_job(self, bag, parameter_server):
+        datasets = self._create_dataset_descriptor_futures(parameter_server)
+        lams = bag.map(_calculate_grouped_matrices,
+                       matrix_function=self._scheme.model.matrix,
+                       dataset_descriptors=datasets,
+                       )
+
+        self._label_and_matrices = lams
+
+        if self._grouped:
+            lams = lams.map(_combine_matrices)
+        return lams
+
+    def _create_residual_job(self, bag, lams):
+
+        residual_function = residual_nnls\
+            if self._scheme.nnls else residual_variable_projection
+        self._clp_and_residuals = \
+            bag.map(
+                _calculate_residual,
+                lams,
+                residual_function=residual_function)
+        return self._clp_and_residuals.reduction(
+            lambda cars: np.concatenate([car.residual for car in cars]),
+            lambda residual: np.concatenate(list(residual)),
+        )
+
     def _create_global_problem(self):
 
-        self._grouped = self._scheme.model.allow_grouping and len(self._scheme.data) != 1
 
         for label, dataset_descriptor in self._scheme.model.dataset.items():
             if label not in self._scheme.data:
