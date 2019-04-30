@@ -93,7 +93,7 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
             rates = k_matrix.rates(dataset_descriptor.initial_concentration)
             lifetimes = 1/rates
 
-            das = dataset.species_associated_spectra.sel(species=compartments)@ a_matrix.T
+            das = dataset.species_associated_spectra.sel(species=compartments).values @ a_matrix.T
 
             component_coords = {
                 'rate': ('component', rates),

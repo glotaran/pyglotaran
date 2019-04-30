@@ -3,7 +3,7 @@ A placeholder for the glotaran python package to be updated in the not-so-distan
 
 ## Instructions for use
 Please do not try to install or use this package, it isn't meant to do anything yet.
-If you accidentally installed it, now is the time to uninstall it, and wait for the 1.0 or 2.0 release.
+If you accidentally installed it, now is the time to uninstall it, and wait for the 1.0 or 2.0 release. If you are interested, please join our [mailing-list](https://groups.google.com/forum/#!forum/glotaran)
 =======
 [![latest release](https://pypip.in/version/glotaran/badge.svg)](https://pypi.org/project/glotaran/)
 [![Build Status](https://travis-ci.org/glotaran/glotaran.svg?branch=master)](https://travis-ci.org/glotaran/glotaran)
