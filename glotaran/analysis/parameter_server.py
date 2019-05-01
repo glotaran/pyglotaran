@@ -19,7 +19,7 @@ class ParameterClient():
         self._interface = None
 
     def __enter__(self):
-        self._actor_future = self.client.submit(ParameterActor, actor=True)
+        self._actor_future = self._client.submit(ParameterActor, actor=True)
         return self._actor_future.result()
 
     def __exit__(self, type, value, traceback):
