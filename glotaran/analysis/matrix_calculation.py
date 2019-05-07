@@ -1,6 +1,7 @@
 import collections
 import dask
 import dask.bag as db
+import numpy as np
 
 from glotaran.parameter import ParameterGroup
 
@@ -8,7 +9,7 @@ LabelAndMatrix = collections.namedtuple('LabelAndMatrix', 'clp_label matrix')
 LabelAndMatrixAndData = collections.namedtuple('LabelAndMatrixAndData', 'label_matrix data')
 
 
-def create_index_independend_matrix_jobs(scheme, parameter_client):
+def create_index_independend_ungrouped_matrix_jobs(scheme, parameter_client):
 
     matrix_jobs = {}
     model = scheme.model
@@ -24,22 +25,33 @@ def create_index_independend_matrix_jobs(scheme, parameter_client):
     return matrix_jobs
 
 
+def create_index_independend_grouped_matrix_jobs(scheme, groups, parameter_client):
+
+    matrix_jobs = create_index_independend_ungrouped_matrix_jobs(scheme, parameter_client)
+
+    for label, group in groups.items():
+        matrix_jobs[label] = dask.delayed(_combine_matrices, nout=2)(
+                    [matrix_jobs[d] for d in group]
+                )
+
+    return matrix_jobs
+
+
 def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter_client):
 
     model = scheme.model
     matrix_jobs = {}
 
     for label, problem in bag.items():
-        matrix_bag = db.from_sequence(problem.global_axis)
         descriptor = _fill_dataset_descriptor(model, problem.dataset, parameter_client)
 
-        matrix_bag.map(lambda index: _calculate_matrix(
-            model.matrix_function,
+        matrix_bag = [dask.delayed(_calculate_matrix, nout=2)(
+            model.matrix,
             descriptor,
             problem.matrix_axis,
             {},
             index=index,
-        ))
+        ) for index in problem.global_axis.values]
         matrix_jobs[label] = matrix_bag
 
     return matrix_jobs
@@ -84,4 +96,33 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
     clp_label, matrix = matrix_function(**args)
     if dataset_descriptor.scale is not None:
         matrix *= dataset_descriptor.scale
-    return LabelAndMatrix(clp_label, matrix)
+    return clp_label, matrix
+
+
+def _combine_matrices(label_and_matrices):
+    (all_clp, matrices) = ([], [])
+    masks = []
+    full_clp = None
+    for label_and_matrix in label_and_matrices:
+        (clp, matrix) = label_and_matrix
+        matrices.append(matrix)
+        if full_clp is None:
+            full_clp = clp
+            masks.append([i for i, _ in enumerate(clp)])
+        else:
+            mask = []
+            for c in clp:
+                if c not in full_clp:
+                    full_clp.append(c)
+                mask.append(full_clp.index(c))
+            masks.append(mask)
+    dim1 = np.sum([m.shape[0] for m in matrices])
+    dim2 = len(full_clp)
+    matrix = np.zeros((dim1, dim2), dtype=np.float64)
+    start = 0
+    for i, m in enumerate(matrices):
+        end = start + m.shape[0]
+        matrix[start:end, masks[i]] = m
+        start = end
+
+    return (full_clp, matrix)

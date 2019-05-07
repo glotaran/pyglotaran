@@ -16,7 +16,7 @@ def optimize(scheme, verbose=True):
     residual_function = residual_nnls if scheme.nnls else residual_variable_projection
     client = dd.get_client()
     with ParameterClient(client) as parameter_client:
-        result, penalty = create_index_independent_ungrouped_problem(
+        result, penalty = create_index_dependent_ungrouped_problem(
             scheme, parameter_client, residual_function
         )
 
@@ -55,6 +55,69 @@ def create_index_independent_ungrouped_problem(scheme, parameter_client, residua
         results[label] = ResultFuture(
             matrix_jobs[label].pluck(0),
             matrix_jobs[label].pluck(1),
+            residual_job[0][label],
+            residual_job[1][label],
+        )
+    return results, residual_job[2]
+
+
+def create_index_dependent_ungrouped_problem(scheme, parameter_client, residual_function):
+
+    bag = problem_bag.create_ungrouped_bag(scheme)
+
+    matrix_jobs = \
+        matrix_calculation.create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter_client)
+
+    residual_job = residual_calculation.create_index_dependend_ungrouped_residual(
+        scheme, bag, matrix_jobs, residual_function)
+
+    results = {}
+    for label in scheme.model.dataset:
+        results[label] = ResultFuture(
+            matrix_jobs[label],#.pluck(0),
+            matrix_jobs[label],#.pluck(1),
+            residual_job[0][label],
+            residual_job[1][label],
+        )
+    return results, residual_job[2]
+
+
+def create_index_independent_grouped_problem(scheme, parameter_client, residual_function):
+
+    bag, groups = problem_bag.create_grouped_bag(scheme)
+
+    matrix_jobs = \
+        matrix_calculation.create_index_independend_grouped_matrix_jobs(scheme, groups, parameter_client)
+
+    residual_job = residual_calculation.create_index_independend_grouped_residual(
+        scheme, bag, matrix_jobs, residual_function)
+
+    results = {}
+    #  for label in scheme.model.dataset:
+    #      results[label] = ResultFuture(
+    #          matrix_jobs[label],#.pluck(0),
+    #          matrix_jobs[label],#.pluck(1),
+    #          residual_job[0][label],
+    #          residual_job[1][label],
+    #      )
+    return results, residual_job[2]
+
+
+def create_index_dependent_grouped_problem(scheme, parameter_client, residual_function):
+
+    bag = problem_bag.create_ungrouped_bag(scheme)
+
+    matrix_jobs = \
+        matrix_calculation.create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter_client)
+
+    residual_job = residual_calculation.create_index_dependend_ungrouped_residual(
+        scheme, bag, matrix_jobs, residual_function)
+
+    results = {}
+    for label in scheme.model.dataset:
+        results[label] = ResultFuture(
+            matrix_jobs[label],#.pluck(0),
+            matrix_jobs[label],#.pluck(1),
             residual_job[0][label],
             residual_job[1][label],
         )

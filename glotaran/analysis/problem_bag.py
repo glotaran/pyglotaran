@@ -24,6 +24,7 @@ def create_ungrouped_bag(scheme):
 
 def create_grouped_bag(scheme):
     bag = None
+    datasets = None
     full_axis = None
     for label in scheme.model.dataset:
         dataset = scheme.data[label]
@@ -35,11 +36,13 @@ def create_grouped_bag(scheme):
                                [GroupedProblemDescriptor(label, value, model_axis)])
                 for i, value in enumerate(global_axis)
             )
+            datasets = collections.deque([label] for _, _ in enumerate(global_axis))
             full_axis = collections.deque(global_axis)
         else:
             i1, i2 = _find_overlap(full_axis, global_axis, atol=0.1)
 
             for i, j in enumerate(i1):
+                datasets[j].append(label)
                 bag[j] = GroupedProblem(
                     da.concatenate(
                         [bag[j][0], dataset.data.isel({scheme.model.global_dimension: i2[i]})]),
@@ -47,20 +50,22 @@ def create_grouped_bag(scheme):
                 )
 
             for i in range(0, i2[0]):
-                full_axis.appendleft(global_axis[i2[i]])
+                datasets.appendleft([label])
+                full_axis.appendleft(global_axis[i])
                 bag.appendleft(GroupedProblem(
-                    dataset.data.isel({scheme.model.global_dimension: i2[i]}),
+                    dataset.data.isel({scheme.model.global_dimension: i}),
                     [GroupedProblemDescriptor(label, global_axis[i], model_axis)]
                 ))
 
             for i in range(i2[-1]+1, len(global_axis)):
+                datasets.append([label])
                 full_axis.append(global_axis[i])
                 bag.append(GroupedProblem(
-                    dataset.data.isel({scheme.model.global_dimension: i2[i]}),
+                    dataset.data.isel({scheme.model.global_dimension: i}),
                     [GroupedProblemDescriptor(label, global_axis[i], model_axis)]
                 ))
 
-    return db.from_sequence(bag)
+    return db.from_sequence(bag), {"".join(d): d for d in datasets if len(d) > 1}
 
 
 def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
