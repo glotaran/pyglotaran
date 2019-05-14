@@ -102,6 +102,7 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
             das_coords = component_coords.copy()
             das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
             all_das_labels.append(megacomplex.label)
+            print('bla', megacomplex.label, das.shape)
             all_das.append(
                 xr.DataArray(
                     das, dims=(model.global_dimension, 'component'),
@@ -143,10 +144,10 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
 
             if irf.coherent_artifact:
                 dataset.coords['coherent_artifact_order'] = \
-                        list(range(0, irf.coherent_artifact_order+1))
+                        list(range(1, irf.coherent_artifact_order+1))
                 dataset['irf_concentration'] = (
                     (model.global_dimension, model.matrix_dimension, 'coherent_artifact_order'),
-                    dataset.concentration.sel(clp_label=irf.clp_labels()).values
+                    dataset.matrix.sel(clp_label=irf.clp_labels()).values
                 )
                 dataset['irf_associated_spectra'] = (
                     (model.global_dimension, 'coherent_artifact_order'),

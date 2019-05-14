@@ -71,10 +71,10 @@ def _apply_constraints(constrain_function, parameter, index, clp, matrix):
 @ds.delayed(nout=2)
 def _combine_matrices(all_clp, matrices):
     masks = []
-    full_clp = None
+    full_clp = []
     for clp in all_clp:
-        if full_clp is None:
-            full_clp = clp
+        if len(full_clp) == 0:
+            full_clp += clp
             masks.append([i for i, _ in enumerate(clp)])
         else:
             mask = []
