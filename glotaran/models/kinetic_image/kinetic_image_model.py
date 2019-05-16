@@ -22,7 +22,7 @@ def kinetic_image_matrix(dataset_descriptor: SpectralTemporalDatasetDescriptor =
     matrix=kinetic_image_matrix,
     matrix_dimension='time',
     global_dimension='pixel',
-    allow_grouping=False,
+    grouped=False,
     finalize_data_function=finalize_kinetic_data,
 )
 class KineticImageModel(KineticModel):

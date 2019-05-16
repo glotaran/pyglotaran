@@ -4,7 +4,7 @@ import numpy as np
 
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.optimizer import Optimizer
+from glotaran.analysis.optimizer_proxy import optimize
 
 from glotaran.model import DatasetDescriptor, Model, model_attribute, model
 from glotaran.parameter import Parameter, ParameterGroup
@@ -211,8 +211,7 @@ def test_fitting(suite):
     data = {'dataset1': dataset}
     scheme = Scheme(model=model, parameter=initial, data=data)
 
-    optimizer = Optimizer(scheme)
-    result = optimizer.optimize()
+    result = optimize(scheme)
     print(result.optimized_parameter)
     print(result.data['dataset1'])
 

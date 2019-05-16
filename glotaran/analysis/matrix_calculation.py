@@ -11,30 +11,55 @@ LabelAndMatrixAndData = collections.namedtuple('LabelAndMatrixAndData', 'label_m
 
 def create_index_independend_ungrouped_matrix_jobs(scheme, parameter_client):
 
+    clp_label = {}
     matrix_jobs = {}
+    constraint_matrix_jobs = {}
     model = scheme.model
 
     for label, descriptor in scheme.model.dataset.items():
-        descriptor = _fill_dataset_descriptor(model, descriptor, parameter_client)
-        matrix_jobs[label] = dask.delayed(_calculate_matrix)(
+        parameter = _get_parameter(parameter_client)
+        descriptor = dask.delayed(descriptor.fill)(model, parameter)
+        clp, matrix = dask.delayed(_calculate_matrix, nout=2)(
             model.matrix,
             descriptor,
-            scheme.data[label].coords[model.matrix_dimension],
+            scheme.data[label].coords[model.matrix_dimension].values,
             {},
         )
-    return matrix_jobs
+        clp_label[label] = clp
+        matrix_jobs[label] = matrix
+        if callable(model.constrain_matrix_function):
+            clp, matrix = model.constrain_matrix_function(parameter, clp, matrix, None)
+        constraint_matrix_jobs[label] = (clp, matrix)
+    return clp_label, matrix_jobs, constraint_matrix_jobs
 
 
 def create_index_independend_grouped_matrix_jobs(scheme, groups, parameter_client):
 
-    matrix_jobs = create_index_independend_ungrouped_matrix_jobs(scheme, parameter_client)
+    model = scheme.model
 
-    for label, group in groups.items():
-        matrix_jobs[label] = dask.delayed(_combine_matrices, nout=2)(
-                    [matrix_jobs[d] for d in group]
-                )
+    descriptors = {label: _fill_dataset_descriptor(model, descriptor, parameter_client)
+                   for label, descriptor in model.dataset.items()}
+    @dask.delayed
+    def calculate_matrices():
+        matrices = {}
 
-    return matrix_jobs
+        ds = dask.compute(descriptors)[0]
+        for label in scheme.model.dataset:
+            matrices[label] = _calculate_matrix(
+                model.matrix,
+                ds[label],
+                scheme.data[label].coords[model.matrix_dimension],
+                {},
+            )
+
+        for label, group in groups.items():
+            if label not in matrices:
+                matrices[label] = _combine_matrices(
+                            [matrices[d] for d in group]
+                        )
+        return matrices
+
+    return calculate_matrices()
 
 
 def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter_client):
@@ -61,24 +86,37 @@ def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter_client):
 
     model = scheme.model
 
-    descriptors = {label: _fill_dataset_descriptor(descriptor)
-                   for label, descriptor in model.dataset}
+    descriptors = {label: _fill_dataset_descriptor(model, descriptor, parameter_client)
+                   for label, descriptor in model.dataset.items()}
 
     def calculate_group(group):
+        ds = dask.compute(descriptors)[0]
         return [_calculate_matrix(
-            model.matrix_function,
-            descriptors[problem.dataset],
+            model.matrix,
+            ds[problem.dataset],
             problem.axis,
             {},
             index=problem.index
-        ) for problem in group]
+        ) for problem in group.descriptor]
 
     matrix_jobs = bag.map(calculate_group)
-    return matrix_jobs
+    combined_matrix_jobs = matrix_jobs.map(_combine_matrices)
+    return matrix_jobs, combined_matrix_jobs
+
+
+@dask.delayed
+def _get_parameter(parameter_client):
+    parameter = parameter_client.get().result()
+    parameter = ParameterGroup.from_parameter_dict(parameter)
+    return parameter
 
 
 @dask.delayed
 def _fill_dataset_descriptor(model, descriptor, parameter_client):
+    return _fill_dataset_descriptor_non_delayed(model, descriptor, parameter_client)
+
+
+def _fill_dataset_descriptor_non_delayed(model, descriptor, parameter_client):
     parameter = parameter_client.get().result()
     parameter = ParameterGroup.from_parameter_dict(parameter)
     return descriptor.fill(model, parameter)
@@ -87,7 +125,7 @@ def _fill_dataset_descriptor(model, descriptor, parameter_client):
 def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=None):
     args = {
         'dataset_descriptor': dataset_descriptor,
-        'axis': axis.values,
+        'axis': axis,
     }
     for k, v in extra:
         args[k] = v

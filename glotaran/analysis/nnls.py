@@ -18,7 +18,6 @@ def residual_nnls(matrix: np.ndarray, data: np.ndarray) \
     data : np.ndarray
         The data to analyze.
     """
-
     clp, _ = nnls(matrix, data)
     residual = data - np.dot(matrix, clp)
     return clp, residual

@@ -5,6 +5,13 @@ from glotaran.analysis.optimizer import Optimizer
 from glotaran.analysis.scheme import Scheme
 from glotaran.parameter import ParameterGroup
 
+from glotaran.analysis.problem_bag import create_grouped_bag
+from glotaran.analysis.matrix_calculation import (
+    create_index_dependend_grouped_matrix_jobs,
+    create_index_independend_grouped_matrix_jobs,
+)
+
+
 from .mock import MockModel
 
 
@@ -22,28 +29,23 @@ def test_single_dataset():
     parameter = ParameterGroup.from_list([1, 10])
     print(model.validate(parameter))
     assert model.valid(parameter)
+    axis_e = [1, 2, 3]
+    axis_c = [5, 7, 9, 12]
 
     data = {'dataset1': xr.DataArray(
         np.ones((3, 4)),
-        coords=[('e', [1, 2, 3]), ('c', [5, 7, 9, 12])]
+        coords=[('e', axis_e), ('c', axis_c)]
     ).to_dataset(name="data")}
 
     scheme = Scheme(model, parameter, data)
-    optimizer = Optimizer(scheme)
-    group = optimizer._global_problem
-    assert len(group) == 3
-    assert list(group.keys()) == [f"dataset1_{i}" for i in [1, 2, 3]]
-    assert all([p.dataset_descriptor.label == 'dataset1' for p in group.values()])
-
-    optimizer._create_calculate_penalty_job(parameter)
-    result = [m.compute() for m in optimizer.matrices.values()]
-    assert len(result) == 3
-    print(result[0])
-    assert result[0].shape == (4, 2)
-
-    data = optimizer._global_data
-    assert len(data) == 3
-    assert list(data.values())[1].compute().shape[0] == 4
+    bag, datasets = create_grouped_bag(scheme)
+    bag = bag.compute()
+    assert len(datasets) == 0
+    assert len(bag) == 3
+    assert all([p.data.size == 4 for p in bag])
+    assert all([p.descriptor[0].dataset == 'dataset1' for p in bag])
+    assert all([all(p.descriptor[0].axis == axis_c) for p in bag])
+    assert [p.descriptor[0].index for p in bag] == axis_e
 
 
 def test_multi_dataset_no_overlap():
@@ -65,36 +67,35 @@ def test_multi_dataset_no_overlap():
     print(model.validate(parameter))
     assert model.valid(parameter)
 
+    axis_e_1 = [1, 2, 3]
+    axis_c_1 = [5, 7]
+    axis_e_2 = [4, 5, 6]
+    axis_c_2 = [5, 7, 9]
     data = {
         'dataset1': xr.DataArray(
             np.ones((3, 2)),
-            coords=[('e', [1, 2, 3]), ('c', [5, 7])]
+            coords=[('e', axis_e_1), ('c', axis_c_1)]
         ).to_dataset(name="data"),
         'dataset2': xr.DataArray(
             np.ones((3, 3)),
-            coords=[('e', [4, 5, 6]), ('c', [5, 7, 9])]
+            coords=[('e', axis_e_2), ('c', axis_c_2)]
         ).to_dataset(name="data"),
     }
 
     scheme = Scheme(model, parameter, data)
-    optimizer = Optimizer(scheme)
-    group = optimizer._global_problem
-    assert len(group) == 6
-    assert [problem[0][0] for problem in group.values()] == [1, 2, 3, 4, 5, 6]
-    assert [problem[0][1].label for problem in group.values()] == \
-        ['dataset1' for _ in range(3)] + ['dataset2' for _ in range(3)]
+    bag, datasets = create_grouped_bag(scheme)
+    bag = bag.compute()
+    assert len(datasets) == 0
+    assert len(bag) == 6
+    assert all([p.data.size == 2 for p in bag[:3]])
+    assert all([p.descriptor[0].dataset == 'dataset1' for p in bag[:3]])
+    assert all([all(p.descriptor[0].axis == axis_c_1) for p in bag[:3]])
+    assert [p.descriptor[0].index for p in bag[:3]] == axis_e_1
 
-    optimizer._create_calculate_penalty_job(parameter)
-    result = [m.compute() for mat in optimizer.matrices.values() for m in mat]
-    assert len(result) == 6
-    print(result[0])
-    assert result[0].shape == (2, 2)
-    assert result[3].shape == (3, 2)
-
-    data = optimizer._global_data
-    assert len(data) == 6
-    assert list(data.values())[1].compute().shape[0] == 2
-    assert list(data.values())[4].compute().shape[0] == 3
+    assert all([p.data.size == 3 for p in bag[3:]])
+    assert all([p.descriptor[0].dataset == 'dataset2' for p in bag[3:]])
+    assert all([all(p.descriptor[0].axis == axis_c_2) for p in bag[3:]])
+    assert [p.descriptor[0].index for p in bag[3:]] == axis_e_2
 
 
 def test_multi_dataset_overlap():
@@ -116,38 +117,40 @@ def test_multi_dataset_overlap():
     print(model.validate(parameter))
     assert model.valid(parameter)
 
+    axis_e_1 = [0, 1, 2, 3]
+    axis_c_1 = [5, 7]
+    axis_e_2 = [1.4, 2.4, 3.4, 9]
+    axis_c_2 = [5, 7, 9, 12]
     data = {
         'dataset1': xr.DataArray(
             np.ones((4, 2)),
-            coords=[('e', [0, 1, 2, 3]), ('c', [5, 7])]
+            coords=[('e', axis_e_1), ('c', axis_c_1)]
         ).to_dataset(name="data"),
         'dataset2': xr.DataArray(
             np.ones((4, 4)),
-            coords=[('e', [1.4, 2.4, 3.4, 9]), ('c', [5, 7, 9, 12])]
+            coords=[('e', axis_e_2), ('c', axis_c_2)]
         ).to_dataset(name="data"),
     }
 
     scheme = Scheme(model, parameter, data, group_tolerance=5e-1)
-    optimizer = Optimizer(scheme)
-    group = optimizer._global_problem
-    assert len(group) == 5
-    assert group[0][0][1].label == 'dataset1'
-    assert group[1][0][1].label == 'dataset1'
-    assert group[1][1][1].label == 'dataset2'
-    assert group[9][0][1].label == 'dataset2'
+    bag, datasets = create_grouped_bag(scheme)
+    bag = bag.compute()
+    assert len(datasets) == 1
+    assert "dataset1dataset2" in datasets
+    assert datasets['dataset1dataset2'] == ["dataset1", "dataset2"]
+    assert len(bag) == 5
 
-    optimizer._create_calculate_penalty_job(parameter)
-    print(optimizer.matrices)
-    result = [m.compute() for m in optimizer.full_matrices.values()]
-    assert len(result) == 5
-    print(result[0])
-    print(result[1])
-    assert result[0].shape == (2, 2)
-    assert result[1].shape == (6, 2)
-    assert result[4].shape == (4, 2)
+    assert all([p.data.size == 2 for p in bag[:1]])
+    assert all([p.descriptor[0].dataset == 'dataset1' for p in bag[:4]])
+    assert all([all(p.descriptor[0].axis == axis_c_1) for p in bag[:4]])
+    assert [p.descriptor[0].index for p in bag[:4]] == axis_e_1
 
-    data = [d.compute() for d in optimizer._global_data.values()]
-    assert len(data) == 5
-    assert data[0].shape[0] == 2
-    assert data[1].shape[0] == 6
-    assert data[4].shape[0] == 4
+    assert all([p.data.size == 6 for p in bag[1:4]])
+    assert all([p.descriptor[1].dataset == 'dataset2' for p in bag[1:4]])
+    assert all([all(p.descriptor[1].axis == axis_c_2) for p in bag[1:4]])
+    assert [p.descriptor[1].index for p in bag[1:4]] == axis_e_2[:3]
+
+    assert all([p.data.size == 4 for p in bag[4:]])
+    assert all([p.descriptor[0].dataset == 'dataset2' for p in bag[4:]])
+    assert all([all(p.descriptor[0].axis == axis_c_2) for p in bag[4:]])
+    assert [p.descriptor[0].index for p in bag[4:]] == axis_e_2[3:]
