@@ -4,6 +4,9 @@ tests/resources/PE2017
 # compatibility problems with newer numpy versions
 *.c
 
+# Dask
+dask-worker-space/
+
 # Notebook
 *.ipynb
 

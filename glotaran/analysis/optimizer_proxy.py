@@ -21,7 +21,7 @@ def optimize(scheme, verbose=True, client=None):
     client = client if client else dd.Client(processes=False)
     initial_parameter = scheme.parameter.as_parameter_dict()
     optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
-    return optimization_result_future.result()
+    return r rm optimization_result_future.result()
 
 
 def optimize_task(initial_parameter, scheme, verbose):
