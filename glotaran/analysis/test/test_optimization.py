@@ -176,13 +176,24 @@ class MultichannelMulticomponentDecay:
     })
 
 
+@pytest.mark.parametrize("index_dependend", [True, False])
+@pytest.mark.parametrize("grouped", [True, False])
 @pytest.mark.parametrize("suite", [
     OneCompartmentDecay,
     TwoCompartmentDecay,
     MultichannelMulticomponentDecay
 ])
-def test_fitting(suite):
+def test_fitting(suite, index_dependend, grouped):
     model = suite.model
+
+    def gr():
+        return grouped
+    model.grouped = gr
+
+    def id():
+        return index_dependend
+    model.index_dependend = id
+
     sim_model = suite.sim_model
     est_axis = suite.e_axis
     cal_axis = suite.c_axis
