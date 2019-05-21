@@ -9,7 +9,7 @@ import xarray as xr
 from glotaran.analysis.result import Result
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.optimizer import Optimizer
+from glotaran.analysis.optimizer_proxy import optimize
 from glotaran.parameter import ParameterGroup
 
 
@@ -157,6 +157,7 @@ class Model:
                  verbose: bool = True,
                  max_nfev: int = None,
                  group_tolerance: int = 0,
+                 client=None,
                  ) -> Result:
         """Optimizes the parameter for this model.
 
@@ -177,8 +178,7 @@ class Model:
         """
         scheme = Scheme(model=self, parameter=parameter, data=data,
                         nnls=nnls, group_tolerance=group_tolerance, nfev=max_nfev)
-        optimizer = Optimizer(scheme)
-        result = optimizer.optimize()
+        result = optimize(scheme, verbose=verbose, client=client)
         return result
 
     def result_from_parameter(self,

@@ -11,6 +11,7 @@ from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_m
 from .test_kinetic_model import ThreeComponentSequential
 
 
+@pytest.mark.skip
 def test_kinetic_matrix_benchmark(benchmark):
     model = KineticModel.from_dict({
         'initial_concentration': {
@@ -55,6 +56,7 @@ def test_kinetic_matrix_benchmark(benchmark):
     benchmark(calculate_kinetic_matrix, dataset, time, 0)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize("nnls", [True, False])
 def test_kinetic_residual_benchmark(benchmark, nnls):
 

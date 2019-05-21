@@ -8,11 +8,15 @@ from glotaran.parameter import ParameterGroup
 from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_data
 
 
-def finalize_doas_data(model: 'glotaran.models.doas.DoasModel',
-                       global_clp: typing.Dict[str, np.ndarray],
-                       parameter: ParameterGroup, data: typing.Dict[str, xr.Dataset],):
+def finalize_doas_data(
+    model: 'glotaran.models.doas.DoasModel',
+    global_indices: typing.List[typing.List[object]],
+    reduced_clp_labels: typing.Union[typing.Dict[str, typing.List[str]], np.ndarray],
+    reduced_clps: typing.Union[typing.Dict[str, np.ndarray], np.ndarray],
+    parameter: ParameterGroup, data: typing.Dict[str, xr.Dataset],
+):
 
-    finalize_kinetic_data(model, global_clp, parameter, data)
+    finalize_kinetic_data(model, global_indices, reduced_clp_labels, reduced_clps, parameter, data)
 
     for label in model.dataset:
         dataset = data[label]
@@ -46,15 +50,11 @@ def finalize_doas_data(model: 'glotaran.models.doas.DoasModel',
         dataset['dampened_oscillation_phase'] = (
             (model.global_dimension, 'oscillation'), phase)
 
-        dataset['dampened_oscillation_sin'] = (
-            (model.global_dimension, model.matrix_dimension, 'oscillation'),
+        dataset['dampened_oscillation_sin'] = \
             dataset.matrix.sel(clp_label=[f'{osc}_sin' for osc in oscillations])
-        )
 
-        dataset['dampened_oscillation_cos'] = (
-            (model.global_dimension, model.matrix_dimension, 'oscillation'),
+        dataset['dampened_oscillation_cos'] = \
             dataset.matrix.sel(clp_label=[f'{osc}_cos' for osc in oscillations])
-        )
 
     time_diff = np.diff(dataset.time, n=1, axis=0)
 

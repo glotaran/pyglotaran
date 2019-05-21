@@ -115,6 +115,7 @@ def _create_result_data(parameter, scheme, result):
     bag, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals = result
     model = scheme.model
     datasets = scheme.data
+    indices = None
 
     if model.grouped():
         groups = bag.map(lambda group: [d.dataset for d in group.descriptor])
@@ -238,8 +239,6 @@ def _create_result_data(parameter, scheme, result):
     dataset['fitted_data'] = dataset.data - dataset.residual
 
     if callable(model.finalize_data):
-        global_clp = {index: xr.DataArray(clp, coords=[('clp_label', full_clp_label[index])])
-                      for index, clp in full_clp.items()}
-        model.finalize_data(global_clp, parameter, datasets)
+        model.finalize_data(indices, reduced_clp_labels, reduced_clps, parameter, datasets)
 
     return datasets

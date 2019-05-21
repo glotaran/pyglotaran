@@ -4,7 +4,9 @@ from glotaran.model import model
 from glotaran.models.spectral_temporal import KineticModel, SpectralTemporalDatasetDescriptor
 from glotaran.models.spectral_temporal.kinetic_model import (
     apply_kinetic_model_constraints,
-    spectral_constraint_penalty
+    spectral_constraint_penalty,
+    grouped,
+    index_dependend,
 )
 
 from .doas_result import finalize_doas_data
@@ -28,6 +30,8 @@ from .oscillation import Oscillation
     finalize_data_function=finalize_doas_data,
     constrain_matrix_function=apply_kinetic_model_constraints,
     additional_penalty_function=spectral_constraint_penalty,
+    grouped=grouped,
+    index_dependend=index_dependend,
 )
 class DOASModel(KineticModel):
     """Extends the kinetic model with damped oscillations."""

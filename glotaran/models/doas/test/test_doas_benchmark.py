@@ -1,10 +1,12 @@
 import numpy as np
+import pytest
 
 from glotaran import ParameterGroup
 from glotaran.models.doas import DOASModel
 from glotaran.models.doas.doas_matrix import calculate_doas_matrix
 
 
+@pytest.mark.skip
 def test_doas_matrix_benchmark(benchmark):
     model = DOASModel.from_dict({
         'initial_concentration': {

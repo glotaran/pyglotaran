@@ -82,6 +82,20 @@ def apply_kinetic_model_constraints(
     return clp_labels, matrix
 
 
+def index_dependend(model: typing.Type['KineticModel']):
+    if any([irf.dispersion_center is not None for irf in model.irf.values()]):
+        return True
+    if len(model.spectral_relations) != 0:
+        return True
+    if len(model.spectral_constraints) != 0:
+        return True
+    return False
+
+
+def grouped(model: typing.Type['KineticModel']):
+    return len(model.dataset) != 1
+
+
 @model(
     'kinetic',
     attributes={
@@ -100,7 +114,9 @@ def apply_kinetic_model_constraints(
     global_dimension='spectral',
     finalize_data_function=finalize_kinetic_data,
     constrain_matrix_function=apply_kinetic_model_constraints,
-    additional_penalty_function=spectral_constraint_penalty
+    additional_penalty_function=spectral_constraint_penalty,
+    grouped=grouped,
+    index_dependend=index_dependend,
 )
 class KineticModel(Model):
     """

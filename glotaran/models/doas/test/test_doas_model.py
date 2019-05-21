@@ -64,7 +64,7 @@ class OneOscillation():
     spectral = np.arange(0, 10)
     axis = {'time': time, 'spectral': spectral}
 
-    wanted_clp = ['osc1_sin', 'osc1_cos']
+    wanted_clp = ['osc1_cos', 'osc1_sin']
     wanted_shape = (300, 2)
 
 
@@ -135,7 +135,7 @@ class OneOscillationWithIrf():
     spectral = np.arange(0, 10)
     axis = {'time': time, 'spectral': spectral}
 
-    wanted_clp = ['osc1_sin', 'osc1_cos']
+    wanted_clp = ['osc1_cos', 'osc1_sin']
     wanted_shape = (300, 2)
 
 
@@ -270,7 +270,7 @@ class OneOscillationWithSequentialModel():
     spectral = np.arange(0, 10)
     axis = {'time': time, 'spectral': spectral}
 
-    wanted_clp = ['osc1_sin', 'osc1_cos', 's1', 's2']
+    wanted_clp = ['osc1_cos', 'osc1_sin', 's1', 's2']
     wanted_shape = (600, 4)
 
 

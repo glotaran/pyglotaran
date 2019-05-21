@@ -9,9 +9,13 @@ from .irf import IrfGaussian
 from .spectral_constraints import OnlyConstraint, ZeroConstraint
 
 
-def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel',
-                          global_clp: typing.Dict[str, np.ndarray],
-                          parameter: ParameterGroup, data: typing.Dict[str, xr.Dataset],):
+def finalize_kinetic_data(
+    model: 'glotaran.models.spectral_temporal.KineticModel',
+    global_indices: typing.List[typing.List[object]],
+    reduced_clp_labels: typing.Union[typing.Dict[str, typing.List[str]], np.ndarray],
+    reduced_clps: typing.Union[typing.Dict[str, np.ndarray], np.ndarray],
+    parameter: ParameterGroup, data: typing.Dict[str, xr.Dataset],
+):
 
     for label in model.dataset:
         dataset = data[label]
@@ -48,14 +52,13 @@ def finalize_kinetic_data(model: 'glotaran.models.spectral_temporal.KineticModel
             if relation.compartment in dataset_descriptor.initial_concentration.compartments:
                 relation = relation.fill(model, parameter)
                 idx = [index.values for index in dataset.spectral if relation.applies(index)]
-                all_idx = np.asarray(list(global_clp.keys()))
+                all_idx = np.asarray(np.sum([idxs for idxs in global_indices]))
                 clp = []
                 for i in idx:
-                    j = np.abs(all_idx - i).argmin()
-                    j = all_idx[j]
+                    group_idx = np.abs(all_idx - i).argmin()
+                    clp_idx = reduced_clp_labels[group_idx].index(relation.target)
                     clp.append(
-                        global_clp[j].sel(clp_label=relation.target).values *
-                        relation.parameter
+                        reduced_clps[group_idx][clp_idx] * relation.parameter
                     )
                 sas = xr.DataArray(clp, coords=[(model.global_dimension, idx)])
 
