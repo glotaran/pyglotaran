@@ -148,10 +148,10 @@ def _optimize(penalty_job, initial_parameter, parameter_server, nfev, verbose=Tr
 def _combine_matrices(label_and_matrices):
     (all_clp, matrices) = label_and_matrices
     masks = []
-    full_clp = None
+    full_clp = []
     for clp in all_clp:
-        if full_clp is None:
-            full_clp = clp
+        if len(full_clp) == 0:
+            full_clp += clp
             masks.append([i for i, _ in enumerate(clp)])
         else:
             mask = []
