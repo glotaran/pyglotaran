@@ -2,7 +2,6 @@ import collections
 import dask
 import dask.distributed as dd
 import numpy as np
-import xarray as xr
 import lmfit
 
 from glotaran.parameter import ParameterGroup
@@ -121,8 +120,9 @@ def _create_result_data(parameter, scheme, result):
         groups = bag.map(lambda group: [d.dataset for d in group.descriptor])
         indices = bag.map(lambda group: [d.index for d in group.descriptor])
         if model.index_dependend():
-            groups, indices, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals = dask.compute(
-                groups, indices, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals)
+            groups, indices, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals = \
+                    dask.compute(groups, indices, clp_labels, matrices,
+                                 reduced_clp_labels, reduced_clps, residuals)
         else:
             groups, indices, reduced_clp_labels, reduced_clps, residuals = dask.compute(
                 groups, indices, reduced_clp_labels, reduced_clps, residuals)
@@ -194,7 +194,8 @@ def _create_result_data(parameter, scheme, result):
             if model.index_dependend():
                 # we assume that the labels are the same, this might not be true in future models
                 dataset.coords['clp_label'] = clp_label[0]
-                dataset['matrix'] = (((model.global_dimension), (model.matrix_dimension), ('clp_label')), matrix)
+                dataset['matrix'] = \
+                    (((model.global_dimension), (model.matrix_dimension), ('clp_label')), matrix)
             else:
                 dataset.coords['clp_label'] = clp_label
                 dataset['matrix'] = (((model.matrix_dimension), ('clp_label')), matrix)
@@ -208,7 +209,8 @@ def _create_result_data(parameter, scheme, result):
                 if model.index_dependend():
                     idx = dataset.coords[model.global_dimension][i]
                     for j, c in enumerate(clp):
-                        dataset.clp.loc[{'clp_label': clp, model.global_dimension: idx}] = reduced_clp[i, j]
+                        dataset.clp.loc[{'clp_label': clp, model.global_dimension: idx}] = \
+                            reduced_clp[i, j]
                 else:
                     dataset.clp.loc[{'clp_label': clp}] = reduced_clp[:, i]
 

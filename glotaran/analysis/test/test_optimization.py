@@ -4,7 +4,7 @@ import numpy as np
 
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.optimizer_proxy import optimize
+from glotaran.analysis.optimize import optimize
 
 from glotaran.model import DatasetDescriptor, Model, model_attribute, model
 from glotaran.parameter import Parameter, ParameterGroup

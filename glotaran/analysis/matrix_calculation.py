@@ -1,6 +1,5 @@
 import collections
 import dask
-import dask.bag as db
 import numpy as np
 
 from glotaran.parameter import ParameterGroup
@@ -191,7 +190,7 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
 
 
 def _combine_matrices(label_and_matrices):
-    (all_clp, matrices) = ([], [])
+    matrices = []
     masks = []
     full_clp = None
     for label_and_matrix in label_and_matrices:

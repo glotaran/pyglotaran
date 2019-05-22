@@ -1,15 +1,10 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.optimizer import Optimizer
 from glotaran.analysis.scheme import Scheme
 from glotaran.parameter import ParameterGroup
 
 from glotaran.analysis.problem_bag import create_grouped_bag
-from glotaran.analysis.matrix_calculation import (
-    create_index_dependend_grouped_matrix_jobs,
-    create_index_independend_grouped_matrix_jobs,
-)
 
 
 from .mock import MockModel

@@ -3,7 +3,6 @@ import pytest
 
 from glotaran.parameter import ParameterGroup
 from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.optimizer import Optimizer
 from glotaran.models.spectral_temporal import KineticModel
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 
@@ -82,6 +81,6 @@ def test_kinetic_residual_benchmark(benchmark, nnls):
 
     data = {'dataset1': dataset}
     scheme = Scheme(model=model, parameter=initial, data=data, nnls=nnls)
-    optimizer = Optimizer(scheme)
+    optimizer = Optimizer(scheme) # noqa f821 TODO: fix or delete benchmarks
 
     benchmark(optimizer._calculate_penalty, initial)

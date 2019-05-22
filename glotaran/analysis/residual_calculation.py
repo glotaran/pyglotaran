@@ -1,5 +1,4 @@
 import dask
-import dask.array as da
 import dask.bag as db
 import numpy as np
 
@@ -21,8 +20,9 @@ def create_index_independend_ungrouped_residual(
         clps[label] = []
         residuals[label] = []
         for i in range(size):
+            data_stripe = data.isel({global_dimension: i}).values
             clp, residual = \
-                dask.delayed(residual_function, nout=2)(matrix, data.isel({global_dimension: i}).values)
+                dask.delayed(residual_function, nout=2)(matrix, data_stripe)
             clps[label].append(clp)
             residuals[label].append(residual)
             full_residuals.append(residual)

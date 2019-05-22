@@ -9,7 +9,7 @@ import xarray as xr
 from glotaran.analysis.result import Result
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.optimizer_proxy import optimize
+from glotaran.analysis.optimize import optimize
 from glotaran.parameter import ParameterGroup
 
 
