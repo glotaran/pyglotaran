@@ -43,8 +43,6 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
 
             rates = np.array([osc.rate for osc in oscillations])
             frequencies = np.array([osc.frequency * 0.03 * 2 * np.pi for osc in oscillations])
-            print(frequencies)
-            print(rates)
 
             over_max = frequencies >= frequency_max
             frequencies[over_max] = np.mod(frequencies[over_max], frequency_max)

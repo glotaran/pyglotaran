@@ -105,7 +105,6 @@ def finalize_kinetic_data(
             das_coords = component_coords.copy()
             das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
             all_das_labels.append(megacomplex.label)
-            print('bla', megacomplex.label, das.shape)
             all_das.append(
                 xr.DataArray(
                     das, dims=(model.global_dimension, 'component'),

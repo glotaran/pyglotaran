@@ -24,7 +24,7 @@ def optimize(scheme, verbose=True, client=None):
         except Exception:
             client = dd.Client(processes=False)
     initial_parameter = scheme.parameter.as_parameter_dict()
-    #  scheme.data = client.scatter(scheme.data)
+    scheme = client.scatter(scheme)
     optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
     return optimization_result_future.result()
 
