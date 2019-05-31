@@ -18,8 +18,13 @@ ResultFuture = \
 
 def optimize(scheme, verbose=True, client=None):
 
-    client = client if client else dd.Client(processes=False)
+    if client is None:
+        try:
+            client = dd.get_client()
+        except Exception:
+            client = dd.Client(processes=False)
     initial_parameter = scheme.parameter.as_parameter_dict()
+    #  scheme.data = client.scatter(scheme.data)
     optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
     return optimization_result_future.result()
 
@@ -28,7 +33,7 @@ def optimize_task(initial_parameter, scheme, verbose):
 
     client = dd.get_client()
     with ParameterClient(client) as parameter_client:
-        penalty, result = create_problem(scheme, parameter_client)
+        penalty, result = create_problem(scheme, client, parameter_client)
 
         minimizer = lmfit.Minimizer(
             calculate_penalty,
@@ -60,7 +65,7 @@ def calculate_penalty(parameter, parameter_client, penalty_job):
     return penalty
 
 
-def create_problem(scheme, parameter_client):
+def create_problem(scheme, client, parameter_client):
     residual_function = residual_nnls if scheme.nnls else residual_variable_projection
     if scheme.model.grouped():
         bag, groups = problem_bag.create_grouped_bag(scheme)
@@ -178,7 +183,7 @@ def _create_result_data(parameter, scheme, result):
                         if dset == label:
                             break
                         start += datasets[dset].coords[model.matrix_dimension].size
-                    end = dataset.coords[model.matrix_dimension].size
+                    end = start + dataset.coords[model.matrix_dimension].size
                     dataset.residual.loc[{model.global_dimension: index}] = residuals[i][start:end]
 
         else:

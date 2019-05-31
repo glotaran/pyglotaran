@@ -106,7 +106,7 @@ class OneCompartmentDecay:
 
 class TwoCompartmentDecay:
     wanted = ParameterGroup.from_list([11e-4, 22e-5])
-    initial = ParameterGroup.from_list([1e-4, 2e-5])
+    initial = ParameterGroup.from_list([10e-4, 20e-5])
 
     e_axis = np.asarray([1])
     c_axis = np.arange(0, 150, 1.5)
@@ -220,7 +220,7 @@ def test_fitting(suite, index_dependend, grouped):
     assert dataset.data.shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
-    scheme = Scheme(model=model, parameter=initial, data=data)
+    scheme = Scheme(model=model, parameter=initial, data=data, nfev=5)
 
     result = optimize(scheme)
     print(result.optimized_parameter)
