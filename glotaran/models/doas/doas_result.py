@@ -40,7 +40,7 @@ def finalize_doas_data(
             sin = dataset.clp.sel(clp_label=f'{osc}_sin')
             cos = dataset.clp.sel(clp_label=f'{osc}_cos')
             doas[:, i] = np.sqrt(sin*sin+cos*cos)
-            phase[:, i] = np.unwrap(np.arctan2(cos, sin))
+            phase[:, i] = np.unwrap(np.arctan2(sin, cos))
 
         dataset.coords['oscillation'] = oscillations
 
