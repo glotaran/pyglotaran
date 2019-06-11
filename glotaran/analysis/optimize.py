@@ -214,7 +214,7 @@ def _create_result_data(parameter, scheme, result):
                 if model.index_dependend():
                     idx = dataset.coords[model.global_dimension][i]
                     for j, c in enumerate(clp):
-                        dataset.clp.loc[{'clp_label': clp, model.global_dimension: idx}] = \
+                        dataset.clp.loc[{'clp_label': c, model.global_dimension: idx}] = \
                             reduced_clp[i, j]
                 else:
                     dataset.clp.loc[{'clp_label': clp}] = reduced_clp[:, i]
