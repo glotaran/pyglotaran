@@ -51,10 +51,12 @@ def finalize_doas_data(
             (model.global_dimension, 'oscillation'), phase)
 
         dataset['dampened_oscillation_sin'] = \
-            dataset.matrix.sel(clp_label=[f'{osc}_sin' for osc in oscillations])
+            dataset.matrix.sel(clp_label=[f'{osc}_sin' for osc in oscillations])\
+            .rename(clp_label='oscillation')
 
         dataset['dampened_oscillation_cos'] = \
-            dataset.matrix.sel(clp_label=[f'{osc}_cos' for osc in oscillations])
+            dataset.matrix.sel(clp_label=[f'{osc}_cos' for osc in oscillations])\
+            .rename(clp_label='oscillation')
 
     time_diff = np.diff(dataset.time, n=1, axis=0)
 
