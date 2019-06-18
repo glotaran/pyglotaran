@@ -6,8 +6,6 @@ from scipy.special import erf
 from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
 from glotaran.models.spectral_temporal.irf import IrfGaussian
 
-from doas_matrix_faddeva import calc_doas_matrix_faddeva
-
 
 def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
 
