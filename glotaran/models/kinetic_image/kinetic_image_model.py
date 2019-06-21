@@ -1,29 +1,30 @@
 import numpy as np
 
-from glotaran.model import model
-from glotaran.models.spectral_temporal import (
-    KineticModel,
-    KineticMegacomplex,
-    SpectralTemporalDatasetDescriptor,
-)
-from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
-from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_data
+from glotaran.model import model, Model
 
-
-def kinetic_image_matrix(dataset_descriptor: SpectralTemporalDatasetDescriptor = None,
-                         axis: np.ndarray = None):
-    return calculate_kinetic_matrix(dataset_descriptor, axis, 0)
+from .initial_concentration import InitialConcentration
+from .irf import Irf
+from .k_matrix import KMatrix
+from .kinetic_image_dataset_descriptor import KineticImageDatasetDescriptor
+from .kinetic_image_matrix import kinetic_image_matrix
+from .kinetic_image_megacomplex import KineticImageMegacomplex
+from .kinetic_image_result import finalize_kinetic_image_result
 
 
 @model(
     'kinetic_image',
-    dataset_type=SpectralTemporalDatasetDescriptor,
-    megacomplex_type=KineticMegacomplex,
+    attributes={
+        'initial_concentration': InitialConcentration,
+        'k_matrix': KMatrix,
+        'irf': Irf,
+    },
+    dataset_type=KineticImageDatasetDescriptor,
+    megacomplex_type=KineticImageMegacomplex,
     matrix=kinetic_image_matrix,
     matrix_dimension='time',
     global_dimension='pixel',
     grouped=False,
-    finalize_data_function=finalize_kinetic_data,
+    finalize_data_function=finalize_kinetic_image_result,
 )
-class KineticImageModel(KineticModel):
-    """."""
+class KineticImageModel(Model):
+    pass

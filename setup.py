@@ -11,15 +11,16 @@ setup_requires = [
     'setuptools>=40.2.0'
 ]
 install_requires = [
+    'click>=7.0',
+    'dask>=1.2',
+    'distributed>=1.28',
     'lmfit>=0.9.12',
+    'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
+    'netCDF4>=1.4.2',
+    'numba>=0.44',
     'pandas>=0.23.4',
     'pyyaml>=3.0,<=5.0',
     'xarray>=0.12.1',
-    'dask>=1.2',
-    'distributed>=1.28',
-    'netCDF4>=1.4.2',
-    'click>=7.0',
-    'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
 ]
 
 

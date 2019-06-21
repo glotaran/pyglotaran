@@ -8,6 +8,7 @@ cimport numpy as np
 
 from libc.math cimport exp, sqrt, erf
 
+
 cdef extern from "erfce.c":
     double erfce(double x)
 
@@ -38,7 +39,7 @@ def calc_kinetic_matrix_gaussian_irf(double[:, :] matrix,
             beta = (t_n - center) / (width * sqrt2)
             thresh = beta - alpha
             if thresh < -1 :
-                matrix[n_t, n_r] += scale * .5 * erfce(-thresh) * exp(-beta * beta)
+                matrix[n_t, n_r] += scale * .5 * erfce(-thresh) * np.exp(-beta * beta)
             else:
                 matrix[n_t, n_r] += scale * .5 * (1 + erf(thresh)) * exp(alpha * (alpha - 2 * beta))
             if backsweep != 0:
@@ -46,3 +47,9 @@ def calc_kinetic_matrix_gaussian_irf(double[:, :] matrix,
                 x2 = exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
                 x3 = exp(-r_n * backsweep_period)
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
+
+def werfce(double x):
+    return erfce(x)
+
+def werf(double x):
+    return erf(x)

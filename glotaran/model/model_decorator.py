@@ -116,16 +116,17 @@ def model(model_type: str,
             index_dep_fun = index_dependend
         setattr(cls, 'index_dependend', index_dep_fun)
 
-        if matrix:
-            c_mat = wrap_func_as_method(cls, name='matrix')(matrix)
-            c_mat = staticmethod(c_mat)
-            setattr(cls, 'matrix', c_mat)
+        mat = wrap_func_as_method(cls, name='matrix')(matrix)
+        mat = staticmethod(mat)
+        setattr(cls, 'matrix', mat)
         setattr(cls, 'matrix_dimension', matrix_dimension)
 
         if global_matrix:
-            e_mat = wrap_func_as_method(cls, name='global_matrix')(global_matrix)
-            e_mat = staticmethod(e_mat)
-            setattr(cls, 'global_matrix', e_mat)
+            g_mat = wrap_func_as_method(cls, name='global_matrix')(global_matrix)
+            g_mat = staticmethod(g_mat)
+            setattr(cls, 'global_matrix', g_mat)
+        else:
+            setattr(cls, 'global_matrix', None)
         setattr(cls, 'global_dimension', global_dimension)
 
         if not hasattr(cls, '_glotaran_model_attributes'):
