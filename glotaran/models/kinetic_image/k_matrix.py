@@ -81,7 +81,7 @@ class KMatrix:
         ----------
         compartments :
             (default = None)
-            An optional list defining the desired order of compartments. 
+            An optional list defining the desired order of compartments.
         fill_parameter : bool
             (default = False)
             If true, the entries will be filled with the actual parameter value

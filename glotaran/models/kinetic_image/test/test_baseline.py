@@ -2,7 +2,7 @@ import numpy as np
 
 from glotaran.parameter import ParameterGroup
 from glotaran.models.kinetic_image import KineticImageModel
-from glotaran.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix 
+from glotaran.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 
 
 def test_baseline():

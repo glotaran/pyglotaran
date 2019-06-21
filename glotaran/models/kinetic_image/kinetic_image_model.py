@@ -1,5 +1,3 @@
-import numpy as np
-
 from glotaran.model import model, Model
 
 from .initial_concentration import InitialConcentration

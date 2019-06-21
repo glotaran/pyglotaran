@@ -2,7 +2,9 @@ from glotaran.model import Model, model, model_attribute
 
 from glotaran.parse import register
 
-#  from glotaran.analysis.test.mock import MockModel
+
+def mock_matrix_fun():
+    pass
 
 
 @model_attribute()
@@ -11,6 +13,7 @@ class MockMegacomplex:
 
 
 @model('register_mock',
+       matrix=mock_matrix_fun,
        megacomplex_type=MockMegacomplex,
        )
 class MockModel(Model):
