@@ -63,24 +63,30 @@ def finalize_kinetic_spectrum_result(
 
         irf = dataset_descriptor.irf
         if isinstance(irf, IrfGaussian):
+            if isinstance(irf, IrfSpectralGaussian):
+                index = irf.dispersion_center if irf.dispersion_center \
+                     else dataset.coords[model.global_dimension].min().values
+                dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
 
-            index = irf.dispersion_center if irf.dispersion_center \
-                 else dataset.coords[model.global_dimension].min().values
-            dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
+                if irf.dispersion_center:
+                    for i, dispersion in enumerate(
+                            irf.calculate_dispersion(dataset.coords['spectral'].values)):
+                        dataset[f'center_dispersion_{i+1}'] = \
+                                ((model.global_dimension, dispersion))
 
-            if irf.dispersion_center:
-                for i, dispersion in enumerate(
-                        irf.calculate_dispersion(dataset.coords['spectral'].values)):
-                    dataset[f'center_dispersion_{i+1}'] = ((model.global_dimension, dispersion))
-
-        if isinstance(irf, IrfSpectralGaussian) and irf.coherent_artifact:
-            dataset.coords['coherent_artifact_order'] = \
-                    list(range(1, irf.coherent_artifact_order+1))
-            dataset['irf_concentration'] = (
-                (model.global_dimension, model.matrix_dimension, 'coherent_artifact_order'),
-                dataset.matrix.sel(clp_label=irf.clp_labels()).values
-            )
-            dataset['irf_associated_spectra'] = (
-                (model.global_dimension, 'coherent_artifact_order'),
-                dataset.clp.sel(clp_label=irf.clp_labels()).values
-            )
+                if irf.coherent_artifact:
+                    dataset.coords['coherent_artifact_order'] = \
+                            list(range(1, irf.coherent_artifact_order+1))
+                    dataset['irf_concentration'] = (
+                        (model.global_dimension,
+                         model.matrix_dimension,
+                         'coherent_artifact_order'),
+                        dataset.matrix.sel(clp_label=irf.clp_labels()).values
+                    )
+                    dataset['irf_associated_spectra'] = (
+                        (model.global_dimension, 'coherent_artifact_order'),
+                        dataset.clp.sel(clp_label=irf.clp_labels()).values
+                    )
+            else:
+                index = dataset.coords[model.global_dimension][0].values
+                dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))

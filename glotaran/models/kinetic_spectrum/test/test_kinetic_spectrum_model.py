@@ -2,11 +2,11 @@ import pytest
 import numpy as np
 
 from glotaran.parameter import ParameterGroup
-from glotaran.models.spectral_temporal import KineticModel
+from glotaran.models.kinetic_spectrum import KineticSpectrumModel
 
 
 class OneComponentOneChannel:
-    model = KineticModel.from_dict({
+    model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1'],
@@ -27,7 +27,7 @@ class OneComponentOneChannel:
             },
         },
     })
-    sim_model = KineticModel.from_dict({
+    sim_model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1'],
@@ -59,7 +59,7 @@ class OneComponentOneChannel:
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = KineticModel.from_dict({
+    model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1'],
@@ -83,7 +83,7 @@ class OneComponentOneChannelGaussianIrf:
             },
         },
     })
-    sim_model = KineticModel.from_dict({
+    sim_model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1'],
@@ -121,7 +121,7 @@ class OneComponentOneChannelGaussianIrf:
 
 
 class ThreeComponentParallel:
-    model = KineticModel.from_dict({
+    model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1', 's2', 's3'],
@@ -149,7 +149,7 @@ class ThreeComponentParallel:
             },
         },
     })
-    sim_model = KineticModel.from_dict({
+    sim_model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1', 's2', 's3'],
@@ -225,7 +225,7 @@ class ThreeComponentParallel:
 
 
 class ThreeComponentSequential:
-    model = KineticModel.from_dict({
+    model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1', 's2', 's3'],
@@ -253,7 +253,7 @@ class ThreeComponentSequential:
             },
         },
     })
-    sim_model = KineticModel.from_dict({
+    sim_model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1', 's2', 's3'],
@@ -332,7 +332,7 @@ class ThreeComponentSequential:
 
 
 class IrfDispersion:
-    model = KineticModel.from_dict({
+    model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1', 's2', 's3', 's4'],
@@ -367,7 +367,7 @@ class IrfDispersion:
             },
         },
     })
-    sim_model = KineticModel.from_dict({
+    sim_model = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {
                 'compartments': ['s1', 's2', 's3', 's4'],
@@ -510,10 +510,14 @@ def test_kinetic_model(suite, nnls):
                            rtol=1e-1)
 
     resultdata = result.data["dataset1"]
+
+    print(resultdata)
+
     assert np.array_equal(dataset['time'], resultdata['time'])
     assert np.array_equal(dataset['spectral'], resultdata['spectral'])
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
-    assert 'species_associated_images' in resultdata
-    assert 'decay_associated_images' in resultdata
+
+    assert 'species_associated_spectra' in resultdata
+    assert 'decay_associated_spectra' in resultdata

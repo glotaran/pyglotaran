@@ -5,7 +5,8 @@ from scipy import fftpack
 
 import glotaran
 from glotaran.parameter import ParameterGroup
-from glotaran.models.spectral_temporal.kinetic_result import finalize_kinetic_data
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_result import \
+    finalize_kinetic_spectrum_result 
 
 
 def finalize_doas_data(
@@ -16,7 +17,8 @@ def finalize_doas_data(
     parameter: ParameterGroup, data: typing.Dict[str, xr.Dataset],
 ):
 
-    finalize_kinetic_data(model, global_indices, reduced_clp_labels, reduced_clps, parameter, data)
+    finalize_kinetic_spectrum_result(
+        model, global_indices, reduced_clp_labels, reduced_clps, parameter, data)
 
     for label in model.dataset:
         dataset = data[label]

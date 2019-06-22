@@ -327,3 +327,8 @@ def test_doas_model(suite):
     assert np.array_equal(dataset['spectral'], resultdata['spectral'])
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data)
+
+    assert 'dampened_oscillation_cos' in resultdata
+    assert 'dampened_oscillation_sin' in resultdata
+    assert 'dampened_oscillation_associated_spectra' in resultdata
+    assert 'dampened_oscillation_phase' in resultdata

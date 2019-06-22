@@ -1,8 +1,10 @@
 """ Gloataran DOAS Model """
 
 from glotaran.model import model
-from glotaran.models.spectral_temporal import KineticModel, SpectralTemporalDatasetDescriptor
-from glotaran.models.spectral_temporal.kinetic_model import (
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import \
+    KineticSpectrumDatasetDescriptor
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_model import (
+    KineticSpectrumModel,
     apply_kinetic_model_constraints,
     spectral_constraint_penalty,
     grouped,
@@ -21,7 +23,7 @@ from .oscillation import Oscillation
     attributes={
         'oscillation': Oscillation,
     },
-    dataset_type=SpectralTemporalDatasetDescriptor,
+    dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=DOASMegacomplex,
     matrix=calculate_doas_matrix,
     matrix_dimension='time',
@@ -33,5 +35,5 @@ from .oscillation import Oscillation
     grouped=grouped,
     index_dependend=index_dependend,
 )
-class DOASModel(KineticModel):
+class DOASModel(KineticSpectrumModel):
     """Extends the kinetic model with damped oscillations."""

@@ -3,9 +3,9 @@
 from typing import List
 
 from glotaran.model import model_attribute
-from glotaran.models.spectral_temporal import KineticMegacomplex
+from glotaran.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
 
 
 @model_attribute(properties={'oscillation': {'type': List[str], 'default': []}})
-class DOASMegacomplex(KineticMegacomplex):
+class DOASMegacomplex(KineticImageMegacomplex):
     """A Megacomplex with one or more oscillations."""

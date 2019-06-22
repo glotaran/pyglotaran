@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from glotaran.models.spectral_temporal.spectral_matrix import calculate_spectral_matrix
+from glotaran.models.kinetic_spectrum.spectral_matrix import spectral_matrix
 
 from .doas_matrix import _collect_oscillations
 
@@ -27,10 +27,10 @@ def calculate_doas_spectral_matrix(dataset, axis):
         for shape in shapes:
             matrix[:, i] *= shape.calculate(axis)
 
-    spectral_clp, spectral_matrix = calculate_spectral_matrix(dataset, axis)
+    kinetic_spectral_clp, kinetic_spectral_matrix = spectral_matrix(dataset, axis)
 
-    if spectral_matrix is not None:
-        matrix = np.concatenate((matrix, spectral_matrix), axis=1)
-        clp += spectral_clp
+    if kinetic_spectral_matrix is not None:
+        matrix = np.concatenate((matrix, kinetic_spectral_matrix), axis=1)
+        clp += kinetic_spectral_clp
 
     return clp, matrix

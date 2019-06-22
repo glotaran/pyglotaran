@@ -78,7 +78,7 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
         rates = k_matrix.rates(dataset_descriptor.initial_concentration)
         lifetimes = 1/rates
 
-        das = dataset.species_associated_images.sel(species=compartments).values @ a_matrix.T
+        das = dataset[f'species_associated_{name}'].sel(species=compartments).values @ a_matrix.T
 
         component_coords = {
             'rate': ('component', rates),
@@ -101,12 +101,12 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
 
     if all_das:
         if len(all_das) == 1:
-            dataset['decay_associated_images'] = all_das[0]
+            dataset[f'decay_associated_{name}'] = all_das[0]
             dataset['a_matrix'] = all_a_matrix[0]
             dataset['k_matrix'] = all_k_matrix[0]
         else:
             for i, das_label in enumerate(all_das_labels):
-                dataset[f'decay_associated_images_{das_label}'] = \
+                dataset[f'decay_associated_{name}_{das_label}'] = \
                         all_das[i].rename(component=f"component_{das_label}")
                 dataset[f'a_matrix_{das_label}'] = all_a_matrix[i] \
                     .rename(component=f"component_{das_label}")

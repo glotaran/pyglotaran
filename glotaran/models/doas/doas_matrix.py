@@ -3,8 +3,8 @@
 import numpy as np
 from scipy.special import erf
 
-from glotaran.models.spectral_temporal.kinetic_matrix import calculate_kinetic_matrix
-from glotaran.models.spectral_temporal.irf import IrfGaussian
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_matrix import kinetic_spectrum_matrix
+from glotaran.models.kinetic_image.irf import IrfGaussian
 
 
 def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
@@ -64,7 +64,7 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
         matrix[:, idx + 1] = osc.imag
         idx += 2
 
-    kinetic_clp, kinetic_matrix = calculate_kinetic_matrix(dataset_descriptor, axis, index)
+    kinetic_clp, kinetic_matrix = kinetic_spectrum_matrix(dataset_descriptor, axis, index, irf)
     if kinetic_matrix is not None:
         clp = clp + kinetic_clp
         matrix = np.concatenate((matrix, kinetic_matrix), axis=1)
