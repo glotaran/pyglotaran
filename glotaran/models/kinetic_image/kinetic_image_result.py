@@ -24,87 +24,90 @@ def finalize_kinetic_image_result(
         if not dataset_descriptor.get_k_matrices():
             continue
 
-        compartments = dataset_descriptor.initial_concentration.compartments
-
-        compartments = [c for c in compartments if c in dataset_descriptor.compartments()]
-        # get_sas
-
-        dataset.coords['species'] = compartments
-        dataset['species_associated_images'] = \
-            ((model.global_dimension, 'species',),
-             dataset.clp.sel(clp_label=compartments))
+        retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, "images")
+        retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, "images")
 
         if dataset_descriptor.baseline:
             dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
-        if len(dataset.matrix.shape) == 3:
-            #  index dependent
-            dataset['species_concentration'] = (
-                (model.global_dimension, model.matrix_dimension, 'species',),
-                dataset.matrix.sel(clp_label=compartments).values)
-        else:
-            #  index independent
-            dataset['species_concentration'] = (
-                (model.matrix_dimension, 'species',),
-                dataset.matrix.sel(clp_label=compartments).values)
-
-        # get_das
-        all_das = []
-        all_a_matrix = []
-        all_k_matrix = []
-        all_das_labels = []
-        for megacomplex in dataset_descriptor.megacomplex:
-
-            k_matrix = megacomplex.full_k_matrix()
-            if k_matrix is None:
-                continue
-
-            compartments = dataset_descriptor.initial_concentration.compartments
-
-            compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
-
-            matrix = k_matrix.full(compartments)
-            a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
-            rates = k_matrix.rates(dataset_descriptor.initial_concentration)
-            lifetimes = 1/rates
-
-            das = dataset.species_associated_images.sel(species=compartments).values @ a_matrix.T
-
-            component_coords = {
-                'rate': ('component', rates),
-                'lifetime': ('component', lifetimes)}
-
-            das_coords = component_coords.copy()
-            das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
-            all_das_labels.append(megacomplex.label)
-            all_das.append(
-                xr.DataArray(
-                    das, dims=(model.global_dimension, 'component'),
-                    coords=das_coords))
-            a_matrix_coords = component_coords.copy()
-            a_matrix_coords['species'] = compartments
-            all_a_matrix.append(
-                xr.DataArray(a_matrix, coords=a_matrix_coords, dims=('component', 'species')))
-            all_k_matrix.append(
-                xr.DataArray(matrix, coords=[('to_species', compartments),
-                                             ('from_species', compartments)]))
-
-        if all_das:
-            if len(all_das) == 1:
-                dataset['decay_associated_images'] = all_das[0]
-                dataset['a_matrix'] = all_a_matrix[0]
-                dataset['k_matrix'] = all_k_matrix[0]
-            else:
-                for i, label in enumerate(all_das_labels):
-                    dataset[f'decay_associated_spectra_{label}'] = \
-                            all_das[i].rename(component=f"component_{label}")
-                    dataset[f'a_matrix_{label}'] = all_a_matrix[i] \
-                        .rename(component=f"component_{label}")
-                    dataset[f'k_matrix_{label}'] = all_k_matrix[i]
-
         irf = dataset_descriptor.irf
-
         if isinstance(irf, IrfGaussian):
-
             index = dataset.coords[model.global_dimension][0].values
             dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
+
+
+def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name):
+    compartments = dataset_descriptor.initial_concentration.compartments
+
+    compartments = [c for c in compartments if c in dataset_descriptor.compartments()]
+
+    dataset.coords['species'] = compartments
+    dataset[f'species_associated_{name}'] = \
+        ((model.global_dimension, 'species',),
+         dataset.clp.sel(clp_label=compartments))
+
+    if len(dataset.matrix.shape) == 3:
+        #  index dependent
+        dataset['species_concentration'] = (
+            (model.global_dimension, model.matrix_dimension, 'species',),
+            dataset.matrix.sel(clp_label=compartments).values)
+    else:
+        #  index independent
+        dataset['species_concentration'] = (
+            (model.matrix_dimension, 'species',),
+            dataset.matrix.sel(clp_label=compartments).values)
+
+
+def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
+    # get_das
+    all_das = []
+    all_a_matrix = []
+    all_k_matrix = []
+    all_das_labels = []
+    for megacomplex in dataset_descriptor.megacomplex:
+
+        k_matrix = megacomplex.full_k_matrix()
+        if k_matrix is None:
+            continue
+
+        compartments = dataset_descriptor.initial_concentration.compartments
+        compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
+
+        matrix = k_matrix.full(compartments)
+        a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
+        rates = k_matrix.rates(dataset_descriptor.initial_concentration)
+        lifetimes = 1/rates
+
+        das = dataset.species_associated_images.sel(species=compartments).values @ a_matrix.T
+
+        component_coords = {
+            'rate': ('component', rates),
+            'lifetime': ('component', lifetimes)}
+
+        das_coords = component_coords.copy()
+        das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
+        all_das_labels.append(megacomplex.label)
+        all_das.append(
+            xr.DataArray(
+                das, dims=(model.global_dimension, 'component'),
+                coords=das_coords))
+        a_matrix_coords = component_coords.copy()
+        a_matrix_coords['species'] = compartments
+        all_a_matrix.append(
+            xr.DataArray(a_matrix, coords=a_matrix_coords, dims=('component', 'species')))
+        all_k_matrix.append(
+            xr.DataArray(matrix, coords=[('to_species', compartments),
+                                         ('from_species', compartments)]))
+
+    if all_das:
+        if len(all_das) == 1:
+            dataset['decay_associated_images'] = all_das[0]
+            dataset['a_matrix'] = all_a_matrix[0]
+            dataset['k_matrix'] = all_k_matrix[0]
+        else:
+            for i, das_label in enumerate(all_das_labels):
+                dataset[f'decay_associated_images_{das_label}'] = \
+                        all_das[i].rename(component=f"component_{das_label}")
+                dataset[f'a_matrix_{das_label}'] = all_a_matrix[i] \
+                    .rename(component=f"component_{das_label}")
+                dataset[f'k_matrix_{das_label}'] = all_k_matrix[i]

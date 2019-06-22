@@ -7,6 +7,7 @@ from glotaran.models.kinetic_image.kinetic_image_model import KineticImageModel
 from glotaran.parameter import ParameterGroup
 
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
+from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
 from .spectral_constraints import (
     SpectralConstraint, OnlyConstraint, ZeroConstraint, EqualAreaConstraint)
 from .spectral_irf import IrfSpectralGaussian
@@ -110,6 +111,7 @@ def grouped(model: typing.Type['KineticModel']):
     additional_penalty_function=spectral_constraint_penalty,
     grouped=grouped,
     index_dependend=index_dependend,
+    finalize_data_function=finalize_kinetic_spectrum_result,
 )
 class KineticSpectrumModel(KineticImageModel):
     pass

@@ -282,3 +282,5 @@ def test_kinetic_model(suite, nnls):
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
+    assert 'species_associated_images' in resultdata
+    assert 'decay_associated_images' in resultdata
