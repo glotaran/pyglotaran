@@ -10,7 +10,7 @@ from .kinetic_image_result import finalize_kinetic_image_result
 
 
 @model(
-    'kinetic_image',
+    'kinetic-image',
     attributes={
         'initial_concentration': InitialConcentration,
         'k_matrix': KMatrix,

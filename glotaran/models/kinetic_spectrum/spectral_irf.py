@@ -1,32 +1,20 @@
-"""This package contains irf items."""
-
-from typing import List
+import typing
 import numpy as np
 
-from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.model import model_attribute
+from glotaran.models.kinetic_image.irf import Irf, IrfGaussian
 from glotaran.parameter import Parameter
 
 
-@model_attribute(has_type=True)
-class IrfMeasured:
-    """A measured IRF. The data must be supplied by the dataset."""
-
-
 @model_attribute(properties={
-    'center': List[Parameter],
-    'width': List[Parameter],
     'dispersion_center': {'type': Parameter, 'allow_none': True},
-    'center_dispersion': {'type': List[Parameter], 'default': []},
-    'width_dispersion': {'type': List[Parameter], 'default': []},
-    'scale': {'type': List[Parameter], 'allow_none': True},
+    'center_dispersion': {'type': typing.List[Parameter], 'default': []},
+    'width_dispersion': {'type': typing.List[Parameter], 'default': []},
     'model_dispersion_with_wavenumber': {'type': bool, 'default': False},
-    'normalize': {'type': bool, 'default': False},
-    'backsweep': {'type': bool, 'default': False},
-    'backsweep_period': {'type': Parameter, 'allow_none': True},
     'coherent_artifact': {'type': bool, 'default': False},
     'coherent_artifact_order': {'type': int, 'allow_none': True},
 }, has_type=True)
-class IrfGaussian:
+class IrfSpectralGaussian(IrfGaussian):
     """
     Represents a gaussian IRF.
 
@@ -54,8 +42,8 @@ class IrfGaussian:
 
     """
     def parameter(self, index):
-
-        centers = self.center if isinstance(self.center, list) else [self.center]
+        centers, widths, scale, backsweep, backsweep_period = \
+                super(IrfSpectralGaussian, self).parameter(index)
 
         if self.dispersion_center:
             dist = (1e3 / index - 1e3 / self.dispersion_center) \
@@ -67,32 +55,11 @@ class IrfGaussian:
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i+1)
 
-        widths = self.width if isinstance(self.width, list) else [self.width]
         if len(self.width_dispersion) != 0:
             if self.dispersion_center is None:
                 raise Exception(self, f'No dispersion center defined for irf "{self.label}"')
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i+1)
-
-        len_centers = len(centers)
-        len_widths = len(widths)
-        if not len_centers == len_widths:
-            if not min(len_centers, len_widths) == 1:
-                raise Exception(f'len(centers) ({len_centers}) not equal '
-                                f'len(widths) ({len_widths}) none of is 1.')
-            if len_centers == 1:
-                centers = [centers[0] for _ in range(len_widths)]
-                len_centers = len_widths
-            else:
-                widths = [widths[0] for _ in range(len_centers)]
-                len_widths = len_centers
-
-        scale = self.scale if self.scale is not None else [1 for _ in centers]
-        scale = scale if isinstance(scale, list) else [scale]
-
-        backsweep = 1 if self.backsweep else 0
-
-        backsweep_period = self.backsweep_period if backsweep else 0
 
         return centers, widths, scale, backsweep, backsweep_period
 
@@ -122,14 +89,6 @@ class IrfGaussian:
         return [f'{self.label}_coherent_artifact_{i}'
                 for i in range(1, self.coherent_artifact_order + 1)]
 
-    def calculate(self, index, axis):
-        center, width, scale, _, _ = self.parameter(index)
-        irf = scale[0] * np.exp(-1 * (axis - center[0])**2 / (2 * width[0]**2))
-        if len(center) > 1:
-            for i in range(1, len(center)):
-                irf += scale[i] * np.exp(-1 * (axis - center[i])**2 / (2 * width[i]**2))
-        return irf
-
     def calculate_dispersion(self, axis):
         dispersion = []
         for index in axis:
@@ -138,9 +97,4 @@ class IrfGaussian:
         return np.asarray(dispersion).T
 
 
-@model_attribute_typed(types={
-    'gaussian': IrfGaussian,
-    'measured': IrfMeasured,
-})
-class Irf(object):
-    """Represents an IRF."""
+Irf.add_type('spectral-gaussian', IrfSpectralGaussian)

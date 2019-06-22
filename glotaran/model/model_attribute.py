@@ -122,11 +122,23 @@ def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
         setattr(cls, '_glotaran_model_attribute_typed', True)
         setattr(cls, '_glotaran_model_attribute_types', types)
 
+        add_type = _create_add_type_func(cls)
+        setattr(cls, 'add_type', add_type)
+
         setattr(cls, '_glotaran_has_label', not no_label)
 
         return cls
 
     return decorator
+
+
+def _create_add_type_func(cls):
+
+    @classmethod
+    @wrap_func_as_method(cls)
+    def add_type(cls, type_name: str, type: typing.Type):
+        getattr(cls, '_glotaran_model_attribute_types')[type_name] = type
+    return add_type
 
 
 def _create_init_func(cls):

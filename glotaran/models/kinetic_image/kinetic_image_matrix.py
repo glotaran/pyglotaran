@@ -95,7 +95,7 @@ def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
 
 def kinetic_image_matrix_implementation(
         matrix, rates, axis, index, dataset_descriptor, measured_irf):
-    # calculate the c_matrix
+
     if isinstance(dataset_descriptor.irf, IrfGaussian):
 
         center, width, irf_scale, backsweep, backsweep_period = \
