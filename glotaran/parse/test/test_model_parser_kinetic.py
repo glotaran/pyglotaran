@@ -1,15 +1,15 @@
 import pytest
 
 from glotaran.parse.parser import load_yml_file
-from glotaran.models.spectral_temporal import (
-    InitialConcentration,
-    KineticModel,
-    IrfGaussian,
-    SpectralShapeGaussian,
-    KineticMegacomplex,
-    ZeroConstraint,
-    EqualAreaConstraint,
-)
+
+from glotaran.models.kinetic_image.initial_concentration import InitialConcentration
+from glotaran.models.kinetic_image.irf import IrfGaussian
+from glotaran.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
+from glotaran.models.kinetic_spectrum.spectral_constraints import ZeroConstraint, EqualAreaConstraint
+from glotaran.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
 
 from os.path import join, dirname, abspath
 import numpy as np
@@ -24,7 +24,7 @@ def model():
 
 
 def test_correct_model(model):
-    assert isinstance(model, KineticModel)
+    assert isinstance(model, KineticSpectrumModel)
 
 
 def test_dataset(model):
@@ -32,6 +32,7 @@ def test_dataset(model):
 
     assert 'dataset1' in model.dataset
     dataset = model.dataset['dataset1']
+    assert isinstance(dataset, KineticSpectrumDatasetDescriptor)
     assert dataset.label == 'dataset1'
     assert dataset.megacomplex == ["cmplx1"]
     assert dataset.initial_concentration == "inputD1"
@@ -110,11 +111,12 @@ def test_irf(model):
         want = [2] if i == 1 else [3, 4]
         assert irf.width == want
         want = [3] if i == 1 else [5, 6]
-        assert irf.center_dispersion == want
-        want = [4] if i == 1 else [7, 8]
-        assert irf.width_dispersion == want
-        want = None if i == 1 else [9]
-        assert irf.scale == want
+        if i == 2:
+            assert irf.center_dispersion == want
+            want = [7, 8]
+            assert irf.width_dispersion == want
+            want = [9]
+            assert irf.scale == want
         assert not irf.normalize
 
         if i == 2:
@@ -156,7 +158,7 @@ def test_megacomplexes(model):
         label = "cmplx{}".format(i)
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
-        assert isinstance(megacomplex, KineticMegacomplex)
+        assert isinstance(megacomplex, KineticImageMegacomplex)
         assert megacomplex.label == label
         assert megacomplex.k_matrix == ["km{}".format(i)]
         i = i + 1
