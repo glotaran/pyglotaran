@@ -150,7 +150,6 @@ import ctypes # noqa
 
 _PTR = ctypes.POINTER
 _dble = ctypes.c_double
-_ptr_dble = _PTR(_dble)
 
 functype = ctypes.CFUNCTYPE(_dble, _dble)
 
