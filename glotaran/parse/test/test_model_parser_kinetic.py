@@ -6,9 +6,11 @@ from glotaran.models.kinetic_image.initial_concentration import InitialConcentra
 from glotaran.models.kinetic_image.irf import IrfGaussian
 from glotaran.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
 
-from glotaran.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
+from glotaran.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor \
+    import KineticSpectrumDatasetDescriptor
 from glotaran.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
-from glotaran.models.kinetic_spectrum.spectral_constraints import ZeroConstraint, EqualAreaConstraint
+from glotaran.models.kinetic_spectrum.spectral_constraints \
+    import ZeroConstraint, EqualAreaConstraint
 from glotaran.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
 
 from os.path import join, dirname, abspath

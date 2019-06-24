@@ -6,7 +6,7 @@ from scipy import fftpack
 import glotaran
 from glotaran.parameter import ParameterGroup
 from glotaran.models.kinetic_spectrum.kinetic_spectrum_result import \
-    finalize_kinetic_spectrum_result 
+    finalize_kinetic_spectrum_result
 
 
 def finalize_doas_data(
