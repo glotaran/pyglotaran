@@ -7,7 +7,6 @@ from setuptools.extension import Extension
 setup_requires = [
     'numpy>=1.16.2',
     'scipy>=1.2.0',
-    'Cython>=0.28.5',
     'setuptools>=40.2.0'
 ]
 install_requires = [
@@ -62,18 +61,6 @@ try:
     import numpy
     import scipy
 
-    ext_modules = [
-        Extension("kinetic_matrix_no_irf",
-                  ["glotaran/models/spectral_temporal/kinetic_matrix_no_irf.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/spectral_temporal"]),
-        Extension("kinetic_matrix_gaussian_irf",
-                  ["glotaran/models/spectral_temporal/erfce.c",
-                   "glotaran/models/spectral_temporal/kinetic_matrix_gaussian_irf.pyx"],
-                  include_dirs=[numpy.get_include(), scipy.get_include(),
-                                "glotaran/models/spectral_temporal"]),
-        ]
-
 except ImportError:
     raise ImportError(f"To install glotaran you need to have following packages installed:\n"
                       f"{setup_requires[0]}\n"
@@ -122,7 +109,6 @@ setup(
     setup_requires=setup_requires,
     install_requires=setup_requires+install_requires,
     entry_points=entry_points,
-    ext_modules=ext_modules,
     test_suite='glotaran',
     tests_require=['pytest'],
     zip_safe=False
