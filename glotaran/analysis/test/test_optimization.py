@@ -126,7 +126,7 @@ class TwoCompartmentDecay:
 
 class MultichannelMulticomponentDecay:
     wanted = ParameterGroup.from_dict({
-        'k': [.0066, 0.0033, 0.00035, 0.033],
+        'k': [.006, 0.003, 0.0003, 0.03],
         'loc': [
             ['1', 14705],
             ['2', 13513],

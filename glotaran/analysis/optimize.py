@@ -69,6 +69,7 @@ def create_problem(scheme, client, parameter_client):
     residual_function = residual_nnls if scheme.nnls else residual_variable_projection
     if scheme.model.grouped():
         bag, groups = problem_bag.create_grouped_bag(scheme)
+        bag = bag.persist()
 
         if scheme.model.index_dependend():
             clp_label, matrix_jobs, constraint_matrix_jobs = \
