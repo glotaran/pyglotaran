@@ -148,7 +148,6 @@ def calculate_kinetic_matrix_gaussian_irf(
 from numba.extending import get_cython_function_address # noqa
 import ctypes # noqa
 
-_PTR = ctypes.POINTER
 _dble = ctypes.c_double
 
 functype = ctypes.CFUNCTYPE(_dble, _dble)

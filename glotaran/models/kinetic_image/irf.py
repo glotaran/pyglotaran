@@ -50,10 +50,10 @@ class IrfGaussian:
     def parameter(self, index):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
-        centers = [c.value for c in centers]
+        centers = np.asarray([c.value for c in centers])
 
         widths = self.width if isinstance(self.width, list) else [self.width]
-        widths = [w.value for w in widths]
+        widths = np.asarray([w.value for w in widths])
 
         len_centers = len(centers)
         len_widths = len(widths)
@@ -68,8 +68,9 @@ class IrfGaussian:
                 widths = [widths[0] for _ in range(len_centers)]
                 len_widths = len_centers
 
-        scale = self.scale if self.scale is not None else [1 for _ in centers]
+        scale = self.scale if self.scale is not None else [1.0 for _ in centers]
         scale = scale if isinstance(scale, list) else [scale]
+        scale = np.asarray(scale)
 
         backsweep = self.backsweep
 
