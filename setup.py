@@ -14,7 +14,6 @@ install_requires = [
     'dask>=1.2',
     'distributed>=1.28',
     'lmfit>=0.9.12',
-    'natsort>=5.3.3',  # dependency introduced by glotaran.dataio.chlorospec_format
     'netCDF4>=1.4.2',
     'numba>=0.44',
     'pandas>=0.23.4',
@@ -79,9 +78,12 @@ entry_points = """
     glotaran=glotaran.cli.main:glotaran
 
     [glotaran.plugins]
-    kinetic_image_model = glotaran.plugins.builtin.models.kinetic_image
-    kinetic_spectrum_model = glotaran.plugins.builtin.models.kinetic_spectrum
-    doas_model = glotaran.plugins.builtin.models.doas
+    kinetic_image_model = glotaran.builtin.models.kinetic_image
+    kinetic_spectrum_model = glotaran.builtin.models.kinetic_spectrum
+    doas_model = glotaran.builtin.models.doas
+
+    ascii_file = glotaran.builtin.file_formats.ascii
+    sdt_file = glotaran.builtin.file_formats.sdt
 """
 
 setup(

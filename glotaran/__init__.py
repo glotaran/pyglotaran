@@ -18,6 +18,5 @@ read_model_from_yml_file = parser.load_yml_file
 
 import pkg_resources  # noqa: E402
 
-print('load plgs')
 for entry_point in pkg_resources.iter_entry_points('glotaran.plugins'):
     entry_point.load()

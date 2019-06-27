@@ -78,15 +78,7 @@ class Scheme:
                 fmt = scheme['data_format']
 
             try:
-                if fmt == 'ascii':
-                    data[label] = glotaran.io.read_ascii_time_trace(path)
-                elif fmt == 'nc':
-                    data[label] = xr.open_dataset(path)
-                elif fmt == 'sdt':
-                    data[label] = glotaran.io.read_sdt_data(fmt)
-                else:
-                    raise Exception(
-                        f"Unknown dataset format '{fmt}', known formats are [ascii, nc, sdt]")
+                data[label] = glotaran.io.read_data_file(path, fmt=fmt)
             except Exception as e:
                 raise Exception(f"Error loading dataset '{label}': {e}")
 

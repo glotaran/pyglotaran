@@ -1,13 +1,7 @@
 import pathlib
 import xarray as xr
 
-from .wavelength_time_explicit_file import read_ascii_time_trace
-from .sdt_file_reader import read_sdt
-
-known_formats = {
-    'nc': xr.open_dataset,
-    'ascii': read_ascii_time_trace,
-    'sdt': read_sdt,
+known_reading_formats = {
 }
 
 
@@ -17,8 +11,29 @@ def read_data_file(filename: str, fmt: str = None) -> xr.Dataset:
     if fmt is None:
         fmt = path.suffix[1:] if path.suffix != '' else 'nc'
 
-    if fmt not in known_formats:
+    if fmt not in known_reading_formats:
         raise Exception(
-            f"Unknown filne format '{fmt}'. Supported formats are [{known_formats.keys()}]")
+            f"Unknown file format '{fmt}'."
+            f"Supported formats are {list(known_reading_formats.keys())}")
 
-    return known_formats[fmt](filename)
+    return known_reading_formats[fmt].read(filename)
+
+
+class Reader:
+
+    def __init__(self, extension, name, reader):
+        self.extension = extension
+        self.name = name if name else f" '.{extension}' format"
+        self.read = reader
+
+
+def file_reader(extension: str = None, name: str = None):
+
+    def decorator(reader):
+        known_reading_formats[extension] = Reader(extension, name, reader)
+        return reader
+
+    return decorator
+
+
+file_reader(extension='nc', name='netCDF4')(xr.open_dataset)

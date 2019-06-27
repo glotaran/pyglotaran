@@ -1,5 +1,5 @@
 """A register for models"""
-
+import typing
 
 from glotaran.model.model import Model
 
@@ -39,3 +39,7 @@ def get_model(model_type: str) -> Model:
         model_type is type of the model.
     """
     return _model_register[model_type]
+
+
+def known_model_names() -> typing.List[str]:
+    return [name for name in _model_register]

@@ -6,6 +6,7 @@ import glotaran as gta
 from .commands.print import print_cmd
 from .commands.validate import validate_cmd
 from .commands.optimize import optimize_cmd
+from .commands.pluginlist import plugin_list_cmd
 
 
 class Cli(click.Group):
@@ -44,17 +45,17 @@ class Cli(click.Group):
 @click.version_option(version=gta.__version__)
 def glotaran():
     pass
-#  glotaran.command(name='export',
-#  short_help="Exports data from netCDF4 to ASCII.", help_priority=4)
 
 
 glotaran.add_command(glotaran.command(
-    name='validate', short_help='Validates a model file.', help_priority=2)(validate_cmd))
+    name='pluginlist',
+    short_help='Prints a list of installed plugins.', help_priority=4)(plugin_list_cmd))
 glotaran.add_command(glotaran.command(
     name='print', short_help="Prints a model as markdown.", help_priority=3)(print_cmd))
 glotaran.add_command(glotaran.command(
+    name='validate', short_help='Validates a model file.', help_priority=2)(validate_cmd))
+glotaran.add_command(glotaran.command(
     name='optimize', short_help="Optimizes a model.", help_priority=1)(optimize_cmd))
-#  glotaran.add_command(export)
 
 
 if __name__ == '__main__':

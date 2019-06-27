@@ -7,8 +7,8 @@ import glotaran as gta
 from . import util
 
 
-@click.option('--datatype', '-dtype', default=None,
-              type=click.Choice(gta.io.reader.known_formats.keys()),
+@click.option('--dataformat', '-dfmt', default=None,
+              type=click.Choice(gta.io.reader.known_reading_formats.keys()),
               help='The input format of the data. Will be infered from extension if not set.')
 @click.option('--data', '-d', multiple=True,
               type=(str, click.Path(exists=True, dir_okay=False)),
@@ -22,8 +22,8 @@ from . import util
 @click.option('--yes', '-y', is_flag=True,
               help="Don't ask for confirmation.")
 @util.signature_analysis
-def optimize_cmd(datatype: str, data: typing.List[str], out: str, nfev: int, nnls: bool, yes: bool,
-                 parameter: str, model: str, scheme: str):
+def optimize_cmd(dataformat: str, data: typing.List[str], out: str, nfev: int, nnls: bool,
+                 yes: bool, parameter: str, model: str, scheme: str):
     """Optimizes a model.
     e.g.:
     glotaran optimize --
@@ -54,7 +54,7 @@ def optimize_cmd(datatype: str, data: typing.List[str], out: str, nfev: int, nnl
                 click.echo(f"Missing dataset for '{label}'", err=True)
                 sys.exit(1)
             path = dataset_files[label]
-            datasets[label] = util.load_dataset_file(path, fmt=datatype, verbose=True)
+            datasets[label] = util.load_dataset_file(path, fmt=dataformat, verbose=True)
 
         scheme = gta.analysis.scheme.Scheme(model=model, parameter=parameter, data=datasets,
                                             nnls=nnls, nfev=nfev)

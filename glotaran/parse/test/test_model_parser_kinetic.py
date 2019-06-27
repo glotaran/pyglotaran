@@ -2,16 +2,20 @@ import pytest
 
 from glotaran.parse.parser import load_yml_file
 
-from glotaran.models.kinetic_image.initial_concentration import InitialConcentration
-from glotaran.models.kinetic_image.irf import IrfGaussian
-from glotaran.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.builtin.models.kinetic_image.initial_concentration \
+        import InitialConcentration
+from glotaran.builtin.models.kinetic_image.irf import IrfGaussian
+from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex \
+        import KineticImageMegacomplex
 
-from glotaran.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor \
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor \
     import KineticSpectrumDatasetDescriptor
-from glotaran.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
-from glotaran.models.kinetic_spectrum.spectral_constraints \
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model \
+        import KineticSpectrumModel
+from glotaran.builtin.models.kinetic_spectrum.spectral_constraints \
     import ZeroConstraint, EqualAreaConstraint
-from glotaran.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
+from glotaran.builtin.models.kinetic_spectrum.spectral_shape \
+        import SpectralShapeGaussian
 
 from os.path import join, dirname, abspath
 import numpy as np
@@ -26,6 +30,7 @@ def model():
 
 
 def test_correct_model(model):
+    assert type(model).__name__ == 'KineticSpectrumModel'
     assert isinstance(model, KineticSpectrumModel)
 
 

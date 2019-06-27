@@ -1,6 +1,6 @@
 import pytest
 from glotaran.parse.parser import load_yml_file
-from glotaran.models.doas import (DOASModel, DOASMegacomplex, Oscillation)
+from glotaran.builtin.models.doas import (DOASModel, DOASMegacomplex, Oscillation)
 
 # unused import
 # from glotaran.model import FixedConstraint, BoundConstraint
