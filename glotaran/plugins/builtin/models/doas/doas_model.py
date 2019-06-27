@@ -1,9 +1,9 @@
 """ Gloataran DOAS Model """
 
 from glotaran.model import model
-from glotaran.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import \
+from glotaran.plugins.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import \
     KineticSpectrumDatasetDescriptor
-from glotaran.models.kinetic_spectrum.kinetic_spectrum_model import (
+from glotaran.plugins.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
     KineticSpectrumModel,
     apply_kinetic_model_constraints,
     spectral_constraint_penalty,

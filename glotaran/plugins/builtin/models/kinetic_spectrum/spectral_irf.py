@@ -2,7 +2,7 @@ import typing
 import numpy as np
 
 from glotaran.model import model_attribute
-from glotaran.models.kinetic_image.irf import Irf, IrfGaussian
+from glotaran.plugins.builtin.models.kinetic_image.irf import Irf, IrfGaussian
 from glotaran.parameter import Parameter
 
 

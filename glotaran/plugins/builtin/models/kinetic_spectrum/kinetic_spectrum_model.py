@@ -2,8 +2,9 @@ import typing
 import numpy as np
 
 from glotaran.model import model
-from glotaran.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
-from glotaran.models.kinetic_image.kinetic_image_model import KineticImageModel
+from glotaran.plugins.builtin.models.kinetic_image.kinetic_image_megacomplex \
+    import KineticImageMegacomplex
+from glotaran.plugins.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 from glotaran.parameter import ParameterGroup
 
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor

@@ -77,6 +77,11 @@ with open("README.md", "r") as fh:
 entry_points = """
     [console_scripts]
     glotaran=glotaran.cli.main:glotaran
+
+    [glotaran.plugins]
+    kinetic_image_model = glotaran.plugins.builtin.models.kinetic_image
+    kinetic_spectrum_model = glotaran.plugins.builtin.models.kinetic_spectrum
+    doas_model = glotaran.plugins.builtin.models.doas
 """
 
 setup(

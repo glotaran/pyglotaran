@@ -4,8 +4,9 @@ import numba as nb
 import numpy as np
 from scipy.special import erf
 
-from glotaran.models.kinetic_spectrum.kinetic_spectrum_matrix import kinetic_spectrum_matrix
-from glotaran.models.kinetic_image.irf import IrfGaussian
+from glotaran.plugins.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix \
+    import kinetic_spectrum_matrix
+from glotaran.plugins.builtin.models.kinetic_image.irf import IrfGaussian
 
 
 def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):

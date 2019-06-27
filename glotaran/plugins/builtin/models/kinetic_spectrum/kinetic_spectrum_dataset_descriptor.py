@@ -1,7 +1,7 @@
 import typing
 
 from glotaran.model import model_attribute
-from glotaran.models.kinetic_image.kinetic_image_dataset_descriptor \
+from glotaran.plugins.builtin.models.kinetic_image.kinetic_image_dataset_descriptor \
     import KineticImageDatasetDescriptor
 
 

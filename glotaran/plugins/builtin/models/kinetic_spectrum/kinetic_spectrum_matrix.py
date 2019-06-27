@@ -1,6 +1,7 @@
 import numpy as np
 
-from glotaran.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
+from glotaran.plugins.builtin.models.kinetic_image.kinetic_image_matrix \
+    import kinetic_image_matrix
 
 from .spectral_irf import IrfSpectralGaussian
 

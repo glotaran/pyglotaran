@@ -10,17 +10,14 @@ read_parameter_from_csv_file = ParameterGroup.from_csv
 read_parameter_from_yml = ParameterGroup.from_yaml
 read_parameter_from_yml_file = ParameterGroup.from_yaml_file
 
-from .models import doas  # noqa: E402
-DOASModel = doas.DOASModel
-
-from .models import kinetic_image  # noqa: E402
-KineticImageModel = kinetic_image.KineticImageModel
-
-from .models import kinetic_spectrum  # noqa: E402
-KineticSpectrumModel = kinetic_spectrum.KineticSpectrumModel
-
 
 from .parse import parser  # noqa: E402
 
 read_model_from_yml = parser.load_yml
 read_model_from_yml_file = parser.load_yml_file
+
+import pkg_resources  # noqa: E402
+
+print('load plgs')
+for entry_point in pkg_resources.iter_entry_points('glotaran.plugins'):
+    entry_point.load()

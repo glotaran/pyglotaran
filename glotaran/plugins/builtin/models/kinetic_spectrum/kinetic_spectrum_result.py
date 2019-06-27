@@ -4,8 +4,8 @@ import xarray as xr
 
 import glotaran
 from glotaran.parameter import ParameterGroup
-from glotaran.models.kinetic_image.irf import IrfGaussian
-from glotaran.models.kinetic_image.kinetic_image_result import \
+from glotaran.plugins.builtin.models.kinetic_image.irf import IrfGaussian
+from glotaran.plugins.builtin.models.kinetic_image.kinetic_image_result import \
         retrieve_species_assocatiated_data, retrieve_decay_assocatiated_data
 
 from .spectral_irf import IrfSpectralGaussian
