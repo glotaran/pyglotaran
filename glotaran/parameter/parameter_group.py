@@ -173,7 +173,7 @@ class ParameterGroup(dict):
         yaml_string :
             The YAML string with the parameters.
         """
-        items = yaml.load(yaml_string)
+        items = yaml.load(yaml_string, Loader=yaml.FullLoader)
         if isinstance(items, list):
             cls = cls.from_list(items)
         else:

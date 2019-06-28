@@ -42,7 +42,7 @@ class Scheme:
         try:
             with open(filename) as f:
                 try:
-                    scheme = yaml.load(f)
+                    scheme = yaml.load(f, Loader=yaml.FullLoader)
                 except Exception as e:
                     raise Exception(f"Error parsing scheme: {e}")
         except Exception as e:
