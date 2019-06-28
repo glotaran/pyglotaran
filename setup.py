@@ -2,23 +2,20 @@ import os
 import shutil
 
 from setuptools import setup, find_packages, Command
-from setuptools.extension import Extension
 
-setup_requires = [
-    'numpy>=1.16.2',
-    'scipy>=1.2.0',
-    'setuptools>=40.2.0'
-]
 install_requires = [
     'click>=7.0',
-    'dask>=1.2',
-    'distributed>=1.28',
-    'lmfit>=0.9.12',
-    'netCDF4>=1.4.2',
+    'dask>=2.0',
+    'distributed>=2.0',
+    'lmfit>=0.9.13',
+    'netCDF4>=1.5',
     'numba>=0.44',
-    'pandas>=0.23.4',
-    'pyyaml>=3.0,<=5.0',
-    'xarray>=0.12.1',
+    'numpy>=1.16',
+    'pandas>=0.24',
+    'pyyaml>=5.1',
+    'scipy>=1.3',
+    'setuptools>=41.0',
+    'xarray>=0.12',
 ]
 
 
@@ -54,20 +51,6 @@ class CleanCommand(Command):
                 shutil.rmtree(clean_path)
             except Exception:
                 pass
-
-
-try:
-    import numpy
-    import scipy
-
-except ImportError:
-    raise ImportError(f"To install glotaran you need to have following packages installed:\n"
-                      f"{setup_requires[0]}\n"
-                      f"{setup_requires[1]}\n"
-                      f"{setup_requires[2]}\n"
-                      f"You can install them by running:\n"
-                      f"`pip install '{setup_requires[0]}' '{setup_requires[1]}' "
-                      f"'{setup_requires[2]}'`")
 
 
 with open("README.md", "r") as fh:
@@ -113,10 +96,9 @@ setup(
     license='GPLv3',
     python_requires=">=3.6",
     packages=find_packages(),
-    setup_requires=setup_requires,
-    install_requires=setup_requires+install_requires,
+    install_requires=install_requires,
     entry_points=entry_points,
     test_suite='glotaran',
     tests_require=['pytest'],
-    zip_safe=False
+    zip_safe=True
 )

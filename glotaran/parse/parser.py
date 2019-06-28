@@ -31,9 +31,9 @@ def _yml_tuple_constructor(loader, node):
 
 
 # !tuple is my own tag name, I think you could choose anything you want
-yaml.add_constructor(u'!tuple', _yml_tuple_constructor)
+yaml.FullLoader.add_constructor(u'!tuple', _yml_tuple_constructor)
 # this is to spot the strings written as tuple in the yaml
-yaml.add_implicit_resolver(u'!tuple', re.compile(r"\((.*?,.*?)\)"))
+yaml.FullLoader.add_implicit_resolver(u'!tuple', re.compile(r"\((.*?,.*?)\)"), None)
 
 
 def parse_yml_file(fname: str) -> Dict:
@@ -58,7 +58,7 @@ def parse_yml_file(fname: str) -> Dict:
 
 def parse_yml(data: str):
     try:
-        return yaml.load(data)
+        return yaml.load(data, Loader=yaml.FullLoader)
     except Exception as e:
         raise e
 
