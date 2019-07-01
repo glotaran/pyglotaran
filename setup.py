@@ -19,40 +19,6 @@ install_requires = [
 ]
 
 
-class CleanCommand(Command):
-    """Custom clean command to tidy up the project root."""
-    user_options = [("all", "a", "")]
-
-    def initialize_options(self):
-        self.all = True
-        self._clean_tree = [
-            os.path.abspath("./build"),
-            os.path.abspath("./dist"),
-        ]
-        for root, dirs, filenames in os.walk(os.path.abspath(".")):
-            for dir in dirs:
-                if dir.endswith(("__pycache__", ".egg-info", ".pytest_cache")) and \
-                        ".tox" not in root:
-
-                    self._clean_tree.append(os.path.join(root, dir))
-
-            for filename in filenames:
-                if filename.endswith((".pyc", ".pyd", ".tgz", ".egg-info")) and \
-                        ".tox" not in root and root not in self._clean_tree:
-
-                    self._clean_tree.append(os.path.join(root, filename))
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        for clean_path in self._clean_tree:
-            try:
-                shutil.rmtree(clean_path)
-            except Exception:
-                pass
-
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
