@@ -75,7 +75,7 @@ in your working directory and fill it with the following:
 
 .. code-block:: yaml
 
-   type: kinetic
+   type: kinetic-spectrum
 
    initial_concentration:
      input:
@@ -116,7 +116,7 @@ Now you can load the model file.
 
    @suppress
    In [1]: model_spec = """
-      ...: type: kinetic
+      ...: type: kinetic-spectrum
       ...:
       ...: initial_concentration:
       ...:   input:

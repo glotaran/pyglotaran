@@ -1,7 +1,7 @@
 import numpy as np
 import glotaran as gta
 
-sim_model = gta.KineticModel.from_dict({
+sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict({
     'initial_concentration': {
         'j1': {
             'compartments': ['s1', 's2', 's3'],
@@ -96,7 +96,7 @@ dataset = sim_model.simulate('dataset1', wanted_parameter,
                              {'time': _time, 'spectral': _spectral},
                              noise=True, noise_std_dev=1e-2)
 
-model = gta.KineticModel.from_dict({
+model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict({
     'initial_concentration': {
         'j1': {
                 'compartments': ['s1', 's2', 's3'],
