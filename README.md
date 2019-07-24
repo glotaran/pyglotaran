@@ -17,14 +17,27 @@ The algorithms provided by this package still need to be validated and reviewed,
 
 # Installation
 
+
 ## From Source
+
+Prerequisites:
+
+* Python 3.6 or higher *(Python 2 is __not__ supported)*
+* On Windows only 64bit is supported
+
+Note for Windows Users: The easiest way to get python for Windows is via [Anaconda](https://www.anaconda.com/)
 
 ```
 $ git clone https://github.com/glotaran/pyglotaran.git
 $ cd pyglotaran
+
+$ pip install .
+# To enforce python3 on systems where python2 is also installed
 $ pip3 install .
 
 ```
+
+*Note for Anaconda Users: Please make sure to update your distribution prior to install since some packages managed by Anaconda cannot be updated by `pip`.*
 
 # Mailinglist
 
