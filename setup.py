@@ -6,6 +6,7 @@ from setuptools import setup, find_packages, Command
 install_requires = [
     'click>=7.0',
     'dask>=2.0',
+    'dask[bag]>=2.0',
     'distributed>=2.0',
     'lmfit>=0.9.13',
     'netCDF4>=1.5',
