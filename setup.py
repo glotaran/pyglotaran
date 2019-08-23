@@ -1,18 +1,17 @@
-import os
-import shutil
-
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages
 
 install_requires = [
     'click>=7.0',
     'dask>=2.0',
     'dask[bag]>=2.0',
     'distributed>=2.0',
+    'fsspec>=0.4.1',
     'lmfit>=0.9.13',
     'netCDF4>=1.5',
     'numba>=0.44',
     'numpy>=1.16',
     'pandas>=0.24',
+    'partd>=0.3.10',  # Needed by dask
     'pyyaml>=5.1',
     'scipy>=1.3',
     'setuptools>=41.0',
