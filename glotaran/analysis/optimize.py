@@ -6,11 +6,16 @@ import lmfit
 
 from glotaran.parameter import ParameterGroup
 
-from . import problem_bag, matrix_calculation, residual_calculation
+from . import problem_bag, residual_calculation
 from .result import Result
-from .parameter_server import ParameterClient
 from .nnls import residual_nnls
 from .variable_projection import residual_variable_projection
+from .matrix_calculation import (
+    calculate_index_independend_ungrouped_matrices,
+    calculate_index_independend_grouped_matrices,
+    create_index_dependend_ungrouped_matrix_jobs,
+    create_index_dependend_grouped_matrix_jobs
+)
 
 ResultFuture = \
     collections.namedtuple('ResultFuture', 'bag clp_label matrix full_clp_label clp residual')
@@ -31,99 +36,138 @@ def optimize(scheme, verbose=True, client=None):
 
 def optimize_task(initial_parameter, scheme, verbose):
 
-    client = dd.get_client()
-    with ParameterClient(client) as parameter_client:
-        penalty, result = create_problem(scheme, client, parameter_client)
+    problem_bag, groups = _create_problem_bag(scheme)
 
-        minimizer = lmfit.Minimizer(
-            calculate_penalty,
-            initial_parameter,
-            fcn_args=[parameter_client, penalty],
-            fcn_kws=None,
-            iter_cb=None,
-            scale_covar=True,
-            nan_policy='omit',
-            reduce_fcn=None,
-            **{})
-        verbose = 2 if verbose else 0
-        lm_result = minimizer.minimize(
-            method='least_squares', verbose=verbose, max_nfev=scheme.nfev)
-        parameter_client.update(lm_result.params)
-        parameter = parameter_client.get().result()
-        parameter = ParameterGroup.from_parameter_dict(parameter)
-        datasets = _create_result_data(parameter, scheme, result)
-        covar = lm_result.covar if hasattr(lm_result, 'covar') else None
+    minimizer = lmfit.Minimizer(
+        calculate_penalty,
+        initial_parameter,
+        fcn_args=[scheme, problem_bag, groups],
+        fcn_kws=None,
+        iter_cb=None,
+        scale_covar=True,
+        nan_policy='omit',
+        reduce_fcn=None,
+        **{})
+    verbose = 2 if verbose else 0
+    lm_result = minimizer.minimize(
+        method='least_squares', verbose=verbose, max_nfev=scheme.nfev)
+
+    parameter = ParameterGroup.from_parameter_dict(lm_result.params)
+    datasets = _create_result(scheme, parameter)
+    covar = lm_result.covar if hasattr(lm_result, 'covar') else None
 
     return Result(scheme, datasets, parameter,
                   lm_result.nfev, lm_result.nvarys, lm_result.ndata, lm_result.nfree,
                   lm_result.chisqr, lm_result.redchi, lm_result.var_names, covar)
 
 
-def calculate_penalty(parameter, parameter_client, penalty_job):
-    parameter_client.update(parameter).result()
-    penalty = penalty_job.compute()
+def calculate_penalty(parameter, scheme, bag, groups):
+    parameter = ParameterGroup.from_parameter_dict(parameter)
+    residual_function = residual_nnls if scheme.nnls else residual_variable_projection
+    if scheme.model.grouped():
+        if scheme.model.index_dependend():
+            _, _, constraint_labels_and_matrices = \
+                create_index_dependend_grouped_matrix_jobs(
+                    scheme, bag, parameter
+                )
+            _, _, _, penalty = \
+                residual_calculation.create_index_dependend_grouped_residual(
+                    scheme, bag, constraint_labels_and_matrices, residual_function
+                )
+        else:
+
+            _, _, constraint_labels_and_matrices = \
+                calculate_index_independend_grouped_matrices(scheme, groups, parameter)
+
+            _, _, _, penalty = \
+                residual_calculation.create_index_independend_grouped_residual(
+                    scheme, bag, constraint_labels_and_matrices, residual_function
+                )
+    else:
+        if scheme.model.index_dependend():
+            _, _, constraint_labels_and_matrices = \
+                create_index_dependend_ungrouped_matrix_jobs(
+                    scheme, bag, parameter
+                )
+            _, _, _, penalty = \
+                residual_calculation.create_index_dependend_ungrouped_residual(
+                    scheme, bag, constraint_labels_and_matrices, residual_function
+                )
+        else:
+
+            _, _, constraint_labels_and_matrices = \
+                calculate_index_independend_ungrouped_matrices(scheme, parameter)
+
+            _, _, _, penalty = \
+                residual_calculation.create_index_independend_ungrouped_residual(
+                    scheme, bag, constraint_labels_and_matrices, residual_function
+                )
+    penalty = penalty.compute()
     return penalty
 
 
-def create_problem(scheme, client, parameter_client):
-    residual_function = residual_nnls if scheme.nnls else residual_variable_projection
+def _create_problem_bag(scheme):
+    groups = None
     if scheme.model.grouped():
         bag, groups = problem_bag.create_grouped_bag(scheme)
         bag = bag.persist()
+    else:
+        bag = problem_bag.create_ungrouped_bag(scheme)
+    return bag, groups
 
-        if scheme.model.index_dependend():
-            clp_label, matrix_jobs, constraint_matrix_jobs = \
-                matrix_calculation.create_index_dependend_grouped_matrix_jobs(
-                    scheme, bag, parameter_client
+
+def _create_result(scheme, parameter):
+
+    residual_function = residual_nnls if scheme.nnls else residual_variable_projection
+    model = scheme.model
+    datasets = scheme.data
+
+    if model.grouped():
+        bag, groups = problem_bag.create_grouped_bag(scheme)
+
+        if model.index_dependend():
+            clp_labels, matrices, constraint_labels_and_matrices = \
+                create_index_dependend_grouped_matrix_jobs(
+                    scheme, bag, parameter
                 )
-            reduced_clp_label, clp, residuals, full_residual = \
+            reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_dependend_grouped_residual(
-                    scheme, bag, constraint_matrix_jobs, residual_function
+                    scheme, bag, constraint_labels_and_matrices, residual_function
                 )
         else:
-            clp_label, matrix_jobs, constraint_matrix_jobs = \
-                matrix_calculation.create_index_independend_grouped_matrix_jobs(
-                    scheme, groups, parameter_client
+            clp_labels, matrices, constraint_labels_and_matrices = \
+                calculate_index_independend_grouped_matrices(
+                    scheme, groups, parameter
                 )
-            reduced_clp_label, clp, residuals, full_residual = \
+            reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_independend_grouped_residual(
-                    scheme, bag, constraint_matrix_jobs, residual_function
+                    scheme, bag, constraint_labels_and_matrices, residual_function
                 )
     else:
         bag = problem_bag.create_ungrouped_bag(scheme)
 
-        if scheme.model.index_dependend():
-            clp_label, matrix_jobs, constraint_matrix_jobs = \
-                matrix_calculation.create_index_dependend_ungrouped_matrix_jobs(
-                    scheme, bag, parameter_client
+        if model.index_dependend():
+            clp_labels, matrices, constraint_labels_and_matrices = \
+                create_index_dependend_ungrouped_matrix_jobs(
+                    scheme, bag, parameter
                 )
-            reduced_clp_label, clp, residuals, full_residual = \
+            reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_dependend_ungrouped_residual(
-                    scheme, bag, constraint_matrix_jobs, residual_function
+                    scheme, bag, constraint_labels_and_matrices, residual_function
                 )
         else:
-            clp_label, matrix_jobs, constraint_matrix_jobs = \
-                matrix_calculation.create_index_independend_ungrouped_matrix_jobs(
-                    scheme, parameter_client
+            clp_labels, matrices, constraint_labels_and_matrices = \
+                calculate_index_independend_ungrouped_matrices(
+                    scheme, parameter
                 )
-            reduced_clp_label, clp, residuals, full_residual = \
+            reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_independend_ungrouped_residual(
-                    scheme, bag, constraint_matrix_jobs, residual_function
+                    scheme, bag, constraint_labels_and_matrices, residual_function
                 )
 
-    result = ResultFuture(bag, clp_label, matrix_jobs, reduced_clp_label, clp, residuals)
-
-    return full_residual, result
-
-
-def _create_result_data(parameter, scheme, result):
-    bag, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals = result
-    model = scheme.model
-    datasets = scheme.data
     indices = None
 
     if model.grouped():
-        groups = bag.map(lambda group: [d.dataset for d in group.descriptor])
         indices = bag.map(lambda group: [d.index for d in group.descriptor])
         if model.index_dependend():
             groups, indices, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals = \
@@ -136,12 +180,14 @@ def _create_result_data(parameter, scheme, result):
     for label, dataset in datasets.items():
         if model.grouped():
             if model.index_dependend():
+                groups = bag.map(lambda group: [d.dataset for d in group.descriptor]).compute()
                 for i, group in enumerate(groups):
                     if label in group:
                         group_index = group.index(label)
                         if 'matrix' not in dataset:
                             # we assume that the labels are the same, this might not be true in
                             # future models
+                            print(clp_labels)
                             dataset.coords['clp_label'] = clp_labels[i][group_index]
 
                             dim1 = dataset.coords[model.global_dimension].size
@@ -161,7 +207,6 @@ def _create_result_data(parameter, scheme, result):
                 )
                 dataset.coords['clp_label'] = clp_label
                 dataset['matrix'] = (((model.matrix_dimension), ('clp_label')), matrix)
-
             dim1 = dataset.coords[model.global_dimension].size
             dim2 = dataset.coords['clp_label'].size
             dataset['clp'] = ((model.global_dimension, 'clp_label'),

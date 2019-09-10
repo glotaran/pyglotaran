@@ -4,18 +4,18 @@ import numpy as np
 
 
 def create_index_independend_ungrouped_residual(
-        scheme, problem_bag, matrix_jobs, residual_function):
+        scheme, problem_bag, constraint_labels_and_matrices, residual_function):
 
     global_dimension = scheme.model.global_dimension
-    clp_label = {}
+    clp_labels = {}
     clps = {}
     residuals = {}
     full_residuals = []
     for label in problem_bag:
         data = problem_bag[label].data
         size = problem_bag[label].global_axis.size
-        clp_label[label] = matrix_jobs[label][0]
-        matrix = matrix_jobs[label][1]
+        clp_labels[label] = constraint_labels_and_matrices[label].clp_label
+        matrix = constraint_labels_and_matrices[label].matrix
 
         clps[label] = []
         residuals[label] = []
@@ -27,8 +27,8 @@ def create_index_independend_ungrouped_residual(
             residuals[label].append(residual)
             full_residuals.append(residual)
 
-    full_residuals = dask.delayed(np.concatenate)(full_residuals)
-    return clp_label, clps, residuals, full_residuals
+    penalty = dask.delayed(np.concatenate)(full_residuals)
+    return clp_labels, clps, residuals, penalty
 
 
 def create_index_dependend_ungrouped_residual(
@@ -60,22 +60,22 @@ def create_index_dependend_ungrouped_residual(
 
 
 def create_index_independend_grouped_residual(
-        scheme, problem_bag, matrix_jobs, residual_function):
+        scheme, problem_bag, constraint_labels_and_matrices, residual_function):
 
-    data_bag = problem_bag.pluck(0)
-
-    matrices = problem_bag.pluck(1)\
+    matrix_labels = problem_bag.pluck(1)\
         .map(lambda group: "".join(problem.dataset for problem in group))\
 
-    reduced_clp_label = matrices.map(lambda group: matrix_jobs[group][0]).compute()
+    reduced_clp_label = {label: constraint_labels_and_matrices[label].clp_label
+                         for label in constraint_labels_and_matrices}
 
-    def residual(matrix, data, jobs):
-        return residual_function(jobs[matrix][1], data)
+    def residual(matrix_label, problem, labels_and_matrices):
+        return residual_function(labels_and_matrices[matrix_label].matrix, problem.data)
 
-    residual_bag = db.map(residual, matrices, data_bag, matrix_jobs)
+    residual_bag = db.map(residual, matrix_labels, problem_bag, constraint_labels_and_matrices)
     clps = residual_bag.pluck(0)
+    residuals = residual_bag.pluck(1)
     full_residuals = dask.delayed(np.concatenate)(residual_bag.pluck(1))
-    return reduced_clp_label, clps, residual_bag.pluck(1), full_residuals
+    return reduced_clp_label, clps, residuals, full_residuals
 
 
 def create_index_dependend_grouped_residual(

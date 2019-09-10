@@ -2,103 +2,66 @@ import collections
 import dask
 import numpy as np
 
-from glotaran.parameter import ParameterGroup
 
 LabelAndMatrix = collections.namedtuple('LabelAndMatrix', 'clp_label matrix')
 LabelAndMatrixAndData = collections.namedtuple('LabelAndMatrixAndData', 'label_matrix data')
 
 
-def create_index_independend_ungrouped_matrix_jobs(scheme, parameter_client):
+def calculate_index_independend_ungrouped_matrices(scheme, parameter):
 
-    clp_label = {}
-    matrix_jobs = {}
-    constraint_matrix_jobs = {}
+    # for this we don't use dask
+
+    clp_labels = {}
+    matrices = {}
+    constraint_labels_and_matrices = {}
     model = scheme.model
 
-    parameter = _get_parameter(parameter_client)
-    for label, descriptor in scheme.model.dataset.items():
-        descriptor = dask.delayed(descriptor.fill)(model, parameter)
-        clp, matrix = dask.delayed(_calculate_matrix, nout=2)(
+    descriptors = {label: descriptor.fill(model, parameter)
+                   for label, descriptor in scheme.model.dataset.items()}
+
+    for label, descriptor in descriptors.items():
+        axis = scheme.data[label].coords[model.matrix_dimension].values
+        clp_label, matrix = _calculate_matrix(
             model.matrix,
             descriptor,
-            scheme.data[label].coords[model.matrix_dimension].values,
+            axis,
             {},
         )
-        clp_label[label] = clp
-        matrix_jobs[label] = matrix
+        clp_labels[label] = clp_label
+        matrices[label] = matrix
         if callable(model.constrain_matrix_function):
-            clp, matrix = model.constrain_matrix_function(parameter, clp, matrix, None)
-        constraint_matrix_jobs[label] = (clp, matrix)
-    return clp_label, matrix_jobs, constraint_matrix_jobs
+            clp_label, matrix = model.constrain_matrix_function(parameter, clp_label, matrix, None)
+        constraint_labels_and_matrices[label] = LabelAndMatrix(clp_label, matrix)
+    return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def create_index_independend_grouped_matrix_jobs(scheme, groups, parameter_client):
+def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
+
+    # We just need to create groups from the ungrouped matrices
+    clp_labels, matrices, constraint_labels_and_matrices = \
+        calculate_index_independend_ungrouped_matrices(scheme, parameter)
+    for label, group in groups.items():
+        if label not in matrices:
+            constraint_labels_and_matrices[label] = \
+                _combine_matrices([constraint_labels_and_matrices[l] for l in group])
+
+    return clp_labels, matrices, constraint_labels_and_matrices
+
+
+def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
 
     model = scheme.model
+    clp_labels = {}
+    matrices = {}
+    constraint_labels_and_matrices = {}
 
-    descriptors = {label: _fill_dataset_descriptor(model, descriptor, parameter_client)
-                   for label, descriptor in model.dataset.items()}
-    parameter_future = _get_parameter(parameter_client)
-
-    @dask.delayed
-    def calculate_matrices():
-        parameter = parameter_future.compute()
-        matrices = {}
-
-        ds = dask.compute(descriptors)[0]
-        for label, descriptor in model.dataset.items():
-            descriptor = descriptor.fill(model, parameter)
-            matrices[label] = _calculate_matrix(
-                model.matrix,
-                ds[label],
-                scheme.data[label].coords[model.matrix_dimension].values,
-                {},
-            )
-
-        for label, group in groups.items():
-            if label not in matrices:
-                matrices[label] = _combine_matrices(
-                            [matrices[d] for d in group]
-                        )
-        return matrices
-
-    @dask.delayed
-    def retrieve_clp(matrices):
-        return {label: matrices[label][0] for label in model.dataset}
-
-    @dask.delayed
-    def retrieve_matrices(matrices):
-        return {label: matrices[label][1] for label in model.dataset}
-
-    @dask.delayed
-    def constrain_matrices(matrices):
-        constraint = {}
-        if callable(model.constrain_matrix_function):
-            parameter = parameter_future.compute()
-            for label in matrices:
-                clp, matrix = matrices[label]
-                constraint[label] = model.constrain_matrix_function(parameter, clp, matrix, None)
-        else:
-            constraint = matrices
-        return constraint
-
-    matrices = calculate_matrices()
-    return retrieve_clp(matrices), retrieve_matrices(matrices), constrain_matrices(matrices)
-
-
-def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter_client):
-
-    model = scheme.model
-    clps = {}
-    matrix_jobs = {}
-    constraint_matrix_jobs = {}
-
-    parameter = _get_parameter(parameter_client)
+    descriptors = {label: descriptor.fill(model, parameter)
+                   for label, descriptor in scheme.model.dataset.items()}
     for label, problem in bag.items():
-        descriptor = dask.delayed(model.dataset[label].fill)(model, parameter)
-        clps[label] = []
-        matrix_jobs[label] = []
-        constraint_matrix_jobs[label] = []
+        descriptor = descriptors[label]
+        clp_labels[label] = []
+        matrices[label] = []
+        constraint_labels_and_matrices[label] = []
         for index in problem.global_axis:
             clp, matrix = dask.delayed(_calculate_matrix, nout=2)(
                 model.matrix,
@@ -107,29 +70,26 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter_client):
                 {},
                 index=index,
             )
-            clps[label].append(clp)
-            matrix_jobs[label].append(matrix)
+            clp_labels[label].append(clp)
+            matrices[label].append(matrix)
             if callable(model.constrain_matrix_function):
                 clp, matrix = model.constrain_matrix_function(parameter, clp, matrix, index)
-            constraint_matrix_jobs[label].append((clp, matrix))
+            constraint_labels_and_matrices[label].append((clp, matrix))
 
-    return clps, matrix_jobs, constraint_matrix_jobs
+    return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter_client):
+def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
 
     model = scheme.model
 
-    descriptors = {label: _fill_dataset_descriptor(model, descriptor, parameter_client)
-                   for label, descriptor in model.dataset.items()}
-
-    parameter = _get_parameter(parameter_client)
+    descriptors = {label: descriptor.fill(model, parameter)
+                   for label, descriptor in scheme.model.dataset.items()}
 
     def calculate_group(group):
-        ds = dask.compute(descriptors)[0]
         results = [_calculate_matrix(
             model.matrix,
-            ds[problem.dataset],
+            descriptors[problem.dataset],
             problem.axis,
             {},
             index=problem.index
@@ -156,24 +116,6 @@ def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter_client):
     return clp, matrices, constraint_matrix_jobs
 
 
-@dask.delayed
-def _get_parameter(parameter_client):
-    parameter = parameter_client.get().result()
-    parameter = ParameterGroup.from_parameter_dict(parameter)
-    return parameter
-
-
-@dask.delayed
-def _fill_dataset_descriptor(model, descriptor, parameter_client):
-    return _fill_dataset_descriptor_non_delayed(model, descriptor, parameter_client)
-
-
-def _fill_dataset_descriptor_non_delayed(model, descriptor, parameter_client):
-    parameter = parameter_client.get().result()
-    parameter = ParameterGroup.from_parameter_dict(parameter)
-    return descriptor.fill(model, parameter)
-
-
 def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=None):
     args = {
         'dataset_descriptor': dataset_descriptor,
@@ -189,30 +131,30 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
     return clp_label, matrix
 
 
-def _combine_matrices(label_and_matrices):
-    matrices = []
+def _combine_matrices(labels_and_matrices):
     masks = []
-    full_clp = None
-    for label_and_matrix in label_and_matrices:
-        (clp, matrix) = label_and_matrix
-        matrices.append(matrix)
-        if full_clp is None:
-            full_clp = clp
-            masks.append([i for i, _ in enumerate(clp)])
+    full_clp_labels = None
+    sizes = []
+    for label_and_matrix in labels_and_matrices:
+        (clp_label, matrix) = label_and_matrix
+        sizes.append(matrix.shape[0])
+        if full_clp_labels is None:
+            full_clp_labels = clp_label
+            masks.append([i for i, _ in enumerate(clp_label)])
         else:
             mask = []
-            for c in clp:
-                if c not in full_clp:
-                    full_clp.append(c)
-                mask.append(full_clp.index(c))
+            for c in clp_label:
+                if c not in full_clp_labels:
+                    full_clp_labels.append(c)
+                mask.append(full_clp_labels.index(c))
             masks.append(mask)
-    dim1 = np.sum([m.shape[0] for m in matrices])
-    dim2 = len(full_clp)
-    matrix = np.zeros((dim1, dim2), dtype=np.float64)
+    dim1 = np.sum(sizes)
+    dim2 = len(full_clp_labels)
+    full_matrix = np.zeros((dim1, dim2), dtype=np.float64)
     start = 0
-    for i, m in enumerate(matrices):
-        end = start + m.shape[0]
-        matrix[start:end, masks[i]] = m
+    for i, m in enumerate(labels_and_matrices):
+        end = start + sizes[i]
+        full_matrix[start:end, masks[i]] = m[1]
         start = end
 
-    return (full_clp, matrix)
+    return (full_clp_labels, full_matrix)
