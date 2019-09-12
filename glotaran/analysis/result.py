@@ -227,7 +227,7 @@ class Result:
         string += "Number of datapoints |".rjust(ll)
         string += f"{self.ndata} |".rjust(lr)
         string += "\n"
-        string += "Negrees of freedom |".rjust(ll)
+        string += "Degrees of freedom |".rjust(ll)
         string += f"{self.nfree} |".rjust(lr)
         string += "\n"
         string += "Chi Square |".rjust(ll)
