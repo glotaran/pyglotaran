@@ -187,7 +187,6 @@ def _create_result(scheme, parameter):
                         if 'matrix' not in dataset:
                             # we assume that the labels are the same, this might not be true in
                             # future models
-                            print(clp_labels)
                             dataset.coords['clp_label'] = clp_labels[i][group_index]
 
                             dim1 = dataset.coords[model.global_dimension].size
