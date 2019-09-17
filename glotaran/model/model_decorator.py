@@ -97,8 +97,14 @@ def model(model_type: str,
 
         setattr(cls, '_model_type', model_type)
         setattr(cls, 'finalize_data', finalize_data_function)
-        setattr(cls, 'constrain_matrix_function',
-                constrain_matrix_function)
+
+        if constrain_matrix_function:
+            c_mat = wrap_func_as_method(
+                cls, name='constrain_matrix_function'
+            )(constrain_matrix_function)
+            setattr(cls, 'constrain_matrix_function', c_mat)
+        else:
+            setattr(cls, 'constrain_matrix_function', None)
         setattr(cls, 'additional_penalty_function',
                 additional_penalty_function)
 

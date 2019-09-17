@@ -254,15 +254,18 @@ def _create_result(scheme, parameter):
             dim2 = dataset.coords['clp_label'].size
             dataset['clp'] = ((model.global_dimension, 'clp_label'),
                               np.zeros((dim1, dim2), dtype=np.float64))
-
             for i, clp in enumerate(reduced_clp_label):
                 if model.index_dependend():
                     idx = dataset.coords[model.global_dimension][i]
-                    for j, c in enumerate(clp):
+                    for c in clp:
+                        if c not in reduced_clp_label[i]:
+                            continue
+                        j = reduced_clp_label[i].index(c)
                         dataset.clp.loc[{'clp_label': c, model.global_dimension: idx}] = \
-                            reduced_clp[i, j]
+                            reduced_clp[i][j]
                 else:
-                    dataset.clp.loc[{'clp_label': clp}] = reduced_clp[:, i]
+                    dataset.clp.loc[{'clp_label': clp}] = \
+                            reduced_clp[:, i]
 
             dataset['residual'] = (((model.matrix_dimension), (model.global_dimension)),
                                    np.asarray(residual).T)

@@ -86,6 +86,10 @@ def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
 
     matrix_implementation(matrix, rates, axis, index, dataset_descriptor, irf)
 
+    if not np.all(np.isfinite(matrix)):
+        raise Exception(f"Non-finite concentrations for K-Matrix '{k_matrix.label}':\n"
+                        "{k_matrix.matrix_as_markdown}")
+
     # apply A matrix
     matrix = matrix @ k_matrix.a_matrix(initial_concentration)
 
