@@ -38,7 +38,7 @@ FinalizeFunction = typing.Callable[
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = typing.Callable[
-    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, float],
+    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, np.ndarray],
     np.ndarray]
 """A `PenaltyFunction` calculates additional penalties for the optimization."""
 
@@ -105,8 +105,14 @@ def model(model_type: str,
             setattr(cls, 'constrain_matrix_function', c_mat)
         else:
             setattr(cls, 'constrain_matrix_function', None)
-        setattr(cls, 'additional_penalty_function',
-                additional_penalty_function)
+
+        if additional_penalty_function:
+            pen = wrap_func_as_method(
+                cls, name='additional_penalty_function'
+            )(additional_penalty_function)
+            setattr(cls, 'additional_penalty_function', pen)
+        else:
+            setattr(cls, 'additional_penalty_function', None)
 
         if not callable(grouped):
             def group_fun(model):

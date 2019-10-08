@@ -27,7 +27,10 @@ def create_index_independend_ungrouped_residual(
             residuals[label].append(residual)
             full_residuals.append(residual)
 
+    #  if callable(model.additional_penalty_function):
+
     penalty = dask.delayed(np.concatenate)(full_residuals)
+    #  penalty = da.concatenate(full_residuals)
     return clp_labels, clps, residuals, penalty
 
 

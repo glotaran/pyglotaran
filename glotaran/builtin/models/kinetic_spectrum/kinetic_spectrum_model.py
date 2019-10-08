@@ -1,20 +1,22 @@
 import typing
 import numpy as np
+import xarray as xr
 
 from glotaran.model import model
+from glotaran.parameter import ParameterGroup
+
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex \
     import KineticImageMegacomplex
 from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
-from glotaran.parameter import ParameterGroup
 
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
 from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
 from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
-from .spectral_constraints import (
-    SpectralConstraint, OnlyConstraint, ZeroConstraint, EqualAreaConstraint)
+from .spectral_constraints import SpectralConstraint, OnlyConstraint, ZeroConstraint
 from .spectral_irf import IrfSpectralGaussian
 from .spectral_matrix import spectral_matrix
-from .spectral_relations import SpectralRelation
+from .spectral_penalties import EqualAreaPenalty
+from .spectral_relations import SpectralRelation, apply_spectral_relations
 from .spectral_shape import SpectralShape
 
 
@@ -33,40 +35,20 @@ def apply_spectral_constraints(
 
 def spectral_constraint_penalty(
         model: typing.Type['KineticModel'],
+        datasets: typing.Dict[str, xr.Dataset],
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         clp: np.ndarray,
-        matrix: np.ndarray,
-        index: float) -> np.ndarray:
+        matrix: any) -> np.ndarray:
     residual = []
-    for constraint in model.spectral_constraints:
-        if isinstance(constraint, EqualAreaConstraint) and constraint.applies(index):
-            constraint = constraint.fill(model, parameter)
-            source_idx = clp_labels.index(constraint.compartment)
-            target_idx = clp_labels.index(constraint.target)
-            residual.append(
-                (clp[source_idx] - constraint.parameter * clp[target_idx]) * constraint.weight
-            )
+    #  for equal_area_penalty in model.equal_area_penalties:
+    #      equal_area_penalty = equal_area_penalty.fill(model, parameter)
+    #      source_idx = clp_labels.index(constraint.compartment)
+    #      target_idx = clp_labels.index(constraint.target)
+    #      residual.append(
+    #          (clp[source_idx] - constraint.parameter * clp[target_idx]) * constraint.weight
+    #      )
     return residual
-
-
-def apply_spectral_relations(
-        model: typing.Type['KineticModel'],
-        parameter: ParameterGroup,
-        clp_labels: typing.List[str],
-        matrix: np.ndarray,
-        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
-    for relation in model.spectral_relations:
-        if relation.applies(index):
-            relation = relation.fill(model, parameter)
-            source_idx = clp_labels.index(relation.compartment)
-            target_idx = clp_labels.index(relation.target)
-            matrix[:, target_idx] += relation.parameter * matrix[:, source_idx]
-
-            idx = [not label == relation.compartment for label in clp_labels]
-            clp_labels = [label for label in clp_labels if not label == relation.compartment]
-            matrix = matrix[:, idx]
-    return (clp_labels, matrix)
 
 
 def apply_kinetic_model_constraints(
@@ -100,6 +82,7 @@ def grouped(model: typing.Type['KineticModel']):
 @model(
     'kinetic-spectrum',
     attributes={
+        'equal_area_penalties': EqualAreaPenalty,
         'shape': SpectralShape,
         'spectral_constraints': SpectralConstraint,
         'spectral_relations': SpectralRelation,

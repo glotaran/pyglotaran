@@ -3,7 +3,6 @@
 import typing
 
 from glotaran.model import model_attribute, model_attribute_typed
-from glotaran.parameter import Parameter
 
 
 @model_attribute(
@@ -14,6 +13,7 @@ from glotaran.parameter import Parameter
 class OnlyConstraint:
     """A only constraint sets the calculated matrix row of a compartment to 0
     outside the given intervals. """
+
     def applies(self, index: any) -> bool:
         """
         Returns true if the indexx is in one of the intervals.
@@ -42,6 +42,7 @@ class OnlyConstraint:
 class ZeroConstraint:
     """A zero constraint sets the calculated matrix row of a compartment to 0
     in the given intervals. """
+
     def applies(self, index: any) -> bool:
         """
         Returns true if the indexx is in one of the intervals.
@@ -62,32 +63,9 @@ class ZeroConstraint:
         return any([applies(i) for i in self.interval])
 
 
-@model_attribute(properties={
-    'target': str,
-    'parameter': Parameter,
-    'weight': str,
-}, has_type=True, no_label=True)
-class EqualAreaConstraint(ZeroConstraint):
-    """An equal area constraint adds a the differenc of the sum of a
-    compartements in the e matrix in one ore more intervals to the scaled sum
-    of the e matrix of one or more target compartmants to resiudal. The additional
-    residual is scaled with the weight.
-
-    Parameters
-    ----------
-    compartment: label of the compartment
-    intervals: list of tuples representing intervals on the estimated axies
-    targets: list of target compartments
-    parameters: list of scaling parameter for the targets
-    weight: scaling factor for the residual
-    """
-    pass
-
-
 @model_attribute_typed(types={
     'only': OnlyConstraint,
     'zero': ZeroConstraint,
-    'equal_area': EqualAreaConstraint,
 }, no_label=True)
 class SpectralConstraint:
     """A compartment constraint is applied on one compartment on one or many

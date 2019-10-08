@@ -35,15 +35,14 @@ initial_concentration:
 # (2,1) means from 1 to 2
 k_matrix:
   km1:
-    matrix: {
-      !tuple '(s1,s1)': 1,
-      !tuple '(s2,s1)': 2,
-      !tuple '(s1,s2)': 3,
-      !tuple '(s3,s1)': 4,
-      !tuple '(s1,s3)': 5,
-      !tuple '(s4,s1)': 6,
-      !tuple '(s1,s4)': 7,
-}
+    matrix:
+      (s1, s1): '1'
+      (s2, s1): '2'
+      (s1, s2): '3'
+      (s3, s1): '4'
+      (s1, s3): '5'
+      (s4, s1): '6'
+      (s1, s4): '7'
 
 shape:
   shape1:
@@ -62,8 +61,12 @@ megacomplex:
 spectral_constraints:
   - type: zero
     compartment: s1
-    interval: [!tuple '(1,100)', !tuple '(2,200)']
-  - [zero, s1, [!tuple '(1,100)', !tuple '(2,200)']]
+    interval:
+      - (1, 100)
+      - (2, 200)
+  - [zero, s1, [!tuple '(1, 100)', !tuple '(2, 200)']]
+
+equal_area_penalties:
   - type: equal_area
     compartment: s3
     interval: [!tuple '(670, 810)']

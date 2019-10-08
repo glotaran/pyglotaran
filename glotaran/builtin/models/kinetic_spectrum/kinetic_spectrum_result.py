@@ -35,29 +35,18 @@ def finalize_kinetic_spectrum_result(
         for constraint in model.spectral_constraints:
             if isinstance(constraint, (OnlyConstraint, ZeroConstraint)):
                 idx = [index for index in dataset.spectral if constraint.applies(index)]
-                if constraint.compartment in dataset.coords['species']:
-                    dataset.species_associated_spectra\
-                        .loc[{'species': constraint.compartment, model.global_dimension: idx}] \
-                        = np.zeros((len(idx)))
-                if constraint.compartment == f"{dataset_descriptor.label}_baseline":
-                    dataset.baseline.loc[{model.global_dimension: idx}] = np.zeros((len(idx)))
 
         for relation in model.spectral_relations:
-            if relation.compartment in dataset_descriptor.initial_concentration.compartments:
+            if relation.compartment in dataset.coords['species']:
                 relation = relation.fill(model, parameter)
-                idx = [index.values for index in dataset.spectral if relation.applies(index)]
-                all_idx = np.asarray(np.sum([idxs for idxs in global_indices]))
-                clp = []
-                for i in idx:
-                    group_idx = np.abs(all_idx - i).argmin()
-                    clp_idx = reduced_clp_labels[group_idx].index(relation.target)
-                    clp.append(
-                        reduced_clps[group_idx][clp_idx] * relation.parameter
-                    )
-                sas = xr.DataArray(clp, coords=[(model.global_dimension, idx)])
 
+                # indexes on the global axis
+                idx = [index for index in dataset.spectral if relation.applies(index)]
                 dataset.species_associated_spectra\
-                    .loc[{'species': relation.compartment, model.global_dimension: idx}] = sas
+                    .loc[{'species': relation.target, model.global_dimension: idx}] = \
+                    dataset.species_associated_spectra.sel(
+                        {'species': relation.compartment, model.global_dimension: idx}) * \
+                    relation.parameter
 
         retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, "spectra")
 

@@ -34,7 +34,6 @@ class Parameter(LmParameter):
         super(Parameter, self).__init__(
             user_data={'non_neg': False, 'full_label': full_label})
 
-        self._non_neg = False
         self.label = label
         self.full_label = full_label
 
@@ -166,11 +165,10 @@ class Parameter(LmParameter):
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
         """  # noqa w605
-        return self._non_neg
+        return self.user_data['non_neg']
 
     @non_neg.setter
     def non_neg(self, non_neg: bool):
-        self._non_neg = non_neg
         self.user_data['non_neg'] = non_neg
 
     @LmParameter.value.setter

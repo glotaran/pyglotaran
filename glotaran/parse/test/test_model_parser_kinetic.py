@@ -1,5 +1,6 @@
 import pytest
 
+from glotaran.parameter import ParameterGroup
 from glotaran.parse.parser import load_yml_file
 
 from glotaran.builtin.models.kinetic_image.initial_concentration \
@@ -13,7 +14,9 @@ from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descripto
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model \
         import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints \
-    import ZeroConstraint, EqualAreaConstraint
+    import ZeroConstraint
+from glotaran.builtin.models.kinetic_spectrum.spectral_penalties \
+    import EqualAreaPenalty
 from glotaran.builtin.models.kinetic_spectrum.spectral_shape \
         import SpectralShapeGaussian
 
@@ -26,7 +29,9 @@ THIS_DIR = dirname(abspath(__file__))
 @pytest.fixture
 def model():
     spec_path = join(THIS_DIR, 'test_model_spec_kinetic.yml')
-    return load_yml_file(spec_path)
+    m = load_yml_file(spec_path)
+    print(m.markdown())
+    return m
 
 
 def test_correct_model(model):
@@ -55,7 +60,7 @@ def test_dataset(model):
 
 def test_spectral_constraints(model):
     print(model.spectral_constraints)
-    assert len(model.spectral_constraints) == 3
+    assert len(model.spectral_constraints) == 2
 
     assert any(isinstance(c, ZeroConstraint) for c in
                model.spectral_constraints)
@@ -67,10 +72,12 @@ def test_spectral_constraints(model):
         assert zc.compartment == 's1'
         assert zc.interval == [(1, 100), (2, 200)]
 
-    assert any(isinstance(c, EqualAreaConstraint) for c in
-               model.spectral_constraints)
-    eac = [eac for eac in model.spectral_constraints
-           if isinstance(eac, EqualAreaConstraint)][0]
+
+def test_spectral_penalties(model):
+    assert len(model.equal_area_penalties) == 1
+    assert all(isinstance(c, EqualAreaPenalty) for c in
+               model.equal_area_penalties)
+    eac = model.equal_area_penalties[0]
     assert eac.compartment == 's3'
     assert eac.interval == [(670, 810)]
     assert eac.target == 's2'
@@ -138,8 +145,9 @@ def test_irf(model):
 
 def test_k_matrices(model):
     assert "km1" in model.k_matrix
-    print(model.k_matrix['km1'])
-    assert np.array_equal(model.k_matrix["km1"].reduced(['s1', 's2', 's3', 's4']),
+    parameter = ParameterGroup.from_list([1, 2, 3, 4, 5, 6, 7])
+    reduced = model.k_matrix["km1"].fill(model, parameter).reduced(['s1', 's2', 's3', 's4'])
+    assert np.array_equal(reduced,
                           np.asarray([[1, 3, 5, 7],
                                       [2, 0, 0, 0],
                                       [4, 0, 0, 0],
