@@ -41,7 +41,7 @@ def create_spectral_relation_matrix(
 
     idx_to_delete = []
     for relation in model.spectral_relations:
-        if relation.applies(index):
+        if relation.compartment in clp_labels and relation.applies(index):
             relation = relation.fill(model, parameter)
             source_idx = clp_labels.index(relation.compartment)
             target_idx = clp_labels.index(relation.target)

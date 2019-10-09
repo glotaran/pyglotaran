@@ -26,7 +26,7 @@ def test_spectral_relation():
                 ("s1", "s1"): 'kinetic.1',
                 ("s2", "s2"): 'kinetic.1',
                 ("s3", "s3"): 'kinetic.1',
-                ("s4", "s3"): 'kinetic.1',
+                ("s4", "s4"): 'kinetic.1',
             }}
         },
         'spectral_relations': [
