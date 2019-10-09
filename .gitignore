@@ -159,3 +159,6 @@ _summary.ps
 
 
 .Rproj.user
+
+# vscode config files
+.vscode

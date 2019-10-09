@@ -1,29 +1,29 @@
 # pyGloTarAn
 
-pyGloTarAn is a python library for global and target analysis 
+pyGloTarAn is a python library for global and target analysis
 
 [![latest release](https://pypip.in/version/glotaran/badge.svg)](https://pypi.org/project/glotaran/)
-[![Build Status](https://travis-ci.org/glotaran/pyglotaran.svg?branch=master)](https://travis-ci.org/glotaran/glotaran)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/glotaran/glotaran?branch=master&svg=true)](https://ci.appveyor.com/project/glotaran/glotaran?branch=master)
+[![Build Status Linux + OsX](https://travis-ci.org/glotaran/pyglotaran.svg?branch=master)](https://travis-ci.org/glotaran/pyglotaran)
+[![Build Status Windows](https://ci.appveyor.com/api/projects/status/76gkx10wyn2cd049?svg=true)](https://ci.appveyor.com/project/glotaran/pyglotaran)
 [![Documentation Status](https://readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/glotaran/glotaran/badge.svg?branch=master)](https://coveralls.io/github/glotaran/glotaran?branch=master)
-
+[![Coverage Status](https://coveralls.io/repos/github/glotaran/pyglotaran/badge.svg?branch=master)](https://coveralls.io/github/glotaran/pyglotaran?branch=master)
 
 ## Warning
+
 This project is still in a pre-release stage and should only be used with care.
 
 ## Additional warning for scientists
+
 The algorithms provided by this package still need to be validated and reviewed, pending the official release it should not be used in scientific publications.
 
 # Installation
-
 
 ## From Source
 
 Prerequisites:
 
-* Python 3.6 or higher *(Python 2 is __not__ supported)*
-* On Windows only 64bit is supported
+- Python 3.6 or higher _(Python 2 is **not** supported)_
+- On Windows only 64bit is supported
 
 Note for Windows Users: The easiest way to get python for Windows is via [Anaconda](https://www.anaconda.com/)
 
@@ -37,7 +37,7 @@ $ pip3 install .
 
 ```
 
-*Note for Anaconda Users: Please make sure to update your distribution prior to install since some packages managed by Anaconda cannot be updated by `pip`.*
+_Note for Anaconda Users: Please make sure to update your distribution prior to install since some packages managed by Anaconda cannot be updated by `pip`._
 
 # Mailinglist
 

@@ -41,7 +41,7 @@ you through the process.
 
 .. _pip: https://pip.pypa.io/en/stable/
 
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
+.. _Python installation guide: ttps://docs.python-guide.org/starting/installation/
 
 
 From sources
@@ -65,7 +65,7 @@ Afterwards you can simply use `pip`_ to install it directly from `Github`_.
 
 .. code-block:: console
 
-   $ pip install git+https://github.com/glotaran/glotaran.git
+   $ pip install git+https://github.com/glotaran/pyglotaran.git
 
 For updating glotaran, just re-run the command above.
 
@@ -73,7 +73,7 @@ If you prefer to manually download the source files, you can find them on `Githu
 
 .. code-block:: console
 
-   $ git clone https://github.com/glotaran/glotaran.git
+   $ git clone https://github.com/glotaran/pyglotaran.git
 
 Within a terminal, navigate to directory where you have unpacked or cloned the code and enter
 
@@ -83,5 +83,5 @@ Within a terminal, navigate to directory where you have unpacked or cloned the c
 
 For updating, simply download and unpack the newest version (or run ``$ git pull`` in glotaran directory if you used `git`_) and and re-run the command above.
 
-.. _Github: https://github.com/glotaran/glotaran
+.. _Github: https://github.com/glotaran/pyglotaran
 .. _git: https://git-scm.com/
