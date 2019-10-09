@@ -87,7 +87,7 @@ def test_spectral_relation():
     assert reduced_matrix.shape == (time.size, 2)
 
     print(reduced_matrix[0, 0], matrix[0, 0], matrix[0, 1], matrix[0, 2])
-    assert np.array_equal(
+    assert np.allclose(
         reduced_matrix[:, 0],  matrix[:, 0] + rel1 * matrix[:, 1] + rel2 * matrix[:, 2]
     )
 
@@ -106,3 +106,7 @@ def test_spectral_relation():
         rel1 * result_data.species_associated_spectra[0, 0]
     assert result_data.species_associated_spectra[0, 2] == \
         rel2 * result_data.species_associated_spectra[0, 0]
+
+
+if __name__ == "__main__":
+    test_spectral_relation()
