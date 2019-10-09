@@ -3,7 +3,7 @@ pip>=18.0
 wheel>=0.30.0
 
 # needed to release new versions
-bumpversion==0.5.3
+bump2version>=0.5.11
 
 # glotaran setup dependencies
 numpy==1.16.4

@@ -7,23 +7,23 @@ matrix:
   fast_finish: true
   include:
     - python: 3.6
-      env: flake8
+      name: flake8
       before_install:
         - echo "before_install"
         - python -m pip install -U pip>=9.0.1 flake8
       script:
         - flake8 glotaran
       after_success:
-      # this prevents the tests to upload stuff to coveralls.io
+        # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
     - python: 3.6
       # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
-      env: docs-creation
+      name: docs-creation
       before_install:
-      - echo "before_install"
-      - python -m pip install -r requirements_dev.txt
-      - pip install -e .
+        - echo "before_install"
+        - python -m pip install -r requirements_dev.txt
+        - pip install -e .
       script:
         - make --directory=docs clean html
       after_success:
@@ -32,34 +32,33 @@ matrix:
 
     - python: 3.6
       # taken from https://quick-sphinx-tutorial.readthedocs.io/en/latest/advanced.html
-      env: docs-linkcheck
+      name: docs-linkcheck
       before_install:
         - echo "before_install"
         - python -m pip install -r requirements_dev.txt
         - pip install -e .
       script:
-      - make --directory=docs clean_all linkcheck
+        - make --directory=docs clean linkcheck
       after_success:
         # this prevents the tests to upload stuff to coveralls.io
         - echo "done"
 
-
     # LINUX
     - python: "3.6"
-      env: linux-py36
+      name: linux-py36
 
     - language: python
       sudo: required
       dist: xenial
       python: "3.7"
-      env: linux-py37
+      name: linux-py37
 
     # OSX
     - language: generic
       python: 3.6
       os: osx
+      name: osx-py36
       env:
-        - osx-py36
         - DEPLOY_ALL=true
       before_install:
         - echo "before_install"
@@ -72,8 +71,8 @@ matrix:
 
     - language: generic
       python: 3.7
+      name: osx-py37
       env:
-        - osx-py37
         - DEPLOY_WHEELS=true
       os: osx
       before_install:
@@ -85,19 +84,19 @@ matrix:
         - conda create -n py37 python=3.7 -y
         - source activate py37
 
-#    - python: 3.6
-#      env: win_coverage
-#      install:
-#        - pip install git+https://github.com/Robpol86/appveyor-artifacts.git coveralls
-#      script:
-#        - appveyor-artifacts -m download
-#      after_success:
-#        - coveralls
-#        - coverage erase
+  #    - python: 3.6
+  #      env: win_coverage
+  #      install:
+  #        - pip install git+https://github.com/Robpol86/appveyor-artifacts.git coveralls
+  #      script:
+  #        - appveyor-artifacts -m download
+  #      after_success:
+  #        - coveralls
+  #        - coverage erase
 
   allow_failures:
-  #      this test is allowed to fail since it uses external resources
-    - env: docs-linkcheck
+    #      this test is allowed to fail since it uses external resources
+    - name: docs-linkcheck
 
 install:
   - pip install coveralls
@@ -113,36 +112,34 @@ after_success:
   - coveralls
   - coverage erase
 
-
 deploy:
   - provider: pypi
     distributions: sdist bdist_wheel
     user: s-weigand
     password:
-      secure: p0SMZ1MY8xIHOFf77YHKrNEJlAdjlmtD/jzzOVsMEDz7HqUaAS7p1SjY6dogAMBBEhCPZkWxBpPe462iJ6TclW8iVDStXLKev8SgaP/E5qdlkQI1pQ2KzuLvNfdMlvWjj4zTvBOWUKCjhxfRsS3iCoiOy1gtx2xAY1YgGEXxRWhmvTpkCIfLiFCcnbIcB6gmO/vRYtp8EpKrDzMaAoCEy4aD7oMGcuTEh1PdMwcjSjeDPSJENkMx/aK7+NKlUF4XcP2KSgcxbUrpfY6c3nB5zeY38lek9nF8m1q/249XUFYQAGbPvb+NG/ha5WYyyppnbcspErOOaaZX9BpB8yAvIMcueT2hwkYuNSUDNc0ThDjn9eCWJQT8gwdY4WZfaR22eV4PJA5xISTzllzMiCRwZ0C5BNSBCWX3EVRigpTic5wZtDgKBqQnZ5LA5WZGvPCwOJvQKDj1SizaeoxRPmml2/nLf5azEwpIOE7wTFCq1Mkj7AOgyX5CuZzqvNCGDrKZQgB0G0Tc+/Hi+A0FBRDh9q/dZReWgn3ucdeAX66AF675x71C7w1/eN4PJcYBrCeCJnsLpKpNq2pPB/8ty/r2JkHO8dxMRxwil/n4puwTWd1dRVopvkQKbjaZpobKKlNqCe/1wKgYINxiyJDU1obu99JXlnpi5HGY0TYQVNTXtWU=
+      secure: 1cciGQshgm8QV7Eo62ipZowGVm44ZvMtUWbKpkD+Dn09t8/V9wXfBmv6mmTu5P2bEZQWk+b39Y5phH8n7MTTbgZV/smjuy7nEmemDgiDW0Vx/KeqqC+8xOmbHT07yjvExn47LoBTPKE5dDUzXs3PDlo/BCV7J5+5qCIJfLDpLnMA/FU4waNYve+pjnxtKI5lsIwDo+ljv6sXj0nBmDLi3vNWlelL5fvtXiQwHACRieim36PwrZklcspqqQpIo7Vt4l0ojd+tQKN5XkKB1zmBLKX2EyOW+5iO9B1keKjDrIj9jiKOExxEPoKRB4mWl5BJ+F5p/veQyws78SoER4i7QxMlfoa1AP63Cvi1rlCDPhsphHfi5T6yfg5oC9LT+a+f8vf6BLTULFCPnXMBNiZJwXHBGxByAoTO0DRMUOq/UY2NwJ44rCMZCHiKHeeIScVFmRL6eG1hWImWolPgDkIlwE4Hfv9BNJNmONhaP8BRGjGnl7rsyNoiJwCVpGjkSFlb29Ae9AhLxrbTdlhjisNTIqEgmFAiZnaMwurOHs3RR4sdO9nb5BifBvvxySma5mW+pOER/vGuxOmowWRpfHtRt35DfqCw1EvaM8V5aUCEfQukJX3t+nepfMvK7W6Q0NqqryoNalSv7nO88Vm+4YKXrtztmY1MXOg6xdAkg7RLH04=
 
     skip_cleanup: true
     on:
       branch: master
       tags: true
-      repo: glotaran/glotaran
+      repo: glotaran/pyglotaran
       # there can only a maximum one test with DEPLOY_ALL=true, since PyPi will throw an error
       # and make the fail if the file (mostly sdist) already exists on the server
       condition: "$DEPLOY_ALL = true"
 
-
-# wheels deployment is needed for OsX
+  # wheels deployment is needed for OsX
   - provider: pypi
     distributions: bdist_wheel
     user: s-weigand
     password:
-      secure: p0SMZ1MY8xIHOFf77YHKrNEJlAdjlmtD/jzzOVsMEDz7HqUaAS7p1SjY6dogAMBBEhCPZkWxBpPe462iJ6TclW8iVDStXLKev8SgaP/E5qdlkQI1pQ2KzuLvNfdMlvWjj4zTvBOWUKCjhxfRsS3iCoiOy1gtx2xAY1YgGEXxRWhmvTpkCIfLiFCcnbIcB6gmO/vRYtp8EpKrDzMaAoCEy4aD7oMGcuTEh1PdMwcjSjeDPSJENkMx/aK7+NKlUF4XcP2KSgcxbUrpfY6c3nB5zeY38lek9nF8m1q/249XUFYQAGbPvb+NG/ha5WYyyppnbcspErOOaaZX9BpB8yAvIMcueT2hwkYuNSUDNc0ThDjn9eCWJQT8gwdY4WZfaR22eV4PJA5xISTzllzMiCRwZ0C5BNSBCWX3EVRigpTic5wZtDgKBqQnZ5LA5WZGvPCwOJvQKDj1SizaeoxRPmml2/nLf5azEwpIOE7wTFCq1Mkj7AOgyX5CuZzqvNCGDrKZQgB0G0Tc+/Hi+A0FBRDh9q/dZReWgn3ucdeAX66AF675x71C7w1/eN4PJcYBrCeCJnsLpKpNq2pPB/8ty/r2JkHO8dxMRxwil/n4puwTWd1dRVopvkQKbjaZpobKKlNqCe/1wKgYINxiyJDU1obu99JXlnpi5HGY0TYQVNTXtWU=
+      secure: 1cciGQshgm8QV7Eo62ipZowGVm44ZvMtUWbKpkD+Dn09t8/V9wXfBmv6mmTu5P2bEZQWk+b39Y5phH8n7MTTbgZV/smjuy7nEmemDgiDW0Vx/KeqqC+8xOmbHT07yjvExn47LoBTPKE5dDUzXs3PDlo/BCV7J5+5qCIJfLDpLnMA/FU4waNYve+pjnxtKI5lsIwDo+ljv6sXj0nBmDLi3vNWlelL5fvtXiQwHACRieim36PwrZklcspqqQpIo7Vt4l0ojd+tQKN5XkKB1zmBLKX2EyOW+5iO9B1keKjDrIj9jiKOExxEPoKRB4mWl5BJ+F5p/veQyws78SoER4i7QxMlfoa1AP63Cvi1rlCDPhsphHfi5T6yfg5oC9LT+a+f8vf6BLTULFCPnXMBNiZJwXHBGxByAoTO0DRMUOq/UY2NwJ44rCMZCHiKHeeIScVFmRL6eG1hWImWolPgDkIlwE4Hfv9BNJNmONhaP8BRGjGnl7rsyNoiJwCVpGjkSFlb29Ae9AhLxrbTdlhjisNTIqEgmFAiZnaMwurOHs3RR4sdO9nb5BifBvvxySma5mW+pOER/vGuxOmowWRpfHtRt35DfqCw1EvaM8V5aUCEfQukJX3t+nepfMvK7W6Q0NqqryoNalSv7nO88Vm+4YKXrtztmY1MXOg6xdAkg7RLH04=
 
     skip_cleanup: true
     on:
       branch: master
       tags: true
-      repo: glotaran/glotaran
+      repo: glotaran/pyglotaran
       # Wheels need to be generated for systems that might lack the compiler
       condition: "$DEPLOY_WHEELS = true"
 
