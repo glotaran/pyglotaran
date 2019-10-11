@@ -111,9 +111,9 @@ def test_spectral_penalties():
     result_data = result_with_penalty.data['dataset1']
     wanted_penalty = result_data.species_associated_spectra.sel(species='s2') - \
         result_data.species_associated_spectra.sel(species='s3') * pen
-    wanted_penalty = np.sum(wanted_penalty.values)
     wanted_penalty *= weight
     wanted_penalty **= 2
+    wanted_penalty = np.sum(wanted_penalty.values)
 
     additional_penalty = result_with_penalty.chisqr - result_without_penalty.chisqr
     assert np.isclose(additional_penalty, wanted_penalty)
