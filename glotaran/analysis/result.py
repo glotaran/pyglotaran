@@ -237,7 +237,7 @@ class Result:
         string += f"{self.red_chisqr:.2e} |".rjust(lr)
         string += "\n"
         string += "Root Mean Square Error |".rjust(ll)
-        string += f"{self.root_mean_sqare_error:.2e} |".rjust(lr)
+        string += f"{self.root_mean_square_error:.2e} |".rjust(lr)
         string += "\n"
 
         if with_model:
