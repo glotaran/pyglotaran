@@ -6,10 +6,10 @@ from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descripto
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
     KineticSpectrumModel,
     apply_kinetic_model_constraints,
-    spectral_constraint_penalty,
     grouped,
     index_dependend,
 )
+from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import apply_spectral_penalties
 
 from .doas_result import finalize_doas_data
 from .doas_megacomplex import DOASMegacomplex
@@ -31,7 +31,7 @@ from .oscillation import Oscillation
     global_dimension='spectral',
     finalize_data_function=finalize_doas_data,
     constrain_matrix_function=apply_kinetic_model_constraints,
-    additional_penalty_function=spectral_constraint_penalty,
+    additional_penalty_function=apply_spectral_penalties,
     grouped=grouped,
     index_dependend=index_dependend,
 )

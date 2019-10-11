@@ -109,7 +109,7 @@ def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
         clp, matrix = _combine_matrices(matrices)
         if callable(model.constrain_matrix_function):
             clp, matrix = model.constrain_matrix_function(parameter, clp, matrix, index)
-        return clp, matrix
+        return LabelAndMatrix(clp, matrix)
 
     matrix_jobs = bag.map(calculate_group)
     constraint_matrix_jobs = matrix_jobs.map(constrain_and_combine_matrices)
@@ -130,7 +130,7 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
     clp_label, matrix = matrix_function(**args)
     if dataset_descriptor.scale is not None:
         matrix *= dataset_descriptor.scale
-    return clp_label, matrix
+    return LabelAndMatrix(clp_label, matrix)
 
 
 def _combine_matrices(labels_and_matrices):

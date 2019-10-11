@@ -1,6 +1,7 @@
 """This package contains compartment constraint items."""
 
 import typing
+import numpy as np
 
 from glotaran.model import model_attribute, model_attribute_typed
 
@@ -75,3 +76,16 @@ class SpectralConstraint:
     the respective classes for details.
     """
     pass
+
+
+def apply_spectral_constraints(
+        model: typing.Type['KineticModel'],
+        clp_labels: typing.List[str],
+        matrix: np.ndarray,
+        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
+    for constraint in model.spectral_constraints:
+        if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
+            idx = [not label == constraint.compartment for label in clp_labels]
+            clp_labels = [label for label in clp_labels if not label == constraint.compartment]
+            matrix = matrix[:, idx]
+    return (clp_labels, matrix)

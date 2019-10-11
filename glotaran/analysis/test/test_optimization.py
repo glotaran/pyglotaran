@@ -67,6 +67,7 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
        global_matrix=calculate_spectral_simple,
        global_dimension='e',
        megacomplex_type=MockMegacomplex,
+       additional_penalty_function=lambda model, parameter, clp_labels, clps, index: [],
        )
 class DecayModel(Model):
     pass

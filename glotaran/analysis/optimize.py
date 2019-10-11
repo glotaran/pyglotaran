@@ -72,7 +72,7 @@ def calculate_penalty(parameter, scheme, bag, groups):
                 )
             _, _, _, penalty = \
                 residual_calculation.create_index_dependend_grouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
         else:
 
@@ -81,7 +81,7 @@ def calculate_penalty(parameter, scheme, bag, groups):
 
             _, _, _, penalty = \
                 residual_calculation.create_index_independend_grouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
     else:
         if scheme.model.index_dependend():
@@ -91,7 +91,7 @@ def calculate_penalty(parameter, scheme, bag, groups):
                 )
             _, _, _, penalty = \
                 residual_calculation.create_index_dependend_ungrouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
         else:
 
@@ -100,7 +100,7 @@ def calculate_penalty(parameter, scheme, bag, groups):
 
             _, _, _, penalty = \
                 residual_calculation.create_index_independend_ungrouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
     penalty = penalty.compute()
     return penalty
@@ -132,7 +132,7 @@ def _create_result(scheme, parameter):
                 )
             reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_dependend_grouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
         else:
             clp_labels, matrices, constraint_labels_and_matrices = \
@@ -141,7 +141,7 @@ def _create_result(scheme, parameter):
                 )
             reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_independend_grouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
     else:
         bag = problem_bag.create_ungrouped_bag(scheme)
@@ -153,7 +153,7 @@ def _create_result(scheme, parameter):
                 )
             reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_dependend_ungrouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
         else:
             clp_labels, matrices, constraint_labels_and_matrices = \
@@ -162,7 +162,7 @@ def _create_result(scheme, parameter):
                 )
             reduced_clp_labels, reduced_clps, residuals, _ = \
                 residual_calculation.create_index_independend_ungrouped_residual(
-                    scheme, bag, constraint_labels_and_matrices, residual_function
+                    scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
 
     indices = None

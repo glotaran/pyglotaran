@@ -117,7 +117,7 @@ class Result:
         return self._red_chisqr
 
     @property
-    def root_mean_sqare_error(self) -> float:
+    def root_mean_square_error(self) -> float:
         """
         The root mean square error the optimization
         :math:`rms = \sqrt{\chi^2_{red}}`

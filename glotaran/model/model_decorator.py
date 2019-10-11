@@ -38,7 +38,7 @@ FinalizeFunction = typing.Callable[
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = typing.Callable[
-    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, np.ndarray],
+    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, any],
     np.ndarray]
 """A `PenaltyFunction` calculates additional penalties for the optimization."""
 
