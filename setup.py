@@ -37,7 +37,7 @@ entry_points = """
 
 setup(
     name="glotaran",
-    version='0.0.10',
+    version='0.0.11',
     description='The Glotaran fitting engine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
