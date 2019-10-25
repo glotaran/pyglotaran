@@ -1,6 +1,7 @@
 # general install dependencies
 pip>=18.0
 wheel>=0.30.0
+setuptools>=41.0
 
 # needed to release new versions
 bump2version>=0.5.11
@@ -8,7 +9,18 @@ bump2version>=0.5.11
 # glotaran setup dependencies
 numpy==1.16.4
 scipy==1.3.0
-setuptools>=40.6.3
+click==7.0
+dask==2.6.0
+dask[bag]==2.6.0
+distributed==2.6.0
+fsspec==0.5.2
+lmfit==0.9.14
+numba==0.46.0
+pandas==0.25.2
+partd==0.3.10  # Needed by dask
+pyyaml==5.1.2
+xarray==0.12
+netCDF4==1.5.2
 
 # documentation dependencies
 Sphinx>=1.8.0
