@@ -84,15 +84,22 @@ matrix:
         - conda create -n py37 python=3.7 -y
         - source activate py37
 
-  #    - python: 3.6
-  #      env: win_coverage
-  #      install:
-  #        - pip install git+https://github.com/Robpol86/appveyor-artifacts.git coveralls
-  #      script:
-  #        - appveyor-artifacts -m download
-  #      after_success:
-  #        - coveralls
-  #        - coverage erase
+    - stage: deploy
+      python: 3.7
+      name: PiPy-release
+      if: type == push AND tag IS present
+      script: echo "skip install"
+      after_success: echo "skip after_success"
+      deploy:
+        provider: pypi
+        distributions: sdist bdist_wheel
+        user: s-weigand
+        password:
+          secure: B4qaAWW5vtHHvKSkMlGZuxg3EYqiPzEVdVdmYyRne9872jpU9pSAEW7HCGqeb6A8osEpML6IcPcQWJakmmEBlnaCQF6DXted/OwZFCnK6rUpPhDb/dmIZdkxDJY2gPFtpzlMC7+emH6HEYFRMG95xXhySRLDHMCrkK2yFutJLwPSZtOQKdRPl2u2S6t7lLhI6lVkmzUW08wA4vtJSRouab9Co1uxzLKm2I5tCZrx89w/52qT4ZAJY8xrzys7Jkuh8hcFrLG08HZ38IcBJGRVpiVbYQAf714BL5ObGHVxTe5IXD4XRVdafW7OUkmIagGWpGbVN/VUdx1slVKo3SVGja3thQzBkZJDZbZTEoZeiFFzzdLipnqSAZtDoqKyC8pWS1AtSq1P/g/L23Ni1EMzN55GVdGHlZfKk0MZuA8SbfLal/pVZoaW9Nmd9DL4KFP/ty5Ms0JQX2TItilpXdKG4tUdZbwz16bwD4bl6k1uskCopCL1oNkGnWyNRLEz/rgA+QYSD4lppIBjFDXuPSWv7lIZe9JSMjOtwL/TeZ+Jws2jcAhp3XeE0a3LTyab1oRdQ0K2qiis2EnNotNnnlAn0xIvwb9GWW/jdhlcxQ4Q2GtoKLajBl429H+SBddz5sln1eVayvetKcW3SliGr8NsEG789cwxJw7rKZGIidJv6VA=
+        on:
+          tags: true
+          branch: master
+          repo: glotaran/pyglotaran
 
   allow_failures:
     #      this test is allowed to fail since it uses external resources
@@ -111,37 +118,6 @@ script:
 after_success:
   - coveralls
   - coverage erase
-
-deploy:
-  - provider: pypi
-    distributions: sdist bdist_wheel
-    user: s-weigand
-    password:
-      secure: B4qaAWW5vtHHvKSkMlGZuxg3EYqiPzEVdVdmYyRne9872jpU9pSAEW7HCGqeb6A8osEpML6IcPcQWJakmmEBlnaCQF6DXted/OwZFCnK6rUpPhDb/dmIZdkxDJY2gPFtpzlMC7+emH6HEYFRMG95xXhySRLDHMCrkK2yFutJLwPSZtOQKdRPl2u2S6t7lLhI6lVkmzUW08wA4vtJSRouab9Co1uxzLKm2I5tCZrx89w/52qT4ZAJY8xrzys7Jkuh8hcFrLG08HZ38IcBJGRVpiVbYQAf714BL5ObGHVxTe5IXD4XRVdafW7OUkmIagGWpGbVN/VUdx1slVKo3SVGja3thQzBkZJDZbZTEoZeiFFzzdLipnqSAZtDoqKyC8pWS1AtSq1P/g/L23Ni1EMzN55GVdGHlZfKk0MZuA8SbfLal/pVZoaW9Nmd9DL4KFP/ty5Ms0JQX2TItilpXdKG4tUdZbwz16bwD4bl6k1uskCopCL1oNkGnWyNRLEz/rgA+QYSD4lppIBjFDXuPSWv7lIZe9JSMjOtwL/TeZ+Jws2jcAhp3XeE0a3LTyab1oRdQ0K2qiis2EnNotNnnlAn0xIvwb9GWW/jdhlcxQ4Q2GtoKLajBl429H+SBddz5sln1eVayvetKcW3SliGr8NsEG789cwxJw7rKZGIidJv6VA=
-
-    skip_cleanup: true
-    on:
-      branch: master
-      tags: true
-      repo: glotaran/pyglotaran
-      # there can only a maximum one test with DEPLOY_ALL=true, since PyPi will throw an error
-      # and make the fail if the file (mostly sdist) already exists on the server
-      condition: "$DEPLOY_ALL = true"
-
-  # wheels deployment is needed for OsX
-  - provider: pypi
-    distributions: bdist_wheel
-    user: s-weigand
-    password:
-      secure: B4qaAWW5vtHHvKSkMlGZuxg3EYqiPzEVdVdmYyRne9872jpU9pSAEW7HCGqeb6A8osEpML6IcPcQWJakmmEBlnaCQF6DXted/OwZFCnK6rUpPhDb/dmIZdkxDJY2gPFtpzlMC7+emH6HEYFRMG95xXhySRLDHMCrkK2yFutJLwPSZtOQKdRPl2u2S6t7lLhI6lVkmzUW08wA4vtJSRouab9Co1uxzLKm2I5tCZrx89w/52qT4ZAJY8xrzys7Jkuh8hcFrLG08HZ38IcBJGRVpiVbYQAf714BL5ObGHVxTe5IXD4XRVdafW7OUkmIagGWpGbVN/VUdx1slVKo3SVGja3thQzBkZJDZbZTEoZeiFFzzdLipnqSAZtDoqKyC8pWS1AtSq1P/g/L23Ni1EMzN55GVdGHlZfKk0MZuA8SbfLal/pVZoaW9Nmd9DL4KFP/ty5Ms0JQX2TItilpXdKG4tUdZbwz16bwD4bl6k1uskCopCL1oNkGnWyNRLEz/rgA+QYSD4lppIBjFDXuPSWv7lIZe9JSMjOtwL/TeZ+Jws2jcAhp3XeE0a3LTyab1oRdQ0K2qiis2EnNotNnnlAn0xIvwb9GWW/jdhlcxQ4Q2GtoKLajBl429H+SBddz5sln1eVayvetKcW3SliGr8NsEG789cwxJw7rKZGIidJv6VA=
-
-    skip_cleanup: true
-    on:
-      branch: master
-      tags: true
-      repo: glotaran/pyglotaran
-      # Wheels need to be generated for systems that might lack the compiler
-      condition: "$DEPLOY_WHEELS = true"
 
 notifications:
   slack:
