@@ -3,11 +3,7 @@
 
 clone_depth: 50
 
-environment:
-  global:
-    TWINE_USERNAME: s-weigand
-    TWINE_PASSWORD:
-      secure: n0iiqKA7JDgOjmLvLhvBqQtDOepmCUMRBgPVnNNXlyY=
+
 
     PYTEST: py.test -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
@@ -67,16 +63,6 @@ test_script:
   # run tests
   - py.test --cov=glotaran --cov-config .coveragerc glotaran
 
-deploy_script:
-  # build wheels for windows
-  - python setup.py bdist_wheel
-  - python -m pip install twine
-  # upload to PyPi
-  - 'if "%APPVEYOR_REPO_TAG%"=="true" ( python -m twine upload --skip-existing dist/*.whl)'
-
-artifacts:
-  - path: dist/*
-    name: Wheels
 
 on_finish:
   # Remove old or huge cache files to hopefully not exceed the 1GB cache limit.
