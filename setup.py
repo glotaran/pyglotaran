@@ -57,7 +57,7 @@ setup(
     ],
     author='Joern Weissenborn, Joris Snellenburg, Ivo van Stokkum',
     author_email="""joern.weissenborn@gmail.com,
-                    j.snellenburg@gmail.com
+                    j.snellenburg@gmail.com,
                     i.h.m.van.stokkum@vu.nl """,
     license='GPLv3',
     python_requires=">=3.6",
