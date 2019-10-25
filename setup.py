@@ -1,3 +1,5 @@
+import sys
+
 from setuptools import setup, find_packages
 
 install_requires = [
@@ -7,7 +9,6 @@ install_requires = [
     'distributed>=2.0',
     'fsspec>=0.4.1',
     'lmfit>=0.9.13',
-    'netCDF4>=1.4',
     'numba>=0.44',
     'numpy>=1.16',
     'pandas>=0.24',
@@ -17,6 +18,13 @@ install_requires = [
     'setuptools>=41.0',
     'xarray>=0.12',
 ]
+
+# TODO: set a new genereal min version for netCDF4
+# when they deploy windows wheels again
+if sys.platform == "win32":
+    install_requires.append('netCDF4>=1.5<1.5.3')
+else:
+    install_requires.append('netCDF4>=1.5')
 
 
 with open("README.md", "r") as fh:
@@ -66,5 +74,5 @@ setup(
     entry_points=entry_points,
     test_suite='glotaran',
     tests_require=['pytest'],
-    zip_safe=True
+    zip_safe=True,
 )
