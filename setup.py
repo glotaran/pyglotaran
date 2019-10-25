@@ -22,7 +22,7 @@ install_requires = [
 # TODO: set a new genereal min version for netCDF4
 # when they deploy windows wheels again
 if sys.platform == "win32":
-    install_requires.append('netCDF4>=1.5<1.5.3')
+    install_requires.append('netCDF4>=1.5,<1.5.3')
 else:
     install_requires.append('netCDF4>=1.5')
 
@@ -54,6 +54,7 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        "Operating System :: OS Independent",
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',

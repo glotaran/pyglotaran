@@ -3,12 +3,11 @@
 
 clone_depth: 50
 
-
-
-    PYTEST: py.test -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
+environment:
+  PYTEST: py.test -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   # uncomment to disable cache restore
-#  APPVEYOR_CACHE_SKIP_RESTORE: true
-    APPVEYOR_SAVE_CACHE_ON_ERROR: flase
+  #  APPVEYOR_CACHE_SKIP_RESTORE: true
+  APPVEYOR_SAVE_CACHE_ON_ERROR: false
 
   matrix:
     - PYTHON: C:\Python36-x64
@@ -21,16 +20,17 @@ clone_depth: 50
 
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
-  - "ECHO \"%APPVEYOR_SCHEDULED_BUILD%\""
+  - 'ECHO "%APPVEYOR_SCHEDULED_BUILD%"'
   # If there is a newer build queued for the same PR, cancel this one.
   # The AppVeyor 'rollout builds' option is supposed to serve the same
   # purpose but it is problematic because it tends to cancel builds pushed
   # directly to master instead of just PR builds (or the converse).
   # credits: JuliaLang developers.
-  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
-        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
-        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
-          throw "There are newer queued builds for this pull request, failing early." }
+  - ps:
+      if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+      https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+      Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+      throw "There are newer queued builds for this pull request, failing early." }
 
 cache:
   # Cache downloaded pip packages and built wheels.
@@ -54,7 +54,6 @@ before_test:
   # install glotaran
   - pip install -e .
 
-
 build: none
 
 test_script:
@@ -62,7 +61,6 @@ test_script:
   - coverage erase
   # run tests
   - py.test --cov=glotaran --cov-config .coveragerc glotaran
-
 
 on_finish:
   # Remove old or huge cache files to hopefully not exceed the 1GB cache limit.
