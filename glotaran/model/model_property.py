@@ -22,10 +22,10 @@ class ModelProperty(property):
                 raise Exception(
                     f"Property '{name}' of '{cls.__name__}' is not allowed to set to None.")
             if self._is_parameter and value is not None:
-                if self._is_parameter_value and isinstance(value, str):
-                    value = Parameter(full_label=value)
-                elif self._is_parameter_list and all(isinstance(v, str) for v in value):
-                    value = [Parameter(full_label=v) for v in value]
+                if self._is_parameter_value:
+                    value = Parameter(full_label=str(value))
+                elif self._is_parameter_list:
+                    value = [Parameter(full_label=str(v)) for v in value]
                 elif self._is_parameter_dict and all(isinstance(v, str) for v in value.values()):
                     for k, v in value.items():
                         value[k] = Parameter(full_label=v)
