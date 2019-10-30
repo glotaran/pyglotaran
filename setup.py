@@ -49,7 +49,7 @@ setup(
     description='The Glotaran fitting engine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='http://glotaran.org',
+    url='https://github.com/glotaran/pyglotaran',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Science/Research',
@@ -69,6 +69,12 @@ setup(
                     j.snellenburg@gmail.com,
                     i.h.m.van.stokkum@vu.nl """,
     license='GPLv3',
+    project_urls={
+        'GloTarAn Ecosystem': 'http://glotaran.org',
+        'Documentation': 'https://glotaran.readthedocs.io',
+        'Source': 'https://github.com/glotaran/pyglotaran',
+        'Tracker': 'https://github.com/glotaran/pyglotaran/issues',
+    },
     python_requires=">=3.6",
     packages=find_packages(),
     install_requires=install_requires,
