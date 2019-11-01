@@ -5,13 +5,13 @@ from glotaran.model import model
 from glotaran.parameter import ParameterGroup
 
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
-from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
 from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
 from .spectral_constraints import SpectralConstraint, apply_spectral_constraints
-from .spectral_irf import IrfSpectralGaussian
+from .spectral_irf import IrfSpectralMultiGaussian
 from .spectral_matrix import spectral_matrix
 from .spectral_penalties import EqualAreaPenalty, apply_spectral_penalties
 from .spectral_relations import SpectralRelation, apply_spectral_relations
@@ -31,7 +31,7 @@ def apply_kinetic_model_constraints(
 
 def index_dependend(model: typing.Type['KineticModel']):
     if any([
-        isinstance(irf, IrfSpectralGaussian) and irf.dispersion_center is not None
+        isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
         for irf in model.irf.values()
     ]):
         return True
@@ -56,7 +56,7 @@ def grouped(model: typing.Type['KineticModel']):
     },
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
-    matrix=kinetic_spectrum_matrix,
+    matrix=kinetic_image_matrix,
     matrix_dimension='time',
     global_matrix=spectral_matrix,
     global_dimension='spectral',

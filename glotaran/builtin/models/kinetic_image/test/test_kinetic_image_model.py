@@ -60,7 +60,7 @@ class OneComponentOneChannelGaussianIrf:
             "k1": {'matrix': {("s1", "s1"): '1', }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['2'], 'width': ['3']},
+            'irf1': {'type': 'gaussian', 'center': '2', 'width': '3'},
         },
         'dataset': {
             'dataset1': {
@@ -141,7 +141,7 @@ class ThreeComponentParallel:
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'multi-gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -198,7 +198,7 @@ class ThreeComponentSequential:
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'multi-gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -262,6 +262,8 @@ def test_kinetic_model(suite, nnls):
     print(model.validate(initial))
     assert model.valid(initial)
 
+    print(model.markdown(initial))
+
     dataset = model.simulate('dataset1', wanted, suite.axis, suite.clp)
 
     assert dataset.data.shape == \
@@ -284,3 +286,6 @@ def test_kinetic_model(suite, nnls):
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
     assert 'species_associated_images' in resultdata
     assert 'decay_associated_images' in resultdata
+
+    if len(model.irf) != 0:
+        assert 'irf' in resultdata

@@ -72,7 +72,8 @@ def model_attribute(
                                  options.get('allow_none', False)
                                  )
             setattr(cls, name, prop)
-            getattr(cls, '_glotaran_properties').append(name)
+            if name not in getattr(cls, '_glotaran_properties'):
+                getattr(cls, '_glotaran_properties').append(name)
 
         init = _create_init_func(cls)
         setattr(cls, '__init__', init)
@@ -297,13 +298,13 @@ def _create_mprint_func(cls):
 
             def format_parameter(param):
                 s = f"{param.full_label}"
-                if parameter:
+                if parameter is not None:
                     p = parameter.get(param.full_label)
                     s += f": **{p.value:.5e}**"
                     if p.vary:
                         err = p.stderr if p.stderr else 0
                         s += f" *(StdErr: {err:.0e}"
-                        if initial:
+                        if initial is not None:
                             i = initial.get(param.full_label)
                             s += f" ,initial: {i.value:.5e}"
                         s += ")*"

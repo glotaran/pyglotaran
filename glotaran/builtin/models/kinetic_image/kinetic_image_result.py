@@ -5,7 +5,7 @@ import xarray as xr
 import glotaran
 from glotaran.parameter import ParameterGroup
 
-from .irf import IrfGaussian
+from .irf import IrfMultiGaussian, IrfGaussianCoherentArtifact
 
 
 def finalize_kinetic_image_result(
@@ -30,10 +30,7 @@ def finalize_kinetic_image_result(
         if dataset_descriptor.baseline:
             dataset['baseline'] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
-        irf = dataset_descriptor.irf
-        if isinstance(irf, IrfGaussian):
-            index = dataset.coords[model.global_dimension][0].values
-            dataset['irf'] = (('time'), irf.calculate(index, dataset.coords['time']))
+        retrieve_irf(model, dataset, dataset_descriptor, "images")
 
 
 def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name):
@@ -111,3 +108,26 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
                 dataset[f'a_matrix_{das_label}'] = all_a_matrix[i] \
                     .rename(component=f"component_{das_label}")
                 dataset[f'k_matrix_{das_label}'] = all_k_matrix[i]
+
+
+def retrieve_irf(model, dataset, dataset_descriptor, name):
+
+    irf = dataset_descriptor.irf
+
+    if isinstance(irf, IrfMultiGaussian):
+        index = dataset.coords[model.global_dimension][0].values
+        dataset['irf'] = ((model.matrix_dimension), irf.calculate(index, dataset.coords['time']))
+
+        if isinstance(irf, IrfGaussianCoherentArtifact):
+            dataset.coords['coherent_artifact_order'] = \
+                    list(range(1, irf.coherent_artifact_order+1))
+            dataset['coherent_artifact_concentration'] = (
+                (
+                 model.matrix_dimension,
+                 'coherent_artifact_order'),
+                dataset.matrix.sel(clp_label=irf.clp_labels()).values
+            )
+            dataset['coherent_artifact_associated_spectra'] = (
+                (model.global_dimension, 'coherent_artifact_order'),
+                dataset.clp.sel(clp_label=irf.clp_labels()).values
+            )

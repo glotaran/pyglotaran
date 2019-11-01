@@ -85,7 +85,7 @@ class OneOscillationWithIrf():
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
         },
         'dataset': {
             'dataset1': {
@@ -104,7 +104,7 @@ class OneOscillationWithIrf():
             'm1': {'oscillation': ['osc1']}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
         },
         'dataset': {
             'dataset1': {
@@ -183,7 +183,7 @@ class OneOscillationWithSequentialModel():
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
         },
         'dataset': {
             'dataset1': {
@@ -222,7 +222,7 @@ class OneOscillationWithSequentialModel():
             }
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'gaussian', 'center': 'irf.center', 'width': 'irf.width'},
         },
         'dataset': {
             'dataset1': {

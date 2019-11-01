@@ -73,7 +73,7 @@ class OneComponentOneChannelGaussianIrf:
             "k1": {'matrix': {("s1", "s1"): '1', }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['2'], 'width': ['3']},
+            'irf1': {'type': 'spectral-gaussian', 'center': '2', 'width': '3'},
         },
         'dataset': {
             'dataset1': {
@@ -98,7 +98,7 @@ class OneComponentOneChannelGaussianIrf:
             "k1": {'matrix': {("s1", "s1"): '1', }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['2'], 'width': ['3']},
+            'irf1': {'type': 'spectral-gaussian', 'center': '2', 'width': '3'},
         },
         'dataset': {
             'dataset1': {
@@ -139,7 +139,10 @@ class ThreeComponentParallel:
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {
+                'type': 'spectral-multi-gaussian',
+                'center': ['irf.center'],
+                'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -187,7 +190,11 @@ class ThreeComponentParallel:
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {
+                'type': 'spectral-multi-gaussian',
+                'center': ['irf.center'],
+                'width': ['irf.width']
+            },
         },
         'dataset': {
             'dataset1': {
@@ -243,7 +250,11 @@ class ThreeComponentSequential:
             }}
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {
+                'type': 'spectral-multi-gaussian',
+                'center': ['irf.center'],
+                'width': ['irf.width']
+            },
         },
         'dataset': {
             'dataset1': {
@@ -291,7 +302,9 @@ class ThreeComponentSequential:
             },
         },
         'irf': {
-            'irf1': {'type': 'gaussian', 'center': ['irf.center'], 'width': ['irf.width']},
+            'irf1': {'type': 'spectral-multi-gaussian',
+                     'center': ['irf.center'],
+                     'width': ['irf.width']},
         },
         'dataset': {
             'dataset1': {
@@ -352,7 +365,7 @@ class IrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'gaussian',
+                'type': 'spectral-multi-gaussian',
                 'center': ['irf.center'],
                 'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
@@ -413,7 +426,7 @@ class IrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'gaussian',
+                'type': 'spectral-multi-gaussian',
                 'center': ['irf.center'],
                 'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
@@ -494,6 +507,8 @@ def test_kinetic_model(suite, nnls):
     initial = suite.initial
     print(model.validate(initial))
     assert model.valid(initial)
+
+    print(model.markdown(wanted))
 
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 

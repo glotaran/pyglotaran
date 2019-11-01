@@ -5,8 +5,8 @@ from glotaran.parameter import ParameterGroup
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_relations import \
     create_spectral_relation_matrix
-from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix \
-    import kinetic_spectrum_matrix
+from glotaran.builtin.models.kinetic_image.kinetic_image_matrix \
+    import kinetic_image_matrix
 
 
 def test_spectral_relation():
@@ -61,7 +61,7 @@ def test_spectral_relation():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset['dataset1'].fill(model, parameter)
-    compartments, matrix = kinetic_spectrum_matrix(dataset, time, 0)
+    compartments, matrix = kinetic_image_matrix(dataset, time, 0)
 
     assert len(compartments) == 4
     assert matrix.shape == (time.size, 4)

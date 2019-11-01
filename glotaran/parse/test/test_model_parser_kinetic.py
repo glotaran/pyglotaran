@@ -5,7 +5,7 @@ from glotaran.parse.parser import load_yml_file
 
 from glotaran.builtin.models.kinetic_image.initial_concentration \
         import InitialConcentration
-from glotaran.builtin.models.kinetic_image.irf import IrfGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex \
         import KineticImageMegacomplex
 
@@ -118,7 +118,7 @@ def test_irf(model):
         label = "irf{}".format(i)
         assert label in model.irf
         irf = model.irf[label]
-        assert isinstance(irf, IrfGaussian)
+        assert isinstance(irf, IrfMultiGaussian)
         assert irf.label == label
         want = [1] if i == 1 else [1, 2]
         assert irf.center == want

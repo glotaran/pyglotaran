@@ -1,6 +1,7 @@
 """This package contains irf items."""
 
 from typing import List
+import numba as nb
 import numpy as np
 
 from glotaran.model import model_attribute, model_attribute_typed
@@ -20,7 +21,7 @@ class IrfMeasured:
     'backsweep': {'type': bool, 'default': False},
     'backsweep_period': {'type': Parameter, 'allow_none': True},
 }, has_type=True)
-class IrfGaussian:
+class IrfMultiGaussian:
     """
     Represents a gaussian IRF.
 
@@ -87,8 +88,61 @@ class IrfGaussian:
         return irf
 
 
+@model_attribute(properties={
+    'center': Parameter,
+    'width': Parameter,
+}, has_type=True)
+class IrfGaussian(IrfMultiGaussian):
+    pass
+
+
+@model_attribute(properties={
+    'coherent_artifact_order': {'type': int},
+    'coherent_artifact_width': {'type': Parameter, 'allow_none': True},
+}, has_type=True)
+class IrfGaussianCoherentArtifact(IrfGaussian):
+
+    def clp_labels(self):
+        return [f'coherent_artifact_{i}'
+                for i in range(1, self.coherent_artifact_order + 1)]
+
+    def calculate_coherent_artifact(self, axis):
+        if not 1 <= self.coherent_artifact_order <= 3:
+            raise Exception(self, "Coherent artifact order must be between in [1,3]")
+
+        center, width, _, _, _ = self.parameter(None)
+
+        center = center[0]
+        width = self.coherent_artifact_width.value \
+            if self.coherent_artifact_width is not None else width[0]
+
+        clp_label = self.clp_labels()
+
+        matrix = self._calculate_coherent_artifact_matrix(
+            center, width, axis, self.coherent_artifact_order
+        )
+
+        return clp_label, matrix
+
+    @staticmethod
+    @nb.jit(nopython=True, parallel=True)
+    def _calculate_coherent_artifact_matrix(center, width, axis, order):
+        matrix = np.zeros((axis.size, order), dtype=np.float64)
+
+        matrix[:, 0] = np.exp(-1 * (axis - center)**2 / (2 * width**2))
+        if order > 1:
+            matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2
+
+        if order > 2:
+            matrix[:, 2] = \
+                matrix[:, 0] * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
+        return matrix
+
+
 @model_attribute_typed(types={
     'gaussian': IrfGaussian,
+    'multi-gaussian': IrfMultiGaussian,
+    'gaussian-coherent-artifact': IrfGaussianCoherentArtifact,
     'measured': IrfMeasured,
 })
 class Irf(object):
