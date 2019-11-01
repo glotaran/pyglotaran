@@ -16,7 +16,7 @@ distributed==2.6.0
 fsspec==0.5.2
 lmfit==0.9.14
 numba==0.46.0
-pandas==0.25.2
+pandas==0.25.3
 partd==0.3.10  # Needed by dask
 pyyaml==5.1.2
 xarray==0.12
