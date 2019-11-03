@@ -19,9 +19,9 @@ install_requires = [
 # TODO: set a new genereal min version for netCDF4
 # when they deploy windows wheels again
 if sys.platform == "win32":
-    install_requires.append('netCDF4>=1.5,<1.5.3')
+    install_requires.append('netCDF4>=1.4,<=1.5.3')
 else:
-    install_requires.append('netCDF4>=1.5')
+    install_requires.append('netCDF4>=1.4')
 
 
 with open("README.md", "r") as fh:
@@ -72,7 +72,7 @@ setup(
         'Source': 'https://github.com/glotaran/pyglotaran',
         'Tracker': 'https://github.com/glotaran/pyglotaran/issues',
     },
-    python_requires=">=3.6",
+    python_requires=">=3.6, <3.8",
     packages=find_packages(),
     install_requires=install_requires,
     entry_points=entry_points,
