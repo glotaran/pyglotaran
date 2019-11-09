@@ -84,11 +84,10 @@ in your working directory and fill it with the following:
 
    k_matrix:
      k1:
-       matrix: {
-         !tuple '(s2, s1)': kinetic.1,
-         !tuple '(s3, s2)': kinetic.2,
-         !tuple '(s3, s3)': kinetic.3,
-       }
+       matrix:
+         (s2, s1): kinetic.1
+         (s3, s2): kinetic.2
+         (s3, s3): kinetic.3
 
    megacomplex:
      m1:
@@ -97,8 +96,8 @@ in your working directory and fill it with the following:
    irf:
      irf1:
        type: gaussian
-       center: [irf.center]
-       width: [irf.width]
+       center: irf.center
+       width: irf.width
 
    dataset:
      dataset1:
@@ -125,11 +124,10 @@ Now you can load the model file.
       ...:
       ...: k_matrix:
       ...:   k1:
-      ...:     matrix: {
-      ...:       !tuple '(s2, s1)': kinetic.1,
-      ...:       !tuple '(s3, s2)': kinetic.2,
-      ...:       !tuple '(s3, s3)': kinetic.3,
-      ...:     }
+      ...:     matrix: 
+      ...:       (s2, s1): kinetic.1
+      ...:       (s3, s2): kinetic.2
+      ...:       (s3, s3): kinetic.3
       ...:
       ...: megacomplex:
       ...:   m1:
@@ -138,8 +136,8 @@ Now you can load the model file.
       ...: irf:
       ...:   irf1:
       ...:     type: gaussian
-      ...:     center: [irf.center]
-      ...:     width: [irf.width]
+      ...:     center: irf.center
+      ...:     width: irf.width
       ...:
       ...: dataset:
       ...:   dataset1:
