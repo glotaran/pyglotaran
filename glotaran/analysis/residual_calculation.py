@@ -63,11 +63,13 @@ def create_index_dependend_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
-            if callable(scheme.model.additional_penalty_function):
-                additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
-                    parameter, clp_label, clp, i
-                )
-                penalties.append(additional_penalty)
+            # call removed because of performance reasons (issue #230)
+            # if callable(scheme.model.additional_penalty_function):
+            #     additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
+            #         parameter, clp_label, clp, i
+            #     )
+            #     penalties.append(additional_penalty)
+            # TODO: re-implement removed functionality (issue: #237)
 
     penalty = dask.delayed(np.concatenate)(penalties)
     return reduced_clp_labels, reduced_clps, residuals, penalty
