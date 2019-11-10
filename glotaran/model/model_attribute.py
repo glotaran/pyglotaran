@@ -314,8 +314,10 @@ def _create_mprint_func(cls):
 
             if isinstance(value, Parameter):
                 a += format_parameter(value)
-            elif isinstance(value, list) and all(isinstance(v, Parameter) for v in value):
-                a += f"[{', '.join([format_parameter(v) for v in value])}]"
+            elif isinstance(value, list):
+                status = [isinstance(v, Parameter) for v in value]
+                if all(status):
+                    a += f"[{', '.join([format_parameter(v) for v in value])}]"
             elif isinstance(value, dict):
                 a += "\n"
                 for k, v in value.items():

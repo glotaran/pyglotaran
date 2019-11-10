@@ -341,7 +341,7 @@ class ThreeComponentSequential:
     })
 
     time = np.asarray(np.arange(-10, 50, 1.0))
-    spectral = np.arange(600, 750, 5.0)
+    spectral = np.arange(600, 750, 25.0)
     axis = {"time": time, "spectral": spectral}
 
 
@@ -509,7 +509,7 @@ def test_kinetic_model(suite, nnls):
     print(model.validate(initial))
     assert model.valid(initial)
 
-    # print(model.markdown(wanted))
+    print(model.markdown(wanted))
 
     dataset = sim_model.simulate('dataset1', wanted, suite.axis)
 
@@ -541,8 +541,8 @@ def test_kinetic_model(suite, nnls):
 
 if __name__ == "__main__":
     for nnls in [True, False]:
-        # test_kinetic_model(OneComponentOneChannel, nnls)
-        # test_kinetic_model(OneComponentOneChannelGaussianIrf, nnls)
-        # test_kinetic_model(ThreeComponentParallel, nnls)
-        # test_kinetic_model(ThreeComponentSequential, nnls)
+        test_kinetic_model(OneComponentOneChannel, nnls)
+        test_kinetic_model(OneComponentOneChannelGaussianIrf, nnls)
+        test_kinetic_model(ThreeComponentParallel, nnls)
+        test_kinetic_model(ThreeComponentSequential, nnls)
         test_kinetic_model(IrfDispersion, nnls)
