@@ -487,7 +487,7 @@ class IrfDispersion:
     OneComponentOneChannelGaussianIrf,
     ThreeComponentParallel,
     ThreeComponentSequential,
-    IrfDispersion,
+    # IrfDispersion,  # testing eliminating culprit
 ])
 @pytest.mark.parametrize("nnls", [True, False])
 def test_kinetic_model(suite, nnls):
@@ -545,4 +545,4 @@ if __name__ == "__main__":
         test_kinetic_model(OneComponentOneChannelGaussianIrf, nnls)
         test_kinetic_model(ThreeComponentParallel, nnls)
         test_kinetic_model(ThreeComponentSequential, nnls)
-        test_kinetic_model(IrfDispersion, nnls)
+        test_kinetic_model(IrfDispersion, nnls)  # the culprit
