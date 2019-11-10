@@ -23,6 +23,8 @@ ResultFuture = \
 
 def optimize(scheme, verbose=True, client=None):
 
+    initial_parameter = scheme.parameter.as_parameter_dict()
+    return optimize_task(initial_parameter, scheme, verbose)
     if client is None:
         try:
             client = dd.get_client()
