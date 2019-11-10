@@ -104,7 +104,7 @@ def calculate_penalty(parameter, scheme, bag, groups):
                 residual_calculation.create_index_independend_ungrouped_residual(
                     scheme, parameter, bag, constraint_labels_and_matrices, residual_function
                 )
-    penalty = penalty.compute()
+    penalty = penalty.compute(scheduler='single-threaded')
     return penalty
 
 
