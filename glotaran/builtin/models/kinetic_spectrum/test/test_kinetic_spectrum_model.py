@@ -227,7 +227,7 @@ class ThreeComponentParallel:
     })
 
     time = np.arange(-10, 100, 1.5)
-    spectral = np.arange(600, 750, 1)
+    spectral = np.arange(600, 750, 10)
     axis = {"time": time, "spectral": spectral}
 
 
@@ -477,7 +477,7 @@ class IrfDispersion:
     })
 
     time = np.arange(-1, 30, 0.01)
-    spectral = np.arange(300, 500, 5)
+    spectral = np.arange(300, 500, 25)
     axis = {"time": time, "spectral": spectral}
 
 
