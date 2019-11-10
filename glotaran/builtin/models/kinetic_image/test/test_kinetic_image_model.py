@@ -172,7 +172,7 @@ class ThreeComponentParallel:
     })
 
     time = np.arange(-10, 100, 1.5)
-    pixel = np.arange(600, 750, 1)
+    pixel = np.arange(600, 750, 10)
     axis = {"time": time, "pixel": pixel}
 
     clp = _create_gaussian_clp(
@@ -232,7 +232,7 @@ class ThreeComponentSequential:
     })
 
     time = np.asarray(np.arange(-10, 50, 1.0))
-    pixel = np.arange(600, 750, 5.0)
+    pixel = np.arange(600, 750, 10)
     axis = {"time": time, "pixel": pixel}
 
     clp = _create_gaussian_clp(
