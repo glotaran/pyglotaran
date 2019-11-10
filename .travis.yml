@@ -112,7 +112,7 @@ install:
 script:
   - pwd
   - pip install -e .
-  - py.test --cov=glotaran --cov-config .coveragerc glotaran
+  - py.test -vv --cov=glotaran --cov-config .coveragerc glotaran
   - pip freeze
 
 after_success:
