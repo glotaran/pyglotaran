@@ -489,7 +489,7 @@ class IrfDispersion:
     ThreeComponentSequential,
     IrfDispersion,  # reenable to test if create_index_dependend_ungrouped_matrix_jobs is blocker
 ])
-@pytest.mark.parametrize("nnls", [True, False])
+@pytest.mark.parametrize("nnls", [False, True])
 def test_kinetic_model(suite, nnls):
 
     model = suite.model
@@ -540,7 +540,7 @@ def test_kinetic_model(suite, nnls):
 
 
 if __name__ == "__main__":
-    for nnls in [True, False]:
+    for nnls in [False, True]:
         # test_kinetic_model(OneComponentOneChannel, nnls)
         # test_kinetic_model(OneComponentOneChannelGaussianIrf, nnls)
         # test_kinetic_model(ThreeComponentParallel, nnls)
