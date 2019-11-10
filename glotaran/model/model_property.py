@@ -24,11 +24,15 @@ class ModelProperty(property):
             if self._is_parameter and value is not None:
                 if self._is_parameter_value and isinstance(value, str):
                     value = Parameter(full_label=str(value))
-                elif self._is_parameter_list and all(isinstance(v, str) for v in value):
-                    value = [Parameter(full_label=str(v)) for v in value]
-                elif self._is_parameter_dict and all(isinstance(v, str) for v in value.values()):
-                    for k, v in value.items():
-                        value[k] = Parameter(full_label=v)
+                elif self._is_parameter_list:
+                    status = [isinstance(v, str) for v in value]
+                    if all(status):
+                        value = [Parameter(full_label=str(v)) for v in value]
+                elif self._is_parameter_dict:
+                    status = [isinstance(v, str) for v in value.values()]
+                    if all(status):
+                        for k, v in value.items():
+                            value[k] = Parameter(full_label=v)
             setattr(that_self, f'_{self._name}', value)
 
         @wrap_func_as_method(cls, name=name)
