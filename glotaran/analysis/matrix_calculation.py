@@ -72,10 +72,12 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
             )
             clp_labels[label].append(clp)
             matrices[label].append(matrix)
-            if callable(model.constrain_matrix_function):
-                clp, matrix = dask.delayed(model.constrain_matrix_function, nout=2)(
-                    parameter, clp, matrix, index
-                )
+            # Disable to test for slowdown:
+            # if callable(model.constrain_matrix_function):
+            #     clp, matrix = dask.delayed(model.constrain_matrix_function, nout=2)(
+            #         parameter, clp, matrix, index
+            #     )
+            # TODO: reactivate functionality above
             constraint_labels_and_matrices[label].append((clp, matrix))
 
     return clp_labels, matrices, constraint_labels_and_matrices
