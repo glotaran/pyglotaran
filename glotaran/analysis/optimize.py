@@ -24,14 +24,12 @@ ResultFuture = \
 def optimize(scheme, verbose=True, client=None):
 
     if client is None:
-        try:
-            client = dd.get_client()
-        except Exception:
-            client = dd.Client(processes=False)
-    initial_parameter = scheme.parameter.as_parameter_dict()
-    scheme = client.scatter(scheme)
-    optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
-    return optimization_result_future.result()
+        with dd.Client(processes=False) as client:
+            initial_parameter = scheme.parameter.as_parameter_dict()
+            scheme = client.scatter(scheme)
+            optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
+            result = optimization_result_future.result()
+    return result
 
 
 def optimize_task(initial_parameter, scheme, verbose):
