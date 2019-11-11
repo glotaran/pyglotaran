@@ -158,6 +158,32 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
 
+def irf_conv_1(matrix, measured_irf, rates, time):
+
+    time_delta = time[:-1] - time[1:]
+    time_delta.append(time_delta[-1])
+
+    for n_r in nb.prange(rates.size):
+        r_n = rates[n_r]
+        # forward
+        for n_t in range(time.size):
+            delta_n = time_delta[n_t]
+            matrix[n_t, n_r] += 1/r_n * (
+                np.exp(-n_t * delta_n * r_n) - np.exp(-(n_t + 1) * delta_n * r_n)
+            )
+        # backward
+        for n_t in reversed(range(time.size)):
+            delta_n = time_delta[n_t]
+            matrix[n_t, n_r] = 0.5 * (
+                measured_irf[0] * matrix[n_t, n_r] + measured_irf[n_t] * matrix[0, n_r]
+            ) + 0.25 * matrix[n_t, n_r] * measured_irf[0]
+
+            for i in range(1, n_t):
+                matrix[n_t, n_r] += matrix[i, n_r] * measured_irf[n_t-i]
+            matrix[n_t, n_r] *= delta_n
+
+
+
 # This is a work around to use scipy.special function with numba
 from numba.extending import get_cython_function_address # noqa
 import ctypes # noqa
