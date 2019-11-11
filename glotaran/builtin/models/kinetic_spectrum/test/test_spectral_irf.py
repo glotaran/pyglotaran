@@ -23,7 +23,7 @@ class SimpleIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'gaussian',
+                'type': 'spectral-gaussian',
                 'center': 'irf.center',
                 'width': 'irf.width',
                 'dispersion_center': 'irf.dispcenter',
@@ -55,7 +55,7 @@ class SimpleIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'gaussian',
+                'type': 'spectral-gaussian',
                 'center': 'irf.center',
                 'width': 'irf.width',
                 'dispersion_center': 'irf.dispcenter',
@@ -101,7 +101,7 @@ class SimpleIrfDispersion:
         'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.01]],
     })
 
-    time = np.arange(-1, 30, 0.01)
+    time = np.arange(-1, 30, 0.2)
     spectral = np.arange(300, 500, 25)
     axis = {"time": time, "spectral": spectral}
 
@@ -124,7 +124,7 @@ class MultiIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'multi-gaussian',
+                'type': 'spectral-multi-gaussian',
                 'center': ['irf.center'],
                 'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
@@ -157,7 +157,7 @@ class MultiIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'multi-gaussian',
+                'type': 'spectral-multi-gaussian',
                 'center': ['irf.center'],
                 'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
@@ -210,7 +210,7 @@ class MultiIrfDispersion:
                 ['widthdisp', 0.025]],
     })
 
-    time = np.arange(-1, 30, 0.01)
+    time = np.arange(-1, 30, 0.2)
     spectral = np.arange(300, 500, 25)
     axis = {"time": time, "spectral": spectral}
 
