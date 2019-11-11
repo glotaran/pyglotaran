@@ -52,10 +52,11 @@ def model(model_type: str,
           matrix_dimension: str = None,
           global_dimension: str = None,
           constrain_matrix_function: ConstrainMatrixFunction = None,
+          has_additional_penalty_function: typing.Callable[[], bool] = None,
           additional_penalty_function: PenaltyFunction = None,
           finalize_data_function: FinalizeFunction = None,
-          grouped: typing.Union[bool, typing.Callable[[None], bool]] = False,
-          index_dependend: typing.Union[bool, typing.Callable[[None], bool]] = False,
+          grouped: typing.Union[bool, typing.Callable[[], bool]] = False,
+          index_dependend: typing.Union[bool, typing.Callable[[], bool]] = False,
           ) -> typing.Callable:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
@@ -106,12 +107,20 @@ def model(model_type: str,
         else:
             setattr(cls, 'constrain_matrix_function', None)
 
-        if additional_penalty_function:
+        if has_additional_penalty_function:
+            if not additional_penalty_function:
+                raise Exception('Model implements `has_additional_penalty_function` '
+                                'but not `additional_penalty_function`')
+            has_pen = wrap_func_as_method(
+                cls, name='has_additional_penalty_function'
+            )(has_additional_penalty_function)
             pen = wrap_func_as_method(
                 cls, name='additional_penalty_function'
             )(additional_penalty_function)
             setattr(cls, 'additional_penalty_function', pen)
+            setattr(cls, 'has_additional_penalty_function', has_pen)
         else:
+            setattr(cls, 'has_additional_penalty_function', None)
             setattr(cls, 'additional_penalty_function', None)
 
         if not callable(grouped):

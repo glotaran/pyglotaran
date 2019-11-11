@@ -27,11 +27,12 @@ def create_index_independend_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
-            if callable(scheme.model.additional_penalty_function):
-                additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
-                    parameter, reduced_clp_labels[label], reduced_clps[label], i
-                )
-                penalties.append(additional_penalty)
+            if callable(scheme.model.has_additional_penalty_function):
+                if scheme.model.has_additional_penalty_function():
+                    additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
+                        parameter, reduced_clp_labels[label], reduced_clps[label], i
+                    )
+                    penalties.append(additional_penalty)
 
     penalty = dask.delayed(np.concatenate)(penalties)
     return reduced_clp_labels, reduced_clps, residuals, penalty
@@ -63,13 +64,12 @@ def create_index_dependend_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
-            # call removed because of performance reasons (issue #230)
-            # if callable(scheme.model.additional_penalty_function):
-            #     additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
-            #         parameter, clp_label, clp, i
-            #     )
-            #     penalties.append(additional_penalty)
-            # TODO: re-implement removed functionality (issue: #237)
+            if callable(scheme.model.has_additional_penalty_function):
+                if scheme.model.has_additional_penalty_function():
+                    additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
+                        parameter, clp_label, clp, i
+                    )
+                    penalties.append(additional_penalty)
 
     penalty = dask.delayed(np.concatenate)(penalties)
     return reduced_clp_labels, reduced_clps, residuals, penalty
@@ -86,11 +86,11 @@ def create_index_independend_grouped_residual(
         clp, residual = residual_function(labels_and_matrices[matrix_label].matrix, problem.data)
 
         penalty = residual
-        if callable(scheme.model.additional_penalty_function):
-            additional_penalty = scheme.model.additional_penalty_function(
-                parameter, labels_and_matrices[matrix_label].clp_label, clp, problem.index
-            )
-            if additional_penalty:
+        if callable(scheme.model.has_additional_penalty_function):
+            if scheme.model.has_additional_penalty_function():
+                additional_penalty = scheme.model.additional_penalty_function(
+                    parameter, labels_and_matrices[matrix_label].clp_label, clp, problem.index
+                )
                 penalty = np.concatenate([penalty, additional_penalty])
         return clp, residual, penalty
     penalty_bag = \
@@ -113,11 +113,11 @@ def create_index_dependend_grouped_residual(
         clp, residual = residual_function(labels_and_matrices.matrix, problem.data)
 
         penalty = residual
-        if callable(scheme.model.additional_penalty_function):
-            additional_penalty = scheme.model.additional_penalty_function(
-                parameter, labels_and_matrices.clp_label, clp, problem.index
-            )
-            if additional_penalty:
+        if callable(scheme.model.has_additional_penalty_function):
+            if scheme.model.has_additional_penalty_function():
+                additional_penalty = scheme.model.additional_penalty_function(
+                    parameter, labels_and_matrices.clp_label, clp, problem.index
+                )
                 penalty = np.concatenate([penalty, additional_penalty])
         return clp, residual, penalty
     penalty_bag = \

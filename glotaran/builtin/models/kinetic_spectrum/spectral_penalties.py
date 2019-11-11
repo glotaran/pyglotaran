@@ -42,15 +42,16 @@ class EqualAreaPenalty:
         return any([applies(i) for i in self.interval])
 
 
+def has_spectral_penalties(model: typing.Type['KineticModel']) -> bool:
+    return len(model.equal_area_penalties) != 0
+
+
 def apply_spectral_penalties(
         model: typing.Type['KineticModel'],
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         clps: np.ndarray,
         index: float) -> np.ndarray:
-
-    if not model.equal_area_penalties:
-        return []
 
     clp_labels, clps = retrieve_clps(model, parameter, clp_labels, clps, index)
 
