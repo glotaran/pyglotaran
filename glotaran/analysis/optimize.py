@@ -23,13 +23,14 @@ ResultFuture = \
 
 def optimize(scheme, verbose=True, client=None):
 
-    if client is None:
-        with dd.Client(processes=False) as client:
-            initial_parameter = scheme.parameter.as_parameter_dict()
-            scheme = client.scatter(scheme)
-            optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
-            result = optimization_result_future.result()
-    return result
+    #  if client is None:
+    #      with dd.Client(processes=False) as client:
+    #          initial_parameter = scheme.parameter.as_parameter_dict()
+    #          scheme = client.scatter(scheme)
+    #          optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
+    #          result = optimization_result_future.result()
+    initial_parameter = scheme.parameter.as_parameter_dict()
+    return optimize_task(initial_parameter, scheme, verbose)
 
 
 def optimize_task(initial_parameter, scheme, verbose):
