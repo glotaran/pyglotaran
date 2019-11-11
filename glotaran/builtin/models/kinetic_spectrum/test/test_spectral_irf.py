@@ -23,7 +23,7 @@ class SimpleIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'spectral-gaussian',
+                'type': 'gaussian',
                 'center': 'irf.center',
                 'width': 'irf.width',
                 'dispersion_center': 'irf.dispcenter',
@@ -55,7 +55,7 @@ class SimpleIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'spectral-gaussian',
+                'type': 'gaussian',
                 'center': 'irf.center',
                 'width': 'irf.width',
                 'dispersion_center': 'irf.dispcenter',
@@ -124,7 +124,7 @@ class MultiIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'spectral-multi-gaussian',
+                'type': 'multi-gaussian',
                 'center': ['irf.center'],
                 'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
@@ -157,7 +157,7 @@ class MultiIrfDispersion:
         },
         'irf': {
             'irf1': {
-                'type': 'spectral-multi-gaussian',
+                'type': 'multi-gaussian',
                 'center': ['irf.center'],
                 'width': ['irf.width'],
                 'dispersion_center': 'irf.dispcenter',
