@@ -8,7 +8,12 @@ from glotaran.model import model_attribute, model_attribute_typed
 from glotaran.parameter import Parameter
 
 
-@model_attribute(has_type=True)
+@model_attribute(
+    properties={
+        'method': str,
+    },
+    has_type=True,
+)
 class IrfMeasured:
     """A measured IRF. The data must be supplied by the dataset."""
 
