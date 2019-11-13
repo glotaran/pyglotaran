@@ -83,7 +83,7 @@ class SimpleIrfDispersion:
         ],
         'kinetic': [
             ["1", 1],
-            {'non-negative': True}
+            {'non-negative': False}
         ],
         'irf': [['center', 0.3],
                 ['width', 0.1],
@@ -186,7 +186,7 @@ class MultiIrfDispersion:
         ],
         'kinetic': [
             ["1", 1],
-            {'non-negative': True}
+            {'non-negative': False}
         ],
         'irf': [['center', 0.3],
                 ['width', 0.1],
