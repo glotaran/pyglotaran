@@ -82,7 +82,7 @@ class SimpleIrfDispersion:
             ['1', 1, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 1],
+            ["1", 0.5],
             {'non-negative': False}
         ],
         'irf': [['center', 0.3],
@@ -95,7 +95,7 @@ class SimpleIrfDispersion:
             ['1', 1, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 1],
+            ["1", 0.5],
         ],
 
         'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.01]],
@@ -185,7 +185,7 @@ class MultiIrfDispersion:
             ['1', 1, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 1],
+            ["1", 0.5],
             {'non-negative': False}
         ],
         'irf': [['center', 0.3],
@@ -200,7 +200,7 @@ class MultiIrfDispersion:
             ['1', 1, {'vary': False, 'non-negative': False}],
         ],
         'kinetic': [
-            ["1", 1],
+            ["1", 0.5],
         ],
         'irf': [['center', 0.3],
                 ['width', 0.1],
