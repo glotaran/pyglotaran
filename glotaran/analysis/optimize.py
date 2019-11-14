@@ -1,6 +1,6 @@
 import collections
 import dask
-import dask.distributed as dd
+# import dask.distributed as dd  # TODO: make optional
 import numpy as np
 import lmfit
 
@@ -27,7 +27,8 @@ def optimize(scheme, verbose=True, client=None):
     #      with dd.Client(processes=False) as client:
     #          initial_parameter = scheme.parameter.as_parameter_dict()
     #          scheme = client.scatter(scheme)
-    #          optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
+    #          optimization_result_future = client.submit(optimize_task, initial_parameter,
+    #          scheme, verbose)
     #          result = optimization_result_future.result()
     initial_parameter = scheme.parameter.as_parameter_dict()
     return optimize_task(initial_parameter, scheme, verbose)
