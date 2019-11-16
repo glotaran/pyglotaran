@@ -1,6 +1,7 @@
 """A base class for global analysis models."""
 
 
+import copy
 import inspect
 import typing
 import numpy as np
@@ -17,7 +18,7 @@ class Model:
     """A base class for global analysis models."""
 
     @classmethod
-    def from_dict(cls, model_dict: typing.Dict) -> typing.Type['Model']:
+    def from_dict(cls, model_dict_ref: typing.Dict) -> typing.Type['Model']:
         """Creates a model from a dictionary.
 
         Parameters
@@ -27,6 +28,8 @@ class Model:
         """
 
         model = cls()
+        
+        model_dict = copy.deepcopy(model_dict_ref)
 
         # iterate over items
         for name, attribute in list(model_dict.items()):
