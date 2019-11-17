@@ -88,7 +88,7 @@ class SimpleIrfDispersion:
         'irf': [['center', 0.3],
                 ['width', 0.1],
                 ['dispcenter', 400, {'vary': False}],
-                ['centerdisp', 0.01]],
+                ['centerdisp', 0.5]],
     })
     wanted = ParameterGroup.from_dict({
         'j': [
@@ -98,11 +98,14 @@ class SimpleIrfDispersion:
             ["1", 0.5],
         ],
 
-        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.01]],
+        'irf': [['center', 0.3], ['width', 0.1], ['dispcenter', 400], ['centerdisp', 0.5]],
     })
 
-    time = np.arange(-1, 5, 0.2)
-    spectral = np.arange(300, 500, 25)
+    time_p1 = np.linspace(-1, 2, 50, endpoint=False)
+    time_p2 = np.linspace(2, 5, 30, endpoint=False)
+    time_p3 = np.geomspace(5, 10, num=20)
+    time = np.concatenate([time_p1, time_p2, time_p3])
+    spectral = np.arange(300, 500, 5)
     axis = {"time": time, "spectral": spectral}
 
 
