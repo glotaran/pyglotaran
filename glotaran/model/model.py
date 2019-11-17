@@ -28,7 +28,7 @@ class Model:
         """
 
         model = cls()
-        
+
         model_dict = copy.deepcopy(model_dict_ref)
 
         # iterate over items
