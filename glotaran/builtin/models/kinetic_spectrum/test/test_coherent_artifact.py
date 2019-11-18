@@ -2,9 +2,9 @@ import numpy as np
 import xarray as xr
 
 from glotaran.parameter import ParameterGroup
-from glotaran.builtin.models.kinetic_image import KineticImageModel
-from glotaran.builtin.models.kinetic_image.kinetic_image_matrix \
-    import kinetic_image_matrix
+from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix \
+    import kinetic_spectrum_matrix
 
 
 def test_coherent_artifact():
@@ -38,7 +38,7 @@ def test_coherent_artifact():
             },
         },
     }
-    model = KineticImageModel.from_dict(model_dict.copy())
+    model = KineticSpectrumModel.from_dict(model_dict.copy())
 
     parameter = ParameterGroup.from_list([
         101e-4,
@@ -53,7 +53,7 @@ def test_coherent_artifact():
     irf_same_width = irf.calculate_coherent_artifact(time)
 
     model_dict['irf']['irf1']['coherent_artifact_width'] = '4'
-    model = KineticImageModel.from_dict(model_dict)
+    model = KineticSpectrumModel.from_dict(model_dict)
 
     irf = model.irf['irf1'].fill(model, parameter)
     irf_diff_width = irf.calculate_coherent_artifact(time)
@@ -61,7 +61,7 @@ def test_coherent_artifact():
     assert not np.array_equal(irf_same_width, irf_diff_width)
 
     dataset = model.dataset['dataset1'].fill(model, parameter)
-    compartments, matrix = kinetic_image_matrix(dataset, time, 0)
+    compartments, matrix = kinetic_spectrum_matrix(dataset, time, 0)
 
     assert len(compartments) == 4
     for i in range(1, 4):
@@ -70,13 +70,13 @@ def test_coherent_artifact():
     assert matrix.shape == (time.size, 4)
 
     clp = xr.DataArray([[1, 1, 1, 1]],
-                       coords=[('pixel', [0]),
+                       coords=[('spectral', [0]),
                                ('clp_label', ['s1',
                                               'coherent_artifact_1',
                                               'coherent_artifact_2',
                                               'coherent_artifact_3',
                                               ])])
-    axis = {"time": time, "pixel": clp.pixel}
+    axis = {"time": time, "spectral": clp.spectral}
     dataset = model.simulate('dataset1', parameter, axis, clp)
 
     data = {'dataset1': dataset}
@@ -89,7 +89,7 @@ def test_coherent_artifact():
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset['time'], resultdata['time'])
-    assert np.array_equal(dataset['pixel'], resultdata['pixel'])
+    assert np.array_equal(dataset['spectral'], resultdata['spectral'])
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)

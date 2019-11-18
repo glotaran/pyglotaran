@@ -10,7 +10,7 @@ from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
     retrieve_irf,
 )
 
-from .spectral_irf import IrfSpectralMultiGaussian
+from .spectral_irf import IrfSpectralMultiGaussian, IrfGaussianCoherentArtifact
 from .spectral_constraints import OnlyConstraint, ZeroConstraint
 
 
@@ -63,6 +63,19 @@ def finalize_kinetic_spectrum_result(
                         irf.calculate_dispersion(dataset.coords['spectral'].values)):
                     dataset[f'center_dispersion_{i+1}'] = \
                             ((model.global_dimension, dispersion))
+        if isinstance(irf, IrfGaussianCoherentArtifact):
+            dataset.coords['coherent_artifact_order'] = \
+                    list(range(1, irf.coherent_artifact_order+1))
+            dataset['coherent_artifact_concentration'] = (
+                (
+                    model.matrix_dimension,
+                    'coherent_artifact_order'),
+                dataset.matrix.sel(clp_label=irf.clp_labels()).values
+            )
+            dataset['coherent_artifact_associated_spectra'] = (
+                (model.global_dimension, 'coherent_artifact_order'),
+                dataset.clp.sel(clp_label=irf.clp_labels()).values
+            )
 
         else:
             retrieve_irf(model, dataset, dataset_descriptor, "images")
