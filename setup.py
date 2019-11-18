@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 install_requires = [
     'click>=7.0',
-    'cloudpickle[bag]>=1.2',  # Needed by dask
+    'cloudpickle>=1.2',  # Needed by dask
     'dask[bag]>=2.8',
     'fsspec>=0.6',
     'lmfit>=0.9.13',
