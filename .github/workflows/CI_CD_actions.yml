@@ -80,7 +80,7 @@ jobs:
         run: pip freeze
       - name: Run tests
         run: |
-          py.test --cov=glotaran --cov-config .coveragerc -k 'not IrfDispersion' glotaran
+          py.test --cov=glotaran --cov-config .coveragerc glotaran
 
   deploy:
     runs-on: [ubuntu-latest]
