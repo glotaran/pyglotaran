@@ -1,5 +1,6 @@
 import typing
 import numpy as np
+import numba as nb
 
 from glotaran.model import model_attribute
 from glotaran.builtin.models.kinetic_image.irf import Irf, IrfMultiGaussian
@@ -77,5 +78,49 @@ class IrfSpectralGaussian(IrfSpectralMultiGaussian):
     pass
 
 
+@model_attribute(properties={
+    'coherent_artifact_order': {'type': int},
+    'coherent_artifact_width': {'type': Parameter, 'allow_none': True},
+}, has_type=True)
+class IrfGaussianCoherentArtifact(IrfSpectralGaussian):
+
+    def clp_labels(self):
+        return [f'coherent_artifact_{i}'
+                for i in range(1, self.coherent_artifact_order + 1)]
+
+    def calculate_coherent_artifact(self, axis):
+        if not 1 <= self.coherent_artifact_order <= 3:
+            raise Exception(self, "Coherent artifact order must be between in [1,3]")
+
+        center, width, _, _, _ = self.parameter(None)
+
+        center = center[0]
+        width = self.coherent_artifact_width.value \
+            if self.coherent_artifact_width is not None else width[0]
+
+        clp_label = self.clp_labels()
+
+        matrix = self._calculate_coherent_artifact_matrix(
+            center, width, axis, self.coherent_artifact_order
+        )
+
+        return clp_label, matrix
+
+    @staticmethod
+    @nb.jit(nopython=True, parallel=True)
+    def _calculate_coherent_artifact_matrix(center, width, axis, order):
+        matrix = np.zeros((axis.size, order), dtype=np.float64)
+
+        matrix[:, 0] = np.exp(-1 * (axis - center)**2 / (2 * width**2))
+        if order > 1:
+            matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2
+
+        if order > 2:
+            matrix[:, 2] = \
+                matrix[:, 0] * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
+        return matrix
+
+
 Irf.add_type('spectral-multi-gaussian', IrfSpectralMultiGaussian)
 Irf.add_type('spectral-gaussian', IrfSpectralGaussian)
+Irf.add_type('gaussian-coherent-artifact', IrfGaussianCoherentArtifact)

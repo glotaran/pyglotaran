@@ -5,7 +5,7 @@ import xarray as xr
 import glotaran
 from glotaran.parameter import ParameterGroup
 
-from .irf import IrfMultiGaussian, IrfGaussianCoherentArtifact
+from .irf import IrfMultiGaussian
 
 
 def finalize_kinetic_image_result(
@@ -117,17 +117,3 @@ def retrieve_irf(model, dataset, dataset_descriptor, name):
     if isinstance(irf, IrfMultiGaussian):
         index = dataset.coords[model.global_dimension][0].values
         dataset['irf'] = ((model.matrix_dimension), irf.calculate(index, dataset.coords['time']))
-
-        if isinstance(irf, IrfGaussianCoherentArtifact):
-            dataset.coords['coherent_artifact_order'] = \
-                    list(range(1, irf.coherent_artifact_order+1))
-            dataset['coherent_artifact_concentration'] = (
-                (
-                 model.matrix_dimension,
-                 'coherent_artifact_order'),
-                dataset.matrix.sel(clp_label=irf.clp_labels()).values
-            )
-            dataset['coherent_artifact_associated_spectra'] = (
-                (model.global_dimension, 'coherent_artifact_order'),
-                dataset.clp.sel(clp_label=irf.clp_labels()).values
-            )

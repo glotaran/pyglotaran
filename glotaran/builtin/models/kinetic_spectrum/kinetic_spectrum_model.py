@@ -5,11 +5,11 @@ from glotaran.model import model
 from glotaran.parameter import ParameterGroup
 
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
-from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
 from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
+from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
 from .spectral_constraints import SpectralConstraint, apply_spectral_constraints
 from .spectral_irf import IrfSpectralMultiGaussian
 from .spectral_matrix import spectral_matrix
@@ -60,7 +60,7 @@ def grouped(model: typing.Type['KineticModel']):
     },
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
-    matrix=kinetic_image_matrix,
+    matrix=kinetic_spectrum_matrix,
     matrix_dimension='time',
     global_matrix=spectral_matrix,
     global_dimension='spectral',
