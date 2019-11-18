@@ -19,7 +19,6 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.analysis.matrix_calculation
     glotaran.analysis.nnls
     glotaran.analysis.optimize
-    glotaran.analysis.parameter_server
     glotaran.analysis.problem_bag
     glotaran.analysis.residual_calculation
     glotaran.analysis.result
@@ -27,6 +26,12 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.analysis.simulation
     glotaran.analysis.variable_projection
     glotaran.builtin
+    glotaran.builtin.file_formats
+    glotaran.builtin.file_formats.ascii
+    glotaran.builtin.file_formats.ascii.wavelength_time_explicit_file
+    glotaran.builtin.file_formats.sdt
+    glotaran.builtin.file_formats.sdt.sdt_file
+    glotaran.builtin.file_formats.sdt.sdt_file_reader
     glotaran.builtin.models
     glotaran.builtin.models.doas
     glotaran.builtin.models.doas.doas_matrix
@@ -46,12 +51,12 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.builtin.models.kinetic_image.kinetic_image_result
     glotaran.builtin.models.kinetic_spectrum
     glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor
-    glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix
     glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model
     glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_result
     glotaran.builtin.models.kinetic_spectrum.spectral_constraints
     glotaran.builtin.models.kinetic_spectrum.spectral_irf
     glotaran.builtin.models.kinetic_spectrum.spectral_matrix
+    glotaran.builtin.models.kinetic_spectrum.spectral_penalties
     glotaran.builtin.models.kinetic_spectrum.spectral_relations
     glotaran.builtin.models.kinetic_spectrum.spectral_shape
     glotaran.cli
