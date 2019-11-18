@@ -11,7 +11,6 @@ install_requires = [
     'numba>=0.44',
     'numpy>=1.16',
     'pandas>=0.24',
-    'partd>=0.3.10',  # Needed by dask
     'pyyaml>=5.1',
     'scipy>=1.3',
     'setuptools>=41.0',
