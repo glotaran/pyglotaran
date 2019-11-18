@@ -1,21 +1,20 @@
 import collections
 import dask
-import dask.distributed as dd
-import numpy as np
 import lmfit
+import numpy as np
 
 from glotaran.parameter import ParameterGroup
 
 from . import problem_bag, residual_calculation
-from .result import Result
-from .nnls import residual_nnls
-from .variable_projection import residual_variable_projection
 from .matrix_calculation import (
     calculate_index_independend_ungrouped_matrices,
     calculate_index_independend_grouped_matrices,
     create_index_dependend_ungrouped_matrix_jobs,
     create_index_dependend_grouped_matrix_jobs
 )
+from .nnls import residual_nnls
+from .variable_projection import residual_variable_projection
+from .result import Result
 
 ResultFuture = \
     collections.namedtuple('ResultFuture', 'bag clp_label matrix full_clp_label clp residual')
@@ -23,15 +22,18 @@ ResultFuture = \
 
 def optimize(scheme, verbose=True, client=None):
 
-    if client is None:
-        try:
-            client = dd.get_client()
-        except Exception:
-            client = dd.Client(processes=False)
     initial_parameter = scheme.parameter.as_parameter_dict()
-    scheme = client.scatter(scheme)
-    optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
-    return optimization_result_future.result()
+
+    if client is not None:
+        scheme = client.scatter(scheme)
+        optimization_result_future = \
+            client.submit(optimize_task, initial_parameter, scheme, verbose)
+        result = optimization_result_future.result()
+
+    else:
+        result = optimize_task(initial_parameter, scheme, verbose)
+
+    return result
 
 
 def optimize_task(initial_parameter, scheme, verbose):

@@ -51,11 +51,13 @@ def model(model_type: str,
           global_matrix: GlobalMatrixFunction = None,
           matrix_dimension: str = None,
           global_dimension: str = None,
+          has_matrix_constraints_function: typing.Callable[[typing.Type[Model]], bool] = None,
           constrain_matrix_function: ConstrainMatrixFunction = None,
+          has_additional_penalty_function: typing.Callable[[typing.Type[Model]], bool] = None,
           additional_penalty_function: PenaltyFunction = None,
           finalize_data_function: FinalizeFunction = None,
-          grouped: typing.Union[bool, typing.Callable[[None], bool]] = False,
-          index_dependend: typing.Union[bool, typing.Callable[[None], bool]] = False,
+          grouped: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
+          index_dependend: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
           ) -> typing.Callable:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
@@ -98,20 +100,36 @@ def model(model_type: str,
         setattr(cls, '_model_type', model_type)
         setattr(cls, 'finalize_data', finalize_data_function)
 
-        if constrain_matrix_function:
+        if has_matrix_constraints_function:
+            if not constrain_matrix_function:
+                raise Exception('Model implements `has_matrix_constraints_function` '
+                                'but not `constrain_matrix_function`')
+            has_c_mat = wrap_func_as_method(
+                cls, name='has_matrix_constraints_function'
+            )(has_matrix_constraints_function)
             c_mat = wrap_func_as_method(
                 cls, name='constrain_matrix_function'
             )(constrain_matrix_function)
+            setattr(cls, 'has_matrix_constraints_function', has_c_mat)
             setattr(cls, 'constrain_matrix_function', c_mat)
         else:
+            setattr(cls, 'has_matrix_constraints_function', None)
             setattr(cls, 'constrain_matrix_function', None)
 
-        if additional_penalty_function:
+        if has_additional_penalty_function:
+            if not additional_penalty_function:
+                raise Exception('Model implements `has_additional_penalty_function`'
+                                'but not `additional_penalty_function`')
+            has_pen = wrap_func_as_method(
+                cls, name='has_additional_penalty_function'
+            )(has_additional_penalty_function)
             pen = wrap_func_as_method(
                 cls, name='additional_penalty_function'
             )(additional_penalty_function)
             setattr(cls, 'additional_penalty_function', pen)
+            setattr(cls, 'has_additional_penalty_function', has_pen)
         else:
+            setattr(cls, 'has_additional_penalty_function', None)
             setattr(cls, 'additional_penalty_function', None)
 
         if not callable(grouped):

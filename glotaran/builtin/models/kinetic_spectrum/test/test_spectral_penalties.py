@@ -41,7 +41,7 @@ def test_spectral_penalties():
         },
     })
 
-    weight = 0.0  # TODO: workaround for #230 should be fixed with #237
+    weight = 0.1
     model_with_penalty = KineticSpectrumModel.from_dict({
         'initial_concentration': {
             'j1': {

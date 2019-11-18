@@ -29,8 +29,12 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
         )
         clp_labels[label] = clp_label
         matrices[label] = matrix
-        if callable(model.constrain_matrix_function):
-            clp_label, matrix = model.constrain_matrix_function(parameter, clp_label, matrix, None)
+
+        if callable(model.has_matrix_constraints_function):
+            if model.has_matrix_constraints_function():
+                clp_label, matrix = \
+                    model.constrain_matrix_function(parameter, clp_label, matrix, None)
+
         constraint_labels_and_matrices[label] = LabelAndMatrix(clp_label, matrix)
     return clp_labels, matrices, constraint_labels_and_matrices
 
@@ -72,10 +76,12 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
             )
             clp_labels[label].append(clp)
             matrices[label].append(matrix)
-            if callable(model.constrain_matrix_function):
-                clp, matrix = dask.delayed(model.constrain_matrix_function, nout=2)(
-                    parameter, clp, matrix, index
-                )
+
+            if callable(model.has_matrix_constraints_function):
+                if model.has_matrix_constraints_function():
+                    clp, matrix = dask.delayed(model.constrain_matrix_function, nout=2)(
+                        parameter, clp, matrix, index
+                    )
             constraint_labels_and_matrices[label].append((clp, matrix))
 
     return clp_labels, matrices, constraint_labels_and_matrices
@@ -107,8 +113,9 @@ def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
     def constrain_and_combine_matrices(result):
         matrices, index = result
         clp, matrix = _combine_matrices(matrices)
-        if callable(model.constrain_matrix_function):
-            clp, matrix = model.constrain_matrix_function(parameter, clp, matrix, index)
+        if callable(model.has_matrix_constraints_function):
+            if model.has_matrix_constraints_function():
+                clp, matrix = model.constrain_matrix_function(parameter, clp, matrix, index)
         return LabelAndMatrix(clp, matrix)
 
     matrix_jobs = bag.map(calculate_group)
