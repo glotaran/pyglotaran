@@ -73,7 +73,7 @@ jobs:
           pip install -r requirements_dev.txt
       - name: Run tests
         run: |
-          py.test --cov=glotaran --cov-config .coveragerc glotaran
+          py.test --cov=glotaran --cov-config .coveragerc -k 'not IrfDispersion' glotaran
 
   deploy:
     runs-on: [ubuntu-latest]
