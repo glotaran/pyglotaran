@@ -24,6 +24,7 @@ class Scheme:
                  model: 'glotaran.model.Model' = None,
                  parameter: ParameterGroup = None,
                  data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
+                 extra: typing.Dict[str, xr.DataArray] = None,
                  group_tolerance: float = 0.0,
                  nnls: bool = False,
                  nfev: int = None,
@@ -32,6 +33,7 @@ class Scheme:
         self.model = model
         self.parameter = parameter
         self.data = data
+        self.extra = extra
         self.group_tolerance = group_tolerance
         self.nnls = nnls
         self.nfev = nfev
@@ -85,7 +87,22 @@ class Scheme:
         nnls = scheme.get('nnls', False)
         nfev = scheme.get('nfev', None)
         group_tolerance = scheme.get('group_tolerance', 0.0)
-        return cls(model=model, parameter=parameter, data=data,
+
+        extra = scheme.get('extra', {})
+
+        for label, path in extra.item:
+            path = pathlib.Path(path)
+
+            fmt = path.suffix[1:] if path.suffix != '' else 'nc'
+            if 'data_format' in scheme:
+                fmt = scheme['data_format']
+
+            try:
+                extra[label] = glotaran.io.read_data_file(path, fmt=fmt)
+            except Exception as e:
+                raise Exception(f"Error loading extra data '{label}': {e}")
+
+        return cls(model=model, parameter=parameter, data=data, extra=extra,
                    nnls=nnls, nfev=nfev, group_tolerance=group_tolerance)
 
     @property

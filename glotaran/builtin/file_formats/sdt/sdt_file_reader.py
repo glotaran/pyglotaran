@@ -19,6 +19,7 @@ def read_sdt(file_path: str,
              dataset_index: int = None,
              swap_axis: bool = False,
              orig_time_axis_index: int = 2,
+             prepare: bool = False,
              ) -> xr.Dataset:
     """
     Reads a `*.sdt` file and returns a pd.DataFrame (`return_dataframe==True`), a
@@ -98,5 +99,6 @@ def read_sdt(file_path: str,
         if not index:
             index = np.array(range(data[0]))
         data = xr.DataArray(data.T, coords=[('time', times), ('spectral', index)])
-        data = prepare_time_trace_dataset(data)
+        if prepare:
+            data = prepare_time_trace_dataset(data)
     return data
