@@ -15,7 +15,7 @@ install_requires = [
     'pyyaml>=5.1',
     'scipy>=1.3',
     'setuptools>=41.0',
-    'xarray>=0.12',
+    'xarray>=0.14',
 ]
 
 # TODO: set a new genereal min version for netCDF4
