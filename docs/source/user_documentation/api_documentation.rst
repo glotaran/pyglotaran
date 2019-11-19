@@ -43,6 +43,8 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.builtin.models.kinetic_image
     glotaran.builtin.models.kinetic_image.initial_concentration
     glotaran.builtin.models.kinetic_image.irf
+    glotaran.builtin.models.kinetic_image.irf_gaussian
+    glotaran.builtin.models.kinetic_image.irf_measured
     glotaran.builtin.models.kinetic_image.k_matrix
     glotaran.builtin.models.kinetic_image.kinetic_image_dataset_descriptor
     glotaran.builtin.models.kinetic_image.kinetic_image_matrix
