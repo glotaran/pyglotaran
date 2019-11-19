@@ -81,47 +81,6 @@ class OneComponentOneChannelGaussianIrf:
     clp = xr.DataArray([[1]], coords=[('pixel', [0]), ('clp_label', ['s1'])])
 
 
-class OneComponentOneChannelMeasuredIrf:
-    model = KineticImageModel.from_dict({
-        'initial_concentration': {
-            'j1': {
-                'compartments': ['s1'],
-                'parameters': ['2']
-            },
-        },
-        'megacomplex': {
-            'mc1': {'k_matrix': ['k1']},
-        },
-        'k_matrix': {
-            "k1": {'matrix': {("s1", "s1"): '1', }}
-        },
-        'irf': {
-            'irf1': {'type': 'measured'},
-        },
-        'dataset': {
-            'dataset1': {
-                'initial_concentration': 'j1',
-                'irf': 'irf1',
-                'megacomplex': ['mc1'],
-            },
-        },
-    })
-
-    initial = ParameterGroup.from_list([101e-4, [1, {'vary': False, 'non-negative': False}]])
-    wanted = ParameterGroup.from_list([101e-3, [1, {'vary': False, 'non-negative': False}]])
-
-    time = np.asarray(np.arange(-10, 50, 1.5))
-    axis = {"time": time, "pixel": np.asarray([0])}
-
-    center = 0
-    width = 5
-    irf = (1/np.sqrt(2 * np.pi)) * np.exp(-(time-center) * (time-center)
-                                          / (2 * width * width))
-    model.irf["irf1"].irfdata = irf
-
-    clp = xr.DataArray([[1]], coords=[('pixel', [0]), ('clp_label', ['s1'])])
-
-
 class ThreeComponentParallel:
     model = KineticImageModel.from_dict({
         'initial_concentration': {
@@ -242,7 +201,6 @@ class ThreeComponentSequential:
 @pytest.mark.parametrize("suite", [
     OneComponentOneChannel,
     OneComponentOneChannelGaussianIrf,
-    #  OneComponentOneChannelMeasuredIrf,
     ThreeComponentParallel,
     ThreeComponentSequential,
 ])

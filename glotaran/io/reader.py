@@ -36,4 +36,4 @@ def file_reader(extension: str = None, name: str = None):
     return decorator
 
 
-file_reader(extension='nc', name='netCDF4')(xr.open_dataset)
+file_reader(extension='nc', name='netCDF4')(xr.open_dataarray)

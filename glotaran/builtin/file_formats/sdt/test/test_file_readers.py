@@ -17,8 +17,8 @@ def test_read_sdt(test_file_path, result_file_path, index):
                             dtype={"Delay": np.float, "Data": np.uint16})
     result_df.Delay = result_df.Delay * 1e-9
     result_traces = pd.DataFrame([result_df.Data.values], columns=result_df.Delay)
-    assert isinstance(test_dataset, xr.Dataset)
-    assert np.all(test_dataset.data.T[0] == result_df.Data.values)
+    assert isinstance(test_dataset, xr.DataArray)
+    assert np.all(test_dataset.T[0] == result_df.Data.values)
 
-    assert test_dataset.data.T.shape == result_traces.values.shape
+    assert test_dataset.T.shape == result_traces.values.shape
     assert np.allclose(test_dataset.time, np.array(result_traces.columns))

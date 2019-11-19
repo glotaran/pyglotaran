@@ -9,7 +9,7 @@ from glotaran.builtin.models.kinetic_image.kinetic_image_matrix \
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 
 
-def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
+def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, extra=None):
 
     oscillations = _collect_oscillations(dataset_descriptor)
     matrix = np.zeros((axis.size, len(2 * oscillations)), dtype=np.float64)
@@ -33,7 +33,7 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
         calculate_doas_matrix_gaussian_irf(
             matrix, frequencies, rates, axis, centers, widths, scales)
 
-    kinetic_clp, kinetic_matrix = kinetic_image_matrix(dataset_descriptor, axis, index, irf)
+    kinetic_clp, kinetic_matrix = kinetic_image_matrix(dataset_descriptor, axis, index, extra)
     if kinetic_matrix is not None:
         clp = clp + kinetic_clp
         matrix = np.concatenate((matrix, kinetic_matrix), axis=1)

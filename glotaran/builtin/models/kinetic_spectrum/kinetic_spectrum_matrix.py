@@ -8,9 +8,9 @@ from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import \
 from .spectral_irf import IrfGaussianCoherentArtifact
 
 
-def kinetic_spectrum_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
+def kinetic_spectrum_matrix(dataset_descriptor=None, axis=None, index=None, extra=None):
 
-    clp_label, matrix = kinetic_image_matrix(dataset_descriptor, axis, index, irf)
+    clp_label, matrix = kinetic_image_matrix(dataset_descriptor, axis, index, extra)
 
     if isinstance(dataset_descriptor.irf, IrfGaussianCoherentArtifact):
         irf_clp_label, irf_matrix = \

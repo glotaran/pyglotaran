@@ -15,6 +15,7 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
     matrices = {}
     constraint_labels_and_matrices = {}
     model = scheme.model
+    extra = scheme.extra
 
     descriptors = {label: descriptor.fill(model, parameter)
                    for label, descriptor in scheme.model.dataset.items()}
@@ -25,7 +26,7 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
             model.matrix,
             descriptor,
             axis,
-            {},
+            extra,
         )
         clp_labels[label] = clp_label
         matrices[label] = matrix
@@ -54,10 +55,11 @@ def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
 
 def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
 
-    model = scheme.model
     clp_labels = {}
     matrices = {}
     constraint_labels_and_matrices = {}
+    model = scheme.model
+    extra = scheme.extra
 
     descriptors = {label: descriptor.fill(model, parameter)
                    for label, descriptor in scheme.model.dataset.items()}
@@ -71,7 +73,7 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
                 model.matrix,
                 descriptor,
                 problem.matrix_axis,
-                {},
+                extra,
                 index=index,
             )
             clp_labels[label].append(clp)
@@ -90,6 +92,7 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
 def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
 
     model = scheme.model
+    extra = scheme.extra
 
     descriptors = {label: descriptor.fill(model, parameter)
                    for label, descriptor in scheme.model.dataset.items()}
@@ -99,7 +102,7 @@ def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
             model.matrix,
             descriptors[problem.dataset],
             problem.axis,
-            {},
+            extra,
             index=problem.index
         ) for problem in group.descriptor]
         return results, group.descriptor[0].index
@@ -129,9 +132,8 @@ def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=No
     args = {
         'dataset_descriptor': dataset_descriptor,
         'axis': axis,
+        'extra': extra,
     }
-    for k, v in extra:
-        args[k] = v
     if index is not None:
         args['index'] = index
     clp_label, matrix = matrix_function(**args)

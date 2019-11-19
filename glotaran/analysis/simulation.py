@@ -12,6 +12,7 @@ def simulate(model: typing.Type['glotaran.model.Model'],
              parameter: ParameterGroup,
              axes: typing.Dict[str, np.ndarray] = None,
              clp: typing.Union[np.ndarray, xr.DataArray] = None,
+             extra: typing.Dict[str, xr.DataArray] = None,
              noise=False,
              noise_std_dev=1.0,
              noise_seed=None,
@@ -54,8 +55,11 @@ def simulate(model: typing.Type['glotaran.model.Model'],
                                   (model.global_dimension, global_dimension)])
     result = result.to_dataset(name='data')
 
-    matrix = [model.matrix(dataset_descriptor=filled_dataset, axis=matrix_dimension, index=index)
-              for index in global_dimension]
+    matrix = [model.matrix(
+        dataset_descriptor=filled_dataset,
+        axis=matrix_dimension,
+        index=index,
+        extra=extra) for index in global_dimension]
     if callable(model.constrain_matrix_function):
         matrix = [model.constrain_matrix_function(parameter, clp, mat, global_dimension[i])
                   for i, (clp, mat) in enumerate(matrix)]

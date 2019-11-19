@@ -24,6 +24,7 @@ class Scheme:
                  model: 'glotaran.model.Model' = None,
                  parameter: ParameterGroup = None,
                  data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
+                 extra: typing.Dict[str, xr.DataArray] = None,
                  group_tolerance: float = 0.0,
                  nnls: bool = False,
                  nfev: int = None,
@@ -32,6 +33,7 @@ class Scheme:
         self.model = model
         self.parameter = parameter
         self.data = data
+        self.extra = extra
         self.group_tolerance = group_tolerance
         self.nnls = nnls
         self.nfev = nfev
@@ -85,7 +87,22 @@ class Scheme:
         nnls = scheme.get('nnls', False)
         nfev = scheme.get('nfev', None)
         group_tolerance = scheme.get('group_tolerance', 0.0)
-        return cls(model=model, parameter=parameter, data=data,
+
+        extra = scheme.get('extra', {})
+
+        for label, path in extra.items():
+            path = pathlib.Path(path)
+
+            fmt = path.suffix[1:] if path.suffix != '' else 'nc'
+            if 'data_format' in scheme:
+                fmt = scheme['data_format']
+
+            try:
+                extra[label] = glotaran.io.read_data_file(path, fmt=fmt)
+            except Exception as e:
+                raise Exception(f"Error loading extra data '{label}': {e}")
+
+        return cls(model=model, parameter=parameter, data=data, extra=extra,
                    nnls=nnls, nfev=nfev, group_tolerance=group_tolerance)
 
     @property
@@ -114,6 +131,14 @@ class Scheme:
     @data.setter
     def data(self, data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]):
         self._data = data
+
+    @property
+    def extra(self) -> typing.Dict[str, xr.Dataset]:
+        return self._extra
+
+    @extra.setter
+    def extra(self, extra: typing.Dict[str, xr.Dataset]):
+        self._extra = extra
 
     @property
     def nnls(self) -> bool:
@@ -153,8 +178,8 @@ class Scheme:
         else `False`."""
         return self.model.valid(parameter)
 
-    def prepared_data(self) -> typing.Dict[str, xr.Dataset]:
-        data = {}
+    def prepare_data(self, copy=True):
+        data = {} if copy else None
         for label, dataset in self.data.items():
             if self.model.matrix_dimension not in dataset.dims:
                 raise Exception("Missing coordinates for dimension "
@@ -170,9 +195,16 @@ class Scheme:
             if 'weight' in dataset and 'weighted_data' not in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
 
-            # This protects transposing when getting data with svd in it
+            if'data_singular_values' not in dataset:
+                l, s, r = np.linalg.svd(dataset.data)
+                dataset['data_left_singular_vectors'] = \
+                    ((self.model.matrix_dimension, 'left_singular_value_index'), l)
+                dataset['data_singular_values'] = (('singular_value_index'), s)
+                dataset['data_right_singular_vectors'] = \
+                    (('right_singular_value_index', self.model.global_dimension), r)
 
-            if 'data_singular_values' in dataset:
+            else:
+                # This protects transposing when getting data with svd in it
                 if dataset.coords['right_singular_value_index'].size != \
                   dataset.coords[self.model.global_dimension].size:
                     dataset = dataset.rename(
@@ -191,8 +223,12 @@ class Scheme:
             new_dims += [dim for dim in dataset.dims
                          if dim != self.model.matrix_dimension
                          and dim != self.model.global_dimension]
-            data[label] = dataset.transpose(*new_dims)
-        return data
+            if copy:
+                data[label] = dataset.transpose(*new_dims)
+            else:
+                self.data[label] = dataset.transpose(*new_dims)
+        if copy:
+            self.data = data
 
     def markdown(self):
         s = self.model.markdown(parameter=self.parameter)

@@ -127,6 +127,7 @@ class Model:
                  parameter: ParameterGroup,
                  axes: typing.Dict[str, np.ndarray] = None,
                  clp: typing.Union[np.ndarray, xr.DataArray] = None,
+                 extra: typing.Dict[str, xr.DataArray] = None,
                  noise: bool = False,
                  noise_std_dev: float = 1.0,
                  noise_seed: int = None,
@@ -151,11 +152,12 @@ class Model:
             Seed for the noise.
         """
         return simulate(self, dataset, parameter, axes=axes, clp=clp, noise=noise,
-                        noise_std_dev=noise_std_dev, noise_seed=noise_seed)
+                        noise_std_dev=noise_std_dev, noise_seed=noise_seed, extra=extra)
 
     def optimize(self,
                  parameter: ParameterGroup,
                  data: typing.Dict[str, typing.Union[xr.Dataset, xr.DataArray]],
+                 extra: typing.Dict[str, xr.DataArray] = None,
                  nnls: bool = False,
                  verbose: bool = True,
                  max_nfev: int = None,
@@ -179,7 +181,7 @@ class Model:
         group_tolerance :
             The tolerance for grouping datasets along the global dimension.
         """
-        scheme = Scheme(model=self, parameter=parameter, data=data,
+        scheme = Scheme(model=self, parameter=parameter, data=data, extra=extra,
                         nnls=nnls, group_tolerance=group_tolerance, nfev=max_nfev)
         result = optimize(scheme, verbose=verbose, client=client)
         return result
