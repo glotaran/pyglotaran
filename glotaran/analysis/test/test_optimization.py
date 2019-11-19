@@ -12,7 +12,8 @@ from glotaran.parameter import Parameter, ParameterGroup
 from .mock import MockMegacomplex
 
 
-def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
+def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra=None):
+    assert extra['testextra']
     kinpar = -1 * np.array(dataset_descriptor.kinetic)
     compartments = [f's{i+1}' for i in range(len(kinpar))]
     array = np.exp(np.outer(axis, kinpar))
@@ -215,13 +216,15 @@ def test_fitting(suite, index_dependend, grouped):
     print(model.validate(initial))
     assert model.valid(initial)
 
-    dataset = simulate(sim_model, 'dataset1', wanted, {'e': est_axis, 'c': cal_axis})
+    extra = {'testextra': True}
+
+    dataset = simulate(sim_model, 'dataset1', wanted, {'e': est_axis, 'c': cal_axis}, extra=extra)
     print(dataset)
 
     assert dataset.data.shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
-    scheme = Scheme(model=model, parameter=initial, data=data, nfev=5)
+    scheme = Scheme(model=model, parameter=initial, data=data, nfev=5, extra=extra)
 
     result = optimize(scheme)
     print(result.optimized_parameter)

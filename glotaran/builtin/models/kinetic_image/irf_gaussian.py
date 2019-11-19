@@ -1,10 +1,8 @@
-"""This package contains irf items."""
-
 from typing import List
 import numba as nb
 import numpy as np
 
-from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 

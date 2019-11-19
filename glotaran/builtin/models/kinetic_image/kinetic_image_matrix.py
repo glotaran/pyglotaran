@@ -3,17 +3,18 @@
 import numpy as np
 import numba as nb
 
-from .irf import IrfMultiGaussian, IrfGaussianCoherentArtifact
+from .irf_gaussian import IrfMultiGaussian, IrfGaussianCoherentArtifact
+from .irf_measured import IrfMeasured
 
 
 def kinetic_image_matrix(
-        dataset_descriptor=None, axis=None, index=None, irf=None):
+        dataset_descriptor=None, axis=None, index=None, extra=None):
     return kinetic_matrix(
-        dataset_descriptor, axis, index, irf, kinetic_image_matrix_implementation)
+        dataset_descriptor, axis, index, extra, kinetic_image_matrix_implementation)
 
 
 def kinetic_matrix(
-        dataset_descriptor=None, axis=None, index=None, irf=None, matrix_implementation=None):
+        dataset_descriptor=None, axis=None, index=None, extra=None, matrix_implementation=None):
 
     compartments = None
     matrix = None
@@ -38,7 +39,7 @@ def kinetic_matrix(
             index,
             k_matrix,
             initial_concentration,
-            irf,
+            extra,
             matrix_implementation
         )
 
@@ -81,7 +82,7 @@ def kinetic_matrix(
 
 
 def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
-                            initial_concentration, irf, matrix_implementation):
+                            initial_concentration, extra, matrix_implementation):
 
     # we might have more compartments in the model then in the k matrix
     compartments = [comp for comp in initial_concentration.compartments
@@ -94,7 +95,7 @@ def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
     size = (axis.size, rates.size)
     matrix = np.zeros(size, dtype=np.float64)
 
-    matrix_implementation(matrix, rates, axis, index, dataset_descriptor, irf)
+    matrix_implementation(matrix, rates, axis, index, dataset_descriptor, extra)
 
     if not np.all(np.isfinite(matrix)):
         raise Exception(f"Non-finite concentrations for K-Matrix '{k_matrix.label}':\n"
@@ -108,9 +109,11 @@ def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
 
 
 def kinetic_image_matrix_implementation(
-        matrix, rates, axis, index, dataset_descriptor, measured_irf):
+        matrix, rates, axis, index, dataset_descriptor, extra):
 
-    if isinstance(dataset_descriptor.irf, IrfMultiGaussian):
+    irf = dataset_descriptor.irf
+
+    if isinstance(irf, IrfMultiGaussian):
 
         center, width, irf_scale, backsweep, backsweep_period = \
             dataset_descriptor.irf.parameter(index)
@@ -120,6 +123,12 @@ def kinetic_image_matrix_implementation(
                 matrix, rates, axis, center[i], width[i],
                 irf_scale[i], backsweep, backsweep_period,)
         matrix /= np.sum(irf_scale)
+
+    if isinstance(irf, IrfMeasured):
+        if irf.label not in extra:
+            raise Exception(f"Missing data for irf '{irf.label}'")
+        measured_irf = extra[irf.label].values
+        irf.get_implementation()(matrix, measured_irf, rates, axis)
 
     else:
         calculate_kinetic_matrix_no_irf(matrix, rates, axis)
@@ -156,49 +165,6 @@ def calculate_kinetic_matrix_gaussian_irf(
                 x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
                 x3 = np.exp(-r_n * backsweep_period)
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
-
-
-@nb.jit(nopython=True, parallel=True)
-def irf_conv_1(matrix, measured_irf, rates, time):
-
-    time_delta = time[:-1] - time[1:]
-    time_delta.append(time_delta[-1])
-
-    for n_r in nb.prange(rates.size):
-        r_n = rates[n_r]
-        # forward
-        for n_t in range(time.size):
-            delta_n = time_delta[n_t]
-            matrix[n_t, n_r] += 1/r_n * (
-                np.exp(-n_t * delta_n * r_n) - np.exp(-(n_t + 1) * delta_n * r_n)
-            )
-        # backward
-        for n_t in reversed(range(time.size)):
-            delta_n = time_delta[n_t]
-            matrix[n_t, n_r] = 0.5 * (
-                measured_irf[0] * matrix[n_t, n_r] + measured_irf[n_t] * matrix[0, n_r]
-            ) + 0.25 * matrix[n_t, n_r] * measured_irf[0]
-
-            for i in range(1, n_t):
-                matrix[n_t, n_r] += matrix[i, n_r] * measured_irf[n_t-i]
-            matrix[n_t, n_r] *= delta_n
-
-
-@nb.jit(nopython=True, parallel=True)
-def irf_conv2(matrix, measured_irf, rates, time):
-    time_delta = time[:-1] - time[1:]
-    time_delta.append(time_delta[-1])
-
-    for n_r in nb.prange(rates.size):
-        r_n = rates[n_r]
-        for n_t in range(1, time.size):
-            delta_n = time_delta[n_t]
-            e = np.exp(-r_n * time_delta[n_t])
-            matrix[n_t, n_r] += \
-                (matrix[n_t-1, n_r] + 0.5 * delta_n * measured_irf[n_t]) * e + \
-                0.5 * delta_n * measured_irf[n_t]
-
-    matrix /= matrix.max()
 
 
 # This is a work around to use scipy.special function with numba
