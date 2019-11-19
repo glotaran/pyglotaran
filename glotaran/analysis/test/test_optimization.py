@@ -237,3 +237,13 @@ def test_fitting(suite, index_dependend, grouped):
     assert dataset.data.shape == resultdata.data.shape
     print(dataset.data[0, 0], resultdata.data[0, 0])
     assert np.allclose(dataset.data, resultdata.data)
+
+    assert 'data_singular_values' in resultdata
+    assert 'data_left_singular_vectors' in resultdata
+    assert 'data_right_singular_vectors' in resultdata
+
+    print(resultdata)
+    assert 'residual' in resultdata
+    assert 'residual_singular_values' in resultdata
+    assert 'residual_left_singular_vectors' in resultdata
+    assert 'residual_right_singular_vectors' in resultdata

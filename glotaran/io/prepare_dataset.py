@@ -35,12 +35,4 @@ def prepare_time_trace_dataset(dataset: typing.Union[xr.DataArray, xr.Dataset],
         dataset['weighted_data'] = (dataset.data.dims,
                                     np.multiply(dataset.data, dataset.weight))
 
-    if irf is not None:
-        if isinstance(irf, np.ndarray):
-            if not len(irf.shape) == 1:
-                raise Exception("IRF with more than one dimension must be `xarray.DataArray`.")
-            dataset['irf'] = (('time',), irf)
-        else:
-            dataset['irf'] = irf
-
     return dataset

@@ -23,6 +23,9 @@ def scheme(tmpdir_factory):
     dataset_path = path.join('dataset.nc')
     xr.DataArray([1, 2, 3]).to_dataset(name='data').to_netcdf(dataset_path)
 
+    extra_path = path.join('extradata.nc')
+    xr.DataArray([1, 2, 3]).to_netcdf(extra_path)
+
     scheme = f"""
     model: {model_path}
     parameter: {parameter_path}
@@ -30,6 +33,8 @@ def scheme(tmpdir_factory):
     nfev: 42
     data:
       dataset1: {dataset_path}
+    extra:
+        testextra: {extra_path}
     """
     scheme_path = path.join('scheme.gta')
     with open(scheme_path, 'w') as f:
@@ -50,4 +55,8 @@ def test_scheme(scheme):
     assert scheme.nfev == 42
 
     assert 'dataset1' in scheme.data
+    assert isinstance(scheme.data['dataset1'], xr.DataArray)
     assert scheme.data['dataset1'].data.size == 3
+
+    assert 'testextra' in scheme.extra
+    assert isinstance(scheme.extra['testextra'], xr.DataArray)

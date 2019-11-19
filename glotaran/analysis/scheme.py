@@ -90,7 +90,7 @@ class Scheme:
 
         extra = scheme.get('extra', {})
 
-        for label, path in extra.item:
+        for label, path in extra.items():
             path = pathlib.Path(path)
 
             fmt = path.suffix[1:] if path.suffix != '' else 'nc'
@@ -131,6 +131,14 @@ class Scheme:
     @data.setter
     def data(self, data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]):
         self._data = data
+
+    @property
+    def extra(self) -> typing.Dict[str, xr.Dataset]:
+        return self._extra
+
+    @extra.setter
+    def extra(self, extra: typing.Dict[str, xr.Dataset]):
+        self._extra = extra
 
     @property
     def nnls(self) -> bool:
@@ -187,9 +195,16 @@ class Scheme:
             if 'weight' in dataset and 'weighted_data' not in dataset:
                 dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
 
-            # This protects transposing when getting data with svd in it
+            if'data_singular_values' not in dataset:
+                l, s, r = np.linalg.svd(dataset.data)
+                dataset['data_left_singular_vectors'] = \
+                    ((self.model.matrix_dimension, 'left_singular_value_index'), l)
+                dataset['data_singular_values'] = (('singular_value_index'), s)
+                dataset['data_right_singular_vectors'] = \
+                    (('right_singular_value_index', self.model.global_dimension), r)
 
-            if 'data_singular_values' in dataset:
+            else:
+                # This protects transposing when getting data with svd in it
                 if dataset.coords['right_singular_value_index'].size != \
                   dataset.coords[self.model.global_dimension].size:
                     dataset = dataset.rename(

@@ -158,6 +158,7 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
 
+@nb.jit(nopython=True, parallel=True)
 def irf_conv_1(matrix, measured_irf, rates, time):
 
     time_delta = time[:-1] - time[1:]
@@ -183,6 +184,7 @@ def irf_conv_1(matrix, measured_irf, rates, time):
             matrix[n_t, n_r] *= delta_n
 
 
+@nb.jit(nopython=True, parallel=True)
 def irf_conv2(matrix, measured_irf, rates, time):
     time_delta = time[:-1] - time[1:]
     time_delta.append(time_delta[-1])
@@ -192,23 +194,6 @@ def irf_conv2(matrix, measured_irf, rates, time):
         for n_t in range(1, time.size):
             delta_n = time_delta[n_t]
             e = np.exp(-r_n * time_delta[n_t])
-            matrix[n_t, n_r] += \
-                (matrix[n_t-1, n_r] + 0.5 * delta_n * measured_irf[n_t]) * e + \
-                0.5 * delta_n * measured_irf[n_t]
-
-    matrix /= matrix.max()
-
-
-def irf_conv3(matrix, measured_irf, reference, rates, time):
-    time_delta = time[:-1] - time[1:]
-    time_delta.append(time_delta[-1])
-
-    for n_r in nb.prange(rates.size):
-        r_n = rates[n_r]
-        # forward
-        for n_t in range(1, time.size):
-            delta_n = time_delta[n_t]
-            e = np.exp(-r_n * delta_n)
             matrix[n_t, n_r] += \
                 (matrix[n_t-1, n_r] + 0.5 * delta_n * measured_irf[n_t]) * e + \
                 0.5 * delta_n * measured_irf[n_t]
