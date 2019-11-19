@@ -178,8 +178,8 @@ class Scheme:
         else `False`."""
         return self.model.valid(parameter)
 
-    def prepared_data(self) -> typing.Dict[str, xr.Dataset]:
-        data = {}
+    def prepare_data(self, copy=True):
+        data = {} if copy else None
         for label, dataset in self.data.items():
             if self.model.matrix_dimension not in dataset.dims:
                 raise Exception("Missing coordinates for dimension "
@@ -223,8 +223,12 @@ class Scheme:
             new_dims += [dim for dim in dataset.dims
                          if dim != self.model.matrix_dimension
                          and dim != self.model.global_dimension]
-            data[label] = dataset.transpose(*new_dims)
-        return data
+            if copy:
+                data[label] = dataset.transpose(*new_dims)
+            else:
+                self.data[label] = dataset.transpose(*new_dims)
+        if copy:
+            self.data = data
 
     def markdown(self):
         s = self.model.markdown(parameter=self.parameter)
