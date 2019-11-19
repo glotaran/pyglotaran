@@ -13,6 +13,9 @@ from . import util
 @click.option('--data', '-d', multiple=True,
               type=(str, click.Path(exists=True, dir_okay=False)),
               help="Path to a dataset in the form '--data DATASET_LABEL PATH_TO_DATA'")
+@click.option('--extra', '-e', multiple=True,
+              type=(str, click.Path(exists=True, dir_okay=False)),
+              help="Path to an extra dataset in the form '--extra EXTRA_LABEL PATH_TO_DATA'")
 @click.option('--out', '-o', default=None, type=click.Path(file_okay=False),
               help='Path to an output directory.', show_default=True)
 @click.option('--nfev', '-n', default=None, type=click.IntRange(min=1),
@@ -22,8 +25,8 @@ from . import util
 @click.option('--yes', '-y', is_flag=True,
               help="Don't ask for confirmation.")
 @util.signature_analysis
-def optimize_cmd(dataformat: str, data: typing.List[str], out: str, nfev: int, nnls: bool,
-                 yes: bool, parameter: str, model: str, scheme: str):
+def optimize_cmd(dataformat: str, data: typing.List[str], extra: typing.List[str], out: str,
+                 nfev: int, nnls: bool, yes: bool, parameter: str, model: str, scheme: str):
     """Optimizes a model.
     e.g.:
     glotaran optimize --
@@ -56,8 +59,9 @@ def optimize_cmd(dataformat: str, data: typing.List[str], out: str, nfev: int, n
             path = dataset_files[label]
             datasets[label] = util.load_dataset_file(path, fmt=dataformat, verbose=True)
 
+        extra_files = {arg[0]: arg[1] for arg in extra}
         scheme = gta.analysis.scheme.Scheme(model=model, parameter=parameter, data=datasets,
-                                            nnls=nnls, nfev=nfev)
+                                            nnls=nnls, nfev=nfev, extra=extra_files)
 
     click.echo(scheme.validate())
     click.echo(f"Use NNLS: {scheme.nnls}")
