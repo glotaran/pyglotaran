@@ -51,6 +51,7 @@ The API Documentation for glotaran is automatically created from its docstrings.
     glotaran.builtin.models.kinetic_image.kinetic_image_result
     glotaran.builtin.models.kinetic_spectrum
     glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor
+    glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix
     glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model
     glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_result
     glotaran.builtin.models.kinetic_spectrum.spectral_constraints
