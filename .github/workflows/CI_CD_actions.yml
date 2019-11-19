@@ -76,11 +76,14 @@ jobs:
           pip install .
       - name: Show installed packages
         run: pip freeze
-      - name: Check doc links
+      - name: Check if api docs are outdated
         run: |
           mv docs/source/user_documentation/api_documentation.rst current_api_docs.rst
           python docs/source/generate_api_doc.py
           diff -qywBd current_api_docs.rst docs/source/user_documentation/api_documentation.rst
+      - name: Fix instructions
+        if: job.status == 'failure'
+        run: echo run `python docs/source/generate_api_doc.py` locally to fix this issue
 
 
   test:
