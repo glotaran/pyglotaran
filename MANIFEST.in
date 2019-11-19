@@ -1,0 +1,11 @@
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include HISTORY.md
+include LICENSE
+include README.md
+setup.cfg
+setup.py
+
+recursive-include glotaran *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
