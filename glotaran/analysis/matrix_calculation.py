@@ -55,11 +55,11 @@ def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
 
 def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
 
-    model = scheme.model
-    extra = scheme.extra
     clp_labels = {}
     matrices = {}
     constraint_labels_and_matrices = {}
+    model = scheme.model
+    extra = scheme.extra
 
     descriptors = {label: descriptor.fill(model, parameter)
                    for label, descriptor in scheme.model.dataset.items()}

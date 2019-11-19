@@ -60,6 +60,10 @@ def simulate(model: typing.Type['glotaran.model.Model'],
         axis=matrix_dimension,
         index=index,
         extra=extra) for index in global_dimension]
+<<<<<<< HEAD
+=======
+
+>>>>>>> Implemented extra arguments for `matrix_function`
     if callable(model.constrain_matrix_function):
         matrix = [model.constrain_matrix_function(parameter, clp, mat, global_dimension[i])
                   for i, (clp, mat) in enumerate(matrix)]

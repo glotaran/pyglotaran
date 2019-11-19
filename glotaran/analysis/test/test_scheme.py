@@ -60,3 +60,4 @@ def test_scheme(scheme):
 
     assert 'testextra' in scheme.extra
     assert isinstance(scheme.extra['testextra'], xr.DataArray)
+    assert scheme.extra['testextra'].size == 3
