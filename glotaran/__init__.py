@@ -2,7 +2,7 @@
 
 from . import model, parameter, io  # noqa: F401
 
-__version__ = '0.0.13'
+__version__ = '0.0.14'
 
 ParameterGroup = parameter.ParameterGroup
 
