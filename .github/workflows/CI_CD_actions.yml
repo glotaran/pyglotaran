@@ -82,7 +82,7 @@ jobs:
           python docs/source/generate_api_doc.py
           diff -qywBd current_api_docs.rst docs/source/user_documentation/api_documentation.rst
       - name: Fix instructions
-        if: job.status == 'failure'
+        if: failure()
         run: echo run `python docs/source/generate_api_doc.py` locally to fix this issue
 
 
