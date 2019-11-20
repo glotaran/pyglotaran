@@ -17,11 +17,11 @@ class IrfMultiGaussian:
     """
     Represents a gaussian IRF.
 
-    One width and one center is a single gauss.
+    One width and one center is a single gaussian.
 
-    One center and multiple widths is a multiple gaussian.
+    One center and multiple widths is a double, triple, etc. gaussian.
 
-    Multiple center and multiple widths is Double-, Triple- , etc. Gaussian.
+    Multiple center and multiple widths is the most generic MultiGaussian.
 
     Parameters
     ----------
