@@ -3,7 +3,7 @@
 import numpy as np
 import numba as nb
 
-from .irf import IrfMultiGaussian, IrfGaussianCoherentArtifact
+from .irf import IrfMultiGaussian
 
 
 def kinetic_image_matrix(
@@ -66,16 +66,6 @@ def kinetic_matrix(
         else:
             compartments.append(baseline_compartment)
             matrix = np.concatenate((matrix, baseline), axis=1)
-
-    if isinstance(dataset_descriptor.irf, IrfGaussianCoherentArtifact):
-        irf_clp_label, irf_matrix = \
-                dataset_descriptor.irf.calculate_coherent_artifact(axis)
-        if matrix is None:
-            compartments = irf_clp_label
-            matrix = irf_matrix
-        else:
-            compartments += irf_clp_label
-            matrix = np.concatenate((matrix, irf_matrix), axis=1)
 
     return (compartments, matrix)
 
