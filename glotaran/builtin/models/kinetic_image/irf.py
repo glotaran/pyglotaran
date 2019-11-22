@@ -1,7 +1,6 @@
 """This package contains irf items."""
 
 from typing import List
-import numba as nb
 import numpy as np
 
 from glotaran.model import model_attribute, model_attribute_typed
@@ -98,7 +97,7 @@ class IrfGaussian(IrfMultiGaussian):
 
 @model_attribute_typed(types={
     'gaussian': IrfGaussian,
-    'multi-gaussian': IrfMultiGaussian,    
+    'multi-gaussian': IrfMultiGaussian,
     'measured': IrfMeasured,
 })
 class Irf(object):

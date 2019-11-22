@@ -3,7 +3,7 @@
 import numpy as np
 import numba as nb
 
-from .irf import IrfMultiGaussian, IrfGaussianCoherentArtifact
+from .irf import IrfMultiGaussian
 
 
 def kinetic_image_matrix(
