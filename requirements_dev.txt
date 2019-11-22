@@ -17,7 +17,7 @@ numba==0.46.0
 pandas==0.25.3
 pyyaml==5.1.2
 xarray==0.14.1
-netCDF4==1.5.2
+netCDF4==1.5.3
 
 # documentation dependencies
 Sphinx>=1.8.0
