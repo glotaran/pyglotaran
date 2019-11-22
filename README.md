@@ -5,7 +5,7 @@ pyGloTarAn is a python library for global and target analysis
 [![latest release](https://pypip.in/version/glotaran/badge.svg)](https://pypi.org/project/glotaran/)
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fglotaran%2Fpyglotaran%2Fbadge&style=popout)](https://actions-badge.atrox.dev/glotaran/pyglotaran/goto)
 [![Documentation Status](https://readthedocs.org/projects/glotaran/badge/?version=latest)](https://glotaran.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/glotaran/pyglotaran/badge.svg?branch=master)](https://coveralls.io/github/glotaran/pyglotaran?branch=master)
+[![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 
 ## Warning
 
