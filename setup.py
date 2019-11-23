@@ -1,5 +1,3 @@
-import sys
-
 from setuptools import setup, find_packages
 
 install_requires = [
@@ -7,6 +5,7 @@ install_requires = [
     'cloudpickle>=1.2',  # Needed by dask
     'dask[bag]>=2.8',
     'lmfit>=0.9.13',
+    'netCDF4>=1.5',
     'numba>=0.44',
     'numpy>=1.16',
     'pandas>=0.24',
@@ -15,13 +14,6 @@ install_requires = [
     'setuptools>=41.0',
     'xarray>=0.14',
 ]
-
-# TODO: set a new genereal min version for netCDF4
-# when they deploy windows wheels again
-if sys.platform == "win32":
-    install_requires.append('netCDF4>=1.4,<=1.5.3')
-else:
-    install_requires.append('netCDF4>=1.4')
 
 
 with open("README.md", "r") as fh:
@@ -42,7 +34,7 @@ entry_points = """
 
 setup(
     name="glotaran",
-    version='0.0.14',
+    version='0.0.15',
     description='The Glotaran fitting engine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
