@@ -32,7 +32,7 @@ def test_spectral_penalties():
                 'compartment': 's1',
                 'target': 's2',
                 'parameter': 'rel.1',
-                'interval': [(0, 5)],  # try setting to [(0, 2)], [(0, 5)] and [(0, 10)]
+                'interval': [(0, 10)],  # try setting to [(0, 2)], [(0, 5)] and [(0, 10)]
             },
         ],
         'dataset': {
@@ -68,7 +68,7 @@ def test_spectral_penalties():
                 'target': 's3',
                 'parameter': 'pen.1',
                 # try setting to something other then spectral_relations['interval']
-                'interval': [(0, 5)],
+                'interval': [(0, 10)],
                 'weight': weight
             },
         ],
@@ -78,7 +78,7 @@ def test_spectral_penalties():
                 'target': 's2',
                 'parameter': 'rel.1',
                 # try setting to [(0, 2)], [(0, 5)] and [(0, 10)]
-                'interval': [(0, 5)],
+                'interval': [(0, 10)],
             },
         ],
         'dataset': {
