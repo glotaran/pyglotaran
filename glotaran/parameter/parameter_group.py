@@ -401,7 +401,7 @@ class ParameterGroup(dict):
             if p.non_neg:
                 p = copy.deepcopy(p)
                 if p.min == 1:
-                    p.min += 1e-10            
+                    p.min += 1e-10
                 try:
                     p.min = log(p.min) if np.isfinite(p.min) else p.min
                 except Exception:
@@ -415,7 +415,7 @@ class ParameterGroup(dict):
                     raise Exception("Could not take log of maximum of parameter"
                                     f" '{label}' with value '{p.max}'")
                 if p.value == 1:
-                    p.value += 1e-10            
+                    p.value += 1e-10
                 try:
                     p.value = log(p.value)
                 except Exception:
