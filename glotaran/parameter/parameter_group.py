@@ -401,28 +401,26 @@ class ParameterGroup(dict):
             if p.non_neg:
                 p = copy.deepcopy(p)
                 if p.min == 1:
-                    p.min += 1e-10
-                else:
-                    try:
-                        p.min = log(p.min) if np.isfinite(p.min) else p.min
-                    except Exception:
-                        raise Exception("Could not take log of minimum of parameter"
-                                        f" '{label}' with value '{p.min}'")
+                    p.min += 1e-10            
+                try:
+                    p.min = log(p.min) if np.isfinite(p.min) else p.min
+                except Exception:
+                    raise Exception("Could not take log of minimum of parameter"
+                                    f" '{label}' with value '{p.min}'")
                 if p.max == 1:
                     p.max += 1e-10
-                    try:
-                        p.max = log(p.max) if np.isfinite(p.max) else p.max
-                    except Exception:
-                        raise Exception("Could not take log of maximum of parameter"
-                                        f" '{label}' with value '{p.max}'")
+                try:
+                    p.max = log(p.max) if np.isfinite(p.max) else p.max
+                except Exception:
+                    raise Exception("Could not take log of maximum of parameter"
+                                    f" '{label}' with value '{p.max}'")
                 if p.value == 1:
-                    p.value += 1e-10
-                else:
-                    try:
-                        p.value = log(p.value)
-                    except Exception:
-                        raise Exception("Could not take log of parameter"
-                                        f" '{label}' with value '{p.value}'")
+                    p.value += 1e-10            
+                try:
+                    p.value = log(p.value)
+                except Exception:
+                    raise Exception("Could not take log of parameter"
+                                    f" '{label}' with value '{p.value}'")
             params.add(p)
         return params
 
