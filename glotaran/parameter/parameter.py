@@ -32,7 +32,7 @@ class Parameter(LmParameter):
         """
 
         super(Parameter, self).__init__(
-            user_data={'non_neg': False, 'full_label': full_label})
+            name=label, user_data={'non_neg': False, 'full_label': full_label})
 
         self.label = label
         self.full_label = full_label

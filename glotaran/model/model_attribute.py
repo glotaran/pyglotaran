@@ -292,7 +292,7 @@ def _create_mprint_func(cls):
         attrs = []
         for name in self._glotaran_properties:
             value = getattr(self, name)
-            if not value:
+            if value is None:
                 continue
             a = f"* *{name.replace('_', ' ').title()}*: "
 
