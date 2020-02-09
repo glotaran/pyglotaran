@@ -16,7 +16,7 @@ lmfit==0.9.14
 numba==0.48.0
 pandas==0.25.3
 pyyaml==5.2
-xarray==0.14.1
+xarray==0.15.0
 netCDF4==1.5.3
 
 # documentation dependencies
