@@ -10,7 +10,7 @@ from .spectral_irf import IrfGaussianCoherentArtifact
 
 def kinetic_spectrum_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):
 
-    clp_label, matrix = kinetic_image_matrix(dataset_descriptor, axis, index, irf)
+    clp_label, matrix = kinetic_image_matrix(dataset_descriptor, axis, index, dataset_descriptor.irf)
 
     if isinstance(dataset_descriptor.irf, IrfGaussianCoherentArtifact):
         irf_clp_label, irf_matrix = \
