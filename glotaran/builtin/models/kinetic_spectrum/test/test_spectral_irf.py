@@ -105,7 +105,7 @@ class SimpleIrfDispersion:
     time_p2 = np.linspace(2, 5, 30, endpoint=False)
     time_p3 = np.geomspace(5, 10, num=20)
     time = np.concatenate([time_p1, time_p2, time_p3])
-    spectral = np.arange(300, 500, 5)
+    spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}
 
 
@@ -214,7 +214,7 @@ class MultiIrfDispersion:
     })
 
     time = np.arange(-1, 5, 0.2)
-    spectral = np.arange(300, 500, 25)
+    spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}
 
 
