@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+from copy import deepcopy
 
 from glotaran.parameter import ParameterGroup
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
@@ -105,8 +106,11 @@ def test_spectral_penalties():
     result_with_penalty = \
         model_with_penalty.optimize(parameter, {'dataset1': data}, max_nfev=1)
 
+    parameter_no_penalty = deepcopy(parameter)
+    del(parameter_no_penalty['pen'])
+
     result_without_penalty = \
-        model_without_penalty.optimize(parameter, {'dataset1': data}, max_nfev=1)
+        model_without_penalty.optimize(parameter_no_penalty, {'dataset1': data}, max_nfev=1)
 
     result_data = result_with_penalty.data['dataset1']
     wanted_penalty = result_data.species_associated_spectra.sel(species='s2') - \
