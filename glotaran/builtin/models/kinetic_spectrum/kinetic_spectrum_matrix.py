@@ -14,7 +14,7 @@ def kinetic_spectrum_matrix(dataset_descriptor=None, axis=None, index=None, extr
 
     if isinstance(dataset_descriptor.irf, IrfGaussianCoherentArtifact):
         irf_clp_label, irf_matrix = \
-                dataset_descriptor.irf.calculate_coherent_artifact(axis)
+            dataset_descriptor.irf.calculate_coherent_artifact(axis)
         if matrix is None:
             clp_label = irf_clp_label
             matrix = irf_matrix

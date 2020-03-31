@@ -4,9 +4,9 @@ on: [push, pull_request]
 
 jobs:
   lint:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -20,9 +20,9 @@ jobs:
           flake8 glotaran
 
   docs:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -40,9 +40,9 @@ jobs:
           make --directory=docs clean html
 
   docs-links:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -60,10 +60,10 @@ jobs:
           make --directory=docs clean linkcheck
 
   api-docs-up-to-date:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     needs: [test]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
@@ -83,17 +83,16 @@ jobs:
         if: failure()
         run: echo run 'python docs/source/generate_api_doc.py' locally to fix this issue
 
-
   test:
     runs-on: ${{ matrix.os }}
     needs: lint
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: [3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -117,11 +116,11 @@ jobs:
           file: ./coverage.xml
 
   deploy:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     needs: [test, docs]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:

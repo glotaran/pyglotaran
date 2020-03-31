@@ -4,6 +4,7 @@ import xarray as xr
 
 import glotaran
 from glotaran.parameter import ParameterGroup
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
     retrieve_species_assocatiated_data,
     retrieve_decay_assocatiated_data,
@@ -53,6 +54,13 @@ def finalize_kinetic_spectrum_result(
         retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, "spectra")
 
         irf = dataset_descriptor.irf
+        if isinstance(irf, IrfMultiGaussian):
+            if isinstance(irf.center, list):
+                dataset['irf_center'] = irf.center[0].value
+                dataset['irf_width'] = irf.width[0].value
+            else:
+                dataset['irf_center'] = irf.center.value
+                dataset['irf_width'] = irf.width.value
         if isinstance(irf, IrfSpectralMultiGaussian):
             index = irf.dispersion_center if irf.dispersion_center \
                  else dataset.coords[model.global_dimension].min().values
