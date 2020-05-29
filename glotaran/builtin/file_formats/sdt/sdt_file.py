@@ -37,7 +37,7 @@ correlated single photon counting instrumentation parameters and measurement
 data. Currently only the "Setup & Data", "DLL Data", and "FCS Data" formats
 are supported.
 
-`Becker & Hickl GmbH <http://www.becker-hickl.de/>`_ is a manufacturer of
+`Becker & Hickl GmbH <https://www.becker-hickl.com/>`_ is a manufacturer of
 equipment for photon counting.
 
 :Author:
@@ -51,7 +51,7 @@ equipment for photon counting.
 Requirements
 ------------
 * `CPython 3.6 <https://www.python.org>`_
-* `Numpy 1.13 <http://www.numpy.org>`_
+* `Numpy 1.13 <https://www.numpy.org>`_
 
 Revisions
 ---------
@@ -68,7 +68,7 @@ Notes
 -----
 The API is not stable yet and might change between revisions.
 
-The `Priithon <http://code.google.com/p/priithon/>`_ package includes an
+The `Priithon <https://github.com/sebhaase/priithon/>`_ package includes an
 alternative SDT file reader.
 
 References
