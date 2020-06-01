@@ -79,7 +79,7 @@ def create_index_independend_grouped_residual(
         scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function):
 
     matrix_labels = problem_bag.pluck(1)\
-        .map(lambda group: "".join(problem.dataset for problem in group))\
+        .map(lambda group: "".join(problem.dataset for problem in group))
 
     def penalty_function(matrix_label, problem, labels_and_matrices):
 

@@ -321,8 +321,8 @@ class ParameterGroup(dict):
     def groups(self) -> typing.Generator['ParameterGroup', None, None]:
         """Returns a generator over all groups and their subgroups."""
         for group in self:
-            for l in group.groups():
-                yield l
+            for sub_group in group.groups():
+                yield sub_group
 
     def has(self, label: str) -> bool:
         """Checks if a parameter with the given label is in the group or in a subgroup.
@@ -354,10 +354,11 @@ class ParameterGroup(dict):
         path = label.split(".")
         label = path.pop()
 
+        # TODO: audit this code
         group = self
-        for l in path:
+        for element in path:
             try:
-                group = group[l]
+                group = group[element]
             except KeyError:
                 raise ParameterNotFoundException(path, label)
         try:

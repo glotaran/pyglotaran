@@ -1,22 +1,24 @@
 import typing
+
 import numpy as np
 import xarray as xr
 
-import glotaran
-from glotaran.parameter import ParameterGroup
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
-    retrieve_species_assocatiated_data,
-    retrieve_decay_assocatiated_data,
-    retrieve_irf,
-)
+    retrieve_decay_assocatiated_data, retrieve_irf,
+    retrieve_species_assocatiated_data)
+from glotaran.parameter import ParameterGroup
 
-from .spectral_irf import IrfSpectralMultiGaussian, IrfGaussianCoherentArtifact
 from .spectral_constraints import OnlyConstraint, ZeroConstraint
+from .spectral_irf import IrfGaussianCoherentArtifact, IrfSpectralMultiGaussian
+
+
+T_KineticSpectrumModel = typing.TypeVar(
+    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
 
 
 def finalize_kinetic_spectrum_result(
-    model: 'glotaran.models.spectral_temporal.KineticModel',
+    model: T_KineticSpectrumModel,
     global_indices: typing.List[typing.List[object]],
     reduced_clp_labels: typing.Union[typing.Dict[str, typing.List[str]], np.ndarray],
     reduced_clps: typing.Union[typing.Dict[str, np.ndarray], np.ndarray],

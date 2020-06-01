@@ -6,8 +6,10 @@ import xarray as xr
 
 from glotaran.parameter import ParameterGroup
 
+T_Model = typing.TypeVar('glotaran.model.Model')
 
-def simulate(model: typing.Type['glotaran.model.Model'],
+
+def simulate(model: T_Model,
              dataset: str,
              parameter: ParameterGroup,
              axes: typing.Dict[str, np.ndarray] = None,
@@ -71,7 +73,7 @@ def simulate(model: typing.Type['glotaran.model.Model'],
             if model.global_dimension not in clp.coords:
                 raise ValueError(f"Missing coordinate '{model.global_dimension}' in clp.")
             if 'clp_label' not in clp.coords:
-                raise ValueError(f"Missing coordinate 'clp_label' in clp.")
+                raise ValueError("Missing coordinate 'clp_label' in clp.")
         else:
             if 'clp_label' not in axes:
                 raise ValueError("Missing axis 'clp_label'")
