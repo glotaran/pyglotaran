@@ -89,7 +89,7 @@ def optimize_cmd(dataformat: str, data: typing.List[str], out: str, nfev: int, n
                 click.echo(f"Saving directory is '{out}'")
                 if yes or click.confirm('Do you want to save the data?', default=True):
                     paths = result.save(out)
-                    click.echo(f"File saving successfull, the follwing files have been written:\n")
+                    click.echo("File saving successfull, the follwing files have been written:\n")
                     for p in paths:
                         click.echo(f"* {p}")
             except Exception as e:

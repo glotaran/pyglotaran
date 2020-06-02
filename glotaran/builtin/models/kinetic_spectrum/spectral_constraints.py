@@ -1,9 +1,13 @@
 """This package contains compartment constraint items."""
 
 import typing
+
 import numpy as np
 
 from glotaran.model import model_attribute, model_attribute_typed
+
+T_KineticSpectrumModel = typing.TypeVar(
+    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
 
 
 @model_attribute(
@@ -79,7 +83,7 @@ class SpectralConstraint:
 
 
 def apply_spectral_constraints(
-        model: typing.Type['KineticModel'],
+        model: T_KineticSpectrumModel,
         clp_labels: typing.List[str],
         matrix: np.ndarray,
         index: float) -> typing.Tuple[typing.List[str], np.ndarray]:

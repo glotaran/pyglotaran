@@ -8,6 +8,9 @@ from glotaran.parameter import Parameter, ParameterGroup
 
 from .spectral_relations import retrieve_clps
 
+T_KineticSpectrumModel = typing.TypeVar(
+    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
+
 
 @model_attribute(properties={
     'compartment': str,
@@ -42,12 +45,12 @@ class EqualAreaPenalty:
         return any([applies(i) for i in self.interval])
 
 
-def has_spectral_penalties(model: typing.Type['KineticModel']) -> bool:
+def has_spectral_penalties(model: T_KineticSpectrumModel) -> bool:
     return len(model.equal_area_penalties) != 0
 
 
 def apply_spectral_penalties(
-        model: typing.Type['KineticModel'],
+        model: T_KineticSpectrumModel,
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         clps: np.ndarray,

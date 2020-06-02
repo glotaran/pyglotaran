@@ -5,6 +5,8 @@ import numba as nb
 
 from .irf import IrfMultiGaussian
 
+sqrt2 = np.sqrt(2)
+
 
 def kinetic_image_matrix(
         dataset_descriptor=None, axis=None, index=None, irf=None):
@@ -124,7 +126,6 @@ def calculate_kinetic_matrix_no_irf(matrix, rates, times):
             matrix[n_t, n_r] += np.exp(r_n * t_n)
 
 
-sqrt2 = np.sqrt(2)
 @nb.jit(nopython=True, parallel=True)
 def calculate_kinetic_matrix_gaussian_irf(
         matrix, rates, times, center, width, scale, backsweep, backsweep_period):

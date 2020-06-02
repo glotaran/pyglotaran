@@ -47,7 +47,7 @@ def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
     for label, group in groups.items():
         if label not in matrices:
             constraint_labels_and_matrices[label] = \
-                _combine_matrices([constraint_labels_and_matrices[l] for l in group])
+                _combine_matrices([constraint_labels_and_matrices[label] for label in group])
 
     return clp_labels, matrices, constraint_labels_and_matrices
 

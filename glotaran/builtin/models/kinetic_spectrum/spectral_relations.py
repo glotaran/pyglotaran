@@ -1,10 +1,14 @@
 """ Glotaran Spectral Relation """
 
 import typing
+
 import numpy as np
 
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter, ParameterGroup
+
+T_KineticSpectrumModel = typing.TypeVar(
+    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
 
 
 @model_attribute(
@@ -32,7 +36,7 @@ class SpectralRelation:
 
 
 def create_spectral_relation_matrix(
-        model: typing.Type['KineticModel'],
+        model: T_KineticSpectrumModel,
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         matrix: np.ndarray,
@@ -54,7 +58,7 @@ def create_spectral_relation_matrix(
 
 
 def apply_spectral_relations(
-        model: typing.Type['KineticModel'],
+        model: T_KineticSpectrumModel,
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         matrix: np.ndarray,
@@ -72,7 +76,7 @@ def apply_spectral_relations(
 
 
 def retrieve_clps(
-        model: typing.Type['KineticModel'],
+        model: T_KineticSpectrumModel,
         parameter: ParameterGroup,
         reduced_clp_labels: typing.List[str],
         reduced_clps: np.ndarray,

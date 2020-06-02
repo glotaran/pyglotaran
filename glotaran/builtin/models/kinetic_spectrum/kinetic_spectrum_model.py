@@ -17,13 +17,16 @@ from .spectral_penalties import EqualAreaPenalty, has_spectral_penalties, apply_
 from .spectral_relations import SpectralRelation, apply_spectral_relations
 from .spectral_shape import SpectralShape
 
+T_KineticSpectrumModel = typing.TypeVar(
+    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
 
-def has_kinetic_model_constraints(model: typing.Type['KineticModel']) -> bool:
+
+def has_kinetic_model_constraints(model: T_KineticSpectrumModel) -> bool:
     return len(model.spectral_relations) + len(model.spectral_constraints) != 0
 
 
 def apply_kinetic_model_constraints(
-        model: typing.Type['KineticModel'],
+        model: T_KineticSpectrumModel,
         parameter: ParameterGroup,
         clp_labels: typing.List[str],
         matrix: np.ndarray,
@@ -33,7 +36,7 @@ def apply_kinetic_model_constraints(
     return clp_labels, matrix
 
 
-def index_dependend(model: typing.Type['KineticModel']):
+def index_dependend(model: T_KineticSpectrumModel):
     if any([
         isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
         for irf in model.irf.values()
@@ -46,7 +49,7 @@ def index_dependend(model: typing.Type['KineticModel']):
     return False
 
 
-def grouped(model: typing.Type['KineticModel']):
+def grouped(model: T_KineticSpectrumModel):
     return len(model.dataset) != 1
 
 

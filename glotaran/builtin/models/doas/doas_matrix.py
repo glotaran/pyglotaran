@@ -14,8 +14,10 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
     oscillations = _collect_oscillations(dataset_descriptor)
     matrix = np.zeros((axis.size, len(2 * oscillations)), dtype=np.float64)
     labels = [o.label for o in oscillations]
+    # TODO: improve code reasability further
     clp = [
-        lbl for o in zip([f'{l}_cos' for l in labels], [f'{l}_sin' for l in labels]) for lbl in o
+        lbl for o in zip([f'{l_cos}_cos' for l_cos in labels],
+                         [f'{l_sin}_sin' for l_sin in labels]) for lbl in o
     ]
 
     delta = np.abs(axis[1:] - axis[:-1])
