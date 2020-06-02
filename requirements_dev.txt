@@ -1,7 +1,6 @@
 # general install dependencies
 pip>=18.0
 wheel>=0.30.0
-setuptools>=41.2
 
 # needed to release new versions
 bump2version>=0.5.11
@@ -18,6 +17,7 @@ pandas==1.0.1
 pyyaml==5.3.1
 xarray==0.15.1
 netCDF4==1.5.3
+setuptools==41.2
 
 # documentation dependencies
 Sphinx>=1.8.0
