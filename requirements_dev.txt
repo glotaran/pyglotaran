@@ -1,7 +1,7 @@
 # general install dependencies
 pip>=18.0
 wheel>=0.30.0
-setuptools>=41.0
+setuptools>=41.2
 
 # needed to release new versions
 bump2version>=0.5.11

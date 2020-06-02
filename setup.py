@@ -11,7 +11,7 @@ install_requires = [
     'pandas>=0.25.2',
     'pyyaml>=5.2',
     'scipy>=1.3.2',
-    'setuptools>=41.0',
+    'setuptools>=41.2',
     'xarray>=0.14',
 ]
 
