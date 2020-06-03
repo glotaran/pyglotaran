@@ -57,7 +57,11 @@ jobs:
       - name: Check doc links
         run: |
           python docs/source/generate_api_doc.py
-          make --directory=docs clean linkcheck
+          make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
+          exit ${PIPESTATUS[0]}
+      - name: Linkcheck summary
+        if: ${{ always() }}
+        run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
 
   api-docs-up-to-date:
     runs-on: ubuntu-latest
