@@ -60,6 +60,7 @@ jobs:
           make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
           exit ${PIPESTATUS[0]}
       - name: Linkcheck summary
+        if: ${{ always() }}
         run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
 
   api-docs-up-to-date:
