@@ -8,7 +8,7 @@ bump2version>=0.5.11
 # glotaran setup dependencies
 numpy==1.18.4
 scipy==1.4.1
-click==7.0
+click==7.1.2
 cloudpickle==1.4.1
 dask[bag]==2.17.2
 lmfit==1.0.0
