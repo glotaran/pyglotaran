@@ -10,7 +10,7 @@ numpy==1.18.4
 scipy==1.4.1
 click==7.1.2
 cloudpickle==1.4.1
-dask[bag]==2.17.2
+dask[bag]==2.18.1
 lmfit==1.0.0
 numba==0.49.1
 pandas==1.0.4
