@@ -33,7 +33,7 @@ entry_points = """
 """
 
 setup(
-    name="glotaran",
+    name="pyglotaran",
     version='0.0.16',
     description='The Glotaran fitting engine.',
     long_description=long_description,
