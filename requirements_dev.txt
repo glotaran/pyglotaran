@@ -11,7 +11,7 @@ scipy==1.4.1
 click==7.1.2
 cloudpickle==1.4.1
 dask[bag]==2.18.1
-lmfit==1.0.0
+lmfit==1.0.1
 numba==0.50.0
 pandas==1.0.4
 pyyaml==5.3.1
