@@ -8,7 +8,7 @@
 API Documentation
 =================
 
-The API Documentation for glotaran is automatically created from its docstrings.
+The API Documentation for pyglotaran is automatically created from its docstrings.
 
 .. currentmodule:: glotaran
 
