@@ -6,7 +6,7 @@ Quickstart/Cheat-Sheet
    pyglotaran is in very early stage of development. You should not use it for
    actual science at the moment.
 
-To start using glotaran in your project, you have to import it first:
+To start using pyglotaran in your project, you have to import it first:
 
 .. ipython::
 
@@ -124,7 +124,7 @@ Now you can load the model file.
       ...:
       ...: k_matrix:
       ...:   k1:
-      ...:     matrix: 
+      ...:     matrix:
       ...:       (s2, s1): kinetic.1
       ...:       (s3, s2): kinetic.2
       ...:       (s3, s3): kinetic.3

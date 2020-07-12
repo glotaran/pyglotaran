@@ -2,8 +2,13 @@
 History
 =======
 
-0.1.0 (Pending)
+0.2.0 (Pending)
+---------------
+
+0.1.0 (2020-07-14)
 ------------------
+
+* Package was renamed to `pyglotaran` on PyPi
 
 0.0.8 (2018-08-07)
 ------------------

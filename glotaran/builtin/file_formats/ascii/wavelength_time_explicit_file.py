@@ -298,7 +298,7 @@ def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
 
     Notes
     -----
-    .. [1] http://glotaran.org/wiki/doku.php?id=file_formats
+    .. [1] https://glotaran.github.io/legacy/file_formats
     """
 
     data_file_format = None

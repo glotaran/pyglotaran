@@ -13,6 +13,8 @@ Welcome to pyglotaran's documentation!
    introduction
    installation
    quickstart
+   history
+   authors
 
 .. toctree::
    :maxdepth: 1
@@ -25,6 +27,12 @@ Welcome to pyglotaran's documentation!
    user_documentation/parameter
    user_documentation/optimizing
    user_documentation/api_documentation
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Documentation:
+
+   contributing
 
 
 Indices and tables

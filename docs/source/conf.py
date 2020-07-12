@@ -60,6 +60,7 @@ extensions = [
     'numpydoc',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
+    'sphinx_copybutton',
 ]
 
 autoclass_content = "both"
@@ -134,6 +135,8 @@ html_logo = "images/glotaran.png"
 #
 # html_sidebars = {}
 
+copybutton_prompt_text = r"In \\[\\d*\\]: |\\.\\.\\.: |\\$ "
+copybutton_prompt_is_regexp = True
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
