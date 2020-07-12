@@ -42,7 +42,7 @@ you through the process.
 
 .. _pip: https://pip.pypa.io/en/stable/
 
-.. _Python installation guide: ttps://docs.python-guide.org/starting/installation/
+.. _Python installation guide: https://docs.python-guide.org/starting/installation/
 
 If you want to install it via conda, you can run the following command:
 
