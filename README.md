@@ -63,5 +63,5 @@ _Note for Anaconda Users: Please make sure to update your distribution prior to 
 
 ## Credits
 
-The credits can be found in the documentations
-[autors section](https://pyglotaran.readthedocs.io/en/latest/autors.html)
+The credits can be found in the documentation
+[authors section](https://pyglotaran.readthedocs.io/en/latest/authors.html)
