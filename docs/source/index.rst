@@ -14,7 +14,7 @@ Welcome to pyglotaran's documentation!
    installation
    quickstart
    history
-   autors
+   authors
 
 .. toctree::
    :maxdepth: 1
