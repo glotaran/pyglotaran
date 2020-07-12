@@ -1,6 +1,6 @@
 include AUTHORS.rst
 include CONTRIBUTING.rst
-include HISTORY.md
+include HISTORY.rst
 include LICENSE
 include README.md
 setup.cfg
