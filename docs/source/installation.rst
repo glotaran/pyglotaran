@@ -28,13 +28,14 @@ Stable release
    pyglotaran is early development, so for the moment stable releases are sparse and outdated.
    We try to keep the master code stable, so please install from source for now.
 
+
+This is the preferred method to install pyglotaran, as it will always install the most recent stable release.
+
 To install pyglotaran, run this command in your terminal:
 
 .. code-block:: console
 
     $ pip install pyglotaran
-
-This is the preferred method to install pyglotaran, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -42,6 +43,12 @@ you through the process.
 .. _pip: https://pip.pypa.io/en/stable/
 
 .. _Python installation guide: ttps://docs.python-guide.org/starting/installation/
+
+If you want to install it via conda, you can run the following command:
+
+.. code-block:: console
+
+    $ conda install -c conda-forge pyglotaran
 
 
 From sources
