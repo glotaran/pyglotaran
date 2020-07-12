@@ -23,14 +23,28 @@ This package was previously released on [pypi](https://pypi.org/) under the name
 
 # Installation
 
-## From Source
-
 Prerequisites:
 
 - Python 3.6 or higher _(Python 2 is **not** supported)_
 - On Windows only 64bit is supported
 
 Note for Windows Users: The easiest way to get python for Windows is via [Anaconda](https://www.anaconda.com/)
+
+## Stable Release
+
+To install pyglotaran from [pypi](https://pypi.org/), run this command in your terminal:
+
+```
+$ pip install pyglotaran
+```
+
+If you want to install it via conda, you can run the following command:
+
+```
+$ conda install -c conda-forge pyglotaran
+```
+
+## From Source
 
 ```
 $ git clone https://github.com/glotaran/pyglotaran.git
@@ -51,4 +65,4 @@ _Note for Anaconda Users: Please make sure to update your distribution prior to 
 ## Credits
 
 The credits can be found in the documentations
-[credits section](https://pyglotaran.readthedocs.io/en/latest/credits.html)
+[autors section](https://pyglotaran.readthedocs.io/en/latest/autors.html)
