@@ -3,6 +3,7 @@
 pyGloTarAn is a python library for global and target analysis
 
 [![latest release](https://pypip.in/version/pyglotaran/badge.svg)](https://pypi.org/project/pyglotaran/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/pyglotaran.svg)](https://anaconda.org/conda-forge/pyglotaran)
 ![Tests](https://github.com/glotaran/pyglotaran/workflows/Tests/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
@@ -19,7 +20,6 @@ The algorithms provided by this package still need to be validated and reviewed,
 ## Temporary rename notice (!!!)
 
 This package was previously released on [pypi](https://pypi.org/) under the name [glotaran](https://pypi.org/project/glotaran/) but was changed so as to not confuse it with the original Glotaran software, first published in the Journal of Statistical Software titeled [Glotaran: A Java-Based Graphical User Interface for the R Package TIMP](https://www.jstatsoft.org/article/view/v049i03) DOI: [10.18637/jss.v049.i03](https://www.jstatsoft.org/article/view/v049i03)
-
 
 # Installation
 
