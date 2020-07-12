@@ -7,7 +7,6 @@ pyGloTarAn is a python library for global and target analysis
 ![Tests](https://github.com/glotaran/pyglotaran/workflows/Tests/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=glotaran/pyglotaran)](https://dependabot.com)
 
 ## Warning
 
