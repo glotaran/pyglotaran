@@ -28,13 +28,13 @@ Stable release
    pyglotaran is early development, so for the moment stable releases are sparse and outdated.
    We try to keep the master code stable, so please install from source for now.
 
-To install glotaran, run this command in your terminal:
+To install pyglotaran, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install glotaran
+    $ pip install pyglotaran
 
-This is the preferred method to install glotaran, as it will always install the most recent stable release.
+This is the preferred method to install pyglotaran, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -67,7 +67,7 @@ Afterwards you can simply use `pip`_ to install it directly from `Github`_.
 
    $ pip install git+https://github.com/glotaran/pyglotaran.git
 
-For updating glotaran, just re-run the command above.
+For updating pyglotaran, just re-run the command above.
 
 If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preffered):
 
@@ -81,7 +81,7 @@ Within a terminal, navigate to directory where you have unpacked or cloned the c
 
    $ pip install -e .
 
-For updating, simply download and unpack the newest version (or run ``$ git pull`` in glotaran directory if you used `git`_) and and re-run the command above.
+For updating, simply download and unpack the newest version (or run ``$ git pull`` in pyglotaran directory if you used `git`_) and and re-run the command above.
 
 .. _Github: https://github.com/glotaran/pyglotaran
 .. _git: https://git-scm.com/
