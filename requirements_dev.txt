@@ -9,7 +9,7 @@ bump2version>=0.5.11
 numpy==1.19.0
 scipy==1.4.1
 click==7.1.2
-cloudpickle==1.4.1
+cloudpickle==1.5.0
 dask[bag]==2.18.1
 lmfit==1.0.0
 numba==0.50.0
