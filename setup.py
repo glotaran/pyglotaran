@@ -11,6 +11,7 @@ install_requires = [
     'pandas>=0.25.2',
     'pyyaml>=5.2',
     'scipy>=1.3.2',
+    'sdtfile>=2020.8.3',
     'setuptools>=41.2',
     'xarray>=0.14',
 ]

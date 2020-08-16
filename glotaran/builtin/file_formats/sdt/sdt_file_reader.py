@@ -9,7 +9,7 @@ import xarray as xr
 from glotaran.io.reader import file_reader
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
-from .sdt_file import SdtFile
+from sdtfile import SdtFile
 
 
 @file_reader(extension='sdt', name='Becker & Hickel SDT file format.')

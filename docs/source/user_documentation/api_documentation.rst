@@ -30,7 +30,6 @@ The API Documentation for pyglotaran is automatically created from its docstring
     glotaran.builtin.file_formats.ascii
     glotaran.builtin.file_formats.ascii.wavelength_time_explicit_file
     glotaran.builtin.file_formats.sdt
-    glotaran.builtin.file_formats.sdt.sdt_file
     glotaran.builtin.file_formats.sdt.sdt_file_reader
     glotaran.builtin.models
     glotaran.builtin.models.doas
