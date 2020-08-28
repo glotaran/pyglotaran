@@ -15,6 +15,7 @@
 
     .. autosummary::
        :toctree:
+       :template: autosummary/attribute.rst
     {% for item in attributes %}
         ~{{name}}.{{ item }}
     {%- endfor %}
