@@ -285,7 +285,7 @@ def get_data_file_format(line):
 def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
     """Reads an ascii file in wavelength- or time-explicit format.
 
-    See [1] for documentation of this format.
+    See [1]_ for documentation of this format.
 
     Parameters
     ----------
