@@ -221,7 +221,7 @@ def test_fitting(suite, index_dependend, grouped):
     assert dataset.data.shape == (cal_axis.size, est_axis.size)
 
     data = {'dataset1': dataset}
-    scheme = Scheme(model=model, parameter=initial, data=data, nfev=5)
+    scheme = Scheme(model=model, parameter=initial, data=data, nfev=10)
 
     result = optimize(scheme)
     print(result.optimized_parameter)
