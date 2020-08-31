@@ -60,9 +60,9 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `pyglotaran` for local development.
+Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 
-1. Fork the `pyglotaran` repo on GitHub.
+1. Fork the ``pyglotaran`` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone https://github.com/<your_name_here>/pyglotaran.git
@@ -115,7 +115,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 3.6, 3.7. and 3.8
-   Check your Github Actions `https://github.com/<your_name_here>/pyglotaran/actions`
+   Check your Github Actions ``https://github.com/<your_name_here>/pyglotaran/actions``
    and make sure that the tests pass for all supported Python versions.
 
 

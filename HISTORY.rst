@@ -8,12 +8,12 @@ History
 0.1.0 (2020-07-14)
 ------------------
 
-* Package was renamed to `pyglotaran` on PyPi
+* Package was renamed to ``pyglotaran`` on PyPi
 
 0.0.8 (2018-08-07)
 ------------------
 
-* Changed `nan_policiy` to `omit`
+* Changed ``nan_policiy`` to ``omit``
 
 0.0.7 (2018-08-07)
 ------------------
