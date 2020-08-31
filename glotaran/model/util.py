@@ -18,11 +18,11 @@ def wrap_func_as_method(
     cls :
         The class in which the function will be wrapped.
     name :
-        The name of method. If `None`, the orginal function's name is used.
+        The name of method. If `None`, the original function's name is used.
     annotations :
-        The annotations of the method. If `None`, the orginal function's annotations are used.
+        The annotations of the method. If `None`, the original function's annotations are used.
     doc :
-        The documenation of the method. If `None`, the orginal function's documenation is used.
+        The documentation of the method. If `None`, the original function's documentation is used.
     """
 
     def decorator(func):

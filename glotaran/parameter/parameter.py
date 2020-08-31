@@ -28,7 +28,7 @@ class Parameter(LmParameter):
         label :
             The label of the parameter.
         full_label : str
-            The label of the parameter with its path in a paramter group prepended.
+            The label of the parameter with its path in a parameter group prepended.
         """
 
         super(Parameter, self).__init__(
@@ -77,7 +77,7 @@ class Parameter(LmParameter):
         value :
             The list or numeric value.
         default_options :
-            A dictonary of default options.
+            A dictionary of default options.
         label :
             The label of the parameter.
         """

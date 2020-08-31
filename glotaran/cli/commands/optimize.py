@@ -12,7 +12,7 @@ from . import util
     "-dfmt",
     default=None,
     type=click.Choice(gta.io.reader.known_reading_formats.keys()),
-    help="The input format of the data. Will be infered from extension if not set.",
+    help="The input format of the data. Will be inferred from extension if not set.",
 )
 @click.option(
     "--data",
@@ -109,7 +109,7 @@ def optimize_cmd(
             click.echo("Optimized Parameter:")
             click.echo(result.optimized_parameter.markdown())
         except Exception as e:
-            click.echo(f"An error occured during optimization: \n\n{e}", err=True)
+            click.echo(f"An error occurred during optimization: \n\n{e}", err=True)
             sys.exit(1)
 
         if out is not None:
@@ -117,11 +117,11 @@ def optimize_cmd(
                 click.echo(f"Saving directory is '{out}'")
                 if yes or click.confirm("Do you want to save the data?", default=True):
                     paths = result.save(out)
-                    click.echo("File saving successfull, the follwing files have been written:\n")
+                    click.echo("File saving successful, the following files have been written:\n")
                     for p in paths:
                         click.echo(f"* {p}")
             except Exception as e:
-                click.echo(f"An error occured during optimization: \n\n{e}", err=True)
+                click.echo(f"An error occurred during optimization: \n\n{e}", err=True)
                 sys.exit(1)
 
         click.echo("All done, have a nice day!")

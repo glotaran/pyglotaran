@@ -21,7 +21,7 @@ Let us get some data to analyze:
    In [2]: dataset
 
 Like all data in ``glotaran``, the dataset is a :class:`xarray:xarray.Dataset`.
-You can find more infomation about the ``xarray`` library the `xarray hompage`_.
+You can find more information about the ``xarray`` library the `xarray hompage`_.
 
 .. _xarray hompage: http://xarray.pydata.org/en/stable/
 

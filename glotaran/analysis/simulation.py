@@ -30,13 +30,13 @@ def simulate(
     dataset :
         Label of the dataset to simulate
     axes :
-        A dictory with axes for simulation.
+        A dictionary with axes for simulation.
     clp :
-        Conditionaly linear parameter. Will be used instead of `model.global_matrix` if given.
+        Conditionally linear parameter. Will be used instead of `model.global_matrix` if given.
     noise :
         Add noise to the simulation.
     noise_std_dev :
-        The standard devition for noise simulation.
+        The standard deviation for noise simulation.
     noise_seed :
         The seed for the noise simulation.
     """

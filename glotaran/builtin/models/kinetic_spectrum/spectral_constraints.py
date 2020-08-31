@@ -21,7 +21,7 @@ class OnlyConstraint:
 
     def applies(self, index: any) -> bool:
         """
-        Returns true if the indexx is in one of the intervals.
+        Returns true if the index is in one of the intervals.
 
         Parameters
         ----------
@@ -75,9 +75,9 @@ class ZeroConstraint:
 @model_attribute_typed(types={"only": OnlyConstraint, "zero": ZeroConstraint,}, no_label=True)
 class SpectralConstraint:
     """A compartment constraint is applied on one compartment on one or many
-    intervals on the estimated axies type.
+    intervals on the estimated axis type.
 
-    There are three types: zeroe, equal and eqal area. See the documention of
+    There are three types: zero, equal and equal area. See the documentation of
     the respective classes for details.
     """
 

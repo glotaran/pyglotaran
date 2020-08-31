@@ -26,7 +26,7 @@ class ParameterNotFoundException(Exception):
 class ParameterGroup(dict):
     def __init__(self, label: str = None):
         """Represents are group of parameters. Can contain other groups, creating a
-        tree-like hirachy.
+        tree-like hierarchy.
 
         Parameters
         ----------
@@ -370,7 +370,7 @@ class ParameterGroup(dict):
             raise ParameterNotFoundException(path, label)
 
     def all(
-        self, root: str = None, seperator: str = "."
+        self, root: str = None, separator: str = "."
     ) -> typing.Generator[typing.Tuple[str, Parameter], None, None]:
         """Returns a generator over all parameter in the group and it's subgroups together with
         their labels.
@@ -379,15 +379,15 @@ class ParameterGroup(dict):
         ----------
         root :
             The label of the root group
-        seperator:
-            The seperator for the parameter labels.
+        separator:
+            The separator for the parameter labels.
         """
 
-        root = f"{root}{self.label}{seperator}" if root is not None else ""
+        root = f"{root}{self.label}{separator}" if root is not None else ""
         for label, p in self._parameters.items():
             yield (f"{root}{label}", p)
         for _, l in self.items():
-            for (lbl, p) in l.all(root=root, seperator=seperator):
+            for (lbl, p) in l.all(root=root, separator=separator):
                 yield (lbl, p)
 
     def as_parameter_dict(self) -> Parameters:
@@ -401,7 +401,7 @@ class ParameterGroup(dict):
         """
 
         params = Parameters()
-        for label, p in self.all(seperator="_"):
+        for label, p in self.all(separator="_"):
             p.name = "_" + label
             if p.non_neg:
                 p = copy.deepcopy(p)

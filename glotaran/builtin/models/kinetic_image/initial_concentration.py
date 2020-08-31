@@ -1,4 +1,4 @@
-"""This package contains the intial concentration item."""
+"""This package contains the initial concentration item."""
 
 import copy
 import typing

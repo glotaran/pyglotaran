@@ -111,7 +111,7 @@ def export(filename: str, select, out: str, name: str):
                         )
                         change = False
                     choice = prompt(
-                        f"The filepath of the ouput file is '{out}'. Save the data?",
+                        f"The filepath of the output file is '{out}'. Save the data?",
                         default="yes",
                         type=click.Choice(["yes", "no", "change"]),
                     )

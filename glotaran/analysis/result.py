@@ -33,7 +33,7 @@ class Result:
         model :
             A subclass of :class:`glotaran.model.Model`
         data :
-            A dictonary containing all datasets with their labels as keys.
+            A dictionary containing all datasets with their labels as keys.
         initital_parameter : glotaran.parameter.ParameterGroup
             The initital fit parameter,
         nnls :

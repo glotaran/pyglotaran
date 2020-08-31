@@ -1,4 +1,4 @@
-"""Functions for calculating conditionaly linear parameters and residual with the variable
+"""Functions for calculating conditionally linear parameters and residual with the variable
 projection method."""
 
 import typing
@@ -10,7 +10,7 @@ from scipy.linalg import lapack
 def residual_variable_projection(
     matrix: np.ndarray, data: np.ndarray
 ) -> typing.Tuple[typing.List[str], np.ndarray]:
-    """Calculates the conditionaly linear parameters and residual with the variable projection
+    """Calculates the conditionally linear parameters and residual with the variable projection
     method.
 
     Parameters

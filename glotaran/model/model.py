@@ -147,13 +147,13 @@ class Model:
         parameter :
             The parameters for the simulation.
         axes :
-            A dictory with axes for simulation.
+            A dictionary with axes for simulation.
         clp :
-            Conditionaly linear parameter. Will be used instead of `model.global_matrix` if given.
+            Conditionally linear parameter. Will be used instead of `model.global_matrix` if given.
         noise :
             If `True` noise is added to the simulated data.
         noise_std_dev :
-            The standart deviation of the noise.
+            The standard deviation of the noise.
         noise_seed :
             Seed for the noise.
         """
@@ -183,11 +183,11 @@ class Model:
         Parameters
         ----------
         data :
-            A dictonary containing all datasets with their labels as keys.
+            A dictionary containing all datasets with their labels as keys.
         parameter : glotaran.model.ParameterGroup
             The initial parameter.
         nnls :
-            If `True` non-linear least squaes optimizing is used instead of variable projection.
+            If `True` non-linear least squares optimizing is used instead of variable projection.
         verbose :
             If `True` feedback is printed at every iteration.
         max_nfev :
@@ -218,11 +218,11 @@ class Model:
         Parameters
         ----------
         data :
-            A dictonary containing all datasets with their labels as keys.
+            A dictionary containing all datasets with their labels as keys.
         parameter : glotaran.model.ParameterGroup
             The parameter.
         nnls :
-            If `True` non-linear least squaes optimizing is used instead of variable projection.
+            If `True` non-linear least squares optimizing is used instead of variable projection.
         group_atol :
             The tolerance for grouping datasets along the global axes.
 

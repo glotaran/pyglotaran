@@ -1,4 +1,4 @@
-"""Functions for calculating conditionaly linear parameters and residual with the non-negative
+"""Functions for calculating conditionally linear parameters and residual with the non-negative
 least-squares method."""
 
 import typing
@@ -10,7 +10,7 @@ from scipy.optimize import nnls
 def residual_nnls(
     matrix: np.ndarray, data: np.ndarray
 ) -> typing.Tuple[typing.List[str], np.ndarray]:
-    """Calculates the conditionaly linear parameters and residual with the non-negative
+    """Calculates the conditionally linear parameters and residual with the non-negative
     least-squares method.
 
     Parameters
