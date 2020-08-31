@@ -18,7 +18,7 @@ A Note To Glotaran Users
 Although closely related and developed in the same lab, pyglotaran is not a
 replacement for Glotaran - A GUI For TIMP. Pyglotaran only aims to provide the
 modeling and optimization framework and algorithms. It is of course possible
-to develop a new GUI which leverages the power of pyglotaran (contributions welcome).  
+to develop a new GUI which leverages the power of pyglotaran (contributions welcome).
 
 The current 'user-interface' for pyglotaran is Jupyter Notebook. It is designed to
 seamlessly integrate in this environment and be compatible with all major
