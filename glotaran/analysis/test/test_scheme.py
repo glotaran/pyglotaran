@@ -2,8 +2,6 @@ import pytest
 import xarray as xr
 from glotaran.analysis.scheme import Scheme
 
-from .mock import MockModel  # noqa
-
 
 @pytest.fixture(scope="session")
 def scheme(tmpdir_factory):

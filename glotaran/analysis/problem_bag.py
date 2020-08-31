@@ -53,7 +53,7 @@ def create_grouped_bag(scheme):
                             bag[j][0],
                             dataset.data.isel({scheme.model.global_dimension: i2[i]}).values,
                         ]
-                    ),  # noqa e501
+                    ),
                     bag[j][1] + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
                 )
 

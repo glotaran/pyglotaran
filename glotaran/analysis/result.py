@@ -3,7 +3,7 @@
 import os
 import typing
 
-import glotaran  # noqa F01
+import glotaran
 import numpy as np
 import xarray as xr
 from glotaran.parameter import ParameterGroup
@@ -105,14 +105,14 @@ class Result:
     @property
     def chisqr(self) -> float:
         r"""The chi-square of the optimization
-        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""  # noqa w605
+        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
         return self._chisqr
 
     @property
     def red_chisqr(self) -> float:
         r"""The reduced chi-square of the optimization
         :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
-        """  # noqa w605
+        """
         return self._red_chisqr
 
     @property
@@ -120,7 +120,7 @@ class Result:
         r"""
         The root mean square error the optimization
         :math:`rms = \sqrt{\chi^2_{red}}`
-        """  # noqa w605
+        """
         return np.sqrt(self.red_chisqr)
 
     @property

@@ -169,10 +169,10 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
 
-import ctypes  # noqa
+import ctypes  # noqa: E402
 
 # This is a work around to use scipy.special function with numba
-from numba.extending import get_cython_function_address  # noqa
+from numba.extending import get_cython_function_address  # noqa: E402
 
 _dble = ctypes.c_double
 

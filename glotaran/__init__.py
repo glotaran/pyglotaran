@@ -1,4 +1,4 @@
-# Glotaran package __init__.py
+"""Glotaran package __init__.py"""
 
 from . import io, model, parameter  # noqa: F401
 
