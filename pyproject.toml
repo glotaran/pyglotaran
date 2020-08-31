@@ -15,3 +15,10 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.isort]
+profile = "hug"
+src_paths = ["flake8_nb", "test"]
+include_trailing_comma = true
+line_length = 99
+multi_line_output = 3
