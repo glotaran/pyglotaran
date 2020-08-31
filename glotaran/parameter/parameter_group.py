@@ -18,9 +18,7 @@ class ParameterNotFoundException(Exception):
     """Raised when a Parameter is not found in the Group."""
 
     def __init__(self, path, label):
-        super(ParameterNotFoundException, self).__init__(
-            f"Cannot find parameter {'.'.join(path)}.{label}"
-        )
+        super().__init__(f"Cannot find parameter {'.'.join(path)}.{label}")
 
 
 class ParameterGroup(dict):
@@ -37,7 +35,7 @@ class ParameterGroup(dict):
         self._label = label
         self._parameters = {}
         self._root = None
-        super(ParameterGroup, self).__init__()
+        super().__init__()
 
     @classmethod
     def from_parameter_dict(cls, parameter: Parameters):
@@ -324,8 +322,7 @@ class ParameterGroup(dict):
     def groups(self) -> typing.Generator["ParameterGroup", None, None]:
         """Returns a generator over all groups and their subgroups."""
         for group in self:
-            for sub_group in group.groups():
-                yield sub_group
+            yield from group.groups()
 
     def has(self, label: str) -> bool:
         """Checks if a parameter with the given label is in the group or in a subgroup.

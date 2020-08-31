@@ -25,7 +25,7 @@ def test_oscillation(model):
 
     i = 1
     for _ in model.oscillation:
-        label = "osc{}".format(i)
+        label = f"osc{i}"
         assert label in model.oscillation
         oscillation = model.oscillation[label]
         assert isinstance(oscillation, Oscillation)
@@ -41,12 +41,12 @@ def test_megacomplexes(model):
 
     i = 1
     for _ in model.megacomplex:
-        label = "cmplx{}".format(i)
+        label = f"cmplx{i}"
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
         assert isinstance(megacomplex, DOASMegacomplex)
         assert megacomplex.label == label
-        assert megacomplex.k_matrix == ["km{}".format(i)]
+        assert megacomplex.k_matrix == [f"km{i}"]
         if i == 2:
             assert megacomplex.oscillation == ["osc1"]
         if i == 4:

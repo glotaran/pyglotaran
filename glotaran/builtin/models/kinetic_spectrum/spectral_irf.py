@@ -45,9 +45,7 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
     """
 
     def parameter(self, index):
-        centers, widths, scale, backsweep, backsweep_period = super(
-            IrfSpectralMultiGaussian, self
-        ).parameter(index)
+        centers, widths, scale, backsweep, backsweep_period = super().parameter(index)
 
         if self.dispersion_center:
             dist = (

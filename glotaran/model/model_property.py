@@ -39,7 +39,7 @@ class ModelProperty(property):
                 value = default
             return value
 
-        super(ModelProperty, self).__init__(fget=getter, fset=setter, doc=doc)
+        super().__init__(fget=getter, fset=setter, doc=doc)
 
     @property
     def allow_none(self) -> bool:

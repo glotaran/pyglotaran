@@ -90,7 +90,7 @@ def test_initial_concentration(model):
 
     i = 1
     for _ in model.initial_concentration:
-        label = "inputD{}".format(i)
+        label = f"inputD{i}"
         assert label in model.initial_concentration
         initial_concentration = model.initial_concentration[label]
         assert initial_concentration.compartments == ["s1", "s2", "s3"]
@@ -104,7 +104,7 @@ def test_irf(model):
 
     i = 1
     for _ in model.irf:
-        label = "irf{}".format(i)
+        label = f"irf{i}"
         assert label in model.irf
         irf = model.irf[label]
         assert isinstance(irf, IrfMultiGaussian)
@@ -157,10 +157,10 @@ def test_megacomplexes(model):
 
     i = 1
     for _ in model.megacomplex:
-        label = "cmplx{}".format(i)
+        label = f"cmplx{i}"
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
         assert isinstance(megacomplex, KineticImageMegacomplex)
         assert megacomplex.label == label
-        assert megacomplex.k_matrix == ["km{}".format(i)]
+        assert megacomplex.k_matrix == [f"km{i}"]
         i = i + 1

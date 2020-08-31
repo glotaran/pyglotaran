@@ -14,7 +14,7 @@ class DataFileType(Enum):
     wavelength_explicit = "Wavelength explicit"
 
 
-class ExplicitFile(object):
+class ExplicitFile:
     """
     Abstract class representing either a time- or wavelength-explicit file.
     """

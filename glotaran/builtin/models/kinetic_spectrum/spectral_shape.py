@@ -47,7 +47,7 @@ class SpectralShapeOne:
         shape: numpy.ndarray
 
         """
-        return np.ones((axis.shape[0]))
+        return np.ones(axis.shape[0])
 
 
 @model_attribute(properties={}, has_type=True)
@@ -69,7 +69,7 @@ class SpectralShapeZero:
         shape: numpy.ndarray
 
         """
-        return np.zeros((axis.shape[0]))
+        return np.zeros(axis.shape[0])
 
 
 @model_attribute_typed(

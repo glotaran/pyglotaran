@@ -104,20 +104,20 @@ class Result:
 
     @property
     def chisqr(self) -> float:
-        """The chi-square of the optimization
+        r"""The chi-square of the optimization
         :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""  # noqa w605
         return self._chisqr
 
     @property
     def red_chisqr(self) -> float:
-        """The reduced chi-square of the optimization
+        r"""The reduced chi-square of the optimization
         :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
         """  # noqa w605
         return self._red_chisqr
 
     @property
     def root_mean_square_error(self) -> float:
-        """
+        r"""
         The root mean square error the optimization
         :math:`rms = \sqrt{\chi^2_{red}}`
         """  # noqa w605

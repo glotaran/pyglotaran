@@ -31,9 +31,7 @@ class Parameter(LmParameter):
             The label of the parameter with its path in a parameter group prepended.
         """
 
-        super(Parameter, self).__init__(
-            name=label, user_data={"non_neg": False, "full_label": full_label}
-        )
+        super().__init__(name=label, user_data={"non_neg": False, "full_label": full_label})
 
         self.label = label
         self.full_label = full_label
@@ -166,7 +164,7 @@ class Parameter(LmParameter):
 
     @property
     def non_neg(self) -> bool:
-        """Indicates if the parameter is non-negativ.
+        r"""Indicates if the parameter is non-negativ.
 
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.

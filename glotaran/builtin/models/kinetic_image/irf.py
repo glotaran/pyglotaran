@@ -101,5 +101,5 @@ class IrfGaussian(IrfMultiGaussian):
 @model_attribute_typed(
     types={"gaussian": IrfGaussian, "multi-gaussian": IrfMultiGaussian, "measured": IrfMeasured,}
 )
-class Irf(object):
+class Irf:
     """Represents an IRF."""

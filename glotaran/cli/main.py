@@ -10,15 +10,15 @@ from .commands.validate import validate_cmd
 class Cli(click.Group):
     def __init__(self, *args, **kwargs):
         self.help_priorities = {}
-        super(Cli, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_help(self, ctx):
         self.list_commands = self.list_commands_for_help
-        return super(Cli, self).get_help(ctx)
+        return super().get_help(ctx)
 
     def list_commands_for_help(self, ctx):
         """reorder the list of commands when listing the help"""
-        commands = super(Cli, self).list_commands(ctx)
+        commands = super().list_commands(ctx)
         return (
             c[1]
             for c in sorted(
