@@ -10,6 +10,12 @@ repos:
       - id: debug-statements
       - id: fix-encoding-pragma
         args: [--remove]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.6.2
+    hooks:
+    - id: pyupgrade
+      args: [--py36-plus]
   - repo: https://github.com/python/black
     rev: 19.10b0
     hooks:
