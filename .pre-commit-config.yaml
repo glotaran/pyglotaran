@@ -23,3 +23,12 @@ repos:
     rev: 3.8.3
     hooks:
       - id: flake8
+  - repo: https://github.com/myint/rstcheck
+    rev: '3f92957478422df87bd730abde66f089cc1ee19b'
+    hooks:
+      - id: rstcheck
+        additional_dependencies: [rstcheck, sphinx]
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.5.1
+    hooks:
+      - id: rst-backticks
