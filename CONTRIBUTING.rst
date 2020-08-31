@@ -78,13 +78,17 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
     (pyglotaran)$ python -m pip install -r requirements_dev.txt
     (pyglotaran)$ pip install -e . --process-dependency-links
 
-4. Create a branch for local development::
+4. Install the ``pre-commit`` hooks, to automatically format and check your code::
+
+    $ pre-commit install
+
+5. Create a branch for local development::
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
+6. When you're done making changes, check that your changes pass flake8 and the
    tests, including testing other Python versions with tox::
 
     $ flake8 glotaran tests
@@ -95,13 +99,13 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
     $ tox
 
 
-6. Commit your changes and push your branch to GitHub::
+7. Commit your changes and push your branch to GitHub::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. Submit a pull request through the GitHub website.
+8. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
