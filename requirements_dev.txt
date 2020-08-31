@@ -31,9 +31,12 @@ IPython>=7.2.0
 
 # testing dependencies
 tox>=3.0.0
-flake8>=3.5.0
 pytest>=3.7.1
 pluggy>=0.7
 pytest-cov>=2.5.1
 pytest-runner>=2.11.1
 pytest-benchmark>=3.1.1
+
+# code quality asurence
+flake8>=3.8.3
+pre-commit>=2.6.0
