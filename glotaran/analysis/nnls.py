@@ -6,8 +6,9 @@ import numpy as np
 from scipy.optimize import nnls
 
 
-def residual_nnls(matrix: np.ndarray, data: np.ndarray) \
-        -> typing.Tuple[typing.List[str], np.ndarray]:
+def residual_nnls(
+    matrix: np.ndarray, data: np.ndarray
+) -> typing.Tuple[typing.List[str], np.ndarray]:
     """Calculates the conditionaly linear parameters and residual with the non-negative
     least-squares method.
 

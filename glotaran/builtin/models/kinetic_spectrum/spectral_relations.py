@@ -8,16 +8,19 @@ from glotaran.model import model_attribute
 from glotaran.parameter import Parameter, ParameterGroup
 
 T_KineticSpectrumModel = typing.TypeVar(
-    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
+    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
+)
 
 
 @model_attribute(
     properties={
-        'compartment': str,
-        'target': str,
-        'parameter': Parameter,
-        'interval': typing.List[typing.Tuple[float, float]],
-    }, no_label=True)
+        "compartment": str,
+        "target": str,
+        "parameter": Parameter,
+        "interval": typing.List[typing.Tuple[float, float]],
+    },
+    no_label=True,
+)
 class SpectralRelation:
     def applies(self, index: any) -> bool:
         """
@@ -36,11 +39,12 @@ class SpectralRelation:
 
 
 def create_spectral_relation_matrix(
-        model: T_KineticSpectrumModel,
-        parameter: ParameterGroup,
-        clp_labels: typing.List[str],
-        matrix: np.ndarray,
-        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
+    model: T_KineticSpectrumModel,
+    parameter: ParameterGroup,
+    clp_labels: typing.List[str],
+    matrix: np.ndarray,
+    index: float,
+) -> typing.Tuple[typing.List[str], np.ndarray]:
     relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
     idx_to_delete = []
@@ -58,17 +62,19 @@ def create_spectral_relation_matrix(
 
 
 def apply_spectral_relations(
-        model: T_KineticSpectrumModel,
-        parameter: ParameterGroup,
-        clp_labels: typing.List[str],
-        matrix: np.ndarray,
-        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
+    model: T_KineticSpectrumModel,
+    parameter: ParameterGroup,
+    clp_labels: typing.List[str],
+    matrix: np.ndarray,
+    index: float,
+) -> typing.Tuple[typing.List[str], np.ndarray]:
 
     if not model.spectral_relations:
         return (clp_labels, matrix)
 
-    reduced_clp_labels, relation_matrix = \
-        create_spectral_relation_matrix(model, parameter, clp_labels, matrix, 1)
+    reduced_clp_labels, relation_matrix = create_spectral_relation_matrix(
+        model, parameter, clp_labels, matrix, 1
+    )
 
     reduced_matrix = matrix @ relation_matrix
 
@@ -76,11 +82,12 @@ def apply_spectral_relations(
 
 
 def retrieve_clps(
-        model: T_KineticSpectrumModel,
-        parameter: ParameterGroup,
-        reduced_clp_labels: typing.List[str],
-        reduced_clps: np.ndarray,
-        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
+    model: T_KineticSpectrumModel,
+    parameter: ParameterGroup,
+    reduced_clp_labels: typing.List[str],
+    reduced_clps: np.ndarray,
+    index: float,
+) -> typing.Tuple[typing.List[str], np.ndarray]:
 
     if not model.spectral_relations:
         return reduced_clp_labels, reduced_clps
@@ -93,11 +100,10 @@ def retrieve_clps(
             relation = relation.fill(model, parameter)
             retrieved_clp_labels.append(relation.target)
             source_idx = reduced_clp_labels.index(relation.compartment)
-            retrieved_clps.append(
-                reduced_clps[source_idx] * relation.parameter
-            )
+            retrieved_clps.append(reduced_clps[source_idx] * relation.parameter)
 
-    retrieved_clps = \
+    retrieved_clps = (
         np.concatenate([reduced_clps, retrieved_clps]) if retrieved_clps else reduced_clps
+    )
 
     return reduced_clp_labels + retrieved_clp_labels, retrieved_clps

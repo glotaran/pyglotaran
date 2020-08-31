@@ -20,7 +20,8 @@ class ModelProperty(property):
         def setter(that_self, value: set_type):
             if value is None and not self._allow_none:
                 raise Exception(
-                    f"Property '{name}' of '{cls.__name__}' is not allowed to set to None.")
+                    f"Property '{name}' of '{cls.__name__}' is not allowed to set to None."
+                )
             if self._is_parameter and value is not None:
                 if self._is_parameter_value and isinstance(value, str):
                     value = Parameter(full_label=str(value))
@@ -29,11 +30,11 @@ class ModelProperty(property):
                 elif self._is_parameter_dict and all([isinstance(v, str) for v in value.values()]):
                     for k, v in value.items():
                         value[k] = Parameter(full_label=v)
-            setattr(that_self, f'_{self._name}', value)
+            setattr(that_self, f"_{self._name}", value)
 
         @wrap_func_as_method(cls, name=name)
         def getter(that_self) -> prop_type:
-            value = getattr(that_self, f'_{self._name}')
+            value = getattr(that_self, f"_{self._name}")
             if value is None:
                 value = default
             return value
@@ -50,7 +51,7 @@ class ModelProperty(property):
             return []
 
         missing_model = []
-        if hasattr(model, f'set_{self._name}') or hasattr(model, f'add_{self._name}'):
+        if hasattr(model, f"set_{self._name}") or hasattr(model, f"add_{self._name}"):
             attr = getattr(model, self._name)
 
             if isinstance(value, list):
@@ -64,8 +65,9 @@ class ModelProperty(property):
             else:
                 if value not in attr:
                     missing_model.append((self._name, value))
-        missing_model = \
-            [f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model]
+        missing_model = [
+            f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model
+        ]
 
         missing_parameter = []
         if parameter is not None and self._is_parameter and value is not None:
@@ -106,9 +108,10 @@ class ModelProperty(property):
             if isinstance(value, list):
                 value = [getattr(model, self._name)[v].fill(model, parameter) for v in value]
             elif isinstance(value, dict):
-                value = \
-                    {k: getattr(model, self._name)[v].fill(model, parameter)
-                     for (k, v) in value.items()}
+                value = {
+                    k: getattr(model, self._name)[v].fill(model, parameter)
+                    for (k, v) in value.items()
+                }
             else:
                 value = getattr(model, self._name)[value].fill(model, parameter)
 
@@ -116,9 +119,16 @@ class ModelProperty(property):
 
     def _determine_if_parameter(self, type):
         self._is_parameter_value = type is Parameter
-        self._is_parameter_list = hasattr(type, '__origin__') and \
-            issubclass(type.__origin__, typing.List) and type.__args__[0] is Parameter
-        self._is_parameter_dict = hasattr(type, '__origin__') and \
-            issubclass(type.__origin__, typing.Dict) and type.__args__[1] is Parameter
-        self._is_parameter = \
+        self._is_parameter_list = (
+            hasattr(type, "__origin__")
+            and issubclass(type.__origin__, typing.List)
+            and type.__args__[0] is Parameter
+        )
+        self._is_parameter_dict = (
+            hasattr(type, "__origin__")
+            and issubclass(type.__origin__, typing.Dict)
+            and type.__args__[1] is Parameter
+        )
+        self._is_parameter = (
             self._is_parameter_value or self._is_parameter_list or self._is_parameter_dict
+        )

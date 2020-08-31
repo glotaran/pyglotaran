@@ -1,6 +1,6 @@
 import pytest
 from glotaran.parse.parser import load_yml_file
-from glotaran.builtin.models.doas import (DOASModel, DOASMegacomplex, Oscillation)
+from glotaran.builtin.models.doas import DOASModel, DOASMegacomplex, Oscillation
 
 # unused import
 # from glotaran.model import FixedConstraint, BoundConstraint
@@ -12,7 +12,7 @@ THIS_DIR = dirname(abspath(__file__))
 
 @pytest.fixture
 def model():
-    spec_path = join(THIS_DIR, 'test_model_spec_doas.yml')
+    spec_path = join(THIS_DIR, "test_model_spec_doas.yml")
     return load_yml_file(spec_path)
 
 
@@ -31,7 +31,7 @@ def test_oscillation(model):
         assert isinstance(oscillation, Oscillation)
         assert oscillation.label == label
         assert oscillation.frequency == i
-        assert oscillation.rate == 2+i
+        assert oscillation.rate == 2 + i
 
         i = i + 1
 

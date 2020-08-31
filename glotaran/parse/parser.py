@@ -22,18 +22,18 @@ def _yml_tuple_constructor(loader, node):
 
     value = loader.construct_scalar(node)
     # remove the ( ) from the string
-    tup_elements = [ele.strip() for ele in value[1:-1].split(',')]
+    tup_elements = [ele.strip() for ele in value[1:-1].split(",")]
     # remove the last element if the tuple was written as (x,b,)
-    if tup_elements[-1] == '':
+    if tup_elements[-1] == "":
         tup_elements.pop(-1)
     tup = tuple(map(parse_tup_el, tup_elements))
     return tup
 
 
 # !tuple is my own tag name, I think you could choose anything you want
-yaml.FullLoader.add_constructor(u'!tuple', _yml_tuple_constructor)
+yaml.FullLoader.add_constructor("!tuple", _yml_tuple_constructor)
 # this is to spot the strings written as tuple in the yaml
-yaml.FullLoader.add_implicit_resolver(u'!tuple', re.compile(r"\((.*?,.*?)\)"), None)
+yaml.FullLoader.add_implicit_resolver("!tuple", re.compile(r"\((.*?,.*?)\)"), None)
 
 
 def parse_yml_file(fname: str) -> Dict:
@@ -65,11 +65,11 @@ def parse_yml(data: str):
 
 def parse_spec(spec: Dict):
 
-    if 'type' not in spec:
+    if "type" not in spec:
         raise Exception("Model type not defined")
 
-    model_type = spec['type']
-    del spec['type']
+    model_type = spec["type"]
+    del spec["type"]
 
     if not known_model(model_type):
         raise Exception(f"Unknown model type '{model_type}'.")

@@ -15,8 +15,8 @@ def calculate_doas_spectral_matrix(dataset, axis):
     for osc in oscillations:
         all_oscillations.append(osc)
         all_oscillations.append(osc)
-        clp.append(f'{osc.label}_sin')
-        clp.append(f'{osc.label}_cos')
+        clp.append(f"{osc.label}_sin")
+        clp.append(f"{osc.label}_cos")
     matrix = np.ones((axis.size, len(all_oscillations)), dtype=np.float64)
     for i, osc in enumerate(all_oscillations):
         if osc.label not in dataset.shape:

@@ -1,8 +1,9 @@
 """ Gloataran DOAS Model """
 
 from glotaran.model import model
-from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import \
-    KineticSpectrumDatasetDescriptor
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
+    KineticSpectrumDatasetDescriptor,
+)
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
     KineticSpectrumModel,
     apply_kinetic_model_constraints,
@@ -19,16 +20,14 @@ from .oscillation import Oscillation
 
 
 @model(
-    'doas',
-    attributes={
-        'oscillation': Oscillation,
-    },
+    "doas",
+    attributes={"oscillation": Oscillation,},
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=DOASMegacomplex,
     matrix=calculate_doas_matrix,
-    matrix_dimension='time',
+    matrix_dimension="time",
     global_matrix=calculate_doas_spectral_matrix,
-    global_dimension='spectral',
+    global_dimension="spectral",
     finalize_data_function=finalize_doas_data,
     constrain_matrix_function=apply_kinetic_model_constraints,
     additional_penalty_function=apply_spectral_penalties,

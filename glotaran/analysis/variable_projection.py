@@ -6,8 +6,9 @@ import numpy as np
 from scipy.linalg import lapack
 
 
-def residual_variable_projection(matrix: np.ndarray, data: np.ndarray) \
-        -> typing.Tuple[typing.List[str], np.ndarray]:
+def residual_variable_projection(
+    matrix: np.ndarray, data: np.ndarray
+) -> typing.Tuple[typing.List[str], np.ndarray]:
     """Calculates the conditionaly linear parameters and residual with the variable projection
     method.
 
@@ -24,8 +25,7 @@ def residual_variable_projection(matrix: np.ndarray, data: np.ndarray) \
     qr, tau, _, _ = lapack.dgeqrf(matrix)
 
     # Kaufman Q2 step 4
-    temp, _, _ = lapack.dormqr("L", "T", qr, tau, data, max(1, matrix.shape[1]),
-                               overwrite_c=0)
+    temp, _, _ = lapack.dormqr("L", "T", qr, tau, data, max(1, matrix.shape[1]), overwrite_c=0)
 
     clp, _ = lapack.dtrtrs(qr, temp)
 
@@ -34,6 +34,5 @@ def residual_variable_projection(matrix: np.ndarray, data: np.ndarray) \
 
     # Kaufman Q2 step 5
 
-    residual, _, _ = lapack.dormqr("L", "N", qr, tau, temp, max(1, matrix.shape[1]),
-                                   overwrite_c=0)
-    return clp[:matrix.shape[1]], residual
+    residual, _, _ = lapack.dormqr("L", "N", qr, tau, temp, max(1, matrix.shape[1]), overwrite_c=0)
+    return clp[: matrix.shape[1]], residual

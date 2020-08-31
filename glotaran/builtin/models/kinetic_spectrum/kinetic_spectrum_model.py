@@ -18,7 +18,8 @@ from .spectral_relations import SpectralRelation, apply_spectral_relations
 from .spectral_shape import SpectralShape
 
 T_KineticSpectrumModel = typing.TypeVar(
-    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
+    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
+)
 
 
 def has_kinetic_model_constraints(model: T_KineticSpectrumModel) -> bool:
@@ -26,21 +27,24 @@ def has_kinetic_model_constraints(model: T_KineticSpectrumModel) -> bool:
 
 
 def apply_kinetic_model_constraints(
-        model: T_KineticSpectrumModel,
-        parameter: ParameterGroup,
-        clp_labels: typing.List[str],
-        matrix: np.ndarray,
-        index: float):
+    model: T_KineticSpectrumModel,
+    parameter: ParameterGroup,
+    clp_labels: typing.List[str],
+    matrix: np.ndarray,
+    index: float,
+):
     clp_labels, matrix = apply_spectral_relations(model, parameter, clp_labels, matrix, index)
     clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
     return clp_labels, matrix
 
 
 def index_dependend(model: T_KineticSpectrumModel):
-    if any([
-        isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
-        for irf in model.irf.values()
-    ]):
+    if any(
+        [
+            isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
+            for irf in model.irf.values()
+        ]
+    ):
         return True
     if len(model.spectral_relations) != 0:
         return True
@@ -54,19 +58,19 @@ def grouped(model: T_KineticSpectrumModel):
 
 
 @model(
-    'kinetic-spectrum',
+    "kinetic-spectrum",
     attributes={
-        'equal_area_penalties': EqualAreaPenalty,
-        'shape': SpectralShape,
-        'spectral_constraints': SpectralConstraint,
-        'spectral_relations': SpectralRelation,
+        "equal_area_penalties": EqualAreaPenalty,
+        "shape": SpectralShape,
+        "spectral_constraints": SpectralConstraint,
+        "spectral_relations": SpectralRelation,
     },
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
     matrix=kinetic_spectrum_matrix,
-    matrix_dimension='time',
+    matrix_dimension="time",
     global_matrix=spectral_matrix,
-    global_dimension='spectral',
+    global_dimension="spectral",
     has_matrix_constraints_function=has_kinetic_model_constraints,
     constrain_matrix_function=apply_kinetic_model_constraints,
     has_additional_penalty_function=has_spectral_penalties,

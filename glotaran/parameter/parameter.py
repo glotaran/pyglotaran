@@ -10,6 +10,7 @@ import glotaran
 
 class Keys:
     """Keys for parameter options."""
+
     MIN = "min"
     MAX = "max"
     NON_NEG = "non-negative"
@@ -32,13 +33,14 @@ class Parameter(LmParameter):
         """
 
         super(Parameter, self).__init__(
-            name=label, user_data={'non_neg': False, 'full_label': full_label})
+            name=label, user_data={"non_neg": False, "full_label": full_label}
+        )
 
         self.label = label
         self.full_label = full_label
 
     @classmethod
-    def from_parameter(cls, label: str, parameter: LmParameter) -> 'Parameter':
+    def from_parameter(cls, label: str, parameter: LmParameter) -> "Parameter":
         """Creates a :class:`Parameter` from a `lmfit.Parameter`
 
         Parameters
@@ -50,21 +52,25 @@ class Parameter(LmParameter):
         """
         p = cls(label=label)
         p.vary = parameter.vary
-        p.non_neg = parameter.user_data['non_neg']
-        p.full_label = parameter.user_data['full_label']
+        p.non_neg = parameter.user_data["non_neg"]
+        p.full_label = parameter.user_data["full_label"]
         p.value = np.exp(parameter.value) if p.non_neg else parameter.value
-        p.min = \
+        p.min = (
             np.exp(parameter.min) if p.non_neg and np.isfinite(parameter.min) else parameter.min
-        p.max = \
+        )
+        p.max = (
             np.exp(parameter.max) if p.non_neg and np.isfinite(parameter.max) else parameter.max
+        )
         p.stderr = parameter.stderr
         return p
 
     @classmethod
-    def from_list_or_value(cls,
-                           value: typing.Union[int, float, typing.List],
-                           default_options: typing.Dict = None,
-                           label: str = None) -> 'Parameter':
+    def from_list_or_value(
+        cls,
+        value: typing.Union[int, float, typing.List],
+        default_options: typing.Dict = None,
+        label: str = None,
+    ) -> "Parameter":
         """Creates a parameter from a list or numeric value.
 
         Parameters
@@ -93,6 +99,7 @@ class Parameter(LmParameter):
                 return tmp[0]
             else:
                 return default
+
         options = retrieve(lambda x: isinstance(x, dict), None)
 
         param.label = value[0] if len(value) != 1 else label
@@ -105,7 +112,7 @@ class Parameter(LmParameter):
             param._set_options_from_dict(options)
         return param
 
-    def set_from_group(self, group: 'glotaran.parameter.ParameterGroup'):
+    def set_from_group(self, group: "glotaran.parameter.ParameterGroup"):
         """Sets all values of the parameter to the values of the conrresoping parameter in the group.
 
         Notes
@@ -143,20 +150,20 @@ class Parameter(LmParameter):
     @property
     def label(self) -> str:
         """Label of the parameter"""
-        return self.user_data['label']
+        return self.user_data["label"]
 
     @label.setter
     def label(self, label: str):
-        self.user_data['label'] = label
+        self.user_data["label"] = label
 
     @property
     def full_label(self) -> str:
         """The label of the parameter with its path in a parameter group prepended."""
-        return self.user_data['full_label']
+        return self.user_data["full_label"]
 
     @full_label.setter
     def full_label(self, full_label: str):
-        self.user_data['full_label'] = full_label
+        self.user_data["full_label"] = full_label
 
     @property
     def non_neg(self) -> bool:
@@ -165,11 +172,11 @@ class Parameter(LmParameter):
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
         """  # noqa w605
-        return self.user_data['non_neg']
+        return self.user_data["non_neg"]
 
     @non_neg.setter
     def non_neg(self, non_neg: bool):
-        self.user_data['non_neg'] = non_neg
+        self.user_data["non_neg"] = non_neg
 
     @LmParameter.value.setter
     def value(self, val):
@@ -177,8 +184,9 @@ class Parameter(LmParameter):
             try:
                 val = float(val)
             except Exception:
-                raise Exception("Parameter Error: value must be numeric:"
-                                "{} Type: {}".format(val, type(val)))
+                raise Exception(
+                    "Parameter Error: value must be numeric:" "{} Type: {}".format(val, type(val))
+                )
 
         if isinstance(val, int):
             val = float(val)
@@ -187,6 +195,8 @@ class Parameter(LmParameter):
 
     def __str__(self):
         """ """
-        return f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.stderr}, _Min_:" + \
-               f" {self.min}, _Max_: {self.max}, _Vary_: {self.vary}," + \
-               f" _Non-Negative_: {self.non_neg}"
+        return (
+            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.stderr}, _Min_:"
+            + f" {self.min}, _Max_: {self.max}, _Vary_: {self.vary},"
+            + f" _Non-Negative_: {self.non_neg}"
+        )
