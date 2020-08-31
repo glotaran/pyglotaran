@@ -1,12 +1,10 @@
+from os.path import abspath, dirname, join
+
+import numpy as np
 import pytest
-
-from glotaran.parameter import ParameterGroup
-from glotaran.parse.parser import load_yml_file
-
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
-
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
     KineticSpectrumDatasetDescriptor,
 )
@@ -14,9 +12,8 @@ from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import Kine
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import ZeroConstraint
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAreaPenalty
 from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
-
-from os.path import join, dirname, abspath
-import numpy as np
+from glotaran.parameter import ParameterGroup
+from glotaran.parse.parser import load_yml_file
 
 THIS_DIR = dirname(abspath(__file__))
 

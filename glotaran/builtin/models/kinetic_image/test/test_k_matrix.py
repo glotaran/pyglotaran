@@ -1,9 +1,8 @@
-import pytest
 import numpy as np
-
-from glotaran.parameter import ParameterGroup
+import pytest
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.k_matrix import KMatrix
+from glotaran.parameter import ParameterGroup
 
 
 class SequentialModel:

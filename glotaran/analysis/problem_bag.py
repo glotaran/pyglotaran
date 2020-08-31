@@ -1,8 +1,9 @@
 import collections
 import itertools
-import dask.array as da
-import dask.bag as db
+
 import numpy as np
+from dask import array as da
+from dask import bag as db
 
 ProblemDescriptor = collections.namedtuple(
     "ProblemDescriptor", "dataset data matrix_axis global_axis"

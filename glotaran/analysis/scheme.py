@@ -1,11 +1,11 @@
 import functools
 import pathlib
 import typing
-import yaml
-import xarray as xr
-import numpy as np
 
 import glotaran
+import numpy as np
+import xarray as xr
+import yaml
 from glotaran.parameter import ParameterGroup
 
 

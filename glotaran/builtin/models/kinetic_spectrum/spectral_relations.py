@@ -3,7 +3,6 @@
 import typing
 
 import numpy as np
-
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter, ParameterGroup
 

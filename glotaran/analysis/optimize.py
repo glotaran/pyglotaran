@@ -1,20 +1,20 @@
 import collections
+
 import dask
 import lmfit
 import numpy as np
-
 from glotaran.parameter import ParameterGroup
 
 from . import problem_bag, residual_calculation
 from .matrix_calculation import (
-    calculate_index_independend_ungrouped_matrices,
     calculate_index_independend_grouped_matrices,
-    create_index_dependend_ungrouped_matrix_jobs,
+    calculate_index_independend_ungrouped_matrices,
     create_index_dependend_grouped_matrix_jobs,
+    create_index_dependend_ungrouped_matrix_jobs,
 )
 from .nnls import residual_nnls
-from .variable_projection import residual_variable_projection
 from .result import Result
+from .variable_projection import residual_variable_projection
 
 ResultFuture = collections.namedtuple(
     "ResultFuture", "bag clp_label matrix full_clp_label clp residual"

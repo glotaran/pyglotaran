@@ -1,7 +1,6 @@
 """Glotaran kinetic spectrum Matrix"""
 
 import numpy as np
-
 from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 
 from .spectral_irf import IrfGaussianCoherentArtifact

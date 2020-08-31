@@ -1,4 +1,4 @@
-from glotaran.model import model, Model
+from glotaran.model import Model, model
 
 from .initial_concentration import InitialConcentration
 from .irf import Irf

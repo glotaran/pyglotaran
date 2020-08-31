@@ -1,7 +1,7 @@
 """ Glotaran Kinetic Matrix """
 
-import numpy as np
 import numba as nb
+import numpy as np
 
 from .irf import IrfMultiGaussian
 
@@ -169,9 +169,10 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
 
+import ctypes  # noqa
+
 # This is a work around to use scipy.special function with numba
 from numba.extending import get_cython_function_address  # noqa
-import ctypes  # noqa
 
 _dble = ctypes.c_double
 

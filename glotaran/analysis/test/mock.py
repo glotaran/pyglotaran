@@ -1,5 +1,4 @@
 import numpy as np
-
 from glotaran.model import Model, model, model_attribute
 
 

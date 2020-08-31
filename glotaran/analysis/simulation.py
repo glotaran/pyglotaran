@@ -1,9 +1,9 @@
 """Functions for simulating a global analysis model."""
 
 import typing
+
 import numpy as np
 import xarray as xr
-
 from glotaran.parameter import ParameterGroup
 
 T_Model = typing.TypeVar("glotaran.model.Model")

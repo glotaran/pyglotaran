@@ -1,9 +1,9 @@
 import typing
-import numpy as np
-import numba as nb
 
-from glotaran.model import model_attribute
+import numba as nb
+import numpy as np
 from glotaran.builtin.models.kinetic_image.irf import Irf, IrfMultiGaussian
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 

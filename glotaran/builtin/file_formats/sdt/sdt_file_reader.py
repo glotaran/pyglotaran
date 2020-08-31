@@ -5,10 +5,8 @@ import warnings
 
 import numpy as np
 import xarray as xr
-
-from glotaran.io.reader import file_reader
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
-
+from glotaran.io.reader import file_reader
 from sdtfile import SdtFile
 
 

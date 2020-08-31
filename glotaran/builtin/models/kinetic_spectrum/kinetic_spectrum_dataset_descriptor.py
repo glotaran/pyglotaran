@@ -1,9 +1,9 @@
 import typing
 
-from glotaran.model import model_attribute
 from glotaran.builtin.models.kinetic_image.kinetic_image_dataset_descriptor import (
     KineticImageDatasetDescriptor,
 )
+from glotaran.model import model_attribute
 
 
 @model_attribute(

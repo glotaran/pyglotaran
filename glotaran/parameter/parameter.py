@@ -1,11 +1,10 @@
 """The parameter class."""
 
 import typing
-import numpy as np
-
-from lmfit import Parameter as LmParameter
 
 import glotaran
+import numpy as np
+from lmfit import Parameter as LmParameter
 
 
 class Keys:

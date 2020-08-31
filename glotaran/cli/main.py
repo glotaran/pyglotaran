@@ -1,11 +1,10 @@
 import click
-
 import glotaran as gta
 
-from .commands.print import print_cmd
-from .commands.validate import validate_cmd
 from .commands.optimize import optimize_cmd
 from .commands.pluginlist import plugin_list_cmd
+from .commands.print import print_cmd
+from .commands.validate import validate_cmd
 
 
 class Cli(click.Group):

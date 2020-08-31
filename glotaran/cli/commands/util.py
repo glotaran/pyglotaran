@@ -1,9 +1,8 @@
 import sys
 
 import click
-from click import echo, prompt
-
 import glotaran as gta
+from click import echo, prompt
 
 
 def signature_analysis(cmd):

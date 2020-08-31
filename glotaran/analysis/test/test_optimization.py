@@ -1,12 +1,11 @@
-import pytest
 from typing import List
+
 import numpy as np
-
-from glotaran.analysis.simulation import simulate
-from glotaran.analysis.scheme import Scheme
+import pytest
 from glotaran.analysis.optimize import optimize
-
-from glotaran.model import DatasetDescriptor, Model, model_attribute, model
+from glotaran.analysis.scheme import Scheme
+from glotaran.analysis.simulation import simulate
+from glotaran.model import DatasetDescriptor, Model, model, model_attribute
 from glotaran.parameter import Parameter, ParameterGroup
 
 from .mock import MockMegacomplex

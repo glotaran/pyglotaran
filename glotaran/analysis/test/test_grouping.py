@@ -1,11 +1,8 @@
 import numpy as np
 import xarray as xr
-
+from glotaran.analysis.problem_bag import create_grouped_bag
 from glotaran.analysis.scheme import Scheme
 from glotaran.parameter import ParameterGroup
-
-from glotaran.analysis.problem_bag import create_grouped_bag
-
 
 from .mock import MockModel
 

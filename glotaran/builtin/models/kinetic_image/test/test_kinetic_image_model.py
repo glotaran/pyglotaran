@@ -1,9 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 import xarray as xr
-
-from glotaran.parameter import ParameterGroup
 from glotaran.builtin.models.kinetic_image import KineticImageModel
+from glotaran.parameter import ParameterGroup
 
 
 def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):

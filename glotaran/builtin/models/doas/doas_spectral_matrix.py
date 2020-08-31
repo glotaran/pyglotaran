@@ -1,7 +1,6 @@
 """Glotaran DOAS Model Spectral Matrix"""
 
 import numpy as np
-
 from glotaran.builtin.models.kinetic_spectrum.spectral_matrix import spectral_matrix
 
 from .doas_matrix import _collect_oscillations

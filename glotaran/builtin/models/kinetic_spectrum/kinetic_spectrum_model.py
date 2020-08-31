@@ -1,19 +1,18 @@
 import typing
-import numpy as np
 
+import numpy as np
+from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 from glotaran.model import model
 from glotaran.parameter import ParameterGroup
 
-from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
-from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
-
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
-from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
 from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
+from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
 from .spectral_constraints import SpectralConstraint, apply_spectral_constraints
 from .spectral_irf import IrfSpectralMultiGaussian
 from .spectral_matrix import spectral_matrix
-from .spectral_penalties import EqualAreaPenalty, has_spectral_penalties, apply_spectral_penalties
+from .spectral_penalties import EqualAreaPenalty, apply_spectral_penalties, has_spectral_penalties
 from .spectral_relations import SpectralRelation, apply_spectral_relations
 from .spectral_shape import SpectralShape
 

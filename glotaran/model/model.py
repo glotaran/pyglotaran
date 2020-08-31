@@ -7,11 +7,10 @@ import typing
 
 import numpy as np
 import xarray as xr
-
+from glotaran.analysis.optimize import optimize
 from glotaran.analysis.result import Result
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.optimize import optimize
 from glotaran.parameter import ParameterGroup
 
 

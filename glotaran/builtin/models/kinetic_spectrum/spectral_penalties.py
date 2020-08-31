@@ -1,8 +1,8 @@
 """This package contains compartment constraint items."""
 
 import typing
-import numpy as np
 
+import numpy as np
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter, ParameterGroup
 

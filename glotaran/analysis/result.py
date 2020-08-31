@@ -1,12 +1,11 @@
 """The result class for global analysis."""
 
-import typing
 import os
-
-import numpy as np
-import xarray as xr
+import typing
 
 import glotaran  # noqa F01
+import numpy as np
+import xarray as xr
 from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme

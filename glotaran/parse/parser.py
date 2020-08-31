@@ -1,8 +1,10 @@
 """Functions for reading and parsing models from serialized representations."""
 
-from typing import Dict
-import yaml
 import re
+from typing import Dict
+
+import yaml
+
 from .register import get_model, known_model
 
 

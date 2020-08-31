@@ -1,8 +1,7 @@
-import pytest
 import numpy as np
-
-from glotaran.parameter import ParameterGroup
+import pytest
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.parameter import ParameterGroup
 
 
 class OneComponentOneChannel:

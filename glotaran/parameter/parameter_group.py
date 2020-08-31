@@ -1,14 +1,15 @@
 """The parameter group class"""
 
-from lmfit import Parameters
-from math import log
 import copy
 import csv
-import numpy as np
-import pandas as pd
 import pathlib
 import typing
+from math import log
+
+import numpy as np
+import pandas as pd
 import yaml
+from lmfit import Parameters
 
 from .parameter import Parameter
 

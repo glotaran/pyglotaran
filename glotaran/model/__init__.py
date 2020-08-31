@@ -4,12 +4,7 @@ This package contains the Glotaran's base model object, the model decorators and
 common model items.
 """
 
-from . import (
-    dataset_descriptor,
-    model,
-    model_decorator,
-    model_attribute,
-)
+from . import dataset_descriptor, model, model_attribute, model_decorator
 
 # Dataset
 

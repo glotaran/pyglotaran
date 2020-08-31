@@ -1,9 +1,9 @@
-import numpy as np
-import xarray as xr
 from copy import deepcopy
 
-from glotaran.parameter import ParameterGroup
+import numpy as np
+import xarray as xr
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.parameter import ParameterGroup
 
 
 def test_spectral_penalties():

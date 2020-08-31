@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-import xarray as xr
 import pytest
-
+import xarray as xr
 from glotaran.builtin.file_formats.sdt.sdt_file_reader import read_sdt
+
 from . import TEMPORAL_DATA
 
 

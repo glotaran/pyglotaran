@@ -1,11 +1,10 @@
 import numpy as np
 import xarray as xr
-
-from glotaran.parameter import ParameterGroup
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix import (
     kinetic_spectrum_matrix,
 )
+from glotaran.parameter import ParameterGroup
 
 
 def test_coherent_artifact():

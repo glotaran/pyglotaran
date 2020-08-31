@@ -2,6 +2,7 @@
 projection method."""
 
 import typing
+
 import numpy as np
 from scipy.linalg import lapack
 

@@ -1,12 +1,11 @@
 import numpy as np
 import xarray as xr
-
-from glotaran.parameter import ParameterGroup
+from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_relations import (
     create_spectral_relation_matrix,
 )
-from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
+from glotaran.parameter import ParameterGroup
 
 
 def test_spectral_relation():

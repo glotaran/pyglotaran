@@ -2,8 +2,8 @@
 
 from typing import List
 
-from glotaran.model import model_attribute
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.model import model_attribute
 
 
 @model_attribute(properties={"oscillation": {"type": List[str], "default": []}})

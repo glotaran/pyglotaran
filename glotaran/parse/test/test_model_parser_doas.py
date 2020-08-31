@@ -1,11 +1,11 @@
-import pytest
-from glotaran.parse.parser import load_yml_file
-from glotaran.builtin.models.doas import DOASModel, DOASMegacomplex, Oscillation
-
 # unused import
 # from glotaran.model import FixedConstraint, BoundConstraint
 # from os import getcwd
-from os.path import join, dirname, abspath
+from os.path import abspath, dirname, join
+
+import pytest
+from glotaran.builtin.models.doas import DOASMegacomplex, DOASModel, Oscillation
+from glotaran.parse.parser import load_yml_file
 
 THIS_DIR = dirname(abspath(__file__))
 

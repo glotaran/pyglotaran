@@ -2,9 +2,9 @@
 
 import copy
 import typing
-import numpy as np
 
-from glotaran.model import model_attribute, DatasetDescriptor
+import numpy as np
+from glotaran.model import DatasetDescriptor, model_attribute
 from glotaran.parameter import Parameter
 
 

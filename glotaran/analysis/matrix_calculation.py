@@ -1,7 +1,7 @@
 import collections
+
 import dask
 import numpy as np
-
 
 LabelAndMatrix = collections.namedtuple("LabelAndMatrix", "clp_label matrix")
 LabelAndMatrixAndData = collections.namedtuple("LabelAndMatrixAndData", "label_matrix data")

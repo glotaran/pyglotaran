@@ -3,7 +3,6 @@
 import typing
 
 import numpy as np
-
 from glotaran.model import model_attribute, model_attribute_typed
 
 T_KineticSpectrumModel = typing.TypeVar(

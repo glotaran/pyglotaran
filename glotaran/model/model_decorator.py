@@ -1,9 +1,9 @@
 """The model decorator."""
 
 import typing
+
 import numpy as np
 import xarray as xr
-
 from glotaran.analysis.result import Result
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model
@@ -11,7 +11,6 @@ from glotaran.parse.register import register_model
 from .dataset_descriptor import DatasetDescriptor
 from .model import Model
 from .util import wrap_func_as_method
-
 
 MatrixFunction = typing.Callable[
     [typing.Type[DatasetDescriptor], xr.Dataset], typing.Tuple[typing.List[str], np.ndarray]

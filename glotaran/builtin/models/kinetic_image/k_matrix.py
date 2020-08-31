@@ -1,12 +1,11 @@
 """ K-Matrix """
 
-from collections import OrderedDict
 import itertools
 import typing
+from collections import OrderedDict
 
 import numpy as np
 import scipy
-
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 

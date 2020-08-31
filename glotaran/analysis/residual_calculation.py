@@ -1,6 +1,6 @@
 import dask
-import dask.bag as db
 import numpy as np
+from dask import bag as db
 
 
 def create_index_independend_ungrouped_residual(

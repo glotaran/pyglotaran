@@ -2,6 +2,7 @@
 least-squares method."""
 
 import typing
+
 import numpy as np
 from scipy.optimize import nnls
 
