@@ -25,6 +25,14 @@ repos:
     rev: 5.0.9
     hooks:
       - id: isort
+  # - repo: https://github.com/PyCQA/pydocstyle
+  #   rev: 5.1.1
+  #   hooks:
+  #     - id: pydocstyle
+  #       exclude: "docs|tests"
+  #       # this is needed due to the following issue:
+  #       # https://github.com/PyCQA/pydocstyle/issues/368
+  #       args: [--ignore-decorators=wrap_func_as_method]
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.2.1
