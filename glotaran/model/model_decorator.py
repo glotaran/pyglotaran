@@ -103,7 +103,7 @@ def model(
 
         if has_matrix_constraints_function:
             if not constrain_matrix_function:
-                raise Exception(
+                raise ValueError(
                     "Model implements `has_matrix_constraints_function` "
                     "but not `constrain_matrix_function`"
                 )
@@ -121,7 +121,7 @@ def model(
 
         if has_additional_penalty_function:
             if not additional_penalty_function:
-                raise Exception(
+                raise ValueError(
                     "Model implements `has_additional_penalty_function`"
                     "but not `additional_penalty_function`"
                 )
@@ -230,11 +230,11 @@ def _create_add_func(cls, name, type):
             The `{type.__name__}` item.
         """
 
-        if not isinstance(item, type):
-            if not hasattr(type, "_glotaran_model_attribute_typed") or not isinstance(
-                item, tuple(type._glotaran_model_attribute_types.values())
-            ):
-                raise TypeError
+        if not isinstance(item, type) and (
+            not hasattr(type, "_glotaran_model_attribute_typed")
+            or not isinstance(item, tuple(type._glotaran_model_attribute_types.values()))
+        ):
+            raise TypeError
         getattr(self, f"_{name}").append(item)
 
     return add_item
@@ -270,11 +270,11 @@ def _create_set_func(cls, name, type):
             The `{type.__name__}` item.
         """
 
-        if not isinstance(item, type):
-            if not hasattr(type, "_glotaran_model_attribute_typed") or not isinstance(
-                item, tuple(type._glotaran_model_attribute_types.values())
-            ):
-                raise TypeError
+        if not isinstance(item, type) and (
+            not hasattr(type, "_glotaran_model_attribute_typed")
+            or not isinstance(item, tuple(type._glotaran_model_attribute_types.values()))
+        ):
+            raise TypeError
         getattr(self, f"_{name}")[label] = item
 
     return set_item
