@@ -1,6 +1,8 @@
 import numpy as np
 
-from glotaran.model import Model, model, model_attribute
+from glotaran.model import Model
+from glotaran.model import model
+from glotaran.model import model_attribute
 
 
 def calculate_c(dataset_descriptor=None, axis=None, index=None):

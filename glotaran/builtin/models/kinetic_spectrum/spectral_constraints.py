@@ -4,7 +4,8 @@ import typing
 
 import numpy as np
 
-from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.model import model_attribute
+from glotaran.model import model_attribute_typed
 
 T_KineticSpectrumModel = typing.TypeVar(
     "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"

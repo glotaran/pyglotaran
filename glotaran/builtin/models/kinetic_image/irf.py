@@ -4,7 +4,8 @@ from typing import List
 
 import numpy as np
 
-from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.model import model_attribute
+from glotaran.model import model_attribute_typed
 from glotaran.parameter import Parameter
 
 

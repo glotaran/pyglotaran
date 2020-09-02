@@ -1,6 +1,8 @@
 """Glotaran package __init__.py"""
 
-from . import io, model, parameter  # noqa: F401
+from . import io  # noqa: F401
+from . import model  # noqa: F401
+from . import parameter
 
 __version__ = "0.1.0"
 

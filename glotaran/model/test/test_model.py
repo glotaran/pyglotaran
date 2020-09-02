@@ -1,9 +1,14 @@
-from typing import Dict, List, Tuple
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 import pytest
 
-from glotaran.model import Model, model, model_attribute
-from glotaran.parameter import Parameter, ParameterGroup
+from glotaran.model import Model
+from glotaran.model import model
+from glotaran.model import model_attribute
+from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 
 @model_attribute(

@@ -1,6 +1,7 @@
 """ Kinetic Image Dataset Descriptor"""
 
-from glotaran.model import DatasetDescriptor, model_attribute
+from glotaran.model import DatasetDescriptor
+from glotaran.model import model_attribute
 
 
 @model_attribute(

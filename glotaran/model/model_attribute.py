@@ -4,7 +4,8 @@ import copy
 import typing
 
 import glotaran
-from glotaran.parameter import Parameter, ParameterGroup
+from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 from .model_property import ModelProperty
 from .util import wrap_func_as_method

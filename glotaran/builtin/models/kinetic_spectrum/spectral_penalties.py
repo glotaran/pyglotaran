@@ -5,7 +5,8 @@ import typing
 import numpy as np
 
 from glotaran.model import model_attribute
-from glotaran.parameter import Parameter, ParameterGroup
+from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 from .spectral_relations import retrieve_clps
 

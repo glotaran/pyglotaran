@@ -1,7 +1,8 @@
 import sys
 
 import click
-from click import echo, prompt
+from click import echo
+from click import prompt
 
 import glotaran as gta
 

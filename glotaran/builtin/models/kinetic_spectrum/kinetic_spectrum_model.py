@@ -10,11 +10,15 @@ from glotaran.parameter import ParameterGroup
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
 from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
 from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
-from .spectral_constraints import SpectralConstraint, apply_spectral_constraints
+from .spectral_constraints import SpectralConstraint
+from .spectral_constraints import apply_spectral_constraints
 from .spectral_irf import IrfSpectralMultiGaussian
 from .spectral_matrix import spectral_matrix
-from .spectral_penalties import EqualAreaPenalty, apply_spectral_penalties, has_spectral_penalties
-from .spectral_relations import SpectralRelation, apply_spectral_relations
+from .spectral_penalties import EqualAreaPenalty
+from .spectral_penalties import apply_spectral_penalties
+from .spectral_penalties import has_spectral_penalties
+from .spectral_relations import SpectralRelation
+from .spectral_relations import apply_spectral_relations
 from .spectral_shape import SpectralShape
 
 T_KineticSpectrumModel = typing.TypeVar(

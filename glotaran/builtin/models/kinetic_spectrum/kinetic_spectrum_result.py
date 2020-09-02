@@ -6,13 +6,17 @@ import xarray as xr
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
     retrieve_decay_assocatiated_data,
-    retrieve_irf,
+)
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import retrieve_irf
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
     retrieve_species_assocatiated_data,
 )
 from glotaran.parameter import ParameterGroup
 
-from .spectral_constraints import OnlyConstraint, ZeroConstraint
-from .spectral_irf import IrfGaussianCoherentArtifact, IrfSpectralMultiGaussian
+from .spectral_constraints import OnlyConstraint
+from .spectral_constraints import ZeroConstraint
+from .spectral_irf import IrfGaussianCoherentArtifact
+from .spectral_irf import IrfSpectralMultiGaussian
 
 T_KineticSpectrumModel = typing.TypeVar(
     "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"

@@ -5,7 +5,8 @@ from typing import Dict
 
 import yaml
 
-from .register import get_model, known_model
+from .register import get_model
+from .register import known_model
 
 
 # shamelessly taken from

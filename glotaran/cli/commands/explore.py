@@ -1,5 +1,7 @@
 import click
-from click import echo, pause, prompt
+from click import echo
+from click import pause
+from click import prompt
 
 from . import util
 

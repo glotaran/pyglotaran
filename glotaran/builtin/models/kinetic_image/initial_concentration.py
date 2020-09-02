@@ -5,7 +5,8 @@ import typing
 
 import numpy as np
 
-from glotaran.model import DatasetDescriptor, model_attribute
+from glotaran.model import DatasetDescriptor
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 

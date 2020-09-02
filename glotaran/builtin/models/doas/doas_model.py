@@ -3,12 +3,12 @@
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
     KineticSpectrumDatasetDescriptor,
 )
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
-    KineticSpectrumModel,
     apply_kinetic_model_constraints,
-    grouped,
-    index_dependend,
 )
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import grouped
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import index_dependend
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import apply_spectral_penalties
 from glotaran.model import model
 

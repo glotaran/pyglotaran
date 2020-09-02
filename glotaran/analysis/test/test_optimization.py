@@ -6,8 +6,12 @@ import pytest
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-from glotaran.model import DatasetDescriptor, Model, model, model_attribute
-from glotaran.parameter import Parameter, ParameterGroup
+from glotaran.model import DatasetDescriptor
+from glotaran.model import Model
+from glotaran.model import model
+from glotaran.model import model_attribute
+from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 from .mock import MockMegacomplex
 
