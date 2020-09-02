@@ -12,14 +12,14 @@
 
 import glotaran
 
-# -- Path setup --------------------------------------------------------------
-
-
 # -- Project information -----------------------------------------------------
 
+authors = ("Joern Weissenborn", "Joris Snellenburg", "Ivo van Stokkum")
+
 project = "pyglotaran"
-copyright = "2018, Joern Weissenborn, " "Joris Snellenburg, " "Ivo van Stokkum"
-author = "Joern Weissenborn, " "Joris Snellenburg, " "Ivo van Stokkum"
+title = f"{project} Documentation"
+copyright = ", ".join(("2018", *authors))
+author = ", ".join(authors)
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -157,13 +157,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (
-        master_doc,
-        "pyglotaran.tex",
-        "pyglotaran Documentation",
-        "Joris Snellenburg, " "Joern Weissenborn, " "Ivo van Stokkum",
-        "manual",
-    ),
+    (master_doc, "pyglotaran.tex", title, author, "manual",),
 ]
 
 
@@ -171,7 +165,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "pyglotaran", "pyglotaran Documentation", [author], 1)]
+man_pages = [(master_doc, project, title, [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -182,10 +176,10 @@ man_pages = [(master_doc, "pyglotaran", "pyglotaran Documentation", [author], 1)
 texinfo_documents = [
     (
         master_doc,
-        "pyglotaran",
-        "pyglotaran Documentation",
+        project,
+        title,
         author,
-        "pyglotaran",
+        project,
         "Global and target analysis software package based on Python",
         "Miscellaneous",
     ),
