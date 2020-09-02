@@ -2,6 +2,7 @@ import typing
 
 import numpy as np
 import xarray as xr
+
 from glotaran.parameter import ParameterGroup
 
 from .irf import IrfMultiGaussian

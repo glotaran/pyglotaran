@@ -1,5 +1,6 @@
 import pytest
 import xarray as xr
+
 from glotaran.analysis.scheme import Scheme
 
 

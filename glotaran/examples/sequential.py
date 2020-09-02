@@ -1,5 +1,6 @@
-import glotaran as gta
 import numpy as np
+
+import glotaran as gta
 
 sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
     {

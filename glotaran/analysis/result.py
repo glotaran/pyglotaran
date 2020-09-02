@@ -3,9 +3,10 @@
 import os
 import typing
 
-import glotaran
 import numpy as np
 import xarray as xr
+
+import glotaran
 from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme

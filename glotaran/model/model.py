@@ -7,6 +7,7 @@ import typing
 
 import numpy as np
 import xarray as xr
+
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.result import Result
 from glotaran.analysis.scheme import Scheme

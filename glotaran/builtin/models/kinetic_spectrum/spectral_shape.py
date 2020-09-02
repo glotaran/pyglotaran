@@ -1,6 +1,7 @@
 """This package contains the spectral shape item."""
 
 import numpy as np
+
 from glotaran.model import model_attribute, model_attribute_typed
 from glotaran.parameter import Parameter
 

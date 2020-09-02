@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import xarray as xr
+
 from glotaran import ParameterGroup
 from glotaran.builtin.models.doas import DOASModel
 from glotaran.builtin.models.doas.doas_matrix import calculate_doas_matrix

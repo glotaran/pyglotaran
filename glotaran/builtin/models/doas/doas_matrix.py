@@ -2,9 +2,10 @@
 
 import numba as nb
 import numpy as np
+from scipy.special import erf
+
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
-from scipy.special import erf
 
 
 def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):

@@ -4,6 +4,7 @@
 from os.path import abspath, dirname, join
 
 import pytest
+
 from glotaran.builtin.models.doas import DOASMegacomplex, DOASModel, Oscillation
 from glotaran.parse.parser import load_yml_file
 

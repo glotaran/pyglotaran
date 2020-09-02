@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.parameter import ParameterGroup
 

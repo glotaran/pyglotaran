@@ -2,6 +2,7 @@ import sys
 import typing
 
 import click
+
 import glotaran as gta
 
 from . import util

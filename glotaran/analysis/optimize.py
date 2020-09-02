@@ -3,6 +3,7 @@ import collections
 import dask
 import lmfit
 import numpy as np
+
 from glotaran.parameter import ParameterGroup
 
 from . import problem_bag, residual_calculation

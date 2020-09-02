@@ -1,4 +1,5 @@
 import click
+
 import glotaran as gta
 
 from .commands.optimize import optimize_cmd

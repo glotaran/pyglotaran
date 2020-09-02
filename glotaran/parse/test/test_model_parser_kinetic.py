@@ -2,6 +2,7 @@ from os.path import abspath, dirname, join
 
 import numpy as np
 import pytest
+
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex

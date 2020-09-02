@@ -1,4 +1,5 @@
 import click
+
 from glotaran.io.reader import known_reading_formats
 from glotaran.parse.register import known_model_names
 

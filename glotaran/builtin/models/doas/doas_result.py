@@ -1,13 +1,14 @@
 import typing
 
-import glotaran
 import numpy as np
 import xarray as xr
+from scipy import fftpack
+
+import glotaran
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_result import (
     finalize_kinetic_spectrum_result,
 )
 from glotaran.parameter import ParameterGroup
-from scipy import fftpack
 
 
 def finalize_doas_data(

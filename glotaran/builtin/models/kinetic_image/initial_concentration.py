@@ -4,6 +4,7 @@ import copy
 import typing
 
 import numpy as np
+
 from glotaran.model import DatasetDescriptor, model_attribute
 from glotaran.parameter import Parameter
 

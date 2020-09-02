@@ -1,6 +1,7 @@
 from typing import Dict, List, Tuple
 
 import pytest
+
 from glotaran.model import Model, model, model_attribute
 from glotaran.parameter import Parameter, ParameterGroup
 

@@ -2,10 +2,11 @@ import functools
 import pathlib
 import typing
 
-import glotaran
 import numpy as np
 import xarray as xr
 import yaml
+
+import glotaran
 from glotaran.parameter import ParameterGroup
 
 

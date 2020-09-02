@@ -4,6 +4,7 @@ import typing
 
 import numpy as np
 import xarray as xr
+
 from glotaran.analysis.result import Result
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model

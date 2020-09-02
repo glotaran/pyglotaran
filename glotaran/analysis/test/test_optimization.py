@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import pytest
+
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate

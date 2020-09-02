@@ -2,9 +2,10 @@
 
 import typing
 
-import glotaran
 import numpy as np
 from lmfit import Parameter as LmParameter
+
+import glotaran
 
 
 class Keys:

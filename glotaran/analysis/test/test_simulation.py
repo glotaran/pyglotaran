@@ -1,4 +1,5 @@
 import numpy as np
+
 from glotaran.analysis.simulation import simulate
 from glotaran.parameter import ParameterGroup
 

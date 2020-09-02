@@ -2,6 +2,7 @@ import typing
 
 import numpy as np
 import xarray as xr
+
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
     retrieve_decay_assocatiated_data,

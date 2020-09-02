@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import xarray as xr
+
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.parameter import ParameterGroup
 

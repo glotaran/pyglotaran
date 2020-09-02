@@ -1,6 +1,7 @@
 import typing
 
 import numpy as np
+
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
 from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 from glotaran.model import model
