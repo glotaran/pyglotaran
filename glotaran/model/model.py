@@ -40,11 +40,11 @@ class Model:
             if hasattr(model, f"set_{name}"):
 
                 # get the set function
-                set = getattr(model, f"set_{name}")
+                model_set = getattr(model, f"set_{name}")
 
                 # we retrieve the actual class from the signature
                 for label, item in attribute.items():
-                    item_cls = set.__func__.__annotations__["item"]
+                    item_cls = model_set.__func__.__annotations__["item"]
                     is_typed = hasattr(item_cls, "_glotaran_model_attribute_typed")
                     if isinstance(item, dict):
                         if is_typed:
@@ -58,7 +58,7 @@ class Model:
                                 )
                             item_cls = item_cls._glotaran_model_attribute_types[item_type]
                         item["label"] = label
-                        set(label, item_cls.from_dict(item))
+                        model_set(label, item_cls.from_dict(item))
                     elif isinstance(item, list):
                         if is_typed:
                             if len(item) < 2 and len(item) != 1:
@@ -75,7 +75,7 @@ class Model:
                                 )
                             item_cls = item_cls._glotaran_model_attribute_types[item_type]
                         item = [label] + item
-                        set(label, item_cls.from_list(item))
+                        model_set(label, item_cls.from_list(item))
                 del model_dict[name]
 
             elif hasattr(model, f"add_{name}"):
