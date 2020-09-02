@@ -1,10 +1,11 @@
 import numpy as np
 import pytest
-import xarray as xr
 
 from glotaran import ParameterGroup
 from glotaran.builtin.models.doas import DOASModel
 from glotaran.builtin.models.doas.doas_matrix import calculate_doas_matrix
+
+# import xarray as xr
 
 
 class OneOscillation:
@@ -209,7 +210,8 @@ def test_doas_model(suite):
     assert suite.model.valid(suite.parameter)
 
     dataset = suite.sim_model.dataset["dataset1"].fill(suite.sim_model, suite.wanted_parameter)
-    data = xr.DataArray(suite.axis["time"], coords=[("time", suite.axis["time"])])
+    # TODO: Actually use this value for something or delete it.
+    # data = xr.DataArray(suite.axis["time"], coords=[("time", suite.axis["time"])])
 
     clp, matrix = calculate_doas_matrix(dataset, suite.axis["time"], 0)
 

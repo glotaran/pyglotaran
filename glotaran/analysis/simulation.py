@@ -43,8 +43,8 @@ def simulate(
     """
 
     if model.global_matrix is None and clp is None:
-        raise Exception(
-            "Cannot simulate models without implementation for global matrix" " and no clp given."
+        raise ValueError(
+            "Cannot simulate models without implementation for global matrix and no clp given."
         )
 
     filled_dataset = model.dataset[dataset].fill(model, parameter)

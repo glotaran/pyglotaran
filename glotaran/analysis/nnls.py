@@ -10,8 +10,9 @@ from scipy.optimize import nnls
 def residual_nnls(
     matrix: np.ndarray, data: np.ndarray
 ) -> typing.Tuple[typing.List[str], np.ndarray]:
-    """Calculates the conditionally linear parameters and residual with the non-negative
-    least-squares method.
+    """Calculate the conditionally linear parameters and residual with the nnls method.
+
+    nnls stands for 'non-negative least-squares'.
 
     Parameters
     ----------

@@ -274,7 +274,7 @@ class ParameterGroup(dict):
         if not isinstance(parameter, list):
             parameter = [parameter]
         if any(not isinstance(p, Parameter) for p in parameter):
-            raise TypeError("Parameter must be  instance of" " glotaran.model.Parameter")
+            raise TypeError("Parameter must be  instance of glotaran.model.Parameter")
         for p in parameter:
             p.index = len(self._parameters) + 1
             if p.label is None:
@@ -407,7 +407,7 @@ class ParameterGroup(dict):
                 try:
                     p.min = log(p.min) if np.isfinite(p.min) else p.min
                 except Exception:
-                    raise Exception(
+                    raise ValueError(
                         "Could not take log of minimum of parameter"
                         f" '{label}' with value '{p.min}'"
                     )
@@ -416,7 +416,7 @@ class ParameterGroup(dict):
                 try:
                     p.max = log(p.max) if np.isfinite(p.max) else p.max
                 except Exception:
-                    raise Exception(
+                    raise ValueError(
                         "Could not take log of maximum of parameter"
                         f" '{label}' with value '{p.max}'"
                     )
@@ -425,8 +425,8 @@ class ParameterGroup(dict):
                 try:
                     p.value = log(p.value)
                 except Exception:
-                    raise Exception(
-                        "Could not take log of parameter" f" '{label}' with value '{p.value}'"
+                    raise ValueError(
+                        f"Could not take log of parameter '{label}' with value '{p.value}'"
                     )
             params.add(p)
         return params

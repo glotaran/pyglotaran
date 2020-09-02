@@ -182,9 +182,7 @@ class Parameter(LmParameter):
             try:
                 val = float(val)
             except Exception:
-                raise Exception(
-                    "Parameter Error: value must be numeric:" "{} Type: {}".format(val, type(val))
-                )
+                raise TypeError(f"Parameter Error: value must be numeric:{val} Type: {type(val)}")
 
         if isinstance(val, int):
             val = float(val)

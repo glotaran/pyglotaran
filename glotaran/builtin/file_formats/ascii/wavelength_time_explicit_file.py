@@ -72,23 +72,21 @@ class ExplicitFile:
         if os.path.isfile(filename) and not overwrite:
             raise Exception("File already exist.")
 
-        f = open(filename, "w")
+        with open(filename, "w") as f:
 
-        f.write(comment[0])
-        f.write(comment[1])
+            f.write(comment[0])
+            f.write(comment[1])
 
-        f.write(self.get_format_name())
+            f.write(self.get_format_name())
 
-        f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
+            f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
 
-        datawriter = csv.writer(f, delimiter=r"\t")
+            datawriter = csv.writer(f, delimiter=r"\t")
 
-        datawriter.writerow(self.get_explicit_axis())
+            datawriter.writerow(self.get_explicit_axis())
 
-        for i in range(len(self.get_secondary_axis())):
-            datawriter.writerow(self.get_data_row(i).prepend(self.get_secondary_axis()[i]))
-
-        f.close()
+            for i in range(len(self.get_secondary_axis())):
+                datawriter.writerow(self.get_data_row(i).prepend(self.get_secondary_axis()[i]))
 
     def write(
         self, overwrite=False, comment="", file_format="TimeExplicit", number_format="%.10e"
@@ -158,8 +156,8 @@ class ExplicitFile:
             obs_idx = 0
 
             for item in [sl for sublist in all_data for sl in sublist]:
-                if item != item:  # NaN was found
-                    ValueError()
+                if np.isnan(item):
+                    raise ValueError()
                 if interval_counter < 0:
                     # print("explicit_axis {}: {}".format(interval_counter, item))
                     explicit_axis.append(item)
@@ -187,8 +185,7 @@ class ExplicitFile:
                 self._observations = np.asarray(observations)
 
             else:
-                NotImplementedError()
-                pass
+                raise NotImplementedError()
 
         return self.dataset(prepare=prepare)
 
@@ -293,7 +290,7 @@ def get_data_file_format(line):
         # print("Wavelength explicit format") #TODO: verbosity / debug statement
         data_file_format = DataFileType.wavelength_explicit
     else:
-        NotImplementedError()
+        raise NotImplementedError()
     return data_file_format
 
 

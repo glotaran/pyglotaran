@@ -44,30 +44,30 @@ class Scheme:
                 try:
                     scheme = yaml.load(f, Loader=yaml.FullLoader)
                 except Exception as e:
-                    raise Exception(f"Error parsing scheme: {e}")
+                    raise ValueError(f"Error parsing scheme: {e}")
         except Exception as e:
-            raise Exception(f"Error opening scheme: {e}")
+            raise OSError(f"Error opening scheme: {e}")
 
         if "model" not in scheme:
-            raise Exception("Model file not specified.")
+            raise ValueError("Model file not specified.")
 
         try:
             model = glotaran.read_model_from_yml_file(scheme["model"])
         except Exception as e:
-            raise Exception(f"Error loading model: {e}")
+            raise ValueError(f"Error loading model: {e}")
 
         if "parameter" not in scheme:
-            raise Exception("Parameter file not specified.")
+            raise ValueError("Parameter file not specified.")
 
         path = scheme["parameter"]
         fmt = scheme.get("parameter_format", None)
         try:
             parameter = glotaran.parameter.ParameterGroup.from_file(path, fmt)
         except Exception as e:
-            raise Exception(f"Error loading parameter: {e}")
+            raise ValueError(f"Error loading parameter: {e}")
 
         if "data" not in scheme:
-            raise Exception("No data specified.")
+            raise ValueError("No data specified.")
 
         data = {}
         for label, path in scheme["data"].items():
@@ -80,7 +80,7 @@ class Scheme:
             try:
                 data[label] = glotaran.io.read_data_file(path, fmt=fmt)
             except Exception as e:
-                raise Exception(f"Error loading dataset '{label}': {e}")
+                raise ValueError(f"Error loading dataset '{label}': {e}")
 
         nnls = scheme.get("nnls", False)
         nfev = scheme.get("nfev", None)
@@ -163,13 +163,13 @@ class Scheme:
         data = {}
         for label, dataset in self.data.items():
             if self.model.matrix_dimension not in dataset.dims:
-                raise Exception(
+                raise ValueError(
                     "Missing coordinates for dimension "
                     f"'{self.model.matrix_dimension}' in data for dataset "
                     f"'{label}'"
                 )
             if self.model.global_dimension not in dataset.dims:
-                raise Exception(
+                raise ValueError(
                     "Missing coordinates for dimension "
                     f"'{self.model.global_dimension}' in data for dataset "
                     f"'{label}'"
@@ -182,29 +182,22 @@ class Scheme:
 
             # This protects transposing when getting data with svd in it
 
-            if "data_singular_values" in dataset:
-                if (
-                    dataset.coords["right_singular_value_index"].size
-                    != dataset.coords[self.model.global_dimension].size
-                ):
-                    dataset = dataset.rename(
-                        right_singular_value_index="right_singular_value_indexTMP"
-                    )
-                    dataset = dataset.rename(
-                        left_singular_value_index="right_singular_value_index"
-                    )
-                    dataset = dataset.rename(
-                        right_singular_value_indexTMP="left_singular_value_index"
-                    )
-                    dataset = dataset.rename(
-                        right_singular_vectors="right_singular_value_vectorsTMP"
-                    )
-                    dataset = dataset.rename(
-                        left_singular_value_vectors="right_singular_value_vectors"
-                    )
-                    dataset = dataset.rename(
-                        right_singular_value_vectorsTMP="left_singular_value_vectors"
-                    )
+            if "data_singular_values" in dataset and (
+                dataset.coords["right_singular_value_index"].size
+                != dataset.coords[self.model.global_dimension].size
+            ):
+                dataset = dataset.rename(
+                    right_singular_value_index="right_singular_value_indexTMP"
+                )
+                dataset = dataset.rename(left_singular_value_index="right_singular_value_index")
+                dataset = dataset.rename(right_singular_value_indexTMP="left_singular_value_index")
+                dataset = dataset.rename(right_singular_vectors="right_singular_value_vectorsTMP")
+                dataset = dataset.rename(
+                    left_singular_value_vectors="right_singular_value_vectors"
+                )
+                dataset = dataset.rename(
+                    right_singular_value_vectorsTMP="left_singular_value_vectors"
+                )
             new_dims = [self.model.matrix_dimension, self.model.global_dimension]
             new_dims += [
                 dim

@@ -65,7 +65,7 @@ class IrfMultiGaussian:
         len_widths = len(widths)
         if not len_centers == len_widths:
             if not min(len_centers, len_widths) == 1:
-                raise Exception(
+                raise ValueError(
                     f"len(centers) ({len_centers}) not equal "
                     f"len(widths) ({len_widths}) none of is 1."
                 )

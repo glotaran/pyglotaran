@@ -39,7 +39,7 @@ class Result:
             The initital fit parameter,
         nnls :
             (default = False)
-            If `True` non-linear least squaes optimizing is used instead of variable projection.
+            If `True` non-linear least squares optimizing is used instead of variable projection.
         atol :
             (default = 0)
             The tolerance for grouping datasets along the global axis.
@@ -68,8 +68,7 @@ class Result:
 
     @property
     def nnls(self) -> bool:
-        """If `True` non-linear least squaes optimizing is used instead of variable
-        projection."""
+        """If `True` non-linear least squares optimizing is used instead of variable projection."""
         return self._scheme.nnls
 
     @property
@@ -105,13 +104,15 @@ class Result:
 
     @property
     def chisqr(self) -> float:
-        r"""The chi-square of the optimization
+        r"""The chi-square of the optimization.
+
         :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
         return self._chisqr
 
     @property
     def red_chisqr(self) -> float:
-        r"""The reduced chi-square of the optimization
+        r"""The reduced chi-square of the optimization.
+
         :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
         """
         return self._red_chisqr
@@ -119,21 +120,24 @@ class Result:
     @property
     def root_mean_square_error(self) -> float:
         r"""
-        The root mean square error the optimization
+        The root mean square error the optimization.
+
         :math:`rms = \sqrt{\chi^2_{red}}`
         """
         return np.sqrt(self.red_chisqr)
 
     @property
     def var_names(self) -> typing.List[str]:
-        """Ordered list of variable parameter names used in optimization, and
-        useful for understanding the values in :attr:`covar`."""
+        """Ordered list of variable parameter names used in optimization.
+
+        This is also useful for understanding the values in :attr:`covar`."""
         return [n.replace("_", ".") for n in self._var_names]
 
     @property
     def covar(self) -> np.ndarray:
-        """Covariance matrix from minimization, with rows and columns
-        corresponding to :attr:`var_names`."""
+        """Covariance matrix from minimization.
+
+        The rows and columns are corresponding to :attr:`var_names`."""
         return self._covar
 
     @property
@@ -143,7 +147,7 @@ class Result:
 
     @property
     def initial_parameter(self) -> ParameterGroup:
-        """The initital fit parameter"""
+        """The initital fit parameter."""
         return self._scheme.parameter
 
     def get_dataset(self, dataset_label: str) -> xr.Dataset:

@@ -178,7 +178,7 @@ def _create_from_dict_func(cls):
         for name in ncls._glotaran_properties:
             if name not in values:
                 if not getattr(ncls, name).allow_none and getattr(item, name) is None:
-                    raise Exception(f"Missing Property '{name}' For Item '{ncls.__name__}'")
+                    raise ValueError(f"Missing Property '{name}' For Item '{ncls.__name__}'")
             else:
                 setattr(item, name, values[name])
 
@@ -200,7 +200,7 @@ def _create_from_list_func(cls):
         """
         item = ncls()
         if len(values) is not len(ncls._glotaran_properties):
-            raise Exception(
+            raise ValueError(
                 f"To few or much parameters for '{ncls.__name__}'"
                 f"\nGot: {values}\nWant: {ncls._glotaran_properties}"
             )
