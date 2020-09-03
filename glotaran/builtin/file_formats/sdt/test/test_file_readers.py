@@ -9,7 +9,10 @@ from . import TEMPORAL_DATA
 
 
 @pytest.mark.parametrize(
-    "test_file_path, result_file_path, index", [(TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], [1]),]
+    "test_file_path, result_file_path, index",
+    [
+        (TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], [1]),
+    ],
 )
 def test_read_sdt(test_file_path, result_file_path, index):
 

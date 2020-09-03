@@ -9,7 +9,15 @@ from .mock import MockModel
 
 
 def test_single_dataset():
-    model = MockModel.from_dict({"dataset": {"dataset1": {"megacomplex": [],},}})
+    model = MockModel.from_dict(
+        {
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": [],
+                },
+            }
+        }
+    )
     print(model.validate())
     assert model.valid()
 
@@ -38,7 +46,16 @@ def test_single_dataset():
 
 def test_multi_dataset_no_overlap():
     model = MockModel.from_dict(
-        {"dataset": {"dataset1": {"megacomplex": [],}, "dataset2": {"megacomplex": [],},}}
+        {
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": [],
+                },
+                "dataset2": {
+                    "megacomplex": [],
+                },
+            }
+        }
     )
 
     print(model.validate())
@@ -79,7 +96,16 @@ def test_multi_dataset_no_overlap():
 
 def test_multi_dataset_overlap():
     model = MockModel.from_dict(
-        {"dataset": {"dataset1": {"megacomplex": [],}, "dataset2": {"megacomplex": [],},}}
+        {
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": [],
+                },
+                "dataset2": {
+                    "megacomplex": [],
+                },
+            }
+        }
     )
 
     print(model.validate())

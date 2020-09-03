@@ -14,7 +14,9 @@ def test_spectral_penalties():
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["i.1", "i.2", "i.3"]},
             },
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
             "k_matrix": {
                 "k1": {
                     "matrix": {
@@ -25,9 +27,19 @@ def test_spectral_penalties():
                 }
             },
             "spectral_relations": [
-                {"compartment": "s1", "target": "s2", "parameter": "rel.1", "interval": [(0, 2)],},
+                {
+                    "compartment": "s1",
+                    "target": "s2",
+                    "parameter": "rel.1",
+                    "interval": [(0, 2)],
+                },
             ],
-            "dataset": {"dataset1": {"initial_concentration": "j1", "megacomplex": ["mc1"],},},
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["mc1"],
+                },
+            },
         }
     )
 
@@ -37,7 +49,9 @@ def test_spectral_penalties():
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["i.1", "i.2", "i.3"]},
             },
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
             "k_matrix": {
                 "k1": {
                     "matrix": {
@@ -57,9 +71,19 @@ def test_spectral_penalties():
                 },
             ],
             "spectral_relations": [
-                {"compartment": "s1", "target": "s2", "parameter": "rel.1", "interval": [(0, 2)],},
+                {
+                    "compartment": "s1",
+                    "target": "s2",
+                    "parameter": "rel.1",
+                    "interval": [(0, 2)],
+                },
             ],
-            "dataset": {"dataset1": {"initial_concentration": "j1", "megacomplex": ["mc1"],},},
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["mc1"],
+                },
+            },
         }
     )
     print(model_with_penalty)
@@ -67,7 +91,12 @@ def test_spectral_penalties():
     rel1 = 2
     pen = 0.5
     parameter = ParameterGroup.from_dict(
-        {"kinetic": [1e-4], "i": [1, 1, 1], "rel": [rel1], "pen": [pen],}
+        {
+            "kinetic": [1e-4],
+            "i": [1, 1, 1],
+            "rel": [rel1],
+            "pen": [pen],
+        }
     )
 
     time = np.asarray(np.arange(0, 50, 1.5))

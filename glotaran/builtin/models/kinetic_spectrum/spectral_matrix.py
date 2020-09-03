@@ -4,7 +4,7 @@ import numpy as np
 
 
 def spectral_matrix(dataset, axis):
-    """ Calculates the matrix.
+    """Calculates the matrix.
 
     Parameters
     ----------

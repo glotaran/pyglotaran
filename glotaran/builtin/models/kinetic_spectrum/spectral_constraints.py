@@ -13,13 +13,16 @@ T_KineticSpectrumModel = typing.TypeVar(
 
 
 @model_attribute(
-    properties={"compartment": str, "interval": typing.List[typing.Tuple[float, float]],},
+    properties={
+        "compartment": str,
+        "interval": typing.List[typing.Tuple[float, float]],
+    },
     has_type=True,
     no_label=True,
 )
 class OnlyConstraint:
     """A only constraint sets the calculated matrix row of a compartment to 0
-    outside the given intervals. """
+    outside the given intervals."""
 
     def applies(self, index: any) -> bool:
         """
@@ -44,13 +47,16 @@ class OnlyConstraint:
 
 
 @model_attribute(
-    properties={"compartment": str, "interval": typing.List[typing.Tuple[float, float]],},
+    properties={
+        "compartment": str,
+        "interval": typing.List[typing.Tuple[float, float]],
+    },
     has_type=True,
     no_label=True,
 )
 class ZeroConstraint:
     """A zero constraint sets the calculated matrix row of a compartment to 0
-    in the given intervals. """
+    in the given intervals."""
 
     def applies(self, index: any) -> bool:
         """
@@ -74,7 +80,13 @@ class ZeroConstraint:
         return any([applies(i) for i in self.interval])
 
 
-@model_attribute_typed(types={"only": OnlyConstraint, "zero": ZeroConstraint,}, no_label=True)
+@model_attribute_typed(
+    types={
+        "only": OnlyConstraint,
+        "zero": ZeroConstraint,
+    },
+    no_label=True,
+)
 class SpectralConstraint:
     """A compartment constraint is applied on one compartment on one or many
     intervals on the estimated axis type.

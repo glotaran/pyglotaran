@@ -95,13 +95,23 @@ class IrfMultiGaussian:
         return irf
 
 
-@model_attribute(properties={"center": Parameter, "width": Parameter,}, has_type=True)
+@model_attribute(
+    properties={
+        "center": Parameter,
+        "width": Parameter,
+    },
+    has_type=True,
+)
 class IrfGaussian(IrfMultiGaussian):
     pass
 
 
 @model_attribute_typed(
-    types={"gaussian": IrfGaussian, "multi-gaussian": IrfMultiGaussian, "measured": IrfMeasured,}
+    types={
+        "gaussian": IrfGaussian,
+        "multi-gaussian": IrfMultiGaussian,
+        "measured": IrfMeasured,
+    }
 )
 class Irf:
     """Represents an IRF."""

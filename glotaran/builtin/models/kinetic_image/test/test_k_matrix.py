@@ -15,17 +15,37 @@ class SequentialModel:
     }
     jvec = ["3", "4"]
 
-    wanted_array = np.asarray([[0, 0], [0.55, 0.0404],])
+    wanted_array = np.asarray(
+        [
+            [0, 0],
+            [0.55, 0.0404],
+        ]
+    )
 
-    wanted_full = np.asarray([[-0.55, 0], [0.55, -0.0404],])
+    wanted_full = np.asarray(
+        [
+            [-0.55, 0],
+            [0.55, -0.0404],
+        ]
+    )
 
     wanted_eigen_vals = np.asarray([-0.55, -0.0404])
 
-    wanted_eigen_vec = np.asarray([[0.6796527, 0], [-0.7335341, 1],])
+    wanted_eigen_vec = np.asarray(
+        [
+            [0.6796527, 0],
+            [-0.7335341, 1],
+        ]
+    )
 
     wanted_gamma = np.diag([1.47134, 1.079278])
 
-    wanted_a_matrix = np.asarray([[1, -1.079278], [0, 1.079278],])
+    wanted_a_matrix = np.asarray(
+        [
+            [1, -1.079278],
+            [0, 1.079278],
+        ]
+    )
 
 
 class SequentialModelWithBacktransfer:
@@ -38,17 +58,37 @@ class SequentialModelWithBacktransfer:
     }
     jvec = ["4", "5"]
 
-    wanted_array = np.asarray([[0, 0.11], [0.55, 0.0404],])
+    wanted_array = np.asarray(
+        [
+            [0, 0.11],
+            [0.55, 0.0404],
+        ]
+    )
 
-    wanted_full = np.asarray([[-0.55, 0.11], [0.55, -0.1504],])
+    wanted_full = np.asarray(
+        [
+            [-0.55, 0.11],
+            [0.55, -0.1504],
+        ]
+    )
 
     wanted_eigen_vals = np.asarray([-0.6670912, -0.03330879])
 
-    wanted_eigen_vec = np.asarray([[-0.6846927, -0.2082266], [0.7288318, -0.9780806],])
+    wanted_eigen_vec = np.asarray(
+        [
+            [-0.6846927, -0.2082266],
+            [0.7288318, -0.9780806],
+        ]
+    )
 
     wanted_gamma = np.diag([-1.19068, -0.8872538])
 
-    wanted_a_matrix = np.asarray([[0.8152501, -0.8678057], [0.1847499, 0.8678057],])
+    wanted_a_matrix = np.asarray(
+        [
+            [0.8152501, -0.8678057],
+            [0.1847499, 0.8678057],
+        ]
+    )
 
 
 class ParallelModel:
@@ -60,17 +100,37 @@ class ParallelModel:
     }
     jvec = ["3", "3"]
 
-    wanted_array = np.asarray([[0.55, 0], [0, 0.0404],])
+    wanted_array = np.asarray(
+        [
+            [0.55, 0],
+            [0, 0.0404],
+        ]
+    )
 
-    wanted_full = np.asarray([[-0.55, 0], [0, -0.0404],])
+    wanted_full = np.asarray(
+        [
+            [-0.55, 0],
+            [0, -0.0404],
+        ]
+    )
 
     wanted_eigen_vals = np.asarray([-0.55, -0.0404])
 
-    wanted_eigen_vec = np.asarray([[1, 0], [0, 1],])
+    wanted_eigen_vec = np.asarray(
+        [
+            [1, 0],
+            [0, 1],
+        ]
+    )
 
     wanted_gamma = np.diag([1, 1])
 
-    wanted_a_matrix = np.asarray([[1, 0], [0, 1],])
+    wanted_a_matrix = np.asarray(
+        [
+            [1, 0],
+            [0, 1],
+        ]
+    )
 
 
 class ParallelModelWithEquilibria:
@@ -84,17 +144,37 @@ class ParallelModelWithEquilibria:
     }
     jvec = ["5", "5"]
 
-    wanted_array = np.asarray([[0.02, 0.11], [0.55, 0.0404],])
+    wanted_array = np.asarray(
+        [
+            [0.02, 0.11],
+            [0.55, 0.0404],
+        ]
+    )
 
-    wanted_full = np.asarray([[-0.57, 0.11], [0.55, -0.1504],])
+    wanted_full = np.asarray(
+        [
+            [-0.57, 0.11],
+            [0.55, -0.1504],
+        ]
+    )
 
     wanted_eigen_vals = np.asarray([-0.6834894, -0.03691059])
 
-    wanted_eigen_vec = np.asarray([[-0.6959817, -0.2020870], [0.7180595, -0.9793676],])
+    wanted_eigen_vec = np.asarray(
+        [
+            [-0.6959817, -0.2020870],
+            [0.7180595, -0.9793676],
+        ]
+    )
 
     wanted_gamma = np.diag([-0.940184, -1.710398])
 
-    wanted_a_matrix = np.asarray([[0.6543509, -0.6751081], [0.3456491, 1.6751081],])
+    wanted_a_matrix = np.asarray(
+        [
+            [0.6543509, -0.6751081],
+            [0.3456491, 1.6751081],
+        ]
+    )
 
 
 @pytest.mark.parametrize(
@@ -185,7 +265,12 @@ def test_unibranched():
     print(mat.reduced(compartments))
     assert mat.is_unibranched(con)
 
-    wanted_a_matrix = np.asarray([[1, -1.079278], [0, 1.079278],])
+    wanted_a_matrix = np.asarray(
+        [
+            [1, -1.079278],
+            [0, 1.079278],
+        ]
+    )
 
     print(mat.a_matrix_unibranch(con))
     assert np.allclose(mat.a_matrix_unibranch(con), wanted_a_matrix)

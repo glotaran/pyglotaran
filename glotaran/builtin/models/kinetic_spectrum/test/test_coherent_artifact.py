@@ -10,9 +10,19 @@ from glotaran.parameter import ParameterGroup
 
 def test_coherent_artifact():
     model_dict = {
-        "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["2"]},},
-        "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-        "k_matrix": {"k1": {"matrix": {("s1", "s1"): "1",}}},
+        "initial_concentration": {
+            "j1": {"compartments": ["s1"], "parameters": ["2"]},
+        },
+        "megacomplex": {
+            "mc1": {"k_matrix": ["k1"]},
+        },
+        "k_matrix": {
+            "k1": {
+                "matrix": {
+                    ("s1", "s1"): "1",
+                }
+            }
+        },
         "irf": {
             "irf1": {
                 "type": "gaussian-coherent-artifact",
@@ -22,7 +32,11 @@ def test_coherent_artifact():
             },
         },
         "dataset": {
-            "dataset1": {"initial_concentration": "j1", "megacomplex": ["mc1"], "irf": "irf1",},
+            "dataset1": {
+                "initial_concentration": "j1",
+                "megacomplex": ["mc1"],
+                "irf": "irf1",
+            },
         },
     }
     model = KineticSpectrumModel.from_dict(model_dict.copy())
@@ -64,7 +78,12 @@ def test_coherent_artifact():
             ("spectral", [0]),
             (
                 "clp_label",
-                ["s1", "coherent_artifact_1", "coherent_artifact_2", "coherent_artifact_3",],
+                [
+                    "s1",
+                    "coherent_artifact_1",
+                    "coherent_artifact_2",
+                    "coherent_artifact_3",
+                ],
             ),
         ],
     )

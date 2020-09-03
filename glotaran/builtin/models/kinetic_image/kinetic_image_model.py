@@ -12,7 +12,11 @@ from .kinetic_image_result import finalize_kinetic_image_result
 
 @model(
     "kinetic-image",
-    attributes={"initial_concentration": InitialConcentration, "k_matrix": KMatrix, "irf": Irf,},
+    attributes={
+        "initial_concentration": InitialConcentration,
+        "k_matrix": KMatrix,
+        "irf": Irf,
+    },
     dataset_type=KineticImageDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
     matrix=kinetic_image_matrix,

@@ -8,9 +8,19 @@ from glotaran.parameter import ParameterGroup
 class SimpleIrfDispersion:
     model = KineticSpectrumModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["j.1"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "kinetic.1",}}},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["j.1"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "kinetic.1",
+                    }
+                }
+            },
             "irf": {
                 "irf1": {
                     "type": "spectral-gaussian",
@@ -31,9 +41,19 @@ class SimpleIrfDispersion:
     )
     sim_model = KineticSpectrumModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["j.1"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "kinetic.1",}}},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["j.1"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "kinetic.1",
+                    }
+                }
+            },
             "irf": {
                 "irf1": {
                     "type": "spectral-gaussian",
@@ -43,7 +63,11 @@ class SimpleIrfDispersion:
                     "center_dispersion": ["irf.centerdisp"],
                 },
             },
-            "shape": {"sh1": {"type": "one",},},
+            "shape": {
+                "sh1": {
+                    "type": "one",
+                },
+            },
             "dataset": {
                 "dataset1": {
                     "initial_concentration": "j1",
@@ -57,7 +81,9 @@ class SimpleIrfDispersion:
 
     initial = ParameterGroup.from_dict(
         {
-            "j": [["1", 1, {"vary": False, "non-negative": False}],],
+            "j": [
+                ["1", 1, {"vary": False, "non-negative": False}],
+            ],
             "kinetic": [["1", 0.5], {"non-negative": False}],
             "irf": [
                 ["center", 0.3],
@@ -69,8 +95,12 @@ class SimpleIrfDispersion:
     )
     wanted = ParameterGroup.from_dict(
         {
-            "j": [["1", 1, {"vary": False, "non-negative": False}],],
-            "kinetic": [["1", 0.5],],
+            "j": [
+                ["1", 1, {"vary": False, "non-negative": False}],
+            ],
+            "kinetic": [
+                ["1", 0.5],
+            ],
             "irf": [["center", 0.3], ["width", 0.1], ["dispcenter", 400], ["centerdisp", 0.5]],
         }
     )
@@ -86,9 +116,19 @@ class SimpleIrfDispersion:
 class MultiIrfDispersion:
     model = KineticSpectrumModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["j.1"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "kinetic.1",}}},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["j.1"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "kinetic.1",
+                    }
+                }
+            },
             "irf": {
                 "irf1": {
                     "type": "spectral-multi-gaussian",
@@ -110,9 +150,19 @@ class MultiIrfDispersion:
     )
     sim_model = KineticSpectrumModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["j.1"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "kinetic.1",}}},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["j.1"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "kinetic.1",
+                    }
+                }
+            },
             "irf": {
                 "irf1": {
                     "type": "spectral-multi-gaussian",
@@ -123,7 +173,11 @@ class MultiIrfDispersion:
                     "width_dispersion": ["irf.widthdisp"],
                 },
             },
-            "shape": {"sh1": {"type": "one",},},
+            "shape": {
+                "sh1": {
+                    "type": "one",
+                },
+            },
             "dataset": {
                 "dataset1": {
                     "initial_concentration": "j1",
@@ -137,7 +191,9 @@ class MultiIrfDispersion:
 
     initial = ParameterGroup.from_dict(
         {
-            "j": [["1", 1, {"vary": False, "non-negative": False}],],
+            "j": [
+                ["1", 1, {"vary": False, "non-negative": False}],
+            ],
             "kinetic": [["1", 0.5], {"non-negative": False}],
             "irf": [
                 ["center", 0.3],
@@ -151,8 +207,12 @@ class MultiIrfDispersion:
     )
     wanted = ParameterGroup.from_dict(
         {
-            "j": [["1", 1, {"vary": False, "non-negative": False}],],
-            "kinetic": [["1", 0.5],],
+            "j": [
+                ["1", 1, {"vary": False, "non-negative": False}],
+            ],
+            "kinetic": [
+                ["1", 0.5],
+            ],
             "irf": [
                 ["center", 0.3],
                 ["width", 0.1],
@@ -169,7 +229,13 @@ class MultiIrfDispersion:
     axis = {"time": time, "spectral": spectral}
 
 
-@pytest.mark.parametrize("suite", [SimpleIrfDispersion, MultiIrfDispersion,])
+@pytest.mark.parametrize(
+    "suite",
+    [
+        SimpleIrfDispersion,
+        MultiIrfDispersion,
+    ],
+)
 def test_spectral_irf(suite):
 
     model = suite.model

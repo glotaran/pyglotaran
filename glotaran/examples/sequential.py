@@ -5,7 +5,10 @@ import glotaran as gta
 sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
     {
         "initial_concentration": {
-            "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"],},
+            "j1": {
+                "compartments": ["s1", "s2", "s3"],
+                "parameters": ["j.1", "j.0", "j.0"],
+            },
         },
         "k_matrix": {
             "k1": {
@@ -16,7 +19,11 @@ sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
                 }
             }
         },
-        "megacomplex": {"m1": {"k_matrix": ["k1"],}},
+        "megacomplex": {
+            "m1": {
+                "k_matrix": ["k1"],
+            }
+        },
         "shape": {
             "sh1": {
                 "type": "gaussian",
@@ -37,12 +44,18 @@ sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
                 "width": "shape.width.3",
             },
         },
-        "irf": {"irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},},
+        "irf": {
+            "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+        },
         "dataset": {
             "dataset1": {
                 "initial_concentration": "j1",
                 "megacomplex": ["m1"],
-                "shape": {"s1": "sh1", "s2": "sh2", "s3": "sh3",},
+                "shape": {
+                    "s1": "sh1",
+                    "s2": "sh2",
+                    "s3": "sh3",
+                },
                 "irf": "irf1",
             }
         },
@@ -55,8 +68,15 @@ wanted_parameter = gta.ParameterGroup.from_dict(
             ["1", 1, {"non-negative": False, "vary": False}],
             ["0", 0, {"non-negative": False, "vary": False}],
         ],
-        "kinetic": [["1", 0.5], ["2", 0.3], ["3", 0.1],],
-        "osc": [["freq", 25], ["rate", 1],],
+        "kinetic": [
+            ["1", 0.5],
+            ["2", 0.3],
+            ["3", 0.1],
+        ],
+        "osc": [
+            ["freq", 25],
+            ["rate", 1],
+        ],
         "shape": {"amps": [30, 20, 40], "locs": [620, 630, 650], "width": [40, 20, 60]},
         "irf": [["center", 0.3], ["width", 0.1]],
     }
@@ -68,7 +88,11 @@ parameter = gta.ParameterGroup.from_dict(
             ["1", 1, {"vary": False, "non-negative": False}],
             ["0", 0, {"vary": False, "non-negative": False}],
         ],
-        "kinetic": [["1", 0.5], ["2", 0.3], ["3", 0.1],],
+        "kinetic": [
+            ["1", 0.5],
+            ["2", 0.3],
+            ["3", 0.1],
+        ],
         "irf": [["center", 0.3], ["width", 0.1]],
     }
 )
@@ -98,10 +122,20 @@ model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
                 }
             }
         },
-        "megacomplex": {"m1": {"k_matrix": ["k1"],}},
-        "irf": {"irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},},
+        "megacomplex": {
+            "m1": {
+                "k_matrix": ["k1"],
+            }
+        },
+        "irf": {
+            "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+        },
         "dataset": {
-            "dataset1": {"initial_concentration": "j1", "megacomplex": ["m1"], "irf": "irf1",}
+            "dataset1": {
+                "initial_concentration": "j1",
+                "megacomplex": ["m1"],
+                "irf": "irf1",
+            }
         },
     }
 )

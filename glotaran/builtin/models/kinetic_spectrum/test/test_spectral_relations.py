@@ -18,7 +18,9 @@ def test_spectral_relation():
                     "parameters": ["i.1", "i.2", "i.3", "i.4"],
                 },
             },
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
             "k_matrix": {
                 "k1": {
                     "matrix": {
@@ -30,17 +32,36 @@ def test_spectral_relation():
                 }
             },
             "spectral_relations": [
-                {"compartment": "s1", "target": "s2", "parameter": "rel.1", "interval": [(0, 2)],},
-                {"compartment": "s1", "target": "s3", "parameter": "rel.2", "interval": [(0, 2)],},
+                {
+                    "compartment": "s1",
+                    "target": "s2",
+                    "parameter": "rel.1",
+                    "interval": [(0, 2)],
+                },
+                {
+                    "compartment": "s1",
+                    "target": "s3",
+                    "parameter": "rel.2",
+                    "interval": [(0, 2)],
+                },
             ],
-            "dataset": {"dataset1": {"initial_concentration": "j1", "megacomplex": ["mc1"],},},
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["mc1"],
+                },
+            },
         }
     )
     print(model)
 
     rel1, rel2 = 10, 20
     parameter = ParameterGroup.from_dict(
-        {"kinetic": [1e-4], "i": [1, 2, 3, 4], "rel": [rel1, rel2],}
+        {
+            "kinetic": [1e-4],
+            "i": [1, 2, 3, 4],
+            "rel": [rel1, rel2],
+        }
     )
 
     time = np.asarray(np.arange(0, 50, 1.5))
@@ -57,7 +78,15 @@ def test_spectral_relation():
     print(relation_matrix)
     assert len(reduced_compartments) == 2
     assert relation_matrix.shape == (4, 2)
-    assert np.array_equal(relation_matrix, [[1.0, 0.0], [10.0, 0.0], [20.0, 0.0], [0.0, 1.0],])
+    assert np.array_equal(
+        relation_matrix,
+        [
+            [1.0, 0.0],
+            [10.0, 0.0],
+            [20.0, 0.0],
+            [0.0, 1.0],
+        ],
+    )
 
     reduced_compartments, reduced_matrix = model.constrain_matrix_function(
         parameter, compartments, matrix, 1

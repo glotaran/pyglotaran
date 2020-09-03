@@ -13,13 +13,17 @@ from glotaran.parameter import Parameter
 from .initial_concentration import InitialConcentration
 
 
-@model_attribute(properties={"matrix": {"type": typing.Dict[typing.Tuple[str, str], Parameter]},},)
+@model_attribute(
+    properties={
+        "matrix": {"type": typing.Dict[typing.Tuple[str, str], Parameter]},
+    },
+)
 class KMatrix:
     """ A K-Matrix represents a first order differental system."""
 
     @classmethod
     def empty(cls, label: str, compartments: typing.List[str]) -> "KMatrix":
-        """ Creates an empty K-Matrix. Useful for combining.
+        """Creates an empty K-Matrix. Useful for combining.
 
         Parameters
         ----------
@@ -42,7 +46,7 @@ class KMatrix:
         return compartments
 
     def combine(self, k_matrix: "KMatrix") -> "KMatrix":
-        """ Creates a combined matrix.
+        """Creates a combined matrix.
 
         Parameters
         ----------
@@ -69,9 +73,11 @@ class KMatrix:
         return combined
 
     def matrix_as_markdown(
-        self, compartments: typing.List[str] = None, fill_parameter: bool = False,
+        self,
+        compartments: typing.List[str] = None,
+        fill_parameter: bool = False,
     ) -> str:
-        """ Returns the KMatrix as markdown formatted table.
+        """Returns the KMatrix as markdown formatted table.
 
         Parameters
         ----------
@@ -101,7 +107,7 @@ class KMatrix:
         return self._array_as_markdown(array, compartments, compartments)
 
     def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> str:
-        """ Returns the A Matrix as markdown formatted table.
+        """Returns the A Matrix as markdown formatted table.
 
         Parameters
         ----------
@@ -139,7 +145,7 @@ class KMatrix:
         return markdown
 
     def reduced(self, compartments: typing.List[str]) -> np.ndarray:
-        """ The reduced representation of the KMatrix as numpy array.
+        """The reduced representation of the KMatrix as numpy array.
 
         Parameters
         ----------
@@ -158,7 +164,7 @@ class KMatrix:
         return array
 
     def full(self, compartments: typing.List[str]) -> np.ndarray:
-        """ The full representation of the KMatrix as numpy array.
+        """The full representation of the KMatrix as numpy array.
 
         Parameters
         ----------
@@ -180,7 +186,7 @@ class KMatrix:
         return mat
 
     def eigen(self, compartments: typing.List[str]) -> typing.Tuple[np.ndarray, np.ndarray]:
-        """ Returns the eigenvalues and eigenvectors of the k matrix.
+        """Returns the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
         ----------
@@ -195,7 +201,7 @@ class KMatrix:
         return (eigenvalues.real, eigenvectors.real)
 
     def rates(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        """ The resulting rates of the matrix.
+        """The resulting rates of the matrix.
 
         Parameters
         ----------
@@ -209,7 +215,9 @@ class KMatrix:
             return rates
 
     def _gamma(
-        self, eigenvectors: np.ndarray, initial_concentration: InitialConcentration,
+        self,
+        eigenvectors: np.ndarray,
+        initial_concentration: InitialConcentration,
     ) -> np.ndarray:
         compartments = [
             c for c in initial_concentration.compartments if c in self.involved_compartments()
@@ -223,7 +231,7 @@ class KMatrix:
         return np.diag(gamma)
 
     def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        """ The resulting A matrix of the KMatrix.
+        """The resulting A matrix of the KMatrix.
 
         Parameters
         ----------
@@ -237,7 +245,7 @@ class KMatrix:
         )
 
     def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        """ The resulting A matrix of the KMatrix for a non-unibranched model.
+        """The resulting A matrix of the KMatrix for a non-unibranched model.
 
         Parameters
         ----------
@@ -252,7 +260,7 @@ class KMatrix:
         return a_matrix.T
 
     def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.array:
-        """ The resulting A matrix of the KMatrix for an unibranched model.
+        """The resulting A matrix of the KMatrix for an unibranched model.
 
         Parameters
         ----------
@@ -276,7 +284,7 @@ class KMatrix:
         return a_matrix
 
     def is_unibranched(self, initial_concentration: InitialConcentration) -> bool:
-        """ Returns true in the KMatrix represents an unibranched model.
+        """Returns true in the KMatrix represents an unibranched model.
 
         Parameters
         ----------

@@ -23,7 +23,12 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
 
     for label, descriptor in descriptors.items():
         axis = scheme.data[label].coords[model.matrix_dimension].values
-        clp_label, matrix = _calculate_matrix(model.matrix, descriptor, axis, {},)
+        clp_label, matrix = _calculate_matrix(
+            model.matrix,
+            descriptor,
+            axis,
+            {},
+        )
         clp_labels[label] = clp_label
         matrices[label] = matrix
 
@@ -72,7 +77,11 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
         constraint_labels_and_matrices[label] = []
         for index in problem.global_axis:
             clp, matrix = dask.delayed(_calculate_matrix, nout=2)(
-                model.matrix, descriptor, problem.matrix_axis, {}, index=index,
+                model.matrix,
+                descriptor,
+                problem.matrix_axis,
+                {},
+                index=index,
             )
             clp_labels[label].append(clp)
             matrices[label].append(matrix)

@@ -44,7 +44,9 @@ def calculate_spectral_gauss(dataset, axis):
 
 
 @model_attribute(
-    properties={"kinetic": List[Parameter],}
+    properties={
+        "kinetic": List[Parameter],
+    }
 )
 class DecayDatasetDescriptor(DatasetDescriptor):
     pass
@@ -129,9 +131,24 @@ class MultichannelMulticomponentDecay:
     wanted = ParameterGroup.from_dict(
         {
             "k": [0.006, 0.003, 0.0003, 0.03],
-            "loc": [["1", 14705], ["2", 13513], ["3", 14492], ["4", 14388],],
-            "amp": [["1", 1], ["2", 2], ["3", 5], ["4", 20],],
-            "del": [["1", 400], ["2", 100], ["3", 300], ["4", 200],],
+            "loc": [
+                ["1", 14705],
+                ["2", 13513],
+                ["3", 14492],
+                ["4", 14388],
+            ],
+            "amp": [
+                ["1", 1],
+                ["2", 2],
+                ["3", 5],
+                ["4", 20],
+            ],
+            "del": [
+                ["1", 400],
+                ["2", 100],
+                ["3", 300],
+                ["4", 200],
+            ],
         }
     )
     initial = ParameterGroup.from_dict({"k": [0.006, 0.003, 0.0003, 0.03]})

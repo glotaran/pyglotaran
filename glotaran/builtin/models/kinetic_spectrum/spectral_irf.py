@@ -78,7 +78,13 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
         return np.asarray(dispersion).T
 
 
-@model_attribute(properties={"center": Parameter, "width": Parameter,}, has_type=True)
+@model_attribute(
+    properties={
+        "center": Parameter,
+        "width": Parameter,
+    },
+    has_type=True,
+)
 class IrfSpectralGaussian(IrfSpectralMultiGaussian):
     pass
 

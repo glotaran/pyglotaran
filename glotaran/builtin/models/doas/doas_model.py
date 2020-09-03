@@ -21,7 +21,9 @@ from .oscillation import Oscillation
 
 @model(
     "doas",
-    attributes={"oscillation": Oscillation,},
+    attributes={
+        "oscillation": Oscillation,
+    },
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=DOASMegacomplex,
     matrix=calculate_doas_matrix,

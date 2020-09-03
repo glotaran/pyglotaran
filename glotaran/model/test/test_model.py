@@ -56,7 +56,10 @@ def model():
             "t2": ["baz", "m2", ["foo"], 7, {}],
         },
         "dataset": {
-            "dataset1": {"megacomplex": ["m1", "m2"], "scale": "scale_1",},
+            "dataset1": {
+                "megacomplex": ["m1", "m2"],
+                "scale": "scale_1",
+            },
             "dataset2": [["m2"], "scale_2"],
         },
     }
@@ -76,7 +79,10 @@ def model_error():
             },
         },
         "dataset": {
-            "dataset1": {"megacomplex": ["N1", "N2"], "scale": "scale_1",},
+            "dataset1": {
+                "megacomplex": ["N1", "N2"],
+                "scale": "scale_1",
+            },
             "dataset2": [["mrX"], "scale_3"],
         },
     }

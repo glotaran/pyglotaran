@@ -8,7 +8,12 @@ from glotaran.parameter import Parameter
 
 
 @model_attribute(
-    properties={"amplitude": Parameter, "location": Parameter, "width": Parameter,}, has_type=True
+    properties={
+        "amplitude": Parameter,
+        "location": Parameter,
+        "width": Parameter,
+    },
+    has_type=True,
 )
 class SpectralShapeGaussian:
     """A gaussian spectral shape"""
@@ -75,7 +80,11 @@ class SpectralShapeZero:
 
 
 @model_attribute_typed(
-    types={"gaussian": SpectralShapeGaussian, "one": SpectralShapeOne, "zero": SpectralShapeZero,}
+    types={
+        "gaussian": SpectralShapeGaussian,
+        "one": SpectralShapeOne,
+        "zero": SpectralShapeZero,
+    }
 )
 class SpectralShape:
     """Base class for spectral shapes"""

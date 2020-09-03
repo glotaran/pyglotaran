@@ -35,12 +35,22 @@ class OneOscillation:
 
     wanted_parameter = ParameterGroup.from_dict(
         {
-            "osc": [["freq", 25.5], ["rate", 0.1],],
+            "osc": [
+                ["freq", 25.5],
+                ["rate", 0.1],
+            ],
             "shape": {"amps": [7], "locs": [5], "width": [4]},
         }
     )
 
-    parameter = ParameterGroup.from_dict({"osc": [["freq", 20], ["rate", 0.3],],})
+    parameter = ParameterGroup.from_dict(
+        {
+            "osc": [
+                ["freq", 20],
+                ["rate", 0.3],
+            ],
+        }
+    )
 
     time = np.arange(0, 3, 0.01)
     spectral = np.arange(0, 10)
@@ -63,9 +73,15 @@ class OneOscillationWithIrf:
                     "width": "shape.width.1",
                 },
             },
-            "irf": {"irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},},
+            "irf": {
+                "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+            },
             "dataset": {
-                "dataset1": {"megacomplex": ["m1"], "shape": {"osc1": "sh1"}, "irf": "irf1",}
+                "dataset1": {
+                    "megacomplex": ["m1"],
+                    "shape": {"osc1": "sh1"},
+                    "irf": "irf1",
+                }
             },
         }
     )
@@ -74,21 +90,37 @@ class OneOscillationWithIrf:
         {
             "oscillation": {"osc1": {"frequency": "osc.freq", "rate": "osc.rate"}},
             "megacomplex": {"m1": {"oscillation": ["osc1"]}},
-            "irf": {"irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},},
-            "dataset": {"dataset1": {"megacomplex": ["m1"], "irf": "irf1",}},
+            "irf": {
+                "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+            },
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": ["m1"],
+                    "irf": "irf1",
+                }
+            },
         }
     )
 
     wanted_parameter = ParameterGroup.from_dict(
         {
-            "osc": [["freq", 25], ["rate", 0.1],],
+            "osc": [
+                ["freq", 25],
+                ["rate", 0.1],
+            ],
             "shape": {"amps": [7], "locs": [5], "width": [4]},
             "irf": [["center", 0.3], ["width", 0.1]],
         }
     )
 
     parameter = ParameterGroup.from_dict(
-        {"osc": [["freq", 25], ["rate", 0.1],], "irf": [["center", 0.3], ["width", 0.1]],}
+        {
+            "osc": [
+                ["freq", 25],
+                ["rate", 0.1],
+            ],
+            "irf": [["center", 0.3], ["width", 0.1]],
+        }
     )
 
     time = np.arange(0, 3, 0.01)
@@ -106,10 +138,20 @@ class OneOscillationWithSequentialModel:
                 "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
             },
             "k_matrix": {
-                "k1": {"matrix": {("s2", "s1"): "kinetic.1", ("s2", "s2"): "kinetic.2",}}
+                "k1": {
+                    "matrix": {
+                        ("s2", "s1"): "kinetic.1",
+                        ("s2", "s2"): "kinetic.2",
+                    }
+                }
             },
             "oscillation": {"osc1": {"frequency": "osc.freq", "rate": "osc.rate"}},
-            "megacomplex": {"m1": {"k_matrix": ["k1"], "oscillation": ["osc1"],}},
+            "megacomplex": {
+                "m1": {
+                    "k_matrix": ["k1"],
+                    "oscillation": ["osc1"],
+                }
+            },
             "shape": {
                 "sh1": {
                     "type": "gaussian",
@@ -130,12 +172,18 @@ class OneOscillationWithSequentialModel:
                     "width": "shape.width.3",
                 },
             },
-            "irf": {"irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},},
+            "irf": {
+                "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+            },
             "dataset": {
                 "dataset1": {
                     "initial_concentration": "j1",
                     "megacomplex": ["m1"],
-                    "shape": {"osc1": "sh1", "s1": "sh2", "s2": "sh3",},
+                    "shape": {
+                        "osc1": "sh1",
+                        "s1": "sh2",
+                        "s2": "sh3",
+                    },
                     "irf": "irf1",
                 }
             },
@@ -148,13 +196,29 @@ class OneOscillationWithSequentialModel:
                 "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
             },
             "k_matrix": {
-                "k1": {"matrix": {("s2", "s1"): "kinetic.1", ("s2", "s2"): "kinetic.2",}}
+                "k1": {
+                    "matrix": {
+                        ("s2", "s1"): "kinetic.1",
+                        ("s2", "s2"): "kinetic.2",
+                    }
+                }
             },
             "oscillation": {"osc1": {"frequency": "osc.freq", "rate": "osc.rate"}},
-            "megacomplex": {"m1": {"k_matrix": ["k1"], "oscillation": ["osc1"],}},
-            "irf": {"irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},},
+            "megacomplex": {
+                "m1": {
+                    "k_matrix": ["k1"],
+                    "oscillation": ["osc1"],
+                }
+            },
+            "irf": {
+                "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+            },
             "dataset": {
-                "dataset1": {"initial_concentration": "j1", "megacomplex": ["m1"], "irf": "irf1",}
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["m1"],
+                    "irf": "irf1",
+                }
             },
         }
     )
@@ -165,8 +229,14 @@ class OneOscillationWithSequentialModel:
                 ["1", 1, {"vary": False, "non-negative": False}],
                 ["0", 0, {"vary": False, "non-negative": False}],
             ],
-            "kinetic": [["1", 0.2], ["2", 0.01],],
-            "osc": [["freq", 25], ["rate", 0.1],],
+            "kinetic": [
+                ["1", 0.2],
+                ["2", 0.01],
+            ],
+            "osc": [
+                ["freq", 25],
+                ["rate", 0.1],
+            ],
             "shape": {"amps": [0.07, 2, 4], "locs": [5, 2, 8], "width": [4, 2, 3]},
             "irf": [["center", 0.3], ["width", 0.1]],
         }
@@ -178,8 +248,14 @@ class OneOscillationWithSequentialModel:
                 ["1", 1, {"vary": False, "non-negative": False}],
                 ["0", 0, {"vary": False, "non-negative": False}],
             ],
-            "kinetic": [["1", 0.2], ["2", 0.01],],
-            "osc": [["freq", 25], ["rate", 0.1],],
+            "kinetic": [
+                ["1", 0.2],
+                ["2", 0.01],
+            ],
+            "osc": [
+                ["freq", 25],
+                ["rate", 0.1],
+            ],
             "irf": [["center", 0.3], ["width", 0.1]],
         }
     )
@@ -193,7 +269,12 @@ class OneOscillationWithSequentialModel:
 
 
 @pytest.mark.parametrize(
-    "suite", [OneOscillation, OneOscillationWithIrf, OneOscillationWithSequentialModel,]
+    "suite",
+    [
+        OneOscillation,
+        OneOscillationWithIrf,
+        OneOscillationWithSequentialModel,
+    ],
 )
 def test_doas_model(suite):
 

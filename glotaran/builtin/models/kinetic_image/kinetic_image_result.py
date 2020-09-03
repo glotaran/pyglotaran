@@ -43,20 +43,30 @@ def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name)
 
     dataset.coords["species"] = compartments
     dataset[f"species_associated_{name}"] = (
-        (model.global_dimension, "species",),
+        (
+            model.global_dimension,
+            "species",
+        ),
         dataset.clp.sel(clp_label=compartments),
     )
 
     if len(dataset.matrix.shape) == 3:
         #  index dependent
         dataset["species_concentration"] = (
-            (model.global_dimension, model.matrix_dimension, "species",),
+            (
+                model.global_dimension,
+                model.matrix_dimension,
+                "species",
+            ),
             dataset.matrix.sel(clp_label=compartments).values,
         )
     else:
         #  index independent
         dataset["species_concentration"] = (
-            (model.matrix_dimension, "species",),
+            (
+                model.matrix_dimension,
+                "species",
+            ),
             dataset.matrix.sel(clp_label=compartments).values,
         )
 

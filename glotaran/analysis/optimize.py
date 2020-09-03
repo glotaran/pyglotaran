@@ -243,7 +243,10 @@ def _create_result(scheme, parameter):
                             {model.global_dimension: indices[i][group_index]}
                         ] = matrices[i][group_index]
             else:
-                clp_label, matrix = dask.compute(clp_labels[label], matrices[label],)
+                clp_label, matrix = dask.compute(
+                    clp_labels[label],
+                    matrices[label],
+                )
                 dataset.coords["clp_label"] = clp_label
                 dataset["matrix"] = (((model.matrix_dimension), ("clp_label")), matrix)
             dim1 = dataset.coords[model.global_dimension].size

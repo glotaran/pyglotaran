@@ -30,7 +30,10 @@ def calculate_e(dataset, axis):
 
 
 @model_attribute(
-    properties={"grouped": bool, "indexdependend": bool,}
+    properties={
+        "grouped": bool,
+        "indexdependend": bool,
+    }
 )
 class MockMegacomplex:
     pass

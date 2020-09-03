@@ -19,10 +19,25 @@ def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
 class OneComponentOneChannel:
     model = KineticImageModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["2"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "1",}}},
-            "dataset": {"dataset1": {"initial_concentration": "j1", "megacomplex": ["mc1"],},},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["2"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "1",
+                    }
+                }
+            },
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["mc1"],
+                },
+            },
         }
     )
 
@@ -38,10 +53,22 @@ class OneComponentOneChannel:
 class OneComponentOneChannelGaussianIrf:
     model = KineticImageModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["2"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "1",}}},
-            "irf": {"irf1": {"type": "gaussian", "center": "2", "width": "3"},},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["2"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "1",
+                    }
+                }
+            },
+            "irf": {
+                "irf1": {"type": "gaussian", "center": "2", "width": "3"},
+            },
             "dataset": {
                 "dataset1": {
                     "initial_concentration": "j1",
@@ -67,10 +94,22 @@ class OneComponentOneChannelGaussianIrf:
 class OneComponentOneChannelMeasuredIrf:
     model = KineticImageModel.from_dict(
         {
-            "initial_concentration": {"j1": {"compartments": ["s1"], "parameters": ["2"]},},
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
-            "k_matrix": {"k1": {"matrix": {("s1", "s1"): "1",}}},
-            "irf": {"irf1": {"type": "measured"},},
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["2"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "1",
+                    }
+                }
+            },
+            "irf": {
+                "irf1": {"type": "measured"},
+            },
             "dataset": {
                 "dataset1": {
                     "initial_concentration": "j1",
@@ -103,7 +142,9 @@ class ThreeComponentParallel:
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.1", "j.1"]},
             },
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
             "k_matrix": {
                 "k1": {
                     "matrix": {
@@ -132,14 +173,22 @@ class ThreeComponentParallel:
 
     initial = ParameterGroup.from_dict(
         {
-            "kinetic": [["1", 300e-3], ["2", 500e-4], ["3", 700e-5],],
+            "kinetic": [
+                ["1", 300e-3],
+                ["2", 500e-4],
+                ["3", 700e-5],
+            ],
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
         }
     )
     wanted = ParameterGroup.from_dict(
         {
-            "kinetic": [["1", 301e-3], ["2", 502e-4], ["3", 705e-5],],
+            "kinetic": [
+                ["1", 301e-3],
+                ["2", 502e-4],
+                ["3", 705e-5],
+            ],
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
         }
@@ -160,7 +209,9 @@ class ThreeComponentSequential:
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
             },
-            "megacomplex": {"mc1": {"k_matrix": ["k1"]},},
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
             "k_matrix": {
                 "k1": {
                     "matrix": {
@@ -189,7 +240,12 @@ class ThreeComponentSequential:
 
     initial = ParameterGroup.from_dict(
         {
-            "kinetic": [["1", 501e-3], ["2", 202e-4], ["3", 105e-5], {"non-negative": True},],
+            "kinetic": [
+                ["1", 501e-3],
+                ["2", 202e-4],
+                ["3", 105e-5],
+                {"non-negative": True},
+            ],
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -199,7 +255,11 @@ class ThreeComponentSequential:
     )
     wanted = ParameterGroup.from_dict(
         {
-            "kinetic": [["1", 501e-3], ["2", 202e-4], ["3", 105e-5],],
+            "kinetic": [
+                ["1", 501e-3],
+                ["2", 202e-4],
+                ["3", 105e-5],
+            ],
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],

@@ -7,7 +7,15 @@ from .mock import MockModel
 
 
 def test_simulate_dataset():
-    model = MockModel.from_dict({"dataset": {"dataset1": {"megacomplex": [],},}})
+    model = MockModel.from_dict(
+        {
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": [],
+                },
+            }
+        }
+    )
     print(model.validate())
     assert model.valid()
 
@@ -23,5 +31,13 @@ def test_simulate_dataset():
     assert np.array_equal(data["e"], est_axis)
     assert data.data.shape == (3, 4)
     assert np.array_equal(
-        data.data, np.asarray([[2, 4, 6], [4, 10, 16], [6, 16, 26], [8, 22, 36],]).T
+        data.data,
+        np.asarray(
+            [
+                [2, 4, 6],
+                [4, 10, 16],
+                [6, 16, 26],
+                [8, 22, 36],
+            ]
+        ).T,
     )
