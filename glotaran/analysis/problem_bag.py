@@ -77,29 +77,23 @@ def create_grouped_bag(scheme):
                     bag[j][2] + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
                 )
 
-            end = i2[0] if len(i2) != 0 else 0
-            for i in range(0, end):
-                datasets.appendleft([label])
-                full_axis.appendleft(global_axis[i])
-                bag.appendleft(
-                    GroupedProblem(
-                        data.isel({scheme.model.global_dimension: i}).values,
-                        weight.isel({scheme.model.global_dimension: i}).values,
-                        [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
-                    )
+            # Add non-overlaping regions
+            beginOverlap = i2[0] if len(i2) != 0 else 0
+            endOverlap = i2[-1] + 1 if len(i2) != 0 else 0
+            for i in itertools.chain(range(0, beginOverlap), range(endOverlap, len(global_axis))):
+                problem = GroupedProblem(
+                    data.isel({scheme.model.global_dimension: i}).values,
+                    weight.isel({scheme.model.global_dimension: i}).values,
+                    [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
                 )
-
-            start = i2[-1] + 1 if len(i2) != 0 else 0
-            for i in range(start, len(global_axis)):
-                datasets.append([label])
-                full_axis.append(global_axis[i])
-                bag.append(
-                    GroupedProblem(
-                        data.isel({scheme.model.global_dimension: i}).values,
-                        weight.isel({scheme.model.global_dimension: i}).values,
-                        [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
-                    )
-                )
+                if i < endOverlap:
+                    datasets.appendleft([label])
+                    full_axis.appendleft(global_axis[i])
+                    bag.appendleft(problem)
+                else:
+                    datasets.append([label])
+                    full_axis.append(global_axis[i])
+                    bag.append(problem)
 
     return db.from_sequence(bag), {"".join(d): d for d in datasets if len(d) > 1}
 
