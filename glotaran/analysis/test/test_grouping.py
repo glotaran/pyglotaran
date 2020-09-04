@@ -149,6 +149,6 @@ def test_multi_dataset_overlap():
     assert all([p.data.size == 4 for p in bag[5:]])
     assert bag[4].descriptor[0].dataset == "dataset1"
     assert bag[5].descriptor[0].dataset == "dataset2"
-    assert np.array_equal(bag[4].descriptor[0].axis == axis_c_1)
-    assert bag[5].descriptor[0].axis == axis_c_2
-    assert [p.descriptor[0].index for p in bag[1:4]] == axis_e_1
+    assert np.array_equal(bag[4].descriptor[0].axis, axis_c_1)
+    assert np.array_equal(bag[5].descriptor[0].axis, axis_c_2)
+    assert [p.descriptor[0].index for p in bag[1:4]] == axis_e_1[:-1]
