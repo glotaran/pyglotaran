@@ -57,14 +57,12 @@ If you are proposing a feature:
 * Remember that this is a volunteer-driven project, and that contributions
   are welcome :)
 
-.. _get-started:
-
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `pyglotaran` for local development.
+Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 
-1. Fork the `pyglotaran` repo on GitHub.
+1. Fork the ``pyglotaran`` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone https://github.com/<your_name_here>/pyglotaran.git
@@ -78,13 +76,17 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
     (pyglotaran)$ python -m pip install -r requirements_dev.txt
     (pyglotaran)$ pip install -e . --process-dependency-links
 
-4. Create a branch for local development::
+4. Install the ``pre-commit`` hooks, to automatically format and check your code::
+
+    $ pre-commit install
+
+5. Create a branch for local development::
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
+6. When you're done making changes, check that your changes pass flake8 and the
    tests, including testing other Python versions with tox::
 
     $ flake8 glotaran tests
@@ -95,13 +97,13 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
     $ tox
 
 
-6. Commit your changes and push your branch to GitHub::
+7. Commit your changes and push your branch to GitHub::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. Submit a pull request through the GitHub website.
+8. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
@@ -113,7 +115,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 3.6, 3.7. and 3.8
-   Check your Github Actions `https://github.com/<your_name_here>/pyglotaran/actions`
+   Check your Github Actions ``https://github.com/<your_name_here>/pyglotaran/actions``
    and make sure that the tests pass for all supported Python versions.
 
 

@@ -4,24 +4,29 @@ import typing
 
 import numpy as np
 
-from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.model import model_attribute
+from glotaran.model import model_attribute_typed
 
 T_KineticSpectrumModel = typing.TypeVar(
-    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
+    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
+)
 
 
 @model_attribute(
     properties={
-        'compartment': str,
-        'interval': typing.List[typing.Tuple[float, float]],
-    }, has_type=True, no_label=True)
+        "compartment": str,
+        "interval": typing.List[typing.Tuple[float, float]],
+    },
+    has_type=True,
+    no_label=True,
+)
 class OnlyConstraint:
     """A only constraint sets the calculated matrix row of a compartment to 0
-    outside the given intervals. """
+    outside the given intervals."""
 
     def applies(self, index: any) -> bool:
         """
-        Returns true if the indexx is in one of the intervals.
+        Returns true if the index is in one of the intervals.
 
         Parameters
         ----------
@@ -32,8 +37,10 @@ class OnlyConstraint:
         applies : bool
 
         """
+
         def applies(interval):
             return interval[0] <= index <= interval[1]
+
         if isinstance(self.interval, tuple):
             return applies(self.interval)
         return not any([applies(i) for i in self.interval])
@@ -41,12 +48,15 @@ class OnlyConstraint:
 
 @model_attribute(
     properties={
-        'compartment': str,
-        'interval': typing.List[typing.Tuple[float, float]],
-    }, has_type=True, no_label=True)
+        "compartment": str,
+        "interval": typing.List[typing.Tuple[float, float]],
+    },
+    has_type=True,
+    no_label=True,
+)
 class ZeroConstraint:
     """A zero constraint sets the calculated matrix row of a compartment to 0
-    in the given intervals. """
+    in the given intervals."""
 
     def applies(self, index: any) -> bool:
         """
@@ -61,32 +71,36 @@ class ZeroConstraint:
         applies : bool
 
         """
+
         def applies(interval):
             return interval[0] <= index <= interval[1]
+
         if isinstance(self.interval, tuple):
             return applies(self.interval)
         return any([applies(i) for i in self.interval])
 
 
-@model_attribute_typed(types={
-    'only': OnlyConstraint,
-    'zero': ZeroConstraint,
-}, no_label=True)
+@model_attribute_typed(
+    types={
+        "only": OnlyConstraint,
+        "zero": ZeroConstraint,
+    },
+    no_label=True,
+)
 class SpectralConstraint:
     """A compartment constraint is applied on one compartment on one or many
-    intervals on the estimated axies type.
+    intervals on the estimated axis type.
 
-    There are three types: zeroe, equal and eqal area. See the documention of
+    There are three types: zero, equal and equal area. See the documentation of
     the respective classes for details.
     """
+
     pass
 
 
 def apply_spectral_constraints(
-        model: T_KineticSpectrumModel,
-        clp_labels: typing.List[str],
-        matrix: np.ndarray,
-        index: float) -> typing.Tuple[typing.List[str], np.ndarray]:
+    model: T_KineticSpectrumModel, clp_labels: typing.List[str], matrix: np.ndarray, index: float
+) -> typing.Tuple[typing.List[str], np.ndarray]:
     for constraint in model.spectral_constraints:
         if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
             idx = [not label == constraint.compartment for label in clp_labels]

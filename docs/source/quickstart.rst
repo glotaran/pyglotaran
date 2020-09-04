@@ -20,8 +20,8 @@ Let us get some data to analyze:
 
    In [2]: dataset
 
-Like all data in `glotaran`, the dataset is a :class:`xarray:xarray.Dataset`.
-You can find more infomation about the `xarray` library the `xarray hompage`_.
+Like all data in ``pyglotaran``, the dataset is a :class:`xarray:xarray.Dataset`.
+You can find more information about the ``xarray`` library the `xarray hompage`_.
 
 .. _xarray hompage: http://xarray.pydata.org/en/stable/
 
@@ -69,7 +69,7 @@ First, take a look at the first 10 singular values:
    @savefig quickstart_data_singular_values.png width=8in
    In [1]: plot_data.plot(yscale='log', marker='o', linewidth=0, aspect=2, size=5);
 
-To analyze our data, we need to create a model. Create a file called `model.py`
+To analyze our data, we need to create a model. Create a file called ``model.py``
 in your working directory and fill it with the following:
 
 
@@ -147,13 +147,13 @@ Now you can load the model file.
       ...: """
       ...: model = gta.read_model_from_yml(model_spec)
 
-You can check your model for problems with `model.validate`.
+You can check your model for problems with ``model.validate``.
 
 .. ipython:: python
 
    print(model.validate())
 
-Now define some starting parameters. Create a file called `parameter.yml` with
+Now define some starting parameters. Create a file called ``parameter.yml`` with
 the following content.
 
 .. code-block:: yaml
@@ -192,7 +192,7 @@ the following content.
       ...:    - ['width', 0.1]
       ...: """)
 
-You can `model.validate` also to check for missing parameters.
+You can ``model.validate`` also to check for missing parameters.
 
 .. ipython:: python
 
@@ -219,7 +219,7 @@ Now we have everything together to optimize our parameters.
    print(result)
    print(result.optimized_parameter)
 
-You can get the resulting data for your dataset with `result.get_dataset`.
+You can get the resulting data for your dataset with ``result.get_dataset``.
 
 .. ipython:: python
 

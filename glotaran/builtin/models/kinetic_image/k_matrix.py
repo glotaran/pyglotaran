@@ -1,8 +1,8 @@
 """ K-Matrix """
 
-from collections import OrderedDict
 import itertools
 import typing
+from collections import OrderedDict
 
 import numpy as np
 import scipy
@@ -15,15 +15,15 @@ from .initial_concentration import InitialConcentration
 
 @model_attribute(
     properties={
-        'matrix': {'type': typing.Dict[typing.Tuple[str, str], Parameter]},
+        "matrix": {"type": typing.Dict[typing.Tuple[str, str], Parameter]},
     },
 )
 class KMatrix:
     """ A K-Matrix represents a first order differental system."""
 
     @classmethod
-    def empty(cls, label: str, compartments: typing.List[str]) -> 'KMatrix':
-        """ Creates an empty K-Matrix. Useful for combining.
+    def empty(cls, label: str, compartments: typing.List[str]) -> "KMatrix":
+        """Creates an empty K-Matrix. Useful for combining.
 
         Parameters
         ----------
@@ -46,7 +46,7 @@ class KMatrix:
         return compartments
 
     def combine(self, k_matrix: "KMatrix") -> "KMatrix":
-        """ Creates a combined matrix.
+        """Creates a combined matrix.
 
         Parameters
         ----------
@@ -72,10 +72,12 @@ class KMatrix:
         combined.matrix = combined_matrix
         return combined
 
-    def matrix_as_markdown(self, compartments: typing.List[str] = None,
-                           fill_parameter: bool = False,
-                           ) -> str:
-        """ Returns the KMatrix as markdown formatted table.
+    def matrix_as_markdown(
+        self,
+        compartments: typing.List[str] = None,
+        fill_parameter: bool = False,
+    ) -> str:
+        """Returns the KMatrix as markdown formatted table.
 
         Parameters
         ----------
@@ -88,52 +90,62 @@ class KMatrix:
             instead of abels.
         """
 
-        compartments = [c for c in compartments if c in self.involved_compartments()] \
-            if compartments else self.involved_compartments()
+        compartments = (
+            [c for c in compartments if c in self.involved_compartments()]
+            if compartments
+            else self.involved_compartments()
+        )
         size = len(compartments)
         array = np.zeros((size, size), dtype=np.object)
         # Matrix is a dict
         for index in self.matrix:
             i = compartments.index(index[0])
             j = compartments.index(index[1])
-            array[i, j] = \
+            array[i, j] = (
                 self.matrix[index].full_label if not fill_parameter else self.matrix[index].value
+            )
         return self._array_as_markdown(array, compartments, compartments)
 
     def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> str:
-        """ Returns the A Matrix as markdown formatted table.
+        """Returns the A Matrix as markdown formatted table.
 
         Parameters
         ----------
         initial_concentration :
             The initial concentration.
         """
-        compartments = [c for c in initial_concentration.compartments
-                        if c in self.involved_compartments()]
-        return self._array_as_markdown(self.a_matrix(initial_concentration).T,
-                                       compartments,
-                                       self.rates(initial_concentration),
-                                       )
+        compartments = [
+            c for c in initial_concentration.compartments if c in self.involved_compartments()
+        ]
+        return self._array_as_markdown(
+            self.a_matrix(initial_concentration).T,
+            compartments,
+            self.rates(initial_concentration),
+        )
 
     @staticmethod
     def _array_as_markdown(array, row_header, column_header):
         markdown = "| compartment | "
-        markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str)
-                                else e for e in column_header])
+        markdown += " | ".join(
+            [f"{e:.4e}" if not isinstance(e, str) else e for e in column_header]
+        )
         markdown += "\n|"
-        markdown += "|".join(['---' for _ in range(len(column_header)+1)])
+        markdown += "|".join(["---" for _ in range(len(column_header) + 1)])
         markdown += "\n"
 
         for i, row in enumerate(array):
-            markdown += f"| {row_header[i]} | " if isinstance(row_header[i], str) \
+            markdown += (
+                f"| {row_header[i]} | "
+                if isinstance(row_header[i], str)
                 else f"| {row_header[i]:.4e} | "
+            )
             markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str) else e for e in row])
             markdown += "|\n"
 
         return markdown
 
     def reduced(self, compartments: typing.List[str]) -> np.ndarray:
-        """ The reduced representation of the KMatrix as numpy array.
+        """The reduced representation of the KMatrix as numpy array.
 
         Parameters
         ----------
@@ -152,7 +164,7 @@ class KMatrix:
         return array
 
     def full(self, compartments: typing.List[str]) -> np.ndarray:
-        """ The full representation of the KMatrix as numpy array.
+        """The full representation of the KMatrix as numpy array.
 
         Parameters
         ----------
@@ -174,7 +186,7 @@ class KMatrix:
         return mat
 
     def eigen(self, compartments: typing.List[str]) -> typing.Tuple[np.ndarray, np.ndarray]:
-        """ Returns the eigenvalues and eigenvectors of the k matrix.
+        """Returns the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
         ----------
@@ -185,12 +197,11 @@ class KMatrix:
         matrix = self.full(compartments).T
         # get the eigenvectors and values, we take the left ones to have
         # computation consistent with TIMP
-        eigenvalues, eigenvectors = scipy.linalg.eig(matrix, left=True,
-                                                     right=False)
+        eigenvalues, eigenvectors = scipy.linalg.eig(matrix, left=True, right=False)
         return (eigenvalues.real, eigenvectors.real)
 
     def rates(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        """ The resulting rates of the matrix.
+        """The resulting rates of the matrix.
 
         Parameters
         ----------
@@ -203,33 +214,38 @@ class KMatrix:
             rates, _ = self.eigen(initial_concentration.compartments)
             return rates
 
-    def _gamma(self,
-               eigenvectors: np.ndarray,
-               initial_concentration: InitialConcentration,
-               ) -> np.ndarray:
-        compartments = [c for c in initial_concentration.compartments
-                        if c in self.involved_compartments()]
-        initial_concentration = \
-            [initial_concentration.parameters[initial_concentration.compartments.index(c)]
-             for c in compartments]
+    def _gamma(
+        self,
+        eigenvectors: np.ndarray,
+        initial_concentration: InitialConcentration,
+    ) -> np.ndarray:
+        compartments = [
+            c for c in initial_concentration.compartments if c in self.involved_compartments()
+        ]
+        initial_concentration = [
+            initial_concentration.parameters[initial_concentration.compartments.index(c)]
+            for c in compartments
+        ]
 
         gamma = scipy.linalg.solve(eigenvectors, initial_concentration)
         return np.diag(gamma)
 
     def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        """ The resulting A matrix of the KMatrix.
+        """The resulting A matrix of the KMatrix.
 
         Parameters
         ----------
         initial_concentration :
             The initial concentration.
         """
-        return self.a_matrix_unibranch(initial_concentration) \
-            if self.is_unibranched(initial_concentration) \
+        return (
+            self.a_matrix_unibranch(initial_concentration)
+            if self.is_unibranched(initial_concentration)
             else self.a_matrix_non_unibranch(initial_concentration)
+        )
 
     def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
-        """ The resulting A matrix of the KMatrix for a non-unibranched model.
+        """The resulting A matrix of the KMatrix for a non-unibranched model.
 
         Parameters
         ----------
@@ -244,15 +260,16 @@ class KMatrix:
         return a_matrix.T
 
     def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.array:
-        """ The resulting A matrix of the KMatrix for an unibranched model.
+        """The resulting A matrix of the KMatrix for an unibranched model.
 
         Parameters
         ----------
         initial_concentration :
             The initial concentration.
         """
-        compartments = [c for c in initial_concentration.compartments
-                        if c in self.involved_compartments()]
+        compartments = [
+            c for c in initial_concentration.compartments if c in self.involved_compartments()
+        ]
         matrix = self.full(compartments).T
         rates = np.diag(matrix)
 
@@ -261,24 +278,31 @@ class KMatrix:
         for i, j in itertools.product(range(rates.size), range(1, rates.size)):
             if i > j:
                 continue
-            a_matrix[i, j] = np.prod([rates[m] for m in range(j)]) / \
-                np.prod([rates[m] - rates[i] for m in range(j+1) if not i == m])
+            a_matrix[i, j] = np.prod([rates[m] for m in range(j)]) / np.prod(
+                [rates[m] - rates[i] for m in range(j + 1) if not i == m]
+            )
         return a_matrix
 
     def is_unibranched(self, initial_concentration: InitialConcentration) -> bool:
-        """ Returns true in the KMatrix represents an unibranched model.
+        """Returns true in the KMatrix represents an unibranched model.
 
         Parameters
         ----------
         initial_concentration :
             The initial concentration.
         """
-        if not np.sum(
-            [initial_concentration.parameters[initial_concentration.compartments.index(c)]
-             for c in self.involved_compartments()]) == 1:
+        if (
+            not np.sum(
+                [
+                    initial_concentration.parameters[initial_concentration.compartments.index(c)]
+                    for c in self.involved_compartments()
+                ]
+            )
+            == 1
+        ):
             return False
         matrix = self.reduced(initial_concentration.compartments)
         for i in range(matrix.shape[1]):
-            if not np.nonzero(matrix[:, i])[0].size == 1 or i != 0 and matrix[i, i-1] == 0:
+            if not np.nonzero(matrix[:, i])[0].size == 1 or i != 0 and matrix[i, i - 1] == 0:
                 return False
         return True

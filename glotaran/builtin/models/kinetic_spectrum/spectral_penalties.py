@@ -1,24 +1,30 @@
 """This package contains compartment constraint items."""
 
 import typing
+
 import numpy as np
 
 from glotaran.model import model_attribute
-from glotaran.parameter import Parameter, ParameterGroup
+from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 from .spectral_relations import retrieve_clps
 
 T_KineticSpectrumModel = typing.TypeVar(
-    'glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel')
+    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
+)
 
 
-@model_attribute(properties={
-    'compartment': str,
-    'interval': typing.List[typing.Tuple[float, float]],
-    'target': str,
-    'parameter': Parameter,
-    'weight': str,
-}, no_label=True)
+@model_attribute(
+    properties={
+        "compartment": str,
+        "interval": typing.List[typing.Tuple[float, float]],
+        "target": str,
+        "parameter": Parameter,
+        "weight": str,
+    },
+    no_label=True,
+)
 class EqualAreaPenalty:
     """An equal area constraint adds a the differenc of the sum of a
     compartements in the e matrix in one ore more intervals to the scaled sum
@@ -38,8 +44,10 @@ class EqualAreaPenalty:
         applies : bool
 
         """
+
         def applies(interval):
             return interval[0] <= index <= interval[1]
+
         if isinstance(self.interval, tuple):
             return applies(self.interval)
         return any([applies(i) for i in self.interval])
@@ -50,11 +58,12 @@ def has_spectral_penalties(model: T_KineticSpectrumModel) -> bool:
 
 
 def apply_spectral_penalties(
-        model: T_KineticSpectrumModel,
-        parameter: ParameterGroup,
-        clp_labels: typing.List[str],
-        clps: np.ndarray,
-        index: float) -> np.ndarray:
+    model: T_KineticSpectrumModel,
+    parameter: ParameterGroup,
+    clp_labels: typing.List[str],
+    clps: np.ndarray,
+    index: float,
+) -> np.ndarray:
 
     clp_labels, clps = retrieve_clps(model, parameter, clp_labels, clps, index)
 

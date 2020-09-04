@@ -21,5 +21,7 @@ def validate_cmd(parameter: str, model: str, scheme: str):
 
         click.echo(model.validate(parameter=parameter))
     else:
-        click.echo("Neither analysis scheme nor model file specified. "
-                   "Type 'glotaran validate --help' for more info.")
+        click.echo(
+            "Neither analysis scheme nor model file specified. "
+            "Type 'glotaran validate --help' for more info."
+        )

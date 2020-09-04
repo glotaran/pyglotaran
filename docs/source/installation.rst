@@ -76,7 +76,7 @@ Afterwards you can simply use `pip`_ to install it directly from `Github`_.
 
 For updating pyglotaran, just re-run the command above.
 
-If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preffered):
+If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preferred):
 
 .. code-block:: console
 

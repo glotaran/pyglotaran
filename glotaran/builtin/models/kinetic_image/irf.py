@@ -1,9 +1,11 @@
 """This package contains irf items."""
 
 from typing import List
+
 import numpy as np
 
-from glotaran.model import model_attribute, model_attribute_typed
+from glotaran.model import model_attribute
+from glotaran.model import model_attribute_typed
 from glotaran.parameter import Parameter
 
 
@@ -12,14 +14,17 @@ class IrfMeasured:
     """A measured IRF. The data must be supplied by the dataset."""
 
 
-@model_attribute(properties={
-    'center': List[Parameter],
-    'width': List[Parameter],
-    'scale': {'type': List[Parameter], 'allow_none': True},
-    'normalize': {'type': bool, 'default': False},
-    'backsweep': {'type': bool, 'default': False},
-    'backsweep_period': {'type': Parameter, 'allow_none': True},
-}, has_type=True)
+@model_attribute(
+    properties={
+        "center": List[Parameter],
+        "width": List[Parameter],
+        "scale": {"type": List[Parameter], "allow_none": True},
+        "normalize": {"type": bool, "default": False},
+        "backsweep": {"type": bool, "default": False},
+        "backsweep_period": {"type": Parameter, "allow_none": True},
+    },
+    has_type=True,
+)
 class IrfMultiGaussian:
     """
     Represents a gaussian IRF.
@@ -47,6 +52,7 @@ class IrfMultiGaussian:
         width as parameter indices. None for no dispersion.
 
     """
+
     def parameter(self, index):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
@@ -59,8 +65,10 @@ class IrfMultiGaussian:
         len_widths = len(widths)
         if not len_centers == len_widths:
             if not min(len_centers, len_widths) == 1:
-                raise Exception(f'len(centers) ({len_centers}) not equal '
-                                f'len(widths) ({len_widths}) none of is 1.')
+                raise ValueError(
+                    f"len(centers) ({len_centers}) not equal "
+                    f"len(widths) ({len_widths}) none of is 1."
+                )
             if len_centers == 1:
                 centers = [centers[0] for _ in range(len_widths)]
                 len_centers = len_widths
@@ -80,25 +88,30 @@ class IrfMultiGaussian:
 
     def calculate(self, index, axis):
         center, width, scale, _, _ = self.parameter(index)
-        irf = scale[0] * np.exp(-1 * (axis - center[0])**2 / (2 * width[0]**2))
+        irf = scale[0] * np.exp(-1 * (axis - center[0]) ** 2 / (2 * width[0] ** 2))
         if len(center) > 1:
             for i in range(1, len(center)):
-                irf += scale[i] * np.exp(-1 * (axis - center[i])**2 / (2 * width[i]**2))
+                irf += scale[i] * np.exp(-1 * (axis - center[i]) ** 2 / (2 * width[i] ** 2))
         return irf
 
 
-@model_attribute(properties={
-    'center': Parameter,
-    'width': Parameter,
-}, has_type=True)
+@model_attribute(
+    properties={
+        "center": Parameter,
+        "width": Parameter,
+    },
+    has_type=True,
+)
 class IrfGaussian(IrfMultiGaussian):
     pass
 
 
-@model_attribute_typed(types={
-    'gaussian': IrfGaussian,
-    'multi-gaussian': IrfMultiGaussian,
-    'measured': IrfMeasured,
-})
-class Irf(object):
+@model_attribute_typed(
+    types={
+        "gaussian": IrfGaussian,
+        "multi-gaussian": IrfMultiGaussian,
+        "measured": IrfMeasured,
+    }
+)
+class Irf:
     """Represents an IRF."""
