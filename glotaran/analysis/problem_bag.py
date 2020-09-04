@@ -78,15 +78,17 @@ def create_grouped_bag(scheme):
                 )
 
             # Add non-overlaping regions
-            beginOverlap = i2[0] if len(i2) != 0 else 0
-            endOverlap = i2[-1] + 1 if len(i2) != 0 else 0
-            for i in itertools.chain(range(0, beginOverlap), range(endOverlap, len(global_axis))):
+            begin_overlap = i2[0] if len(i2) != 0 else 0
+            end_overlap = i2[-1] + 1 if len(i2) != 0 else 0
+            for i in itertools.chain(
+                range(0, begin_overlap), range(end_overlap, len(global_axis))
+            ):
                 problem = GroupedProblem(
                     data.isel({scheme.model.global_dimension: i}).values,
                     weight.isel({scheme.model.global_dimension: i}).values,
                     [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
                 )
-                if i < endOverlap:
+                if i < end_overlap:
                     datasets.appendleft([label])
                     full_axis.appendleft(global_axis[i])
                     bag.appendleft(problem)
