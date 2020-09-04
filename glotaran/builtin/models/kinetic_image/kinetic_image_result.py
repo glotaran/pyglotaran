@@ -62,6 +62,7 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
     all_das = []
     all_a_matrix = []
     all_k_matrix = []
+    all_k_matrix_reduced = []
     all_das_labels = []
     for megacomplex in dataset_descriptor.megacomplex:
 
@@ -73,6 +74,7 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
         compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
 
         matrix = k_matrix.full(compartments)
+        matrix_reduced = k_matrix.reduced(compartments)
         a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
         rates = k_matrix.rates(dataset_descriptor.initial_concentration)
         lifetimes = 1/rates
@@ -97,19 +99,24 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
         all_k_matrix.append(
             xr.DataArray(matrix, coords=[('to_species', compartments),
                                          ('from_species', compartments)]))
+        all_k_matrix_reduced.append(
+            xr.DataArray(matrix_reduced, coords=[('to_species', compartments),
+                                                 ('from_species', compartments)]))
 
     if all_das:
         if len(all_das) == 1:
             dataset[f'decay_associated_{name}'] = all_das[0]
             dataset['a_matrix'] = all_a_matrix[0]
             dataset['k_matrix'] = all_k_matrix[0]
+            dataset['k_matrix_reduced'] = all_k_matrix_reduced[0]
         else:
             for i, das_label in enumerate(all_das_labels):
                 dataset[f'decay_associated_{name}_{das_label}'] = \
-                        all_das[i].rename(component=f"component_{das_label}")
+                    all_das[i].rename(component=f"component_{das_label}")
                 dataset[f'a_matrix_{das_label}'] = all_a_matrix[i] \
                     .rename(component=f"component_{das_label}")
                 dataset[f'k_matrix_{das_label}'] = all_k_matrix[i]
+                dataset[f'k_matrix_reduced_{das_label}'] = all_k_matrix_reduced[i]
 
 
 def retrieve_irf(model, dataset, dataset_descriptor, name):
