@@ -18,7 +18,7 @@ def create_ungrouped_bag(scheme):
     for label in scheme.model.dataset:
         dataset = scheme.data[label]
         data = dataset.data
-        weight = dataset.weight if "weight" in data else None
+        weight = dataset.weight if "weight" in dataset else None
         if weight is not None:
             data = data * weight
         bag[label] = ProblemDescriptor(

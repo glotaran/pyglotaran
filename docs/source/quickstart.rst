@@ -214,7 +214,6 @@ The same way you should inspect your parameters.
 Now we have everything together to optimize our parameters.
 
 .. ipython:: python
-   :okwarning:
 
    result = model.optimize(parameter, {'dataset1': dataset})
    print(result)

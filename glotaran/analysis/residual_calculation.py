@@ -41,6 +41,10 @@ def create_index_independend_ungrouped_residual(
 def create_index_dependend_ungrouped_residual(
     scheme, parameter, problem_bag, matrix_jobs, residual_function
 ):
+    def apply_weight(matrix, weight):
+        for i in range(matrix.shape[1]):
+            matrix[:, i] *= weight
+        return matrix
 
     global_dimension = scheme.model.global_dimension
     reduced_clp_labels = {}
@@ -59,8 +63,7 @@ def create_index_dependend_ungrouped_residual(
             matrix = matrices[i][1]
 
             if weight is not None:
-                for i in range(matrix.shape[1]):
-                    matrix[:, i] *= weight.isel({global_dimension: i})
+                dask.delayed(apply_weight)(matrix, weight.isel({global_dimension: i}))
 
             clp, residual = dask.delayed(residual_function, nout=2)(
                 matrix, data.isel({global_dimension: i}).values
