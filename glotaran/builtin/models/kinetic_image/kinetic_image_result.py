@@ -116,10 +116,11 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
 
         all_k_matrix_reduced.append(
             xr.DataArray(
-              matrix_reduced, coords=[("to_species", compartments), ("from_species", compartments)]
+                matrix_reduced,
+                coords=[("to_species", compartments), ("from_species", compartments)],
             )
         )
-        
+
     if all_das:
         if len(all_das) == 1:
             dataset[f"decay_associated_{name}"] = all_das[0]
@@ -137,7 +138,6 @@ def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
                 )
                 dataset[f"k_matrix_{das_label}"] = all_k_matrix[i]
                 dataset[f"k_matrix_reduced_{das_label}"] = all_k_matrix_reduced[i]
-
 
 
 def retrieve_irf(model, dataset, dataset_descriptor, name):
