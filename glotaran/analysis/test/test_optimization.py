@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import pytest
+import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
@@ -187,10 +188,11 @@ class MultichannelMulticomponentDecay:
 
 @pytest.mark.parametrize("index_dependend", [True, False])
 @pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
     "suite", [OneCompartmentDecay, TwoCompartmentDecay, MultichannelMulticomponentDecay]
 )
-def test_fitting(suite, index_dependend, grouped):
+def test_fitting(suite, index_dependend, grouped, weight):
     model = suite.model
 
     def gr():
@@ -225,6 +227,9 @@ def test_fitting(suite, index_dependend, grouped):
 
     dataset = simulate(sim_model, "dataset1", wanted, {"e": est_axis, "c": cal_axis})
     print(dataset)
+
+    if weight:
+        dataset["weight"] = xr.DataArray(np.ones_like(dataset.data) * 0.5, coords=dataset.coords)
 
     assert dataset.data.shape == (cal_axis.size, est_axis.size)
 

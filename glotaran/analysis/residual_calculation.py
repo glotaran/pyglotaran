@@ -51,12 +51,19 @@ def create_index_dependend_ungrouped_residual(
         data = problem_bag[label].data
         size = problem_bag[label].global_axis.size
         matrices = matrix_jobs[label]
+        weight = problem_bag[label].weight
         reduced_clp_labels[label] = []
         reduced_clps[label] = []
         residuals[label] = []
         for i in range(size):
+            matrix = matrices[i][1]
+
+            if weight is not None:
+                for i in range(matrix.shape[1]):
+                    matrix[:, i] *= weight.isel({global_dimension: i})
+
             clp, residual = dask.delayed(residual_function, nout=2)(
-                matrices[i][1], data.isel({global_dimension: i}).values
+                matrix, data.isel({global_dimension: i}).values
             )
 
             clp_label = matrices[i][0]
@@ -80,7 +87,7 @@ def create_index_independend_grouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
 
-    matrix_labels = problem_bag.pluck(1).map(
+    matrix_labels = problem_bag.pluck(2).map(
         lambda group: "".join(problem.dataset for problem in group)
     )
 
@@ -116,8 +123,11 @@ def create_index_dependend_grouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
     def penalty_function(problem, labels_and_matrices):
+        matrix = labels_and_matrices.matrix
+        for i in range(matrix.shape[1]):
+            matrix[:, i] *= problem.weight
 
-        clp, residual = residual_function(labels_and_matrices.matrix, problem.data)
+        clp, residual = residual_function(matrix, problem.data)
 
         penalty = residual
         if callable(scheme.model.has_additional_penalty_function):

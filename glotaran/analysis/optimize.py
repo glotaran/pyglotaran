@@ -326,7 +326,7 @@ def _create_result(scheme, parameter):
 
     if "weight" in dataset:
         dataset["weighted_residual"] = dataset.residual
-        dataset.residual = np.multiply(dataset.weighted_residual, dataset.weight ** -1)
+        dataset["residual"] = dataset.weighted_residual / dataset.weight
 
     size = dataset.residual.shape[0] * dataset.residual.shape[1]
     dataset.attrs["root_mean_square_error"] = np.sqrt((dataset.residual ** 2).sum() / size).values

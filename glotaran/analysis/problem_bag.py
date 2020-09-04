@@ -2,24 +2,31 @@ import collections
 import itertools
 
 import numpy as np
+import xarray as xr
 from dask import array as da
 from dask import bag as db
 
 ProblemDescriptor = collections.namedtuple(
-    "ProblemDescriptor", "dataset data matrix_axis global_axis"
+    "ProblemDescriptor", "dataset data matrix_axis global_axis weight"
 )
-GroupedProblem = collections.namedtuple("GroupedProblem", "data descriptor")
+GroupedProblem = collections.namedtuple("GroupedProblem", "data weight descriptor")
 GroupedProblemDescriptor = collections.namedtuple("ProblemDescriptor", "dataset index axis")
 
 
 def create_ungrouped_bag(scheme):
     bag = {}
     for label in scheme.model.dataset:
+        dataset = scheme.data[label]
+        data = dataset.data
+        weight = dataset.weight if "weight" in data else None
+        if weight is not None:
+            data = data * weight
         bag[label] = ProblemDescriptor(
             scheme.model.dataset[label],
-            scheme.data[label].data,
-            scheme.data[label].coords[scheme.model.matrix_dimension].values,
-            scheme.data[label].coords[scheme.model.global_dimension].values,
+            data,
+            dataset.coords[scheme.model.matrix_dimension].values,
+            dataset.coords[scheme.model.global_dimension].values,
+            weight,
         )
     return bag
 
@@ -30,12 +37,19 @@ def create_grouped_bag(scheme):
     full_axis = None
     for label in scheme.model.dataset:
         dataset = scheme.data[label]
+        weight = (
+            dataset.weight
+            if "weight" in dataset
+            else xr.DataArray(np.ones_like(dataset.data), coords=dataset.data.coords)
+        )
+        data = dataset.data * weight
         global_axis = dataset.coords[scheme.model.global_dimension].values
         model_axis = dataset.coords[scheme.model.matrix_dimension].values
         if bag is None:
             bag = collections.deque(
                 GroupedProblem(
-                    dataset.data.isel({scheme.model.global_dimension: i}).values,
+                    data.isel({scheme.model.global_dimension: i}).values,
+                    weight.isel({scheme.model.global_dimension: i}).values,
                     [GroupedProblemDescriptor(label, value, model_axis)],
                 )
                 for i, value in enumerate(global_axis)
@@ -51,10 +65,16 @@ def create_grouped_bag(scheme):
                     da.concatenate(
                         [
                             bag[j][0],
-                            dataset.data.isel({scheme.model.global_dimension: i2[i]}).values,
+                            data.isel({scheme.model.global_dimension: i2[i]}).values,
                         ]
                     ),
-                    bag[j][1] + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
+                    da.concatenate(
+                        [
+                            bag[j][1],
+                            weight.isel({scheme.model.global_dimension: i2[i]}).values,
+                        ]
+                    ),
+                    bag[j][2] + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
                 )
 
             end = i2[0] if len(i2) != 0 else 0
@@ -63,7 +83,8 @@ def create_grouped_bag(scheme):
                 full_axis.appendleft(global_axis[i])
                 bag.appendleft(
                     GroupedProblem(
-                        dataset.data.isel({scheme.model.global_dimension: i}.values).values,
+                        data.isel({scheme.model.global_dimension: i}).values,
+                        weight.isel({scheme.model.global_dimension: i}).values,
                         [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
                     )
                 )
@@ -74,7 +95,8 @@ def create_grouped_bag(scheme):
                 full_axis.append(global_axis[i])
                 bag.append(
                     GroupedProblem(
-                        dataset.data.isel({scheme.model.global_dimension: i}).values,
+                        data.isel({scheme.model.global_dimension: i}).values,
+                        weight.isel({scheme.model.global_dimension: i}).values,
                         [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
                     )
                 )
