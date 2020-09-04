@@ -115,16 +115,16 @@ def test_multi_dataset_overlap():
     print(model.validate(parameter))
     assert model.valid(parameter)
 
-    axis_e_1 = [0, 1, 2, 3]
+    axis_e_1 = [1, 2, 3, 5]
     axis_c_1 = [5, 7]
-    axis_e_2 = [1.4, 2.4, 3.4, 9]
+    axis_e_2 = [0, 1.4, 2.4, 3.4, 9]
     axis_c_2 = [5, 7, 9, 12]
     data = {
         "dataset1": xr.DataArray(
             np.ones((4, 2)), coords=[("e", axis_e_1), ("c", axis_c_1)]
         ).to_dataset(name="data"),
         "dataset2": xr.DataArray(
-            np.ones((4, 4)), coords=[("e", axis_e_2), ("c", axis_c_2)]
+            np.ones((5, 4)), coords=[("e", axis_e_2), ("c", axis_c_2)]
         ).to_dataset(name="data"),
     }
 
@@ -134,19 +134,21 @@ def test_multi_dataset_overlap():
     assert len(datasets) == 1
     assert "dataset1dataset2" in datasets
     assert datasets["dataset1dataset2"] == ["dataset1", "dataset2"]
-    assert len(bag) == 5
+    assert len(bag) == 6
 
-    assert all([p.data.size == 2 for p in bag[:1]])
-    assert all([p.descriptor[0].dataset == "dataset1" for p in bag[:4]])
-    assert all([all(p.descriptor[0].axis == axis_c_1) for p in bag[:4]])
-    assert [p.descriptor[0].index for p in bag[:4]] == axis_e_1
+    assert all([p.data.size == 4 for p in bag[:1]])
+    assert all([p.descriptor[0].dataset == "dataset1" for p in bag[1:5]])
+    assert all([all(p.descriptor[0].axis == axis_c_1) for p in bag[1:5]])
+    assert [p.descriptor[0].index for p in bag[1:5]] == axis_e_1
 
     assert all([p.data.size == 6 for p in bag[1:4]])
     assert all([p.descriptor[1].dataset == "dataset2" for p in bag[1:4]])
     assert all([all(p.descriptor[1].axis == axis_c_2) for p in bag[1:4]])
-    assert [p.descriptor[1].index for p in bag[1:4]] == axis_e_2[:3]
+    assert [p.descriptor[1].index for p in bag[1:4]] == axis_e_2[1:4]
 
-    assert all([p.data.size == 4 for p in bag[4:]])
-    assert all([p.descriptor[0].dataset == "dataset2" for p in bag[4:]])
-    assert all([all(p.descriptor[0].axis == axis_c_2) for p in bag[4:]])
-    assert [p.descriptor[0].index for p in bag[4:]] == axis_e_2[3:]
+    assert all([p.data.size == 4 for p in bag[5:]])
+    assert bag[4].descriptor[0].dataset == "dataset1"
+    assert bag[5].descriptor[0].dataset == "dataset2"
+    assert np.array_equal(bag[4].descriptor[0].axis == axis_c_1)
+    assert bag[5].descriptor[0].axis == axis_c_2
+    assert [p.descriptor[0].index for p in bag[1:4]] == axis_e_1
