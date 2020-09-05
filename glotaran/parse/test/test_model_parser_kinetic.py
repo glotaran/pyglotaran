@@ -15,6 +15,7 @@ from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import Kine
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import ZeroConstraint
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAreaPenalty
 from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
+from glotaran.model import Weight
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.parser import load_yml_file
 
@@ -142,6 +143,17 @@ def test_k_matrices(model):
     assert np.array_equal(
         reduced, np.asarray([[1, 3, 5, 7], [2, 0, 0, 0], [4, 0, 0, 0], [6, 0, 0, 0]])
     )
+
+
+def test_weight(model):
+
+    assert "weight1" in model.weight
+
+    weight = model.weight["weight1"]
+    assert isinstance(weight, Weight)
+    assert weight.global_interval == (100, 102)
+    assert weight.model_interval == (301, 502)
+    assert weight.value == 42
 
 
 def test_shapes(model):
