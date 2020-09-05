@@ -50,7 +50,7 @@ def model():
             {
                 "datasets": ["d1", "d2"],
                 "global_interval": (1, 4),
-                "model_interval": (2, 3),
+                "matrix_interval": (2, 3),
                 "value": 5.4,
             }
         ],
