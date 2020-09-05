@@ -46,6 +46,13 @@ class MockModel(Model):
 def model():
     d = {
         "megacomplex": {"m1": [], "m2": []},
+        "weight": {
+            "weight1": {
+                "global_interval": (1, 4),
+                "model_interval": (2, 3),
+                "value": 5.4,
+            }
+        },
         "test": {
             "t1": {
                 "param": "foo",
@@ -102,7 +109,7 @@ def test_model_misc(model):
     assert model.index_depended_matrix
 
 
-@pytest.mark.parametrize("attr", ["dataset", "megacomplex", "test"])
+@pytest.mark.parametrize("attr", ["dataset", "megacomplex", "weight", "test"])
 def test_model_attr(model, attr):
     assert hasattr(model, attr)
     assert hasattr(model, f"get_{attr}")
@@ -151,6 +158,12 @@ def test_items(model):
     assert "dataset2" in model.dataset
     assert model.get_dataset("dataset2").megacomplex == ["m2"]
     assert model.get_dataset("dataset2").scale.full_label == "scale_2"
+
+    assert "weight1" in model.weight
+    w = model.get_weight("weight1")
+    assert w.global_interval == (1, 4)
+    assert w.model_interval == (2, 3)
+    assert w.value == 5.4
 
 
 def test_fill(model, parameter):

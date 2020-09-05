@@ -79,3 +79,8 @@ spectral_relations:
     target: s2
     parameter: 8
     interval: [!tuple '(1,100)', !tuple '(2,200)']
+
+weights:
+  weight1:
+    global_interval: (100, 102)
+    model_interval: (301, 502)

@@ -12,6 +12,7 @@ from glotaran.parse.register import register_model
 from .dataset_descriptor import DatasetDescriptor
 from .model import Model
 from .util import wrap_func_as_method
+from .weight import Weight
 
 MatrixFunction = typing.Callable[
     [typing.Type[DatasetDescriptor], xr.Dataset], typing.Tuple[typing.List[str], np.ndarray]
@@ -178,15 +179,23 @@ def model(
                 getattr(cls, "_glotaran_model_attributes").copy(),
             )
 
-        attributes["megacomplex"] = megacomplex_type
+        # We add the standard attributes here.
         attributes["dataset"] = dataset_type
+        attributes["megacomplex"] = megacomplex_type
+        attributes["weight"] = Weight
 
         # Set annotations and methods for attributes
         for attr_name, attr_type in attributes.items():
+
+            # store for internal lookups
             getattr(cls, "_glotaran_model_attributes")[attr_name] = None
+
+            # create and attach the property to class
             attr_prop = _create_property_for_attribute(cls, attr_name, attr_type)
             setattr(cls, attr_name, attr_prop)
 
+            # properties with labels are implemented as dicts, whereas properties
+            # without as arrays. Thus the need different setters.
             if getattr(attr_type, "_glotaran_has_label"):
                 get_item = _create_get_func(cls, attr_name, attr_type)
                 setattr(cls, get_item.__name__, get_item)
