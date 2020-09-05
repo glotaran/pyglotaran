@@ -147,10 +147,9 @@ def test_k_matrices(model):
 
 def test_weight(model):
 
-    assert "weight1" in model.weight
-
-    weight = model.weight["weight1"]
+    weight = model.weights[0]
     assert isinstance(weight, Weight)
+    assert weight.datasets == ["d1", "d2"]
     assert weight.global_interval == (100, 102)
     assert weight.model_interval == (301, 502)
     assert weight.value == 42

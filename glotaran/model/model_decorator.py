@@ -182,7 +182,7 @@ def model(
         # We add the standard attributes here.
         attributes["dataset"] = dataset_type
         attributes["megacomplex"] = megacomplex_type
-        attributes["weight"] = Weight
+        attributes["weights"] = Weight
 
         # Set annotations and methods for attributes
         for attr_name, attr_type in attributes.items():

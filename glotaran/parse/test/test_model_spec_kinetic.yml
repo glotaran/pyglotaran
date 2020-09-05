@@ -80,8 +80,8 @@ spectral_relations:
     parameter: 8
     interval: [!tuple '(1,100)', !tuple '(2,200)']
 
-weight:
-  weight1:
+weights:
+  - datasets: [d1, d2]
     global_interval: (100, 102)
     model_interval: (301, 502)
     value: 42

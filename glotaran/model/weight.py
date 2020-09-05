@@ -8,6 +8,7 @@ from .model_attribute import model_attribute
 
 @model_attribute(
     properties={
+        "datasets": {type: List[str]},
         "global_interval": {
             "type": List[Tuple[float, float]],
             "default": None,
@@ -15,7 +16,8 @@ from .model_attribute import model_attribute
         },
         "model_interval": {"type": List[Tuple[float, float]], "default": None, "allow_none": True},
         "value": {"type": float},
-    }
+    },
+    no_label=True,
 )
 class Weight:
     """The `Weight` class describes a value by which a dataset will scaled.
