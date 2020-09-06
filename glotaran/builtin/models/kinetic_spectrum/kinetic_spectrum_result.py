@@ -91,7 +91,7 @@ def finalize_kinetic_spectrum_result(
                 range(1, irf.coherent_artifact_order + 1)
             )
             dataset["coherent_artifact_concentration"] = (
-                (model.matrix_dimension, "coherent_artifact_order"),
+                (model.model_dimension, "coherent_artifact_order"),
                 dataset.matrix.sel(clp_label=irf.clp_labels()).values,
             )
             dataset["coherent_artifact_associated_spectra"] = (

@@ -12,6 +12,7 @@ from glotaran.parse.register import register_model
 from .dataset_descriptor import DatasetDescriptor
 from .model import Model
 from .util import wrap_func_as_method
+from .weight import Weight
 
 MatrixFunction = typing.Callable[
     [typing.Type[DatasetDescriptor], xr.Dataset], typing.Tuple[typing.List[str], np.ndarray]
@@ -51,7 +52,7 @@ def model(
     megacomplex_type: typing.Any = None,
     matrix: typing.Union[MatrixFunction, IndexDependedMatrixFunction] = None,
     global_matrix: GlobalMatrixFunction = None,
-    matrix_dimension: str = None,
+    model_dimension: str = None,
     global_dimension: str = None,
     has_matrix_constraints_function: typing.Callable[[typing.Type[Model]], bool] = None,
     constrain_matrix_function: ConstrainMatrixFunction = None,
@@ -82,7 +83,7 @@ def model(
         A function to calculate the matrix for the model.
     global_matrix :
         A function to calculate the global matrix for the model.
-    matrix_dimension :
+    model_dimension :
         The name of model matrix row dimension.
     global_dimension :
         The name of model global matrix row dimension.
@@ -159,7 +160,7 @@ def model(
         mat = wrap_func_as_method(cls, name="matrix")(matrix)
         mat = staticmethod(mat)
         setattr(cls, "matrix", mat)
-        setattr(cls, "matrix_dimension", matrix_dimension)
+        setattr(cls, "model_dimension", model_dimension)
 
         if global_matrix:
             g_mat = wrap_func_as_method(cls, name="global_matrix")(global_matrix)
@@ -178,15 +179,23 @@ def model(
                 getattr(cls, "_glotaran_model_attributes").copy(),
             )
 
-        attributes["megacomplex"] = megacomplex_type
+        # We add the standard attributes here.
         attributes["dataset"] = dataset_type
+        attributes["megacomplex"] = megacomplex_type
+        attributes["weights"] = Weight
 
         # Set annotations and methods for attributes
         for attr_name, attr_type in attributes.items():
+
+            # store for internal lookups
             getattr(cls, "_glotaran_model_attributes")[attr_name] = None
+
+            # create and attach the property to class
             attr_prop = _create_property_for_attribute(cls, attr_name, attr_type)
             setattr(cls, attr_name, attr_prop)
 
+            # properties with labels are implemented as dicts, whereas properties
+            # without as arrays. Thus the need different setters.
             if getattr(attr_type, "_glotaran_has_label"):
                 get_item = _create_get_func(cls, attr_name, attr_type)
                 setattr(cls, get_item.__name__, get_item)

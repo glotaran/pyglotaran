@@ -1,6 +1,7 @@
 import functools
 import pathlib
 import typing
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -8,6 +9,8 @@ import yaml
 
 import glotaran
 from glotaran.parameter import ParameterGroup
+
+from .util import create_svd
 
 
 def _not_none(f):
@@ -188,10 +191,10 @@ class Scheme:
     def prepare_data(self, copy=True):
         data = {} if copy else None
         for label, dataset in self.data.items():
-            if self.model.matrix_dimension not in dataset.dims:
+            if self.model.model_dimension not in dataset.dims:
                 raise ValueError(
                     "Missing coordinates for dimension "
-                    f"'{self.model.matrix_dimension}' in data for dataset "
+                    f"'{self.model.model_dimension}' in data for dataset "
                     f"'{label}'"
                 )
             if self.model.global_dimension not in dataset.dims:
@@ -203,20 +206,12 @@ class Scheme:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            if "weight" in dataset and "weighted_data" not in dataset:
-                dataset["weighted_data"] = np.multiply(dataset.data, dataset.weight)
+            dataset = self._transpose_dataset(dataset)
+
+            self._add_weight(label, dataset)
 
             if "data_singular_values" not in dataset:
-                l, s, r = np.linalg.svd(dataset.data)
-                dataset["data_left_singular_vectors"] = (
-                    (self.model.matrix_dimension, "left_singular_value_index"),
-                    l,
-                )
-                dataset["data_singular_values"] = (("singular_value_index"), s)
-                dataset["data_right_singular_vectors"] = (
-                    ("right_singular_value_index", self.model.global_dimension),
-                    r,
-                )
+                create_svd("data", dataset, self.model)
 
             if "data_singular_values" in dataset and (
                 dataset.coords["right_singular_value_index"].size
@@ -234,16 +229,10 @@ class Scheme:
                 dataset = dataset.rename(
                     right_singular_value_vectorsTMP="left_singular_value_vectors"
                 )
-            new_dims = [self.model.matrix_dimension, self.model.global_dimension]
-            new_dims += [
-                dim
-                for dim in dataset.dims
-                if dim != self.model.matrix_dimension and dim != self.model.global_dimension
-            ]
             if copy:
-                data[label] = dataset.transpose(*new_dims)
+                data[label] = dataset
             else:
-                self.data[label] = dataset.transpose(*new_dims)
+                self.data[label] = dataset
 
         return data
 
@@ -258,3 +247,52 @@ class Scheme:
         s += f"* *group_tolerance*: {self.group_tolerance}\n"
 
         return s
+
+    def _transpose_dataset(self, dataset):
+        new_dims = [self.model.model_dimension, self.model.global_dimension]
+        new_dims += [
+            dim
+            for dim in dataset.dims
+            if dim != self.model.model_dimension and dim != self.model.global_dimension
+        ]
+        return dataset.transpose(*new_dims)
+
+    def _add_weight(self, label, dataset):
+
+        # if the user supplies a weight we ignore modeled weights
+        if "weight" in dataset:
+            if any([label in weight.datasets for weight in self.model.weights]):
+                warnings.warn(
+                    f"Ignoring model weight for dataset '{label}'"
+                    " because weight is already supplied by dataset."
+                )
+            return
+
+        global_axis = dataset.coords[self.model.global_dimension]
+        model_axis = dataset.coords[self.model.model_dimension]
+
+        for weight in self.model.weights:
+            if label in weight.datasets:
+                if "weight" not in dataset:
+                    dataset["weight"] = xr.DataArray(
+                        np.ones_like(dataset.data), coords=dataset.data.coords
+                    )
+
+                idx = {}
+                if weight.global_interval is not None:
+                    idx[self.model.global_dimension] = _get_min_max_from_interval(
+                        weight.global_interval, global_axis
+                    )
+                if weight.model_interval is not None:
+                    idx[self.model.model_dimension] = _get_min_max_from_interval(
+                        weight.model_interval, model_axis
+                    )
+                dataset.weight[idx] *= weight.value
+
+
+def _get_min_max_from_interval(interval, axis):
+    minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    maximum = (
+        np.abs(axis.values - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+    )
+    return slice(minimum, maximum)

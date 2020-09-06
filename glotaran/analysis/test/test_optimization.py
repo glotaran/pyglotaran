@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import pytest
+import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
@@ -69,7 +70,7 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     "one_channel",
     dataset_type=DecayDatasetDescriptor,
     matrix=calculate_kinetic,
-    matrix_dimension="c",
+    model_dimension="c",
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
     megacomplex_type=MockMegacomplex,
@@ -83,7 +84,7 @@ class DecayModel(Model):
     "multi_channel",
     dataset_type=GaussianShapeDecayDatasetDescriptor,
     matrix=calculate_kinetic,
-    matrix_dimension="c",
+    model_dimension="c",
     global_matrix=calculate_spectral_gauss,
     global_dimension="e",
     megacomplex_type=MockMegacomplex,
@@ -188,10 +189,11 @@ class MultichannelMulticomponentDecay:
 
 @pytest.mark.parametrize("index_dependent", [True, False])
 @pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
     "suite", [OneCompartmentDecay, TwoCompartmentDecay, MultichannelMulticomponentDecay]
 )
-def test_fitting(suite, index_dependent, grouped):
+def test_fitting(suite, index_dependent, grouped, weight):
     model = suite.model
 
     def gr():
@@ -229,6 +231,9 @@ def test_fitting(suite, index_dependent, grouped):
     dataset = simulate(sim_model, "dataset1", wanted, {"e": est_axis, "c": cal_axis}, extra=extra)
     print(dataset)
 
+    if weight:
+        dataset["weight"] = xr.DataArray(np.ones_like(dataset.data) * 0.5, coords=dataset.coords)
+
     assert dataset.data.shape == (cal_axis.size, est_axis.size)
 
     data = {"dataset1": dataset}
@@ -242,18 +247,29 @@ def test_fitting(suite, index_dependent, grouped):
         assert np.allclose(param.value, wanted.get(param.full_label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
+    print(resultdata)
+    assert "residual" in resultdata
+    assert "residual_left_singular_vectors" in resultdata
+    assert "residual_right_singular_vectors" in resultdata
+    assert "residual_singular_values" in resultdata
     assert np.array_equal(dataset.c, resultdata.c)
     assert np.array_equal(dataset.e, resultdata.e)
     assert dataset.data.shape == resultdata.data.shape
     print(dataset.data[0, 0], resultdata.data[0, 0])
     assert np.allclose(dataset.data, resultdata.data)
 
+    print(resultdata)
     assert "data_singular_values" in resultdata
     assert "data_left_singular_vectors" in resultdata
     assert "data_right_singular_vectors" in resultdata
 
-    print(resultdata)
     assert "residual" in resultdata
     assert "residual_singular_values" in resultdata
     assert "residual_left_singular_vectors" in resultdata
     assert "residual_right_singular_vectors" in resultdata
+    if weight:
+        assert "weight" in resultdata
+        assert "weighted_residual" in resultdata
+        assert "weighted_residual_left_singular_vectors" in resultdata
+        assert "weighted_residual_right_singular_vectors" in resultdata
+        assert "weighted_residual_singular_values" in resultdata

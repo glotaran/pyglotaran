@@ -27,7 +27,7 @@ from .oscillation import Oscillation
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=DOASMegacomplex,
     matrix=calculate_doas_matrix,
-    matrix_dimension="time",
+    model_dimension="time",
     global_matrix=calculate_doas_spectral_matrix,
     global_dimension="spectral",
     finalize_data_function=finalize_doas_data,
