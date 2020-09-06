@@ -15,6 +15,7 @@ def create_index_independend_ungrouped_residual(
     for label in problem_bag:
         data = problem_bag[label].data
         size = problem_bag[label].global_axis.size
+        weight = problem_bag[label].weight
         reduced_clp_labels[label] = constraint_labels_and_matrices[label].clp_label
         matrix = constraint_labels_and_matrices[label].matrix
 
@@ -22,7 +23,13 @@ def create_index_independend_ungrouped_residual(
         residuals[label] = []
         for i in range(size):
             data_stripe = data.isel({global_dimension: i}).values
-            clp, residual = dask.delayed(residual_function, nout=2)(matrix, data_stripe)
+            matrix_stripe = matrix
+
+            if weight is not None:
+                for j in range(matrix.shape[1]):
+                    matrix[:, j] *= weight.isel({global_dimension: i}).values
+
+            clp, residual = dask.delayed(residual_function, nout=2)(matrix_stripe, data_stripe)
             reduced_clps[label].append(clp)
             residuals[label].append(residual)
             penalties.append(residual)
@@ -63,7 +70,7 @@ def create_index_dependend_ungrouped_residual(
             matrix = matrices[i][1]
 
             if weight is not None:
-                dask.delayed(apply_weight)(matrix, weight.isel({global_dimension: i}))
+                matrix = dask.delayed(apply_weight)(matrix, weight.isel({global_dimension: i}))
 
             clp, residual = dask.delayed(residual_function, nout=2)(
                 matrix, data.isel({global_dimension: i}).values
@@ -98,7 +105,10 @@ def create_index_independend_grouped_residual(
 
     def penalty_function(matrix_label, problem, labels_and_matrices):
 
-        clp, residual = residual_function(labels_and_matrices[matrix_label].matrix, problem.data)
+        matrix = labels_and_matrices[matrix_label].matrix
+        for i in range(matrix.shape[1]):
+            matrix[:, i] *= problem.weight
+        clp, residual = residual_function(matrix, problem.data)
 
         penalty = residual
         if callable(scheme.model.has_additional_penalty_function):
