@@ -7,7 +7,7 @@ LabelAndMatrix = collections.namedtuple("LabelAndMatrix", "clp_label matrix")
 LabelAndMatrixAndData = collections.namedtuple("LabelAndMatrixAndData", "label_matrix data")
 
 
-def calculate_index_independend_ungrouped_matrices(scheme, parameter):
+def calculate_index_independent_ungrouped_matrices(scheme, parameter):
 
     # for this we don't use dask
 
@@ -42,14 +42,14 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
     return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
+def calculate_index_independent_grouped_matrices(scheme, groups, parameter):
 
     # We just need to create groups from the ungrouped matrices
     (
         clp_labels,
         matrices,
         constraint_labels_and_matrices,
-    ) = calculate_index_independend_ungrouped_matrices(scheme, parameter)
+    ) = calculate_index_independent_ungrouped_matrices(scheme, parameter)
     for label, group in groups.items():
         if label not in matrices:
             constraint_labels_and_matrices[label] = _combine_matrices(
@@ -59,7 +59,7 @@ def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
     return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
+def create_index_dependent_ungrouped_matrix_jobs(scheme, bag, parameter):
 
     model = scheme.model
     clp_labels = {}
@@ -96,7 +96,7 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
     return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
+def create_index_dependent_grouped_matrix_jobs(scheme, bag, parameter):
 
     model = scheme.model
 
