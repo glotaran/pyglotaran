@@ -1,13 +1,15 @@
 import collections
 import itertools
-import dask.array as da
-import dask.bag as db
-import numpy as np
 
-ProblemDescriptor = collections.namedtuple('ProblemDescriptor',
-                                           'dataset data matrix_axis global_axis')
-GroupedProblem = collections.namedtuple('GroupedProblem', 'data descriptor')
-GroupedProblemDescriptor = collections.namedtuple('ProblemDescriptor', 'dataset index axis')
+import numpy as np
+from dask import array as da
+from dask import bag as db
+
+ProblemDescriptor = collections.namedtuple(
+    "ProblemDescriptor", "dataset data matrix_axis global_axis"
+)
+GroupedProblem = collections.namedtuple("GroupedProblem", "data descriptor")
+GroupedProblemDescriptor = collections.namedtuple("ProblemDescriptor", "dataset index axis")
 
 
 def create_ungrouped_bag(scheme):
@@ -32,8 +34,10 @@ def create_grouped_bag(scheme):
         model_axis = dataset.coords[scheme.model.matrix_dimension].values
         if bag is None:
             bag = collections.deque(
-                GroupedProblem(dataset.data.isel({scheme.model.global_dimension: i}).values,
-                               [GroupedProblemDescriptor(label, value, model_axis)])
+                GroupedProblem(
+                    dataset.data.isel({scheme.model.global_dimension: i}).values,
+                    [GroupedProblemDescriptor(label, value, model_axis)],
+                )
                 for i, value in enumerate(global_axis)
             )
             datasets = collections.deque([label] for _, _ in enumerate(global_axis))
@@ -45,27 +49,35 @@ def create_grouped_bag(scheme):
                 datasets[j].append(label)
                 bag[j] = GroupedProblem(
                     da.concatenate(
-                        [bag[j][0], dataset.data.isel({scheme.model.global_dimension: i2[i]}).values]), # noqa e501
-                    bag[j][1] + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)]
+                        [
+                            bag[j][0],
+                            dataset.data.isel({scheme.model.global_dimension: i2[i]}).values,
+                        ]
+                    ),
+                    bag[j][1] + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
                 )
 
             end = i2[0] if len(i2) != 0 else 0
             for i in range(0, end):
                 datasets.appendleft([label])
                 full_axis.appendleft(global_axis[i])
-                bag.appendleft(GroupedProblem(
-                    dataset.data.isel({scheme.model.global_dimension: i}.values).values,
-                    [GroupedProblemDescriptor(label, global_axis[i], model_axis)]
-                ))
+                bag.appendleft(
+                    GroupedProblem(
+                        dataset.data.isel({scheme.model.global_dimension: i}.values).values,
+                        [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
+                    )
+                )
 
             start = i2[-1] + 1 if len(i2) != 0 else 0
             for i in range(start, len(global_axis)):
                 datasets.append([label])
                 full_axis.append(global_axis[i])
-                bag.append(GroupedProblem(
-                    dataset.data.isel({scheme.model.global_dimension: i}).values,
-                    [GroupedProblemDescriptor(label, global_axis[i], model_axis)]
-                ))
+                bag.append(
+                    GroupedProblem(
+                        dataset.data.isel({scheme.model.global_dimension: i}).values,
+                        [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
+                    )
+                )
 
     return db.from_sequence(bag), {"".join(d): d for d in datasets if len(d) > 1}
 

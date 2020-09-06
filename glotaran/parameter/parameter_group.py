@@ -1,30 +1,30 @@
 """The parameter group class"""
 
-from lmfit import Parameters
-from math import log
 import copy
 import csv
-import numpy as np
-import pandas as pd
 import pathlib
 import typing
+from math import log
+
+import numpy as np
+import pandas as pd
 import yaml
+from lmfit import Parameters
 
 from .parameter import Parameter
 
 
 class ParameterNotFoundException(Exception):
     """Raised when a Parameter is not found in the Group."""
+
     def __init__(self, path, label):
-        super(ParameterNotFoundException, self).__init__(
-            f"Cannot find parameter {'.'.join(path)}.{label}")
+        super().__init__(f"Cannot find parameter {'.'.join(path)}.{label}")
 
 
 class ParameterGroup(dict):
-
     def __init__(self, label: str = None):
         """Represents are group of parameters. Can contain other groups, creating a
-        tree-like hirachy.
+        tree-like hierarchy.
 
         Parameters
         ----------
@@ -35,7 +35,7 @@ class ParameterGroup(dict):
         self._label = label
         self._parameters = {}
         self._root = None
-        super(ParameterGroup, self).__init__()
+        super().__init__()
 
     @classmethod
     def from_parameter_dict(cls, parameter: Parameters):
@@ -79,9 +79,9 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def from_dict(cls,
-                  parameter: typing.Dict[str, typing.Union[typing.Dict, typing.List]],
-                  label="p") -> "ParameterGroup":
+    def from_dict(
+        cls, parameter: typing.Dict[str, typing.Union[typing.Dict, typing.List]], label="p"
+    ) -> "ParameterGroup":
         """Creates a :class:`ParameterGroup` from a dictionary.
 
         Parameters
@@ -101,9 +101,9 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def from_list(cls,
-                  parameter: typing.List[typing.Union[float, typing.List]],
-                  label="p") -> "ParameterGroup":
+    def from_list(
+        cls, parameter: typing.List[typing.Union[float, typing.List]], label="p"
+    ) -> "ParameterGroup":
         """Creates a :class:`ParameterGroup` from a list.
 
         Parameters
@@ -135,19 +135,21 @@ class ParameterGroup(dict):
     @classmethod
     def known_formats(cls) -> typing.Dict[str, typing.Callable]:
         return {
-            'csv': cls.from_csv,
-            'yml': cls.from_yaml_file,
-            'yaml': cls.from_yaml_file,
+            "csv": cls.from_csv,
+            "yml": cls.from_yaml_file,
+            "yaml": cls.from_yaml_file,
         }
 
     @classmethod
     def from_file(cls, filepath: str, fmt: str = None):
         if fmt is None:
             path = pathlib.Path(filepath)
-            fmt = path.suffix[1:] if path.suffix != '' else 'yml'
+            fmt = path.suffix[1:] if path.suffix != "" else "yml"
         if fmt not in cls.known_formats():
-            raise Exception(f"Unknown parameter format '{format}'. "
-                            f"Valid Formats are {cls.known_formats().keys()}.")
+            raise Exception(
+                f"Unknown parameter format '{format}'. "
+                f"Valid Formats are {cls.known_formats().keys()}."
+            )
         return cls.known_formats()[fmt](filepath)
 
     @classmethod
@@ -181,7 +183,7 @@ class ParameterGroup(dict):
         return cls
 
     @classmethod
-    def from_csv(cls, filepath: str, delimiter: str = '\t'):
+    def from_csv(cls, filepath: str, delimiter: str = "\t"):
         """Creates a :class:`ParameterGroup` from a CSV file.
 
         Parameters
@@ -195,16 +197,16 @@ class ParameterGroup(dict):
         root = cls()
         df = pd.read_csv(filepath, sep=delimiter)
 
-        for i, label in enumerate(df['label']):
-            label = label.split('.')
+        for i, label in enumerate(df["label"]):
+            label = label.split(".")
             if len(label) == 1:
                 p = Parameter(label=label.pop())
-                p.value = df['value'][i]
-                p.stderr = df['stderr'][i]
-                p.min = df['min'][i]
-                p.max = df['max'][i]
-                p.vary = df['vary'][i]
-                p.non_neg = df['non-negative'][i]
+                p.value = df["value"][i]
+                p.stderr = df["stderr"][i]
+                p.min = df["min"][i]
+                p.max = df["max"][i]
+                p.vary = df["vary"][i]
+                p.non_neg = df["non-negative"][i]
                 root.add_parameter(p)
                 continue
 
@@ -214,12 +216,12 @@ class ParameterGroup(dict):
                 if group in top:
                     if len(label) == 1:
                         p = Parameter(label=label.pop())
-                        p.value = df['value'][i]
-                        p.stderr = df['stderr'][i]
-                        p.min = df['min'][i]
-                        p.max = df['max'][i]
-                        p.vary = df['vary'][i]
-                        p.non_neg = df['non-negative'][i]
+                        p.value = df["value"][i]
+                        p.stderr = df["stderr"][i]
+                        p.min = df["min"][i]
+                        p.max = df["max"][i]
+                        p.vary = df["vary"][i]
+                        p.non_neg = df["non-negative"][i]
                         top[group].add_parameter(p)
                     else:
                         top = top[group]
@@ -228,18 +230,18 @@ class ParameterGroup(dict):
                     top.add_group(group)
                     if len(label) == 1:
                         p = Parameter(label=label.pop())
-                        p.value = df['value'][i]
-                        p.stderr = df['stderr'][i]
-                        p.min = df['min'][i]
-                        p.max = df['max'][i]
-                        p.vary = df['vary'][i]
-                        p.non_neg = df['non-negative'][i]
+                        p.value = df["value"][i]
+                        p.stderr = df["stderr"][i]
+                        p.min = df["min"][i]
+                        p.max = df["max"][i]
+                        p.vary = df["vary"][i]
+                        p.non_neg = df["non-negative"][i]
                         group.add_parameter(p)
                     else:
                         top = group
         return root
 
-    def to_csv(self, filename: str, delimiter: str = '\t'):
+    def to_csv(self, filename: str, delimiter: str = "\t"):
         """Writes a :class:`ParameterGroup` to a CSV file.
 
         Parameters
@@ -250,10 +252,10 @@ class ParameterGroup(dict):
             The delimiter of the CSV file.
         """
 
-        with open(filename, mode='w') as parameter_file:
+        with open(filename, mode="w") as parameter_file:
             parameter_writer = csv.writer(parameter_file, delimiter=delimiter)
             parameter_writer.writerow(
-                ['label', 'value', 'min', 'max', 'vary', 'non-negative', 'stderr']
+                ["label", "value", "min", "max", "vary", "non-negative", "stderr"]
             )
 
             for (label, p) in self.all():
@@ -272,16 +274,15 @@ class ParameterGroup(dict):
         if not isinstance(parameter, list):
             parameter = [parameter]
         if any(not isinstance(p, Parameter) for p in parameter):
-            raise TypeError("Parameter must be  instance of"
-                            " glotaran.model.Parameter")
+            raise TypeError("Parameter must be  instance of glotaran.model.Parameter")
         for p in parameter:
             p.index = len(self._parameters) + 1
             if p.label is None:
                 p.label = f"{p.index}"
-            p.full_label = f'{self.label}.{p.label}' if self.label else p.label
+            p.full_label = f"{self.label}.{p.label}" if self.label else p.label
             self._parameters[p.label] = p
 
-    def add_group(self, group: 'ParameterGroup'):
+    def add_group(self, group: "ParameterGroup"):
         """Adds a :class:`ParameterGroup` to the group.
 
         Parameters
@@ -294,7 +295,7 @@ class ParameterGroup(dict):
         group.set_root(self)
         self[group.label] = group
 
-    def set_root(self, root: 'ParameterGroup'):
+    def set_root(self, root: "ParameterGroup"):
         """Sets the root of the group.
 
         Parameters
@@ -318,11 +319,10 @@ class ParameterGroup(dict):
         """Label of the group """
         return self._label
 
-    def groups(self) -> typing.Generator['ParameterGroup', None, None]:
+    def groups(self) -> typing.Generator["ParameterGroup", None, None]:
         """Returns a generator over all groups and their subgroups."""
         for group in self:
-            for l in group.groups():
-                yield l
+            yield from group.groups()
 
     def has(self, label: str) -> bool:
         """Checks if a parameter with the given label is in the group or in a subgroup.
@@ -354,10 +354,11 @@ class ParameterGroup(dict):
         path = label.split(".")
         label = path.pop()
 
+        # TODO: audit this code
         group = self
-        for l in path:
+        for element in path:
             try:
-                group = group[l]
+                group = group[element]
             except KeyError:
                 raise ParameterNotFoundException(path, label)
         try:
@@ -365,8 +366,9 @@ class ParameterGroup(dict):
         except KeyError:
             raise ParameterNotFoundException(path, label)
 
-    def all(self, root: str = None, seperator: str = ".") \
-            -> typing.Generator[typing.Tuple[str, Parameter], None, None]:
+    def all(
+        self, root: str = None, separator: str = "."
+    ) -> typing.Generator[typing.Tuple[str, Parameter], None, None]:
         """Returns a generator over all parameter in the group and it's subgroups together with
         their labels.
 
@@ -374,15 +376,15 @@ class ParameterGroup(dict):
         ----------
         root :
             The label of the root group
-        seperator:
-            The seperator for the parameter labels.
+        separator:
+            The separator for the parameter labels.
         """
 
-        root = f"{root}{self.label}{seperator}" if root is not None else ""
+        root = f"{root}{self.label}{separator}" if root is not None else ""
         for label, p in self._parameters.items():
             yield (f"{root}{label}", p)
         for _, l in self.items():
-            for (lbl, p) in l.all(root=root, seperator=seperator):
+            for (lbl, p) in l.all(root=root, separator=separator):
                 yield (lbl, p)
 
     def as_parameter_dict(self) -> Parameters:
@@ -396,7 +398,7 @@ class ParameterGroup(dict):
         """
 
         params = Parameters()
-        for label, p in self.all(seperator="_"):
+        for label, p in self.all(separator="_"):
             p.name = "_" + label
             if p.non_neg:
                 p = copy.deepcopy(p)
@@ -405,22 +407,27 @@ class ParameterGroup(dict):
                 try:
                     p.min = log(p.min) if np.isfinite(p.min) else p.min
                 except Exception:
-                    raise Exception("Could not take log of minimum of parameter"
-                                    f" '{label}' with value '{p.min}'")
+                    raise ValueError(
+                        "Could not take log of minimum of parameter"
+                        f" '{label}' with value '{p.min}'"
+                    )
                 if p.max == 1:
                     p.max += 1e-10
                 try:
                     p.max = log(p.max) if np.isfinite(p.max) else p.max
                 except Exception:
-                    raise Exception("Could not take log of maximum of parameter"
-                                    f" '{label}' with value '{p.max}'")
+                    raise ValueError(
+                        "Could not take log of maximum of parameter"
+                        f" '{label}' with value '{p.max}'"
+                    )
                 if p.value == 1:
                     p.value += 1e-10
                 try:
                     p.value = log(p.value)
                 except Exception:
-                    raise Exception("Could not take log of parameter"
-                                    f" '{label}' with value '{p.value}'")
+                    raise ValueError(
+                        f"Could not take log of parameter '{label}' with value '{p.value}'"
+                    )
             params.add(p)
         return params
 

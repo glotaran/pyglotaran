@@ -1,2 +1,1 @@
-
-from . import sequential # noqa F01
+from . import sequential  # noqa: F401

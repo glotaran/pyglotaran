@@ -4,7 +4,7 @@ import numpy as np
 
 
 def spectral_matrix(dataset, axis):
-    """ Calculates the matrix.
+    """Calculates the matrix.
 
     Parameters
     ----------
@@ -21,8 +21,9 @@ def spectral_matrix(dataset, axis):
     if dataset.initial_concentration is None:
         return None, None
     shape_compartments = [s for s in dataset.shape]
-    compartments = [c for c in dataset.initial_concentration.compartments
-                    if c in shape_compartments]
+    compartments = [
+        c for c in dataset.initial_concentration.compartments if c in shape_compartments
+    ]
     matrix = np.zeros((axis.size, len(compartments)))
     for i, comp in enumerate(compartments):
         shapes = dataset.shape[comp]

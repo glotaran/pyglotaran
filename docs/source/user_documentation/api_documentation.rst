@@ -1,92 +1,10 @@
-..
-    Don't change api_documentation.rst since it changes will be overwritten.
-    If you want to change api_documentation.rst you have to make the changes in
-    api_documentation_template.rst and run `make api_docs` afterwards.
-    For changes to take effect you might also have to run `make clean_all`
-    afterwards.
-
 API Documentation
 =================
 
-The API Documentation for glotaran is automatically created from its docstrings.
-
-.. currentmodule:: glotaran
+The API Documentation for pyglotaran is automatically created from its docstrings.
 
 .. autosummary::
     :toctree: api
+    :recursive:
 
-    glotaran.analysis
-    glotaran.analysis.matrix_calculation
-    glotaran.analysis.nnls
-    glotaran.analysis.optimize
-    glotaran.analysis.problem_bag
-    glotaran.analysis.residual_calculation
-    glotaran.analysis.result
-    glotaran.analysis.scheme
-    glotaran.analysis.simulation
-    glotaran.analysis.variable_projection
-    glotaran.builtin
-    glotaran.builtin.file_formats
-    glotaran.builtin.file_formats.ascii
-    glotaran.builtin.file_formats.ascii.wavelength_time_explicit_file
-    glotaran.builtin.file_formats.sdt
-    glotaran.builtin.file_formats.sdt.sdt_file
-    glotaran.builtin.file_formats.sdt.sdt_file_reader
-    glotaran.builtin.models
-    glotaran.builtin.models.doas
-    glotaran.builtin.models.doas.doas_matrix
-    glotaran.builtin.models.doas.doas_megacomplex
-    glotaran.builtin.models.doas.doas_model
-    glotaran.builtin.models.doas.doas_result
-    glotaran.builtin.models.doas.doas_spectral_matrix
-    glotaran.builtin.models.doas.oscillation
-    glotaran.builtin.models.kinetic_image
-    glotaran.builtin.models.kinetic_image.initial_concentration
-    glotaran.builtin.models.kinetic_image.irf
-    glotaran.builtin.models.kinetic_image.irf_gaussian
-    glotaran.builtin.models.kinetic_image.irf_measured
-    glotaran.builtin.models.kinetic_image.k_matrix
-    glotaran.builtin.models.kinetic_image.kinetic_image_dataset_descriptor
-    glotaran.builtin.models.kinetic_image.kinetic_image_matrix
-    glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex
-    glotaran.builtin.models.kinetic_image.kinetic_image_model
-    glotaran.builtin.models.kinetic_image.kinetic_image_result
-    glotaran.builtin.models.kinetic_spectrum
-    glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor
-    glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix
-    glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model
-    glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_result
-    glotaran.builtin.models.kinetic_spectrum.spectral_constraints
-    glotaran.builtin.models.kinetic_spectrum.spectral_irf
-    glotaran.builtin.models.kinetic_spectrum.spectral_matrix
-    glotaran.builtin.models.kinetic_spectrum.spectral_penalties
-    glotaran.builtin.models.kinetic_spectrum.spectral_relations
-    glotaran.builtin.models.kinetic_spectrum.spectral_shape
-    glotaran.cli
-    glotaran.cli.commands
-    glotaran.cli.commands.explore
-    glotaran.cli.commands.export
-    glotaran.cli.commands.optimize
-    glotaran.cli.commands.pluginlist
-    glotaran.cli.commands.print
-    glotaran.cli.commands.util
-    glotaran.cli.commands.validate
-    glotaran.cli.main
-    glotaran.examples
-    glotaran.examples.sequential
-    glotaran.io
-    glotaran.io.prepare_dataset
-    glotaran.io.reader
-    glotaran.model
-    glotaran.model.dataset_descriptor
-    glotaran.model.model
-    glotaran.model.model_attribute
-    glotaran.model.model_decorator
-    glotaran.model.model_property
-    glotaran.model.util
-    glotaran.parameter
-    glotaran.parameter.parameter
-    glotaran.parameter.parameter_group
-    glotaran.parse
-    glotaran.parse.parser
-    glotaran.parse.register
+    glotaran

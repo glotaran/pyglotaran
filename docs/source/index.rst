@@ -1,7 +1,7 @@
 .. pyglotaran documentation master file, created by
    sphinx-quickstart on Wed Jan 30 18:10:57 2019.
    You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+   contain the root ``toctree`` directive.
 
 Welcome to pyglotaran's documentation!
 ======================================
@@ -13,6 +13,8 @@ Welcome to pyglotaran's documentation!
    introduction
    installation
    quickstart
+   history
+   authors
 
 .. toctree::
    :maxdepth: 1
@@ -25,6 +27,12 @@ Welcome to pyglotaran's documentation!
    user_documentation/parameter
    user_documentation/optimizing
    user_documentation/api_documentation
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Documentation:
+
+   contributing
 
 
 Indices and tables

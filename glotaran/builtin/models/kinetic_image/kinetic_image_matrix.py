@@ -1,20 +1,23 @@
 """ Glotaran Kinetic Matrix """
 
-import numpy as np
 import numba as nb
+import numpy as np
 
 from .irf_gaussian import IrfMultiGaussian
 from .irf_measured import IrfMeasured
 
+sqrt2 = np.sqrt(2)
 
-def kinetic_image_matrix(
-        dataset_descriptor=None, axis=None, index=None, extra=None):
+
+def kinetic_image_matrix(dataset_descriptor=None, axis=None, index=None, extra=None):
     return kinetic_matrix(
-        dataset_descriptor, axis, index, extra, kinetic_image_matrix_implementation)
+        dataset_descriptor, axis, index, extra, kinetic_image_matrix_implementation
+    )
 
 
 def kinetic_matrix(
-        dataset_descriptor=None, axis=None, index=None, extra=None, matrix_implementation=None):
+    dataset_descriptor=None, axis=None, index=None, extra=None, matrix_implementation=None
+):
 
     compartments = None
     matrix = None
@@ -25,7 +28,8 @@ def kinetic_matrix(
 
     if dataset_descriptor.initial_concentration is None:
         raise Exception(
-            f'No initial concentration specified in dataset "{dataset_descriptor.label}"')
+            f'No initial concentration specified in dataset "{dataset_descriptor.label}"'
+        )
     initial_concentration = dataset_descriptor.initial_concentration.normalized(dataset_descriptor)
 
     for k_matrix in k_matrices:
@@ -40,15 +44,16 @@ def kinetic_matrix(
             k_matrix,
             initial_concentration,
             extra,
-            matrix_implementation
+            matrix_implementation,
         )
 
         if matrix is None:
             compartments = this_compartments
             matrix = this_matrix
         else:
-            new_compartments = \
-                    compartments + [c for c in this_compartments if c not in compartments]
+            new_compartments = compartments + [
+                c for c in this_compartments if c not in compartments
+            ]
             new_matrix = np.zeros((matrix.shape[0], len(new_compartments)), dtype=np.float64)
             for i, comp in enumerate(new_compartments):
                 if comp in compartments:
@@ -59,7 +64,7 @@ def kinetic_matrix(
             matrix = new_matrix
 
     if dataset_descriptor.baseline:
-        baseline_compartment = f'{dataset_descriptor.label}_baseline'
+        baseline_compartment = f"{dataset_descriptor.label}_baseline"
         baseline = np.ones((axis.size, 1), dtype=np.float64)
         if matrix is None:
             compartments = [baseline_compartment]
@@ -71,12 +76,16 @@ def kinetic_matrix(
     return (compartments, matrix)
 
 
-def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
-                            initial_concentration, extra, matrix_implementation):
+def _calculate_for_k_matrix(
+    dataset_descriptor, axis, index, k_matrix, initial_concentration, extra, matrix_implementation
+):
 
     # we might have more compartments in the model then in the k matrix
-    compartments = [comp for comp in initial_concentration.compartments
-                    if comp in k_matrix.involved_compartments()]
+    compartments = [
+        comp
+        for comp in initial_concentration.compartments
+        if comp in k_matrix.involved_compartments()
+    ]
 
     # the rates are the eigenvalues of the k matrix
     rates = k_matrix.rates(initial_concentration)
@@ -88,8 +97,10 @@ def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
     matrix_implementation(matrix, rates, axis, index, dataset_descriptor, extra)
 
     if not np.all(np.isfinite(matrix)):
-        raise Exception(f"Non-finite concentrations for K-Matrix '{k_matrix.label}':\n"
-                        "{k_matrix.matrix_as_markdown}")
+        raise ValueError(
+            f"Non-finite concentrations for K-Matrix '{k_matrix.label}':\n"
+            "{k_matrix.matrix_as_markdown}"
+        )
 
     # apply A matrix
     matrix = matrix @ k_matrix.a_matrix(initial_concentration)
@@ -98,20 +109,27 @@ def _calculate_for_k_matrix(dataset_descriptor, axis, index, k_matrix,
     return (compartments, matrix)
 
 
-def kinetic_image_matrix_implementation(
-        matrix, rates, axis, index, dataset_descriptor, extra):
+def kinetic_image_matrix_implementation(matrix, rates, axis, index, dataset_descriptor, extra):
 
     irf = dataset_descriptor.irf
 
     if isinstance(irf, IrfMultiGaussian):
 
-        center, width, irf_scale, backsweep, backsweep_period = \
-            dataset_descriptor.irf.parameter(index)
+        center, width, irf_scale, backsweep, backsweep_period = dataset_descriptor.irf.parameter(
+            index
+        )
 
         for i in range(len(center)):
             calculate_kinetic_matrix_gaussian_irf(
-                matrix, rates, axis, center[i], width[i],
-                irf_scale[i], backsweep, backsweep_period,)
+                matrix,
+                rates,
+                axis,
+                center[i],
+                width[i],
+                irf_scale[i],
+                backsweep,
+                backsweep_period,
+            )
         matrix /= np.sum(irf_scale)
 
     if isinstance(irf, IrfMeasured):
@@ -133,10 +151,10 @@ def calculate_kinetic_matrix_no_irf(matrix, rates, times):
             matrix[n_t, n_r] += np.exp(r_n * t_n)
 
 
-sqrt2 = np.sqrt(2)
 @nb.jit(nopython=True, parallel=True)
 def calculate_kinetic_matrix_gaussian_irf(
-        matrix, rates, times, center, width, scale, backsweep, backsweep_period):
+    matrix, rates, times, center, width, scale, backsweep, backsweep_period
+):
     """Calculates a kinetic matrix with a gaussian irf."""
     for n_r in nb.prange(rates.size):
         r_n = -rates[n_r]
@@ -146,10 +164,11 @@ def calculate_kinetic_matrix_gaussian_irf(
             beta = (t_n - center) / (width * sqrt2)
             thresh = beta - alpha
             if thresh < -1:
-                matrix[n_t, n_r] += scale * .5 * erfcx(-thresh) * np.exp(-beta * beta)
+                matrix[n_t, n_r] += scale * 0.5 * erfcx(-thresh) * np.exp(-beta * beta)
             else:
-                matrix[n_t, n_r] += \
-                        scale * .5 * (1 + erf(thresh)) * np.exp(alpha * (alpha - 2 * beta))
+                matrix[n_t, n_r] += (
+                    scale * 0.5 * (1 + erf(thresh)) * np.exp(alpha * (alpha - 2 * beta))
+                )
             if backsweep:
                 x1 = np.exp(-r_n * (t_n - center + backsweep_period))
                 x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
@@ -157,9 +176,10 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
 
+import ctypes  # noqa: E402
+
 # This is a work around to use scipy.special function with numba
-from numba.extending import get_cython_function_address # noqa
-import ctypes # noqa
+from numba.extending import get_cython_function_address  # noqa: E402
 
 _dble = ctypes.c_double
 

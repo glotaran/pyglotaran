@@ -1,32 +1,32 @@
 """The result class for global analysis."""
 
-import typing
 import os
+import typing
 
 import numpy as np
 import xarray as xr
 
-import glotaran  # noqa F01
+import glotaran
 from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme
 
 
 class Result:
-
-    def __init__(self,
-                 scheme: Scheme,
-                 data: typing.Dict[str, xr.Dataset],
-                 parameter: ParameterGroup,
-                 nfev: int,
-                 nvars: int,
-                 ndata: int,
-                 nfree: int,
-                 chisqr: float,
-                 red_chisqr: float,
-                 var_names: typing.List[str],
-                 covar: np.ndarray,
-                 ):
+    def __init__(
+        self,
+        scheme: Scheme,
+        data: typing.Dict[str, xr.Dataset],
+        parameter: ParameterGroup,
+        nfev: int,
+        nvars: int,
+        ndata: int,
+        nfree: int,
+        chisqr: float,
+        red_chisqr: float,
+        var_names: typing.List[str],
+        covar: np.ndarray,
+    ):
         """The result of a global analysis.
 
         Parameters
@@ -34,12 +34,12 @@ class Result:
         model :
             A subclass of :class:`glotaran.model.Model`
         data :
-            A dictonary containing all datasets with their labels as keys.
+            A dictionary containing all datasets with their labels as keys.
         initital_parameter : glotaran.parameter.ParameterGroup
             The initital fit parameter,
         nnls :
             (default = False)
-            If `True` non-linear least squaes optimizing is used instead of variable projection.
+            If `True` non-linear least squares optimizing is used instead of variable projection.
         atol :
             (default = 0)
             The tolerance for grouping datasets along the global axis.
@@ -49,7 +49,7 @@ class Result:
         self._optimized_parameter = parameter
         self._nfev = nfev
         self._nvars = nvars
-        self._ndata = ndata,
+        self._ndata = (ndata,)
         self._nfree = nfree
         self._chisqr = chisqr
         self._red_chisqr = red_chisqr
@@ -62,14 +62,13 @@ class Result:
         return self._scheme
 
     @property
-    def model(self) -> typing.Type['glotaran.model.Model']:
+    def model(self) -> typing.Type["glotaran.model.Model"]:
         """The model for analysis."""
         return self._scheme.model
 
     @property
     def nnls(self) -> bool:
-        """If `True` non-linear least squaes optimizing is used instead of variable
-        projection."""
+        """If `True` non-linear least squares optimizing is used instead of variable projection."""
         return self._scheme.nnls
 
     @property
@@ -105,35 +104,40 @@ class Result:
 
     @property
     def chisqr(self) -> float:
-        """The chi-square of the optimization
-        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`.""" # noqa w605
+        r"""The chi-square of the optimization.
+
+        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
         return self._chisqr
 
     @property
     def red_chisqr(self) -> float:
-        """The reduced chi-square of the optimization
+        r"""The reduced chi-square of the optimization.
+
         :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
-        """ # noqa w605
+        """
         return self._red_chisqr
 
     @property
     def root_mean_square_error(self) -> float:
-        """
-        The root mean square error the optimization
+        r"""
+        The root mean square error the optimization.
+
         :math:`rms = \sqrt{\chi^2_{red}}`
-        """ # noqa w605
+        """
         return np.sqrt(self.red_chisqr)
 
     @property
     def var_names(self) -> typing.List[str]:
-        """Ordered list of variable parameter names used in optimization, and
-        useful for understanding the values in :attr:`covar`."""
-        return [n.replace('_', '.') for n in self._var_names]
+        """Ordered list of variable parameter names used in optimization.
+
+        This is also useful for understanding the values in :attr:`covar`."""
+        return [n.replace("_", ".") for n in self._var_names]
 
     @property
     def covar(self) -> np.ndarray:
-        """Covariance matrix from minimization, with rows and columns
-        corresponding to :attr:`var_names`."""
+        """Covariance matrix from minimization.
+
+        The rows and columns are corresponding to :attr:`var_names`."""
         return self._covar
 
     @property
@@ -143,7 +147,7 @@ class Result:
 
     @property
     def initial_parameter(self) -> ParameterGroup:
-        """The initital fit parameter"""
+        """The initital fit parameter."""
         return self._scheme.parameter
 
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
@@ -159,7 +163,7 @@ class Result:
         except KeyError:
             raise Exception(f"Unknown dataset '{dataset_label}'")
 
-    def save(self,  path: str) -> typing.List[str]:
+    def save(self, path: str) -> typing.List[str]:
         """Saves the result to given folder.
 
         Returns a list with paths of all saved items.
@@ -182,18 +186,18 @@ class Result:
 
         paths = []
 
-        md_path = os.path.join(path, 'result.md')
-        with open(md_path, 'w') as f:
+        md_path = os.path.join(path, "result.md")
+        with open(md_path, "w") as f:
             f.write(self.markdown())
         paths.append(md_path)
 
-        csv_path = os.path.join(path, 'optimized_parameter.csv')
+        csv_path = os.path.join(path, "optimized_parameter.csv")
         self.optimized_parameter.to_csv(csv_path)
         paths.append(csv_path)
 
         for label, data in self.data.items():
             nc_path = os.path.join(path, f"{label}.nc")
-            data.to_netcdf(nc_path, engine='netcdf4')
+            data.to_netcdf(nc_path, engine="netcdf4")
             paths.append(nc_path)
 
         return paths
@@ -210,7 +214,7 @@ class Result:
         ll = 32
         lr = 13
 
-        string = "Optimization Result".ljust(ll-1)
+        string = "Optimization Result".ljust(ll - 1)
         string += "|"
         string += "|".rjust(lr)
         string += "\n"
@@ -241,8 +245,9 @@ class Result:
         string += "\n"
 
         if with_model:
-            string += "\n\n" + self.model.markdown(parameter=self.optimized_parameter,
-                                                   initial=self.initial_parameter)
+            string += "\n\n" + self.model.markdown(
+                parameter=self.optimized_parameter, initial=self.initial_parameter
+            )
 
         return string
 

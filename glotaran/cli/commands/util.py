@@ -1,23 +1,30 @@
 import sys
 
 import click
-from click import echo, prompt
+from click import echo
+from click import prompt
 
 import glotaran as gta
 
 
 def signature_analysis(cmd):
-    cmd = click.option('--model', '-m', default=None, type=click.Path(exists=True, dir_okay=False),
-                       help='Path to model file.')(cmd)
-    cmd = click.option('--parameter', '-p',
-                       default=None,
-                       type=click.Path(exists=True, dir_okay=False),
-                       help='(optional) Path to parameter file.'
-                       )(cmd)
-    cmd = click.argument("scheme",
-                         type=click.Path(exists=True, dir_okay=False),
-                         required=False
-                         )(cmd)
+    cmd = click.option(
+        "--model",
+        "-m",
+        default=None,
+        type=click.Path(exists=True, dir_okay=False),
+        help="Path to model file.",
+    )(cmd)
+    cmd = click.option(
+        "--parameter",
+        "-p",
+        default=None,
+        type=click.Path(exists=True, dir_okay=False),
+        help="(optional) Path to parameter file.",
+    )(cmd)
+    cmd = click.argument("scheme", type=click.Path(exists=True, dir_okay=False), required=False)(
+        cmd
+    )
     return cmd
 
 
@@ -39,27 +46,25 @@ def _load_file(filename, loader, name, verbose):
 
 
 def load_scheme_file(filename, verbose=False):
-    return _load_file(filename, gta.analysis.scheme.Scheme.from_yml_file, 'scheme', verbose)
+    return _load_file(filename, gta.analysis.scheme.Scheme.from_yml_file, "scheme", verbose)
 
 
 def load_model_file(filename, verbose=False):
-    return _load_file(filename, gta.read_model_from_yml_file, 'model', verbose)
+    return _load_file(filename, gta.read_model_from_yml_file, "model", verbose)
 
 
 def load_parameter_file(filename, fmt=None, verbose=False):
-
     def loader(filename):
         return gta.parameter.ParameterGroup.from_file(filename, fmt=fmt)
 
-    return _load_file(filename, loader, 'parameter', verbose)
+    return _load_file(filename, loader, "parameter", verbose)
 
 
 def load_dataset_file(filename, fmt=None, verbose=False):
-
     def loader(filename):
         return gta.io.read_data_file(filename, fmt=fmt)
 
-    return _load_file(filename, loader, 'parameter', verbose)
+    return _load_file(filename, loader, "parameter", verbose)
 
 
 def select_name(filename, dataset):
@@ -69,10 +74,11 @@ def select_name(filename, dataset):
     for i, n in enumerate(names):
         echo(f"* [{i}] {n}")
 
-    n = prompt("\n Please select a name to export",
-               type=click.IntRange(min=0, max=len(names)-1),
-               show_choices=True,
-               )
+    n = prompt(
+        "\n Please select a name to export",
+        type=click.IntRange(min=0, max=len(names) - 1),
+        show_choices=True,
+    )
     return names[n]
 
 
@@ -93,7 +99,7 @@ def select_data(data, dim, selection):
                 selection = float(selection)
         except ValueError:
             raise ValueError(f"Error: Selection '{selection}' is not numeric")
-        method = 'nearest'
+        method = "nearest"
     if isinstance(selection, tuple):
         min = selection[0]
         max = selection[1]
@@ -111,16 +117,16 @@ def write_data(data, out):
 
 
 class ValOrRangeOrList(click.ParamType):
-    name = 'number or range or list'
+    name = "number or range or list"
 
     def convert(self, value, param, ctx):
-        if value[0] == '(' and value[-1] == ')':
-            split = value[1:-1].split(',')
+        if value[0] == "(" and value[-1] == ")":
+            split = value[1:-1].split(",")
             if not len(split) == 2:
                 self.fail(f"Malformed range: '{value}'")
             return (split[0].strip(), split[1].strip())
-        if value[0] == '[' and value[-1] == ']':
-            split = value[1:-1].split(',')
+        if value[0] == "[" and value[-1] == "]":
+            split = value[1:-1].split(",")
             return [s.strip() for s in split]
         return value
 

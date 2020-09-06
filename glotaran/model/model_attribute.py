@@ -4,16 +4,18 @@ import copy
 import typing
 
 import glotaran
-from glotaran.parameter import Parameter, ParameterGroup
+from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 from .model_property import ModelProperty
 from .util import wrap_func_as_method
 
 
 def model_attribute(
-        properties: typing.Union[typing.Any, typing.Dict[str, typing.Dict[str, typing.Any]]] = {},
-        has_type: bool = False,
-        no_label: bool = False) -> typing.Callable:
+    properties: typing.Union[typing.Any, typing.Dict[str, typing.Dict[str, typing.Any]]] = {},
+    has_type: bool = False,
+    no_label: bool = False,
+) -> typing.Callable:
     """The `@model_attribute` decorator adds the given properties to the class. Further it adds
     classmethods for deserialization, validation and printing.
 
@@ -39,65 +41,71 @@ def model_attribute(
     no_label:
         If true no label property will be added.
     """
+
     def decorator(cls):
 
-        setattr(cls, '_glotaran_has_label', not no_label)
-        setattr(cls, '_glotaran_model_attribute', True)
+        setattr(cls, "_glotaran_has_label", not no_label)
+        setattr(cls, "_glotaran_model_attribute", True)
 
         # store for later sanity checking
-        if not hasattr(cls, '_glotaran_properties'):
-            setattr(cls, '_glotaran_properties', [])
+        if not hasattr(cls, "_glotaran_properties"):
+            setattr(cls, "_glotaran_properties", [])
             if not no_label:
-                doc = f'The label of {cls.__name__} item.'
-                prop = ModelProperty(cls, 'label', str, doc, None, False)
-                setattr(cls, 'label', prop)
-                getattr(cls, '_glotaran_properties').append('label')
+                doc = f"The label of {cls.__name__} item."
+                prop = ModelProperty(cls, "label", str, doc, None, False)
+                setattr(cls, "label", prop)
+                getattr(cls, "_glotaran_properties").append("label")
             if has_type:
-                doc = f'The type string of {cls.__name__}.'
-                prop = ModelProperty(cls, 'type', str, doc, None, False)
-                setattr(cls, 'type', prop)
-                getattr(cls, '_glotaran_properties').append('type')
+                doc = f"The type string of {cls.__name__}."
+                prop = ModelProperty(cls, "type", str, doc, None, False)
+                setattr(cls, "type", prop)
+                getattr(cls, "_glotaran_properties").append("type")
 
         else:
-            setattr(cls, '_glotaran_properties',
-                    [attr for attr in getattr(cls, '_glotaran_properties')])
+            setattr(
+                cls,
+                "_glotaran_properties",
+                [attr for attr in getattr(cls, "_glotaran_properties")],
+            )
 
         for name, options in properties.items():
             if not isinstance(options, dict):
-                options = {'type': options}
-            prop = ModelProperty(cls, name,
-                                 options.get('type'),
-                                 options.get('doc', f'{name}'),
-                                 options.get('default', None),
-                                 options.get('allow_none', False)
-                                 )
+                options = {"type": options}
+            prop = ModelProperty(
+                cls,
+                name,
+                options.get("type"),
+                options.get("doc", f"{name}"),
+                options.get("default", None),
+                options.get("allow_none", False),
+            )
             setattr(cls, name, prop)
-            if name not in getattr(cls, '_glotaran_properties'):
-                getattr(cls, '_glotaran_properties').append(name)
+            if name not in getattr(cls, "_glotaran_properties"):
+                getattr(cls, "_glotaran_properties").append(name)
 
         init = _create_init_func(cls)
-        setattr(cls, '__init__', init)
+        setattr(cls, "__init__", init)
 
         from_dict = _create_from_dict_func(cls)
-        setattr(cls, 'from_dict', from_dict)
+        setattr(cls, "from_dict", from_dict)
 
         from_list = _create_from_list_func(cls)
-        setattr(cls, 'from_list', from_list)
+        setattr(cls, "from_list", from_list)
 
         validate = _create_validation_func(cls)
-        setattr(cls, 'validate', validate)
+        setattr(cls, "validate", validate)
 
         get_state = _create_get_state_func(cls)
-        setattr(cls, '__getstate__', get_state)
+        setattr(cls, "__getstate__", get_state)
 
         set_state = _create_set_state_func(cls)
-        setattr(cls, '__setstate__', set_state)
+        setattr(cls, "__setstate__", set_state)
 
         fill = _create_fill_func(cls)
-        setattr(cls, 'fill', fill)
+        setattr(cls, "fill", fill)
 
         mprint = _create_mprint_func(cls)
-        setattr(cls, 'mprint', mprint)
+        setattr(cls, "mprint", mprint)
 
         return cls
 
@@ -119,14 +127,14 @@ def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
 
     def decorator(cls):
 
-        setattr(cls, '_glotaran_model_attribute', True)
-        setattr(cls, '_glotaran_model_attribute_typed', True)
-        setattr(cls, '_glotaran_model_attribute_types', types)
+        setattr(cls, "_glotaran_model_attribute", True)
+        setattr(cls, "_glotaran_model_attribute_typed", True)
+        setattr(cls, "_glotaran_model_attribute_types", types)
 
         add_type = _create_add_type_func(cls)
-        setattr(cls, 'add_type', add_type)
+        setattr(cls, "add_type", add_type)
 
-        setattr(cls, '_glotaran_has_label', not no_label)
+        setattr(cls, "_glotaran_has_label", not no_label)
 
         return cls
 
@@ -134,26 +142,25 @@ def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
 
 
 def _create_add_type_func(cls):
-
     @classmethod
     @wrap_func_as_method(cls)
     def add_type(cls, type_name: str, type: typing.Type):
-        getattr(cls, '_glotaran_model_attribute_types')[type_name] = type
+        getattr(cls, "_glotaran_model_attribute_types")[type_name] = type
+
     return add_type
 
 
 def _create_init_func(cls):
-
     @classmethod
     @wrap_func_as_method(cls)
     def __init__(self):
         for attr in self._glotaran_properties:
-            setattr(self, f'_{attr}', None)
+            setattr(self, f"_{attr}", None)
+
     return __init__
 
 
 def _create_from_dict_func(cls):
-
     @classmethod
     @wrap_func_as_method(cls)
     def from_dict(ncls, values: typing.Dict) -> cls:
@@ -171,16 +178,16 @@ def _create_from_dict_func(cls):
         for name in ncls._glotaran_properties:
             if name not in values:
                 if not getattr(ncls, name).allow_none and getattr(item, name) is None:
-                    raise Exception(f"Missing Property '{name}' For Item '{ncls.__name__}'")
+                    raise ValueError(f"Missing Property '{name}' For Item '{ncls.__name__}'")
             else:
                 setattr(item, name, values[name])
 
         return item
+
     return from_dict
 
 
 def _create_from_list_func(cls):
-
     @classmethod
     @wrap_func_as_method(cls)
     def from_list(ncls, values: typing.List) -> cls:
@@ -193,18 +200,20 @@ def _create_from_list_func(cls):
         """
         item = ncls()
         if len(values) is not len(ncls._glotaran_properties):
-            raise Exception(f"To few or much parameters for '{ncls.__name__}'"
-                            f"\nGot: {values}\nWant: {ncls._glotaran_properties}")
+            raise ValueError(
+                f"To few or much parameters for '{ncls.__name__}'"
+                f"\nGot: {values}\nWant: {ncls._glotaran_properties}"
+            )
 
         for i, name in enumerate(ncls._glotaran_properties):
             setattr(item, name, values[i])
 
         return item
+
     return from_list
 
 
 def _create_validation_func(cls):
-
     @wrap_func_as_method(cls)
     def validate(self, model, parameter=None) -> typing.List[str]:
         f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
@@ -230,9 +239,8 @@ def _create_validation_func(cls):
 
 
 def _create_fill_func(cls):
-
     @wrap_func_as_method(cls)
-    def fill(self, model: 'glotaran.model.BaseModel', parameter: ParameterGroup) -> cls:
+    def fill(self, model: "glotaran.model.BaseModel", parameter: ParameterGroup) -> cls:
         """Returns a copy of the {cls._name} instance with all members which are Parameters are
         replaced by the value of the corresponding parameter in the parameter group.
 
@@ -250,21 +258,19 @@ def _create_fill_func(cls):
             value = prop.fill(value, model, parameter)
             setattr(item, name, value)
         return item
+
     return fill
 
 
 def _create_get_state_func(cls):
-
     @wrap_func_as_method(cls)
     def get_state(self) -> cls:
-        return tuple(
-            getattr(self, name) for name in self._glotaran_properties
-        )
+        return tuple(getattr(self, name) for name in self._glotaran_properties)
+
     return get_state
 
 
 def _create_set_state_func(cls):
-
     @wrap_func_as_method(cls)
     def set_state(self, state) -> cls:
         for i, name in enumerate(self._glotaran_properties):
@@ -274,19 +280,18 @@ def _create_set_state_func(cls):
 
 
 def _create_mprint_func(cls):
-
-    @wrap_func_as_method(cls, name='mprint')
+    @wrap_func_as_method(cls, name="mprint")
     def mprint_item(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
-        f'''Returns a string with the {cls.__name__} formatted in markdown.'''
+        f"""Returns a string with the {cls.__name__} formatted in markdown."""
 
         s = "\n"
         if self._glotaran_has_label:
             s = f"**{self.label}**"
 
-            if hasattr(self, 'type'):
+            if hasattr(self, "type"):
                 s += f" ({self.type})"
             s += ":\n"
-        elif hasattr(self, 'type'):
+        elif hasattr(self, "type"):
             s = f"**{self.type}**:\n"
 
         attrs = []
@@ -330,4 +335,5 @@ def _create_mprint_func(cls):
             attrs.append(a)
         s += "\n".join(attrs)
         return s
+
     return mprint_item

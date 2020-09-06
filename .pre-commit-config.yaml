@@ -1,0 +1,61 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: debug-statements
+      - id: fix-encoding-pragma
+        args: [--remove]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.7.2
+    hooks:
+    - id: pyupgrade
+      args: [--py36-plus]
+  - repo: https://github.com/python/black
+    rev: 20.8b1
+    hooks:
+      - id: black
+        language_version: python3
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.5.0
+    hooks:
+      - id: isort
+  # - repo: https://github.com/PyCQA/pydocstyle
+  #   rev: 5.1.1
+  #   hooks:
+  #     - id: pydocstyle
+  #       exclude: "docs|tests"
+  #       # this is needed due to the following issue:
+  #       # https://github.com/PyCQA/pydocstyle/issues/368
+  #       args: [--ignore-decorators=wrap_func_as_method]
+
+  - repo: https://github.com/asottile/yesqa
+    rev: v1.2.2
+    hooks:
+      - id: yesqa
+        additional_dependencies: [flake8-docstrings]
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.3
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/myint/rstcheck
+    rev: '3f92957478422df87bd730abde66f089cc1ee19b'
+    hooks:
+      - id: rstcheck
+        additional_dependencies: [rstcheck, sphinx]
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.6.0
+    hooks:
+      - id: rst-backticks
+  - repo: https://github.com/codespell-project/codespell
+    rev: v1.17.1
+    hooks:
+      - id: codespell
+        files: ".py|.rst"
+        args: [-L doas]

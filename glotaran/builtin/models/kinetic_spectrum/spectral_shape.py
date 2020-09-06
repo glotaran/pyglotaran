@@ -1,15 +1,20 @@
 """This package contains the spectral shape item."""
 
 import numpy as np
-from glotaran.model import model_attribute, model_attribute_typed
+
+from glotaran.model import model_attribute
+from glotaran.model import model_attribute_typed
 from glotaran.parameter import Parameter
 
 
-@model_attribute(properties={
-    'amplitude': Parameter,
-    'location': Parameter,
-    'width': Parameter,
-}, has_type=True)
+@model_attribute(
+    properties={
+        "amplitude": Parameter,
+        "location": Parameter,
+        "width": Parameter,
+    },
+    has_type=True,
+)
 class SpectralShapeGaussian:
     """A gaussian spectral shape"""
 
@@ -27,12 +32,12 @@ class SpectralShapeGaussian:
 
         """
         matrix = self.amplitude * np.exp(
-            -np.log(2) * np.square(2 * (axis - self.location)/self.width))
+            -np.log(2) * np.square(2 * (axis - self.location) / self.width)
+        )
         return matrix
 
 
-@model_attribute(properties={
-}, has_type=True)
+@model_attribute(properties={}, has_type=True)
 class SpectralShapeOne:
     """A gaussian spectral shape"""
 
@@ -49,11 +54,10 @@ class SpectralShapeOne:
         shape: numpy.ndarray
 
         """
-        return np.ones((axis.shape[0]))
+        return np.ones(axis.shape[0])
 
 
-@model_attribute(properties={
-}, has_type=True)
+@model_attribute(properties={}, has_type=True)
 class SpectralShapeZero:
     """A gaussian spectral shape"""
 
@@ -72,13 +76,15 @@ class SpectralShapeZero:
         shape: numpy.ndarray
 
         """
-        return np.zeros((axis.shape[0]))
+        return np.zeros(axis.shape[0])
 
 
-@model_attribute_typed(types={
-    'gaussian': SpectralShapeGaussian,
-    'one': SpectralShapeOne,
-    'zero': SpectralShapeZero,
-})
+@model_attribute_typed(
+    types={
+        "gaussian": SpectralShapeGaussian,
+        "one": SpectralShapeOne,
+        "zero": SpectralShapeZero,
+    }
+)
 class SpectralShape:
     """Base class for spectral shapes"""
