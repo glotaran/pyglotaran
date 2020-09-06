@@ -112,3 +112,11 @@ def test_weight():
     data = scheme.prepared_data()["dataset1"]
     assert np.all(data.weight.sel(e=slice(0, 200), c=slice(4, 8)).values == 0.5 * 0.2)
     assert np.all(data.weight.sel(c=slice(0, 3)).values == 0.2)
+
+    scheme = Scheme(model, parameter, {"dataset1": data})
+    with pytest.warns(
+        UserWarning,
+        match="Ignoring model weight for dataset 'dataset1'"
+        " because weight is already supplied by dataset.",
+    ):
+        scheme.prepared_data()["dataset1"]

@@ -1,6 +1,7 @@
 import functools
 import pathlib
 import typing
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -177,15 +178,9 @@ class Scheme:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            if "weight" in dataset and "weighted_data" not in dataset:
-                dataset["weighted_data"] = np.multiply(dataset.data, dataset.weight)
-
-            # if the user supplies a weight we ignore modeled weights
-            if "weight" not in dataset:
-                self._add_weight(label, dataset)
+            self._add_weight(label, dataset)
 
             # This protects transposing when getting data with svd in it
-
             if "data_singular_values" in dataset and (
                 dataset.coords["right_singular_value_index"].size
                 != dataset.coords[self.model.global_dimension].size
@@ -224,8 +219,14 @@ class Scheme:
         return s
 
     def _add_weight(self, label, dataset):
-        def get_idx(array, value):
-            return np.abs(array.values - value).argmin()
+
+        # if the user supplies a weight we ignore modeled weights
+        if "weight" in dataset:
+            if any([label in weight.datasets for weight in self.model.weights]):
+                warnings.warn(
+                    f"Ignoring model weight for dataset '{label}'"
+                    " because weight is already supplied by dataset."
+                )
 
         global_axis = dataset.coords[self.model.global_dimension]
         matrix_axis = dataset.coords[self.model.matrix_dimension]
@@ -239,27 +240,20 @@ class Scheme:
 
                 idx = {}
                 if weight.global_interval is not None:
-                    global_min = (
-                        get_idx(global_axis, weight.global_interval[0])
-                        if not np.isinf(weight.global_interval[0])
-                        else 0
+                    idx[self.model.global_dimension] = self._get_min_max_from_interval(
+                        weight.global_interval, global_axis
                     )
-                    global_max = (
-                        get_idx(global_axis, weight.global_interval[1]) + 1
-                        if not np.isinf(weight.global_interval[1])
-                        else global_axis.size
-                    )
-                    idx[self.model.global_dimension] = slice(global_min, global_max)
                 if weight.matrix_interval is not None:
-                    matrix_min = (
-                        get_idx(matrix_axis, weight.matrix_interval[0])
-                        if not np.isinf(weight.matrix_interval[0])
-                        else 0
+                    idx[self.model.matrix_dimension] = self._get_min_max_from_interval(
+                        weight.matrix_interval, matrix_axis
                     )
-                    matrix_max = (
-                        get_idx(matrix_axis, weight.matrix_interval[1]) + 1
-                        if not np.isinf(weight.matrix_interval[1])
-                        else matrix_axis.size
-                    )
-                    idx[self.model.matrix_dimension] = slice(matrix_min, matrix_max)
                 dataset.weight[idx] *= weight.value
+
+    def _get_min_max_from_interval(self, interval, axis):
+        minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+        maximum = (
+            np.abs(axis.values - interval[1]).argmin() + 1
+            if not np.isinf(interval[1])
+            else axis.size
+        )
+        return slice(minimum, maximum)
