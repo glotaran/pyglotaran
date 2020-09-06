@@ -3,7 +3,7 @@ import numpy as np
 from dask import bag as db
 
 
-def create_index_independend_ungrouped_residual(
+def create_index_independent_ungrouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
 
@@ -45,7 +45,7 @@ def create_index_independend_ungrouped_residual(
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
-def create_index_dependend_ungrouped_residual(
+def create_index_dependent_ungrouped_residual(
     scheme, parameter, problem_bag, matrix_jobs, residual_function
 ):
     def apply_weight(matrix, weight):
@@ -95,7 +95,7 @@ def create_index_dependend_ungrouped_residual(
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
-def create_index_independend_grouped_residual(
+def create_index_independent_grouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
 
@@ -134,7 +134,7 @@ def create_index_independend_grouped_residual(
     return reduced_clp_label, reduced_clps, residuals, penalty
 
 
-def create_index_dependend_grouped_residual(
+def create_index_dependent_grouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
     def penalty_function(problem, labels_and_matrices):

@@ -60,7 +60,7 @@ def model(
     additional_penalty_function: PenaltyFunction = None,
     finalize_data_function: FinalizeFunction = None,
     grouped: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
-    index_dependend: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
+    index_dependent: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
 ) -> typing.Callable:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
@@ -148,14 +148,14 @@ def model(
             group_fun = grouped
         setattr(cls, "grouped", group_fun)
 
-        if not callable(index_dependend):
+        if not callable(index_dependent):
 
             def index_dep_fun(model):
-                return index_dependend
+                return index_dependent
 
         else:
-            index_dep_fun = index_dependend
-        setattr(cls, "index_dependend", index_dep_fun)
+            index_dep_fun = index_dependent
+        setattr(cls, "index_dependent", index_dep_fun)
 
         mat = wrap_func_as_method(cls, name="matrix")(matrix)
         mat = staticmethod(mat)
