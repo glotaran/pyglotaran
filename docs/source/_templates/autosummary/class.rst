@@ -14,17 +14,14 @@
     .. rubric:: Attributes Summary
 
     .. autosummary::
-       :toctree: 
+       :toctree:
+       :template: autosummary/attribute.rst
     {% for item in attributes %}
         ~{{name}}.{{ item }}
     {%- endfor %}
 
     {% endif %}
     {% endblock %}
-
-    {% if '__init__' in methods %}
-        {% set caught_result = methods.remove('__init__') %}
-    {% endif %}
 
 
     {% block methods_summary %}
@@ -33,21 +30,23 @@
     .. rubric:: Methods Summary
 
     .. autosummary::
-        :toctree: 
+        :toctree:
         :nosignatures:
 
     {% for item in methods %}
+      {% if not item.endswith("__init__") %}
         ~{{ name }}.{{ item }}
+      {% endif %}
     {%- endfor %}
+
+
+    {% endif %}
+    {% endblock %}
 
     {% block methods_documentation %}
     {% if methods %}
 
     .. rubric:: Methods Documentation
-
-    {% endif %}
-    {% endblock %}
-
 
     {% endif %}
     {% endblock %}

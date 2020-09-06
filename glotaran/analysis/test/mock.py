@@ -1,10 +1,12 @@
 import numpy as np
 
-from glotaran.model import Model, model, model_attribute
+from glotaran.model import Model
+from glotaran.model import model
+from glotaran.model import model_attribute
 
 
 def calculate_c(dataset_descriptor=None, axis=None, index=None, extra=None):
-    compartments = ['s1', 's2']
+    compartments = ["s1", "s2"]
     r_compartments = []
     array = np.zeros((axis.shape[0], len(compartments)))
 
@@ -16,7 +18,7 @@ def calculate_c(dataset_descriptor=None, axis=None, index=None, extra=None):
 
 
 def calculate_e(dataset, axis):
-    compartments = ['s1', 's2']
+    compartments = ["s1", "s2"]
     r_compartments = []
     array = np.zeros((axis.shape[0], len(compartments)))
 
@@ -29,20 +31,21 @@ def calculate_e(dataset, axis):
 
 @model_attribute(
     properties={
-        'grouped': bool,
-        'indexdependend': bool,
+        "grouped": bool,
+        "indexdependent": bool,
     }
 )
 class MockMegacomplex:
     pass
 
 
-@model('mock',
-       matrix=calculate_c,
-       matrix_dimension='c',
-       global_matrix=calculate_e,
-       global_dimension='e',
-       megacomplex_type=MockMegacomplex,
-       )
+@model(
+    "mock",
+    matrix=calculate_c,
+    matrix_dimension="c",
+    global_matrix=calculate_e,
+    global_dimension="e",
+    megacomplex_type=MockMegacomplex,
+)
 class MockModel(Model):
     pass

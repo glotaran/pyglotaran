@@ -6,8 +6,9 @@ from glotaran.parameter import Parameter
 
 @model_attribute(
     properties={
-        'frequency': Parameter,
-        'rate': Parameter,
-    })
+        "frequency": Parameter,
+        "rate": Parameter,
+    }
+)
 class Oscillation:
     """A damped oscillation"""

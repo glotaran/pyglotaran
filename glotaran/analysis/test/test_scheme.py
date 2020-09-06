@@ -2,28 +2,27 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.scheme import Scheme
-from .mock import MockModel # noqa
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def scheme(tmpdir_factory):
 
     path = tmpdir_factory.mktemp("scheme")
 
     model = "type: mock\ndataset:\n  dataset1:\n    megacomplex: []"
     model_path = path.join("model.yml")
-    with open(model_path, 'w') as f:
+    with open(model_path, "w") as f:
         f.write(model)
 
     parameter = "[1.0, 67.0]"
     parameter_path = path.join("parameter.yml")
-    with open(parameter_path, 'w') as f:
+    with open(parameter_path, "w") as f:
         f.write(parameter)
 
-    dataset_path = path.join('dataset.nc')
-    xr.DataArray([1, 2, 3]).to_dataset(name='data').to_netcdf(dataset_path)
+    dataset_path = path.join("dataset.nc")
+    xr.DataArray([1, 2, 3]).to_dataset(name="data").to_netcdf(dataset_path)
 
-    extra_path = path.join('extradata.nc')
+    extra_path = path.join("extradata.nc")
     xr.DataArray([1, 2, 3]).to_netcdf(extra_path)
 
     scheme = f"""
@@ -36,8 +35,8 @@ def scheme(tmpdir_factory):
     extra:
         testextra: {extra_path}
     """
-    scheme_path = path.join('scheme.gta')
-    with open(scheme_path, 'w') as f:
+    scheme_path = path.join("scheme.gta")
+    with open(scheme_path, "w") as f:
         f.write(scheme)
     return scheme_path
 
@@ -54,10 +53,10 @@ def test_scheme(scheme):
     assert scheme.nnls
     assert scheme.nfev == 42
 
-    assert 'dataset1' in scheme.data
-    assert isinstance(scheme.data['dataset1'], xr.DataArray)
-    assert scheme.data['dataset1'].data.size == 3
+    assert "dataset1" in scheme.data
+    assert isinstance(scheme.data["dataset1"], xr.DataArray)
+    assert scheme.data["dataset1"].data.size == 3
 
-    assert 'testextra' in scheme.extra
-    assert isinstance(scheme.extra['testextra'], xr.DataArray)
-    assert scheme.extra['testextra'].size == 3
+    assert "testextra" in scheme.extra
+    assert isinstance(scheme.extra["testextra"], xr.DataArray)
+    assert scheme.extra["testextra"].size == 3

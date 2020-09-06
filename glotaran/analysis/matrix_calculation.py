@@ -1,13 +1,13 @@
 import collections
+
 import dask
 import numpy as np
 
+LabelAndMatrix = collections.namedtuple("LabelAndMatrix", "clp_label matrix")
+LabelAndMatrixAndData = collections.namedtuple("LabelAndMatrixAndData", "label_matrix data")
 
-LabelAndMatrix = collections.namedtuple('LabelAndMatrix', 'clp_label matrix')
-LabelAndMatrixAndData = collections.namedtuple('LabelAndMatrixAndData', 'label_matrix data')
 
-
-def calculate_index_independend_ungrouped_matrices(scheme, parameter):
+def calculate_index_independent_ungrouped_matrices(scheme, parameter):
 
     # for this we don't use dask
 
@@ -17,8 +17,10 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
     model = scheme.model
     extra = scheme.extra
 
-    descriptors = {label: descriptor.fill(model, parameter)
-                   for label, descriptor in scheme.model.dataset.items()}
+    descriptors = {
+        label: descriptor.fill(model, parameter)
+        for label, descriptor in scheme.model.dataset.items()
+    }
 
     for label, descriptor in descriptors.items():
         axis = scheme.data[label].coords[model.matrix_dimension].values
@@ -33,27 +35,32 @@ def calculate_index_independend_ungrouped_matrices(scheme, parameter):
 
         if callable(model.has_matrix_constraints_function):
             if model.has_matrix_constraints_function():
-                clp_label, matrix = \
-                    model.constrain_matrix_function(parameter, clp_label, matrix, None)
+                clp_label, matrix = model.constrain_matrix_function(
+                    parameter, clp_label, matrix, None
+                )
 
         constraint_labels_and_matrices[label] = LabelAndMatrix(clp_label, matrix)
     return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def calculate_index_independend_grouped_matrices(scheme, groups, parameter):
+def calculate_index_independent_grouped_matrices(scheme, groups, parameter):
 
     # We just need to create groups from the ungrouped matrices
-    clp_labels, matrices, constraint_labels_and_matrices = \
-        calculate_index_independend_ungrouped_matrices(scheme, parameter)
+    (
+        clp_labels,
+        matrices,
+        constraint_labels_and_matrices,
+    ) = calculate_index_independent_ungrouped_matrices(scheme, parameter)
     for label, group in groups.items():
         if label not in matrices:
-            constraint_labels_and_matrices[label] = \
-                _combine_matrices([constraint_labels_and_matrices[l] for l in group])
+            constraint_labels_and_matrices[label] = _combine_matrices(
+                [constraint_labels_and_matrices[label] for label in group]
+            )
 
     return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
+def create_index_dependent_ungrouped_matrix_jobs(scheme, bag, parameter):
 
     clp_labels = {}
     matrices = {}
@@ -61,8 +68,10 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
     model = scheme.model
     extra = scheme.extra
 
-    descriptors = {label: descriptor.fill(model, parameter)
-                   for label, descriptor in scheme.model.dataset.items()}
+    descriptors = {
+        label: descriptor.fill(model, parameter)
+        for label, descriptor in scheme.model.dataset.items()
+    }
     for label, problem in bag.items():
         descriptor = descriptors[label]
         clp_labels[label] = []
@@ -89,22 +98,27 @@ def create_index_dependend_ungrouped_matrix_jobs(scheme, bag, parameter):
     return clp_labels, matrices, constraint_labels_and_matrices
 
 
-def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
+def create_index_dependent_grouped_matrix_jobs(scheme, bag, parameter):
 
     model = scheme.model
     extra = scheme.extra
 
-    descriptors = {label: descriptor.fill(model, parameter)
-                   for label, descriptor in scheme.model.dataset.items()}
+    descriptors = {
+        label: descriptor.fill(model, parameter)
+        for label, descriptor in scheme.model.dataset.items()
+    }
 
     def calculate_group(group):
-        results = [_calculate_matrix(
-            model.matrix,
-            descriptors[problem.dataset],
-            problem.axis,
-            extra,
-            index=problem.index
-        ) for problem in group.descriptor]
+        results = [
+            _calculate_matrix(
+                model.matrix,
+                descriptors[problem.dataset],
+                problem.axis,
+                extra,
+                index=problem.index,
+            )
+            for problem in group.descriptor
+        ]
         return results, group.descriptor[0].index
 
     def get_clp(result):
@@ -130,12 +144,12 @@ def create_index_dependend_grouped_matrix_jobs(scheme, bag, parameter):
 
 def _calculate_matrix(matrix_function, dataset_descriptor, axis, extra, index=None):
     args = {
-        'dataset_descriptor': dataset_descriptor,
-        'axis': axis,
-        'extra': extra,
+        "dataset_descriptor": dataset_descriptor,
+        "axis": axis,
+        "extra": extra,
     }
     if index is not None:
-        args['index'] = index
+        args["index"] = index
     clp_label, matrix = matrix_function(**args)
     if dataset_descriptor.scale is not None:
         matrix *= dataset_descriptor.scale

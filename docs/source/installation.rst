@@ -28,20 +28,27 @@ Stable release
    pyglotaran is early development, so for the moment stable releases are sparse and outdated.
    We try to keep the master code stable, so please install from source for now.
 
-To install glotaran, run this command in your terminal:
+
+This is the preferred method to install pyglotaran, as it will always install the most recent stable release.
+
+To install pyglotaran, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install glotaran
-
-This is the preferred method to install glotaran, as it will always install the most recent stable release.
+    $ pip install pyglotaran
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
 
 .. _pip: https://pip.pypa.io/en/stable/
 
-.. _Python installation guide: ttps://docs.python-guide.org/starting/installation/
+.. _Python installation guide: https://docs.python-guide.org/starting/installation/
+
+If you want to install it via conda, you can run the following command:
+
+.. code-block:: console
+
+    $ conda install -c conda-forge pyglotaran
 
 
 From sources
@@ -67,9 +74,9 @@ Afterwards you can simply use `pip`_ to install it directly from `Github`_.
 
    $ pip install git+https://github.com/glotaran/pyglotaran.git
 
-For updating glotaran, just re-run the command above.
+For updating pyglotaran, just re-run the command above.
 
-If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preffered):
+If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preferred):
 
 .. code-block:: console
 
@@ -81,7 +88,7 @@ Within a terminal, navigate to directory where you have unpacked or cloned the c
 
    $ pip install -e .
 
-For updating, simply download and unpack the newest version (or run ``$ git pull`` in glotaran directory if you used `git`_) and and re-run the command above.
+For updating, simply download and unpack the newest version (or run ``$ git pull`` in pyglotaran directory if you used `git`_) and and re-run the command above.
 
 .. _Github: https://github.com/glotaran/pyglotaran
 .. _git: https://git-scm.com/

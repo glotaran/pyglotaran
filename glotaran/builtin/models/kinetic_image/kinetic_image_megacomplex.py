@@ -6,10 +6,12 @@ from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 
-@model_attribute(properties={
-    'k_matrix': {'type': List[str], 'default': []},
-    'scale': {'type': Parameter, 'allow_none': True},
-})
+@model_attribute(
+    properties={
+        "k_matrix": {"type": List[str], "default": []},
+        "scale": {"type": Parameter, "allow_none": True},
+    }
+)
 class KineticImageMegacomplex:
     """A Megacomplex with one or more K-Matrices."""
 

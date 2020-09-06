@@ -1,16 +1,16 @@
 import functools
 import pathlib
 import typing
-import yaml
-import xarray as xr
+
 import numpy as np
+import xarray as xr
+import yaml
 
 import glotaran
 from glotaran.parameter import ParameterGroup
 
 
 def _not_none(f):
-
     @functools.wraps(f)
     def decorator(self, value):
         if value is None:
@@ -19,16 +19,16 @@ def _not_none(f):
 
 
 class Scheme:
-
-    def __init__(self,
-                 model: 'glotaran.model.Model' = None,
-                 parameter: ParameterGroup = None,
-                 data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
-                 extra: typing.Dict[str, xr.DataArray] = None,
-                 group_tolerance: float = 0.0,
-                 nnls: bool = False,
-                 nfev: int = None,
-                 ):
+    def __init__(
+        self,
+        model: "glotaran.model.Model" = None,
+        parameter: ParameterGroup = None,
+        data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
+        extra: typing.Dict[str, xr.DataArray] = None,
+        group_tolerance: float = 0.0,
+        nnls: bool = False,
+        nfev: int = None,
+    ):
 
         self.model = model
         self.parameter = parameter
@@ -39,79 +39,86 @@ class Scheme:
         self.nfev = nfev
 
     @classmethod
-    def from_yml_file(cls, filename: str) -> 'Scheme':
+    def from_yml_file(cls, filename: str) -> "Scheme":
 
         try:
             with open(filename) as f:
                 try:
                     scheme = yaml.load(f, Loader=yaml.FullLoader)
                 except Exception as e:
-                    raise Exception(f"Error parsing scheme: {e}")
+                    raise ValueError(f"Error parsing scheme: {e}")
         except Exception as e:
-            raise Exception(f"Error opening scheme: {e}")
+            raise OSError(f"Error opening scheme: {e}")
 
-        if 'model' not in scheme:
-            raise Exception('Model file not specified.')
+        if "model" not in scheme:
+            raise ValueError("Model file not specified.")
 
         try:
-            model = glotaran.read_model_from_yml_file(scheme['model'])
+            model = glotaran.read_model_from_yml_file(scheme["model"])
         except Exception as e:
-            raise Exception(f"Error loading model: {e}")
+            raise ValueError(f"Error loading model: {e}")
 
-        if 'parameter' not in scheme:
-            raise Exception('Parameter file not specified.')
+        if "parameter" not in scheme:
+            raise ValueError("Parameter file not specified.")
 
-        path = scheme['parameter']
-        fmt = scheme.get('parameter_format', None)
+        path = scheme["parameter"]
+        fmt = scheme.get("parameter_format", None)
         try:
             parameter = glotaran.parameter.ParameterGroup.from_file(path, fmt)
         except Exception as e:
-            raise Exception(f"Error loading parameter: {e}")
+            raise ValueError(f"Error loading parameter: {e}")
 
-        if 'data' not in scheme:
-            raise Exception('No data specified.')
+        if "data" not in scheme:
+            raise ValueError("No data specified.")
 
         data = {}
-        for label, path in scheme['data'].items():
+        for label, path in scheme["data"].items():
             path = pathlib.Path(path)
 
-            fmt = path.suffix[1:] if path.suffix != '' else 'nc'
-            if 'data_format' in scheme:
-                fmt = scheme['data_format']
+            fmt = path.suffix[1:] if path.suffix != "" else "nc"
+            if "data_format" in scheme:
+                fmt = scheme["data_format"]
 
             try:
                 data[label] = glotaran.io.read_data_file(path, fmt=fmt)
             except Exception as e:
                 raise Exception(f"Error loading dataset '{label}': {e}")
 
-        nnls = scheme.get('nnls', False)
-        nfev = scheme.get('nfev', None)
-        group_tolerance = scheme.get('group_tolerance', 0.0)
+        nnls = scheme.get("nnls", False)
+        nfev = scheme.get("nfev", None)
+        group_tolerance = scheme.get("group_tolerance", 0.0)
 
-        extra = scheme.get('extra', {})
+        extra = scheme.get("extra", {})
 
         for label, path in extra.items():
             path = pathlib.Path(path)
 
-            fmt = path.suffix[1:] if path.suffix != '' else 'nc'
-            if 'data_format' in scheme:
-                fmt = scheme['data_format']
+            fmt = path.suffix[1:] if path.suffix != "" else "nc"
+            if "data_format" in scheme:
+                fmt = scheme["data_format"]
 
             try:
                 extra[label] = glotaran.io.read_data_file(path, fmt=fmt)
             except Exception as e:
                 raise Exception(f"Error loading extra data '{label}': {e}")
 
-        return cls(model=model, parameter=parameter, data=data, extra=extra,
-                   nnls=nnls, nfev=nfev, group_tolerance=group_tolerance)
+        return cls(
+            model=model,
+            parameter=parameter,
+            data=data,
+            extra=extra,
+            nnls=nnls,
+            nfev=nfev,
+            group_tolerance=group_tolerance,
+        )
 
     @property
-    def model(self) -> 'glotaran.model.Model':
+    def model(self) -> "glotaran.model.Model":
         return self._model
 
     @_not_none
     @model.setter
-    def model(self, model: 'glotaran.model.Model'):
+    def model(self, model: "glotaran.model.Model"):
         self._model = model
 
     @property
@@ -182,53 +189,59 @@ class Scheme:
         data = {} if copy else None
         for label, dataset in self.data.items():
             if self.model.matrix_dimension not in dataset.dims:
-                raise Exception("Missing coordinates for dimension "
-                                f"'{self.model.matrix_dimension}' in data for dataset "
-                                f"'{label}'")
+                raise ValueError(
+                    "Missing coordinates for dimension "
+                    f"'{self.model.matrix_dimension}' in data for dataset "
+                    f"'{label}'"
+                )
             if self.model.global_dimension not in dataset.dims:
-                raise Exception("Missing coordinates for dimension "
-                                f"'{self.model.global_dimension}' in data for dataset "
-                                f"'{label}'")
+                raise ValueError(
+                    "Missing coordinates for dimension "
+                    f"'{self.model.global_dimension}' in data for dataset "
+                    f"'{label}'"
+                )
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            if 'weight' in dataset and 'weighted_data' not in dataset:
-                dataset['weighted_data'] = np.multiply(dataset.data, dataset.weight)
+            if "weight" in dataset and "weighted_data" not in dataset:
+                dataset["weighted_data"] = np.multiply(dataset.data, dataset.weight)
 
-            if'data_singular_values' not in dataset:
+            if "data_singular_values" not in dataset:
                 l, s, r = np.linalg.svd(dataset.data)
-                dataset['data_left_singular_vectors'] = \
-                    ((self.model.matrix_dimension, 'left_singular_value_index'), l)
-                dataset['data_singular_values'] = (('singular_value_index'), s)
-                dataset['data_right_singular_vectors'] = \
-                    (('right_singular_value_index', self.model.global_dimension), r)
+                dataset["data_left_singular_vectors"] = (
+                    (self.model.matrix_dimension, "left_singular_value_index"),
+                    l,
+                )
+                dataset["data_singular_values"] = (("singular_value_index"), s)
+                dataset["data_right_singular_vectors"] = (
+                    ("right_singular_value_index", self.model.global_dimension),
+                    r,
+                )
 
-            else:
-                # This protects transposing when getting data with svd in it
-                if dataset.coords['right_singular_value_index'].size != \
-                  dataset.coords[self.model.global_dimension].size:
-                    dataset = dataset.rename(
-                        right_singular_value_index='right_singular_value_indexTMP')
-                    dataset = dataset.rename(
-                        left_singular_value_index='right_singular_value_index')
-                    dataset = dataset.rename(
-                        right_singular_value_indexTMP='left_singular_value_index')
-                    dataset = dataset.rename(
-                        right_singular_vectors='right_singular_value_vectorsTMP')
-                    dataset = dataset.rename(
-                        left_singular_value_vectors='right_singular_value_vectors')
-                    dataset = dataset.rename(
-                        right_singular_value_vectorsTMP='left_singular_value_vectors')
+            if "data_singular_values" in dataset and (
+                dataset.coords["right_singular_value_index"].size
+                != dataset.coords[self.model.global_dimension].size
+            ):
+                dataset = dataset.rename(
+                    right_singular_value_index="right_singular_value_indexTMP"
+                )
+                dataset = dataset.rename(left_singular_value_index="right_singular_value_index")
+                dataset = dataset.rename(right_singular_value_indexTMP="left_singular_value_index")
+                dataset = dataset.rename(right_singular_vectors="right_singular_value_vectorsTMP")
+                dataset = dataset.rename(
+                    left_singular_value_vectors="right_singular_value_vectors"
+                )
+                dataset = dataset.rename(
+                    right_singular_value_vectorsTMP="left_singular_value_vectors"
+                )
             new_dims = [self.model.matrix_dimension, self.model.global_dimension]
-            new_dims += [dim for dim in dataset.dims
-                         if dim != self.model.matrix_dimension
-                         and dim != self.model.global_dimension]
-            if copy:
-                data[label] = dataset.transpose(*new_dims)
-            else:
-                self.data[label] = dataset.transpose(*new_dims)
-        if copy:
-            self.data = data
+            new_dims += [
+                dim
+                for dim in dataset.dims
+                if dim != self.model.matrix_dimension and dim != self.model.global_dimension
+            ]
+            data[label] = dataset.transpose(*new_dims)
+        return data
 
     def markdown(self):
         s = self.model.markdown(parameter=self.parameter)

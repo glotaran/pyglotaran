@@ -4,9 +4,8 @@ import numba as nb
 import numpy as np
 from scipy.special import erf
 
-from glotaran.builtin.models.kinetic_image.kinetic_image_matrix \
-    import kinetic_image_matrix
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 
 
 def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, extra=None):
@@ -14,16 +13,20 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, extra=
     oscillations = _collect_oscillations(dataset_descriptor)
     matrix = np.zeros((axis.size, len(2 * oscillations)), dtype=np.float64)
     labels = [o.label for o in oscillations]
+    # TODO: improve code reasability further
     clp = [
-        lbl for o in zip([f'{l}_cos' for l in labels], [f'{l}_sin' for l in labels]) for lbl in o
+        lbl
+        for o in zip([f"{l_cos}_cos" for l_cos in labels], [f"{l_sin}_sin" for l_sin in labels])
+        for lbl in o
     ]
 
     delta = np.abs(axis[1:] - axis[:-1])
     delta_min = delta[np.argmin(delta)]
     frequency_max = 1 / (2 * 0.03 * delta_min)
     frequencies = np.asarray([o.frequency * 0.03 * 2 * np.pi for o in oscillations])
-    frequencies[frequencies >= frequency_max] = \
-        np.mod(frequencies[frequencies >= frequency_max], frequency_max)
+    frequencies[frequencies >= frequency_max] = np.mod(
+        frequencies[frequencies >= frequency_max], frequency_max
+    )
     rates = np.asarray([o.rate for o in oscillations])
 
     if dataset_descriptor.irf is None:
@@ -31,7 +34,8 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, extra=
     elif isinstance(dataset_descriptor.irf, IrfMultiGaussian):
         centers, widths, scales, _, _ = dataset_descriptor.irf.parameter(index)
         calculate_doas_matrix_gaussian_irf(
-            matrix, frequencies, rates, axis, centers, widths, scales)
+            matrix, frequencies, rates, axis, centers, widths, scales
+        )
 
     kinetic_clp, kinetic_matrix = kinetic_image_matrix(dataset_descriptor, axis, index, extra)
     if kinetic_matrix is not None:
@@ -58,8 +62,8 @@ def calculate_doas_matrix_gaussian_irf(matrix, frequencies, rates, axis, centers
         osc = np.zeros_like(axis, dtype=np.complex64)
         for i in range(len(centers)):
             shifted_axis = axis - centers[i]
-            d = widths[i]**2
-            k = (rate + 1j * frequency)
+            d = widths[i] ** 2
+            k = rate + 1j * frequency
 
             a = (-1 * shifted_axis + 0.5 * d * k) * k
             a = np.minimum(a, 709)

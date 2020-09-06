@@ -57,8 +57,8 @@ def test_param_options():
 
     assert params.get("7").value == 2e4
     assert not params.get("7").non_neg
-    assert params.get("7").min == float('-inf')
-    assert params.get("7").max == float('inf')
+    assert params.get("7").min == float("-inf")
+    assert params.get("7").max == float("inf")
     assert params.get("7").vary
 
 
@@ -89,11 +89,11 @@ def test_nested_param_list():
     params = ParameterGroup.from_yaml(params)
 
     assert len(list(params.all())) == 5
-    group = params['kinetic']
+    group = params["kinetic"]
     assert len(list(group.all())) == 3
     assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
     assert [p.value for _, p in group.all()] == list(range(3, 6))
-    group = params['j']
+    group = params["j"]
     assert len(list(group.all())) == 2
     assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 3)]
     assert [p.value for _, p in group.all()] == list(range(7, 9))
@@ -110,9 +110,9 @@ def test_nested_param_group():
 
     params = ParameterGroup.from_yaml(params)
     assert len(list(params.all())) == 3
-    group = params['kinetic']
+    group = params["kinetic"]
     assert len(list(group.all())) == 3
-    group = group['j']
+    group = group["j"]
     assert len(list(group.all())) == 3
     assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
     assert [p.value for _, p in group.all()] == list(range(7, 10))

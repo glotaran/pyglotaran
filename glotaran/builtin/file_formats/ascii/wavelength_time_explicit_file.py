@@ -1,12 +1,13 @@
-from enum import Enum
-import os.path
 import csv
+import os.path
 import re
+from enum import Enum
+
 import numpy as np
 import xarray as xr
 
-from glotaran.io.reader import file_reader
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
+from glotaran.io.reader import file_reader
 
 
 class DataFileType(Enum):
@@ -14,10 +15,11 @@ class DataFileType(Enum):
     wavelength_explicit = "Wavelength explicit"
 
 
-class ExplicitFile(object):
+class ExplicitFile:
     """
     Abstract class representing either a time- or wavelength-explicit file.
     """
+
     # TODO: implement time_intervals
     def __init__(self, filepath: str = None, dataset: xr.DataArray = None):
         self._file_data_format = None
@@ -29,8 +31,8 @@ class ExplicitFile(object):
         absfilepath = os.path.realpath(filepath)
         if dataset is not None:
             self._observations = np.array(dataset.values).T
-            self._times = np.array(dataset.coords['time'])
-            self._spectral_indices = np.array(dataset.coords['spectral'])
+            self._times = np.array(dataset.coords["time"])
+            self._spectral_indices = np.array(dataset.coords["spectral"])
             self._file = filepath
         elif os.path.isfile(filepath):
             self._file = filepath
@@ -70,50 +72,59 @@ class ExplicitFile(object):
         if os.path.isfile(filename) and not overwrite:
             raise Exception("File already exist.")
 
-        f = open(filename, "w")
+        with open(filename, "w") as f:
 
-        f.write(comment[0])
-        f.write(comment[1])
+            f.write(comment[0])
+            f.write(comment[1])
 
-        f.write(self.get_format_name())
+            f.write(self.get_format_name())
 
-        f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
+            f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
 
-        datawriter = csv.writer(f, delimiter=r'\t')
+            datawriter = csv.writer(f, delimiter=r"\t")
 
-        datawriter.writerow(self.get_explicit_axis())
+            datawriter.writerow(self.get_explicit_axis())
 
-        for i in range(len(self.get_secondary_axis())):
-            datawriter.writerow(self.get_data_row(i)
-                                .prepend(self.get_secondary_axis()[i]))
+            for i in range(len(self.get_secondary_axis())):
+                datawriter.writerow(self.get_data_row(i).prepend(self.get_secondary_axis()[i]))
 
-        f.close()
-
-    def write(self, overwrite=False, comment="",
-              file_format="TimeExplicit", number_format="%.10e"):
+    def write(
+        self, overwrite=False, comment="", file_format="TimeExplicit", number_format="%.10e"
+    ):
         # TODO: write a more elegant method
 
         if os.path.isfile(self._file) and not overwrite:
-            print('File {} already exists'.format(os.path.isfile(self._file)))
+            print("File {} already exists".format(os.path.isfile(self._file)))
             raise Exception("File already exist.")
 
         comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
 
         if file_format == "WavelengthExplicit":
-            wav = '\t'.join([repr(num) for num in self._spectral_indices])
-            header = comments + "Wavelength explicit\nIntervalnr {}" \
-                                "".format(len(self._spectral_indices)) + "\n" + wav
+            wav = "\t".join([repr(num) for num in self._spectral_indices])
+            header = (
+                comments + "Wavelength explicit\nIntervalnr {}"
+                "".format(len(self._spectral_indices)) + "\n" + wav
+            )
             raw_data = np.vstack((self._times.T, self._observations)).T
         elif file_format == "TimeExplicit":
-            tim = '\t'.join([repr(num) for num in self._times])
-            header = comments + "Time explicit\nIntervalnr {}" \
-                                "".format(len(self._times)) + "\n" + tim
+            tim = "\t".join([repr(num) for num in self._times])
+            header = (
+                comments + "Time explicit\nIntervalnr {}" "".format(len(self._times)) + "\n" + tim
+            )
             raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
         else:
             raise NotImplementedError
 
-        np.savetxt(self._file, raw_data, fmt=number_format, delimiter='\t', newline='\n',
-                   header=header, footer='', comments='')
+        np.savetxt(
+            self._file,
+            raw_data,
+            fmt=number_format,
+            delimiter="\t",
+            newline="\n",
+            header=header,
+            footer="",
+            comments="",
+        )
 
     def read(self, prepare: bool = True):
         if not os.path.isfile(self._file):
@@ -129,8 +140,9 @@ class ExplicitFile(object):
             all_data = []
             line = f.readline()
             while line:
-                all_data.append([float(i) for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+",
-                                                            line.strip())])
+                all_data.append(
+                    [float(i) for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+", line.strip())]
+                )
                 # data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+",
                 #                          engine='python', header=None, index_col=False)
                 # all_data.append(data_block.values())
@@ -144,8 +156,8 @@ class ExplicitFile(object):
             obs_idx = 0
 
             for item in [sl for sublist in all_data for sl in sublist]:
-                if item != item:  # NaN was found
-                    ValueError()
+                if np.isnan(item):
+                    raise ValueError()
                 if interval_counter < 0:
                     # print("explicit_axis {}: {}".format(interval_counter, item))
                     explicit_axis.append(item)
@@ -173,8 +185,7 @@ class ExplicitFile(object):
                 self._observations = np.asarray(observations)
 
             else:
-                NotImplementedError()
-                pass
+                raise NotImplementedError()
 
         return self.dataset(prepare=prepare)
 
@@ -183,7 +194,8 @@ class ExplicitFile(object):
         if self._file_data_format == DataFileType.time_explicit:
             data = data.T
         dataset = xr.DataArray(
-            data, coords=[('time', self._times), ('spectral', self._spectral_indices)])
+            data, coords=[("time", self._times), ("spectral", self._spectral_indices)]
+        )
         if prepare:
             dataset = prepare_time_trace_dataset(dataset)
         return dataset
@@ -228,6 +240,7 @@ class TimeExplicitFile(ExplicitFile):
     """
     Represents a time explicit file
     """
+
     def get_explicit_axis(self):
         return self.observations()
 
@@ -259,7 +272,7 @@ def get_interval_number(line):
     if match:
         interval_number = match.group(1)
     if not interval_number:
-        interval_number = re.search(r'\d+', line[::-1]).group()[::-1]
+        interval_number = re.search(r"\d+", line[::-1]).group()[::-1]
     try:
         interval_number = int(interval_number)
     except ValueError:
@@ -277,15 +290,15 @@ def get_data_file_format(line):
         # print("Wavelength explicit format") #TODO: verbosity / debug statement
         data_file_format = DataFileType.wavelength_explicit
     else:
-        NotImplementedError()
+        raise NotImplementedError()
     return data_file_format
 
 
-@file_reader(extension='ascii', name='Wavelength-/Time-Explicit ASCII')
+@file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
 def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
     """Reads an ascii file in wavelength- or time-explicit format.
 
-    See [1] for documentation of this format.
+    See [1]_ for documentation of this format.
 
     Parameters
     ----------
@@ -298,7 +311,7 @@ def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
 
     Notes
     -----
-    .. [1] http://glotaran.org/wiki/doku.php?id=file_formats
+    .. [1] https://glotaran.github.io/legacy/file_formats
     """
 
     data_file_format = None
@@ -307,22 +320,28 @@ def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
         f.readline()  # Read second line with comments (and discard for now)
         data_file_format = get_data_file_format(f.readline())
 
-    data_file = WavelengthExplicitFile(filepath=fname) if data_file_format is \
-        DataFileType.wavelength_explicit else TimeExplicitFile(fname)
+    data_file = (
+        WavelengthExplicitFile(filepath=fname)
+        if data_file_format is DataFileType.wavelength_explicit
+        else TimeExplicitFile(fname)
+    )
 
     return data_file.read(prepare=prepare)
 
 
-def write_ascii_time_trace(filename: str,
-                           dataset: xr.DataArray,
-                           overwrite=False,
-                           comment="",
-                           file_format="TimeExplicit",
-                           number_format="%.10e"):
-    data_file = \
-        TimeExplicitFile(filepath=filename, dataset=dataset) if file_format == "TimeExplicit" \
+def write_ascii_time_trace(
+    filename: str,
+    dataset: xr.DataArray,
+    overwrite=False,
+    comment="",
+    file_format="TimeExplicit",
+    number_format="%.10e",
+):
+    data_file = (
+        TimeExplicitFile(filepath=filename, dataset=dataset)
+        if file_format == "TimeExplicit"
         else WavelengthExplicitFile(filepath=filename, dataset=dataset)
-    data_file.write(overwrite=overwrite,
-                    comment=comment,
-                    file_format=file_format,
-                    number_format=number_format)
+    )
+    data_file.write(
+        overwrite=overwrite, comment=comment, file_format=file_format, number_format=number_format
+    )

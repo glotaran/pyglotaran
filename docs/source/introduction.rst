@@ -6,7 +6,7 @@ It is designed to provide a state of the art modeling toolbox to researchers, in
 
 Its features are:
 
-* user-friendly modeling with a custom YAML (*.yml) based modeling language
+* user-friendly modeling with a custom YAML (``*.yml``) based modeling language
 * parameter optimization using variable projection and non-linear least-squares algorithms
 * easy to extend modeling framework
 * battle-hardened model and algorithms for fluorescence dynamics
@@ -18,7 +18,7 @@ A Note To Glotaran Users
 Although closely related and developed in the same lab, pyglotaran is not a
 replacement for Glotaran - A GUI For TIMP. Pyglotaran only aims to provide the
 modeling and optimization framework and algorithms. It is of course possible
-to develop a new GUI which leverages the power of pyglotaran (contributions welcome).  
+to develop a new GUI which leverages the power of pyglotaran (contributions welcome).
 
 The current 'user-interface' for pyglotaran is Jupyter Notebook. It is designed to
 seamlessly integrate in this environment and be compatible with all major
