@@ -52,7 +52,7 @@ def model(
     megacomplex_type: typing.Any = None,
     matrix: typing.Union[MatrixFunction, IndexDependedMatrixFunction] = None,
     global_matrix: GlobalMatrixFunction = None,
-    matrix_dimension: str = None,
+    model_dimension: str = None,
     global_dimension: str = None,
     has_matrix_constraints_function: typing.Callable[[typing.Type[Model]], bool] = None,
     constrain_matrix_function: ConstrainMatrixFunction = None,
@@ -83,7 +83,7 @@ def model(
         A function to calculate the matrix for the model.
     global_matrix :
         A function to calculate the global matrix for the model.
-    matrix_dimension :
+    model_dimension :
         The name of model matrix row dimension.
     global_dimension :
         The name of model global matrix row dimension.
@@ -160,7 +160,7 @@ def model(
         mat = wrap_func_as_method(cls, name="matrix")(matrix)
         mat = staticmethod(mat)
         setattr(cls, "matrix", mat)
-        setattr(cls, "matrix_dimension", matrix_dimension)
+        setattr(cls, "model_dimension", model_dimension)
 
         if global_matrix:
             g_mat = wrap_func_as_method(cls, name="global_matrix")(global_matrix)

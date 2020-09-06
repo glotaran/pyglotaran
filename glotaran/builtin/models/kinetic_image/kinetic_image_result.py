@@ -55,7 +55,7 @@ def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name)
         dataset["species_concentration"] = (
             (
                 model.global_dimension,
-                model.matrix_dimension,
+                model.model_dimension,
                 "species",
             ),
             dataset.matrix.sel(clp_label=compartments).values,
@@ -64,7 +64,7 @@ def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name)
         #  index independent
         dataset["species_concentration"] = (
             (
-                model.matrix_dimension,
+                model.model_dimension,
                 "species",
             ),
             dataset.matrix.sel(clp_label=compartments).values,
@@ -146,4 +146,4 @@ def retrieve_irf(model, dataset, dataset_descriptor, name):
 
     if isinstance(irf, IrfMultiGaussian):
         index = dataset.coords[model.global_dimension][0].values
-        dataset["irf"] = ((model.matrix_dimension), irf.calculate(index, dataset.coords["time"]))
+        dataset["irf"] = ((model.model_dimension), irf.calculate(index, dataset.coords["time"]))

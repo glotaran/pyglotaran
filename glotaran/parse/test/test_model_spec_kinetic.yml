@@ -83,5 +83,5 @@ spectral_relations:
 weights:
   - datasets: [d1, d2]
     global_interval: (100, 102)
-    matrix_interval: (301, 502)
+    model_interval: (301, 502)
     value: 42

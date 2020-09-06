@@ -72,7 +72,7 @@ def grouped(model: T_KineticSpectrumModel):
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
     matrix=kinetic_spectrum_matrix,
-    matrix_dimension="time",
+    model_dimension="time",
     global_matrix=spectral_matrix,
     global_dimension="spectral",
     has_matrix_constraints_function=has_kinetic_model_constraints,

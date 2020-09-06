@@ -163,10 +163,10 @@ class Scheme:
     def prepared_data(self) -> typing.Dict[str, xr.Dataset]:
         data = {}
         for label, dataset in self.data.items():
-            if self.model.matrix_dimension not in dataset.dims:
+            if self.model.model_dimension not in dataset.dims:
                 raise ValueError(
                     "Missing coordinates for dimension "
-                    f"'{self.model.matrix_dimension}' in data for dataset "
+                    f"'{self.model.model_dimension}' in data for dataset "
                     f"'{label}'"
                 )
             if self.model.global_dimension not in dataset.dims:
@@ -197,11 +197,11 @@ class Scheme:
                 dataset = dataset.rename(
                     right_singular_value_vectorsTMP="left_singular_value_vectors"
                 )
-            new_dims = [self.model.matrix_dimension, self.model.global_dimension]
+            new_dims = [self.model.model_dimension, self.model.global_dimension]
             new_dims += [
                 dim
                 for dim in dataset.dims
-                if dim != self.model.matrix_dimension and dim != self.model.global_dimension
+                if dim != self.model.model_dimension and dim != self.model.global_dimension
             ]
             data[label] = dataset.transpose(*new_dims)
         return data
@@ -230,7 +230,7 @@ class Scheme:
             return
 
         global_axis = dataset.coords[self.model.global_dimension]
-        matrix_axis = dataset.coords[self.model.matrix_dimension]
+        model_axis = dataset.coords[self.model.model_dimension]
 
         for weight in self.model.weights:
             if label in weight.datasets:
@@ -244,9 +244,9 @@ class Scheme:
                     idx[self.model.global_dimension] = self._get_min_max_from_interval(
                         weight.global_interval, global_axis
                     )
-                if weight.matrix_interval is not None:
-                    idx[self.model.matrix_dimension] = self._get_min_max_from_interval(
-                        weight.matrix_interval, matrix_axis
+                if weight.model_interval is not None:
+                    idx[self.model.model_dimension] = self._get_min_max_from_interval(
+                        weight.model_interval, model_axis
                     )
                 dataset.weight[idx] *= weight.value
 

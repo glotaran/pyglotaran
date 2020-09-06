@@ -7,7 +7,7 @@ from dask import array as da
 from dask import bag as db
 
 ProblemDescriptor = collections.namedtuple(
-    "ProblemDescriptor", "dataset data matrix_axis global_axis weight"
+    "ProblemDescriptor", "dataset data model_axis global_axis weight"
 )
 GroupedProblem = collections.namedtuple("GroupedProblem", "data weight descriptor")
 GroupedProblemDescriptor = collections.namedtuple("ProblemDescriptor", "dataset index axis")
@@ -24,7 +24,7 @@ def create_ungrouped_bag(scheme):
         bag[label] = ProblemDescriptor(
             scheme.model.dataset[label],
             data,
-            dataset.coords[scheme.model.matrix_dimension].values,
+            dataset.coords[scheme.model.model_dimension].values,
             dataset.coords[scheme.model.global_dimension].values,
             weight,
         )
@@ -44,7 +44,7 @@ def create_grouped_bag(scheme):
         )
         data = dataset.data * weight
         global_axis = dataset.coords[scheme.model.global_dimension].values
-        model_axis = dataset.coords[scheme.model.matrix_dimension].values
+        model_axis = dataset.coords[scheme.model.model_dimension].values
         if bag is None:
             bag = collections.deque(
                 GroupedProblem(

@@ -67,7 +67,7 @@ def test_weight():
             {
                 "datasets": ["dataset1"],
                 "global_interval": (np.inf, 200),
-                "matrix_interval": (4, 8),
+                "model_interval": (4, 8),
                 "value": 0.5,
             },
         ],
@@ -79,11 +79,11 @@ def test_weight():
     parameter = ParameterGroup.from_list([])
 
     global_axis = np.asarray(range(50, 300))
-    matrix_axis = np.asarray(range(15))
+    model_axis = np.asarray(range(15))
 
     dataset = xr.DataArray(
-        np.ones((global_axis.size, matrix_axis.size)),
-        coords={"e": global_axis, "c": matrix_axis},
+        np.ones((global_axis.size, model_axis.size)),
+        coords={"e": global_axis, "c": model_axis},
         dims=("e", "c"),
     )
 

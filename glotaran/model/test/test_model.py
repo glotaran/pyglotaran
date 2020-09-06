@@ -50,7 +50,7 @@ def model():
             {
                 "datasets": ["d1", "d2"],
                 "global_interval": (1, 4),
-                "matrix_interval": (2, 3),
+                "model_interval": (2, 3),
                 "value": 5.4,
             }
         ],
@@ -167,7 +167,7 @@ def test_items(model):
     w = model.weights[0]
     assert w.datasets == ["d1", "d2"]
     assert w.global_interval == (1, 4)
-    assert w.matrix_interval == (2, 3)
+    assert w.model_interval == (2, 3)
     assert w.value == 5.4
 
 

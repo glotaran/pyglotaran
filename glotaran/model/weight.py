@@ -14,7 +14,7 @@ from .model_attribute import model_attribute
             "default": None,
             "allow_none": True,
         },
-        "matrix_interval": {
+        "model_interval": {
             "type": List[Tuple[float, float]],
             "default": None,
             "allow_none": True,
