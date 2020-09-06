@@ -40,7 +40,7 @@ def optimize(scheme, verbose=True, client=None):
 
 def optimize_task(initial_parameter, scheme, verbose):
 
-    scheme.prepare_data()
+    scheme.prepare_data(copy=False)
 
     problem_bag, groups = _create_problem_bag(scheme)
 

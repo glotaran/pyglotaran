@@ -240,7 +240,11 @@ class Scheme:
                 for dim in dataset.dims
                 if dim != self.model.matrix_dimension and dim != self.model.global_dimension
             ]
-            data[label] = dataset.transpose(*new_dims)
+            if copy:
+                data[label] = dataset.transpose(*new_dims)
+            else:
+                self.data[label] = dataset.transpose(*new_dims)
+
         return data
 
     def markdown(self):

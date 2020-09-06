@@ -1,11 +1,13 @@
 import numpy as np
+import pytest
 import xarray as xr
 
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.parameter import ParameterGroup
 
 
-def test_measured_irf():
+@pytest.mark.parametrize("method", [1, 2])
+def test_measured_irf(method):
     model = KineticImageModel.from_dict(
         {
             "initial_concentration": {
@@ -22,7 +24,7 @@ def test_measured_irf():
                 }
             },
             "irf": {
-                "irf1": {"type": "measured", "method": "conv1"},
+                "irf1": {"type": "measured", "method": f"conv{method}"},
             },
             "dataset": {
                 "dataset1": {

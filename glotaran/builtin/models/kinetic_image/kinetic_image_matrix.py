@@ -99,7 +99,7 @@ def _calculate_for_k_matrix(
     if not np.all(np.isfinite(matrix)):
         raise ValueError(
             f"Non-finite concentrations for K-Matrix '{k_matrix.label}':\n"
-            "{k_matrix.matrix_as_markdown}"
+            f"{k_matrix.matrix_as_markdown()}"
         )
 
     # apply A matrix

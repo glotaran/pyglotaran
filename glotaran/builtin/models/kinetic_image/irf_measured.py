@@ -20,7 +20,7 @@ class IrfMeasured:
             raise ValueError(f"Unknown convolution methond '{self.method}'")
 
 
-@nb.jit(nopython=True, parallel=True)
+@nb.jit(nopython=True, parallel=False)
 def irf_conv_1(matrix, measured_irf, rates, time):
 
     time_delta = np.zeros_like(time)
@@ -54,8 +54,9 @@ def irf_conv_1(matrix, measured_irf, rates, time):
 @nb.jit(nopython=True, parallel=True)
 def irf_conv_2(matrix, measured_irf, rates, time):
 
-    time_delta = np.array_like(time)
-    time_delta[:-1] = time[:-1] - time[1:]
+    time_delta = np.empty_like(time)
+    time_delta[:-1] = time[1:] - time[:-1]
+    time_delta[0] = time_delta[1]
     time_delta[-1] = time_delta[-2]
 
     for n_r in nb.prange(rates.size):
