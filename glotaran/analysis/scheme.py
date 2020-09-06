@@ -227,6 +227,7 @@ class Scheme:
                     f"Ignoring model weight for dataset '{label}'"
                     " because weight is already supplied by dataset."
                 )
+            return
 
         global_axis = dataset.coords[self.model.global_dimension]
         matrix_axis = dataset.coords[self.model.matrix_dimension]
