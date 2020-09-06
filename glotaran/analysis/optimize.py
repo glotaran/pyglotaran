@@ -327,29 +327,33 @@ def _create_result(scheme, parameter):
     if "weight" in dataset:
         dataset["weighted_residual"] = dataset.residual
         dataset["residual"] = dataset.weighted_residual / dataset.weight
+        _create_svd("weighted_residual", dataset, model)
+    _create_svd("residual", dataset, model)
 
+    # Calculate RMS
     size = dataset.residual.shape[0] * dataset.residual.shape[1]
     dataset.attrs["root_mean_square_error"] = np.sqrt((dataset.residual ** 2).sum() / size).values
 
-    l, v, r = np.linalg.svd(dataset.residual)
-
-    dataset["residual_left_singular_vectors"] = (
-        (model.matrix_dimension, "left_singular_value_index"),
-        l,
-    )
-
-    dataset["residual_right_singular_vectors"] = (
-        ("right_singular_value_index", model.global_dimension),
-        r,
-    )
-
-    dataset["residual_singular_values"] = (("singular_value_index"), v)
-
     # reconstruct fitted data
-
     dataset["fitted_data"] = dataset.data - dataset.residual
 
     if callable(model.finalize_data):
         model.finalize_data(indices, reduced_clp_labels, reduced_clps, parameter, datasets)
 
     return datasets
+
+
+def _create_svd(name, dataset, model):
+    l, v, r = np.linalg.svd(dataset[name])
+
+    dataset[f"{name}_left_singular_vectors"] = (
+        (model.matrix_dimension, "left_singular_value_index"),
+        l,
+    )
+
+    dataset[f"{name}_right_singular_vectors"] = (
+        ("right_singular_value_index", model.global_dimension),
+        r,
+    )
+
+    dataset[f"{name}_singular_values"] = (("singular_value_index"), v)

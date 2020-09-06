@@ -244,8 +244,20 @@ def test_fitting(suite, index_dependend, grouped, weight):
         assert np.allclose(param.value, wanted.get(param.full_label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
+    print(resultdata)
+    assert "residual" in resultdata
+    assert "residual_left_singular_vectors" in resultdata
+    assert "residual_right_singular_vectors" in resultdata
+    assert "residual_singular_values" in resultdata
     assert np.array_equal(dataset.c, resultdata.c)
     assert np.array_equal(dataset.e, resultdata.e)
     assert dataset.data.shape == resultdata.data.shape
     print(dataset.data[0, 0], resultdata.data[0, 0])
     assert np.allclose(dataset.data, resultdata.data)
+
+    if weight:
+        assert "weight" in resultdata
+        assert "weighted_residual" in resultdata
+        assert "weighted_residual_left_singular_vectors" in resultdata
+        assert "weighted_residual_right_singular_vectors" in resultdata
+        assert "weighted_residual_singular_values" in resultdata
