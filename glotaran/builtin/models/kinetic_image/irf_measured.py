@@ -17,7 +17,7 @@ class IrfMeasured:
         elif self.method == "conv2":
             return irf_conv_2
         else:
-            raise Exception(f"Unknown convolution methond '{self.method}'")
+            raise ValueError(f"Unknown convolution methond '{self.method}'")
 
 
 @nb.jit(nopython=True, parallel=True)

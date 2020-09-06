@@ -134,7 +134,7 @@ def kinetic_image_matrix_implementation(matrix, rates, axis, index, dataset_desc
 
     if isinstance(irf, IrfMeasured):
         if irf.label not in extra:
-            raise Exception(f"Missing data for irf '{irf.label}'")
+            raise ValueError(f"Missing data for irf '{irf.label}'")
         measured_irf = extra[irf.label].values
         irf.get_implementation()(matrix, measured_irf, rates, axis)
 

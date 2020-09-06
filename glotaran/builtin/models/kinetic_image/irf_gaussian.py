@@ -57,16 +57,14 @@ class IrfMultiGaussian:
         len_widths = len(widths)
         if not len_centers == len_widths:
             if not min(len_centers, len_widths) == 1:
-                raise Exception(
+                raise ValueError(
                     f"len(centers) ({len_centers}) not equal "
                     f"len(widths) ({len_widths}) none of is 1."
                 )
             if len_centers == 1:
                 centers = [centers[0] for _ in range(len_widths)]
-                len_centers = len_widths
             else:
                 widths = [widths[0] for _ in range(len_centers)]
-                len_widths = len_centers
 
         scale = self.scale if self.scale is not None else [1.0 for _ in centers]
         scale = scale if isinstance(scale, list) else [scale]
