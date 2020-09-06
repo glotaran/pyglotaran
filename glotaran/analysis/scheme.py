@@ -140,11 +140,11 @@ class Scheme:
         self._data = data
 
     @property
-    def extra(self) -> typing.Dict[str, xr.Dataset]:
+    def extra(self) -> typing.Dict[str, xr.DataArray]:
         return self._extra
 
     @extra.setter
-    def extra(self, extra: typing.Dict[str, xr.Dataset]):
+    def extra(self, extra: typing.Dict[str, xr.DataArray]):
         self._extra = extra
 
     @property
