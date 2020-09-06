@@ -49,22 +49,22 @@ def simulate(
 
     filled_dataset = model.dataset[dataset].fill(model, parameter)
 
-    matrix_dimension = axes[model.matrix_dimension]
+    model_dimension = axes[model.model_dimension]
     global_dimension = axes[model.global_dimension]
 
-    dim1 = matrix_dimension.size
+    dim1 = model_dimension.size
     dim2 = global_dimension.size
     result = xr.DataArray(
         np.empty((dim1, dim2), dtype=np.float64),
         coords=[
-            (model.matrix_dimension, matrix_dimension),
+            (model.model_dimension, model_dimension),
             (model.global_dimension, global_dimension),
         ],
     )
     result = result.to_dataset(name="data")
 
     matrix = [
-        model.matrix(dataset_descriptor=filled_dataset, axis=matrix_dimension, index=index)
+        model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=index)
         for index in global_dimension
     ]
     if callable(model.constrain_matrix_function):
@@ -74,7 +74,7 @@ def simulate(
         ]
     matrix = [
         xr.DataArray(
-            mat, coords=[(model.matrix_dimension, matrix_dimension), ("clp_label", clp_label)]
+            mat, coords=[(model.model_dimension, model_dimension), ("clp_label", clp_label)]
         )
         for clp_label, mat in matrix
     ]
@@ -112,7 +112,7 @@ def simulate(
         if noise_seed is not None:
             np.random.seed(noise_seed)
         result["data"] = (
-            (model.matrix_dimension, model.global_dimension),
+            (model.model_dimension, model.global_dimension),
             np.random.normal(result.data, noise_std_dev),
         )
 

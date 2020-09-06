@@ -1,6 +1,7 @@
 import functools
 import pathlib
 import typing
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -162,10 +163,10 @@ class Scheme:
     def prepared_data(self) -> typing.Dict[str, xr.Dataset]:
         data = {}
         for label, dataset in self.data.items():
-            if self.model.matrix_dimension not in dataset.dims:
+            if self.model.model_dimension not in dataset.dims:
                 raise ValueError(
                     "Missing coordinates for dimension "
-                    f"'{self.model.matrix_dimension}' in data for dataset "
+                    f"'{self.model.model_dimension}' in data for dataset "
                     f"'{label}'"
                 )
             if self.model.global_dimension not in dataset.dims:
@@ -177,11 +178,9 @@ class Scheme:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            if "weight" in dataset and "weighted_data" not in dataset:
-                dataset["weighted_data"] = np.multiply(dataset.data, dataset.weight)
+            self._add_weight(label, dataset)
 
             # This protects transposing when getting data with svd in it
-
             if "data_singular_values" in dataset and (
                 dataset.coords["right_singular_value_index"].size
                 != dataset.coords[self.model.global_dimension].size
@@ -198,11 +197,11 @@ class Scheme:
                 dataset = dataset.rename(
                     right_singular_value_vectorsTMP="left_singular_value_vectors"
                 )
-            new_dims = [self.model.matrix_dimension, self.model.global_dimension]
+            new_dims = [self.model.model_dimension, self.model.global_dimension]
             new_dims += [
                 dim
                 for dim in dataset.dims
-                if dim != self.model.matrix_dimension and dim != self.model.global_dimension
+                if dim != self.model.model_dimension and dim != self.model.global_dimension
             ]
             data[label] = dataset.transpose(*new_dims)
         return data
@@ -218,3 +217,43 @@ class Scheme:
         s += f"* *group_tolerance*: {self.group_tolerance}\n"
 
         return s
+
+    def _add_weight(self, label, dataset):
+
+        # if the user supplies a weight we ignore modeled weights
+        if "weight" in dataset:
+            if any([label in weight.datasets for weight in self.model.weights]):
+                warnings.warn(
+                    f"Ignoring model weight for dataset '{label}'"
+                    " because weight is already supplied by dataset."
+                )
+            return
+
+        global_axis = dataset.coords[self.model.global_dimension]
+        model_axis = dataset.coords[self.model.model_dimension]
+
+        for weight in self.model.weights:
+            if label in weight.datasets:
+                if "weight" not in dataset:
+                    dataset["weight"] = xr.DataArray(
+                        np.ones_like(dataset.data), coords=dataset.data.coords
+                    )
+
+                idx = {}
+                if weight.global_interval is not None:
+                    idx[self.model.global_dimension] = _get_min_max_from_interval(
+                        weight.global_interval, global_axis
+                    )
+                if weight.model_interval is not None:
+                    idx[self.model.model_dimension] = _get_min_max_from_interval(
+                        weight.model_interval, model_axis
+                    )
+                dataset.weight[idx] *= weight.value
+
+
+def _get_min_max_from_interval(interval, axis):
+    minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    maximum = (
+        np.abs(axis.values - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+    )
+    return slice(minimum, maximum)

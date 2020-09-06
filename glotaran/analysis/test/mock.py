@@ -42,7 +42,7 @@ class MockMegacomplex:
 @model(
     "mock",
     matrix=calculate_c,
-    matrix_dimension="c",
+    model_dimension="c",
     global_matrix=calculate_e,
     global_dimension="e",
     megacomplex_type=MockMegacomplex,

@@ -8,10 +8,15 @@ from . import dataset_descriptor
 from . import model
 from . import model_attribute
 from . import model_decorator
+from . import weight
 
 # Dataset
 
 DatasetDescriptor = dataset_descriptor.DatasetDescriptor
+
+# Weight
+
+Weight = weight.Weight
 
 # BaseModel
 
