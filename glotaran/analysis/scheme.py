@@ -241,11 +241,11 @@ class Scheme:
 
                 idx = {}
                 if weight.global_interval is not None:
-                    idx[self.model.global_dimension] = self._get_min_max_from_interval(
+                    idx[self.model.global_dimension] = _get_min_max_from_interval(
                         weight.global_interval, global_axis
                     )
                 if weight.model_interval is not None:
-                    idx[self.model.model_dimension] = self._get_min_max_from_interval(
+                    idx[self.model.model_dimension] = _get_min_max_from_interval(
                         weight.model_interval, model_axis
                     )
                 dataset.weight[idx] *= weight.value
