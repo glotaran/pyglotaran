@@ -119,4 +119,5 @@ def test_weight():
         match="Ignoring model weight for dataset 'dataset1'"
         " because weight is already supplied by dataset.",
     ):
-        scheme.prepared_data()["dataset1"]
+        # unnesscary, but the linter complains if we just call the function without doing anything
+        assert "dataset1" in scheme.prepared_data()

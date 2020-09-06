@@ -250,11 +250,10 @@ class Scheme:
                     )
                 dataset.weight[idx] *= weight.value
 
-    def _get_min_max_from_interval(self, interval, axis):
-        minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
-        maximum = (
-            np.abs(axis.values - interval[1]).argmin() + 1
-            if not np.isinf(interval[1])
-            else axis.size
-        )
-        return slice(minimum, maximum)
+
+def _get_min_max_from_interval(interval, axis):
+    minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    maximum = (
+        np.abs(axis.values - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+    )
+    return slice(minimum, maximum)
