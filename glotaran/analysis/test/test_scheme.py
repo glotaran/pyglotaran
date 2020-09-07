@@ -89,7 +89,7 @@ def test_weight():
 
     scheme = Scheme(model, parameter, {"dataset1": dataset})
 
-    data = scheme.prepared_data()["dataset1"]
+    data = scheme.prepare_data()["dataset1"]
     print(data)
     assert "data" in data
     assert "weight" in data
@@ -109,7 +109,7 @@ def test_weight():
     assert model.valid()
 
     scheme = Scheme(model, parameter, {"dataset1": dataset})
-    data = scheme.prepared_data()["dataset1"]
+    data = scheme.prepare_data()["dataset1"]
     assert np.all(data.weight.sel(e=slice(0, 200), c=slice(4, 8)).values == 0.5 * 0.2)
     assert np.all(data.weight.sel(c=slice(0, 3)).values == 0.2)
 
@@ -120,4 +120,4 @@ def test_weight():
         " because weight is already supplied by dataset.",
     ):
         # unnesscary, but the linter complains if we just call the function without doing anything
-        assert "dataset1" in scheme.prepared_data()
+        assert "dataset1" in scheme.prepare_data()
