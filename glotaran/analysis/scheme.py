@@ -160,8 +160,17 @@ class Scheme:
         else `False`."""
         return self.model.valid(parameter)
 
-    def prepared_data(self) -> typing.Dict[str, xr.Dataset]:
-        data = {}
+    def _transpose_dataset(self, dataset):
+        new_dims = [self.model.model_dimension, self.model.global_dimension]
+        new_dims += [
+            dim
+            for dim in dataset.dims
+            if dim != self.model.model_dimension and dim != self.model.global_dimension
+        ]
+        return dataset.transpose(*new_dims)
+
+    def prepare_data(self, copy=True):
+        data = {} if copy else None
         for label, dataset in self.data.items():
             if self.model.model_dimension not in dataset.dims:
                 raise ValueError(
@@ -178,6 +187,7 @@ class Scheme:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
+            dataset = self._transpose_dataset(dataset)
             self._add_weight(label, dataset)
 
             # This protects transposing when getting data with svd in it
@@ -203,7 +213,10 @@ class Scheme:
                 for dim in dataset.dims
                 if dim != self.model.model_dimension and dim != self.model.global_dimension
             ]
-            data[label] = dataset.transpose(*new_dims)
+            if copy:
+                data[label] = dataset
+            else:
+                self.data[label] = dataset
         return data
 
     def markdown(self):
