@@ -14,7 +14,6 @@ def create_index_independent_ungrouped_residual(
     penalties = []
     for label in problem_bag:
         data = problem_bag[label].data
-        size = problem_bag[label].global_axis.size
         weight = problem_bag[label].weight
         global_axis = problem_bag[label].global_axis
         reduced_clp_labels[label] = constraint_labels_and_matrices[label].clp_label
