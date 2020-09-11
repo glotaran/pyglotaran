@@ -15,6 +15,7 @@ class MockMegacomplex:
 
 @model(
     "register_mock",
+    attributes={},
     matrix=mock_matrix_fun,
     megacomplex_type=MockMegacomplex,
 )

@@ -52,7 +52,7 @@ PenaltyFunction = Callable[
 
 def model(
     model_type: str,
-    attributes: Dict[str, Any] = {},
+    attributes: Dict[str, Any] = None,
     dataset_type: Type[DatasetDescriptor] = DatasetDescriptor,
     megacomplex_type: Any = None,
     matrix: Union[MatrixFunction, IndexDependedMatrixFunction] = None,
