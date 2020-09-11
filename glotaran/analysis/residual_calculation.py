@@ -34,8 +34,9 @@ def create_index_independent_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
+        #  scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
         _apply_ungrouped_penalty(
-            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis
+            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
         )
 
     penalty = dask.delayed(np.concatenate)(penalties)
@@ -78,7 +79,7 @@ def create_index_dependent_ungrouped_residual(
             penalties.append(residual)
 
         _apply_ungrouped_penalty(
-            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis
+            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
         )
 
     penalty = dask.delayed(np.concatenate)(penalties)
