@@ -42,7 +42,7 @@ def apply_kinetic_model_constraints(
     return clp_labels, matrix
 
 
-def index_dependend(model: T_KineticSpectrumModel):
+def index_dependent(model: T_KineticSpectrumModel):
     if any(
         [
             isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
@@ -72,7 +72,7 @@ def grouped(model: T_KineticSpectrumModel):
     dataset_type=KineticSpectrumDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
     matrix=kinetic_spectrum_matrix,
-    matrix_dimension="time",
+    model_dimension="time",
     global_matrix=spectral_matrix,
     global_dimension="spectral",
     has_matrix_constraints_function=has_kinetic_model_constraints,
@@ -80,7 +80,7 @@ def grouped(model: T_KineticSpectrumModel):
     has_additional_penalty_function=has_spectral_penalties,
     additional_penalty_function=apply_spectral_penalties,
     grouped=grouped,
-    index_dependend=index_dependend,
+    index_dependent=index_dependent,
     finalize_data_function=finalize_kinetic_spectrum_result,
 )
 class KineticSpectrumModel(KineticImageModel):

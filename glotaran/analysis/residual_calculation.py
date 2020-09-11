@@ -3,7 +3,7 @@ import numpy as np
 from dask import bag as db
 
 
-def create_index_independend_ungrouped_residual(
+def create_index_independent_ungrouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
 
@@ -14,6 +14,7 @@ def create_index_independend_ungrouped_residual(
     penalties = []
     for label in problem_bag:
         data = problem_bag[label].data
+        weight = problem_bag[label].weight
         global_axis = problem_bag[label].global_axis
         reduced_clp_labels[label] = constraint_labels_and_matrices[label].clp_label
         matrix = constraint_labels_and_matrices[label].matrix
@@ -22,7 +23,13 @@ def create_index_independend_ungrouped_residual(
         residuals[label] = []
         for i, index in enumerate(global_axis):
             data_stripe = data.isel({global_dimension: i}).values
-            clp, residual = dask.delayed(residual_function, nout=2)(matrix, data_stripe)
+            matrix_stripe = matrix
+
+            if weight is not None:
+                for j in range(matrix.shape[1]):
+                    matrix[:, j] *= weight.isel({global_dimension: i}).values
+
+            clp, residual = dask.delayed(residual_function, nout=2)(matrix_stripe, data_stripe)
             reduced_clps[label].append(clp)
             residuals[label].append(residual)
             penalties.append(residual)
@@ -38,9 +45,13 @@ def create_index_independend_ungrouped_residual(
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
-def create_index_dependend_ungrouped_residual(
+def create_index_dependent_ungrouped_residual(
     scheme, parameter, problem_bag, matrix_jobs, residual_function
 ):
+    def apply_weight(matrix, weight):
+        for i in range(matrix.shape[1]):
+            matrix[:, i] *= weight
+        return matrix
 
     global_dimension = scheme.model.global_dimension
     reduced_clp_labels = {}
@@ -51,12 +62,16 @@ def create_index_dependend_ungrouped_residual(
         data = problem_bag[label].data
         global_axis = problem_bag[label].global_axis
         matrices = matrix_jobs[label]
+        weight = problem_bag[label].weight
         reduced_clp_labels[label] = []
         reduced_clps[label] = []
         residuals[label] = []
         for i, index in enumerate(global_axis):
+            matrix = matrices[i][1]
+            if weight is not None:
+                matrix = dask.delayed(apply_weight)(matrix, weight.isel({global_dimension: i}))
             clp, residual = dask.delayed(residual_function, nout=2)(
-                matrices[i][1], data.isel({global_dimension: i}).values
+                matrix, data.isel({global_dimension: i}).values
             )
 
             clp_label = matrices[i][0]
@@ -76,17 +91,20 @@ def create_index_dependend_ungrouped_residual(
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
-def create_index_independend_grouped_residual(
+def create_index_independent_grouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
 
-    matrix_labels = problem_bag.pluck(1).map(
+    matrix_labels = problem_bag.pluck(2).map(
         lambda group: "".join(problem.dataset for problem in group)
     )
 
     def penalty_function(matrix_label, problem, labels_and_matrices):
 
-        clp, residual = residual_function(labels_and_matrices[matrix_label].matrix, problem.data)
+        matrix = labels_and_matrices[matrix_label].matrix
+        for i in range(matrix.shape[1]):
+            matrix[:, i] *= problem.weight
+        clp, residual = residual_function(matrix, problem.data)
 
         penalty = residual
         if callable(scheme.model.has_additional_penalty_function):
@@ -112,12 +130,15 @@ def create_index_independend_grouped_residual(
     return reduced_clp_label, reduced_clps, residuals, penalty
 
 
-def create_index_dependend_grouped_residual(
+def create_index_dependent_grouped_residual(
     scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
 ):
     def penalty_function(problem, labels_and_matrices):
+        matrix = labels_and_matrices.matrix
+        for i in range(matrix.shape[1]):
+            matrix[:, i] *= problem.weight
 
-        clp, residual = residual_function(labels_and_matrices.matrix, problem.data)
+        clp, residual = residual_function(matrix, problem.data)
 
         penalty = residual
         if callable(scheme.model.has_additional_penalty_function):

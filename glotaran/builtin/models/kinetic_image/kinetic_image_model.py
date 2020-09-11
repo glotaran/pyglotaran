@@ -20,7 +20,7 @@ from .kinetic_image_result import finalize_kinetic_image_result
     dataset_type=KineticImageDatasetDescriptor,
     megacomplex_type=KineticImageMegacomplex,
     matrix=kinetic_image_matrix,
-    matrix_dimension="time",
+    model_dimension="time",
     global_dimension="pixel",
     grouped=False,
     finalize_data_function=finalize_kinetic_image_result,
