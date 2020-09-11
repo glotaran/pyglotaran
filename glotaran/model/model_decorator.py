@@ -1,6 +1,12 @@
 """The model decorator."""
 
-import typing
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Type
+from typing import Union
 
 import numpy as np
 import xarray as xr
@@ -14,54 +20,53 @@ from .model import Model
 from .util import wrap_func_as_method
 from .weight import Weight
 
-MatrixFunction = typing.Callable[
-    [typing.Type[DatasetDescriptor], xr.Dataset], typing.Tuple[typing.List[str], np.ndarray]
+MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
+"""A `MatrixFunction` calculates the matrix for a model."""
+
+IndexDependedMatrixFunction = Callable[
+    [Type[DatasetDescriptor], xr.Dataset, Any],
+    Tuple[List[str], np.ndarray],
 ]
 """A `MatrixFunction` calculates the matrix for a model."""
 
-IndexDependedMatrixFunction = typing.Callable[
-    [typing.Type[DatasetDescriptor], xr.Dataset, typing.Any],
-    typing.Tuple[typing.List[str], np.ndarray],
-]
-"""A `MatrixFunction` calculates the matrix for a model."""
-
-GlobalMatrixFunction = typing.Callable[
-    [typing.Type[DatasetDescriptor], np.ndarray], typing.Tuple[typing.List[str], np.ndarray]
+GlobalMatrixFunction = Callable[
+    [Type[DatasetDescriptor], np.ndarray], Tuple[List[str], np.ndarray]
 ]
 """A `GlobalMatrixFunction` calculates the global matrix for a model."""
 
-ConstrainMatrixFunction = typing.Callable[
-    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, float],
-    typing.Tuple[typing.List[str], np.ndarray],
+ConstrainMatrixFunction = Callable[
+    [Type[Model], ParameterGroup, List[str], np.ndarray, float],
+    Tuple[List[str], np.ndarray],
 ]
 """A `ConstrainMatrixFunction` applies constraints on a matrix."""
 
-FinalizeFunction = typing.Callable[[typing.Type[Model], Result], None]
+FinalizeFunction = Callable[[Type[Model], Result], None]
 """A `FinalizeFunction` gets called after optimization."""
 
-PenaltyFunction = typing.Callable[
-    [typing.Type[Model], ParameterGroup, typing.List[str], np.ndarray, any], np.ndarray
+PenaltyFunction = Callable[
+    [Type[Model], ParameterGroup, Union[List[str], List[List[str]]], np.ndarray, np.ndarray],
+    np.ndarray,
 ]
 """A `PenaltyFunction` calculates additional penalties for the optimization."""
 
 
 def model(
     model_type: str,
-    attributes: typing.Dict[str, typing.Any] = {},
-    dataset_type: typing.Type[DatasetDescriptor] = DatasetDescriptor,
-    megacomplex_type: typing.Any = None,
-    matrix: typing.Union[MatrixFunction, IndexDependedMatrixFunction] = None,
+    attributes: Dict[str, Any] = {},
+    dataset_type: Type[DatasetDescriptor] = DatasetDescriptor,
+    megacomplex_type: Any = None,
+    matrix: Union[MatrixFunction, IndexDependedMatrixFunction] = None,
     global_matrix: GlobalMatrixFunction = None,
     model_dimension: str = None,
     global_dimension: str = None,
-    has_matrix_constraints_function: typing.Callable[[typing.Type[Model]], bool] = None,
+    has_matrix_constraints_function: Callable[[Type[Model]], bool] = None,
     constrain_matrix_function: ConstrainMatrixFunction = None,
-    has_additional_penalty_function: typing.Callable[[typing.Type[Model]], bool] = None,
+    has_additional_penalty_function: Callable[[Type[Model]], bool] = None,
     additional_penalty_function: PenaltyFunction = None,
     finalize_data_function: FinalizeFunction = None,
-    grouped: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
-    index_dependent: typing.Union[bool, typing.Callable[[typing.Type[Model]], bool]] = False,
-) -> typing.Callable:
+    grouped: Union[bool, Callable[[Type[Model]], bool]] = False,
+    index_dependent: Union[bool, Callable[[Type[Model]], bool]] = False,
+) -> Callable:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
     adds the functions (e.g. for `matrix`) to the model ansures they are added wrapped in a correct
@@ -292,9 +297,7 @@ def _create_set_func(cls, name, type):
 
 def _create_property_for_attribute(cls, name, type):
 
-    return_type = (
-        typing.Dict[str, type] if hasattr(type, "_glotaran_has_label") else typing.List[type]
-    )
+    return_type = Dict[str, type] if hasattr(type, "_glotaran_has_label") else List[type]
 
     doc_type = "dictionary" if hasattr(type, "_glotaran_has_label") else "list"
 

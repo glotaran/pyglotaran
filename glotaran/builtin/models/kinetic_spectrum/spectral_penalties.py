@@ -1,6 +1,9 @@
 """This package contains compartment constraint items."""
 
-import typing
+from typing import List
+from typing import Tuple
+from typing import TypeVar
+from typing import Union
 
 import numpy as np
 
@@ -10,15 +13,13 @@ from glotaran.parameter import ParameterGroup
 
 from .spectral_relations import retrieve_clps
 
-T_KineticSpectrumModel = typing.TypeVar(
-    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
-)
+T_KineticSpectrumModel = TypeVar("glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel")
 
 
 @model_attribute(
     properties={
         "compartment": str,
-        "interval": typing.List[typing.Tuple[float, float]],
+        "interval": List[Tuple[float, float]],
         "target": str,
         "parameter": Parameter,
         "weight": str,
@@ -60,20 +61,47 @@ def has_spectral_penalties(model: T_KineticSpectrumModel) -> bool:
 def apply_spectral_penalties(
     model: T_KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: typing.List[str],
+    clp_labels: Union[List[str], List[List[str]]],
     clps: np.ndarray,
-    index: float,
+    global_axis: np.ndarray,
 ) -> np.ndarray:
-
-    clp_labels, clps = retrieve_clps(model, parameter, clp_labels, clps, index)
 
     penalties = []
     for penalty in model.equal_area_penalties:
-        if penalty.applies(index):
-            penalty = penalty.fill(model, parameter)
-            source_idx = clp_labels.index(penalty.compartment)
-            target_idx = clp_labels.index(penalty.target)
-            penalties.append(
-                (clps[source_idx] - penalty.parameter * clps[target_idx]) * penalty.weight
-            )
+
+        source_area = []
+        target_area = []
+
+        penalty = penalty.fill(model, parameter)
+
+        for interval in penalty.interval:
+
+            start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
+            for i in range(start_idx, end_idx):
+
+                index_clp_label = clp_labels
+                index_clp = clps
+
+                if model.index_dependent():
+                    index_clp_label = index_clp_label[i]
+                    index_clp = index_clp[i]
+
+                index_clp_label, index_clp = retrieve_clps(
+                    model, parameter, index_clp_label, index_clp, global_axis[i]
+                )
+
+                source_idx = index_clp_label.index(penalty.compartment)
+                source_area.append(index_clp[source_idx])
+
+                target_idx = index_clp_label.index(penalty.target)
+                target_area.append(index_clp[target_idx])
+
+        areaPenalty = np.sum(source_area) - penalty.parameter * np.sum(target_area)
+        penalties.append(areaPenalty * penalty.weight)
     return penalties
+
+
+def _get_idx_from_interval(interval, axis):
+    start = np.abs(axis - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    end = np.abs(axis - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+    return start, end

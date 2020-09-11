@@ -66,7 +66,7 @@ def test_spectral_penalties():
                     "compartment": "s2",
                     "target": "s3",
                     "parameter": "pen.1",
-                    "interval": [(0, 2)],
+                    "interval": [(0, 4)],
                     "weight": weight,
                 },
             ],
@@ -75,7 +75,7 @@ def test_spectral_penalties():
                     "compartment": "s1",
                     "target": "s2",
                     "parameter": "rel.1",
-                    "interval": [(0, 2)],
+                    "interval": [(0, 4)],
                 },
             ],
             "dataset": {
@@ -101,11 +101,12 @@ def test_spectral_penalties():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     clp = xr.DataArray(
-        [[1.0, 2.0, 4]], coords=(("spectral", [1]), ("clp_label", ["s1", "s2", "s3"]))
+        [[1.0, 2.0, 4], [1.0, 2.0, 4], [1.0, 2.0, 4], [1.0, 2.0, 4]],
+        coords=(("spectral", [0, 1, 2, 3]), ("clp_label", ["s1", "s2", "s3"])),
     )
 
     data = model_without_penalty.simulate(
-        "dataset1", parameter, clp=clp, axes={"time": time, "spectral": np.array([1])}
+        "dataset1", parameter, clp=clp, axes={"time": time, "spectral": clp.spectral.values}
     )
 
     result_with_penalty = model_with_penalty.optimize(parameter, {"dataset1": data}, max_nfev=1)
@@ -119,8 +120,8 @@ def test_spectral_penalties():
 
     result_data = result_with_penalty.data["dataset1"]
     wanted_penalty = (
-        result_data.species_associated_spectra.sel(species="s2")
-        - result_data.species_associated_spectra.sel(species="s3") * pen
+        np.sum(result_data.species_associated_spectra.sel(species="s2"))
+        - np.sum(result_data.species_associated_spectra.sel(species="s3")) * pen
     )
     wanted_penalty *= weight
     wanted_penalty **= 2
