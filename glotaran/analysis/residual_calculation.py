@@ -34,14 +34,9 @@ def create_index_independent_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
-        if (
-            callable(scheme.model.has_additional_penalty_function)
-            and scheme.model.has_additional_penalty_function()
-        ):
-            additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
-                parameter, reduced_clp_labels[label], reduced_clps[label], global_axis
-            )
-            penalties.append(additional_penalty)
+        _apply_ungrouped_penalty(
+            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis
+        )
 
     penalty = dask.delayed(np.concatenate)(penalties)
     return reduced_clp_labels, reduced_clps, residuals, penalty
@@ -82,14 +77,9 @@ def create_index_dependent_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
-        if (
-            callable(scheme.model.has_additional_penalty_function)
-            and scheme.model.has_additional_penalty_function()
-        ):
-            additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
-                parameter, reduced_clp_labels[label], reduced_clps[label], global_axis
-            )
-            penalties.append(additional_penalty)
+        _apply_ungrouped_penalty(
+            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis
+        )
 
     penalty = dask.delayed(np.concatenate)(penalties)
     return reduced_clp_labels, reduced_clps, residuals, penalty
@@ -116,25 +106,17 @@ def create_index_independent_grouped_residual(
         penalty_function, matrix_labels, problem_bag, constraint_labels_and_matrices
     )
 
-    reduced_clp_label = {
+    reduced_clp_labels = {
         label: constraint_labels_and_matrices[label].clp_label
         for label in constraint_labels_and_matrices
     }
     reduced_clps = penalty_bag.pluck(0)
     residuals = penalty_bag.pluck(1)
-    penalty = residuals
-    if (
-        callable(scheme.model.has_additional_penalty_function)
-        and scheme.model.has_additional_penalty_function()
-    ):
-        full_axis = problem_bag.pluck(2).map(lambda group: group[0].index)
+    penalty = _apply_grouped_penalty(
+        scheme, parameter, problem_bag, reduced_clp_labels, reduced_clps, residuals
+    )
 
-        additional_penalty = scheme.model.additional_penalty_function(
-            parameter, reduced_clp_label, reduced_clp_label, full_axis
-        )
-        penalty = dask.delayed(np.concatenate)([penalty, additional_penalty])
-
-    return reduced_clp_label, reduced_clps, residuals, penalty
+    return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
 def create_index_dependent_grouped_residual(
@@ -154,7 +136,16 @@ def create_index_dependent_grouped_residual(
     reduced_clp_labels = constraint_labels_and_matrices.pluck(0)
     reduced_clps = penalty_bag.pluck(0)
     residuals = penalty_bag.pluck(1)
-    penalty = residuals
+    penalty = _apply_grouped_penalty(
+        scheme, parameter, problem_bag, reduced_clp_labels, reduced_clps, residuals
+    )
+
+    return reduced_clp_labels, reduced_clps, residuals, penalty
+
+
+def _apply_grouped_penalty(
+    scheme, parameter, problem_bag, reduced_clp_labels, reduced_clps, penalties
+):
     if (
         callable(scheme.model.has_additional_penalty_function)
         and scheme.model.has_additional_penalty_function()
@@ -164,6 +155,18 @@ def create_index_dependent_grouped_residual(
         additional_penalty = scheme.model.additional_penalty_function(
             parameter, reduced_clp_labels, reduced_clps, full_axis
         )
-        penalty = dask.delayed(np.concatenate)([penalty, additional_penalty])
+        penalties = dask.delayed(np.concatenate)([penalties, additional_penalty])
+    return penalties
 
-    return reduced_clp_labels, reduced_clps, residuals, penalty
+
+def _apply_ungrouped_penalty(
+    scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
+):
+    if (
+        callable(scheme.model.has_additional_penalty_function)
+        and scheme.model.has_additional_penalty_function()
+    ):
+        additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
+            parameter, reduced_clp_labels[label], reduced_clps[label], global_axis
+        )
+        penalties.append(additional_penalty)
