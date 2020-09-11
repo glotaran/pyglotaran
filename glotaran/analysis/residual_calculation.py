@@ -182,6 +182,11 @@ def create_index_dependent_grouped_residual(
         residuals,
     )
 
+        additional_penalty = scheme.model.additional_penalty_function(
+            parameter, reduced_clp_labels, reduced_clps, full_axis
+        )
+        penalty = dask.delayed(np.concatenate)([penalty, additional_penalty])
+
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
