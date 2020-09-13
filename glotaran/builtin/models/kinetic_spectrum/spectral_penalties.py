@@ -96,7 +96,7 @@ def apply_spectral_penalties(
                 target_idx = index_clp_label.index(penalty.target)
                 target_area.append(index_clp[target_idx])
 
-        area_penalty = np.sum(source_area) - penalty.parameter * np.sum(target_area)
+        area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
         penalties.append(area_penalty * penalty.weight)
     return penalties
 

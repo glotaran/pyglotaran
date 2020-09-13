@@ -74,7 +74,7 @@ def apply_spectral_relations(
         return (clp_labels, matrix)
 
     reduced_clp_labels, relation_matrix = create_spectral_relation_matrix(
-        model, parameter, clp_labels, matrix, 1
+        model, parameter, clp_labels, matrix, index
     )
 
     reduced_matrix = matrix @ relation_matrix
