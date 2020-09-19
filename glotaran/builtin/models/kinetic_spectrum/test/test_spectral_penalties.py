@@ -1,8 +1,8 @@
 from copy import deepcopy
 
+import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-import matplotlib.pyplot as plt
 
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.parameter import ParameterGroup
