@@ -1,24 +1,38 @@
+# To add a new cell, type '# %%'
+# To add a new markdown cell, type '# %% [markdown]'
+# %%
+import importlib
+from collections import namedtuple
 from copy import deepcopy
 
-import matplotlib.pyplot as plt
+import dask
 import numpy as np
-import xarray as xr
 
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.io import prepare_time_trace_dataset
 from glotaran.parameter import ParameterGroup
+
+ParameterSpec = namedtuple("ParameterSpec", "base equal_area shape")
+NoiseSpec = namedtuple("NoiseSpec", "active seed std_dev")
+SimulationSpec = namedtuple("SimulationSpec", "max_nfev noise")
+DatasetSpec = namedtuple("DatasetSpec", "times wavelengths irf shapes")
+IrfSpec = namedtuple("IrfSpec", "location width")
+ShapeSpec = namedtuple("ShapeSpec", "amplitude location width")
+ModelSpec = namedtuple("ModelSpec", "base shape dataset_shape equ_area")
+OptimizationSpec = namedtuple("OptimizationSpec", "nnls max_nfev")
 
 
 def plot_overview(res, title=None):
-    """ very simple plot helper function derived from pyglotaran_examples """
-    fig, ax = plt.subplots(2, 3, figsize=(12, 6), constrained_layout=True)
+    """ very simple plot helper function derived from pyglotaran_extras """
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(2, 2, figsize=(9, 8), constrained_layout=True)
     if title:
         fig.suptitle(title, fontsize=16)
     sas = res.species_associated_spectra
     traces = res.species_concentration
     if "spectral" in traces.coords:
-        traces.sel(spectral=res.spectral.values[0], method="nearest").plot.line(
-            x="time", ax=ax[0, 0]
-        )
+        traces.sel(spectral=res.spectral[0], method="nearest").plot.line(x="time", ax=ax[0, 0])
     else:
         traces.plot.line(x="time", ax=ax[0, 0])
     sas.plot.line(x="spectral", ax=ax[0, 1])
@@ -32,16 +46,46 @@ def plot_overview(res, title=None):
         x="spectral", ax=ax[1, 1]
     )
     ax[1, 1].set_title("res. RSV")
-    ax[0, 2].set_title("data")
-    res.data.plot(x="time", ax=ax[0, 2])
     plt.show(block=False)
 
 
-def test_spectral_penalties():
+def test_equal_area_penalties(debug=False):
+    # %%
+    if debug:
+        dask.config.set(scheduler="single-threaded")
 
-    mspec_base = {
+    optim_spec = OptimizationSpec(nnls=True, max_nfev=999)
+    noise_spec = NoiseSpec(active=True, seed=1, std_dev=1e-8)
+
+    wavelengths = np.arange(650, 670, 2)
+    time_p1 = np.linspace(-1, 2, 50, endpoint=False)
+    time_p2 = np.linspace(2, 10, 30, endpoint=False)
+    time_p3 = np.geomspace(10, 50, num=20)
+    times = np.concatenate([time_p1, time_p2, time_p3])
+
+    irf_loc = float(times[20])
+    irf_width = float((times[1] - times[0]) * 10)
+    irf = IrfSpec(irf_loc, irf_width)
+
+    amplitude = 1
+    location1 = float(wavelengths[2])  # 2
+    location2 = float(wavelengths[-3])  # -3
+    width1 = float((wavelengths[1] - wavelengths[0]) * 5)
+    width2 = float((wavelengths[1] - wavelengths[0]) * 3)
+    shape1 = ShapeSpec(amplitude, location1, width1)
+    shape2 = ShapeSpec(amplitude, location2, width2)
+    dataset_spec = DatasetSpec(times, wavelengths, irf, [shape1, shape2])
+
+    wavelengths = dataset_spec.wavelengths
+    equ_interval = [(min(wavelengths), max(wavelengths))]
+    weight = 0.01
+    # %% The base model specification (mspec)
+    base = {
         "initial_concentration": {
-            "j1": {"compartments": ["s1", "s2"], "parameters": ["i.1", "i.2"]},
+            "j1": {
+                "compartments": ["s1", "s2"],
+                "parameters": ["i.1", "i.2"],
+            },
         },
         "megacomplex": {
             "mc1": {"k_matrix": ["k1"]},
@@ -54,87 +98,162 @@ def test_spectral_penalties():
                 }
             }
         },
+        "irf": {
+            "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+        },
         "dataset": {
             "dataset1": {
                 "initial_concentration": "j1",
                 "megacomplex": ["mc1"],
+                "irf": "irf1",
             },
         },
-        # "spectral_constraints": [
-        #     {
-        #         "type": "zero",
-        #         "compartment": "s1",
-        #         "interval": [(7, 9)],
-        #     },
-        #     {
-        #         "type": "zero",
-        #         "compartment": "s2",
-        #         "interval": [(5, 6)],
-        #     },
-        # ]
     }
 
-    mspec_equ_area = {
+    shape = {
+        "shape": {
+            "sh1": {
+                "type": "gaussian",
+                "amplitude": "shape.amps.1",
+                "location": "shape.locs.1",
+                "width": "shape.width.1",
+            },
+            "sh2": {
+                "type": "gaussian",
+                "amplitude": "shape.amps.2",
+                "location": "shape.locs.2",
+                "width": "shape.width.2",
+            },
+        }
+    }
+
+    dataset_shape = {
+        "shape": {
+            "s1": "sh1",
+            "s2": "sh2",
+        }
+    }
+
+    equ_area = {
         "equal_area_penalties": [
             {
-                "compartment": "s2",
-                "target": "s1",
-                "parameter": "pen.1",
-                "interval": [(0, 90)],
-                "weight": 100,
+                "compartment": "s1",
+                "target": "s2",
+                "parameter": "rela.1",
+                "interval": equ_interval,
+                "weight": weight,
             },
         ],
     }
-    mspec_np = deepcopy(mspec_base)
-    mspec_wp = dict(deepcopy(mspec_base), **mspec_equ_area)
+    mspec = ModelSpec(base, shape, dataset_shape, equ_area)
 
-    model_without_penalty = KineticSpectrumModel.from_dict(mspec_np)
-    model_with_penalty = KineticSpectrumModel.from_dict(mspec_wp)
-
+    rela = 1.0  # relation between areas
+    irf = dataset_spec.irf
+    [sh1, sh2] = dataset_spec.shapes
     pspec_base = {
-        "kinetic": [0.02, 0.1, 0.5],
-        "i": [1.0, 1.0, {"vary": False}],
-        "pen": [1, {"vary": False}],
+        "kinetic": [1e-1, 5e-3],
+        "i": [0.5, 0.5, {"vary": False}],
+        "irf": [["center", irf.location], ["width", irf.width]],
     }
-    pspec_fit = {"i": [[1, {"vary": True}], 3]}
+    pspec_equa_area = {
+        "rela": [rela, {"vary": False}],
+    }
+    pspec_shape = {
+        "shape": {
+            "amps": [sh1.amplitude, sh2.amplitude],
+            "locs": [sh1.location, sh2.location],
+            "width": [sh1.width, sh2.width],
+        },
+    }
+    pspec = ParameterSpec(pspec_base, pspec_equa_area, pspec_shape)
 
-    pspec_np = dict(pspec_base, **pspec_fit)
-    del pspec_np["pen"]
-    pspec_wp = dict(pspec_base, **pspec_fit)
+    # derivates:
+    mspec_sim = dict(deepcopy(mspec.base), **mspec.shape)
+    mspec_sim["dataset"]["dataset1"].update(mspec.dataset_shape)
 
-    param_sim = ParameterGroup.from_dict(deepcopy(pspec_base))
-    param_np = ParameterGroup.from_dict(deepcopy(pspec_np))
-    param_wp = ParameterGroup.from_dict(deepcopy(pspec_wp))
+    mspec_fit_wp = dict(deepcopy(mspec.base), **mspec.equ_area)
+    mspec_fit_np = dict(deepcopy(mspec.base))
 
-    time = np.asarray(np.arange(0, 99, 0.5))
-    clp = xr.DataArray(
-        [[3.0, 0.0], [3.0, 0.0], [0.0, 1.0], [0.0, 1.0]],
-        coords=(("spectral", [5.0, 6.0, 7.0, 8.0]), ("clp_label", ["s1", "s2"])),
-    )
+    model_sim = KineticSpectrumModel.from_dict(mspec_sim)
+    model_wp = KineticSpectrumModel.from_dict(mspec_fit_wp)
+    model_np = KineticSpectrumModel.from_dict(mspec_fit_np)
+    print(model_np)
 
-    data = model_without_penalty.simulate(
+    # %% Parameter specification (pspec)
+
+    pspec_sim = dict(deepcopy(pspec.base), **pspec.shape)
+    param_sim = ParameterGroup.from_dict(pspec_sim)
+
+    # For the wp model we create two version of the parameter specification
+    # One has all inputs fixed, the other has all but the first free
+    # for both we perturb kinetic parameters a bit to give the optimizer some work
+    pspec_wp = dict(deepcopy(pspec.base), **pspec.equal_area)
+    pspec_wp["kinetic"] = [v * 1.01 for v in pspec_wp["kinetic"]]
+    pspec_wp.update({"i": [[1, {"vary": False}], 1, 1]})
+
+    pspec_np = dict(deepcopy(pspec.base))
+
+    param_wp = ParameterGroup.from_dict(pspec_wp)
+    param_np = ParameterGroup.from_dict(pspec_np)
+
+    # %% Print models with parameters
+    print(model_sim.markdown(param_sim))
+    print(model_wp.markdown(param_wp))
+    print(model_np.markdown(param_np))
+
+    # %%
+    simulated_data = model_sim.simulate(
         "dataset1",
         param_sim,
-        clp=clp,
-        axes={"time": time, "spectral": clp.spectral.values},
-        noise=True,
-        noise_std_dev=1e-8,
-        noise_seed=1,
+        axes={"time": times, "spectral": wavelengths},
+        noise=noise_spec.active,
+        noise_std_dev=noise_spec.std_dev,
+        noise_seed=noise_spec.seed,
     )
+    # %%
+    simulated_data = prepare_time_trace_dataset(simulated_data)
+    # make a copy to keep an intact reference
+    data = deepcopy(simulated_data)
 
-    result_np = model_without_penalty.optimize(param_np, {"dataset1": data}, nnls=True)
-    plot_overview(result_np.data["dataset1"], "without penalties")
+    # %% Optimizing model without penalty (np)
 
-    result_wp = model_with_penalty.optimize(param_wp, {"dataset1": data}, nnls=True)
-    plot_overview(result_wp.data["dataset1"], "with penalties")
+    result_np = model_np.optimize(
+        param_np, {"dataset1": data}, nnls=optim_spec.nnls, max_nfev=optim_spec.max_nfev
+    )
+    print(result_np)
 
-    result_data = result_wp.data["dataset1"]
+    # %% Optimizing model with penalty fixed inputs (wp_ifix)
+    result_wp = model_wp.optimize(
+        param_wp, {"dataset1": data}, nnls=optim_spec.nnls, max_nfev=optim_spec.max_nfev
+    )
+    print(result_wp)
 
-    area1 = np.sum(result_data.species_associated_spectra.sel(species="s1"))
-    area2 = np.sum(result_data.species_associated_spectra.sel(species="s2"))
-    print(f"area1: {area1}\narea2: {area2}\n")
-    plt.show()
+    if debug:
+        # %% Plot results
+        plt_spec = importlib.util.find_spec("matplotlib")
+        if plt_spec is not None:
+            import matplotlib.pyplot as plt
+
+            plot_overview(result_np.data["dataset1"], "no penalties")
+            plot_overview(result_wp.data["dataset1"], "with penalties")
+            plt.show()
+
+    # %% Test calculation
+    print(result_wp.data["dataset1"])
+    area1_np = np.sum(result_np.data["dataset1"].species_associated_spectra.sel(species="s1"))
+    area2_np = np.sum(result_np.data["dataset1"].species_associated_spectra.sel(species="s2"))
+    assert not np.isclose(area1_np, area2_np)
+
+    area1_wp = np.sum(result_wp.data["dataset1"].species_associated_spectra.sel(species="s1"))
+    area2_wp = np.sum(result_wp.data["dataset1"].species_associated_spectra.sel(species="s2"))
+    assert np.isclose(area1_wp, area2_wp)
+
+    input_ratio = result_wp.optimized_parameter.get("i.1") / result_wp.optimized_parameter.get(
+        "i.2"
+    )
+    assert np.isclose(input_ratio, 1.5038858115)
 
 
 if __name__ == "__main__":
-    test_spectral_penalties()
+    test_equal_area_penalties(debug=False)
+    test_equal_area_penalties(debug=True)
