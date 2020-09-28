@@ -82,19 +82,19 @@ def apply_spectral_penalties(
                 index_clp_label = clp_labels
                 index_clp = clps
 
-                if model.index_dependent():
-                    index_clp_label = index_clp_label[i]
-                    index_clp = index_clp[i]
+                # if model.index_dependent():
+                #     index_clp_label = index_clp_label[i]
+                #     index_clp = index_clp[i]
 
                 index_clp_label, index_clp = retrieve_clps(
                     model, parameter, index_clp_label, index_clp, global_axis[i]
                 )
 
                 source_idx = index_clp_label.index(penalty.compartment)
-                source_area.append(index_clp[source_idx])
+                source_area.append(index_clp[i][source_idx])
 
                 target_idx = index_clp_label.index(penalty.target)
-                target_area.append(index_clp[target_idx])
+                target_area.append(index_clp[i][target_idx])
 
         area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
         penalties.append(area_penalty * penalty.weight)
