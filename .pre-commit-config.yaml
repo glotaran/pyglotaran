@@ -22,7 +22,7 @@ repos:
       - id: black
         language_version: python3
   - repo: https://github.com/PyCQA/isort
-    rev: 5.6.1
+    rev: 5.6.4
     hooks:
       - id: isort
   # - repo: https://github.com/PyCQA/pydocstyle
