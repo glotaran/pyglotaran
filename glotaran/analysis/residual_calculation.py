@@ -4,7 +4,12 @@ from dask import bag as db
 
 
 def create_index_independent_ungrouped_residual(
-    scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
+    scheme,
+    parameter,
+    problem_bag,
+    full_clp_label,
+    constraint_labels_and_matrices,
+    residual_function,
 ):
 
     global_dimension = scheme.model.global_dimension
@@ -35,8 +40,15 @@ def create_index_independent_ungrouped_residual(
             penalties.append(residual)
 
         #  scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
-        _apply_ungrouped_penalty(
-            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
+        penalties = _apply_ungrouped_penalty(
+            scheme,
+            parameter,
+            label,
+            full_clp_label,
+            reduced_clp_labels,
+            reduced_clps,
+            global_axis,
+            penalties,
         )
 
     penalty = dask.delayed(np.concatenate)(penalties)
@@ -44,7 +56,7 @@ def create_index_independent_ungrouped_residual(
 
 
 def create_index_dependent_ungrouped_residual(
-    scheme, parameter, problem_bag, matrix_jobs, residual_function
+    scheme, parameter, problem_bag, full_clp_label, matrix_jobs, residual_function
 ):
     def apply_weight(matrix, weight):
         for i in range(matrix.shape[1]):
@@ -78,8 +90,15 @@ def create_index_dependent_ungrouped_residual(
             residuals[label].append(residual)
             penalties.append(residual)
 
-        _apply_ungrouped_penalty(
-            scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
+        penalties = _apply_ungrouped_penalty(
+            scheme,
+            parameter,
+            label,
+            full_clp_label,
+            reduced_clp_labels,
+            reduced_clps,
+            global_axis,
+            penalties,
         )
 
     penalty = dask.delayed(np.concatenate)(penalties)
@@ -87,7 +106,12 @@ def create_index_dependent_ungrouped_residual(
 
 
 def create_index_independent_grouped_residual(
-    scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
+    scheme,
+    parameter,
+    problem_bag,
+    full_clp_labels,
+    constraint_labels_and_matrices,
+    residual_function,
 ):
 
     matrix_labels = problem_bag.pluck(2).map(
@@ -114,14 +138,25 @@ def create_index_independent_grouped_residual(
     reduced_clps = penalty_bag.pluck(0)
     residuals = penalty_bag.pluck(1)
     penalty = _apply_grouped_penalty(
-        scheme, parameter, problem_bag, reduced_clp_labels, reduced_clps, residuals
+        scheme,
+        parameter,
+        problem_bag,
+        full_clp_labels,
+        reduced_clp_labels,
+        reduced_clps,
+        residuals,
     )
 
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
 def create_index_dependent_grouped_residual(
-    scheme, parameter, problem_bag, constraint_labels_and_matrices, residual_function
+    scheme,
+    parameter,
+    problem_bag,
+    full_clp_labels,
+    constraint_labels_and_matrices,
+    residual_function,
 ):
     def penalty_function(problem, labels_and_matrices):
         matrix = labels_and_matrices.matrix
@@ -138,36 +173,62 @@ def create_index_dependent_grouped_residual(
     reduced_clps = penalty_bag.pluck(0)
     residuals = penalty_bag.pluck(1)
     penalty = _apply_grouped_penalty(
-        scheme, parameter, problem_bag, reduced_clp_labels, reduced_clps, residuals
+        scheme,
+        parameter,
+        problem_bag,
+        full_clp_labels,
+        reduced_clp_labels,
+        reduced_clps,
+        residuals,
     )
 
     return reduced_clp_labels, reduced_clps, residuals, penalty
 
 
 def _apply_grouped_penalty(
-    scheme, parameter, problem_bag, reduced_clp_labels, reduced_clps, penalties
+    scheme, parameter, problem_bag, full_clp_labels, reduced_clp_labels, reduced_clps, penalty
 ):
     if (
         callable(scheme.model.has_additional_penalty_function)
         and scheme.model.has_additional_penalty_function()
     ):
         full_axis = problem_bag.pluck(2).map(lambda group: group[0].index)
+        full_clps = scheme.model.retrieve_clp_function(
+            parameter, full_clp_labels, reduced_clp_labels, reduced_clps, full_axis
+        )
 
         additional_penalty = scheme.model.additional_penalty_function(
-            parameter, reduced_clp_labels, reduced_clps, full_axis
+            parameter, full_clp_labels, full_clps, full_axis
         )
-        penalties = dask.delayed(np.concatenate)([penalties, additional_penalty])
-    return penalties
+        return dask.concatenate(penalty, additional_penalty)
+
+    return penalty
 
 
 def _apply_ungrouped_penalty(
-    scheme, parameter, label, reduced_clp_labels, reduced_clps, global_axis, penalties
+    scheme,
+    parameter,
+    label,
+    full_clp_labels,
+    reduced_clp_labels,
+    reduced_clps,
+    global_axis,
+    penalty,
 ):
     if (
         callable(scheme.model.has_additional_penalty_function)
         and scheme.model.has_additional_penalty_function()
     ):
-        additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
-            parameter, reduced_clp_labels[label], reduced_clps[label], global_axis
+        full_clps = scheme.model.retrieve_clp_function(
+            parameter,
+            full_clp_labels[label],
+            reduced_clp_labels[label],
+            reduced_clps[label],
+            global_axis,
         )
-        penalties.append(additional_penalty)
+        additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
+            parameter, full_clp_labels[label], full_clps, global_axis
+        )
+        penalty.append(additional_penalty)
+
+    return penalty

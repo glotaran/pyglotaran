@@ -40,6 +40,12 @@ ConstrainMatrixFunction = Callable[
 ]
 """A `ConstrainMatrixFunction` applies constraints on a matrix."""
 
+RetrieveClpFunction = Callable[
+    [Type[Model], ParameterGroup, List[str], List[str], np.ndarray, float],
+    np.ndarray,
+]
+"""A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
+
 FinalizeFunction = Callable[[Type[Model], Result], None]
 """A `FinalizeFunction` gets called after optimization."""
 
@@ -61,6 +67,7 @@ def model(
     global_dimension: str = None,
     has_matrix_constraints_function: Callable[[Type[Model]], bool] = None,
     constrain_matrix_function: ConstrainMatrixFunction = None,
+    retrieve_clp_function: RetrieveClpFunction = None,
     has_additional_penalty_function: Callable[[Type[Model]], bool] = None,
     additional_penalty_function: PenaltyFunction = None,
     finalize_data_function: FinalizeFunction = None,
@@ -94,6 +101,8 @@ def model(
         The name of model global matrix row dimension.
     constrain_matrix_function :
         A function to constrain the global matrix for the model.
+    retrieve_clp_function :
+        A function to retrieve the full clp from the reduced.
     None
     additional_penalty_function : PenaltyFunction
         A function to calculate additional penalties when optimizing the model.
@@ -114,14 +123,21 @@ def model(
                     "Model implements `has_matrix_constraints_function` "
                     "but not `constrain_matrix_function`"
                 )
+            if not retrieve_clp_function:
+                raise ValueError(
+                    "Model implements `has_matrix_constraints_function` "
+                    "but not `retrieve_clp_function`"
+                )
             has_c_mat = wrap_func_as_method(cls, name="has_matrix_constraints_function")(
                 has_matrix_constraints_function
             )
             c_mat = wrap_func_as_method(cls, name="constrain_matrix_function")(
                 constrain_matrix_function
             )
+            r_clp = wrap_func_as_method(cls, name="retrieve_clp_function")(retrieve_clp_function)
             setattr(cls, "has_matrix_constraints_function", has_c_mat)
             setattr(cls, "constrain_matrix_function", c_mat)
+            setattr(cls, "retrieve_clp_function", r_clp)
         else:
             setattr(cls, "has_matrix_constraints_function", None)
             setattr(cls, "constrain_matrix_function", None)

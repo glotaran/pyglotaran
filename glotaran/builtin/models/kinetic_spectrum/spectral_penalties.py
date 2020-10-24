@@ -11,8 +11,6 @@ from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
-from .spectral_relations import retrieve_clps
-
 T_KineticSpectrumModel = TypeVar("glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel")
 
 
@@ -82,13 +80,10 @@ def apply_spectral_penalties(
                 index_clp_label = clp_labels
                 index_clp = clps
 
-                # if model.index_dependent():
-                #     index_clp_label = index_clp_label[i]
-                #     index_clp = index_clp[i]
-
-                index_clp_label, index_clp = retrieve_clps(
-                    model, parameter, index_clp_label, index_clp, global_axis[i]
-                )
+                # In case of an index dependet problem the clps and labels are  per index
+                if model.index_dependent():
+                    index_clp_label = index_clp_label[i]
+                    index_clp = index_clp[i]
 
                 source_idx = index_clp_label.index(penalty.compartment)
                 source_area.append(index_clp[i][source_idx])

@@ -82,29 +82,19 @@ def apply_spectral_relations(
     return (reduced_clp_labels, reduced_matrix)
 
 
-def retrieve_clps(
+def retrieve_related_clps(
     model: T_KineticSpectrumModel,
     parameter: ParameterGroup,
-    reduced_clp_labels: typing.List[str],
-    reduced_clps: np.ndarray,
+    clp_labels: typing.List[str],
+    clps: np.ndarray,
     index: float,
 ) -> typing.Tuple[typing.List[str], np.ndarray]:
 
-    if not model.spectral_relations:
-        return reduced_clp_labels, reduced_clps
-
-    retrieved_clp_labels = []
-    retrieved_clps = []
-
     for relation in model.spectral_relations:
-        if relation.compartment in reduced_clp_labels and relation.applies(index):
+        if relation.compartment in clp_labels and relation.applies(index):
             relation = relation.fill(model, parameter)
-            retrieved_clp_labels.append(relation.target)
-            source_idx = reduced_clp_labels.index(relation.compartment)
-            retrieved_clps.append(reduced_clps[source_idx] * relation.parameter)
+            target_idx = clp_labels.index(relation.target)
+            source_idx = clp_labels.index(relation.compartment)
+            clps[target_idx] = clps[source_idx] * relation.parameter
 
-    retrieved_clps = (
-        np.concatenate([reduced_clps, retrieved_clps]) if retrieved_clps else reduced_clps
-    )
-
-    return reduced_clp_labels + retrieved_clp_labels, retrieved_clps
+    return clp_labels, clps
