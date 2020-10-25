@@ -193,11 +193,11 @@ def _apply_grouped_penalty(
         and scheme.model.has_additional_penalty_function()
     ):
         full_axis = problem_bag.pluck(2).map(lambda group: group[0].index)
-        full_clps = scheme.model.retrieve_clp_function(
+        full_clps = dask.delayed(scheme.model.retrieve_clp_function)(
             parameter, full_clp_labels, reduced_clp_labels, reduced_clps, full_axis
         )
 
-        additional_penalty = scheme.model.additional_penalty_function(
+        additional_penalty = dask.delayed(scheme.model.additional_penalty_function)(
             parameter, full_clp_labels, full_clps, full_axis
         )
         return dask.concatenate(penalty, additional_penalty)
@@ -219,7 +219,7 @@ def _apply_ungrouped_penalty(
         callable(scheme.model.has_additional_penalty_function)
         and scheme.model.has_additional_penalty_function()
     ):
-        full_clps = scheme.model.retrieve_clp_function(
+        full_clps = dask.delayed(scheme.model.retrieve_clp_function)(
             parameter,
             full_clp_labels[label],
             reduced_clp_labels[label],
