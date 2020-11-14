@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v3.3.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -12,7 +12,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.7.2
+    rev: v2.7.4
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -22,7 +22,7 @@ repos:
       - id: black
         language_version: python3
   - repo: https://github.com/PyCQA/isort
-    rev: 5.6.1
+    rev: 5.6.4
     hooks:
       - id: isort
   # - repo: https://github.com/PyCQA/pydocstyle
@@ -50,7 +50,7 @@ repos:
       - id: rstcheck
         additional_dependencies: [rstcheck, sphinx]
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.6.0
+    rev: v1.7.0
     hooks:
       - id: rst-backticks
   - repo: https://github.com/codespell-project/codespell
