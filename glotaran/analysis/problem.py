@@ -4,11 +4,10 @@ import typing
 
 import numpy as np
 import xarray as xr
-from dask import array as da
-from dask import bag as db
 
+from glotaran.model import DatasetDescriptor
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
-from glotaran.model import DatasetDescriptor, Model
 
 from .scheme import Scheme
 
@@ -151,7 +150,7 @@ class Problem:
             global_axis = dataset.coords[self._global_dimension].values
             model_axis = dataset.coords[self._model_dimension].values
             if self._bag is None:
-                bag = collections.deque(
+                self._bag = collections.deque(
                     GroupedProblem(
                         data.isel({self._global_dimension: i}).values,
                         weight.isel({self._global_dimension: i}).values,
@@ -164,7 +163,6 @@ class Problem:
                 self._full_axis = collections.deque(global_axis)
             else:
                 self._append_to_grouped_bag(label, datasets, global_axis, model_axis, data, weight)
-        self._bag = db.from_sequence(bag)
         self._groups = {"".join(d): d for d in datasets if len(d) > 1}
 
     def _append_to_grouped_bag(
