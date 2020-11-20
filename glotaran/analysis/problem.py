@@ -7,12 +7,17 @@ import xarray as xr
 from dask import array as da
 from dask import bag as db
 
+from glotaran.parameter import ParameterGroup
+from glotaran.model import DatasetDescriptor, Model
+
 from .scheme import Scheme
+
+ParameterError = ValueError("Parameter not initialized")
 
 ProblemDescriptor = collections.namedtuple(
     "ProblemDescriptor", "dataset data model_axis global_axis weight"
 )
-GroupedProblem = collections.namedtuple("GroupedProblem", "data weight descriptor")
+GroupedProblem = collections.namedtuple("GroupedProblem", "data weight group descriptor")
 GroupedProblemDescriptor = collections.namedtuple("ProblemDescriptor", "dataset index axis")
 
 UngroupedBag = typing.Dict[str, ProblemDescriptor]
@@ -36,12 +41,25 @@ class Problem:
         self._index_dependent = scheme.model.index_dependent()
         self._grouped = scheme.model.grouped()
 
+        self._parameter = None
+        self._filled_descriptors = None
+
         self._bag = None
         self._groups = None
+
+        self._reset_results()
 
     @property
     def scheme(self) -> Scheme:
         return self._scheme
+
+    @property
+    def parameter(self) -> ParameterGroup:
+        return self._parameter
+
+    @property
+    def filled_dataset_descriptors(self) -> typing.Dict[str, DatasetDescriptor]:
+        return self._filled_parameter
 
     @property
     def bag(self) -> typing.Union[UngroupedBag, GroupedBag]:
@@ -63,7 +81,7 @@ class Problem:
         typing.Dict[str, typing.List[typing.List[str]]],
         typing.List[typing.List[typing.List[str]]],
     ]:
-        return self._clp_label
+        return self._clp_labels
 
     @property
     def matrices(
@@ -84,6 +102,18 @@ class Problem:
         typing.List[LabelAndMatrix],
     ]:
         return self._constraint_labels_and_matrices
+
+    def initialize_parameter(self, parameter: ParameterGroup):
+        self._parameter = parameter
+        self._filled_descriptors = {
+            label: descriptor.fill(self._model, self._parameter)
+            for label, descriptor in self._model.dataset.items()
+        }
+
+    def _reset_results(self):
+        self._clp_labels = None
+        self._matrices = None
+        self._constraint_labels_and_matrices = None
 
     def _init_bag(self):
         if self._grouped:
@@ -109,7 +139,7 @@ class Problem:
 
     def _init_grouped_bag(self):
         datasets = None
-        full_axis = None
+        self._full_axis = None
         for label in self._model.dataset:
             dataset = self._data[label]
             weight = (
@@ -125,16 +155,15 @@ class Problem:
                     GroupedProblem(
                         data.isel({self._global_dimension: i}).values,
                         weight.isel({self._global_dimension: i}).values,
+                        label,
                         [GroupedProblemDescriptor(label, value, model_axis)],
                     )
                     for i, value in enumerate(global_axis)
                 )
                 datasets = collections.deque([label] for _, _ in enumerate(global_axis))
-                full_axis = collections.deque(global_axis)
+                self._full_axis = collections.deque(global_axis)
             else:
-                self._append_to_grouped_bag(
-                    label, datasets, full_axis, global_axis, model_axis, data, weight
-                )
+                self._append_to_grouped_bag(label, datasets, global_axis, model_axis, data, weight)
         self._bag = db.from_sequence(bag)
         self._groups = {"".join(d): d for d in datasets if len(d) > 1}
 
@@ -142,30 +171,30 @@ class Problem:
         self,
         label: str,
         datasets: collections.Deque[str],
-        full_axis: collections.Deque[float],
         global_axis: np.ndarray,
         model_axis: np.ndarray,
         data: xr.DataArray,
         weight: xr.DataArray,
     ):
-        i1, i2 = _find_overlap(full_axis, global_axis, atol=self._scheme.group_tolerance)
+        i1, i2 = _find_overlap(self._full_axis, global_axis, atol=self._scheme.group_tolerance)
 
         for i, j in enumerate(i1):
             datasets[j].append(label)
             self._bag[j] = GroupedProblem(
-                da.concatenate(
+                np.concatenate(
                     [
-                        self._bag[j][0],
+                        self._bag[j].data,
                         data.isel({self._global_dimension: i2[i]}).values,
                     ]
                 ),
-                da.concatenate(
+                np.concatenate(
                     [
-                        self._bag[j][1],
+                        self._bag[j].weight,
                         weight.isel({self._global_dimension: i2[i]}).values,
                     ]
                 ),
-                self._bag[j][2]
+                self._bag[j].group + label,
+                self._bag[j].descriptor
                 + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
             )
 
@@ -180,110 +209,36 @@ class Problem:
             )
             if i < end_overlap:
                 datasets.appendleft([label])
-                full_axis.appendleft(global_axis[i])
+                self._full_axis.appendleft(global_axis[i])
                 self._bag.appendleft(problem)
             else:
                 datasets.append([label])
-                full_axis.append(global_axis[i])
+                self._full_axis.append(global_axis[i])
                 self._bag.append(problem)
 
-    def _calculate_index_independent_ungrouped_matrices(
-        self, parameter: ParameterGroup
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, np.ndarray],
-        typing.Dict[str, LabelAndMatrix],
-    ]:
+    def calculate_matrices(self):
+        if self._index_dependent:
+            if self._grouped:
+                self.calculate_index_dependent_grouped_matrices()
+            else:
+                self.calculate_index_dependent_ungrouped_matrices()
+        else:
+            if self._grouped:
+                self.calculate_index_independent_grouped_matrices()
+            else:
+                self.calculate_index_independent_ungrouped_matrices()
 
-        clp_labels = {}
-        matrices = {}
-        constraint_labels_and_matrices = {}
-
-        descriptors = self._get_filled_descriptors(parameter)
-
-        for label, descriptor in descriptors.items():
-            axis = self._data[label].coords[self._model_dimension].values
-            result = _calculate_matrix(
-                self._model.matrix,
-                descriptor,
-                axis,
-                {},
-            )
-
-            clp_labels[label] = result.clp_label
-            matrices[label] = result.matrix
-            constraint_labels_and_matrices[label] = _constrain_matrix(
-                self._model, parameter, result, None
-            )
-
-        return clp_labels, matrices, constraint_labels_and_matrices
-
-    def _calculate_index_independent_grouped_matrices(
-        self, parameter: ParameterGroup
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, np.ndarray],
-        typing.Dict[str, LabelAndMatrix],
-    ]:
-
-        # We just need to create groups from the ungrouped matrices
-        (
-            clp_labels,
-            matrices,
-            constraint_labels_and_matrices,
-        ) = self._calculate_index_independent_ungrouped_matrices(parameter)
-        for label, group in self._groups.items():
-            if label not in matrices:
-                constraint_labels_and_matrices[label] = _combine_matrices(
-                    [constraint_labels_and_matrices[label] for label in group]
-                )
-
-        return clp_labels, matrices, constraint_labels_and_matrices
-
-    def _calculate_index_dependent_ungrouped_matrix_jobs(
-        self, parameter: ParameterGroup
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[typing.List[str]]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[LabelAndMatrix]],
-    ]:
-
-        clp_labels = {}
-        constraint_labels_and_matrices = {}
-        descriptors = self._get_filled_descriptors(parameter)
-        matrices = {}
-
-        for label, problem in self._bag.items():
-
-            clp_labels[label] = []
-            constraint_labels_and_matrices[label] = []
-            descriptor = descriptors[label]
-            matrices[label] = []
-
-            for index in problem.global_axis:
-                result = _calculate_matrix(
-                    self._model.matrix,
-                    descriptor,
-                    problem.model_axis,
-                    {},
-                    index=index,
-                )
-
-                clp_labels[label].append(result.clp_label)
-                matrices[label].append(result.matrix)
-                constraint_labels_and_matrices[label].append(
-                    _constrain_matrix(self._model, parameter, result, index)
-                )
-
-        return clp_labels, matrices, constraint_labels_and_matrices
-
-    def create_index_dependent_grouped_matrix_jobs(
-        self, parameter: ParameterGroup
+    def calculate_index_dependent_grouped_matrices(
+        self,
     ) -> typing.Tuple[
         typing.List[typing.List[typing.List[str]]],
         typing.List[typing.List[np.ndarray]],
-        typing.List[LabelAndMatrix],
+        typing.List[typing.List[typing.List[str]]],
+        typing.List[typing.List[np.ndarray]],
     ]:
+        if self._parameter is None:
+            raise ParameterError
+
         def calculate_group(
             group: GroupedProblem, descriptors: typing.Dict[str, DatasetDescriptor]
         ) -> typing.Tuple[typing.List[LabelAndMatrix], typing.Var]:
@@ -309,36 +264,296 @@ class Problem:
         ) -> typing.List[np.ndarray]:
             return [d.matrix for d in result[0]]
 
-        def constrain_and_combine_matrices(
+        def reduce_and_combine_matrices(
             parameter: ParameterGroup,
             result: typing.Tuple[typing.List[LabelAndMatrix], typing.Var],
         ) -> LabelAndMatrix:
             labels_and_matrices, index = result
-            constraint_labels_and_matrices = map(
-                lambda label_and_matrix: _constrain_matrix(
-                    self._model, parameter, label_and_matrix, index
-                ),
-                labels_and_matrices,
+            constraint_labels_and_matrices = list(
+                map(
+                    lambda label_and_matrix: _reduce_matrix(
+                        self._model, parameter, label_and_matrix, index
+                    ),
+                    labels_and_matrices,
+                )
             )
             clp, matrix = _combine_matrices(constraint_labels_and_matrices)
             return LabelAndMatrix(clp, matrix)
 
-        descriptors = self._get_filled_descriptors(parameter)
+        results = list(
+            map(lambda group: calculate_group(group, self._filled_descriptors), self._bag)
+        )
+        self._clp_labels = list(map(get_clp, results))
+        self._matrices = list(map(get_matrices, results))
+        reduced_results = list(map(reduce_and_combine_matrices, results))
+        self._reduced_clp_labels = list(map(get_clp, reduced_results))
+        self._reduced_matrices = list(map(get_matrices, reduced_results))
+        return self.clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
 
-        results = map(lambda group: calculate_group(group, descriptors), self._bag)
-        clp = map(get_clp, results)
-        matrices = map(get_matrices, results)
-        constraint_labels_and_matrices = map(constrain_and_combine_matrices, results)
+    def calculate_index_dependent_ungrouped_matrices(
+        self,
+    ) -> typing.Tuple[
+        typing.Dict[str, typing.List[typing.List[str]]],
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[typing.List[str]]],
+        typing.Dict[str, typing.List[np.ndarray]],
+    ]:
+        if self._parameter is None:
+            raise ParameterError
 
-        return clp, matrices, constraint_labels_and_matrices
+        self._clp_labels = {}
+        self._matrices = {}
+        self._reduced_clp_labels = {}
+        self._reduced_matrices = {}
 
-    def _get_filled_descriptors(
-        self, parameter: ParameterGroup
-    ) -> typing.Dict[str, DatasetDescriptor]:
-        return {
-            label: descriptor.fill(self._model, parameter)
-            for label, descriptor in self._model.dataset.items()
-        }
+        for label, problem in self._bag.items():
+            self._clp_labels[label] = []
+            self._constraint_labels_and_matrices[label] = []
+            self._matrices[label] = []
+            descriptor = self._filled_descriptors[label]
+
+            for index in problem.global_axis:
+                result = _calculate_matrix(
+                    self._model.matrix,
+                    descriptor,
+                    problem.model_axis,
+                    {},
+                    index=index,
+                )
+
+                self._clp_labels[label].append(result.clp_label)
+                self._matrices[label].append(result.matrix)
+                reduced_labels_and_matrix = _reduce_matrix(
+                    self._model, self._parameter, result, index
+                )
+                self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
+                self._reduced_matrices[label].append(reduced_labels_and_matrix.matrix)
+
+        return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
+
+    def calculate_index_independent_grouped_matrices(
+        self,
+    ) -> typing.Tuple[
+        typing.Dict[str, typing.List[str]],
+        typing.Dict[str, np.ndarray],
+        typing.Dict[str, LabelAndMatrix],
+    ]:
+        # We just need to create groups from the ungrouped matrices
+        self.calculate_index_independent_ungrouped_matrices()
+        for group_label, group in self._groups.items():
+            if group_label not in self._matrices:
+                reduced_labels_and_matrix = _combine_matrices(
+                    [
+                        LabelAndMatrix(
+                            self._reduced_clp_labels[label], self._reduced_matrices[label]
+                        )
+                        for label in group
+                    ]
+                )
+                self._reduced_clp_labels[group_label] = reduced_labels_and_matrix.clp_label
+                self._reduced_matrices[group_label] = reduced_labels_and_matrix.matrix
+
+        return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
+
+    def calculate_index_independent_ungrouped_matrices(
+        self,
+    ) -> typing.Tuple[
+        typing.Dict[str, typing.List[str]],
+        typing.Dict[str, np.ndarray],
+        typing.Dict[str, typing.List[str]],
+        typing.Dict[str, np.ndarray],
+    ]:
+        if self._parameter is None:
+            raise ParameterError
+
+        self._clp_labels = {}
+        self._matrices = {}
+        self._reduced_clp_labels = {}
+        self._reduced_matrices = {}
+
+        for label, descriptor in self._filled_descriptors.items():
+            axis = self._data[label].coords[self._model_dimension].values
+            result = _calculate_matrix(
+                self._model.matrix,
+                descriptor,
+                axis,
+                {},
+            )
+
+            self._clp_labels[label] = result.clp_label
+            self._matrices[label] = result.matrix
+            reduced_result = _reduce_matrix(self._model, self._parameter, result, None)
+            self._reduced_clp_labels[label] = reduced_result.clp_label
+            self._reduced_matrices[label] = reduced_result.matrix
+
+        return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
+
+    def calculate_index_dependent_grouped_residual(
+        self,
+    ) -> typing.Tuple[
+        typing.List[typing.ndarray],
+        typing.List[typing.ndarray],
+        typing.List[typing.ndarray],
+        typing.List[float],
+    ]:
+        def residual_function(
+            problem: GroupedProblem, matrix: np.ndarray
+        ) -> typing.Tuple[np.ndarray, np.ndarray]:
+
+            matrix = matrix.copy()
+            for i in range(matrix.shape[1]):
+                matrix[:, i] *= problem.weight
+            return self._residual_function(matrix, problem.data)
+
+        results = list(map(residual_function, self.bag, self.reduced_matrices))
+
+        self._reduced_clps = list(map(lambda result: result[0], results))
+        self._weighted_residuals = list(map(lambda result: result[1], results))
+        self._calculate_additional_grouped_penalty()
+
+        return (
+            self._reduced_clps,
+            self._full_clps,
+            self._weighted_residuals,
+            self._additional_penalty,
+        )
+
+    def calculate_index_dependent_ungrouped_residual(
+        self,
+    ) -> typing.Tuple[
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[float]],
+    ]:
+        self._reduced_clps = {}
+        self._weighted_residuals = {}
+        self._additional_penalty = {}
+        for label, problem in self.bag.items():
+            self._reduced_clps[label] = []
+            self._weighted_residuals[label] = []
+            for i, index in enumerate(problem.global_axis):
+                matrix_at_index = self.reduced_matrices[label][i]
+                if problem.weight is not None:
+                    matrix_at_index = matrix_at_index.copy()
+                    for j in range(matrix_at_index.shape[1]):
+                        matrix_at_index[:, j] *= problem.weight.isel({self._global_dimension: j})
+                clp, residual = self._residual_function(
+                    matrix_at_index, problem.data.isel({self._global_dimension: i}).values
+                )
+                self._reduced_clps[label].append(clp)
+                self._weighted_residuals[label].append(residual)
+
+            self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
+        return (
+            self._reduced_clps,
+            self._full_clps,
+            self._weighted_residuals,
+            self._additional_penalty,
+        )
+
+    def calculate_index_independent_grouped_residual(
+        self,
+    ) -> typing.Tuple[
+        typing.List[np.ndarray],
+        typing.List[np.ndarray],
+        typing.List[np.ndarray],
+        typing.List[float],
+    ]:
+        def residual_function(problem: GroupedProblem):
+            matrix = self.matrices[problem.group].copy()
+            for i in range(matrix.shape[1]):
+                matrix[:, i] *= problem.weight
+            clp, residual = self._residual_function(matrix, problem.data)
+            return clp, residual
+
+        results = list(map(residual_function, self.bag))
+
+        self._reduced_clps = list(map(lambda result: result[0]), results)
+        self._weighted_residuals = list(map(lambda result: result[1]), results)
+        self._calculate_additional_grouped_penalty()
+
+        return (
+            self._reduced_clps,
+            self._full_clps,
+            self._weighted_residuals,
+            self._additional_penalty,
+        )
+
+    def create_index_independent_ungrouped_residual(
+        self,
+    ) -> typing.Tuple[
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[float]],
+    ]:
+
+        self._reduced_clps = {}
+        self._weighted_residuals = {}
+        self._additional_penalty = {}
+        for label, problem in self.bag:
+
+            self._reduced_clps[label] = []
+            self._weighted_residuals[label] = []
+
+            for i, index in enumerate(problem.global_axis):
+                data = problem.data.isel({self._global_dimension: i}).values
+                matrix = self.reduced_matrices[label]
+
+                if problem.weight is not None:
+                    matrix = matrix.copy()
+                    for j in range(matrix.shape[1]):
+                        matrix[:, j] *= problem.weight.isel({problem.global_dimension: i}).values
+
+                clp, residual = self._residual_function(matrix, data)
+                self._reduced_clps[label].append(clp)
+                self._weighted_residuals[label].append(residual)
+
+            self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
+        return (
+            self._reduced_clps,
+            self._full_clps,
+            self._weighted_residuals,
+            self._additional_penalty,
+        )
+
+    def _calculate_additional_grouped_penalty(self):
+        if (
+            callable(self.model.has_additional_penalty_function)
+            and self.model.has_additional_penalty_function()
+        ):
+            self._full_clps = self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels,
+                self.reduced_clp_labels,
+                self.reduced_clps,
+                self.full_axis,
+            )
+
+            self._additional_penalty = self.model.additional_penalty_function(
+                self.parameter, self.full_clp_labels, self.full_clps, self.full_axis
+            )
+        else:
+            self._full_clps = self.reduced_clps
+
+    def _calculate_additional_ungrouped_penalty(self, label: str, global_axis: np.ndarray):
+        if (
+            callable(self.model.has_additional_penalty_function)
+            and self.model.has_additional_penalty_function()
+        ):
+            self._full_clps[label] = self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels[label],
+                self.reduced_clp_labels[label],
+                self.reduced_clps[label],
+                global_axis,
+            )
+            self._additional_penalty[label] = self.model.additional_penalty_function(
+                self.parameter, self._clp_labels[label], self._full_clps, global_axis
+            )
+        else:
+            self._full_clps = self._reduced_clps
 
 
 def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
@@ -378,7 +593,7 @@ def _calculate_matrix(
     return LabelAndMatrix(clp_label, matrix)
 
 
-def _constrain_matrix(
+def _reduce_matrix(
     model: Model,
     parameter: ParameterGroup,
     result: LabelAndMatrix,
