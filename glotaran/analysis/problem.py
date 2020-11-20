@@ -80,6 +80,8 @@ class Problem:
         typing.Dict[str, typing.List[typing.List[str]]],
         typing.List[typing.List[typing.List[str]]],
     ]:
+        if self._clp_labels is None:
+            self.calculate_matrices()
         return self._clp_labels
 
     @property
@@ -90,17 +92,73 @@ class Problem:
         typing.Dict[str, typing.List[np.ndarray]],
         typing.List[typing.List[np.ndarray]],
     ]:
+        if self._matrices is None:
+            self.calculate_matrices()
         return self._matrices
 
     @property
-    def constraint_labels_and_matrices(
+    def reduced_clp_labels(
         self,
     ) -> typing.Union[
-        typing.Dict[str, LabelAndMatrix],
-        typing.Dict[str, typing.List[LabelAndMatrix]],
-        typing.List[LabelAndMatrix],
+        typing.Dict[str, typing.List[str]],
+        typing.Dict[str, typing.List[typing.List[str]]],
+        typing.List[typing.List[typing.List[str]]],
     ]:
-        return self._constraint_labels_and_matrices
+        if self._reduced_clp_labels is None:
+            self.calculate_matrices()
+        return self._reduced_clp_labels
+
+    @property
+    def reduced_matrices(
+        self,
+    ) -> typing.Union[
+        typing.Dict[str, np.ndarray],
+        typing.Dict[str, typing.List[np.ndarray]],
+        typing.List[typing.List[np.ndarray]],
+    ]:
+        if self._reduced_matrices is None:
+            self.calculate_matrices()
+        return self._reduced_matrices
+
+    @property
+    def reduced_clps(
+        self,
+    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+        if self._reduced_clps is None:
+            self.calculate_residual()
+        return self._reduced_clps
+
+    @property
+    def full_clps(
+        self,
+    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+        if self._full_clps is None:
+            self.calculate_residual()
+        return self._full_clps
+
+    @property
+    def weighted_residuals(
+        self,
+    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+        if self._weighted_residual is None:
+            self.calculate_residual()
+        return self._weighted_residual
+
+    @property
+    def residuals(
+        self,
+    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+        if self._residual is None:
+            self.calculate_residual()
+        return self._residual
+
+    @property
+    def additional_penalty(
+        self,
+    ) -> typing.Union[typing.List[float], typing.Dict[str, typing.List[float]],]:
+        if self._additional_penalty is None:
+            self.calculate_residual()
+        return self._additional_penalty
 
     def initialize_parameter(self, parameter: ParameterGroup):
         self._parameter = parameter
@@ -112,7 +170,13 @@ class Problem:
     def _reset_results(self):
         self._clp_labels = None
         self._matrices = None
-        self._constraint_labels_and_matrices = None
+        self._reduced_clp_labels = None
+        self._reduced_matrices = None
+        self._reduced_clps = None
+        self._full_clps = None
+        self._weighted_residuals = None
+        self._residuals = None
+        self._additional_penalty = None
 
     def _init_bag(self):
         if self._grouped:
@@ -386,9 +450,22 @@ class Problem:
 
         return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
 
+    def calculate_residual(self):
+        if self._index_dependent:
+            if self._grouped:
+                self.calculate_index_dependent_grouped_residual()
+            else:
+                self.calculate_index_dependent_ungrouped_residual()
+        else:
+            if self._grouped:
+                self.calculate_index_independent_grouped_residual()
+            else:
+                self.calculate_index_independent_ungrouped_residual()
+
     def calculate_index_dependent_grouped_residual(
         self,
     ) -> typing.Tuple[
+        typing.List[typing.ndarray],
         typing.List[typing.ndarray],
         typing.List[typing.ndarray],
         typing.List[typing.ndarray],
@@ -396,23 +473,34 @@ class Problem:
     ]:
         def residual_function(
             problem: GroupedProblem, matrix: np.ndarray
-        ) -> typing.Tuple[np.ndarray, np.ndarray]:
+        ) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
             matrix = matrix.copy()
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
-            return self._residual_function(matrix, problem.data)
+            clp, residual = self._residual_function(matrix, problem.data)
+            return clp, residual, residual / problem.weight
 
         results = list(map(residual_function, self.bag, self.reduced_matrices))
 
         self._reduced_clps = list(map(lambda result: result[0], results))
         self._weighted_residuals = list(map(lambda result: result[1], results))
+        self._residuals = list(map(lambda result: result[2], results))
+        self._full_clps = self.model.retrieve_clp_function(
+            self.parameter,
+            self.clp_labels,
+            self.reduced_clp_labels,
+            self.reduced_clps,
+            self.full_axis,
+        )
+
         self._calculate_additional_grouped_penalty()
 
         return (
             self._reduced_clps,
             self._full_clps,
             self._weighted_residuals,
+            self._residuals,
             self._additional_penalty,
         )
 
@@ -422,10 +510,12 @@ class Problem:
         typing.Dict[str, typing.List[np.ndarray]],
         typing.Dict[str, typing.List[np.ndarray]],
         typing.Dict[str, typing.List[np.ndarray]],
+        typing.Dict[str, typing.List[np.ndarray]],
         typing.Dict[str, typing.List[float]],
     ]:
         self._reduced_clps = {}
         self._weighted_residuals = {}
+        self._residuals = {}
         self._additional_penalty = {}
         for label, problem in self.bag.items():
             self._reduced_clps[label] = []
@@ -435,24 +525,39 @@ class Problem:
                 if problem.weight is not None:
                     matrix_at_index = matrix_at_index.copy()
                     for j in range(matrix_at_index.shape[1]):
-                        matrix_at_index[:, j] *= problem.weight.isel({self._global_dimension: j})
+                        matrix_at_index[:, j] *= problem.weight.isel({self._global_dimension: i})
                 clp, residual = self._residual_function(
                     matrix_at_index, problem.data.isel({self._global_dimension: i}).values
                 )
                 self._reduced_clps[label].append(clp)
                 self._weighted_residuals[label].append(residual)
+                if problem.weight is not None:
+                    self._residuals[label].append(
+                        residual / problem.weight.isel({self._global_dimension: i})
+                    )
+                else:
+                    self._residuals[label].append(residual)
 
+            self._full_clps[label] = self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels[label],
+                self.reduced_clp_labels[label],
+                self.reduced_clps[label],
+                problem.global_axis,
+            )
             self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
             self._reduced_clps,
             self._full_clps,
             self._weighted_residuals,
+            self._residuals,
             self._additional_penalty,
         )
 
     def calculate_index_independent_grouped_residual(
         self,
     ) -> typing.Tuple[
+        typing.List[np.ndarray],
         typing.List[np.ndarray],
         typing.List[np.ndarray],
         typing.List[np.ndarray],
@@ -463,24 +568,35 @@ class Problem:
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
             clp, residual = self._residual_function(matrix, problem.data)
-            return clp, residual
+            return clp, residual, residual / problem.weight
 
         results = list(map(residual_function, self.bag))
 
         self._reduced_clps = list(map(lambda result: result[0]), results)
         self._weighted_residuals = list(map(lambda result: result[1]), results)
+        self._residuals = list(map(lambda result: result[2], results))
+        self._full_clps = self.model.retrieve_clp_function(
+            self.parameter,
+            self.clp_labels,
+            self.reduced_clp_labels,
+            self.reduced_clps,
+            self.full_axis,
+        )
+
         self._calculate_additional_grouped_penalty()
 
         return (
             self._reduced_clps,
             self._full_clps,
             self._weighted_residuals,
+            self._residuals,
             self._additional_penalty,
         )
 
     def create_index_independent_ungrouped_residual(
         self,
     ) -> typing.Tuple[
+        typing.Dict[str, typing.List[np.ndarray]],
         typing.Dict[str, typing.List[np.ndarray]],
         typing.Dict[str, typing.List[np.ndarray]],
         typing.Dict[str, typing.List[np.ndarray]],
@@ -507,12 +623,26 @@ class Problem:
                 clp, residual = self._residual_function(matrix, data)
                 self._reduced_clps[label].append(clp)
                 self._weighted_residuals[label].append(residual)
+                if problem.weight is not None:
+                    self._residuals[label].append(
+                        residual / problem.weight.isel({self._global_dimension: i})
+                    )
+                else:
+                    self._residuals[label].append(residual)
 
+            self._full_clps[label] = self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels[label],
+                self.reduced_clp_labels[label],
+                self.reduced_clps[label],
+                problem.global_axis,
+            )
             self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
             self._reduced_clps,
             self._full_clps,
             self._weighted_residuals,
+            self._residuals,
             self._additional_penalty,
         )
 
@@ -521,14 +651,6 @@ class Problem:
             callable(self.model.has_additional_penalty_function)
             and self.model.has_additional_penalty_function()
         ):
-            self._full_clps = self.model.retrieve_clp_function(
-                self.parameter,
-                self.clp_labels,
-                self.reduced_clp_labels,
-                self.reduced_clps,
-                self.full_axis,
-            )
-
             self._additional_penalty = self.model.additional_penalty_function(
                 self.parameter, self.full_clp_labels, self.full_clps, self.full_axis
             )
@@ -540,13 +662,6 @@ class Problem:
             callable(self.model.has_additional_penalty_function)
             and self.model.has_additional_penalty_function()
         ):
-            self._full_clps[label] = self.model.retrieve_clp_function(
-                self.parameter,
-                self.clp_labels[label],
-                self.reduced_clp_labels[label],
-                self.reduced_clps[label],
-                global_axis,
-            )
             self._additional_penalty[label] = self.model.additional_penalty_function(
                 self.parameter, self._clp_labels[label], self._full_clps, global_axis
             )
