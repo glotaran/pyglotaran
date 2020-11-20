@@ -160,12 +160,25 @@ class Problem:
             self.calculate_residual()
         return self._additional_penalty
 
+    @property
+    def full_penalty(self) -> np.ndarray:
+        if self._full_penalty is None:
+            residuals = self.weighted_residuals
+            additional_penalty = self.additional_penalty
+            if not self.grouped:
+                residuals = [np.concatenate(residuals[label]) for label in residuals]
+                additional_penalty = [additional_penalty[label] for label in additional_penalty]
+
+            self._full_penalty = np.concatenate(residuals + additional_penalty)
+        return self._full_penalty
+
     def initialize_parameter(self, parameter: ParameterGroup):
         self._parameter = parameter
         self._filled_descriptors = {
             label: descriptor.fill(self._model, self._parameter)
             for label, descriptor in self._model.dataset.items()
         }
+        self._reset_results()
 
     def _reset_results(self):
         self._clp_labels = None
@@ -177,6 +190,7 @@ class Problem:
         self._weighted_residuals = None
         self._residuals = None
         self._additional_penalty = None
+        self._full_penalty = None
 
     def _init_bag(self):
         if self._grouped:
@@ -655,7 +669,7 @@ class Problem:
                 self.parameter, self.full_clp_labels, self.full_clps, self.full_axis
             )
         else:
-            self._full_clps = self.reduced_clps
+            self._additional_penalty = []
 
     def _calculate_additional_ungrouped_penalty(self, label: str, global_axis: np.ndarray):
         if (
@@ -665,8 +679,6 @@ class Problem:
             self._additional_penalty[label] = self.model.additional_penalty_function(
                 self.parameter, self._clp_labels[label], self._full_clps, global_axis
             )
-        else:
-            self._full_clps = self._reduced_clps
 
 
 def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
