@@ -25,17 +25,14 @@ def optimize(scheme, verbose=True, client=None):
 
     initial_parameter = scheme.parameter.as_parameter_dict()
 
-    if client is not None:
-        scheme = client.scatter(scheme)
-        optimization_result_future = client.submit(
-            optimize_task, initial_parameter, scheme, verbose
-        )
-        result = optimization_result_future.result()
+    if client is None:
+        return optimize_task(initial_parameter, scheme, verbose)
 
-    else:
-        result = optimize_task(initial_parameter, scheme, verbose)
-
-    return result
+    scheme = client.scatter(scheme)
+    optimization_result_future = client.submit(
+        optimize_task, initial_parameter, scheme, verbose
+    )
+    return optimization_result_future.result()
 
 
 def optimize_task(initial_parameter, scheme, verbose):
