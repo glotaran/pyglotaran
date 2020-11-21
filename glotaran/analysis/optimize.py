@@ -29,9 +29,7 @@ def optimize(scheme, verbose=True, client=None):
         return optimize_task(initial_parameter, scheme, verbose)
 
     scheme = client.scatter(scheme)
-    optimization_result_future = client.submit(
-        optimize_task, initial_parameter, scheme, verbose
-    )
+    optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
     return optimization_result_future.result()
 
 
