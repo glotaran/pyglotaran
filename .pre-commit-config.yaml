@@ -25,6 +25,7 @@ repos:
     rev: 5.6.4
     hooks:
       - id: isort
+
   # - repo: https://github.com/PyCQA/pydocstyle
   #   rev: 5.1.1
   #   hooks:
@@ -33,7 +34,10 @@ repos:
   #       # this is needed due to the following issue:
   #       # https://github.com/PyCQA/pydocstyle/issues/368
   #       args: [--ignore-decorators=wrap_func_as_method]
-
+  # - repo: https://github.com/terrencepreilly/darglint
+  #   rev: v1.5.5
+  #   hooks:
+  #     - id: darglint
   - repo: https://github.com/econchick/interrogate
     rev: 1.3.2
     hooks:
