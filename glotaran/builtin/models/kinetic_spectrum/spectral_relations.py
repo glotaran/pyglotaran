@@ -36,7 +36,7 @@ class SpectralRelation:
         applies : bool
 
         """
-        return any([interval[0] <= index <= interval[1] for interval in self.interval])
+        return any(interval[0] <= index <= interval[1] for interval in self.interval)
 
 
 def create_spectral_relation_matrix(
