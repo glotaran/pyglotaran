@@ -26,7 +26,7 @@ def create_index_independent_ungrouped_residual(
 
         reduced_clps[label] = []
         residuals[label] = []
-        for i, index in enumerate(global_axis):
+        for i in range(len(global_axis)):
             data_stripe = data.isel({global_dimension: i}).values
             matrix_stripe = matrix
 
@@ -76,7 +76,7 @@ def create_index_dependent_ungrouped_residual(
         reduced_clp_labels[label] = []
         reduced_clps[label] = []
         residuals[label] = []
-        for i, index in enumerate(global_axis):
+        for i in range(len(global_axis)):
             matrix = matrices[i][1]
             if weight is not None:
                 matrix = dask.delayed(apply_weight)(matrix, weight.isel({global_dimension: i}))
