@@ -34,6 +34,13 @@ repos:
   #       # https://github.com/PyCQA/pydocstyle/issues/368
   #       args: [--ignore-decorators=wrap_func_as_method]
 
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.3.2
+    hooks:
+      - id: interrogate
+        args: [-vv, --config=pyproject.toml]
+        exclude: ^(docs|setup.py)|test/|__init__.py
+
   - repo: https://github.com/asottile/yesqa
     rev: v1.2.2
     hooks:

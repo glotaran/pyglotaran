@@ -24,3 +24,8 @@ line_length = 99
 multi_line_output = 3
 known_first_party = ["glotaran"]
 force_single_line = true
+
+[tool.interrogate]
+exclude = ["setup.py", "docs", "*test/*"]
+ignore-init-module = true
+fail-under = 40
