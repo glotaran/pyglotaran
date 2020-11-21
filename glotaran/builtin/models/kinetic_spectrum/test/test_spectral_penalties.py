@@ -37,9 +37,7 @@ def plot_overview(res, title=None):
         traces.plot.line(x="time", ax=ax[0, 0])
     sas.plot.line(x="spectral", ax=ax[0, 1])
     rLSV = res.residual_left_singular_vectors
-    rLSV.isel(left_singular_value_index=range(min(2, len(rLSV)))).plot.line(
-        x="time", ax=ax[1, 0]
-    )
+    rLSV.isel(left_singular_value_index=range(min(2, len(rLSV)))).plot.line(x="time", ax=ax[1, 0])
 
     ax[1, 0].set_title("res. LSV")
     rRSV = res.residual_right_singular_vectors

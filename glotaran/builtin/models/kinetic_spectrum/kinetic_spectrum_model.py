@@ -68,8 +68,7 @@ def retrieve_spectral_clps(
 
 def index_dependent(model: T_KineticSpectrumModel):
     if any(
-        isinstance(irf, IrfSpectralMultiGaussian)
-        and irf.dispersion_center is not None
+        isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
         for irf in model.irf.values()
     ):
         return True
