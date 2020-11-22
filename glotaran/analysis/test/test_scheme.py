@@ -13,14 +13,14 @@ def scheme(tmpdir_factory):
 
     path = tmpdir_factory.mktemp("scheme")
 
-    model = "type: mock\ndataset:\n  dataset1:\n    megacomplex: []"
     model_path = path.join("model.yml")
     with open(model_path, "w") as f:
+        model = "type: mock\ndataset:\n  dataset1:\n    megacomplex: []"
         f.write(model)
 
-    parameter = "[1.0, 67.0]"
     parameter_path = path.join("parameter.yml")
     with open(parameter_path, "w") as f:
+        parameter = "[1.0, 67.0]"
         f.write(parameter)
 
     dataset_path = path.join("dataset.nc")

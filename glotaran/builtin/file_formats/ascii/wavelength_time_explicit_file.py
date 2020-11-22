@@ -213,9 +213,7 @@ class WavelengthExplicitFile(ExplicitFile):
         return self.observations()
 
     def get_data_row(self, index):
-        row = []
-        pass
-        return row
+        return []
 
     def add_data_row(self, row):
         if self._timepoints is None:

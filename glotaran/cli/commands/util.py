@@ -122,7 +122,7 @@ class ValOrRangeOrList(click.ParamType):
     def convert(self, value, param, ctx):
         if value[0] == "(" and value[-1] == ")":
             split = value[1:-1].split(",")
-            if not len(split) == 2:
+            if len(split) != 2:
                 self.fail(f"Malformed range: '{value}'")
             return (split[0].strip(), split[1].strip())
         if value[0] == "[" and value[-1] == "]":

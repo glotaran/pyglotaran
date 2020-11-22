@@ -307,7 +307,7 @@ def _create_mprint_func(cls):
                     p = parameter.get(param.full_label)
                     s += f": **{p.value:.5e}**"
                     if p.vary:
-                        err = p.stderr if p.stderr else 0
+                        err = p.stderr or 0
                         s += f" *(StdErr: {err:.0e}"
                         if initial is not None:
                             i = initial.get(param.full_label)

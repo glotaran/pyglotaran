@@ -23,7 +23,7 @@ def read_data_file(filename: str, fmt: str = None) -> xr.Dataset:
 class Reader:
     def __init__(self, extension, name, reader):
         self.extension = extension
-        self.name = name if name else f" '.{extension}' format"
+        self.name = name or f" '.{extension}' format"
         self.read = reader
 
 

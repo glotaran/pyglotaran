@@ -93,8 +93,8 @@ def test_initial_concentration(model):
     assert len(model.initial_concentration) == 2
 
     i = 1
+    label = f"inputD{i}"
     for _ in model.initial_concentration:
-        label = f"inputD{i}"
         assert label in model.initial_concentration
         initial_concentration = model.initial_concentration[label]
         assert initial_concentration.compartments == ["s1", "s2", "s3"]
@@ -106,8 +106,7 @@ def test_initial_concentration(model):
 def test_irf(model):
     assert len(model.irf) == 2
 
-    i = 1
-    for _ in model.irf:
+    for i, _ in enumerate(model.irf, start=1):
         label = f"irf{i}"
         assert label in model.irf
         irf = model.irf[label]
@@ -132,8 +131,6 @@ def test_irf(model):
         else:
             assert not irf.backsweep
             assert irf.backsweep_period is None
-
-        i = i + 1
 
 
 def test_k_matrices(model):
@@ -169,12 +166,10 @@ def test_shapes(model):
 def test_megacomplexes(model):
     assert len(model.megacomplex) == 3
 
-    i = 1
-    for _ in model.megacomplex:
+    for i, _ in enumerate(model.megacomplex, start=1):
         label = f"cmplx{i}"
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
         assert isinstance(megacomplex, KineticImageMegacomplex)
         assert megacomplex.label == label
         assert megacomplex.k_matrix == [f"km{i}"]
-        i = i + 1

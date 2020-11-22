@@ -104,6 +104,6 @@ def apply_spectral_constraints(
     for constraint in model.spectral_constraints:
         if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
             idx = [not label == constraint.compartment for label in clp_labels]
-            clp_labels = [label for label in clp_labels if not label == constraint.compartment]
+            clp_labels = [label for label in clp_labels if label != constraint.compartment]
             matrix = matrix[:, idx]
     return (clp_labels, matrix)

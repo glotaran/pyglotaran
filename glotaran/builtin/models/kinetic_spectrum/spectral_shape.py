@@ -31,10 +31,9 @@ class SpectralShapeGaussian:
         shape: numpy.ndarray
 
         """
-        matrix = self.amplitude * np.exp(
+        return self.amplitude * np.exp(
             -np.log(2) * np.square(2 * (axis - self.location) / self.width)
         )
-        return matrix
 
 
 @model_attribute(properties={}, has_type=True)

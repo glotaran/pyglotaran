@@ -39,7 +39,7 @@ def calculate_doas_matrix(dataset_descriptor=None, axis=None, index=None, irf=No
 
     kinetic_clp, kinetic_matrix = kinetic_image_matrix(dataset_descriptor, axis, index, irf)
     if kinetic_matrix is not None:
-        clp = clp + kinetic_clp
+        clp += kinetic_clp
         matrix = np.concatenate((matrix, kinetic_matrix), axis=1)
     return (clp, matrix)
 

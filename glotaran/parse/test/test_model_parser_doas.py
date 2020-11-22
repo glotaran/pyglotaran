@@ -28,8 +28,7 @@ def test_correct_model(model):
 def test_oscillation(model):
     assert len(model.oscillation) == 2
 
-    i = 1
-    for _ in model.oscillation:
+    for i, _ in enumerate(model.oscillation, start=1):
         label = f"osc{i}"
         assert label in model.oscillation
         oscillation = model.oscillation[label]
@@ -38,14 +37,11 @@ def test_oscillation(model):
         assert oscillation.frequency == i
         assert oscillation.rate == 2 + i
 
-        i = i + 1
-
 
 def test_megacomplexes(model):
     assert len(model.megacomplex) == 4
 
-    i = 1
-    for _ in model.megacomplex:
+    for i, _ in enumerate(model.megacomplex, start=1):
         label = f"cmplx{i}"
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
@@ -54,7 +50,5 @@ def test_megacomplexes(model):
         assert megacomplex.k_matrix == [f"km{i}"]
         if i == 2:
             assert megacomplex.oscillation == ["osc1"]
-        if i == 4:
+        elif i == 4:
             assert megacomplex.oscillation == ["osc2"]
-
-        i = i + 1
