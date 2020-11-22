@@ -92,9 +92,8 @@ def test_spectral_relations(model):
 def test_initial_concentration(model):
     assert len(model.initial_concentration) == 2
 
-    i = 1
-    label = f"inputD{i}"
-    for _ in model.initial_concentration:
+    for i, _ in enumerate(model.initial_concentration, start=1):
+        label = f"inputD{i}"
         assert label in model.initial_concentration
         initial_concentration = model.initial_concentration[label]
         assert initial_concentration.compartments == ["s1", "s2", "s3"]
