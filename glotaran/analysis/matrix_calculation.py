@@ -36,9 +36,7 @@ def calculate_index_independent_ungrouped_matrices(scheme, parameter):
             callable(model.has_matrix_constraints_function)
             and model.has_matrix_constraints_function()
         ):
-            clp_label, matrix = model.constrain_matrix_function(
-                parameter, clp_label, matrix, None
-            )
+            clp_label, matrix = model.constrain_matrix_function(parameter, clp_label, matrix, None)
 
         constraint_labels_and_matrices[label] = LabelAndMatrix(clp_label, matrix)
     return clp_labels, matrices, constraint_labels_and_matrices

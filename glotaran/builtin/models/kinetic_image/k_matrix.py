@@ -292,9 +292,7 @@ class KMatrix:
         if (
             np.sum(
                 [
-                    initial_concentration.parameters[
-                        initial_concentration.compartments.index(c)
-                    ]
+                    initial_concentration.parameters[initial_concentration.compartments.index(c)]
                     for c in self.involved_compartments()
                 ]
             )
@@ -303,8 +301,6 @@ class KMatrix:
             return False
         matrix = self.reduced(initial_concentration.compartments)
         return not any(
-            np.nonzero(matrix[:, i])[0].size != 1
-            or i != 0
-            and matrix[i, i - 1] == 0
+            np.nonzero(matrix[:, i])[0].size != 1 or i != 0 and matrix[i, i - 1] == 0
             for i in range(matrix.shape[1])
         )

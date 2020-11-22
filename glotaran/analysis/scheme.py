@@ -212,8 +212,7 @@ class Scheme:
             new_dims += [
                 dim
                 for dim in dataset.dims
-                if dim
-                not in [self.model.model_dimension, self.model.global_dimension]
+                if dim not in [self.model.model_dimension, self.model.global_dimension]
             ]
 
             if copy:
