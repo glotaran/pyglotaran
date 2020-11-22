@@ -73,6 +73,10 @@ templates_path = ["_templates"]
 # source_suffix = ['.rst', '.md']
 source_suffix = ".rst"
 
+linkcheck_ignore = [
+    r"https://github\.com/.+?#.+",
+]
+
 # The master toctree document.
 master_doc = "index"
 
