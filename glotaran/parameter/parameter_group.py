@@ -177,10 +177,9 @@ class ParameterGroup(dict):
         """
         items = yaml.load(yaml_string, Loader=yaml.FullLoader)
         if isinstance(items, list):
-            cls = cls.from_list(items)
+            return cls.from_list(items)
         else:
-            cls = cls.from_dict(items)
-        return cls
+            return cls.from_dict(items)
 
     @classmethod
     def from_csv(cls, filepath: str, delimiter: str = "\t"):
@@ -384,8 +383,7 @@ class ParameterGroup(dict):
         for label, p in self._parameters.items():
             yield (f"{root}{label}", p)
         for _, l in self.items():
-            for (lbl, p) in l.all(root=root, separator=separator):
-                yield (lbl, p)
+            yield from l.all(root=root, separator=separator)
 
     def as_parameter_dict(self) -> Parameters:
         """

@@ -204,8 +204,7 @@ class Model:
             group_tolerance=group_tolerance,
             nfev=max_nfev,
         )
-        result = optimize(scheme, verbose=verbose, client=client)
-        return result
+        return optimize(scheme, verbose=verbose, client=client)
 
     def result_from_parameter(
         self,

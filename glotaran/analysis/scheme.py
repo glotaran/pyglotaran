@@ -165,8 +165,9 @@ class Scheme:
         new_dims += [
             dim
             for dim in dataset.dims
-            if dim != self.model.model_dimension and dim != self.model.global_dimension
+            if dim not in [self.model.model_dimension, self.model.global_dimension]
         ]
+
         return dataset.transpose(*new_dims)
 
     def prepare_data(self, copy=True):
@@ -211,8 +212,9 @@ class Scheme:
             new_dims += [
                 dim
                 for dim in dataset.dims
-                if dim != self.model.model_dimension and dim != self.model.global_dimension
+                if dim not in [self.model.model_dimension, self.model.global_dimension]
             ]
+
             if copy:
                 data[label] = dataset
             else:
@@ -235,7 +237,7 @@ class Scheme:
 
         # if the user supplies a weight we ignore modeled weights
         if "weight" in dataset:
-            if any([label in weight.datasets for weight in self.model.weights]):
+            if any(label in weight.datasets for weight in self.model.weights):
                 warnings.warn(
                     f"Ignoring model weight for dataset '{label}'"
                     " because weight is already supplied by dataset."

@@ -92,11 +92,11 @@ class Parameter(LmParameter):
 
         def retrieve(filt, default):
             tmp = list(filter(filt, value))
-            if len(tmp) != 0:
-                value.remove(tmp[0])
-                return tmp[0]
-            else:
+            if not tmp:
                 return default
+
+            value.remove(tmp[0])
+            return tmp[0]
 
         options = retrieve(lambda x: isinstance(x, dict), None)
 

@@ -62,9 +62,7 @@ class KMatrix:
         """
         if not isinstance(k_matrix, KMatrix):
             raise TypeError("K-Matrices can only be combined with other K-Matrices.")
-        combined_matrix = {}
-        for entry in k_matrix.matrix:
-            combined_matrix[entry] = k_matrix.matrix[entry]
+        combined_matrix = {entry: k_matrix.matrix[entry] for entry in k_matrix.matrix}
         for entry in self.matrix:
             combined_matrix[entry] = self.matrix[entry]
         combined = KMatrix()
@@ -210,9 +208,8 @@ class KMatrix:
         """
         if self.is_unibranched(initial_concentration):
             return np.diag(self.full(initial_concentration.compartments)).copy()
-        else:
-            rates, _ = self.eigen(initial_concentration.compartments)
-            return rates
+        rates, _ = self.eigen(initial_concentration.compartments)
+        return rates
 
     def _gamma(
         self,
@@ -279,8 +276,9 @@ class KMatrix:
             if i > j:
                 continue
             a_matrix[i, j] = np.prod([rates[m] for m in range(j)]) / np.prod(
-                [rates[m] - rates[i] for m in range(j + 1) if not i == m]
+                [rates[m] - rates[i] for m in range(j + 1) if i != m]
             )
+
         return a_matrix
 
     def is_unibranched(self, initial_concentration: InitialConcentration) -> bool:
@@ -292,17 +290,17 @@ class KMatrix:
             The initial concentration.
         """
         if (
-            not np.sum(
+            np.sum(
                 [
                     initial_concentration.parameters[initial_concentration.compartments.index(c)]
                     for c in self.involved_compartments()
                 ]
             )
-            == 1
+            != 1
         ):
             return False
         matrix = self.reduced(initial_concentration.compartments)
-        for i in range(matrix.shape[1]):
-            if not np.nonzero(matrix[:, i])[0].size == 1 or i != 0 and matrix[i, i - 1] == 0:
-                return False
-        return True
+        return not any(
+            np.nonzero(matrix[:, i])[0].size != 1 or i != 0 and matrix[i, i - 1] == 0
+            for i in range(matrix.shape[1])
+        )

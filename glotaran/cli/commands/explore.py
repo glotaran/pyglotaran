@@ -91,7 +91,7 @@ def export(filename: str, select, out: str, name: str):
                         default="back",
                         type=util.VALORRANGEORLIST,
                     )
-                    if not choice == "back":
+                    if choice != "back":
                         try:
                             data = util.select_data(data, dim, choice)
                         except ValueError as e:
