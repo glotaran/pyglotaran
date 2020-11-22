@@ -67,6 +67,7 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
 
 @model(
     "one_channel",
+    attributes={},
     dataset_type=DecayDatasetDescriptor,
     matrix=calculate_kinetic,
     model_dimension="c",
@@ -81,6 +82,7 @@ class DecayModel(Model):
 
 @model(
     "multi_channel",
+    attributes={},
     dataset_type=GaussianShapeDecayDatasetDescriptor,
     matrix=calculate_kinetic,
     model_dimension="c",

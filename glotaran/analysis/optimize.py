@@ -25,17 +25,12 @@ def optimize(scheme, verbose=True, client=None):
 
     initial_parameter = scheme.parameter.as_parameter_dict()
 
-    if client is not None:
-        scheme = client.scatter(scheme)
-        optimization_result_future = client.submit(
-            optimize_task, initial_parameter, scheme, verbose
-        )
-        result = optimization_result_future.result()
+    if client is None:
+        return optimize_task(initial_parameter, scheme, verbose)
 
-    else:
-        result = optimize_task(initial_parameter, scheme, verbose)
-
-    return result
+    scheme = client.scatter(scheme)
+    optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
+    return optimization_result_future.result()
 
 
 def optimize_task(initial_parameter, scheme, verbose):
@@ -81,37 +76,65 @@ def calculate_penalty(parameter, scheme, bag, groups):
     residual_function = residual_nnls if scheme.nnls else residual_variable_projection
     if scheme.model.grouped():
         if scheme.model.index_dependent():
-            _, _, constraint_labels_and_matrices = create_index_dependent_grouped_matrix_jobs(
-                scheme, bag, parameter
-            )
+            (
+                full_clp_label,
+                _,
+                constraint_labels_and_matrices,
+            ) = create_index_dependent_grouped_matrix_jobs(scheme, bag, parameter)
             _, _, _, penalty = residual_calculation.create_index_dependent_grouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                full_clp_label,
+                constraint_labels_and_matrices,
+                residual_function,
             )
         else:
 
-            _, _, constraint_labels_and_matrices = calculate_index_independent_grouped_matrices(
-                scheme, groups, parameter
-            )
+            (
+                full_clp_label,
+                _,
+                constraint_labels_and_matrices,
+            ) = calculate_index_independent_grouped_matrices(scheme, groups, parameter)
 
             _, _, _, penalty = residual_calculation.create_index_independent_grouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                full_clp_label,
+                constraint_labels_and_matrices,
+                residual_function,
             )
     else:
         if scheme.model.index_dependent():
-            _, _, constraint_labels_and_matrices = create_index_dependent_ungrouped_matrix_jobs(
-                scheme, bag, parameter
-            )
+            (
+                full_clp_label,
+                _,
+                constraint_labels_and_matrices,
+            ) = create_index_dependent_ungrouped_matrix_jobs(scheme, bag, parameter)
             _, _, _, penalty = residual_calculation.create_index_dependent_ungrouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                full_clp_label,
+                constraint_labels_and_matrices,
+                residual_function,
             )
         else:
 
-            _, _, constraint_labels_and_matrices = calculate_index_independent_ungrouped_matrices(
-                scheme, parameter
-            )
+            (
+                full_clp_label,
+                _,
+                constraint_labels_and_matrices,
+            ) = calculate_index_independent_ungrouped_matrices(scheme, parameter)
 
             _, _, _, penalty = residual_calculation.create_index_independent_ungrouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                full_clp_label,
+                constraint_labels_and_matrices,
+                residual_function,
             )
     penalty = penalty.compute()
     return penalty
@@ -148,7 +171,12 @@ def _create_result(scheme, parameter):
                 residuals,
                 _,
             ) = residual_calculation.create_index_dependent_grouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                clp_labels,
+                constraint_labels_and_matrices,
+                residual_function,
             )
         else:
             (
@@ -162,7 +190,12 @@ def _create_result(scheme, parameter):
                 residuals,
                 _,
             ) = residual_calculation.create_index_independent_grouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                clp_labels,
+                constraint_labels_and_matrices,
+                residual_function,
             )
     else:
         bag = problem_bag.create_ungrouped_bag(scheme)
@@ -179,7 +212,12 @@ def _create_result(scheme, parameter):
                 residuals,
                 _,
             ) = residual_calculation.create_index_dependent_ungrouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                clp_labels,
+                constraint_labels_and_matrices,
+                residual_function,
             )
         else:
             (
@@ -193,7 +231,12 @@ def _create_result(scheme, parameter):
                 residuals,
                 _,
             ) = residual_calculation.create_index_independent_ungrouped_residual(
-                scheme, parameter, bag, constraint_labels_and_matrices, residual_function
+                scheme,
+                parameter,
+                bag,
+                clp_labels,
+                constraint_labels_and_matrices,
+                residual_function,
             )
 
     indices = None
