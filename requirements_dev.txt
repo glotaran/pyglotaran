@@ -13,7 +13,7 @@ cloudpickle==1.6.0
 dask[bag]==2.30.0
 lmfit==1.0.1
 numba==0.51.2
-pandas==1.1.1
+pandas==1.1.4
 pyyaml==5.3.1
 xarray==0.16.1
 netCDF4==1.5.4
