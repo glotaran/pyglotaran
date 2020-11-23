@@ -6,7 +6,7 @@ wheel>=0.30.0
 bump2version>=0.5.11
 
 # glotaran setup dependencies
-numpy==1.19.1
+numpy==1.19.4
 scipy==1.5.2
 click==7.1.2
 cloudpickle==1.6.0
