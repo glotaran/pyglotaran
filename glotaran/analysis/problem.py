@@ -123,7 +123,7 @@ class Problem:
     @property
     def reduced_clps(
         self,
-    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
         if self._reduced_clps is None:
             self.calculate_residual()
         return self._reduced_clps
@@ -131,7 +131,7 @@ class Problem:
     @property
     def full_clps(
         self,
-    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
         if self._full_clps is None:
             self.calculate_residual()
         return self._full_clps
@@ -139,7 +139,7 @@ class Problem:
     @property
     def weighted_residuals(
         self,
-    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
         if self._weighted_residual is None:
             self.calculate_residual()
         return self._weighted_residual
@@ -147,7 +147,7 @@ class Problem:
     @property
     def residuals(
         self,
-    ) -> typing.Union[typing.List[typing.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
         if self._residual is None:
             self.calculate_residual()
         return self._residual
@@ -246,7 +246,7 @@ class Problem:
     def _append_to_grouped_bag(
         self,
         label: str,
-        datasets: collections.Deque[str],
+        datasets: typing.Deque[str],
         global_axis: np.ndarray,
         model_axis: np.ndarray,
         data: xr.DataArray,
@@ -479,10 +479,10 @@ class Problem:
     def calculate_index_dependent_grouped_residual(
         self,
     ) -> typing.Tuple[
-        typing.List[typing.ndarray],
-        typing.List[typing.ndarray],
-        typing.List[typing.ndarray],
-        typing.List[typing.ndarray],
+        typing.List[np.ndarray],
+        typing.List[np.ndarray],
+        typing.List[np.ndarray],
+        typing.List[np.ndarray],
         typing.List[float],
     ]:
         def residual_function(
@@ -722,7 +722,7 @@ def _reduce_matrix(
     model: Model,
     parameter: ParameterGroup,
     result: LabelAndMatrix,
-    index: typing.Var,
+    index: float,
 ) -> LabelAndMatrix:
     if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
         clp_label, matrix = model.constrain_matrix_function(
