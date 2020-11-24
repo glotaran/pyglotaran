@@ -5,6 +5,8 @@ import typing
 import numpy as np
 import xarray as xr
 
+from glotaran.analysis.nnls import residual_nnls
+from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
@@ -41,24 +43,49 @@ class Problem:
         self._grouped = scheme.model.grouped()
 
         self._parameter = None
-        self._filled_descriptors = None
+        self._filled_dataset_descriptors = None
+
+        self._clp_labels = None
+        self._matrices = None
+        self._reduced_clp_labels = None
+        self._reduced_matrices = None
+        self._reduced_clps = None
+        self._full_clps = None
+        self._weighted_residuals = None
+        self._residuals = None
+        self._additional_penalty = None
+        self._full_penalty = None
 
         self._bag = None
         self._groups = None
 
-        self._reset_results()
+        self._residual_function = residual_nnls if scheme.nnls else residual_variable_projection
+
+        self.initialize_parameter(scheme.parameter)
 
     @property
     def scheme(self) -> Scheme:
         return self._scheme
 
     @property
+    def model(self) -> Model:
+        return self._model
+
+    @property
     def parameter(self) -> ParameterGroup:
         return self._parameter
 
     @property
+    def grouped(self) -> bool:
+        return self._grouped
+
+    @property
+    def index_dependent(self) -> bool:
+        return self._index_dependent
+
+    @property
     def filled_dataset_descriptors(self) -> typing.Dict[str, DatasetDescriptor]:
-        return self._filled_parameter
+        return self._filled_dataset_descriptors
 
     @property
     def bag(self) -> typing.Union[UngroupedBag, GroupedBag]:
@@ -140,17 +167,17 @@ class Problem:
     def weighted_residuals(
         self,
     ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
-        if self._weighted_residual is None:
+        if self._weighted_residuals is None:
             self.calculate_residual()
-        return self._weighted_residual
+        return self._weighted_residuals
 
     @property
     def residuals(
         self,
     ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
-        if self._residual is None:
+        if self._residuals is None:
             self.calculate_residual()
-        return self._residual
+        return self._residuals
 
     @property
     def additional_penalty(
@@ -163,7 +190,7 @@ class Problem:
     @property
     def full_penalty(self) -> np.ndarray:
         if self._full_penalty is None:
-            residuals = self.weighted_residuals
+            residuals = self._weighted_residuals
             additional_penalty = self.additional_penalty
             if not self.grouped:
                 residuals = [np.concatenate(residuals[label]) for label in residuals]
@@ -174,7 +201,7 @@ class Problem:
 
     def initialize_parameter(self, parameter: ParameterGroup):
         self._parameter = parameter
-        self._filled_descriptors = {
+        self._filled_dataset_descriptors = {
             label: descriptor.fill(self._model, self._parameter)
             for label, descriptor in self._model.dataset.items()
         }
@@ -357,7 +384,7 @@ class Problem:
             return LabelAndMatrix(clp, matrix)
 
         results = list(
-            map(lambda group: calculate_group(group, self._filled_descriptors), self._bag)
+            map(lambda group: calculate_group(group, self._filled_dataset_descriptors), self._bag)
         )
         self._clp_labels = list(map(get_clp, results))
         self._matrices = list(map(get_matrices, results))
@@ -386,7 +413,7 @@ class Problem:
             self._clp_labels[label] = []
             self._constraint_labels_and_matrices[label] = []
             self._matrices[label] = []
-            descriptor = self._filled_descriptors[label]
+            descriptor = self._filled_dataset_descriptors[label]
 
             for index in problem.global_axis:
                 result = _calculate_matrix(
@@ -447,7 +474,7 @@ class Problem:
         self._reduced_clp_labels = {}
         self._reduced_matrices = {}
 
-        for label, descriptor in self._filled_descriptors.items():
+        for label, descriptor in self._filled_dataset_descriptors.items():
             axis = self._data[label].coords[self._model_dimension].values
             result = _calculate_matrix(
                 self._model.matrix,
@@ -533,6 +560,7 @@ class Problem:
         self._additional_penalty = {}
         for label, problem in self.bag.items():
             self._reduced_clps[label] = []
+            self._residuals[label] = []
             self._weighted_residuals[label] = []
             for i, index in enumerate(problem.global_axis):
                 matrix_at_index = self.reduced_matrices[label][i]
@@ -607,7 +635,7 @@ class Problem:
             self._additional_penalty,
         )
 
-    def create_index_independent_ungrouped_residual(
+    def calculate_index_independent_ungrouped_residual(
         self,
     ) -> typing.Tuple[
         typing.Dict[str, typing.List[np.ndarray]],
@@ -617,13 +645,17 @@ class Problem:
         typing.Dict[str, typing.List[float]],
     ]:
 
+        self._full_clps = {}
         self._reduced_clps = {}
         self._weighted_residuals = {}
+        self._residuals = {}
         self._additional_penalty = {}
-        for label, problem in self.bag:
+        for label, problem in self.bag.items():
 
+            self._full_clps[label] = []
             self._reduced_clps[label] = []
             self._weighted_residuals[label] = []
+            self._residuals[label] = []
 
             for i, index in enumerate(problem.global_axis):
                 data = problem.data.isel({self._global_dimension: i}).values
