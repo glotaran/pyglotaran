@@ -61,14 +61,29 @@ class Problem:
 
         self._residual_function = residual_nnls if scheme.nnls else residual_variable_projection
 
-        self.initialize_parameter(scheme.parameter)
+        self.parameter = scheme.parameter
 
     @property
     def scheme(self) -> Scheme:
+        """Property providing access to the used scheme
+
+        Returns:
+            Scheme: An instance of :class:`glotaran.analysis.scheme.Scheme`
+                Provides access to data, model, parameters and optimization arguments.
+        """
         return self._scheme
 
     @property
     def model(self) -> Model:
+        """Property providing access to the used model
+
+        The model is a subclass of :class:`glotaran.model.Model` decorated with the `@model` decorator :class:`glotaran.model.model_decorator.model`
+        For an example implementation see e.g. :class:`glotaran.builtin.models.kinetic_spectrum`
+
+        Returns:
+            Model: A subclass of :class:`glotaran.model.Model`
+                The model must be decorated with the `@model` decorator :class:`glotaran.model.model_decorator.model`
+        """
         return self._model
 
     @property
@@ -199,7 +214,8 @@ class Problem:
             self._full_penalty = np.concatenate(residuals + additional_penalty)
         return self._full_penalty
 
-    def initialize_parameter(self, parameter: ParameterGroup):
+    @parameter.setter
+    def parameter(self, parameter: ParameterGroup):
         self._parameter = parameter
         self._filled_dataset_descriptors = {
             label: descriptor.fill(self._model, self._parameter)
