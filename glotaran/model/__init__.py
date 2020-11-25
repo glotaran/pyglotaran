@@ -4,26 +4,9 @@ This package contains the Glotaran's base model object, the model decorators and
 common model items.
 """
 
-from . import dataset_descriptor
-from . import model
-from . import model_attribute
-from . import model_decorator
-from . import weight
-
-# Dataset
-
-DatasetDescriptor = dataset_descriptor.DatasetDescriptor
-
-# Weight
-
-Weight = weight.Weight
-
-# BaseModel
-
-Model = model.Model
-
-# Decorators
-
-model = model_decorator.model
-model_attribute_typed = model_attribute.model_attribute_typed
-model_attribute = model_attribute.model_attribute
+from .attribute import model_attribute  # noqa: F401
+from .attribute import model_attribute_typed  # noqa: F401
+from .base_model import Model  # noqa: F401
+from .dataset_descriptor import DatasetDescriptor  # noqa: F401
+from .decorator import model  # noqa: F401
+from .weight import Weight  # noqa: F401

@@ -3,7 +3,7 @@
 from typing import List
 from typing import Tuple
 
-from .model_attribute import model_attribute
+from .attribute import model_attribute
 
 
 @model_attribute(
