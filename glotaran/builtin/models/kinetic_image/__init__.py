@@ -1,3 +1,1 @@
-from . import kinetic_image_model
-
-KineticImageModel = kinetic_image_model.KineticImageModel
+from .kinetic_image_model import KineticImageModel  # noqa: F401

@@ -1,12 +1,13 @@
-import typing
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
-from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 from glotaran.model import model
-from glotaran.parameter import ParameterGroup
 
+from ..kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from ..kinetic_image.kinetic_image_model import KineticImageModel
 from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
 from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
 from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
@@ -22,19 +23,21 @@ from .spectral_relations import apply_spectral_relations
 from .spectral_relations import retrieve_related_clps
 from .spectral_shape import SpectralShape
 
-T_KineticSpectrumModel = typing.TypeVar(
-    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
-)
+if TYPE_CHECKING:
+    from typing import List
+    from typing import Union
+
+    from glotaran.parameter import ParameterGroup
 
 
-def has_kinetic_model_constraints(model: T_KineticSpectrumModel) -> bool:
+def has_kinetic_model_constraints(model: KineticSpectrumModel) -> bool:
     return len(model.spectral_relations) + len(model.spectral_constraints) != 0
 
 
 def apply_kinetic_model_constraints(
-    model: T_KineticSpectrumModel,
+    model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: typing.List[str],
+    clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
 ):
@@ -44,11 +47,11 @@ def apply_kinetic_model_constraints(
 
 
 def retrieve_spectral_clps(
-    model: T_KineticSpectrumModel,
+    model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: typing.List[str],
-    reduced_clp_labels: typing.List[str],
-    reduced_clps: typing.Union[np.ndarray, typing.List[np.ndarray]],
+    clp_labels: List[str],
+    reduced_clp_labels: List[str],
+    reduced_clps: Union[np.ndarray, List[np.ndarray]],
     global_axis: np.ndarray,
 ):
     if not has_kinetic_model_constraints(model):
@@ -66,7 +69,7 @@ def retrieve_spectral_clps(
     return full_clp
 
 
-def index_dependent(model: T_KineticSpectrumModel):
+def index_dependent(model: KineticSpectrumModel):
     if any(
         isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
         for irf in model.irf.values()
@@ -77,7 +80,7 @@ def index_dependent(model: T_KineticSpectrumModel):
     return len(model.spectral_constraints) != 0
 
 
-def grouped(model: T_KineticSpectrumModel):
+def grouped(model: KineticSpectrumModel):
     return len(model.dataset) != 1
 
 

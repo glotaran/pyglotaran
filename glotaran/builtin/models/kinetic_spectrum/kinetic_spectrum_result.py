@@ -1,35 +1,37 @@
-import typing
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import xarray as xr
 
-from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
-from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
-    retrieve_decay_assocatiated_data,
-)
-from glotaran.builtin.models.kinetic_image.kinetic_image_result import retrieve_irf
-from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
-    retrieve_species_assocatiated_data,
-)
-from glotaran.parameter import ParameterGroup
-
+from ..kinetic_image.irf import IrfMultiGaussian
+from ..kinetic_image.kinetic_image_result import retrieve_decay_assocatiated_data
+from ..kinetic_image.kinetic_image_result import retrieve_irf
+from ..kinetic_image.kinetic_image_result import retrieve_species_assocatiated_data
 from .spectral_constraints import OnlyConstraint
 from .spectral_constraints import ZeroConstraint
 from .spectral_irf import IrfGaussianCoherentArtifact
 from .spectral_irf import IrfSpectralMultiGaussian
 
-T_KineticSpectrumModel = typing.TypeVar(
-    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
-)
+if TYPE_CHECKING:
+    from typing import Dict
+    from typing import List
+    from typing import Union
+
+    import xarray as xr
+
+    from glotaran.parameter import ParameterGroup
+
+    from .kinetic_spectrum_model import KineticSpectrumModel
 
 
 def finalize_kinetic_spectrum_result(
-    model: T_KineticSpectrumModel,
-    global_indices: typing.List[typing.List[object]],
-    reduced_clp_labels: typing.Union[typing.Dict[str, typing.List[str]], np.ndarray],
-    reduced_clps: typing.Union[typing.Dict[str, np.ndarray], np.ndarray],
+    model: KineticSpectrumModel,
+    global_indices: List[List[object]],
+    reduced_clp_labels: Union[Dict[str, List[str]], np.ndarray],
+    reduced_clps: Union[Dict[str, np.ndarray], np.ndarray],
     parameter: ParameterGroup,
-    data: typing.Dict[str, xr.Dataset],
+    data: Dict[str, xr.Dataset],
 ):
 
     for label in model.dataset:

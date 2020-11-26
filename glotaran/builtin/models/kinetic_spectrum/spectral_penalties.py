@@ -1,17 +1,23 @@
 """This package contains compartment constraint items."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import List
 from typing import Tuple
-from typing import TypeVar
-from typing import Union
 
 import numpy as np
 
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
-from glotaran.parameter import ParameterGroup
 
-T_KineticSpectrumModel = TypeVar("glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel")
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Union
+
+    from glotaran.parameter import ParameterGroup
+
+    from .kinetic_spectrum_model import KineticSpectrumModel
 
 
 @model_attribute(
@@ -30,13 +36,13 @@ class EqualAreaPenalty:
     of the e matrix of one or more target compartmants to resiudal. The additional
     residual is scaled with the weight."""
 
-    def applies(self, index: any) -> bool:
+    def applies(self, index: Any) -> bool:
         """
-        Returns true if the indexx is in one of the intervals.
+        Returns true if the index is in one of the intervals.
 
         Parameters
         ----------
-        index : any
+        index :
 
         Returns
         -------
@@ -52,12 +58,12 @@ class EqualAreaPenalty:
         return any([applies(i) for i in self.interval])
 
 
-def has_spectral_penalties(model: T_KineticSpectrumModel) -> bool:
+def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
     return len(model.equal_area_penalties) != 0
 
 
 def apply_spectral_penalties(
-    model: T_KineticSpectrumModel,
+    model: KineticSpectrumModel,
     parameter: ParameterGroup,
     clp_labels: Union[List[str], List[List[str]]],
     clps: np.ndarray,

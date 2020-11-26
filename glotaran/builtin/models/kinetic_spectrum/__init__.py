@@ -1,3 +1,1 @@
-from . import kinetic_spectrum_model
-
-KineticSpectrumModel = kinetic_spectrum_model.KineticSpectrumModel
+from .kinetic_spectrum_model import KineticSpectrumModel  # noqa: F401

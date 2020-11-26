@@ -1,22 +1,29 @@
-import typing
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
 
-from glotaran.parameter import ParameterGroup
-
 from .irf import IrfMultiGaussian
 
-T_KineticImageModel = typing.TypeVar("glotaran.builtin.models.kinetic_image.KineticImageModel")
+if TYPE_CHECKING:
+    from typing import Dict
+    from typing import List
+    from typing import Union
+
+    from glotaran.parameter import ParameterGroup
+
+    from .kinetic_image_model import KineticImageModel
 
 
 def finalize_kinetic_image_result(
-    model: T_KineticImageModel,
-    global_indices: typing.List[typing.List[object]],
-    reduced_clp_labels: typing.Union[typing.Dict[str, typing.List[str]], np.ndarray],
-    reduced_clps: typing.Union[typing.Dict[str, np.ndarray], np.ndarray],
+    model: KineticImageModel,
+    global_indices: List[List[object]],
+    reduced_clp_labels: Union[Dict[str, List[str]], np.ndarray],
+    reduced_clps: Union[Dict[str, np.ndarray], np.ndarray],
     parameter: ParameterGroup,
-    data: typing.Dict[str, xr.Dataset],
+    data: Dict[str, xr.Dataset],
 ):
 
     for label in model.dataset:
