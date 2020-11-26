@@ -30,7 +30,15 @@ LabelAndMatrixAndData = collections.namedtuple("LabelAndMatrixAndData", "label_m
 
 
 class Problem:
+    """A Problem class """
+
     def __init__(self, scheme: Scheme):
+        """Initializes the Problem class from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
+
+        Args:
+            scheme (Scheme): An instance of :class:`glotaran.analysis.scheme.Scheme`
+                which defines your model, parameters, and data
+        """
 
         self._scheme = scheme
 
@@ -77,12 +85,14 @@ class Problem:
     def model(self) -> Model:
         """Property providing access to the used model
 
-        The model is a subclass of :class:`glotaran.model.Model` decorated with the `@model` decorator :class:`glotaran.model.model_decorator.model`
+        The model is a subclass of :class:`glotaran.model.Model` decorated with the `@model`
+        decorator :class:`glotaran.model.model_decorator.model`
         For an example implementation see e.g. :class:`glotaran.builtin.models.kinetic_spectrum`
 
         Returns:
             Model: A subclass of :class:`glotaran.model.Model`
-                The model must be decorated with the `@model` decorator :class:`glotaran.model.model_decorator.model`
+                The model must be decorated with the `@model` decorator
+                :class:`glotaran.model.model_decorator.model`
         """
         return self._model
 
