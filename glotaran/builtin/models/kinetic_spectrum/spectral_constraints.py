@@ -1,21 +1,25 @@
 """This package contains compartment constraint items."""
+from __future__ import annotations
 
-import typing
-
-import numpy as np
+from typing import TYPE_CHECKING
+from typing import List
+from typing import Tuple
 
 from glotaran.model import model_attribute
 from glotaran.model import model_attribute_typed
 
-T_KineticSpectrumModel = typing.TypeVar(
-    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
-)
+if TYPE_CHECKING:
+    from typing import Any
+
+    import numpy as np
+
+    from .kinetic_spectrum_model import KineticSpectrumModel
 
 
 @model_attribute(
     properties={
         "compartment": str,
-        "interval": typing.List[typing.Tuple[float, float]],
+        "interval": List[Tuple[float, float]],
     },
     has_type=True,
     no_label=True,
@@ -24,13 +28,13 @@ class OnlyConstraint:
     """A only constraint sets the calculated matrix row of a compartment to 0
     outside the given intervals."""
 
-    def applies(self, index: any) -> bool:
+    def applies(self, index: Any) -> bool:
         """
         Returns true if the index is in one of the intervals.
 
         Parameters
         ----------
-        index : any
+        index :
 
         Returns
         -------
@@ -49,7 +53,7 @@ class OnlyConstraint:
 @model_attribute(
     properties={
         "compartment": str,
-        "interval": typing.List[typing.Tuple[float, float]],
+        "interval": List[Tuple[float, float]],
     },
     has_type=True,
     no_label=True,
@@ -58,13 +62,13 @@ class ZeroConstraint:
     """A zero constraint sets the calculated matrix row of a compartment to 0
     in the given intervals."""
 
-    def applies(self, index: any) -> bool:
+    def applies(self, index: Any) -> bool:
         """
         Returns true if the indexx is in one of the intervals.
 
         Parameters
         ----------
-        index : any
+        index :
 
         Returns
         -------
@@ -99,8 +103,8 @@ class SpectralConstraint:
 
 
 def apply_spectral_constraints(
-    model: T_KineticSpectrumModel, clp_labels: typing.List[str], matrix: np.ndarray, index: float
-) -> typing.Tuple[typing.List[str], np.ndarray]:
+    model: KineticSpectrumModel, clp_labels: List[str], matrix: np.ndarray, index: float
+) -> Tuple[List[str], np.ndarray]:
     for constraint in model.spectral_constraints:
         if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
             idx = [not label == constraint.compartment for label in clp_labels]
