@@ -1,21 +1,25 @@
 """Functions for simulating a global analysis model."""
+from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
 
-from glotaran.parameter import ParameterGroup
+if TYPE_CHECKING:
+    from typing import Dict
+    from typing import Union
 
-T_Model = typing.TypeVar("glotaran.model.Model")
+    from glotaran.model import Model
+    from glotaran.parameter import ParameterGroup
 
 
 def simulate(
-    model: T_Model,
+    model: Model,
     dataset: str,
     parameter: ParameterGroup,
-    axes: typing.Dict[str, np.ndarray] = None,
-    clp: typing.Union[np.ndarray, xr.DataArray] = None,
+    axes: Dict[str, np.ndarray] = None,
+    clp: Union[np.ndarray, xr.DataArray] = None,
     noise=False,
     noise_std_dev=1.0,
     noise_seed=None,
