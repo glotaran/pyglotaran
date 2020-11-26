@@ -1,8 +1,8 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.problem import Problem
+from glotaran.analysis.scheme import Scheme
 from glotaran.parameter import ParameterGroup
 
 from .mock import MockModel

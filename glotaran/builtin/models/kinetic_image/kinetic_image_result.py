@@ -2,22 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
 import xarray as xr
 
 from .irf import IrfMultiGaussian
 
-T_Problem = typing.TypeVar("glotaran.analysis.problem.Problem")
-T_KineticImageModel = typing.TypeVar("glotaran.builtin.models.kinetic_image.KineticImageModel")
 if TYPE_CHECKING:
-    from typing import Dict
-    from typing import List
-    from typing import Union
+    from glotaran.analysis.problem import Problem
 
-    from glotaran.parameter import ParameterGroup
 
-    from .kinetic_image_model import KineticImageModel
-def finalize_kinetic_image_result(problem: T_Problem):
+def finalize_kinetic_image_result(problem: Problem):
 
     for label, dataset in problem.data.item():
 

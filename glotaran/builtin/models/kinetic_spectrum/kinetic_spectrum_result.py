@@ -2,30 +2,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from ..kinetic_image.irf import IrfMultiGaussian
 from ..kinetic_image.kinetic_image_result import retrieve_decay_assocatiated_data
 from ..kinetic_image.kinetic_image_result import retrieve_irf
 from ..kinetic_image.kinetic_image_result import retrieve_species_assocatiated_data
-from .spectral_constraints import OnlyConstraint
-from .spectral_constraints import ZeroConstraint
 from .spectral_irf import IrfGaussianCoherentArtifact
 from .spectral_irf import IrfSpectralMultiGaussian
 
-T_Problem = typing.TypeVar("glotaran.analysis.problem.Problem")
 if TYPE_CHECKING:
-    from typing import Dict
-    from typing import List
-    from typing import Union
+    from glotaran.analysis.problem import Problem
 
-    import xarray as xr
 
-    from .kinetic_spectrum_model import KineticSpectrumModel
-    from glotaran.parameter import ParameterGroup
-
-def finalize_kinetic_spectrum_result(problem: T_Problem):
-
+def finalize_kinetic_spectrum_result(problem: Problem):
 
     for label, dataset in problem.data.item():
 
