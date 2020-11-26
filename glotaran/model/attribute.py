@@ -1,21 +1,32 @@
 """The model attribute decorator."""
+from __future__ import annotations
 
 import copy
-import typing
+from typing import TYPE_CHECKING
 
-import glotaran
 from glotaran.parameter import Parameter
-from glotaran.parameter import ParameterGroup
 
 from .property import ModelProperty
 from .util import wrap_func_as_method
 
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import Dict
+    from typing import List
+    from typing import Type
+    from typing import Union
+
+    from glotaran.parameter import ParameterGroup
+
+    from .base_model import Model
+
 
 def model_attribute(
-    properties: typing.Union[typing.Any, typing.Dict[str, typing.Dict[str, typing.Any]]] = {},
+    properties: Union[Any, Dict[str, Dict[str, Any]]] = {},
     has_type: bool = False,
     no_label: bool = False,
-) -> typing.Callable:
+) -> Callable:
     """The `@model_attribute` decorator adds the given properties to the class. Further it adds
     classmethods for deserialization, validation and printing.
 
@@ -112,7 +123,7 @@ def model_attribute(
     return decorator
 
 
-def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
+def model_attribute_typed(types: Dict[str, Any] = {}, no_label=False):
     """The model_attribute_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class for an item when there
     are multiple variants.
@@ -144,7 +155,7 @@ def model_attribute_typed(types: typing.Dict[str, any] = {}, no_label=False):
 def _create_add_type_func(cls):
     @classmethod
     @wrap_func_as_method(cls)
-    def add_type(cls, type_name: str, type: typing.Type):
+    def add_type(cls, type_name: str, type: Type):
         getattr(cls, "_glotaran_model_attribute_types")[type_name] = type
 
     return add_type
@@ -163,7 +174,7 @@ def _create_init_func(cls):
 def _create_from_dict_func(cls):
     @classmethod
     @wrap_func_as_method(cls)
-    def from_dict(ncls, values: typing.Dict) -> cls:
+    def from_dict(ncls, values: Dict) -> cls:
         f"""Creates an instance of {cls.__name__} from a dictionary of values.
 
         Intended only for internal use.
@@ -190,7 +201,7 @@ def _create_from_dict_func(cls):
 def _create_from_list_func(cls):
     @classmethod
     @wrap_func_as_method(cls)
-    def from_list(ncls, values: typing.List) -> cls:
+    def from_list(ncls, values: List) -> cls:
         f"""Creates an instance of {cls.__name__} from a list of values. Intended only for internal use.
 
         Parameters
@@ -215,7 +226,7 @@ def _create_from_list_func(cls):
 
 def _create_validation_func(cls):
     @wrap_func_as_method(cls)
-    def validate(self, model, parameter=None) -> typing.List[str]:
+    def validate(self, model: Model, parameter=None) -> List[str]:
         f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
         set of parameters.
 
@@ -240,7 +251,7 @@ def _create_validation_func(cls):
 
 def _create_fill_func(cls):
     @wrap_func_as_method(cls)
-    def fill(self, model: "glotaran.model.BaseModel", parameter: ParameterGroup) -> cls:
+    def fill(self, model: Model, parameter: ParameterGroup) -> cls:
         """Returns a copy of the {cls._name} instance with all members which are Parameters are
         replaced by the value of the corresponding parameter in the parameter group.
 
