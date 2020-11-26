@@ -15,8 +15,8 @@ from glotaran.analysis.result import Result
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model
 
+from .base_model import Model
 from .dataset_descriptor import DatasetDescriptor
-from .model import Model
 from .util import wrap_func_as_method
 from .weight import Weight
 

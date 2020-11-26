@@ -4,7 +4,7 @@ from typing import List
 
 from glotaran.parameter import Parameter
 
-from .model_attribute import model_attribute
+from .attribute import model_attribute
 
 
 @model_attribute(

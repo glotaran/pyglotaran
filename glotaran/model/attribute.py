@@ -7,7 +7,7 @@ import glotaran
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
-from .model_property import ModelProperty
+from .property import ModelProperty
 from .util import wrap_func_as_method
 
 
