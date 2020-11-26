@@ -1,6 +1,3 @@
-import collections
-
-import dask
 import lmfit
 import numpy as np
 
@@ -9,10 +6,6 @@ from glotaran.parameter import ParameterGroup
 from .problem import Problem
 from .result import Result
 from .scheme import Scheme
-
-ResultFuture = collections.namedtuple(
-    "ResultFuture", "bag clp_label matrix full_clp_label clp residual"
-)
 
 
 def optimize(scheme: Scheme, verbose: bool = True) -> Result:

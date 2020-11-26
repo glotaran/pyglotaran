@@ -1,8 +1,8 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.problem_bag import create_grouped_bag
 from glotaran.analysis.scheme import Scheme
+from glotaran.analysis.problem import Problem
 from glotaran.parameter import ParameterGroup
 
 from .mock import MockModel
@@ -34,8 +34,9 @@ def test_single_dataset():
     }
 
     scheme = Scheme(model, parameter, data)
-    bag, datasets = create_grouped_bag(scheme)
-    bag = bag.compute()
+    problem = Problem(scheme)
+    bag = problem.bag
+    datasets = problem.groups
     assert len(datasets) == 0
     assert len(bag) == 3
     assert all(p.data.size == 4 for p in bag)
@@ -79,8 +80,9 @@ def test_multi_dataset_no_overlap():
     }
 
     scheme = Scheme(model, parameter, data)
-    bag, datasets = create_grouped_bag(scheme)
-    bag = bag.compute()
+    problem = Problem(scheme)
+    bag = problem.bag
+    datasets = problem.groups
     assert len(datasets) == 0
     assert len(bag) == 6
     assert all(p.data.size == 2 for p in bag[:3])
@@ -129,8 +131,9 @@ def test_multi_dataset_overlap():
     }
 
     scheme = Scheme(model, parameter, data, group_tolerance=5e-1)
-    bag, datasets = create_grouped_bag(scheme)
-    bag = bag.compute()
+    problem = Problem(scheme)
+    bag = problem.bag
+    datasets = problem.groups
     assert len(datasets) == 1
     assert "dataset1dataset2" in datasets
     assert datasets["dataset1dataset2"] == ["dataset1", "dataset2"]
