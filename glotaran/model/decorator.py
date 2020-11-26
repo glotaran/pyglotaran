@@ -50,7 +50,7 @@ FinalizeFunction = Callable[[Type[Model], Result], None]
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = Callable[
-    [Type[Model], ParameterGroup, Union[List[str], List[List[str]]], np.ndarray, np.ndarray],
+    [Type[Model], ParameterGroup, Union[List[str], List[List[str]]], List[np.ndarray], np.ndarray],
     np.ndarray,
 ]
 """A `PenaltyFunction` calculates additional penalties for the optimization."""

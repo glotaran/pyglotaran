@@ -154,7 +154,7 @@ class Problem:
     ) -> typing.Union[
         typing.Dict[str, typing.List[str]],
         typing.Dict[str, typing.List[typing.List[str]]],
-        typing.List[typing.List[typing.List[str]]],
+        typing.List[typing.List[str]],
     ]:
         if self._reduced_clp_labels is None:
             self.calculate_matrices()
@@ -166,7 +166,7 @@ class Problem:
     ) -> typing.Union[
         typing.Dict[str, np.ndarray],
         typing.Dict[str, typing.List[np.ndarray]],
-        typing.List[typing.List[np.ndarray]],
+        typing.List[np.ndarray],
     ]:
         if self._reduced_matrices is None:
             self.calculate_matrices()
@@ -362,8 +362,8 @@ class Problem:
     ) -> typing.Tuple[
         typing.List[typing.List[typing.List[str]]],
         typing.List[typing.List[np.ndarray]],
-        typing.List[typing.List[typing.List[str]]],
-        typing.List[typing.List[np.ndarray]],
+        typing.List[typing.List[str]],
+        typing.List[np.ndarray],
     ]:
         if self._parameter is None:
             raise ParameterError
@@ -424,7 +424,7 @@ class Problem:
     ) -> typing.Tuple[
         typing.Dict[str, typing.List[typing.List[str]]],
         typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[typing.List[str]]],
+        typing.Dict[str, typing.List[str]],
         typing.Dict[str, typing.List[np.ndarray]],
     ]:
         if self._parameter is None:
@@ -735,7 +735,7 @@ class Problem:
             and self.model.has_additional_penalty_function()
         ):
             self._additional_penalty[label] = self.model.additional_penalty_function(
-                self.parameter, self._clp_labels[label], self._full_clps, global_axis
+                self.parameter, self._clp_labels[label], self._full_clps[label], global_axis
             )
 
 
