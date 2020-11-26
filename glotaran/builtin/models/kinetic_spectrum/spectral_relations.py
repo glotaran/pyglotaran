@@ -1,16 +1,21 @@
 """ Glotaran Spectral Relation """
+from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING
+from typing import List
+from typing import Tuple
 
 import numpy as np
 
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
-from glotaran.parameter import ParameterGroup
 
-T_KineticSpectrumModel = typing.TypeVar(
-    "glotaran.builtin.models.kinetic_spectrum.KineticSpectrumModel"
-)
+if TYPE_CHECKING:
+    from typing import Any
+
+    from glotaran.parameter import ParameterGroup
+
+    from .kinetic_spectrum_model import KineticSpectrumModel
 
 
 @model_attribute(
@@ -18,18 +23,18 @@ T_KineticSpectrumModel = typing.TypeVar(
         "compartment": str,
         "target": str,
         "parameter": Parameter,
-        "interval": typing.List[typing.Tuple[float, float]],
+        "interval": List[Tuple[float, float]],
     },
     no_label=True,
 )
 class SpectralRelation:
-    def applies(self, index: any) -> bool:
+    def applies(self, index: Any) -> bool:
         """
         Returns true if the index is in one of the intervals.
 
         Parameters
         ----------
-        index : any
+        index :
 
         Returns
         -------
@@ -40,12 +45,12 @@ class SpectralRelation:
 
 
 def create_spectral_relation_matrix(
-    model: T_KineticSpectrumModel,
+    model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: typing.List[str],
+    clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
-) -> typing.Tuple[typing.List[str], np.ndarray]:
+) -> Tuple[List[str], np.ndarray]:
     relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
     idx_to_delete = []
@@ -63,12 +68,12 @@ def create_spectral_relation_matrix(
 
 
 def apply_spectral_relations(
-    model: T_KineticSpectrumModel,
+    model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: typing.List[str],
+    clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
-) -> typing.Tuple[typing.List[str], np.ndarray]:
+) -> Tuple[List[str], np.ndarray]:
 
     if not model.spectral_relations:
         return (clp_labels, matrix)
@@ -83,12 +88,12 @@ def apply_spectral_relations(
 
 
 def retrieve_related_clps(
-    model: T_KineticSpectrumModel,
+    model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: typing.List[str],
+    clp_labels: List[str],
     clps: np.ndarray,
     index: float,
-) -> typing.Tuple[typing.List[str], np.ndarray]:
+) -> Tuple[List[str], np.ndarray]:
 
     for relation in model.spectral_relations:
         if relation.compartment in clp_labels and relation.applies(index):
