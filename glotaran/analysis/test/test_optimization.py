@@ -194,7 +194,7 @@ class MultichannelMulticomponentDecay:
 @pytest.mark.parametrize(
     "suite", [OneCompartmentDecay, TwoCompartmentDecay, MultichannelMulticomponentDecay]
 )
-def test_fitting(suite, index_dependent, grouped, weight):
+def test_optimization(suite, index_dependent, grouped, weight):
     model = suite.model
 
     def gr():

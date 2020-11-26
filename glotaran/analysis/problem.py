@@ -7,11 +7,12 @@ import xarray as xr
 
 from glotaran.analysis.nnls import residual_nnls
 from glotaran.analysis.variable_projection import residual_variable_projection
-from glotaran.model import DatasetDescriptor
-from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme
+
+T_DatasetDescriptor = typing.TypeVar("glotaran.model.DatasetDescriptor")
+T_Model = typing.TypeVar("glotaran.model.Model")
 
 ParameterError = ValueError("Parameter not initialized")
 
@@ -82,7 +83,7 @@ class Problem:
         return self._scheme
 
     @property
-    def model(self) -> Model:
+    def model(self) -> T_Model:
         """Property providing access to the used model
 
         The model is a subclass of :class:`glotaran.model.Model` decorated with the `@model`
@@ -97,6 +98,10 @@ class Problem:
         return self._model
 
     @property
+    def data(self) -> typing.Dict[str, xr.Dataset]:
+        return self._data
+
+    @property
     def parameter(self) -> ParameterGroup:
         return self._parameter
 
@@ -109,7 +114,7 @@ class Problem:
         return self._index_dependent
 
     @property
-    def filled_dataset_descriptors(self) -> typing.Dict[str, DatasetDescriptor]:
+    def filled_dataset_descriptors(self) -> typing.Dict[str, T_DatasetDescriptor]:
         return self._filled_dataset_descriptors
 
     @property
@@ -369,8 +374,8 @@ class Problem:
             raise ParameterError
 
         def calculate_group(
-            group: GroupedProblem, descriptors: typing.Dict[str, DatasetDescriptor]
-        ) -> typing.Tuple[typing.List[LabelAndMatrix], typing.Var]:
+            group: GroupedProblem, descriptors: typing.Dict[str, T_DatasetDescriptor]
+        ) -> typing.Tuple[typing.List[LabelAndMatrix], float]:
             result = [
                 _calculate_matrix(
                     self._model.matrix,
@@ -384,24 +389,23 @@ class Problem:
             return result, group.descriptor[0].index
 
         def get_clp(
-            result: typing.Tuple[typing.List[LabelAndMatrix], typing.Var]
+            result: typing.Tuple[typing.List[LabelAndMatrix], float]
         ) -> typing.List[typing.List[str]]:
             return [d.clp_label for d in result[0]]
 
         def get_matrices(
-            result: typing.Tuple[typing.List[LabelAndMatrix], typing.Var]
+            result: typing.Tuple[typing.List[LabelAndMatrix], float]
         ) -> typing.List[np.ndarray]:
             return [d.matrix for d in result[0]]
 
         def reduce_and_combine_matrices(
-            parameter: ParameterGroup,
-            result: typing.Tuple[typing.List[LabelAndMatrix], typing.Var],
+            result: typing.Tuple[typing.List[LabelAndMatrix], float],
         ) -> LabelAndMatrix:
             labels_and_matrices, index = result
             constraint_labels_and_matrices = list(
                 map(
                     lambda label_and_matrix: _reduce_matrix(
-                        self._model, parameter, label_and_matrix, index
+                        self._model, self.parameter, label_and_matrix, index
                     ),
                     labels_and_matrices,
                 )
@@ -437,8 +441,9 @@ class Problem:
 
         for label, problem in self._bag.items():
             self._clp_labels[label] = []
-            self._constraint_labels_and_matrices[label] = []
             self._matrices[label] = []
+            self._reduced_clp_labels[label] = []
+            self._reduced_matrices[label] = []
             descriptor = self._filled_dataset_descriptors[label]
 
             for index in problem.global_axis:
@@ -553,12 +558,16 @@ class Problem:
         self._reduced_clps = list(map(lambda result: result[0], results))
         self._weighted_residuals = list(map(lambda result: result[1], results))
         self._residuals = list(map(lambda result: result[2], results))
-        self._full_clps = self.model.retrieve_clp_function(
-            self.parameter,
-            self.clp_labels,
-            self.reduced_clp_labels,
-            self.reduced_clps,
-            self.full_axis,
+        self._full_clps = (
+            self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels,
+                self.reduced_clp_labels,
+                self.reduced_clps,
+                self.full_axis,
+            )
+            if callable(self.model.retrieve_clp_function)
+            else self._reduced_clps
         )
 
         self._calculate_additional_grouped_penalty()
@@ -606,12 +615,16 @@ class Problem:
                 else:
                     self._residuals[label].append(residual)
 
-            self._full_clps[label] = self.model.retrieve_clp_function(
-                self.parameter,
-                self.clp_labels[label],
-                self.reduced_clp_labels[label],
-                self.reduced_clps[label],
-                problem.global_axis,
+            self._full_clps[label] = (
+                self.model.retrieve_clp_function(
+                    self.parameter,
+                    self.clp_labels[label],
+                    self.reduced_clp_labels[label],
+                    self.reduced_clps[label],
+                    problem.global_axis,
+                )
+                if callable(self.model.retrieve_clp_function)
+                else self._reduced_clps[label]
             )
             self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
@@ -643,12 +656,16 @@ class Problem:
         self._reduced_clps = list(map(lambda result: result[0]), results)
         self._weighted_residuals = list(map(lambda result: result[1]), results)
         self._residuals = list(map(lambda result: result[2], results))
-        self._full_clps = self.model.retrieve_clp_function(
-            self.parameter,
-            self.clp_labels,
-            self.reduced_clp_labels,
-            self.reduced_clps,
-            self.full_axis,
+        self._full_clps = (
+            self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels,
+                self.reduced_clp_labels,
+                self.reduced_clps,
+                self.full_axis,
+            )
+            if callable(self.model.retrieve_clp_function)
+            else self._reduced_clps
         )
 
         self._calculate_additional_grouped_penalty()
@@ -702,12 +719,16 @@ class Problem:
                 else:
                     self._residuals[label].append(residual)
 
-            self._full_clps[label] = self.model.retrieve_clp_function(
-                self.parameter,
-                self.clp_labels[label],
-                self.reduced_clp_labels[label],
-                self.reduced_clps[label],
-                problem.global_axis,
+            self._full_clps[label] = (
+                self.model.retrieve_clp_function(
+                    self.parameter,
+                    self.clp_labels[label],
+                    self.reduced_clp_labels[label],
+                    self.reduced_clps[label],
+                    problem.global_axis,
+                )
+                if callable(self.model.retrieve_clp_function)
+                else self._reduced_clps[label]
             )
             self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
@@ -757,7 +778,7 @@ def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
 
 def _calculate_matrix(
     matrix_function: typing.Callable,
-    dataset_descriptor: DatasetDescriptor,
+    dataset_descriptor: T_DatasetDescriptor,
     axis: np.ndarray,
     extra: typing.Dict,
     index: float = None,
@@ -777,7 +798,7 @@ def _calculate_matrix(
 
 
 def _reduce_matrix(
-    model: Model,
+    model: T_Model,
     parameter: ParameterGroup,
     result: LabelAndMatrix,
     index: float,

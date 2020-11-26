@@ -177,7 +177,6 @@ class Model:
         verbose: bool = True,
         max_nfev: int = None,
         group_tolerance: int = 0,
-        client=None,
     ) -> Result:
         """Optimizes the parameter for this model.
 
@@ -204,7 +203,7 @@ class Model:
             group_tolerance=group_tolerance,
             nfev=max_nfev,
         )
-        return optimize(scheme, verbose=verbose, client=client)
+        return optimize(scheme, verbose=verbose)
 
     def result_from_parameter(
         self,

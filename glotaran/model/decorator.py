@@ -141,6 +141,7 @@ def model(
         else:
             setattr(cls, "has_matrix_constraints_function", None)
             setattr(cls, "constrain_matrix_function", None)
+            setattr(cls, "retrieve_clp_function", None)
 
         if has_additional_penalty_function:
             if not additional_penalty_function:

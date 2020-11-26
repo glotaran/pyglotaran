@@ -6,42 +6,24 @@ import numpy as np
 
 from glotaran.parameter import ParameterGroup
 
-from . import problem_bag
-from . import residual_calculation
-from .matrix_calculation import calculate_index_independent_grouped_matrices
-from .matrix_calculation import calculate_index_independent_ungrouped_matrices
-from .matrix_calculation import create_index_dependent_grouped_matrix_jobs
-from .matrix_calculation import create_index_dependent_ungrouped_matrix_jobs
-from .nnls import residual_nnls
+from .problem import Problem
 from .result import Result
-from .variable_projection import residual_variable_projection
+from .scheme import Scheme
 
 ResultFuture = collections.namedtuple(
     "ResultFuture", "bag clp_label matrix full_clp_label clp residual"
 )
 
 
-def optimize(scheme, verbose=True, client=None):
+def optimize(scheme: Scheme, verbose: bool = True) -> Result:
 
     initial_parameter = scheme.parameter.as_parameter_dict()
-
-    if client is None:
-        return optimize_task(initial_parameter, scheme, verbose)
-
-    scheme = client.scatter(scheme)
-    optimization_result_future = client.submit(optimize_task, initial_parameter, scheme, verbose)
-    return optimization_result_future.result()
-
-
-def optimize_task(initial_parameter, scheme, verbose):
-
-    scheme.prepare_data(copy=False)
-    problem_bag, groups = _create_problem_bag(scheme)
+    problem = Problem(scheme)
 
     minimizer = lmfit.Minimizer(
-        calculate_penalty,
+        _calculate_penalty,
         initial_parameter,
-        fcn_args=[scheme, problem_bag, groups],
+        fcn_args=[problem],
         fcn_kws=None,
         iter_cb=None,
         scale_covar=True,
@@ -52,14 +34,13 @@ def optimize_task(initial_parameter, scheme, verbose):
     verbose = 2 if verbose else 0
     lm_result = minimizer.minimize(method="least_squares", verbose=verbose, max_nfev=scheme.nfev)
 
-    parameter = ParameterGroup.from_parameter_dict(lm_result.params)
-    datasets = _create_result(scheme, parameter)
+    _create_result(problem)
     covar = lm_result.covar if hasattr(lm_result, "covar") else None
 
     return Result(
         scheme,
-        datasets,
-        parameter,
+        problem.datasets,
+        problem.parameter,
         lm_result.nfev,
         lm_result.nvarys,
         lm_result.ndata,
@@ -71,320 +52,163 @@ def optimize_task(initial_parameter, scheme, verbose):
     )
 
 
-def calculate_penalty(parameter, scheme, bag, groups):
-    parameter = ParameterGroup.from_parameter_dict(parameter)
-    residual_function = residual_nnls if scheme.nnls else residual_variable_projection
-    if scheme.model.grouped():
-        if scheme.model.index_dependent():
-            (
-                full_clp_label,
-                _,
-                constraint_labels_and_matrices,
-            ) = create_index_dependent_grouped_matrix_jobs(scheme, bag, parameter)
-            _, _, _, penalty = residual_calculation.create_index_dependent_grouped_residual(
-                scheme,
-                parameter,
-                bag,
-                full_clp_label,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-        else:
-
-            (
-                full_clp_label,
-                _,
-                constraint_labels_and_matrices,
-            ) = calculate_index_independent_grouped_matrices(scheme, groups, parameter)
-
-            _, _, _, penalty = residual_calculation.create_index_independent_grouped_residual(
-                scheme,
-                parameter,
-                bag,
-                full_clp_label,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-    else:
-        if scheme.model.index_dependent():
-            (
-                full_clp_label,
-                _,
-                constraint_labels_and_matrices,
-            ) = create_index_dependent_ungrouped_matrix_jobs(scheme, bag, parameter)
-            _, _, _, penalty = residual_calculation.create_index_dependent_ungrouped_residual(
-                scheme,
-                parameter,
-                bag,
-                full_clp_label,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-        else:
-
-            (
-                full_clp_label,
-                _,
-                constraint_labels_and_matrices,
-            ) = calculate_index_independent_ungrouped_matrices(scheme, parameter)
-
-            _, _, _, penalty = residual_calculation.create_index_independent_ungrouped_residual(
-                scheme,
-                parameter,
-                bag,
-                full_clp_label,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-    penalty = penalty.compute()
-    return penalty
+def _calculate_penalty(parameter: lmfit.Parameters, problem: Problem):
+    problem.parameter = ParameterGroup.from_parameter_dict(parameter)
+    return problem.full_penalty
 
 
-def _create_problem_bag(scheme):
-    groups = None
-    if scheme.model.grouped():
-        bag, groups = problem_bag.create_grouped_bag(scheme)
-        bag = bag.persist()
-    else:
-        bag = problem_bag.create_ungrouped_bag(scheme)
-    return bag, groups
+def _create_result(problem: Problem):
 
-
-def _create_result(scheme, parameter):
-
-    residual_function = residual_nnls if scheme.nnls else residual_variable_projection
-    model = scheme.model
-    datasets = scheme.data
-
-    if model.grouped():
-        bag, groups = problem_bag.create_grouped_bag(scheme)
-
-        if model.index_dependent():
-            (
-                clp_labels,
-                matrices,
-                constraint_labels_and_matrices,
-            ) = create_index_dependent_grouped_matrix_jobs(scheme, bag, parameter)
-            (
-                reduced_clp_labels,
-                reduced_clps,
-                residuals,
-                _,
-            ) = residual_calculation.create_index_dependent_grouped_residual(
-                scheme,
-                parameter,
-                bag,
-                clp_labels,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-        else:
-            (
-                clp_labels,
-                matrices,
-                constraint_labels_and_matrices,
-            ) = calculate_index_independent_grouped_matrices(scheme, groups, parameter)
-            (
-                reduced_clp_labels,
-                reduced_clps,
-                residuals,
-                _,
-            ) = residual_calculation.create_index_independent_grouped_residual(
-                scheme,
-                parameter,
-                bag,
-                clp_labels,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-    else:
-        bag = problem_bag.create_ungrouped_bag(scheme)
-
-        if model.index_dependent():
-            (
-                clp_labels,
-                matrices,
-                constraint_labels_and_matrices,
-            ) = create_index_dependent_ungrouped_matrix_jobs(scheme, bag, parameter)
-            (
-                reduced_clp_labels,
-                reduced_clps,
-                residuals,
-                _,
-            ) = residual_calculation.create_index_dependent_ungrouped_residual(
-                scheme,
-                parameter,
-                bag,
-                clp_labels,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-        else:
-            (
-                clp_labels,
-                matrices,
-                constraint_labels_and_matrices,
-            ) = calculate_index_independent_ungrouped_matrices(scheme, parameter)
-            (
-                reduced_clp_labels,
-                reduced_clps,
-                residuals,
-                _,
-            ) = residual_calculation.create_index_independent_ungrouped_residual(
-                scheme,
-                parameter,
-                bag,
-                clp_labels,
-                constraint_labels_and_matrices,
-                residual_function,
-            )
-
-    indices = None
-
-    if model.grouped():
-        indices = bag.map(lambda group: [d.index for d in group.descriptor])
-        if model.index_dependent():
-            (
-                groups,
-                indices,
-                clp_labels,
-                matrices,
-                reduced_clp_labels,
-                reduced_clps,
-                residuals,
-            ) = dask.compute(
-                groups, indices, clp_labels, matrices, reduced_clp_labels, reduced_clps, residuals
-            )
-        else:
-            groups, indices, reduced_clp_labels, reduced_clps, residuals = dask.compute(
-                groups, indices, reduced_clp_labels, reduced_clps, residuals
-            )
-
-    for label, dataset in datasets.items():
-        if model.grouped():
-            if model.index_dependent():
-                groups = bag.map(lambda group: [d.dataset for d in group.descriptor]).compute()
-                for i, group in enumerate(groups):
-                    if label in group:
-                        group_index = group.index(label)
-                        if "matrix" not in dataset:
+    for label, dataset in problem.data.items():
+        if problem.index_dependent:
+            if problem.grouped:
+                for i, grouped_problem in enumerate(problem.bag):
+                    if label in grouped_problem:
+                        group_index = [
+                            descriptor.label for descriptor in grouped_problem.descriptor
+                        ].index(label)
+                        if "clp_label" not in dataset.coords:
                             # we assume that the labels are the same, this might not be true in
                             # future models
-                            dataset.coords["clp_label"] = clp_labels[i][group_index]
+                            dataset.coords["clp_label"] = problem.clp_labels[i][group_index]
 
-                            dim1 = dataset.coords[model.global_dimension].size
-                            dim2 = dataset.coords[model.model_dimension].size
+                        if "matrix" not in dataset:
+                            dim1 = dataset.coords[problem.model.global_dimension].size
+                            dim2 = dataset.coords[problem.model.model_dimension].size
                             dim3 = dataset.clp_label.size
                             dataset["matrix"] = (
                                 (
-                                    (model.global_dimension),
-                                    (model.model_dimension),
+                                    (problem.model.global_dimension),
+                                    (problem.model.model_dimension),
                                     ("clp_label"),
                                 ),
                                 np.zeros((dim1, dim2, dim3), dtype=np.float64),
                             )
+
+                        if "clp" not in dataset:
+                            dim1 = dataset.coords[problem.model.global_dimension].size
+                            dim2 = dataset.clp_label.size
+                            dataset["clp"] = (
+                                (
+                                    (problem.model.global_dimension),
+                                    ("clp_label"),
+                                ),
+                                np.zeros((dim1, dim2, dim3), dtype=np.float64),
+                            )
+
+                        if "residual" not in dataset:
+                            dim1 = dataset.coords[problem.model.model_dimension].size
+                            dim2 = dataset.coords[problem.model.global_dimension].size
+                            dataset["weighted_residual"] = (
+                                (problem.model.model_dimension, problem.model.global_dimension),
+                                np.zeros((dim1, dim2), dtype=np.float64),
+                            )
+                            dataset["residual"] = (
+                                (problem.model.model_dimension, problem.model.global_dimension),
+                                np.zeros((dim1, dim2), dtype=np.float64),
+                            )
+
+                        index = grouped_problem.descriptor[group_index].index
                         dataset.matrix.loc[
-                            {model.global_dimension: indices[i][group_index]}
-                        ] = matrices[i][group_index]
-            else:
-                clp_label, matrix = dask.compute(
-                    clp_labels[label],
-                    matrices[label],
-                )
-                dataset.coords["clp_label"] = clp_label
-                dataset["matrix"] = (((model.model_dimension), ("clp_label")), matrix)
-            dim1 = dataset.coords[model.global_dimension].size
-            dim2 = dataset.coords["clp_label"].size
-            dataset["clp"] = (
-                (model.global_dimension, "clp_label"),
-                np.zeros((dim1, dim2), dtype=np.float64),
-            )
+                            {problem.model.global_dimension: index}
+                        ] = problem.matrices[i][group_index]
 
-            dim1 = dataset.coords[model.model_dimension].size
-            dim2 = dataset.coords[model.global_dimension].size
-            dataset["residual"] = (
-                (model.model_dimension, model.global_dimension),
-                np.zeros((dim1, dim2), dtype=np.float64),
-            )
-            idx = 0
-            for i, group in enumerate(groups):
-                if label in group:
-                    index = indices[i][group.index(label)]
-                    for j, clp in enumerate(reduced_clp_labels[i]):
-                        if clp in dataset.clp_label:
+                        for j, clp in problem.full_clps:
                             dataset.clp.loc[
-                                {"clp_label": clp, model.global_dimension: index}
-                            ] = reduced_clps[i][j]
+                                {
+                                    problem.model.global_dimension: index,
+                                    "clp_label": problem.clp_labels[i][j],
+                                }
+                            ] = clp
                     start = 0
-                    for dset in group:
-                        if dset == label:
-                            break
-                        start += datasets[dset].coords[model.model_dimension].size
-                    end = start + dataset.coords[model.model_dimension].size
-                    dataset.residual.loc[{model.global_dimension: index}] = residuals[i][start:end]
-
-        else:
-            clp_label, matrix, reduced_clp_label, reduced_clp, residual = dask.compute(
-                clp_labels[label],
-                matrices[label],
-                reduced_clp_labels[label],
-                reduced_clps[label],
-                residuals[label],
-            )
-            reduced_clp = np.asarray(reduced_clp)
-
-            if model.index_dependent():
-                # we assume that the labels are the same, this might not be true in future models
-                dataset.coords["clp_label"] = clp_label[0]
-                dataset["matrix"] = (
-                    ((model.global_dimension), (model.model_dimension), ("clp_label")),
-                    matrix,
-                )
+                    for j in range(group_index):
+                        start += (
+                            problem.data[grouped_problem.descriptor[j].label]
+                            .coords[problem.model.model_dimension]
+                            .size
+                        )
+                    end = start + dataset.coords[problem.model.model_dimension].size
+                    dataset.weighted_residual.loc[
+                        {problem.model.global_dimension: index}
+                    ] = problem.weighted_residuals[i][start:end]
+                    dataset.residual.loc[
+                        {problem.model.global_dimension: index}
+                    ] = problem.residuals[i][start:end]
             else:
-                dataset.coords["clp_label"] = clp_label
-                dataset["matrix"] = (((model.model_dimension), ("clp_label")), matrix)
-
-            dim1 = dataset.coords[model.global_dimension].size
-            dim2 = dataset.coords["clp_label"].size
+                dataset.coords["clp_label"] = problem.clp_labels[label][0]
+                dataset["matrix"] = (
+                    (
+                        (problem.model.global_dimension),
+                        (problem.model.model_dimension),
+                        ("clp_label"),
+                    ),
+                    np.asarray(problem.matrices[label]),
+                )
+                dataset["clp"] = (
+                    (
+                        (problem.model.global_dimension),
+                        ("clp_label"),
+                    ),
+                    np.asarray(problem.full_clps[label]),
+                )
+                dataset["weighted_residual"] = (
+                    (
+                        (problem.model.model_dimension),
+                        (problem.model.global_dimension),
+                    ),
+                    np.asarray(problem.weighted_residuals[label]),
+                )
+                dataset["residual"] = (
+                    (
+                        (problem.model.model_dimension),
+                        (problem.model.global_dimension),
+                    ),
+                    np.asarray(problem.residuals[label]),
+                )
+        else:
+            dataset.coords["clp_label"] = problem.clp_labels[label]
+            dataset["matrix"] = (
+                (
+                    (problem.model.model_dimension),
+                    ("clp_label"),
+                ),
+                np.asarray(problem.matrices[label]),
+            )
             dataset["clp"] = (
-                (model.global_dimension, "clp_label"),
-                np.zeros((dim1, dim2), dtype=np.float64),
+                (
+                    (problem.model.global_dimension),
+                    ("clp_label"),
+                ),
+                np.asarray(problem.full_clps[label]),
             )
-            for i, clp in enumerate(reduced_clp_label):
-                if model.index_dependent():
-                    idx = dataset.coords[model.global_dimension][i]
-                    for c in clp:
-                        if c not in reduced_clp_label[i]:
-                            continue
-                        j = reduced_clp_label[i].index(c)
-                        dataset.clp.loc[
-                            {"clp_label": c, model.global_dimension: idx}
-                        ] = reduced_clp[i][j]
-                else:
-                    dataset.clp.loc[{"clp_label": clp}] = reduced_clp[:, i]
-
+            dataset["weighted_residual"] = (
+                (
+                    (problem.model.model_dimension),
+                    (problem.model.global_dimension),
+                ),
+                np.asarray(problem.weighted_residuals[label]),
+            )
             dataset["residual"] = (
-                ((model.model_dimension), (model.global_dimension)),
-                np.asarray(residual).T,
+                (
+                    (problem.model.model_dimension),
+                    (problem.model.global_dimension),
+                ),
+                np.asarray(problem.residuals[label]),
             )
+        _create_svd("weighted_residual", dataset, problem.model)
+        _create_svd("residual", dataset, problem.model)
 
-    if "weight" in dataset:
-        dataset["weighted_residual"] = dataset.residual
-        dataset["residual"] = dataset.weighted_residual / dataset.weight
-        _create_svd("weighted_residual", dataset, model)
-    _create_svd("residual", dataset, model)
+        # Calculate RMS
+        size = dataset.residual.shape[0] * dataset.residual.shape[1]
+        dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (dataset.residual ** 2).sum() / size
+        ).values
 
-    # Calculate RMS
-    size = dataset.residual.shape[0] * dataset.residual.shape[1]
-    dataset.attrs["root_mean_square_error"] = np.sqrt((dataset.residual ** 2).sum() / size).values
+        # reconstruct fitted data
+        dataset["fitted_data"] = dataset.data - dataset.residual
 
-    # reconstruct fitted data
-    dataset["fitted_data"] = dataset.data - dataset.residual
-
-    if callable(model.finalize_data):
-        model.finalize_data(indices, reduced_clp_labels, reduced_clps, parameter, datasets)
-
-    return datasets
+    if callable(problem.model.finalize_data):
+        problem.model.finalize_data(problem)
 
 
 def _create_svd(name, dataset, model):
