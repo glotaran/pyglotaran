@@ -299,7 +299,7 @@ class Problem:
                 self._full_axis = collections.deque(global_axis)
             else:
                 self._append_to_grouped_bag(label, datasets, global_axis, model_axis, data, weight)
-        self._groups = {"".join(d): d for d in datasets if len(d) > 1}
+        self._groups = {"".join(d): d for d in datasets}
 
     def _append_to_grouped_bag(
         self,
@@ -388,16 +388,6 @@ class Problem:
             ]
             return result, group.descriptor[0].index
 
-        def get_clp(
-            result: typing.Tuple[typing.List[LabelAndMatrix], float]
-        ) -> typing.List[typing.List[str]]:
-            return [d.clp_label for d in result[0]]
-
-        def get_matrices(
-            result: typing.Tuple[typing.List[LabelAndMatrix], float]
-        ) -> typing.List[np.ndarray]:
-            return [d.matrix for d in result[0]]
-
         def reduce_and_combine_matrices(
             result: typing.Tuple[typing.List[LabelAndMatrix], float],
         ) -> LabelAndMatrix:
@@ -416,11 +406,11 @@ class Problem:
         results = list(
             map(lambda group: calculate_group(group, self._filled_dataset_descriptors), self._bag)
         )
-        self._clp_labels = list(map(get_clp, results))
-        self._matrices = list(map(get_matrices, results))
+        self._clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
+        self._matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
         reduced_results = list(map(reduce_and_combine_matrices, results))
-        self._reduced_clp_labels = list(map(get_clp, reduced_results))
-        self._reduced_matrices = list(map(get_matrices, reduced_results))
+        self._reduced_clp_labels = list(map(lambda result: result.clp_label, reduced_results))
+        self._reduced_matrices = list(map(lambda result: result.matrix, reduced_results))
         return self.clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
 
     def calculate_index_dependent_ungrouped_matrices(
@@ -811,7 +801,7 @@ def _reduce_matrix(
     return result
 
 
-def _combine_matrices(labels_and_matrices: typing.List[LabelAndMatrix]):
+def _combine_matrices(labels_and_matrices: typing.List[LabelAndMatrix]) -> LabelAndMatrix:
     masks = []
     full_clp_labels = None
     sizes = []
