@@ -588,6 +588,7 @@ class Problem:
         self._weighted_residuals = {}
         self._residuals = {}
         self._additional_penalty = {}
+        self._full_clps = {}
         for label, problem in self.bag.items():
             self._reduced_clps[label] = []
             self._residuals[label] = []
