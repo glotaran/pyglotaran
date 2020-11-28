@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from glotaran.analysis.problem import Problem
 
 
-def finalize_kinetic_spectrum_result(problem: Problem):
+def finalize_kinetic_spectrum_result(self, problem: Problem):
 
-    for label, dataset in problem.data.item():
+    for label, dataset in problem.data.items():
 
         dataset_descriptor = problem.filled_dataset_descriptors[label]
         if not dataset_descriptor.get_k_matrices():

@@ -223,8 +223,13 @@ class Problem:
             residuals = self._weighted_residuals
             additional_penalty = self.additional_penalty
             if not self.grouped:
-                residuals = [np.concatenate(residuals[label]) for label in residuals]
-                additional_penalty = [additional_penalty[label] for label in additional_penalty]
+                residuals = [
+                    np.concatenate(self._weighted_residuals[label])
+                    for label in self._weighted_residuals.keys()
+                ]
+                additional_penalty = [
+                    self.additional_penalty[label] for label in self.additional_penalty.keys()
+                ]
 
             self._full_penalty = np.concatenate(residuals + additional_penalty)
         return self._full_penalty

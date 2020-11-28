@@ -32,7 +32,7 @@ def optimize(scheme: Scheme, verbose: bool = True) -> Result:
 
     return Result(
         scheme,
-        problem.datasets,
+        problem.data,
         problem.parameter,
         lm_result.nfev,
         lm_result.nvarys,
@@ -149,14 +149,14 @@ def _create_result(problem: Problem):
                         (problem.model.model_dimension),
                         (problem.model.global_dimension),
                     ),
-                    np.asarray(problem.weighted_residuals[label]),
+                    np.transpose(np.asarray(problem.weighted_residuals[label])),
                 )
                 dataset["residual"] = (
                     (
                         (problem.model.model_dimension),
                         (problem.model.global_dimension),
                     ),
-                    np.asarray(problem.residuals[label]),
+                    np.transpose(np.asarray(problem.residuals[label])),
                 )
         else:
             dataset.coords["clp_label"] = problem.clp_labels[label]
@@ -179,14 +179,14 @@ def _create_result(problem: Problem):
                     (problem.model.model_dimension),
                     (problem.model.global_dimension),
                 ),
-                np.asarray(problem.weighted_residuals[label]),
+                np.transpose(np.asarray(problem.weighted_residuals[label])),
             )
             dataset["residual"] = (
                 (
                     (problem.model.model_dimension),
                     (problem.model.global_dimension),
                 ),
-                np.asarray(problem.residuals[label]),
+                np.transpose(np.asarray(problem.residuals[label])),
             )
         _create_svd("weighted_residual", dataset, problem.model)
         _create_svd("residual", dataset, problem.model)
