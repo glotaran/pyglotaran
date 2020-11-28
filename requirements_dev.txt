@@ -38,4 +38,4 @@ pytest-benchmark>=3.1.1
 
 # code quality asurence
 flake8>=3.8.3
-pre-commit>=2.6.0
+pre-commit>=2.9.0
