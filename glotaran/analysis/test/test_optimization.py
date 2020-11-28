@@ -5,10 +5,9 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-
-from .mock import OneCompartmentDecay
-from .mock import TwoCompartmentDecay
-from .mock import MultichannelMulticomponentDecay
+from glotaran.analysis.test.mock import MultichannelMulticomponentDecay
+from glotaran.analysis.test.mock import OneCompartmentDecay
+from glotaran.analysis.test.mock import TwoCompartmentDecay
 
 
 @pytest.mark.parametrize("index_dependent", [True, False])
@@ -79,3 +78,9 @@ def test_optimization(suite, index_dependent, grouped, weight):
         assert "weighted_residual_left_singular_vectors" in resultdata
         assert "weighted_residual_right_singular_vectors" in resultdata
         assert "weighted_residual_singular_values" in resultdata
+
+
+if __name__ == "__main__":
+    test_optimization(OneCompartmentDecay, True, True, True)
+    test_optimization(OneCompartmentDecay, False, False, False)
+    test_optimization(OneCompartmentDecay, False, False, True)

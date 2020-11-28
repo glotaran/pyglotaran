@@ -60,6 +60,7 @@ class Problem:
         self._reduced_matrices = None
         self._reduced_clps = None
         self._full_clps = None
+        self._full_clp_labels = None
         self._weighted_residuals = None
         self._residuals = None
         self._additional_penalty = None
@@ -220,15 +221,12 @@ class Problem:
     @property
     def full_penalty(self) -> np.ndarray:
         if self._full_penalty is None:
-            residuals = self._weighted_residuals
+            residuals = self.weighted_residuals
             additional_penalty = self.additional_penalty
             if not self.grouped:
-                residuals = [
-                    np.concatenate(self._weighted_residuals[label])
-                    for label in self._weighted_residuals.keys()
-                ]
+                residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
                 additional_penalty = [
-                    self.additional_penalty[label] for label in self.additional_penalty.keys()
+                    additional_penalty[label] for label in additional_penalty.keys()
                 ]
 
             self._full_penalty = np.concatenate(residuals + additional_penalty)
@@ -514,6 +512,18 @@ class Problem:
             reduced_result = _reduce_matrix(self._model, self._parameter, result, None)
             self._reduced_clp_labels[label] = reduced_result.clp_label
             self._reduced_matrices[label] = reduced_result.matrix
+            # TODO: isn't something like below missing here?
+            # self._full_clps = (
+            #     self._model.retrieve_clp_function(
+            #         self.parameter,
+            #         self.clp_labels,
+            #         self.reduced_clp_labels,
+            #         self.reduced_clps,
+            #         self._full_axis,
+            #     )
+            #     if callable(self.model.retrieve_clp_function)
+            #     else self.reduced_clps
+            # )
 
         return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
 
@@ -559,7 +569,7 @@ class Problem:
                 self.clp_labels,
                 self.reduced_clp_labels,
                 self.reduced_clps,
-                self.full_axis,
+                self._full_axis,
             )
             if callable(self.model.retrieve_clp_function)
             else self._reduced_clps
@@ -649,8 +659,8 @@ class Problem:
 
         results = list(map(residual_function, self.bag))
 
-        self._reduced_clps = list(map(lambda result: result[0]), results)
-        self._weighted_residuals = list(map(lambda result: result[1]), results)
+        self._reduced_clps = list(map(lambda result: result[0], results))
+        self._weighted_residuals = list(map(lambda result: result[1], results))
         self._residuals = list(map(lambda result: result[2], results))
         self._full_clps = (
             self.model.retrieve_clp_function(
@@ -658,7 +668,7 @@ class Problem:
                 self.clp_labels,
                 self.reduced_clp_labels,
                 self.reduced_clps,
-                self.full_axis,
+                self._full_axis,
             )
             if callable(self.model.retrieve_clp_function)
             else self._reduced_clps
@@ -741,7 +751,7 @@ class Problem:
             and self.model.has_additional_penalty_function()
         ):
             self._additional_penalty = self.model.additional_penalty_function(
-                self.parameter, self.full_clp_labels, self.full_clps, self.full_axis
+                self.parameter, self._full_clp_labels, self.full_clps, self._full_axis
             )
         else:
             self._additional_penalty = []
