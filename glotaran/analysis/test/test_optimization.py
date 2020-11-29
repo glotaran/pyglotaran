@@ -1,5 +1,6 @@
 from typing import List
 
+import dask
 import numpy as np
 import pytest
 import xarray as xr
@@ -7,6 +8,7 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.mock import MockMegacomplex
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.model import model
@@ -14,7 +16,7 @@ from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
-from .mock import MockMegacomplex
+dask.config.set(scheduler="single-threaded")
 
 
 def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
