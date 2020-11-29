@@ -15,7 +15,7 @@ jobs:
       - name: Create Doxygen Docs
         uses: mattnotmitt/doxygen-action@v1
         with:
-          doxyfile-path: "docs/Doxyfile"
+          doxyfile-path: "docs/Doxyfile.ini"
       - name: Upload Doxygen Docs Artifact
         uses: actions/upload-artifact@v2
         with:
