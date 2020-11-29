@@ -1,6 +1,13 @@
 import collections
 import itertools
-import typing
+from typing import Callable
+from typing import Deque
+from typing import Dict
+from typing import List
+from typing import NamedTuple
+from typing import Tuple
+from typing import TypeVar
+from typing import Union
 
 import numpy as np
 import xarray as xr
@@ -11,23 +18,40 @@ from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme
 
-T_DatasetDescriptor = typing.TypeVar("glotaran.model.DatasetDescriptor")
-T_Model = typing.TypeVar("glotaran.model.Model")
+T_DatasetDescriptor = TypeVar("glotaran.model.DatasetDescriptor")
+T_Model = TypeVar("glotaran.model.Model")
 
 ParameterError = ValueError("Parameter not initialized")
 
-ProblemDescriptor = collections.namedtuple(
-    "ProblemDescriptor", "dataset data model_axis global_axis weight"
-)
-GroupedProblem = collections.namedtuple("GroupedProblem", "data weight group descriptor")
-GroupedProblemDescriptor = collections.namedtuple("ProblemDescriptor", "dataset index axis")
 
-UngroupedBag = typing.Dict[str, ProblemDescriptor]
-GroupedBag = typing.Deque[GroupedProblem]
+class ProblemDescriptor(NamedTuple):
+    dataset: T_DatasetDescriptor
+    data: xr.DataArray
+    model_axis: np.ndarray
+    global_axis: np.ndarray
+    weight: xr.DataArray
 
 
-LabelAndMatrix = collections.namedtuple("LabelAndMatrix", "clp_label matrix")
-LabelAndMatrixAndData = collections.namedtuple("LabelAndMatrixAndData", "label_matrix data")
+class GroupedProblemDescriptor(NamedTuple):
+    label: str
+    index: float  # TODO could be non mumeric in principle, e.g tuples
+    axis: np.ndarray
+
+
+class GroupedProblem(NamedTuple):
+    data: np.ndarray
+    weight: np.ndarray
+    group: str
+    descriptor: GroupedProblemDescriptor
+
+
+UngroupedBag = Dict[str, ProblemDescriptor]
+GroupedBag = Deque[GroupedProblem]
+
+
+class LabelAndMatrix(NamedTuple):
+    clp_label: List[str]
+    matrix: np.ndarray
 
 
 class Problem:
@@ -99,7 +123,7 @@ class Problem:
         return self._model
 
     @property
-    def data(self) -> typing.Dict[str, xr.Dataset]:
+    def data(self) -> Dict[str, xr.Dataset]:
         return self._data
 
     @property
@@ -115,17 +139,17 @@ class Problem:
         return self._index_dependent
 
     @property
-    def filled_dataset_descriptors(self) -> typing.Dict[str, T_DatasetDescriptor]:
+    def filled_dataset_descriptors(self) -> Dict[str, T_DatasetDescriptor]:
         return self._filled_dataset_descriptors
 
     @property
-    def bag(self) -> typing.Union[UngroupedBag, GroupedBag]:
+    def bag(self) -> Union[UngroupedBag, GroupedBag]:
         if not self._bag:
             self._init_bag()
         return self._bag
 
     @property
-    def groups(self) -> typing.Dict[str, typing.List[str]]:
+    def groups(self) -> Dict[str, List[str]]:
         if not self._groups and self._grouped:
             self._init_bag()
         return self._groups
@@ -133,11 +157,7 @@ class Problem:
     @property
     def clp_labels(
         self,
-    ) -> typing.Union[
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, typing.List[typing.List[str]]],
-        typing.List[typing.List[typing.List[str]]],
-    ]:
+    ) -> Union[Dict[str, List[str]], Dict[str, List[List[str]]], List[List[List[str]]],]:
         if self._clp_labels is None:
             self.calculate_matrices()
         return self._clp_labels
@@ -145,11 +165,7 @@ class Problem:
     @property
     def matrices(
         self,
-    ) -> typing.Union[
-        typing.Dict[str, np.ndarray],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.List[typing.List[np.ndarray]],
-    ]:
+    ) -> Union[Dict[str, np.ndarray], Dict[str, List[np.ndarray]], List[List[np.ndarray]],]:
         if self._matrices is None:
             self.calculate_matrices()
         return self._matrices
@@ -157,11 +173,7 @@ class Problem:
     @property
     def reduced_clp_labels(
         self,
-    ) -> typing.Union[
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, typing.List[typing.List[str]]],
-        typing.List[typing.List[str]],
-    ]:
+    ) -> Union[Dict[str, List[str]], Dict[str, List[List[str]]], List[List[str]],]:
         if self._reduced_clp_labels is None:
             self.calculate_matrices()
         return self._reduced_clp_labels
@@ -169,11 +181,7 @@ class Problem:
     @property
     def reduced_matrices(
         self,
-    ) -> typing.Union[
-        typing.Dict[str, np.ndarray],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.List[np.ndarray],
-    ]:
+    ) -> Union[Dict[str, np.ndarray], Dict[str, List[np.ndarray]], List[np.ndarray],]:
         if self._reduced_matrices is None:
             self.calculate_matrices()
         return self._reduced_matrices
@@ -181,7 +189,7 @@ class Problem:
     @property
     def reduced_clps(
         self,
-    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
         if self._reduced_clps is None:
             self.calculate_residual()
         return self._reduced_clps
@@ -189,7 +197,7 @@ class Problem:
     @property
     def full_clps(
         self,
-    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
         if self._full_clps is None:
             self.calculate_residual()
         return self._full_clps
@@ -197,7 +205,7 @@ class Problem:
     @property
     def weighted_residuals(
         self,
-    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
         if self._weighted_residuals is None:
             self.calculate_residual()
         return self._weighted_residuals
@@ -205,7 +213,7 @@ class Problem:
     @property
     def residuals(
         self,
-    ) -> typing.Union[typing.List[np.ndarray], typing.Dict[str, typing.List[np.ndarray]],]:
+    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
         if self._residuals is None:
             self.calculate_residual()
         return self._residuals
@@ -213,7 +221,7 @@ class Problem:
     @property
     def additional_penalty(
         self,
-    ) -> typing.Union[typing.List[float], typing.Dict[str, typing.List[float]],]:
+    ) -> Union[List[float], Dict[str, List[float]],]:
         if self._additional_penalty is None:
             self.calculate_residual()
         return self._additional_penalty
@@ -307,7 +315,7 @@ class Problem:
     def _append_to_grouped_bag(
         self,
         label: str,
-        datasets: typing.Deque[str],
+        datasets: Deque[str],
         global_axis: np.ndarray,
         model_axis: np.ndarray,
         data: xr.DataArray,
@@ -367,22 +375,17 @@ class Problem:
 
     def calculate_index_dependent_grouped_matrices(
         self,
-    ) -> typing.Tuple[
-        typing.List[typing.List[typing.List[str]]],
-        typing.List[typing.List[np.ndarray]],
-        typing.List[typing.List[str]],
-        typing.List[np.ndarray],
-    ]:
+    ) -> Tuple[List[List[List[str]]], List[List[np.ndarray]], List[List[str]], List[np.ndarray],]:
         if self._parameter is None:
             raise ParameterError
 
         def calculate_group(
-            group: GroupedProblem, descriptors: typing.Dict[str, T_DatasetDescriptor]
-        ) -> typing.Tuple[typing.List[LabelAndMatrix], float]:
+            group: GroupedProblem, descriptors: Dict[str, T_DatasetDescriptor]
+        ) -> Tuple[List[LabelAndMatrix], float]:
             result = [
                 _calculate_matrix(
                     self._model.matrix,
-                    descriptors[problem.dataset],
+                    descriptors[problem.label],
                     problem.axis,
                     {},
                     index=problem.index,
@@ -392,7 +395,7 @@ class Problem:
             return result, group.descriptor[0].index
 
         def reduce_and_combine_matrices(
-            result: typing.Tuple[typing.List[LabelAndMatrix], float],
+            result: Tuple[List[LabelAndMatrix], float],
         ) -> LabelAndMatrix:
             labels_and_matrices, index = result
             constraint_labels_and_matrices = list(
@@ -418,11 +421,11 @@ class Problem:
 
     def calculate_index_dependent_ungrouped_matrices(
         self,
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[typing.List[str]]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, typing.List[np.ndarray]],
+    ) -> Tuple[
+        Dict[str, List[List[str]]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[str]],
+        Dict[str, List[np.ndarray]],
     ]:
         if self._parameter is None:
             raise ParameterError
@@ -460,11 +463,7 @@ class Problem:
 
     def calculate_index_independent_grouped_matrices(
         self,
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, np.ndarray],
-        typing.Dict[str, LabelAndMatrix],
-    ]:
+    ) -> Tuple[Dict[str, List[str]], Dict[str, np.ndarray], Dict[str, LabelAndMatrix],]:
         # We just need to create groups from the ungrouped matrices
         self.calculate_index_independent_ungrouped_matrices()
         for group_label, group in self._groups.items():
@@ -484,11 +483,11 @@ class Problem:
 
     def calculate_index_independent_ungrouped_matrices(
         self,
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, np.ndarray],
-        typing.Dict[str, typing.List[str]],
-        typing.Dict[str, np.ndarray],
+    ) -> Tuple[
+        Dict[str, List[str]],
+        Dict[str, np.ndarray],
+        Dict[str, List[str]],
+        Dict[str, np.ndarray],
     ]:
         if self._parameter is None:
             raise ParameterError
@@ -541,16 +540,16 @@ class Problem:
 
     def calculate_index_dependent_grouped_residual(
         self,
-    ) -> typing.Tuple[
-        typing.List[np.ndarray],
-        typing.List[np.ndarray],
-        typing.List[np.ndarray],
-        typing.List[np.ndarray],
-        typing.List[float],
+    ) -> Tuple[
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[float],
     ]:
         def residual_function(
             problem: GroupedProblem, matrix: np.ndarray
-        ) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
             matrix = matrix.copy()
             for i in range(matrix.shape[1]):
@@ -587,12 +586,12 @@ class Problem:
 
     def calculate_index_dependent_ungrouped_residual(
         self,
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[float]],
+    ) -> Tuple[
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[float]],
     ]:
         self._reduced_clps = {}
         self._weighted_residuals = {}
@@ -643,12 +642,12 @@ class Problem:
 
     def calculate_index_independent_grouped_residual(
         self,
-    ) -> typing.Tuple[
-        typing.List[np.ndarray],
-        typing.List[np.ndarray],
-        typing.List[np.ndarray],
-        typing.List[np.ndarray],
-        typing.List[float],
+    ) -> Tuple[
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[np.ndarray],
+        List[float],
     ]:
         def residual_function(problem: GroupedProblem):
             matrix = self.matrices[problem.group].copy()
@@ -686,12 +685,12 @@ class Problem:
 
     def calculate_index_independent_ungrouped_residual(
         self,
-    ) -> typing.Tuple[
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[np.ndarray]],
-        typing.Dict[str, typing.List[float]],
+    ) -> Tuple[
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, List[float]],
     ]:
 
         self._full_clps = {}
@@ -783,10 +782,10 @@ def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
 
 
 def _calculate_matrix(
-    matrix_function: typing.Callable,
+    matrix_function: Callable,
     dataset_descriptor: T_DatasetDescriptor,
     axis: np.ndarray,
-    extra: typing.Dict,
+    extra: Dict,
     index: float = None,
 ) -> LabelAndMatrix:
     args = {
@@ -817,7 +816,7 @@ def _reduce_matrix(
     return result
 
 
-def _combine_matrices(labels_and_matrices: typing.List[LabelAndMatrix]) -> LabelAndMatrix:
+def _combine_matrices(labels_and_matrices: List[LabelAndMatrix]) -> LabelAndMatrix:
     masks = []
     full_clp_labels = None
     sizes = []
