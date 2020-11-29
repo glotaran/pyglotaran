@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 
+from glotaran.analysis.optimize import optimize
+from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.parameter import ParameterGroup
 
@@ -263,7 +265,8 @@ def test_spectral_irf(suite):
 
     data = {"dataset1": dataset}
 
-    result = model.optimize(initial, data, nnls=True, max_nfev=20)
+    scheme = Scheme(model=model, parameter=initial, data=data, nfev=20)
+    result = optimize(scheme)
     print(result.optimized_parameter)
 
     for label, param in result.optimized_parameter.all():

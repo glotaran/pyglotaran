@@ -57,11 +57,9 @@ def retrieve_spectral_clps(
     if not has_kinetic_model_constraints(model):
         return reduced_clps
 
-    # If we have constraints then we are alwys index dependent and the reduced_clps
-    # are a `list` of arrays.
     full_clp = []
     for (i, index) in enumerate(global_axis):
-        clps = np.ndarray((len(clp_labels[i])), dtype=np.float64)
+        clps = np.zeros((len(clp_labels[i])), dtype=np.float64)
         for j, label in enumerate(reduced_clp_labels[i]):
             clps[j] = reduced_clps[i][reduced_clp_labels[i].index(label)]
         clps = retrieve_related_clps(model, parameter, clp_labels[i], clps, index)

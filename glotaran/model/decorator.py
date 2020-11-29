@@ -47,7 +47,9 @@ RetrieveClpFunction = Callable[
 ]
 """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
-FinalizeFunction = Callable[[TypeVar("glotaran.analysis.problem.Problem"), xr.Dataset], None]
+FinalizeFunction = Callable[
+    [TypeVar("glotaran.analysis.problem.Problem"), Dict[str, xr.Dataset]], None
+]
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = Callable[

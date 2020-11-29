@@ -351,6 +351,7 @@ class Problem:
             problem = GroupedProblem(
                 data.isel({self._global_dimension: i}).values,
                 weight.isel({self._global_dimension: i}).values,
+                label,
                 [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
             )
             if i < end_overlap:
@@ -436,7 +437,7 @@ class Problem:
         self._reduced_clp_labels = {}
         self._reduced_matrices = {}
 
-        for label, problem in self._bag.items():
+        for label, problem in self.bag.items():
             self._clp_labels[label] = []
             self._matrices[label] = []
             self._reduced_clp_labels[label] = []

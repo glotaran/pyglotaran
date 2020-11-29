@@ -1,6 +1,8 @@
 import numpy as np
 import xarray as xr
 
+from glotaran.analysis.optimize import optimize
+from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import (
@@ -78,9 +80,12 @@ def test_spectral_constraint():
         "dataset1", parameter, clp=clp, axes={"time": time, "spectral": np.array([1])}
     )
 
-    result = model.optimize(parameter, {"dataset1": data}, max_nfev=1)
+    dataset = {"dataset1": data}
+    scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
+    result = optimize(scheme)
 
     result_data = result.data["dataset1"]
+    print(result_data.clp_label)
     print(result_data.clp)
     #  TODO: save reduced clp
     #  assert result_data.clp.shape == (1, 1)

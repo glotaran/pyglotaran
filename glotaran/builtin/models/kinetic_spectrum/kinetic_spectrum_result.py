@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Dict
+
+import xarray as xr
+
+from glotaran.analysis.problem import Problem
 
 from ..kinetic_image.irf import IrfMultiGaussian
 from ..kinetic_image.kinetic_image_result import retrieve_decay_assocatiated_data
@@ -9,13 +13,10 @@ from ..kinetic_image.kinetic_image_result import retrieve_species_assocatiated_d
 from .spectral_irf import IrfGaussianCoherentArtifact
 from .spectral_irf import IrfSpectralMultiGaussian
 
-if TYPE_CHECKING:
-    from glotaran.analysis.problem import Problem
 
+def finalize_kinetic_spectrum_result(model, problem: Problem, data: Dict[str, xr.Dataset]):
 
-def finalize_kinetic_spectrum_result(self, problem: Problem):
-
-    for label, dataset in problem.data.items():
+    for label, dataset in data.items():
 
         dataset_descriptor = problem.filled_dataset_descriptors[label]
         if not dataset_descriptor.get_k_matrices():

@@ -8,6 +8,7 @@ import xarray as xr
 import yaml
 
 import glotaran
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
 
@@ -22,7 +23,7 @@ def _not_none(f):
 class Scheme:
     def __init__(
         self,
-        model: "glotaran.model.Model" = None,
+        model: Model = None,
         parameter: ParameterGroup = None,
         data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
         group_tolerance: float = 0.0,

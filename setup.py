@@ -29,7 +29,6 @@ entry_points = """
     [glotaran.plugins]
     kinetic_image_model = glotaran.builtin.models.kinetic_image
     kinetic_spectrum_model = glotaran.builtin.models.kinetic_spectrum
-    doas_model = glotaran.builtin.models.doas
 
     ascii_file = glotaran.builtin.file_formats.ascii
     sdt_file = glotaran.builtin.file_formats.sdt

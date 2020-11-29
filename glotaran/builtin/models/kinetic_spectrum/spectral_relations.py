@@ -102,4 +102,4 @@ def retrieve_related_clps(
             source_idx = clp_labels.index(relation.compartment)
             clps[target_idx] = clps[source_idx] * relation.parameter
 
-    return clp_labels, clps
+    return clps

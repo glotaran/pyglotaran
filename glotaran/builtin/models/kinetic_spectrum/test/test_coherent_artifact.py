@@ -1,6 +1,8 @@
 import numpy as np
 import xarray as xr
 
+from glotaran.analysis.optimize import optimize
+from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix import (
     kinetic_spectrum_matrix,
@@ -63,8 +65,8 @@ def test_coherent_artifact():
 
     assert not np.array_equal(irf_same_width, irf_diff_width)
 
-    dataset = model.dataset["dataset1"].fill(model, parameter)
-    compartments, matrix = kinetic_spectrum_matrix(dataset, time, 0)
+    data = model.dataset["dataset1"].fill(model, parameter)
+    compartments, matrix = kinetic_spectrum_matrix(data, time, 0)
 
     assert len(compartments) == 4
     for i in range(1, 4):
@@ -88,21 +90,22 @@ def test_coherent_artifact():
         ],
     )
     axis = {"time": time, "spectral": clp.spectral}
-    dataset = model.simulate("dataset1", parameter, axis, clp)
+    data = model.simulate("dataset1", parameter, axis, clp)
 
-    data = {"dataset1": dataset}
-    result = model.optimize(parameter, data, max_nfev=20)
+    dataset = {"dataset1": data}
+    scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
+    result = optimize(scheme)
     print(result.optimized_parameter)
 
     for label, param in result.optimized_parameter.all():
         assert np.allclose(param.value, parameter.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
-    assert np.array_equal(dataset["time"], resultdata["time"])
-    assert np.array_equal(dataset["spectral"], resultdata["spectral"])
-    assert dataset.data.shape == resultdata.data.shape
-    assert dataset.data.shape == resultdata.fitted_data.shape
-    assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
+    assert np.array_equal(data.time, resultdata.time)
+    assert np.array_equal(data.spectral, resultdata.spectral)
+    assert data.data.shape == resultdata.data.shape
+    assert data.data.shape == resultdata.fitted_data.shape
+    assert np.allclose(data.data, resultdata.fitted_data, rtol=1e-2)
 
     assert "coherent_artifact_concentration" in resultdata
     assert resultdata["coherent_artifact_concentration"].shape == (time.size, 3)
