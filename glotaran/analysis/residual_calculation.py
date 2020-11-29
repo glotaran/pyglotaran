@@ -161,7 +161,10 @@ def create_index_dependent_grouped_residual(
     def penalty_function(problem, labels_and_matrices):
         matrix = labels_and_matrices.matrix
         for i in range(matrix.shape[1]):
-            matrix[:, i] *= problem.weight
+            if isinstance(problem.weight, dask.array.core.Array):
+                matrix[:, i] *= problem.weight.compute()
+            else:
+                matrix[:, i] *= problem.weight
 
         clp, residual = residual_function(matrix, problem.data)
 
