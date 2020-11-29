@@ -104,3 +104,48 @@ def test_problem_residuals(problem: Problem):
         assert len(problem.residuals["dataset1"]) == suite.e_axis.size
     assert isinstance(problem.full_penalty, np.ndarray)
     assert problem.full_penalty.size == suite.c_axis.size * suite.e_axis.size
+
+
+def test_problem_result_data(problem: Problem):
+
+    data = problem.create_result_data()
+
+    assert "dataset1" in data
+
+    dataset = data["dataset1"]
+
+    assert "clp_label" in dataset.coords
+    assert np.array_equal(dataset.clp_label, ["s1", "s2", "s3", "s4"])
+
+    assert problem.model.global_dimension in dataset.coords
+    assert np.array_equal(dataset.coords[problem.model.global_dimension], suite.e_axis)
+
+    assert problem.model.model_dimension in dataset.coords
+    assert np.array_equal(dataset.coords[problem.model.model_dimension], suite.c_axis)
+
+    assert "matrix" in dataset
+    matrix = dataset.matrix
+    if problem.index_dependent:
+        assert len(matrix.shape) == 3
+        assert matrix.shape[0] == suite.e_axis.size
+        assert matrix.shape[1] == suite.c_axis.size
+        assert matrix.shape[2] == 4
+    else:
+        assert len(matrix.shape) == 2
+        assert matrix.shape[0] == suite.c_axis.size
+        assert matrix.shape[1] == 4
+
+    assert "clp" in dataset
+    clp = dataset.clp
+    assert len(clp.shape) == 2
+    assert clp.shape[0] == suite.e_axis.size
+    assert clp.shape[1] == 4
+
+    assert "weighted_residual" in dataset
+    assert dataset.data.shape == dataset.weighted_residual.shape
+
+    assert "residual" in dataset
+    assert dataset.data.shape == dataset.residual.shape
+
+    assert "residual_singular_values" in dataset
+    assert "weighted_residual_singular_values" in dataset

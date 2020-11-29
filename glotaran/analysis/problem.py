@@ -703,7 +703,7 @@ class Problem:
                 if problem.weight is not None:
                     matrix = matrix.copy()
                     for j in range(matrix.shape[1]):
-                        matrix[:, j] *= problem.weight.isel({problem.global_dimension: i}).values
+                        matrix[:, j] *= problem.weight.isel({self._global_dimension: i}).values
 
                 clp, residual = self._residual_function(matrix, data)
                 self._reduced_clps[label].append(clp)
@@ -754,6 +754,249 @@ class Problem:
             self._additional_penalty[label] = self.model.additional_penalty_function(
                 self.parameter, self._clp_labels[label], self._full_clps[label], global_axis
             )
+
+    def create_result_data(self, copy: bool = True) -> Dict[str, xr.Dataset]:
+
+        result_data = {}
+
+        for label in self.data:
+            result_data[label] = self._create_result_dataset(label, copy=copy)
+
+        if callable(self.model.finalize_data):
+            self.model.finalize_data(self, result_data)
+
+        return result_data
+
+    def _create_result_dataset(self, label: str, copy: bool = True) -> xr.Dataset:
+        dataset = self.data[label]
+        if copy:
+            dataset = dataset.copy()
+        if self.grouped:
+            if self.index_dependent:
+                dataset = self._create_index_dependent_grouped_result_dataset(label, dataset)
+            else:
+                dataset = self._create_index_independent_grouped_result_dataset(label, dataset)
+        else:
+            if self.index_dependent:
+                dataset = self._create_index_dependent_ungrouped_result_dataset(label, dataset)
+            else:
+                dataset = self._create_index_independent_ungrouped_result_dataset(label, dataset)
+
+        self._create_svd("weighted_residual", dataset)
+        self._create_svd("residual", dataset)
+
+        # Calculate RMS
+        size = dataset.residual.shape[0] * dataset.residual.shape[1]
+        dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (dataset.residual ** 2).sum() / size
+        ).values
+
+        # reconstruct fitted data
+        dataset["fitted_data"] = dataset.data - dataset.residual
+        return dataset
+
+    def _create_index_dependent_grouped_result_dataset(
+        self, label: str, dataset: xr.Dataset
+    ) -> xr.Dataset:
+
+        for index, grouped_problem in enumerate(self.bag):
+
+            if label in grouped_problem.group:
+                group_index = [
+                    descriptor.label for descriptor in grouped_problem.descriptor
+                ].index(label)
+                global_index = grouped_problem.descriptor[group_index].index
+
+                self._add_index_dependent_grouped_matrix_to_dataset(
+                    dataset, index, group_index, global_index
+                )
+
+                self._add_grouped_full_clp_to_dataset(dataset, index, global_index)
+
+                self._add_grouped_residual_to_dataset(
+                    dataset, grouped_problem, index, group_index, global_index
+                )
+
+        return dataset
+
+    def _create_index_independent_grouped_result_dataset(
+        self, label: str, dataset: xr.Dataset
+    ) -> xr.Dataset:
+
+        self._add_index_independent_matrix_to_dataset(label, dataset)
+
+        for index, grouped_problem in enumerate(self.bag):
+
+            if label in grouped_problem.group:
+                group_index = [
+                    descriptor.label for descriptor in grouped_problem.descriptor
+                ].index(label)
+                global_index = grouped_problem.descriptor[group_index].index
+
+                self._add_grouped_full_clp_to_dataset(dataset, index, global_index)
+
+                self._add_grouped_residual_to_dataset(
+                    dataset, grouped_problem, index, group_index, global_index
+                )
+
+        return dataset
+
+    def _create_index_dependent_ungrouped_result_dataset(
+        self, label: str, dataset: xr.Dataset
+    ) -> xr.Dataset:
+
+        self._add_index_dependent_ungrouped_matrix_to_dataset(label, dataset)
+
+        self._add_ungrouped_residual_and_full_clp_to_dataset(label, dataset)
+
+        return dataset
+
+    def _create_index_independent_ungrouped_result_dataset(
+        self, label: str, dataset: xr.Dataset
+    ) -> xr.Dataset:
+
+        self._add_index_independent_matrix_to_dataset(label, dataset)
+
+        self._add_ungrouped_residual_and_full_clp_to_dataset(label, dataset)
+
+        return dataset
+
+    def _add_index_dependent_grouped_matrix_to_dataset(
+        self, dataset: xr.Dataset, index: int, group_index: int, global_index: float
+    ):
+        if "clp_label" not in dataset.coords:
+            # we assume that the labels are the same, this might not be true in
+            # future models
+            dataset.coords["clp_label"] = self.clp_labels[index][group_index]
+
+        if "matrix" not in dataset:
+            dim1 = dataset.coords[self._global_dimension].size
+            dim2 = dataset.coords[self._model_dimension].size
+            dim3 = dataset.clp_label.size
+            dataset["matrix"] = (
+                (
+                    (self._global_dimension),
+                    (self._model_dimension),
+                    ("clp_label"),
+                ),
+                np.zeros((dim1, dim2, dim3), dtype=np.float64),
+            )
+
+        dataset.matrix.loc[{self._global_dimension: global_index}] = self.matrices[index][
+            group_index
+        ]
+
+    def _add_index_dependent_ungrouped_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
+        # we assume that the labels are the same, this might not be true in
+        # future models
+        dataset.coords["clp_label"] = self.clp_labels[label][0]
+
+        dataset["matrix"] = (
+            (
+                (self._global_dimension),
+                (self._model_dimension),
+                ("clp_label"),
+            ),
+            np.asarray(self.matrices[label]),
+        )
+
+    def _add_index_independent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
+        dataset.coords["clp_label"] = self.clp_labels[label]
+        dataset["matrix"] = (
+            (
+                (self._model_dimension),
+                ("clp_label"),
+            ),
+            np.asarray(self.matrices[label]),
+        )
+
+    def _add_grouped_full_clp_to_dataset(self, dataset: xr.Dataset, index: int, global_index: int):
+        if "clp" not in dataset:
+            dim1 = dataset.coords[self._global_dimension].size
+            dim2 = dataset.clp_label.size
+            dataset["clp"] = (
+                (
+                    (self._global_dimension),
+                    ("clp_label"),
+                ),
+                np.zeros((dim1, dim2), dtype=np.float64),
+            )
+        dataset.clp.loc[
+            {
+                self._global_dimension: global_index,
+            }
+        ] = self.full_clps[index]
+
+    def _add_grouped_residual_to_dataset(
+        self,
+        dataset: xr.Dataset,
+        grouped_problem: GroupedProblem,
+        index: int,
+        group_index: int,
+        global_index: int,
+    ):
+        if "residual" not in dataset:
+            dim1 = dataset.coords[self._model_dimension].size
+            dim2 = dataset.coords[self._global_dimension].size
+            dataset["weighted_residual"] = (
+                (self._model_dimension, self._global_dimension),
+                np.zeros((dim1, dim2), dtype=np.float64),
+            )
+            dataset["residual"] = (
+                (self._model_dimension, self._global_dimension),
+                np.zeros((dim1, dim2), dtype=np.float64),
+            )
+
+        start = 0
+        for i in range(group_index):
+            start += (
+                self.data[grouped_problem.descriptor[i].label].coords[self._model_dimension].size
+            )
+        end = start + dataset.coords[self._model_dimension].size
+        dataset.weighted_residual.loc[
+            {self._global_dimension: global_index}
+        ] = self.weighted_residuals[index][start:end]
+        dataset.residual.loc[{self._global_dimension: global_index}] = self.residuals[index][
+            start:end
+        ]
+
+    def _add_ungrouped_residual_and_full_clp_to_dataset(self, label: str, dataset: xr.Dataset):
+        dataset["clp"] = (
+            (
+                (self._global_dimension),
+                ("clp_label"),
+            ),
+            np.asarray(self.full_clps[label]),
+        )
+        dataset["weighted_residual"] = (
+            (
+                (self._model_dimension),
+                (self._global_dimension),
+            ),
+            np.transpose(np.asarray(self.weighted_residuals[label])),
+        )
+        dataset["residual"] = (
+            (
+                (self._model_dimension),
+                (self._global_dimension),
+            ),
+            np.transpose(np.asarray(self.residuals[label])),
+        )
+
+    def _create_svd(self, name: str, dataset: xr.Dataset):
+        l, v, r = np.linalg.svd(dataset[name])
+
+        dataset[f"{name}_left_singular_vectors"] = (
+            (self._model_dimension, "left_singular_value_index"),
+            l,
+        )
+
+        dataset[f"{name}_right_singular_vectors"] = (
+            ("right_singular_value_index", self._global_dimension),
+            r,
+        )
+
+        dataset[f"{name}_singular_values"] = (("singular_value_index"), v)
 
 
 def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
