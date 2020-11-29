@@ -1,0 +1,99 @@
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Type
+from typing import TypeVar
+from typing import Union
+
+import numpy as np
+import xarray as xr
+
+from glotaran.analysis.optimize import optimize
+from glotaran.analysis.result import Result
+from glotaran.analysis.scheme import Scheme
+from glotaran.analysis.simulation import simulate
+from glotaran.parameter import ParameterGroup
+
+from .dataset_descriptor import DatasetDescriptor
+from .decorator import FinalizeFunction
+from .weight import Weight
+
+Cls = TypeVar("Cls")
+
+
+class Model:
+    _model_type: str
+    dataset: Dict[str, DatasetDescriptor]
+    megacomplex: Any
+    weights: Weight
+    model_dimension: str
+    global_dimension: str
+    global_matrix = None
+    finalize_data = FinalizeFunction
+    grouped: Callable[[Type[Model]], bool]
+    index_dependent: Callable[[Type[Model]], bool]
+
+    @staticmethod
+    def matrix(
+        dataset_descriptor: DatasetDescriptor = None, axis=None, index=None
+    ) -> Union[Tuple[None, None], Tuple[List[Any], np.ndarray]]:
+        ...
+
+    @classmethod
+    def from_dict(cls: Type[Cls], model_dict_ref: Dict) -> Cls:
+        ...
+
+    @property
+    def index_depended_matrix(self):
+        ...
+
+    @property
+    def model_type(self) -> str:
+        ...
+
+    def simulate(
+        self,
+        dataset: str,
+        parameter: ParameterGroup,
+        axes: Dict[str, np.ndarray] = ...,
+        clp: Union[np.ndarray, xr.DataArray] = ...,
+        noise: bool = ...,
+        noise_std_dev: float = ...,
+        noise_seed: int = ...,
+    ) -> xr.Dataset:
+        ...
+
+    def optimize(
+        self,
+        parameter: ParameterGroup,
+        data: Dict[str, Union[xr.Dataset, xr.DataArray]],
+        nnls: bool = ...,
+        verbose: bool = ...,
+        max_nfev: int = ...,
+        group_tolerance: int = ...,
+        client: Any = ...,
+    ) -> Result:
+        ...
+
+    def result_from_parameter(
+        self,
+        parameter: ParameterGroup,
+        data: Dict[str, Union[xr.DataArray, xr.Dataset]],
+        nnls: bool = ...,
+        group_atol: float = ...,
+    ) -> Result:
+        ...
+
+    def problem_list(self, parameter: ParameterGroup = ...) -> List[str]:
+        ...
+
+    def validate(self, parameter: ParameterGroup = ...) -> str:
+        ...
+
+    def valid(self, parameter: ParameterGroup = None) -> bool:
+        ...
+
+    def markdown(self, parameter: ParameterGroup = ..., initial: ParameterGroup = ...) -> str:
+        ...
