@@ -21,7 +21,10 @@ from .scheme import Scheme
 T_DatasetDescriptor = TypeVar("glotaran.model.DatasetDescriptor")
 T_Model = TypeVar("glotaran.model.Model")
 
-ParameterError = ValueError("Parameter not initialized")
+
+class ParameterError(ValueError):
+    def __init__(self):
+        super().__init__("Parameter not initialized")
 
 
 class ProblemDescriptor(NamedTuple):
