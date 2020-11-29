@@ -514,18 +514,6 @@ class Problem:
             reduced_result = _reduce_matrix(self._model, self._parameter, result, None)
             self._reduced_clp_labels[label] = reduced_result.clp_label
             self._reduced_matrices[label] = reduced_result.matrix
-            # TODO: isn't something like below missing here?
-            # self._full_clps = (
-            #     self._model.retrieve_clp_function(
-            #         self.parameter,
-            #         self.clp_labels,
-            #         self.reduced_clp_labels,
-            #         self.reduced_clps,
-            #         self._full_axis,
-            #     )
-            #     if callable(self.model.retrieve_clp_function)
-            #     else self.reduced_clps
-            # )
 
         return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
 
