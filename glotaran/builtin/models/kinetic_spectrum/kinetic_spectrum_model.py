@@ -25,6 +25,7 @@ from .spectral_shape import SpectralShape
 
 if TYPE_CHECKING:
     from typing import List
+    from typing import Tuple
     from typing import Union
 
     from glotaran.parameter import ParameterGroup
@@ -40,7 +41,7 @@ def apply_kinetic_model_constraints(
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
-):
+) -> Tuple[List[str], np.ndarray]:
     clp_labels, matrix = apply_spectral_relations(model, parameter, clp_labels, matrix, index)
     clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
     return clp_labels, matrix
@@ -64,7 +65,7 @@ def retrieve_spectral_clps(
     return full_clps
 
 
-def index_dependent(model: KineticSpectrumModel):
+def index_dependent(model: KineticSpectrumModel) -> bool:
     if any(
         isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
         for irf in model.irf.values()
