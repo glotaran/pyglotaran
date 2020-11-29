@@ -6,12 +6,13 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.result import Result
+import glotaran
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model
 
@@ -46,7 +47,7 @@ RetrieveClpFunction = Callable[
 ]
 """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
-FinalizeFunction = Callable[[Type[Model], Result], None]
+FinalizeFunction = Callable[[TypeVar("glotaran.analysis.problem.Problem"), xr.Dataset], None]
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = Callable[

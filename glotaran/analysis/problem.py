@@ -6,7 +6,6 @@ from typing import Dict
 from typing import List
 from typing import NamedTuple
 from typing import Tuple
-from typing import TypeVar
 from typing import Union
 
 import numpy as np
@@ -14,12 +13,11 @@ import xarray as xr
 
 from glotaran.analysis.nnls import residual_nnls
 from glotaran.analysis.variable_projection import residual_variable_projection
+from glotaran.model import DatasetDescriptor
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme
-
-T_DatasetDescriptor = TypeVar("glotaran.model.DatasetDescriptor")
-T_Model = TypeVar("glotaran.model.Model")
 
 
 class ParameterError(ValueError):
@@ -28,7 +26,7 @@ class ParameterError(ValueError):
 
 
 class ProblemDescriptor(NamedTuple):
-    dataset: T_DatasetDescriptor
+    dataset: DatasetDescriptor
     data: xr.DataArray
     model_axis: np.ndarray
     global_axis: np.ndarray
@@ -111,7 +109,7 @@ class Problem:
         return self._scheme
 
     @property
-    def model(self) -> T_Model:
+    def model(self) -> Model:
         """Property providing access to the used model
 
         The model is a subclass of :class:`glotaran.model.Model` decorated with the `@model`
@@ -142,7 +140,7 @@ class Problem:
         return self._index_dependent
 
     @property
-    def filled_dataset_descriptors(self) -> Dict[str, T_DatasetDescriptor]:
+    def filled_dataset_descriptors(self) -> Dict[str, DatasetDescriptor]:
         return self._filled_dataset_descriptors
 
     @property
@@ -383,7 +381,7 @@ class Problem:
             raise ParameterError
 
         def calculate_group(
-            group: GroupedProblem, descriptors: Dict[str, T_DatasetDescriptor]
+            group: GroupedProblem, descriptors: Dict[str, DatasetDescriptor]
         ) -> Tuple[List[LabelAndMatrix], float]:
             result = [
                 _calculate_matrix(
@@ -1017,7 +1015,7 @@ def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
 
 def _calculate_matrix(
     matrix_function: Callable,
-    dataset_descriptor: T_DatasetDescriptor,
+    dataset_descriptor: DatasetDescriptor,
     axis: np.ndarray,
     extra: Dict,
     index: float = None,
@@ -1037,7 +1035,7 @@ def _calculate_matrix(
 
 
 def _reduce_matrix(
-    model: T_Model,
+    model: Model,
     parameter: ParameterGroup,
     result: LabelAndMatrix,
     index: float,
