@@ -88,7 +88,7 @@ def test_multi_dataset_no_overlap():
     bag = list(problem.bag)
     assert len(problem.groups) == 2
     assert len(bag) == 6
-    assert all([p.data.size == 2 for p in bag[:3]])
+    assert all(p.data.size == 2 for p in bag[:3])
     assert all(p.descriptor[0].label == "dataset1" for p in bag[:3])
     assert all(all(p.descriptor[0].axis == axis_c_1) for p in bag[:3])
     assert [p.descriptor[0].index for p in bag[:3]] == axis_e_1
@@ -145,15 +145,15 @@ def test_multi_dataset_overlap():
 
     assert all(p.data.size == 4 for p in bag[:1])
     assert all(p.descriptor[0].label == "dataset1" for p in bag[1:5])
-    assert all([all(p.descriptor[0].axis == axis_c_1) for p in bag[1:5]])
+    assert all(all(p.descriptor[0].axis == axis_c_1) for p in bag[1:5])
     assert [p.descriptor[0].index for p in bag[1:5]] == axis_e_1
 
-    assert all([p.data.size == 6 for p in bag[1:4]])
-    assert all([p.descriptor[1].label == "dataset2" for p in bag[1:4]])
-    assert all([all(p.descriptor[1].axis == axis_c_2) for p in bag[1:4]])
+    assert all(p.data.size == 6 for p in bag[1:4])
+    assert all(p.descriptor[1].label == "dataset2" for p in bag[1:4])
+    assert all(all(p.descriptor[1].axis == axis_c_2) for p in bag[1:4])
     assert [p.descriptor[1].index for p in bag[1:4]] == axis_e_2[1:4]
 
-    assert all([p.data.size == 4 for p in bag[5:]])
+    assert all(p.data.size == 4 for p in bag[5:])
     assert bag[4].descriptor[0].label == "dataset1"
     assert bag[5].descriptor[0].label == "dataset2"
     assert np.array_equal(bag[4].descriptor[0].axis, axis_c_1)

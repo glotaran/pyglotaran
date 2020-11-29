@@ -58,23 +58,19 @@ def test_problem_matrices(problem: Problem):
             assert isinstance(problem.reduced_matrices["dataset1"], np.ndarray)
     else:
         if problem.index_dependent:
-            assert isinstance(problem.clp_labels, dict)
-            assert isinstance(problem.matrices, dict)
             assert isinstance(problem.reduced_clp_labels, dict)
             assert isinstance(problem.reduced_matrices, dict)
-            assert "dataset1" in problem.reduced_clp_labels
-            assert "dataset1" in problem.reduced_matrices
-            assert isinstance(problem.reduced_clp_labels["dataset1"], list)
             assert isinstance(problem.reduced_matrices["dataset1"], list)
             assert all(isinstance(c, list) for c in problem.reduced_clp_labels["dataset1"])
             assert all(isinstance(m, np.ndarray) for m in problem.reduced_matrices["dataset1"])
         else:
-            assert isinstance(problem.clp_labels, dict)
-            assert isinstance(problem.matrices, dict)
-            assert "dataset1" in problem.reduced_clp_labels
-            assert "dataset1" in problem.reduced_matrices
-            assert isinstance(problem.reduced_clp_labels["dataset1"], list)
             assert isinstance(problem.reduced_matrices["dataset1"], np.ndarray)
+
+        assert isinstance(problem.matrices, dict)
+        assert isinstance(problem.reduced_clp_labels["dataset1"], list)
+        assert isinstance(problem.clp_labels, dict)
+        assert "dataset1" in problem.reduced_clp_labels
+        assert "dataset1" in problem.reduced_matrices
 
 
 def test_problem_residuals(problem: Problem):
