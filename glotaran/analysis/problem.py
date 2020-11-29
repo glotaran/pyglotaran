@@ -756,11 +756,7 @@ class Problem:
 
     def create_result_data(self, copy: bool = True) -> Dict[str, xr.Dataset]:
 
-        result_data = {
-            label: self._create_result_dataset(label, copy=copy)
-            for label in self.data
-        }
-
+        result_data = {label: self._create_result_dataset(label, copy=copy) for label in self.data}
 
         if callable(self.model.finalize_data):
             self.model.finalize_data(self, result_data)
@@ -948,9 +944,7 @@ class Problem:
             )
 
         start = sum(
-            self.data[grouped_problem.descriptor[i].label]
-            .coords[self._model_dimension]
-            .size
+            self.data[grouped_problem.descriptor[i].label].coords[self._model_dimension].size
             for i in range(group_index)
         )
 
