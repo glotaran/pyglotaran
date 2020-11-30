@@ -592,7 +592,7 @@ class Problem:
             self._reduced_clps[label] = []
             self._residuals[label] = []
             self._weighted_residuals[label] = []
-            for i, index in enumerate(problem.global_axis):
+            for i in range(len(problem.global_axis)):
                 matrix_at_index = self.reduced_matrices[label][i]
                 if problem.weight is not None:
                     matrix_at_index = matrix_at_index.copy()

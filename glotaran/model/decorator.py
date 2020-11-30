@@ -12,7 +12,7 @@ from typing import Union
 import numpy as np
 import xarray as xr
 
-import glotaran
+import glotaran  # TODO: refactor to postponed type annotation
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model
 
