@@ -188,7 +188,7 @@ def test_equal_area_penalties(debug=False):
     # for both we perturb kinetic parameters a bit to give the optimizer some work
     pspec_wp = dict(deepcopy(pspec.base), **pspec.equal_area)
     pspec_wp["kinetic"] = [v * 1.01 for v in pspec_wp["kinetic"]]
-    pspec_wp.update({"i": [[1, {"vary": False}], 1, 1]})
+    pspec_wp.update({"i": [[1, {"vary": False}], 1]})
 
     pspec_np = dict(deepcopy(pspec.base))
 
