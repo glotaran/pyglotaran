@@ -6,11 +6,17 @@ Quickstart/Cheat-Sheet
    pyglotaran is in very early stage of development. You should not use it for
    actual science at the moment.
 
-To start using pyglotaran in your project, you have to import it first:
+To start using pyglotaran in your project, you have to import it first.
+In addition we need to import some extra components for later use.
+
 
 .. ipython::
 
    In [1]: import glotaran as gta
+
+   In [2]: from glotaran.analysis.optimize import optimize
+
+   In [3]: from glotaran.analysis.scheme import Scheme
 
 Let us get some data to analyze:
 
@@ -211,11 +217,12 @@ The same way you should inspect your parameters.
 
    print(parameter)
 
-Now we have everything together to optimize our parameters.
+Now we have everything together to optimize our parameters. First we import optimize.
 
 .. ipython:: python
 
-   result = model.optimize(parameter, {'dataset1': dataset})
+   scheme = Scheme(model, parameter, {'dataset1': dataset})
+   result = optimize(scheme)
    print(result)
    print(result.optimized_parameter)
 
