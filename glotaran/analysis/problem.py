@@ -830,7 +830,9 @@ class Problem:
                     dataset, index, group_index, global_index
                 )
 
-                self._add_grouped_full_clp_to_dataset(dataset, index, global_index)
+                self._add_grouped_full_clp_to_dataset(
+                    dataset, index, global_index, group_index=group_index
+                )
 
                 self._add_grouped_residual_to_dataset(
                     dataset, grouped_problem, index, group_index, global_index
@@ -929,7 +931,9 @@ class Problem:
             np.asarray(self.matrices[label]),
         )
 
-    def _add_grouped_full_clp_to_dataset(self, dataset: xr.Dataset, index: int, global_index: int):
+    def _add_grouped_full_clp_to_dataset(
+        self, dataset: xr.Dataset, index: int, global_index: int, group_index: int = None
+    ):
         if "clp" not in dataset:
             dim1 = dataset.coords[self._global_dimension].size
             dim2 = dataset.clp_label.size
@@ -940,11 +944,9 @@ class Problem:
                 ),
                 np.zeros((dim1, dim2), dtype=np.float64),
             )
-        dataset.clp.loc[
-            {
-                self._global_dimension: global_index,
-            }
-        ] = self.full_clps[index]
+        dataset.clp.loc[{self._global_dimension: global_index,}] = (
+            self.full_clps[index] if group_index is None else self.full_clps[index][group_index]
+        )
 
     def _add_grouped_residual_to_dataset(
         self,
