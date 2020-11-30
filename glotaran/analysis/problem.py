@@ -695,7 +695,7 @@ class Problem:
             self._weighted_residuals[label] = []
             self._residuals[label] = []
 
-            for i, index in enumerate(problem.global_axis):
+            for i in range(len(problem.global_axis)):
                 data = problem.data.isel({self._global_dimension: i}).values
                 matrix = self.reduced_matrices[label]
 
