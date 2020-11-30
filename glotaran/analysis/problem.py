@@ -552,13 +552,33 @@ class Problem:
         self._reduced_clps = list(map(lambda result: result[0], results))
         self._weighted_residuals = list(map(lambda result: result[1], results))
         self._residuals = list(map(lambda result: result[2], results))
+
+        def retrieve_clp_function(
+            problem: GroupedProblem,
+            clp_labels: List[List[str]],
+            reduced_clp_labels: List[str],
+            reduced_clps: np.ndarray,
+        ):
+            return [
+                self.model.retrieve_clp_function(
+                    self.parameter,
+                    clp_labels[i],
+                    reduced_clp_labels,
+                    reduced_clps,
+                    p.index,
+                )
+                for i, p in enumerate(problem.descriptor)
+            ]
+
         self._full_clps = (
-            self.model.retrieve_clp_function(
-                self.parameter,
-                self.clp_labels,
-                self.reduced_clp_labels,
-                self.reduced_clps,
-                self._full_axis,
+            list(
+                map(
+                    retrieve_clp_function,
+                    self.bag,
+                    self.clp_labels,
+                    self.reduced_clp_labels,
+                    self.reduced_clps,
+                )
             )
             if callable(self.model.retrieve_clp_function)
             else self._reduced_clps
@@ -590,6 +610,7 @@ class Problem:
         self._full_clps = {}
         for label, problem in self.bag.items():
             self._reduced_clps[label] = []
+            self._full_clps[label] = []
             self._residuals[label] = []
             self._weighted_residuals[label] = []
             for i in range(len(problem.global_axis)):
@@ -601,7 +622,20 @@ class Problem:
                 clp, residual = self._residual_function(
                     matrix_at_index, problem.data.isel({self._global_dimension: i}).values
                 )
+                full_clps = (
+                    self.model.retrieve_clp_function(
+                        self.parameter,
+                        self.clp_labels[label][i],
+                        self.reduced_clp_labels[label][i],
+                        clp,
+                        problem.global_axis[i],
+                    )
+                    if callable(self.model.retrieve_clp_function)
+                    else clp
+                )
+
                 self._reduced_clps[label].append(clp)
+                self._full_clps[label].append(full_clps)
                 self._weighted_residuals[label].append(residual)
                 if problem.weight is not None:
                     self._residuals[label].append(
@@ -610,17 +644,6 @@ class Problem:
                 else:
                     self._residuals[label].append(residual)
 
-            self._full_clps[label] = (
-                self.model.retrieve_clp_function(
-                    self.parameter,
-                    self.clp_labels[label],
-                    self.reduced_clp_labels[label],
-                    self.reduced_clps[label],
-                    problem.global_axis,
-                )
-                if callable(self.model.retrieve_clp_function)
-                else self._reduced_clps[label]
-            )
             self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
             self._reduced_clps,
