@@ -75,9 +75,16 @@ class Problem:
 
         self._index_dependent = scheme.model.index_dependent()
         self._grouped = scheme.model.grouped()
+        self._bag = None
+        self._groups = None
 
+        self._residual_function = residual_nnls if scheme.nnls else residual_variable_projection
         self._parameter = None
         self._filled_dataset_descriptors = None
+
+        self.parameter = scheme.parameter
+
+        # all of the above are always not None
 
         self._clp_labels = None
         self._matrices = None
@@ -90,13 +97,6 @@ class Problem:
         self._residuals = None
         self._additional_penalty = None
         self._full_penalty = None
-
-        self._bag = None
-        self._groups = None
-
-        self._residual_function = residual_nnls if scheme.nnls else residual_variable_projection
-
-        self.parameter = scheme.parameter
 
     @property
     def scheme(self) -> Scheme:
