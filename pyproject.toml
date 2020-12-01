@@ -28,4 +28,4 @@ force_single_line = true
 [tool.interrogate]
 exclude = ["setup.py", "docs", "*test/*"]
 ignore-init-module = true
-fail-under = 39
+fail-under = 36
