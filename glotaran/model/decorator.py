@@ -6,12 +6,13 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.result import Result
+import glotaran  # TODO: refactor to postponed type annotation
 from glotaran.parameter import ParameterGroup
 from glotaran.parse.register import register_model
 
@@ -46,11 +47,13 @@ RetrieveClpFunction = Callable[
 ]
 """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
-FinalizeFunction = Callable[[Type[Model], Result], None]
+FinalizeFunction = Callable[
+    [TypeVar("glotaran.analysis.problem.Problem"), Dict[str, xr.Dataset]], None
+]
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = Callable[
-    [Type[Model], ParameterGroup, Union[List[str], List[List[str]]], np.ndarray, np.ndarray],
+    [Type[Model], ParameterGroup, Union[List[str], List[List[str]]], List[np.ndarray], np.ndarray],
     np.ndarray,
 ]
 """A `PenaltyFunction` calculates additional penalties for the optimization."""
@@ -141,6 +144,7 @@ def model(
         else:
             setattr(cls, "has_matrix_constraints_function", None)
             setattr(cls, "constrain_matrix_function", None)
+            setattr(cls, "retrieve_clp_function", None)
 
         if has_additional_penalty_function:
             if not additional_penalty_function:

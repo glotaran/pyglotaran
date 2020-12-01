@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.analysis.optimize import optimize
+from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.parameter import ParameterGroup
 
@@ -80,10 +82,15 @@ class OneComponentOneChannelGaussianIrf:
     )
 
     initial = ParameterGroup.from_list(
-        [101e-4, 0.1, 5, [1, {"vary": False, "non-negative": False}]]
+        [101e-4, 0.1, 1, [1, {"vary": False, "non-negative": False}]]
     )
     wanted = ParameterGroup.from_list(
-        [101e-3, 0.3, 10, [1, {"vary": False, "non-negative": False}]]
+        [
+            [101e-3, {"non-negative": True}],
+            [0.2, {"non-negative": True}],
+            [2, {"non-negative": True}],
+            [1, {"vary": False, "non-negative": False}],
+        ]
     )
 
     time = np.asarray(np.arange(-10, 50, 1.5))
@@ -311,7 +318,8 @@ def test_kinetic_model(suite, nnls):
 
     data = {"dataset1": dataset}
 
-    result = model.optimize(initial, data, nnls=nnls, max_nfev=20)
+    scheme = Scheme(model=model, parameter=initial, data=data, nfev=20)
+    result = optimize(scheme)
     print(result.optimized_parameter)
 
     for label, param in result.optimized_parameter.all():

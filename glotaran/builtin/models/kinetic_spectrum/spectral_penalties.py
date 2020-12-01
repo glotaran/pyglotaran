@@ -66,7 +66,7 @@ def apply_spectral_penalties(
     model: KineticSpectrumModel,
     parameter: ParameterGroup,
     clp_labels: Union[List[str], List[List[str]]],
-    clps: np.ndarray,
+    full_clps: List[np.ndarray],
     global_axis: np.ndarray,
 ) -> np.ndarray:
 
@@ -83,19 +83,16 @@ def apply_spectral_penalties(
             start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
             for i in range(start_idx, end_idx):
 
-                index_clp_label = clp_labels
-                index_clp = clps
+                # In case of an index dependent problem the clp_labels are per index
+                index_clp_label = clp_labels[i] if model.index_dependent() else clp_labels
 
-                # In case of an index dependet problem the clps and labels are  per index
-                if model.index_dependent():
-                    index_clp_label = index_clp_label[i]
-                    index_clp = index_clp[i]
+                index_clp = full_clps[i]
 
                 source_idx = index_clp_label.index(penalty.compartment)
-                source_area.append(index_clp[i][source_idx])
+                source_area.append(index_clp[source_idx])
 
                 target_idx = index_clp_label.index(penalty.target)
-                target_area.append(index_clp[i][target_idx])
+                target_area.append(index_clp[target_idx])
 
         area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
         penalties.append(area_penalty * penalty.weight)

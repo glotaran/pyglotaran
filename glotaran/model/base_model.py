@@ -8,9 +8,6 @@ import typing
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.result import Result
-from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
 from glotaran.parameter import ParameterGroup
 
@@ -168,66 +165,6 @@ class Model:
             noise_std_dev=noise_std_dev,
             noise_seed=noise_seed,
         )
-
-    def optimize(
-        self,
-        parameter: ParameterGroup,
-        data: typing.Dict[str, typing.Union[xr.Dataset, xr.DataArray]],
-        nnls: bool = False,
-        verbose: bool = True,
-        max_nfev: int = None,
-        group_tolerance: int = 0,
-        client=None,
-    ) -> Result:
-        """Optimizes the parameter for this model.
-
-        Parameters
-        ----------
-        data :
-            A dictionary containing all datasets with their labels as keys.
-        parameter : glotaran.model.ParameterGroup
-            The initial parameter.
-        nnls :
-            If `True` non-linear least squares optimizing is used instead of variable projection.
-        verbose :
-            If `True` feedback is printed at every iteration.
-        max_nfev :
-            Maximum number of function evaluations. `None` for unlimited.
-        group_tolerance :
-            The tolerance for grouping datasets along the global dimension.
-        """
-        scheme = Scheme(
-            model=self,
-            parameter=parameter,
-            data=data,
-            nnls=nnls,
-            group_tolerance=group_tolerance,
-            nfev=max_nfev,
-        )
-        return optimize(scheme, verbose=verbose, client=client)
-
-    def result_from_parameter(
-        self,
-        parameter: ParameterGroup,
-        data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]],
-        nnls: bool = False,
-        group_atol: float = 0.0,
-    ) -> Result:
-        """Loads a result from parameters without optimization.
-
-        Parameters
-        ----------
-        data :
-            A dictionary containing all datasets with their labels as keys.
-        parameter : glotaran.model.ParameterGroup
-            The parameter.
-        nnls :
-            If `True` non-linear least squares optimizing is used instead of variable projection.
-        group_atol :
-            The tolerance for grouping datasets along the global axes.
-
-        """
-        return Result.from_parameter(self, data, parameter, nnls, group_atol)
 
     def problem_list(self, parameter: ParameterGroup = None) -> typing.List[str]:
         """

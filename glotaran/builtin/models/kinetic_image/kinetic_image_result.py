@@ -1,46 +1,29 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Dict
 
-import numpy as np
 import xarray as xr
+
+from glotaran.analysis.problem import Problem
 
 from .irf import IrfMultiGaussian
 
-if TYPE_CHECKING:
-    from typing import Dict
-    from typing import List
-    from typing import Union
 
-    from glotaran.parameter import ParameterGroup
+def finalize_kinetic_image_result(model, problem: Problem, data: Dict[str, xr.Dataset]):
 
-    from .kinetic_image_model import KineticImageModel
+    for label, dataset in data.items():
 
-
-def finalize_kinetic_image_result(
-    model: KineticImageModel,
-    global_indices: List[List[object]],
-    reduced_clp_labels: Union[Dict[str, List[str]], np.ndarray],
-    reduced_clps: Union[Dict[str, np.ndarray], np.ndarray],
-    parameter: ParameterGroup,
-    data: Dict[str, xr.Dataset],
-):
-
-    for label in model.dataset:
-        dataset = data[label]
-
-        dataset_descriptor = model.dataset[label].fill(model, parameter)
-
+        dataset_descriptor = problem.filled_dataset_descriptors[label]
         if not dataset_descriptor.get_k_matrices():
             continue
 
-        retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, "images")
-        retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, "images")
+        retrieve_species_assocatiated_data(problem.model, dataset, dataset_descriptor, "images")
+        retrieve_decay_assocatiated_data(problem.model, dataset, dataset_descriptor, "images")
 
         if dataset_descriptor.baseline:
             dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
-        retrieve_irf(model, dataset, dataset_descriptor, "images")
+        retrieve_irf(problem.model, dataset, dataset_descriptor, "images")
 
 
 def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name):

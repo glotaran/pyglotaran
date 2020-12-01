@@ -5,9 +5,10 @@ import importlib
 from collections import namedtuple
 from copy import deepcopy
 
-import dask
 import numpy as np
 
+from glotaran.analysis.optimize import optimize
+from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.io import prepare_time_trace_dataset
 from glotaran.parameter import ParameterGroup
@@ -51,8 +52,6 @@ def plot_overview(res, title=None):
 
 def test_equal_area_penalties(debug=False):
     # %%
-    if debug:
-        dask.config.set(scheduler="single-threaded")
 
     optim_spec = OptimizationSpec(nnls=True, max_nfev=999)
     noise_spec = NoiseSpec(active=True, seed=1, std_dev=1e-8)
@@ -189,7 +188,7 @@ def test_equal_area_penalties(debug=False):
     # for both we perturb kinetic parameters a bit to give the optimizer some work
     pspec_wp = dict(deepcopy(pspec.base), **pspec.equal_area)
     pspec_wp["kinetic"] = [v * 1.01 for v in pspec_wp["kinetic"]]
-    pspec_wp.update({"i": [[1, {"vary": False}], 1, 1]})
+    pspec_wp.update({"i": [[1, {"vary": False}], 1]})
 
     pspec_np = dict(deepcopy(pspec.base))
 
@@ -217,15 +216,26 @@ def test_equal_area_penalties(debug=False):
 
     # %% Optimizing model without penalty (np)
 
-    result_np = model_np.optimize(
-        param_np, {"dataset1": data}, nnls=optim_spec.nnls, max_nfev=optim_spec.max_nfev
+    dataset = {"dataset1": data}
+    scheme_np = Scheme(
+        model=model_np,
+        parameter=param_np,
+        data=dataset,
+        nnls=optim_spec.nnls,
+        nfev=optim_spec.max_nfev,
     )
+    result_np = optimize(scheme_np)
     print(result_np)
 
     # %% Optimizing model with penalty fixed inputs (wp_ifix)
-    result_wp = model_wp.optimize(
-        param_wp, {"dataset1": data}, nnls=optim_spec.nnls, max_nfev=optim_spec.max_nfev
+    scheme_wp = Scheme(
+        model=model_wp,
+        parameter=param_wp,
+        data=dataset,
+        nnls=optim_spec.nnls,
+        nfev=optim_spec.max_nfev,
     )
+    result_wp = optimize(scheme_wp)
     print(result_wp)
 
     if debug:
