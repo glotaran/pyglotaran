@@ -1,6 +1,6 @@
 from typing import Any
-from typing import Dict
 from typing import List
+from typing import Mapping
 from typing import Tuple
 from typing import Union
 
@@ -18,8 +18,8 @@ from .kinetic_image_megacomplex import KineticImageMegacomplex
 from .kinetic_image_result import finalize_kinetic_image_result
 
 class KineticImageModel(Model):
-    dataset: Dict[str, KineticImageDatasetDescriptor]  # type: ignore[assignment]
-    megacomplex: Dict[str, KineticImageMegacomplex]
+    dataset: Mapping[str, KineticImageDatasetDescriptor]
+    megacomplex: Mapping[str, KineticImageMegacomplex]
 
     @staticmethod
     def matrix(  # type: ignore[override]
@@ -28,13 +28,13 @@ class KineticImageModel(Model):
         ...
 
     @property
-    def initial_concentration(self) -> Dict[str, InitialConcentration]:
+    def initial_concentration(self) -> Mapping[str, InitialConcentration]:
         ...
 
     @property
-    def k_matrix(self) -> Dict[str, KMatrix]:
+    def k_matrix(self) -> Mapping[str, KMatrix]:
         ...
 
     @property
-    def irf(self) -> Dict[str, Irf]:
+    def irf(self) -> Mapping[str, Irf]:
         ...

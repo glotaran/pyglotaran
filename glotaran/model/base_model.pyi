@@ -2,6 +2,8 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Mapping
+from typing import Optional
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -25,13 +27,13 @@ Cls = TypeVar("Cls")
 
 class Model:
     _model_type: str
-    dataset: Dict[str, DatasetDescriptor]
+    dataset: Mapping[str, DatasetDescriptor]
     megacomplex: Any
     weights: Weight
     model_dimension: str
     global_dimension: str
     global_matrix = None
-    finalize_data = FinalizeFunction
+    finalize_data: Optional[FinalizeFunction] = None
     grouped: Callable[[Type[Model]], bool]
     index_dependent: Callable[[Type[Model]], bool]
 
@@ -39,6 +41,15 @@ class Model:
     def matrix(
         dataset_descriptor: DatasetDescriptor = None, axis=None, index=None
     ) -> Union[Tuple[None, None], Tuple[List[Any], np.ndarray]]:
+        ...
+
+    def add_megacomplex(self, item: Any):
+        ...
+
+    def add_weights(self, item: Weight):
+        ...
+
+    def get_dataset(self, label: str) -> DatasetDescriptor:
         ...
 
     @classmethod

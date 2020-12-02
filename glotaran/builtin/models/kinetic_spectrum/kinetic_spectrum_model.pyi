@@ -1,6 +1,6 @@
 from typing import Any
-from typing import Dict
 from typing import List
+from typing import Mapping
 from typing import Tuple
 from typing import Union
 
@@ -60,15 +60,15 @@ def grouped(model: KineticSpectrumModel) -> bool:
 
 
 class KineticSpectrumModel(KineticImageModel):
-    dataset: Dict[str, KineticSpectrumDatasetDescriptor]  # type: ignore[assignment]
-    megacomplex: Dict[str, KineticImageMegacomplex]
+    dataset: Mapping[str, KineticSpectrumDatasetDescriptor]
+    megacomplex: Mapping[str, KineticImageMegacomplex]
 
     @property
     def equal_area_penalties(self) -> List[EqualAreaPenalty]:
         ...
 
     @property
-    def shape(self) -> Dict[str, SpectralShape]:
+    def shape(self) -> Mapping[str, SpectralShape]:
         ...
 
     @property
