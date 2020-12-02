@@ -2,8 +2,11 @@
 History
 =======
 
-0.2.0 (Pending)
----------------
+0.2.0 (2020-12-02)
+------------------
+
+* Large refactor with significant improvements but also small API changes (see docs)
+* Removed doas plugin
 
 0.1.0 (2020-07-14)
 ------------------
