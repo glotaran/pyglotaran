@@ -3,8 +3,6 @@ from setuptools import setup
 
 install_requires = [
     "click>=7.0",
-    "cloudpickle>=1.2",  # Needed by dask
-    "dask[bag]>=2.8",
     "lmfit>=0.9.13",
     "netCDF4>=1.5.3",
     "numba>=0.48",
