@@ -76,18 +76,6 @@ class Model:
     ) -> xr.Dataset:
         ...
 
-    def optimize(
-        self,
-        parameter: ParameterGroup,
-        data: Dict[str, Union[xr.Dataset, xr.DataArray]],
-        nnls: bool = ...,
-        verbose: bool = ...,
-        max_nfev: int = ...,
-        group_tolerance: int = ...,
-        client: Any = ...,
-    ) -> Result:
-        ...
-
     def result_from_parameter(
         self,
         parameter: ParameterGroup,
