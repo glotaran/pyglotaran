@@ -137,7 +137,7 @@ class GaussianDecayModel(Model):
 class OneCompartmentDecay:
     scale = 2
     wanted = ParameterGroup.from_list([101e-4])
-    initial = ParameterGroup.from_list([100e-5, [scale, {"vary":False}]])
+    initial = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
 
     e_axis = np.asarray([1])
     c_axis = np.arange(0, 150, 1.5)
