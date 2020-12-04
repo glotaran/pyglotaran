@@ -45,6 +45,9 @@ def test_optimization(suite, index_dependent, grouped, weight):
     dataset = simulate(sim_model, "dataset1", wanted, {"e": est_axis, "c": cal_axis})
     print(dataset)
 
+    if hasattr(suite, "scale"):
+        dataset["data"] /= suite.scale
+
     if weight:
         dataset["weight"] = xr.DataArray(np.ones_like(dataset.data) * 0.5, coords=dataset.coords)
 
@@ -58,7 +61,8 @@ def test_optimization(suite, index_dependent, grouped, weight):
     print(result.data["dataset1"])
 
     for _, param in result.optimized_parameter.all():
-        assert np.allclose(param.value, wanted.get(param.full_label).value, rtol=1e-1)
+        if param.vary:
+            assert np.allclose(param.value, wanted.get(param.full_label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     print(resultdata)

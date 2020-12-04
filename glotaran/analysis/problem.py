@@ -1,5 +1,6 @@
 import collections
 import itertools
+from typing import Any
 from typing import Callable
 from typing import Deque
 from typing import Dict
@@ -35,14 +36,19 @@ class ProblemDescriptor(NamedTuple):
 
 class GroupedProblemDescriptor(NamedTuple):
     label: str
-    index: float  # TODO could be non mumeric in principle, e.g tuples
+    index: Any
     axis: np.ndarray
 
 
 class GroupedProblem(NamedTuple):
     data: np.ndarray
     weight: np.ndarray
+    has_scaling: bool
+    """Indicates if at least one dataset in the group needs scaling."""
     group: str
+    """The concatenated labels of the involved datasets."""
+    data_sizes: List[int]
+    """Holds the sizes of the concatenated datasets."""
     descriptor: GroupedProblemDescriptor
 
 
@@ -297,20 +303,25 @@ class Problem:
             data = dataset.data * weight
             global_axis = dataset.coords[self._global_dimension].values
             model_axis = dataset.coords[self._model_dimension].values
+            has_scaling = self._model.dataset[label].scale is not None
             if self._bag is None:
                 self._bag = collections.deque(
                     GroupedProblem(
-                        data.isel({self._global_dimension: i}).values,
-                        weight.isel({self._global_dimension: i}).values,
-                        label,
-                        [GroupedProblemDescriptor(label, value, model_axis)],
+                        data=data.isel({self._global_dimension: i}).values,
+                        weight=weight.isel({self._global_dimension: i}).values,
+                        has_scaling=has_scaling,
+                        group=label,
+                        data_sizes=[data.isel({self._global_dimension: i}).values.size],
+                        descriptor=[GroupedProblemDescriptor(label, value, model_axis)],
                     )
                     for i, value in enumerate(global_axis)
                 )
                 datasets = collections.deque([label] for _, _ in enumerate(global_axis))
                 self._full_axis = collections.deque(global_axis)
             else:
-                self._append_to_grouped_bag(label, datasets, global_axis, model_axis, data, weight)
+                self._append_to_grouped_bag(
+                    label, datasets, global_axis, model_axis, data, weight, has_scaling
+                )
         self._groups = {"".join(d): d for d in datasets}
 
     def _append_to_grouped_bag(
@@ -321,26 +332,30 @@ class Problem:
         model_axis: np.ndarray,
         data: xr.DataArray,
         weight: xr.DataArray,
+        has_scaling: bool,
     ):
         i1, i2 = _find_overlap(self._full_axis, global_axis, atol=self._scheme.group_tolerance)
 
         for i, j in enumerate(i1):
             datasets[j].append(label)
+            data_stripe = data.isel({self._global_dimension: i2[i]}).values
             self._bag[j] = GroupedProblem(
-                np.concatenate(
+                data=np.concatenate(
                     [
                         self._bag[j].data,
-                        data.isel({self._global_dimension: i2[i]}).values,
+                        data_stripe,
                     ]
                 ),
-                np.concatenate(
+                weight=np.concatenate(
                     [
                         self._bag[j].weight,
                         weight.isel({self._global_dimension: i2[i]}).values,
                     ]
                 ),
-                self._bag[j].group + label,
-                self._bag[j].descriptor
+                has_scaling=has_scaling or self._bag[j].has_scaling,
+                group=self._bag[j].group + label,
+                data_sizes=self._bag[j].data_sizes + [data_stripe.size],
+                descriptor=self._bag[j].descriptor
                 + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
             )
 
@@ -348,11 +363,14 @@ class Problem:
         begin_overlap = i2[0] if len(i2) != 0 else 0
         end_overlap = i2[-1] + 1 if len(i2) != 0 else 0
         for i in itertools.chain(range(begin_overlap), range(end_overlap, len(global_axis))):
+            data_stripe = data.isel({self._global_dimension: i}).values
             problem = GroupedProblem(
-                data.isel({self._global_dimension: i}).values,
-                weight.isel({self._global_dimension: i}).values,
-                label,
-                [GroupedProblemDescriptor(label, global_axis[i], model_axis)],
+                data=data_stripe,
+                weight=weight.isel({self._global_dimension: i}).values,
+                has_scaling=has_scaling,
+                group=label,
+                data_sizes=[data_stripe.size],
+                descriptor=[GroupedProblemDescriptor(label, global_axis[i], model_axis)],
             )
             if i < end_overlap:
                 datasets.appendleft([label])
@@ -544,7 +562,17 @@ class Problem:
             matrix = matrix.copy()
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
-            clp, residual = self._residual_function(matrix, problem.data)
+            data = problem.data
+            if problem.has_scaling:
+                data = data.copy()
+                for i, descriptor in enumerate(problem.descriptor):
+                    label = descriptor.label
+                    if self.filled_dataset_descriptors[label] is not None:
+                        start = 0 if i == 0 else problem.data_sizes[i - 1]
+                        end = problem.data_sizes[i]
+                        data[start:end] *= self.filled_dataset_descriptors[label].scale
+
+            clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
 
         results = list(map(residual_function, self.bag, self.reduced_matrices))
@@ -613,6 +641,9 @@ class Problem:
             self._full_clps[label] = []
             self._residuals[label] = []
             self._weighted_residuals[label] = []
+            data = problem.data
+            if problem.dataset.scale is not None:
+                data = data * self.filled_dataset_descriptors[label].scale
             for i in range(len(problem.global_axis)):
                 matrix_at_index = self.reduced_matrices[label][i]
                 if problem.weight is not None:
@@ -620,7 +651,7 @@ class Problem:
                     for j in range(matrix_at_index.shape[1]):
                         matrix_at_index[:, j] *= problem.weight.isel({self._global_dimension: i})
                 clp, residual = self._residual_function(
-                    matrix_at_index, problem.data.isel({self._global_dimension: i}).values
+                    matrix_at_index, data.isel({self._global_dimension: i})
                 )
                 full_clps = (
                     self.model.retrieve_clp_function(
@@ -666,7 +697,16 @@ class Problem:
             matrix = self.matrices[problem.group].copy()
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
-            clp, residual = self._residual_function(matrix, problem.data)
+            data = problem.data
+            if problem.has_scaling:
+                data = data.copy()
+                for i, descriptor in enumerate(problem.descriptor):
+                    label = descriptor.label
+                    if self.filled_dataset_descriptors[label] is not None:
+                        start = 0 if i == 0 else problem.data_sizes[i - 1]
+                        end = problem.data_sizes[i]
+                        data[start:end] *= self.filled_dataset_descriptors[label].scale
+            clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
 
         results = list(map(residual_function, self.bag))
@@ -717,9 +757,11 @@ class Problem:
             self._reduced_clps[label] = []
             self._weighted_residuals[label] = []
             self._residuals[label] = []
+            data = problem.data
+            if problem.dataset.scale is not None:
+                data = data * self.filled_dataset_descriptors[label].scale
 
             for i in range(len(problem.global_axis)):
-                data = problem.data.isel({self._global_dimension: i}).values
                 matrix = self.reduced_matrices[label]
 
                 if problem.weight is not None:
@@ -727,7 +769,9 @@ class Problem:
                     for j in range(matrix.shape[1]):
                         matrix[:, j] *= problem.weight.isel({self._global_dimension: i}).values
 
-                clp, residual = self._residual_function(matrix, data)
+                clp, residual = self._residual_function(
+                    matrix, data.isel({self._global_dimension: i}).values
+                )
                 self._reduced_clps[label].append(clp)
                 self._weighted_residuals[label].append(residual)
                 if problem.weight is not None:
