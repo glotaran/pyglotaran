@@ -135,21 +135,22 @@ class GaussianDecayModel(Model):
 
 
 class OneCompartmentDecay:
+    scale = 2
     wanted = ParameterGroup.from_list([101e-4])
-    initial = ParameterGroup.from_list([100e-5])
+    initial = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
 
     e_axis = np.asarray([1])
     c_axis = np.arange(0, 150, 1.5)
 
-    model = DecayModel.from_dict(
-        {
-            "compartment": ["s1"],
-            "dataset": {
-                "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]}
-            },
-        }
-    )
-    sim_model = model
+    model_dict = {
+        "compartment": ["s1"],
+        "dataset": {
+            "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]}
+        },
+    }
+    sim_model = DecayModel.from_dict(model_dict)
+    model_dict["dataset"]["dataset1"]["scale"] = "2"
+    model = DecayModel.from_dict(model_dict)
 
 
 class TwoCompartmentDecay:
