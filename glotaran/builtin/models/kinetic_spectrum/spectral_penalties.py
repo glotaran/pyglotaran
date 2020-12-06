@@ -13,6 +13,8 @@ from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
     from typing import Any
+    from typing import List
+    from typing import Sequence
     from typing import Union
 
     from glotaran.parameter import ParameterGroup
@@ -99,7 +101,13 @@ def apply_spectral_penalties(
     return penalties
 
 
-def _get_idx_from_interval(interval, axis):
-    start = np.abs(axis - interval[0]).argmin() if not np.isinf(interval[0]) else 0
-    end = np.abs(axis - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+def _get_idx_from_interval(
+    interval: Tuple[float, float], axis: Union[Sequence[float], np.ndarray]
+) -> Tuple[int, int]:
+    start = np.abs(np.array(axis) - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    end = (
+        np.abs(np.array(axis) - interval[1]).argmin() + 1
+        if not np.isinf(interval[1])
+        else len(axis)
+    )
     return start, end
