@@ -79,9 +79,9 @@ def test_problem_residuals(problem: Problem):
         assert isinstance(problem.reduced_clps, list)
         assert all(isinstance(c, np.ndarray) for c in problem.reduced_clps)
         assert len(problem.reduced_clps) == suite.e_axis.size
-        assert isinstance(problem.full_clps, list)
-        assert all(isinstance(c, np.ndarray) for c in problem.full_clps)
-        assert len(problem.full_clps) == suite.e_axis.size
+        assert isinstance(problem.clps, list)
+        assert all(isinstance(c, np.ndarray) for c in problem.clps)
+        assert len(problem.clps) == suite.e_axis.size
         assert isinstance(problem.residuals, list)
         assert all(isinstance(r, np.ndarray) for r in problem.residuals)
         assert len(problem.residuals) == suite.e_axis.size
@@ -90,10 +90,10 @@ def test_problem_residuals(problem: Problem):
         assert "dataset1" in problem.reduced_clps
         assert all(isinstance(c, np.ndarray) for c in problem.reduced_clps["dataset1"])
         assert len(problem.reduced_clps["dataset1"]) == suite.e_axis.size
-        assert isinstance(problem.full_clps, dict)
-        assert "dataset1" in problem.full_clps
-        assert all(isinstance(c, np.ndarray) for c in problem.full_clps["dataset1"])
-        assert len(problem.full_clps["dataset1"]) == suite.e_axis.size
+        assert isinstance(problem.clps, dict)
+        assert "dataset1" in problem.clps
+        assert all(isinstance(c, np.ndarray) for c in problem.clps["dataset1"])
+        assert len(problem.clps["dataset1"]) == suite.e_axis.size
         assert isinstance(problem.residuals, dict)
         assert "dataset1" in problem.residuals
         assert all(isinstance(r, np.ndarray) for r in problem.residuals["dataset1"])
