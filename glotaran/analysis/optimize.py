@@ -8,9 +8,13 @@ from .scheme import Scheme
 
 
 def optimize(scheme: Scheme, verbose: bool = True) -> Result:
-
-    initial_parameter = scheme.parameter.as_parameter_dict()
     problem = Problem(scheme)
+    return optimize_problem(problem, verbose=verbose)
+
+
+def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
+
+    initial_parameter = problem.scheme.parameter.as_parameter_dict()
 
     minimizer = lmfit.Minimizer(
         _calculate_penalty,
@@ -24,12 +28,14 @@ def optimize(scheme: Scheme, verbose: bool = True) -> Result:
         **{},
     )
     verbose = 2 if verbose else 0
-    lm_result = minimizer.minimize(method="least_squares", verbose=verbose, max_nfev=scheme.nfev)
+    lm_result = minimizer.minimize(
+        method="least_squares", verbose=verbose, max_nfev=problem.scheme.nfev
+    )
 
     covar = lm_result.covar if hasattr(lm_result, "covar") else None
 
     return Result(
-        scheme,
+        problem.scheme,
         problem.create_result_data(),
         problem.parameter,
         lm_result.nfev,
