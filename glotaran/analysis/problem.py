@@ -98,7 +98,6 @@ class Problem:
         self._reduced_matrices = None
         self._reduced_clps = None
         self._clps = None
-        self._full_clp_labels = None
         self._weighted_residuals = None
         self._residuals = None
         self._additional_penalty = None
@@ -249,7 +248,9 @@ class Problem:
                     additional_penalty[label] for label in additional_penalty.keys()
                 ]
 
-            self._full_penalty = np.concatenate(residuals + additional_penalty)
+            self._full_penalty = np.concatenate(
+                (np.concatenate(residuals), np.array(additional_penalty).ravel())
+            )
         return self._full_penalty
 
     def reset(self):
@@ -811,7 +812,7 @@ class Problem:
             and self.model.has_additional_penalty_function()
         ):
             self._additional_penalty = self.model.additional_penalty_function(
-                self.parameter, self._full_clp_labels, self.clps, self._full_axis
+                self.parameter, self._reduced_clp_labels, self._reduced_clps, self._full_axis
             )
         else:
             self._additional_penalty = []
