@@ -13,6 +13,7 @@ from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
     from typing import Any
+    from typing import Sequence
     from typing import Union
 
     from glotaran.parameter import ParameterGroup
@@ -81,7 +82,7 @@ def apply_spectral_penalties(
         for interval in penalty.interval:
 
             start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
-            for i in range(start_idx, end_idx):
+            for i in range(start_idx, end_idx + 1):
 
                 # In case of an index dependent problem the clp_labels are per index
                 index_clp_label = clp_labels[i] if model.index_dependent() else clp_labels
@@ -99,7 +100,26 @@ def apply_spectral_penalties(
     return penalties
 
 
-def _get_idx_from_interval(interval, axis):
-    start = np.abs(axis - interval[0]).argmin() if not np.isinf(interval[0]) else 0
-    end = np.abs(axis - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+def _get_idx_from_interval(
+    interval: Tuple[float, float], axis: Union[Sequence[float], np.ndarray]
+) -> Tuple[int, int]:
+    """Retrieves start and end index of an interval on some axis
+
+    Parameters
+    ----------
+    interval : A tuple of floats with begin and end of the interval
+    axis : Array like object which can be cast to np.array
+
+    Returns
+    -------
+    start, end : tuple of int
+
+    """
+    axis_array = np.array(axis)
+    start = np.abs(axis_array - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    end = (
+        np.abs(axis_array - interval[1]).argmin()
+        if not np.isinf(interval[1])
+        else axis_array.size - 1
+    )
     return start, end

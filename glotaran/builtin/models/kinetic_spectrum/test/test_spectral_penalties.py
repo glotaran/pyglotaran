@@ -2,14 +2,17 @@
 # To add a new markdown cell, type '# %% [markdown]'
 # %%
 import importlib
+from collections import deque
 from collections import namedtuple
 from copy import deepcopy
 
 import numpy as np
+import pytest
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import _get_idx_from_interval
 from glotaran.io import prepare_time_trace_dataset
 from glotaran.parameter import ParameterGroup
 
@@ -48,6 +51,24 @@ def plot_overview(res, title=None):
 
     ax[1, 1].set_title("res. RSV")
     plt.show(block=False)
+
+
+@pytest.mark.parametrize("type_factory", [list, deque, tuple, np.array])
+@pytest.mark.parametrize(
+    "interval,axis,expected",
+    [
+        [(100, 1000), np.linspace(400, 800, 5), (0, 4)],
+        [(100, 1000), np.linspace(400.0, 800.0, 5), (0, 4)],
+        [(500, 600), np.linspace(400, 800, 5), (1, 2)],
+        [(400.0, 800.0), np.linspace(400.0, 800.0, 5), (0, 4)],
+        [(400.0, np.inf), np.linspace(400.0, 800.0, 5), (0, 4)],
+        [(0, np.inf), np.linspace(400.0, 800.0, 5), (0, 4)],
+        [(-np.inf, np.inf), np.linspace(400.0, 800.0, 5), (0, 4)],
+    ],
+)
+def test__get_idx_from_interval(type_factory, interval, axis, expected):
+    axis = type_factory(axis)
+    assert expected == _get_idx_from_interval(interval, axis)
 
 
 def test_equal_area_penalties(debug=False):
@@ -265,5 +286,8 @@ def test_equal_area_penalties(debug=False):
 
 
 if __name__ == "__main__":
+    test__get_idx_from_interval(
+        type_factory=list, interval=(500, 600), axis=range(400, 800, 100), expected=(1, 2)
+    )
     test_equal_area_penalties(debug=False)
     test_equal_area_penalties(debug=True)
