@@ -2,6 +2,7 @@
 
 from typing import Dict
 from typing import List
+from typing import Tuple
 from typing import Union
 
 import numpy as np
@@ -265,6 +266,26 @@ class Parameter:
 
         self._value = value
 
+    def get_value_and_bounds_for_optimization(
+        self, group: "glotaran.parameter.ParameterGroup"
+    ) -> Tuple[float, float, float]:
+        """Gets the parameter value and bounds with expression and non-negative constraints
+        applied."""
+        value = self.value
+        minimum = self.minimum
+        maximum = self.maximum
+
+        if self.non_negative:
+            value = _log_value(value)
+            minimum = _log_value(minimum)
+            maximum = _log_value(maximum)
+
+        return value, minimum, maximum
+
+    def set_value_from_optimization(self, value: float):
+        """Sets the value from an optimization result and reverses non-negative transormation."""
+        self.value = np.exp(value) if self.non_negative else value
+
     def _getval(self) -> float:
         return self._value
 
@@ -399,3 +420,11 @@ class Parameter:
     def __rsub__(self, other):
         """- (right)"""
         return other - self._getval()
+
+
+def _log_value(value: float):
+    if not np.isfinite(value):
+        return value
+    if value == 1:
+        value += 1e-10
+    return np.log(value)

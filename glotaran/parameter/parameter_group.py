@@ -3,8 +3,13 @@
 import copy
 import csv
 import pathlib
-import typing
 from math import log
+from typing import Callable
+from typing import Dict
+from typing import Generator
+from typing import List
+from typing import Tuple
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -79,9 +84,7 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def from_dict(
-        cls, parameter: typing.Dict[str, typing.Union[typing.Dict, typing.List]], label="p"
-    ) -> "ParameterGroup":
+    def from_dict(cls, parameter: Dict[str, Union[Dict, List]], label="p") -> "ParameterGroup":
         """Creates a :class:`ParameterGroup` from a dictionary.
 
         Parameters
@@ -101,9 +104,7 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def from_list(
-        cls, parameter: typing.List[typing.Union[float, typing.List]], label="p"
-    ) -> "ParameterGroup":
+    def from_list(cls, parameter: List[Union[float, List]], label="p") -> "ParameterGroup":
         """Creates a :class:`ParameterGroup` from a list.
 
         Parameters
@@ -133,7 +134,7 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def known_formats(cls) -> typing.Dict[str, typing.Callable]:
+    def known_formats(cls) -> Dict[str, Callable]:
         return {
             "csv": cls.from_csv,
             "yml": cls.from_yaml_file,
@@ -202,10 +203,10 @@ class ParameterGroup(dict):
                 p = Parameter(label=label.pop())
                 p.value = df["value"][i]
                 p.stderr = df["stderr"][i]
-                p.min = df["min"][i]
-                p.max = df["max"][i]
+                p.minimum = df["min"][i]
+                p.maximum = df["max"][i]
                 p.vary = df["vary"][i]
-                p.non_neg = df["non-negative"][i]
+                p.non_negative = df["non-negative"][i]
                 root.add_parameter(p)
                 continue
 
@@ -217,10 +218,10 @@ class ParameterGroup(dict):
                         p = Parameter(label=label.pop())
                         p.value = df["value"][i]
                         p.stderr = df["stderr"][i]
-                        p.min = df["min"][i]
-                        p.max = df["max"][i]
+                        p.minimum = df["min"][i]
+                        p.maximum = df["max"][i]
                         p.vary = df["vary"][i]
-                        p.non_neg = df["non-negative"][i]
+                        p.non_negative = df["non-negative"][i]
                         top[group].add_parameter(p)
                     else:
                         top = top[group]
@@ -231,10 +232,10 @@ class ParameterGroup(dict):
                         p = Parameter(label=label.pop())
                         p.value = df["value"][i]
                         p.stderr = df["stderr"][i]
-                        p.min = df["min"][i]
-                        p.max = df["max"][i]
+                        p.minimum = df["min"][i]
+                        p.maximum = df["max"][i]
                         p.vary = df["vary"][i]
-                        p.non_neg = df["non-negative"][i]
+                        p.non_negative = df["non-negative"][i]
                         group.add_parameter(p)
                     else:
                         top = group
@@ -259,7 +260,7 @@ class ParameterGroup(dict):
 
             for (label, p) in self.all():
                 parameter_writer.writerow(
-                    [label, p.value, p.min, p.max, p.vary, p.non_neg, p.stderr]
+                    [label, p.value, p.minimum, p.maximum, p.vary, p.non_negative, p.stderr]
                 )
 
     def add_parameter(self, parameter: Parameter):
@@ -318,7 +319,7 @@ class ParameterGroup(dict):
         """Label of the group """
         return self._label
 
-    def groups(self) -> typing.Generator["ParameterGroup", None, None]:
+    def groups(self) -> Generator["ParameterGroup", None, None]:
         """Returns a generator over all groups and their subgroups."""
         for group in self:
             yield from group.groups()
@@ -339,7 +340,7 @@ class ParameterGroup(dict):
             return False
 
     def get(self, label: str) -> Parameter:
-        """Gets a :class:`Parameter` by it label.
+        """Gets a :class:`Parameter` by its label.
 
         Parameters
         ----------
@@ -367,7 +368,7 @@ class ParameterGroup(dict):
 
     def all(
         self, root: str = None, separator: str = "."
-    ) -> typing.Generator[typing.Tuple[str, Parameter], None, None]:
+    ) -> Generator[Tuple[str, Parameter], None, None]:
         """Returns a generator over all parameter in the group and it's subgroups together with
         their labels.
 
@@ -398,25 +399,25 @@ class ParameterGroup(dict):
         params = Parameters()
         for label, p in self.all(separator="_"):
             p.name = "_" + label
-            if p.non_neg:
+            if p.non_negative:
                 p = copy.deepcopy(p)
-                if p.min == 1:
-                    p.min += 1e-10
+                if p.minimum == 1:
+                    p.minimum += 1e-10
                 try:
-                    p.min = log(p.min) if np.isfinite(p.min) else p.min
+                    p.minimum = log(p.minimum) if np.isfinite(p.minimum) else p.minimum
                 except Exception:
                     raise ValueError(
                         "Could not take log of minimum of parameter"
-                        f" '{label}' with value '{p.min}'"
+                        f" '{label}' with value '{p.minimum}'"
                     )
-                if p.max == 1:
-                    p.max += 1e-10
+                if p.maximum == 1:
+                    p.maximum += 1e-10
                 try:
-                    p.max = log(p.max) if np.isfinite(p.max) else p.max
+                    p.maximum = log(p.maximum) if np.isfinite(p.maximum) else p.maximum
                 except Exception:
                     raise ValueError(
                         "Could not take log of maximum of parameter"
-                        f" '{label}' with value '{p.max}'"
+                        f" '{label}' with value '{p.maximum}'"
                     )
                 if p.value == 1:
                     p.value += 1e-10
@@ -428,6 +429,41 @@ class ParameterGroup(dict):
                     )
             params.add(p)
         return params
+
+    def get_label_value_and_bounds_arrays(
+        self, exclude_non_vary: bool = False
+    ) -> Tuple[List[str], List[float], List[Tuple[float, float]]]:
+        """Returns a arrays of all parameter labels, values and bounds.
+
+        Parameters
+        ----------
+
+        exclude_non_vary: bool = False
+            If true, parameters with `vary=False` are excluded.
+        """
+        labels = []
+        values = []
+        bounds = []
+
+        for label, parameter in self.all():
+            if not exclude_non_vary or parameter.vary:
+                labels.append(label)
+                value, minimum, maximum = parameter.get_value_and_bounds_for_optimization()
+                values.append(value)
+                bounds.append((minimum, maximum))
+
+        return labels, values, bounds
+
+    def set_from_label_and_value_arrays(self, labels: List[str], values: List[float]):
+        """Updates the parameter values from a list of labels and values."""
+
+        if not len(labels) == len(values):
+            raise ValueError(
+                f"Length of labels({len(labels)}) not equal to length of values({len(values)})."
+            )
+
+        for label, value in zip(labels, values):
+            self.get(label).set_value_from_optimization(value)
 
     def markdown(self) -> str:
         """Formats the :class:`ParameterGroup` as markdown string."""
@@ -441,5 +477,8 @@ class ParameterGroup(dict):
             s += f"{g.__str__()}"
         return s
 
-    def __str__(self):
+    def __repr__(self):
         return self.markdown()
+
+    def __str__(self):
+        return self.__repr__
