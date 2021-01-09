@@ -234,7 +234,19 @@ class Problem:
         self,
     ) -> Union[List[float], Dict[str, List[float]],]:
         if self._additional_penalty is None:
-            self.calculate_residual()
+            self.calculate_additional_penalty()
+        return self._additional_penalty
+
+    def calculate_additional_penalty(self):
+        if (
+            callable(self.model.has_additional_penalty_function)
+            and self.model.has_additional_penalty_function()
+        ):
+            self._additional_penalty = self.model.additional_penalty_function(
+                self.parameter, self._clp_labels, self._clps, self._full_axis
+            )
+        else:
+            self._additional_penalty = []  # TODO: investigate why {} -> code crash
         return self._additional_penalty
 
     @property
@@ -244,9 +256,10 @@ class Problem:
             additional_penalty = self.additional_penalty
             if not self.grouped:
                 residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
-                additional_penalty = [
-                    additional_penalty[label] for label in additional_penalty.keys()
-                ]
+                if additional_penalty and isinstance(additional_penalty, dict):
+                    additional_penalty = [
+                        additional_penalty[label] for label in additional_penalty.keys()
+                    ]
 
             self._full_penalty = np.concatenate(
                 (np.concatenate(residuals), np.array(additional_penalty).ravel())
@@ -281,6 +294,7 @@ class Problem:
 
     def _init_ungrouped_bag(self):
         self._bag = {}
+        self._full_axis = None  # TODO: remove, temp workaround
         for label in self._scheme.model.dataset:
             dataset = self._scheme.data[label]
             data = dataset.data
@@ -294,6 +308,8 @@ class Problem:
                 dataset.coords[self._global_dimension].values,
                 weight,
             )
+            global_axis = dataset.coords[self._global_dimension].values
+            self._full_axis = collections.deque(global_axis)
 
     def _init_grouped_bag(self):
         datasets = None
@@ -558,7 +574,7 @@ class Problem:
         List[np.ndarray],
         List[np.ndarray],
         List[np.ndarray],
-        List[float],
+        # List[float],
     ]:
         def residual_function(
             problem: GroupedProblem, matrix: np.ndarray
@@ -617,14 +633,14 @@ class Problem:
             else self._reduced_clps
         )
 
-        self._calculate_additional_grouped_penalty()
+        # self._calculate_additional_grouped_penalty()
 
         return (
             self._reduced_clps,
             self._clps,
             self._weighted_residuals,
             self._residuals,
-            self._additional_penalty,
+            # self._additional_penalty,
         )
 
     def calculate_index_dependent_ungrouped_residual(
@@ -634,12 +650,12 @@ class Problem:
         Dict[str, List[np.ndarray]],
         Dict[str, List[np.ndarray]],
         Dict[str, List[np.ndarray]],
-        Dict[str, List[float]],
+        # Dict[str, List[float]],
     ]:
         self._reduced_clps = {}
         self._weighted_residuals = {}
         self._residuals = {}
-        self._additional_penalty = {}
+        # self._additional_penalty = {}
         self._clps = {}
         for label, problem in self.bag.items():
             self._reduced_clps[label] = []
@@ -680,13 +696,13 @@ class Problem:
                 else:
                     self._residuals[label].append(residual)
 
-            self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
+            # self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
             self._reduced_clps,
             self._clps,
             self._weighted_residuals,
             self._residuals,
-            self._additional_penalty,
+            # self._additional_penalty,
         )
 
     def calculate_index_independent_grouped_residual(
@@ -696,7 +712,7 @@ class Problem:
         List[np.ndarray],
         List[np.ndarray],
         List[np.ndarray],
-        List[float],
+        # List[float],
     ]:
         def residual_function(problem: GroupedProblem):
             matrix = self.matrices[problem.group].copy()
@@ -731,14 +747,14 @@ class Problem:
             else self._reduced_clps
         )
 
-        self._calculate_additional_grouped_penalty()
+        # self._calculate_additional_grouped_penalty()
 
         return (
             self._reduced_clps,
             self._clps,
             self._weighted_residuals,
             self._residuals,
-            self._additional_penalty,
+            # self._additional_penalty,
         )
 
     def calculate_index_independent_ungrouped_residual(
@@ -748,14 +764,14 @@ class Problem:
         Dict[str, List[np.ndarray]],
         Dict[str, List[np.ndarray]],
         Dict[str, List[np.ndarray]],
-        Dict[str, List[float]],
+        # Dict[str, List[float]],
     ]:
 
         self._clps = {}
         self._reduced_clps = {}
         self._weighted_residuals = {}
         self._residuals = {}
-        self._additional_penalty = {}
+        # self._additional_penalty = {}
         for label, problem in self.bag.items():
 
             self._clps[label] = []
@@ -797,34 +813,14 @@ class Problem:
                 if callable(self.model.retrieve_clp_function)
                 else self._reduced_clps[label]
             )
-            self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
+            # self._calculate_additional_ungrouped_penalty(label, problem.global_axis)
         return (
             self._reduced_clps,
             self._clps,
             self._weighted_residuals,
             self._residuals,
-            self._additional_penalty,
+            # self._additional_penalty,
         )
-
-    def _calculate_additional_grouped_penalty(self):
-        if (
-            callable(self.model.has_additional_penalty_function)
-            and self.model.has_additional_penalty_function()
-        ):
-            self._additional_penalty = self.model.additional_penalty_function(
-                self.parameter, self._reduced_clp_labels, self._reduced_clps, self._full_axis
-            )
-        else:
-            self._additional_penalty = []
-
-    def _calculate_additional_ungrouped_penalty(self, label: str, global_axis: np.ndarray):
-        if (
-            callable(self.model.has_additional_penalty_function)
-            and self.model.has_additional_penalty_function()
-        ):
-            self._additional_penalty[label] = self.model.additional_penalty_function(
-                self.parameter, self._clp_labels[label], self._clps[label], global_axis
-            )
 
     def create_result_data(self, copy: bool = True) -> Dict[str, xr.Dataset]:
 

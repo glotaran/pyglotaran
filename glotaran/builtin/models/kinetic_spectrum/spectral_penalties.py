@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Dict
 from typing import List
 from typing import Tuple
 
@@ -33,8 +34,8 @@ if TYPE_CHECKING:
 )
 class EqualAreaPenalty:
     """An equal area constraint adds a the differenc of the sum of a
-    compartements in the e matrix in one ore more intervals to the scaled sum
-    of the e matrix of one or more target compartmants to resiudal. The additional
+    compartments in the e matrix in one ore more intervals to the scaled sum
+    of the e matrix of one or more target compartments to residual. The additional
     residual is scaled with the weight."""
 
     def applies(self, index: Any) -> bool:
@@ -66,8 +67,12 @@ def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
 def apply_spectral_penalties(
     model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: Union[List[str], List[List[str]]],
-    full_clps: List[np.ndarray],
+    clp_labels: Union[
+        Dict[str, List[str]],
+        Dict[str, List[List[str]]],
+        List[List[List[str]]],
+    ],
+    clps: Dict[str, List[np.ndarray]],
     global_axis: np.ndarray,
 ) -> np.ndarray:
 
@@ -79,24 +84,26 @@ def apply_spectral_penalties(
 
         penalty = penalty.fill(model, parameter)
 
-        for interval in penalty.interval:
+        for label in clps.keys():
+            # get axis for label
+            for interval in penalty.interval:
 
-            start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
-            for i in range(start_idx, end_idx + 1):
+                start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
+                for i in range(start_idx, end_idx + 1):
 
-                # In case of an index dependent problem the clp_labels are per index
-                index_clp_label = clp_labels[i] if model.index_dependent() else clp_labels
+                    # In case of an index dependent problem the clp_labels are per index
+                    index_clp_label = clp_labels[i] if model.index_dependent() else clp_labels
 
-                index_clp = full_clps[i]
+                    index_clp = clps[label][i]
 
-                source_idx = index_clp_label.index(penalty.compartment)
-                source_area.append(index_clp[source_idx])
+                    source_idx = index_clp_label[label].index(penalty.compartment)
+                    source_area.append(index_clp[source_idx])
 
-                target_idx = index_clp_label.index(penalty.target)
-                target_area.append(index_clp[target_idx])
+                    target_idx = index_clp_label[label].index(penalty.target)
+                    target_area.append(index_clp[target_idx])
 
-        area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
-        penalties.append(area_penalty * penalty.weight)
+            area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
+            penalties.append(area_penalty * penalty.weight)
     return penalties
 
 
