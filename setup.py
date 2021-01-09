@@ -2,8 +2,8 @@ from setuptools import find_packages
 from setuptools import setup
 
 install_requires = [
+    "asteval>=0.9.21",
     "click>=7.0",
-    "lmfit>=0.9.13",
     "netCDF4>=1.5.3",
     "numba>=0.48",
     'numpy>=1.17.3; sys_platform != "win32"',

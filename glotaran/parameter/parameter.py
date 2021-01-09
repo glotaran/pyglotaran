@@ -1,13 +1,17 @@
 """The parameter class."""
 
+import re
 from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Union
 
+import asteval
 import numpy as np
 
 import glotaran
+
+RESERVED_LABELS = [symbol for symbol in asteval.make_symbol_table()] + ["group"]
 
 
 class Keys:
@@ -23,6 +27,11 @@ class Keys:
 class Parameter:
     """A parameter for optimization."""
 
+    _find_parameter = re.compile(r"(\$[\w\d\.]+)")
+    """A regexpression to find and replace parameter names in expressions."""
+    _label_validator_regexp = re.compile(r"\W", flags=re.ASCII)
+    """A regexpression to validate labels."""
+
     def __init__(
         self,
         label: str = None,
@@ -31,6 +40,7 @@ class Parameter:
         maximum: Union[int, float] = np.inf,
         minimum: Union[int, float] = -np.inf,
         non_negative: bool = False,
+        value: float = None,
         vary: bool = True,
     ):
         """
@@ -43,8 +53,6 @@ class Parameter:
             The label of the parameter with its path in a parameter group prepended.
         """  # TODO: update docstring.
 
-        super().__init__(name=label, user_data={"non_negative": False, "full_label": full_label})
-
         self.label = label
         self.full_label = full_label
         self.expression = expression
@@ -52,7 +60,15 @@ class Parameter:
         self.minimum = minimum
         self.non_negative = non_negative
         self.stderr = 0.0
+        self.value = value
         self.vary = vary
+
+        self._transformed_expression = None
+
+    @classmethod
+    def valid_label(cls, label: str) -> bool:
+        """Returns true if the `label` is valid string."""
+        return cls._label_validator_regexp.search(label) is None and label not in RESERVED_LABELS
 
     #  @classmethod
     #  def from_parameter(cls, label: str, parameter: LmParameter) -> "Parameter":
@@ -99,23 +115,25 @@ class Parameter:
         """
 
         param = cls(label=label)
+        options = None
 
         if not isinstance(value, list):
             param.value = value
-            return param
 
-        def retrieve(filt, default):
-            tmp = list(filter(filt, value))
-            if not tmp:
-                return default
+        else:
 
-            value.remove(tmp[0])
-            return tmp[0]
+            def retrieve(filt, default):
+                tmp = list(filter(filt, value))
+                if not tmp:
+                    return default
 
-        options = retrieve(lambda x: isinstance(x, dict), None)
+                value.remove(tmp[0])
+                return tmp[0]
 
-        param.label = value[0] if len(value) != 1 else label
-        param.value = float(value[0] if len(value) == 1 else value[1])
+            options = retrieve(lambda x: isinstance(x, dict), None)
+
+            param.label = value[0] if len(value) != 1 else label
+            param.value = float(value[0] if len(value) == 1 else value[1])
 
         if default_options:
             param._set_options_from_dict(default_options)
@@ -148,11 +166,16 @@ class Parameter:
         self.vary = p.vary
 
     def _set_options_from_dict(self, options: Dict):
-        self.expr = options.get(Keys.EXPR, None)
-        self.non_negative = options.get(Keys.NON_NEG, False)
-        self.maximum = options.get(Keys.MAX, np.inf)
-        self.minimum = options.get(Keys.MIN, -np.inf)
-        self.vary = options.get(Keys.VARY, True)
+        if Keys.EXPR in options:
+            self.expression = options[Keys.EXPR]
+        if Keys.NON_NEG in options:
+            self.non_negative = options[Keys.NON_NEG]
+        if Keys.MAX in options:
+            self.maximum = options[Keys.MAX]
+        if Keys.MIN in options:
+            self.minimum = options[Keys.MIN]
+        if Keys.VARY in options:
+            self.vary = options[Keys.VARY]
 
     @property
     def label(self) -> str:
@@ -161,6 +184,8 @@ class Parameter:
 
     @label.setter
     def label(self, label: str):
+        if label is not None and not Parameter.valid_label(label):
+            raise ValueError("'{label}' is not a valid group label.")
         self._label = label
 
     @property
@@ -178,8 +203,10 @@ class Parameter:
 
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
+
+        Always `False` if `expression` is not `None`.
         """  # w605
-        return self._non_negative
+        return self._non_negative if self.expression is None else False
 
     @non_negative.setter
     def non_negative(self, non_negative: bool):
@@ -187,8 +214,11 @@ class Parameter:
 
     @property
     def vary(self) -> bool:
-        """Indicates if the parameter should be optimized."""
-        return self._vary
+        """Indicates if the parameter should be optimized.
+
+        Always `False` if `expression` is not `None`.
+        """
+        return self._vary if self.expression is None else False
 
     @vary.setter
     def vary(self, vary: bool):
@@ -238,6 +268,18 @@ class Parameter:
     @expression.setter
     def expression(self, expression: str):
         self._expression = expression
+        self._transformed_expression = None
+
+    @property
+    def transformed_expression(self) -> str:
+        """The expression of the parameter transformed for evaluation within a `ParameterGroup`."""
+        if self.expression is not None and self._transformed_expression is None:
+            self._transformed_expression = self.expression
+            for match in Parameter._find_parameter.findall(self._transformed_expression):
+                self._transformed_expression = self._transformed_expression.replace(
+                    match, f"group.get('{match[1:]}').value"
+                )
+        return self._transformed_expression
 
     @property
     def stderr(self) -> float:
@@ -255,7 +297,7 @@ class Parameter:
 
     @value.setter
     def value(self, value: Union[int, float]):
-        if not isinstance(value, float):
+        if not isinstance(value, float) and value is not None:
             try:
                 value = float(value)
             except Exception:
@@ -266,9 +308,7 @@ class Parameter:
 
         self._value = value
 
-    def get_value_and_bounds_for_optimization(
-        self, group: "glotaran.parameter.ParameterGroup"
-    ) -> Tuple[float, float, float]:
+    def get_value_and_bounds_for_optimization(self) -> Tuple[float, float, float]:
         """Gets the parameter value and bounds with expression and non-negative constraints
         applied."""
         value = self.value
@@ -293,13 +333,13 @@ class Parameter:
         """String representation """
         return (
             f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.stderr}, _Min_:"
-            + f" {self.min}, _Max_: {self.max}, _Vary_: {self.vary},"
-            + f" _Non-Negative_: {self.non_negative}"
+            f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
+            f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
         )
 
     def __array__(self):
         """array"""
-        return [float(self._getval())]
+        return np.array([float(self._getval())])
 
     def __str__(self):
         """string"""
