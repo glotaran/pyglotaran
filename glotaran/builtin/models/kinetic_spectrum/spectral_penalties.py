@@ -84,7 +84,7 @@ def apply_spectral_penalties(
 
         penalty = penalty.fill(model, parameter)
 
-        for label in clps.keys():
+        for label in clps:
             # get axis for label
             for interval in penalty.interval:
 
