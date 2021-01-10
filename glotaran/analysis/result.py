@@ -1,10 +1,13 @@
 """The result class for global analysis."""
 
 import os
-import typing
+from typing import Dict
+from typing import List
+from typing import Type
 
 import numpy as np
 import xarray as xr
+from scipy.optimize import OptimizeResult
 
 import glotaran
 from glotaran.parameter import ParameterGroup
@@ -16,16 +19,10 @@ class Result:
     def __init__(
         self,
         scheme: Scheme,
-        data: typing.Dict[str, xr.Dataset],
+        data: Dict[str, xr.Dataset],
         parameter: ParameterGroup,
-        nfev: int,
-        nvars: int,
-        ndata: int,
-        nfree: int,
-        chisqr: float,
-        red_chisqr: float,
-        var_names: typing.List[str],
-        covar: np.ndarray,
+        least_squares_result: OptimizeResult,
+        free_parameter_labels: List[str],
     ):
         """The result of a global analysis.
 
@@ -47,14 +44,19 @@ class Result:
         self._scheme = scheme
         self._data = data
         self._optimized_parameter = parameter
-        self._nfev = nfev
-        self._nvars = nvars
-        self._ndata = (ndata,)
-        self._nfree = nfree
-        self._chisqr = chisqr
-        self._red_chisqr = red_chisqr
-        self._var_names = var_names
-        self._covar = covar
+        self._calculate_statistics(least_squares_result)
+        self._free_parameter_labels = free_parameter_labels
+
+    def _calculate_statistics(self, least_squares_result: OptimizeResult):
+        self._nfev = least_squares_result.nfev
+        self._cost = least_squares_result.cost
+        self._optimality = least_squares_result.optimality
+        self._ndata = least_squares_result.fun.size
+        self._nvars = least_squares_result.x.size
+        self._nfree = self._ndata - self._nvars
+        self._chisqr = np.sum(least_squares_result.fun ** 2)
+        self._red_chisqr = self._chisqr / self._nfree
+        self._root_mean_square_error = np.sqrt(self.red_chisqr)
 
     @property
     def scheme(self) -> Scheme:
@@ -62,7 +64,7 @@ class Result:
         return self._scheme
 
     @property
-    def model(self) -> typing.Type["glotaran.model.Model"]:
+    def model(self) -> Type["glotaran.model.Model"]:
         """The model for analysis."""
         return self._scheme.model
 
@@ -72,7 +74,7 @@ class Result:
         return self._scheme.nnls
 
     @property
-    def data(self) -> typing.Dict[str, xr.Dataset]:
+    def data(self) -> Dict[str, xr.Dataset]:
         """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
         Notes
@@ -124,21 +126,19 @@ class Result:
 
         :math:`rms = \sqrt{\chi^2_{red}}`
         """
-        return np.sqrt(self.red_chisqr)
+        return self._root_mean_square_error
 
     @property
-    def var_names(self) -> typing.List[str]:
-        """Ordered list of variable parameter names used in optimization.
+    def free_parameter_labels(self) -> List[str]:
+        """List of labels of the free parameter used in optimization."""
+        return self._free_parameter_labels
 
-        This is also useful for understanding the values in :attr:`covar`."""
-        return [n.replace("_", ".") for n in self._var_names]
-
-    @property
-    def covar(self) -> np.ndarray:
-        """Covariance matrix from minimization.
-
-        The rows and columns are corresponding to :attr:`var_names`."""
-        return self._covar
+    #  @property
+    #  def covar(self) -> np.ndarray:
+    #      """Covariance matrix from minimization.
+    #
+    #      The rows and columns are corresponding to :attr:`var_names`."""
+    #      return self._covar
 
     @property
     def optimized_parameter(self) -> ParameterGroup:
@@ -163,7 +163,7 @@ class Result:
         except KeyError:
             raise Exception(f"Unknown dataset '{dataset_label}'")
 
-    def save(self, path: str) -> typing.List[str]:
+    def save(self, path: str) -> List[str]:
         """Saves the result to given folder.
 
         Returns a list with paths of all saved items.

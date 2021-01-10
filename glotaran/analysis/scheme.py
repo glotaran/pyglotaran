@@ -2,6 +2,7 @@ import functools
 import pathlib
 import typing
 import warnings
+from typing import Literal
 
 import numpy as np
 import xarray as xr
@@ -29,12 +30,18 @@ class Scheme:
         group_tolerance: float = 0.0,
         nnls: bool = False,
         nfev: int = None,
+        optimization_method: Literal[
+            "TrustRegionReflection",
+            "Dogbox",
+            "LevenbergMarquart",
+        ] = "TrustRegionReflection",
     ):
 
         self.model = model
         self.parameter = parameter
         self.data = data
         self.group_tolerance = group_tolerance
+        self.optimization_method = optimization_method
         self.nnls = nnls
         self.nfev = nfev
 
@@ -84,6 +91,7 @@ class Scheme:
             except Exception as e:
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 
+        optimization_method = scheme.get("optimization_method", "TrustRegionReflection")
         nnls = scheme.get("nnls", False)
         nfev = scheme.get("nfev", None)
         group_tolerance = scheme.get("group_tolerance", 0.0)
@@ -94,6 +102,7 @@ class Scheme:
             nnls=nnls,
             nfev=nfev,
             group_tolerance=group_tolerance,
+            optimization_method=optimization_method,
         )
 
     @property

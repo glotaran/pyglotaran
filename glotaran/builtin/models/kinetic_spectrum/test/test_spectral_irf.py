@@ -280,7 +280,7 @@ def test_spectral_irf(suite):
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
-    assert np.allclose(dataset.data, resultdata.fitted_data, atol=1e-15)
+    assert np.allclose(dataset.data, resultdata.fitted_data, atol=1e-14)
 
     print(resultdata.fitted_data.isel(spectral=0).argmax())
     print(resultdata.fitted_data.isel(spectral=-1).argmax())

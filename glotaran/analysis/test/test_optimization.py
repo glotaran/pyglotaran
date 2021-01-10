@@ -60,9 +60,9 @@ def test_optimization(suite, index_dependent, grouped, weight):
     print(result.optimized_parameter)
     print(result.data["dataset1"])
 
-    for _, param in result.optimized_parameter.all():
+    for label, param in result.optimized_parameter.all():
         if param.vary:
-            assert np.allclose(param.value, wanted.get(param.full_label).value, rtol=1e-1)
+            assert np.allclose(param.value, wanted.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     print(resultdata)

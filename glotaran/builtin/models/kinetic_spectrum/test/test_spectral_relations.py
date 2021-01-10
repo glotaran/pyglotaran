@@ -113,6 +113,10 @@ def test_spectral_relation():
     scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
     result = optimize(scheme)
 
+    for label, param in result.optimized_parameter.all():
+        if param.vary:
+            assert np.allclose(param.value, parameter.get(label).value, rtol=1e-1)
+
     result_data = result.data["dataset1"]
     print(result_data.species_associated_spectra)
     assert result_data.species_associated_spectra.shape == (1, 4)
@@ -120,9 +124,9 @@ def test_spectral_relation():
         result_data.species_associated_spectra[0, 1]
         == rel1 * result_data.species_associated_spectra[0, 0]
     )
-    assert (
-        result_data.species_associated_spectra[0, 2]
-        == rel2 * result_data.species_associated_spectra[0, 0]
+    assert np.allclose(
+        result_data.species_associated_spectra[0, 2].values,
+        rel2 * result_data.species_associated_spectra[0, 0].values,
     )
 
 

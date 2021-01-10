@@ -168,9 +168,9 @@ def test_parameter_group_to_array():
     assert len(upper_bounds) == 3
 
     assert labels == ["1", "2", "3"]
-    assert values == [1, np.log(4e2), 2e4]
-    assert lower_bounds == [-1, np.log(10), -np.inf]
-    assert upper_bounds == [1, np.log(8e2), np.inf]
+    assert np.allclose(values, [1, np.log(4e2), 2e4])
+    assert np.allclose(lower_bounds, [-1, np.log(10), -np.inf])
+    assert np.allclose(upper_bounds, [1, np.log(8e2), np.inf])
 
     (
         labels_only_vary,

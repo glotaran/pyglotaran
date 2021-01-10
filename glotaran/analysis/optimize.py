@@ -1,10 +1,17 @@
-import lmfit
+from typing import List
 
-from glotaran.parameter import ParameterGroup
+import numpy as np
+from scipy.optimize import least_squares
 
 from .problem import Problem
 from .result import Result
 from .scheme import Scheme
+
+SUPPORTED_METHODS = {
+    "TrustRegionReflection": "trf",
+    "Dogbox": "dogbox",
+    "LevenbergMarquart": "lm",
+}
 
 
 def optimize(scheme: Scheme, verbose: bool = True) -> Result:
@@ -14,41 +21,44 @@ def optimize(scheme: Scheme, verbose: bool = True) -> Result:
 
 def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
 
-    initial_parameter = problem.scheme.parameter.as_parameter_dict()
+    if problem.scheme.optimization_method not in SUPPORTED_METHODS:
+        raise ValueError(
+            f"Unsupported optimization method {problem.scheme.optimization_method}. "
+            f"Supported methods are '{list(SUPPORTED_METHODS.keys())}'"
+        )
 
-    minimizer = lmfit.Minimizer(
+    (
+        labels,
+        initial_parameter,
+        lower_bounds,
+        upper_bounds,
+    ) = problem.scheme.parameter.get_label_value_and_bounds_arrays(exclude_non_vary=True)
+    method = SUPPORTED_METHODS[problem.scheme.optimization_method]
+    nfev = problem.scheme.nfev
+    verbose = 2 if verbose else 0
+
+    ls_result = least_squares(
         _calculate_penalty,
         initial_parameter,
-        fcn_args=[problem],
-        fcn_kws=None,
-        iter_cb=None,
-        scale_covar=True,
-        nan_policy="omit",
-        reduce_fcn=None,
-        **{},
+        bounds=(lower_bounds, upper_bounds),
+        method=method,
+        max_nfev=nfev,
+        verbose=verbose,
+        #  ftol=1.e-7,
+        #  gtol=1.e-7,
+        kwargs={"labels": labels, "problem": problem},
     )
-    verbose = 2 if verbose else 0
-    lm_result = minimizer.minimize(
-        method="least_squares", verbose=verbose, max_nfev=problem.scheme.nfev
-    )
-
-    covar = lm_result.covar if hasattr(lm_result, "covar") else None
 
     return Result(
         problem.scheme,
         problem.create_result_data(),
         problem.parameter,
-        lm_result.nfev,
-        lm_result.nvarys,
-        lm_result.ndata,
-        lm_result.nfree,
-        lm_result.chisqr,
-        lm_result.redchi,
-        lm_result.var_names,
-        covar,
+        ls_result,
+        labels,
     )
 
 
-def _calculate_penalty(parameter: lmfit.Parameters, problem: Problem):
-    problem.parameter = ParameterGroup.from_parameter_dict(parameter)
+def _calculate_penalty(parameter: np.ndarray, labels: List[str] = None, problem: Problem = None):
+    problem.parameter.set_from_label_and_value_arrays(labels, parameter)
+    problem.reset()
     return problem.full_penalty

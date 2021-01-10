@@ -10,6 +10,7 @@ from typing import Tuple
 from typing import Union
 
 import asteval
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -34,53 +35,12 @@ class ParameterGroup(dict):
             The label of the group.
         """
         if label is not None and not Parameter.valid_label(label):
-            raise ValueError("'{label}' is not a valid group label.")
+            raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
         self._parameters = {}
         self._root = None
         self._evaluator = asteval.Interpreter(symtable=asteval.make_symbol_table(group=self))
         super().__init__()
-
-    #  @classmethod
-    #  def from_parameter_dict(cls, parameter: Parameters):
-    #      """Creates a :class:`ParameterGroup` from an lmfit.Parameters dictionary
-    #
-    #      Parameters
-    #      ----------
-    #      parameter :
-    #          A lmfit.Parameters dictionary
-    #      """
-    #
-    #      root = cls(None)
-    #      for lbl, param in parameter.items():
-    #          lbl = lbl.split("_")
-    #          if len(lbl) == 2:
-    #              # it is a root param
-    #              param = Parameter.from_parameter(lbl.pop(), param)
-    #              root.add_parameter(param)
-    #              continue
-    #
-    #          # remove root
-    #          lbl.pop(0)
-    #
-    #          top = root
-    #          while len(lbl) != 0:
-    #              group = lbl.pop(0)
-    #              if group in top:
-    #                  if len(lbl) == 1:
-    #                      param = Parameter.from_parameter(lbl.pop(), param)
-    #                      top[group].add_parameter(param)
-    #                  else:
-    #                      top = top[group]
-    #              else:
-    #                  group = ParameterGroup(group)
-    #                  top.add_group(group)
-    #                  if len(lbl) == 1:
-    #                      param = Parameter.from_parameter(lbl.pop(), param)
-    #                      group.add_parameter(param)
-    #                  else:
-    #                      top = group
-    #      return root
 
     @classmethod
     def from_dict(cls, parameter: Dict[str, Union[Dict, List]], label="p") -> "ParameterGroup":
@@ -387,53 +347,9 @@ class ParameterGroup(dict):
         for _, l in self.items():
             yield from l.all(root=root, separator=separator)
 
-    #  def as_parameter_dict(self) -> Parameters:
-    #      """
-    #      Creates a lmfit.Parameters dictionary from the group.
-    #
-    #      Notes
-    #      -----
-    #
-    #      Only for internal use.
-    #      """
-    #
-    #      params = Parameters()
-    #      for label, p in self.all(separator="_"):
-    #          p.name = "_" + label
-    #          if p.non_negative:
-    #              p = copy.deepcopy(p)
-    #              if p.minimum == 1:
-    #                  p.minimum += 1e-10
-    #              try:
-    #                  p.minimum = log(p.minimum) if np.isfinite(p.minimum) else p.minimum
-    #              except Exception:
-    #                  raise ValueError(
-    #                      "Could not take log of minimum of parameter"
-    #                      f" '{label}' with value '{p.minimum}'"
-    #                  )
-    #              if p.maximum == 1:
-    #                  p.maximum += 1e-10
-    #              try:
-    #                  p.maximum = log(p.maximum) if np.isfinite(p.maximum) else p.maximum
-    #              except Exception:
-    #                  raise ValueError(
-    #                      "Could not take log of maximum of parameter"
-    #                      f" '{label}' with value '{p.maximum}'"
-    #                  )
-    #              if p.value == 1:
-    #                  p.value += 1e-10
-    #              try:
-    #                  p.value = log(p.value)
-    #              except Exception:
-    #                  raise ValueError(
-    #                      f"Could not take log of parameter '{label}' with value '{p.value}'"
-    #                  )
-    #          params.add(p)
-    #      return params
-
     def get_label_value_and_bounds_arrays(
         self, exclude_non_vary: bool = False
-    ) -> Tuple[List[str], List[float], List[Tuple[float, float]]]:
+    ) -> Tuple[List[str], np.ndarray, np.ndarray, np.ndarray]:
         """Returns a arrays of all parameter labels, values and bounds.
 
         Parameters
@@ -457,9 +373,9 @@ class ParameterGroup(dict):
                 lower_bounds.append(minimum)
                 upper_bounds.append(maximum)
 
-        return labels, values, lower_bounds, upper_bounds
+        return labels, np.asarray(values), np.asarray(lower_bounds), np.asarray(upper_bounds)
 
-    def set_from_label_and_value_arrays(self, labels: List[str], values: List[float]):
+    def set_from_label_and_value_arrays(self, labels: List[str], values: np.ndarray):
         """Updates the parameter values from a list of labels and values."""
 
         if not len(labels) == len(values):
@@ -500,4 +416,4 @@ class ParameterGroup(dict):
         return self.markdown()
 
     def __str__(self):
-        return self.__repr__
+        return self.__repr__()

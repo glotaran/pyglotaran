@@ -189,21 +189,21 @@ class ThreeComponentParallel:
             "shape": {
                 "sh1": {
                     "type": "gaussian",
-                    "amplitude": "shape.amps.1",
-                    "location": "shape.locs.1",
-                    "width": "shape.width.1",
+                    "amplitude": "shapes.amps.1",
+                    "location": "shapes.locs.1",
+                    "width": "shapes.width.1",
                 },
                 "sh2": {
                     "type": "gaussian",
-                    "amplitude": "shape.amps.2",
-                    "location": "shape.locs.2",
-                    "width": "shape.width.2",
+                    "amplitude": "shapes.amps.2",
+                    "location": "shapes.locs.2",
+                    "width": "shapes.width.2",
                 },
                 "sh3": {
                     "type": "gaussian",
-                    "amplitude": "shape.amps.3",
-                    "location": "shape.locs.3",
-                    "width": "shape.width.3",
+                    "amplitude": "shapes.amps.3",
+                    "location": "shapes.locs.3",
+                    "width": "shapes.width.3",
                 },
             },
             "irf": {
@@ -242,7 +242,7 @@ class ThreeComponentParallel:
                 ["2", 502e-4],
                 ["3", 705e-5],
             ],
-            "shape": {"amps": [7, 3, 30], "locs": [620, 670, 720], "width": [10, 30, 50]},
+            "shapes": {"amps": [7, 3, 30], "locs": [620, 670, 720], "width": [10, 30, 50]},
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
         }
@@ -307,21 +307,21 @@ class ThreeComponentSequential:
             "shape": {
                 "sh1": {
                     "type": "gaussian",
-                    "amplitude": "shape.amps.1",
-                    "location": "shape.locs.1",
-                    "width": "shape.width.1",
+                    "amplitude": "shapes.amps.1",
+                    "location": "shapes.locs.1",
+                    "width": "shapes.width.1",
                 },
                 "sh2": {
                     "type": "gaussian",
-                    "amplitude": "shape.amps.2",
-                    "location": "shape.locs.2",
-                    "width": "shape.width.2",
+                    "amplitude": "shapes.amps.2",
+                    "location": "shapes.locs.2",
+                    "width": "shapes.width.2",
                 },
                 "sh3": {
                     "type": "gaussian",
-                    "amplitude": "shape.amps.3",
-                    "location": "shape.locs.3",
-                    "width": "shape.width.3",
+                    "amplitude": "shapes.amps.3",
+                    "location": "shapes.locs.3",
+                    "width": "shapes.width.3",
                 },
             },
             "irf": {
@@ -364,7 +364,7 @@ class ThreeComponentSequential:
                 ["2", 202e-4],
                 ["3", 105e-5],
             ],
-            "shape": {"amps": [3, 1, 5], "locs": [620, 670, 720], "width": [10, 30, 50]},
+            "shapes": {"amps": [3, 1, 5], "locs": [620, 670, 720], "width": [10, 30, 50]},
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],

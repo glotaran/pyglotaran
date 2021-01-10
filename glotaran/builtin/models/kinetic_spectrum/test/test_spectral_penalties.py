@@ -16,7 +16,7 @@ from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import _get_idx
 from glotaran.io import prepare_time_trace_dataset
 from glotaran.parameter import ParameterGroup
 
-ParameterSpec = namedtuple("ParameterSpec", "base equal_area shape")
+ParameterSpec = namedtuple("ParameterSpec", "base equal_area shapes")
 NoiseSpec = namedtuple("NoiseSpec", "active seed std_dev")
 SimulationSpec = namedtuple("SimulationSpec", "max_nfev noise")
 DatasetSpec = namedtuple("DatasetSpec", "times wavelengths irf shapes")
@@ -134,15 +134,15 @@ def test_equal_area_penalties(debug=False):
         "shape": {
             "sh1": {
                 "type": "gaussian",
-                "amplitude": "shape.amps.1",
-                "location": "shape.locs.1",
-                "width": "shape.width.1",
+                "amplitude": "shapes.amps.1",
+                "location": "shapes.locs.1",
+                "width": "shapes.width.1",
             },
             "sh2": {
                 "type": "gaussian",
-                "amplitude": "shape.amps.2",
-                "location": "shape.locs.2",
-                "width": "shape.width.2",
+                "amplitude": "shapes.amps.2",
+                "location": "shapes.locs.2",
+                "width": "shapes.width.2",
             },
         }
     }
@@ -179,7 +179,7 @@ def test_equal_area_penalties(debug=False):
         "rela": [rela, {"vary": False}],
     }
     pspec_shape = {
-        "shape": {
+        "shapes": {
             "amps": [sh1.amplitude, sh2.amplitude],
             "locs": [sh1.location, sh2.location],
             "width": [sh1.width, sh2.width],
@@ -201,7 +201,7 @@ def test_equal_area_penalties(debug=False):
 
     # %% Parameter specification (pspec)
 
-    pspec_sim = dict(deepcopy(pspec.base), **pspec.shape)
+    pspec_sim = dict(deepcopy(pspec.base), **pspec.shapes)
     param_sim = ParameterGroup.from_dict(pspec_sim)
 
     # For the wp model we create two version of the parameter specification
