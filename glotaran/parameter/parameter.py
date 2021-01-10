@@ -326,6 +326,34 @@ class Parameter:
         """Sets the value from an optimization result and reverses non-negative transormation."""
         self.value = np.exp(value) if self.non_negative else value
 
+    def __getstate__(self):
+        """Get state for pickle."""
+        return (
+            self.label,
+            self.full_label,
+            self.expression,
+            self.maximum,
+            self.minimum,
+            self.non_negative,
+            self.stderr,
+            self.value,
+            self.vary,
+        )
+
+    def __setstate__(self, state):
+        """Set state from pickle."""
+        (
+            self.label,
+            self.full_label,
+            self.expression,
+            self.maximum,
+            self.minimum,
+            self.non_negative,
+            self.stderr,
+            self.value,
+            self.vary,
+        ) = state
+
     def _getval(self) -> float:
         return self._value
 

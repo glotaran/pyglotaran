@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import pytest
 
@@ -286,3 +288,15 @@ def test_parameter_expressions():
 
     with pytest.raises(ValueError):
         ParameterGroup.from_yaml(params_bad_expr)
+
+
+def test_parameter_pickle(tmpdir):
+
+    parameter = Parameter("testlabel", "testlabelfull", "testexpression", 1, 2, True, 42, False)
+
+    with open(tmpdir.join("test_param_pickle"), "wb") as f:
+        pickle.dump(parameter, f)
+    with open(tmpdir.join("test_param_pickle"), "rb") as f:
+        pickled_parameter = pickle.load(f)
+
+    assert parameter == pickled_parameter
