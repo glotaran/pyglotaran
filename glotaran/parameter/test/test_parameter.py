@@ -282,11 +282,11 @@ def test_parameter_expressions():
     assert params.get("3").value == params.get("1") * np.exp(params.get("2"))
     assert params.get("4").value == 2
 
-    params_bad_expr = """
+    with pytest.raises(ValueError):
+        params_bad_expr = """
     - ["3", {expr: 'None'}]
     """
 
-    with pytest.raises(ValueError):
         ParameterGroup.from_yaml(params_bad_expr)
 
 

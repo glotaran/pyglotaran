@@ -378,7 +378,7 @@ class ParameterGroup(dict):
     def set_from_label_and_value_arrays(self, labels: List[str], values: np.ndarray):
         """Updates the parameter values from a list of labels and values."""
 
-        if not len(labels) == len(values):
+        if len(labels) != len(values):
             raise ValueError(
                 f"Length of labels({len(labels)}) not equal to length of values({len(values)})."
             )
@@ -402,7 +402,7 @@ class ParameterGroup(dict):
 
     def markdown(self) -> str:
         """Formats the :class:`ParameterGroup` as markdown string."""
-        t = "".join(["  " for _ in range(self.get_nr_roots())])
+        t = "".join("  " for _ in range(self.get_nr_roots()))
         s = ""
         if self.label != "p":
             s += f"{t}* __{self.label}__:\n"
