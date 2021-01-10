@@ -5,10 +5,10 @@ from glotaran.parse.register import known_model_names
 
 
 def plugin_list_cmd():
-    """Prints a list of intalled plugins."""
+    """Prints a list of installed plugins."""
 
     output = """
-Installed Glotaran Plugins:
+    Installed Glotaran Plugins:
 
     Models:
     """

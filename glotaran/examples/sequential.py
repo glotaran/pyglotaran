@@ -27,21 +27,21 @@ sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
         "shape": {
             "sh1": {
                 "type": "gaussian",
-                "amplitude": "shape.amps.1",
-                "location": "shape.locs.1",
-                "width": "shape.width.1",
+                "amplitude": "shapes.amps.1",
+                "location": "shapes.locs.1",
+                "width": "shapes.width.1",
             },
             "sh2": {
                 "type": "gaussian",
-                "amplitude": "shape.amps.2",
-                "location": "shape.locs.2",
-                "width": "shape.width.2",
+                "amplitude": "shapes.amps.2",
+                "location": "shapes.locs.2",
+                "width": "shapes.width.2",
             },
             "sh3": {
                 "type": "gaussian",
-                "amplitude": "shape.amps.3",
-                "location": "shape.locs.3",
-                "width": "shape.width.3",
+                "amplitude": "shapes.amps.3",
+                "location": "shapes.locs.3",
+                "width": "shapes.width.3",
             },
         },
         "irf": {
@@ -73,11 +73,7 @@ wanted_parameter = gta.ParameterGroup.from_dict(
             ["2", 0.3],
             ["3", 0.1],
         ],
-        "osc": [
-            ["freq", 25],
-            ["rate", 1],
-        ],
-        "shape": {"amps": [30, 20, 40], "locs": [620, 630, 650], "width": [40, 20, 60]},
+        "shapes": {"amps": [30, 20, 40], "locs": [620, 630, 650], "width": [40, 20, 60]},
         "irf": [["center", 0.3], ["width", 0.1]],
     }
 )

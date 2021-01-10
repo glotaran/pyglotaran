@@ -2,6 +2,7 @@ import functools
 import pathlib
 import typing
 import warnings
+from typing import Literal
 
 import numpy as np
 import xarray as xr
@@ -29,6 +30,14 @@ class Scheme:
         group_tolerance: float = 0.0,
         nnls: bool = False,
         nfev: int = None,
+        ftol: float = 1e-8,
+        gtol: float = 1e-8,
+        xtol: float = 1e-8,
+        optimization_method: Literal[
+            "TrustRegionReflection",
+            "Dogbox",
+            "LevenbergMarquart",
+        ] = "TrustRegionReflection",
     ):
 
         self.model = model
@@ -37,6 +46,10 @@ class Scheme:
         self.group_tolerance = group_tolerance
         self.nnls = nnls
         self.nfev = nfev
+        self.ftol = ftol
+        self.gtol = gtol
+        self.xtol = xtol
+        self.optimization_method = optimization_method
 
     @classmethod
     def from_yml_file(cls, filename: str) -> "Scheme":
@@ -84,8 +97,12 @@ class Scheme:
             except Exception as e:
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 
+        optimization_method = scheme.get("optimization_method", "TrustRegionReflection")
         nnls = scheme.get("nnls", False)
         nfev = scheme.get("nfev", None)
+        ftol = scheme.get("ftol", 1e-8)
+        gtol = scheme.get("gtol", 1e-8)
+        xtol = scheme.get("xtol", 1e-8)
         group_tolerance = scheme.get("group_tolerance", 0.0)
         return cls(
             model=model,
@@ -93,7 +110,11 @@ class Scheme:
             data=data,
             nnls=nnls,
             nfev=nfev,
+            ftol=ftol,
+            gtol=gtol,
+            xtol=xtol,
             group_tolerance=group_tolerance,
+            optimization_method=optimization_method,
         )
 
     @property

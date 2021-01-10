@@ -137,6 +137,11 @@ class Problem:
     def parameter(self) -> ParameterGroup:
         return self._parameter
 
+    @parameter.setter
+    def parameter(self, parameter: ParameterGroup):
+        self._parameter = parameter
+        self.reset()
+
     @property
     def grouped(self) -> bool:
         return self._grouped
@@ -247,9 +252,8 @@ class Problem:
             self._full_penalty = np.concatenate(residuals + additional_penalty)
         return self._full_penalty
 
-    @parameter.setter
-    def parameter(self, parameter: ParameterGroup):
-        self._parameter = parameter
+    def reset(self):
+        """Resets all results and `DatasetDescriptors`. Use after updating parameters."""
         self._filled_dataset_descriptors = {
             label: descriptor.fill(self._model, self._parameter)
             for label, descriptor in self._model.dataset.items()
