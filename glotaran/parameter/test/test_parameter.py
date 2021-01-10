@@ -182,7 +182,7 @@ def test_parameter_group_to_array():
     assert len(labels_only_vary) == 2
     assert len(values_only_vary) == 2
     assert len(lower_bounds_only_vary) == 2
-    assert len(lower_bounds_only_vary) == 2
+    assert len(upper_bounds_only_vary) == 2
 
     assert labels_only_vary == ["2", "3"]
 
