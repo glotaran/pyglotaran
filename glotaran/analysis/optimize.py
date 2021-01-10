@@ -35,6 +35,9 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
     ) = problem.scheme.parameter.get_label_value_and_bounds_arrays(exclude_non_vary=True)
     method = SUPPORTED_METHODS[problem.scheme.optimization_method]
     nfev = problem.scheme.nfev
+    ftol = problem.scheme.ftol
+    gtol = problem.scheme.gtol
+    xtol = problem.scheme.xtol
     verbose = 2 if verbose else 0
 
     ls_result = least_squares(
@@ -44,8 +47,9 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         method=method,
         max_nfev=nfev,
         verbose=verbose,
-        #  ftol=1.e-7,
-        #  gtol=1.e-7,
+        ftol=ftol,
+        gtol=gtol,
+        xtol=xtol,
         kwargs={"labels": labels, "problem": problem},
     )
 
