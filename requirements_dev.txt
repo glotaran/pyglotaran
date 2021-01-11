@@ -17,7 +17,7 @@ pyyaml==5.3.1
 xarray==0.16.2
 netCDF4==1.5.4
 setuptools==41.2
-sdtfile==2020.8.3
+sdtfile==2020.12.10
 
 # documentation dependencies
 Sphinx>=3.2.0
