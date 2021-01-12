@@ -7,7 +7,7 @@ install_requires = [
     "netCDF4>=1.5.3",
     "numba>=0.48",
     'numpy>=1.17.3; sys_platform != "win32"',
-    'numpy==1.19.3; sys_platform == "win32"',
+    'numpy==1.19.5; sys_platform == "win32"',
     "pandas>=0.25.2",
     "pyyaml>=5.2",
     "scipy>=1.3.2",
