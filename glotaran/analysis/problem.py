@@ -208,7 +208,7 @@ class Problem:
     @property
     def clps(
         self,
-    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
+    ) -> Dict[str, List[np.ndarray]]:
         if self._clps is None:
             self.calculate_residual()
         return self._clps
@@ -216,7 +216,7 @@ class Problem:
     @property
     def weighted_residuals(
         self,
-    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
+    ) -> Dict[str, List[np.ndarray]]:
         if self._weighted_residuals is None:
             self.calculate_residual()
         return self._weighted_residuals
@@ -224,7 +224,7 @@ class Problem:
     @property
     def residuals(
         self,
-    ) -> Union[List[np.ndarray], Dict[str, List[np.ndarray]],]:
+    ) -> Dict[str, List[np.ndarray]]:
         if self._residuals is None:
             self.calculate_residual()
         return self._residuals
@@ -232,7 +232,7 @@ class Problem:
     @property
     def additional_penalty(
         self,
-    ) -> Union[List[float], Dict[str, List[float]],]:
+    ) -> Dict[str, List[float]]:
         if self._additional_penalty is None:
             self.calculate_additional_penalty()
         return self._additional_penalty
@@ -596,6 +596,7 @@ class Problem:
             clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
 
+        # TODO: this needs a rewrite so that clps are assigned (dataset) labels
         results = list(map(residual_function, self.bag, self.reduced_matrices))
 
         self._reduced_clps = list(map(lambda result: result[0], results))
@@ -730,6 +731,7 @@ class Problem:
             clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
 
+        # TODO: this needs a rewrite so that clps are assigned (dataset) labels
         results = list(map(residual_function, self.bag))
 
         self._reduced_clps = list(map(lambda result: result[0], results))
