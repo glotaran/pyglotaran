@@ -250,8 +250,10 @@ class Problem:
                         additional_penalty[label] for label in additional_penalty.keys()
                     ]
 
-            self._full_penalty = np.concatenate(
-                (np.concatenate(residuals), np.array(additional_penalty).ravel())
+            self._full_penalty = (
+                np.concatenate((np.concatenate(residuals), np.array(additional_penalty).ravel()))
+                if additional_penalty
+                else np.concatenate(residuals)
             )
         return self._full_penalty
 
