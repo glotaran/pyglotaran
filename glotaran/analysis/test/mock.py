@@ -130,7 +130,7 @@ def additional_penalty_typecheck(
         for matrix in matrices.values():
             assert isinstance(matrix, np.ndarray)
 
-    return [0.1]
+    return np.asarray([0.1])
 
 
 @model_attribute(

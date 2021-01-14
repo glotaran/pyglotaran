@@ -402,7 +402,12 @@ class Problem:
 
     def calculate_index_dependent_grouped_matrices(
         self,
-    ) -> Tuple[List[List[List[str]]], List[List[np.ndarray]], List[List[str]], List[np.ndarray],]:
+    ) -> Tuple[
+        Dict[str, List[List[str]]],
+        Dict[str, List[np.ndarray]],
+        List[List[str]],
+        List[np.ndarray],
+    ]:
         if self._parameter is None:
             raise ParameterError
 
@@ -439,8 +444,23 @@ class Problem:
         results = list(
             map(lambda group: calculate_group(group, self._filled_dataset_descriptors), self._bag)
         )
-        self._clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
-        self._matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
+        #  self._clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
+        #  self._matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
+
+        clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
+        matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
+
+        self._clp_labels = {}
+        self._matrices = {}
+
+        for i, grouped_problem in enumerate(self._bag):
+            for j, descriptor in enumerate(grouped_problem.descriptor):
+                if descriptor.label not in self._clp_labels:
+                    self._clp_labels[descriptor.label] = []
+                    self._matrices[descriptor.label] = []
+                self._clp_labels[descriptor.label].append(clp_labels[i][j])
+                self._matrices[descriptor.label].append(matrices[i][j])
+
         reduced_results = list(map(reduce_and_combine_matrices, results))
         self._reduced_clp_labels = list(map(lambda result: result.clp_label, reduced_results))
         self._reduced_matrices = list(map(lambda result: result.matrix, reduced_results))
@@ -829,14 +849,21 @@ class Problem:
                 ].index(label)
                 global_index = grouped_problem.descriptor[group_index].index
 
-                self._add_index_dependent_grouped_matrix_to_dataset(
-                    dataset, index, group_index, global_index
-                )
-
                 self._add_grouped_residual_to_dataset(
                     dataset, grouped_problem, index, group_index, global_index
                 )
 
+        # we assume that the labels are the same, this might not be true in
+        # future models
+        dataset.coords["clp_label"] = self.clp_labels[label][0]
+        dataset["matrix"] = (
+            (
+                (self._global_dimension),
+                (self._model_dimension),
+                ("clp_label"),
+            ),
+            self.matrices[label],
+        )
         dataset["clp"] = (
             (
                 (self._global_dimension),
@@ -894,31 +921,6 @@ class Problem:
         self._add_ungrouped_residual_and_full_clp_to_dataset(label, dataset)
 
         return dataset
-
-    def _add_index_dependent_grouped_matrix_to_dataset(
-        self, dataset: xr.Dataset, index: int, group_index: int, global_index: float
-    ):
-        if "clp_label" not in dataset.coords:
-            # we assume that the labels are the same, this might not be true in
-            # future models
-            dataset.coords["clp_label"] = self.clp_labels[index][group_index]
-
-        if "matrix" not in dataset:
-            dim1 = dataset.coords[self._global_dimension].size
-            dim2 = dataset.coords[self._model_dimension].size
-            dim3 = dataset.clp_label.size
-            dataset["matrix"] = (
-                (
-                    (self._global_dimension),
-                    (self._model_dimension),
-                    ("clp_label"),
-                ),
-                np.zeros((dim1, dim2, dim3), dtype=np.float64),
-            )
-
-        dataset.matrix.loc[{self._global_dimension: global_index}] = self.matrices[index][
-            group_index
-        ]
 
     def _add_index_dependent_ungrouped_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
         # we assume that the labels are the same, this might not be true in
