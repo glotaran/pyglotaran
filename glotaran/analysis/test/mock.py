@@ -1,6 +1,10 @@
+from typing import Dict
 from typing import List
+from typing import Type
+from typing import Union
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
@@ -84,6 +88,51 @@ def calculate_spectral_gauss(dataset, axis):
     return compartments, array.T
 
 
+def additional_penalty_typecheck(
+    model: Type[Model],
+    parameter: Parameter,
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    clps: Dict[str, List[np.ndarray]],
+    matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    data: Dict[str, xr.Dataset],
+):
+
+    assert isinstance(clps, dict)
+    assert all([isinstance(dataset_clps, list) for dataset_clps in clps.values()])
+    assert all(
+        [
+            [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
+            for dataset_clps in clps.values()
+        ]
+    )
+
+    assert isinstance(data, dict)
+    assert all([isinstance(label, str) for label in data])
+    assert all([isinstance(dataset, xr.Dataset) for dataset in data.values()])
+
+    assert isinstance(clp_labels, dict)
+    assert isinstance(matrices, dict)
+    if model.index_dependent():
+        for dataset_clp_labels in clp_labels.values():
+            assert all([isinstance(index_label, list) for index_label in dataset_clp_labels])
+            assert all(
+                [
+                    [isinstance(label, str) for label in index_label]
+                    for index_label in dataset_clp_labels
+                ]
+            )
+        for matrix in matrices.values():
+            assert isinstance(matrix, list)
+            assert all([isinstance(index_matrix, np.ndarray) for index_matrix in matrix])
+    else:
+        for dataset_clp_labels in clp_labels.values():
+            assert all([isinstance(label, str) for label in dataset_clp_labels])
+        for matrix in matrices.values():
+            assert isinstance(matrix, np.ndarray)
+
+    return [0.1]
+
+
 @model_attribute(
     properties={
         "kinetic": List[Parameter],
@@ -114,7 +163,8 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
     megacomplex_type=MockMegacomplex,
-    additional_penalty_function=lambda model, parameter, clp_labels, clps, index: [],
+    has_additional_penalty_function=lambda model: True,
+    additional_penalty_function=additional_penalty_typecheck,
 )
 class DecayModel(Model):
     pass
