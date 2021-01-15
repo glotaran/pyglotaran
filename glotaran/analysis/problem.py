@@ -620,11 +620,9 @@ class Problem:
         self._reduced_clps = {}
         self._weighted_residuals = {}
         self._residuals = {}
-        self._clps = {}
 
         for label, problem in self.bag.items():
             self._reduced_clps[label] = []
-            self._clps[label] = []
             self._residuals[label] = []
             self._weighted_residuals[label] = []
             data = problem.data
@@ -639,20 +637,8 @@ class Problem:
                 clp, residual = self._residual_function(
                     matrix_at_index, data.isel({self._global_dimension: i})
                 )
-                clps = (
-                    self.model.retrieve_clp_function(
-                        self.parameter,
-                        self.clp_labels[label][i],
-                        self.reduced_clp_labels[label][i],
-                        clp,
-                        problem.global_axis[i],
-                    )
-                    if callable(self.model.retrieve_clp_function)
-                    else clp
-                )
 
                 self._reduced_clps[label].append(clp)
-                self._clps[label].append(clps)
                 self._weighted_residuals[label].append(residual)
                 if problem.weight is not None:
                     self._residuals[label].append(
@@ -660,6 +646,18 @@ class Problem:
                     )
                 else:
                     self._residuals[label].append(residual)
+
+        self._clps = (
+            self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels,
+                self.reduced_clp_labels,
+                self.reduced_clps,
+                self.data,
+            )
+            if callable(self.model.retrieve_clp_function)
+            else self.reduced_clps
+        )
 
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
 
@@ -735,17 +733,17 @@ class Problem:
                 else:
                     self._residuals[label].append(residual)
 
-            self._clps[label] = (
-                self.model.retrieve_clp_function(
-                    self.parameter,
-                    self.clp_labels[label],
-                    self.reduced_clp_labels[label],
-                    self.reduced_clps[label],
-                    problem.global_axis,
-                )
-                if callable(self.model.retrieve_clp_function)
-                else self._reduced_clps[label]
+        self._clps = (
+            self.model.retrieve_clp_function(
+                self.parameter,
+                self.clp_labels,
+                self.reduced_clp_labels,
+                self.reduced_clps,
+                self.data,
             )
+            if callable(self.model.retrieve_clp_function)
+            else self._reduced_clps
+        )
 
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
 

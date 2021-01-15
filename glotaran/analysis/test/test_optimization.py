@@ -5,6 +5,7 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.mock import DecayModel
 from glotaran.analysis.test.mock import MultichannelMulticomponentDecay
 from glotaran.analysis.test.mock import OneCompartmentDecay
 from glotaran.analysis.test.mock import TwoCompartmentDecay
@@ -19,10 +20,17 @@ from glotaran.analysis.test.mock import TwoCompartmentDecay
 def test_optimization(suite, index_dependent, grouped, weight):
     model = suite.model
 
-    model.grouped = lambda: grouped
-    model.index_depended = lambda: index_dependent
+    model.is_grouped = grouped
+    model.is_index_dependent = index_dependent
+    print("Grouped:", grouped)
+    print("Index dependent:", index_dependent)
+
+    assert model.grouped() == grouped
+    assert model.index_dependent() == index_dependent
 
     sim_model = suite.sim_model
+    sim_model.is_grouped = grouped
+    sim_model.is_index_dependent = index_dependent
     est_axis = suite.e_axis
     cal_axis = suite.c_axis
 
@@ -75,6 +83,18 @@ def test_optimization(suite, index_dependent, grouped, weight):
     assert dataset.data.shape == resultdata.data.shape
     print(dataset.data[0, 0], resultdata.data[0, 0])
     assert np.allclose(dataset.data, resultdata.data)
+
+    if isinstance(model, DecayModel):
+        assert callable(model.additional_penalty_function)
+        assert model.additional_penalty_function_called
+        assert callable(model.constrain_matrix_function)
+        assert model.constrain_matrix_function_called
+        assert callable(model.retrieve_clp_function)
+        assert model.retrieve_clp_function_called
+    else:
+        assert model.additional_penalty_function_called
+        assert not model.constrain_matrix_function_called
+        assert not model.retrieve_clp_function_called
 
     if weight:
         assert "weight" in resultdata

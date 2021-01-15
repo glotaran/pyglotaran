@@ -15,14 +15,19 @@ from .mock import MultichannelMulticomponentDecay as suite
 )
 def problem(request) -> Problem:
     model = suite.model
-    model.grouped = lambda: request.param[0]
-    model.index_dependent = lambda: request.param[1]
+    model.is_grouped = request.param[0]
+    model.is_index_dependent = request.param[1]
 
     dataset = simulate(
         suite.sim_model, "dataset1", suite.wanted, {"e": suite.e_axis, "c": suite.c_axis}
     )
     scheme = Scheme(model=model, parameter=suite.initial, data={"dataset1": dataset})
     return Problem(scheme)
+
+
+def test_problem(problem: Problem):
+    assert problem.grouped == problem.model.is_grouped
+    assert problem.index_dependent == problem.model.is_index_dependent
 
 
 def test_problem_bag(problem: Problem):
