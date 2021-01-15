@@ -99,7 +99,7 @@ def constrain_matrix_function_typecheck(
     assert isinstance(label, str)
     assert isinstance(parameter, ParameterGroup)
     assert isinstance(clp_labels, list)
-    assert all([isinstance(clp_label, str) for clp_label in clp_labels])
+    assert all(isinstance(clp_label, str) for clp_label in clp_labels)
     assert isinstance(matrix, np.ndarray)
 
     if model.index_dependent():
@@ -123,31 +123,33 @@ def retrieve_clp_typecheck(
     assert isinstance(parameter, ParameterGroup)
 
     assert isinstance(reduced_clps, dict)
-    assert all([isinstance(dataset_clps, list) for dataset_clps in reduced_clps.values()])
     assert all(
-        [
-            [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
-            for dataset_clps in reduced_clps.values()
-        ]
+        isinstance(dataset_clps, list)
+        for dataset_clps in reduced_clps.values()
     )
 
+    assert all(
+        [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
+        for dataset_clps in reduced_clps.values()
+    )
+
+
     assert isinstance(data, dict)
-    assert all([isinstance(label, str) for label in data])
-    assert all([isinstance(dataset, xr.Dataset) for dataset in data.values()])
+    assert all(isinstance(label, str) for label in data)
+    assert all(isinstance(dataset, xr.Dataset) for dataset in data.values())
 
     assert isinstance(clp_labels, dict)
     if model.index_dependent():
         for dataset_clp_labels in clp_labels.values():
-            assert all([isinstance(index_label, list) for index_label in dataset_clp_labels])
+            assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
             assert all(
-                [
-                    [isinstance(label, str) for label in index_label]
-                    for index_label in dataset_clp_labels
-                ]
+                [isinstance(label, str) for label in index_label]
+                for index_label in dataset_clp_labels
             )
+
     else:
         for dataset_clp_labels in clp_labels.values():
-            assert all([isinstance(label, str) for label in dataset_clp_labels])
+            assert all(isinstance(label, str) for label in dataset_clp_labels)
 
     model.retrieve_clp_function_called = True
 
@@ -165,35 +167,33 @@ def additional_penalty_typecheck(
     assert isinstance(parameter, ParameterGroup)
 
     assert isinstance(clps, dict)
-    assert all([isinstance(dataset_clps, list) for dataset_clps in clps.values()])
+    assert all(isinstance(dataset_clps, list) for dataset_clps in clps.values())
     assert all(
-        [
-            [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
-            for dataset_clps in clps.values()
-        ]
+        [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
+        for dataset_clps in clps.values()
     )
 
+
     assert isinstance(data, dict)
-    assert all([isinstance(label, str) for label in data])
-    assert all([isinstance(dataset, xr.Dataset) for dataset in data.values()])
+    assert all(isinstance(label, str) for label in data)
+    assert all(isinstance(dataset, xr.Dataset) for dataset in data.values())
 
     assert isinstance(clp_labels, dict)
     assert isinstance(matrices, dict)
     if model.index_dependent():
         for dataset_clp_labels in clp_labels.values():
-            assert all([isinstance(index_label, list) for index_label in dataset_clp_labels])
+            assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
             assert all(
-                [
-                    [isinstance(label, str) for label in index_label]
-                    for index_label in dataset_clp_labels
-                ]
+                [isinstance(label, str) for label in index_label]
+                for index_label in dataset_clp_labels
             )
+
         for matrix in matrices.values():
             assert isinstance(matrix, list)
-            assert all([isinstance(index_matrix, np.ndarray) for index_matrix in matrix])
+            assert all(isinstance(index_matrix, np.ndarray) for index_matrix in matrix)
     else:
         for dataset_clp_labels in clp_labels.values():
-            assert all([isinstance(label, str) for label in dataset_clp_labels])
+            assert all(isinstance(label, str) for label in dataset_clp_labels)
         for matrix in matrices.values():
             assert isinstance(matrix, np.ndarray)
 
