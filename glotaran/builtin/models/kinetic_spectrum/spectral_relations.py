@@ -1,6 +1,7 @@
 """ Glotaran Spectral Relation """
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
@@ -62,7 +63,7 @@ def create_spectral_relation_matrix(
         if relation.target in clp_labels and relation.applies(index):
 
             if relation.compartment not in clp_labels:
-                Warning(
+                warnings.warn(
                     "Relation between compartments '{relation.compartment}' and "
                     f"'{relation.target}' cannot be applied for '{dataset}'. "
                     f" '{relation.source}' not in dataset"
