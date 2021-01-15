@@ -123,16 +123,12 @@ def retrieve_clp_typecheck(
     assert isinstance(parameter, ParameterGroup)
 
     assert isinstance(reduced_clps, dict)
-    assert all(
-        isinstance(dataset_clps, list)
-        for dataset_clps in reduced_clps.values()
-    )
+    assert all(isinstance(dataset_clps, list) for dataset_clps in reduced_clps.values())
 
     assert all(
         [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
         for dataset_clps in reduced_clps.values()
     )
-
 
     assert isinstance(data, dict)
     assert all(isinstance(label, str) for label in data)
@@ -172,7 +168,6 @@ def additional_penalty_typecheck(
         [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
         for dataset_clps in clps.values()
     )
-
 
     assert isinstance(data, dict)
     assert all(isinstance(label, str) for label in data)
