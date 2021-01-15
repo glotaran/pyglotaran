@@ -78,11 +78,11 @@ def simulate(
     if callable(model.constrain_matrix_function):
         matrix = (
             [
-                model.constrain_matrix_function(parameter, clp, mat, global_dimension[i])
+                model.constrain_matrix_function(dataset, parameter, clp, mat, global_dimension[i])
                 for i, (clp, mat) in enumerate(matrix)
             ]
             if model.index_dependent()
-            else model.constrain_matrix_function(parameter, matrix[0], matrix[1], None)
+            else model.constrain_matrix_function(dataset, parameter, matrix[0], matrix[1], None)
         )
     matrix = (
         [

@@ -90,11 +90,13 @@ def calculate_spectral_gauss(dataset, axis):
 
 def constrain_matrix_function_typecheck(
     model: Type[Model],
+    label: str,
     parameter: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
 ):
+    assert isinstance(label, str)
     assert isinstance(parameter, ParameterGroup)
     assert isinstance(clp_labels, list)
     assert all([isinstance(clp_label, str) for clp_label in clp_labels])

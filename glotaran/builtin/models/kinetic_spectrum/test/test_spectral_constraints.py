@@ -67,7 +67,7 @@ def test_spectral_constraint():
     assert reduced_matrix.shape == (time.size, 1)
 
     reduced_compartments, reduced_matrix = model.constrain_matrix_function(
-        parameter, compartments, matrix, 1
+        "dataset1", parameter, compartments, matrix, 1
     )
 
     assert reduced_matrix.shape == (time.size, 1)

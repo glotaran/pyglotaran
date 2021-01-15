@@ -415,29 +415,32 @@ class Problem:
 
         def calculate_group(
             group: GroupedProblem, descriptors: Dict[str, DatasetDescriptor]
-        ) -> Tuple[List[LabelAndMatrix], float]:
+        ) -> Tuple[List[Tuple[LabelAndMatrix, str]], float]:
             result = [
-                _calculate_matrix(
-                    self._model.matrix,
-                    descriptors[problem.label],
-                    problem.axis,
-                    {},
-                    index=problem.index,
+                (
+                    _calculate_matrix(
+                        self._model.matrix,
+                        descriptors[problem.label],
+                        problem.axis,
+                        {},
+                        index=problem.index,
+                    ),
+                    problem.label,
                 )
                 for problem in group.descriptor
             ]
             return result, group.descriptor[0].index
 
         def reduce_and_combine_matrices(
-            result: Tuple[List[LabelAndMatrix], float],
+            results: Tuple[List[Tuple[LabelAndMatrix, str]], float],
         ) -> LabelAndMatrix:
-            labels_and_matrices, index = result
+            index_results, index = results
             constraint_labels_and_matrices = list(
                 map(
-                    lambda label_and_matrix: _reduce_matrix(
-                        self._model, self.parameter, label_and_matrix, index
+                    lambda result: _reduce_matrix(
+                        self._model, result[1], self.parameter, result[0], index
                     ),
-                    labels_and_matrices,
+                    index_results,
                 )
             )
             clp, matrix = _combine_matrices(constraint_labels_and_matrices)
@@ -449,8 +452,8 @@ class Problem:
         #  self._clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
         #  self._matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
 
-        clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
-        matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
+        clp_labels = list(map(lambda result: [r[0].clp_label for r in result[0]], results))
+        matrices = list(map(lambda result: [r[0].matrix for r in result[0]], results))
 
         self._clp_labels = {}
         self._matrices = {}
@@ -503,7 +506,7 @@ class Problem:
                 self._clp_labels[label].append(result.clp_label)
                 self._matrices[label].append(result.matrix)
                 reduced_labels_and_matrix = _reduce_matrix(
-                    self._model, self._parameter, result, index
+                    self._model, label, self._parameter, result, index
                 )
                 self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
                 self._reduced_matrices[label].append(reduced_labels_and_matrix.matrix)
@@ -557,7 +560,7 @@ class Problem:
 
             self._clp_labels[label] = result.clp_label
             self._matrices[label] = result.matrix
-            reduced_result = _reduce_matrix(self._model, self._parameter, result, None)
+            reduced_result = _reduce_matrix(self._model, label, self._parameter, result, None)
             self._reduced_clp_labels[label] = reduced_result.clp_label
             self._reduced_matrices[label] = reduced_result.matrix
 
@@ -1057,13 +1060,14 @@ def _calculate_matrix(
 
 def _reduce_matrix(
     model: Model,
+    label: str,
     parameter: ParameterGroup,
     result: LabelAndMatrix,
     index: float,
 ) -> LabelAndMatrix:
     if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
         clp_label, matrix = model.constrain_matrix_function(
-            parameter, result.clp_label, result.matrix, index
+            label, parameter, result.clp_label, result.matrix, index
         )
         return LabelAndMatrix(clp_label, matrix)
     return result

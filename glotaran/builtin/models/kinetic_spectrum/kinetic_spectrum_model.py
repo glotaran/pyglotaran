@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Dict
+from typing import List
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import model
 
@@ -24,7 +27,6 @@ from .spectral_relations import retrieve_related_clps
 from .spectral_shape import SpectralShape
 
 if TYPE_CHECKING:
-    from typing import List
     from typing import Tuple
     from typing import Union
 
@@ -37,12 +39,15 @@ def has_kinetic_model_constraints(model: KineticSpectrumModel) -> bool:
 
 def apply_kinetic_model_constraints(
     model: KineticSpectrumModel,
+    dataset: str,
     parameter: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
 ) -> Tuple[List[str], np.ndarray]:
-    clp_labels, matrix = apply_spectral_relations(model, parameter, clp_labels, matrix, index)
+    clp_labels, matrix = apply_spectral_relations(
+        model, dataset, parameter, clp_labels, matrix, index
+    )
     clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
     return clp_labels, matrix
 
@@ -50,19 +55,27 @@ def apply_kinetic_model_constraints(
 def retrieve_spectral_clps(
     model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: List[str],
-    reduced_clp_labels: List[str],
-    reduced_clps: Union[np.ndarray, List[np.ndarray]],
-    global_index: float,
-):
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    reduced_clps: Dict[str, List[np.ndarray]],
+    data: Dict[str, xr.Dataset],
+) -> Dict[str, List[np.ndarray]]:
     if not has_kinetic_model_constraints(model):
         return reduced_clps
 
-    full_clps = np.zeros((len(clp_labels)), dtype=np.float64)
-    for i, label in enumerate(reduced_clp_labels):
-        full_clps[clp_labels.index(label)] = reduced_clps[i]
-    full_clps = retrieve_related_clps(model, parameter, clp_labels, full_clps, global_index)
-    return full_clps
+    # Note: we are always in index_dependent case when we have constraints
+    clps = {}
+    for label in clp_labels:
+        clps[label] = []
+        for i, index_reduced_clp_labels in enumerate(reduced_clp_labels[label]):
+            index_clp_labels = clp_labels[label][i]
+            index_reduced_clps = reduced_clps[label][i]
+            index_clps = np.zeros((len(index_clp_labels)), dtype=np.float64)
+            for j, clp_label in enumerate(index_reduced_clp_labels):
+                index_clps[index_clp_labels.index(clp_label)] = index_reduced_clps[i]
+            clps[label].append(index_clps)
+    clps = retrieve_related_clps(model, parameter, clp_labels, clps, data)
+    return clps
 
 
 def index_dependent(model: KineticSpectrumModel) -> bool:

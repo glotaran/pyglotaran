@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Union
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
@@ -46,6 +49,7 @@ class SpectralRelation:
 
 def create_spectral_relation_matrix(
     model: KineticSpectrumModel,
+    dataset: str,
     parameter: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
@@ -55,7 +59,16 @@ def create_spectral_relation_matrix(
 
     idx_to_delete = []
     for relation in model.spectral_relations:
-        if relation.compartment in clp_labels and relation.applies(index):
+        if relation.target in clp_labels and relation.applies(index):
+
+            if relation.compartment not in clp_labels:
+                Warning(
+                    "Relation between compartments '{relation.compartment}' and "
+                    f"'{relation.target}' cannot be applied for '{dataset}'. "
+                    f" '{relation.source}' not in dataset"
+                )
+                continue
+
             relation = relation.fill(model, parameter)
             source_idx = clp_labels.index(relation.compartment)
             target_idx = clp_labels.index(relation.target)
@@ -69,6 +82,7 @@ def create_spectral_relation_matrix(
 
 def apply_spectral_relations(
     model: KineticSpectrumModel,
+    dataset: str,
     parameter: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
@@ -79,7 +93,7 @@ def apply_spectral_relations(
         return (clp_labels, matrix)
 
     reduced_clp_labels, relation_matrix = create_spectral_relation_matrix(
-        model, parameter, clp_labels, matrix, index
+        model, dataset, parameter, clp_labels, matrix, index
     )
 
     reduced_matrix = matrix @ relation_matrix
@@ -90,16 +104,22 @@ def apply_spectral_relations(
 def retrieve_related_clps(
     model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: List[str],
-    clps: np.ndarray,
-    index: float,
-) -> Tuple[List[str], np.ndarray]:
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    clps: Dict[str, List[np.ndarray]],
+    data: Dict[str, xr.Dataset],
+) -> Dict[str, List[np.ndarray]]:
 
     for relation in model.spectral_relations:
-        if relation.compartment in clp_labels and relation.applies(index):
-            relation = relation.fill(model, parameter)
-            target_idx = clp_labels.index(relation.target)
-            source_idx = clp_labels.index(relation.compartment)
-            clps[target_idx] = clps[source_idx] * relation.parameter
+        relation = relation.fill(model, parameter)
+        for label, dataset_clp_labels in clp_labels.items():
+            for i, index in enumerate(data[label].coords[model.global_dimension]):
+                if (
+                    relation.target in dataset_clp_labels[i]
+                    and relation.compartment in dataset_clp_labels[i]
+                    and relation.applies(index)
+                ):
+                    target_idx = dataset_clp_labels[i].index(relation.target)
+                    source_idx = dataset_clp_labels[i].index(relation.compartment)
+                    clps[label][i][target_idx] = clps[label][i][source_idx] * relation.parameter
 
     return clps

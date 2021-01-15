@@ -74,7 +74,7 @@ def test_spectral_relation():
     assert matrix.shape == (time.size, 4)
 
     reduced_compartments, relation_matrix = create_spectral_relation_matrix(
-        model, parameter, compartments, matrix, 1
+        model, "dataset1", parameter, compartments, matrix, 1
     )
 
     print(relation_matrix)
@@ -91,7 +91,7 @@ def test_spectral_relation():
     )
 
     reduced_compartments, reduced_matrix = model.constrain_matrix_function(
-        parameter, compartments, matrix, 1
+        "dataset1", parameter, compartments, matrix, 1
     )
 
     assert reduced_matrix.shape == (time.size, 2)
