@@ -86,16 +86,15 @@ def test_optimization(suite, index_dependent, grouped, weight):
 
     if isinstance(model, DecayModel):
         assert callable(model.additional_penalty_function)
-        assert model.additional_penalty_function_called
         assert callable(model.constrain_matrix_function)
         assert model.constrain_matrix_function_called
         assert callable(model.retrieve_clp_function)
         assert model.retrieve_clp_function_called
     else:
-        assert model.additional_penalty_function_called
         assert not model.constrain_matrix_function_called
         assert not model.retrieve_clp_function_called
 
+    assert model.additional_penalty_function_called
     if weight:
         assert "weight" in resultdata
         assert "weighted_residual" in resultdata
