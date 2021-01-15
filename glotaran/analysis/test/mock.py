@@ -117,7 +117,7 @@ def retrieve_clp_typecheck(
     reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     reduced_clps: Dict[str, List[np.ndarray]],
     data: Dict[str, xr.Dataset],
-) -> Dict[str, List[List[str]]]:
+) -> Dict[str, List[np.ndarray]]:
     assert isinstance(parameter, ParameterGroup)
 
     assert isinstance(reduced_clps, dict)

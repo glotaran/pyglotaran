@@ -42,8 +42,15 @@ ConstrainMatrixFunction = Callable[
 """A `ConstrainMatrixFunction` applies constraints on a matrix."""
 
 RetrieveClpFunction = Callable[
-    [Type[Model], ParameterGroup, List[str], List[str], np.ndarray, float],
-    np.ndarray,
+    [
+        Type[Model],
+        ParameterGroup,
+        Dict[str, Union[List[str], List[List[str]]]],
+        Dict[str, Union[List[str], List[List[str]]]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, xr.Dataset],
+    ],
+    Dict[str, List[np.ndarray]],
 ]
 """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
@@ -53,7 +60,14 @@ FinalizeFunction = Callable[
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = Callable[
-    [Type[Model], ParameterGroup, Union[List[str], List[List[str]]], List[np.ndarray], np.ndarray],
+    [
+        Type[Model],
+        ParameterGroup,
+        Dict[str, Union[List[str], List[List[str]]]],
+        Dict[str, List[np.ndarray]],
+        Dict[str, Union[np.ndarray, List[np.ndarray]]],
+        Dict[str, xr.Dataset],
+    ],
     np.ndarray,
 ]
 """A `PenaltyFunction` calculates additional penalties for the optimization."""
