@@ -245,14 +245,10 @@ class Problem:
             additional_penalty = self.additional_penalty
             if not self.grouped:
                 residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
-                if additional_penalty and isinstance(additional_penalty, dict):
-                    additional_penalty = [
-                        additional_penalty[label] for label in additional_penalty.keys()
-                    ]
 
             self._full_penalty = (
-                np.concatenate((np.concatenate(residuals), np.array(additional_penalty).ravel()))
-                if additional_penalty
+                np.concatenate((np.concatenate(residuals), additional_penalty))
+                if additional_penalty is not None
                 else np.concatenate(residuals)
             )
         return self._full_penalty
