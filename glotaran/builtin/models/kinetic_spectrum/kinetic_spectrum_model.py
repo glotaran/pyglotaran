@@ -79,14 +79,14 @@ def retrieve_spectral_clps(
 
 
 def index_dependent(model: KineticSpectrumModel) -> bool:
-    if any(
-        isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
-        for irf in model.irf.values()
-    ):
-        return True
-    if len(model.spectral_relations) != 0:
-        return True
-    return len(model.spectral_constraints) != 0
+    return (
+        any(
+            isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center is not None
+            for irf in model.irf.values()
+        )
+        or len(model.spectral_relations) != 0
+        or len(model.spectral_constraints) != 0
+    )
 
 
 def grouped(model: KineticSpectrumModel):

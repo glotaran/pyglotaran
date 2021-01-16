@@ -798,7 +798,12 @@ class Problem:
             and self.model.has_additional_penalty_function()
         ):
             self._additional_penalty = self.model.additional_penalty_function(
-                self.parameter, self.clp_labels, self.clps, self.matrices, self.data
+                self.parameter,
+                self.clp_labels,
+                self.clps,
+                self.matrices,
+                self.data,
+                self._scheme.group_tolerance,
             )
         else:
             self._additional_penalty = None

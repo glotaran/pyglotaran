@@ -167,8 +167,10 @@ def additional_penalty_typecheck(
     clps: Dict[str, List[np.ndarray]],
     matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
     data: Dict[str, xr.Dataset],
+    group_tolerance: float,
 ) -> np.ndarray:
     assert isinstance(parameter, ParameterGroup)
+    assert isinstance(group_tolerance, float)
 
     assert isinstance(clps, dict)
     assert all(isinstance(dataset_clps, list) for dataset_clps in clps.values())

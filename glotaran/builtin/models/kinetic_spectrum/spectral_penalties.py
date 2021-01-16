@@ -8,6 +8,7 @@ from typing import List
 from typing import Tuple
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
@@ -67,44 +68,109 @@ def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
 def apply_spectral_penalties(
     model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: Union[
-        Dict[str, List[str]],
-        Dict[str, List[List[str]]],
-        List[List[List[str]]],
-    ],
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     clps: Dict[str, List[np.ndarray]],
-    global_axis: np.ndarray,
+    matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    data: Dict[str, xr.Dataset],
+    group_tolerance: float,
 ) -> np.ndarray:
 
     penalties = []
     for penalty in model.equal_area_penalties:
 
-        source_area = []
-        target_area = []
-
         penalty = penalty.fill(model, parameter)
+        source_area_indices, source_area = _get_area(
+            model.index_dependent(),
+            model.global_dimension,
+            clp_labels,
+            clps,
+            data,
+            group_tolerance,
+            penalty,
+            penalty.compartment,
+        )
 
-        for label in clps:
-            # get axis for label
-            for interval in penalty.interval:
+        target_area_indices, target_area = _get_area(
+            model.index_dependent(),
+            model.global_dimension,
+            clp_labels,
+            clps,
+            data,
+            group_tolerance,
+            penalty,
+            penalty.target,
+        )
 
-                start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
-                for i in range(start_idx, end_idx + 1):
+        if not np.isclose(source_area_indices[0], target_area_indices[0], atol=group_tolerance):
+            if source_area_indices[0] < target_area_indices[0]:
+                idx = np.argmin(np.abs(target_area_indices - source_area_indices[0]))
+                source_area_indices = source_area_indices[idx:]
+                source_area = source_area[idx:]
+            else:
+                idx = np.argmin(np.abs(source_area_indices - target_area_indices[0]))
+                target_area_indices = target_area_indices[idx:]
+                target_area = target_area[idx:]
 
-                    # In case of an index dependent problem the clp_labels are per index
-                    index_clp_label = clp_labels[i] if model.index_dependent() else clp_labels
+        if not np.isclose(source_area_indices[-1], target_area_indices[-1], atol=group_tolerance):
+            if source_area_indices[-1] < target_area_indices[-1]:
+                idx = np.argmin(np.abs(target_area_indices - source_area_indices[-1]))
+                target_area_indices = target_area_indices[:idx]
+                target_area = target_area[:idx]
+            else:
+                idx = np.argmin(np.abs(source_area_indices - target_area_indices[-1]))
+                source_area_indices = source_area_indices[:idx]
+                source_area = source_area[:idx]
 
-                    index_clp = clps[label][i]
+        if not source_area_indices.size == target_area_indices.size:
+            if source_area_indices.size > target_area_indices.size:
+                mask = [
+                    np.any(np.isclose(target_area_indices, index)) for index in source_area_indices
+                ]
+                source_area_indices = source_area_indices[mask]
+                source_area = source_area[mask]
+            else:
+                mask = [
+                    np.any(np.isclose(source_area_indices, index, atol=group_tolerance))
+                    for index in target_area_indices
+                ]
+                target_area_indices = target_area_indices[mask]
+                target_area = target_area[mask]
+        area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
+        penalties.append(area_penalty * penalty.weight)
+    return np.asarray(penalties)
 
-                    source_idx = index_clp_label[label].index(penalty.compartment)
-                    source_area.append(index_clp[source_idx])
 
-                    target_idx = index_clp_label[label].index(penalty.target)
-                    target_area.append(index_clp[target_idx])
+def _get_area(
+    index_dependent: bool,
+    global_dimension: str,
+    clp_labels: Dict[str, List[List[str]]],
+    clps: Dict[str, List[np.ndarray]],
+    data: Dict[str, xr.Dataset],
+    group_tolerance: float,
+    penalty: EqualAreaPenalty,
+    compartment: str,
+) -> Tuple[np.ndarray, np.ndarray]:
+    area = []
+    area_indices = []
 
-            area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
-            penalties.append(area_penalty * penalty.weight)
-    return penalties
+    for label, dataset in data.items():
+        global_axis = dataset.coords[global_dimension]
+        for interval in penalty.interval:
+            if interval[0] > global_axis[-1]:
+                # interval not in this dataset
+                continue
+
+            start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
+            for i in range(start_idx, end_idx + 1):
+                index_clp_labels = clp_labels[label][i] if index_dependent else clp_labels[label]
+                if not len(area) == 0 and global_axis[i] - group_tolerance < area_indices[-1]:
+                    # already got clp for this index
+                    continue
+                if compartment in index_clp_labels:
+                    area.append(clps[label][i][index_clp_labels.index(compartment)])
+                    area_indices.append(global_axis[i])
+
+    return np.asarray(area_indices), np.asarray(area)
 
 
 def _get_idx_from_interval(

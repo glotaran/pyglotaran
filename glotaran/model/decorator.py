@@ -67,6 +67,7 @@ PenaltyFunction = Callable[
         Dict[str, List[np.ndarray]],
         Dict[str, Union[np.ndarray, List[np.ndarray]]],
         Dict[str, xr.Dataset],
+        float,
     ],
     np.ndarray,
 ]
