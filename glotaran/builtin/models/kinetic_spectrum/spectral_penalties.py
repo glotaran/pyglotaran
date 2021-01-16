@@ -25,9 +25,10 @@ if TYPE_CHECKING:
 
 @model_attribute(
     properties={
-        "compartment": str,
-        "interval": List[Tuple[float, float]],
+        "source": str,
+        "source_intervals": List[Tuple[float, float]],
         "target": str,
+        "target_intervals": List[Tuple[float, float]],
         "parameter": Parameter,
         "weight": str,
     },
@@ -79,62 +80,28 @@ def apply_spectral_penalties(
     for penalty in model.equal_area_penalties:
 
         penalty = penalty.fill(model, parameter)
-        source_area_indices, source_area = _get_area(
+        source_area = _get_area(
             model.index_dependent(),
             model.global_dimension,
             clp_labels,
             clps,
             data,
             group_tolerance,
-            penalty,
-            penalty.compartment,
+            penalty.source_intervals,
+            penalty.source,
         )
 
-        target_area_indices, target_area = _get_area(
+        target_area = _get_area(
             model.index_dependent(),
             model.global_dimension,
             clp_labels,
             clps,
             data,
             group_tolerance,
-            penalty,
+            penalty.target_intervals,
             penalty.target,
         )
 
-        if not np.isclose(source_area_indices[0], target_area_indices[0], atol=group_tolerance):
-            if source_area_indices[0] < target_area_indices[0]:
-                idx = np.argmin(np.abs(target_area_indices - source_area_indices[0]))
-                source_area_indices = source_area_indices[idx:]
-                source_area = source_area[idx:]
-            else:
-                idx = np.argmin(np.abs(source_area_indices - target_area_indices[0]))
-                target_area_indices = target_area_indices[idx:]
-                target_area = target_area[idx:]
-
-        if not np.isclose(source_area_indices[-1], target_area_indices[-1], atol=group_tolerance):
-            if source_area_indices[-1] < target_area_indices[-1]:
-                idx = np.argmin(np.abs(target_area_indices - source_area_indices[-1]))
-                target_area_indices = target_area_indices[:idx]
-                target_area = target_area[:idx]
-            else:
-                idx = np.argmin(np.abs(source_area_indices - target_area_indices[-1]))
-                source_area_indices = source_area_indices[:idx]
-                source_area = source_area[:idx]
-
-        if not source_area_indices.size == target_area_indices.size:
-            if source_area_indices.size > target_area_indices.size:
-                mask = [
-                    np.any(np.isclose(target_area_indices, index)) for index in source_area_indices
-                ]
-                source_area_indices = source_area_indices[mask]
-                source_area = source_area[mask]
-            else:
-                mask = [
-                    np.any(np.isclose(source_area_indices, index, atol=group_tolerance))
-                    for index in target_area_indices
-                ]
-                target_area_indices = target_area_indices[mask]
-                target_area = target_area[mask]
         area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
         penalties.append(area_penalty * penalty.weight)
     return np.asarray(penalties)
@@ -147,15 +114,15 @@ def _get_area(
     clps: Dict[str, List[np.ndarray]],
     data: Dict[str, xr.Dataset],
     group_tolerance: float,
-    penalty: EqualAreaPenalty,
+    intervals: List[Tuple[float, float]],
     compartment: str,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     area = []
     area_indices = []
 
     for label, dataset in data.items():
         global_axis = dataset.coords[global_dimension]
-        for interval in penalty.interval:
+        for interval in intervals:
             if interval[0] > global_axis[-1]:
                 # interval not in this dataset
                 continue
@@ -163,14 +130,16 @@ def _get_area(
             start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
             for i in range(start_idx, end_idx + 1):
                 index_clp_labels = clp_labels[label][i] if index_dependent else clp_labels[label]
-                if not len(area) == 0 and global_axis[i] - group_tolerance < area_indices[-1]:
+                if not len(area) == 0 and np.any(
+                    np.isclose(area_indices, global_axis[i], atol=group_tolerance)
+                ):
                     # already got clp for this index
                     continue
                 if compartment in index_clp_labels:
                     area.append(clps[label][i][index_clp_labels.index(compartment)])
                     area_indices.append(global_axis[i])
 
-    return np.asarray(area_indices), np.asarray(area)
+    return np.asarray(area)
 
 
 def _get_idx_from_interval(
