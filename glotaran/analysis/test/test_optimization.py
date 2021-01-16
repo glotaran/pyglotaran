@@ -16,10 +16,18 @@ from glotaran.analysis.test.mock import TwoCompartmentDecay
 @pytest.mark.parametrize("grouped", [True, False])
 @pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
+    "method",
+    [
+        "TrustRegionReflection",
+        "Dogbox",
+        "LevenbergMarquart",
+    ],
+)
+@pytest.mark.parametrize(
     "suite",
     [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
-def test_optimization(suite, index_dependent, grouped, weight):
+def test_optimization(suite, index_dependent, grouped, weight, method):
     model = suite.model
 
     model.is_grouped = grouped
@@ -73,7 +81,14 @@ def test_optimization(suite, index_dependent, grouped, weight):
 
         data[f"dataset{i+1}"] = dataset
 
-    scheme = Scheme(model=model, parameter=initial, data=data, nfev=10, group_tolerance=0.1)
+    scheme = Scheme(
+        model=model,
+        parameter=initial,
+        data=data,
+        nfev=10,
+        group_tolerance=0.1,
+        optimization_method=method,
+    )
 
     result = optimize(scheme)
     print(result.optimized_parameter)
