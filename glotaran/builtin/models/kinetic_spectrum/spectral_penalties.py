@@ -139,7 +139,7 @@ def _get_area(
                     area.append(clps[label][i][index_clp_labels.index(compartment)])
                     area_indices.append(global_axis[i])
 
-    return np.asarray(area)
+    return np.asarray(area)  # TODO: normalize for distance on global axis
 
 
 def _get_idx_from_interval(
