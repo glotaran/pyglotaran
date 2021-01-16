@@ -8,6 +8,7 @@ from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.mock import DecayModel
 from glotaran.analysis.test.mock import MultichannelMulticomponentDecay
 from glotaran.analysis.test.mock import OneCompartmentDecay
+from glotaran.analysis.test.mock import ThreeDatasetDecay
 from glotaran.analysis.test.mock import TwoCompartmentDecay
 
 
@@ -15,7 +16,8 @@ from glotaran.analysis.test.mock import TwoCompartmentDecay
 @pytest.mark.parametrize("grouped", [True, False])
 @pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
-    "suite", [OneCompartmentDecay, TwoCompartmentDecay, MultichannelMulticomponentDecay]
+    "suite",
+    [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
 def test_optimization(suite, index_dependent, grouped, weight):
     model = suite.model
@@ -31,8 +33,6 @@ def test_optimization(suite, index_dependent, grouped, weight):
     sim_model = suite.sim_model
     sim_model.is_grouped = grouped
     sim_model.is_index_dependent = index_dependent
-    est_axis = suite.e_axis
-    cal_axis = suite.c_axis
 
     print(model.validate())
     assert model.valid()
@@ -50,42 +50,63 @@ def test_optimization(suite, index_dependent, grouped, weight):
     print(model.validate(initial))
     assert model.valid(initial)
 
-    dataset = simulate(sim_model, "dataset1", wanted, {"e": est_axis, "c": cal_axis})
-    print(dataset)
+    nr_datasets = 3 if issubclass(suite, ThreeDatasetDecay) else 1
+    data = {}
+    for i in range(nr_datasets):
+        e_axis = getattr(suite, "e_axis" if i == 0 else f"e_axis{i+1}")
+        c_axis = getattr(suite, "c_axis" if i == 0 else f"c_axis{i+1}")
 
-    if hasattr(suite, "scale"):
-        dataset["data"] /= suite.scale
+        dataset = simulate(sim_model, f"dataset{i+1}", wanted, {"e": e_axis, "c": c_axis})
+        print(f"Dataset {i+1}")
+        print("=============")
+        print(dataset)
 
-    if weight:
-        dataset["weight"] = xr.DataArray(np.ones_like(dataset.data) * 0.5, coords=dataset.coords)
+        if hasattr(suite, "scale"):
+            dataset["data"] /= suite.scale
 
-    assert dataset.data.shape == (cal_axis.size, est_axis.size)
+        if weight:
+            dataset["weight"] = xr.DataArray(
+                np.ones_like(dataset.data) * 0.5, coords=dataset.coords
+            )
 
-    data = {"dataset1": dataset}
-    scheme = Scheme(model=model, parameter=initial, data=data, nfev=10)
+        assert dataset.data.shape == (c_axis.size, e_axis.size)
+
+        data[f"dataset{i+1}"] = dataset
+
+    scheme = Scheme(model=model, parameter=initial, data=data, nfev=10, group_tolerance=0.1)
 
     result = optimize(scheme)
     print(result.optimized_parameter)
-    print(result.data["dataset1"])
 
     for label, param in result.optimized_parameter.all():
         if param.vary:
             assert np.allclose(param.value, wanted.get(label).value, rtol=1e-1)
 
-    resultdata = result.data["dataset1"]
-    print(resultdata)
-    assert "residual" in resultdata
-    assert "residual_left_singular_vectors" in resultdata
-    assert "residual_right_singular_vectors" in resultdata
-    assert "residual_singular_values" in resultdata
-    assert np.array_equal(dataset.c, resultdata.c)
-    assert np.array_equal(dataset.e, resultdata.e)
-    assert dataset.data.shape == resultdata.data.shape
-    print(dataset.data[0, 0], resultdata.data[0, 0])
-    assert np.allclose(dataset.data, resultdata.data)
+    for i, dataset in enumerate(data.values()):
+        resultdata = result.data[f"dataset{i+1}"]
+        print(f"Result Data {i+1}")
+        print("=================")
+        print(resultdata)
+        assert "residual" in resultdata
+        assert "residual_left_singular_vectors" in resultdata
+        assert "residual_right_singular_vectors" in resultdata
+        assert "residual_singular_values" in resultdata
+        assert np.array_equal(dataset.c, resultdata.c)
+        assert np.array_equal(dataset.e, resultdata.e)
+        assert dataset.data.shape == resultdata.data.shape
+        print(dataset.data[0, 0], resultdata.data[0, 0])
+        assert np.allclose(dataset.data, resultdata.data)
+        if weight:
+            assert "weight" in resultdata
+            assert "weighted_residual" in resultdata
+            assert "weighted_residual_left_singular_vectors" in resultdata
+            assert "weighted_residual_right_singular_vectors" in resultdata
+            assert "weighted_residual_singular_values" in resultdata
+
+    assert callable(model.additional_penalty_function)
+    assert model.additional_penalty_function_called
 
     if isinstance(model, DecayModel):
-        assert callable(model.additional_penalty_function)
         assert callable(model.constrain_matrix_function)
         assert model.constrain_matrix_function_called
         assert callable(model.retrieve_clp_function)
@@ -93,14 +114,6 @@ def test_optimization(suite, index_dependent, grouped, weight):
     else:
         assert not model.constrain_matrix_function_called
         assert not model.retrieve_clp_function_called
-
-    assert model.additional_penalty_function_called
-    if weight:
-        assert "weight" in resultdata
-        assert "weighted_residual" in resultdata
-        assert "weighted_residual_left_singular_vectors" in resultdata
-        assert "weighted_residual_right_singular_vectors" in resultdata
-        assert "weighted_residual_singular_values" in resultdata
 
 
 if __name__ == "__main__":

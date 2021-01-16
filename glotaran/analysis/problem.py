@@ -668,7 +668,7 @@ class Problem:
         self,
     ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray],]:
         def residual_function(problem: GroupedProblem):
-            matrix = self.matrices[problem.group].copy()
+            matrix = self.reduced_matrices[problem.group].copy()
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
             data = problem.data
@@ -764,16 +764,17 @@ class Problem:
             self._reduced_clp_labels[label] = []
             self._reduced_clps[label] = []
             for i in range(self.data[label].coords[self._global_dimension].size):
+                group_label = self.bag[i].group
+                dataset_clp_labels = clp_labels[i] if self._index_dependent else clp_labels
                 index_clp_labels = (
                     reduced_clp_labels[i + offset]
                     if self._index_dependent
-                    else reduced_clp_labels[label]
+                    else reduced_clp_labels[group_label]
                 )
-                self._reduced_clp_labels[label] = (
-                    [clp_label for clp_label in clp_labels[i] if clp_label in index_clp_labels]
-                    if self._index_dependent
-                    else index_clp_labels
-                )
+                self._reduced_clp_labels[label] = [
+                    clp_label for clp_label in dataset_clp_labels if clp_label in index_clp_labels
+                ]
+
                 mask = [
                     clp_label in self._reduced_clp_labels[label] for clp_label in index_clp_labels
                 ]
@@ -1065,12 +1066,13 @@ def _reduce_matrix(
     result: LabelAndMatrix,
     index: float,
 ) -> LabelAndMatrix:
+    clp_labels = result.clp_label.copy()
     if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
         clp_label, matrix = model.constrain_matrix_function(
-            label, parameter, result.clp_label, result.matrix, index
+            label, parameter, clp_labels, result.matrix, index
         )
         return LabelAndMatrix(clp_label, matrix)
-    return result
+    return LabelAndMatrix(clp_labels, result.matrix)
 
 
 def _combine_matrices(labels_and_matrices: List[LabelAndMatrix]) -> LabelAndMatrix:

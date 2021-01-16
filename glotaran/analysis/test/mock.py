@@ -63,14 +63,22 @@ class MockModel(Model):
 
 def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
     kinpar = -1 * np.array(dataset_descriptor.kinetic)
-    compartments = [f"s{i+1}" for i in range(len(kinpar))]
+    if dataset_descriptor.label == "dataset3":
+        # this case is for the ThreeDatasetDecay test
+        compartments = [f"s{i+2}" for i in range(len(kinpar))]
+    else:
+        compartments = [f"s{i+1}" for i in range(len(kinpar))]
     array = np.exp(np.outer(axis, kinpar))
     return (compartments, array)
 
 
-def calculate_spectral_simple(dataset, axis):
-    kinpar = -1 * np.array(dataset.kinetic)
-    compartments = [f"s{i+1}" for i in range(len(kinpar))]
+def calculate_spectral_simple(dataset_descriptor, axis):
+    kinpar = -1 * np.array(dataset_descriptor.kinetic)
+    if dataset_descriptor.label == "dataset3":
+        # this case is for the ThreeDatasetDecay test
+        compartments = [f"s{i+2}" for i in range(len(kinpar))]
+    else:
+        compartments = [f"s{i+1}" for i in range(len(kinpar))]
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
     return compartments, array.T
 
@@ -274,7 +282,6 @@ class OneCompartmentDecay:
     c_axis = np.arange(0, 150, 1.5)
 
     model_dict = {
-        "compartment": ["s1"],
         "dataset": {
             "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]}
         },
@@ -293,13 +300,36 @@ class TwoCompartmentDecay:
 
     model = DecayModel.from_dict(
         {
-            "compartment": ["s1", "s2"],
             "dataset": {
                 "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1", "2"]}
             },
         }
     )
     sim_model = model
+
+
+class ThreeDatasetDecay:
+    wanted = ParameterGroup.from_list([101e-4, 201e-3])
+    initial = ParameterGroup.from_list([100e-5, 200e-3])
+
+    e_axis = np.asarray([1.0])
+    c_axis = np.arange(0, 150, 1.5)
+
+    e_axis2 = np.asarray([1.0, 2.01])
+    c_axis2 = np.arange(0, 100, 1.5)
+
+    e_axis3 = np.asarray([0.99, 3.0])
+    c_axis3 = np.arange(0, 150, 1.5)
+
+    model_dict = {
+        "dataset": {
+            "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]},
+            "dataset2": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1", "2"]},
+            "dataset3": {"initial_concentration": [], "megacomplex": [], "kinetic": ["2"]},
+        },
+    }
+    sim_model = DecayModel.from_dict(model_dict)
+    model = sim_model
 
 
 class MultichannelMulticomponentDecay:
