@@ -68,9 +68,10 @@ spectral_constraints:
 
 equal_area_penalties:
   - type: equal_area
-    compartment: s3
-    interval: [!tuple '(670, 810)']
+    source: s3
+    source_intervals: [!tuple '(670, 810)']
     target: s2
+    target_intervals: [!tuple '(670, 810)']
     parameter: 55
     weight: 0.0016
 

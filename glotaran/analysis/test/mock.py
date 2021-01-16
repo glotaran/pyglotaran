@@ -1,6 +1,10 @@
+from typing import Dict
 from typing import List
+from typing import Type
+from typing import Union
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
@@ -59,14 +63,22 @@ class MockModel(Model):
 
 def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
     kinpar = -1 * np.array(dataset_descriptor.kinetic)
-    compartments = [f"s{i+1}" for i in range(len(kinpar))]
+    if dataset_descriptor.label == "dataset3":
+        # this case is for the ThreeDatasetDecay test
+        compartments = [f"s{i+2}" for i in range(len(kinpar))]
+    else:
+        compartments = [f"s{i+1}" for i in range(len(kinpar))]
     array = np.exp(np.outer(axis, kinpar))
     return (compartments, array)
 
 
-def calculate_spectral_simple(dataset, axis):
-    kinpar = -1 * np.array(dataset.kinetic)
-    compartments = [f"s{i+1}" for i in range(len(kinpar))]
+def calculate_spectral_simple(dataset_descriptor, axis):
+    kinpar = -1 * np.array(dataset_descriptor.kinetic)
+    if dataset_descriptor.label == "dataset3":
+        # this case is for the ThreeDatasetDecay test
+        compartments = [f"s{i+2}" for i in range(len(kinpar))]
+    else:
+        compartments = [f"s{i+1}" for i in range(len(kinpar))]
     array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
     return compartments, array.T
 
@@ -84,6 +96,117 @@ def calculate_spectral_gauss(dataset, axis):
     return compartments, array.T
 
 
+def constrain_matrix_function_typecheck(
+    model: Type[Model],
+    label: str,
+    parameter: ParameterGroup,
+    clp_labels: List[str],
+    matrix: np.ndarray,
+    index: float,
+):
+    assert isinstance(label, str)
+    assert isinstance(parameter, ParameterGroup)
+    assert isinstance(clp_labels, list)
+    assert all(isinstance(clp_label, str) for clp_label in clp_labels)
+    assert isinstance(matrix, np.ndarray)
+
+    if model.index_dependent():
+        assert isinstance(index, float)
+    else:
+        assert index is None
+
+    model.constrain_matrix_function_called = True
+
+    return (clp_labels, matrix)
+
+
+def retrieve_clp_typecheck(
+    model: Type[Model],
+    parameter: ParameterGroup,
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    reduced_clps: Dict[str, List[np.ndarray]],
+    data: Dict[str, xr.Dataset],
+) -> Dict[str, List[np.ndarray]]:
+    assert isinstance(parameter, ParameterGroup)
+
+    assert isinstance(reduced_clps, dict)
+    assert all(isinstance(dataset_clps, list) for dataset_clps in reduced_clps.values())
+
+    assert all(
+        [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
+        for dataset_clps in reduced_clps.values()
+    )
+
+    assert isinstance(data, dict)
+    assert all(isinstance(label, str) for label in data)
+    assert all(isinstance(dataset, xr.Dataset) for dataset in data.values())
+
+    assert isinstance(clp_labels, dict)
+    if model.index_dependent():
+        for dataset_clp_labels in clp_labels.values():
+            assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
+            assert all(
+                [isinstance(label, str) for label in index_label]
+                for index_label in dataset_clp_labels
+            )
+
+    else:
+        for dataset_clp_labels in clp_labels.values():
+            assert all(isinstance(label, str) for label in dataset_clp_labels)
+
+    model.retrieve_clp_function_called = True
+
+    return reduced_clps
+
+
+def additional_penalty_typecheck(
+    model: Type[Model],
+    parameter: ParameterGroup,
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    clps: Dict[str, List[np.ndarray]],
+    matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    data: Dict[str, xr.Dataset],
+    group_tolerance: float,
+) -> np.ndarray:
+    assert isinstance(parameter, ParameterGroup)
+    assert isinstance(group_tolerance, float)
+
+    assert isinstance(clps, dict)
+    assert all(isinstance(dataset_clps, list) for dataset_clps in clps.values())
+    assert all(
+        [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
+        for dataset_clps in clps.values()
+    )
+
+    assert isinstance(data, dict)
+    assert all(isinstance(label, str) for label in data)
+    assert all(isinstance(dataset, xr.Dataset) for dataset in data.values())
+
+    assert isinstance(clp_labels, dict)
+    assert isinstance(matrices, dict)
+    if model.index_dependent():
+        for dataset_clp_labels in clp_labels.values():
+            assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
+            assert all(
+                [isinstance(label, str) for label in index_label]
+                for index_label in dataset_clp_labels
+            )
+
+        for matrix in matrices.values():
+            assert isinstance(matrix, list)
+            assert all(isinstance(index_matrix, np.ndarray) for index_matrix in matrix)
+    else:
+        for dataset_clp_labels in clp_labels.values():
+            assert all(isinstance(label, str) for label in dataset_clp_labels)
+        for matrix in matrices.values():
+            assert isinstance(matrix, np.ndarray)
+
+    model.additional_penalty_function_called = True
+
+    return np.asarray([0.1])
+
+
 @model_attribute(
     properties={
         "kinetic": List[Parameter],
@@ -96,9 +219,9 @@ class DecayDatasetDescriptor(DatasetDescriptor):
 @model_attribute(
     properties={
         "kinetic": List[Parameter],
-        "location": List[Parameter],
-        "amplitude": List[Parameter],
-        "delta": List[Parameter],
+        "location": {"type": List[Parameter], "allow_none": True},
+        "amplitude": {"type": List[Parameter], "allow_none": True},
+        "delta": {"type": List[Parameter], "allow_none": True},
     }
 )
 class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
@@ -114,10 +237,20 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
     megacomplex_type=MockMegacomplex,
-    additional_penalty_function=lambda model, parameter, clp_labels, clps, index: [],
+    has_additional_penalty_function=lambda model: True,
+    additional_penalty_function=additional_penalty_typecheck,
+    has_matrix_constraints_function=lambda model: True,
+    constrain_matrix_function=constrain_matrix_function_typecheck,
+    retrieve_clp_function=retrieve_clp_typecheck,
+    grouped=lambda model: model.is_grouped,
+    index_dependent=lambda model: model.is_index_dependent,
 )
 class DecayModel(Model):
-    pass
+    additional_penalty_function_called = False
+    constrain_matrix_function_called = False
+    retrieve_clp_function_called = False
+    is_grouped = False
+    is_index_dependent = False
 
 
 @model(
@@ -129,9 +262,17 @@ class DecayModel(Model):
     global_matrix=calculate_spectral_gauss,
     global_dimension="e",
     megacomplex_type=MockMegacomplex,
+    grouped=lambda model: model.is_grouped,
+    index_dependent=lambda model: model.is_index_dependent,
+    has_additional_penalty_function=lambda model: True,
+    additional_penalty_function=additional_penalty_typecheck,
 )
 class GaussianDecayModel(Model):
-    pass
+    additional_penalty_function_called = False
+    constrain_matrix_function_called = False
+    retrieve_clp_function_called = False
+    is_grouped = False
+    is_index_dependent = False
 
 
 class OneCompartmentDecay:
@@ -139,11 +280,10 @@ class OneCompartmentDecay:
     wanted = ParameterGroup.from_list([101e-4])
     initial = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
 
-    e_axis = np.asarray([1])
+    e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
 
     model_dict = {
-        "compartment": ["s1"],
         "dataset": {
             "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]}
         },
@@ -157,18 +297,41 @@ class TwoCompartmentDecay:
     wanted = ParameterGroup.from_list([11e-4, 22e-5])
     initial = ParameterGroup.from_list([10e-4, 20e-5])
 
-    e_axis = np.asarray([1])
+    e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
 
     model = DecayModel.from_dict(
         {
-            "compartment": ["s1", "s2"],
             "dataset": {
                 "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1", "2"]}
             },
         }
     )
     sim_model = model
+
+
+class ThreeDatasetDecay:
+    wanted = ParameterGroup.from_list([101e-4, 201e-3])
+    initial = ParameterGroup.from_list([100e-5, 200e-3])
+
+    e_axis = np.asarray([1.0])
+    c_axis = np.arange(0, 150, 1.5)
+
+    e_axis2 = np.asarray([1.0, 2.01])
+    c_axis2 = np.arange(0, 100, 1.5)
+
+    e_axis3 = np.asarray([0.99, 3.0])
+    c_axis3 = np.arange(0, 150, 1.5)
+
+    model_dict = {
+        "dataset": {
+            "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]},
+            "dataset2": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1", "2"]},
+            "dataset3": {"initial_concentration": [], "megacomplex": [], "kinetic": ["2"]},
+        },
+    }
+    sim_model = DecayModel.from_dict(model_dict)
+    model = sim_model
 
 
 class MultichannelMulticomponentDecay:
@@ -215,7 +378,7 @@ class MultichannelMulticomponentDecay:
             },
         }
     )
-    model = DecayModel.from_dict(
+    model = GaussianDecayModel.from_dict(
         {
             "compartment": ["s1", "s2", "s3", "s4"],
             "dataset": {

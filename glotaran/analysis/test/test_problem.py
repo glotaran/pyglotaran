@@ -15,14 +15,19 @@ from .mock import MultichannelMulticomponentDecay as suite
 )
 def problem(request) -> Problem:
     model = suite.model
-    model.grouped = lambda: request.param[0]
-    model.index_dependent = lambda: request.param[1]
+    model.is_grouped = request.param[0]
+    model.is_index_dependent = request.param[1]
 
     dataset = simulate(
         suite.sim_model, "dataset1", suite.wanted, {"e": suite.e_axis, "c": suite.c_axis}
     )
     scheme = Scheme(model=model, parameter=suite.initial, data={"dataset1": dataset})
     return Problem(scheme)
+
+
+def test_problem(problem: Problem):
+    assert problem.grouped == problem.model.is_grouped
+    assert problem.index_dependent == problem.model.is_index_dependent
 
 
 def test_problem_bag(problem: Problem):
@@ -43,15 +48,11 @@ def test_problem_matrices(problem: Problem):
 
     if problem.grouped:
         if problem.index_dependent:
-            assert isinstance(problem.clp_labels, list)
-            assert isinstance(problem.matrices, list)
             assert all(isinstance(m, list) for m in problem.reduced_clp_labels)
             assert all(isinstance(m, np.ndarray) for m in problem.reduced_matrices)
             assert len(problem.reduced_clp_labels) == suite.e_axis.size
             assert len(problem.reduced_matrices) == suite.e_axis.size
         else:
-            assert isinstance(problem.clp_labels, dict)
-            assert isinstance(problem.matrices, dict)
             assert "dataset1" in problem.reduced_clp_labels
             assert "dataset1" in problem.reduced_matrices
             assert isinstance(problem.reduced_clp_labels["dataset1"], list)
@@ -66,9 +67,9 @@ def test_problem_matrices(problem: Problem):
         else:
             assert isinstance(problem.reduced_matrices["dataset1"], np.ndarray)
 
+        assert isinstance(problem.clp_labels, dict)
         assert isinstance(problem.matrices, dict)
         assert isinstance(problem.reduced_clp_labels["dataset1"], list)
-        assert isinstance(problem.clp_labels, dict)
         assert "dataset1" in problem.reduced_clp_labels
         assert "dataset1" in problem.reduced_matrices
 
@@ -76,30 +77,30 @@ def test_problem_matrices(problem: Problem):
 def test_problem_residuals(problem: Problem):
     problem.calculate_residual()
     if problem.grouped:
-        assert isinstance(problem.reduced_clps, list)
-        assert all(isinstance(c, np.ndarray) for c in problem.reduced_clps)
-        assert len(problem.reduced_clps) == suite.e_axis.size
-        assert isinstance(problem.clps, list)
-        assert all(isinstance(c, np.ndarray) for c in problem.clps)
-        assert len(problem.clps) == suite.e_axis.size
         assert isinstance(problem.residuals, list)
         assert all(isinstance(r, np.ndarray) for r in problem.residuals)
         assert len(problem.residuals) == suite.e_axis.size
     else:
-        assert isinstance(problem.reduced_clps, dict)
-        assert "dataset1" in problem.reduced_clps
-        assert all(isinstance(c, np.ndarray) for c in problem.reduced_clps["dataset1"])
-        assert len(problem.reduced_clps["dataset1"]) == suite.e_axis.size
-        assert isinstance(problem.clps, dict)
-        assert "dataset1" in problem.clps
-        assert all(isinstance(c, np.ndarray) for c in problem.clps["dataset1"])
-        assert len(problem.clps["dataset1"]) == suite.e_axis.size
         assert isinstance(problem.residuals, dict)
         assert "dataset1" in problem.residuals
         assert all(isinstance(r, np.ndarray) for r in problem.residuals["dataset1"])
         assert len(problem.residuals["dataset1"]) == suite.e_axis.size
+    assert isinstance(problem.reduced_clps, dict)
+    assert "dataset1" in problem.reduced_clps
+    assert all(isinstance(c, np.ndarray) for c in problem.reduced_clps["dataset1"])
+    assert len(problem.reduced_clps["dataset1"]) == suite.e_axis.size
+    assert isinstance(problem.clps, dict)
+    assert "dataset1" in problem.clps
+    assert all(isinstance(c, np.ndarray) for c in problem.clps["dataset1"])
+    assert len(problem.clps["dataset1"]) == suite.e_axis.size
+    assert isinstance(problem.additional_penalty, np.ndarray)
+    assert problem.additional_penalty.size == 1
+    assert problem.additional_penalty[0] == 0.1
     assert isinstance(problem.full_penalty, np.ndarray)
-    assert problem.full_penalty.size == suite.c_axis.size * suite.e_axis.size
+    assert (
+        problem.full_penalty.size
+        == (suite.c_axis.size * suite.e_axis.size) + problem.additional_penalty.size
+    )
 
 
 def test_problem_result_data(problem: Problem):

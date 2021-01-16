@@ -157,10 +157,11 @@ def test_equal_area_penalties(debug=False):
     equ_area = {
         "equal_area_penalties": [
             {
-                "compartment": "s1",
+                "source": "s1",
                 "target": "s2",
                 "parameter": "rela.1",
-                "interval": equ_interval,
+                "source_intervals": equ_interval,
+                "target_intervals": equ_interval,
                 "weight": weight,
             },
         ],

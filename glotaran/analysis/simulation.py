@@ -67,21 +67,35 @@ def simulate(
     )
     result = result.to_dataset(name="data")
 
-    matrix = [
-        model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=index)
-        for index in global_dimension
-    ]
-    if callable(model.constrain_matrix_function):
-        matrix = [
-            model.constrain_matrix_function(parameter, clp, mat, global_dimension[i])
-            for i, (clp, mat) in enumerate(matrix)
+    matrix = (
+        [
+            model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=index)
+            for index in global_dimension
         ]
-    matrix = [
-        xr.DataArray(
-            mat, coords=[(model.model_dimension, model_dimension), ("clp_label", clp_label)]
+        if model.index_dependent()
+        else model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=None)
+    )
+    if callable(model.constrain_matrix_function):
+        matrix = (
+            [
+                model.constrain_matrix_function(dataset, parameter, clp, mat, global_dimension[i])
+                for i, (clp, mat) in enumerate(matrix)
+            ]
+            if model.index_dependent()
+            else model.constrain_matrix_function(dataset, parameter, matrix[0], matrix[1], None)
         )
-        for clp_label, mat in matrix
-    ]
+    matrix = (
+        [
+            xr.DataArray(
+                mat, coords=[(model.model_dimension, model_dimension), ("clp_label", clp_label)]
+            )
+            for clp_label, mat in matrix
+        ]
+        if model.index_dependent()
+        else xr.DataArray(
+            matrix[1], coords=[(model.model_dimension, model_dimension), ("clp_label", matrix[0])]
+        )
+    )
 
     if clp is not None:
         if clp.shape[0] != global_dimension.size:
@@ -110,7 +124,10 @@ def simulate(
             clp, coords=[(model.global_dimension, global_dimension), ("clp_label", clp_labels)]
         )
     for i in range(dim2):
-        result.data[:, i] = np.dot(matrix[i], clp[i].sel(clp_label=matrix[i].coords["clp_label"]))
+        index_matrix = matrix[i] if model.index_dependent() else matrix
+        result.data[:, i] = np.dot(
+            index_matrix, clp[i].sel(clp_label=index_matrix.coords["clp_label"])
+        )
 
     if noise:
         if noise_seed is not None:

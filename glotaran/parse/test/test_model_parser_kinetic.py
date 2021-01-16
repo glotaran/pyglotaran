@@ -71,9 +71,10 @@ def test_spectral_penalties(model):
     assert len(model.equal_area_penalties) == 1
     assert all(isinstance(c, EqualAreaPenalty) for c in model.equal_area_penalties)
     eac = model.equal_area_penalties[0]
-    assert eac.compartment == "s3"
-    assert eac.interval == [(670, 810)]
+    assert eac.source == "s3"
+    assert eac.source_intervals == [(670, 810)]
     assert eac.target == "s2"
+    assert eac.target_intervals == [(670, 810)]
     assert eac.parameter == 55
     assert eac.weight == 0.0016
 

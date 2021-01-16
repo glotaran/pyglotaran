@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Dict
 from typing import List
 from typing import Tuple
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
@@ -23,9 +25,10 @@ if TYPE_CHECKING:
 
 @model_attribute(
     properties={
-        "compartment": str,
-        "interval": List[Tuple[float, float]],
+        "source": str,
+        "source_intervals": List[Tuple[float, float]],
         "target": str,
+        "target_intervals": List[Tuple[float, float]],
         "parameter": Parameter,
         "weight": str,
     },
@@ -33,8 +36,8 @@ if TYPE_CHECKING:
 )
 class EqualAreaPenalty:
     """An equal area constraint adds a the differenc of the sum of a
-    compartements in the e matrix in one ore more intervals to the scaled sum
-    of the e matrix of one or more target compartmants to resiudal. The additional
+    compartments in the e matrix in one ore more intervals to the scaled sum
+    of the e matrix of one or more target compartments to residual. The additional
     residual is scaled with the weight."""
 
     def applies(self, index: Any) -> bool:
@@ -66,38 +69,77 @@ def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
 def apply_spectral_penalties(
     model: KineticSpectrumModel,
     parameter: ParameterGroup,
-    clp_labels: Union[List[str], List[List[str]]],
-    full_clps: List[np.ndarray],
-    global_axis: np.ndarray,
+    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
+    clps: Dict[str, List[np.ndarray]],
+    matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    data: Dict[str, xr.Dataset],
+    group_tolerance: float,
 ) -> np.ndarray:
 
     penalties = []
     for penalty in model.equal_area_penalties:
 
-        source_area = []
-        target_area = []
-
         penalty = penalty.fill(model, parameter)
+        source_area = _get_area(
+            model.index_dependent(),
+            model.global_dimension,
+            clp_labels,
+            clps,
+            data,
+            group_tolerance,
+            penalty.source_intervals,
+            penalty.source,
+        )
 
-        for interval in penalty.interval:
-
-            start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
-            for i in range(start_idx, end_idx + 1):
-
-                # In case of an index dependent problem the clp_labels are per index
-                index_clp_label = clp_labels[i] if model.index_dependent() else clp_labels
-
-                index_clp = full_clps[i]
-
-                source_idx = index_clp_label.index(penalty.compartment)
-                source_area.append(index_clp[source_idx])
-
-                target_idx = index_clp_label.index(penalty.target)
-                target_area.append(index_clp[target_idx])
+        target_area = _get_area(
+            model.index_dependent(),
+            model.global_dimension,
+            clp_labels,
+            clps,
+            data,
+            group_tolerance,
+            penalty.target_intervals,
+            penalty.target,
+        )
 
         area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
         penalties.append(area_penalty * penalty.weight)
-    return penalties
+    return np.asarray(penalties)
+
+
+def _get_area(
+    index_dependent: bool,
+    global_dimension: str,
+    clp_labels: Dict[str, List[List[str]]],
+    clps: Dict[str, List[np.ndarray]],
+    data: Dict[str, xr.Dataset],
+    group_tolerance: float,
+    intervals: List[Tuple[float, float]],
+    compartment: str,
+) -> np.ndarray:
+    area = []
+    area_indices = []
+
+    for label, dataset in data.items():
+        global_axis = dataset.coords[global_dimension]
+        for interval in intervals:
+            if interval[0] > global_axis[-1]:
+                # interval not in this dataset
+                continue
+
+            start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
+            for i in range(start_idx, end_idx + 1):
+                index_clp_labels = clp_labels[label][i] if index_dependent else clp_labels[label]
+                if not len(area) == 0 and np.any(
+                    np.isclose(area_indices, global_axis[i], atol=group_tolerance)
+                ):
+                    # already got clp for this index
+                    continue
+                if compartment in index_clp_labels:
+                    area.append(clps[label][i][index_clp_labels.index(compartment)])
+                    area_indices.append(global_axis[i])
+
+    return np.asarray(area)  # TODO: normalize for distance on global axis
 
 
 def _get_idx_from_interval(
