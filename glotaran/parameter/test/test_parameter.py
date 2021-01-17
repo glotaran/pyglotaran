@@ -284,10 +284,51 @@ def test_parameter_expressions():
 
     with pytest.raises(ValueError):
         params_bad_expr = """
-    - ["3", {expr: 'None'}]
+        - ["3", {expr: 'None'}]
+        """
+        ParameterGroup.from_yaml(params_bad_expr)
+
+
+def test_parameter_expressions_groups():
+    params_vary_explicit = """
+    b:
+        - [0.25, {vary: True}]
+        - [0.75, {expr: '1 - $b.1', vary: False}]
+    rates:
+        - ["total", 2, {vary: True}]
+        - ["branch1", {expr: '$rates.total * $b.1)', vary: False}]
+        - ["branch2", {expr: '$rates.total * $b.2)', vary: False}]
+    """
+    params_vary_implicit = """
+    b:
+        - [0.25]
+        - [0.75, {expr: '1 - $b.1'}]
+    rates:
+        - ["total", 2]
+        - ["branch1", {expr: '$rates.total * $b.1)'}]
+        - ["branch2", {expr: '$rates.total * $b.2)'}]
+    """
+    params_label_explicit = """
+    b:
+        - ["1", 0.25]
+        - ["2", 0.75, {expr: '1 - $b.1'}]
+    rates:
+        - ["total", 2]
+        - ["branch1", {expr: '$rates.total * $b.1)'}]
+        - ["branch2", {expr: '$rates.total * $b.2)'}]
     """
 
-        ParameterGroup.from_yaml(params_bad_expr)
+    for params in [params_vary_explicit, params_vary_implicit, params_label_explicit]:
+        params = ParameterGroup.from_yaml(params)
+
+        assert params.get("b.1").expression is not None
+        assert params.get("b.1").vary
+        assert not params.get("b.2").vary
+        assert params.get("rates.branch1").value == params.get("rates.total") * params.get("b.1")
+        assert params.get("rates.branch2").value == params.get("rates.total") * params.get("b.2")
+        assert params.get("rates.total").vary
+        assert not params.get("rates.branch1").vary
+        assert not params.get("rates.branch2").vary
 
 
 def test_parameter_pickle(tmpdir):
