@@ -3,9 +3,8 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.scheme import Scheme
+from glotaran.analysis.test.mock import MockModel
 from glotaran.parameter import ParameterGroup
-
-from .mock import MockModel
 
 
 @pytest.fixture(scope="session")
