@@ -91,5 +91,5 @@ def sanitize_yaml(d):
         dict: a sanitized dict with (broken) string tuples restored as proper tuples
     """
     sanitize_dict_keys(d)
-    sanitize_dict_values(d)
+    # sanitize_dict_values(d)
     return d

@@ -64,7 +64,7 @@ def test_spectral_constraints(model):
     assert len(zcs) == 2
     for zc in zcs:
         assert zc.compartment == "s1"
-        assert zc.interval == [(1, 100), (2, 200)]
+        assert zc.interval == [[1, 100], [2, 200]]
 
 
 def test_spectral_penalties(model):
@@ -72,9 +72,9 @@ def test_spectral_penalties(model):
     assert all(isinstance(c, EqualAreaPenalty) for c in model.equal_area_penalties)
     eac = model.equal_area_penalties[0]
     assert eac.source == "s3"
-    assert eac.source_intervals == [(670, 810)]
+    assert eac.source_intervals == [[670, 810]]
     assert eac.target == "s2"
-    assert eac.target_intervals == [(670, 810)]
+    assert eac.target_intervals == [[670, 810]]
     assert eac.parameter == 55
     assert eac.weight == 0.0016
 
@@ -87,7 +87,7 @@ def test_spectral_relations(model):
 
     assert rel.compartment == "s1"
     assert rel.target == "s2"
-    assert rel.interval == [(1, 100), (2, 200)]
+    assert rel.interval == [[1, 100], [2, 200]]
 
 
 def test_initial_concentration(model):
@@ -147,8 +147,8 @@ def test_weight(model):
     weight = model.weights[0]
     assert isinstance(weight, Weight)
     assert weight.datasets == ["d1", "d2"]
-    assert weight.global_interval == (100, 102)
-    assert weight.model_interval == (301, 502)
+    assert weight.global_interval == [100, 102]
+    assert weight.model_interval == [301, 502]
     assert weight.value == 42
 
 
