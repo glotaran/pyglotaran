@@ -72,7 +72,7 @@ def retrieve_spectral_clps(
             index_reduced_clps = reduced_clps[label][i]
             index_clps = np.zeros((len(index_clp_labels)), dtype=np.float64)
             for j, clp_label in enumerate(index_reduced_clp_labels):
-                index_clps[index_clp_labels.index(clp_label)] = index_reduced_clps[i]
+                index_clps[index_clp_labels.index(clp_label)] = index_reduced_clps[j]
             clps[label].append(index_clps)
     clps = retrieve_related_clps(model, parameter, clp_labels, clps, data)
     return clps
