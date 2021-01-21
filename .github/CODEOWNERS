@@ -17,10 +17,10 @@
 # tooling
 /.github /.*                    @glotaran/admins @glotaran/maintainers
 /*.y*ml /*.ini /*.toml /*.txt   @glotaran/admins @glotaran/maintainers
-LICENSE                         @pyglotaran_creators
+LICENSE                         @glotaran/pyglotaran_creators
 
 # docs
-/docs *.rst *.md                @glotaran/maintainers @pyglotaran_creators
+/docs *.rst *.md                @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
 /glotaran/analysis/             @joernweissenborn
