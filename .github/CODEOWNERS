@@ -25,7 +25,7 @@ LICENSE                         @glotaran/pyglotaran_creators
 
 # docs
 /docs/**/*.rst                  @glotaran/maintainers @glotaran/pyglotaran_creators
-/docs/**/*.md                   @glotaran/maintainers @glotaran/pyglotaran_creators
+# /docs/**/*.md                   @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
 /glotaran/analysis/             @joernweissenborn
