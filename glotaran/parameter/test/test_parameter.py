@@ -27,10 +27,10 @@ def test_param_array():
 def test_param_scientific():
     values = [5e3, -4.2e-4, 3e-2, -2e6]
     params = """
-    - 5e3
-    - -4.2e-4
-    - 3e-2
-    - -2e6
+    - ["1", 5e3]
+    - ["2", -4.2e-4]
+    - ["3", 3e-2]
+    - ["4", -2e6]
     """
 
     params = ParameterGroup.from_yaml(params)
