@@ -1,9 +1,13 @@
 """The parameter class."""
 
+from __future__ import annotations
+
 import re
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Type
 from typing import Union
 
 import asteval
@@ -70,38 +74,13 @@ class Parameter:
         """Returns true if the `label` is valid string."""
         return cls._label_validator_regexp.search(label) is None and label not in RESERVED_LABELS
 
-    #  @classmethod
-    #  def from_parameter(cls, label: str, parameter: LmParameter) -> "Parameter":
-    #      """Creates a :class:`Parameter` from a `lmfit.Parameter`
-    #
-    #      Parameters
-    #      ----------
-    #      label : str
-    #          The label of the parameter.
-    #      parameter : lmfit.Parameter
-    #          The `lmfit.Parameter`.
-    #      """
-    #      p = cls(label=label)
-    #      p.vary = parameter.vary
-    #      p.non_neg = parameter.user_data["non_neg"]
-    #      p.full_label = parameter.user_data["full_label"]
-    #      p.value = np.exp(parameter.value) if p.non_neg else parameter.value
-    #      p.min = (
-    #          np.exp(parameter.min) if p.non_neg and np.isfinite(parameter.min) else parameter.min
-    #      )
-    #      p.max = (
-    #          np.exp(parameter.max) if p.non_neg and np.isfinite(parameter.max) else parameter.max
-    #      )
-    #      p.stderr = parameter.stderr
-    #      return p
-
     @classmethod
     def from_list_or_value(
         cls,
         value: Union[int, float, List],
         default_options: Dict = None,
         label: str = None,
-    ) -> "Parameter":
+    ) -> Parameter:
         """Creates a parameter from a list or numeric value.
 
         Parameters
@@ -121,19 +100,10 @@ class Parameter:
             param.value = value
 
         else:
-
-            def retrieve(filt, default):
-                tmp = list(filter(filt, value))
-                if not tmp:
-                    return default
-
-                value.remove(tmp[0])
-                return tmp[0]
-
-            options = retrieve(lambda x: isinstance(x, dict), None)
-
-            param.label = value[0] if len(value) != 1 else label
-            param.value = float(value[0] if len(value) == 1 else value[1])
+            values = _sanatize_parameter_list(value)
+            param.label = _retrieve_from_list_by_type(values, str, label)
+            param.value = float(_retrieve_from_list_by_type(values, (int, float), 0))
+            options = _retrieve_from_list_by_type(values, dict, None)
 
         if default_options:
             param._set_options_from_dict(default_options)
@@ -496,3 +466,23 @@ def _log_value(value: float):
     if value == 1:
         value += 1e-10
     return np.log(value)
+
+
+# A reexp for ONLY matching scientific
+_match_scientific = re.compile(r"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)")
+
+
+def _sanatize_parameter_list(li: List) -> List:
+    for i, value in enumerate(li):
+        if isinstance(value, str) and _match_scientific.match(value):
+            li[i] = float(value)
+
+    return li
+
+
+def _retrieve_from_list_by_type(li: List, t: Type, default: Any):
+    tmp = list(filter(lambda x: isinstance(x, t), li))
+    if not tmp:
+        return default
+    li.remove(tmp[0])
+    return tmp[0]

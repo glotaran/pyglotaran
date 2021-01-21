@@ -1,5 +1,7 @@
 """The parameter group class"""
 
+from __future__ import annotations
+
 import csv
 import pathlib
 from typing import Callable
@@ -25,7 +27,7 @@ class ParameterNotFoundException(Exception):
 
 
 class ParameterGroup(dict):
-    def __init__(self, label: str = None):
+    def __init__(self, label: str = None, root: ParameterGroup = None):
         """Represents are group of parameters. Can contain other groups, creating a
         tree-like hierarchy.
 
@@ -38,12 +40,21 @@ class ParameterGroup(dict):
             raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
         self._parameters = {}
-        self._root = None
-        self._evaluator = asteval.Interpreter(symtable=asteval.make_symbol_table(group=self))
+        self._root = root
+        self._evaluator = (
+            asteval.Interpreter(symtable=asteval.make_symbol_table(group=self))
+            if root is None
+            else None
+        )
         super().__init__()
 
     @classmethod
-    def from_dict(cls, parameter: Dict[str, Union[Dict, List]], label="p") -> "ParameterGroup":
+    def from_dict(
+        cls,
+        parameter: Dict[str, Union[Dict, List]],
+        label: str = None,
+        root_group: ParameterGroup = None,
+    ) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a dictionary.
 
         Parameters
@@ -52,19 +63,27 @@ class ParameterGroup(dict):
             The parameter dictionary.
         label :
             The label of root group.
+        root_group:
+            The root group
         """
-        root = cls(label)
+        root = cls(label=label, root=root_group)
         for label, item in parameter.items():
             label = str(label)
             if isinstance(item, dict):
-                root.add_group(cls.from_dict(item, label=label))
+                root.add_group(cls.from_dict(item, label=label, root_group=root))
             if isinstance(item, list):
-                root.add_group(cls.from_list(item, label=label))
-        root.update_parameter_expression()
+                root.add_group(cls.from_list(item, label=label, root_group=root))
+        if root_group is None:
+            root.update_parameter_expression()
         return root
 
     @classmethod
-    def from_list(cls, parameter: List[Union[float, List]], label="p") -> "ParameterGroup":
+    def from_list(
+        cls,
+        parameter: List[Union[float, List]],
+        label: str = None,
+        root_group: ParameterGroup = None,
+    ) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a list.
 
         Parameters
@@ -73,8 +92,10 @@ class ParameterGroup(dict):
             The parameter list.
         label :
             The label of the root group.
+        root_group:
+            The root group
         """
-        root = cls(label)
+        root = cls(label=label, root=root_group)
 
         # get defaults
         defaults = None
@@ -83,15 +104,18 @@ class ParameterGroup(dict):
                 defaults = item
                 break
 
-        for item in parameter:
-            if isinstance(item, str):
+        for i, item in enumerate(parameter):
+            if isinstance(item, (str, int, float)):
                 try:
                     item = float(item)
                 except Exception:
                     pass
             if isinstance(item, (float, int, list)):
-                root.add_parameter(Parameter.from_list_or_value(item, default_options=defaults))
-        root.update_parameter_expression()
+                root.add_parameter(
+                    Parameter.from_list_or_value(item, label=str(i + 1), default_options=defaults)
+                )
+        if root_group is None:
+            root.update_parameter_expression()
         return root
 
     @classmethod
@@ -202,6 +226,16 @@ class ParameterGroup(dict):
                         top = group
         return root
 
+    @property
+    def label(self) -> str:
+        """Label of the group."""
+        return self._label
+
+    @property
+    def root(self) -> ParameterGroup:
+        """Root of the group."""
+        return self._root
+
     def to_csv(self, filename: str, delimiter: str = "\t"):
         """Writes a :class:`ParameterGroup` to a CSV file.
 
@@ -243,7 +277,7 @@ class ParameterGroup(dict):
             p.full_label = f"{self.label}.{p.label}" if self.label else p.label
             self._parameters[p.label] = p
 
-    def add_group(self, group: "ParameterGroup"):
+    def add_group(self, group: ParameterGroup):
         """Adds a :class:`ParameterGroup` to the group.
 
         Parameters
@@ -253,32 +287,16 @@ class ParameterGroup(dict):
         """
         if not isinstance(group, ParameterGroup):
             raise TypeError("Group must be glotaran.model.ParameterGroup")
-        group.set_root(self)
         self[group.label] = group
-
-    def set_root(self, root: "ParameterGroup"):
-        """Sets the root of the group.
-
-        Parameters
-        ----------
-        root :
-            The new root of the group.
-        """
-        self._root = root
 
     def get_nr_roots(self) -> int:
         """Returns the number of roots of the group."""
         n = 0
-        root = self._root
+        root = self.root
         while root is not None:
             n += 1
-            root = root._root
+            root = root.root
         return n
-
-    @property
-    def label(self) -> str:
-        """Label of the group """
-        return self._label
 
     def groups(self) -> Generator["ParameterGroup", None, None]:
         """Returns a generator over all groups and their subgroups."""
