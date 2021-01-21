@@ -62,16 +62,16 @@ spectral_constraints:
   - type: zero
     compartment: s1
     interval:
-      - (1, 100)
-      - (2, 200)
-  - [zero, s1, [!tuple '(1, 100)', !tuple '(2, 200)']]
+      - [1, 100]
+      - [2, 200]
+  - [zero, s1, [[1, 100], [2, 200]]]
 
 equal_area_penalties:
   - type: equal_area
     source: s3
-    source_intervals: [!tuple '(670, 810)']
+    source_intervals: [[670, 810]]
     target: s2
-    target_intervals: [!tuple '(670, 810)']
+    target_intervals: [[670, 810]]
     parameter: 55
     weight: 0.0016
 
@@ -79,10 +79,10 @@ spectral_relations:
   - compartment: s1
     target: s2
     parameter: 8
-    interval: [!tuple '(1,100)', !tuple '(2,200)']
+    interval: [[1,100], [2,200]]
 
 weights:
   - datasets: [d1, d2]
-    global_interval: (100, 102)
-    model_interval: (301, 502)
+    global_interval: [100, 102]
+    model_interval: [301, 502]
     value: 42

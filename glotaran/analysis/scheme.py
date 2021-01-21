@@ -57,7 +57,7 @@ class Scheme:
         try:
             with open(filename) as f:
                 try:
-                    scheme = yaml.load(f, Loader=yaml.FullLoader)
+                    scheme = yaml.safe_load(f)
                 except Exception as e:
                     raise ValueError(f"Error parsing scheme: {e}")
         except Exception as e:
