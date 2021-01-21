@@ -26,7 +26,7 @@ LICENSE                         @glotaran/pyglotaran_creators
 /glotaran/analysis/             @joernweissenborn
 
 # builtin module:
-/glotaran/builtin/file_format/  @jsnel @s-weigand
+/glotaran/builtin/file_formats/ @jsnel @s-weigand
 /glotaran/builtin/models/       @jsnel @joernweissenborn
 
 # cli
