@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import pathlib
+from copy import copy
 from typing import Callable
 from typing import Dict
 from typing import Generator
@@ -27,7 +28,7 @@ class ParameterNotFoundException(Exception):
 
 
 class ParameterGroup(dict):
-    def __init__(self, label: str = None, root: ParameterGroup = None):
+    def __init__(self, label: str = None, root_group: ParameterGroup = None):
         """Represents are group of parameters. Can contain other groups, creating a
         tree-like hierarchy.
 
@@ -40,10 +41,10 @@ class ParameterGroup(dict):
             raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
         self._parameters = {}
-        self._root = root
+        self._root_group = root_group
         self._evaluator = (
             asteval.Interpreter(symtable=asteval.make_symbol_table(group=self))
-            if root is None
+            if root_group is None
             else None
         )
         super().__init__()
@@ -66,7 +67,7 @@ class ParameterGroup(dict):
         root_group:
             The root group
         """
-        root = cls(label=label, root=root_group)
+        root = cls(label=label, root_group=root_group)
         for label, item in parameter.items():
             label = str(label)
             if isinstance(item, dict):
@@ -95,7 +96,7 @@ class ParameterGroup(dict):
         root_group:
             The root group
         """
-        root = cls(label=label, root=root_group)
+        root = cls(label=label, root_group=root_group)
 
         # get defaults
         defaults = None
@@ -232,9 +233,9 @@ class ParameterGroup(dict):
         return self._label
 
     @property
-    def root(self) -> ParameterGroup:
+    def root_group(self) -> ParameterGroup:
         """Root of the group."""
-        return self._root
+        return self._root_group
 
     def to_csv(self, filename: str, delimiter: str = "\t"):
         """Writes a :class:`ParameterGroup` to a CSV file.
@@ -292,10 +293,10 @@ class ParameterGroup(dict):
     def get_nr_roots(self) -> int:
         """Returns the number of roots of the group."""
         n = 0
-        root = self.root
+        root = self.root_group
         while root is not None:
             n += 1
-            root = root.root
+            root = root.root_group
         return n
 
     def groups(self) -> Generator["ParameterGroup", None, None]:
@@ -344,6 +345,17 @@ class ParameterGroup(dict):
             return group._parameters[label]
         except KeyError:
             raise ParameterNotFoundException(path, label)
+
+    def copy(self) -> ParameterGroup:
+        root = ParameterGroup(label=self.label, root_group=self.root_group)
+
+        for label, parameter in self._parameters.items():
+            root._parameters[label] = copy(parameter)
+
+        for label, group in self.items():
+            root[label] = group.copy()
+
+        return root
 
     def all(
         self, root: str = None, separator: str = "."

@@ -28,10 +28,14 @@ from glotaran.analysis.test.mock import TwoCompartmentDecay
     [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
 def test_optimization(suite, index_dependent, grouped, weight, method):
+    if issubclass(suite, ThreeDatasetDecay) and method == "LevenbergMarquart":
+        # LM does not support bounds
+        return
     model = suite.model
 
     model.is_grouped = grouped
     model.is_index_dependent = index_dependent
+    print("Weighted:", weight)
     print("Grouped:", grouped)
     print("Index dependent:", index_dependent)
 
@@ -53,7 +57,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     print(sim_model.validate(wanted))
     assert sim_model.valid(wanted)
 
-    initial = suite.initial
+    initial = suite.initial.copy()
     print(initial)
     print(model.validate(initial))
     assert model.valid(initial)
@@ -69,9 +73,6 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         print("=============")
         print(dataset)
 
-        if hasattr(suite, "scale"):
-            dataset["data"] /= suite.scale
-
         if weight:
             dataset["weight"] = xr.DataArray(
                 np.ones_like(dataset.data) * 0.5, coords=dataset.coords
@@ -85,7 +86,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         model=model,
         parameter=initial,
         data=data,
-        nfev=10,
+        nfev=20,
         group_tolerance=0.1,
         optimization_method=method,
     )

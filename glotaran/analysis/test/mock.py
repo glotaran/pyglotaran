@@ -276,9 +276,8 @@ class GaussianDecayModel(Model):
 
 
 class OneCompartmentDecay:
-    scale = 2
     wanted = ParameterGroup.from_list([101e-4])
-    initial = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
+    initial = ParameterGroup.from_list([100e-4])
 
     e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
@@ -289,13 +288,12 @@ class OneCompartmentDecay:
         },
     }
     sim_model = DecayModel.from_dict(model_dict)
-    model_dict["dataset"]["dataset1"]["scale"] = "2"
     model = DecayModel.from_dict(model_dict)
 
 
 class TwoCompartmentDecay:
     wanted = ParameterGroup.from_list([11e-4, 22e-5])
-    initial = ParameterGroup.from_list([10e-4, 20e-5])
+    initial = ParameterGroup.from_list([11e-4, 22e-5])
 
     e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
@@ -311,8 +309,18 @@ class TwoCompartmentDecay:
 
 
 class ThreeDatasetDecay:
-    wanted = ParameterGroup.from_list([101e-4, 201e-3])
-    initial = ParameterGroup.from_list([100e-5, 200e-3])
+
+    scale2 = 0.5
+    scale3 = 1.1
+    wanted = ParameterGroup.from_list([101e-4, 201e-3, scale2, scale3])
+    initial = ParameterGroup.from_list(
+        [
+            100e-4,
+            200e-3,
+            [0.5, {"non-negative": False, "min": 0.5, "max": 0.6, "vary": False}],
+            [1.1, {"non-negative": False, "min": 1, "max": 1.2, "vary": True}],
+        ]
+    )
 
     e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
@@ -326,8 +334,18 @@ class ThreeDatasetDecay:
     model_dict = {
         "dataset": {
             "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]},
-            "dataset2": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1", "2"]},
-            "dataset3": {"initial_concentration": [], "megacomplex": [], "kinetic": ["2"]},
+            "dataset2": {
+                "initial_concentration": [],
+                "megacomplex": [],
+                "kinetic": ["1", "2"],
+                "scale": "3",
+            },
+            "dataset3": {
+                "initial_concentration": [],
+                "megacomplex": [],
+                "kinetic": ["2"],
+                "scale": "4",
+            },
         },
     }
     sim_model = DecayModel.from_dict(model_dict)

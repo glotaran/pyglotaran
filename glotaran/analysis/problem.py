@@ -434,7 +434,11 @@ class Problem:
             constraint_labels_and_matrices = list(
                 map(
                     lambda result: _reduce_matrix(
-                        self._model, result[1], self.parameter, result[0], index
+                        self._model,
+                        self._filled_dataset_descriptors[result[1]],
+                        self.parameter,
+                        result[0],
+                        index,
                     ),
                     index_results,
                 )
@@ -445,8 +449,6 @@ class Problem:
         results = list(
             map(lambda group: calculate_group(group, self._filled_dataset_descriptors), self._bag)
         )
-        #  self._clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
-        #  self._matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
 
         clp_labels = list(map(lambda result: [r[0].clp_label for r in result[0]], results))
         matrices = list(map(lambda result: [r[0].matrix for r in result[0]], results))
@@ -502,7 +504,7 @@ class Problem:
                 self._clp_labels[label].append(result.clp_label)
                 self._matrices[label].append(result.matrix)
                 reduced_labels_and_matrix = _reduce_matrix(
-                    self._model, label, self._parameter, result, index
+                    self._model, descriptor, self._parameter, result, index
                 )
                 self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
                 self._reduced_matrices[label].append(reduced_labels_and_matrix.matrix)
@@ -556,7 +558,7 @@ class Problem:
 
             self._clp_labels[label] = result.clp_label
             self._matrices[label] = result.matrix
-            reduced_result = _reduce_matrix(self._model, label, self._parameter, result, None)
+            reduced_result = _reduce_matrix(self._model, descriptor, self._parameter, result, None)
             self._reduced_clp_labels[label] = reduced_result.clp_label
             self._reduced_matrices[label] = reduced_result.matrix
 
@@ -584,17 +586,8 @@ class Problem:
             matrix = matrix.copy()
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
-            data = problem.data
-            if problem.has_scaling:
-                data = data.copy()
-                for i, descriptor in enumerate(problem.descriptor):
-                    label = descriptor.label
-                    if self.filled_dataset_descriptors[label] is not None:
-                        start = 0 if i == 0 else problem.data_sizes[i - 1]
-                        end = problem.data_sizes[i]
-                        data[start:end] *= self.filled_dataset_descriptors[label].scale
 
-            clp, residual = self._residual_function(matrix, data)
+            clp, residual = self._residual_function(matrix, problem.data)
             return clp, residual, residual / problem.weight
 
         results = list(map(residual_function, self.bag, self.reduced_matrices))
@@ -625,8 +618,7 @@ class Problem:
             self._residuals[label] = []
             self._weighted_residuals[label] = []
             data = problem.data
-            if problem.dataset.scale is not None:
-                data = data * self.filled_dataset_descriptors[label].scale
+
             for i in range(len(problem.global_axis)):
                 matrix_at_index = self.reduced_matrices[label][i]
                 if problem.weight is not None:
@@ -664,19 +656,12 @@ class Problem:
         self,
     ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray],]:
         def residual_function(problem: GroupedProblem):
+
             matrix = self.reduced_matrices[problem.group].copy()
             for i in range(matrix.shape[1]):
                 matrix[:, i] *= problem.weight
-            data = problem.data
-            if problem.has_scaling:
-                data = data.copy()
-                for i, descriptor in enumerate(problem.descriptor):
-                    label = descriptor.label
-                    if self.filled_dataset_descriptors[label] is not None:
-                        start = 0 if i == 0 else problem.data_sizes[i - 1]
-                        end = problem.data_sizes[i]
-                        data[start:end] *= self.filled_dataset_descriptors[label].scale
-            clp, residual = self._residual_function(matrix, data)
+
+            clp, residual = self._residual_function(matrix, problem.data)
             return clp, residual, residual / problem.weight
 
         results = list(map(residual_function, self.bag))
@@ -709,8 +694,6 @@ class Problem:
             self._weighted_residuals[label] = []
             self._residuals[label] = []
             data = problem.data
-            if problem.dataset.scale is not None:
-                data = data * self.filled_dataset_descriptors[label].scale
 
             for i in range(len(problem.global_axis)):
                 matrix = self.reduced_matrices[label]
@@ -1062,18 +1045,23 @@ def _calculate_matrix(
 
 def _reduce_matrix(
     model: Model,
-    label: str,
+    dataset_descriptor: DatasetDescriptor,
     parameter: ParameterGroup,
     result: LabelAndMatrix,
     index: float,
 ) -> LabelAndMatrix:
     clp_labels = result.clp_label.copy()
     if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
-        clp_label, matrix = model.constrain_matrix_function(
-            label, parameter, clp_labels, result.matrix, index
+        clp_labels, matrix = model.constrain_matrix_function(
+            dataset_descriptor.label, parameter, clp_labels, result.matrix, index
         )
-        return LabelAndMatrix(clp_label, matrix)
-    return LabelAndMatrix(clp_labels, result.matrix)
+    else:
+        matrix = result.matrix
+
+    if dataset_descriptor.scale is not None:
+        matrix = matrix * dataset_descriptor.scale
+
+    return LabelAndMatrix(clp_labels, matrix)
 
 
 def _combine_matrices(labels_and_matrices: List[LabelAndMatrix]) -> LabelAndMatrix:

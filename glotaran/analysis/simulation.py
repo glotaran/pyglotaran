@@ -137,4 +137,7 @@ def simulate(
             np.random.normal(result.data, noise_std_dev),
         )
 
+    if filled_dataset.scale is not None:
+        result["data"] *= filled_dataset.scale
+
     return result

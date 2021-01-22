@@ -52,6 +52,29 @@ def test_param_label():
     assert [p.value for _, p in params.all()] == list(range(1, 4))
 
 
+def test_param_group_copy():
+    params = """
+    kinetic:
+        - ["5", 1, {non-negative: true, min: -1, max: 1, vary: false}]
+        - 4
+        - 5
+    j:
+        - 7
+        - 8
+    """
+    params = ParameterGroup.from_yaml(params)
+    copy = params.copy()
+
+    for label, parameter in params.all():
+        assert copy.has(label)
+        copied_parameter = copy.get(label)
+        assert parameter.value == copied_parameter.value
+        assert parameter.non_negative == copied_parameter.non_negative
+        assert parameter.minimum == copied_parameter.minimum
+        assert parameter.maximum == copied_parameter.maximum
+        assert parameter.vary == copied_parameter.vary
+
+
 def test_param_options():
     params = """
     - ["5", 1, {non-negative: false, min: -1, max: 1, vary: false}]
