@@ -1,6 +1,7 @@
 name: "Codeowners Validator"
 
 on:
+  push:
   schedule:
     # Runs at 08:00 UTC every day
     - cron:  '0 8 * * *'
@@ -8,6 +9,7 @@ on:
 
 jobs:
   sanity:
+    if: github.repository_owner == 'glotaran'
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository, which is validated in the next step

@@ -15,18 +15,23 @@
 *                               @glotaran/admins
 
 # tooling
-/.github /.*                    @glotaran/admins @glotaran/maintainers
-/*.y*ml /*.ini /*.toml /*.txt   @glotaran/admins @glotaran/maintainers
-LICENSE                         @pyglotaran_creators
+/.github                        @glotaran/admins @glotaran/maintainers
+/.*                             @glotaran/admins @glotaran/maintainers
+/*.y*ml                         @glotaran/admins @glotaran/maintainers
+/*.ini                          @glotaran/admins @glotaran/maintainers
+/*.toml                         @glotaran/admins @glotaran/maintainers
+/*.txt                          @glotaran/admins @glotaran/maintainers
+LICENSE                         @glotaran/pyglotaran_creators
 
 # docs
-/docs *.rst *.md                @glotaran/maintainers @pyglotaran_creators
+/docs/**/*.rst                  @glotaran/maintainers @glotaran/pyglotaran_creators
+# /docs/**/*.md                   @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
 /glotaran/analysis/             @joernweissenborn
 
 # builtin module:
-/glotaran/builtin/file_format/  @jsnel @s-weigand
+/glotaran/builtin/file_formats/ @jsnel @s-weigand
 /glotaran/builtin/models/       @jsnel @joernweissenborn
 
 # cli
