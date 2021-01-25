@@ -178,9 +178,20 @@ class ParameterGroup(dict):
         delimiter : str
             The delimiter of the CSV file.
         """
+        df = pd.read_csv(filepath, sep=delimiter)
+        return cls.from_pandas_dataframe(df)
+
+    @classmethod
+    def from_pandas_dataframe(cls, df: pd.DataFrame):
+        """Creates a :class:`ParameterGroup` from a Pandas dataframe file.
+
+        Parameters
+        ----------
+        df :
+            An instance of Pandas DataFrame
+        """
 
         root = cls()
-        df = pd.read_csv(filepath, sep=delimiter)
 
         for i, label in enumerate(df["label"]):
             label = label.split(".")
