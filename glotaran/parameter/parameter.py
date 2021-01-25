@@ -357,7 +357,7 @@ class Parameter:
 
     def __bool__(self):
         """bool"""
-        return self._getval() != 0  # TODO: fix return bool(self._getval() != 0)
+        return bool(self._getval() != 0)
 
     def __int__(self):
         """int"""
