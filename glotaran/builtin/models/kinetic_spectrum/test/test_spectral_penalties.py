@@ -280,7 +280,7 @@ def test_equal_area_penalties(debug=False):
     area2_wp = np.sum(result_wp.data["dataset1"].species_associated_spectra.sel(species="s2"))
     assert np.isclose(area1_wp, area2_wp)
 
-    input_ratio = result_wp.optimized_parameter.get("i.1") / result_wp.optimized_parameter.get(
+    input_ratio = result_wp.optimized_parameters.get("i.1") / result_wp.optimized_parameters.get(
         "i.2"
     )
     assert np.isclose(input_ratio, 1.5038858115)

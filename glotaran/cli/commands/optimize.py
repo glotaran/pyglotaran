@@ -108,7 +108,7 @@ def optimize_cmd(
             click.echo("Optimization done.")
             click.echo(result.markdown(with_model=False))
             click.echo("Optimized Parameter:")
-            click.echo(result.optimized_parameter.markdown())
+            click.echo(result.optimized_parameters.markdown())
         except Exception as e:
             click.echo(f"An error occurred during optimization: \n\n{e}", err=True)
             sys.exit(1)

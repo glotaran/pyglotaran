@@ -113,7 +113,7 @@ def test_spectral_relation():
     scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
     result = optimize(scheme)
 
-    for label, param in result.optimized_parameter.all():
+    for label, param in result.optimized_parameters.all():
         if param.vary:
             assert np.allclose(param.value, parameter.get(label).value, rtol=1e-1)
 

@@ -224,7 +224,7 @@ Now we have everything together to optimize our parameters. First we import opti
    scheme = Scheme(model, parameter, {'dataset1': dataset})
    result = optimize(scheme)
    print(result)
-   print(result.optimized_parameter)
+   print(result.optimized_parameters)
 
 You can get the resulting data for your dataset with ``result.get_dataset``.
 

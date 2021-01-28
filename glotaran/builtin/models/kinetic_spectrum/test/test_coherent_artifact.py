@@ -95,9 +95,9 @@ def test_coherent_artifact():
     dataset = {"dataset1": data}
     scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
     result = optimize(scheme)
-    print(result.optimized_parameter)
+    print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameter.all():
+    for label, param in result.optimized_parameters.all():
         assert np.allclose(param.value, parameter.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]

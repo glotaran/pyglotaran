@@ -91,9 +91,9 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     )
 
     result = optimize(scheme)
-    print(result.optimized_parameter)
+    print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameter.all():
+    for label, param in result.optimized_parameters.all():
         if param.vary:
             assert np.allclose(param.value, wanted.get(label).value, rtol=1e-1)
 
