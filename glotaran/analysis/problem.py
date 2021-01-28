@@ -588,13 +588,13 @@ class Problem:
                 matrix[:, i] *= problem.weight
             data = problem.data
             if problem.has_scaling:
-                data = data.copy()
+                #  data = data.copy()
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
                         start = 0 if i == 0 else problem.data_sizes[i - 1]
                         end = problem.data_sizes[i]
-                        data[start:end] *= self.filled_dataset_descriptors[label].scale
+                        matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
 
             clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
@@ -627,10 +627,11 @@ class Problem:
             self._residuals[label] = []
             self._weighted_residuals[label] = []
             data = problem.data
-            if problem.dataset.scale is not None:
-                data = data * self.filled_dataset_descriptors[label].scale
             for i in range(len(problem.global_axis)):
                 matrix_at_index = self.reduced_matrices[label][i]
+
+                if problem.dataset.scale is not None:
+                    matrix_at_index *= self.filled_dataset_descriptors[label].scale
                 if problem.weight is not None:
                     matrix_at_index = matrix_at_index.copy()
                     for j in range(matrix_at_index.shape[1]):
@@ -671,13 +672,13 @@ class Problem:
                 matrix[:, i] *= problem.weight
             data = problem.data
             if problem.has_scaling:
-                data = data.copy()
+                #  data = data.copy()
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
                         start = 0 if i == 0 else problem.data_sizes[i - 1]
                         end = problem.data_sizes[i]
-                        data[start:end] *= self.filled_dataset_descriptors[label].scale
+                        matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
             clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
 
@@ -711,14 +712,13 @@ class Problem:
             self._weighted_residuals[label] = []
             self._residuals[label] = []
             data = problem.data
-            if problem.dataset.scale is not None:
-                data = data * self.filled_dataset_descriptors[label].scale
 
             for i in range(len(problem.global_axis)):
-                matrix = self.reduced_matrices[label]
+                matrix = self.reduced_matrices[label].copy()
+                if problem.dataset.scale is not None:
+                    matrix *= self.filled_dataset_descriptors[label].scale
 
                 if problem.weight is not None:
-                    matrix = matrix.copy()
                     for j in range(matrix.shape[1]):
                         matrix[:, j] *= problem.weight.isel({self._global_dimension: i}).values
 
@@ -1057,8 +1057,6 @@ def _calculate_matrix(
     if index is not None:
         args["index"] = index
     clp_label, matrix = matrix_function(**args)
-    if dataset_descriptor.scale is not None:
-        matrix *= dataset_descriptor.scale
     return LabelAndMatrix(clp_label, matrix)
 
 
