@@ -447,8 +447,6 @@ class Problem:
         results = list(
             map(lambda group: calculate_group(group, self._filled_dataset_descriptors), self._bag)
         )
-        #  self._clp_labels = list(map(lambda result: [r.clp_label for r in result[0]], results))
-        #  self._matrices = list(map(lambda result: [r.matrix for r in result[0]], results))
 
         clp_labels = list(map(lambda result: [r[0].clp_label for r in result[0]], results))
         matrices = list(map(lambda result: [r[0].matrix for r in result[0]], results))
@@ -588,7 +586,6 @@ class Problem:
                 matrix[:, i] *= problem.weight
             data = problem.data
             if problem.has_scaling:
-                #  data = data.copy()
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
@@ -672,7 +669,6 @@ class Problem:
                 matrix[:, i] *= problem.weight
             data = problem.data
             if problem.has_scaling:
-                #  data = data.copy()
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
