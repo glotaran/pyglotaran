@@ -88,7 +88,7 @@ class Problem:
         self._parameter = None
         self._filled_dataset_descriptors = None
 
-        self.parameter = scheme.parameter
+        self.parameter = scheme.parameter.copy()
 
         # all of the above are always not None
 
@@ -287,6 +287,7 @@ class Problem:
             weight = dataset.weight if "weight" in dataset else None
             if weight is not None:
                 data = data * weight
+                dataset["weighted_data"] = data
             self._bag[label] = ProblemDescriptor(
                 self._scheme.model.dataset[label],
                 data,
@@ -299,12 +300,13 @@ class Problem:
         datasets = None
         for label in self._model.dataset:
             dataset = self._data[label]
-            weight = (
-                dataset.weight
-                if "weight" in dataset
-                else xr.DataArray(np.ones_like(dataset.data), coords=dataset.data.coords)
-            )
-            data = dataset.data * weight
+            if "weight" in dataset:
+                weight = dataset.weight
+                data = dataset.data * weight
+                dataset["weighted_data"] = data
+            else:
+                weight = xr.DataArray(np.ones_like(dataset.data), coords=dataset.data.coords)
+                data = dataset.data
             global_axis = dataset.coords[self._global_dimension].values
             model_axis = dataset.coords[self._model_dimension].values
             has_scaling = self._model.dataset[label].scale is not None
@@ -634,7 +636,7 @@ class Problem:
                     for j in range(matrix_at_index.shape[1]):
                         matrix_at_index[:, j] *= problem.weight.isel({self._global_dimension: i})
                 clp, residual = self._residual_function(
-                    matrix_at_index, data.isel({self._global_dimension: i})
+                    matrix_at_index, data.isel({self._global_dimension: i}).values
                 )
 
                 self._reduced_clps[label].append(clp)

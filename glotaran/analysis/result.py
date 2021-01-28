@@ -20,7 +20,7 @@ class Result:
         self,
         scheme: Scheme,
         data: Dict[str, xr.Dataset],
-        parameter: ParameterGroup,
+        optimized_parameter: ParameterGroup,
         least_squares_result: OptimizeResult,
         free_parameter_labels: List[str],
     ):
@@ -43,7 +43,7 @@ class Result:
         """
         self._scheme = scheme
         self._data = data
-        self._optimized_parameter = parameter
+        self._optimized_parameter = optimized_parameter
         self._calculate_statistics(least_squares_result)
         self._free_parameter_labels = free_parameter_labels
 
