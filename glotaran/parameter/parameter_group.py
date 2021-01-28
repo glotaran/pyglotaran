@@ -175,7 +175,7 @@ class ParameterGroup(dict):
             if column_name not in df:
                 raise ValueError(f"Missing column '{column_name}' in '{source}'")
 
-        for column_name in ["minimum", "maximum"]:
+        for column_name in ["minimum", "maximum", "value"]:
             if column_name in df and any(not np.isreal(v) for v in df[column_name]):
                 raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values")
 
