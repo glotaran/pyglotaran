@@ -110,6 +110,18 @@ class Result:
         return self._number_jacobian_evaluation
 
     @property
+    def jacobian(self) -> np.ndarray:
+        """Modified Jacobian matrix at the solution
+        See also: :py:function:`scipy.optimize.least_squares`
+
+        Returns
+        -------
+        np.ndarray
+            Numpy array
+        """
+        return self._jacobian
+
+    @property
     def number_variables(self) -> int:
         """Number of variables in optimization :math:`N_{vars}`"""
         return self._number_variables
