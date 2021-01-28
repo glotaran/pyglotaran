@@ -1,6 +1,7 @@
 """The result class for global analysis."""
 
 import os
+import warnings
 from typing import Dict
 from typing import List
 from typing import Type
@@ -44,8 +45,8 @@ class Result:
         self._scheme = scheme
         self._data = data
         self._optimized_parameter = optimized_parameter
-        self._calculate_statistics(least_squares_result)
         self._free_parameter_labels = free_parameter_labels
+        self._calculate_statistics(least_squares_result)
 
     def _calculate_statistics(self, least_squares_result: OptimizeResult):
         self._nfev = least_squares_result.nfev
@@ -57,6 +58,18 @@ class Result:
         self._chisqr = np.sum(least_squares_result.fun ** 2)
         self._red_chisqr = self._chisqr / self._nfree
         self._root_mean_square_error = np.sqrt(self.red_chisqr)
+        self._jacobian = least_squares_result.jac
+
+        try:
+            self._covariance_matrix = np.linalg.inv(self._jacobian.T.dot(self._jacobian))
+            standard_errors = np.sqrt(np.diagonal(self._covariance_matrix))
+            for label, error in zip(self.free_parameter_labels, standard_errors):
+                self.optimized_parameter.get(label).standard_error = error
+        except np.linalg.LinAlgError:
+            warnings.warn(
+                "The resulting Jacobian is singular, cannot compute covariance matrix and "
+                "standard errors."
+            )
 
     @property
     def scheme(self) -> Scheme:
@@ -133,12 +146,12 @@ class Result:
         """List of labels of the free parameter used in optimization."""
         return self._free_parameter_labels
 
-    #  @property
-    #  def covar(self) -> np.ndarray:
-    #      """Covariance matrix from minimization.
-    #
-    #      The rows and columns are corresponding to :attr:`var_names`."""
-    #      return self._covar
+    @property
+    def covariance_matrix(self) -> np.ndarray:
+        """Covariance matrix.
+
+        The rows and columns are corresponding to :attr:`free_parameter_labels`."""
+        return self._covariance_matrix
 
     @property
     def optimized_parameter(self) -> ParameterGroup:

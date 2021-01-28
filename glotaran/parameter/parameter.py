@@ -63,7 +63,7 @@ class Parameter:
         self.maximum = maximum
         self.minimum = minimum
         self.non_negative = non_negative
-        self.stderr = 0.0
+        self.standard_error = 0.0
         self.value = value
         self.vary = vary
 
@@ -131,7 +131,7 @@ class Parameter:
         self.maximum = p.maximum
         self.minimum = p.minimum
         self.non_negative = p.non_negative
-        self.stderr = p.stderr
+        self.standard_error = p.standard_error
         self.value = p.value
         self.vary = p.vary
 
@@ -252,13 +252,13 @@ class Parameter:
         return self._transformed_expression
 
     @property
-    def stderr(self) -> float:
+    def standard_error(self) -> float:
         """The standard error of the optimized parameter."""
         return self._stderr
 
-    @stderr.setter
-    def stderr(self, stderr: float):
-        self._stderr = stderr
+    @standard_error.setter
+    def standard_error(self, standard_error: float):
+        self._stderr = standard_error
 
     @property
     def value(self) -> float:
@@ -305,7 +305,7 @@ class Parameter:
             self.maximum,
             self.minimum,
             self.non_negative,
-            self.stderr,
+            self.standard_error,
             self.value,
             self.vary,
         )
@@ -319,7 +319,7 @@ class Parameter:
             self.maximum,
             self.minimum,
             self.non_negative,
-            self.stderr,
+            self.standard_error,
             self.value,
             self.vary,
         ) = state
@@ -330,7 +330,7 @@ class Parameter:
     def __repr__(self):
         """String representation """
         return (
-            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.stderr}, _Min_:"
+            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
             f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
             f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
         )
