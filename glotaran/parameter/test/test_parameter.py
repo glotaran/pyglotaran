@@ -380,3 +380,66 @@ def test_parameter_pickle(tmpdir):
         pickled_parameter = pickle.load(f)
 
     assert parameter == pickled_parameter
+
+
+TEST_CSV = """
+label; value; minimum; maximum; vary; non-negative; expression
+rates.k1;0.050;0;5;True;True;rates.k2 * 2
+rates.k2;0.509;-inf;inf;True;True;None
+rates.k3;2.311;-inf;inf;True;True;None
+pen.eq.1;1.000;-inf;inf;False;False;None
+"""
+
+
+def test_param_group_from_csv(tmpdir):
+
+    csv_path = tmpdir.join("parameters.csv")
+    with open(csv_path, "w") as f:
+        f.write(TEST_CSV)
+
+    params = ParameterGroup.from_csv(csv_path, ";")
+
+    assert "rates" in params
+
+    assert params.has("rates.k1")
+    p = params.get("rates.k1")
+    assert p.label == "k1"
+    assert p.value == 0.05
+    assert p.minimum == 0
+    assert p.maximum == 5
+    assert not p.vary
+    assert not p.non_negative
+    assert p.expression == "rates.k2 * 2"
+
+    assert params.has("rates.k2")
+    p = params.get("rates.k2")
+    assert p.label == "k2"
+    assert p.value == 0.509
+    assert p.minimum == -np.inf
+    assert p.maximum == np.inf
+    assert p.vary
+    assert p.non_negative
+    assert p.expression is None
+
+    assert params.has("rates.k3")
+    p = params.get("rates.k3")
+    assert p.label == "k3"
+    assert p.value == 2.311
+    assert p.minimum == -np.inf
+    assert p.maximum == np.inf
+    assert p.vary
+    assert p.non_negative
+    assert p.expression is None
+
+    assert "pen" in params
+    assert "eq" in params["pen"]
+
+    assert params.has("pen.eq.1")
+    p = params.get("pen.eq.1")
+    assert p.label == "1"
+    assert p.value == 1.0
+    assert p.minimum == -np.inf
+    assert p.maximum == np.inf
+    assert not p.vary
+    assert not p.non_negative
+    assert p.expression is None

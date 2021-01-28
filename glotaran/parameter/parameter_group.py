@@ -169,63 +169,75 @@ class ParameterGroup(dict):
             return cls.from_dict(items)
 
     @classmethod
-    def from_csv(cls, filepath: str, delimiter: str = "\t"):
+    def from_dataframe(cls, df: pd.DataFrame, source: str = "DataFrame") -> ParameterGroup:
+        """Creates a :class:`ParameterGroup` from a :class:`pandas.DataFrame`"""
+
+        for column_name in ["label", "value"]:
+            if column_name not in df:
+                raise ValueError(f"Missing column '{column_name}' in '{source}'")
+
+        for column_name in ["minimum", "maximum"]:
+            if column_name in df and any(not np.isreal(v) for v in df[column_name]):
+                raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values")
+
+        for column_name in ["non-negative", "vary"]:
+            if column_name in df and any(not isinstance(v, bool) for v in df[column_name]):
+                raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values")
+
+        root = cls()
+
+        for i, full_label in enumerate(df["label"]):
+            path = full_label.split(".")
+            group = root
+            while len(path) > 1:
+                group_label = path.pop(0)
+                if group_label not in group:
+                    group.add_group(ParameterGroup(label=group_label, root_group=group))
+                group = group[group_label]
+            label = path.pop()
+            print(label)
+            value = df["value"][i]
+            minimum = df["minimum"][i] if "minimum" in df else -np.inf
+            maximum = df["maximum"][i] if "maximum" in df else np.inf
+            non_negative = df["non-negative"][i] if "non-negative" in df else False
+            vary = df["vary"][i] if "vary" in df else True
+            expression = (
+                df["expression"][i]
+                if "expression" in df and isinstance(df["expression"][i], str)
+                else None
+            )
+
+            parameter = Parameter(
+                label=label,
+                full_label=full_label,
+                value=value,
+                expression=expression,
+                maximum=maximum,
+                minimum=minimum,
+                non_negative=non_negative,
+                vary=vary,
+            )
+            print(parameter)
+            group.add_parameter(parameter)
+
+        return root
+
+    @classmethod
+    def from_csv(cls, filepath: str, delimiter: str = None) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a CSV file.
 
         Parameters
         ----------
         filepath :
             The path to the CSV file.
-        delimiter : str
+        delimiter :
             The delimiter of the CSV file.
         """
 
-        root = cls()
-        df = pd.read_csv(filepath, sep=delimiter)
-
-        for i, label in enumerate(df["label"]):
-            label = label.split(".")
-            if len(label) == 1:
-                p = Parameter(label=label.pop())
-                p.value = df["value"][i]
-                p.stderr = df["stderr"][i]
-                p.minimum = df["min"][i]
-                p.maximum = df["max"][i]
-                p.vary = df["vary"][i]
-                p.non_negative = df["non-negative"][i]
-                root.add_parameter(p)
-                continue
-
-            top = root
-            while len(label) != 0:
-                group = label.pop(0)
-                if group in top:
-                    if len(label) == 1:
-                        p = Parameter(label=label.pop())
-                        p.value = df["value"][i]
-                        p.stderr = df["stderr"][i]
-                        p.minimum = df["min"][i]
-                        p.maximum = df["max"][i]
-                        p.vary = df["vary"][i]
-                        p.non_negative = df["non-negative"][i]
-                        top[group].add_parameter(p)
-                    else:
-                        top = top[group]
-                else:
-                    group = ParameterGroup(group)
-                    top.add_group(group)
-                    if len(label) == 1:
-                        p = Parameter(label=label.pop())
-                        p.value = df["value"][i]
-                        p.stderr = df["stderr"][i]
-                        p.minimum = df["min"][i]
-                        p.maximum = df["max"][i]
-                        p.vary = df["vary"][i]
-                        p.non_negative = df["non-negative"][i]
-                        group.add_parameter(p)
-                    else:
-                        top = group
-        return root
+        df = pd.read_csv(
+            filepath, delimiter=delimiter, skipinitialspace=True, na_values=["None", "none"]
+        )
+        return cls.from_dataframe(df, source=filepath)
 
     @property
     def label(self) -> str:
@@ -259,7 +271,7 @@ class ParameterGroup(dict):
                     [label, p.value, p.minimum, p.maximum, p.vary, p.non_negative, p.stderr]
                 )
 
-    def add_parameter(self, parameter: Parameter):
+    def add_parameter(self, parameter: Union[Parameter, List[Parameter]]):
         """Adds a :class:`Parameter` to the group.
 
         Parameters
