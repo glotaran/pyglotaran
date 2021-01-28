@@ -355,10 +355,6 @@ class Parameter:
         """positive"""
         return +self._getval()
 
-    def __bool__(self):
-        """bool"""
-        return bool(self._getval() != 0)
-
     def __int__(self):
         """int"""
         return int(self._getval())

@@ -1,11 +1,8 @@
+# fmt: off
 from typing import Any
-from typing import Dict
 from typing import List
-from typing import Tuple
 
-from glotaran.builtin.models.kinetic_image.irf import Irf
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
-from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 class IrfSpectralMultiGaussian(IrfMultiGaussian):
@@ -56,3 +53,4 @@ class IrfGaussianCoherentArtifact(IrfSpectralGaussian):
 
     def calculate_coherent_artifact(self, axis: Any):
         ...
+# fmt: on
