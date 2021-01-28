@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import csv
 import pathlib
 from copy import copy
 from typing import Callable
@@ -219,7 +218,7 @@ class ParameterGroup(dict):
             )
             print(parameter)
             group.add_parameter(parameter)
-
+        root.update_parameter_expression()
         return root
 
     @classmethod
@@ -249,7 +248,27 @@ class ParameterGroup(dict):
         """Root of the group."""
         return self._root_group
 
-    def to_csv(self, filename: str, delimiter: str = "\t"):
+    def to_dataframe(self) -> pd.DataFrame:
+        parameter_dict = {
+            "label": [],
+            "value": [],
+            "minimum": [],
+            "maximum": [],
+            "vary": [],
+            "non-negative": [],
+            "expression": [],
+        }
+        for label, parameter in self.all():
+            parameter_dict["label"].append(label)
+            parameter_dict["value"].append(parameter.value)
+            parameter_dict["minimum"].append(parameter.minimum)
+            parameter_dict["maximum"].append(parameter.maximum)
+            parameter_dict["vary"].append(parameter.vary)
+            parameter_dict["non-negative"].append(parameter.non_negative)
+            parameter_dict["expression"].append(parameter.expression)
+        return pd.DataFrame(parameter_dict)
+
+    def to_csv(self, filename: str, delimiter: str = ","):
         """Writes a :class:`ParameterGroup` to a CSV file.
 
         Parameters
@@ -259,17 +278,7 @@ class ParameterGroup(dict):
         delimiter : str
             The delimiter of the CSV file.
         """
-
-        with open(filename, mode="w") as parameter_file:
-            parameter_writer = csv.writer(parameter_file, delimiter=delimiter)
-            parameter_writer.writerow(
-                ["label", "value", "min", "max", "vary", "non-negative", "stderr"]
-            )
-
-            for (label, p) in self.all():
-                parameter_writer.writerow(
-                    [label, p.value, p.minimum, p.maximum, p.vary, p.non_negative, p.stderr]
-                )
+        self.to_dataframe().to_csv(filename, sep=delimiter, na_rep="None", index=False)
 
     def add_parameter(self, parameter: Union[Parameter, List[Parameter]]):
         """Adds a :class:`Parameter` to the group.

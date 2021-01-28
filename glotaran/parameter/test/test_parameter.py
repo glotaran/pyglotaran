@@ -383,11 +383,11 @@ def test_parameter_pickle(tmpdir):
 
 
 TEST_CSV = """
-label; value; minimum; maximum; vary; non-negative; expression
-rates.k1;0.050;0;5;True;True;rates.k2 * 2
-rates.k2;0.509;-inf;inf;True;True;None
-rates.k3;2.311;-inf;inf;True;True;None
-pen.eq.1;1.000;-inf;inf;False;False;None
+label, value, minimum, maximum, vary, non-negative, expression
+rates.k1,0.050,0,5,True,True,None
+rates.k2,None,-inf,inf,True,True,$rates.k1 * 2
+rates.k3,2.311,-inf,inf,True,True,None
+pen.eq.1,1.000,-inf,inf,False,False,None
 """
 
 
@@ -397,7 +397,7 @@ def test_param_group_from_csv(tmpdir):
     with open(csv_path, "w") as f:
         f.write(TEST_CSV)
 
-    params = ParameterGroup.from_csv(csv_path, ";")
+    params = ParameterGroup.from_csv(csv_path)
 
     assert "rates" in params
 
@@ -407,19 +407,19 @@ def test_param_group_from_csv(tmpdir):
     assert p.value == 0.05
     assert p.minimum == 0
     assert p.maximum == 5
-    assert not p.vary
-    assert not p.non_negative
-    assert p.expression == "rates.k2 * 2"
+    assert p.vary
+    assert p.non_negative
+    assert p.expression is None
 
     assert params.has("rates.k2")
     p = params.get("rates.k2")
     assert p.label == "k2"
-    assert p.value == 0.509
+    assert p.value == params.get("rates.k1") * 2
     assert p.minimum == -np.inf
     assert p.maximum == np.inf
-    assert p.vary
-    assert p.non_negative
-    assert p.expression is None
+    assert not p.vary
+    assert not p.non_negative
+    assert p.expression == "$rates.k1 * 2"
 
     assert params.has("rates.k3")
     p = params.get("rates.k3")
@@ -443,3 +443,35 @@ def test_param_group_from_csv(tmpdir):
     assert not p.vary
     assert not p.non_negative
     assert p.expression is None
+
+
+def test_parameter_to_csv(tmpdir):
+    csv_path = tmpdir.join("parameters.csv")
+    params = ParameterGroup.from_yaml(
+        """
+    b:
+        - ["1", 0.25, {vary: false, min: 0, max: 8}]
+        - ["2", 0.75, {expr: '1 - $b.1', non-negative: true}]
+    rates:
+        - ["total", 2]
+        - ["branch1", {expr: '$rates.total * $b.1'}]
+        - ["branch2", {expr: '$rates.total * $b.2'}]
+    """
+    )
+
+    params.to_csv(csv_path)
+
+    with open(csv_path) as f:
+        print(f.read())
+    params_from_csv = ParameterGroup.from_csv(csv_path)
+
+    for label, p in params.all():
+        assert params_from_csv.has(label)
+        p_from_csv = params_from_csv.get(label)
+        assert p.label == p_from_csv.label
+        assert p.value == p_from_csv.value
+        assert p.minimum == p_from_csv.minimum
+        assert p.maximum == p_from_csv.maximum
+        assert p.vary == p_from_csv.vary
+        assert p.non_negative == p_from_csv.non_negative
+        assert p.expression == p_from_csv.expression
