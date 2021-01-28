@@ -49,15 +49,16 @@ class Result:
         self._calculate_statistics(least_squares_result)
 
     def _calculate_statistics(self, least_squares_result: OptimizeResult):
-        self._nfev = least_squares_result.nfev
+        self._number_function_evaluation = least_squares_result.nfev
+        self._number_jacobian_evaluation = least_squares_result.njev
         self._cost = least_squares_result.cost
         self._optimality = least_squares_result.optimality
-        self._ndata = least_squares_result.fun.size
-        self._nvars = least_squares_result.x.size
-        self._nfree = self._ndata - self._nvars
-        self._chisqr = np.sum(least_squares_result.fun ** 2)
-        self._red_chisqr = self._chisqr / self._nfree
-        self._root_mean_square_error = np.sqrt(self.red_chisqr)
+        self._number_data_points = least_squares_result.fun.size
+        self._number_variables = least_squares_result.x.size
+        self._degree_of_freedom = self._number_data_points - self._number_variables
+        self._chi_square = np.sum(least_squares_result.fun ** 2)
+        self._reduced_chi_square = self._chi_square / self._degree_of_freedom
+        self._root_mean_square_error = np.sqrt(self._reduced_chi_square)
         self._jacobian = least_squares_result.jac
 
         try:
@@ -70,6 +71,7 @@ class Result:
                 "The resulting Jacobian is singular, cannot compute covariance matrix and "
                 "standard errors."
             )
+            self._covariance_matrix = None
 
     @property
     def scheme(self) -> Scheme:
@@ -98,39 +100,44 @@ class Result:
         return self._data
 
     @property
-    def nfev(self) -> int:
+    def number_function_evaluation(self) -> int:
         """The number of function evaluations."""
-        return self._nfev
+        return self._number_function_evaluation
 
     @property
-    def nvars(self) -> int:
+    def number_jacobian_evaluation(self) -> int:
+        """The number of jacobian evaluations."""
+        return self._number_jacobian_evaluation
+
+    @property
+    def number_variables(self) -> int:
         """Number of variables in optimization :math:`N_{vars}`"""
-        return self._nvars
+        return self._number_variables
 
     @property
-    def ndata(self) -> int:
+    def number_data_points(self) -> int:
         """Number of data points :math:`N`."""
-        return self._ndata
+        return self._number_data_points
 
     @property
-    def nfree(self) -> int:
+    def degree_of_freedom(self) -> int:
         """Degrees of freedom in optimization :math:`N - N_{vars}`."""
-        return self._nfree
+        return self._degree_of_freedom
 
     @property
-    def chisqr(self) -> float:
+    def chi_square(self) -> float:
         r"""The chi-square of the optimization.
 
         :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
-        return self._chisqr
+        return self._chi_square
 
     @property
-    def red_chisqr(self) -> float:
+    def reduced_chi_square(self) -> float:
         r"""The reduced chi-square of the optimization.
 
         :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
         """
-        return self._red_chisqr
+        return self._reduced_chi_square
 
     @property
     def root_mean_square_error(self) -> float:
@@ -175,6 +182,27 @@ class Result:
             return self.data[dataset_label]
         except KeyError:
             raise Exception(f"Unknown dataset '{dataset_label}'")
+
+    def get_scheme(self) -> Scheme:
+        data = {}
+
+        for label, dataset in self:
+            data[label] = dataset.data.to_dataset(name=data)
+            if "weight" in dataset:
+                data[label]["weight"] = dataset.weight
+
+        return Scheme(
+            model=self.model,
+            parameter=self.optimized_parameter,
+            data=data,
+            group_tolerance=self.group_tolerance,
+            nnls=self.scheme.nnls,
+            nfev=self.scheme.nfev,
+            ftol=self.scheme.ftol,
+            gtol=self.scheme.gtol,
+            xtol=self.scheme.xtol,
+            optimization_method=self.scheme.optimization_method,
+        )
 
     def save(self, path: str) -> List[str]:
         """Saves the result to given folder.
