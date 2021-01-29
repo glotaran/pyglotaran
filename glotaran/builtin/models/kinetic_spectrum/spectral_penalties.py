@@ -130,9 +130,7 @@ def _get_area(
             start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
             for i in range(start_idx, end_idx + 1):
                 index_clp_labels = clp_labels[label][i] if index_dependent else clp_labels[label]
-                if not len(area) == 0 and np.any(
-                    np.isclose(area_indices, global_axis[i], atol=group_tolerance)
-                ):
+                if area and np.any(np.isclose(area_indices, global_axis[i], atol=group_tolerance)):
                     # already got clp for this index
                     continue
                 if compartment in index_clp_labels:
