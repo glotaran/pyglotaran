@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 def simulate(
     model: Model,
     dataset: str,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     axes: Dict[str, np.ndarray] = None,
     clp: Union[np.ndarray, xr.DataArray] = None,
     noise=False,
@@ -37,7 +37,7 @@ def simulate(
     axes :
         A dictionary with axes for simulation.
     clp :
-        Conditionally linear parameter. Will be used instead of `model.global_matrix` if given.
+        Conditionally linear parameters. Will be used instead of `model.global_matrix` if given.
     noise :
         Add noise to the simulation.
     noise_std_dev :
@@ -51,7 +51,7 @@ def simulate(
             "Cannot simulate models without implementation for global matrix and no clp given."
         )
 
-    filled_dataset = model.dataset[dataset].fill(model, parameter)
+    filled_dataset = model.dataset[dataset].fill(model, parameters)
 
     model_dimension = axes[model.model_dimension]
     global_dimension = axes[model.global_dimension]
@@ -78,11 +78,11 @@ def simulate(
     if callable(model.constrain_matrix_function):
         matrix = (
             [
-                model.constrain_matrix_function(dataset, parameter, clp, mat, global_dimension[i])
+                model.constrain_matrix_function(dataset, parameters, clp, mat, global_dimension[i])
                 for i, (clp, mat) in enumerate(matrix)
             ]
             if model.index_dependent()
-            else model.constrain_matrix_function(dataset, parameter, matrix[0], matrix[1], None)
+            else model.constrain_matrix_function(dataset, parameters, matrix[0], matrix[1], None)
         )
     matrix = (
         [

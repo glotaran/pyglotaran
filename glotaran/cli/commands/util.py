@@ -46,11 +46,11 @@ def _load_file(filename, loader, name, verbose):
 
 
 def load_scheme_file(filename, verbose=False):
-    return _load_file(filename, gta.analysis.scheme.Scheme.from_yml_file, "scheme", verbose)
+    return _load_file(filename, gta.analysis.scheme.Scheme.from_yaml_file, "scheme", verbose)
 
 
 def load_model_file(filename, verbose=False):
-    return _load_file(filename, gta.read_model_from_yml_file, "model", verbose)
+    return _load_file(filename, gta.read_model_from_yaml_file, "model", verbose)
 
 
 def load_parameter_file(filename, fmt=None, verbose=False):

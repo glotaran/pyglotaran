@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import pathlib
 import typing
@@ -25,7 +27,7 @@ class Scheme:
     def __init__(
         self,
         model: Model = None,
-        parameter: ParameterGroup = None,
+        parameters: ParameterGroup = None,
         data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
         group_tolerance: float = 0.0,
         nnls: bool = False,
@@ -41,7 +43,7 @@ class Scheme:
     ):
 
         self.model = model
-        self.parameter = parameter
+        self.parameters = parameters
         self.data = data
         self.group_tolerance = group_tolerance
         self.nnls = nnls
@@ -52,7 +54,7 @@ class Scheme:
         self.optimization_method = optimization_method
 
     @classmethod
-    def from_yml_file(cls, filename: str) -> "Scheme":
+    def from_yaml_file(cls, filename: str) -> Scheme:
 
         try:
             with open(filename) as f:
@@ -67,19 +69,19 @@ class Scheme:
             raise ValueError("Model file not specified.")
 
         try:
-            model = glotaran.read_model_from_yml_file(scheme["model"])
+            model = glotaran.read_model_from_yaml_file(scheme["model"])
         except Exception as e:
             raise ValueError(f"Error loading model: {e}")
 
-        if "parameter" not in scheme:
-            raise ValueError("Parameter file not specified.")
+        if "parameters" not in scheme:
+            raise ValueError("Parameters file not specified.")
 
-        path = scheme["parameter"]
+        path = scheme["parameters"]
         fmt = scheme.get("parameter_format", None)
         try:
-            parameter = glotaran.parameter.ParameterGroup.from_file(path, fmt)
+            parameters = glotaran.parameter.ParameterGroup.from_file(path, fmt)
         except Exception as e:
-            raise ValueError(f"Error loading parameter: {e}")
+            raise ValueError(f"Error loading parameters: {e}")
 
         if "data" not in scheme:
             raise ValueError("No data specified.")
@@ -106,7 +108,7 @@ class Scheme:
         group_tolerance = scheme.get("group_tolerance", 0.0)
         return cls(
             model=model,
-            parameter=parameter,
+            parameters=parameters,
             data=data,
             nnls=nnls,
             nfev=nfev,
@@ -118,22 +120,22 @@ class Scheme:
         )
 
     @property
-    def model(self) -> "glotaran.model.Model":
+    def model(self) -> Model:
         return self._model
 
     @_not_none
     @model.setter
-    def model(self, model: "glotaran.model.Model"):
+    def model(self, model: Model):
         self._model = model
 
     @property
-    def parameter(self) -> ParameterGroup:
-        return self._parameter
+    def parameters(self) -> ParameterGroup:
+        return self._parameters
 
     @_not_none
-    @parameter.setter
-    def parameter(self, parameter: ParameterGroup):
-        self._parameter = parameter
+    @parameters.setter
+    def parameters(self, parameters: ParameterGroup):
+        self._parameters = parameters
 
     @property
     def data(self) -> typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]:
@@ -171,16 +173,16 @@ class Scheme:
 
     def problem_list(self) -> typing.List[str]:
         """Returns a list with all problems in the model and missing parameters."""
-        return self.model.problem_list(self.parameter)
+        return self.model.problem_list(self.parameters)
 
     def validate(self) -> str:
         """Returns a string listing all problems in the model and missing parameters."""
-        return self.model.validate(self.parameter)
+        return self.model.validate(self.parameters)
 
-    def valid(self, parameter: ParameterGroup = None) -> bool:
+    def valid(self, parameters: ParameterGroup = None) -> bool:
         """Returns `True` if there are no problems with the model or the parameters,
         else `False`."""
-        return self.model.valid(parameter)
+        return self.model.valid(parameters)
 
     def _transpose_dataset(self, dataset):
         new_dims = [self.model.model_dimension, self.model.global_dimension]
@@ -244,7 +246,7 @@ class Scheme:
         return data
 
     def markdown(self):
-        s = self.model.markdown(parameter=self.parameter)
+        s = self.model.markdown(parameters=self.parameters)
 
         s += "\n\n"
         s += "__Scheme__\n\n"

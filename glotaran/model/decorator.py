@@ -24,7 +24,7 @@ from .weight import Weight
 MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
 """A `MatrixFunction` calculates the matrix for a model."""
 
-IndexDependedMatrixFunction = Callable[
+IndexDependentMatrixFunction = Callable[
     [Type[DatasetDescriptor], xr.Dataset, Any],
     Tuple[List[str], np.ndarray],
 ]
@@ -79,7 +79,7 @@ def model(
     attributes: Dict[str, Any] = None,
     dataset_type: Type[DatasetDescriptor] = DatasetDescriptor,
     megacomplex_type: Any = None,
-    matrix: Union[MatrixFunction, IndexDependedMatrixFunction] = None,
+    matrix: Union[MatrixFunction, IndexDependentMatrixFunction] = None,
     global_matrix: GlobalMatrixFunction = None,
     model_dimension: str = None,
     global_dimension: str = None,
@@ -94,7 +94,7 @@ def model(
 ) -> Callable:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
-    adds the functions (e.g. for `matrix`) to the model ansures they are added wrapped in a correct
+    adds the functions (e.g. for `matrix`) to the model ensures they are added wrapped in a correct
     way.
 
     Parameters
@@ -105,7 +105,7 @@ def model(
         A dictionary of attribute names and types. All types must be decorated with the
         :func:`glotaran.model.model_attribute` decorator.
     dataset_type :
-     A subclass of :class:`DatasetDescriptor`
+    A subclass of :class:`DatasetDescriptor`
     megacomplex_type :
         A class for the model megacomplexes. The class must be decorated with the
         :func:`glotaran.model.model_attribute` decorator.

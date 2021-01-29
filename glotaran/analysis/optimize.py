@@ -32,7 +32,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         initial_parameter,
         lower_bounds,
         upper_bounds,
-    ) = problem.scheme.parameter.get_label_value_and_bounds_arrays(exclude_non_vary=True)
+    ) = problem.scheme.parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
     method = SUPPORTED_METHODS[problem.scheme.optimization_method]
     nfev = problem.scheme.nfev
     ftol = problem.scheme.ftol
@@ -56,13 +56,13 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
     return Result(
         problem.scheme,
         problem.create_result_data(),
-        problem.parameter,
+        problem.parameters,
         ls_result,
         labels,
     )
 
 
-def _calculate_penalty(parameter: np.ndarray, labels: List[str] = None, problem: Problem = None):
-    problem.parameter.set_from_label_and_value_arrays(labels, parameter)
+def _calculate_penalty(parameters: np.ndarray, labels: List[str] = None, problem: Problem = None):
+    problem.parameters.set_from_label_and_value_arrays(labels, parameters)
     problem.reset()
     return problem.full_penalty

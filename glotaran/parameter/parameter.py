@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import List
@@ -10,10 +11,11 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+if TYPE_CHECKING:
+    from glotaran.parameter import ParameterGroup
+
 import asteval
 import numpy as np
-
-import glotaran
 
 RESERVED_LABELS = [symbol for symbol in asteval.make_symbol_table()] + ["group"]
 
@@ -63,7 +65,7 @@ class Parameter:
         self.maximum = maximum
         self.minimum = minimum
         self.non_negative = non_negative
-        self.stderr = 0.0
+        self.standard_error = 0.0
         self.value = value
         self.vary = vary
 
@@ -112,8 +114,8 @@ class Parameter:
             param._set_options_from_dict(options)
         return param
 
-    def set_from_group(self, group: "glotaran.parameter.ParameterGroup"):
-        """Sets all values of the parameter to the values of the conrresoping parameter in the group.
+    def set_from_group(self, group: ParameterGroup):
+        """Sets all values of the parameter to the values of the corresponding parameter in the group.
 
         Notes
         -----
@@ -131,7 +133,7 @@ class Parameter:
         self.maximum = p.maximum
         self.minimum = p.minimum
         self.non_negative = p.non_negative
-        self.stderr = p.stderr
+        self.standard_error = p.standard_error
         self.value = p.value
         self.vary = p.vary
 
@@ -252,13 +254,13 @@ class Parameter:
         return self._transformed_expression
 
     @property
-    def stderr(self) -> float:
+    def standard_error(self) -> float:
         """The standard error of the optimized parameter."""
         return self._stderr
 
-    @stderr.setter
-    def stderr(self, stderr: float):
-        self._stderr = stderr
+    @standard_error.setter
+    def standard_error(self, standard_error: float):
+        self._stderr = standard_error
 
     @property
     def value(self) -> float:
@@ -293,7 +295,7 @@ class Parameter:
         return value, minimum, maximum
 
     def set_value_from_optimization(self, value: float):
-        """Sets the value from an optimization result and reverses non-negative transormation."""
+        """Sets the value from an optimization result and reverses non-negative transformation."""
         self.value = np.exp(value) if self.non_negative else value
 
     def __getstate__(self):
@@ -305,7 +307,7 @@ class Parameter:
             self.maximum,
             self.minimum,
             self.non_negative,
-            self.stderr,
+            self.standard_error,
             self.value,
             self.vary,
         )
@@ -319,7 +321,7 @@ class Parameter:
             self.maximum,
             self.minimum,
             self.non_negative,
-            self.stderr,
+            self.standard_error,
             self.value,
             self.vary,
         ) = state
@@ -330,7 +332,7 @@ class Parameter:
     def __repr__(self):
         """String representation """
         return (
-            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.stderr}, _Min_:"
+            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
             f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
             f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
         )
@@ -354,10 +356,6 @@ class Parameter:
     def __pos__(self):
         """positive"""
         return +self._getval()
-
-    def __bool__(self):
-        """bool"""
-        return self._getval() != 0
 
     def __int__(self):
         """int"""

@@ -48,29 +48,29 @@ def optimize_cmd(
     nfev: int,
     nnls: bool,
     yes: bool,
-    parameter: str,
-    model: str,
-    scheme: str,
+    parameters_file: str,
+    model_file: str,
+    scheme_file: str,
 ):
     """Optimizes a model.
     e.g.:
     glotaran optimize --
 
     """
-    if scheme is not None:
-        scheme = util.load_scheme_file(scheme, verbose=True)
+    if scheme_file is not None:
+        scheme = util.load_scheme_file(scheme_file, verbose=True)
         if nfev is not None:
             scheme.nfev = nfev
     else:
-        if model is None:
+        if model_file is None:
             click.echo("Error: Neither scheme nor model specified", err=True)
             sys.exit(1)
-        model = util.load_model_file(model, verbose=True)
+        model = util.load_model_file(model_file, verbose=True)
 
-        if parameter is None:
+        if parameters_file is None:
             click.echo("Error: Neither scheme nor parameter specified", err=True)
             sys.exit(1)
-        parameter = util.load_parameter_file(parameter, verbose=True)
+        parameters = util.load_parameter_file(parameters_file, verbose=True)
 
         if len(data) == 0:
             click.echo("Error: Neither scheme nor data specified", err=True)
@@ -85,7 +85,7 @@ def optimize_cmd(
             datasets[label] = util.load_dataset_file(path, fmt=dataformat, verbose=True)
 
         scheme = gta.analysis.scheme.Scheme(
-            model=model, parameter=parameter, data=datasets, nnls=nnls, nfev=nfev
+            model=model, parameters=parameters, data=datasets, nnls=nnls, nfev=nfev
         )
 
     click.echo(scheme.validate())
@@ -108,7 +108,7 @@ def optimize_cmd(
             click.echo("Optimization done.")
             click.echo(result.markdown(with_model=False))
             click.echo("Optimized Parameter:")
-            click.echo(result.optimized_parameter.markdown())
+            click.echo(result.optimized_parameters.markdown())
         except Exception as e:
             click.echo(f"An error occurred during optimization: \n\n{e}", err=True)
             sys.exit(1)

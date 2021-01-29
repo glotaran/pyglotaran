@@ -226,7 +226,7 @@ def _create_from_list_func(cls):
 
 def _create_validation_func(cls):
     @wrap_func_as_method(cls)
-    def validate(self, model: Model, parameter=None) -> List[str]:
+    def validate(self, model: Model, parameters=None) -> List[str]:
         f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
         set of parameters.
 
@@ -243,7 +243,7 @@ def _create_validation_func(cls):
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            errors += prop.validate(value, model, parameter)
+            errors += prop.validate(value, model, parameters)
         return errors
 
     return validate
@@ -251,7 +251,7 @@ def _create_validation_func(cls):
 
 def _create_fill_func(cls):
     @wrap_func_as_method(cls)
-    def fill(self, model: Model, parameter: ParameterGroup) -> cls:
+    def fill(self, model: Model, parameters: ParameterGroup) -> cls:
         """Returns a copy of the {cls._name} instance with all members which are Parameters are
         replaced by the value of the corresponding parameter in the parameter group.
 
@@ -266,7 +266,7 @@ def _create_fill_func(cls):
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            value = prop.fill(value, model, parameter)
+            value = prop.fill(value, model, parameters)
             setattr(item, name, value)
         return item
 
@@ -292,7 +292,9 @@ def _create_set_state_func(cls):
 
 def _create_mprint_func(cls):
     @wrap_func_as_method(cls, name="mprint")
-    def mprint_item(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+    def mprint_item(
+        self, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
+    ) -> str:
         f"""Returns a string with the {cls.__name__} formatted in markdown."""
 
         s = "\n"
@@ -314,14 +316,14 @@ def _create_mprint_func(cls):
 
             def format_parameter(param):
                 s = f"{param.full_label}"
-                if parameter is not None:
-                    p = parameter.get(param.full_label)
+                if parameters is not None:
+                    p = parameters.get(param.full_label)
                     s += f": **{p.value:.5e}**"
                     if p.vary:
-                        err = p.stderr or 0
+                        err = p.standard_error or 0
                         s += f" *(StdErr: {err:.0e}"
-                        if initial is not None:
-                            i = initial.get(param.full_label)
+                        if initial_parameters is not None:
+                            i = initial_parameters.get(param.full_label)
                             s += f" ,initial: {i.value:.5e}"
                         s += ")*"
                     else:

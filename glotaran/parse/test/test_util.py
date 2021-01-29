@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 from typing import List
 from typing import NamedTuple
@@ -43,12 +45,12 @@ test_data_list = [
 
 
 @pytest.mark.parametrize("test_data", test_data_list)
-def test_mangled_list_sanitization(test_data: "MangledListTestData"):
+def test_mangled_list_sanitization(test_data: MangledListTestData):
     assert test_data.input_sanitized == str(test_data.input).replace("'", "")
 
 
 @pytest.mark.parametrize("test_data", test_data_list)
-def test_fix_tuple_string_list(test_data: "MangledListTestData"):
+def test_fix_tuple_string_list(test_data: MangledListTestData):
     actual = sanitize_list_with_broken_tuples(test_data.input)
     assert all(a in b for a, b in zip(actual, test_data.output))
 

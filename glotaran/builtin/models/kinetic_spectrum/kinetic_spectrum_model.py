@@ -40,13 +40,13 @@ def has_kinetic_model_constraints(model: KineticSpectrumModel) -> bool:
 def apply_kinetic_model_constraints(
     model: KineticSpectrumModel,
     dataset: str,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
 ) -> Tuple[List[str], np.ndarray]:
     clp_labels, matrix = apply_spectral_relations(
-        model, dataset, parameter, clp_labels, matrix, index
+        model, dataset, parameters, clp_labels, matrix, index
     )
     clp_labels, matrix = apply_spectral_constraints(model, clp_labels, matrix, index)
     return clp_labels, matrix
@@ -54,7 +54,7 @@ def apply_kinetic_model_constraints(
 
 def retrieve_spectral_clps(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     reduced_clps: Dict[str, List[np.ndarray]],
@@ -74,7 +74,7 @@ def retrieve_spectral_clps(
             for j, clp_label in enumerate(index_reduced_clp_labels):
                 index_clps[index_clp_labels.index(clp_label)] = index_reduced_clps[j]
             clps[label].append(index_clps)
-    clps = retrieve_related_clps(model, parameter, clp_labels, clps, data)
+    clps = retrieve_related_clps(model, parameters, clp_labels, clps, data)
     return clps
 
 

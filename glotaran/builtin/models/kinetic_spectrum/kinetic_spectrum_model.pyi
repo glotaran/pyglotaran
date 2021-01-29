@@ -32,7 +32,7 @@ def has_kinetic_model_constraints(model: KineticSpectrumModel) -> bool:
 
 def apply_kinetic_model_constraints(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
@@ -42,7 +42,7 @@ def apply_kinetic_model_constraints(
 
 def retrieve_spectral_clps(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     reduced_clp_labels: List[str],
     reduced_clps: Union[np.ndarray, List[np.ndarray]],
@@ -83,13 +83,13 @@ class KineticSpectrumModel(KineticImageModel):
         ...
 
     def constrain_matrix_function(
-        self, parameter: ParameterGroup, clp_labels: List[str], matrix: np.ndarray, index: float
+        self, parameters: ParameterGroup, clp_labels: List[str], matrix: np.ndarray, index: float
     ) -> Tuple[List[str], np.ndarray]:
         ...
 
     def retrieve_clp_function(
         self,
-        parameter: ParameterGroup,
+        parameters: ParameterGroup,
         clp_labels: List[str],
         reduced_clp_labels: List[str],
         reduced_clps: Union[np.ndarray, List[np.ndarray]],
@@ -102,7 +102,7 @@ class KineticSpectrumModel(KineticImageModel):
 
     def additional_penalty_function(
         self,
-        parameter: ParameterGroup,
+        parameters: ParameterGroup,
         clp_labels: Union[List[str], List[List[str]]],
         clps: np.ndarray,
         global_axis: np.ndarray,

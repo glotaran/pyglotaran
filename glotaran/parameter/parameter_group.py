@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import csv
 import pathlib
+from copy import copy
 from typing import Callable
 from typing import Dict
 from typing import Generator
@@ -27,7 +27,7 @@ class ParameterNotFoundException(Exception):
 
 
 class ParameterGroup(dict):
-    def __init__(self, label: str = None, root: ParameterGroup = None):
+    def __init__(self, label: str = None, root_group: ParameterGroup = None):
         """Represents are group of parameters. Can contain other groups, creating a
         tree-like hierarchy.
 
@@ -40,10 +40,10 @@ class ParameterGroup(dict):
             raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
         self._parameters = {}
-        self._root = root
+        self._root_group = root_group
         self._evaluator = (
             asteval.Interpreter(symtable=asteval.make_symbol_table(group=self))
-            if root is None
+            if root_group is None
             else None
         )
         super().__init__()
@@ -51,7 +51,7 @@ class ParameterGroup(dict):
     @classmethod
     def from_dict(
         cls,
-        parameter: Dict[str, Union[Dict, List]],
+        parameter_dict: Dict[str, Union[Dict, List]],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -59,15 +59,15 @@ class ParameterGroup(dict):
 
         Parameters
         ----------
-        parameter :
-            The parameter dictionary.
+        parameter_dict :
+            A parameter dictionary containing parameters.
         label :
             The label of root group.
         root_group:
             The root group
         """
-        root = cls(label=label, root=root_group)
-        for label, item in parameter.items():
+        root = cls(label=label, root_group=root_group)
+        for label, item in parameter_dict.items():
             label = str(label)
             if isinstance(item, dict):
                 root.add_group(cls.from_dict(item, label=label, root_group=root))
@@ -80,7 +80,7 @@ class ParameterGroup(dict):
     @classmethod
     def from_list(
         cls,
-        parameter: List[Union[float, List]],
+        parameter_list: List[Union[float, List]],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -88,23 +88,23 @@ class ParameterGroup(dict):
 
         Parameters
         ----------
-        parameter :
-            The parameter list.
+        parameter_list :
+            A parameter list containing parameters
         label :
             The label of the root group.
         root_group:
             The root group
         """
-        root = cls(label=label, root=root_group)
+        root = cls(label=label, root_group=root_group)
 
         # get defaults
         defaults = None
-        for item in parameter:
+        for item in parameter_list:
             if isinstance(item, dict):
                 defaults = item
                 break
 
-        for i, item in enumerate(parameter):
+        for i, item in enumerate(parameter_list):
             if isinstance(item, (str, int, float)):
                 try:
                     item = float(item)
@@ -139,7 +139,7 @@ class ParameterGroup(dict):
         return cls.known_formats()[fmt](filepath)
 
     @classmethod
-    def from_yaml_file(cls, filepath: str) -> "ParameterGroup":
+    def from_yaml_file(cls, filepath: str) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a YAML file.
 
         Parameters
@@ -153,7 +153,7 @@ class ParameterGroup(dict):
         return cls
 
     @classmethod
-    def from_yaml(cls, yaml_string: str):
+    def from_yaml(cls, yaml_string: str) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a YAML string.
 
         Parameters
@@ -168,63 +168,73 @@ class ParameterGroup(dict):
             return cls.from_dict(items)
 
     @classmethod
-    def from_csv(cls, filepath: str, delimiter: str = "\t"):
+    def from_dataframe(cls, df: pd.DataFrame, source: str = "DataFrame") -> ParameterGroup:
+        """Creates a :class:`ParameterGroup` from a :class:`pandas.DataFrame`"""
+
+        for column_name in ["label", "value"]:
+            if column_name not in df:
+                raise ValueError(f"Missing column '{column_name}' in '{source}'")
+
+        for column_name in ["minimum", "maximum", "value"]:
+            if column_name in df and any(not np.isreal(v) for v in df[column_name]):
+                raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values")
+
+        for column_name in ["non-negative", "vary"]:
+            if column_name in df and any(not isinstance(v, bool) for v in df[column_name]):
+                raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values")
+
+        root = cls()
+
+        for i, full_label in enumerate(df["label"]):
+            path = full_label.split(".")
+            group = root
+            while len(path) > 1:
+                group_label = path.pop(0)
+                if group_label not in group:
+                    group.add_group(ParameterGroup(label=group_label, root_group=group))
+                group = group[group_label]
+            label = path.pop()
+            value = df["value"][i]
+            minimum = df["minimum"][i] if "minimum" in df else -np.inf
+            maximum = df["maximum"][i] if "maximum" in df else np.inf
+            non_negative = df["non-negative"][i] if "non-negative" in df else False
+            vary = df["vary"][i] if "vary" in df else True
+            expression = (
+                df["expression"][i]
+                if "expression" in df and isinstance(df["expression"][i], str)
+                else None
+            )
+
+            parameter = Parameter(
+                label=label,
+                full_label=full_label,
+                value=value,
+                expression=expression,
+                maximum=maximum,
+                minimum=minimum,
+                non_negative=non_negative,
+                vary=vary,
+            )
+            group.add_parameter(parameter)
+        root.update_parameter_expression()
+        return root
+
+    @classmethod
+    def from_csv(cls, filepath: str, delimiter: str = None) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a CSV file.
 
         Parameters
         ----------
         filepath :
             The path to the CSV file.
-        delimiter : str
+        delimiter :
             The delimiter of the CSV file.
         """
 
-        root = cls()
-        df = pd.read_csv(filepath, sep=delimiter)
-
-        for i, label in enumerate(df["label"]):
-            label = label.split(".")
-            if len(label) == 1:
-                p = Parameter(label=label.pop())
-                p.value = df["value"][i]
-                p.stderr = df["stderr"][i]
-                p.minimum = df["min"][i]
-                p.maximum = df["max"][i]
-                p.vary = df["vary"][i]
-                p.non_negative = df["non-negative"][i]
-                root.add_parameter(p)
-                continue
-
-            top = root
-            while len(label) != 0:
-                group = label.pop(0)
-                if group in top:
-                    if len(label) == 1:
-                        p = Parameter(label=label.pop())
-                        p.value = df["value"][i]
-                        p.stderr = df["stderr"][i]
-                        p.minimum = df["min"][i]
-                        p.maximum = df["max"][i]
-                        p.vary = df["vary"][i]
-                        p.non_negative = df["non-negative"][i]
-                        top[group].add_parameter(p)
-                    else:
-                        top = top[group]
-                else:
-                    group = ParameterGroup(group)
-                    top.add_group(group)
-                    if len(label) == 1:
-                        p = Parameter(label=label.pop())
-                        p.value = df["value"][i]
-                        p.stderr = df["stderr"][i]
-                        p.minimum = df["min"][i]
-                        p.maximum = df["max"][i]
-                        p.vary = df["vary"][i]
-                        p.non_negative = df["non-negative"][i]
-                        group.add_parameter(p)
-                    else:
-                        top = group
-        return root
+        df = pd.read_csv(
+            filepath, delimiter=delimiter, skipinitialspace=True, na_values=["None", "none"]
+        )
+        return cls.from_dataframe(df, source=filepath)
 
     @property
     def label(self) -> str:
@@ -232,11 +242,31 @@ class ParameterGroup(dict):
         return self._label
 
     @property
-    def root(self) -> ParameterGroup:
+    def root_group(self) -> ParameterGroup:
         """Root of the group."""
-        return self._root
+        return self._root_group
 
-    def to_csv(self, filename: str, delimiter: str = "\t"):
+    def to_dataframe(self) -> pd.DataFrame:
+        parameter_dict = {
+            "label": [],
+            "value": [],
+            "minimum": [],
+            "maximum": [],
+            "vary": [],
+            "non-negative": [],
+            "expression": [],
+        }
+        for label, parameter in self.all():
+            parameter_dict["label"].append(label)
+            parameter_dict["value"].append(parameter.value)
+            parameter_dict["minimum"].append(parameter.minimum)
+            parameter_dict["maximum"].append(parameter.maximum)
+            parameter_dict["vary"].append(parameter.vary)
+            parameter_dict["non-negative"].append(parameter.non_negative)
+            parameter_dict["expression"].append(parameter.expression)
+        return pd.DataFrame(parameter_dict)
+
+    def to_csv(self, filename: str, delimiter: str = ","):
         """Writes a :class:`ParameterGroup` to a CSV file.
 
         Parameters
@@ -246,19 +276,9 @@ class ParameterGroup(dict):
         delimiter : str
             The delimiter of the CSV file.
         """
+        self.to_dataframe().to_csv(filename, sep=delimiter, na_rep="None", index=False)
 
-        with open(filename, mode="w") as parameter_file:
-            parameter_writer = csv.writer(parameter_file, delimiter=delimiter)
-            parameter_writer.writerow(
-                ["label", "value", "min", "max", "vary", "non-negative", "stderr"]
-            )
-
-            for (label, p) in self.all():
-                parameter_writer.writerow(
-                    [label, p.value, p.minimum, p.maximum, p.vary, p.non_negative, p.stderr]
-                )
-
-    def add_parameter(self, parameter: Parameter):
+    def add_parameter(self, parameter: Union[Parameter, List[Parameter]]):
         """Adds a :class:`Parameter` to the group.
 
         Parameters
@@ -292,13 +312,13 @@ class ParameterGroup(dict):
     def get_nr_roots(self) -> int:
         """Returns the number of roots of the group."""
         n = 0
-        root = self.root
+        root = self.root_group
         while root is not None:
             n += 1
-            root = root.root
+            root = root.root_group
         return n
 
-    def groups(self) -> Generator["ParameterGroup", None, None]:
+    def groups(self) -> Generator[ParameterGroup, None, None]:
         """Returns a generator over all groups and their subgroups."""
         for group in self:
             yield from group.groups()
@@ -344,6 +364,17 @@ class ParameterGroup(dict):
             return group._parameters[label]
         except KeyError:
             raise ParameterNotFoundException(path, label)
+
+    def copy(self) -> ParameterGroup:
+        root = ParameterGroup(label=self.label, root_group=self.root_group)
+
+        for label, parameter in self._parameters.items():
+            root._parameters[label] = copy(parameter)
+
+        for label, group in self.items():
+            root[label] = group.copy()
+
+        return root
 
     def all(
         self, root: str = None, separator: str = "."

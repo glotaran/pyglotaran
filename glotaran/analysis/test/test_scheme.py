@@ -17,7 +17,7 @@ def scheme(tmpdir_factory):
         model = "type: mock\ndataset:\n  dataset1:\n    megacomplex: []"
         f.write(model)
 
-    parameter_path = path.join("parameter.yml")
+    parameter_path = path.join("parameters.yml")
     with open(parameter_path, "w") as f:
         parameter = "[1.0, 67.0]"
         f.write(parameter)
@@ -27,7 +27,7 @@ def scheme(tmpdir_factory):
 
     scheme = f"""
     model: {model_path}
-    parameter: {parameter_path}
+    parameters: {parameter_path}
     nnls: True
     nfev: 42
     data:
@@ -40,13 +40,13 @@ def scheme(tmpdir_factory):
 
 
 def test_scheme(scheme):
-    scheme = Scheme.from_yml_file(scheme)
+    scheme = Scheme.from_yaml_file(scheme)
     assert scheme.model is not None
     assert scheme.model.model_type == "mock"
 
-    assert scheme.parameter is not None
-    assert scheme.parameter.get("1") == 1.0
-    assert scheme.parameter.get("2") == 67.0
+    assert scheme.parameters is not None
+    assert scheme.parameters.get("1") == 1.0
+    assert scheme.parameters.get("2") == 67.0
 
     assert scheme.nnls
     assert scheme.nfev == 42
@@ -75,7 +75,7 @@ def test_weight():
     print(model.validate())
     assert model.valid()
 
-    parameter = ParameterGroup.from_list([])
+    parameters = ParameterGroup.from_list([])
 
     global_axis = np.asarray(range(50, 300))
     model_axis = np.asarray(range(15))
@@ -86,7 +86,7 @@ def test_weight():
         dims=("e", "c"),
     )
 
-    scheme = Scheme(model, parameter, {"dataset1": dataset})
+    scheme = Scheme(model, parameters, {"dataset1": dataset})
 
     data = scheme.prepare_data()["dataset1"]
     print(data)
@@ -107,16 +107,16 @@ def test_weight():
     print(model.validate())
     assert model.valid()
 
-    scheme = Scheme(model, parameter, {"dataset1": dataset})
+    scheme = Scheme(model, parameters, {"dataset1": dataset})
     data = scheme.prepare_data()["dataset1"]
     assert np.all(data.weight.sel(e=slice(0, 200), c=slice(4, 8)).values == 0.5 * 0.2)
     assert np.all(data.weight.sel(c=slice(0, 3)).values == 0.2)
 
-    scheme = Scheme(model, parameter, {"dataset1": data})
+    scheme = Scheme(model, parameters, {"dataset1": data})
     with pytest.warns(
         UserWarning,
         match="Ignoring model weight for dataset 'dataset1'"
         " because weight is already supplied by dataset.",
     ):
-        # unnesscary, but the linter complains if we just call the function without doing anything
+        # unnecessary, but the linter complains if we just call the function without doing anything
         assert "dataset1" in scheme.prepare_data()

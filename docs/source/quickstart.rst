@@ -117,7 +117,7 @@ Now you can load the model file.
 .. ipython::
 
    @verbatim
-   In [1]: model = gta.read_model_from_yml_file('model.yml')
+   In [1]: model = gta.read_model_from_yaml_file('model.yml')
 
    @suppress
    In [1]: model_spec = """
@@ -151,7 +151,7 @@ Now you can load the model file.
       ...:     megacomplex: [m1]
       ...:     irf: irf1
       ...: """
-      ...: model = gta.read_model_from_yml(model_spec)
+      ...: model = gta.read_model_from_yaml(model_spec)
 
 You can check your model for problems with ``model.validate``.
 
@@ -159,7 +159,7 @@ You can check your model for problems with ``model.validate``.
 
    print(model.validate())
 
-Now define some starting parameters. Create a file called ``parameter.yml`` with
+Now define some starting parameters. Create a file called ``parameters.yml`` with
 the following content.
 
 .. code-block:: yaml
@@ -181,10 +181,10 @@ the following content.
 .. ipython::
 
    @verbatim
-   In [1]: parameter = gta.read_parameter_from_yml_file('parameter.yml')
+   In [1]: parameters = gta.read_parameters_from_yaml_file('parameters.yml')
 
    @suppress
-   In [1]: parameter = gta.read_parameter_from_yml("""
+   In [1]: parameters = gta.read_parameters_from_yaml("""
       ...:  input:
       ...:    - ['1', 1, {'vary': False, 'non-negative': False}]
       ...:    - ['0', 0, {'vary': False, 'non-negative': False}]
@@ -202,7 +202,7 @@ You can ``model.validate`` also to check for missing parameters.
 
 .. ipython:: python
 
-   print(model.validate(parameter=parameter))
+   print(model.validate(parameters=parameters))
 
 Since not all problems in the model can be detected automatically it is wise to
 visually inspect the model. For this purpose, you can just print the model.
@@ -215,16 +215,16 @@ The same way you should inspect your parameters.
 
 .. ipython:: python
 
-   print(parameter)
+   print(parameters)
 
 Now we have everything together to optimize our parameters. First we import optimize.
 
 .. ipython:: python
 
-   scheme = Scheme(model, parameter, {'dataset1': dataset})
+   scheme = Scheme(model, parameters, {'dataset1': dataset})
    result = optimize(scheme)
    print(result)
-   print(result.optimized_parameter)
+   print(result.optimized_parameters)
 
 You can get the resulting data for your dataset with ``result.get_dataset``.
 

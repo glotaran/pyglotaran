@@ -45,7 +45,7 @@ class ModelProperty(property):
     def allow_none(self) -> bool:
         return self._allow_none
 
-    def validate(self, value, model, parameter=None) -> typing.List[str]:
+    def validate(self, value, model, parameters=None) -> typing.List[str]:
 
         if value is None and self.allow_none:
             return []
@@ -69,22 +69,22 @@ class ModelProperty(property):
             f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model
         ]
 
-        missing_parameter = []
-        if parameter is not None and self._is_parameter and value is not None:
+        missing_parameters = []
+        if parameters is not None and self._is_parameter and value is not None:
             if self._is_parameter_value:
-                if not parameter.has(value.full_label):
-                    missing_parameter.append(value.full_label)
+                if not parameters.has(value.full_label):
+                    missing_parameters.append(value.full_label)
             elif self._is_parameter_list:
                 for item in value:
-                    if not parameter.has(item.full_label):
-                        missing_parameter.append(item.full_label)
+                    if not parameters.has(item.full_label):
+                        missing_parameters.append(item.full_label)
             elif self._is_parameter_dict:
                 for item in value.values():
-                    if not parameter.has(item.full_label):
-                        missing_parameter.append(item.full_label)
-        missing_parameter = [f"Missing Parameter: '{p}'" for p in missing_parameter]
+                    if not parameters.has(item.full_label):
+                        missing_parameters.append(item.full_label)
+        missing_parameters = [f"Missing Parameter: '{p}'" for p in missing_parameters]
 
-        return missing_model + missing_parameter
+        return missing_model + missing_parameters
 
     def fill(self, value, model, parameter):
 

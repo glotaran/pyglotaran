@@ -68,7 +68,7 @@ def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
 
 def apply_spectral_penalties(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     clps: Dict[str, List[np.ndarray]],
     matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
@@ -79,7 +79,7 @@ def apply_spectral_penalties(
     penalties = []
     for penalty in model.equal_area_penalties:
 
-        penalty = penalty.fill(model, parameter)
+        penalty = penalty.fill(model, parameters)
         source_area = _get_area(
             model.index_dependent(),
             model.global_dimension,
@@ -130,9 +130,7 @@ def _get_area(
             start_idx, end_idx = _get_idx_from_interval(interval, global_axis)
             for i in range(start_idx, end_idx + 1):
                 index_clp_labels = clp_labels[label][i] if index_dependent else clp_labels[label]
-                if not len(area) == 0 and np.any(
-                    np.isclose(area_indices, global_axis[i], atol=group_tolerance)
-                ):
+                if area and np.any(np.isclose(area_indices, global_axis[i], atol=group_tolerance)):
                     # already got clp for this index
                     continue
                 if compartment in index_clp_labels:

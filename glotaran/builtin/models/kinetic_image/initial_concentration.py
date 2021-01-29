@@ -1,4 +1,5 @@
 """This package contains the initial concentration item."""
+from __future__ import annotations
 
 import copy
 import typing
@@ -21,7 +22,7 @@ class InitialConcentration:
     """An initial concentration describes the population of the compartments at
     the beginning of an experiment."""
 
-    def normalized(self, dataset: DatasetDescriptor) -> "InitialConcentration":
+    def normalized(self, dataset: DatasetDescriptor) -> InitialConcentration:
         parameters = self.parameters
         for megacomplex in dataset.megacomplex:
             scale = [
