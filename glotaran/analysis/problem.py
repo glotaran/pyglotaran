@@ -85,10 +85,10 @@ class Problem:
         self._groups = None
 
         self._residual_function = residual_nnls if scheme.nnls else residual_variable_projection
-        self._parameter = None
+        self._parameters = None
         self._filled_dataset_descriptors = None
 
-        self.parameter = scheme.parameter.copy()
+        self.parameters = scheme.parameters.copy()
 
         # all of the above are always not None
 
@@ -134,12 +134,12 @@ class Problem:
         return self._data
 
     @property
-    def parameter(self) -> ParameterGroup:
-        return self._parameter
+    def parameters(self) -> ParameterGroup:
+        return self._parameters
 
-    @parameter.setter
-    def parameter(self, parameter: ParameterGroup):
-        self._parameter = parameter
+    @parameters.setter
+    def parameters(self, parameters: ParameterGroup):
+        self._parameters = parameters
         self.reset()
 
     @property
@@ -256,7 +256,7 @@ class Problem:
     def reset(self):
         """Resets all results and `DatasetDescriptors`. Use after updating parameters."""
         self._filled_dataset_descriptors = {
-            label: descriptor.fill(self._model, self._parameter)
+            label: descriptor.fill(self._model, self._parameters)
             for label, descriptor in self._model.dataset.items()
         }
         self._reset_results()
@@ -408,7 +408,7 @@ class Problem:
         List[List[str]],
         List[np.ndarray],
     ]:
-        if self._parameter is None:
+        if self._parameters is None:
             raise ParameterError
 
         def calculate_group(
@@ -436,7 +436,7 @@ class Problem:
             constraint_labels_and_matrices = list(
                 map(
                     lambda result: _reduce_matrix(
-                        self._model, result[1], self.parameter, result[0], index
+                        self._model, result[1], self.parameters, result[0], index
                     ),
                     index_results,
                 )
@@ -475,7 +475,7 @@ class Problem:
         Dict[str, List[str]],
         Dict[str, List[np.ndarray]],
     ]:
-        if self._parameter is None:
+        if self._parameters is None:
             raise ParameterError
 
         self._clp_labels = {}
@@ -502,7 +502,7 @@ class Problem:
                 self._clp_labels[label].append(result.clp_label)
                 self._matrices[label].append(result.matrix)
                 reduced_labels_and_matrix = _reduce_matrix(
-                    self._model, label, self._parameter, result, index
+                    self._model, label, self._parameters, result, index
                 )
                 self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
                 self._reduced_matrices[label].append(reduced_labels_and_matrix.matrix)
@@ -537,7 +537,7 @@ class Problem:
         Dict[str, List[str]],
         Dict[str, np.ndarray],
     ]:
-        if self._parameter is None:
+        if self._parameters is None:
             raise ParameterError
 
         self._clp_labels = {}
@@ -556,7 +556,7 @@ class Problem:
 
             self._clp_labels[label] = result.clp_label
             self._matrices[label] = result.matrix
-            reduced_result = _reduce_matrix(self._model, label, self._parameter, result, None)
+            reduced_result = _reduce_matrix(self._model, label, self._parameters, result, None)
             self._reduced_clp_labels[label] = reduced_result.clp_label
             self._reduced_matrices[label] = reduced_result.matrix
 
@@ -648,7 +648,7 @@ class Problem:
 
         self._clps = (
             self.model.retrieve_clp_function(
-                self.parameter,
+                self.parameters,
                 self.clp_labels,
                 self.reduced_clp_labels,
                 self.reduced_clps,
@@ -732,7 +732,7 @@ class Problem:
 
         self._clps = (
             self.model.retrieve_clp_function(
-                self.parameter,
+                self.parameters,
                 self.clp_labels,
                 self.reduced_clp_labels,
                 self.reduced_clps,
@@ -775,7 +775,7 @@ class Problem:
                 self._reduced_clps[label].append(reduced_clps[i + offset][mask])
         self._clps = (
             self.model.retrieve_clp_function(
-                self.parameter,
+                self.parameters,
                 self.clp_labels,
                 self.reduced_clp_labels,
                 self.reduced_clps,
@@ -792,7 +792,7 @@ class Problem:
             and self.model.has_additional_penalty_function()
         ):
             self._additional_penalty = self.model.additional_penalty_function(
-                self.parameter,
+                self.parameters,
                 self.clp_labels,
                 self.clps,
                 self.matrices,
@@ -1059,14 +1059,14 @@ def _calculate_matrix(
 def _reduce_matrix(
     model: Model,
     label: str,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     result: LabelAndMatrix,
     index: float,
 ) -> LabelAndMatrix:
     clp_labels = result.clp_label.copy()
     if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
         clp_label, matrix = model.constrain_matrix_function(
-            label, parameter, clp_labels, result.matrix, index
+            label, parameters, clp_labels, result.matrix, index
         )
         return LabelAndMatrix(clp_label, matrix)
     return LabelAndMatrix(clp_labels, result.matrix)

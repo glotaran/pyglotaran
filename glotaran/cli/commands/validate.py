@@ -19,7 +19,7 @@ def validate_cmd(parameter: str, model: str, scheme: str):
         if parameter is not None:
             parameter = util.load_parameter_file(parameter, verbose=True)
 
-        click.echo(model.validate(parameter=parameter))
+        click.echo(model.validate(parameters=parameter))
     else:
         click.echo(
             "Neither analysis scheme nor model file specified. "

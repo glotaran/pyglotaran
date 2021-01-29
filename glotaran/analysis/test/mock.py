@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict
 from typing import List
 from typing import Type
@@ -99,13 +101,13 @@ def calculate_spectral_gauss(dataset, axis):
 def constrain_matrix_function_typecheck(
     model: Type[Model],
     label: str,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
 ):
     assert isinstance(label, str)
-    assert isinstance(parameter, ParameterGroup)
+    assert isinstance(parameters, ParameterGroup)
     assert isinstance(clp_labels, list)
     assert all(isinstance(clp_label, str) for clp_label in clp_labels)
     assert isinstance(matrix, np.ndarray)
@@ -122,13 +124,13 @@ def constrain_matrix_function_typecheck(
 
 def retrieve_clp_typecheck(
     model: Type[Model],
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     reduced_clps: Dict[str, List[np.ndarray]],
     data: Dict[str, xr.Dataset],
 ) -> Dict[str, List[np.ndarray]]:
-    assert isinstance(parameter, ParameterGroup)
+    assert isinstance(parameters, ParameterGroup)
 
     assert isinstance(reduced_clps, dict)
     assert all(isinstance(dataset_clps, list) for dataset_clps in reduced_clps.values())
@@ -162,14 +164,14 @@ def retrieve_clp_typecheck(
 
 def additional_penalty_typecheck(
     model: Type[Model],
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     clps: Dict[str, List[np.ndarray]],
     matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
     data: Dict[str, xr.Dataset],
     group_tolerance: float,
 ) -> np.ndarray:
-    assert isinstance(parameter, ParameterGroup)
+    assert isinstance(parameters, ParameterGroup)
     assert isinstance(group_tolerance, float)
 
     assert isinstance(clps, dict)
@@ -277,8 +279,8 @@ class GaussianDecayModel(Model):
 
 class OneCompartmentDecay:
     scale = 2
-    wanted = ParameterGroup.from_list([101e-4])
-    initial = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
+    wanted_parameters = ParameterGroup.from_list([101e-4])
+    initial_parameters = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
 
     e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
@@ -294,8 +296,8 @@ class OneCompartmentDecay:
 
 
 class TwoCompartmentDecay:
-    wanted = ParameterGroup.from_list([11e-4, 22e-5])
-    initial = ParameterGroup.from_list([10e-4, 20e-5])
+    wanted_parameters = ParameterGroup.from_list([11e-4, 22e-5])
+    initial_parameters = ParameterGroup.from_list([10e-4, 20e-5])
 
     e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
@@ -311,8 +313,8 @@ class TwoCompartmentDecay:
 
 
 class ThreeDatasetDecay:
-    wanted = ParameterGroup.from_list([101e-4, 201e-3])
-    initial = ParameterGroup.from_list([100e-5, 200e-3])
+    wanted_parameters = ParameterGroup.from_list([101e-4, 201e-3])
+    initial_parameters = ParameterGroup.from_list([100e-5, 200e-3])
 
     e_axis = np.asarray([1.0])
     c_axis = np.arange(0, 150, 1.5)
@@ -335,7 +337,7 @@ class ThreeDatasetDecay:
 
 
 class MultichannelMulticomponentDecay:
-    wanted = ParameterGroup.from_dict(
+    wanted_parameters = ParameterGroup.from_dict(
         {
             "k": [0.006, 0.003, 0.0003, 0.03],
             "loc": [
@@ -358,7 +360,7 @@ class MultichannelMulticomponentDecay:
             ],
         }
     )
-    initial = ParameterGroup.from_dict({"k": [0.006, 0.003, 0.0003, 0.03]})
+    initial_parameters = ParameterGroup.from_dict({"k": [0.006, 0.003, 0.0003, 0.03]})
 
     e_axis = np.arange(12820, 15120, 50)
     c_axis = np.arange(0, 150, 1.5)

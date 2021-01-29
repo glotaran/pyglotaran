@@ -81,7 +81,7 @@ class SimpleIrfDispersion:
         }
     )
 
-    initial = ParameterGroup.from_dict(
+    initial_parameters = ParameterGroup.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -95,7 +95,7 @@ class SimpleIrfDispersion:
             ],
         }
     )
-    wanted = ParameterGroup.from_dict(
+    wanted_parameters = ParameterGroup.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -191,7 +191,7 @@ class MultiIrfDispersion:
         }
     )
 
-    initial = ParameterGroup.from_dict(
+    initial_parameters = ParameterGroup.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -207,7 +207,7 @@ class MultiIrfDispersion:
             ],
         }
     )
-    wanted = ParameterGroup.from_dict(
+    wanted_parameters = ParameterGroup.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -248,29 +248,29 @@ def test_spectral_irf(suite):
     print(sim_model.validate())
     assert sim_model.valid()
 
-    wanted = suite.wanted
-    print(sim_model.validate(wanted))
-    print(wanted)
-    assert sim_model.valid(wanted)
+    wanted_parameters = suite.wanted_parameters
+    print(sim_model.validate(wanted_parameters))
+    print(wanted_parameters)
+    assert sim_model.valid(wanted_parameters)
 
-    initial = suite.initial
-    print(model.validate(initial))
-    assert model.valid(initial)
+    initial_parameters = suite.initial_parameters
+    print(model.validate(initial_parameters))
+    assert model.valid(initial_parameters)
 
-    print(model.markdown(wanted))
+    print(model.markdown(wanted_parameters))
 
-    dataset = sim_model.simulate("dataset1", wanted, suite.axis)
+    dataset = sim_model.simulate("dataset1", wanted_parameters, suite.axis)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 
     data = {"dataset1": dataset}
 
-    scheme = Scheme(model=model, parameter=initial, data=data, nfev=20)
+    scheme = Scheme(model=model, parameters=initial_parameters, data=data, nfev=20)
     result = optimize(scheme)
     print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, wanted.get(label).value, rtol=1e-1)
+        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
 

@@ -51,7 +51,7 @@ class ParameterGroup(dict):
     @classmethod
     def from_dict(
         cls,
-        parameter: Dict[str, Union[Dict, List]],
+        parameter_dict: Dict[str, Union[Dict, List]],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -59,15 +59,15 @@ class ParameterGroup(dict):
 
         Parameters
         ----------
-        parameter :
-            The parameter dictionary.
+        parameter_dict :
+            A parameter dictionary containing parameters.
         label :
             The label of root group.
         root_group:
             The root group
         """
         root = cls(label=label, root_group=root_group)
-        for label, item in parameter.items():
+        for label, item in parameter_dict.items():
             label = str(label)
             if isinstance(item, dict):
                 root.add_group(cls.from_dict(item, label=label, root_group=root))
@@ -80,7 +80,7 @@ class ParameterGroup(dict):
     @classmethod
     def from_list(
         cls,
-        parameter: List[Union[float, List]],
+        parameter_list: List[Union[float, List]],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -88,8 +88,8 @@ class ParameterGroup(dict):
 
         Parameters
         ----------
-        parameter :
-            The parameter list.
+        parameter_list :
+            A parameter list containing parameters
         label :
             The label of the root group.
         root_group:
@@ -99,12 +99,12 @@ class ParameterGroup(dict):
 
         # get defaults
         defaults = None
-        for item in parameter:
+        for item in parameter_list:
             if isinstance(item, dict):
                 defaults = item
                 break
 
-        for i, item in enumerate(parameter):
+        for i, item in enumerate(parameter_list):
             if isinstance(item, (str, int, float)):
                 try:
                     item = float(item)
@@ -139,7 +139,7 @@ class ParameterGroup(dict):
         return cls.known_formats()[fmt](filepath)
 
     @classmethod
-    def from_yaml_file(cls, filepath: str) -> "ParameterGroup":
+    def from_yaml_file(cls, filepath: str) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a YAML file.
 
         Parameters
@@ -153,7 +153,7 @@ class ParameterGroup(dict):
         return cls
 
     @classmethod
-    def from_yaml(cls, yaml_string: str):
+    def from_yaml(cls, yaml_string: str) -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a YAML string.
 
         Parameters
@@ -318,7 +318,7 @@ class ParameterGroup(dict):
             root = root.root_group
         return n
 
-    def groups(self) -> Generator["ParameterGroup", None, None]:
+    def groups(self) -> Generator[ParameterGroup, None, None]:
         """Returns a generator over all groups and their subgroups."""
         for group in self:
             yield from group.groups()

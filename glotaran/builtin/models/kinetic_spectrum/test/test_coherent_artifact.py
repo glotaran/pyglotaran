@@ -43,7 +43,7 @@ def test_coherent_artifact():
     }
     model = KineticSpectrumModel.from_dict(model_dict.copy())
 
-    parameter = ParameterGroup.from_list(
+    parameters = ParameterGroup.from_list(
         [
             101e-4,
             [10, {"vary": False, "non-negative": False}],
@@ -54,18 +54,18 @@ def test_coherent_artifact():
 
     time = np.asarray(np.arange(0, 50, 1.5))
 
-    irf = model.irf["irf1"].fill(model, parameter)
+    irf = model.irf["irf1"].fill(model, parameters)
     irf_same_width = irf.calculate_coherent_artifact(time)
 
     model_dict["irf"]["irf1"]["coherent_artifact_width"] = "4"
     model = KineticSpectrumModel.from_dict(model_dict)
 
-    irf = model.irf["irf1"].fill(model, parameter)
+    irf = model.irf["irf1"].fill(model, parameters)
     irf_diff_width = irf.calculate_coherent_artifact(time)
 
     assert not np.array_equal(irf_same_width, irf_diff_width)
 
-    data = model.dataset["dataset1"].fill(model, parameter)
+    data = model.dataset["dataset1"].fill(model, parameters)
     compartments, matrix = kinetic_spectrum_matrix(data, time, 0)
 
     assert len(compartments) == 4
@@ -90,15 +90,15 @@ def test_coherent_artifact():
         ],
     )
     axis = {"time": time, "spectral": clp.spectral}
-    data = model.simulate("dataset1", parameter, axis, clp)
+    data = model.simulate("dataset1", parameters, axis, clp)
 
     dataset = {"dataset1": data}
-    scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
+    scheme = Scheme(model=model, parameters=parameters, data=dataset, nfev=20)
     result = optimize(scheme)
     print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, parameter.get(label).value, rtol=1e-1)
+        assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(data.time, resultdata.time)

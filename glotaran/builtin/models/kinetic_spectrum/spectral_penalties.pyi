@@ -42,7 +42,7 @@ def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
 
 def apply_spectral_penalties(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Union[List[str], List[List[str]]],
     clps: np.ndarray,
     global_axis: np.ndarray,

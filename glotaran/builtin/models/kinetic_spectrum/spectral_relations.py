@@ -51,7 +51,7 @@ class SpectralRelation:
 def create_spectral_relation_matrix(
     model: KineticSpectrumModel,
     dataset: str,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
@@ -70,7 +70,7 @@ def create_spectral_relation_matrix(
                 )
                 continue
 
-            relation = relation.fill(model, parameter)
+            relation = relation.fill(model, parameters)
             source_idx = clp_labels.index(relation.compartment)
             target_idx = clp_labels.index(relation.target)
             relation_matrix[target_idx, source_idx] = relation.parameter
@@ -84,7 +84,7 @@ def create_spectral_relation_matrix(
 def apply_spectral_relations(
     model: KineticSpectrumModel,
     dataset: str,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
@@ -94,7 +94,7 @@ def apply_spectral_relations(
         return (clp_labels, matrix)
 
     reduced_clp_labels, relation_matrix = create_spectral_relation_matrix(
-        model, dataset, parameter, clp_labels, matrix, index
+        model, dataset, parameters, clp_labels, matrix, index
     )
 
     reduced_matrix = matrix @ relation_matrix
@@ -104,14 +104,14 @@ def apply_spectral_relations(
 
 def retrieve_related_clps(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     clps: Dict[str, List[np.ndarray]],
     data: Dict[str, xr.Dataset],
 ) -> Dict[str, List[np.ndarray]]:
 
     for relation in model.spectral_relations:
-        relation = relation.fill(model, parameter)
+        relation = relation.fill(model, parameters)
         for label, dataset_clp_labels in clp_labels.items():
             for i, index in enumerate(data[label].coords[model.global_dimension]):
                 if (

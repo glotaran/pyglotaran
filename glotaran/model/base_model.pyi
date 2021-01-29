@@ -57,7 +57,7 @@ class Model:
         ...
 
     @property
-    def index_depended_matrix(self):
+    def index_dependent_matrix(self):
         ...
 
     @property
@@ -67,7 +67,7 @@ class Model:
     def simulate(
         self,
         dataset: str,
-        parameter: ParameterGroup,
+        parameters: ParameterGroup,
         axes: Dict[str, np.ndarray] = ...,
         clp: Union[np.ndarray, xr.DataArray] = ...,
         noise: bool = ...,
@@ -78,21 +78,21 @@ class Model:
 
     def result_from_parameter(
         self,
-        parameter: ParameterGroup,
+        parameters: ParameterGroup,
         data: Dict[str, Union[xr.DataArray, xr.Dataset]],
         nnls: bool = ...,
         group_atol: float = ...,
     ) -> Result:
         ...
 
-    def problem_list(self, parameter: ParameterGroup = ...) -> List[str]:
+    def problem_list(self, parameters: ParameterGroup = ...) -> List[str]:
         ...
 
-    def validate(self, parameter: ParameterGroup = ...) -> str:
+    def validate(self, parameters: ParameterGroup = ...) -> str:
         ...
 
-    def valid(self, parameter: ParameterGroup = None) -> bool:
+    def valid(self, parameters: ParameterGroup = None) -> bool:
         ...
 
-    def markdown(self, parameter: ParameterGroup = ..., initial: ParameterGroup = ...) -> str:
+    def markdown(self, parameters: ParameterGroup = ..., initial: ParameterGroup = ...) -> str:
         ...

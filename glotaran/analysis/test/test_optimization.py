@@ -48,15 +48,15 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     print(sim_model.validate())
     assert sim_model.valid()
 
-    wanted = suite.wanted
-    print(wanted)
-    print(sim_model.validate(wanted))
-    assert sim_model.valid(wanted)
+    wanted_parameters = suite.wanted_parameters
+    print(wanted_parameters)
+    print(sim_model.validate(wanted_parameters))
+    assert sim_model.valid(wanted_parameters)
 
-    initial = suite.initial
-    print(initial)
-    print(model.validate(initial))
-    assert model.valid(initial)
+    initial_parameters = suite.initial_parameters
+    print(initial_parameters)
+    print(model.validate(initial_parameters))
+    assert model.valid(initial_parameters)
 
     nr_datasets = 3 if issubclass(suite, ThreeDatasetDecay) else 1
     data = {}
@@ -64,7 +64,9 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         e_axis = getattr(suite, "e_axis" if i == 0 else f"e_axis{i+1}")
         c_axis = getattr(suite, "c_axis" if i == 0 else f"c_axis{i+1}")
 
-        dataset = simulate(sim_model, f"dataset{i+1}", wanted, {"e": e_axis, "c": c_axis})
+        dataset = simulate(
+            sim_model, f"dataset{i+1}", wanted_parameters, {"e": e_axis, "c": c_axis}
+        )
         print(f"Dataset {i+1}")
         print("=============")
         print(dataset)
@@ -83,7 +85,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
 
     scheme = Scheme(
         model=model,
-        parameter=initial,
+        parameters=initial_parameters,
         data=data,
         nfev=10,
         group_tolerance=0.1,
@@ -95,7 +97,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
 
     for label, param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, wanted.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
 
     for i, dataset in enumerate(data.values()):
         resultdata = result.data[f"dataset{i+1}"]

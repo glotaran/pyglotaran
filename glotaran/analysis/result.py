@@ -1,7 +1,9 @@
 """The result class for global analysis."""
+from __future__ import annotations
 
 import os
 import warnings
+from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 from typing import Type
@@ -10,8 +12,9 @@ import numpy as np
 import xarray as xr
 from scipy.optimize import OptimizeResult
 
-import glotaran
-from glotaran.parameter import ParameterGroup
+if TYPE_CHECKING:
+    from glotaran.model import Model
+    from glotaran.parameter import ParameterGroup
 
 from .scheme import Scheme
 
@@ -33,8 +36,8 @@ class Result:
             A subclass of :class:`glotaran.model.Model`
         data :
             A dictionary containing all datasets with their labels as keys.
-        initital_parameter : glotaran.parameter.ParameterGroup
-            The initital fit parameter,
+        optimized_parameters : glotaran.parameter.ParameterGroup
+            The optimized parameters,
         nnls :
             (default = False)
             If `True` non-linear least squares optimizing is used instead of variable projection.
@@ -79,7 +82,7 @@ class Result:
         return self._scheme
 
     @property
-    def model(self) -> Type["glotaran.model.Model"]:
+    def model(self) -> Type[Model]:
         """The model for analysis."""
         return self._scheme.model
 
@@ -162,7 +165,7 @@ class Result:
 
     @property
     def free_parameter_labels(self) -> List[str]:
-        """List of labels of the free parameter used in optimization."""
+        """List of labels of the free parameters used in optimization."""
         return self._free_parameter_labels
 
     @property
@@ -179,7 +182,7 @@ class Result:
 
     @property
     def initial_parameters(self) -> ParameterGroup:
-        """The initital fit parameter."""
+        """The initital parameters."""
         return self._scheme.parameters
 
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
@@ -205,7 +208,7 @@ class Result:
 
         return Scheme(
             model=self.model,
-            parameter=self.optimized_parameters,
+            parameters=self.optimized_parameters,
             data=data,
             group_tolerance=self.group_tolerance,
             nnls=self.scheme.nnls,
@@ -224,7 +227,7 @@ class Result:
         The following files are saved:
 
         * `result.md`: The result with the model formatted as markdown text.
-        * `optimized_parameter.csv`: The optimized parameter as csv file.
+        * `optimized_parameters.csv`: The optimized parameter as csv file.
         * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
 
         Parameters
@@ -244,7 +247,7 @@ class Result:
             f.write(self.markdown())
         paths.append(md_path)
 
-        csv_path = os.path.join(path, "optimized_parameter.csv")
+        csv_path = os.path.join(path, "optimized_parameters.csv")
         self.optimized_parameters.to_csv(csv_path)
         paths.append(csv_path)
 
@@ -261,7 +264,7 @@ class Result:
         Parameters
         ----------
         with_model :
-            If `True`, the model will be printed together with the initial and optimized parameter.
+            If `True`, the model will be printed with initial and optimized parameters filled in.
         """
 
         ll = 32
@@ -299,7 +302,7 @@ class Result:
 
         if with_model:
             string += "\n\n" + self.model.markdown(
-                parameter=self.optimized_parameters, initial=self.initial_parameters
+                parameters=self.optimized_parameters, initial_parameters=self.initial_parameters
             )
 
         return string

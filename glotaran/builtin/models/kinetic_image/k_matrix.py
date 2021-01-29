@@ -1,4 +1,5 @@
 """ K-Matrix """
+from __future__ import annotations
 
 import itertools
 import typing
@@ -22,7 +23,7 @@ class KMatrix:
     """ A K-Matrix represents a first order differental system."""
 
     @classmethod
-    def empty(cls, label: str, compartments: typing.List[str]) -> "KMatrix":
+    def empty(cls, label: str, compartments: typing.List[str]) -> KMatrix:
         """Creates an empty K-Matrix. Useful for combining.
 
         Parameters
@@ -45,7 +46,7 @@ class KMatrix:
         compartments = list(set(compartments))
         return compartments
 
-    def combine(self, k_matrix: "KMatrix") -> "KMatrix":
+    def combine(self, k_matrix: KMatrix) -> KMatrix:
         """Creates a combined matrix.
 
         Parameters
@@ -73,7 +74,7 @@ class KMatrix:
     def matrix_as_markdown(
         self,
         compartments: typing.List[str] = None,
-        fill_parameter: bool = False,
+        fill_parameters: bool = False,
     ) -> str:
         """Returns the KMatrix as markdown formatted table.
 
@@ -82,10 +83,10 @@ class KMatrix:
         compartments :
             (default = None)
             An optional list defining the desired order of compartments.
-        fill_parameter : bool
+        fill_parameters : bool
             (default = False)
-            If true, the entries will be filled with the actual parameter value
-            instead of abels.
+            If true, the entries will be filled with the actual parameter values
+            instead of labels.
         """
 
         compartments = (
@@ -100,7 +101,7 @@ class KMatrix:
             i = compartments.index(index[0])
             j = compartments.index(index[1])
             array[i, j] = (
-                self.matrix[index].full_label if not fill_parameter else self.matrix[index].value
+                self.matrix[index].full_label if not fill_parameters else self.matrix[index].value
             )
         return self._array_as_markdown(array, compartments, compartments)
 

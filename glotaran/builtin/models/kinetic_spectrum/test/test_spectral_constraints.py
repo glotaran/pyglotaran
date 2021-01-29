@@ -45,13 +45,13 @@ def test_spectral_constraint():
     )
     print(model)
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameters = ParameterGroup.from_dict(
         {
             "kinetic": [1e-4, 1e-5],
             "i": [1, 2],
         }
     )
-    initial_parameter = ParameterGroup.from_dict(
+    initial_parameters = ParameterGroup.from_dict(
         {
             "kinetic": [2e-4, 2e-5],
             "i": [1, 2, {"vary": False}],
@@ -59,7 +59,7 @@ def test_spectral_constraint():
     )
 
     time = np.asarray(np.arange(0, 50, 1.5))
-    dataset = model.dataset["dataset1"].fill(model, wanted_parameter)
+    dataset = model.dataset["dataset1"].fill(model, wanted_parameters)
     compartments, matrix = kinetic_image_matrix(dataset, time, 0)
 
     assert len(compartments) == 2
@@ -74,7 +74,7 @@ def test_spectral_constraint():
     assert reduced_matrix.shape == (time.size, 1)
 
     reduced_compartments, reduced_matrix = model.constrain_matrix_function(
-        "dataset1", wanted_parameter, compartments, matrix, 1
+        "dataset1", wanted_parameters, compartments, matrix, 1
     )
 
     assert reduced_matrix.shape == (time.size, 1)
@@ -84,11 +84,11 @@ def test_spectral_constraint():
     )
 
     data = model.simulate(
-        "dataset1", wanted_parameter, clp=clp, axes={"time": time, "spectral": np.array([1])}
+        "dataset1", wanted_parameters, clp=clp, axes={"time": time, "spectral": np.array([1])}
     )
 
     dataset = {"dataset1": data}
-    scheme = Scheme(model=model, parameter=initial_parameter, data=dataset, nfev=20)
+    scheme = Scheme(model=model, parameters=initial_parameters, data=dataset, nfev=20)
 
     # the resulting jacobian is singular
     with pytest.warns(UserWarning):

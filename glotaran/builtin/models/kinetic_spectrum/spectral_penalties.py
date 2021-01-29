@@ -68,7 +68,7 @@ def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
 
 def apply_spectral_penalties(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: Dict[str, Union[List[str], List[List[str]]]],
     clps: Dict[str, List[np.ndarray]],
     matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
@@ -79,7 +79,7 @@ def apply_spectral_penalties(
     penalties = []
     for penalty in model.equal_area_penalties:
 
-        penalty = penalty.fill(model, parameter)
+        penalty = penalty.fill(model, parameters)
         source_area = _get_area(
             model.index_dependent(),
             model.global_dimension,

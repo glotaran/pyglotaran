@@ -19,9 +19,12 @@ def problem(request) -> Problem:
     model.is_index_dependent = request.param[1]
 
     dataset = simulate(
-        suite.sim_model, "dataset1", suite.wanted, {"e": suite.e_axis, "c": suite.c_axis}
+        suite.sim_model,
+        "dataset1",
+        suite.wanted_parameters,
+        {"e": suite.e_axis, "c": suite.c_axis},
     )
-    scheme = Scheme(model=model, parameter=suite.initial, data={"dataset1": dataset})
+    scheme = Scheme(model=model, parameters=suite.initial_parameters, data={"dataset1": dataset})
     return Problem(scheme)
 
 

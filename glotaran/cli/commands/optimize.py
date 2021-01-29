@@ -85,7 +85,7 @@ def optimize_cmd(
             datasets[label] = util.load_dataset_file(path, fmt=dataformat, verbose=True)
 
         scheme = gta.analysis.scheme.Scheme(
-            model=model, parameter=parameter, data=datasets, nnls=nnls, nfev=nfev
+            model=model, parameters=parameter, data=datasets, nnls=nnls, nfev=nfev
         )
 
     click.echo(scheme.validate())

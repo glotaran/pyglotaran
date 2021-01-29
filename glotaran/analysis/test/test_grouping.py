@@ -3,9 +3,8 @@ import xarray as xr
 
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.scheme import Scheme
+from glotaran.analysis.test.mock import MockModel
 from glotaran.parameter import ParameterGroup
-
-from .mock import MockModel
 
 
 def test_single_dataset():
@@ -23,9 +22,9 @@ def test_single_dataset():
     assert model.valid()
     assert model.grouped()
 
-    parameter = ParameterGroup.from_list([1, 10])
-    print(model.validate(parameter))
-    assert model.valid(parameter)
+    parameters = ParameterGroup.from_list([1, 10])
+    print(model.validate(parameters))
+    assert model.valid(parameters)
     axis_e = [1, 2, 3]
     axis_c = [5, 7, 9, 12]
 
@@ -35,7 +34,7 @@ def test_single_dataset():
         ).to_dataset(name="data")
     }
 
-    scheme = Scheme(model, parameter, data)
+    scheme = Scheme(model, parameters, data)
     problem = Problem(scheme)
     bag = problem.bag
     datasets = problem.groups
@@ -66,9 +65,9 @@ def test_multi_dataset_no_overlap():
     assert model.valid()
     assert model.grouped()
 
-    parameter = ParameterGroup.from_list([1, 10])
-    print(model.validate(parameter))
-    assert model.valid(parameter)
+    parameters = ParameterGroup.from_list([1, 10])
+    print(model.validate(parameters))
+    assert model.valid(parameters)
 
     axis_e_1 = [1, 2, 3]
     axis_c_1 = [5, 7]
@@ -83,7 +82,7 @@ def test_multi_dataset_no_overlap():
         ).to_dataset(name="data"),
     }
 
-    scheme = Scheme(model, parameter, data)
+    scheme = Scheme(model, parameters, data)
     problem = Problem(scheme)
     bag = list(problem.bag)
     assert len(problem.groups) == 2
@@ -118,9 +117,9 @@ def test_multi_dataset_overlap():
     assert model.valid()
     assert model.grouped()
 
-    parameter = ParameterGroup.from_list([1, 10])
-    print(model.validate(parameter))
-    assert model.valid(parameter)
+    parameters = ParameterGroup.from_list([1, 10])
+    print(model.validate(parameters))
+    assert model.valid(parameters)
 
     axis_e_1 = [1, 2, 3, 5]
     axis_c_1 = [5, 7]
@@ -135,7 +134,7 @@ def test_multi_dataset_overlap():
         ).to_dataset(name="data"),
     }
 
-    scheme = Scheme(model, parameter, data, group_tolerance=5e-1)
+    scheme = Scheme(model, parameters, data, group_tolerance=5e-1)
     problem = Problem(scheme)
     bag = list(problem.bag)
     assert len(problem.groups) == 3

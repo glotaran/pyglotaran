@@ -21,7 +21,7 @@ class KMatrix:
     def combine(self, k_matrix: KMatrix) -> KMatrix:
         ...
 
-    def matrix_as_markdown(self, compartments: List[str] = ..., fill_parameter: bool = ...) -> str:
+    def matrix_as_markdown(self, compartments: List[str] = ..., fill_parameters: bool = ...) -> str:
         ...
 
     def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> str:

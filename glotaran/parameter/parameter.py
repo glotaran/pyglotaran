@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import List
@@ -10,10 +11,11 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+if TYPE_CHECKING:
+    from glotaran.parameter import ParameterGroup
+
 import asteval
 import numpy as np
-
-import glotaran
 
 RESERVED_LABELS = [symbol for symbol in asteval.make_symbol_table()] + ["group"]
 
@@ -112,8 +114,8 @@ class Parameter:
             param._set_options_from_dict(options)
         return param
 
-    def set_from_group(self, group: "glotaran.parameter.ParameterGroup"):
-        """Sets all values of the parameter to the values of the conrresoping parameter in the group.
+    def set_from_group(self, group: ParameterGroup):
+        """Sets all values of the parameter to the values of the corresponding parameter in the group.
 
         Notes
         -----
@@ -293,7 +295,7 @@ class Parameter:
         return value, minimum, maximum
 
     def set_value_from_optimization(self, value: float):
-        """Sets the value from an optimization result and reverses non-negative transormation."""
+        """Sets the value from an optimization result and reverses non-negative transformation."""
         self.value = np.exp(value) if self.non_negative else value
 
     def __getstate__(self):

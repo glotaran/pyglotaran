@@ -18,7 +18,7 @@ class DatasetDescriptor:
     megacomplex: List[str]
     scale: Optional[Parameter] = None
 
-    def fill(self, model: T_Model, parameter: ParameterGroup) -> T_DatasetDescriptor:
+    def fill(self, model: T_Model, parameters: ParameterGroup) -> T_DatasetDescriptor:
         ...
 
     @classmethod
@@ -29,8 +29,8 @@ class DatasetDescriptor:
     def from_list(cls: Type[T_DatasetDescriptor], values: List) -> T_DatasetDescriptor:
         ...
 
-    def validate(self, model: T_Model, parameter=None) -> List[str]:
+    def validate(self, model: T_Model, parameters=None) -> List[str]:
         ...
 
-    def mprint_item(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+    def mprint_item(self, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None) -> str:
         ...

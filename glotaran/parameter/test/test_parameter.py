@@ -271,9 +271,9 @@ def test_update_parameter_group_from_array():
     ],
 )
 def test_transform_expression(case):
-    expression, wanted = case
+    expression, wanted_parameters = case
     parameter = Parameter(expression=expression)
-    assert parameter.transformed_expression == wanted
+    assert parameter.transformed_expression == wanted_parameters
 
 
 def test_label_validator():

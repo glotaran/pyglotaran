@@ -58,7 +58,7 @@ def test_spectral_relation():
     print(model)
 
     rel1, rel2 = 10, 20
-    parameter = ParameterGroup.from_dict(
+    parameters = ParameterGroup.from_dict(
         {
             "kinetic": [1e-4],
             "i": [1, 2, 3, 4],
@@ -67,14 +67,14 @@ def test_spectral_relation():
     )
 
     time = np.asarray(np.arange(0, 50, 1.5))
-    dataset = model.dataset["dataset1"].fill(model, parameter)
+    dataset = model.dataset["dataset1"].fill(model, parameters)
     compartments, matrix = kinetic_image_matrix(dataset, time, 0)
 
     assert len(compartments) == 4
     assert matrix.shape == (time.size, 4)
 
     reduced_compartments, relation_matrix = create_spectral_relation_matrix(
-        model, "dataset1", parameter, compartments, matrix, 1
+        model, "dataset1", parameters, compartments, matrix, 1
     )
 
     print(relation_matrix)
@@ -91,7 +91,7 @@ def test_spectral_relation():
     )
 
     reduced_compartments, reduced_matrix = model.constrain_matrix_function(
-        "dataset1", parameter, compartments, matrix, 1
+        "dataset1", parameters, compartments, matrix, 1
     )
 
     assert reduced_matrix.shape == (time.size, 2)
@@ -106,16 +106,16 @@ def test_spectral_relation():
     )
 
     data = model.simulate(
-        "dataset1", parameter, clp=clp, axes={"time": time, "spectral": np.array([1])}
+        "dataset1", parameters, clp=clp, axes={"time": time, "spectral": np.array([1])}
     )
 
     dataset = {"dataset1": data}
-    scheme = Scheme(model=model, parameter=parameter, data=dataset, nfev=20)
+    scheme = Scheme(model=model, parameters=parameters, data=dataset, nfev=20)
     result = optimize(scheme)
 
     for label, param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, parameter.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
 
     result_data = result.data["dataset1"]
     print(result_data.species_associated_spectra)

@@ -57,8 +57,12 @@ class OneComponentOneChannel:
         }
     )
 
-    initial = ParameterGroup.from_list([101e-4, [1, {"vary": False, "non-negative": False}]])
-    wanted = ParameterGroup.from_list([101e-3, [1, {"vary": False, "non-negative": False}]])
+    initial_parameters = ParameterGroup.from_list(
+        [101e-4, [1, {"vary": False, "non-negative": False}]]
+    )
+    wanted_parameters = ParameterGroup.from_list(
+        [101e-3, [1, {"vary": False, "non-negative": False}]]
+    )
 
     time = np.asarray(np.arange(0, 50, 1.5))
     spectral = np.asarray([0])
@@ -123,10 +127,10 @@ class OneComponentOneChannelGaussianIrf:
         }
     )
 
-    initial = ParameterGroup.from_list(
+    initial_parameters = ParameterGroup.from_list(
         [101e-4, 0.1, 1, [1, {"vary": False, "non-negative": False}]]
     )
-    wanted = ParameterGroup.from_list(
+    wanted_parameters = ParameterGroup.from_list(
         [101e-3, 0.3, 2, [1, {"vary": False, "non-negative": False}]]
     )
 
@@ -224,7 +228,7 @@ class ThreeComponentParallel:
         }
     )
 
-    initial = ParameterGroup.from_dict(
+    initial_parameters = ParameterGroup.from_dict(
         {
             "kinetic": [
                 ["1", 300e-3],
@@ -235,7 +239,7 @@ class ThreeComponentParallel:
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
         }
     )
-    wanted = ParameterGroup.from_dict(
+    wanted_parameters = ParameterGroup.from_dict(
         {
             "kinetic": [
                 ["1", 301e-3],
@@ -342,7 +346,7 @@ class ThreeComponentSequential:
         }
     )
 
-    initial = ParameterGroup.from_dict(
+    initial_parameters = ParameterGroup.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -357,7 +361,7 @@ class ThreeComponentSequential:
             ],
         }
     )
-    wanted = ParameterGroup.from_dict(
+    wanted_parameters = ParameterGroup.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -398,29 +402,29 @@ def test_kinetic_model(suite, nnls):
     print(sim_model.validate())
     assert sim_model.valid()
 
-    wanted = suite.wanted
-    print(sim_model.validate(wanted))
-    print(wanted)
-    assert sim_model.valid(wanted)
+    wanted_parameters = suite.wanted_parameters
+    print(sim_model.validate(wanted_parameters))
+    print(wanted_parameters)
+    assert sim_model.valid(wanted_parameters)
 
-    initial = suite.initial
-    print(model.validate(initial))
-    assert model.valid(initial)
+    initial_parameters = suite.initial_parameters
+    print(model.validate(initial_parameters))
+    assert model.valid(initial_parameters)
 
-    print(model.markdown(wanted))
+    print(model.markdown(wanted_parameters))
 
-    dataset = sim_model.simulate("dataset1", wanted, suite.axis)
+    dataset = sim_model.simulate("dataset1", wanted_parameters, suite.axis)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 
     data = {"dataset1": dataset}
 
-    scheme = Scheme(model=model, parameter=initial, data=data, nfev=20)
+    scheme = Scheme(model=model, parameters=initial_parameters, data=data, nfev=20)
     result = optimize(scheme)
     print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, wanted.get(label).value, rtol=1e-1)
+        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
 

@@ -33,7 +33,7 @@ class SpectralRelation:
 
 def create_spectral_relation_matrix(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
@@ -43,7 +43,7 @@ def create_spectral_relation_matrix(
 
 def apply_spectral_relations(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     matrix: np.ndarray,
     index: float,
@@ -53,7 +53,7 @@ def apply_spectral_relations(
 
 def retrieve_related_clps(
     model: KineticSpectrumModel,
-    parameter: ParameterGroup,
+    parameters: ParameterGroup,
     clp_labels: List[str],
     clps: np.ndarray,
     index: float,

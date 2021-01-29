@@ -1,5 +1,5 @@
 """A base class for global analysis models."""
-
+from __future__ import annotations
 
 import copy
 import inspect
@@ -16,7 +16,7 @@ class Model:
     """A base class for global analysis models."""
 
     @classmethod
-    def from_dict(cls, model_dict_ref: typing.Dict) -> typing.Type["Model"]:
+    def from_dict(cls, model_dict_ref: typing.Dict) -> Model:
         """Creates a model from a dictionary.
 
         Parameters
@@ -118,7 +118,7 @@ class Model:
         return model
 
     @property
-    def index_depended_matrix(self):
+    def index_dependent_matrix(self):
         return len(inspect.signature(self.matrix).parameters) == 3
 
     @property
@@ -129,7 +129,7 @@ class Model:
     def simulate(
         self,
         dataset: str,
-        parameter: ParameterGroup,
+        parameters: ParameterGroup,
         axes: typing.Dict[str, np.ndarray] = None,
         clp: typing.Union[np.ndarray, xr.DataArray] = None,
         noise: bool = False,
@@ -147,7 +147,7 @@ class Model:
         axes :
             A dictionary with axes for simulation.
         clp :
-            Conditionally linear parameter. Will be used instead of `model.global_matrix` if given.
+            Conditionally linear parameters. Used instead of `model.global_matrix` if provided.
         noise :
             If `True` noise is added to the simulated data.
         noise_std_dev :
@@ -158,7 +158,7 @@ class Model:
         return simulate(
             self,
             dataset,
-            parameter,
+            parameters,
             axes=axes,
             clp=clp,
             noise=noise,
@@ -166,7 +166,7 @@ class Model:
             noise_seed=noise_seed,
         )
 
-    def problem_list(self, parameter: ParameterGroup = None) -> typing.List[str]:
+    def problem_list(self, parameters: ParameterGroup = None) -> typing.List[str]:
         """
         Returns a list with all problems in the model and missing parameters if specified.
 
@@ -183,14 +183,14 @@ class Model:
             attr = getattr(self, attr)
             if isinstance(attr, list):
                 for item in attr:
-                    problems += item.validate(self, parameter=parameter)
+                    problems += item.validate(self, parameters=parameters)
             else:
                 for _, item in attr.items():
-                    problems += item.validate(self, parameter=parameter)
+                    problems += item.validate(self, parameters=parameters)
 
         return problems
 
-    def validate(self, parameter: ParameterGroup = None) -> str:
+    def validate(self, parameters: ParameterGroup = None) -> str:
         """
         Returns a string listing all problems in the model and missing parameters if specified.
 
@@ -202,7 +202,7 @@ class Model:
         """
         result = ""
 
-        problems = self.problem_list(parameter)
+        problems = self.problem_list(parameters)
         if problems:
             result = f"Your model has {len(problems)} problems:\n"
             for p in problems:
@@ -211,7 +211,7 @@ class Model:
             result = "Your model is valid."
         return result
 
-    def valid(self, parameter: ParameterGroup = None) -> bool:
+    def valid(self, parameters: ParameterGroup = None) -> bool:
         """Returns `True` if the number problems in the model is 0, else `False`
 
         Parameters
@@ -220,9 +220,11 @@ class Model:
         parameter :
             The parameter to validate.
         """
-        return len(self.problem_list(parameter)) == 0
+        return len(self.problem_list(parameters)) == 0
 
-    def markdown(self, parameter: ParameterGroup = None, initial: ParameterGroup = None) -> str:
+    def markdown(
+        self, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
+    ) -> str:
         """Formats the model as Markdown string.
 
         Parameters will be included if specified.
@@ -249,7 +251,9 @@ class Model:
             if isinstance(items, dict):
                 items = items.values()
             for item in items:
-                item_str = item.mprint(parameter=parameter, initial=initial).split("\n")
+                item_str = item.mprint(
+                    parameters=parameters, initial_parameters=initial_parameters
+                ).split("\n")
                 string += f"* {item_str[0]}\n"
                 for s in item_str[1:]:
                     string += f"  {s}\n"

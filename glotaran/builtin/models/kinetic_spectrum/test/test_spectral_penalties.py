@@ -241,7 +241,7 @@ def test_equal_area_penalties(debug=False):
     dataset = {"dataset1": data}
     scheme_np = Scheme(
         model=model_np,
-        parameter=param_np,
+        parameters=param_np,
         data=dataset,
         nnls=optim_spec.nnls,
         nfev=optim_spec.max_nfev,
@@ -252,7 +252,7 @@ def test_equal_area_penalties(debug=False):
     # %% Optimizing model with penalty fixed inputs (wp_ifix)
     scheme_wp = Scheme(
         model=model_wp,
-        parameter=param_wp,
+        parameters=param_wp,
         data=dataset,
         nnls=optim_spec.nnls,
         nfev=optim_spec.max_nfev,

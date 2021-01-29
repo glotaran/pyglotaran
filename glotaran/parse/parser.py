@@ -10,8 +10,8 @@ from .register import get_model
 from .register import known_model
 
 
-def parse_yml_file(filename: str) -> Dict:
-    """parse_yml_file reads the given file and parses its content as YML.
+def parse_yaml_file(filename: str) -> Dict:
+    """parse_yaml_file reads the given file and parses its content as YML.
 
     Parameters
     ----------
@@ -25,12 +25,12 @@ def parse_yml_file(filename: str) -> Dict:
     """
 
     with open(filename) as f:
-        spec = parse_yml(f)
+        spec = parse_yaml(f)
 
     return spec
 
 
-def parse_yml(data: str):
+def parse_yaml(data: str):
     try:
         return yaml.safe_load(data)
     except Exception as e:
@@ -57,11 +57,11 @@ def parse_spec(spec: Dict):
         raise e
 
 
-def load_yml_file(filename: str):
-    spec = parse_yml_file(filename)
+def load_yaml_file(filename: str):
+    spec = parse_yaml_file(filename)
     return parse_spec(spec)
 
 
-def load_yml(data: str):
-    spec = parse_yml(data)
+def load_yaml(data: str):
+    spec = parse_yaml(data)
     return parse_spec(spec)
