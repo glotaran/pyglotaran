@@ -194,7 +194,6 @@ class ParameterGroup(dict):
                     group.add_group(ParameterGroup(label=group_label, root_group=group))
                 group = group[group_label]
             label = path.pop()
-            print(label)
             value = df["value"][i]
             minimum = df["minimum"][i] if "minimum" in df else -np.inf
             maximum = df["maximum"][i] if "maximum" in df else np.inf
@@ -216,7 +215,6 @@ class ParameterGroup(dict):
                 non_negative=non_negative,
                 vary=vary,
             )
-            print(parameter)
             group.add_parameter(parameter)
         root.update_parameter_expression()
         return root
