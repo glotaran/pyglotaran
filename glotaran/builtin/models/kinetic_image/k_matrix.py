@@ -126,10 +126,11 @@ class KMatrix:
     def _array_as_markdown(array, row_header, column_header):
         markdown = "| compartment | "
         markdown += " | ".join(
-            [f"{e:.4e}" if not isinstance(e, str) else e for e in column_header]
+            f"{e:.4e}" if not isinstance(e, str) else e for e in column_header
         )
+
         markdown += "\n|"
-        markdown += "|".join(["---" for _ in range(len(column_header) + 1)])
+        markdown += "|".join("---" for _ in range(len(column_header) + 1))
         markdown += "\n"
 
         for i, row in enumerate(array):
@@ -138,7 +139,10 @@ class KMatrix:
                 if isinstance(row_header[i], str)
                 else f"| {row_header[i]:.4e} | "
             )
-            markdown += " | ".join([f"{e:.4e}" if not isinstance(e, str) else e for e in row])
+            markdown += " | ".join(
+                f"{e:.4e}" if not isinstance(e, str) else e for e in row
+            )
+
             markdown += "|\n"
 
         return markdown
