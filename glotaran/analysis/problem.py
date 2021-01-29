@@ -767,12 +767,17 @@ class Problem:
                     if self._index_dependent
                     else reduced_clp_labels[group_label]
                 )
-                self._reduced_clp_labels[label] = [
-                    clp_label for clp_label in dataset_clp_labels if clp_label in index_clp_labels
-                ]
+                self._reduced_clp_labels[label].append(
+                    [
+                        clp_label
+                        for clp_label in dataset_clp_labels
+                        if clp_label in index_clp_labels
+                    ]
+                )
 
                 mask = [
-                    clp_label in self._reduced_clp_labels[label] for clp_label in index_clp_labels
+                    clp_label in self._reduced_clp_labels[label][i]
+                    for clp_label in index_clp_labels
                 ]
                 self._reduced_clps[label].append(reduced_clps[i + offset][mask])
         self._clps = (

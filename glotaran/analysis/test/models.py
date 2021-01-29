@@ -149,6 +149,10 @@ def retrieve_clp_typecheck(
     assert all(
         isinstance(dataset_clp_labels, list) for dataset_clp_labels in reduced_clp_labels.values()
     )
+    assert all(
+        [[isinstance(label, str) for label in index_labels] for index_labels in dataset_clp_labels]
+        for dataset_clp_labels in reduced_clp_labels.values()
+    )
     if model.index_dependent():
         for dataset_clp_labels in clp_labels.values():
             assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
@@ -160,21 +164,10 @@ def retrieve_clp_typecheck(
             [isinstance(index_labels, list) for index_labels in dataset_clp_labels]
             for dataset_clp_labels in reduced_clp_labels.values()
         )
-        assert all(
-            [
-                [isinstance(label, str) for label in index_labels]
-                for index_labels in dataset_clp_labels
-            ]
-            for dataset_clp_labels in reduced_clp_labels.values()
-        )
 
     else:
         for dataset_clp_labels in clp_labels.values():
             assert all(isinstance(label, str) for label in dataset_clp_labels)
-        assert all(
-            [isinstance(label, str) for label in dataset_clp_labels]
-            for dataset_clp_labels in reduced_clp_labels.values()
-        )
 
     model.retrieve_clp_function_called = True
 
