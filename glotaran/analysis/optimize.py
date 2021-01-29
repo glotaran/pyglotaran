@@ -59,6 +59,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
     except Exception as e:
         warn(f"Optimization failed:\n\n{e}")
         termination_reason = str(e)
+        ls_result = None
 
     return Result(
         problem.scheme,
