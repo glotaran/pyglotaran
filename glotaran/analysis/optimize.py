@@ -1,4 +1,5 @@
 from typing import List
+from warnings import warn
 
 import numpy as np
 from scipy.optimize import least_squares
@@ -39,19 +40,25 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
     gtol = problem.scheme.gtol
     xtol = problem.scheme.xtol
     verbose = 2 if verbose else 0
+    termination_reason = ""
 
-    ls_result = least_squares(
-        _calculate_penalty,
-        initial_parameter,
-        bounds=(lower_bounds, upper_bounds),
-        method=method,
-        max_nfev=nfev,
-        verbose=verbose,
-        ftol=ftol,
-        gtol=gtol,
-        xtol=xtol,
-        kwargs={"labels": labels, "problem": problem},
-    )
+    try:
+        ls_result = least_squares(
+            _calculate_penalty,
+            initial_parameter,
+            bounds=(lower_bounds, upper_bounds),
+            method=method,
+            max_nfev=nfev,
+            verbose=verbose,
+            ftol=ftol,
+            gtol=gtol,
+            xtol=xtol,
+            kwargs={"labels": labels, "problem": problem},
+        )
+        termination_reason = ls_result.message
+    except Exception as e:
+        warn(f"Optimization failed:\n\n{e}")
+        termination_reason = str(e)
 
     return Result(
         problem.scheme,
@@ -59,6 +66,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         problem.parameters,
         ls_result,
         labels,
+        termination_reason,
     )
 
 

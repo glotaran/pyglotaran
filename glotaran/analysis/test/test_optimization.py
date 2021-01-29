@@ -95,6 +95,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
 
     result = optimize(scheme)
     print(result.optimized_parameters)
+    assert result.success
 
     for label, param in result.optimized_parameters.all():
         if param.vary:

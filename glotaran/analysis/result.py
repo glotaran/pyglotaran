@@ -27,6 +27,7 @@ class Result:
         optimized_parameters: ParameterGroup,
         least_squares_result: OptimizeResult,
         free_parameter_labels: List[str],
+        termination_reason: str,
     ):
         """The result of a global analysis.
 
@@ -49,7 +50,9 @@ class Result:
         self._data = data
         self._optimized_parameters = optimized_parameters
         self._free_parameter_labels = free_parameter_labels
-        self._calculate_statistics(least_squares_result)
+        self._success = least_squares_result is not None
+        if self._success:
+            self._calculate_statistics(least_squares_result)
 
     def _calculate_statistics(self, least_squares_result: OptimizeResult):
         self._number_of_function_evaluation = least_squares_result.nfev
@@ -75,6 +78,16 @@ class Result:
                 "standard errors."
             )
             self._covariance_matrix = None
+
+    @property
+    def success(self):
+        """Indicates if the optimization was successful."""
+        return self._success
+
+    @property
+    def termination_reason(self):
+        """The reason of the termination of the process."""
+        return self._success
 
     @property
     def scheme(self) -> Scheme:
