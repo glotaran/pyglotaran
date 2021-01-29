@@ -18,11 +18,13 @@ class MockMegacomplex:
     attributes={},
     matrix=mock_matrix_fun,
     megacomplex_type=MockMegacomplex,
+    model_dimension="c",
+    global_dimension="e",
 )
-class MockModel(Model):
+class MockModelRegister(Model):
     pass
 
 
 def test_register():
     assert register.known_model("register_mock")
-    assert issubclass(register.get_model("register_mock"), MockModel)
+    assert issubclass(register.get_model("register_mock"), MockModelRegister)

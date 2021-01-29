@@ -34,7 +34,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         upper_bounds,
     ) = problem.scheme.parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
     method = SUPPORTED_METHODS[problem.scheme.optimization_method]
-    nfev = problem.scheme.nfev
+    nfev = problem.scheme.maximum_number_function_evaluations
     ftol = problem.scheme.ftol
     gtol = problem.scheme.gtol
     xtol = problem.scheme.xtol

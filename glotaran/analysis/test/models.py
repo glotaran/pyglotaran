@@ -46,20 +46,20 @@ def calculate_e(dataset, axis):
         "indexdependent": bool,
     }
 )
-class MockMegacomplex:
+class SimpleTestMegacomplex:
     pass
 
 
 @model(
-    "mock",
+    "simple_test",
     attributes={},
     matrix=calculate_c,
     model_dimension="c",
     global_matrix=calculate_e,
     global_dimension="e",
-    megacomplex_type=MockMegacomplex,
+    megacomplex_type=SimpleTestMegacomplex,
 )
-class MockModel(Model):
+class SimpleTestModel(Model):
     pass
 
 
@@ -238,7 +238,7 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     model_dimension="c",
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
-    megacomplex_type=MockMegacomplex,
+    megacomplex_type=SimpleTestMegacomplex,
     has_additional_penalty_function=lambda model: True,
     additional_penalty_function=additional_penalty_typecheck,
     has_matrix_constraints_function=lambda model: True,
@@ -263,7 +263,7 @@ class DecayModel(Model):
     model_dimension="c",
     global_matrix=calculate_spectral_gauss,
     global_dimension="e",
-    megacomplex_type=MockMegacomplex,
+    megacomplex_type=SimpleTestMegacomplex,
     grouped=lambda model: model.is_grouped,
     index_dependent=lambda model: model.is_index_dependent,
     has_additional_penalty_function=lambda model: True,

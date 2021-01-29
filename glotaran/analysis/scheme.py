@@ -30,8 +30,8 @@ class Scheme:
         parameters: ParameterGroup = None,
         data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
         group_tolerance: float = 0.0,
-        nnls: bool = False,
-        nfev: int = None,
+        non_linear_least_squares: bool = False,
+        maximum_number_function_evaluations: int = None,
         ftol: float = 1e-8,
         gtol: float = 1e-8,
         xtol: float = 1e-8,
@@ -42,16 +42,16 @@ class Scheme:
         ] = "TrustRegionReflection",
     ):
 
-        self.model = model
-        self.parameters = parameters
-        self.data = data
-        self.group_tolerance = group_tolerance
-        self.nnls = nnls
-        self.nfev = nfev
-        self.ftol = ftol
-        self.gtol = gtol
-        self.xtol = xtol
-        self.optimization_method = optimization_method
+        self._model = model
+        self._parameters = parameters
+        self._group_tolerance = group_tolerance
+        self._non_linear_least_squares = non_linear_least_squares
+        self._maximum_number_function_evaluations = maximum_number_function_evaluations
+        self._ftol = ftol
+        self._gtol = gtol
+        self._xtol = xtol
+        self._optimization_method = optimization_method
+        self._prepare_data(data)
 
     @classmethod
     def from_yaml_file(cls, filename: str) -> Scheme:
@@ -100,8 +100,8 @@ class Scheme:
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 
         optimization_method = scheme.get("optimization_method", "TrustRegionReflection")
-        nnls = scheme.get("nnls", False)
-        nfev = scheme.get("nfev", None)
+        nnls = scheme.get("non-linear-least-squares", False)
+        nfev = scheme.get("maximum-number-function-evaluations", None)
         ftol = scheme.get("ftol", 1e-8)
         gtol = scheme.get("gtol", 1e-8)
         xtol = scheme.get("xtol", 1e-8)
@@ -110,8 +110,8 @@ class Scheme:
             model=model,
             parameters=parameters,
             data=data,
-            nnls=nnls,
-            nfev=nfev,
+            non_linear_least_squares=nnls,
+            maximum_number_function_evaluations=nfev,
             ftol=ftol,
             gtol=gtol,
             xtol=xtol,
@@ -123,53 +123,41 @@ class Scheme:
     def model(self) -> Model:
         return self._model
 
-    @_not_none
-    @model.setter
-    def model(self, model: Model):
-        self._model = model
-
     @property
     def parameters(self) -> ParameterGroup:
         return self._parameters
-
-    @_not_none
-    @parameters.setter
-    def parameters(self, parameters: ParameterGroup):
-        self._parameters = parameters
 
     @property
     def data(self) -> typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]:
         return self._data
 
-    @_not_none
-    @data.setter
-    def data(self, data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]):
-        self._data = data
+    @property
+    def non_linear_least_squares(self) -> bool:
+        return self._non_linear_least_squares
 
     @property
-    def nnls(self) -> bool:
-        return self._nnls
-
-    @_not_none
-    @nnls.setter
-    def nnls(self, nnls: bool):
-        self._nnls = nnls
-
-    @property
-    def nfev(self) -> int:
-        return self._nfev
-
-    @nfev.setter
-    def nfev(self, nfev: int):
-        self._nfev = nfev
+    def maximum_number_function_evaluations(self) -> int:
+        return self._maximum_number_function_evaluations
 
     @property
     def group_tolerance(self) -> float:
         return self._group_tolerance
 
-    @group_tolerance.setter
-    def group_tolerance(self, group_tolerance: float):
-        self._group_tolerance = group_tolerance
+    @property
+    def ftol(self) -> float:
+        return self._ftol
+
+    @property
+    def gtol(self) -> float:
+        return self._gtol
+
+    @property
+    def xtol(self) -> float:
+        return self._xtol
+
+    @property
+    def optimization_method(self) -> str:
+        return self._optimization_method
 
     def problem_list(self) -> typing.List[str]:
         """Returns a list with all problems in the model and missing parameters."""
@@ -194,9 +182,9 @@ class Scheme:
 
         return dataset.transpose(*new_dims)
 
-    def prepare_data(self, copy=True):
-        data = {} if copy else None
-        for label, dataset in self.data.items():
+    def _prepare_data(self, data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]):
+        self._data = {}
+        for label, dataset in data.items():
             if self.model.model_dimension not in dataset.dims:
                 raise ValueError(
                     "Missing coordinates for dimension "
@@ -239,11 +227,7 @@ class Scheme:
                 if dim not in [self.model.model_dimension, self.model.global_dimension]
             ]
 
-            if copy:
-                data[label] = dataset
-            else:
-                self.data[label] = dataset
-        return data
+            self._data[label] = dataset
 
     def markdown(self):
         s = self.model.markdown(parameters=self.parameters)

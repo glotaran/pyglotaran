@@ -5,11 +5,12 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.test.mock import DecayModel
-from glotaran.analysis.test.mock import MultichannelMulticomponentDecay
-from glotaran.analysis.test.mock import OneCompartmentDecay
-from glotaran.analysis.test.mock import ThreeDatasetDecay
-from glotaran.analysis.test.mock import TwoCompartmentDecay
+
+from .models import DecayModel
+from .models import MultichannelMulticomponentDecay
+from .models import OneCompartmentDecay
+from .models import ThreeDatasetDecay
+from .models import TwoCompartmentDecay
 
 
 @pytest.mark.parametrize("index_dependent", [True, False])
@@ -87,7 +88,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         model=model,
         parameters=initial_parameters,
         data=data,
-        nfev=10,
+        maximum_number_function_evaluations=10,
         group_tolerance=0.1,
         optimization_method=method,
     )

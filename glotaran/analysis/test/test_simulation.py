@@ -3,11 +3,11 @@ import numpy as np
 from glotaran.analysis.simulation import simulate
 from glotaran.parameter import ParameterGroup
 
-from .mock import MockModel
+from .models import SimpleTestModel
 
 
 def test_simulate_dataset():
-    model = MockModel.from_dict(
+    model = SimpleTestModel.from_dict(
         {
             "dataset": {
                 "dataset1": {
