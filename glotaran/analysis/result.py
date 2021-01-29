@@ -51,6 +51,7 @@ class Result:
         self._optimized_parameters = optimized_parameters
         self._free_parameter_labels = free_parameter_labels
         self._success = least_squares_result is not None
+        self._termination_reason = termination_reason
         if self._success:
             self._calculate_statistics(least_squares_result)
 
@@ -87,7 +88,7 @@ class Result:
     @property
     def termination_reason(self):
         """The reason of the termination of the process."""
-        return self._success
+        return self._termination_reason
 
     @property
     def scheme(self) -> Scheme:
