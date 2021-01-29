@@ -221,7 +221,7 @@ epub_exclude_files = ["search.html"]
 intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
-    "scipy": ("http://docs.scipy.org/doc/scipy/reference/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "https://docs.python.org/": None,
 }
 
