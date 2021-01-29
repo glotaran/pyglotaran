@@ -110,7 +110,9 @@ def test_spectral_relation():
     )
 
     dataset = {"dataset1": data}
-    scheme = Scheme(model=model, parameters=parameters, data=dataset, nfev=20)
+    scheme = Scheme(
+        model=model, parameters=parameters, data=dataset, maximum_number_function_evaluations=20
+    )
     result = optimize(scheme)
 
     for label, param in result.optimized_parameters.all():

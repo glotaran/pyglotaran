@@ -7,7 +7,7 @@ from glotaran.analysis.problem import Problem
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
 
-from .mock import MultichannelMulticomponentDecay as suite
+from .models import MultichannelMulticomponentDecay as suite
 
 
 @pytest.fixture(

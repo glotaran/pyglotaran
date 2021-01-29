@@ -243,8 +243,8 @@ def test_equal_area_penalties(debug=False):
         model=model_np,
         parameters=param_np,
         data=dataset,
-        nnls=optim_spec.nnls,
-        nfev=optim_spec.max_nfev,
+        non_linear_least_squares=optim_spec.nnls,
+        maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_np = optimize(scheme_np)
     print(result_np)
@@ -254,8 +254,8 @@ def test_equal_area_penalties(debug=False):
         model=model_wp,
         parameters=param_wp,
         data=dataset,
-        nnls=optim_spec.nnls,
-        nfev=optim_spec.max_nfev,
+        non_linear_least_squares=optim_spec.nnls,
+        maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_wp = optimize(scheme_wp)
     print(result_wp)

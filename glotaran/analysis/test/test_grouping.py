@@ -3,12 +3,12 @@ import xarray as xr
 
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.test.mock import MockModel
+from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
 
 
 def test_single_dataset():
-    model = MockModel.from_dict(
+    model = SimpleTestModel.from_dict(
         {
             "dataset": {
                 "dataset1": {
@@ -47,7 +47,7 @@ def test_single_dataset():
 
 
 def test_multi_dataset_no_overlap():
-    model = MockModel.from_dict(
+    model = SimpleTestModel.from_dict(
         {
             "dataset": {
                 "dataset1": {
@@ -99,7 +99,7 @@ def test_multi_dataset_no_overlap():
 
 
 def test_multi_dataset_overlap():
-    model = MockModel.from_dict(
+    model = SimpleTestModel.from_dict(
         {
             "dataset": {
                 "dataset1": {

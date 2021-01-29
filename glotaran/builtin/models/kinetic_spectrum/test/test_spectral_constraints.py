@@ -88,7 +88,12 @@ def test_spectral_constraint():
     )
 
     dataset = {"dataset1": data}
-    scheme = Scheme(model=model, parameters=initial_parameters, data=dataset, nfev=20)
+    scheme = Scheme(
+        model=model,
+        parameters=initial_parameters,
+        data=dataset,
+        maximum_number_function_evaluations=20,
+    )
 
     # the resulting jacobian is singular
     with pytest.warns(UserWarning):

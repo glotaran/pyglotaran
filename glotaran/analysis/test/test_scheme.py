@@ -3,56 +3,53 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.test.mock import MockModel
 from glotaran.parameter import ParameterGroup
 
+from .models import SimpleTestModel
 
-@pytest.fixture(scope="session")
-def scheme(tmpdir_factory):
 
-    path = tmpdir_factory.mktemp("scheme")
+def test_scheme(tmpdir):
 
-    model_path = path.join("model.yml")
+    model_path = tmpdir.join("model.yml")
     with open(model_path, "w") as f:
-        model = "type: mock\ndataset:\n  dataset1:\n    megacomplex: []"
+        model = "type: simple_test\ndataset:\n  dataset1:\n    megacomplex: []"
         f.write(model)
 
-    parameter_path = path.join("parameters.yml")
+    parameter_path = tmpdir.join("parameters.yml")
     with open(parameter_path, "w") as f:
         parameter = "[1.0, 67.0]"
         f.write(parameter)
 
-    dataset_path = path.join("dataset.nc")
-    xr.DataArray([1, 2, 3]).to_dataset(name="data").to_netcdf(dataset_path)
+    dataset_path = tmpdir.join("dataset.nc")
+    xr.DataArray([[1, 2, 3]], coords=[("e", [1]), ("c", [1, 2, 3])]).to_dataset(
+        name="data"
+    ).to_netcdf(dataset_path)
 
     scheme = f"""
     model: {model_path}
     parameters: {parameter_path}
-    nnls: True
-    nfev: 42
+    non-linear-least-squares: True
+    maximum-number-function-evaluations: 42
     data:
       dataset1: {dataset_path}
     """
-    scheme_path = path.join("scheme.gta")
+    scheme_path = tmpdir.join("scheme.gta")
     with open(scheme_path, "w") as f:
         f.write(scheme)
-    return scheme_path
 
-
-def test_scheme(scheme):
-    scheme = Scheme.from_yaml_file(scheme)
+    scheme = Scheme.from_yaml_file(scheme_path)
     assert scheme.model is not None
-    assert scheme.model.model_type == "mock"
+    assert scheme.model.model_type == "simple_test"
 
     assert scheme.parameters is not None
     assert scheme.parameters.get("1") == 1.0
     assert scheme.parameters.get("2") == 67.0
 
-    assert scheme.nnls
-    assert scheme.nfev == 42
+    assert scheme.non_linear_least_squares
+    assert scheme.maximum_number_function_evaluations == 42
 
     assert "dataset1" in scheme.data
-    assert scheme.data["dataset1"].data.size == 3
+    assert scheme.data["dataset1"].data.shape == (3, 1)
 
 
 def test_weight():
@@ -71,7 +68,7 @@ def test_weight():
             },
         ],
     }
-    model = MockModel.from_dict(model_dict)
+    model = SimpleTestModel.from_dict(model_dict)
     print(model.validate())
     assert model.valid()
 
@@ -88,7 +85,7 @@ def test_weight():
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
 
-    data = scheme.prepare_data()["dataset1"]
+    data = scheme.data["dataset1"]
     print(data)
     assert "data" in data
     assert "weight" in data
@@ -103,20 +100,18 @@ def test_weight():
             "value": 0.2,
         }
     )
-    model = MockModel.from_dict(model_dict)
+    model = SimpleTestModel.from_dict(model_dict)
     print(model.validate())
     assert model.valid()
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
-    data = scheme.prepare_data()["dataset1"]
+    data = scheme.data["dataset1"]
     assert np.all(data.weight.sel(e=slice(0, 200), c=slice(4, 8)).values == 0.5 * 0.2)
     assert np.all(data.weight.sel(c=slice(0, 3)).values == 0.2)
 
-    scheme = Scheme(model, parameters, {"dataset1": data})
     with pytest.warns(
         UserWarning,
         match="Ignoring model weight for dataset 'dataset1'"
         " because weight is already supplied by dataset.",
     ):
-        # unnecessary, but the linter complains if we just call the function without doing anything
-        assert "dataset1" in scheme.prepare_data()
+        Scheme(model, parameters, {"dataset1": data})

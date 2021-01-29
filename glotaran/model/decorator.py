@@ -200,6 +200,9 @@ def model(
         mat = wrap_func_as_method(cls, name="matrix")(matrix)
         mat = staticmethod(mat)
         setattr(cls, "matrix", mat)
+
+        if model_dimension is None:
+            raise ValueError(f"Model dimension not specified for model {model_type}")
         setattr(cls, "model_dimension", model_dimension)
 
         if global_matrix:
@@ -208,6 +211,9 @@ def model(
             setattr(cls, "global_matrix", g_mat)
         else:
             setattr(cls, "global_matrix", None)
+
+        if global_dimension is None:
+            raise ValueError(f"Global dimension not specified for model {model_type}")
         setattr(cls, "global_dimension", global_dimension)
 
         if not hasattr(cls, "_glotaran_model_attributes"):

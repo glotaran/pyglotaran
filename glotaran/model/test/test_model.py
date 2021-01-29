@@ -37,7 +37,14 @@ def matrix_fun_index(dataset, axis, index):
     pass
 
 
-@model("mock", attributes={"test": MockAttr}, megacomplex_type=MockMegacomplex, matrix=matrix_fun)
+@model(
+    "mock_model",
+    attributes={"test": MockAttr},
+    megacomplex_type=MockMegacomplex,
+    matrix=matrix_fun,
+    model_dimension="model",
+    global_dimension="global",
+)
 class MockModel(Model):
     pass
 
@@ -104,7 +111,7 @@ def parameter():
 
 
 def test_model_misc(model):
-    assert model.model_type == "mock"
+    assert model.model_type == "mock_model"
     assert not model.index_dependent_matrix
     model.matrix = matrix_fun_index
     assert model.index_dependent_matrix
