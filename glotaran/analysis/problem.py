@@ -591,9 +591,8 @@ class Problem:
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
-                        end_index = i + 1
                         start = sum(problem.data_sizes[0:i])
-                        end = sum(problem.data_sizes[0:end_index])
+                        end = start + problem.data_sizes[i]
                         matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
 
             clp, residual = self._residual_function(matrix, data)
@@ -675,9 +674,8 @@ class Problem:
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
-                        end_index = i + 1
                         start = sum(problem.data_sizes[0:i])
-                        end = sum(problem.data_sizes[0:end_index])
+                        end = start + problem.data_sizes[i]
                         matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
             clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
