@@ -86,6 +86,7 @@ def index_dependent(model: KineticSpectrumModel) -> bool:
         )
         or len(model.spectral_relations) != 0
         or len(model.spectral_constraints) != 0
+        or len(model.weights) != 0
     )
 
 
