@@ -591,8 +591,8 @@ class Problem:
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
-                        start = 0 if i == 0 else problem.data_sizes[i - 1]
-                        end = problem.data_sizes[i]
+                        start = sum(problem.data_sizes[0:i])
+                        end = start + problem.data_sizes[i]
                         matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
 
             clp, residual = self._residual_function(matrix, data)
@@ -674,8 +674,8 @@ class Problem:
                 for i, descriptor in enumerate(problem.descriptor):
                     label = descriptor.label
                     if self.filled_dataset_descriptors[label] is not None:
-                        start = 0 if i == 0 else problem.data_sizes[i - 1]
-                        end = problem.data_sizes[i]
+                        start = sum(problem.data_sizes[0:i])
+                        end = start + problem.data_sizes[i]
                         matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
             clp, residual = self._residual_function(matrix, data)
             return clp, residual, residual / problem.weight
@@ -712,7 +712,7 @@ class Problem:
             data = problem.data
 
             for i in range(len(problem.global_axis)):
-                matrix = self.reduced_matrices[label].copy()
+                matrix = self.reduced_matrices[label].copy()  # TODO: .copy() or not
                 if problem.dataset.scale is not None:
                     matrix *= self.filled_dataset_descriptors[label].scale
 
@@ -767,12 +767,17 @@ class Problem:
                     if self._index_dependent
                     else reduced_clp_labels[group_label]
                 )
-                self._reduced_clp_labels[label] = [
-                    clp_label for clp_label in dataset_clp_labels if clp_label in index_clp_labels
-                ]
+                self._reduced_clp_labels[label].append(
+                    [
+                        clp_label
+                        for clp_label in dataset_clp_labels
+                        if clp_label in index_clp_labels
+                    ]
+                )
 
                 mask = [
-                    clp_label in self._reduced_clp_labels[label] for clp_label in index_clp_labels
+                    clp_label in self._reduced_clp_labels[label][i]
+                    for clp_label in index_clp_labels
                 ]
                 self._reduced_clps[label].append(reduced_clps[i + offset][mask])
         self._clps = (
