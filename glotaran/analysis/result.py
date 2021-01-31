@@ -25,6 +25,7 @@ class Result:
         scheme: Scheme,
         data: Dict[str, xr.Dataset],
         optimized_parameters: ParameterGroup,
+        additional_penalty: np.ndarray,
         least_squares_result: OptimizeResult,
         free_parameter_labels: List[str],
         termination_reason: str,
@@ -49,6 +50,7 @@ class Result:
         self._scheme = scheme
         self._data = data
         self._optimized_parameters = optimized_parameters
+        self._additional_penalty = additional_penalty
         self._free_parameter_labels = free_parameter_labels
         self._success = least_squares_result is not None
         self._termination_reason = termination_reason
@@ -199,6 +201,11 @@ class Result:
         """The initital parameters."""
         return self._scheme.parameters
 
+    @property
+    def additional_penalty(self) -> np.ndarray:
+        """The additional penalty vector."""
+        return self._additional_penalty
+
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
         """Returns the result dataset for the given dataset label.
 
@@ -313,6 +320,12 @@ class Result:
         string += "Root Mean Square Error |".rjust(ll)
         string += f"{self.root_mean_square_error:.2e} |".rjust(lr)
         string += "\n"
+        string += f"{sum(self.additional_penalty):.2e} |".rjust(lr)
+        if len(self.data) > 1:
+            string += "Root Mean Square Error (per dataset) |".rjust(ll)
+            for label, dataset in self.data.items():
+                string += f"{label}: {dataset.root_mean_square_error:.2e} |".rjust(lr)
+                string += "\n"
 
         if with_model:
             string += "\n\n" + self.model.markdown(
