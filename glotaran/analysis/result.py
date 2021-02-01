@@ -30,22 +30,24 @@ class Result:
         free_parameter_labels: List[str],
         termination_reason: str,
     ):
-        """The result of a global analysis.
+        """The result of a global analysis
 
         Parameters
         ----------
-        model :
-            A subclass of :class:`glotaran.model.Model`
-        data :
+        scheme : Scheme
+            An analysis scheme
+        data : Dict[str, xr.Dataset]
             A dictionary containing all datasets with their labels as keys.
-        optimized_parameters : glotaran.parameter.ParameterGroup
-            The optimized parameters,
-        nnls :
-            (default = False)
-            If `True` non-linear least squares optimizing is used instead of variable projection.
-        atol :
-            (default = 0)
-            The tolerance for grouping datasets along the global axis.
+        optimized_parameters : ParameterGroup
+            The optimized parameters, organized in a :class:`ParameterGroup`
+        additional_penalty : np.ndarray
+            A vector with the value for each additional penalty.
+        least_squares_result : OptimizeResult
+            See :func:`scipy.optimize.OptimizeResult` :func:`scipy.optimize.least_squares`
+        free_parameter_labels : List[str]
+            The text labels of the free parameters that were optimized
+        termination_reason : str
+            The reason (message when) the optimizer terminated
         """
         self._scheme = scheme
         self._data = data
@@ -131,7 +133,7 @@ class Result:
     @property
     def jacobian(self) -> np.ndarray:
         """Modified Jacobian matrix at the solution
-        See also: :py:function:`scipy.optimize.least_squares`
+        See also: :func:`scipy.optimize.least_squares`
 
         Returns
         -------
