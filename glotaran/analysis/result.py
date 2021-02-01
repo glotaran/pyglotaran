@@ -107,7 +107,8 @@ class Result:
 
     @property
     def nnls(self) -> bool:
-        """If `True` non-linear least squares optimizing is used instead of variable projection."""
+        """If `True` non-negative least squares optimization is used
+        instead of the default variable projection."""
         return self._scheme.nnls
 
     @property

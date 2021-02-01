@@ -28,7 +28,7 @@ def test_scheme(tmpdir):
     scheme = f"""
     model: {model_path}
     parameters: {parameter_path}
-    non-linear-least-squares: True
+    non-negative-least-squares: True
     maximum-number-function-evaluations: 42
     data:
       dataset1: {dataset_path}
@@ -45,7 +45,7 @@ def test_scheme(tmpdir):
     assert scheme.parameters.get("1") == 1.0
     assert scheme.parameters.get("2") == 67.0
 
-    assert scheme.non_linear_least_squares
+    assert scheme.non_negative_least_squares
     assert scheme.maximum_number_function_evaluations == 42
 
     assert "dataset1" in scheme.data

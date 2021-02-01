@@ -7,7 +7,7 @@ It is designed to provide a state of the art modeling toolbox to researchers, in
 Its features are:
 
 * user-friendly modeling with a custom YAML (``*.yml``) based modeling language
-* parameter optimization using variable projection and non-linear least-squares algorithms
+* parameter optimization using variable projection and non-negative least-squares algorithms
 * easy to extend modeling framework
 * battle-hardened model and algorithms for fluorescence dynamics
 * build upon and fully integrated in the standard Python science stack (NumPy,  SciPy, Jupyter)
