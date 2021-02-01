@@ -842,6 +842,10 @@ class Problem:
         dataset.attrs["root_mean_square_error"] = np.sqrt(
             (dataset.residual ** 2).sum() / size
         ).values
+        size = dataset.weighted_residual.shape[0] * dataset.weighted_residual.shape[1]
+        dataset.attrs["weighted_root_mean_square_error"] = np.sqrt(
+            (dataset.weighted_residual ** 2).sum() / size
+        ).values
 
         # reconstruct fitted data
         dataset["fitted_data"] = dataset.data - dataset.residual

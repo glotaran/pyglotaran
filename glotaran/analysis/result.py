@@ -326,10 +326,21 @@ class Result:
         if self.additional_penalty is not None:
             string += "RMSE additional penalty |".rjust(ll)
             string += f"{sum(self.additional_penalty):.2e} |".rjust(lr)
+            string += "\n"
         if len(self.data) > 1:
-            string += "Root Mean Square Error (per dataset) |".rjust(ll)
-            for label, dataset in self.data.items():
-                string += f"{label}: {dataset.root_mean_square_error:.2e} |".rjust(lr)
+            string += "RMSE (per dataset) |".rjust(ll)
+            string += "weighted |".rjust(lr)
+            string += "\n"
+            for index, (label, dataset) in enumerate(self.data.items(), start=1):
+                string += f"  {index}. {label}: |".rjust(ll)
+                string += f"{dataset.weighted_root_mean_square_error:.2e} |".rjust(lr)
+                string += "\n"
+            string += "RMSE (per dataset) |".rjust(ll)
+            string += "unweighted |".rjust(lr)
+            string += "\n"
+            for index, (label, dataset) in enumerate(self.data.items(), start=1):
+                string += f"  {index}. {label}: |".rjust(ll)
+                string += f"{dataset.root_mean_square_error:.2e} |".rjust(lr)
                 string += "\n"
 
         if with_model:
