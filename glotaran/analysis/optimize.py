@@ -65,6 +65,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         problem.scheme,
         problem.create_result_data(),
         problem.parameters,
+        problem.additional_penalty,
         ls_result,
         labels,
         termination_reason,

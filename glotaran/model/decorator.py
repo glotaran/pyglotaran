@@ -99,35 +99,54 @@ def model(
 
     Parameters
     ----------
-    model_type :
+    model_type : str
         Human readable string used by the parser to identify the correct model.
-    attributes :
+    attributes : Dict[str, Any], optional
         A dictionary of attribute names and types. All types must be decorated with the
-        :func:`glotaran.model.model_attribute` decorator.
-    dataset_type :
-    A subclass of :class:`DatasetDescriptor`
-    megacomplex_type :
+        :func:`glotaran.model.model_attribute` decorator, by default None.
+    dataset_type : Type[DatasetDescriptor], optional
+        A subclass of :class:`DatasetDescriptor`, by default DatasetDescriptor
+    megacomplex_type : Any, optional
         A class for the model megacomplexes. The class must be decorated with the
-        :func:`glotaran.model.model_attribute` decorator.
-    matrix :
-        A function to calculate the matrix for the model.
-    global_matrix :
-        A function to calculate the global matrix for the model.
-    model_dimension :
-        The name of model matrix row dimension.
-    global_dimension :
-        The name of model global matrix row dimension.
-    constrain_matrix_function :
-        A function to constrain the global matrix for the model.
-    retrieve_clp_function :
-        A function to retrieve the full clp from the reduced.
-    None
-    additional_penalty_function : PenaltyFunction
-        A function to calculate additional penalties when optimizing the model.
-    finalize_data_function :
-        A function to finalize data after optimization.
-    allow_grouping :
-        If `True`, datasets can can be grouped along the global dimension.
+        :func:`glotaran.model.model_attribute` decorator, by default None
+    matrix : Union[MatrixFunction, IndexDependentMatrixFunction], optional
+        A function to calculate the matrix for the model, by default None
+    global_matrix : GlobalMatrixFunction, optional
+        A function to calculate the global matrix for the model, by default None
+    model_dimension : str, optional
+        The name of model matrix row dimension, by default None
+    global_dimension : str, optional
+        The name of model global matrix row dimension, by default None
+    has_matrix_constraints_function : Callable[[Type[Model]], bool], optional
+        True if the model as a constrain_matrix_function set, by default None
+    constrain_matrix_function : ConstrainMatrixFunction, optional
+        A function to constrain the global matrix for the model, by default None
+    retrieve_clp_function : RetrieveClpFunction, optional
+        A function to retrieve the full clp from the reduced, by default None
+    has_additional_penalty_function : Callable[[Type[Model]], bool], optional
+        True if model has a additional_penalty_function set, by default None
+    additional_penalty_function : PenaltyFunction, optional
+        A function to calculate additional penalties when optimizing the model, by default None
+    finalize_data_function : FinalizeFunction, optional
+        A function to finalize data after optimization, by default None
+    grouped : Union[bool, Callable[[Type[Model]], bool]], optional
+        True if model described a grouped problem, by default False
+    index_dependent : Union[bool, Callable[[Type[Model]], bool]], optional
+        True if model described a index dependent problem, by default False
+
+    Returns
+    -------
+    Callable
+        Returns a decorated model function
+
+    Raises
+    ------
+    ValueError
+        If model implements meth:`has_matrix_constraints_function` but not
+        meth:`constrain_matrix_function` and meth:`retrieve_clp_function`
+    ValueError
+        If model implements meth:`has_additional_penalty_function` but not
+        meth:`additional_penalty_function`
     """
 
     def decorator(cls):

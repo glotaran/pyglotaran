@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 from typing import Type
+from typing import Union
 
 import numpy as np
 import xarray as xr
@@ -25,30 +26,34 @@ class Result:
         scheme: Scheme,
         data: Dict[str, xr.Dataset],
         optimized_parameters: ParameterGroup,
+        additional_penalty: Union[np.ndarray, None],
         least_squares_result: OptimizeResult,
         free_parameter_labels: List[str],
         termination_reason: str,
     ):
-        """The result of a global analysis.
+        """The result of a global analysis
 
         Parameters
         ----------
-        model :
-            A subclass of :class:`glotaran.model.Model`
-        data :
+        scheme : Scheme
+            An analysis scheme
+        data : Dict[str, xr.Dataset]
             A dictionary containing all datasets with their labels as keys.
-        optimized_parameters : glotaran.parameter.ParameterGroup
-            The optimized parameters,
-        nnls :
-            (default = False)
-            If `True` non-linear least squares optimizing is used instead of variable projection.
-        atol :
-            (default = 0)
-            The tolerance for grouping datasets along the global axis.
+        optimized_parameters : ParameterGroup
+            The optimized parameters, organized in a :class:`ParameterGroup`
+        additional_penalty : Union[np.ndarray, None]
+            A vector with the value for each additional penalty, or None
+        least_squares_result : OptimizeResult
+            See :func:`scipy.optimize.OptimizeResult` :func:`scipy.optimize.least_squares`
+        free_parameter_labels : List[str]
+            The text labels of the free parameters that were optimized
+        termination_reason : str
+            The reason (message when) the optimizer terminated
         """
         self._scheme = scheme
         self._data = data
         self._optimized_parameters = optimized_parameters
+        self._additional_penalty = additional_penalty
         self._free_parameter_labels = free_parameter_labels
         self._success = least_squares_result is not None
         self._termination_reason = termination_reason
@@ -129,7 +134,7 @@ class Result:
     @property
     def jacobian(self) -> np.ndarray:
         """Modified Jacobian matrix at the solution
-        See also: :py:function:`scipy.optimize.least_squares`
+        See also: :func:`scipy.optimize.least_squares`
 
         Returns
         -------
@@ -198,6 +203,11 @@ class Result:
     def initial_parameters(self) -> ParameterGroup:
         """The initital parameters."""
         return self._scheme.parameters
+
+    @property
+    def additional_penalty(self) -> np.ndarray:
+        """The additional penalty vector."""
+        return self._additional_penalty
 
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
         """Returns the result dataset for the given dataset label.
@@ -310,9 +320,28 @@ class Result:
         string += "Reduced Chi Square |".rjust(ll)
         string += f"{self.reduced_chi_square:.2e} |".rjust(lr)
         string += "\n"
-        string += "Root Mean Square Error |".rjust(ll)
+        string += "Root Mean Square Error (RMSE) |".rjust(ll)
         string += f"{self.root_mean_square_error:.2e} |".rjust(lr)
         string += "\n"
+        if self.additional_penalty is not None:
+            string += "RMSE additional penalty |".rjust(ll)
+            string += f"{sum(self.additional_penalty):.2e} |".rjust(lr)
+            string += "\n"
+        if len(self.data) > 1:
+            string += "RMSE (per dataset) |".rjust(ll)
+            string += "weighted |".rjust(lr)
+            string += "\n"
+            for index, (label, dataset) in enumerate(self.data.items(), start=1):
+                string += f"  {index}. {label}: |".rjust(ll)
+                string += f"{dataset.weighted_root_mean_square_error:.2e} |".rjust(lr)
+                string += "\n"
+            string += "RMSE (per dataset) |".rjust(ll)
+            string += "unweighted |".rjust(lr)
+            string += "\n"
+            for index, (label, dataset) in enumerate(self.data.items(), start=1):
+                string += f"  {index}. {label}: |".rjust(ll)
+                string += f"{dataset.root_mean_square_error:.2e} |".rjust(lr)
+                string += "\n"
 
         if with_model:
             string += "\n\n" + self.model.markdown(
