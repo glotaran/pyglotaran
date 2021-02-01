@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 from typing import Type
+from typing import Union
 
 import numpy as np
 import xarray as xr
@@ -25,7 +26,7 @@ class Result:
         scheme: Scheme,
         data: Dict[str, xr.Dataset],
         optimized_parameters: ParameterGroup,
-        additional_penalty: np.ndarray,
+        additional_penalty: Union[np.ndarray, None],
         least_squares_result: OptimizeResult,
         free_parameter_labels: List[str],
         termination_reason: str,
@@ -40,8 +41,8 @@ class Result:
             A dictionary containing all datasets with their labels as keys.
         optimized_parameters : ParameterGroup
             The optimized parameters, organized in a :class:`ParameterGroup`
-        additional_penalty : np.ndarray
-            A vector with the value for each additional penalty.
+        additional_penalty : Union[np.ndarray, None]
+            A vector with the value for each additional penalty, or None
         least_squares_result : OptimizeResult
             See :func:`scipy.optimize.OptimizeResult` :func:`scipy.optimize.least_squares`
         free_parameter_labels : List[str]
@@ -319,10 +320,12 @@ class Result:
         string += "Reduced Chi Square |".rjust(ll)
         string += f"{self.reduced_chi_square:.2e} |".rjust(lr)
         string += "\n"
-        string += "Root Mean Square Error |".rjust(ll)
+        string += "Root Mean Square Error (RMSE) |".rjust(ll)
         string += f"{self.root_mean_square_error:.2e} |".rjust(lr)
         string += "\n"
-        string += f"{sum(self.additional_penalty):.2e} |".rjust(lr)
+        if self.additional_penalty is not None:
+            string += "RMSE additional penalty |".rjust(ll)
+            string += f"{sum(self.additional_penalty):.2e} |".rjust(lr)
         if len(self.data) > 1:
             string += "Root Mean Square Error (per dataset) |".rjust(ll)
             for label, dataset in self.data.items():
