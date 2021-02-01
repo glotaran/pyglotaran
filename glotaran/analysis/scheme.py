@@ -30,7 +30,7 @@ class Scheme:
         parameters: ParameterGroup = None,
         data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
         group_tolerance: float = 0.0,
-        non_linear_least_squares: bool = False,
+        non_negative_least_squares: bool = False,
         maximum_number_function_evaluations: int = None,
         ftol: float = 1e-8,
         gtol: float = 1e-8,
@@ -45,7 +45,7 @@ class Scheme:
         self._model = model
         self._parameters = parameters
         self._group_tolerance = group_tolerance
-        self._non_linear_least_squares = non_linear_least_squares
+        self._non_negative_least_squares = non_negative_least_squares
         self._maximum_number_function_evaluations = maximum_number_function_evaluations
         self._ftol = ftol
         self._gtol = gtol
@@ -100,7 +100,7 @@ class Scheme:
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 
         optimization_method = scheme.get("optimization_method", "TrustRegionReflection")
-        nnls = scheme.get("non-linear-least-squares", False)
+        nnls = scheme.get("non-negative-least-squares", False)
         nfev = scheme.get("maximum-number-function-evaluations", None)
         ftol = scheme.get("ftol", 1e-8)
         gtol = scheme.get("gtol", 1e-8)
@@ -110,7 +110,7 @@ class Scheme:
             model=model,
             parameters=parameters,
             data=data,
-            non_linear_least_squares=nnls,
+            non_negative_least_squares=nnls,
             maximum_number_function_evaluations=nfev,
             ftol=ftol,
             gtol=gtol,
@@ -132,8 +132,8 @@ class Scheme:
         return self._data
 
     @property
-    def non_linear_least_squares(self) -> bool:
-        return self._non_linear_least_squares
+    def non_negative_least_squares(self) -> bool:
+        return self._non_negative_least_squares
 
     @property
     def maximum_number_function_evaluations(self) -> int:

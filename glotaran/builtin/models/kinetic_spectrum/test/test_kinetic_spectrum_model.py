@@ -424,7 +424,7 @@ def test_kinetic_model(suite, nnls):
         parameters=initial_parameters,
         data=data,
         maximum_number_function_evaluations=20,
-        non_linear_least_squares=nnls,
+        non_negative_least_squares=nnls,
     )
     result = optimize(scheme)
     print(result.optimized_parameters)

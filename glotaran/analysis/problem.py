@@ -85,7 +85,7 @@ class Problem:
         self._groups = None
 
         self._residual_function = (
-            residual_nnls if scheme.non_linear_least_squares else residual_variable_projection
+            residual_nnls if scheme.non_negative_least_squares else residual_variable_projection
         )
         self._parameters = None
         self._filled_dataset_descriptors = None
