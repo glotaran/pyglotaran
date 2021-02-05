@@ -103,8 +103,8 @@ class SpectralConstraint:
 
 
 def apply_spectral_constraints(
-    model: KineticSpectrumModel, clp_labels: List[str], matrix: np.ndarray, index: float
-) -> Tuple[List[str], np.ndarray]:
+    model: KineticSpectrumModel, clp_labels: list[str], matrix: np.ndarray, index: float
+) -> tuple[list[str], np.ndarray]:
     for constraint in model.spectral_constraints:
         if isinstance(constraint, (OnlyConstraint, ZeroConstraint)) and constraint.applies(index):
             idx = [not label == constraint.compartment for label in clp_labels]

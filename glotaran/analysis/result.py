@@ -24,11 +24,11 @@ class Result:
     def __init__(
         self,
         scheme: Scheme,
-        data: Dict[str, xr.Dataset],
+        data: dict[str, xr.Dataset],
         optimized_parameters: ParameterGroup,
-        additional_penalty: Union[np.ndarray, None],
+        additional_penalty: np.ndarray | None,
         least_squares_result: OptimizeResult,
-        free_parameter_labels: List[str],
+        free_parameter_labels: list[str],
         termination_reason: str,
     ):
         """The result of a global analysis
@@ -101,7 +101,7 @@ class Result:
         return self._scheme
 
     @property
-    def model(self) -> Type[Model]:
+    def model(self) -> type[Model]:
         """The model for analysis."""
         return self._scheme.model
 
@@ -112,7 +112,7 @@ class Result:
         return self._scheme.nnls
 
     @property
-    def data(self) -> Dict[str, xr.Dataset]:
+    def data(self) -> dict[str, xr.Dataset]:
         """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
         Notes
@@ -184,7 +184,7 @@ class Result:
         return self._root_mean_square_error
 
     @property
-    def free_parameter_labels(self) -> List[str]:
+    def free_parameter_labels(self) -> list[str]:
         """List of labels of the free parameters used in optimization."""
         return self._free_parameter_labels
 
@@ -244,7 +244,7 @@ class Result:
             optimization_method=self.scheme.optimization_method,
         )
 
-    def save(self, path: str) -> List[str]:
+    def save(self, path: str) -> list[str]:
         """Saves the result to given folder.
 
         Returns a list with paths of all saved items.

@@ -99,10 +99,10 @@ def calculate_spectral_gauss(dataset, axis):
 
 
 def constrain_matrix_function_typecheck(
-    model: Type[Model],
+    model: type[Model],
     label: str,
     parameters: ParameterGroup,
-    clp_labels: List[str],
+    clp_labels: list[str],
     matrix: np.ndarray,
     index: float,
 ):
@@ -123,13 +123,13 @@ def constrain_matrix_function_typecheck(
 
 
 def retrieve_clp_typecheck(
-    model: Type[Model],
+    model: type[Model],
     parameters: ParameterGroup,
-    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
-    reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
-    reduced_clps: Dict[str, List[np.ndarray]],
-    data: Dict[str, xr.Dataset],
-) -> Dict[str, List[np.ndarray]]:
+    clp_labels: dict[str, list[str] | list[list[str]]],
+    reduced_clp_labels: dict[str, list[str] | list[list[str]]],
+    reduced_clps: dict[str, list[np.ndarray]],
+    data: dict[str, xr.Dataset],
+) -> dict[str, list[np.ndarray]]:
     assert isinstance(parameters, ParameterGroup)
 
     assert isinstance(reduced_clps, dict)
@@ -175,12 +175,12 @@ def retrieve_clp_typecheck(
 
 
 def additional_penalty_typecheck(
-    model: Type[Model],
+    model: type[Model],
     parameters: ParameterGroup,
-    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
-    clps: Dict[str, List[np.ndarray]],
-    matrices: Dict[str, Union[np.ndarray, List[np.ndarray]]],
-    data: Dict[str, xr.Dataset],
+    clp_labels: dict[str, list[str] | list[list[str]]],
+    clps: dict[str, list[np.ndarray]],
+    matrices: dict[str, np.ndarray | list[np.ndarray]],
+    data: dict[str, xr.Dataset],
     group_tolerance: float,
 ) -> np.ndarray:
     assert isinstance(parameters, ParameterGroup)

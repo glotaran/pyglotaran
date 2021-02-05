@@ -46,5 +46,5 @@ def get_model(model_type: str) -> Model:
     return _model_register[model_type]
 
 
-def known_model_names() -> List[str]:
+def known_model_names() -> list[str]:
     return [name for name in _model_register]

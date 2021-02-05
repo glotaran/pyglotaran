@@ -28,7 +28,7 @@ class Scheme:
         self,
         model: Model = None,
         parameters: ParameterGroup = None,
-        data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]] = None,
+        data: dict[str, xr.DataArray | xr.Dataset] = None,
         group_tolerance: float = 0.0,
         non_negative_least_squares: bool = False,
         maximum_number_function_evaluations: int = None,
@@ -128,7 +128,7 @@ class Scheme:
         return self._parameters
 
     @property
-    def data(self) -> typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]:
+    def data(self) -> dict[str, xr.DataArray | xr.Dataset]:
         return self._data
 
     @property
@@ -159,7 +159,7 @@ class Scheme:
     def optimization_method(self) -> str:
         return self._optimization_method
 
-    def problem_list(self) -> typing.List[str]:
+    def problem_list(self) -> list[str]:
         """Returns a list with all problems in the model and missing parameters."""
         return self.model.problem_list(self.parameters)
 
@@ -182,7 +182,7 @@ class Scheme:
 
         return dataset.transpose(*new_dims)
 
-    def _prepare_data(self, data: typing.Dict[str, typing.Union[xr.DataArray, xr.Dataset]]):
+    def _prepare_data(self, data: dict[str, xr.DataArray | xr.Dataset]):
         self._data = {}
         for label, dataset in data.items():
             if self.model.model_dimension not in dataset.dims:

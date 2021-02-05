@@ -16,7 +16,7 @@ class Model:
     """A base class for global analysis models."""
 
     @classmethod
-    def from_dict(cls, model_dict_ref: typing.Dict) -> Model:
+    def from_dict(cls, model_dict_ref: dict) -> Model:
         """Creates a model from a dictionary.
 
         Parameters
@@ -130,8 +130,8 @@ class Model:
         self,
         dataset: str,
         parameters: ParameterGroup,
-        axes: typing.Dict[str, np.ndarray] = None,
-        clp: typing.Union[np.ndarray, xr.DataArray] = None,
+        axes: dict[str, np.ndarray] = None,
+        clp: np.ndarray | xr.DataArray = None,
         noise: bool = False,
         noise_std_dev: float = 1.0,
         noise_seed: int = None,
@@ -166,7 +166,7 @@ class Model:
             noise_seed=noise_seed,
         )
 
-    def problem_list(self, parameters: ParameterGroup = None) -> typing.List[str]:
+    def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
         """
         Returns a list with all problems in the model and missing parameters if specified.
 

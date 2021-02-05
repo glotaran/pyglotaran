@@ -14,7 +14,7 @@ from .spectral_irf import IrfGaussianCoherentArtifact
 from .spectral_irf import IrfSpectralMultiGaussian
 
 
-def finalize_kinetic_spectrum_result(model, problem: Problem, data: Dict[str, xr.Dataset]):
+def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr.Dataset]):
 
     for label, dataset in data.items():
 

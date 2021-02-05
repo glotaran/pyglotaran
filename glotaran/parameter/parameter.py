@@ -43,8 +43,8 @@ class Parameter:
         label: str = None,
         full_label: str = None,
         expression: str = None,
-        maximum: Union[int, float] = np.inf,
-        minimum: Union[int, float] = -np.inf,
+        maximum: int | float = np.inf,
+        minimum: int | float = -np.inf,
         non_negative: bool = False,
         value: float = None,
         vary: bool = True,
@@ -79,8 +79,8 @@ class Parameter:
     @classmethod
     def from_list_or_value(
         cls,
-        value: Union[int, float, List],
-        default_options: Dict = None,
+        value: int | float | list,
+        default_options: dict = None,
         label: str = None,
     ) -> Parameter:
         """Creates a parameter from a list or numeric value.
@@ -137,7 +137,7 @@ class Parameter:
         self.value = p.value
         self.vary = p.vary
 
-    def _set_options_from_dict(self, options: Dict):
+    def _set_options_from_dict(self, options: dict):
         if Keys.EXPR in options:
             self.expression = options[Keys.EXPR]
         if Keys.NON_NEG in options:
@@ -202,7 +202,7 @@ class Parameter:
         return self._maximum
 
     @maximum.setter
-    def maximum(self, maximum: Union[int, float]):
+    def maximum(self, maximum: int | float):
         if not isinstance(maximum, float):
             try:
                 maximum = float(maximum)
@@ -220,7 +220,7 @@ class Parameter:
         return self._minimum
 
     @minimum.setter
-    def minimum(self, minimum: Union[int, float]):
+    def minimum(self, minimum: int | float):
         if not isinstance(minimum, float):
             try:
                 minimum = float(minimum)
@@ -268,7 +268,7 @@ class Parameter:
         return self._getval()
 
     @value.setter
-    def value(self, value: Union[int, float]):
+    def value(self, value: int | float):
         if not isinstance(value, float) and value is not None:
             try:
                 value = float(value)
@@ -280,7 +280,7 @@ class Parameter:
 
         self._value = value
 
-    def get_value_and_bounds_for_optimization(self) -> Tuple[float, float, float]:
+    def get_value_and_bounds_for_optimization(self) -> tuple[float, float, float]:
         """Gets the parameter value and bounds with expression and non-negative constraints
         applied."""
         value = self.value
@@ -470,7 +470,7 @@ def _log_value(value: float):
 _match_scientific = re.compile(r"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)")
 
 
-def _sanatize_parameter_list(li: List) -> List:
+def _sanatize_parameter_list(li: list) -> list:
     for i, value in enumerate(li):
         if isinstance(value, str) and _match_scientific.match(value):
             li[i] = float(value)
@@ -478,7 +478,7 @@ def _sanatize_parameter_list(li: List) -> List:
     return li
 
 
-def _retrieve_from_list_by_type(li: List, t: Type, default: Any):
+def _retrieve_from_list_by_type(li: list, t: type, default: Any):
     tmp = list(filter(lambda x: isinstance(x, t), li))
     if not tmp:
         return default

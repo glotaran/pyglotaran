@@ -52,10 +52,10 @@ def create_spectral_relation_matrix(
     model: KineticSpectrumModel,
     dataset: str,
     parameters: ParameterGroup,
-    clp_labels: List[str],
+    clp_labels: list[str],
     matrix: np.ndarray,
     index: float,
-) -> Tuple[List[str], np.ndarray]:
+) -> tuple[list[str], np.ndarray]:
     relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
     idx_to_delete = []
@@ -85,10 +85,10 @@ def apply_spectral_relations(
     model: KineticSpectrumModel,
     dataset: str,
     parameters: ParameterGroup,
-    clp_labels: List[str],
+    clp_labels: list[str],
     matrix: np.ndarray,
     index: float,
-) -> Tuple[List[str], np.ndarray]:
+) -> tuple[list[str], np.ndarray]:
 
     if not model.spectral_relations:
         return (clp_labels, matrix)
@@ -105,10 +105,10 @@ def apply_spectral_relations(
 def retrieve_related_clps(
     model: KineticSpectrumModel,
     parameters: ParameterGroup,
-    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
-    clps: Dict[str, List[np.ndarray]],
-    data: Dict[str, xr.Dataset],
-) -> Dict[str, List[np.ndarray]]:
+    clp_labels: dict[str, list[str] | list[list[str]]],
+    clps: dict[str, list[np.ndarray]],
+    data: dict[str, xr.Dataset],
+) -> dict[str, list[np.ndarray]]:
 
     for relation in model.spectral_relations:
         relation = relation.fill(model, parameters)

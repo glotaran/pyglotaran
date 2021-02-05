@@ -9,7 +9,7 @@ from glotaran.analysis.problem import Problem
 from .irf import IrfMultiGaussian
 
 
-def finalize_kinetic_image_result(model, problem: Problem, data: Dict[str, xr.Dataset]):
+def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Dataset]):
 
     for label, dataset in data.items():
 
