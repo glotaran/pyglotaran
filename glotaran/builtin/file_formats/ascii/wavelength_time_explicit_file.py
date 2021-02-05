@@ -100,14 +100,14 @@ class ExplicitFile:
         comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
 
         if file_format == "WavelengthExplicit":
-            wav = "\t".join([repr(num) for num in self._spectral_indices])
+            wav = "\t".join(repr(num) for num in self._spectral_indices)
             header = (
                 comments + "Wavelength explicit\nIntervalnr {}"
                 "".format(len(self._spectral_indices)) + "\n" + wav
             )
             raw_data = np.vstack((self._times.T, self._observations)).T
         elif file_format == "TimeExplicit":
-            tim = "\t".join([repr(num) for num in self._times])
+            tim = "\t".join(repr(num) for num in self._times)
             header = (
                 comments + "Time explicit\nIntervalnr {}" "".format(len(self._times)) + "\n" + tim
             )
