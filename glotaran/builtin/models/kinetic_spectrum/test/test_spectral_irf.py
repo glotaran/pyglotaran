@@ -1,13 +1,137 @@
+from textwrap import dedent
+
 import numpy as np
 import pytest
 
+from glotaran import read_model_from_yaml
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.parameter import ParameterGroup
 
 
+def get_dataset_block(megacomplex, input, irf, shape_tuples=None):
+    line1 = "" if not shape_tuples else "shape:"
+    shape_block = (
+        "" if not shape_tuples else "".join(f"{key}: {value}\n" for key, value in shape_tuples)
+    )
+    return dedent(
+        f"""\
+    dataset:
+        dataset1:
+            megacomplex: {megacomplex}
+            initial_concentration: {input}
+            irf: {irf}
+            {line1}
+                {shape_block}
+    """
+    )
+
+
+def get_shape_block(shape_key, type, amplitude=None, location=None, width=None):
+    line1 = "" if not amplitude else f"amplitude: {amplitude}"
+    line2 = "" if not location else f"location: {location}"
+    line3 = "" if not width else f"width: {width}"
+    return dedent(
+        f"""\
+        shape:
+            {shape_key}:
+                type: {type}
+                {line1}
+                {line2}
+                {line3}
+                """
+    )
+
+
+def get_initial_concentration_block(input_label, compartments, parameters):
+    return dedent(
+        f"""\
+        initial_concentration:
+            {input_label}:
+                compartments: {compartments}
+                parameters: {parameters}
+    """
+    )
+
+
+def get_megacomplex_block(megacomplex_key, k_matrix):
+    return dedent(
+        f"""\
+        megacomplex:
+            {megacomplex_key}:
+                k_matrix: {k_matrix}
+    """
+    )
+
+
+def get_k_matrix_block(k_matrix_key, matrix_tuples):
+    matrix_block = "".join(f"{key}: {value}\n" for key, value in matrix_tuples)
+    return dedent(
+        f"""\
+        k_matrix:
+            {k_matrix_key}:
+                matrix:
+                    {matrix_block}
+    """
+    )
+
+
+def get_k_irf_block(
+    irf_key,
+    type,
+    center,
+    width,
+    dispersion_center=None,
+    center_dispersion=None,
+    width_dispersion=None,
+):
+    line1 = "" if not dispersion_center else f"dispersion_center: {dispersion_center}"
+    line2 = "" if not center_dispersion else f"center_dispersion: {center_dispersion}"
+    line3 = "" if not width_dispersion else f"width_dispersion: {width_dispersion}"
+    return dedent(
+        f"""\
+    irf:
+        {irf_key}:
+            type: {type}
+            center: {center}
+            width: {width}
+            {line1}
+            {line2}
+            {line3}
+    """
+    )
+
+
+BASE_MODEL_STR = f"""\
+type: kinetic-spectrum
+{get_dataset_block("[mc1]","j1","irf1")}
+{get_initial_concentration_block("j1","[s1]","[j.1]")}
+{get_megacomplex_block("mc1", "[k1]")}
+{get_k_matrix_block("k1",[("(s1, s1)","kinetic.1")])}
+{get_k_irf_block("irf1","spectral-gaussian","irf.center","irf.width","irf.dispcenter","[irf.centerdisp]")}
+"""
+
+SIM_MODEL_STR = f"""\
+type: kinetic-spectrum
+{get_dataset_block("[mc1]","j1","irf1",[('s1','sh1')])}
+{get_initial_concentration_block("j1","[s1]","[j.1]")}
+{get_megacomplex_block("mc1", "[k1]")}
+{get_k_matrix_block("k1",[("(s1, s1)","kinetic.1")])}
+{get_k_irf_block("irf1","spectral-gaussian","irf.center","irf.width","irf.dispcenter","[irf.centerdisp]")}
+{get_shape_block("sh1", "one")}
+"""
+
+
 class SimpleIrfDispersion:
+
+    print(BASE_MODEL_STR)
+    print(SIM_MODEL_STR)
+    print(BASE_MODEL_STR + SIM_MODEL_STR)
+
+    model_ref = read_model_from_yaml(BASE_MODEL_STR)
+    sim_ref = read_model_from_yaml(SIM_MODEL_STR)
+
     model = KineticSpectrumModel.from_dict(
         {
             "initial_concentration": {
@@ -41,6 +165,7 @@ class SimpleIrfDispersion:
             },
         }
     )
+    assert model.markdown() == model_ref.markdown()  # Proves the two are equivalent
     sim_model = KineticSpectrumModel.from_dict(
         {
             "initial_concentration": {
@@ -296,3 +421,7 @@ def test_spectral_irf(suite):
 
     assert "species_associated_spectra" in resultdata
     assert "decay_associated_spectra" in resultdata
+
+
+if __name__ == "__main__":
+    test_spectral_irf(SimpleIrfDispersion())

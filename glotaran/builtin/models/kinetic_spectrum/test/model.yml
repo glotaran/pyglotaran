@@ -1,0 +1,38 @@
+type: kinetic-spectrum
+
+dataset:
+    dataset1:
+        megacomplex: [mc1]
+        initial_concentration: j1
+        irf: irf1
+
+initial_concentration:
+    j1:
+        compartments: [s1]
+        parameters: [j.1]
+
+megacomplex:
+  mc1:
+    k_matrix: [k1]
+
+k_matrix:
+  k1:
+    matrix:
+      (s1 s1): kinetic.1
+
+irf:
+    irf1:
+        type: spectral-gaussian
+        center: irf.center
+        width: irf.width
+        dispersion_center: irf.dispcenter
+        center_dispersion: [irf.centerdisp]
+
+irf3:
+    irf1:
+        type: spectral-multi-gaussian
+        center: [irf.center]
+        width: [irf.width]
+        dispersion_center: irf.dispcenter
+        center_dispersion: [irf.centerdisp1, irf.centerdisp2]
+        width_dispersion: [irf.widthdisp]
