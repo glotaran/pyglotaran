@@ -119,7 +119,7 @@ def model_attribute(
     return decorator
 
 
-def model_attribute_typed(types: dict[str, Any] = {}, no_label=False):
+def model_attribute_typed(types: dict[str, Any], no_label=False):
     """The model_attribute_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class for an item when there
     are multiple variants.
