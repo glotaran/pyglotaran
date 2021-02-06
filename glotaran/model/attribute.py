@@ -151,8 +151,8 @@ def model_attribute_typed(types: dict[str, Any] = {}, no_label=False):
 def _create_add_type_func(cls):
     @classmethod
     @wrap_func_as_method(cls)
-    def add_type(cls, type_name: str, type: type):
-        getattr(cls, "_glotaran_model_attribute_types")[type_name] = type
+    def add_type(cls, type_name: str, attribute_type: type):
+        getattr(cls, "_glotaran_model_attribute_types")[type_name] = attribute_type
 
     return add_type
 
