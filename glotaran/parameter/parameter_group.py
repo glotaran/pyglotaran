@@ -5,11 +5,7 @@ from __future__ import annotations
 import pathlib
 from copy import copy
 from typing import Callable
-from typing import Dict
 from typing import Generator
-from typing import List
-from typing import Tuple
-from typing import Union
 
 import asteval
 import numpy as np

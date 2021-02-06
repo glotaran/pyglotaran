@@ -12,10 +12,6 @@ from .util import wrap_func_as_method
 if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
-    from typing import Dict
-    from typing import List
-    from typing import Type
-    from typing import Union
 
     from glotaran.parameter import ParameterGroup
 

@@ -5,11 +5,6 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
-from typing import Type
-from typing import Union
 
 if TYPE_CHECKING:
     from glotaran.parameter import ParameterGroup

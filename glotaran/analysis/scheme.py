@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import pathlib
-import typing
 import warnings
 from typing import Literal
 

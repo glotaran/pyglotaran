@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Dict
 from typing import List
 from typing import Tuple
 
@@ -16,7 +15,6 @@ from glotaran.parameter import Parameter
 if TYPE_CHECKING:
     from typing import Any
     from typing import Sequence
-    from typing import Union
 
     from glotaran.parameter import ParameterGroup
 

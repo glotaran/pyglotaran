@@ -4,10 +4,6 @@ from __future__ import annotations
 import os
 import warnings
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import List
-from typing import Type
-from typing import Union
 
 import numpy as np
 import xarray as xr

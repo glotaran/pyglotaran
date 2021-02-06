@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import xarray as xr
 
 from glotaran.analysis.problem import Problem

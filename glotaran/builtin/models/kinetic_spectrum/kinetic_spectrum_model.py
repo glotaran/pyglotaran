@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import List
 
 import numpy as np
 import xarray as xr
@@ -27,9 +25,6 @@ from .spectral_relations import retrieve_related_clps
 from .spectral_shape import SpectralShape
 
 if TYPE_CHECKING:
-    from typing import Tuple
-    from typing import Union
-
     from glotaran.parameter import ParameterGroup
 
 

@@ -7,9 +7,6 @@ import numpy as np
 import xarray as xr
 
 if TYPE_CHECKING:
-    from typing import Dict
-    from typing import Union
-
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
 
