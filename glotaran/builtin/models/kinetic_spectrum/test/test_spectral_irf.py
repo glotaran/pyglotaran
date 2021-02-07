@@ -155,9 +155,3 @@ def test_spectral_irf(suite):
 
     assert "species_associated_spectra" in resultdata
     assert "decay_associated_spectra" in resultdata
-
-
-if __name__ == "__main__":
-    # Defined for testing purposes:
-    test_spectral_irf(SimpleIrfDispersion())
-    test_spectral_irf(MultiIrfDispersion())
