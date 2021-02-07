@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import List
 from typing import NamedTuple
 
 import pytest
@@ -10,9 +9,9 @@ from glotaran.parse.util import sanitize_list_with_broken_tuples
 
 
 class MangledListTestData(NamedTuple):
-    input: List[Any]
-    input_sanitized: List[str]
-    output: List[str]
+    input: list[Any]
+    input_sanitized: list[str]
+    output: list[str]
 
 
 test_data_list = [

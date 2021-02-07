@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
@@ -9,7 +7,7 @@ from glotaran.analysis.problem import Problem
 from .irf import IrfMultiGaussian
 
 
-def finalize_kinetic_image_result(model, problem: Problem, data: Dict[str, xr.Dataset]):
+def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Dataset]):
 
     for label, dataset in data.items():
 

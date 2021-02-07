@@ -7,9 +7,6 @@ import numpy as np
 import xarray as xr
 
 if TYPE_CHECKING:
-    from typing import Dict
-    from typing import Union
-
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
 
@@ -18,8 +15,8 @@ def simulate(
     model: Model,
     dataset: str,
     parameters: ParameterGroup,
-    axes: Dict[str, np.ndarray] = None,
-    clp: Union[np.ndarray, xr.DataArray] = None,
+    axes: dict[str, np.ndarray] = None,
+    clp: np.ndarray | xr.DataArray = None,
     noise=False,
     noise_std_dev=1.0,
     noise_seed=None,

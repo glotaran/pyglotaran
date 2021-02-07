@@ -4,8 +4,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import List
-
     from glotaran.model import Model
 
 _model_register = {}
@@ -46,5 +44,5 @@ def get_model(model_type: str) -> Model:
     return _model_register[model_type]
 
 
-def known_model_names() -> List[str]:
+def known_model_names() -> list[str]:
     return [name for name in _model_register]

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import List
 
 import numpy as np
 import xarray as xr
@@ -27,9 +25,6 @@ from .spectral_relations import retrieve_related_clps
 from .spectral_shape import SpectralShape
 
 if TYPE_CHECKING:
-    from typing import Tuple
-    from typing import Union
-
     from glotaran.parameter import ParameterGroup
 
 
@@ -41,10 +36,10 @@ def apply_kinetic_model_constraints(
     model: KineticSpectrumModel,
     dataset: str,
     parameters: ParameterGroup,
-    clp_labels: List[str],
+    clp_labels: list[str],
     matrix: np.ndarray,
     index: float,
-) -> Tuple[List[str], np.ndarray]:
+) -> tuple[list[str], np.ndarray]:
     clp_labels, matrix = apply_spectral_relations(
         model, dataset, parameters, clp_labels, matrix, index
     )
@@ -55,11 +50,11 @@ def apply_kinetic_model_constraints(
 def retrieve_spectral_clps(
     model: KineticSpectrumModel,
     parameters: ParameterGroup,
-    clp_labels: Dict[str, Union[List[str], List[List[str]]]],
-    reduced_clp_labels: Dict[str, Union[List[str], List[List[str]]]],
-    reduced_clps: Dict[str, List[np.ndarray]],
-    data: Dict[str, xr.Dataset],
-) -> Dict[str, List[np.ndarray]]:
+    clp_labels: dict[str, list[str] | list[list[str]]],
+    reduced_clp_labels: dict[str, list[str] | list[list[str]]],
+    reduced_clps: dict[str, list[np.ndarray]],
+    data: dict[str, xr.Dataset],
+) -> dict[str, list[np.ndarray]]:
     if not has_kinetic_model_constraints(model):
         return reduced_clps
 

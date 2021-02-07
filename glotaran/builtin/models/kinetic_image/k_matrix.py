@@ -23,7 +23,7 @@ class KMatrix:
     """ A K-Matrix represents a first order differental system."""
 
     @classmethod
-    def empty(cls, label: str, compartments: typing.List[str]) -> KMatrix:
+    def empty(cls, label: str, compartments: list[str]) -> KMatrix:
         """Creates an empty K-Matrix. Useful for combining.
 
         Parameters
@@ -36,7 +36,7 @@ class KMatrix:
         """
         return cls(label, OrderedDict())
 
-    def involved_compartments(self) -> typing.List[str]:
+    def involved_compartments(self) -> list[str]:
         """ A list of all compartments in the Matrix. """
         compartments = []
         for index in self.matrix:
@@ -73,7 +73,7 @@ class KMatrix:
 
     def matrix_as_markdown(
         self,
-        compartments: typing.List[str] = None,
+        compartments: list[str] = None,
         fill_parameters: bool = False,
     ) -> str:
         """Returns the KMatrix as markdown formatted table.
@@ -143,7 +143,7 @@ class KMatrix:
 
         return markdown
 
-    def reduced(self, compartments: typing.List[str]) -> np.ndarray:
+    def reduced(self, compartments: list[str]) -> np.ndarray:
         """The reduced representation of the KMatrix as numpy array.
 
         Parameters
@@ -162,7 +162,7 @@ class KMatrix:
             array[i, j] = self.matrix[index]
         return array
 
-    def full(self, compartments: typing.List[str]) -> np.ndarray:
+    def full(self, compartments: list[str]) -> np.ndarray:
         """The full representation of the KMatrix as numpy array.
 
         Parameters
@@ -184,7 +184,7 @@ class KMatrix:
                 mat[fr_idx, fr_idx] -= param
         return mat
 
-    def eigen(self, compartments: typing.List[str]) -> typing.Tuple[np.ndarray, np.ndarray]:
+    def eigen(self, compartments: list[str]) -> tuple[np.ndarray, np.ndarray]:
         """Returns the eigenvalues and eigenvectors of the k matrix.
 
         Parameters

@@ -5,11 +5,7 @@ from __future__ import annotations
 import pathlib
 from copy import copy
 from typing import Callable
-from typing import Dict
 from typing import Generator
-from typing import List
-from typing import Tuple
-from typing import Union
 
 import asteval
 import numpy as np
@@ -51,7 +47,7 @@ class ParameterGroup(dict):
     @classmethod
     def from_dict(
         cls,
-        parameter_dict: Dict[str, Union[Dict, List]],
+        parameter_dict: dict[str, dict | list],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -80,7 +76,7 @@ class ParameterGroup(dict):
     @classmethod
     def from_list(
         cls,
-        parameter_list: List[Union[float, List]],
+        parameter_list: list[float | list],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -119,7 +115,7 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def known_formats(cls) -> Dict[str, Callable]:
+    def known_formats(cls) -> dict[str, Callable]:
         return {
             "csv": cls.from_csv,
             "yml": cls.from_yaml_file,
@@ -278,7 +274,7 @@ class ParameterGroup(dict):
         """
         self.to_dataframe().to_csv(filename, sep=delimiter, na_rep="None", index=False)
 
-    def add_parameter(self, parameter: Union[Parameter, List[Parameter]]):
+    def add_parameter(self, parameter: Parameter | list[Parameter]):
         """Adds a :class:`Parameter` to the group.
 
         Parameters
@@ -378,7 +374,7 @@ class ParameterGroup(dict):
 
     def all(
         self, root: str = None, separator: str = "."
-    ) -> Generator[Tuple[str, Parameter], None, None]:
+    ) -> Generator[tuple[str, Parameter], None, None]:
         """Returns a generator over all parameter in the group and it's subgroups together with
         their labels.
 
@@ -398,7 +394,7 @@ class ParameterGroup(dict):
 
     def get_label_value_and_bounds_arrays(
         self, exclude_non_vary: bool = False
-    ) -> Tuple[List[str], np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[list[str], np.ndarray, np.ndarray, np.ndarray]:
         """Returns a arrays of all parameter labels, values and bounds.
 
         Parameters
@@ -424,7 +420,7 @@ class ParameterGroup(dict):
 
         return labels, np.asarray(values), np.asarray(lower_bounds), np.asarray(upper_bounds)
 
-    def set_from_label_and_value_arrays(self, labels: List[str], values: np.ndarray):
+    def set_from_label_and_value_arrays(self, labels: list[str], values: np.ndarray):
         """Updates the parameter values from a list of labels and values."""
 
         if len(labels) != len(values):
