@@ -79,8 +79,8 @@ class KineticSpectrumModel(KineticImageModel):
     def global_matrix(dataset, axis) -> tuple[None, None] | tuple[list[str], np.ndarray]: ...
     @staticmethod
     def matrix(  # type: ignore[override]
-        dataset_descriptor: KineticSpectrumDatasetDescriptor = None,
-        axis=None,
-        index=None,
-        irf=None,
+        dataset_descriptor: KineticSpectrumDatasetDescriptor = ...,
+        axis=...,
+        index=...,
+        irf=...,
     ) -> tuple[None, None] | tuple[list[Any], np.ndarray]: ...
