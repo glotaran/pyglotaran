@@ -220,13 +220,20 @@ class Result:
             raise Exception(f"Unknown dataset '{dataset_label}'")
 
     def get_scheme(self) -> Scheme:
-        # TODO: clarify intention, code may be needed for analysis with weighted datasets
-        # data = {}
+        """Return a new scheme from the Result object with optimized parameters.
 
-        # for label, dataset in self.data.items():
-        #     data[label] = dataset.data.to_dataset(name=data)
-        #     if "weight" in dataset:
-        #         data[label]["weight"] = dataset.weight
+        Returns
+        -------
+        Scheme
+            A new scheme with the parameters set to the optimized values.
+            For the dataset weights the (precomputed) weights from the original scheme are used.
+        """
+        data = {}
+
+        for label, dataset in self.data.items():
+            data[label] = dataset.data.to_dataset(name="data")
+            if "weight" in dataset:
+                data[label]["weight"] = dataset.weight
 
         return Scheme(
             model=self.model,
