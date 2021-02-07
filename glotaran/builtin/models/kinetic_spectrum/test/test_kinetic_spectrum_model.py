@@ -57,16 +57,7 @@ class OneComponentOneChannel:
     model = read_model_from_yaml(MODEL_ONE_COMPONENT)
     sim_model = read_model_from_yaml(MODEL_SIM_ONE_COMPONENT)
     initial_parameters = read_parameters_from_yaml(PARAMETERS_ONE_COMPONENT_INITIAL)
-    initial_parameters_ref = ParameterGroup.from_list(
-        [[1, {"vary": False, "non-negative": False}], 101e-4]
-    )
-    assert initial_parameters.markdown() == initial_parameters_ref.markdown()
     wanted_parameters = read_parameters_from_yaml(PARAMETERS_ONE_COMPONENT_WANTED)
-    wanted_parameters_ref = ParameterGroup.from_list(
-        [[1, {"vary": False, "non-negative": False}], 101e-3]
-    )
-    assert wanted_parameters.markdown() == wanted_parameters_ref.markdown()
-
     time = np.asarray(np.arange(0, 50, 1.5))
     spectral = np.asarray([0])
     axis = {"time": time, "spectral": spectral}
