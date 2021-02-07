@@ -39,9 +39,11 @@ shape:
     sh1:
         type: one
 """
+
 PARAMETERS_BASE = """\
 - [1, {"vary": False, "non-negative": False}]
 """
+
 PARAMETERS_ONE_COMPONENT_INITIAL = f"""\
 {PARAMETERS_BASE}
 - 101e-4
@@ -125,19 +127,9 @@ dataset:
         megacomplex: [mc1]
         initial_concentration: j1
         irf: irf1
-initial_concentration:
-    j1:
-        compartments: [s1, s2, s3]
-        parameters: [j.1, j.1, j.1]
 megacomplex:
     mc1:
         k_matrix: [k1]
-k_matrix:
-    k1:
-        matrix:
-            (s1, s1): "kinetic.1"
-            (s2, s2): "kinetic.2"
-            (s3, s3): "kinetic.3"
 irf:
     irf1:
         type: spectral-multi-gaussian
@@ -147,10 +139,33 @@ irf:
 
 MODEL_3C_PARALLEL = f"""\
 {MODEL_3C_BASE}
+initial_concentration:
+    j1:
+        compartments: [s1, s2, s3]
+        parameters: [j.1, j.1, j.1]
+k_matrix:
+    k1:
+        matrix:
+            (s1, s1): "kinetic.1"
+            (s2, s2): "kinetic.2"
+            (s3, s3): "kinetic.3"
 """
 
-MODEL_SIM_3C_PARALLEL = f"""\
+MODEL_3C_SEQUENTIAL = f"""\
 {MODEL_3C_BASE}
+initial_concentration:
+    j1:
+        compartments: [s1, s2, s3]
+        parameters: [j.1, j.0, j.0]
+k_matrix:
+    k1:
+        matrix:
+            (s2, s1): "kinetic.1"
+            (s3, s2): "kinetic.2"
+            (s3, s3): "kinetic.3"
+"""
+
+MODEL_3C_SIM_BASE = """\
 dataset:
     dataset1:
         <<: *dataset1
@@ -176,7 +191,17 @@ shape:
         width: shapes.width.3
 """
 
-PARAMETERS_3C_BASE = """\
+MODEL_SIM_3C_PARALLEL = f"""\
+{MODEL_3C_PARALLEL}
+{MODEL_3C_SIM_BASE}
+"""
+
+MODEL_SIM_3C_SEQUENTIAL = f"""\
+{MODEL_3C_SEQUENTIAL}
+{MODEL_3C_SIM_BASE}
+"""
+
+PARAMETERS_3C_BASE_PARALLEL = """\
 irf:
     - ["center", 1.3]
     - ["width", 7.8]
@@ -184,7 +209,7 @@ j:
     - ["1", 1, {"vary": False, "non-negative": False}]
 """
 
-PARAMETERS_3C_SIM = f"""\
+PARAMETERS_3C_SIM_PARALLEL = f"""\
 kinetic:
     - ["1", 301e-3]
     - ["2", 502e-4]
@@ -193,151 +218,60 @@ shapes:
     amps: [7, 3, 30, {{"vary": False}}]
     locs: [620, 670, 720, {{"vary": False}}]
     width: [10, 30, 50, {{"vary": False}}]
-{PARAMETERS_3C_BASE}
+{PARAMETERS_3C_BASE_PARALLEL}
 """
 
-PARAMETERS_3C_INITIAL = f"""\
+PARAMETERS_3C_INITIAL_PARALLEL = f"""\
 kinetic:
     - ["1", 300e-3]
     - ["2", 500e-4]
     - ["3", 700e-5]
-{PARAMETERS_3C_BASE}
+{PARAMETERS_3C_BASE_PARALLEL}
+"""
+
+PARAMETERS_3C_BASE_SEQUENTIAL = """\
+irf:
+    - ["center", 1.3]
+    - ["width", 7.8]
+j:
+    - ["1", 1, {"vary": False, "non-negative": False}]
+    - ["0", 0, {"vary": False, "non-negative": False}]
+"""
+
+PARAMETERS_3C_SIM_SEQUENTIAL = f"""\
+kinetic:
+    - ["1", 501e-3]
+    - ["2", 202e-4]
+    - ["3", 105e-5]
+shapes:
+    amps: [3, 1, 5, {{"vary": False}}]
+    locs: [620, 670, 720, {{"vary": False}}]
+    width: [10, 30, 50, {{"vary": False}}]
+{PARAMETERS_3C_BASE_SEQUENTIAL}
+"""
+
+PARAMETERS_3C_INITIAL_SEQUENTIAL = f"""\
+kinetic:
+    - ["1", 500e-3]
+    - ["2", 200e-4]
+    - ["3", 100e-5]
+    - {{"non-negative": True}}
+{PARAMETERS_3C_BASE_SEQUENTIAL}
 """
 
 
 class ThreeComponentParallel:
-    model_ref = KineticSpectrumModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.1", "j.1"]},
-            },
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "kinetic.1",
-                        ("s2", "s2"): "kinetic.2",
-                        ("s3", "s3"): "kinetic.3",
-                    }
-                }
-            },
-            "irf": {
-                "irf1": {
-                    "type": "spectral-multi-gaussian",
-                    "center": ["irf.center"],
-                    "width": ["irf.width"],
-                },
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "irf": "irf1",
-                    "megacomplex": ["mc1"],
-                },
-            },
-        }
-    )
     model = read_model_from_yaml(MODEL_3C_PARALLEL)
-    assert model.markdown() == model_ref.markdown()
-
-    sim_model_ref = KineticSpectrumModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.1", "j.1"]},
-            },
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "kinetic.1",
-                        ("s2", "s2"): "kinetic.2",
-                        ("s3", "s3"): "kinetic.3",
-                    }
-                }
-            },
-            "shape": {
-                "sh1": {
-                    "type": "gaussian",
-                    "amplitude": "shapes.amps.1",
-                    "location": "shapes.locs.1",
-                    "width": "shapes.width.1",
-                },
-                "sh2": {
-                    "type": "gaussian",
-                    "amplitude": "shapes.amps.2",
-                    "location": "shapes.locs.2",
-                    "width": "shapes.width.2",
-                },
-                "sh3": {
-                    "type": "gaussian",
-                    "amplitude": "shapes.amps.3",
-                    "location": "shapes.locs.3",
-                    "width": "shapes.width.3",
-                },
-            },
-            "irf": {
-                "irf1": {
-                    "type": "spectral-multi-gaussian",
-                    "center": ["irf.center"],
-                    "width": ["irf.width"],
-                },
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "irf": "irf1",
-                    "megacomplex": ["mc1"],
-                    "shape": {"s1": "sh1", "s2": "sh2", "s3": "sh3"},
-                },
-            },
-        }
-    )
     sim_model = read_model_from_yaml(MODEL_SIM_3C_PARALLEL)
-    assert sim_model.markdown() == sim_model_ref.markdown()
-
-    initial_parameters_ref = ParameterGroup.from_dict(
-        {
-            "kinetic": [
-                ["1", 300e-3],
-                ["2", 500e-4],
-                ["3", 700e-5],
-            ],
-            "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [["1", 1, {"vary": False, "non-negative": False}]],
-        }
-    )
-    initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL)
-    assert initial_parameters.markdown() == initial_parameters_ref.markdown()
-    wanted_parameters_ref = ParameterGroup.from_dict(
-        {
-            "kinetic": [
-                ["1", 301e-3],
-                ["2", 502e-4],
-                ["3", 705e-5],
-            ],
-            "shapes": {
-                "amps": [7, 3, 30, {"vary": False}],
-                "locs": [620, 670, 720, {"vary": False}],
-                "width": [10, 30, 50, {"vary": False}],
-            },
-            "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [["1", 1, {"vary": False, "non-negative": False}]],
-        }
-    )
-    wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_SIM)
-    assert wanted_parameters.markdown() == wanted_parameters_ref.markdown()
-
+    initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL_PARALLEL)
+    wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_SIM_PARALLEL)
     time = np.arange(-10, 100, 1.5)
     spectral = np.arange(600, 750, 10)
     axis = {"time": time, "spectral": spectral}
 
 
 class ThreeComponentSequential:
-    model = KineticSpectrumModel.from_dict(
+    model_ref = KineticSpectrumModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
@@ -370,7 +304,9 @@ class ThreeComponentSequential:
             },
         }
     )
-    sim_model = KineticSpectrumModel.from_dict(
+    model = read_model_from_yaml(MODEL_3C_SEQUENTIAL)
+    assert model.markdown() == model_ref.markdown()
+    sim_model_ref = KineticSpectrumModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
@@ -424,13 +360,15 @@ class ThreeComponentSequential:
             },
         }
     )
+    sim_model = read_model_from_yaml(MODEL_SIM_3C_SEQUENTIAL)
+    assert sim_model.markdown() == sim_model_ref.markdown()
 
-    initial_parameters = ParameterGroup.from_dict(
+    initial_parameters_ref = ParameterGroup.from_dict(
         {
             "kinetic": [
-                ["1", 501e-3],
-                ["2", 202e-4],
-                ["3", 105e-5],
+                ["1", 500e-3],
+                ["2", 200e-4],
+                ["3", 100e-5],
                 {"non-negative": True},
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
@@ -440,14 +378,20 @@ class ThreeComponentSequential:
             ],
         }
     )
-    wanted_parameters = ParameterGroup.from_dict(
+    initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL_SEQUENTIAL)
+    assert initial_parameters.markdown() == initial_parameters_ref.markdown()
+    wanted_parameters_ref = ParameterGroup.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
                 ["2", 202e-4],
                 ["3", 105e-5],
             ],
-            "shapes": {"amps": [3, 1, 5], "locs": [620, 670, 720], "width": [10, 30, 50]},
+            "shapes": {
+                "amps": [3, 1, 5, {"vary": False}],
+                "locs": [620, 670, 720, {"vary": False}],
+                "width": [10, 30, 50, {"vary": False}],
+            },
             "irf": [["center", 1.3], ["width", 7.8]],
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -455,6 +399,8 @@ class ThreeComponentSequential:
             ],
         }
     )
+    wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_SIM_SEQUENTIAL)
+    assert wanted_parameters.markdown() == wanted_parameters_ref.markdown()
 
     time = np.asarray(np.arange(-10, 50, 1.0))
     spectral = np.arange(600, 750, 5.0)
