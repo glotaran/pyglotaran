@@ -220,20 +220,21 @@ class Result:
             raise Exception(f"Unknown dataset '{dataset_label}'")
 
     def get_scheme(self) -> Scheme:
-        data = {}
+        # TODO: clarify intention, code may be needed for analysis with weighted datasets
+        # data = {}
 
-        for label, dataset in self:
-            data[label] = dataset.data.to_dataset(name=data)
-            if "weight" in dataset:
-                data[label]["weight"] = dataset.weight
+        # for label, dataset in self.data.items():
+        #     data[label] = dataset.data.to_dataset(name=data)
+        #     if "weight" in dataset:
+        #         data[label]["weight"] = dataset.weight
 
         return Scheme(
             model=self.model,
             parameters=self.optimized_parameters,
-            data=data,
-            group_tolerance=self.group_tolerance,
-            nnls=self.scheme.nnls,
-            nfev=self.scheme.nfev,
+            data=self.data,
+            group_tolerance=self.scheme.group_tolerance,
+            non_negative_least_squares=self.scheme.non_negative_least_squares,
+            maximum_number_function_evaluations=self.scheme.maximum_number_function_evaluations,
             ftol=self.scheme.ftol,
             gtol=self.scheme.gtol,
             xtol=self.scheme.xtol,
