@@ -97,7 +97,7 @@ class Result:
         return self._scheme
 
     @property
-    def model(self) -> type[Model]:
+    def model(self) -> Model:
         """The model for analysis."""
         return self._scheme.model
 
