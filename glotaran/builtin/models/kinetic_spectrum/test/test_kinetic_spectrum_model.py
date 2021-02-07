@@ -17,14 +17,14 @@ dataset:
 initial_concentration:
     j1:
         compartments: [s1]
-        parameters: ["2"]
+        parameters: ["1"]
 megacomplex:
     mc1:
         k_matrix: [k1]
 k_matrix:
     k1:
         matrix:
-            (s1, s1): "1"
+            (s1, s1): "2"
 """
 MODEL_ONE_COMPONENT = MODEL_ONE_COMPONENT_BASE
 
@@ -43,13 +43,13 @@ PARAMETERS_BASE = """\
 - [1, {"vary": False, "non-negative": False}]
 """
 PARAMETERS_ONE_COMPONENT_INITIAL = f"""\
-- 101e-4
 {PARAMETERS_BASE}
+- 101e-4
 """
 
 PARAMETERS_ONE_COMPONENT_WANTED = f"""\
-- 101e-3
 {PARAMETERS_BASE}
+- 101e-3
 """
 
 
@@ -58,12 +58,12 @@ class OneComponentOneChannel:
     sim_model = read_model_from_yaml(MODEL_SIM_ONE_COMPONENT)
     initial_parameters = read_parameters_from_yaml(PARAMETERS_ONE_COMPONENT_INITIAL)
     initial_parameters_ref = ParameterGroup.from_list(
-        [101e-4, [1, {"vary": False, "non-negative": False}]]
+        [[1, {"vary": False, "non-negative": False}], 101e-4]
     )
     assert initial_parameters.markdown() == initial_parameters_ref.markdown()
     wanted_parameters = read_parameters_from_yaml(PARAMETERS_ONE_COMPONENT_WANTED)
     wanted_parameters_ref = ParameterGroup.from_list(
-        [101e-3, [1, {"vary": False, "non-negative": False}]]
+        [[1, {"vary": False, "non-negative": False}], 101e-3]
     )
     assert wanted_parameters.markdown() == wanted_parameters_ref.markdown()
 
