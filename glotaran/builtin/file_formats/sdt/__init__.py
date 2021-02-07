@@ -1,1 +1,1 @@
-from . import sdt_file_reader  # noqa: F401
+from . import sdt_file_reader
