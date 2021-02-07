@@ -1,68 +1,71 @@
 import numpy as np
 import pytest
 
+from glotaran import read_model_from_yaml
+from glotaran import read_parameters_from_yaml
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.parameter import ParameterGroup
 
+MODEL_ONE_COMPONENT_BASE = """\
+type: kinetic-spectrum
+dataset:
+    dataset1: &dataset1
+        megacomplex: [mc1]
+        initial_concentration: j1
+initial_concentration:
+    j1:
+        compartments: [s1]
+        parameters: ["2"]
+megacomplex:
+    mc1:
+        k_matrix: [k1]
+k_matrix:
+    k1:
+        matrix:
+            (s1, s1): "1"
+"""
+MODEL_ONE_COMPONENT = MODEL_ONE_COMPONENT_BASE
+
+MODEL_SIM_ONE_COMPONENT = f"""\
+{MODEL_ONE_COMPONENT_BASE}
+dataset:
+    dataset1:
+        <<: *dataset1
+        shape:
+            s1: sh1
+shape:
+    sh1:
+        type: one
+"""
+PARAMETERS_BASE = """\
+- [1, {"vary": False, "non-negative": False}]
+"""
+PARAMETERS_ONE_COMPONENT_INITIAL = f"""\
+- 101e-4
+{PARAMETERS_BASE}
+"""
+
+PARAMETERS_ONE_COMPONENT_WANTED = f"""\
+- 101e-3
+{PARAMETERS_BASE}
+"""
+
 
 class OneComponentOneChannel:
-    model = KineticSpectrumModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["2"]},
-            },
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "1",
-                    }
-                }
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "megacomplex": ["mc1"],
-                },
-            },
-        }
-    )
-    sim_model = KineticSpectrumModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["2"]},
-            },
-            "shape": {"sh1": ["one"]},
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "1",
-                    }
-                }
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "megacomplex": ["mc1"],
-                    "shape": {"s1": "sh1"},
-                },
-            },
-        }
-    )
-
-    initial_parameters = ParameterGroup.from_list(
+    model = read_model_from_yaml(MODEL_ONE_COMPONENT)
+    sim_model = read_model_from_yaml(MODEL_SIM_ONE_COMPONENT)
+    initial_parameters = read_parameters_from_yaml(PARAMETERS_ONE_COMPONENT_INITIAL)
+    initial_parameters_ref = ParameterGroup.from_list(
         [101e-4, [1, {"vary": False, "non-negative": False}]]
     )
-    wanted_parameters = ParameterGroup.from_list(
+    assert initial_parameters.markdown() == initial_parameters_ref.markdown()
+    wanted_parameters = read_parameters_from_yaml(PARAMETERS_ONE_COMPONENT_WANTED)
+    wanted_parameters_ref = ParameterGroup.from_list(
         [101e-3, [1, {"vary": False, "non-negative": False}]]
     )
+    assert wanted_parameters.markdown() == wanted_parameters_ref.markdown()
 
     time = np.asarray(np.arange(0, 50, 1.5))
     spectral = np.asarray([0])
@@ -444,3 +447,8 @@ def test_kinetic_model(suite, nnls):
 
     assert "species_associated_spectra" in resultdata
     assert "decay_associated_spectra" in resultdata
+
+
+if __name__ == "__main__":
+    test_kinetic_model(OneComponentOneChannel(), True)
+    test_kinetic_model(OneComponentOneChannel(), False)
