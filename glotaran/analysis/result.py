@@ -238,7 +238,7 @@ class Result:
         return Scheme(
             model=self.model,
             parameters=self.optimized_parameters,
-            data=self.data,
+            data=data,
             group_tolerance=self.scheme.group_tolerance,
             non_negative_least_squares=self.scheme.non_negative_least_squares,
             maximum_number_function_evaluations=self.scheme.maximum_number_function_evaluations,

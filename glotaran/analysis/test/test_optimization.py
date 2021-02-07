@@ -5,12 +5,11 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
-
-from .models import DecayModel
-from .models import MultichannelMulticomponentDecay
-from .models import OneCompartmentDecay
-from .models import ThreeDatasetDecay
-from .models import TwoCompartmentDecay
+from glotaran.analysis.test.models import DecayModel
+from glotaran.analysis.test.models import MultichannelMulticomponentDecay
+from glotaran.analysis.test.models import OneCompartmentDecay
+from glotaran.analysis.test.models import ThreeDatasetDecay
+from glotaran.analysis.test.models import TwoCompartmentDecay
 
 
 @pytest.mark.parametrize("index_dependent", [True, False])
@@ -96,7 +95,12 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     result = optimize(scheme)
     print(result.optimized_parameters)
     assert result.success
-
+    optimized_scheme = result.get_scheme()
+    assert result.optimized_parameters == optimized_scheme.parameters
+    for i, dataset in enumerate(optimized_scheme.data.values()):
+        assert "fitted_data" not in dataset
+        if weight:
+            assert "weight" in dataset
     for label, param in result.optimized_parameters.all():
         if param.vary:
             assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
@@ -135,9 +139,3 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     else:
         assert not model.constrain_matrix_function_called
         assert not model.retrieve_clp_function_called
-
-
-if __name__ == "__main__":
-    test_optimization(OneCompartmentDecay, True, True, True)
-    test_optimization(OneCompartmentDecay, False, False, False)
-    test_optimization(OneCompartmentDecay, False, False, True)
