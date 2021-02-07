@@ -1,9 +1,9 @@
-from typing import Type
+from __future__ import annotations
 
 import numpy as np
 
-from glotaran.model import model_attribute
-from glotaran.model import model_attribute_typed
+from glotaran.model import model_attribute  # noqa: F401
+from glotaran.model import model_attribute_typed  # noqa: F401
 from glotaran.parameter import Parameter
 
 class SpectralShapeGaussian:
@@ -23,4 +23,4 @@ class SpectralShapeZero:
 
 class SpectralShape:
     @classmethod
-    def add_type(cls, type_name: str, type: Type) -> None: ...
+    def add_type(cls, type_name: str, type: type) -> None: ...

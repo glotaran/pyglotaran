@@ -1,21 +1,17 @@
+from __future__ import annotations
+
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import List
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
-from typing import Type
 from typing import TypeVar
-from typing import Union
 
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.optimize import optimize
+from glotaran.analysis.optimize import optimize  # noqa: F401
 from glotaran.analysis.result import Result
-from glotaran.analysis.scheme import Scheme
-from glotaran.analysis.simulation import simulate
+from glotaran.analysis.scheme import Scheme  # noqa: F401
+from glotaran.analysis.simulation import simulate  # noqa: F401
 from glotaran.parameter import ParameterGroup
 
 from .dataset_descriptor import DatasetDescriptor
@@ -23,7 +19,6 @@ from .decorator import FinalizeFunction
 from .weight import Weight
 
 Cls = TypeVar("Cls")
-
 
 class Model:
     _model_type: str
@@ -33,66 +28,40 @@ class Model:
     model_dimension: str
     global_dimension: str
     global_matrix = None
-    finalize_data: Optional[FinalizeFunction] = None
-    grouped: Callable[[Type[Model]], bool]
-    index_dependent: Callable[[Type[Model]], bool]
-
+    finalize_data: FinalizeFunction | None = None
+    grouped: Callable[[type[Model]], bool]
+    index_dependent: Callable[[type[Model]], bool]
     @staticmethod
     def matrix(
         dataset_descriptor: DatasetDescriptor = None, axis=None, index=None
-    ) -> Union[Tuple[None, None], Tuple[List[Any], np.ndarray]]:
-        ...
-
-    def add_megacomplex(self, item: Any):
-        ...
-
-    def add_weights(self, item: Weight):
-        ...
-
-    def get_dataset(self, label: str) -> DatasetDescriptor:
-        ...
-
+    ) -> tuple[None, None] | tuple[list[Any], np.ndarray]: ...
+    def add_megacomplex(self, item: Any): ...
+    def add_weights(self, item: Weight): ...
+    def get_dataset(self, label: str) -> DatasetDescriptor: ...
     @classmethod
-    def from_dict(cls: Type[Cls], model_dict_ref: Dict) -> Cls:
-        ...
-
+    def from_dict(cls: type[Cls], model_dict_ref: dict) -> Cls: ...
     @property
-    def index_dependent_matrix(self):
-        ...
-
+    def index_dependent_matrix(self): ...
     @property
-    def model_type(self) -> str:
-        ...
-
-    def simulate(
+    def model_type(self) -> str: ...
+    def simulate(  # noqa: F811
         self,
         dataset: str,
         parameters: ParameterGroup,
-        axes: Dict[str, np.ndarray] = ...,
-        clp: Union[np.ndarray, xr.DataArray] = ...,
+        axes: dict[str, np.ndarray] = ...,
+        clp: np.ndarray | xr.DataArray = ...,
         noise: bool = ...,
         noise_std_dev: float = ...,
         noise_seed: int = ...,
-    ) -> xr.Dataset:
-        ...
-
+    ) -> xr.Dataset: ...
     def result_from_parameter(
         self,
         parameters: ParameterGroup,
-        data: Dict[str, Union[xr.DataArray, xr.Dataset]],
+        data: dict[str, xr.DataArray | xr.Dataset],
         nnls: bool = ...,
         group_atol: float = ...,
-    ) -> Result:
-        ...
-
-    def problem_list(self, parameters: ParameterGroup = ...) -> List[str]:
-        ...
-
-    def validate(self, parameters: ParameterGroup = ...) -> str:
-        ...
-
-    def valid(self, parameters: ParameterGroup = None) -> bool:
-        ...
-
-    def markdown(self, parameters: ParameterGroup = ..., initial: ParameterGroup = ...) -> str:
-        ...
+    ) -> Result: ...
+    def problem_list(self, parameters: ParameterGroup = ...) -> list[str]: ...
+    def validate(self, parameters: ParameterGroup = ...) -> str: ...
+    def valid(self, parameters: ParameterGroup = None) -> bool: ...
+    def markdown(self, parameters: ParameterGroup = ..., initial: ParameterGroup = ...) -> str: ...
