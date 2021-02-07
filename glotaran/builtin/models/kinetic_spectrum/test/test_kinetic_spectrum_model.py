@@ -53,6 +53,47 @@ PARAMETERS_ONE_COMPONENT_WANTED = f"""\
 """
 
 
+MODEL_ONE_COMPONENT_ONE_CHANNEL_GASSIAN = f"""\
+{MODEL_ONE_COMPONENT_BASE}
+irf:
+    irf1:
+        type: spectral-gaussian
+        center: "3"
+        width: "4"
+dataset:
+    dataset1:
+        <<: *dataset1
+        irf: irf1
+"""
+
+MODEL_SIM_ONE_COMPONENT_ONE_CHANNEL_GASSIAN = f"""\
+{MODEL_ONE_COMPONENT_ONE_CHANNEL_GASSIAN}
+dataset:
+    dataset1:
+        <<: *dataset1
+        irf: irf1
+        shape:
+            s1: sh1
+shape:
+    sh1:
+        type: one
+"""
+
+PARAMETERS_ONE_COMPONENT_ONE_CHANNEL_GASSIAN_INITIAL = f"""\
+{PARAMETERS_BASE}
+- 101e-4
+- 0.1
+- 1
+"""
+
+PARAMETERS_ONE_COMPONENT_ONE_CHANNEL_GASSIAN_WANTED = f"""\
+{PARAMETERS_BASE}
+- 101e-3
+- 0.3
+- 2
+"""
+
+
 class OneComponentOneChannel:
     model = read_model_from_yaml(MODEL_ONE_COMPONENT)
     sim_model = read_model_from_yaml(MODEL_SIM_ONE_COMPONENT)
@@ -64,10 +105,10 @@ class OneComponentOneChannel:
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = KineticSpectrumModel.from_dict(
+    model_ref = KineticSpectrumModel.from_dict(
         {
             "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["2"]},
+                "j1": {"compartments": ["s1"], "parameters": ["1"]},
             },
             "megacomplex": {
                 "mc1": {"k_matrix": ["k1"]},
@@ -75,12 +116,12 @@ class OneComponentOneChannelGaussianIrf:
             "k_matrix": {
                 "k1": {
                     "matrix": {
-                        ("s1", "s1"): "1",
+                        ("s1", "s1"): "2",
                     }
                 }
             },
             "irf": {
-                "irf1": {"type": "spectral-gaussian", "center": "2", "width": "3"},
+                "irf1": {"type": "spectral-gaussian", "center": "3", "width": "4"},
             },
             "dataset": {
                 "dataset1": {
@@ -91,10 +132,13 @@ class OneComponentOneChannelGaussianIrf:
             },
         }
     )
-    sim_model = KineticSpectrumModel.from_dict(
+    model = read_model_from_yaml(MODEL_ONE_COMPONENT_ONE_CHANNEL_GASSIAN)
+    assert model.markdown() == model_ref.markdown()
+
+    sim_model_ref = KineticSpectrumModel.from_dict(
         {
             "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["4"]},
+                "j1": {"compartments": ["s1"], "parameters": ["1"]},
             },
             "shape": {"sh1": ["one"]},
             "megacomplex": {
@@ -103,12 +147,12 @@ class OneComponentOneChannelGaussianIrf:
             "k_matrix": {
                 "k1": {
                     "matrix": {
-                        ("s1", "s1"): "1",
+                        ("s1", "s1"): "2",
                     }
                 }
             },
             "irf": {
-                "irf1": {"type": "spectral-gaussian", "center": "2", "width": "3"},
+                "irf1": {"type": "spectral-gaussian", "center": "3", "width": "4"},
             },
             "dataset": {
                 "dataset1": {
@@ -120,13 +164,23 @@ class OneComponentOneChannelGaussianIrf:
             },
         }
     )
+    sim_model = read_model_from_yaml(MODEL_SIM_ONE_COMPONENT_ONE_CHANNEL_GASSIAN)
+    assert sim_model.markdown() == sim_model_ref.markdown()
 
-    initial_parameters = ParameterGroup.from_list(
-        [101e-4, 0.1, 1, [1, {"vary": False, "non-negative": False}]]
+    initial_parameters_ref = ParameterGroup.from_list(
+        [[1, {"vary": False, "non-negative": False}], 101e-4, 0.1, 1]
     )
-    wanted_parameters = ParameterGroup.from_list(
-        [101e-3, 0.3, 2, [1, {"vary": False, "non-negative": False}]]
+    wanted_parameters_ref = ParameterGroup.from_list(
+        [[1, {"vary": False, "non-negative": False}], 101e-3, 0.3, 2]
     )
+    initial_parameters = read_parameters_from_yaml(
+        PARAMETERS_ONE_COMPONENT_ONE_CHANNEL_GASSIAN_INITIAL
+    )
+    wanted_parameters = read_parameters_from_yaml(
+        PARAMETERS_ONE_COMPONENT_ONE_CHANNEL_GASSIAN_WANTED
+    )
+    assert initial_parameters.markdown() == initial_parameters_ref.markdown()
+    assert wanted_parameters.markdown() == wanted_parameters_ref.markdown()
 
     time = np.asarray(np.arange(-10, 50, 1.5))
     spectral = np.asarray([0])
@@ -443,3 +497,5 @@ def test_kinetic_model(suite, nnls):
 if __name__ == "__main__":
     test_kinetic_model(OneComponentOneChannel(), True)
     test_kinetic_model(OneComponentOneChannel(), False)
+    test_kinetic_model(OneComponentOneChannelGaussianIrf(), True)
+    test_kinetic_model(OneComponentOneChannelGaussianIrf(), False)
