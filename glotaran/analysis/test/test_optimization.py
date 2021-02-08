@@ -97,7 +97,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     assert result.success
     optimized_scheme = result.get_scheme()
     assert result.optimized_parameters == optimized_scheme.parameters
-    for i, dataset in enumerate(optimized_scheme.data.values()):
+    for dataset in optimized_scheme.data.values():
         assert "fitted_data" not in dataset
         if weight:
             assert "weight" in dataset
