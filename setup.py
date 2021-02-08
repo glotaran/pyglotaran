@@ -39,9 +39,9 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/glotaran/pyglotaran",
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         "Operating System :: OS Independent",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
@@ -54,7 +54,7 @@ setup(
     author_email="""joern.weissenborn@gmail.com,
                     j.snellenburg@gmail.com,
                     i.h.m.van.stokkum@vu.nl """,
-    license="GPLv3",
+    license="LGPLv3",
     project_urls={
         "GloTarAn Ecosystem": "http://glotaran.org",
         "Documentation": "https://glotaran.readthedocs.io",
