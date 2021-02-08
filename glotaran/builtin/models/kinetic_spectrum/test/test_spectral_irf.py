@@ -93,9 +93,7 @@ class SimpleIrfDispersion:
 
 class MultiIrfDispersion:
     model = read_model_from_yaml(MODEL_MULTI_IRF_DISPERSION)
-    print(model)
     parameters = read_parameters_from_yaml(PARAMETERS_MULTI_IRF_DISPERSION)
-    print(parameters)
     time = np.arange(-1, 5, 0.2)
     spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}
@@ -138,7 +136,7 @@ def test_spectral_irf(suite):
 
     resultdata = result.data["dataset1"]
 
-    print(resultdata)
+    # print(resultdata)
 
     assert np.array_equal(dataset["time"], resultdata["time"])
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
@@ -146,12 +144,11 @@ def test_spectral_irf(suite):
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, atol=1e-14)
 
-    print(resultdata.fitted_data.isel(spectral=0).argmax())
-    print(resultdata.fitted_data.isel(spectral=-1).argmax())
-    assert (
-        resultdata.fitted_data.isel(spectral=0).argmax()
-        != resultdata.fitted_data.isel(spectral=-1).argmax()
-    )
+    irf_max_at_start = resultdata.fitted_data.isel(spectral=0).argmax(axis=0)
+    irf_max_at_end = resultdata.fitted_data.isel(spectral=-1).argmax(axis=0)
+    print(f" irf_max_at_start: {irf_max_at_start}\n irf_max_at_end: {irf_max_at_end}")
+    # These should not be equal due to dispersion:
+    assert irf_max_at_start != irf_max_at_end
 
     assert "species_associated_spectra" in resultdata
     assert "decay_associated_spectra" in resultdata
