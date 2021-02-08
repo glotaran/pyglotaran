@@ -9,6 +9,8 @@ pyGloTarAn is a Python library for Global and Target Analysis
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/glotaran/pyglotaran.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/glotaran/pyglotaran/alerts/)
 
+**Warning**: This is an *early access* release, please refer to the [usage notice](#usage-notice)   down below prior to committing to use pyglotaran to avoid surprises down the line.
+
 ## Installation
 
 Prerequisites:
@@ -46,15 +48,27 @@ _To enforce the installation within a Python3 environment on systems where Pytho
 
 _Note for Anaconda Users: Please make sure to update your distribution prior to install since some packages managed by Anaconda cannot be updated by `pip`._
 
-## Notice for scientists
+## Usage notice
 
-Anyone using this package for serious work, in particular scientists and academic users, are cautioned, and treat it as any other instrument or tool that needs calibration or validation. The software comes with no warranties or guarantees as per the [LICENSE](LICENSE).
+This software package is made available as an early access release, to the advantage of the (scientific) community who wishes to make use of it before it has fully matured, but without any warranties.
 
-As of yet, the pyglotaran package has not yet been used in scientific publications (contribution welcome) but it has undergone some form of validation by cross-validating it against the TIM software package in use for several decades and described in [this publication](https://doi.org/10.1016/j.bbabio.2004.04.011) (DOI: [10.1016/j.bbabio.2004.04.011](https://doi.org/10.1016/j.bbabio.2004.04.011)). The examples used in this validation process can be obtained from the [pyglotaran_examples repository](https://github.com/glotaran/pyglotaran_examples).
+Anyone using this package for serious work - scientists and academic users in particular - are cautioned, and treat it as any other instrument or tool that requires calibration or validation. Also be prepared for some refactoring of models or analysis specifications, sometime down the line.
+
+As of yet, the pyglotaran package has not yet been used in any peer-reviewed scientific publications (contribution welcome), but it has been partially cross-validated against comparable software, such as the [R-package TIMP](http://dx.doi.org/10.18637/jss.v018.i03), and the TIM software described in [this publication](https://doi.org/10.1016/j.bbabio.2004.04.011) ([DOI: 10.1016/j.bbabio.2004.04.011](https://doi.org/10.1016/j.bbabio.2004.04.011)).
+
+The examples used in this validation process can be obtained from the [pyglotaran_examples repository](https://github.com/glotaran/pyglotaran_examples).
 
 ## Glotaran legacy
 
-The pyglotaran package derives its name from the glotaran software package (now called [glotaran-legacy](https://github.com/glotaran/glotaran-legacy)), first released in 2011 and described in a publication in the Journal of Statistical Software under the tile [Glotaran: A Java-Based Graphical User Interface for the R Package TIMP](https://www.jstatsoft.org/article/view/v049i03) ( DOI: [10.18637/jss.v049.i03](http://dx.doi.org/10.18637/jss.v049.i03) ).
+The pyglotaran package derives its name from the glotaran software package (now called [glotaran-legacy](https://github.com/glotaran/glotaran-legacy)), first released in 2011 and described in a highly-cited publication in the Journal of Statistical Software, under the title [Glotaran: A Java-Based Graphical User Interface for the R Package TIMP](https://www.jstatsoft.org/article/view/v049i03) ([DOI: 10.18637/jss.v049.i03](http://dx.doi.org/10.18637/jss.v049.i03)).
+
+The [pyglotaran](https://github.com/glotaran/pyglotaran) software can be considered the spiritual successor of the  [glotaran-legacy](https://github.com/glotaran/glotaran-legacy) software and has the backing of many of its original creators.
+
+## The future of global and target analysis
+
+Eventually, and hopefully sooner than later, a (scientific) publication about the architecture and the design of the software package will appear, detailing the flexibility of the software and showing why we believe this software package is the future of global and target analysis.
+
+Until then, enjoy your glimpse into the future.
 
 ## Mailing List
 
