@@ -37,7 +37,6 @@ class Scheme:
         optimization_method: Literal[
             "TrustRegionReflection",
             "Dogbox",
-            "LevenbergMarquardt",
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ):

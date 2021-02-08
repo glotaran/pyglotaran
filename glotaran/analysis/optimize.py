@@ -11,7 +11,6 @@ from .scheme import Scheme
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
     "Dogbox": "dogbox",
-    "LevenbergMarquardt": "lm",
     "Levenberg-Marquardt": "lm",
 }
 
