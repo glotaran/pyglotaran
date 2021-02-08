@@ -20,7 +20,7 @@ from glotaran.analysis.test.models import TwoCompartmentDecay
     [
         "TrustRegionReflection",
         "Dogbox",
-        "LevenbergMarquart",
+        "Levenberg-Marquardt",
     ],
 )
 @pytest.mark.parametrize(

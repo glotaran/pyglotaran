@@ -63,7 +63,8 @@ def test_coherent_artifact():
     irf = model.irf["irf1"].fill(model, parameters)
     irf_diff_width = irf.calculate_coherent_artifact(time)
 
-    assert not np.array_equal(irf_same_width, irf_diff_width)
+    assert np.array_equal(irf_same_width[0], irf_diff_width[0])  # labels the same
+    assert not np.array_equal(irf_same_width[1], irf_diff_width[1])  # but content is not
 
     data = model.dataset["dataset1"].fill(model, parameters)
     compartments, matrix = kinetic_spectrum_matrix(data, time, 0)
