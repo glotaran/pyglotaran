@@ -9,22 +9,22 @@ import glotaran as gta
 
 def signature_analysis(cmd):
     cmd = click.option(
-        "--model",
+        "--model_file",
         "-m",
         default=None,
         type=click.Path(exists=True, dir_okay=False),
         help="Path to model file.",
     )(cmd)
     cmd = click.option(
-        "--parameter",
+        "--parameters_file",
         "-p",
         default=None,
         type=click.Path(exists=True, dir_okay=False),
         help="(optional) Path to parameter file.",
     )(cmd)
-    cmd = click.argument("scheme", type=click.Path(exists=True, dir_okay=False), required=False)(
-        cmd
-    )
+    cmd = click.argument(
+        "scheme_file", type=click.Path(exists=True, dir_okay=False), required=False
+    )(cmd)
     return cmd
 
 
