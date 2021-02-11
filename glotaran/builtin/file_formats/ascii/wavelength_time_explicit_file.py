@@ -4,6 +4,7 @@ import re
 from enum import Enum
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
@@ -141,14 +142,31 @@ class ExplicitFile:
             line = f.readline()
             while line:
                 all_data.append(
-                    [float(i) for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+", line.strip())]
+                    np.array(
+                        [
+                            float(i)
+                            for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+", line.strip())
+                        ]
+                    )
                 )
                 # data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+",
                 #                          engine='python', header=None, index_col=False)
                 # all_data.append(data_block.values())
                 line = f.readline()
-            all_data = np.asarray(all_data)
+            all_data = np.array(all_data)  # TODO: np.asarray raises VisibleDeprecationWarning
 
+            # TODO: read with pandas -> alright, let's do that
+            # read the first line (explicit_axis) separately
+            explicit_axis_check = np.array(
+                pd.read_csv(self._file, skiprows=4, delimiter=r"\s+", header=None, nrows=1)
+            )
+            # then the rest of the data:
+            rest_of_data = np.array(
+                pd.read_csv(self._file, skiprows=5, delimiter=r"\s+", header=None)
+            )
+            secondary_axis_check = rest_of_data[:, 0]
+            observations_check = rest_of_data[:, 1:]
+            # check against initial
             interval_counter = -interval_nr
             explicit_axis = []
             secondary_axis = []
@@ -186,7 +204,9 @@ class ExplicitFile:
 
             else:
                 raise NotImplementedError()
-
+        assert np.all(observations == observations_check)
+        assert np.all(explicit_axis == explicit_axis_check)
+        assert np.all(secondary_axis == secondary_axis_check)
         return self.dataset(prepare=prepare)
 
     def dataset(self, prepare: bool = True):
