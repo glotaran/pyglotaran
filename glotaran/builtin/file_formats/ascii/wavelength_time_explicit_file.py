@@ -1,9 +1,12 @@
-import csv
+from __future__ import annotations
+
 import os.path
 import re
+import warnings
 from enum import Enum
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
@@ -59,55 +62,31 @@ class ExplicitFile:
     def get_format_name(self):
         raise NotImplementedError
 
-    def write_old(self, filename, export_type, overwrite=False, comment=""):
-        if not isinstance(type, DataFileType):
-            raise TypeError("Export type not supported")
-
-        # self._dataset = dataset
-
-        comment = comment.splitlines()
-        while len(comment) < 2:
-            comment.append("")
-
-        if os.path.isfile(filename) and not overwrite:
-            raise Exception("File already exist.")
-
-        with open(filename, "w") as f:
-
-            f.write(comment[0])
-            f.write(comment[1])
-
-            f.write(self.get_format_name())
-
-            f.write("Intervalnr {}".format(len(self.get_explicit_axis())))
-
-            datawriter = csv.writer(f, delimiter=r"\t")
-
-            datawriter.writerow(self.get_explicit_axis())
-
-            for i in range(len(self.get_secondary_axis())):
-                datawriter.writerow(self.get_data_row(i).prepend(self.get_secondary_axis()[i]))
-
     def write(
-        self, overwrite=False, comment="", file_format="TimeExplicit", number_format="%.10e"
+        self,
+        overwrite=False,
+        comment="",
+        file_format=DataFileType.time_explicit,
+        number_format="%.10e",
     ):
         # TODO: write a more elegant method
 
         if os.path.isfile(self._file) and not overwrite:
             print("File {} already exists".format(os.path.isfile(self._file)))
             raise Exception("File already exist.")
+        comment = self._comment + " " + comment
 
-        comments = "# Filename: " + self._file + "\n" + " ".join(self._comment.splitlines()) + "\n"
+        comments = "# Filename: " + str(self._file) + "\n" + " ".join(comment.splitlines()) + "\n"
 
-        if file_format == "WavelengthExplicit":
-            wav = "\t".join([repr(num) for num in self._spectral_indices])
+        if file_format == DataFileType.wavelength_explicit:
+            wav = "\t".join(repr(num) for num in self._spectral_indices)
             header = (
                 comments + "Wavelength explicit\nIntervalnr {}"
                 "".format(len(self._spectral_indices)) + "\n" + wav
             )
             raw_data = np.vstack((self._times.T, self._observations)).T
-        elif file_format == "TimeExplicit":
-            tim = "\t".join([repr(num) for num in self._times])
+        elif file_format == DataFileType.time_explicit:
+            tim = "\t".join(repr(num) for num in self._times)
             header = (
                 comments + "Time explicit\nIntervalnr {}" "".format(len(self._times)) + "\n" + tim
             )
@@ -129,67 +108,35 @@ class ExplicitFile:
     def read(self, prepare: bool = True):
         if not os.path.isfile(self._file):
             raise Exception("File does not exist.")
-
         with open(self._file) as f:
-            f.readline()  # Read first line with comments (and discard for now)
-            f.readline()  # Read second line with comments (and discard for now)
-            # TODO: what to do with return: None?
+            f.readline()  # The first two lines are comments
+            f.readline()
+            # The third line defines the ExplicitFileFormat (Time or Wavelength explicit)
             self._file_data_format = get_data_file_format(f.readline())
-            # TODO: what to do with return: None?
-            interval_nr = get_interval_number(f.readline().strip().lower())
-            all_data = []
-            line = f.readline()
-            while line:
-                all_data.append(
-                    [float(i) for i in re.split(r"\s+|\t+|\s+\t+|\t+\s+|\u3000+", line.strip())]
-                )
-                # data_block = pd.read_csv(line, sep="\s+|\t+|\s+\t+|\t+\s+|\u3000+",
-                #                          engine='python', header=None, index_col=False)
-                # all_data.append(data_block.values())
-                line = f.readline()
-            all_data = np.asarray(all_data)
-
-            interval_counter = -interval_nr
-            explicit_axis = []
-            secondary_axis = []
-            observations = [[]]
-            obs_idx = 0
-
-            for item in [sl for sublist in all_data for sl in sublist]:
-                if np.isnan(item):
-                    raise ValueError()
-                if interval_counter < 0:
-                    # print("explicit_axis {}: {}".format(interval_counter, item))
-                    explicit_axis.append(item)
-                elif interval_counter == 0:
-                    # print("secondary_axis: {}".format(item))
-                    secondary_axis.append(item)
-                elif interval_counter < (interval_nr + 1):
-                    observations[obs_idx].append(item)
-                interval_counter += 1
-                if interval_counter == (interval_nr + 1):
-                    interval_counter = 0
-                    obs_idx += 1
-                    observations.append([])
-
-            del observations[-1]
-
-            if self._file_data_format == DataFileType.time_explicit:
-                self._times = np.asarray(explicit_axis)
-                self._spectral_indices = np.asarray(secondary_axis)
-                self._observations = np.asarray(observations)
-
-            elif self._file_data_format == DataFileType.wavelength_explicit:
-                self._spectral_indices = np.asarray(explicit_axis)
-                self._times = np.asarray(secondary_axis)
-                self._observations = np.asarray(observations)
-
-            else:
-                raise NotImplementedError()
-
+            # The fourth line define the number of elements on the explicit axis, which
+            # we can ignore because pandas is intelligent enough to read it
+        # read the first line (explicit_axis) separately
+        explicit_axis = pd.read_csv(
+            self._file, skiprows=4, delimiter=r"\s+", header=None, nrows=1
+        ).values
+        explicit_axis = explicit_axis[0, :]  # reshape to (n,)
+        # then the rest of the data:
+        rest_of_data = pd.read_csv(self._file, skiprows=5, delimiter=r"\s+", header=None).values
+        secondary_axis = rest_of_data[:, 0]
+        observations = rest_of_data[:, 1:]
+        if self._file_data_format == DataFileType.time_explicit:
+            self._times = explicit_axis  # (501,)
+            self._spectral_indices = secondary_axis  # (51,)
+            self._observations = observations  # len(observation)=51 . (51, 501)
+        elif self._file_data_format == DataFileType.wavelength_explicit:
+            self._spectral_indices = explicit_axis
+            self._times = secondary_axis
+            self._observations = observations
+        else:
+            raise NotImplementedError()
         return self.dataset(prepare=prepare)
 
-    def dataset(self, prepare: bool = True):
+    def dataset(self, prepare: bool = True) -> xr.Dataset | xr.DataArray:
         data = self._observations
         if self._file_data_format == DataFileType.time_explicit:
             data = data.T
@@ -274,7 +221,7 @@ def get_interval_number(line):
     try:
         interval_number = int(interval_number)
     except ValueError:
-        pass  # TODO: let user know no interval_number was found
+        warnings.warn(f"No interval number found in line:\n{line}")
         interval_number = None
     return interval_number
 
