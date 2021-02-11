@@ -4,6 +4,7 @@ import typing
 import click
 
 import glotaran as gta
+from glotaran.analysis.optimize import optimize
 
 from . import util
 
@@ -85,12 +86,16 @@ def optimize_cmd(
             datasets[label] = util.load_dataset_file(path, fmt=dataformat, verbose=True)
 
         scheme = gta.analysis.scheme.Scheme(
-            model=model, parameters=parameters, data=datasets, nnls=nnls, nfev=nfev
+            model=model,
+            parameters=parameters,
+            data=datasets,
+            non_negative_least_squares=nnls,
+            maximum_number_function_evaluations=nfev,
         )
 
     click.echo(scheme.validate())
-    click.echo(f"Use NNLS: {scheme.nnls}")
-    click.echo(f"Max Nr Function Evaluations: {scheme.nfev}")
+    click.echo(f"Use NNLS: {scheme.non_negative_least_squares}")
+    click.echo(f"Max Nr Function Evaluations: {scheme.maximum_number_function_evaluations}")
     click.echo(f"Saving directory: is '{out if out is not None else 'None'}'")
 
     if yes or click.confirm("Do you want to start optimization?", abort=True, default=True):
@@ -104,7 +109,7 @@ def optimize_cmd(
         #      sys.exit(1)
         try:
             click.echo("Optimizing...")
-            result = gta.analysis.optimize.optimize(scheme)
+            result = optimize(scheme)
             click.echo("Optimization done.")
             click.echo(result.markdown(with_model=False))
             click.echo("Optimized Parameter:")
