@@ -15,7 +15,6 @@ TEST_BLOCK_2x2_BOTTOM_RIGHT = np.array([[0.384812891, 0.342516541], [0.350679725
 
 
 def test_read_explicit_file():
-
     data_file = ExplicitFile(TEST_FILE_ASCII)
     test_dataarray = data_file.read(prepare=False)
     assert isinstance(test_dataarray, xr.DataArray)
@@ -29,3 +28,13 @@ def test_read_explicit_file():
     assert 0.0 == min(test_dataset.coords["time"].values)
     assert 5.0 == max(test_dataset.coords["time"].values)
     test_dataset.sel(spectral=[620, 630, 650], method="nearest")
+
+
+def test_write_explicit_file(tmp_path):
+    data_file = ExplicitFile(TEST_FILE_ASCII)
+    test_dataarray_read = data_file.read(prepare=False)
+    test_data_file = tmp_path.joinpath("test.ascii")
+    test_data_file_write = ExplicitFile(filepath=str(test_data_file), dataset=test_dataarray_read)
+    test_data_file_write.write(comment="written \n in \n test.", overwrite=True)
+    test_dataarray_reread = test_data_file_write.read(prepare=False)
+    assert np.array_equal(test_dataarray_read.values, test_dataarray_reread.values)
