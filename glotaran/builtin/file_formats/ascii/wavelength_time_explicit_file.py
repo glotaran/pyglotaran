@@ -116,12 +116,12 @@ class ExplicitFile:
             # The fourth line define the number of elements on the explicit axis, which
             # we can ignore because pandas is intelligent enough to read it
         # read the first line (explicit_axis) separately
-        explicit_axis = np.array(
-            pd.read_csv(self._file, skiprows=4, delimiter=r"\s+", header=None, nrows=1)
-        )
+        explicit_axis = pd.read_csv(
+            self._file, skiprows=4, delimiter=r"\s+", header=None, nrows=1
+        ).values
         explicit_axis = explicit_axis[0, :]  # reshape to (n,)
         # then the rest of the data:
-        rest_of_data = np.array(pd.read_csv(self._file, skiprows=5, delimiter=r"\s+", header=None))
+        rest_of_data = pd.read_csv(self._file, skiprows=5, delimiter=r"\s+", header=None).values
         secondary_axis = rest_of_data[:, 0]
         observations = rest_of_data[:, 1:]
         if self._file_data_format == DataFileType.time_explicit:
