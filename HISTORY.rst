@@ -2,6 +2,12 @@
 History
 =======
 
+0.3.0 (2021-02-11)
+------------------
+
+* Significant code refactor with small API changes to parameter relation specification (see docs)
+* Replaced lmfit with scipy.optimize
+
 0.2.0 (2020-12-02)
 ------------------
 
