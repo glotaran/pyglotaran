@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from glotaran import read_model_from_yaml
+from glotaran import load_model
 from glotaran import read_parameters_from_yaml
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
@@ -74,7 +74,7 @@ PARAMETERS_1C_GAUSSIAN_WANTED = f"""\
 
 
 class OneComponentOneChannel:
-    model = read_model_from_yaml(MODEL_1C_NO_IRF)
+    model = load_model(MODEL_1C_NO_IRF, fmt="yml_str")
     initial_parameters = read_parameters_from_yaml(PARAMETERS_1C_INITIAL)
     wanted_parameters = read_parameters_from_yaml(PARAMETERS_1C_WANTED)
     time = np.asarray(np.arange(0, 50, 1.5))
@@ -83,7 +83,7 @@ class OneComponentOneChannel:
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = read_model_from_yaml(MODEL_1C_GAUSSIAN_IRF)
+    model = load_model(MODEL_1C_GAUSSIAN_IRF, fmt="yml_str")
     initial_parameters = read_parameters_from_yaml(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL)
     wanted_parameters = read_parameters_from_yaml(PARAMETERS_1C_GAUSSIAN_WANTED)
     time = np.asarray(np.arange(-10, 50, 1.5))
@@ -216,7 +216,7 @@ kinetic:
 
 
 class ThreeComponentParallel:
-    model = read_model_from_yaml(MODEL_3C_PARALLEL)
+    model = load_model(MODEL_3C_PARALLEL, fmt="yml_str")
     initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL_PARALLEL)
     wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_PARALLEL_WANTED)
     time = np.arange(-10, 100, 1.5)
@@ -225,7 +225,7 @@ class ThreeComponentParallel:
 
 
 class ThreeComponentSequential:
-    model = read_model_from_yaml(MODEL_3C_SEQUENTIAL)
+    model = load_model(MODEL_3C_SEQUENTIAL, fmt="yml_str")
     initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL_SEQUENTIAL)
     wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_SIM_SEQUENTIAL)
     time = np.asarray(np.arange(-10, 50, 1.0))

@@ -1,7 +1,7 @@
 from glotaran.model import Model
 from glotaran.model import model
 from glotaran.model import model_attribute
-from glotaran.parse import register
+from glotaran.register import register
 
 
 def mock_matrix_fun():
