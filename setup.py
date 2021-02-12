@@ -6,13 +6,13 @@ install_requires = [
     "click>=7.0",
     "netCDF4>=1.5.3",
     "numba>=0.48",
-    "numpy>=1.19.5,<1.20.0",
+    "numpy>=1.20.0",
     "pandas>=0.25.2",
     "pyyaml>=5.2",
     "scipy>=1.3.2",
     "sdtfile>=2020.8.3",
     "setuptools>=41.2",
-    "xarray>=0.14",
+    "xarray>=0.16.2",
 ]
 
 
