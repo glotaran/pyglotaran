@@ -29,6 +29,7 @@ entry_points = """
 
     ascii_file = glotaran.builtin.file_formats.ascii
     sdt_file = glotaran.builtin.file_formats.sdt
+    yml_io = glotaran.builtin.io.yml
 """
 
 setup(

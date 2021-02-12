@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from glotaran import read_model_from_yaml
+from glotaran import load_model
 from glotaran import read_parameters_from_yaml
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
@@ -81,7 +81,7 @@ irf:
 
 
 class SimpleIrfDispersion:
-    model = read_model_from_yaml(MODEL_SIMPLE_IRF_DISPERSION)
+    model = load_model(MODEL_SIMPLE_IRF_DISPERSION, fmt="yml_str")
     parameters = read_parameters_from_yaml(PARAMETERS_SIMPLE_IRF_DISPERSION)
     time_p1 = np.linspace(-1, 2, 50, endpoint=False)
     time_p2 = np.linspace(2, 5, 30, endpoint=False)
@@ -92,7 +92,7 @@ class SimpleIrfDispersion:
 
 
 class MultiIrfDispersion:
-    model = read_model_from_yaml(MODEL_MULTI_IRF_DISPERSION)
+    model = load_model(MODEL_MULTI_IRF_DISPERSION, fmt="yml_str")
     parameters = read_parameters_from_yaml(PARAMETERS_MULTI_IRF_DISPERSION)
     time = np.arange(-1, 5, 0.2)
     spectral = np.arange(300, 500, 100)

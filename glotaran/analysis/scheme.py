@@ -68,7 +68,7 @@ class Scheme:
             raise ValueError("Model file not specified.")
 
         try:
-            model = glotaran.read_model_from_yaml_file(scheme["model"])
+            model = glotaran.load_model(scheme["model"])
         except Exception as e:
             raise ValueError(f"Error loading model: {e}")
 
