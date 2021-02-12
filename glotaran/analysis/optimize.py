@@ -41,6 +41,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
     xtol = problem.scheme.xtol
     verbose = 2 if verbose else 0
     termination_reason = ""
+    history_index = -1
 
     try:
         ls_result = least_squares(
@@ -60,10 +61,13 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         warn(f"Optimization failed:\n\n{e}")
         termination_reason = str(e)
         ls_result = None
+        history_index = -2
+
+    problem.save_parameters_for_history()
 
     return Result(
         problem.scheme,
-        problem.create_result_data(),
+        problem.create_result_data(history_index=history_index),
         problem.parameters,
         problem.additional_penalty,
         ls_result,
@@ -73,6 +77,7 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
 
 
 def _calculate_penalty(parameters: np.ndarray, labels: List[str] = None, problem: Problem = None):
+    problem.save_parameters_for_history()
     problem.parameters.set_from_label_and_value_arrays(labels, parameters)
     problem.reset()
     return problem.full_penalty
