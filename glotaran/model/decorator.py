@@ -14,7 +14,7 @@ import xarray as xr
 
 import glotaran  # TODO: refactor to postponed type annotation
 from glotaran.parameter import ParameterGroup
-from glotaran.parse.register import register_model
+from glotaran.register.register import register_model
 
 from .base_model import Model
 from .dataset_descriptor import DatasetDescriptor

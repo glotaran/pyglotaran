@@ -5,6 +5,7 @@ from os.path import join
 import numpy as np
 import pytest
 
+from glotaran import load_model
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
@@ -17,7 +18,6 @@ from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAre
 from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
 from glotaran.model import Weight
 from glotaran.parameter import ParameterGroup
-from glotaran.parse.parser import load_yaml_file
 
 THIS_DIR = dirname(abspath(__file__))
 
@@ -25,7 +25,7 @@ THIS_DIR = dirname(abspath(__file__))
 @pytest.fixture
 def model():
     spec_path = join(THIS_DIR, "test_model_spec_kinetic.yml")
-    m = load_yaml_file(spec_path)
+    m = load_model(spec_path)
     print(m.markdown())
     return m
 
