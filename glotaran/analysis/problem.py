@@ -822,7 +822,7 @@ class Problem:
         self, copy: bool = True, history_index: int = None
     ) -> Dict[str, xr.Dataset]:
 
-        if history_index is not None:
+        if history_index is not None and history_index != -1:
             self.parameters = self.parameter_history[history_index]
         result_data = {label: self._create_result_dataset(label, copy=copy) for label in self.data}
 
