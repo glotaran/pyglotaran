@@ -61,7 +61,7 @@ class SimpleTestModel(Model):
 
 
 def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
-    kinpar = -1 * np.array(dataset_descriptor.kinetic)
+    kinpar = -1 * np.asarray(dataset_descriptor.kinetic)
     if dataset_descriptor.label == "dataset3":
         # this case is for the ThreeDatasetDecay test
         compartments = [f"s{i+2}" for i in range(len(kinpar))]
