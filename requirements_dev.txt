@@ -6,8 +6,8 @@ wheel>=0.30.0
 bump2version>=0.5.11
 
 # glotaran setup dependencies
-asteval==0.9.21
-numpy==1.19.5
+asteval==0.9.22
+numpy==1.20.1
 scipy==1.6.0
 click==7.1.2
 numba==0.52.0
