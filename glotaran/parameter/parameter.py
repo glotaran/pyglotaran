@@ -334,7 +334,7 @@ class Parameter:
 
     def __array__(self):
         """array"""
-        return np.array([float(self._getval())])
+        return np.array(float(self._getval()), dtype=float)
 
     def __str__(self):
         """string"""
