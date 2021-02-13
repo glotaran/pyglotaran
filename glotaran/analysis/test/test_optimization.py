@@ -3,13 +3,13 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import DecayModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay
 from glotaran.analysis.test.models import OneCompartmentDecay
 from glotaran.analysis.test.models import ThreeDatasetDecay
 from glotaran.analysis.test.models import TwoCompartmentDecay
+from glotaran.project import Scheme
 
 
 @pytest.mark.parametrize("index_dependent", [True, False])

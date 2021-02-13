@@ -2,9 +2,9 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
-from glotaran.analysis.scheme import Scheme
 from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Scheme
 
 
 def test_single_dataset():

@@ -39,6 +39,15 @@ def load_model(file_name: str, fmt: str = None):
         raise ValueError(f"Cannot read models with format '{fmt}'")
 
 
+def load_scheme(file_name: str, fmt: str = None):
+    fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
+    io = get_io(fmt)
+    try:
+        return io.read_scheme(fmt, file_name)
+    except NotImplementedError:
+        raise ValueError(f"Cannot read scheme with format '{fmt}'")
+
+
 def load_parameters(file_name: str, fmt: str = None):
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
