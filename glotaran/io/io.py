@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Scheme
 
 if TYPE_CHECKING:
     from glotaran.analysis import Result
@@ -26,4 +27,10 @@ class Io:
         raise NotImplementedError
 
     def write_result(fmt: str, result_name: str, result: Result):
+        raise NotImplementedError
+
+    def read_scheme(fmt: str, file_name: str) -> Scheme:
+        raise NotImplementedError
+
+    def write_scheme(fmt: str, file_name: str, result: Scheme):
         raise NotImplementedError
