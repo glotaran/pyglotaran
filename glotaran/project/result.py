@@ -1,7 +1,6 @@
 """The result class for global analysis."""
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 
 import numpy as np
@@ -33,6 +32,7 @@ class Result:
     """List of labels of the free parameters used in optimization."""
     number_of_function_evaluations: int
     """The number of function evaluations."""
+    initial_parameters: ParameterGroup
     optimized_parameters: ParameterGroup
     """The optimized parameters, organized in a :class:`ParameterGroup`"""
     scheme: Scheme
@@ -77,11 +77,6 @@ class Result:
     """
 
     @property
-    def initial_parameters(self) -> ParameterGroup:
-        """The initital parameters."""
-        return self.scheme.parameters
-
-    @property
     def model(self) -> Model:
         return self.scheme.model
 
@@ -113,45 +108,6 @@ class Result:
             xtol=self.scheme.xtol,
             optimization_method=self.scheme.optimization_method,
         )
-
-    def save(self, path: str) -> list[str]:
-        """Saves the result to given folder.
-
-        Returns a list with paths of all saved items.
-
-        The following files are saved:
-
-        * `result.md`: The result with the model formatted as markdown text.
-        * `optimized_parameters.csv`: The optimized parameter as csv file.
-        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
-
-        Parameters
-        ----------
-        path :
-            The path to the folder in which to save the result.
-        """
-        if not os.path.exists(path):
-            os.makedirs(path)
-        elif not os.path.isdir(path):
-            raise Exception(f"The path '{path}' is not a directory.")
-
-        paths = []
-
-        md_path = os.path.join(path, "result.md")
-        with open(md_path, "w") as f:
-            f.write(self.markdown())
-        paths.append(md_path)
-
-        csv_path = os.path.join(path, "optimized_parameters.csv")
-        self.optimized_parameters.to_csv(csv_path)
-        paths.append(csv_path)
-
-        for label, data in self.data.items():
-            nc_path = os.path.join(path, f"{label}.nc")
-            data.to_netcdf(nc_path, engine="netcdf4")
-            paths.append(nc_path)
-
-        return paths
 
     def markdown(self, with_model=True) -> str:
         """Formats the model as a markdown text.
