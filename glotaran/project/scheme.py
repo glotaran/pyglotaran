@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 from dataclasses import dataclass
 from typing import Literal
 
@@ -10,19 +9,20 @@ from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
 
-def _not_none(f):
-    @functools.wraps(f)
-    def decorator(self, value):
-        if value is None:
-            raise ValueError(f"{f.__name__} cannot be None")
-        f(self, value)
+@dataclass
+class SavingOptions:
+    level: Literal["minimal", "standard", "full"] = "full"
+    data_filter: list[str] | None = None
+    data_format: str = "nc"
+    parameter_format: str = "csv"
+    report: bool = True
 
 
 @dataclass
 class Scheme:
-    model: Model
-    parameters: ParameterGroup
-    data: dict[str, xr.DataArray | xr.Dataset]
+    model: Model | str
+    parameters: ParameterGroup | str
+    data: dict[str, xr.DataArray | xr.Dataset | str]
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
     maximum_number_function_evaluations: int = None
@@ -34,6 +34,7 @@ class Scheme:
         "Dogbox",
         "Levenberg-Marquardt",
     ] = "TrustRegionReflection"
+    saving: SavingOptions = SavingOptions()
 
     def problem_list(self) -> list[str]:
         """Returns a list with all problems in the model and missing parameters."""

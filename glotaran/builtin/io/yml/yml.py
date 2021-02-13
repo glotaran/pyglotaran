@@ -8,8 +8,8 @@ from glotaran.io import read_data_file
 from glotaran.io import register_io
 from glotaran.model import Model
 from glotaran.model import get_model
-from glotaran.model import known_model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import SavingOptions
 from glotaran.project import Scheme
 
 from .sanatize import sanitize_yaml
@@ -46,14 +46,8 @@ class YmlIo:
         model_type = spec["type"]
         del spec["type"]
 
-        if not known_model(model_type):
-            raise Exception(f"Unknown model type '{model_type}'.")
-
         model = get_model(model_type)
-        try:
-            return model.from_dict(spec)
-        except Exception as e:
-            raise e
+        return model.from_dict(spec)
 
     def read_parameters(fmt: str, file_name: str) -> ParameterGroup:
 
@@ -122,6 +116,7 @@ class YmlIo:
         gtol = scheme.get("gtol", 1e-8)
         xtol = scheme.get("xtol", 1e-8)
         group_tolerance = scheme.get("group_tolerance", 0.0)
+        saving = SavingOptions(**scheme.get("saving", {}))
         return Scheme(
             model=model,
             parameters=parameters,
@@ -133,6 +128,7 @@ class YmlIo:
             xtol=xtol,
             group_tolerance=group_tolerance,
             optimization_method=optimization_method,
+            saving=saving,
         )
 
     def write_scheme(fmt: str, file_name: str, result: Scheme):
