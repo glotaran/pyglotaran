@@ -155,9 +155,10 @@ Deploying
 ---------
 
 A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
+Make sure all your changes are committed (including an entry in HISTORY.rst),
+the version number only needs to be changed in ``glotaran/__init__.py``.
 
 Then make a `new release on GitHub <https://github.com/glotaran/pyglotaran/releases/new>`_ and
-give the tag a proper name (might be included in the citation).
+give the tag a proper name, e.g. ``0.3.0`` since might be included in a citation.
 
 Github Actions will then deploy to PyPI if the tests pass.
