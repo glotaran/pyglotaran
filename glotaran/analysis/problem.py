@@ -91,6 +91,7 @@ class Problem:
         self._filled_dataset_descriptors = None
 
         self.parameters = scheme.parameters.copy()
+        self._parameter_history = []
 
         # all of the above are always not None
 
@@ -143,6 +144,10 @@ class Problem:
     def parameters(self, parameters: ParameterGroup):
         self._parameters = parameters
         self.reset()
+
+    @property
+    def parameter_history(self) -> List[ParameterGroup]:
+        return self._parameter_history
 
     @property
     def grouped(self) -> bool:
@@ -254,6 +259,9 @@ class Problem:
                 else np.concatenate(residuals)
             )
         return self._full_penalty
+
+    def save_parameters_for_history(self):
+        self._parameter_history.append(self._parameters)
 
     def reset(self):
         """Resets all results and `DatasetDescriptors`. Use after updating parameters."""
@@ -810,8 +818,12 @@ class Problem:
             self._additional_penalty = None
         return self._additional_penalty
 
-    def create_result_data(self, copy: bool = True) -> Dict[str, xr.Dataset]:
+    def create_result_data(
+        self, copy: bool = True, history_index: int = None
+    ) -> Dict[str, xr.Dataset]:
 
+        if history_index is not None and history_index != -1:
+            self.parameters = self.parameter_history[history_index]
         result_data = {label: self._create_result_dataset(label, copy=copy) for label in self.data}
 
         if callable(self.model.finalize_data):
