@@ -156,10 +156,8 @@ Deploying
 
 A reminder for the maintainers on how to deploy.
 Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
 
-$ bumpversion patch # possible: major / minor / patch
-$ git push
-$ git push --tags
+Then make a `new release on GitHub <https://github.com/glotaran/pyglotaran/releases/new>`_ and
+give the tag a proper name (might be included in the citation).
 
 Github Actions will then deploy to PyPI if the tests pass.
