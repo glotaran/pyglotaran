@@ -7,7 +7,7 @@ def test_scheme(tmpdir):
 
     model_path = tmpdir.join("model.yml")
     with open(model_path, "w") as f:
-        model = "type: simple_test\ndataset:\n  dataset1:\n    megacomplex: []"
+        model = "type: kinetic-spectrum\ndataset:\n  dataset1:\n    megacomplex: []"
         f.write(model)
 
     parameter_path = tmpdir.join("parameters.yml")
@@ -27,6 +27,13 @@ def test_scheme(tmpdir):
     maximum-number-function-evaluations: 42
     data:
       dataset1: {dataset_path}
+
+    saving:
+        level: minimal
+        data_filter: [a, b, c]
+        data_format: csv
+        parameter_format: yaml
+        report: false
     """
     scheme_path = tmpdir.join("scheme.yml")
     with open(scheme_path, "w") as f:
@@ -34,7 +41,7 @@ def test_scheme(tmpdir):
 
     scheme = load_scheme(scheme_path)
     assert scheme.model is not None
-    assert scheme.model.model_type == "simple_test"
+    assert scheme.model.model_type == "kinetic-spectrum"
 
     assert scheme.parameters is not None
     assert scheme.parameters.get("1") == 1.0
@@ -45,3 +52,9 @@ def test_scheme(tmpdir):
 
     assert "dataset1" in scheme.data
     assert scheme.data["dataset1"].data.shape == (1, 3)
+
+    assert scheme.saving.level == "minimal"
+    assert scheme.saving.data_filter == ["a", "b", "c"]
+    assert scheme.saving.data_format == "csv"
+    assert scheme.saving.parameter_format == "yaml"
+    assert not scheme.saving.report
