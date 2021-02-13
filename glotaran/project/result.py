@@ -3,17 +3,15 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
 from scipy.optimize import OptimizeResult
 
-if TYPE_CHECKING:
-    from glotaran.model import Model
-    from glotaran.parameter import ParameterGroup
+from glotaran.model import Model
+from glotaran.parameter import ParameterGroup
 
-from glotaran.project import Scheme
+from .scheme import Scheme
 
 
 class Result:
