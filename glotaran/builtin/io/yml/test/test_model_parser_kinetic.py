@@ -5,7 +5,6 @@ from os.path import join
 import numpy as np
 import pytest
 
-from glotaran import load_model
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
@@ -16,6 +15,7 @@ from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import Kine
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import ZeroConstraint
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAreaPenalty
 from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
+from glotaran.io import load_model
 from glotaran.model import Weight
 from glotaran.parameter import ParameterGroup
 
