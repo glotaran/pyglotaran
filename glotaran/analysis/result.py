@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
 
-from .scheme import Scheme
+from glotaran.project import Scheme
 
 
 class Result:

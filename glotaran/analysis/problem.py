@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 import collections
 import itertools
+import warnings
 from typing import Any
 from typing import Callable
 from typing import Deque
 from typing import Dict
-from typing import List
 from typing import NamedTuple
-from typing import Tuple
-from typing import Union
 
 import numpy as np
 import xarray as xr
@@ -17,8 +17,7 @@ from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
-
-from .scheme import Scheme
+from glotaran.project import Scheme
 
 
 class ParameterError(ValueError):
@@ -47,7 +46,7 @@ class GroupedProblem(NamedTuple):
     """Indicates if at least one dataset in the group needs scaling."""
     group: str
     """The concatenated labels of the involved datasets."""
-    data_sizes: List[int]
+    data_sizes: list[int]
     """Holds the sizes of the concatenated datasets."""
     descriptor: GroupedProblemDescriptor
 
@@ -57,7 +56,7 @@ GroupedBag = Deque[GroupedProblem]
 
 
 class LabelAndMatrix(NamedTuple):
-    clp_label: List[str]
+    clp_label: list[str]
     matrix: np.ndarray
 
 
@@ -77,7 +76,7 @@ class Problem:
         self._model = scheme.model
         self._global_dimension = scheme.model.global_dimension
         self._model_dimension = scheme.model.model_dimension
-        self._data = scheme.data
+        self._prepare_data(scheme.data)
 
         self._index_dependent = scheme.model.index_dependent()
         self._grouped = scheme.model.grouped()
@@ -133,7 +132,7 @@ class Problem:
         return self._model
 
     @property
-    def data(self) -> Dict[str, xr.Dataset]:
+    def data(self) -> dict[str, xr.Dataset]:
         return self._data
 
     @property
@@ -146,7 +145,7 @@ class Problem:
         self.reset()
 
     @property
-    def parameter_history(self) -> List[ParameterGroup]:
+    def parameter_history(self) -> list[ParameterGroup]:
         return self._parameter_history
 
     @property
@@ -158,17 +157,17 @@ class Problem:
         return self._index_dependent
 
     @property
-    def filled_dataset_descriptors(self) -> Dict[str, DatasetDescriptor]:
+    def filled_dataset_descriptors(self) -> dict[str, DatasetDescriptor]:
         return self._filled_dataset_descriptors
 
     @property
-    def bag(self) -> Union[UngroupedBag, GroupedBag]:
+    def bag(self) -> UngroupedBag | GroupedBag:
         if not self._bag:
             self._init_bag()
         return self._bag
 
     @property
-    def groups(self) -> Dict[str, List[str]]:
+    def groups(self) -> dict[str, list[str]]:
         if not self._groups and self._grouped:
             self._init_bag()
         return self._groups
@@ -176,7 +175,7 @@ class Problem:
     @property
     def clp_labels(
         self,
-    ) -> Dict[str, Union[List[str], List[List[str]]]]:
+    ) -> dict[str, list[str] | list[list[str]]]:
         if self._clp_labels is None:
             self.calculate_matrices()
         return self._clp_labels
@@ -184,7 +183,7 @@ class Problem:
     @property
     def matrices(
         self,
-    ) -> Dict[str, Union[np.ndarray, List[np.ndarray]]]:
+    ) -> dict[str, np.ndarray | list[np.ndarray]]:
         if self._matrices is None:
             self.calculate_matrices()
         return self._matrices
@@ -192,7 +191,7 @@ class Problem:
     @property
     def reduced_clp_labels(
         self,
-    ) -> Dict[str, Union[List[str], List[List[str]]]]:
+    ) -> dict[str, list[str] | list[list[str]]]:
         if self._reduced_clp_labels is None:
             self.calculate_matrices()
         return self._reduced_clp_labels
@@ -200,7 +199,7 @@ class Problem:
     @property
     def reduced_matrices(
         self,
-    ) -> Union[Dict[str, np.ndarray], Dict[str, List[np.ndarray]], List[np.ndarray],]:
+    ) -> dict[str, np.ndarray] | dict[str, list[np.ndarray]] | list[np.ndarray]:
         if self._reduced_matrices is None:
             self.calculate_matrices()
         return self._reduced_matrices
@@ -208,7 +207,7 @@ class Problem:
     @property
     def reduced_clps(
         self,
-    ) -> Dict[str, List[np.ndarray]]:
+    ) -> dict[str, list[np.ndarray]]:
         if self._reduced_clps is None:
             self.calculate_residual()
         return self._reduced_clps
@@ -216,7 +215,7 @@ class Problem:
     @property
     def clps(
         self,
-    ) -> Dict[str, List[np.ndarray]]:
+    ) -> dict[str, list[np.ndarray]]:
         if self._clps is None:
             self.calculate_residual()
         return self._clps
@@ -224,7 +223,7 @@ class Problem:
     @property
     def weighted_residuals(
         self,
-    ) -> Dict[str, List[np.ndarray]]:
+    ) -> dict[str, list[np.ndarray]]:
         if self._weighted_residuals is None:
             self.calculate_residual()
         return self._weighted_residuals
@@ -232,7 +231,7 @@ class Problem:
     @property
     def residuals(
         self,
-    ) -> Dict[str, List[np.ndarray]]:
+    ) -> dict[str, list[np.ndarray]]:
         if self._residuals is None:
             self.calculate_residual()
         return self._residuals
@@ -240,7 +239,7 @@ class Problem:
     @property
     def additional_penalty(
         self,
-    ) -> Dict[str, List[float]]:
+    ) -> dict[str, list[float]]:
         if self._additional_penalty is None:
             self.calculate_additional_penalty()
         return self._additional_penalty
@@ -283,6 +282,95 @@ class Problem:
         self._additional_penalty = None
         self._full_penalty = None
 
+    def _prepare_data(self, data: dict[str, xr.DataArray | xr.Dataset]):
+        self._data = {}
+        for label, dataset in data.items():
+            if self.model.model_dimension not in dataset.dims:
+                raise ValueError(
+                    "Missing coordinates for dimension "
+                    f"'{self.model.model_dimension}' in data for dataset "
+                    f"'{label}'"
+                )
+            if self.model.global_dimension not in dataset.dims:
+                raise ValueError(
+                    "Missing coordinates for dimension "
+                    f"'{self.model.global_dimension}' in data for dataset "
+                    f"'{label}'"
+                )
+            if isinstance(dataset, xr.DataArray):
+                dataset = dataset.to_dataset(name="data")
+
+            dataset = self._transpose_dataset(dataset)
+            self._add_weight(label, dataset)
+
+            # This protects transposing when getting data with svd in it
+            if "data_singular_values" in dataset and (
+                dataset.coords["right_singular_value_index"].size
+                != dataset.coords[self.model.global_dimension].size
+            ):
+                dataset = dataset.rename(
+                    right_singular_value_index="right_singular_value_indexTMP"
+                )
+                dataset = dataset.rename(left_singular_value_index="right_singular_value_index")
+                dataset = dataset.rename(right_singular_value_indexTMP="left_singular_value_index")
+                dataset = dataset.rename(right_singular_vectors="right_singular_value_vectorsTMP")
+                dataset = dataset.rename(
+                    left_singular_value_vectors="right_singular_value_vectors"
+                )
+                dataset = dataset.rename(
+                    right_singular_value_vectorsTMP="left_singular_value_vectors"
+                )
+            new_dims = [self.model.model_dimension, self.model.global_dimension]
+            new_dims += [
+                dim
+                for dim in dataset.dims
+                if dim not in [self.model.model_dimension, self.model.global_dimension]
+            ]
+
+            self._data[label] = dataset
+
+    def _transpose_dataset(self, dataset):
+        new_dims = [self.model.model_dimension, self.model.global_dimension]
+        new_dims += [
+            dim
+            for dim in dataset.dims
+            if dim not in [self.model.model_dimension, self.model.global_dimension]
+        ]
+
+        return dataset.transpose(*new_dims)
+
+    def _add_weight(self, label, dataset):
+
+        # if the user supplies a weight we ignore modeled weights
+        if "weight" in dataset:
+            if any(label in weight.datasets for weight in self.model.weights):
+                warnings.warn(
+                    f"Ignoring model weight for dataset '{label}'"
+                    " because weight is already supplied by dataset."
+                )
+            return
+
+        global_axis = dataset.coords[self.model.global_dimension]
+        model_axis = dataset.coords[self.model.model_dimension]
+
+        for weight in self.model.weights:
+            if label in weight.datasets:
+                if "weight" not in dataset:
+                    dataset["weight"] = xr.DataArray(
+                        np.ones_like(dataset.data), coords=dataset.data.coords
+                    )
+
+                idx = {}
+                if weight.global_interval is not None:
+                    idx[self.model.global_dimension] = _get_min_max_from_interval(
+                        weight.global_interval, global_axis
+                    )
+                if weight.model_interval is not None:
+                    idx[self.model.model_dimension] = _get_min_max_from_interval(
+                        weight.model_interval, model_axis
+                    )
+                dataset.weight[idx] *= weight.value
+
     def _init_bag(self):
         if self._grouped:
             self._init_grouped_bag()
@@ -292,7 +380,7 @@ class Problem:
     def _init_ungrouped_bag(self):
         self._bag = {}
         for label in self._scheme.model.dataset:
-            dataset = self._scheme.data[label]
+            dataset = self._data[label]
             data = dataset.data
             weight = dataset.weight if "weight" in dataset else None
             if weight is not None:
@@ -412,18 +500,18 @@ class Problem:
 
     def calculate_index_dependent_grouped_matrices(
         self,
-    ) -> Tuple[
-        Dict[str, List[List[str]]],
-        Dict[str, List[np.ndarray]],
-        List[List[str]],
-        List[np.ndarray],
+    ) -> tuple[
+        dict[str, list[list[str]]],
+        dict[str, list[np.ndarray]],
+        list[list[str]],
+        list[np.ndarray],
     ]:
         if self._parameters is None:
             raise ParameterError
 
         def calculate_group(
-            group: GroupedProblem, descriptors: Dict[str, DatasetDescriptor]
-        ) -> Tuple[List[Tuple[LabelAndMatrix, str]], float]:
+            group: GroupedProblem, descriptors: dict[str, DatasetDescriptor]
+        ) -> tuple[list[tuple[LabelAndMatrix, str]], float]:
             result = [
                 (
                     _calculate_matrix(
@@ -440,7 +528,7 @@ class Problem:
             return result, group.descriptor[0].index
 
         def reduce_and_combine_matrices(
-            results: Tuple[List[Tuple[LabelAndMatrix, str]], float],
+            results: tuple[list[tuple[LabelAndMatrix, str]], float],
         ) -> LabelAndMatrix:
             index_results, index = results
             constraint_labels_and_matrices = list(
@@ -479,11 +567,11 @@ class Problem:
 
     def calculate_index_dependent_ungrouped_matrices(
         self,
-    ) -> Tuple[
-        Dict[str, List[List[str]]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[str]],
-        Dict[str, List[np.ndarray]],
+    ) -> tuple[
+        dict[str, list[list[str]]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[str]],
+        dict[str, list[np.ndarray]],
     ]:
         if self._parameters is None:
             raise ParameterError
@@ -521,7 +609,7 @@ class Problem:
 
     def calculate_index_independent_grouped_matrices(
         self,
-    ) -> Tuple[Dict[str, List[str]], Dict[str, np.ndarray], Dict[str, LabelAndMatrix],]:
+    ) -> tuple[dict[str, list[str]], dict[str, np.ndarray], dict[str, LabelAndMatrix],]:
         # We just need to create groups from the ungrouped matrices
         self.calculate_index_independent_ungrouped_matrices()
         for group_label, group in self._groups.items():
@@ -541,11 +629,11 @@ class Problem:
 
     def calculate_index_independent_ungrouped_matrices(
         self,
-    ) -> Tuple[
-        Dict[str, List[str]],
-        Dict[str, np.ndarray],
-        Dict[str, List[str]],
-        Dict[str, np.ndarray],
+    ) -> tuple[
+        dict[str, list[str]],
+        dict[str, np.ndarray],
+        dict[str, list[str]],
+        dict[str, np.ndarray],
     ]:
         if self._parameters is None:
             raise ParameterError
@@ -586,10 +674,10 @@ class Problem:
 
     def calculate_index_dependent_grouped_residual(
         self,
-    ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray],]:
+    ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray],]:
         def residual_function(
             problem: GroupedProblem, matrix: np.ndarray
-        ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
             matrix = matrix.copy()
             for i in range(matrix.shape[1]):
@@ -618,11 +706,11 @@ class Problem:
 
     def calculate_index_dependent_ungrouped_residual(
         self,
-    ) -> Tuple[
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[np.ndarray]],
+    ) -> tuple[
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
     ]:
 
         self._reduced_clps = {}
@@ -672,7 +760,7 @@ class Problem:
 
     def calculate_index_independent_grouped_residual(
         self,
-    ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray], List[np.ndarray],]:
+    ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray],]:
         def residual_function(problem: GroupedProblem):
             matrix = self.reduced_matrices[problem.group].copy()
             for i in range(matrix.shape[1]):
@@ -700,11 +788,11 @@ class Problem:
 
     def calculate_index_independent_ungrouped_residual(
         self,
-    ) -> Tuple[
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, List[np.ndarray]],
+    ) -> tuple[
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
     ]:
 
         self._clps = {}
@@ -800,7 +888,7 @@ class Problem:
             else self._reduced_clps
         )
 
-    def calculate_additional_penalty(self) -> Union[np.ndarray, Dict[str, np.ndarray]]:
+    def calculate_additional_penalty(self) -> np.ndarray | dict[str, np.ndarray]:
         """Calculates additional penalties by calling the model.additional_penalty function."""
         if (
             callable(self.model.has_additional_penalty_function)
@@ -820,7 +908,7 @@ class Problem:
 
     def create_result_data(
         self, copy: bool = True, history_index: int = None
-    ) -> Dict[str, xr.Dataset]:
+    ) -> dict[str, xr.Dataset]:
 
         if history_index is not None and history_index != -1:
             self.parameters = self.parameter_history[history_index]
@@ -1064,7 +1152,7 @@ def _calculate_matrix(
     matrix_function: Callable,
     dataset_descriptor: DatasetDescriptor,
     axis: np.ndarray,
-    extra: Dict,
+    extra: dict,
     index: float = None,
 ) -> LabelAndMatrix:
     args = {
@@ -1095,7 +1183,7 @@ def _reduce_matrix(
     return LabelAndMatrix(clp_labels, result.matrix)
 
 
-def _combine_matrices(labels_and_matrices: List[LabelAndMatrix]) -> LabelAndMatrix:
+def _combine_matrices(labels_and_matrices: list[LabelAndMatrix]) -> LabelAndMatrix:
     masks = []
     full_clp_labels = None
     sizes = []
@@ -1126,3 +1214,11 @@ def _combine_matrices(labels_and_matrices: List[LabelAndMatrix]) -> LabelAndMatr
 
 def _find_closest_index(index: float, axis: np.ndarray):
     return np.abs(axis - index).argmin()
+
+
+def _get_min_max_from_interval(interval, axis):
+    minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    maximum = (
+        np.abs(axis.values - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+    )
+    return slice(minimum, maximum)

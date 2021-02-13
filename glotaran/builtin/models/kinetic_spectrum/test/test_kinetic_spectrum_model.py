@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.scheme import Scheme
 from glotaran.io import load_model
 from glotaran.io import load_parameters
+from glotaran.project import Scheme
 
 MODEL_1C_BASE = """\
 type: kinetic-spectrum
