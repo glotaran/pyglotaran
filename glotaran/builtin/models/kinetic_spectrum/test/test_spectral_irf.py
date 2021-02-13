@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from glotaran import load_model
-from glotaran import read_parameters_from_yaml
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.scheme import Scheme
+from glotaran.io import load_model
+from glotaran.io import load_parameters
 
 MODEL_BASE = """\
 type: kinetic-spectrum
@@ -82,7 +82,7 @@ irf:
 
 class SimpleIrfDispersion:
     model = load_model(MODEL_SIMPLE_IRF_DISPERSION, fmt="yml_str")
-    parameters = read_parameters_from_yaml(PARAMETERS_SIMPLE_IRF_DISPERSION)
+    parameters = load_parameters(PARAMETERS_SIMPLE_IRF_DISPERSION, fmt="yml_str")
     time_p1 = np.linspace(-1, 2, 50, endpoint=False)
     time_p2 = np.linspace(2, 5, 30, endpoint=False)
     time_p3 = np.geomspace(5, 10, num=20)
@@ -93,7 +93,7 @@ class SimpleIrfDispersion:
 
 class MultiIrfDispersion:
     model = load_model(MODEL_MULTI_IRF_DISPERSION, fmt="yml_str")
-    parameters = read_parameters_from_yaml(PARAMETERS_MULTI_IRF_DISPERSION)
+    parameters = load_parameters(PARAMETERS_MULTI_IRF_DISPERSION, fmt="yml_str")
     time = np.arange(-1, 5, 0.2)
     spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}
