@@ -1,16 +1,16 @@
 import yaml
 
-from glotaran.analysis.result import Result
-from glotaran.io import io
+from glotaran.io import register_io
 from glotaran.model import Model
-from glotaran.parameter import Parameter
-from glotaran.register import register
+from glotaran.model import get_model
+from glotaran.model import known_model
+from glotaran.parameter import ParameterGroup
 
 from .sanatize import sanitize_yaml
 
 
-@io(["yml", "yaml", "yml_str"])
-class YamlIo:
+@register_io(["yml", "yaml", "yml_str"])
+class YmlIo:
     def read_model(fmt: str, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 
@@ -40,26 +40,24 @@ class YamlIo:
         model_type = spec["type"]
         del spec["type"]
 
-        if not register.known_model(model_type):
+        if not known_model(model_type):
             raise Exception(f"Unknown model type '{model_type}'.")
 
-        model = register.get_model(model_type)
+        model = get_model(model_type)
         try:
             return model.from_dict(spec)
         except Exception as e:
             raise e
 
-    def write_model(fmt: str, file_name: str, model: Model):
-        pass
+    def read_parameters(fmt: str, file_name: str) -> ParameterGroup:
 
-    def read_parameter(fmt: str, file_name: str) -> Parameter:
-        pass
+        if fmt == "yml_str":
+            spec = yaml.safe_load(file_name)
+        else:
+            with open(file_name) as f:
+                spec = yaml.safe_load(f)
 
-    def write_parameter(fmt: str, file_name: str, parameter: Parameter):
-        pass
-
-    def read_result(fmt: str, result_name: str) -> Result:
-        pass
-
-    def write_result(fmt: str, result_name: str, result: Result):
-        pass
+        if isinstance(spec, list):
+            return ParameterGroup.from_list(spec)
+        else:
+            return ParameterGroup.from_dict(spec)

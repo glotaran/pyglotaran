@@ -14,10 +14,10 @@ import xarray as xr
 
 import glotaran  # TODO: refactor to postponed type annotation
 from glotaran.parameter import ParameterGroup
-from glotaran.register.register import register_model
 
 from .base_model import Model
 from .dataset_descriptor import DatasetDescriptor
+from .register import register_model
 from .util import wrap_func_as_method
 from .weight import Weight
 

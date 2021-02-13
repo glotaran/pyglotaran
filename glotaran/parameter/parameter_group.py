@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import pathlib
 from copy import copy
-from typing import Callable
 from typing import Generator
 
 import asteval
 import numpy as np
 import pandas as pd
-import yaml
 
 from .parameter import Parameter
 
@@ -115,55 +112,6 @@ class ParameterGroup(dict):
         return root
 
     @classmethod
-    def known_formats(cls) -> dict[str, Callable]:
-        return {
-            "csv": cls.from_csv,
-            "yml": cls.from_yaml_file,
-            "yaml": cls.from_yaml_file,
-        }
-
-    @classmethod
-    def from_file(cls, filepath: str, fmt: str = None):
-        if fmt is None:
-            path = pathlib.Path(filepath)
-            fmt = path.suffix[1:] if path.suffix != "" else "yml"
-        if fmt not in cls.known_formats():
-            raise Exception(
-                f"Unknown parameter format '{format}'. "
-                f"Valid Formats are {cls.known_formats().keys()}."
-            )
-        return cls.known_formats()[fmt](filepath)
-
-    @classmethod
-    def from_yaml_file(cls, filepath: str) -> ParameterGroup:
-        """Creates a :class:`ParameterGroup` from a YAML file.
-
-        Parameters
-        ----------
-        filepath :
-            The path to the YAML file.
-        """
-
-        with open(filepath) as f:
-            cls = cls.from_yaml(f)
-        return cls
-
-    @classmethod
-    def from_yaml(cls, yaml_string: str) -> ParameterGroup:
-        """Creates a :class:`ParameterGroup` from a YAML string.
-
-        Parameters
-        ----------
-        yaml_string :
-            The YAML string with the parameters.
-        """
-        items = yaml.safe_load(yaml_string)
-        if isinstance(items, list):
-            return cls.from_list(items)
-        else:
-            return cls.from_dict(items)
-
-    @classmethod
     def from_dataframe(cls, df: pd.DataFrame, source: str = "DataFrame") -> ParameterGroup:
         """Creates a :class:`ParameterGroup` from a :class:`pandas.DataFrame`"""
 
@@ -214,23 +162,6 @@ class ParameterGroup(dict):
             group.add_parameter(parameter)
         root.update_parameter_expression()
         return root
-
-    @classmethod
-    def from_csv(cls, filepath: str, delimiter: str = None) -> ParameterGroup:
-        """Creates a :class:`ParameterGroup` from a CSV file.
-
-        Parameters
-        ----------
-        filepath :
-            The path to the CSV file.
-        delimiter :
-            The delimiter of the CSV file.
-        """
-
-        df = pd.read_csv(
-            filepath, delimiter=delimiter, skipinitialspace=True, na_values=["None", "none"]
-        )
-        return cls.from_dataframe(df, source=filepath)
 
     @property
     def label(self) -> str:

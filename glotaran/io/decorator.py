@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from glotaran.register.register import register_io
+from .register import register_io as register
 
 
-def io(fmt: str | list(str)):
+def register_io(fmt: str | list(str)):
     def decorator(cls):
-        register_io(fmt, cls)
+        register(fmt, cls)
         return cls
 
     return decorator
-
-
-def implements(method):
-    setattr(method, "implements", True)
-    return method
