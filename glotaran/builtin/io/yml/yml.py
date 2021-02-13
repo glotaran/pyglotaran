@@ -2,9 +2,9 @@ import pathlib
 
 import yaml
 
+from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
-from glotaran.io import read_data_file
 from glotaran.io import register_io
 from glotaran.model import Model
 from glotaran.model import get_model
@@ -98,14 +98,11 @@ class YmlIo:
 
         data = {}
         for label, path in scheme["data"].items():
+            fmt = scheme.get("data_format", None)
             path = pathlib.Path(path)
 
-            fmt = path.suffix[1:] if path.suffix != "" else "nc"
-            if "data_format" in scheme:
-                fmt = scheme["data_format"]
-
             try:
-                data[label] = read_data_file(path, fmt=fmt)
+                data[label] = load_dataset(path, fmt=fmt)
             except Exception as e:
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 

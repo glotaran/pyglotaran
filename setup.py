@@ -27,11 +27,12 @@ entry_points = """
     kinetic_image_model = glotaran.builtin.models.kinetic_image
     kinetic_spectrum_model = glotaran.builtin.models.kinetic_spectrum
 
-    ascii_file = glotaran.builtin.file_formats.ascii
-    sdt_file = glotaran.builtin.file_formats.sdt
     csv_io = glotaran.builtin.io.csv
     yml_io = glotaran.builtin.io.yml
+    net_cdf_io = glotaran.builtin.io.netCDF
 """
+#  ascii_file = glotaran.builtin.file_formats.ascii
+#  sdt_file = glotaran.builtin.file_formats.sdt
 
 setup(
     name="pyglotaran",

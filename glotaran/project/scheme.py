@@ -8,10 +8,12 @@ import xarray as xr
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
+default_data_filters = {"minimal": ["fitted_data", "residual"], "full": None}
+
 
 @dataclass
 class SavingOptions:
-    level: Literal["minimal", "standard", "full"] = "full"
+    level: Literal["minimal", "full"] = "full"
     data_filter: list[str] | None = None
     data_format: str = "nc"
     parameter_format: str = "csv"
@@ -35,6 +37,7 @@ class Scheme:
         "Levenberg-Marquardt",
     ] = "TrustRegionReflection"
     saving: SavingOptions = SavingOptions()
+    result_path: str | None = None
 
     def problem_list(self) -> list[str]:
         """Returns a list with all problems in the model and missing parameters."""

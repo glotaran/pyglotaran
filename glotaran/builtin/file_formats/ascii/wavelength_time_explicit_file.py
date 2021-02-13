@@ -10,7 +10,8 @@ import pandas as pd
 import xarray as xr
 
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
-from glotaran.io.reader import file_reader
+
+#  from glotaran.io.reader import file_reader
 
 
 class DataFileType(Enum):
@@ -239,7 +240,7 @@ def get_data_file_format(line):
     return data_file_format
 
 
-@file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
+#  @file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
 def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
     """Reads an ascii file in wavelength- or time-explicit format.
 
