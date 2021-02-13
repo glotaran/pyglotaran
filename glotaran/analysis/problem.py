@@ -259,6 +259,10 @@ class Problem:
             )
         return self._full_penalty
 
+    @property
+    def cost(self) -> float:
+        return np.sum(self._full_penalty)
+
     def save_parameters_for_history(self):
         self._parameter_history.append(self._parameters)
 
@@ -907,7 +911,7 @@ class Problem:
         return self._additional_penalty
 
     def create_result_data(
-        self, copy: bool = True, history_index: int = None
+        self, copy: bool = True, history_index: int | None = None
     ) -> dict[str, xr.Dataset]:
 
         if history_index is not None and history_index != -1:
