@@ -4,10 +4,10 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import least_squares
 
+from glotaran.project import Result
 from glotaran.project import Scheme
 
 from .problem import Problem
-from .result import Result
 
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
