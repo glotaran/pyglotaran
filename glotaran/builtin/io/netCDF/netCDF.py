@@ -8,7 +8,7 @@ from glotaran.project import SavingOptions
 from glotaran.project import default_data_filters
 
 
-@register_io(["nc"])
+@register_io("nc")
 class NetCDFIo(Io):
     def read_dataset(fmt: str, file_name: str) -> xr.Dataset | xr.DataArray:
         return xr.open_dataset(file_name)
