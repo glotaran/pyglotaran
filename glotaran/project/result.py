@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import os
-import warnings
+from dataclasses import dataclass
 
 import numpy as np
 import xarray as xr
-from scipy.optimize import OptimizeResult
+from numpy.typing import ArrayLike
 
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
@@ -14,208 +14,76 @@ from glotaran.parameter import ParameterGroup
 from .scheme import Scheme
 
 
+@dataclass
 class Result:
-    def __init__(
-        self,
-        scheme: Scheme,
-        data: dict[str, xr.Dataset],
-        optimized_parameters: ParameterGroup,
-        additional_penalty: np.ndarray | None,
-        least_squares_result: OptimizeResult,
-        free_parameter_labels: list[str],
-        termination_reason: str,
-    ):
-        """The result of a global analysis
+    """The result of a global analysis"""
 
-        Parameters
-        ----------
-        scheme : Scheme
-            An analysis scheme
-        data : Dict[str, xr.Dataset]
-            A dictionary containing all datasets with their labels as keys.
-        optimized_parameters : ParameterGroup
-            The optimized parameters, organized in a :class:`ParameterGroup`
-        additional_penalty : Union[np.ndarray, None]
-            A vector with the value for each additional penalty, or None
-        least_squares_result : OptimizeResult
-            See :func:`scipy.optimize.OptimizeResult` :func:`scipy.optimize.least_squares`
-        free_parameter_labels : List[str]
-            The text labels of the free parameters that were optimized
-        termination_reason : str
-            The reason (message when) the optimizer terminated
-        """
-        self._scheme = scheme
-        self._data = data
-        self._optimized_parameters = optimized_parameters
-        self._additional_penalty = additional_penalty
-        self._free_parameter_labels = free_parameter_labels
-        self._success = least_squares_result is not None
-        self._termination_reason = termination_reason
-        if self._success:
-            self._calculate_statistics(least_squares_result)
+    additional_penalty: np.ndarray | None
+    """A vector with the value for each additional penalty, or None"""
+    cost: ArrayLike
+    data: dict[str, xr.Dataset]
+    """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
-    def _calculate_statistics(self, least_squares_result: OptimizeResult):
-        self._number_of_function_evaluation = least_squares_result.nfev
-        self._number_of_jacobian_evaluation = least_squares_result.njev
-        self._cost = least_squares_result.cost
-        self._optimality = least_squares_result.optimality
-        self._number_of_data_points = least_squares_result.fun.size
-        self._number_of_variables = least_squares_result.x.size
-        self._degrees_of_freedom = self._number_of_data_points - self._number_of_variables
-        self._chi_square = np.sum(least_squares_result.fun ** 2)
-        self._reduced_chi_square = self._chi_square / self._degrees_of_freedom
-        self._root_mean_square_error = np.sqrt(self._reduced_chi_square)
-        self._jacobian = least_squares_result.jac
+    Notes
+    -----
+    The actual content of the data depends on the actual model and can be found in the
+    documentation for the model.
+    """
+    free_parameter_labels: list[str]
+    """List of labels of the free parameters used in optimization."""
+    number_of_function_evaluations: int
+    """The number of function evaluations."""
+    optimized_parameters: ParameterGroup
+    """The optimized parameters, organized in a :class:`ParameterGroup`"""
+    scheme: Scheme
+    success: bool
+    """Indicates if the optimization was successful."""
+    termination_reason: str
+    """The reason (message when) the optimizer terminated"""
 
-        try:
-            self._covariance_matrix = np.linalg.inv(self._jacobian.T.dot(self._jacobian))
-            standard_errors = np.sqrt(np.diagonal(self._covariance_matrix))
-            for label, error in zip(self.free_parameter_labels, standard_errors):
-                self.optimized_parameters.get(label).standard_error = error
-        except np.linalg.LinAlgError:
-            warnings.warn(
-                "The resulting Jacobian is singular, cannot compute covariance matrix and "
-                "standard errors."
-            )
-            self._covariance_matrix = None
+    # The below can be none in case of unsuccessful optimization
+    chi_square: float | None = None
+    r"""The chi-square of the optimization.
 
-    @property
-    def success(self):
-        """Indicates if the optimization was successful."""
-        return self._success
+    :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
+    covariance_matrix: ArrayLike | None = None
+    """Covariance matrix.
 
-    @property
-    def termination_reason(self):
-        """The reason of the termination of the process."""
-        return self._termination_reason
+    The rows and columns are corresponding to :attr:`free_parameter_labels`."""
+    degrees_of_freedom: int | None = None
+    """Degrees of freedom in optimization :math:`N - N_{vars}`."""
+    jacobian: ArrayLike | None = None
+    """Modified Jacobian matrix at the solution
 
-    @property
-    def scheme(self) -> Scheme:
-        """The scheme for analysis."""
-        return self._scheme
+    See also: :func:`scipy.optimize.least_squares`
+    """
+    number_of_data_points: int | None = None
+    """Number of data points :math:`N`."""
+    number_of_jacobian_evaluations: int | None = None
+    """The number of jacobian evaluations."""
+    number_of_variables: int | None = None
+    """Number of variables in optimization :math:`N_{vars}`"""
+    optimality: float | None = None
+    reduced_chi_square: float | None = None
+    r"""The reduced chi-square of the optimization.
 
-    @property
-    def model(self) -> Model:
-        """The model for analysis."""
-        return self._scheme.model
+    :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
+    """
+    root_mean_square_error: float | None = None
+    r"""
+    The root mean square error the optimization.
 
-    @property
-    def nnls(self) -> bool:
-        """If `True` non-negative least squares optimization is used
-        instead of the default variable projection."""
-        return self._scheme.nnls
-
-    @property
-    def data(self) -> dict[str, xr.Dataset]:
-        """The resulting data as a dictionary of :xarraydoc:`Dataset`.
-
-        Notes
-        -----
-        The actual content of the data depends on the actual model and can be found in the
-        documentation for the model.
-        """
-        return self._data
-
-    @property
-    def number_of_function_evaluations(self) -> int:
-        """The number of function evaluations."""
-        return self._number_of_function_evaluation
-
-    @property
-    def number_of_jacobian_evaluations(self) -> int:
-        """The number of jacobian evaluations."""
-        return self._number_of_jacobian_evaluation
-
-    @property
-    def jacobian(self) -> np.ndarray:
-        """Modified Jacobian matrix at the solution
-        See also: :func:`scipy.optimize.least_squares`
-
-        Returns
-        -------
-        np.ndarray
-            Numpy array
-        """
-        return self._jacobian
-
-    @property
-    def number_of_variables(self) -> int:
-        """Number of variables in optimization :math:`N_{vars}`"""
-        return self._number_of_variables
-
-    @property
-    def number_of_data_points(self) -> int:
-        """Number of data points :math:`N`."""
-        return self._number_of_data_points
-
-    @property
-    def degrees_of_freedom(self) -> int:
-        """Degrees of freedom in optimization :math:`N - N_{vars}`."""
-        return self._degrees_of_freedom
-
-    @property
-    def chi_square(self) -> float:
-        r"""The chi-square of the optimization.
-
-        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
-        return self._chi_square
-
-    @property
-    def reduced_chi_square(self) -> float:
-        r"""The reduced chi-square of the optimization.
-
-        :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
-        """
-        return self._reduced_chi_square
-
-    @property
-    def root_mean_square_error(self) -> float:
-        r"""
-        The root mean square error the optimization.
-
-        :math:`rms = \sqrt{\chi^2_{red}}`
-        """
-        return self._root_mean_square_error
-
-    @property
-    def free_parameter_labels(self) -> list[str]:
-        """List of labels of the free parameters used in optimization."""
-        return self._free_parameter_labels
-
-    @property
-    def covariance_matrix(self) -> np.ndarray:
-        """Covariance matrix.
-
-        The rows and columns are corresponding to :attr:`free_parameter_labels`."""
-        return self._covariance_matrix
-
-    @property
-    def optimized_parameters(self) -> ParameterGroup:
-        """The optimized parameters."""
-        return self._optimized_parameters
+    :math:`rms = \sqrt{\chi^2_{red}}`
+    """
 
     @property
     def initial_parameters(self) -> ParameterGroup:
         """The initital parameters."""
-        return self._scheme.parameters
+        return self.scheme.parameters
 
     @property
-    def additional_penalty(self) -> np.ndarray:
-        """The additional penalty vector."""
-        return self._additional_penalty
-
-    def get_dataset(self, dataset_label: str) -> xr.Dataset:
-        """Returns the result dataset for the given dataset label.
-
-        Parameters
-        ----------
-        dataset_label :
-            The label of the dataset.
-        """
-        try:
-            return self.data[dataset_label]
-        except KeyError:
-            raise Exception(f"Unknown dataset '{dataset_label}'")
+    def model(self) -> Model:
+        return self.scheme.model
 
     def get_scheme(self) -> Scheme:
         """Return a new scheme from the Result object with optimized parameters.
