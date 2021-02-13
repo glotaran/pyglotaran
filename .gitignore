@@ -7,8 +7,6 @@ tests/resources/PE2017
 # Dask
 dask-worker-space/
 
-# Notebook
-*.ipynb
 
 # TIMP data
 *.RData
