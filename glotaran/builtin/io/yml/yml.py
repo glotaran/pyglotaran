@@ -1,7 +1,9 @@
 import pathlib
+from dataclasses import asdict
 
 import yaml
 
+from glotaran.io import Io
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
@@ -9,6 +11,7 @@ from glotaran.io import register_io
 from glotaran.model import Model
 from glotaran.model import get_model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Result
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
 
@@ -16,7 +19,7 @@ from .sanatize import sanitize_yaml
 
 
 @register_io(["yml", "yaml", "yml_str"])
-class YmlIo:
+class YmlIo(Io):
     def read_model(fmt: str, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 
@@ -128,5 +131,13 @@ class YmlIo:
             saving=saving,
         )
 
-    def write_scheme(fmt: str, file_name: str, result: Scheme):
-        raise NotImplementedError
+    def write_scheme(fmt: str, file_name: str, scheme: Scheme):
+        _write_dict(file_name, asdict(scheme))
+
+    def write_result(fmt: str, file_name: str, saving_options: SavingOptions, result: Result):
+        _write_dict(file_name, asdict(result))
+
+
+def _write_dict(file_name: str, d: dict):
+    with open(file_name, "w") as f:
+        f.write(yaml.dump(d))

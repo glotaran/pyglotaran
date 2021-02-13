@@ -124,6 +124,7 @@ def _create_result(
         data=data,
         free_parameter_labels=free_parameter_labels,
         number_of_function_evaluations=number_of_function_evaluation,
+        initial_parameters=problem.scheme.parameters,
         optimized_parameters=parameters,
         scheme=problem.scheme,
         success=success,
