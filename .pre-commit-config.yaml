@@ -26,6 +26,7 @@ repos:
         types: [file]
         types_or: [python, pyi]
         language_version: python3
+
   - repo: https://github.com/PyCQA/isort
     rev: 5.7.0
     hooks:
@@ -33,6 +34,11 @@ repos:
         types: [file]
         types_or: [python, pyi]
         minimum_pre_commit_version: 2.9.0
+
+  - repo: https://github.com/asottile/setup-cfg-fmt
+    rev: v1.16.0
+    hooks:
+      - id: setup-cfg-fmt
 
   # - repo: https://github.com/PyCQA/pydocstyle
   #   rev: 5.1.1
