@@ -9,7 +9,10 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from glotaran.io import Io
+from glotaran.io import register_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
+from glotaran.project import SavingOptions
 
 #  from glotaran.io.reader import file_reader
 
@@ -241,53 +244,51 @@ def get_data_file_format(line):
 
 
 #  @file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
-def read_ascii_time_trace(fname: str, prepare: bool = True) -> xr.Dataset:
-    """Reads an ascii file in wavelength- or time-explicit format.
+@register_io("ascii")
+class AsciiIo(Io):
+    def read_dataset(fmt: str, file_name: str) -> xr.Dataset | xr.DataArray:
+        """Reads an ascii file in wavelength- or time-explicit format.
 
-    See [1]_ for documentation of this format.
+        See [1]_ for documentation of this format.
 
-    Parameters
-    ----------
-    fname : str
-        Name of the ascii file.
+        Parameters
+        ----------
+        fname : str
+            Name of the ascii file.
 
-    Returns
-    -------
-    dataset : xr.Dataset
+        Returns
+        -------
+        dataset : xr.Dataset
 
-    Notes
-    -----
-    .. [1] https://glotaran.github.io/legacy/file_formats
-    """
+        Notes
+        -----
+        .. [1] https://glotaran.github.io/legacy/file_formats
+        """
 
-    data_file_format = None
-    with open(fname) as f:
-        f.readline()  # Read first line with comments (and discard for now)
-        f.readline()  # Read second line with comments (and discard for now)
-        data_file_format = get_data_file_format(f.readline())
+        data_file_format = None
+        with open(file_name) as f:
+            f.readline()  # Read first line with comments (and discard for now)
+            f.readline()  # Read second line with comments (and discard for now)
+            data_file_format = get_data_file_format(f.readline())
 
-    data_file = (
-        WavelengthExplicitFile(filepath=fname)
-        if data_file_format is DataFileType.wavelength_explicit
-        else TimeExplicitFile(fname)
-    )
+        data_file = (
+            WavelengthExplicitFile(filepath=file_name)
+            if data_file_format is DataFileType.wavelength_explicit
+            else TimeExplicitFile(file_name)
+        )
 
-    return data_file.read(prepare=prepare)
+        return data_file.read(prepare=True)
 
-
-def write_ascii_time_trace(
-    filename: str,
-    dataset: xr.DataArray,
-    overwrite=False,
-    comment="",
-    file_format="TimeExplicit",
-    number_format="%.10e",
-):
-    data_file = (
-        TimeExplicitFile(filepath=filename, dataset=dataset)
-        if file_format == "TimeExplicit"
-        else WavelengthExplicitFile(filepath=filename, dataset=dataset)
-    )
-    data_file.write(
-        overwrite=overwrite, comment=comment, file_format=file_format, number_format=number_format
-    )
+        def write_dataset(
+            fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
+        ):
+            file_format = "TimeExplicit"
+            number_format = "%.10e"
+            data_file = (
+                TimeExplicitFile(filepath=file_name, dataset=dataset)
+                if file_format == "TimeExplicit"
+                else WavelengthExplicitFile(filepath=file_name, dataset=dataset)
+            )
+            data_file.write(
+                overwrite=True, comment="", file_format=file_format, number_format=number_format
+            )
