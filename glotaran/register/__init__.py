@@ -1,1 +1,0 @@
-"""Glotarans parsing package"""

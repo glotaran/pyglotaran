@@ -10,6 +10,7 @@ import xarray as xr
 import yaml
 
 import glotaran
+from glotaran.io import load_parameters
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
@@ -78,7 +79,7 @@ class Scheme:
         path = scheme["parameters"]
         fmt = scheme.get("parameter_format", None)
         try:
-            parameters = glotaran.parameter.ParameterGroup.from_file(path, fmt)
+            parameters = load_parameters(path, fmt)
         except Exception as e:
             raise ValueError(f"Error loading parameters: {e}")
 

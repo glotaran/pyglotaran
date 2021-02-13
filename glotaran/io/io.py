@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from glotaran.model import Model
-from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 if TYPE_CHECKING:
     from glotaran.analysis import Result
@@ -16,10 +16,10 @@ class Io:
     def write_model(fmt: str, file_name: str, model: Model):
         raise NotImplementedError
 
-    def read_parameter(fmt: str, file_name: str) -> Parameter:
+    def read_parameters(fmt: str, file_name: str) -> ParameterGroup:
         raise NotImplementedError
 
-    def write_parameter(fmt: str, file_name: str, parameter: Parameter):
+    def write_parameters(fmt: str, file_name: str, parameters: ParameterGroup):
         raise NotImplementedError
 
     def read_result(fmt: str, result_name: str) -> Result:
