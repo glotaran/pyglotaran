@@ -1,9 +1,13 @@
-"""A register for models"""
 from __future__ import annotations
 
 import os
 
+import xarray as xr
+
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import SavingOptions
+from glotaran.project import Scheme
 
 from .io import Io
 
@@ -30,7 +34,7 @@ def known_fmts() -> list[str]:
     return [fmt for fmt in _io_register]
 
 
-def load_model(file_name: str, fmt: str = None):
+def load_model(file_name: str, fmt: str = None) -> Model:
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
     try:
@@ -39,7 +43,7 @@ def load_model(file_name: str, fmt: str = None):
         raise ValueError(f"Cannot read models with format '{fmt}'")
 
 
-def load_scheme(file_name: str, fmt: str = None):
+def load_scheme(file_name: str, fmt: str = None) -> Scheme:
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
     try:
@@ -48,7 +52,7 @@ def load_scheme(file_name: str, fmt: str = None):
         raise ValueError(f"Cannot read scheme with format '{fmt}'")
 
 
-def load_parameters(file_name: str, fmt: str = None):
+def load_parameters(file_name: str, fmt: str = None) -> ParameterGroup:
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
     try:
@@ -62,7 +66,26 @@ def write_parameters(file_name: str, fmt: str, parameters: ParameterGroup):
     try:
         return io.write_parameters(fmt, file_name, parameters)
     except NotImplementedError:
-        raise ValueError(f"Cannot read parameters with format '{fmt}'")
+        raise ValueError(f"Cannot write parameters with format '{fmt}'")
+
+
+def load_dataset(file_name: str, fmt: str = None) -> xr.Dataset | xr.DataArray:
+    fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
+    io = get_io(fmt)
+    try:
+        return io.read_dataset(fmt, file_name)
+    except NotImplementedError:
+        raise ValueError(f"Cannot read dataset with format '{fmt}'")
+
+
+def write_dataset(
+    file_name: str, fmt: str, dataset: xr.Dataset, saving_options: SavingOptions = SavingOptions()
+):
+    io = get_io(fmt)
+    try:
+        return io.write_dataset(fmt, file_name, saving_options, dataset)
+    except NotImplementedError:
+        raise ValueError(f"Cannot write dataset with format '{fmt}'")
 
 
 def _get_fmt_from_file_name(file_name: str) -> str:
