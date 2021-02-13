@@ -22,6 +22,7 @@ sphinx-copybutton>=0.3.0
 numpydoc>=0.8.0
 matplotlib>=3.0.0
 IPython>=7.2.0
+jupyterlab>=3.0.0
 
 
 # testing dependencies
