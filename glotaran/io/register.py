@@ -44,7 +44,6 @@ def load_model(file_name: str, fmt: str = None) -> Model:
         raise ValueError(f"Cannot read models with format '{fmt}'")
 
 
-@staticmethod
 def load_scheme(file_name: str, fmt: str = None) -> Scheme:
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
@@ -54,7 +53,6 @@ def load_scheme(file_name: str, fmt: str = None) -> Scheme:
         raise ValueError(f"Cannot read scheme with format '{fmt}'")
 
 
-@staticmethod
 def write_scheme(file_name: str, fmt: str, scheme: Scheme):
     io = get_io(fmt)
     try:
@@ -63,7 +61,6 @@ def write_scheme(file_name: str, fmt: str, scheme: Scheme):
         raise ValueError(f"Cannot write dataset with format '{fmt}'")
 
 
-@staticmethod
 def load_parameters(file_name: str, fmt: str = None) -> ParameterGroup:
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
@@ -73,7 +70,6 @@ def load_parameters(file_name: str, fmt: str = None) -> ParameterGroup:
         raise ValueError(f"Cannot read parameters with format '{fmt}'")
 
 
-@staticmethod
 def write_parameters(file_name: str, fmt: str, parameters: ParameterGroup):
     io = get_io(fmt)
     try:
@@ -82,7 +78,6 @@ def write_parameters(file_name: str, fmt: str, parameters: ParameterGroup):
         raise ValueError(f"Cannot write parameters with format '{fmt}'")
 
 
-@staticmethod
 def load_dataset(file_name: str, fmt: str = None) -> xr.Dataset | xr.DataArray:
     fmt = _get_fmt_from_file_name(file_name) if fmt is None else fmt
     io = get_io(fmt)
@@ -92,7 +87,6 @@ def load_dataset(file_name: str, fmt: str = None) -> xr.Dataset | xr.DataArray:
         raise ValueError(f"Cannot read dataset with format '{fmt}'")
 
 
-@staticmethod
 def write_dataset(
     file_name: str, fmt: str, dataset: xr.Dataset, saving_options: SavingOptions = SavingOptions()
 ):
@@ -103,7 +97,6 @@ def write_dataset(
         raise ValueError(f"Cannot write dataset with format '{fmt}'")
 
 
-@staticmethod
 def write_result(
     file_name: str, fmt: str, result: Result, saving_options: SavingOptions = SavingOptions()
 ):
@@ -114,7 +107,6 @@ def write_result(
         raise ValueError(f"Cannot write dataset with format '{fmt}'")
 
 
-@staticmethod
 def _get_fmt_from_file_name(file_name: str) -> str:
     _, fmt = os.path.splitext(file_name)
     if fmt == "":
