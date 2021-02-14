@@ -1,7 +1,7 @@
 import click
 
-from glotaran.io.reader import known_reading_formats
-from glotaran.parse.register import known_model_names
+from glotaran.io.register import known_fmts
+from glotaran.model import known_model_names
 
 
 def plugin_list_cmd():
@@ -19,7 +19,7 @@ def plugin_list_cmd():
 
     output += "\nFile Formats\n\n"
 
-    for reader in known_reading_formats.values():
-        output += f"    * .{reader.extension} : {reader.name}\n"
+    for reader_fmt in known_fmts():
+        output += f"    * .{reader_fmt}\n"
 
     click.echo(output)
