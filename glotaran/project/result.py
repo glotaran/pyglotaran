@@ -15,66 +15,78 @@ from .scheme import Scheme
 
 @dataclass
 class Result:
-    """The result of a global analysis"""
+    r"""The result of a global analysis
 
+    Attributes
+    -------
+    additional_penalty:
+        A vector with the value for each additional penalty, or None
+    cost: ArrayLike
+    data:
+        The resulting data as a dictionary of :xarraydoc:`Dataset`
+        Notes
+        -----
+        The actual content of the data depends on the actual model and can be found in the
+        documentation for the model.
+    free_parameter_labels:
+        List of labels of the free parameters used in optimization.
+    number_of_function_evaluations:
+        The number of function evaluations.
+    optimized_parameters:
+        The optimized parameters, organized in a :class:`ParameterGroup`
+    scheme: Scheme
+    success:
+        Indicates if the optimization was successful
+    termination_reason:
+        The reason (message when) the optimizer terminated
+    chi_square:
+        The chi-square of the optimization.
+        :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`.
+    covariance_matrix:
+        Covariance matrix
+        The rows and columns are corresponding to :attr:`free_parameter_labels`.
+    degrees_of_freedom:
+        Degrees of freedom in optimization :math:`N - N_{vars}`.
+    jacobian:
+        Modified Jacobian matrix at the solution
+        See also: :func:`scipy.optimize.least_squares`
+    number_of_data_points:
+        Number of data points :math:`N`.
+    number_of_jacobian_evaluations:
+        The number of jacobian evaluations.
+    number_of_variables:
+        Number of variables in optimization :math:`N_{vars}`
+    optimality:
+        First-order optimality measure
+        See also: :func:`scipy.optimize.least_squares`
+    reduced_chi_square:
+        The reduced chi-square of the optimization.
+        :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
+    root_mean_square_error:
+        The root mean square error the optimization.
+        :math:`rms = \sqrt{\chi^2_{red}}`
+    """
     additional_penalty: np.ndarray | None
-    """A vector with the value for each additional penalty, or None"""
     cost: ArrayLike
     data: dict[str, xr.Dataset]
-    """The resulting data as a dictionary of :xarraydoc:`Dataset`.
-
-    Notes
-    -----
-    The actual content of the data depends on the actual model and can be found in the
-    documentation for the model.
-    """
     free_parameter_labels: list[str]
-    """List of labels of the free parameters used in optimization."""
     number_of_function_evaluations: int
-    """The number of function evaluations."""
     initial_parameters: ParameterGroup
     optimized_parameters: ParameterGroup
-    """The optimized parameters, organized in a :class:`ParameterGroup`"""
     scheme: Scheme
     success: bool
-    """Indicates if the optimization was successful."""
     termination_reason: str
-    """The reason (message when) the optimizer terminated"""
-
     # The below can be none in case of unsuccessful optimization
     chi_square: float | None = None
-    r"""The chi-square of the optimization.
-
-    :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
     covariance_matrix: ArrayLike | None = None
-    """Covariance matrix.
-
-    The rows and columns are corresponding to :attr:`free_parameter_labels`."""
     degrees_of_freedom: int | None = None
-    """Degrees of freedom in optimization :math:`N - N_{vars}`."""
     jacobian: ArrayLike | None = None
-    """Modified Jacobian matrix at the solution
-
-    See also: :func:`scipy.optimize.least_squares`
-    """
     number_of_data_points: int | None = None
-    """Number of data points :math:`N`."""
     number_of_jacobian_evaluations: int | None = None
-    """The number of jacobian evaluations."""
     number_of_variables: int | None = None
-    """Number of variables in optimization :math:`N_{vars}`"""
     optimality: float | None = None
     reduced_chi_square: float | None = None
-    r"""The reduced chi-square of the optimization.
-
-    :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
-    """
     root_mean_square_error: float | None = None
-    r"""
-    The root mean square error the optimization.
-
-    :math:`rms = \sqrt{\chi^2_{red}}`
-    """
 
     @property
     def model(self) -> Model:
