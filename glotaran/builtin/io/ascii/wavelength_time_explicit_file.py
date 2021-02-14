@@ -279,16 +279,16 @@ class AsciiIo(Io):
 
         return data_file.read(prepare=True)
 
-        def write_dataset(
-            fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
-        ):
-            file_format = "TimeExplicit"
-            number_format = "%.10e"
-            data_file = (
-                TimeExplicitFile(filepath=file_name, dataset=dataset)
-                if file_format == "TimeExplicit"
-                else WavelengthExplicitFile(filepath=file_name, dataset=dataset)
-            )
-            data_file.write(
-                overwrite=True, comment="", file_format=file_format, number_format=number_format
-            )
+    def write_dataset(
+        fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
+    ):
+        file_format = "TimeExplicit"
+        number_format = "%.10e"
+        data_file = (
+            TimeExplicitFile(filepath=file_name, dataset=dataset)
+            if file_format == "TimeExplicit"
+            else WavelengthExplicitFile(filepath=file_name, dataset=dataset)
+        )
+        data_file.write(
+            overwrite=True, comment="", file_format=file_format, number_format=number_format
+        )
