@@ -246,6 +246,7 @@ def get_data_file_format(line):
 #  @file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
 @register_io("ascii")
 class AsciiIo(Io):
+    @staticmethod
     def read_dataset(fmt: str, file_name: str) -> xr.Dataset | xr.DataArray:
         """Reads an ascii file in wavelength- or time-explicit format.
 
@@ -279,6 +280,7 @@ class AsciiIo(Io):
 
         return data_file.read(prepare=True)
 
+    @staticmethod
     def write_dataset(
         fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
     ):

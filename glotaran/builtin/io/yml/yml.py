@@ -20,6 +20,7 @@ from .sanatize import sanitize_yaml
 
 @register_io(["yml", "yaml", "yml_str"])
 class YmlIo(Io):
+    @staticmethod
     def read_model(fmt: str, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 
@@ -52,6 +53,7 @@ class YmlIo(Io):
         model = get_model(model_type)
         return model.from_dict(spec)
 
+    @staticmethod
     def read_parameters(fmt: str, file_name: str) -> ParameterGroup:
 
         if fmt == "yml_str":
@@ -65,6 +67,7 @@ class YmlIo(Io):
         else:
             return ParameterGroup.from_dict(spec)
 
+    @staticmethod
     def read_scheme(fmt: str, file_name: str) -> Scheme:
         if fmt == "yml_str":
             yml = file_name
@@ -131,9 +134,11 @@ class YmlIo(Io):
             saving=saving,
         )
 
+    @staticmethod
     def write_scheme(fmt: str, file_name: str, scheme: Scheme):
         _write_dict(file_name, asdict(scheme))
 
+    @staticmethod
     def write_result(fmt: str, file_name: str, saving_options: SavingOptions, result: Result):
         _write_dict(file_name, asdict(result))
 
