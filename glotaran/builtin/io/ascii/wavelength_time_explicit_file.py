@@ -280,6 +280,7 @@ class AsciiIo(Io):
 
         return data_file.read(prepare=True)
 
+    @staticmethod
     def write_dataset(
         fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
     ):
