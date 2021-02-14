@@ -1,8 +1,9 @@
 import numpy as np
 
-import glotaran as gta
+from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.parameter import ParameterGroup
 
-sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
+sim_model = KineticSpectrumModel.from_dict(
     {
         "initial_concentration": {
             "j1": {
@@ -62,7 +63,7 @@ sim_model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
     }
 )
 
-wanted_parameter = gta.ParameterGroup.from_dict(
+wanted_parameter = ParameterGroup.from_dict(
     {
         "j": [
             ["1", 1, {"non-negative": False, "vary": False}],
@@ -78,7 +79,7 @@ wanted_parameter = gta.ParameterGroup.from_dict(
     }
 )
 
-parameter = gta.ParameterGroup.from_dict(
+parameter = ParameterGroup.from_dict(
     {
         "j": [
             ["1", 1, {"vary": False, "non-negative": False}],
@@ -104,7 +105,7 @@ dataset = sim_model.simulate(
     noise_std_dev=1e-2,
 )
 
-model = gta.builtin.models.kinetic_spectrum.KineticSpectrumModel.from_dict(
+model = KineticSpectrumModel.from_dict(
     {
         "initial_concentration": {
             "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
