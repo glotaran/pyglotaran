@@ -12,11 +12,15 @@ In addition we need to import some extra components for later use.
 
 .. ipython::
 
-   In [1]: import glotaran as gta
+   In [1]: from glotaran.analysis.optimize import optimize
 
-   In [2]: from glotaran.analysis.optimize import optimize
+   In [1]: from glotaran.project.scheme import Scheme
 
-   In [3]: from glotaran.analysis.scheme import Scheme
+   In [1]: from glotaran.io import load_model
+
+   In [1]: from glotaran.io import load_parameters
+
+   In [1]: from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
 Let us get some data to analyze:
 
@@ -24,7 +28,7 @@ Let us get some data to analyze:
 
    In [1]: from glotaran.examples.sequential import dataset
 
-   In [2]: dataset
+   In [1]: dataset
 
 Like all data in ``pyglotaran``, the dataset is a :class:`xarray:xarray.Dataset`.
 You can find more information about the ``xarray`` library the `xarray hompage`_.
@@ -63,7 +67,7 @@ things).
 
 .. ipython:: python
 
-   dataset = gta.io.prepare_time_trace_dataset(dataset)
+   dataset = prepare_time_trace_dataset(dataset)
    dataset
 
 First, take a look at the first 10 singular values:
@@ -117,10 +121,10 @@ Now you can load the model file.
 .. ipython::
 
    @verbatim
-   In [1]: model = gta.read_model_from_yaml_file('model.yml')
+   In [1]: model = load_model('model.yml')
 
    @suppress
-   In [1]: model_spec = """
+   In [1]: model_spec = """\
       ...: type: kinetic-spectrum
       ...:
       ...: initial_concentration:
@@ -151,7 +155,7 @@ Now you can load the model file.
       ...:     megacomplex: [m1]
       ...:     irf: irf1
       ...: """
-      ...: model = gta.read_model_from_yaml(model_spec)
+      ...: model = load_model(model_spec, 'yml_str')
 
 You can check your model for problems with ``model.validate``.
 
@@ -181,10 +185,10 @@ the following content.
 .. ipython::
 
    @verbatim
-   In [1]: parameters = gta.read_parameters_from_yaml_file('parameters.yml')
+   In [1]: parameters = load_parameters('parameters.yml')
 
    @suppress
-   In [1]: parameters = gta.read_parameters_from_yaml("""
+   In [1]: parameters = load_parameters("""
       ...:  input:
       ...:    - ['1', 1, {'vary': False, 'non-negative': False}]
       ...:    - ['0', 0, {'vary': False, 'non-negative': False}]
@@ -196,7 +200,7 @@ the following content.
       ...:  irf:
       ...:    - ['center', 0.3]
       ...:    - ['width', 0.1]
-      ...: """)
+      ...: """, 'yml_str')
 
 You can ``model.validate`` also to check for missing parameters.
 
@@ -230,7 +234,7 @@ You can get the resulting data for your dataset with ``result.get_dataset``.
 
 .. ipython:: python
 
-   result_dataset = result.get_dataset('dataset1')
+   result_dataset = result.data['dataset1']
    result_dataset
 
 The resulting data can be visualized the same way as the dataset. To judge the
