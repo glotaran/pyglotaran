@@ -29,6 +29,7 @@ jobs:
             pip install pre-commit
             pre-commit autoupdate || (exit 0);
             pre-commit run -a || (exit 0);
+          COMMIT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           COMMIT_MESSAGE: "⬆️ UPGRADE: Autoupdate pre-commit config"
           PR_BRANCH_NAME: "pre-commit-config-update-${PR_ID}"
           PR_TITLE: "⬆️ UPGRADE: Autoupdate pre-commit config"
