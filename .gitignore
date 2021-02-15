@@ -93,6 +93,9 @@ docs/source/user_documentation/api/*
 # doc figures
 docs/source/images/plot
 
+# Datafiles created by notebooks
+docs/**/*.nc
+
 # PyBuilder
 target/
 
