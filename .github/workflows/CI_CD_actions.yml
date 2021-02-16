@@ -17,12 +17,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          conda-channels: conda-forge
+          activate-conda: false
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install dependencies
         run: |
+          conda install -y pandoc
           python -m pip install -U pip wheel
           pip install .
           python -m pip install -U -r requirements_dev.txt
@@ -36,12 +42,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          conda-channels: conda-forge
+          activate-conda: false
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install dependencies
         run: |
+          conda install -y pandoc
           python -m pip install -U pip wheel
           pip install .
           python -m pip install -U -r requirements_dev.txt
