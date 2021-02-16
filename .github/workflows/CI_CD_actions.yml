@@ -67,6 +67,25 @@ jobs:
         if: ${{ always() }}
         run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
 
+  docs-notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip wheel
+          pip install .
+          python -m pip install -U -r requirements_dev.txt
+      - name: Show installed packages
+        run: pip freeze
+      - name: Build docs
+        run: |
+          py.test -vv --nbval docs/source/notebooks
+
   test:
     runs-on: ${{ matrix.os }}
     needs: pre-commit
@@ -100,7 +119,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [test, docs]
+    needs: [test, docs, docs-notebooks]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8

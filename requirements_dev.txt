@@ -26,6 +26,7 @@ sphinx-last-updated-by-git>=0.3.0
 jupyterlab>=3.0.0
 matplotlib>=3.0.0
 IPython>=7.2.0
+nbval>=0.9.6
 
 
 # testing dependencies
