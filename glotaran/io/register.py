@@ -18,7 +18,7 @@ _io_register = {}
 def register_io(fmt: str | list[str], io: Io):
     fmt = fmt if isinstance(fmt, list) else [fmt]
     for fmt_name in fmt:
-        _io_register[fmt_name] = io
+        _io_register[fmt_name] = io()
 
 
 def known_fmt(fmt: str) -> bool:
