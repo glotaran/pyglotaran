@@ -12,7 +12,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.9.0
+    rev: v2.10.0
     hooks:
       - id: pyupgrade
         types: [file]
@@ -26,6 +26,7 @@ repos:
         types: [file]
         types_or: [python, pyi]
         language_version: python3
+
   - repo: https://github.com/PyCQA/isort
     rev: 5.7.0
     hooks:
@@ -33,6 +34,11 @@ repos:
         types: [file]
         types_or: [python, pyi]
         minimum_pre_commit_version: 2.9.0
+
+  - repo: https://github.com/asottile/setup-cfg-fmt
+    rev: v1.16.0
+    hooks:
+      - id: setup-cfg-fmt
 
   # - repo: https://github.com/PyCQA/pydocstyle
   #   rev: 5.1.1
@@ -72,7 +78,7 @@ repos:
       - id: rstcheck
         additional_dependencies: [rstcheck, sphinx]
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.7.0
+    rev: v1.7.1
     hooks:
       - id: rst-backticks
   - repo: https://github.com/codespell-project/codespell
