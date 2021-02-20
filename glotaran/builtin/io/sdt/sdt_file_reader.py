@@ -12,7 +12,6 @@ from glotaran.io import register_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
 
-#  @file_reader(extension="sdt", name="Becker & Hickel SDT file format.")
 @register_io("sdt")
 class SdtIo(Io):
     def read_dataset(
