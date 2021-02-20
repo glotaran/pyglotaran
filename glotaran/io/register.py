@@ -25,7 +25,7 @@ def known_fmt(fmt: str) -> bool:
     return fmt in _io_register
 
 
-def get_io(fmt: str):
+def get_io(fmt: str) -> Io:
     if not known_fmt(fmt):
         raise ValueError(f"Unknown format '{fmt}'. Known formats are: {known_fmts()}")
     return _io_register[fmt]
