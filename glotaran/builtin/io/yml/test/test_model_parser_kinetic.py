@@ -15,9 +15,9 @@ from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import Kine
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import ZeroConstraint
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAreaPenalty
 from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
+from glotaran.io import load_model
 from glotaran.model import Weight
 from glotaran.parameter import ParameterGroup
-from glotaran.parse.parser import load_yaml_file
 
 THIS_DIR = dirname(abspath(__file__))
 
@@ -25,7 +25,7 @@ THIS_DIR = dirname(abspath(__file__))
 @pytest.fixture
 def model():
     spec_path = join(THIS_DIR, "test_model_spec_kinetic.yml")
-    m = load_yaml_file(spec_path)
+    m = load_model(spec_path)
     print(m.markdown())
     return m
 

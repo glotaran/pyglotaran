@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 
-from glotaran.builtin.file_formats.ascii.wavelength_time_explicit_file import ExplicitFile
+from glotaran.builtin.io.ascii.wavelength_time_explicit_file import ExplicitFile
 
 DATA_DIR = Path(__file__).parent
 TEST_FILE_ASCII = DATA_DIR.joinpath("data.ascii")

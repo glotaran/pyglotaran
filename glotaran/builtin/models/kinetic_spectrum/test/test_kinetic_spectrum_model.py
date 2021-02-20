@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from glotaran import read_model_from_yaml
-from glotaran import read_parameters_from_yaml
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.scheme import Scheme
+from glotaran.io import load_model
+from glotaran.io import load_parameters
+from glotaran.project import Scheme
 
 MODEL_1C_BASE = """\
 type: kinetic-spectrum
@@ -74,18 +74,18 @@ PARAMETERS_1C_GAUSSIAN_WANTED = f"""\
 
 
 class OneComponentOneChannel:
-    model = read_model_from_yaml(MODEL_1C_NO_IRF)
-    initial_parameters = read_parameters_from_yaml(PARAMETERS_1C_INITIAL)
-    wanted_parameters = read_parameters_from_yaml(PARAMETERS_1C_WANTED)
+    model = load_model(MODEL_1C_NO_IRF, fmt="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_1C_INITIAL, fmt="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_1C_WANTED, fmt="yml_str")
     time = np.asarray(np.arange(0, 50, 1.5))
     spectral = np.asarray([0])
     axis = {"time": time, "spectral": spectral}
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = read_model_from_yaml(MODEL_1C_GAUSSIAN_IRF)
-    initial_parameters = read_parameters_from_yaml(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL)
-    wanted_parameters = read_parameters_from_yaml(PARAMETERS_1C_GAUSSIAN_WANTED)
+    model = load_model(MODEL_1C_GAUSSIAN_IRF, fmt="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL, fmt="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_WANTED, fmt="yml_str")
     time = np.asarray(np.arange(-10, 50, 1.5))
     spectral = np.asarray([0])
     axis = {"time": time, "spectral": spectral}
@@ -216,18 +216,18 @@ kinetic:
 
 
 class ThreeComponentParallel:
-    model = read_model_from_yaml(MODEL_3C_PARALLEL)
-    initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL_PARALLEL)
-    wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_PARALLEL_WANTED)
+    model = load_model(MODEL_3C_PARALLEL, fmt="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_PARALLEL, fmt="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_3C_PARALLEL_WANTED, fmt="yml_str")
     time = np.arange(-10, 100, 1.5)
     spectral = np.arange(600, 750, 10)
     axis = {"time": time, "spectral": spectral}
 
 
 class ThreeComponentSequential:
-    model = read_model_from_yaml(MODEL_3C_SEQUENTIAL)
-    initial_parameters = read_parameters_from_yaml(PARAMETERS_3C_INITIAL_SEQUENTIAL)
-    wanted_parameters = read_parameters_from_yaml(PARAMETERS_3C_SIM_SEQUENTIAL)
+    model = load_model(MODEL_3C_SEQUENTIAL, fmt="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_SEQUENTIAL, fmt="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_3C_SIM_SEQUENTIAL, fmt="yml_str")
     time = np.asarray(np.arange(-10, 50, 1.0))
     spectral = np.arange(600, 750, 5.0)
     axis = {"time": time, "spectral": spectral}

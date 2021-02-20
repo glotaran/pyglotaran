@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 import pytest
 
-from glotaran.parse.util import sanitize_list_with_broken_tuples
+from glotaran.builtin.io.yml.sanatize import sanitize_list_with_broken_tuples
 
 
 class MangledListTestData(NamedTuple):

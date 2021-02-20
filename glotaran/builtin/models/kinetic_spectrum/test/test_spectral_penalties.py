@@ -10,11 +10,11 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import _get_idx_from_interval
 from glotaran.io import prepare_time_trace_dataset
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Scheme
 
 ParameterSpec = namedtuple("ParameterSpec", "base equal_area shapes")
 NoiseSpec = namedtuple("NoiseSpec", "active seed std_dev")

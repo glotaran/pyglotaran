@@ -3,8 +3,10 @@ import typing
 
 import click
 
-import glotaran as gta
 from glotaran.analysis.optimize import optimize
+from glotaran.io import save_result
+from glotaran.io.register import known_fmts
+from glotaran.project.scheme import Scheme
 
 from . import util
 
@@ -13,7 +15,7 @@ from . import util
     "--dataformat",
     "-dfmt",
     default=None,
-    type=click.Choice(gta.io.reader.known_reading_formats.keys()),
+    type=click.Choice(known_fmts()),
     help="The input format of the data. Will be inferred from extension if not set.",
 )
 @click.option(
@@ -85,7 +87,7 @@ def optimize_cmd(
             path = dataset_files[label]
             datasets[label] = util.load_dataset_file(path, fmt=dataformat, verbose=True)
 
-        scheme = gta.analysis.scheme.Scheme(
+        scheme = Scheme(
             model=model,
             parameters=parameters,
             data=datasets,
@@ -122,12 +124,10 @@ def optimize_cmd(
             try:
                 click.echo(f"Saving directory is '{out}'")
                 if yes or click.confirm("Do you want to save the data?", default=True):
-                    paths = result.save(out)
-                    click.echo("File saving successful, the following files have been written:\n")
-                    for p in paths:
-                        click.echo(f"* {p}")
+                    save_result(result, out)
+                    click.echo("File saving successful.")
             except Exception as e:
-                click.echo(f"An error occurred during optimization: \n\n{e}", err=True)
+                click.echo(f"An error occurred during saving: \n\n{e}", err=True)
                 sys.exit(1)
 
         click.echo("All done, have a nice day!")

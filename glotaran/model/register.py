@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from glotaran.model import Model
+    from .model import Model
 
 _model_register = {}
 
@@ -41,6 +41,10 @@ def get_model(model_type: str) -> Model:
     model_type :
         model_type is type of the model.
     """
+    if not known_model(model_type):
+        raise ValueError(
+            f"Unknown model type '{model_type}'. Known model types are: {known_model_names()}"
+        )
     return _model_register[model_type]
 
 

@@ -3,9 +3,9 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.scheme import Scheme
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Scheme
 
 
 def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
