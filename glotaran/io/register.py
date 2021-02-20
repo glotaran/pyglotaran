@@ -58,7 +58,7 @@ def write_scheme(file_name: str, fmt: str, scheme: Scheme):
     try:
         return io.write_scheme(fmt, file_name, scheme)
     except NotImplementedError:
-        raise ValueError(f"Cannot write dataset with format '{fmt}'")
+        raise ValueError(f"Cannot write scheme with format '{fmt}'")
 
 
 def load_parameters(file_name: str, fmt: str = None) -> ParameterGroup:
