@@ -1,8 +1,8 @@
 """Glotaran package __init__.py"""
 
-import pkg_resources
+from importlib import metadata
 
-for entry_point in pkg_resources.iter_entry_points("glotaran.plugins"):
+for entry_point in metadata.entry_points()["glotaran.plugins"]:
     entry_point.load()
 
 __version__ = "0.3.0"
