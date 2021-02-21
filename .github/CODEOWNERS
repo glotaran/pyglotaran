@@ -25,13 +25,17 @@ LICENSE                         @glotaran/pyglotaran_creators
 
 # docs
 /docs/**/*.rst                  @glotaran/maintainers @glotaran/pyglotaran_creators
-# /docs/**/*.md                   @glotaran/maintainers @glotaran/pyglotaran_creators
+# /docs/**/*.md                 @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
 /glotaran/analysis/             @joernweissenborn
 
 # builtin module:
-/glotaran/builtin/file_formats/ @jsnel @s-weigand
+/glotaran/builtin/io/*          @glotaran/admins
+/glotaran/builtin/io/ascii      @jsnel @glotaran/maintainers
+/glotaran/builtin/io/csv        @joernweissenborn @glotaran/maintainers
+/glotaran/builtin/io/netCDF     @joernweissenborn @glotaran/maintainers
+/glotaran/builtin/io/sdt        @s-weigand @glotaran/maintainers
 /glotaran/builtin/models/       @jsnel @joernweissenborn
 
 # cli
@@ -49,5 +53,5 @@ LICENSE                         @glotaran/pyglotaran_creators
 # parameter
 /glotaran/parameter/            @jsnel @joernweissenborn
 
-# parse
-/glotaran/parse/                @jsnel @joernweissenborn
+# project
+/glotaran/project/              @jsnel @joernweissenborn
