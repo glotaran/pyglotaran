@@ -5,7 +5,7 @@ wheel>=0.30.0
 # glotaran setup dependencies
 asteval==0.9.22
 numpy==1.20.1
-scipy==1.6.0
+scipy==1.6.1
 click==7.1.2
 numba==0.52.0
 pandas==1.2.2
