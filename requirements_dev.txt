@@ -31,6 +31,9 @@ nbval>=0.9.6
 
 # testing dependencies
 tox>=3.0.0
+# For now we use my feature branch to install tox-direct
+git+https://github.com/s-weigand/tox-direct.git@add_testenv_attribute
+# tox-direct>=0.3.5
 pytest>=3.7.1
 pluggy>=0.7
 pytest-cov>=2.5.1
