@@ -6,10 +6,11 @@ pyGloTarAn is a Python library for Global and Target Analysis
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pyglotaran.svg)](https://anaconda.org/conda-forge/pyglotaran)
 ![Tests](https://github.com/glotaran/pyglotaran/workflows/Tests/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
+[![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/glotaran/pyglotaran.git/main?urlpath=lab%2Ftree%2Fdocs%2Fsource%2Fnotebooks)
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/glotaran/pyglotaran.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/glotaran/pyglotaran/alerts/)
 
-**Warning**: This is an *early access* release, please refer to the [usage notice](#usage-notice)   down below prior to committing to use pyglotaran to avoid surprises down the line.
+**Warning**: This is an _early access_ release, please refer to the [usage notice](#usage-notice) down below prior to committing to use pyglotaran to avoid surprises down the line.
 
 ## Installation
 
@@ -44,7 +45,7 @@ cd pyglotaran
 pip install .
 ```
 
-_To enforce the installation within a Python3 environment on systems where Python2 is the default, instead of the last command use `pip3 install .`.
+\_To enforce the installation within a Python3 environment on systems where Python2 is the default, instead of the last command use `pip3 install .`.
 
 _Note for Anaconda Users: Please make sure to update your distribution prior to install since some packages managed by Anaconda cannot be updated by `pip`._
 
@@ -62,7 +63,7 @@ The examples used in this validation process can be obtained from the [pyglotara
 
 The pyglotaran package derives its name from the glotaran software package (now called [glotaran-legacy](https://github.com/glotaran/glotaran-legacy)), first released in 2011 and described in a highly-cited publication in the Journal of Statistical Software, under the title [Glotaran: A Java-Based Graphical User Interface for the R Package TIMP](https://www.jstatsoft.org/article/view/v049i03) ([DOI: 10.18637/jss.v049.i03](http://dx.doi.org/10.18637/jss.v049.i03)).
 
-The [pyglotaran](https://github.com/glotaran/pyglotaran) software can be considered the spiritual successor of the  [glotaran-legacy](https://github.com/glotaran/glotaran-legacy) software and has the backing of many of its original creators.
+The [pyglotaran](https://github.com/glotaran/pyglotaran) software can be considered the spiritual successor of the [glotaran-legacy](https://github.com/glotaran/glotaran-legacy) software and has the backing of many of its original creators.
 
 ## The future of global and target analysis
 
