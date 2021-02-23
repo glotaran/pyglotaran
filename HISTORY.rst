@@ -2,6 +2,14 @@
 History
 =======
 
+0.3.1 (2021-02-23)
+------------------
+
+* Added compatibility for numpy 1.20 and raised minimum required numpy version to 1.20 (#555)
+* Fixed excessive memory consumption in result creation due to full SVD computation (#574)
+* Added feature parameter history (#557)
+* Moved setup logic to ``setup.cfg`` (#560)
+
 0.3.0 (2021-02-11)
 ------------------
 
