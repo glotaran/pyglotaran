@@ -58,6 +58,14 @@ repos:
         args: [--nbqa-mutate, --py38-plus]
       - id: nbqa-flake8
 
+  - repo: local
+    hooks:
+      - id: nbstripout-empty
+        name: Strip empty notebook cells
+        language: system
+        entry: python docs/strip_empty_notebook_cells.py
+        types: [jupyter]
+
   # Linters
 
   # - repo: https://github.com/PyCQA/pydocstyle
