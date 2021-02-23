@@ -57,6 +57,10 @@ repos:
         additional_dependencies: [pyupgrade==2.9.0]
         args: [--nbqa-mutate, --py38-plus]
       - id: nbqa-flake8
+      - id: nbqa-check-ast
+      - id: nbqa-isort
+        additional_dependencies: [isort==5.7.0]
+        args: [--nbqa-mutate]
 
   - repo: local
     hooks:
