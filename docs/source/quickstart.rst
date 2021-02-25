@@ -79,7 +79,7 @@ First, take a look at the first 10 singular values:
    @savefig quickstart_data_singular_values.png width=8in
    In [1]: plot_data.plot(yscale='log', marker='o', linewidth=0, aspect=2, size=5);
 
-To analyze our data, we need to create a model. Create a file called ``model.py``
+To analyze our data, we need to create a model. Create a file called ``model.yml``
 in your working directory and fill it with the following:
 
 
