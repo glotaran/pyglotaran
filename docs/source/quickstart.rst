@@ -3,8 +3,11 @@ Quickstart/Cheat-Sheet
 
 .. warning::
 
-   pyglotaran is in very early stage of development. You should not use it for
-   actual science at the moment.
+   This is documentation for an early access release of pyglotaran, certain aspects of how it works
+   (as demonstrated in this quickstart) may be subjected to changes in future 0.x releases of the software.
+   Please consult the `pyglotaran readme`_ to learn more on what this means.
+
+.. _pyglotaran readme: https://github.com/glotaran/pyglotaran/blob/maintenance/v0.3/README.md
 
 To start using pyglotaran in your project, you have to import it first.
 In addition we need to import some extra components for later use.
