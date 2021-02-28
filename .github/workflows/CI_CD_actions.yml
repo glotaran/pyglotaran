@@ -78,8 +78,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -U pip wheel
-          pip install .
           python -m pip install -U -r requirements_dev.txt
+          python -m pip install .
       - name: Show installed packages
         run: pip freeze
       - name: Build docs
