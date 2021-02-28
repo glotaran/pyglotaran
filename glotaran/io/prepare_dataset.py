@@ -25,7 +25,7 @@ def prepare_time_trace_dataset(
         dataset = dataset.to_dataset(name="data")
 
     if "data_singular_values" not in dataset:
-        l, s, r = np.linalg.svd(dataset.data)
+        l, s, r = np.linalg.svd(dataset.data, full_matrices=False)
         dataset["data_left_singular_vectors"] = (("time", "left_singular_value_index"), l)
         dataset["data_singular_values"] = (("singular_value_index"), s)
         dataset["data_right_singular_vectors"] = (("right_singular_value_index", "spectral"), r)
