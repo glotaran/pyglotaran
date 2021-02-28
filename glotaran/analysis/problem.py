@@ -1121,7 +1121,7 @@ class Problem:
         )
 
     def _create_svd(self, name: str, dataset: xr.Dataset):
-        l, v, r = np.linalg.svd(dataset[name])
+        l, v, r = np.linalg.svd(dataset[name], full_matrices=False)
 
         dataset[f"{name}_left_singular_vectors"] = (
             (self._model_dimension, "left_singular_value_index"),
