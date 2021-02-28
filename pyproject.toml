@@ -29,3 +29,8 @@ remove_redundant_aliases = true
 exclude = ["setup.py", "docs", "*test/*"]
 ignore-init-module = true
 fail-under = 35
+
+[tool.nbqa.addopts]
+flake8 = [
+    "--extend-ignore=E402"
+]

@@ -1,0 +1,14 @@
+channels:
+  - conda-forge
+dependencies:
+  # Jupyter
+  - jupyterlab=3
+  - jupyter-offlinenotebook=0.2
+  # Python Kernel
+  - ipykernel>5.1
+  - python=3.8
+  # update outdated repo2docker version
+  - pip
+  - pip:
+      - -r ../requirements_dev.txt
+      - ..

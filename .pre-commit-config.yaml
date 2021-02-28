@@ -1,4 +1,5 @@
 repos:
+  # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.4.0
     hooks:
@@ -40,6 +41,37 @@ repos:
     hooks:
       - id: setup-cfg-fmt
 
+  # Notebook tools
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.3.9
+    hooks:
+      - id: nbstripout
+
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 0.5.7
+    hooks:
+      - id: nbqa-black
+        additional_dependencies: [black==20.8b1]
+        args: [--nbqa-mutate]
+      - id: nbqa-pyupgrade
+        additional_dependencies: [pyupgrade==2.9.0]
+        args: [--nbqa-mutate, --py38-plus]
+      - id: nbqa-flake8
+      - id: nbqa-check-ast
+      - id: nbqa-isort
+        additional_dependencies: [isort==5.7.0]
+        args: [--nbqa-mutate]
+
+  - repo: local
+    hooks:
+      - id: nbstripout-empty
+        name: Strip empty notebook cells
+        language: system
+        entry: python docs/strip_empty_notebook_cells.py
+        types: [jupyter]
+
+  # Linters
+
   # - repo: https://github.com/PyCQA/pydocstyle
   #   rev: 5.1.1
   #   hooks:
@@ -52,6 +84,7 @@ repos:
   #   rev: v1.5.5
   #   hooks:
   #     - id: darglint
+
   - repo: https://github.com/econchick/interrogate
     rev: 1.3.2
     hooks:
@@ -85,5 +118,5 @@ repos:
     rev: v2.0.0
     hooks:
       - id: codespell
-        files: ".py|.rst"
+        files: ".py|.rst|.ipynb"
         args: [-L doas]

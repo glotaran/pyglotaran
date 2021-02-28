@@ -1,0 +1,13 @@
+input:
+ - ['1', 1, {'vary': False, 'non-negative': False}]
+ - ['0', 0, {'vary': False, 'non-negative': False}]
+
+kinetic: [
+    0.5,
+    0.3,
+    0.1,
+]
+
+irf:
+ - ['center', 0.3]
+ - ['width', 0.1]
