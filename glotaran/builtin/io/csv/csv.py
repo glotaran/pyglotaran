@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import pandas as pd
 
-from glotaran.io import register_io
-from glotaran.io.io import Io
+from glotaran.io import ProjectIoInterface
+from glotaran.io import register_project_io
 from glotaran.parameter import ParameterGroup
 
 
-@register_io(["csv"])
-class CsvIo(Io):
+@register_project_io(["csv"])
+class CsvIo(ProjectIoInterface):
     def read_parameters(self, file_name: str) -> ParameterGroup:
         df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"])
         return ParameterGroup.from_dataframe(df, source=file_name)

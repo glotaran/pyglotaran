@@ -9,13 +9,13 @@ import numpy as np
 import xarray as xr
 from sdtfile import SdtFile
 
-from glotaran.io import Io
-from glotaran.io import register_io
+from glotaran.io import DataIoInterface
+from glotaran.io import register_data_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
 
-@register_io("sdt")
-class SdtIo(Io):
+@register_data_io("sdt")
+class SdtIo(DataIoInterface):
     def read_dataset(
         self,
         file_name: str,

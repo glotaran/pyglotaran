@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING
 
 import yaml
 
-from glotaran.io import Io
+from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
-from glotaran.io import register_io
+from glotaran.io import register_project_io
 from glotaran.model import get_model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
@@ -23,8 +23,8 @@ if TYPE_CHECKING:
     from glotaran.project import Result
 
 
-@register_io(["yml", "yaml", "yml_str"])
-class YmlIo(Io):
+@register_project_io(["yml", "yaml", "yml_str"])
+class YmlIo(ProjectIoInterface):
     def read_model(self, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 

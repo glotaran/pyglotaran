@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from glotaran.io import Io
-from glotaran.io import register_io
+from glotaran.io import DataIoInterface
+from glotaran.io import register_data_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 from glotaran.project import SavingOptions
 
@@ -244,8 +244,8 @@ def get_data_file_format(line):
 
 
 #  @file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
-@register_io("ascii")
-class AsciiIo(Io):
+@register_data_io("ascii")
+class AsciiIo(DataIoInterface):
     def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         """Reads an ascii file in wavelength- or time-explicit format.
 

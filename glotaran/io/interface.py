@@ -12,7 +12,18 @@ if TYPE_CHECKING:
     from glotaran.project import Scheme
 
 
-class Io:
+class DataIoInterface:
+    def __init__(self, fmt: str) -> None:
+        self.format = fmt
+
+    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
+        raise NotImplementedError
+
+    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
+        raise NotImplementedError
+
+
+class ProjectIoInterface:
     def __init__(self, fmt: str) -> None:
         self.format = fmt
 
@@ -32,12 +43,6 @@ class Io:
         raise NotImplementedError
 
     def write_scheme(self, file_name: str, scheme: Scheme):
-        raise NotImplementedError
-
-    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
-        raise NotImplementedError
-
-    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
         raise NotImplementedError
 
     def read_result(self, file_name: str) -> Result:
