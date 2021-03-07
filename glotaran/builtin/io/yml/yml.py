@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
-class YmlIo(ProjectIoInterface):
+class YmlProjectIo(ProjectIoInterface):
     def read_model(self, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 

@@ -15,7 +15,7 @@ from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
 
 @register_data_io("sdt")
-class SdtIo(DataIoInterface):
+class SdtDataIo(DataIoInterface):
     def read_dataset(
         self,
         file_name: str,
