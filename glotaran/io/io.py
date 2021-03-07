@@ -10,36 +10,35 @@ from glotaran.project import Scheme
 
 
 class Io:
-    def read_model(self, fmt: str, file_name: str) -> Model:
+    def __init__(self, fmt: str) -> None:
+        self.format = fmt
+
+    def read_model(self, file_name: str) -> Model:
         raise NotImplementedError
 
-    def write_model(self, fmt: str, file_name: str, model: Model):
+    def write_model(self, file_name: str, model: Model):
         raise NotImplementedError
 
-    def read_parameters(self, fmt: str, file_name: str) -> ParameterGroup:
+    def read_parameters(self, file_name: str) -> ParameterGroup:
         raise NotImplementedError
 
-    def write_parameters(self, fmt: str, file_name: str, parameters: ParameterGroup):
+    def write_parameters(self, file_name: str, parameters: ParameterGroup):
         raise NotImplementedError
 
-    def read_scheme(self, fmt: str, file_name: str) -> Scheme:
+    def read_scheme(self, file_name: str) -> Scheme:
         raise NotImplementedError
 
-    def write_scheme(self, fmt: str, file_name: str, scheme: Scheme):
+    def write_scheme(self, file_name: str, scheme: Scheme):
         raise NotImplementedError
 
-    def read_dataset(self, fmt: str, file_name: str) -> xr.DataSet | xr.DataArray:
+    def read_dataset(self, file_name: str) -> xr.DataSet | xr.DataArray:
         raise NotImplementedError
 
-    def write_dataset(
-        self, fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.DataSet
-    ):
+    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.DataSet):
         raise NotImplementedError
 
-    def read_result(self, fmt: str, file_name: str) -> Result:
+    def read_result(self, file_name: str) -> Result:
         raise NotImplementedError
 
-    def write_result(
-        self, fmt: str, file_name: str, saving_options: SavingOptions, result: Result
-    ):
+    def write_result(self, file_name: str, saving_options: SavingOptions, result: Result):
         raise NotImplementedError

@@ -10,12 +10,10 @@ from glotaran.project import default_data_filters
 
 @register_io("nc")
 class NetCDFIo(Io):
-    def read_dataset(self, fmt: str, file_name: str) -> xr.Dataset | xr.DataArray:
+    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         return xr.open_dataset(file_name)
 
-    def write_dataset(
-        self, fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
-    ):
+    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
 
         data_to_save = dataset
 

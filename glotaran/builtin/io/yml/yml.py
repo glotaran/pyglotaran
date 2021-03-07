@@ -20,7 +20,7 @@ from .sanatize import sanitize_yaml
 
 @register_io(["yml", "yaml", "yml_str"])
 class YmlIo(Io):
-    def read_model(self, fmt: str, file_name: str) -> Model:
+    def read_model(self, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 
         Parameters
@@ -34,7 +34,7 @@ class YmlIo(Io):
             The content of the file as dictionary.
         """
 
-        if fmt == "yml_str":
+        if self.format == "yml_str":
             spec = yaml.safe_load(file_name)
 
         else:
@@ -52,9 +52,9 @@ class YmlIo(Io):
         model = get_model(model_type)
         return model.from_dict(spec)
 
-    def read_parameters(self, fmt: str, file_name: str) -> ParameterGroup:
+    def read_parameters(self, file_name: str) -> ParameterGroup:
 
-        if fmt == "yml_str":
+        if self.format == "yml_str":
             spec = yaml.safe_load(file_name)
         else:
             with open(file_name) as f:
@@ -65,8 +65,8 @@ class YmlIo(Io):
         else:
             return ParameterGroup.from_dict(spec)
 
-    def read_scheme(self, fmt: str, file_name: str) -> Scheme:
-        if fmt == "yml_str":
+    def read_scheme(self, file_name: str) -> Scheme:
+        if self.format == "yml_str":
             yml = file_name
         else:
             try:
@@ -131,12 +131,10 @@ class YmlIo(Io):
             saving=saving,
         )
 
-    def write_scheme(self, fmt: str, file_name: str, scheme: Scheme):
+    def write_scheme(self, file_name: str, scheme: Scheme):
         _write_dict(file_name, asdict(scheme))
 
-    def write_result(
-        self, fmt: str, file_name: str, saving_options: SavingOptions, result: Result
-    ):
+    def write_result(self, file_name: str, saving_options: SavingOptions, result: Result):
         _write_dict(file_name, asdict(result))
 
 

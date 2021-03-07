@@ -16,8 +16,8 @@ from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 class SdtIo(Io):
     def read_dataset(
         self,
-        fmt: str,
         file_name: str,
+        *,
         index: np.ndarray = None,
         flim: bool = False,
         dataset_index: int = None,

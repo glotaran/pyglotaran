@@ -246,7 +246,7 @@ def get_data_file_format(line):
 #  @file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
 @register_io("ascii")
 class AsciiIo(Io):
-    def read_dataset(self, fmt: str, file_name: str) -> xr.Dataset | xr.DataArray:
+    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         """Reads an ascii file in wavelength- or time-explicit format.
 
         See [1]_ for documentation of this format.
@@ -279,9 +279,7 @@ class AsciiIo(Io):
 
         return data_file.read(prepare=True)
 
-    def write_dataset(
-        self, fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
-    ):
+    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
         file_format = "TimeExplicit"
         number_format = "%.10e"
         data_file = (
