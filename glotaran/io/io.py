@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import xarray as xr
+from typing import TYPE_CHECKING
 
-from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
-from glotaran.project import Result
-from glotaran.project import SavingOptions
-from glotaran.project import Scheme
+if TYPE_CHECKING:
+    import xarray as xr
+
+    from glotaran.model import Model
+    from glotaran.parameter import ParameterGroup
+    from glotaran.project import Result
+    from glotaran.project import SavingOptions
+    from glotaran.project import Scheme
 
 
 class Io:
@@ -31,10 +34,10 @@ class Io:
     def write_scheme(self, file_name: str, scheme: Scheme):
         raise NotImplementedError
 
-    def read_dataset(self, file_name: str) -> xr.DataSet | xr.DataArray:
+    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         raise NotImplementedError
 
-    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.DataSet):
+    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
         raise NotImplementedError
 
     def read_result(self, file_name: str) -> Result:

@@ -1,6 +1,8 @@
 """
 Glotarans module to read files
 """
+from __future__ import annotations
+
 import warnings
 
 import numpy as np
@@ -18,9 +20,9 @@ class SdtIo(Io):
         self,
         file_name: str,
         *,
-        index: np.ndarray = None,
+        index: np.ndarray | None = None,
         flim: bool = False,
-        dataset_index: int = None,
+        dataset_index: int | None = None,
         swap_axis: bool = False,
         orig_time_axis_index: int = 2,
     ) -> xr.Dataset:

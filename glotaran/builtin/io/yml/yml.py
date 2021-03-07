@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import pathlib
 from dataclasses import asdict
+from typing import TYPE_CHECKING
 
 import yaml
 
@@ -8,14 +11,16 @@ from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import register_io
-from glotaran.model import Model
 from glotaran.model import get_model
 from glotaran.parameter import ParameterGroup
-from glotaran.project import Result
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
 
 from .sanatize import sanitize_yaml
+
+if TYPE_CHECKING:
+    from glotaran.model import Model
+    from glotaran.project import Result
 
 
 @register_io(["yml", "yaml", "yml_str"])
@@ -102,7 +107,7 @@ class YmlIo(Io):
         data = {}
         for label, path in scheme["data"].items():
             fmt = scheme.get("data_format", None)
-            path = pathlib.Path(path)
+            path = str(pathlib.Path(path).resolve())
 
             try:
                 data[label] = load_dataset(path, fmt=fmt)
