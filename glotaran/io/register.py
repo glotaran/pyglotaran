@@ -9,6 +9,8 @@ from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
     from glotaran.io.interface import DataIoInterface
+    from glotaran.io.interface import DataLoader
+    from glotaran.io.interface import DataWriter
     from glotaran.io.interface import ProjectIoInterface
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
@@ -120,6 +122,36 @@ def write_dataset(
         return io.write_dataset(file_name, saving_options, dataset)
     except NotImplementedError:
         raise ValueError(f"Cannot write dataset with format '{fmt}'")
+
+
+def get_dataloader(fmt: str) -> DataLoader:
+    """Retrieve implementation of the read_dataset functionalityfor the format 'fmt'.
+
+    This allows to get the proper help and autocomplete for the function,
+    which is especially valuable if the function provides additional options.
+
+    Returns
+    -------
+    DataLoader
+        Function to load data of format 'fmt' as :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
+    """
+    io = get_data_io(fmt)
+    return io.get_dataloader()
+
+
+def get_datawriter(fmt: str) -> DataWriter:
+    """Retrieve implementation of the write_dataset functionality for the format 'fmt'.
+
+    This allows to get the proper help and autocomplete for the function,
+    which is especially valuable if the function provides additional options.
+
+    Returns
+    -------
+    DataWriter
+        Function to write :xarraydoc:`Dataset` to the format 'fmt' .
+    """
+    io = get_data_io(fmt)
+    return io.get_datawriter()
 
 
 def write_result(
