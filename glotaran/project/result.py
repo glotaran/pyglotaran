@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 import xarray as xr
 from numpy.typing import ArrayLike
+from tabulate import tabulate
 
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
@@ -118,64 +119,52 @@ class Result:
             If `True`, the model will be printed with initial and optimized parameters filled in.
         """
 
-        ll = 32
-        lr = 13
-
-        string = "Optimization Result".ljust(ll - 1)
-        string += "|"
-        string += "|".rjust(lr)
-        string += "\n"
-        string += "|".rjust(ll, "-")
-        string += "|".rjust(lr, "-")
-        string += "\n"
-
-        string += "Number of residual evaluation |".rjust(ll)
-        string += f"{self.number_of_function_evaluations} |".rjust(lr)
-        string += "\n"
-        string += "Number of variables |".rjust(ll)
-        string += f"{self.number_of_variables} |".rjust(lr)
-        string += "\n"
-        string += "Number of datapoints |".rjust(ll)
-        string += f"{self.number_of_data_points} |".rjust(lr)
-        string += "\n"
-        string += "Degrees of freedom |".rjust(ll)
-        string += f"{self.degrees_of_freedom} |".rjust(lr)
-        string += "\n"
-        string += "Chi Square |".rjust(ll)
-        string += f"{self.chi_square:.2e} |".rjust(lr)
-        string += "\n"
-        string += "Reduced Chi Square |".rjust(ll)
-        string += f"{self.reduced_chi_square:.2e} |".rjust(lr)
-        string += "\n"
-        string += "Root Mean Square Error (RMSE) |".rjust(ll)
-        string += f"{self.root_mean_square_error:.2e} |".rjust(lr)
-        string += "\n"
+        general_table_rows = [
+            ["Number of residual evaluation", self.number_of_function_evaluations],
+            ["Number of variables", self.number_of_variables],
+            ["Number of datapoints", self.number_of_data_points],
+            ["Degrees of freedom", self.degrees_of_freedom],
+            ["Chi Square", f"{self.chi_square:.2e}"],
+            ["Reduced Chi Square", f"{self.reduced_chi_square:.2e}"],
+            ["Root Mean Square Error (RMSE)", f"{self.root_mean_square_error:.2e}"],
+        ]
         if self.additional_penalty is not None:
-            string += "RMSE additional penalty |".rjust(ll)
-            string += f"{sum(self.additional_penalty):.2e} |".rjust(lr)
-            string += "\n"
+            general_table_rows.append(["RMSE additional penalty", self.additional_penalty])
+
+        result_table = tabulate(
+            general_table_rows,
+            headers=["Optimization Result", ""],
+            tablefmt="github",
+            disable_numparse=True,
+        )
         if len(self.data) > 1:
-            string += "RMSE (per dataset) |".rjust(ll)
-            string += "weighted |".rjust(lr)
-            string += "\n"
+
+            RMSE_rows = []
             for index, (label, dataset) in enumerate(self.data.items(), start=1):
-                string += f"  {index}. {label}: |".rjust(ll)
-                string += f"{dataset.weighted_root_mean_square_error:.2e} |".rjust(lr)
-                string += "\n"
-            string += "RMSE (per dataset) |".rjust(ll)
-            string += "unweighted |".rjust(lr)
-            string += "\n"
-            for index, (label, dataset) in enumerate(self.data.items(), start=1):
-                string += f"  {index}. {label}: |".rjust(ll)
-                string += f"{dataset.root_mean_square_error:.2e} |".rjust(lr)
-                string += "\n"
+
+                RMSE_rows.append(
+                    [
+                        f"{index}.{label}:",
+                        dataset.weighted_root_mean_square_error,
+                        dataset.root_mean_square_error,
+                    ]
+                )
+
+            RMSE_table = tabulate(
+                RMSE_rows,
+                headers=["RMSE (per dataset)", "weighted", "unweighted"],
+                floatfmt=".2e",
+                tablefmt="github",
+            )
+
+            result_table = f"{result_table}\n\n{RMSE_table}"
 
         if with_model:
-            string += "\n\n" + self.model.markdown(
+            result_table += "\n\n" + self.model.markdown(
                 parameters=self.optimized_parameters, initial_parameters=self.initial_parameters
             )
 
-        return string
+        return result_table
 
     def __str__(self):
         return self.markdown(with_model=False)
