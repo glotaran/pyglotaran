@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from copy import copy
+from textwrap import indent
 from typing import Generator
 
 import asteval
 import numpy as np
 import pandas as pd
+from tabulate import tabulate
 
 from .parameter import Parameter
 
@@ -378,12 +380,42 @@ class ParameterGroup(dict):
 
     def markdown(self) -> str:
         """Formats the :class:`ParameterGroup` as markdown string."""
-        t = "".join("  " for _ in range(self.get_nr_roots()))
+        t = "  " * self.get_nr_roots()
         s = ""
+        parameter_rows = []
+        table_header = [
+            "_Label_",
+            "_Value_",
+            "_StdErr_",
+            "_Min_",
+            "_Max_",
+            "_Vary_",
+            "_Non-Negative_",
+            "_Expr_",
+        ]
         if self.label != "p":
             s += f"{t}* __{self.label}__:\n"
-        for _, p in self._parameters.items():
-            s += f"{t}  * {p}\n"
+        if len(self._parameters):
+            for _, parameter in self._parameters.items():
+                parameter_rows.append(
+                    [
+                        parameter.label,
+                        parameter.value,
+                        parameter.standard_error,
+                        parameter.minimum,
+                        parameter.maximum,
+                        parameter.vary,
+                        parameter.non_negative,
+                        parameter.expression,
+                    ]
+                )
+            parameter_table = indent(
+                tabulate(
+                    parameter_rows, headers=table_header, tablefmt="github", missingval="None"
+                ),
+                f"  {t}",
+            )
+            s += f"{parameter_table}\n\n"
         for _, g in self.items():
             s += f"{g.__str__()}"
         return s
