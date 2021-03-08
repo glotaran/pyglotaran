@@ -379,9 +379,12 @@ class ParameterGroup(dict):
                 parameter.value = value
 
     def markdown(self) -> str:
-        """Formats the :class:`ParameterGroup` as markdown string."""
-        t = "  " * self.get_nr_roots()
-        s = ""
+        """Formats the :class:`ParameterGroup` as markdown string.
+
+        This is done by recursing the nested :class:`ParameterGroup` tree.
+        """
+        node_indentation = "  " * self.get_nr_roots()
+        return_string = ""
         parameter_rows = []
         table_header = [
             "_Label_",
@@ -394,7 +397,7 @@ class ParameterGroup(dict):
             "_Expr_",
         ]
         if self.label != "p":
-            s += f"{t}* __{self.label}__:\n"
+            return_string += f"{node_indentation}* __{self.label}__:\n"
         if len(self._parameters):
             for _, parameter in self._parameters.items():
                 parameter_rows.append(
@@ -413,12 +416,12 @@ class ParameterGroup(dict):
                 tabulate(
                     parameter_rows, headers=table_header, tablefmt="github", missingval="None"
                 ),
-                f"  {t}",
+                f"  {node_indentation}",
             )
-            s += f"{parameter_table}\n\n"
-        for _, g in self.items():
-            s += f"{g.__str__()}"
-        return s
+            return_string += f"{parameter_table}\n\n"
+        for _, child_group in self.items():
+            return_string += f"{child_group.__str__()}"
+        return return_string
 
     def __repr__(self):
         return self.markdown()
