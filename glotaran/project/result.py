@@ -139,17 +139,11 @@ class Result:
         )
         if len(self.data) > 1:
 
-            RMSE_rows = []
-            for index, (label, dataset) in enumerate(self.data.items(), start=1):
-
-                RMSE_rows.append(
-                    [
+            RMSE_rows = [[
                         f"{index}.{label}:",
                         dataset.weighted_root_mean_square_error,
                         dataset.root_mean_square_error,
-                    ]
-                )
-
+                    ] for index, (label, dataset) in enumerate(self.data.items(), start=1)]
             RMSE_table = tabulate(
                 RMSE_rows,
                 headers=["RMSE (per dataset)", "weighted", "unweighted"],
