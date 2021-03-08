@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from copy import copy
+from textwrap import indent
 from typing import Generator
 
 import asteval
 import numpy as np
 import pandas as pd
+from tabulate import tabulate
 
 from .parameter import Parameter
 
@@ -377,16 +379,48 @@ class ParameterGroup(dict):
                 parameter.value = value
 
     def markdown(self) -> str:
-        """Formats the :class:`ParameterGroup` as markdown string."""
-        t = "".join("  " for _ in range(self.get_nr_roots()))
-        s = ""
-        if self.label != "p":
-            s += f"{t}* __{self.label}__:\n"
-        for _, p in self._parameters.items():
-            s += f"{t}  * {p}\n"
-        for _, g in self.items():
-            s += f"{g.__str__()}"
-        return s
+        """Formats the :class:`ParameterGroup` as markdown string.
+
+        This is done by recursing the nested :class:`ParameterGroup` tree.
+        """
+        node_indentation = "  " * self.get_nr_roots()
+        return_string = ""
+        table_header = [
+            "_Label_",
+            "_Value_",
+            "_StdErr_",
+            "_Min_",
+            "_Max_",
+            "_Vary_",
+            "_Non-Negative_",
+            "_Expr_",
+        ]
+        if self.label is not None:
+            return_string += f"{node_indentation}* __{self.label}__:\n"
+        if len(self._parameters):
+            parameter_rows = [
+                [
+                    parameter.label,
+                    parameter.value,
+                    parameter.standard_error,
+                    parameter.minimum,
+                    parameter.maximum,
+                    parameter.vary,
+                    parameter.non_negative,
+                    parameter.expression,
+                ]
+                for _, parameter in self._parameters.items()
+            ]
+            parameter_table = indent(
+                tabulate(
+                    parameter_rows, headers=table_header, tablefmt="github", missingval="None"
+                ),
+                f"  {node_indentation}",
+            )
+            return_string += f"{parameter_table}\n\n"
+        for _, child_group in self.items():
+            return_string += f"{child_group.__str__()}"
+        return return_string
 
     def __repr__(self):
         return self.markdown()
