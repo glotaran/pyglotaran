@@ -395,7 +395,7 @@ class ParameterGroup(dict):
             "_Non-Negative_",
             "_Expr_",
         ]
-        if self.label != "p":
+        if self.label is not None:
             return_string += f"{node_indentation}* __{self.label}__:\n"
         if len(self._parameters):
             parameter_rows = [
