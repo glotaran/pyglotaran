@@ -385,7 +385,6 @@ class ParameterGroup(dict):
         """
         node_indentation = "  " * self.get_nr_roots()
         return_string = ""
-        parameter_rows = []
         table_header = [
             "_Label_",
             "_Value_",
@@ -399,19 +398,19 @@ class ParameterGroup(dict):
         if self.label != "p":
             return_string += f"{node_indentation}* __{self.label}__:\n"
         if len(self._parameters):
-            for _, parameter in self._parameters.items():
-                parameter_rows.append(
-                    [
-                        parameter.label,
-                        parameter.value,
-                        parameter.standard_error,
-                        parameter.minimum,
-                        parameter.maximum,
-                        parameter.vary,
-                        parameter.non_negative,
-                        parameter.expression,
-                    ]
-                )
+            parameter_rows = [
+                [
+                    parameter.label,
+                    parameter.value,
+                    parameter.standard_error,
+                    parameter.minimum,
+                    parameter.maximum,
+                    parameter.vary,
+                    parameter.non_negative,
+                    parameter.expression,
+                ]
+                for _, parameter in self._parameters.items()
+            ]
             parameter_table = indent(
                 tabulate(
                     parameter_rows, headers=table_header, tablefmt="github", missingval="None"
