@@ -1,26 +1,28 @@
 """
 Glotarans module to read files
 """
+from __future__ import annotations
+
 import warnings
 
 import numpy as np
 import xarray as xr
 from sdtfile import SdtFile
 
-from glotaran.io import Io
-from glotaran.io import register_io
+from glotaran.io import DataIoInterface
+from glotaran.io import register_data_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
 
-@register_io("sdt")
-class SdtIo(Io):
+@register_data_io("sdt")
+class SdtDataIo(DataIoInterface):
     def read_dataset(
         self,
-        fmt: str,
         file_name: str,
-        index: np.ndarray = None,
+        *,
+        index: np.ndarray | None = None,
         flim: bool = False,
-        dataset_index: int = None,
+        dataset_index: int | None = None,
         swap_axis: bool = False,
         orig_time_axis_index: int = 2,
     ) -> xr.Dataset:

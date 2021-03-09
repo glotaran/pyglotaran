@@ -2,20 +2,18 @@ from __future__ import annotations
 
 import xarray as xr
 
-from glotaran.io import Io
-from glotaran.io import register_io
+from glotaran.io import DataIoInterface
+from glotaran.io import register_data_io
 from glotaran.project import SavingOptions
 from glotaran.project import default_data_filters
 
 
-@register_io("nc")
-class NetCDFIo(Io):
-    def read_dataset(self, fmt: str, file_name: str) -> xr.Dataset | xr.DataArray:
+@register_data_io("nc")
+class NetCDFDataIo(DataIoInterface):
+    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         return xr.open_dataset(file_name)
 
-    def write_dataset(
-        self, fmt: str, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset
-    ):
+    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
 
         data_to_save = dataset
 
