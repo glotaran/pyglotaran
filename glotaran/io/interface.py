@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from glotaran.project import Scheme
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
-    DataWriter = Callable[[str, SavingOptions, xr.Dataset], None]
+    DataWriter = Callable[[str, Union[xr.Dataset, xr.DataArray], Union[SavingOptions, None]], None]
 
 
 class DataIoInterface:
@@ -62,7 +62,12 @@ class DataIoInterface:
         """
         raise NotImplementedError(f"""Cannot read data with format: {self.format!r}""")
 
-    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
+    def write_dataset(
+        self,
+        file_name: str,
+        dataset: xr.Dataset | xr.DataArray,
+        saving_options: SavingOptions = None,
+    ):
         """Write data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
 
         Parameters

@@ -281,8 +281,8 @@ class AsciiDataIo(DataIoInterface):
     def write_dataset(
         self,
         file_name: str,
-        saving_options: SavingOptions,
         dataset: xr.DataArray,
+        saving_options: SavingOptions = None,
         *,
         comment: str = "",
         file_format: DataFileType = DataFileType.time_explicit,

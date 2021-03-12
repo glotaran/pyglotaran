@@ -106,11 +106,11 @@ class YmlProjectIo(ProjectIoInterface):
 
         data = {}
         for label, path in scheme["data"].items():
-            fmt = scheme.get("data_format", None)
+            data_format = scheme.get("data_format", None)
             path = str(pathlib.Path(path).resolve())
 
             try:
-                data[label] = load_dataset(path, fmt=fmt)
+                data[label] = load_dataset(path, format_name=data_format)
             except Exception as e:
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 

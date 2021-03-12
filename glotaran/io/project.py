@@ -1,9 +1,9 @@
 import dataclasses
 import os
 
+from glotaran.plugin_system.data_io_registration import write_dataset
 from glotaran.project import Result
 
-from .register import write_dataset
 from .register import write_parameters
 from .register import write_result
 from .register import write_scheme

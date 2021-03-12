@@ -5,7 +5,7 @@ import click
 
 from glotaran.analysis.optimize import optimize
 from glotaran.io import save_result
-from glotaran.io.register import known_data_fmts
+from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.project.scheme import Scheme
 
 from . import util
@@ -15,7 +15,7 @@ from . import util
     "--dataformat",
     "-dfmt",
     default=None,
-    type=click.Choice(known_data_fmts()),
+    type=click.Choice(known_data_formats()),
     help="The input format of the data. Will be inferred from extension if not set.",
 )
 @click.option(
