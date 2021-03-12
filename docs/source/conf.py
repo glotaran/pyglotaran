@@ -199,7 +199,7 @@ html_logo = "images/glotaran.png"
 #
 # html_sidebars = {}
 
-copybutton_prompt_text = r"In \[\d*\]: |\.\.\.: |\$ "
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
 
 # -- Options for HTMLHelp output ---------------------------------------------
