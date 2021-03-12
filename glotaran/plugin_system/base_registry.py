@@ -10,14 +10,15 @@ import functools
 import os
 from importlib import metadata
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Callable
+from typing import TypeVar
+from typing import cast
 from warnings import warn
 
 if TYPE_CHECKING:
 
-    from typing import Any
-    from typing import Callable
     from typing import MutableMapping
-    from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
@@ -27,7 +28,9 @@ if TYPE_CHECKING:
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
     )
-    RT = TypeVar("RT")  # Generic function returntype
+
+
+F = TypeVar("F", bound=Callable[..., Any])  # decorated function
 
 
 class __PluginRegistry:
@@ -334,7 +337,7 @@ def inferr_file_format(file_path: str | os.PathLike[str]) -> str:
         return file_format.lstrip(".")
 
 
-def not_implemented_to_value_error(func: Callable[..., RT]) -> Callable[..., RT]:
+def not_implemented_to_value_error(func: F) -> F:
     """Decorate a function to raise ValueError instead of NotImplementedError.
 
     This decorator is supposed to be used on functions which call functions
@@ -353,10 +356,10 @@ def not_implemented_to_value_error(func: Callable[..., RT]) -> Callable[..., RT]
     """
 
     @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> RT:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except NotImplementedError as error:
             raise ValueError(error.args)
 
-    return wrapper
+    return cast(F, wrapper)
