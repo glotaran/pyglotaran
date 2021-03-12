@@ -1,3 +1,15 @@
+"""Baseclasses to create Data/Project IO plugins from.
+
+The main purpose of those classes are to guarantee a consistent API via
+typechecker like ``mypy`` and demonstarate with methods are accessed by
+highlevel convenience functions for a given type of plugin.
+
+To add additional options to a method, those options need to be
+keyword only arguments.
+See: https://www.python.org/dev/peps/pep-3102/
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -21,23 +33,55 @@ if TYPE_CHECKING:
 class DataIoInterface:
     """Baseclass for Data IO plugins."""
 
-    def __init__(self, fmt: str) -> None:
-        self.format = fmt
+    def __init__(self, format_name: str) -> None:
+        """Initialize a Data IO plugin with the name of the format.
+
+        Parameters
+        ----------
+        format_name : str
+            Name of the supported format an instance uses.
+        """
+        self.format = format_name
 
     def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
-        """'read_dataset' isn't implemented for this format."""
-        raise NotImplementedError(
-            f"""'read_dataset' isn't implemented for the format: {self.format!r}"""
-        )
+        """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray` (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the data.
+
+        Returns
+        -------
+        xr.Dataset|xr.DataArray
+            Data loaded from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"""Cannot read data with format: {self.format!r}""")
 
     def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
-        """'write_dataset' isn't implemented for this format."""
-        raise NotImplementedError(
-            f"""'write_dataset' isn't implemented for the format: {self.format!r}"""
-        )
+        """Write data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the result data to.
+        saving_options : SavingOptions
+            Options on how to save the result.
+        dataset : xr.Dataset
+            Dataset to be saved to file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"""Cannot write data with format: {self.format!r}""")
 
     def get_dataloader(self) -> DataLoader:
-        """Retrieve implementation of the read_dataset functionality.
+        """Retrieve implementation of the ``read_dataset`` functionality.
 
         This allows to get the proper help and autocomplete for the function,
         which is especially valuable if the function provides additional options.
@@ -50,7 +94,7 @@ class DataIoInterface:
         return self.read_dataset
 
     def get_datawriter(self) -> DataWriter:
-        """Retrieve implementation of the write_dataset functionality.
+        """Retrieve implementation of the ``write_dataset`` functionality.
 
         This allows to get the proper help and autocomplete for the function,
         which is especially valuable if the function provides additional options.
@@ -66,29 +110,153 @@ class DataIoInterface:
 class ProjectIoInterface:
     """Baseclass for Project IO plugins."""
 
-    def __init__(self, fmt: str) -> None:
-        self.format = fmt
+    def __init__(self, format_name: str) -> None:
+        """Initialize a Project IO plugin with the name of the format.
+
+        Parameters
+        ----------
+        format_name : str
+            Name of the supported format an instance uses.
+        """
+        self.format = format_name
 
     def read_model(self, file_name: str) -> Model:
-        raise NotImplementedError
+        r"""Create a Model instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the model specs.
+
+        Returns
+        -------
+        Model
+            Model instance created from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read models with format {self.format!r}")
 
     def write_model(self, file_name: str, model: Model):
-        raise NotImplementedError
+        r"""Write a Model instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the model specs to.
+        model: Model
+            Model instance to write to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot write models with format {self.format!r}")
 
     def read_parameters(self, file_name: str) -> ParameterGroup:
-        raise NotImplementedError
+        """Create a ParameterGroup instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the parameter specs.
+
+        Returns
+        -------
+        ParameterGroup
+            ParameterGroup instance created from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
 
     def write_parameters(self, file_name: str, parameters: ParameterGroup):
-        raise NotImplementedError
+        """Write a ParameterGroup instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the parameter specs to.
+        parameters : ParameterGroup
+            ParameterGroup instance to write to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot write parameters with format {self.format!r}")
 
     def read_scheme(self, file_name: str) -> Scheme:
-        raise NotImplementedError
+        """Create a Scheme instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the parameter specs.
+
+        Returns
+        -------
+        Scheme
+            Scheme instance created from the file.
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read scheme with format {self.format!r}")
 
     def write_scheme(self, file_name: str, scheme: Scheme):
-        raise NotImplementedError
+        """Write a Scheme instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the scheme specs to.
+        scheme : Scheme
+            Scheme instance to write to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot write scheme with format {self.format!r}")
 
     def read_result(self, file_name: str) -> Result:
-        raise NotImplementedError
+        """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the result data.
+
+        Returns
+        -------
+        Result
+            Result instance created from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
     def write_result(self, file_name: str, saving_options: SavingOptions, result: Result):
-        raise NotImplementedError
+        """Write a Result instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the result data to.
+        saving_options : SavingOptions
+            Options on how to save the result.
+        result : Result
+            Result instance to write to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot write result with format {self.format!r}")
