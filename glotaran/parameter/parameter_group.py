@@ -417,7 +417,7 @@ class ParameterGroup(dict):
                 ),
                 f"  {node_indentation}",
             )
-            return_string += f"{parameter_table}\n\n"
+            return_string += f"\n{parameter_table}\n\n"
         for _, child_group in sorted(self.items()):
             return_string += f"{child_group.__str__()}"
         return return_string
