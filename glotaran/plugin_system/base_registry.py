@@ -6,6 +6,8 @@ This is to prevent issues with circular imports.
 """
 from __future__ import annotations
 
+import functools
+import os
 from importlib import metadata
 from typing import TYPE_CHECKING
 from warnings import warn
@@ -13,6 +15,7 @@ from warnings import warn
 if TYPE_CHECKING:
 
     from typing import Any
+    from typing import Callable
     from typing import MutableMapping
     from typing import Type
     from typing import TypeVar
@@ -25,6 +28,7 @@ if TYPE_CHECKING:
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", Type[DataIoInterface], Type[ProjectIoInterface]
     )
+    RT = TypeVar("RT")  # Generic function returntype
 
 
 class __PluginRegistry:
@@ -297,3 +301,63 @@ def get_plugin_from_registry(
         raise ValueError(not_found_error_message)
     else:
         return plugin_registry[plugin_register_key]
+
+
+def inferr_file_format(file_path: str | os.PathLike[str]) -> str:
+    """Inferr format of a file if it exists.
+
+    Parameters
+    ----------
+    file_path : str
+        Path/str to the file.
+
+    Returns
+    -------
+    str
+        File extension without the leading dot.
+
+    Raises
+    ------
+    ValueError
+        If file doesn't exists.
+    ValueError
+        If file has no extension.
+    """
+    if not os.path.isfile(file_path):
+        raise ValueError(f"There is no file {file_path!r}.")
+
+    _, file_format = os.path.splitext(file_path)
+    if file_format == "":
+        raise ValueError(
+            f"Cannot determine format of file {file_path!r}, please provide an explicit format."
+        )
+    else:
+        return file_format.lstrip(".")
+
+
+def not_implemented_to_value_error(func: Callable[..., RT]) -> Callable[..., RT]:
+    """Decorate a function to raise ValueError instead of NotImplementedError.
+
+    This decorator is supposed to be used on functions which call functions
+    that might raise a NotImplementedError, but raise ValueError instead with
+    the same error text.
+
+    Parameters
+    ----------
+    func : Callable[..., RT]
+        Function to be decorated.
+
+    Returns
+    -------
+    Callable[..., RT]
+        Wrapped function.
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> RT:
+        try:
+            return func(*args, **kwargs)
+        except NotImplementedError as error:
+            raise ValueError(error.args)
+
+    return wrapper
