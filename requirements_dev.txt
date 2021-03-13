@@ -17,17 +17,7 @@ sdtfile==2020.12.10
 tabulate==0.8.9
 
 # documentation dependencies
-Sphinx>=3.2.0
-sphinx-rtd-theme>=0.5.1
-sphinx-copybutton>=0.3.0
-numpydoc>=0.8.0
-# notebook docs
-nbsphinx>=0.8.1
-sphinx-last-updated-by-git>=0.3.0
-jupyterlab>=3.0.0
-matplotlib>=3.0.0
-IPython>=7.2.0
-nbval>=0.9.6
+-r docs/requirements.txt
 
 
 # testing dependencies
