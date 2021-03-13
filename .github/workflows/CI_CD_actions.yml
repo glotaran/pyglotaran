@@ -30,8 +30,8 @@ jobs:
         run: |
           conda install -y pandoc
           python -m pip install -U pip wheel
-          python -m pip install -U -r requirements_dev.txt
           pip install .
+          python -m pip install -U -r docs/doc-dependencies.txt
       - name: Show installed packages
         run: pip freeze
       - name: Build docs
@@ -55,8 +55,8 @@ jobs:
         run: |
           conda install -y pandoc
           python -m pip install -U pip wheel
-          python -m pip install -U -r requirements_dev.txt
           pip install .
+          python -m pip install -U -r docs/doc-dependencies.txt
       - name: Show installed packages
         run: pip freeze
       - name: Check doc links

@@ -8,6 +8,6 @@ build:
 python:
   version: 3.8
   install:
-    - requirements: requirements_dev.txt
+    - requirements: docs/doc-dependencies.txt
     - method: pip
       path: .
