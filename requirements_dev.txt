@@ -17,7 +17,7 @@ sdtfile==2020.12.10
 tabulate==0.8.9
 
 # documentation dependencies
--r docs/doc-dependencies.txt
+-r docs/requirements.txt
 
 
 # testing dependencies

@@ -31,7 +31,7 @@ jobs:
           conda install -y pandoc
           python -m pip install -U pip wheel
           pip install .
-          python -m pip install -U -r docs/doc-dependencies.txt
+          python -m pip install -U -r docs/requirements.txt
       - name: Show installed packages
         run: pip freeze
       - name: Build docs
@@ -56,7 +56,7 @@ jobs:
           conda install -y pandoc
           python -m pip install -U pip wheel
           pip install .
-          python -m pip install -U -r docs/doc-dependencies.txt
+          python -m pip install -U -r docs/requirements.txt
       - name: Show installed packages
         run: pip freeze
       - name: Check doc links
