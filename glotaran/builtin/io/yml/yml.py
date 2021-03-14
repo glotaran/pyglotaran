@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import os
 import pathlib
 from dataclasses import asdict
 from typing import TYPE_CHECKING
@@ -11,6 +13,8 @@ from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import register_project_io
+from glotaran.io import write_dataset
+from glotaran.io import write_parameters
 from glotaran.model import get_model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
@@ -35,7 +39,7 @@ class YmlProjectIo(ProjectIoInterface):
 
         Returns
         -------
-        content : Dict
+        Model
             The content of the file as dictionary.
         """
 
@@ -139,10 +143,51 @@ class YmlProjectIo(ProjectIoInterface):
     def write_scheme(self, file_name: str, scheme: Scheme):
         _write_dict(file_name, asdict(scheme))
 
-    def write_result(
-        self, result_path: str, result: Result, saving_options: SavingOptions = SavingOptions()
-    ):
-        _write_dict(result_path, asdict(result))
+    def write_result(self, result_path: str, result: Result, saving_options: SavingOptions = None):
+        options = result.scheme.saving
+
+        if os.path.exists(result_path):
+            raise FileExistsError(f"The path '{result_path}' is already existing.")
+
+        os.makedirs(result_path)
+
+        if options.report:
+            md_path = os.path.join(result_path, "result.md")
+            with open(md_path, "w") as f:
+                f.write(result.markdown())
+
+        scheme_path = os.path.join(result_path, "scheme.yml")
+        result_scheme = dataclasses.replace(result.scheme)
+        result = dataclasses.replace(result)
+        result.scheme = scheme_path
+
+        parameters_format = options.parameter_format
+
+        initial_parameters_path = os.path.join(
+            result_path, f"initial_parameters.{parameters_format}"
+        )
+        write_parameters(initial_parameters_path, parameters_format, result.initial_parameters)
+        result.initial_parameters = initial_parameters_path
+        result_scheme.parameters = initial_parameters_path
+
+        optimized_parameters_path = os.path.join(
+            result_path, f"optimized_parameters.{parameters_format}"
+        )
+        write_parameters(optimized_parameters_path, parameters_format, result.optimized_parameters)
+        result.optimized_parameters = optimized_parameters_path
+
+        dataset_format = options.data_format
+        for label, dataset in result.data.items():
+            dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
+            write_dataset(dataset_path, dataset_format, dataset, options)
+            result.data[label] = dataset_path
+            result_scheme.data[label] = dataset_path
+
+        result_file_path = os.path.join(result_path, "result.yml")
+        _write_dict(result_file_path, asdict(result))
+        result_scheme.result_path = result_file_path
+
+        self.write_scheme(scheme_path, result_scheme)
 
 
 def _write_dict(file_name: str, d: dict):
