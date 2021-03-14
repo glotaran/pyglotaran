@@ -28,7 +28,7 @@ def register_model(model_type: str, model: type[Model]) -> None:
     )
 
 
-def known_model(model_type: str) -> bool:
+def is_known_model(model_type: str) -> bool:
     """Check if a model is in the model registry.
 
     Parameters

@@ -7,7 +7,7 @@ import pytest
 from glotaran.model import Model
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.model_registration import get_model
-from glotaran.plugin_system.model_registration import known_model
+from glotaran.plugin_system.model_registration import is_known_model
 from glotaran.plugin_system.model_registration import known_model_names
 from glotaran.plugin_system.model_registration import register_model
 
@@ -28,9 +28,9 @@ def test_register_model(mocked_registry):
 
 
 def test_known_model(mocked_registry):
-    assert known_model("foo")
-    assert known_model("bar")
-    assert not known_model("baz")
+    assert is_known_model("foo")
+    assert is_known_model("bar")
+    assert not is_known_model("baz")
 
 
 def test_get_model(mocked_registry):

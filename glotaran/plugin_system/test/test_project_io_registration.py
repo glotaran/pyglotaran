@@ -15,7 +15,7 @@ from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.project_io_registration import get_project_io
-from glotaran.plugin_system.project_io_registration import known_project_format
+from glotaran.plugin_system.project_io_registration import is_known_project_format
 from glotaran.plugin_system.project_io_registration import known_project_formats
 from glotaran.plugin_system.project_io_registration import load_model
 from glotaran.plugin_system.project_io_registration import load_parameters
@@ -63,17 +63,17 @@ def test_register_project_io(mocked_registry):
 
 def test_known_project_format(mocked_registry):
     """Known format in mocked register"""
-    assert known_project_format("foo")
-    assert known_project_format("bar")
-    assert not known_project_format("baz")
+    assert is_known_project_format("foo")
+    assert is_known_project_format("bar")
+    assert not is_known_project_format("baz")
 
 
 def test_known_project_format_actual_register():
     """Builtins in are in actual register."""
-    assert known_project_format("yml")
-    assert known_project_format("yaml")
-    assert known_project_format("yml_str")
-    assert known_project_format("csv")
+    assert is_known_project_format("yml")
+    assert is_known_project_format("yaml")
+    assert is_known_project_format("yml_str")
+    assert is_known_project_format("csv")
 
 
 @pytest.mark.parametrize(

@@ -13,7 +13,7 @@ from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.plugin_system.data_io_registration import get_dataloader
 from glotaran.plugin_system.data_io_registration import get_datawriter
-from glotaran.plugin_system.data_io_registration import known_data_format
+from glotaran.plugin_system.data_io_registration import is_known_data_format
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.plugin_system.data_io_registration import register_data_io
@@ -67,16 +67,16 @@ def test_register_data_io(mocked_registry):
 
 def test_known_data_format(mocked_registry):
     """Known format in mocked register"""
-    assert known_data_format("foo")
-    assert known_data_format("bar")
-    assert not known_data_format("baz")
+    assert is_known_data_format("foo")
+    assert is_known_data_format("bar")
+    assert not is_known_data_format("baz")
 
 
 def test_known_data_format_actual_register():
     """Builtins in are in actual register."""
-    assert known_data_format("sdt")
-    assert known_data_format("ascii")
-    assert known_data_format("nc")
+    assert is_known_data_format("sdt")
+    assert is_known_data_format("ascii")
+    assert is_known_data_format("nc")
 
 
 @pytest.mark.parametrize(

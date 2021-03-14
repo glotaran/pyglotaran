@@ -5,7 +5,7 @@ common model items.
 """
 
 from glotaran.plugin_system.model_registration import get_model
-from glotaran.plugin_system.model_registration import known_model
+from glotaran.plugin_system.model_registration import is_known_model
 from glotaran.plugin_system.model_registration import known_model_names
 
 from .attribute import model_attribute

@@ -70,7 +70,7 @@ def register_project_io(
     return decorator
 
 
-def known_project_format(format_name: str) -> bool:
+def is_known_project_format(format_name: str) -> bool:
     """Check if a data format is in the project_io registry.
 
     Parameters

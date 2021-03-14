@@ -70,7 +70,7 @@ def register_data_io(
     return decorator
 
 
-def known_data_format(format_name: str) -> bool:
+def is_known_data_format(format_name: str) -> bool:
     """Check if a data format is in the data_io registry.
 
     Parameters
