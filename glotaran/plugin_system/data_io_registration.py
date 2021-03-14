@@ -1,10 +1,10 @@
 """Data Io registration convenience functions.
 
-Note:
------
-The [call-arg] type error would be raised since the base methods doesn't have a **kwargs argument,
-but we rather ignore this error here, than adding **kwargs to the base method and
-causing an [override] type error in the plugins implementation.
+Note
+----
+The [call-arg] type error would be raised since the base methods doesn't have a ``**kwargs``
+argument, but we rather ignore this error here, than adding ``**kwargs`` to the base method
+and causing an [override] type error in the plugins implementation.
 """
 from __future__ import annotations
 
@@ -152,7 +152,7 @@ def write_dataset(
     file_name: str,
     format_name: str,
     dataset: xr.Dataset | xr.DataArray,
-    saving_options: SavingOptions = SavingOptions(),
+    saving_options: SavingOptions | None = SavingOptions(),
     **kwargs: Any,
 ) -> None:
     """Write data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
@@ -163,15 +163,14 @@ def write_dataset(
         File to write the data to.
     format_name : str
         Format the file should be in.
+    dataset: xr.Dataset|xr.DataArray
+        Data to be written to file.
+    saving_options: SavingOptions | None
+        Options on how to save the data.
     **kwargs: Any
         Additional keyword arguments passes to the ``write_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_datawriter``
         to get the implementation with the proper help and autocomplete.
-
-    Returns
-    -------
-    xr.Dataset|xr.DataArray
-        Data loaded from the file.
     """
     io = get_data_io(format_name)
     io.write_dataset(  # type: ignore[call-arg]
