@@ -17,6 +17,7 @@ from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
+from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
@@ -153,6 +154,8 @@ def write_dataset(
     format_name: str,
     dataset: xr.Dataset | xr.DataArray,
     saving_options: SavingOptions | None = SavingOptions(),
+    *,
+    allow_overwrite: bool = False,
     **kwargs: Any,
 ) -> None:
     """Write data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
@@ -167,11 +170,14 @@ def write_dataset(
         Data to be written to file.
     saving_options: SavingOptions | None
         Options on how to save the data.
+    allow_overwrite : bool
+        Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
         Additional keyword arguments passes to the ``write_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_datawriter``
         to get the implementation with the proper help and autocomplete.
     """
+    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name)
     io.write_dataset(  # type: ignore[call-arg]
         file_name=file_name,
@@ -182,7 +188,7 @@ def write_dataset(
 
 
 def get_dataloader(format_name: str) -> DataLoader:
-    """Retrieve implementation of the read_dataset functionalityfor the format 'fmt'.
+    """Retrieve implementation of the read_dataset functionalityfor the format 'format_name'.
 
     This allows to get the proper help and autocomplete for the function,
     which is especially valuable if the function provides additional options.
@@ -203,7 +209,7 @@ def get_dataloader(format_name: str) -> DataLoader:
 
 
 def get_datawriter(format_name: str) -> DataWriter:
-    """Retrieve implementation of the write_dataset functionality for the format 'fmt'.
+    """Retrieve implementation of the write_dataset functionality for the format 'format_name'.
 
     This allows to get the proper help and autocomplete for the function,
     which is especially valuable if the function provides additional options.

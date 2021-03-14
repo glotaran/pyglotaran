@@ -155,3 +155,24 @@ def test_value_error_write_functions(
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
         function(str(file_path), "foo", "bar")
+
+
+@pytest.mark.parametrize(
+    "function, error_regex",
+    (
+        (write_model, "write models"),
+        (write_parameters, "write parameters"),
+        (write_scheme, "write scheme"),
+        (write_result, "write result"),
+    ),
+)
+def test_protect_from_overwrite_write_functions(
+    mocked_registry, tmp_path: Path, function: Callable[..., Any], error_regex: str
+):
+    """Raise FileExistsError if file exists."""
+
+    file_path = tmp_path / "dummy.foo"
+    file_path.touch()
+
+    with pytest.raises(FileExistsError, match="The file .+? already exists"):
+        function(str(file_path), "foo", "bar")

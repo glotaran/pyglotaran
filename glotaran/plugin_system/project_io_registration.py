@@ -17,6 +17,7 @@ from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
+from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
@@ -146,7 +147,9 @@ def load_model(file_name: str, format_name: str = None, **kwargs: Any) -> Model:
 
 
 @not_implemented_to_value_error
-def write_model(file_name: str, format_name: str, model: Model, **kwargs: Any) -> None:
+def write_model(
+    file_name: str, format_name: str, model: Model, *, allow_overwrite: bool = False, **kwargs: Any
+) -> None:
     """Write a :class:`Model` instance to a spec file.
 
     Parameters
@@ -157,10 +160,13 @@ def write_model(file_name: str, format_name: str, model: Model, **kwargs: Any) -
         Format the file should be in.
     model: Model
         :class:`Model` instance to write to specs file.
+    allow_overwrite : bool
+        Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
         Additional keyword arguments passes to the ``write_model`` implementation
         of the project io plugin.
     """
+    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name)
     io.write_model(file_name=file_name, model=model, **kwargs)  # type: ignore[call-arg]
 
@@ -190,7 +196,12 @@ def load_parameters(file_name: str, format_name: str = None, **kwargs) -> Parame
 
 @not_implemented_to_value_error
 def write_parameters(
-    file_name: str, format_name: str, parameters: ParameterGroup, **kwargs: Any
+    file_name: str,
+    format_name: str,
+    parameters: ParameterGroup,
+    *,
+    allow_overwrite: bool = False,
+    **kwargs: Any,
 ) -> None:
     """Write a :class:`ParameterGroup` instance to a spec file.
 
@@ -202,10 +213,13 @@ def write_parameters(
         Format the file should be in.
     parameters : ParameterGroup
         :class:`ParameterGroup` instance to write to specs file.
+    allow_overwrite : bool
+        Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
         Additional keyword arguments passes to the ``write_parameters`` implementation
         of the project io plugin.
     """
+    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name)
     io.write_parameters(  # type: ignore[call-arg]
         file_name=file_name,
@@ -238,7 +252,14 @@ def load_scheme(file_name: str, format_name: str = None, **kwargs: Any) -> Schem
 
 
 @not_implemented_to_value_error
-def write_scheme(file_name: str, format_name: str, scheme: Scheme, **kwargs: Any) -> None:
+def write_scheme(
+    file_name: str,
+    format_name: str,
+    scheme: Scheme,
+    *,
+    allow_overwrite: bool = False,
+    **kwargs: Any,
+) -> None:
     """Write a :class:`Scheme` instance to a spec file.
 
     Parameters
@@ -249,10 +270,13 @@ def write_scheme(file_name: str, format_name: str, scheme: Scheme, **kwargs: Any
         Format the file should be in.
     scheme : Scheme
         :class:`Scheme` instance to write to specs file.
+    allow_overwrite : bool
+        Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
         Additional keyword arguments passes to the ``write_scheme`` implementation
         of the project io plugin.
     """
+    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name)
     io.write_scheme(file_name=file_name, scheme=scheme, **kwargs)  # type: ignore[call-arg]
 
@@ -287,6 +311,8 @@ def write_result(
     format_name: str,
     result: Result,
     saving_options: SavingOptions = SavingOptions(),
+    *,
+    allow_overwrite: bool = False,
     **kwargs: Any,
 ) -> None:
     """Write a :class:`Result` instance to a spec file.
@@ -301,10 +327,13 @@ def write_result(
         Options on how to save the result.
     result : Result
         :class:`Result` instance to write.
+    allow_overwrite : bool
+        Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
         Additional keyword arguments passes to the ``write_result`` implementation
         of the project io plugin.
     """
+    protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name)
     io.write_result(  # type: ignore[call-arg]
         result_path=result_path,
