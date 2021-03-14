@@ -2,11 +2,10 @@ import dataclasses
 import os
 
 from glotaran.plugin_system.data_io_registration import write_dataset
+from glotaran.plugin_system.project_io_registration import write_parameters
+from glotaran.plugin_system.project_io_registration import write_result
+from glotaran.plugin_system.project_io_registration import write_scheme
 from glotaran.project import Result
-
-from .register import write_parameters
-from .register import write_result
-from .register import write_scheme
 
 
 def save_result(result_path: str, result: Result):
@@ -28,21 +27,23 @@ def save_result(result_path: str, result: Result):
     result = dataclasses.replace(result)
     result.scheme = scheme_path
 
-    parameters_fmt = options.parameter_format
+    parameters_format = options.parameter_format
 
-    initial_parameters_path = os.path.join(result_path, f"initial_parameters.{parameters_fmt}")
-    write_parameters(initial_parameters_path, parameters_fmt, result.initial_parameters)
+    initial_parameters_path = os.path.join(result_path, f"initial_parameters.{parameters_format}")
+    write_parameters(initial_parameters_path, parameters_format, result.initial_parameters)
     result.initial_parameters = initial_parameters_path
     result_scheme.parameters = initial_parameters_path
 
-    optimized_parameters_path = os.path.join(result_path, f"optimized_parameters.{parameters_fmt}")
-    write_parameters(optimized_parameters_path, parameters_fmt, result.optimized_parameters)
+    optimized_parameters_path = os.path.join(
+        result_path, f"optimized_parameters.{parameters_format}"
+    )
+    write_parameters(optimized_parameters_path, parameters_format, result.optimized_parameters)
     result.optimized_parameters = optimized_parameters_path
 
-    dataset_fmt = options.data_format
+    dataset_format = options.data_format
     for label, dataset in result.data.items():
-        dataset_path = os.path.join(result_path, f"{label}.{dataset_fmt}")
-        write_dataset(dataset_path, dataset_fmt, dataset, options)
+        dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
+        write_dataset(dataset_path, dataset_format, dataset, options)
         result.data[label] = dataset_path
         result_scheme.data[label] = dataset_path
 

@@ -1,8 +1,8 @@
 import click
 
-from glotaran.io.register import known_project_fmts
 from glotaran.model import known_model_names
 from glotaran.plugin_system.data_io_registration import known_data_formats
+from glotaran.plugin_system.project_io_registration import known_project_formats
 
 
 def plugin_list_cmd():
@@ -25,7 +25,7 @@ def plugin_list_cmd():
 
     output += "\nProject file Formats\n\n"
 
-    for reader_fmt in known_project_fmts():
+    for reader_fmt in known_project_formats():
         output += f"    * .{reader_fmt}\n"
 
     click.echo(output)

@@ -139,8 +139,10 @@ class YmlProjectIo(ProjectIoInterface):
     def write_scheme(self, file_name: str, scheme: Scheme):
         _write_dict(file_name, asdict(scheme))
 
-    def write_result(self, file_name: str, saving_options: SavingOptions, result: Result):
-        _write_dict(file_name, asdict(result))
+    def write_result(
+        self, result_path: str, result: Result, saving_options: SavingOptions = SavingOptions()
+    ):
+        _write_dict(result_path, asdict(result))
 
 
 def _write_dict(file_name: str, d: dict):

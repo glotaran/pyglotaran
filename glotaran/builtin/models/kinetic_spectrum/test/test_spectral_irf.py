@@ -81,8 +81,8 @@ irf:
 
 
 class SimpleIrfDispersion:
-    model = load_model(MODEL_SIMPLE_IRF_DISPERSION, fmt="yml_str")
-    parameters = load_parameters(PARAMETERS_SIMPLE_IRF_DISPERSION, fmt="yml_str")
+    model = load_model(MODEL_SIMPLE_IRF_DISPERSION, format_name="yml_str")
+    parameters = load_parameters(PARAMETERS_SIMPLE_IRF_DISPERSION, format_name="yml_str")
     time_p1 = np.linspace(-1, 2, 50, endpoint=False)
     time_p2 = np.linspace(2, 5, 30, endpoint=False)
     time_p3 = np.geomspace(5, 10, num=20)
@@ -92,8 +92,8 @@ class SimpleIrfDispersion:
 
 
 class MultiIrfDispersion:
-    model = load_model(MODEL_MULTI_IRF_DISPERSION, fmt="yml_str")
-    parameters = load_parameters(PARAMETERS_MULTI_IRF_DISPERSION, fmt="yml_str")
+    model = load_model(MODEL_MULTI_IRF_DISPERSION, format_name="yml_str")
+    parameters = load_parameters(PARAMETERS_MULTI_IRF_DISPERSION, format_name="yml_str")
     time = np.arange(-1, 5, 0.2)
     spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}

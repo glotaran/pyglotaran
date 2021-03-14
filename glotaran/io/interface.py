@@ -126,7 +126,7 @@ class ProjectIoInterface:
         self.format = format_name
 
     def read_model(self, file_name: str) -> Model:
-        r"""Create a Model instance from the specs defined in a file (**NOT IMPLEMENTED**).
+        """Create a Model instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
@@ -145,7 +145,7 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot read models with format {self.format!r}")
 
     def write_model(self, file_name: str, model: Model):
-        r"""Write a Model instance to a spec file (**NOT IMPLEMENTED**).
+        """Write a Model instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
@@ -229,13 +229,13 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot write scheme with format {self.format!r}")
 
-    def read_result(self, file_name: str) -> Result:
+    def read_result(self, result_path: str) -> Result:
         """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        file_name : str
-            File containing the result data.
+        result_path : str
+            Path containing the result data.
 
         Returns
         -------
@@ -248,17 +248,17 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def write_result(self, file_name: str, saving_options: SavingOptions, result: Result):
+    def write_result(self, result_path: str, result: Result, saving_options: SavingOptions | None):
         """Write a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        file_name : str
-            File to write the result data to.
-        saving_options : SavingOptions
-            Options on how to save the result.
+        result_path : str
+            Path to write the result data to.
         result : Result
             Result instance to write to specs file.
+        saving_options : SavingOptions
+            Options on how to save the result.
 
 
         .. # noqa: DAR101

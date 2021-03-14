@@ -5,13 +5,17 @@ from glotaran.plugin_system.data_io_registration import get_datawriter
 from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.plugin_system.data_io_registration import register_data_io
 from glotaran.plugin_system.data_io_registration import write_dataset
+from glotaran.plugin_system.project_io_registration import load_model
+from glotaran.plugin_system.project_io_registration import load_parameters
+from glotaran.plugin_system.project_io_registration import load_result
+from glotaran.plugin_system.project_io_registration import load_scheme
+from glotaran.plugin_system.project_io_registration import register_project_io
+from glotaran.plugin_system.project_io_registration import write_model
+from glotaran.plugin_system.project_io_registration import write_parameters
+from glotaran.plugin_system.project_io_registration import write_result
+from glotaran.plugin_system.project_io_registration import write_scheme
 
-from .decorator import register_project_io
 from .interface import DataIoInterface
 from .interface import ProjectIoInterface
 from .prepare_dataset import prepare_time_trace_dataset
 from .project import save_result
-from .register import load_model
-from .register import load_parameters
-from .register import load_scheme
-from .register import write_parameters
