@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
-from glotaran.plugin_system.base_registry import inferr_file_format
 from glotaran.plugin_system.base_registry import is_registered_plugin
-from glotaran.plugin_system.base_registry import not_implemented_to_value_error
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.io_plugin_utils import inferr_file_format
+from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:

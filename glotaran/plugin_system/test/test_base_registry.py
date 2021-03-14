@@ -22,14 +22,10 @@ from glotaran.plugin_system.base_registry import add_plugin_to_registry
 from glotaran.plugin_system.base_registry import extend_conflicting_plugin_key
 from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
-from glotaran.plugin_system.base_registry import inferr_file_format
 from glotaran.plugin_system.base_registry import is_registered_plugin
-from glotaran.plugin_system.base_registry import not_implemented_to_value_error
 from glotaran.plugin_system.base_registry import registered_plugins
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.plugin_system.base_registry import _PluginInstantiableType
@@ -211,56 +207,3 @@ def test_get_plugin_from_register_not_found():
     """Error when Plugin wasn't found"""
     with pytest.raises(ValueError, match="something went wrong"):
         get_plugin_from_registry("not-registered", mock_registry_data_io, "something went wrong")
-
-
-@pytest.mark.parametrize(
-    "extension,expected",
-    (
-        (
-            "yaml",
-            "yaml",
-        ),
-        (
-            "sdt",
-            "sdt",
-        ),
-        (
-            "something.sdt",
-            "sdt",
-        ),
-    ),
-)
-def test_inferr_file_format(tmp_path: Path, extension: str, expected: str):
-    """Inferr type from existing files with extension."""
-    file_path = tmp_path / f"dummy.{extension}"
-    file_path.touch()
-
-    assert inferr_file_format(file_path) == expected
-
-
-def test_inferr_file_format_no_extension(tmp_path: Path):
-    """Raise error if file has no extension."""
-    file_path = tmp_path / "dummy"
-    file_path.touch()
-
-    with pytest.raises(
-        ValueError, match="Cannot determine format of file .+?, please provide an explicit format"
-    ):
-        inferr_file_format(file_path)
-
-
-def test_inferr_file_format_none_existing_file():
-    """Raise error if file does not exists."""
-    with pytest.raises(ValueError, match="There is no file "):
-        inferr_file_format("none-existing-file.yml")
-
-
-def test_not_implemented_to_value_error():
-    """Redirect not NotImplementedError to ValueError."""
-
-    @not_implemented_to_value_error
-    def dummy():
-        raise NotImplementedError("This isn't working")
-
-    with pytest.raises(ValueError, match="This isn't working"):
-        dummy()
