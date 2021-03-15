@@ -63,7 +63,7 @@ def register_data_io(
     ...     pass
     """
 
-    def decorator(cls: type[DataIoInterface]) -> type[DataIoInterface]:
+    def wrapper(cls: type[DataIoInterface]) -> type[DataIoInterface]:
         add_instantiated_plugin_to_registry(
             plugin_register_keys=format_names,
             plugin_class=cls,
@@ -71,7 +71,7 @@ def register_data_io(
         )
         return cls
 
-    return decorator
+    return wrapper
 
 
 def is_known_data_format(format_name: str) -> bool:

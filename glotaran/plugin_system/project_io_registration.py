@@ -76,7 +76,7 @@ def register_project_io(
     ...     pass
     """
 
-    def decorator(cls: type[ProjectIoInterface]) -> type[ProjectIoInterface]:
+    def wrapper(cls: type[ProjectIoInterface]) -> type[ProjectIoInterface]:
         add_instantiated_plugin_to_registry(
             plugin_register_keys=format_names,
             plugin_class=cls,
@@ -84,7 +84,7 @@ def register_project_io(
         )
         return cls
 
-    return decorator
+    return wrapper
 
 
 def is_known_project_format(format_name: str) -> bool:
