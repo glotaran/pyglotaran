@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class MockDataIO(DataIoInterface):
-    def read_dataset(self, file_name: str, **kwargs: Any) -> xr.Dataset | xr.DataArray:
+    def load_dataset(self, file_name: str, **kwargs: Any) -> xr.Dataset | xr.DataArray:
         return {"file_name": file_name, **kwargs}  # type:ignore
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
@@ -120,7 +120,7 @@ def test_known_data_formats(mocked_registry):
 def test_get_dataloader(format_name: str, io_class: type[DataIoInterface]):
     """Code of the dataloader is the same as original classes method code"""
     dataloader = get_dataloader(format_name)
-    assert dataloader.__code__ == io_class.read_dataset.__code__
+    assert dataloader.__code__ == io_class.load_dataset.__code__
 
 
 @pytest.mark.parametrize(

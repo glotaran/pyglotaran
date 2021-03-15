@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 class MockProjectIo(ProjectIoInterface):
     # TODO: Investigate why write methods raises an [override] type error and load functions don't
-    def read_model(self, file_name: str, **kwargs: Any) -> Model:
+    def load_model(self, file_name: str, **kwargs: Any) -> Model:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def write_model(  # type:ignore[override]
@@ -52,7 +52,7 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def read_parameters(self, file_name: str, **kwargs: Any) -> ParameterGroup:
+    def load_parameters(self, file_name: str, **kwargs: Any) -> ParameterGroup:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def write_parameters(  # type:ignore[override]
@@ -71,7 +71,7 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def read_scheme(self, file_name: str, **kwargs: Any) -> Scheme:
+    def load_scheme(self, file_name: str, **kwargs: Any) -> Scheme:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def write_scheme(  # type:ignore[override]
@@ -85,7 +85,7 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def read_result(self, result_path: str, **kwargs: Any) -> Result:
+    def load_result(self, result_path: str, **kwargs: Any) -> Result:
         return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
 
     def write_result(  # type:ignore[override]
@@ -285,6 +285,6 @@ def test_protect_from_overwrite_write_functions(
 
 def test_get_project_io_method(mocked_registry):
     io = get_project_io("mock")
-    result = get_project_io_method("mock", "read_model")
+    result = get_project_io_method("mock", "load_model")
 
-    assert result.__code__ == io.read_model.__code__
+    assert result.__code__ == io.load_model.__code__

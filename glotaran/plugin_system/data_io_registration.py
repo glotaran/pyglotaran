@@ -146,7 +146,7 @@ def load_dataset(
         Data loaded from the file.
     """
     io = get_data_io(format_name or inferr_file_format(file_name))
-    return io.read_dataset(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_dataset(file_name, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
@@ -206,7 +206,7 @@ def get_dataloader(format_name: str) -> DataLoader:
         :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
     """
     io = get_data_io(format_name)
-    return get_method_from_plugin(io, "read_dataset")
+    return get_method_from_plugin(io, "load_dataset")
 
 
 def get_datawriter(format_name: str) -> DataWriter:

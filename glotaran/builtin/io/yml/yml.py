@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 @register_project_io(["yml", "yaml", "yml_str"])
 class YmlProjectIo(ProjectIoInterface):
-    def read_model(self, file_name: str) -> Model:
+    def load_model(self, file_name: str) -> Model:
         """parse_yaml_file reads the given file and parses its content as YML.
 
         Parameters
@@ -61,7 +61,7 @@ class YmlProjectIo(ProjectIoInterface):
         model = get_model(model_type)
         return model.from_dict(spec)
 
-    def read_parameters(self, file_name: str) -> ParameterGroup:
+    def load_parameters(self, file_name: str) -> ParameterGroup:
 
         if self.format == "yml_str":
             spec = yaml.safe_load(file_name)
@@ -74,7 +74,7 @@ class YmlProjectIo(ProjectIoInterface):
         else:
             return ParameterGroup.from_dict(spec)
 
-    def read_scheme(self, file_name: str) -> Scheme:
+    def load_scheme(self, file_name: str) -> Scheme:
         if self.format == "yml_str":
             yml = file_name
         else:

@@ -43,7 +43,7 @@ class DataIoInterface:
         """
         self.format = format_name
 
-    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
+    def load_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray` (**NOT IMPLEMENTED**).
 
         Parameters
@@ -99,7 +99,7 @@ class ProjectIoInterface:
         """
         self.format = format_name
 
-    def read_model(self, file_name: str) -> Model:
+    def load_model(self, file_name: str) -> Model:
         """Create a Model instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
@@ -134,7 +134,7 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot write models with format {self.format!r}")
 
-    def read_parameters(self, file_name: str) -> ParameterGroup:
+    def load_parameters(self, file_name: str) -> ParameterGroup:
         """Create a ParameterGroup instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
@@ -169,7 +169,7 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot write parameters with format {self.format!r}")
 
-    def read_scheme(self, file_name: str) -> Scheme:
+    def load_scheme(self, file_name: str) -> Scheme:
         """Create a Scheme instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
@@ -203,7 +203,7 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot write scheme with format {self.format!r}")
 
-    def read_result(self, result_path: str) -> Result:
+    def load_result(self, result_path: str) -> Result:
         """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
