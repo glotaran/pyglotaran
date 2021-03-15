@@ -211,13 +211,6 @@ class Scheme:
                 r,
             )
 
-            new_dims = [self.model.model_dimension, self.model.global_dimension]
-            new_dims += [
-                dim
-                for dim in dataset.dims
-                if dim not in [self.model.model_dimension, self.model.global_dimension]
-            ]
-
             self._data[label] = dataset
 
     def markdown(self):
