@@ -16,6 +16,7 @@ from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
@@ -24,6 +25,7 @@ from glotaran.project import SavingOptions
 if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
+    from typing import Literal
 
     import xarray as xr
 
@@ -227,3 +229,19 @@ def get_datawriter(format_name: str) -> DataWriter:
     """
     io = get_data_io(format_name)
     return get_method_from_plugin(io, "write_dataset")
+
+
+def show_data_io_method_help(
+    format_name: str, method_name: Literal["load_dataset", "write_dataset"]
+) -> None:
+    """Show help for the implementation of data io plugin methods.
+
+    Parameters
+    ----------
+    format_name : str
+        Format the method should support.
+    method_name : {'load_dataset', 'write_dataset'}
+        Method name
+    """
+    io = get_data_io(format_name)
+    show_method_help(io, method_name)

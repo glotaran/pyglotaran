@@ -18,6 +18,7 @@ from glotaran.plugin_system.project_io_registration import load_parameters
 from glotaran.plugin_system.project_io_registration import load_result
 from glotaran.plugin_system.project_io_registration import load_scheme
 from glotaran.plugin_system.project_io_registration import register_project_io
+from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 from glotaran.plugin_system.project_io_registration import write_model
 from glotaran.plugin_system.project_io_registration import write_parameters
 from glotaran.plugin_system.project_io_registration import write_result
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
 
+    from _pytest.capture import CaptureFixture
     from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.model import Model
@@ -39,6 +41,7 @@ if TYPE_CHECKING:
 class MockProjectIo(ProjectIoInterface):
     # TODO: Investigate why write methods raises an [override] type error and load functions don't
     def load_model(self, file_name: str, **kwargs: Any) -> Model:
+        """This docstring is just for help testing of 'load_model'."""
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def write_model(  # type:ignore[override]
@@ -288,3 +291,19 @@ def test_get_project_io_method(mocked_registry):
     result = get_project_io_method("mock", "load_model")
 
     assert result.__code__ == io.load_model.__code__
+
+
+def test_show_project_io_method_help(
+    mocked_registry,
+    capsys: CaptureFixture,
+):
+    """Same help as when called directly."""
+    plugin = MockProjectIo("foo")
+    help(plugin.load_model)
+    original_help, _ = capsys.readouterr()
+
+    show_project_io_method_help(format_name="mock", method_name="load_model")
+    result, _ = capsys.readouterr()
+
+    assert "This docstring is just for help testing of 'load_model'." in result
+    assert result == original_help

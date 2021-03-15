@@ -25,8 +25,10 @@ from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import show_method_help
 
 if TYPE_CHECKING:
+    from _pytest.capture import CaptureFixture
     from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.plugin_system.base_registry import _PluginInstantiableType
@@ -242,3 +244,19 @@ def test_get_method_from_plugin_missing_attribute():
         ValueError, match=r"The plugin '.+?\.MockPlugin' has no method 'not_even_an_attribute'"
     ):
         get_method_from_plugin(plugin, "not_even_an_attribute")
+
+
+@pytest.mark.parametrize("plugin", (MockPlugin, MockPlugin()))
+def test_show_method_help(capsys: CaptureFixture, plugin: MockPlugin | type[MockPlugin]):
+    """Same help as when called directly.
+
+    Note: help differs when called on class.method vs. instance.method
+    """
+    help(plugin.some_method)
+    original_help, _ = capsys.readouterr()
+
+    show_method_help(plugin, "some_method")
+    result, _ = capsys.readouterr()
+
+    assert "This docstring is just for help testing of 'some_method'." in result
+    assert result == original_help

@@ -17,12 +17,14 @@ from glotaran.plugin_system.data_io_registration import is_known_data_format
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.plugin_system.data_io_registration import register_data_io
+from glotaran.plugin_system.data_io_registration import show_data_io_method_help
 from glotaran.plugin_system.data_io_registration import write_dataset
 
 if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
+    from _pytest.capture import CaptureFixture
     from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.project import SavingOptions
@@ -30,6 +32,7 @@ if TYPE_CHECKING:
 
 class MockDataIO(DataIoInterface):
     def load_dataset(self, file_name: str, **kwargs: Any) -> xr.Dataset | xr.DataArray:
+        """This docstring is just for help testing of 'load_dataset'."""
         return {"file_name": file_name, **kwargs}  # type:ignore
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
@@ -55,7 +58,7 @@ class MockDataIO(DataIoInterface):
 @pytest.fixture(scope="function")
 def mocked_registry(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
-        __PluginRegistry, "data_io", {"foo": DataIoInterface("foo"), "mocked": MockDataIO("bar")}
+        __PluginRegistry, "data_io", {"foo": DataIoInterface("foo"), "mock": MockDataIO("bar")}
     )
 
 
@@ -79,7 +82,7 @@ def test_register_data_io(mocked_registry):
 def test_known_data_format(mocked_registry):
     """Known format in mocked register"""
     assert is_known_data_format("foo")
-    assert is_known_data_format("mocked")
+    assert is_known_data_format("mock")
     assert not is_known_data_format("baz")
 
 
@@ -106,7 +109,7 @@ def test_get_data_io(format_name: str, io_class: type[DataIoInterface]):
 
 def test_known_data_formats(mocked_registry):
     """Known formats are the same as mocked register keys"""
-    assert known_data_formats() == ["foo", "mocked"]
+    assert known_data_formats() == ["foo", "mock"]
 
 
 @pytest.mark.parametrize(
@@ -139,8 +142,8 @@ def test_get_datawriter(format_name: str, io_class: type[DataIoInterface]):
 
 def test_load_dataset(mocked_registry, tmp_path: Path):
     """All args and kwargs are passes correctly."""
-    file_path = tmp_path / "dummy.mocked"
-    file_path.write_text("mocked")
+    file_path = tmp_path / "dummy.mock"
+    file_path.write_text("mock")
 
     result = load_dataset(str(file_path), dummy_arg="baz")
 
@@ -164,7 +167,7 @@ def test_write_dataset(mocked_registry, tmp_path: Path):
     result: dict[str, Any] = {}
     write_dataset(
         str(file_path),
-        "mocked",
+        "mock",
         "no_dataset",  # type:ignore
         "no_option",  # type:ignore
         result_container=result,
@@ -190,3 +193,19 @@ def test_write_dataset_error(mocked_registry, tmp_path: Path):
 
     with pytest.raises(ValueError, match="Cannot read data with format: 'foo'"):
         load_dataset(str(file_path))
+
+
+def test_show_data_io_method_help(
+    mocked_registry,
+    capsys: CaptureFixture,
+):
+    """Same help as when called directly."""
+    plugin = MockDataIO("foo")
+    help(plugin.load_dataset)
+    original_help, _ = capsys.readouterr()
+
+    show_data_io_method_help(format_name="mock", method_name="load_dataset")
+    result, _ = capsys.readouterr()
+
+    assert "This docstring is just for help testing of 'load_dataset'." in result
+    assert result == original_help

@@ -339,3 +339,20 @@ def get_method_from_plugin(
             raise ValueError(not_a_method_error_message)
     except AttributeError:
         raise ValueError(not_a_method_error_message)
+
+
+def show_method_help(
+    plugin: object | type[object],
+    method_name: str,
+) -> None:
+    """Show help on a method as if it was called directly on it.
+
+    Parameters
+    ----------
+    plugin : object | type[object],
+        Plugin instance or class.
+    method_name : str
+        Method name, e.g. load_model.
+    """
+    method = get_method_from_plugin(plugin, method_name)
+    help(method)

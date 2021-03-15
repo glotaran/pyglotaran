@@ -9,6 +9,7 @@ and causing an [override] type error in the plugins implementation.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
@@ -16,23 +17,34 @@ from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
-    # MyPy bug
-    # Module 'typing' has no attribute 'Literal'
     from typing import Any
     from typing import Callable
-    from typing import Literal  # type:ignore [attr-defined]
+    from typing import Literal
 
     from glotaran.io.interface import ProjectIoInterface
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
     from glotaran.project import Scheme
+
+    ProjectIoMethods = TypeVar(
+        "ProjectIoMethods",
+        Literal["load_model"],
+        Literal["write_model"],
+        Literal["load_parameters"],
+        Literal["write_parameters"],
+        Literal["load_scheme"],
+        Literal["write_scheme"],
+        Literal["load_result"],
+        Literal["write_result"],
+    )
 
 
 def register_project_io(
@@ -347,19 +359,7 @@ def write_result(
     )
 
 
-def get_project_io_method(
-    format_name: str,
-    method_name: Literal[
-        "load_model",
-        "write_model",
-        "load_parameters",
-        "write_parameters",
-        "load_scheme",
-        "write_scheme",
-        "load_result",
-        "write_result",
-    ],
-) -> Callable[..., Any]:
+def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Callable[..., Any]:
     """Retrieve implementation of project io functionality for the format 'format_name'.
 
     This allows to get the proper help and autocomplete for the function,
@@ -369,13 +369,36 @@ def get_project_io_method(
     ----------
     format_name : str
         Format the dataloader should be able to read.
-    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters', 'load_scheme', 'write_scheme', 'load_result', 'write_result'}
+    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters',\
+    'load_scheme', 'write_scheme', 'load_result', 'write_result'}
         Method name, e.g. load_model.
 
     Returns
     -------
     Callable[..., Any]
         The function which is called in the background by the convenience functions.
-    """  # noqa: E501
+
+
+    .. # noqa: DAR103 method_name
+    """
     io = get_project_io(format_name)
     return get_method_from_plugin(io, method_name)
+
+
+def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods) -> None:
+    """Show help for the implementation of project io plugin methods.
+
+    Parameters
+    ----------
+    format_name : str
+        Format the method should support.
+    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters',\
+    'load_scheme', 'write_scheme', 'load_result', 'write_result'}
+        Method name.
+
+
+    .. # noqa: DAR103 method_name
+    .. # noqa: DAR101
+    """
+    io = get_project_io(format_name)
+    show_method_help(io, method_name)
