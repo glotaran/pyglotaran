@@ -282,7 +282,7 @@ def write_scheme(
 
 
 @not_implemented_to_value_error
-def load_result(result_path: str, format_name: str, **kwargs: Any) -> Result:
+def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Result:
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters

@@ -6,11 +6,6 @@ import pytest
 
 from glotaran.builtin.io.csv.csv import CsvProjectIo
 from glotaran.builtin.io.yml.yml import YmlProjectIo
-from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
-from glotaran.builtin.models.kinetic_spectrum.test.test_kinetic_spectrum_model import MODEL_1C_BASE
-from glotaran.builtin.models.kinetic_spectrum.test.test_kinetic_spectrum_model import (
-    PARAMETERS_3C_BASE,
-)
 from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
 from glotaran.plugin_system.base_registry import __PluginRegistry
@@ -34,13 +29,89 @@ if TYPE_CHECKING:
 
     from _pytest.monkeypatch import MonkeyPatch
 
+    from glotaran.model import Model
+    from glotaran.project import Result
+    from glotaran.project import SavingOptions
+    from glotaran.project import Scheme
+
+
+class MockProjectIo(ProjectIoInterface):
+    # TODO: Investigate why write methods raises an [override] type error and load functions don't
+    def read_model(self, file_name: str, **kwargs: Any) -> Model:
+        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
+
+    def write_model(  # type:ignore[override]
+        self, file_name: str, model: Model, *, result_container: dict[str, Any], **kwargs: Any
+    ):
+        result_container.update(
+            **{
+                "file_name": file_name,
+                "data_object": model,
+                **kwargs,
+            }
+        )
+
+    def read_parameters(self, file_name: str, **kwargs: Any) -> ParameterGroup:
+        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
+
+    def write_parameters(  # type:ignore[override]
+        self,
+        file_name: str,
+        parameters: ParameterGroup,
+        *,
+        result_container: dict[str, Any],
+        **kwargs: Any,
+    ):
+        result_container.update(
+            **{
+                "file_name": file_name,
+                "data_object": parameters,
+                **kwargs,
+            }
+        )
+
+    def read_scheme(self, file_name: str, **kwargs: Any) -> Scheme:
+        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
+
+    def write_scheme(  # type:ignore[override]
+        self, file_name: str, scheme: Scheme, *, result_container: dict[str, Any], **kwargs: Any
+    ):
+        result_container.update(
+            **{
+                "file_name": file_name,
+                "data_object": scheme,
+                **kwargs,
+            }
+        )
+
+    def read_result(self, result_path: str, **kwargs: Any) -> Result:
+        return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
+
+    def write_result(  # type:ignore[override]
+        self,
+        result_path: str,
+        result: Result,
+        saving_options: SavingOptions | None,
+        *,
+        result_container: dict[str, Any],
+        **kwargs: Any,
+    ):
+        result_container.update(
+            **{
+                "file_name": result_path,
+                "data_object": result,
+                "saving_options": saving_options,
+                **kwargs,
+            }
+        )
+
 
 @pytest.fixture
 def mocked_registry(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
         __PluginRegistry,
         "project_io",
-        {"foo": ProjectIoInterface("foo"), "bar": ProjectIoInterface("bar")},
+        {"foo": ProjectIoInterface("foo"), "mock": MockProjectIo("bar")},
     )
 
 
@@ -64,7 +135,7 @@ def test_register_project_io(mocked_registry):
 def test_known_project_format(mocked_registry):
     """Known format in mocked register"""
     assert is_known_project_format("foo")
-    assert is_known_project_format("bar")
+    assert is_known_project_format("mock")
     assert not is_known_project_format("baz")
 
 
@@ -85,7 +156,7 @@ def test_known_project_format_actual_register():
         ("csv", CsvProjectIo),
     ),
 )
-def test_get_data_io(format_name: str, io_class: type[ProjectIoInterface]):
+def test_get_project_io(format_name: str, io_class: type[ProjectIoInterface]):
     """Get the right instance"""
     assert isinstance(get_project_io(format_name), io_class)
     assert get_project_io(format_name).format == format_name
@@ -93,32 +164,65 @@ def test_get_data_io(format_name: str, io_class: type[ProjectIoInterface]):
 
 def test_known_project_formats(mocked_registry):
     """Known formats are the same as mocked register keys"""
-    assert known_project_formats() == ["foo", "bar"]
-
-
-def test_load_model(tmp_path: Path):
-    """Right kind of model from yml definition"""
-    model_path = tmp_path / "model.yml"
-    model_path.write_text(MODEL_1C_BASE)
-
-    model = load_model(str(model_path))
-
-    assert model.validate() == "Your model is valid."
-    assert isinstance(model, KineticSpectrumModel)
-
-
-def test_load_parameters(tmp_path: Path):
-    """Parameters have irf"""
-    parameters_path = tmp_path / "parameters.yml"
-    parameters_path.write_text(PARAMETERS_3C_BASE)
-    parameters = load_parameters(str(parameters_path))
-    assert isinstance(parameters, ParameterGroup)
-    assert parameters.has("irf.center")
-    assert parameters.has("irf.width")
+    assert known_project_formats() == ["foo", "mock"]
 
 
 @pytest.mark.parametrize(
-    "function, error_regex",
+    "load_function",
+    (
+        load_model,
+        load_parameters,
+        load_scheme,
+        load_result,
+    ),
+)
+def test_load_functions(mocked_registry, tmp_path: Path, load_function: Callable[..., Any]):
+    """All args and kwargs are passes correctly."""
+    file_path = tmp_path / "model.mock"
+    file_path.touch()
+
+    result = load_function(str(file_path), dummy_arg="baz")
+
+    assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
+
+
+@pytest.mark.parametrize(
+    "write_function",
+    (
+        write_model,
+        write_parameters,
+        write_scheme,
+        write_result,
+    ),
+)
+def test_write_functions(
+    mocked_registry,
+    tmp_path: Path,
+    write_function: Callable[..., Any],
+):
+    """All args and kwargs are passes correctly."""
+    file_path = tmp_path / "model.mock"
+    result: dict[str, Any] = {}
+
+    write_function(
+        str(file_path),
+        "mock",
+        "data_object",  # type:ignore
+        saving_options="no_option",  # type:ignore
+        result_container=result,
+        dummy_arg="baz",
+    )
+
+    assert result == {
+        "file_name": str(file_path),
+        "data_object": "data_object",
+        "saving_options": "no_option",
+        "dummy_arg": "baz",
+    }
+
+
+@pytest.mark.parametrize(
+    "load_function, error_regex",
     (
         (load_model, "read models"),
         (load_parameters, "read parameters"),
@@ -126,19 +230,19 @@ def test_load_parameters(tmp_path: Path):
         (load_result, "read result"),
     ),
 )
-def test_value_error_load_functions(
-    mocked_registry, tmp_path: Path, function: Callable[..., Any], error_regex: str
+def test_load_functions_value_error(
+    mocked_registry, tmp_path: Path, load_function: Callable[..., Any], error_regex: str
 ):
     """Raise ValueError if load method isn't implemented."""
 
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        function(str(file_path), "foo")
+        load_function(str(file_path), "foo")
 
 
 @pytest.mark.parametrize(
-    "function, error_regex",
+    "write_function, error_regex",
     (
         (write_model, "write models"),
         (write_parameters, "write parameters"),
@@ -146,15 +250,15 @@ def test_value_error_load_functions(
         (write_result, "write result"),
     ),
 )
-def test_value_error_write_functions(
-    mocked_registry, tmp_path: Path, function: Callable[..., Any], error_regex: str
+def test_write_functions_value_error(
+    mocked_registry, tmp_path: Path, write_function: Callable[..., Any], error_regex: str
 ):
     """Raise ValueError if write method isn't implemented."""
 
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        function(str(file_path), "foo", "bar")
+        write_function(str(file_path), "foo", "bar")
 
 
 @pytest.mark.parametrize(
