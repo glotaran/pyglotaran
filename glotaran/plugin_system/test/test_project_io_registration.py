@@ -10,6 +10,7 @@ from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.project_io_registration import get_project_io
+from glotaran.plugin_system.project_io_registration import get_project_io_method
 from glotaran.plugin_system.project_io_registration import is_known_project_format
 from glotaran.plugin_system.project_io_registration import known_project_formats
 from glotaran.plugin_system.project_io_registration import load_model
@@ -280,3 +281,10 @@ def test_protect_from_overwrite_write_functions(
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
         function(str(file_path), "foo", "bar")
+
+
+def test_get_project_io_method(mocked_registry):
+    io = get_project_io("mock")
+    result = get_project_io_method("mock", "read_model")
+
+    assert result.__code__ == io.read_model.__code__

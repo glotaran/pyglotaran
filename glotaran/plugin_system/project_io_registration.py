@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
+from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
@@ -21,8 +22,11 @@ from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
+    # MyPy bug
+    # Module 'typing' has no attribute 'Literal'
     from typing import Any
     from typing import Callable
+    from typing import Literal  # type:ignore [attr-defined]
 
     from glotaran.io.interface import ProjectIoInterface
     from glotaran.model import Model
@@ -143,7 +147,7 @@ def load_model(file_name: str, format_name: str = None, **kwargs: Any) -> Model:
         Model instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.read_model(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_model(file_name, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
@@ -191,7 +195,7 @@ def load_parameters(file_name: str, format_name: str = None, **kwargs) -> Parame
         :class:`ParameterGroup` instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.read_parameters(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_parameters(file_name, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
@@ -248,7 +252,7 @@ def load_scheme(file_name: str, format_name: str = None, **kwargs: Any) -> Schem
         :class:`Scheme` instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.read_scheme(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_scheme(file_name, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
@@ -302,7 +306,7 @@ def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Res
         :class:`Result` instance created from the saved format.
     """
     io = get_project_io(format_name or inferr_file_format(result_path))
-    return io.read_result(result_path, **kwargs)  # type: ignore[call-arg]
+    return io.load_result(result_path, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
@@ -341,3 +345,37 @@ def write_result(
         saving_options=saving_options,
         **kwargs,
     )
+
+
+def get_project_io_method(
+    format_name: str,
+    method_name: Literal[
+        "load_model",
+        "write_model",
+        "load_parameters",
+        "write_parameters",
+        "load_scheme",
+        "write_scheme",
+        "load_result",
+        "write_result",
+    ],
+) -> Callable[..., Any]:
+    """Retrieve implementation of project io functionality for the format 'format_name'.
+
+    This allows to get the proper help and autocomplete for the function,
+    which is especially valuable if the function provides additional options.
+
+    Parameters
+    ----------
+    format_name : str
+        Format the dataloader should be able to read.
+    method_name : {'load_model', 'write_model', 'load_parameters', 'write_parameters', 'load_scheme', 'write_scheme', 'load_result', 'write_result'}
+        Method name, e.g. load_model.
+
+    Returns
+    -------
+    Callable[..., Any]
+        The function which is called in the background by the convenience functions.
+    """  # noqa: E501
+    io = get_project_io(format_name)
+    return get_method_from_plugin(io, method_name)
