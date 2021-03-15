@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from importlib import metadata
 from typing import TYPE_CHECKING
-from typing import Any
-from typing import TypeVar
 from warnings import warn
 
 if TYPE_CHECKING:
-
+    from typing import Any
+    from typing import Callable
     from typing import MutableMapping
+    from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
@@ -301,3 +301,41 @@ def get_plugin_from_registry(
         raise ValueError(not_found_error_message)
     else:
         return plugin_registry[plugin_register_key]
+
+
+def get_method_from_plugin(
+    plugin: object | type[object],
+    method_name: str,
+) -> Callable[..., Any]:
+    """Retrieve a method callabe from an class or instance plugin.
+
+    Parameters
+    ----------
+    plugin : object | type[object],
+        Plugin instance or class.
+    method_name : str
+        Method name, e.g. load_model.
+
+    Returns
+    -------
+    Callable[..., Any]
+        Method callable.
+
+    Raises
+    ------
+    ValueError
+        If plugin has an attribute with that name but it isn't callable.
+    ValueError
+        If plugin misses the attribute.
+    """
+    not_a_method_error_message = (
+        f"The plugin {full_plugin_name(plugin)!r} has no method {method_name!r}"
+    )
+    try:
+        possible_method = getattr(plugin, method_name)
+        if callable(possible_method):
+            return possible_method
+        else:
+            raise ValueError(not_a_method_error_message)
+    except AttributeError:
+        raise ValueError(not_a_method_error_message)

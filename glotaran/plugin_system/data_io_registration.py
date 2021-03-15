@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
+from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
@@ -188,7 +189,7 @@ def write_dataset(
 
 
 def get_dataloader(format_name: str) -> DataLoader:
-    """Retrieve implementation of the read_dataset functionalityfor the format 'format_name'.
+    """Retrieve implementation of the ``read_dataset`` functionality for the format 'format_name'.
 
     This allows to get the proper help and autocomplete for the function,
     which is especially valuable if the function provides additional options.
@@ -205,11 +206,11 @@ def get_dataloader(format_name: str) -> DataLoader:
         :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
     """
     io = get_data_io(format_name)
-    return io.get_dataloader()
+    return get_method_from_plugin(io, "read_dataset")
 
 
 def get_datawriter(format_name: str) -> DataWriter:
-    """Retrieve implementation of the write_dataset functionality for the format 'format_name'.
+    """Retrieve implementation of the ``write_dataset`` functionality for the format 'format_name'.
 
     This allows to get the proper help and autocomplete for the function,
     which is especially valuable if the function provides additional options.
@@ -225,4 +226,4 @@ def get_datawriter(format_name: str) -> DataWriter:
         Function to write :xarraydoc:`Dataset` to the format ``format_name`` .
     """
     io = get_data_io(format_name)
-    return io.get_datawriter()
+    return get_method_from_plugin(io, "write_dataset")

@@ -85,32 +85,6 @@ class DataIoInterface:
         """
         raise NotImplementedError(f"""Cannot write data with format: {self.format!r}""")
 
-    def get_dataloader(self) -> DataLoader:
-        """Retrieve implementation of the ``read_dataset`` functionality.
-
-        This allows to get the proper help and autocomplete for the function,
-        which is especially valuable if the function provides additional options.
-
-        Returns
-        -------
-        DataLoader
-            Function to load data a given format as :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
-        """
-        return self.read_dataset
-
-    def get_datawriter(self) -> DataWriter:
-        """Retrieve implementation of the ``write_dataset`` functionality.
-
-        This allows to get the proper help and autocomplete for the function,
-        which is especially valuable if the function provides additional options.
-
-        Returns
-        -------
-        DataWriter
-            Function to write :xarraydoc:`Dataset` to a given format.
-        """
-        return self.write_dataset
-
 
 class ProjectIoInterface:
     """Baseclass for Project IO plugins."""

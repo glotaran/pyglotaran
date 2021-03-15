@@ -21,6 +21,7 @@ from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_regi
 from glotaran.plugin_system.base_registry import add_plugin_to_registry
 from glotaran.plugin_system.base_registry import extend_conflicting_plugin_key
 from glotaran.plugin_system.base_registry import full_plugin_name
+from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
@@ -33,7 +34,12 @@ if TYPE_CHECKING:
 
 
 class MockPlugin:
-    pass
+    def __init__(self) -> None:
+        self.format_name = "mock"
+
+    def some_method(self):
+        """This docstring is just for help testing of 'some_method'."""
+        return f"got the method of {self.format_name}"
 
 
 mock_registry_data_io = cast(
@@ -207,3 +213,32 @@ def test_get_plugin_from_register_not_found():
     """Error when Plugin wasn't found"""
     with pytest.raises(ValueError, match="something went wrong"):
         get_plugin_from_registry("not-registered", mock_registry_data_io, "something went wrong")
+
+
+def test_get_method_from_plugin():
+    """Method works like a function."""
+    plugin = MockPlugin()
+
+    method = get_method_from_plugin(plugin, "some_method")
+
+    assert method() == "got the method of mock"
+
+
+def test_get_method_from_plugin_just_attribute():
+    """Error if attribute does exists on plugin but is not a method."""
+    plugin = MockPlugin()
+
+    with pytest.raises(
+        ValueError, match=r"The plugin '.+?\.MockPlugin' has no method 'format_name'"
+    ):
+        get_method_from_plugin(plugin, "format_name")
+
+
+def test_get_method_from_plugin_missing_attribute():
+    """Error if attribute does not exists on plugin."""
+    plugin = MockPlugin()
+
+    with pytest.raises(
+        ValueError, match=r"The plugin '.+?\.MockPlugin' has no method 'not_even_an_attribute'"
+    ):
+        get_method_from_plugin(plugin, "not_even_an_attribute")
