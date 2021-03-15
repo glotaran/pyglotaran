@@ -27,6 +27,11 @@ if TYPE_CHECKING:
 
 
 class __PluginRegistry:
+    """Central Plugin Registry.
+
+    This is super private since if anyone messes with it, the pluginsystem could break.
+    """
+
     model: MutableMapping[str, type[Model]] = {}
     data_io: MutableMapping[str, DataIoInterface] = {}
     project_io: MutableMapping[str, ProjectIoInterface] = {}
