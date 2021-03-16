@@ -101,7 +101,7 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
         "use the argument 'allow_overwrite=True'."
     )
     if allow_overwrite:
-        pass
+        return
     elif os.path.isfile(path):
         raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
     elif os.path.isdir(path) and os.listdir(str(path)):
