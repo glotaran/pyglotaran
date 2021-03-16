@@ -166,20 +166,20 @@ class YmlProjectIo(ProjectIoInterface):
         initial_parameters_path = os.path.join(
             result_path, f"initial_parameters.{parameters_format}"
         )
-        write_parameters(initial_parameters_path, parameters_format, result.initial_parameters)
+        write_parameters(initial_parameters_path, result.initial_parameters, parameters_format)
         result.initial_parameters = initial_parameters_path
         result_scheme.parameters = initial_parameters_path
 
         optimized_parameters_path = os.path.join(
             result_path, f"optimized_parameters.{parameters_format}"
         )
-        write_parameters(optimized_parameters_path, parameters_format, result.optimized_parameters)
+        write_parameters(optimized_parameters_path, result.optimized_parameters, parameters_format)
         result.optimized_parameters = optimized_parameters_path
 
         dataset_format = options.data_format
         for label, dataset in result.data.items():
             dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            write_dataset(dataset_path, dataset_format, dataset, saving_options=options)
+            write_dataset(dataset_path, dataset, dataset_format, saving_options=options)
             result.data[label] = dataset_path
             result_scheme.data[label] = dataset_path
 

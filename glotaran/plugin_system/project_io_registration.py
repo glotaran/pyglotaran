@@ -179,7 +179,12 @@ def load_model(file_name: str, format_name: str = None, **kwargs: Any) -> Model:
 
 @not_implemented_to_value_error
 def write_model(
-    file_name: str, format_name: str, model: Model, *, allow_overwrite: bool = False, **kwargs: Any
+    file_name: str,
+    model: Model,
+    format_name: str = None,
+    *,
+    allow_overwrite: bool = False,
+    **kwargs: Any,
 ) -> None:
     """Write a :class:`Model` instance to a spec file.
 
@@ -187,10 +192,10 @@ def write_model(
     ----------
     file_name : str
         File to write the model specs to.
-    format_name : str
-        Format the file should be in.
     model: Model
         :class:`Model` instance to write to specs file.
+    format_name : str
+        Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
@@ -198,7 +203,7 @@ def write_model(
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name)
+    io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.write_model(file_name=file_name, model=model, **kwargs)  # type: ignore[call-arg]
 
 
@@ -228,8 +233,8 @@ def load_parameters(file_name: str, format_name: str = None, **kwargs) -> Parame
 @not_implemented_to_value_error
 def write_parameters(
     file_name: str,
-    format_name: str,
     parameters: ParameterGroup,
+    format_name: str = None,
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -240,10 +245,10 @@ def write_parameters(
     ----------
     file_name : str
         File to write the parameter specs to.
-    format_name : str
-        Format the file should be in.
     parameters : ParameterGroup
         :class:`ParameterGroup` instance to write to specs file.
+    format_name : str
+        Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
@@ -251,7 +256,7 @@ def write_parameters(
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name)
+    io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.write_parameters(  # type: ignore[call-arg]
         file_name=file_name,
         parameters=parameters,
@@ -285,8 +290,8 @@ def load_scheme(file_name: str, format_name: str = None, **kwargs: Any) -> Schem
 @not_implemented_to_value_error
 def write_scheme(
     file_name: str,
-    format_name: str,
     scheme: Scheme,
+    format_name: str = None,
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -297,10 +302,10 @@ def write_scheme(
     ----------
     file_name : str
         File to write the scheme specs to.
-    format_name : str
-        Format the file should be in.
     scheme : Scheme
         :class:`Scheme` instance to write to specs file.
+    format_name : str
+        Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
@@ -308,7 +313,7 @@ def write_scheme(
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name)
+    io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.write_scheme(file_name=file_name, scheme=scheme, **kwargs)  # type: ignore[call-arg]
 
 
@@ -321,7 +326,7 @@ def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Res
     result_path : str
         Path containing the result data.
     format_name : str
-        Format the result should be saved in, if not provided and it is a file
+        Format the result is in, if not provided and it is a file
         it will be inferred from the file extension.
     **kwargs: Any
         Additional keyword arguments passes to the ``read_result`` implementation
@@ -339,8 +344,8 @@ def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Res
 @not_implemented_to_value_error
 def write_result(
     result_path: str,
-    format_name: str,
     result: Result,
+    format_name: str = None,
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -351,10 +356,11 @@ def write_result(
     ----------
     result_path : str
         Path to write the result data to.
-    format_name : str
-        Format the result should be saved in.
     result : Result
         :class:`Result` instance to write.
+    format_name : str
+        Format the result should be saved in, if not provided and it is a file
+        it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
@@ -362,7 +368,7 @@ def write_result(
         of the project io plugin.
     """
     protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name)
+    io = get_project_io(format_name or inferr_file_format(result_path, needs_to_exist=False))
     io.write_result(  # type: ignore[call-arg]
         result_path=result_path,
         result=result,

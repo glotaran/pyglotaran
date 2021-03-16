@@ -210,8 +210,8 @@ def test_write_functions(tmp_path: Path, write_function: Callable[..., Any]):
 
     write_function(
         str(file_path),
-        "mock",
         "data_object",  # type:ignore
+        "mock",
         result_container=result,
         dummy_arg="baz",
     )
@@ -260,7 +260,7 @@ def test_write_functions_value_error(
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        write_function(str(file_path), "foo", "bar")
+        write_function(str(file_path), "bar")
 
 
 @pytest.mark.parametrize(

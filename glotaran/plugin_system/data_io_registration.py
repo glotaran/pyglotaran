@@ -160,8 +160,8 @@ def load_dataset(
 @not_implemented_to_value_error
 def write_dataset(
     file_name: str,
-    format_name: str,
     dataset: xr.Dataset | xr.DataArray,
+    format_name: str = None,
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -173,7 +173,7 @@ def write_dataset(
     file_name : str
         File to write the data to.
     format_name : str
-        Format the file should be in.
+        Format the file should be in, if not provided it will be inferred from the file extension.
     dataset: xr.Dataset|xr.DataArray
         Data to be written to file.
     allow_overwrite : bool
@@ -184,7 +184,7 @@ def write_dataset(
         to get the implementation with the proper help and autocomplete.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_data_io(format_name)
+    io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.write_dataset(  # type: ignore[call-arg]
         file_name=file_name,
         dataset=dataset,

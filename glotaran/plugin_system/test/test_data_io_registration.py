@@ -160,18 +160,17 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        write_dataset(str(file_path), "foo", "")  # type:ignore
+        write_dataset(str(file_path), "")  # type:ignore
 
 
 @pytest.mark.usefixtures("mocked_registry")
 def test_write_dataset(tmp_path: Path):
     """All args and kwargs are passes correctly."""
-    file_path = tmp_path / "dummy.ascii"
+    file_path = tmp_path / "dummy.mock"
 
     result: dict[str, Any] = {}
     write_dataset(
         str(file_path),
-        "mock",
         "no_dataset",  # type:ignore
         result_container=result,
         dummy_arg="baz",
@@ -190,7 +189,7 @@ def test_write_dataset_error(tmp_path: Path):
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match="Cannot write data with format: 'foo'"):
-        write_dataset(str(file_path), "foo", "")  # type:ignore
+        write_dataset(str(file_path), "", "foo")  # type:ignore
 
     file_path.touch()
 

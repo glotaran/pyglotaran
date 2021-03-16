@@ -15,13 +15,16 @@ from typing import cast
 DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 
-def inferr_file_format(file_path: str | os.PathLike[str]) -> str:
+def inferr_file_format(file_path: str | os.PathLike[str], *, needs_to_exist: bool = True) -> str:
     """Inferr format of a file if it exists.
 
     Parameters
     ----------
     file_path : str
         Path/str to the file.
+    needs_to_exist : bool
+        Whether or not a file need to exists for an successful format inferring.
+        While write functions don't need the file to exists, load functions do.
 
     Returns
     -------
@@ -35,7 +38,7 @@ def inferr_file_format(file_path: str | os.PathLike[str]) -> str:
     ValueError
         If file has no extension.
     """
-    if not os.path.isfile(file_path):
+    if not os.path.isfile(file_path) and needs_to_exist:
         raise ValueError(f"There is no file {file_path!r}.")
 
     _, file_format = os.path.splitext(file_path)
