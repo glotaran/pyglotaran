@@ -12,7 +12,7 @@ Welcome to pyglotaran's documentation!
 
    introduction
    installation
-   notebooks/quickstart
+   notebooks/quickstart/quickstart
    history
    authors
 
