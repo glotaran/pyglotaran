@@ -11,13 +11,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
+from tabulate import tabulate
+
+from glotaran.io.interface import ProjectIoInterface
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
+from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import show_method_help
+from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
@@ -28,7 +33,6 @@ if TYPE_CHECKING:
     from typing import Callable
     from typing import Literal
 
-    from glotaran.io.interface import ProjectIoInterface
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
@@ -45,6 +49,18 @@ if TYPE_CHECKING:
         Literal["load_result"],
         Literal["write_result"],
     )
+
+
+PROJECT_IO_METHODS = (
+    "load_model",
+    "write_model",
+    "load_parameters",
+    "write_parameters",
+    "load_scheme",
+    "write_scheme",
+    "load_result",
+    "write_result",
+)
 
 
 def register_project_io(
@@ -402,3 +418,22 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     """
     io = get_project_io(format_name)
     show_method_help(io, method_name)
+
+
+def project_io_plugin_table() -> str:
+    """Return registered project io plugins and which functions they support as markdown table.
+
+    This is especially useful when you work with new plugins.
+
+    Returns
+    -------
+    str
+        Markdown table of project io plugins.
+    """
+    table_data = methods_differ_from_baseclass_table(
+        PROJECT_IO_METHODS, known_project_formats(), get_project_io, ProjectIoInterface
+    )
+    headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *PROJECT_IO_METHODS]))
+    return tabulate(
+        bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
+    )

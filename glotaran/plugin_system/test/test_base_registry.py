@@ -24,6 +24,8 @@ from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
+from glotaran.plugin_system.base_registry import methods_differ_from_baseclass
+from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import show_method_help
 
@@ -36,12 +38,19 @@ if TYPE_CHECKING:
 
 
 class MockPlugin:
-    def __init__(self) -> None:
-        self.format_name = "mock"
+    format_name = "mock"
 
     def some_method(self):
         """This docstring is just for help testing of 'some_method'."""
         return f"got the method of {self.format_name}"
+
+    def some_other_method(self):
+        pass
+
+
+class MockPluginSubclass(MockPlugin):
+    def some_method(self):
+        return "different implementation"
 
 
 mock_registry_data_io = cast(
@@ -260,3 +269,56 @@ def test_show_method_help(capsys: CaptureFixture, plugin: MockPlugin | type[Mock
 
     assert "This docstring is just for help testing of 'some_method'." in result
     assert result == original_help
+
+
+@pytest.mark.parametrize(
+    "method_names,plugin,expected",
+    (
+        ("some_method", MockPluginSubclass, [True]),
+        ("some_method", MockPluginSubclass(), [True]),
+        (["some_method", "some_other_method"], MockPluginSubclass, [True, False]),
+        (["some_method", "some_other_method"], MockPluginSubclass(), [True, False]),
+    ),
+)
+def test_methods_differ_from_baseclass(
+    method_names: str | list[str], plugin: object | type[object], expected: list[bool]
+):
+    """Inherited methods are the same as base class and overwritten ones differ"""
+    result = methods_differ_from_baseclass(method_names, plugin, MockPlugin)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "method_names,plugin_registry_keys,expected",
+    (
+        ("some_method", "base", [["base", False]]),
+        ("some_method", "sub_class", [["sub_class", True]]),
+        ("some_method", "sub_class_inst", [["sub_class_inst", True]]),
+        (
+            ["some_method", "some_other_method"],
+            ["base", "sub_class", "sub_class_inst"],
+            [["base", False, False], ["sub_class", True, False], ["sub_class_inst", True, False]],
+        ),
+    ),
+)
+def test_methods_differ_from_baseclass_table(
+    method_names: str | list[str],
+    plugin_registry_keys: str | list[str],
+    expected: list[list[str | bool]],
+):
+    """Inherited methods are the same as base class and overwritten ones differ"""
+
+    def get_plugin_function(plugin_registry_key: str):
+        if plugin_registry_key == "base":
+            return MockPlugin
+        elif plugin_registry_key == "sub_class":
+            return MockPluginSubclass
+        elif plugin_registry_key == "sub_class_inst":
+            return MockPluginSubclass
+
+    result = methods_differ_from_baseclass_table(
+        method_names, plugin_registry_keys, get_plugin_function, MockPlugin
+    )
+
+    assert result == expected

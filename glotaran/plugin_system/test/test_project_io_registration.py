@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
@@ -17,6 +18,7 @@ from glotaran.plugin_system.project_io_registration import load_model
 from glotaran.plugin_system.project_io_registration import load_parameters
 from glotaran.plugin_system.project_io_registration import load_result
 from glotaran.plugin_system.project_io_registration import load_scheme
+from glotaran.plugin_system.project_io_registration import project_io_plugin_table
 from glotaran.plugin_system.project_io_registration import register_project_io
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 from glotaran.plugin_system.project_io_registration import write_model
@@ -307,3 +309,17 @@ def test_show_project_io_method_help(
 
     assert "This docstring is just for help testing of 'load_model'." in result
     assert result == original_help
+
+
+def test_project_io_plugin_table(mocked_registry):
+    """Plugin foo supports no function and mock supports all"""
+    expected = dedent(
+        """\
+        |  __Plugin__  |  __load_model__  |  __write_model__  |  __load_parameters__  |  __write_parameters__  |  __load_scheme__  |  __write_scheme__  |  __load_result__  |  __write_result__  |
+        |--------------|------------------|-------------------|-----------------------|------------------------|-------------------|--------------------|-------------------|--------------------|
+        |     foo      |        /         |         /         |           /           |           /            |         /         |         /          |         /         |         /          |
+        |     mock     |        *         |         *         |           *           |           *            |         *         |         *          |         *         |         *          |
+        """  # noqa: E501
+    )
+
+    assert f"{project_io_plugin_table()}\n" == expected

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,6 +11,7 @@ from glotaran.builtin.io.netCDF.netCDF import NetCDFDataIo
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
 from glotaran.io import DataIoInterface
 from glotaran.plugin_system.base_registry import __PluginRegistry
+from glotaran.plugin_system.data_io_registration import data_io_plugin_table
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.plugin_system.data_io_registration import get_dataloader
 from glotaran.plugin_system.data_io_registration import get_datawriter
@@ -209,3 +211,17 @@ def test_show_data_io_method_help(
 
     assert "This docstring is just for help testing of 'load_dataset'." in result
     assert result == original_help
+
+
+def test_data_io_plugin_table(mocked_registry):
+    """Plugin foo supports no function and mock supports all"""
+    expected = dedent(
+        """\
+        |  __Plugin__  |  __load_dataset__  |  __write_dataset__  |
+        |--------------|--------------------|---------------------|
+        |     foo      |         /          |          /          |
+        |     mock     |         *          |          *          |
+        """
+    )
+
+    assert f"{data_io_plugin_table()}\n" == expected

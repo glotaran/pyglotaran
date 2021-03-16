@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-import functools
 import os
+from functools import partial
+from functools import wraps
 from typing import Any
 from typing import Callable
+from typing import Iterable
+from typing import Iterator
 from typing import TypeVar
 from typing import cast
 
@@ -62,7 +65,7 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
         Wrapped function.
     """
 
-    @functools.wraps(func)
+    @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
@@ -102,3 +105,81 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
         raise FileExistsError(
             f"The folder {path!r} already exists and is not empty. \n{user_info}"
         )
+
+
+def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> Any:
+    """Replace boolean value with string repr.
+
+    This function is a helper for table representation (e.g. with tabulate)
+    of boolean values.
+
+    Parameters
+    ----------
+    value : Any
+        Arbitrary value
+    true_repr : str
+        Desired repr for ``True``, by default "*"
+    false_repr : str
+        Desired repr for ``False``, by default "/"
+
+    Returns
+    -------
+    Any
+        Original value or desired repr for bool
+
+    Examples
+    --------
+    >>> table_data = [["foo", True, False], ["bar", False, True]]
+    >>> print(tabulate(map(lambda x: map(bool_table_repr, x), table_data)))
+    ---  -  -
+    foo  *  /
+    bar  /  *
+    ---  -  -
+    """
+    # since bool is a subclass of int we can't use isinstance
+    if type(value) == bool:
+        if value:
+            return true_repr
+        else:
+            return false_repr
+    else:
+        return value
+
+
+def bool_table_repr(
+    table_data: Iterable[Iterable[Any]], true_repr: str = "*", false_repr: str = "/"
+) -> Iterator[Iterator[Any]]:
+    """Replace boolean value with string repr for all table values.
+
+    This function is an implementation of :func:`bool_str_repr` for a
+    2D table, for easy usage with tabulate.
+
+    Parameters
+    ----------
+    table_data : Iterable[Iterable[Any]]
+        Data of the table e.g. a list of lists.
+    true_repr : str
+        Desired repr for ``True``, by default "*"
+    false_repr : str
+        Desired repr for ``False``, by default "/"
+
+    Returns
+    -------
+    Iterator[Iterator[Any]]
+        ``table_data`` with original values or desired repr for bool
+
+    See Also
+    --------
+    bool_str_repr
+
+    Examples
+    --------
+    >>> table_data = [["foo", True, False], ["bar", False, True]]
+    >>> print(tabulate(bool_table_repr(table_data))
+    ---  -  -
+    foo  *  /
+    bar  /  *
+    ---  -  -
+    """
+    bool_repr = partial(bool_str_repr, true_repr=true_repr, false_repr=false_repr)
+    return map(lambda value: map(bool_repr, value), table_data)

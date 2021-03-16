@@ -10,13 +10,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tabulate import tabulate
+
+from glotaran.io.interface import DataIoInterface
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
+from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import show_method_help
+from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
@@ -29,9 +34,11 @@ if TYPE_CHECKING:
 
     import xarray as xr
 
-    from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import DataLoader
     from glotaran.io.interface import DataWriter
+
+DATA_IO_METHODS = ("load_dataset", "write_dataset")
+"""Methods used by DataIoInterface plugins."""
 
 
 def register_data_io(
@@ -245,3 +252,22 @@ def show_data_io_method_help(
     """
     io = get_data_io(format_name)
     show_method_help(io, method_name)
+
+
+def data_io_plugin_table() -> str:
+    """Return registered data io plugins and which functions they support as markdown table.
+
+    This is especially useful when you work with new plugins.
+
+    Returns
+    -------
+    str
+        Markdown table of data io plugins.
+    """
+    table_data = methods_differ_from_baseclass_table(
+        DATA_IO_METHODS, known_data_formats(), get_data_io, DataIoInterface
+    )
+    headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *DATA_IO_METHODS]))
+    return tabulate(
+        bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
+    )

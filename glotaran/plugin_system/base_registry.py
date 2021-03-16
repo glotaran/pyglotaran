@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
     from typing import MutableMapping
+    from typing import Sequence
     from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
@@ -24,6 +25,8 @@ if TYPE_CHECKING:
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
     )
+
+    GenericPluginInstance = TypeVar("GenericPluginInstance", bound=object)
 
 
 class __PluginRegistry:
@@ -356,3 +359,88 @@ def show_method_help(
     """
     method = get_method_from_plugin(plugin, method_name)
     help(method)
+
+
+def methods_differ_from_baseclass(
+    method_names: str | Sequence[str],
+    plugin: GenericPluginInstance | type[GenericPluginInstance],
+    base_class: type[GenericPluginInstance],
+) -> list[bool]:
+    """Check if a plugins methods implementation differ from its baseclass.
+
+    Based on the assumption that ``base_class`` didn't implement the methods
+    (e.g. :class:`DataIoInterface` or :class:`ProjectIoInterface`), this can be
+    used to to create a 'supported methods' list.
+
+    Parameters
+    ----------
+    method_names : str | list[str]
+        Name|s of the method|s
+    plugin : GenericPluginInstance | type[GenericPluginInstance]
+        Plugin class or instance.
+    base_class : type[GenericPluginInstance]
+        Base class the plugin inherited from.
+
+    Returns
+    -------
+    list[bool]
+        List containing whether or not a plugins method differs from the baseclasses.
+    """
+    differs_list = []
+    if isinstance(method_names, str):
+        method_names = [method_names]
+    for method_name in method_names:
+        plugin_method = get_method_from_plugin(plugin, method_name)
+        base_class_method = get_method_from_plugin(base_class, method_name)
+        differs_list.append(plugin_method.__code__ != base_class_method.__code__)
+    return differs_list
+
+
+def methods_differ_from_baseclass_table(
+    method_names: str | Sequence[str],
+    plugin_registry_keys: str | Sequence[str],
+    get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
+    base_class: type[GenericPluginInstance],
+) -> list[list[str | bool]]:
+    """Create table of which plugins methods differ from their baseclass.
+
+    This uses the assumption that all plugins have the same ``base_class``.
+
+    The main purpose of this function is to show the user which plugin implements
+    which methods differently than its baseclass.
+
+    Based on the assumption that ``base_class`` didn't implement the methods
+    (e.g. :class:`DataIoInterface` or :class:`ProjectIoInterface`), this can be
+    used to to create a 'supported methods' table.
+
+    Parameters
+    ----------
+    method_names : str | list[str]
+        Name|s of the method|s.
+    plugin_registry_keys : str | list[str]
+        Keys the plugins are registered under
+        (e.g. return value of the implementation of func:`registered_plugins`)
+    get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]]
+        Function to get plugin from plugin registry.
+    base_class : type[GenericPluginInstance]
+        Base class the plugin inherited from.
+
+    Returns
+    -------
+    list[list[str | bool]]
+        Table like structure with the first value of each row being the
+        ``plugin_registry_key`` and the others whether or not a plugins
+        method differs from the baseclasses.
+
+    See Also
+    --------
+    methods_differ_from_baseclass
+    """
+    differs_table: list[list[str | bool]] = []
+    if isinstance(plugin_registry_keys, str):
+        plugin_registry_keys = [plugin_registry_keys]
+    for plugin_registry_key in plugin_registry_keys:
+        plugin = get_plugin_function(plugin_registry_key)
+        differs_list = methods_differ_from_baseclass(method_names, plugin, base_class)
+        differs_table.append([plugin_registry_key, *differs_list])
+    return differs_table
