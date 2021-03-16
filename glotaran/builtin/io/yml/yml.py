@@ -3,7 +3,6 @@ from __future__ import annotations
 import dataclasses
 import os
 import pathlib
-from dataclasses import asdict
 from typing import TYPE_CHECKING
 
 import yaml
@@ -141,7 +140,7 @@ class YmlProjectIo(ProjectIoInterface):
         )
 
     def write_scheme(self, file_name: str, scheme: Scheme):
-        _write_dict(file_name, asdict(scheme))
+        _write_dict(file_name, dataclasses.asdict(scheme))
 
     def write_result(self, result_path: str, result: Result):
         options = result.scheme.saving
@@ -184,7 +183,7 @@ class YmlProjectIo(ProjectIoInterface):
             result_scheme.data[label] = dataset_path
 
         result_file_path = os.path.join(result_path, "result.yml")
-        _write_dict(result_file_path, asdict(result))
+        _write_dict(result_file_path, dataclasses.asdict(result))
         result_scheme.result_path = result_file_path
 
         self.write_scheme(scheme_path, result_scheme)
