@@ -26,7 +26,6 @@ from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
-from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
     from typing import Any
@@ -342,7 +341,6 @@ def write_result(
     result_path: str,
     format_name: str,
     result: Result,
-    saving_options: SavingOptions = SavingOptions(),
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -355,8 +353,6 @@ def write_result(
         Path to write the result data to.
     format_name : str
         Format the result should be saved in.
-    saving_options : SavingOptions
-        Options on how to save the result.
     result : Result
         :class:`Result` instance to write.
     allow_overwrite : bool
@@ -370,7 +366,6 @@ def write_result(
     io.write_result(  # type: ignore[call-arg]
         result_path=result_path,
         result=result,
-        saving_options=saving_options,
         **kwargs,
     )
 

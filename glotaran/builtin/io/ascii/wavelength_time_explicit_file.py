@@ -12,7 +12,6 @@ import xarray as xr
 from glotaran.io import DataIoInterface
 from glotaran.io import register_data_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
-from glotaran.project import SavingOptions
 
 #  from glotaran.io.reader import file_reader
 
@@ -282,7 +281,6 @@ class AsciiDataIo(DataIoInterface):
         self,
         file_name: str,
         dataset: xr.DataArray,
-        saving_options: SavingOptions = None,
         *,
         comment: str = "",
         file_format: DataFileType = DataFileType.time_explicit,

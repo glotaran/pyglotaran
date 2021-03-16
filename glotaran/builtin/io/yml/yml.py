@@ -143,7 +143,7 @@ class YmlProjectIo(ProjectIoInterface):
     def write_scheme(self, file_name: str, scheme: Scheme):
         _write_dict(file_name, asdict(scheme))
 
-    def write_result(self, result_path: str, result: Result, saving_options: SavingOptions = None):
+    def write_result(self, result_path: str, result: Result):
         options = result.scheme.saving
 
         if os.path.exists(result_path):
@@ -179,7 +179,7 @@ class YmlProjectIo(ProjectIoInterface):
         dataset_format = options.data_format
         for label, dataset in result.data.items():
             dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            write_dataset(dataset_path, dataset_format, dataset, options)
+            write_dataset(dataset_path, dataset_format, dataset, saving_options=options)
             result.data[label] = dataset_path
             result_scheme.data[label] = dataset_path
 

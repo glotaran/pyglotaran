@@ -25,7 +25,6 @@ from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
-from glotaran.project import SavingOptions
 
 if TYPE_CHECKING:
     from typing import Any
@@ -163,7 +162,6 @@ def write_dataset(
     file_name: str,
     format_name: str,
     dataset: xr.Dataset | xr.DataArray,
-    saving_options: SavingOptions | None = SavingOptions(),
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -178,8 +176,6 @@ def write_dataset(
         Format the file should be in.
     dataset: xr.Dataset|xr.DataArray
         Data to be written to file.
-    saving_options: SavingOptions | None
-        Options on how to save the data.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs: Any
@@ -192,7 +188,6 @@ def write_dataset(
     io.write_dataset(  # type: ignore[call-arg]
         file_name=file_name,
         dataset=dataset,
-        saving_options=saving_options,
         **kwargs,
     )
 

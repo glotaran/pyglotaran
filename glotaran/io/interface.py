@@ -66,7 +66,6 @@ class DataIoInterface:
         self,
         file_name: str,
         dataset: xr.Dataset | xr.DataArray,
-        saving_options: SavingOptions = None,
     ):
         """Write data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
 
@@ -74,8 +73,6 @@ class DataIoInterface:
         ----------
         file_name : str
             File to write the result data to.
-        saving_options : SavingOptions
-            Options on how to save the result.
         dataset : xr.Dataset
             Dataset to be saved to file.
 
@@ -222,7 +219,7 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def write_result(self, result_path: str, result: Result, saving_options: SavingOptions | None):
+    def write_result(self, result_path: str, result: Result):
         """Write a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
@@ -231,8 +228,6 @@ class ProjectIoInterface:
             Path to write the result data to.
         result : Result
             Result instance to write to specs file.
-        saving_options : SavingOptions
-            Options on how to save the result.
 
 
         .. # noqa: DAR101

@@ -14,7 +14,11 @@ class NetCDFDataIo(DataIoInterface):
         return xr.open_dataset(file_name)
 
     def write_dataset(
-        self, file_name: str, dataset: xr.Dataset, saving_options: SavingOptions = SavingOptions()
+        self,
+        file_name: str,
+        dataset: xr.Dataset,
+        *,
+        saving_options: SavingOptions = SavingOptions(),
     ):
 
         data_to_save = dataset

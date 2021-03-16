@@ -36,7 +36,6 @@ if TYPE_CHECKING:
 
     from glotaran.model import Model
     from glotaran.project import Result
-    from glotaran.project import SavingOptions
     from glotaran.project import Scheme
 
 
@@ -97,7 +96,6 @@ class MockProjectIo(ProjectIoInterface):
         self,
         result_path: str,
         result: Result,
-        saving_options: SavingOptions | None,
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -106,7 +104,6 @@ class MockProjectIo(ProjectIoInterface):
             **{
                 "file_name": result_path,
                 "data_object": result,
-                "saving_options": saving_options,
                 **kwargs,
             }
         )
@@ -215,7 +212,6 @@ def test_write_functions(tmp_path: Path, write_function: Callable[..., Any]):
         str(file_path),
         "mock",
         "data_object",  # type:ignore
-        saving_options="no_option",  # type:ignore
         result_container=result,
         dummy_arg="baz",
     )
@@ -223,7 +219,6 @@ def test_write_functions(tmp_path: Path, write_function: Callable[..., Any]):
     assert result == {
         "file_name": str(file_path),
         "data_object": "data_object",
-        "saving_options": "no_option",
         "dummy_arg": "baz",
     }
 
@@ -242,7 +237,6 @@ def test_load_functions_value_error(
     tmp_path: Path, load_function: Callable[..., Any], error_regex: str
 ):
     """Raise ValueError if load method isn't implemented."""
-
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
@@ -263,7 +257,6 @@ def test_write_functions_value_error(
     tmp_path: Path, write_function: Callable[..., Any], error_regex: str
 ):
     """Raise ValueError if write method isn't implemented."""
-
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):

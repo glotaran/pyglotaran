@@ -29,8 +29,6 @@ if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture
     from _pytest.monkeypatch import MonkeyPatch
 
-    from glotaran.project import SavingOptions
-
 
 class MockDataIO(DataIoInterface):
     def load_dataset(self, file_name: str, **kwargs: Any) -> xr.Dataset | xr.DataArray:
@@ -42,7 +40,6 @@ class MockDataIO(DataIoInterface):
         self,
         file_name: str,
         dataset: xr.Dataset | xr.DataArray,
-        saving_options: SavingOptions | None = None,
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -51,7 +48,6 @@ class MockDataIO(DataIoInterface):
             **{
                 "file_name": file_name,
                 "dataset": dataset,
-                "saving_options": saving_options,
                 **kwargs,
             }
         )
@@ -177,7 +173,6 @@ def test_write_dataset(tmp_path: Path):
         str(file_path),
         "mock",
         "no_dataset",  # type:ignore
-        "no_option",  # type:ignore
         result_container=result,
         dummy_arg="baz",
     )
@@ -185,7 +180,6 @@ def test_write_dataset(tmp_path: Path):
     assert result == {
         "file_name": str(file_path),
         "dataset": "no_dataset",
-        "saving_options": "no_option",
         "dummy_arg": "baz",
     }
 
