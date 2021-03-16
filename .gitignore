@@ -95,6 +95,7 @@ docs/source/images/plot
 
 # Datafiles created by notebooks
 docs/**/*.nc
+docs/source/notebooks/plugin_system/**/*.json
 
 # PyBuilder
 target/
