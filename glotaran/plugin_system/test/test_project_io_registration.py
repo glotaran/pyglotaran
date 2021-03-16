@@ -121,7 +121,8 @@ def mocked_registry(monkeypatch: MonkeyPatch):
     )
 
 
-def test_register_project_io(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_project_io():
     """Registered project_io plugin is in registry"""
 
     @register_project_io("dummy")
@@ -138,7 +139,8 @@ def test_register_project_io(mocked_registry):
         assert __PluginRegistry.project_io[format_name].format == format_name
 
 
-def test_known_project_format(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_project_format():
     """Known format in mocked register"""
     assert is_known_project_format("foo")
     assert is_known_project_format("mock")
@@ -168,7 +170,8 @@ def test_get_project_io(format_name: str, io_class: type[ProjectIoInterface]):
     assert get_project_io(format_name).format == format_name
 
 
-def test_known_project_formats(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_project_formats():
     """Known formats are the same as mocked register keys"""
     assert known_project_formats() == ["foo", "mock"]
 
@@ -182,7 +185,8 @@ def test_known_project_formats(mocked_registry):
         load_result,
     ),
 )
-def test_load_functions(mocked_registry, tmp_path: Path, load_function: Callable[..., Any]):
+@pytest.mark.usefixtures("mocked_registry")
+def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "model.mock"
     file_path.touch()
@@ -201,11 +205,8 @@ def test_load_functions(mocked_registry, tmp_path: Path, load_function: Callable
         write_result,
     ),
 )
-def test_write_functions(
-    mocked_registry,
-    tmp_path: Path,
-    write_function: Callable[..., Any],
-):
+@pytest.mark.usefixtures("mocked_registry")
+def test_write_functions(tmp_path: Path, write_function: Callable[..., Any]):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "model.mock"
     result: dict[str, Any] = {}
@@ -236,8 +237,9 @@ def test_write_functions(
         (load_result, "read result"),
     ),
 )
+@pytest.mark.usefixtures("mocked_registry")
 def test_load_functions_value_error(
-    mocked_registry, tmp_path: Path, load_function: Callable[..., Any], error_regex: str
+    tmp_path: Path, load_function: Callable[..., Any], error_regex: str
 ):
     """Raise ValueError if load method isn't implemented."""
 
@@ -256,8 +258,9 @@ def test_load_functions_value_error(
         (write_result, "write result"),
     ),
 )
+@pytest.mark.usefixtures("mocked_registry")
 def test_write_functions_value_error(
-    mocked_registry, tmp_path: Path, write_function: Callable[..., Any], error_regex: str
+    tmp_path: Path, write_function: Callable[..., Any], error_regex: str
 ):
     """Raise ValueError if write method isn't implemented."""
 
@@ -268,17 +271,11 @@ def test_write_functions_value_error(
 
 
 @pytest.mark.parametrize(
-    "function, error_regex",
-    (
-        (write_model, "write models"),
-        (write_parameters, "write parameters"),
-        (write_scheme, "write scheme"),
-        (write_result, "write result"),
-    ),
+    "function",
+    (write_model, write_parameters, write_scheme, write_result),
 )
-def test_protect_from_overwrite_write_functions(
-    mocked_registry, tmp_path: Path, function: Callable[..., Any], error_regex: str
-):
+@pytest.mark.usefixtures("mocked_registry")
+def test_protect_from_overwrite_write_functions(tmp_path: Path, function: Callable[..., Any]):
     """Raise FileExistsError if file exists."""
 
     file_path = tmp_path / "dummy.foo"
@@ -288,17 +285,16 @@ def test_protect_from_overwrite_write_functions(
         function(str(file_path), "foo", "bar")
 
 
-def test_get_project_io_method(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_get_project_io_method():
     io = get_project_io("mock")
     result = get_project_io_method("mock", "load_model")
 
     assert result.__code__ == io.load_model.__code__
 
 
-def test_show_project_io_method_help(
-    mocked_registry,
-    capsys: CaptureFixture,
-):
+@pytest.mark.usefixtures("mocked_registry")
+def test_show_project_io_method_help(capsys: CaptureFixture):
     """Same help as when called directly."""
     plugin = MockProjectIo("foo")
     help(plugin.load_model)
@@ -311,7 +307,8 @@ def test_show_project_io_method_help(
     assert result == original_help
 
 
-def test_project_io_plugin_table(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_project_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\

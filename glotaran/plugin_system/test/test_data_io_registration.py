@@ -64,7 +64,8 @@ def mocked_registry(monkeypatch: MonkeyPatch):
     )
 
 
-def test_register_data_io(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_data_io():
     """Registered data_io plugin is in registry"""
 
     @register_data_io("dummy")
@@ -81,7 +82,8 @@ def test_register_data_io(mocked_registry):
         assert __PluginRegistry.data_io[format_name].format == format_name
 
 
-def test_known_data_format(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_data_format():
     """Known format in mocked register"""
     assert is_known_data_format("foo")
     assert is_known_data_format("mock")
@@ -109,7 +111,8 @@ def test_get_data_io(format_name: str, io_class: type[DataIoInterface]):
     assert get_data_io(format_name).format == format_name
 
 
-def test_known_data_formats(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_data_formats():
     """Known formats are the same as mocked register keys"""
     assert known_data_formats() == ["foo", "mock"]
 
@@ -142,7 +145,8 @@ def test_get_datawriter(format_name: str, io_class: type[DataIoInterface]):
     assert datawriter.__code__ == io_class.write_dataset.__code__
 
 
-def test_load_dataset(mocked_registry, tmp_path: Path):
+@pytest.mark.usefixtures("mocked_registry")
+def test_load_dataset(tmp_path: Path):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "dummy.mock"
     file_path.write_text("mock")
@@ -152,7 +156,8 @@ def test_load_dataset(mocked_registry, tmp_path: Path):
     assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
 
 
-def test_protect_from_overwrite_write_functions(mocked_registry, tmp_path: Path):
+@pytest.mark.usefixtures("mocked_registry")
+def test_protect_from_overwrite_write_functions(tmp_path: Path):
     """Raise FileExistsError if file exists."""
 
     file_path = tmp_path / "dummy.foo"
@@ -162,7 +167,8 @@ def test_protect_from_overwrite_write_functions(mocked_registry, tmp_path: Path)
         write_dataset(str(file_path), "foo", "")  # type:ignore
 
 
-def test_write_dataset(mocked_registry, tmp_path: Path):
+@pytest.mark.usefixtures("mocked_registry")
+def test_write_dataset(tmp_path: Path):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "dummy.ascii"
 
@@ -184,7 +190,8 @@ def test_write_dataset(mocked_registry, tmp_path: Path):
     }
 
 
-def test_write_dataset_error(mocked_registry, tmp_path: Path):
+@pytest.mark.usefixtures("mocked_registry")
+def test_write_dataset_error(tmp_path: Path):
     """Raise ValueError if method isn't implemented in the DataIo class."""
     file_path = tmp_path / "dummy.foo"
 
@@ -197,10 +204,8 @@ def test_write_dataset_error(mocked_registry, tmp_path: Path):
         load_dataset(str(file_path))
 
 
-def test_show_data_io_method_help(
-    mocked_registry,
-    capsys: CaptureFixture,
-):
+@pytest.mark.usefixtures("mocked_registry")
+def test_show_data_io_method_help(capsys: CaptureFixture):
     """Same help as when called directly."""
     plugin = MockDataIO("foo")
     help(plugin.load_dataset)
@@ -213,7 +218,8 @@ def test_show_data_io_method_help(
     assert result == original_help
 
 
-def test_data_io_plugin_table(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_data_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\
