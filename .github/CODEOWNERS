@@ -53,5 +53,8 @@ LICENSE                         @glotaran/pyglotaran_creators
 # parameter
 /glotaran/parameter/            @jsnel @joernweissenborn
 
+# plugin_system
+glotaran/plugin_system          @s-weigand @glotaran/maintainers
+
 # project
 /glotaran/project/              @jsnel @joernweissenborn
