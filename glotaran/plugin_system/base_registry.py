@@ -15,13 +15,14 @@ if TYPE_CHECKING:
     from typing import Callable
     from typing import MutableMapping
     from typing import Sequence
+    from typing import Type
     from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
     from glotaran.model.base_model import Model
 
-    _PluginType = TypeVar("_PluginType", type[Model], DataIoInterface, ProjectIoInterface)
+    _PluginType = TypeVar("_PluginType", Type[Model], DataIoInterface, ProjectIoInterface)
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
     )
