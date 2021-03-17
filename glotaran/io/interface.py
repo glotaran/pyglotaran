@@ -23,11 +23,10 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
-    from glotaran.project import SavingOptions
     from glotaran.project import Scheme
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
-    DataWriter = Callable[[str, Union[xr.Dataset, xr.DataArray], Union[SavingOptions, None]], None]
+    DataSaver = Callable[[str, Union[xr.Dataset, xr.DataArray]], None]
 
 
 class DataIoInterface:
@@ -62,17 +61,17 @@ class DataIoInterface:
         """
         raise NotImplementedError(f"""Cannot read data with format: {self.format!r}""")
 
-    def write_dataset(
+    def save_dataset(
         self,
         file_name: str,
         dataset: xr.Dataset | xr.DataArray,
     ):
-        """Write data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
+        """Save data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         file_name : str
-            File to write the result data to.
+            File to write the data to.
         dataset : xr.Dataset
             Dataset to be saved to file.
 
@@ -80,7 +79,7 @@ class DataIoInterface:
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"""Cannot write data with format: {self.format!r}""")
+        raise NotImplementedError(f"""Cannot save data with format: {self.format!r}""")
 
 
 class ProjectIoInterface:
@@ -115,21 +114,21 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read models with format {self.format!r}")
 
-    def write_model(self, file_name: str, model: Model):
-        """Write a Model instance to a spec file (**NOT IMPLEMENTED**).
+    def save_model(self, file_name: str, model: Model):
+        """Save a Model instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         file_name : str
             File to write the model specs to.
         model: Model
-            Model instance to write to specs file.
+            Model instance to save to specs file.
 
 
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot write models with format {self.format!r}")
+        raise NotImplementedError(f"Cannot save models with format {self.format!r}")
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
         """Create a ParameterGroup instance from the specs defined in a file (**NOT IMPLEMENTED**).
@@ -150,21 +149,21 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
 
-    def write_parameters(self, file_name: str, parameters: ParameterGroup):
-        """Write a ParameterGroup instance to a spec file (**NOT IMPLEMENTED**).
+    def save_parameters(self, file_name: str, parameters: ParameterGroup):
+        """Save a ParameterGroup instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         file_name : str
             File to write the parameter specs to.
         parameters : ParameterGroup
-            ParameterGroup instance to write to specs file.
+            ParameterGroup instance to save to specs file.
 
 
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot write parameters with format {self.format!r}")
+        raise NotImplementedError(f"Cannot save parameters with format {self.format!r}")
 
     def load_scheme(self, file_name: str) -> Scheme:
         """Create a Scheme instance from the specs defined in a file (**NOT IMPLEMENTED**).
@@ -184,21 +183,21 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read scheme with format {self.format!r}")
 
-    def write_scheme(self, file_name: str, scheme: Scheme):
-        """Write a Scheme instance to a spec file (**NOT IMPLEMENTED**).
+    def save_scheme(self, file_name: str, scheme: Scheme):
+        """Save a Scheme instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         file_name : str
             File to write the scheme specs to.
         scheme : Scheme
-            Scheme instance to write to specs file.
+            Scheme instance to save to specs file.
 
 
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot write scheme with format {self.format!r}")
+        raise NotImplementedError(f"Cannot save scheme with format {self.format!r}")
 
     def load_result(self, result_path: str) -> Result:
         """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
@@ -219,18 +218,18 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def write_result(self, result_path: str, result: Result):
-        """Write a Result instance to a spec file (**NOT IMPLEMENTED**).
+    def save_result(self, result_path: str, result: Result):
+        """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         result_path : str
             Path to write the result data to.
         result : Result
-            Result instance to write to specs file.
+            Result instance to save to specs file.
 
 
         .. # noqa: DAR101
         .. # noqa: DAR401
         """
-        raise NotImplementedError(f"Cannot write result with format {self.format!r}")
+        raise NotImplementedError(f"Cannot save result with format {self.format!r}")

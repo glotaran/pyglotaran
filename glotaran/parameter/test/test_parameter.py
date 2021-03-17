@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from glotaran.io import load_parameters
-from glotaran.io import write_parameters
+from glotaran.io import save_parameters
 from glotaran.parameter import Parameter
 
 
@@ -460,7 +460,7 @@ def test_parameter_to_csv(tmpdir):
         format_name="yml_str",
     )
 
-    write_parameters(csv_path, params, "csv")
+    save_parameters(csv_path, params, "csv")
 
     with open(csv_path) as f:
         print(f.read())

@@ -20,11 +20,11 @@ from glotaran.plugin_system.project_io_registration import load_result
 from glotaran.plugin_system.project_io_registration import load_scheme
 from glotaran.plugin_system.project_io_registration import project_io_plugin_table
 from glotaran.plugin_system.project_io_registration import register_project_io
+from glotaran.plugin_system.project_io_registration import save_model
+from glotaran.plugin_system.project_io_registration import save_parameters
+from glotaran.plugin_system.project_io_registration import save_result
+from glotaran.plugin_system.project_io_registration import save_scheme
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
-from glotaran.plugin_system.project_io_registration import write_model
-from glotaran.plugin_system.project_io_registration import write_parameters
-from glotaran.plugin_system.project_io_registration import write_result
-from glotaran.plugin_system.project_io_registration import write_scheme
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -45,7 +45,7 @@ class MockProjectIo(ProjectIoInterface):
         """This docstring is just for help testing of 'load_model'."""
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
-    def write_model(  # type:ignore[override]
+    def save_model(  # type:ignore[override]
         self, file_name: str, model: Model, *, result_container: dict[str, Any], **kwargs: Any
     ):
         result_container.update(
@@ -59,7 +59,7 @@ class MockProjectIo(ProjectIoInterface):
     def load_parameters(self, file_name: str, **kwargs: Any) -> ParameterGroup:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
-    def write_parameters(  # type:ignore[override]
+    def save_parameters(  # type:ignore[override]
         self,
         file_name: str,
         parameters: ParameterGroup,
@@ -78,7 +78,7 @@ class MockProjectIo(ProjectIoInterface):
     def load_scheme(self, file_name: str, **kwargs: Any) -> Scheme:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
-    def write_scheme(  # type:ignore[override]
+    def save_scheme(  # type:ignore[override]
         self, file_name: str, scheme: Scheme, *, result_container: dict[str, Any], **kwargs: Any
     ):
         result_container.update(
@@ -92,7 +92,7 @@ class MockProjectIo(ProjectIoInterface):
     def load_result(self, result_path: str, **kwargs: Any) -> Result:
         return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
 
-    def write_result(  # type:ignore[override]
+    def save_result(  # type:ignore[override]
         self,
         result_path: str,
         result: Result,
@@ -194,21 +194,21 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
 
 
 @pytest.mark.parametrize(
-    "write_function",
+    "save_function",
     (
-        write_model,
-        write_parameters,
-        write_scheme,
-        write_result,
+        save_model,
+        save_parameters,
+        save_scheme,
+        save_result,
     ),
 )
 @pytest.mark.usefixtures("mocked_registry")
-def test_write_functions(tmp_path: Path, write_function: Callable[..., Any]):
+def test_write_functions(tmp_path: Path, save_function: Callable[..., Any]):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "model.mock"
     result: dict[str, Any] = {}
 
-    write_function(
+    save_function(
         str(file_path),
         "data_object",  # type:ignore
         "mock",
@@ -244,31 +244,31 @@ def test_load_functions_value_error(
 
 
 @pytest.mark.parametrize(
-    "write_function, error_regex",
+    "save_function, error_regex",
     (
-        (write_model, "write models"),
-        (write_parameters, "write parameters"),
-        (write_scheme, "write scheme"),
-        (write_result, "write result"),
+        (save_model, "save models"),
+        (save_parameters, "save parameters"),
+        (save_scheme, "save scheme"),
+        (save_result, "save result"),
     ),
 )
 @pytest.mark.usefixtures("mocked_registry")
-def test_write_functions_value_error(
-    tmp_path: Path, write_function: Callable[..., Any], error_regex: str
+def test_save_functions_value_error(
+    tmp_path: Path, save_function: Callable[..., Any], error_regex: str
 ):
-    """Raise ValueError if write method isn't implemented."""
+    """Raise ValueError if save method isn't implemented."""
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        write_function(str(file_path), "bar")
+        save_function(str(file_path), "bar")
 
 
 @pytest.mark.parametrize(
     "function",
-    (write_model, write_parameters, write_scheme, write_result),
+    (save_model, save_parameters, save_scheme, save_result),
 )
 @pytest.mark.usefixtures("mocked_registry")
-def test_protect_from_overwrite_write_functions(tmp_path: Path, function: Callable[..., Any]):
+def test_protect_from_overwrite_save_functions(tmp_path: Path, function: Callable[..., Any]):
     """Raise FileExistsError if file exists."""
 
     file_path = tmp_path / "dummy.foo"
@@ -280,6 +280,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path, function: Callab
 
 @pytest.mark.usefixtures("mocked_registry")
 def test_get_project_io_method():
+    """Methods have the same code."""
     io = get_project_io("mock")
     result = get_project_io_method("mock", "load_model")
 
@@ -305,10 +306,10 @@ def test_project_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\
-        |  __Plugin__  |  __load_model__  |  __write_model__  |  __load_parameters__  |  __write_parameters__  |  __load_scheme__  |  __write_scheme__  |  __load_result__  |  __write_result__  |
-        |--------------|------------------|-------------------|-----------------------|------------------------|-------------------|--------------------|-------------------|--------------------|
-        |     foo      |        /         |         /         |           /           |           /            |         /         |         /          |         /         |         /          |
-        |     mock     |        *         |         *         |           *           |           *            |         *         |         *          |         *         |         *          |
+        |  __Plugin__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
+        |--------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
+        |     foo      |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
+        |     mock     |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
         """  # noqa: E501
     )
 

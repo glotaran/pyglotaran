@@ -34,9 +34,9 @@ if TYPE_CHECKING:
     import xarray as xr
 
     from glotaran.io.interface import DataLoader
-    from glotaran.io.interface import DataWriter
+    from glotaran.io.interface import DataSaver
 
-DATA_IO_METHODS = ("load_dataset", "write_dataset")
+DATA_IO_METHODS = ("load_dataset", "save_dataset")
 """Methods used by DataIoInterface plugins."""
 
 
@@ -158,7 +158,7 @@ def load_dataset(
 
 
 @not_implemented_to_value_error
-def write_dataset(
+def save_dataset(
     file_name: str,
     dataset: xr.Dataset | xr.DataArray,
     format_name: str = None,
@@ -166,7 +166,7 @@ def write_dataset(
     allow_overwrite: bool = False,
     **kwargs: Any,
 ) -> None:
-    """Write data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
+    """Save data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
 
     Parameters
     ----------
@@ -185,7 +185,7 @@ def write_dataset(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.write_dataset(  # type: ignore[call-arg]
+    io.save_dataset(  # type: ignore[call-arg]
         file_name=file_name,
         dataset=dataset,
         **kwargs,
@@ -213,8 +213,8 @@ def get_dataloader(format_name: str) -> DataLoader:
     return get_method_from_plugin(io, "load_dataset")
 
 
-def get_datawriter(format_name: str) -> DataWriter:
-    """Retrieve implementation of the ``write_dataset`` functionality for the format 'format_name'.
+def get_datasaver(format_name: str) -> DataSaver:
+    """Retrieve implementation of the ``save_dataset`` functionality for the format 'format_name'.
 
     This allows to get the proper help and autocomplete for the function,
     which is especially valuable if the function provides additional options.
@@ -226,15 +226,15 @@ def get_datawriter(format_name: str) -> DataWriter:
 
     Returns
     -------
-    DataWriter
+    DataSaver
         Function to write :xarraydoc:`Dataset` to the format ``format_name`` .
     """
     io = get_data_io(format_name)
-    return get_method_from_plugin(io, "write_dataset")
+    return get_method_from_plugin(io, "save_dataset")
 
 
 def show_data_io_method_help(
-    format_name: str, method_name: Literal["load_dataset", "write_dataset"]
+    format_name: str, method_name: Literal["load_dataset", "save_dataset"]
 ) -> None:
     """Show help for the implementation of data io plugin methods.
 
@@ -242,7 +242,7 @@ def show_data_io_method_help(
     ----------
     format_name : str
         Format the method should support.
-    method_name : {'load_dataset', 'write_dataset'}
+    method_name : {'load_dataset', 'save_dataset'}
         Method name
     """
     io = get_data_io(format_name)

@@ -13,7 +13,7 @@ class NetCDFDataIo(DataIoInterface):
     def load_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         return xr.open_dataset(file_name)
 
-    def write_dataset(
+    def save_dataset(
         self,
         file_name: str,
         dataset: xr.Dataset,

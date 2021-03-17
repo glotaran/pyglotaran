@@ -14,13 +14,13 @@ from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.data_io_registration import data_io_plugin_table
 from glotaran.plugin_system.data_io_registration import get_data_io
 from glotaran.plugin_system.data_io_registration import get_dataloader
-from glotaran.plugin_system.data_io_registration import get_datawriter
+from glotaran.plugin_system.data_io_registration import get_datasaver
 from glotaran.plugin_system.data_io_registration import is_known_data_format
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.plugin_system.data_io_registration import register_data_io
+from glotaran.plugin_system.data_io_registration import save_dataset
 from glotaran.plugin_system.data_io_registration import show_data_io_method_help
-from glotaran.plugin_system.data_io_registration import write_dataset
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,7 +36,7 @@ class MockDataIO(DataIoInterface):
         return {"file_name": file_name, **kwargs}  # type:ignore
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
-    def write_dataset(  # type:ignore[override]
+    def save_dataset(  # type:ignore[override]
         self,
         file_name: str,
         dataset: xr.Dataset | xr.DataArray,
@@ -137,8 +137,8 @@ def test_get_dataloader(format_name: str, io_class: type[DataIoInterface]):
 )
 def test_get_datawriter(format_name: str, io_class: type[DataIoInterface]):
     """Code of the datawriter is the same as original classes method code"""
-    datawriter = get_datawriter(format_name)
-    assert datawriter.__code__ == io_class.write_dataset.__code__
+    datawriter = get_datasaver(format_name)
+    assert datawriter.__code__ == io_class.save_dataset.__code__
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -160,7 +160,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        write_dataset(str(file_path), "")  # type:ignore
+        save_dataset(str(file_path), "")  # type:ignore
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -169,7 +169,7 @@ def test_write_dataset(tmp_path: Path):
     file_path = tmp_path / "dummy.mock"
 
     result: dict[str, Any] = {}
-    write_dataset(
+    save_dataset(
         str(file_path),
         "no_dataset",  # type:ignore
         result_container=result,
@@ -188,8 +188,8 @@ def test_write_dataset_error(tmp_path: Path):
     """Raise ValueError if method isn't implemented in the DataIo class."""
     file_path = tmp_path / "dummy.foo"
 
-    with pytest.raises(ValueError, match="Cannot write data with format: 'foo'"):
-        write_dataset(str(file_path), "", "foo")  # type:ignore
+    with pytest.raises(ValueError, match="Cannot save data with format: 'foo'"):
+        save_dataset(str(file_path), "", "foo")  # type:ignore
 
     file_path.touch()
 
@@ -216,10 +216,10 @@ def test_data_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\
-        |  __Plugin__  |  __load_dataset__  |  __write_dataset__  |
-        |--------------|--------------------|---------------------|
-        |     foo      |         /          |          /          |
-        |     mock     |         *          |          *          |
+        |  __Plugin__  |  __load_dataset__  |  __save_dataset__  |
+        |--------------|--------------------|--------------------|
+        |     foo      |         /          |         /          |
+        |     mock     |         *          |         *          |
         """
     )
 

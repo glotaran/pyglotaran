@@ -12,8 +12,8 @@ from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import register_project_io
-from glotaran.io import write_dataset
-from glotaran.io import write_parameters
+from glotaran.io import save_dataset
+from glotaran.io import save_parameters
 from glotaran.model import get_model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
@@ -139,10 +139,10 @@ class YmlProjectIo(ProjectIoInterface):
             saving=saving,
         )
 
-    def write_scheme(self, file_name: str, scheme: Scheme):
+    def save_scheme(self, file_name: str, scheme: Scheme):
         _write_dict(file_name, dataclasses.asdict(scheme))
 
-    def write_result(self, result_path: str, result: Result):
+    def save_result(self, result_path: str, result: Result):
         options = result.scheme.saving
 
         if os.path.exists(result_path):
@@ -165,20 +165,20 @@ class YmlProjectIo(ProjectIoInterface):
         initial_parameters_path = os.path.join(
             result_path, f"initial_parameters.{parameters_format}"
         )
-        write_parameters(initial_parameters_path, result.initial_parameters, parameters_format)
+        save_parameters(initial_parameters_path, result.initial_parameters, parameters_format)
         result.initial_parameters = initial_parameters_path
         result_scheme.parameters = initial_parameters_path
 
         optimized_parameters_path = os.path.join(
             result_path, f"optimized_parameters.{parameters_format}"
         )
-        write_parameters(optimized_parameters_path, result.optimized_parameters, parameters_format)
+        save_parameters(optimized_parameters_path, result.optimized_parameters, parameters_format)
         result.optimized_parameters = optimized_parameters_path
 
         dataset_format = options.data_format
         for label, dataset in result.data.items():
             dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            write_dataset(dataset_path, dataset, dataset_format, saving_options=options)
+            save_dataset(dataset_path, dataset, dataset_format, saving_options=options)
             result.data[label] = dataset_path
             result_scheme.data[label] = dataset_path
 
@@ -186,7 +186,7 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(result_file_path, dataclasses.asdict(result))
         result_scheme.result_path = result_file_path
 
-        self.write_scheme(scheme_path, result_scheme)
+        self.save_scheme(scheme_path, result_scheme)
 
 
 def _write_dict(file_name: str, d: dict):

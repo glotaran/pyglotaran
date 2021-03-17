@@ -3,7 +3,7 @@ import os
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import ThreeDatasetDecay as suite
-from glotaran.io import write_result
+from glotaran.io import save_result
 from glotaran.project import Scheme
 
 
@@ -32,7 +32,7 @@ def test_optimization(tmpdir):
     result = optimize(scheme)
 
     result_dir = os.path.join(tmpdir, "testresult")
-    write_result(result_path=result_dir, format_name="yml", result=result)
+    save_result(result_path=result_dir, format_name="yml", result=result)
 
     assert os.path.exists(os.path.join(result_dir, "result.md"))
     assert os.path.exists(os.path.join(result_dir, "scheme.yml"))

@@ -277,7 +277,7 @@ class AsciiDataIo(DataIoInterface):
 
         return data_file.read(prepare=True)
 
-    def write_dataset(
+    def save_dataset(
         self,
         file_name: str,
         dataset: xr.DataArray,
