@@ -202,29 +202,14 @@ class Scheme:
             dataset = self._transpose_dataset(dataset)
             self._add_weight(label, dataset)
 
-            # This protects transposing when getting data with svd in it
-            if "data_singular_values" in dataset and (
-                dataset.coords["right_singular_value_index"].size
-                != dataset.coords[self.model.global_dimension].size
-            ):
-                dataset = dataset.rename(
-                    right_singular_value_index="right_singular_value_indexTMP"
-                )
-                dataset = dataset.rename(left_singular_value_index="right_singular_value_index")
-                dataset = dataset.rename(right_singular_value_indexTMP="left_singular_value_index")
-                dataset = dataset.rename(right_singular_vectors="right_singular_value_vectorsTMP")
-                dataset = dataset.rename(
-                    left_singular_value_vectors="right_singular_value_vectors"
-                )
-                dataset = dataset.rename(
-                    right_singular_value_vectorsTMP="left_singular_value_vectors"
-                )
-            new_dims = [self.model.model_dimension, self.model.global_dimension]
-            new_dims += [
-                dim
-                for dim in dataset.dims
-                if dim not in [self.model.model_dimension, self.model.global_dimension]
-            ]
+            # TODO: avoid computation if not requested
+            l, s, r = np.linalg.svd(dataset.data, full_matrices=False)
+            dataset["data_left_singular_vectors"] = (("time", "left_singular_value_index"), l)
+            dataset["data_singular_values"] = (("singular_value_index"), s)
+            dataset["data_right_singular_vectors"] = (
+                ("right_singular_value_index", "spectral"),
+                r,
+            )
 
             self._data[label] = dataset
 
