@@ -2,7 +2,18 @@
 History
 =======
 
-0.3.1 (2021-02-23)
+0.3.3 (2021-03-18)
+------------------
+* Force recalculation of SVD attributes in scheme._prepare_data (#597)
+* Remove unneeded check in spectral_penalties._get_area Fixes (#598)
+* Added python 3.9 support (#450)
+
+0.3.2 (2021-02-28)
+------------------
+
+* Re-release of version 0.3.1 due to packaging issue
+
+0.3.1 (2021-02-28)
 ------------------
 
 * Added compatibility for numpy 1.20 and raised minimum required numpy version to 1.20 (#555)
