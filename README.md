@@ -15,7 +15,7 @@ pyGloTarAn is a Python library for Global and Target Analysis
 
 Prerequisites:
 
-- Python 3.8 (Python 3.9+ is not supported in this release)
+- Python 3.8 (Python 3.9 is only supported as of v0.3.3)
 - On Windows only 64bit is supported
 
 Note for Windows Users: The easiest way to get python for Windows is via [Anaconda](https://www.anaconda.com/)
