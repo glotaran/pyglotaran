@@ -25,7 +25,9 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
+python remove_notebook_written_data.py
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+python remove_notebook_written_data.py
 goto end
 
 :help
