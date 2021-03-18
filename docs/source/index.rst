@@ -12,7 +12,7 @@ Welcome to pyglotaran's documentation!
 
    introduction
    installation
-   notebooks/quickstart
+   notebooks/quickstart/quickstart
    history
    authors
 
@@ -27,12 +27,14 @@ Welcome to pyglotaran's documentation!
    user_documentation/parameter
    user_documentation/optimizing
    user_documentation/api_documentation
+   user_documentation/using_plugins
 
 .. toctree::
    :maxdepth: 1
    :caption: Developer Documentation:
 
    contributing
+   plugin_dev
 
 
 Indices and tables

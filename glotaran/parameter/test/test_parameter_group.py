@@ -58,8 +58,8 @@ def test_markdown_is_order_independent():
         }
     )
 
-    initial_parameters1 = load_parameters(PARAMETERS_3C_INITIAL1, fmt="yml_str")
-    initial_parameters2 = load_parameters(PARAMETERS_3C_INITIAL2, fmt="yml_str")
+    initial_parameters1 = load_parameters(PARAMETERS_3C_INITIAL1, format_name="yml_str")
+    initial_parameters2 = load_parameters(PARAMETERS_3C_INITIAL2, format_name="yml_str")
 
     assert initial_parameters1.markdown() == RENDERED_MARKDOWN
     assert initial_parameters2.markdown() == RENDERED_MARKDOWN

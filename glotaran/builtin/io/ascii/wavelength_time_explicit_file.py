@@ -12,7 +12,6 @@ import xarray as xr
 from glotaran.io import DataIoInterface
 from glotaran.io import register_data_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
-from glotaran.project import SavingOptions
 
 #  from glotaran.io.reader import file_reader
 
@@ -246,7 +245,7 @@ def get_data_file_format(line):
 #  @file_reader(extension="ascii", name="Wavelength-/Time-Explicit ASCII")
 @register_data_io("ascii")
 class AsciiDataIo(DataIoInterface):
-    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
+    def load_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
         """Reads an ascii file in wavelength- or time-explicit format.
 
         See [1]_ for documentation of this format.
@@ -265,7 +264,6 @@ class AsciiDataIo(DataIoInterface):
         .. [1] https://glotaran.github.io/legacy/file_formats
         """
 
-        data_file_format = None
         with open(file_name) as f:
             f.readline()  # Read first line with comments (and discard for now)
             f.readline()  # Read second line with comments (and discard for now)
@@ -279,14 +277,20 @@ class AsciiDataIo(DataIoInterface):
 
         return data_file.read(prepare=True)
 
-    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
-        file_format = "TimeExplicit"
-        number_format = "%.10e"
+    def save_dataset(
+        self,
+        file_name: str,
+        dataset: xr.DataArray,
+        *,
+        comment: str = "",
+        file_format: DataFileType = DataFileType.time_explicit,
+        number_format: str = "%.10e",
+    ):
         data_file = (
             TimeExplicitFile(filepath=file_name, dataset=dataset)
-            if file_format == "TimeExplicit"
+            if file_format is DataFileType.time_explicit
             else WavelengthExplicitFile(filepath=file_name, dataset=dataset)
         )
         data_file.write(
-            overwrite=True, comment="", file_format=file_format, number_format=number_format
+            overwrite=True, comment=comment, file_format=file_format, number_format=number_format
         )

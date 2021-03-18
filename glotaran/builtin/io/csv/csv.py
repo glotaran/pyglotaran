@@ -9,10 +9,10 @@ from glotaran.parameter import ParameterGroup
 
 @register_project_io(["csv"])
 class CsvProjectIo(ProjectIoInterface):
-    def read_parameters(self, file_name: str) -> ParameterGroup:
+    def load_parameters(self, file_name: str) -> ParameterGroup:
         df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"])
         return ParameterGroup.from_dataframe(df, source=file_name)
 
-    def write_parameters(self, file_name: str, parameters: ParameterGroup):
-        """Writes a :class:`ParameterGroup` to a CSV file."""
+    def save_parameters(self, file_name: str, parameters: ParameterGroup):
+        """Save a :class:`ParameterGroup` to a CSV file."""
         parameters.to_dataframe().to_csv(file_name, na_rep="None", index=False)

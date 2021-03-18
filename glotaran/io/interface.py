@@ -1,3 +1,15 @@
+"""Baseclasses to create Data/Project IO plugins from.
+
+The main purpose of those classes are to guarantee a consistent API via
+typechecker like ``mypy`` and demonstarate with methods are accessed by
+highlevel convenience functions for a given type of plugin.
+
+To add additional options to a method, those options need to be
+keyword only arguments.
+See: https://www.python.org/dev/peps/pep-3102/
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,84 +23,213 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
-    from glotaran.project import SavingOptions
     from glotaran.project import Scheme
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
-    DataWriter = Callable[[str, SavingOptions, xr.Dataset], None]
+    DataSaver = Callable[[str, Union[xr.Dataset, xr.DataArray]], None]
 
 
 class DataIoInterface:
     """Baseclass for Data IO plugins."""
 
-    def __init__(self, fmt: str) -> None:
-        self.format = fmt
+    def __init__(self, format_name: str) -> None:
+        """Initialize a Data IO plugin with the name of the format.
 
-    def read_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
-        """'read_dataset' isn't implemented for this format."""
-        raise NotImplementedError(
-            f"""'read_dataset' isn't implemented for the format: {self.format!r}"""
-        )
+        Parameters
+        ----------
+        format_name : str
+            Name of the supported format an instance uses.
+        """
+        self.format = format_name
 
-    def write_dataset(self, file_name: str, saving_options: SavingOptions, dataset: xr.Dataset):
-        """'write_dataset' isn't implemented for this format."""
-        raise NotImplementedError(
-            f"""'write_dataset' isn't implemented for the format: {self.format!r}"""
-        )
+    def load_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
+        """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray` (**NOT IMPLEMENTED**).
 
-    def get_dataloader(self) -> DataLoader:
-        """Retrieve implementation of the read_dataset functionality.
-
-        This allows to get the proper help and autocomplete for the function,
-        which is especially valuable if the function provides additional options.
+        Parameters
+        ----------
+        file_name : str
+            File containing the data.
 
         Returns
         -------
-        DataLoader
-            Function to load data a given format as :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
+        xr.Dataset|xr.DataArray
+            Data loaded from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
         """
-        return self.read_dataset
+        raise NotImplementedError(f"""Cannot read data with format: {self.format!r}""")
 
-    def get_datawriter(self) -> DataWriter:
-        """Retrieve implementation of the write_dataset functionality.
+    def save_dataset(
+        self,
+        file_name: str,
+        dataset: xr.Dataset | xr.DataArray,
+    ):
+        """Save data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
 
-        This allows to get the proper help and autocomplete for the function,
-        which is especially valuable if the function provides additional options.
+        Parameters
+        ----------
+        file_name : str
+            File to write the data to.
+        dataset : xr.Dataset
+            Dataset to be saved to file.
 
-        Returns
-        -------
-        DataWriter
-            Function to write :xarraydoc:`Dataset` to a given format.
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
         """
-        return self.write_dataset
+        raise NotImplementedError(f"""Cannot save data with format: {self.format!r}""")
 
 
 class ProjectIoInterface:
     """Baseclass for Project IO plugins."""
 
-    def __init__(self, fmt: str) -> None:
-        self.format = fmt
+    def __init__(self, format_name: str) -> None:
+        """Initialize a Project IO plugin with the name of the format.
 
-    def read_model(self, file_name: str) -> Model:
-        raise NotImplementedError
+        Parameters
+        ----------
+        format_name : str
+            Name of the supported format an instance uses.
+        """
+        self.format = format_name
 
-    def write_model(self, file_name: str, model: Model):
-        raise NotImplementedError
+    def load_model(self, file_name: str) -> Model:
+        """Create a Model instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
-    def read_parameters(self, file_name: str) -> ParameterGroup:
-        raise NotImplementedError
+        Parameters
+        ----------
+        file_name : str
+            File containing the model specs.
 
-    def write_parameters(self, file_name: str, parameters: ParameterGroup):
-        raise NotImplementedError
+        Returns
+        -------
+        Model
+            Model instance created from the file.
 
-    def read_scheme(self, file_name: str) -> Scheme:
-        raise NotImplementedError
 
-    def write_scheme(self, file_name: str, scheme: Scheme):
-        raise NotImplementedError
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read models with format {self.format!r}")
 
-    def read_result(self, file_name: str) -> Result:
-        raise NotImplementedError
+    def save_model(self, file_name: str, model: Model):
+        """Save a Model instance to a spec file (**NOT IMPLEMENTED**).
 
-    def write_result(self, file_name: str, saving_options: SavingOptions, result: Result):
-        raise NotImplementedError
+        Parameters
+        ----------
+        file_name : str
+            File to write the model specs to.
+        model: Model
+            Model instance to save to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot save models with format {self.format!r}")
+
+    def load_parameters(self, file_name: str) -> ParameterGroup:
+        """Create a ParameterGroup instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the parameter specs.
+
+        Returns
+        -------
+        ParameterGroup
+            ParameterGroup instance created from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
+
+    def save_parameters(self, file_name: str, parameters: ParameterGroup):
+        """Save a ParameterGroup instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the parameter specs to.
+        parameters : ParameterGroup
+            ParameterGroup instance to save to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot save parameters with format {self.format!r}")
+
+    def load_scheme(self, file_name: str) -> Scheme:
+        """Create a Scheme instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the parameter specs.
+
+        Returns
+        -------
+        Scheme
+            Scheme instance created from the file.
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read scheme with format {self.format!r}")
+
+    def save_scheme(self, file_name: str, scheme: Scheme):
+        """Save a Scheme instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File to write the scheme specs to.
+        scheme : Scheme
+            Scheme instance to save to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot save scheme with format {self.format!r}")
+
+    def load_result(self, result_path: str) -> Result:
+        """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        result_path : str
+            Path containing the result data.
+
+        Returns
+        -------
+        Result
+            Result instance created from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read result with format {self.format!r}")
+
+    def save_result(self, result_path: str, result: Result):
+        """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        result_path : str
+            Path to write the result data to.
+        result : Result
+            Result instance to save to specs file.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot save result with format {self.format!r}")

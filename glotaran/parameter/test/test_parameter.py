@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from glotaran.io import load_parameters
-from glotaran.io import write_parameters
+from glotaran.io import save_parameters
 from glotaran.parameter import Parameter
 
 
@@ -17,7 +17,7 @@ def test_param_array():
     - 1
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     assert len(list(params.all())) == 5
 
@@ -34,7 +34,7 @@ def test_param_scientific():
     - ["4", -2e6]
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     assert [p.value for _, p in params.all()] == values
 
@@ -46,7 +46,7 @@ def test_param_label():
     - ["3", 3]
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     assert len(list(params.all())) == 3
     assert [p.label for _, p in params.all()] == [f"{i}" for i in range(5, 2, -1)]
@@ -63,7 +63,7 @@ def test_param_group_copy():
         - 7
         - 8
     """
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
     copy = params.copy()
 
     for label, parameter in params.all():
@@ -83,7 +83,7 @@ def test_param_options():
     - ["7", 2e4]
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     assert params.get("5").value == 1.0
     assert not params.get("5").non_negative
@@ -112,7 +112,7 @@ def test_param_block_options():
         - {vary: false}
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
     assert not params.get("block.1").vary
     assert params.get("block.2").vary
 
@@ -128,7 +128,7 @@ def test_nested_param_list():
         - 8
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     assert len(list(params.all())) == 5
     group = params["kinetic"]
@@ -150,7 +150,7 @@ def test_nested_param_group():
             - 9
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
     assert len(list(params.all())) == 3
     group = params["kinetic"]
     assert len(list(group.all())) == 3
@@ -194,7 +194,7 @@ def test_parameter_group_to_array():
     - ["3", 2e4]
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     labels, values, lower_bounds, upper_bounds = params.get_label_value_and_bounds_arrays(
         exclude_non_vary=False
@@ -232,7 +232,7 @@ def test_update_parameter_group_from_array():
     - ["3", 2e4]
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     labels = ["1", "2", "3"]
     values = [0, np.log(6e2), 42]
@@ -313,7 +313,7 @@ def test_parameter_expressions():
     - ["4", {expr: '2'}]
     """
 
-    params = load_parameters(params, fmt="yml_str")
+    params = load_parameters(params, format_name="yml_str")
 
     assert params.get("3").expression is not None
     assert not params.get("3").vary
@@ -324,7 +324,7 @@ def test_parameter_expressions():
         params_bad_expr = """
     - ["3", {expr: 'None'}]
     """
-        load_parameters(params_bad_expr, fmt="yml_str")
+        load_parameters(params_bad_expr, format_name="yml_str")
 
 
 def test_parameter_expressions_groups():
@@ -357,7 +357,7 @@ def test_parameter_expressions_groups():
     """
 
     for params in [params_vary_explicit, params_vary_implicit, params_label_explicit]:
-        params = load_parameters(params, fmt="yml_str")
+        params = load_parameters(params, format_name="yml_str")
 
         assert params.get("b.1").expression is None
         assert params.get("b.1").vary
@@ -457,10 +457,10 @@ def test_parameter_to_csv(tmpdir):
         - ["branch1", {expr: '$rates.total * $b.1'}]
         - ["branch2", {expr: '$rates.total * $b.2'}]
     """,
-        fmt="yml_str",
+        format_name="yml_str",
     )
 
-    write_parameters(csv_path, "csv", params)
+    save_parameters(csv_path, params, "csv")
 
     with open(csv_path) as f:
         print(f.read())

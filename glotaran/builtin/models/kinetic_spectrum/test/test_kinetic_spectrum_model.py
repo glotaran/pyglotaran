@@ -74,18 +74,18 @@ PARAMETERS_1C_GAUSSIAN_WANTED = f"""\
 
 
 class OneComponentOneChannel:
-    model = load_model(MODEL_1C_NO_IRF, fmt="yml_str")
-    initial_parameters = load_parameters(PARAMETERS_1C_INITIAL, fmt="yml_str")
-    wanted_parameters = load_parameters(PARAMETERS_1C_WANTED, fmt="yml_str")
+    model = load_model(MODEL_1C_NO_IRF, format_name="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_1C_INITIAL, format_name="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_1C_WANTED, format_name="yml_str")
     time = np.asarray(np.arange(0, 50, 1.5))
     spectral = np.asarray([0])
     axis = {"time": time, "spectral": spectral}
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = load_model(MODEL_1C_GAUSSIAN_IRF, fmt="yml_str")
-    initial_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL, fmt="yml_str")
-    wanted_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_WANTED, fmt="yml_str")
+    model = load_model(MODEL_1C_GAUSSIAN_IRF, format_name="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL, format_name="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_WANTED, format_name="yml_str")
     time = np.asarray(np.arange(-10, 50, 1.5))
     spectral = np.asarray([0])
     axis = {"time": time, "spectral": spectral}
@@ -216,18 +216,18 @@ kinetic:
 
 
 class ThreeComponentParallel:
-    model = load_model(MODEL_3C_PARALLEL, fmt="yml_str")
-    initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_PARALLEL, fmt="yml_str")
-    wanted_parameters = load_parameters(PARAMETERS_3C_PARALLEL_WANTED, fmt="yml_str")
+    model = load_model(MODEL_3C_PARALLEL, format_name="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_PARALLEL, format_name="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_3C_PARALLEL_WANTED, format_name="yml_str")
     time = np.arange(-10, 100, 1.5)
     spectral = np.arange(600, 750, 10)
     axis = {"time": time, "spectral": spectral}
 
 
 class ThreeComponentSequential:
-    model = load_model(MODEL_3C_SEQUENTIAL, fmt="yml_str")
-    initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_SEQUENTIAL, fmt="yml_str")
-    wanted_parameters = load_parameters(PARAMETERS_3C_SIM_SEQUENTIAL, fmt="yml_str")
+    model = load_model(MODEL_3C_SEQUENTIAL, format_name="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_SEQUENTIAL, format_name="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_3C_SIM_SEQUENTIAL, format_name="yml_str")
     time = np.asarray(np.arange(-10, 50, 1.0))
     spectral = np.arange(600, 750, 5.0)
     axis = {"time": time, "spectral": spectral}

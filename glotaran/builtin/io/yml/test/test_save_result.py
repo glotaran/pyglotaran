@@ -32,7 +32,7 @@ def test_optimization(tmpdir):
     result = optimize(scheme)
 
     result_dir = os.path.join(tmpdir, "testresult")
-    save_result(result_dir, result)
+    save_result(result_path=result_dir, format_name="yml", result=result)
 
     assert os.path.exists(os.path.join(result_dir, "result.md"))
     assert os.path.exists(os.path.join(result_dir, "scheme.yml"))
