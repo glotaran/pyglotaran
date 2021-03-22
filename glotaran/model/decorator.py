@@ -6,7 +6,6 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Type
-from typing import TypeVar
 from typing import Union
 
 import numpy as np
@@ -54,9 +53,7 @@ RetrieveClpFunction = Callable[
 ]
 """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
-FinalizeFunction = Callable[
-    [TypeVar("glotaran.analysis.problem.Problem"), Dict[str, xr.Dataset]], None
-]
+FinalizeFunction = Callable[["glotaran.analysis.problem.Problem", Dict[str, xr.Dataset]], None]
 """A `FinalizeFunction` gets called after optimization."""
 
 PenaltyFunction = Callable[
@@ -91,7 +88,7 @@ def model(
     finalize_data_function: FinalizeFunction = None,
     grouped: Union[bool, Callable[[Type[Model]], bool]] = False,
     index_dependent: Union[bool, Callable[[Type[Model]], bool]] = False,
-) -> Callable:
+) -> Callable[[Type[Model]], Type[Model]]:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
     adds the functions (e.g. for `matrix`) to the model ensures they are added wrapped in a correct
