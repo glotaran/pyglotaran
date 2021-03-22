@@ -1,75 +1,78 @@
 """The model decorator."""
 from __future__ import annotations
 
-from typing import Any
-from typing import Callable
+from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
-from typing import Tuple
-from typing import Type
-from typing import Union
 
-import numpy as np
-import xarray as xr
-
-import glotaran  # TODO: refactor to postponed type annotation
-from glotaran.parameter import ParameterGroup
+from glotaran.model.dataset_descriptor import DatasetDescriptor
+from glotaran.model.util import wrap_func_as_method
+from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import register_model
 
-from .base_model import Model
-from .dataset_descriptor import DatasetDescriptor
-from .util import wrap_func_as_method
-from .weight import Weight
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import Tuple
+    from typing import Type
+    from typing import Union
 
-MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
-"""A `MatrixFunction` calculates the matrix for a model."""
+    import numpy as np
+    import xarray as xr
 
-IndexDependentMatrixFunction = Callable[
-    [Type[DatasetDescriptor], xr.Dataset, Any],
-    Tuple[List[str], np.ndarray],
-]
-"""A `MatrixFunction` calculates the matrix for a model."""
+    from glotaran.analysis.problem import Problem
+    from glotaran.model.base_model import Model
+    from glotaran.parameter import ParameterGroup
 
-GlobalMatrixFunction = Callable[
-    [Type[DatasetDescriptor], np.ndarray], Tuple[List[str], np.ndarray]
-]
-"""A `GlobalMatrixFunction` calculates the global matrix for a model."""
+    MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
+    """A `MatrixFunction` calculates the matrix for a model."""
 
-ConstrainMatrixFunction = Callable[
-    [Type[Model], ParameterGroup, List[str], np.ndarray, float],
-    Tuple[List[str], np.ndarray],
-]
-"""A `ConstrainMatrixFunction` applies constraints on a matrix."""
+    IndexDependentMatrixFunction = Callable[
+        [Type[DatasetDescriptor], xr.Dataset, Any],
+        Tuple[List[str], np.ndarray],
+    ]
+    """A `MatrixFunction` calculates the matrix for a model."""
 
-RetrieveClpFunction = Callable[
-    [
-        Type[Model],
-        ParameterGroup,
-        Dict[str, Union[List[str], List[List[str]]]],
-        Dict[str, Union[List[str], List[List[str]]]],
+    GlobalMatrixFunction = Callable[
+        [Type[DatasetDescriptor], np.ndarray], Tuple[List[str], np.ndarray]
+    ]
+    """A `GlobalMatrixFunction` calculates the global matrix for a model."""
+
+    ConstrainMatrixFunction = Callable[
+        [Type[Model], ParameterGroup, List[str], np.ndarray, float],
+        Tuple[List[str], np.ndarray],
+    ]
+    """A `ConstrainMatrixFunction` applies constraints on a matrix."""
+
+    RetrieveClpFunction = Callable[
+        [
+            Type[Model],
+            ParameterGroup,
+            Dict[str, Union[List[str], List[List[str]]]],
+            Dict[str, Union[List[str], List[List[str]]]],
+            Dict[str, List[np.ndarray]],
+            Dict[str, xr.Dataset],
+        ],
         Dict[str, List[np.ndarray]],
-        Dict[str, xr.Dataset],
-    ],
-    Dict[str, List[np.ndarray]],
-]
-"""A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
+    ]
+    """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
-FinalizeFunction = Callable[["glotaran.analysis.problem.Problem", Dict[str, xr.Dataset]], None]
-"""A `FinalizeFunction` gets called after optimization."""
+    FinalizeFunction = Callable[[Problem, Dict[str, xr.Dataset]], None]
+    """A `FinalizeFunction` gets called after optimization."""
 
-PenaltyFunction = Callable[
-    [
-        Type[Model],
-        ParameterGroup,
-        Dict[str, Union[List[str], List[List[str]]]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, Union[np.ndarray, List[np.ndarray]]],
-        Dict[str, xr.Dataset],
-        float,
-    ],
-    np.ndarray,
-]
-"""A `PenaltyFunction` calculates additional penalties for the optimization."""
+    PenaltyFunction = Callable[
+        [
+            Type[Model],
+            ParameterGroup,
+            Dict[str, Union[List[str], List[List[str]]]],
+            Dict[str, List[np.ndarray]],
+            Dict[str, Union[np.ndarray, List[np.ndarray]]],
+            Dict[str, xr.Dataset],
+            float,
+        ],
+        np.ndarray,
+    ]
+    """A `PenaltyFunction` calculates additional penalties for the optimization."""
 
 
 def model(
