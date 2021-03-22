@@ -1,4 +1,5 @@
 """The model decorator."""
+from __future__ import annotations
 
 from typing import Any
 from typing import Callable
@@ -73,22 +74,22 @@ PenaltyFunction = Callable[
 
 def model(
     model_type: str,
-    attributes: Dict[str, Any] = None,
-    dataset_type: Type[DatasetDescriptor] = DatasetDescriptor,
+    attributes: dict[str, Any] = None,
+    dataset_type: type[DatasetDescriptor] = DatasetDescriptor,
     megacomplex_type: Any = None,
-    matrix: Union[MatrixFunction, IndexDependentMatrixFunction] = None,
+    matrix: MatrixFunction | IndexDependentMatrixFunction = None,
     global_matrix: GlobalMatrixFunction = None,
     model_dimension: str = None,
     global_dimension: str = None,
-    has_matrix_constraints_function: Callable[[Type[Model]], bool] = None,
+    has_matrix_constraints_function: Callable[[type[Model]], bool] = None,
     constrain_matrix_function: ConstrainMatrixFunction = None,
     retrieve_clp_function: RetrieveClpFunction = None,
-    has_additional_penalty_function: Callable[[Type[Model]], bool] = None,
+    has_additional_penalty_function: Callable[[type[Model]], bool] = None,
     additional_penalty_function: PenaltyFunction = None,
     finalize_data_function: FinalizeFunction = None,
-    grouped: Union[bool, Callable[[Type[Model]], bool]] = False,
-    index_dependent: Union[bool, Callable[[Type[Model]], bool]] = False,
-) -> Callable[[Type[Model]], Type[Model]]:
+    grouped: bool | Callable[[type[Model]], bool] = False,
+    index_dependent: bool | Callable[[type[Model]], bool] = False,
+) -> Callable[[type[Model]], type[Model]]:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
     adds the functions (e.g. for `matrix`) to the model ensures they are added wrapped in a correct
@@ -291,20 +292,20 @@ def _create_init_func(cls, attributes):
     return __init__
 
 
-def _create_add_func(cls, name, type):
-    @wrap_func_as_method(cls, name=f"add_{name}")
-    def add_item(self, item: type):
-        f"""Adds an `{type.__name__}` object.
+def _create_add_func(cls, name, item_type):
+    @wrap_func_as_method(cls, name=f"add_{name}", annotations={"item": item_type})
+    def add_item(self, item: item_type):
+        f"""Adds an `{item_type.__name__}` object.
 
         Parameters
         ----------
         item :
-            The `{type.__name__}` item.
+            The `{item_type.__name__}` item.
         """
 
-        if not isinstance(item, type) and (
-            not hasattr(type, "_glotaran_model_attribute_typed")
-            or not isinstance(item, tuple(type._glotaran_model_attribute_types.values()))
+        if not isinstance(item, item_type) and (
+            not hasattr(item_type, "_glotaran_model_attribute_typed")
+            or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
         ):
             raise TypeError
         getattr(self, f"_{name}").append(item)
@@ -312,39 +313,39 @@ def _create_add_func(cls, name, type):
     return add_item
 
 
-def _create_get_func(cls, name, type):
-    @wrap_func_as_method(cls, name=f"get_{name}")
-    def get_item(self, label: str) -> type:
+def _create_get_func(cls, name, item_type):
+    @wrap_func_as_method(cls, name=f"get_{name}", annotations={"return": item_type})
+    def get_item(self, label: str) -> item_type:
         f"""
-        Returns the `{type.__name__}` object with the given label.
+        Returns the `{item_type.__name__}` object with the given label.
 
         Parameters
         ----------
         label :
-            The label of the `{type.__name__}` object.
+            The label of the `{item_type.__name__}` object.
         """
         return getattr(self, f"_{name}")[label]
 
     return get_item
 
 
-def _create_set_func(cls, name, type):
-    @wrap_func_as_method(cls, name=f"set_{name}")
-    def set_item(self, label: str, item: type):
+def _create_set_func(cls, name, item_type):
+    @wrap_func_as_method(cls, name=f"set_{name}", annotations={"item": item_type})
+    def set_item(self, label: str, item: item_type):
         f"""
-        Sets the `{type.__name__}` object with the given label with to the item.
+        Sets the `{item_type.__name__}` object with the given label with to the item.
 
         Parameters
         ----------
         label :
-            The label of the `{type.__name__}` object.
+            The label of the `{item_type.__name__}` object.
         item :
-            The `{type.__name__}` item.
+            The `{item_type.__name__}` item.
         """
 
-        if not isinstance(item, type) and (
-            not hasattr(type, "_glotaran_model_attribute_typed")
-            or not isinstance(item, tuple(type._glotaran_model_attribute_types.values()))
+        if not isinstance(item, item_type) and (
+            not hasattr(item_type, "_glotaran_model_attribute_typed")
+            or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
         ):
             raise TypeError
         getattr(self, f"_{name}")[label] = item
@@ -352,14 +353,18 @@ def _create_set_func(cls, name, type):
     return set_item
 
 
-def _create_property_for_attribute(cls, name, type):
+def _create_property_for_attribute(cls, name, attribute_type):
 
-    return_type = Dict[str, type] if hasattr(type, "_glotaran_has_label") else List[type]
+    return_type = (
+        Dict[str, attribute_type]
+        if hasattr(attribute_type, "_glotaran_has_label")
+        else List[attribute_type]
+    )
 
-    doc_type = "dictionary" if hasattr(type, "_glotaran_has_label") else "list"
+    doc_type = "dictionary" if hasattr(attribute_type, "_glotaran_has_label") else "list"
 
     @property
-    @wrap_func_as_method(cls, name=f"{name}")
+    @wrap_func_as_method(cls, name=f"{name}", annotations={"return": return_type})
     def attribute(self) -> return_type:
         f"""A {doc_type} containing {type.__name__}"""
         return getattr(self, f"_{name}")
