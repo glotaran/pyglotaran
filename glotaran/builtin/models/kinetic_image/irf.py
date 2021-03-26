@@ -19,7 +19,7 @@ class IrfMeasured:
         "center": List[Parameter],
         "width": List[Parameter],
         "scale": {"type": List[Parameter], "allow_none": True},
-        "normalize": {"type": bool, "default": False},
+        "normalize": {"type": bool, "default": True},
         "backsweep": {"type": bool, "default": False},
         "backsweep_period": {"type": Parameter, "allow_none": True},
     },

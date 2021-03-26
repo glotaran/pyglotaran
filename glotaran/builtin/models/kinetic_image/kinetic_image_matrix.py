@@ -129,7 +129,8 @@ def kinetic_image_matrix_implementation(
                 backsweep,
                 backsweep_period,
             )
-        matrix /= np.sum(irf_scale)
+        if dataset_descriptor.irf.normalize:
+            matrix /= np.sum(irf_scale)
 
     else:
         calculate_kinetic_matrix_no_irf(matrix, rates, axis)
