@@ -7,6 +7,9 @@ tests/resources/PE2017
 # Dask
 dask-worker-space/
 
+# virtualenv
+bin/
+pyvenv.cfg
 
 # TIMP data
 *.RData
