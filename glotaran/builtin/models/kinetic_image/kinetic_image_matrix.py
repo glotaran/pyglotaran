@@ -20,7 +20,7 @@ def kinetic_matrix(
 
     compartments = None
     matrix = None
-    k_matrices = dataset_descriptor.get_k_matrices()
+    megacomplex_scales, k_matrices = dataset_descriptor.get_megacomplex_k_matrices()
 
     if len(k_matrices) == 0:
         return (None, None)
@@ -29,9 +29,9 @@ def kinetic_matrix(
         raise Exception(
             f'No initial concentration specified in dataset "{dataset_descriptor.label}"'
         )
-    initial_concentration = dataset_descriptor.initial_concentration.normalized(dataset_descriptor)
+    initial_concentration = dataset_descriptor.initial_concentration.normalized()
 
-    for k_matrix in k_matrices:
+    for i, k_matrix in enumerate(k_matrices):
 
         if k_matrix is None:
             continue
@@ -45,6 +45,9 @@ def kinetic_matrix(
             irf,
             matrix_implementation,
         )
+
+        if megacomplex_scales is not None:
+            this_matrix *= megacomplex_scales[i]
 
         if matrix is None:
             compartments = this_compartments

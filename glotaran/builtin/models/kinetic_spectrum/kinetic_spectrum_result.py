@@ -17,7 +17,7 @@ def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr
     for label, dataset in data.items():
 
         dataset_descriptor = problem.filled_dataset_descriptors[label]
-        if not dataset_descriptor.get_k_matrices():
+        if not dataset_descriptor.has_k_matrix():
             continue
 
         retrieve_species_assocatiated_data(problem.model, dataset, dataset_descriptor, "spectra")

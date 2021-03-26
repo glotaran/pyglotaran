@@ -75,7 +75,7 @@ def model():
                 "megacomplex": ["m1", "m2"],
                 "scale": "scale_1",
             },
-            "dataset2": [["m2"], "scale_2"],
+            "dataset2": [["m2"], ["bar"], "scale_2"],
         },
     }
     return MockModel.from_dict(d)
@@ -98,7 +98,7 @@ def model_error():
                 "megacomplex": ["N1", "N2"],
                 "scale": "scale_1",
             },
-            "dataset2": [["mrX"], "scale_3"],
+            "dataset2": [["mrX"], ["bar"], "scale_3"],
         },
     }
     return MockModel.from_dict(d)

@@ -10,6 +10,7 @@ from .attribute import model_attribute
 @model_attribute(
     properties={
         "megacomplex": List[str],
+        "megacomplex_scale": {"type": List[Parameter], "default": None, "allow_none": True},
         "scale": {"type": Parameter, "default": None, "allow_none": True},
     }
 )
