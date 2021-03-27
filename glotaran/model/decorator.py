@@ -1,97 +1,98 @@
 """The model decorator."""
+from __future__ import annotations
 
-from typing import Any
-from typing import Callable
+from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
-from typing import Tuple
-from typing import Type
-from typing import TypeVar
-from typing import Union
 
-import numpy as np
-import xarray as xr
-
-import glotaran  # TODO: refactor to postponed type annotation
-from glotaran.parameter import ParameterGroup
+from glotaran.model.dataset_descriptor import DatasetDescriptor
+from glotaran.model.util import wrap_func_as_method
+from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import register_model
 
-from .base_model import Model
-from .dataset_descriptor import DatasetDescriptor
-from .util import wrap_func_as_method
-from .weight import Weight
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import Tuple
+    from typing import Type
+    from typing import Union
 
-MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
-"""A `MatrixFunction` calculates the matrix for a model."""
+    import numpy as np
+    import xarray as xr
 
-IndexDependentMatrixFunction = Callable[
-    [Type[DatasetDescriptor], xr.Dataset, Any],
-    Tuple[List[str], np.ndarray],
-]
-"""A `MatrixFunction` calculates the matrix for a model."""
+    from glotaran.analysis.problem import Problem
+    from glotaran.model.base_model import Model
+    from glotaran.parameter import ParameterGroup
 
-GlobalMatrixFunction = Callable[
-    [Type[DatasetDescriptor], np.ndarray], Tuple[List[str], np.ndarray]
-]
-"""A `GlobalMatrixFunction` calculates the global matrix for a model."""
+    MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
+    """A `MatrixFunction` calculates the matrix for a model."""
 
-ConstrainMatrixFunction = Callable[
-    [Type[Model], ParameterGroup, List[str], np.ndarray, float],
-    Tuple[List[str], np.ndarray],
-]
-"""A `ConstrainMatrixFunction` applies constraints on a matrix."""
+    IndexDependentMatrixFunction = Callable[
+        [Type[DatasetDescriptor], xr.Dataset, Any],
+        Tuple[List[str], np.ndarray],
+    ]
+    """A `MatrixFunction` calculates the matrix for a model."""
 
-RetrieveClpFunction = Callable[
-    [
-        Type[Model],
-        ParameterGroup,
-        Dict[str, Union[List[str], List[List[str]]]],
-        Dict[str, Union[List[str], List[List[str]]]],
+    GlobalMatrixFunction = Callable[
+        [Type[DatasetDescriptor], np.ndarray], Tuple[List[str], np.ndarray]
+    ]
+    """A `GlobalMatrixFunction` calculates the global matrix for a model."""
+
+    ConstrainMatrixFunction = Callable[
+        [Type[Model], ParameterGroup, List[str], np.ndarray, float],
+        Tuple[List[str], np.ndarray],
+    ]
+    """A `ConstrainMatrixFunction` applies constraints on a matrix."""
+
+    RetrieveClpFunction = Callable[
+        [
+            Type[Model],
+            ParameterGroup,
+            Dict[str, Union[List[str], List[List[str]]]],
+            Dict[str, Union[List[str], List[List[str]]]],
+            Dict[str, List[np.ndarray]],
+            Dict[str, xr.Dataset],
+        ],
         Dict[str, List[np.ndarray]],
-        Dict[str, xr.Dataset],
-    ],
-    Dict[str, List[np.ndarray]],
-]
-"""A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
+    ]
+    """A `RetrieveClpFunction` retrieves the full set of clp from a reduced set."""
 
-FinalizeFunction = Callable[
-    [TypeVar("glotaran.analysis.problem.Problem"), Dict[str, xr.Dataset]], None
-]
-"""A `FinalizeFunction` gets called after optimization."""
+    FinalizeFunction = Callable[[Problem, Dict[str, xr.Dataset]], None]
+    """A `FinalizeFunction` gets called after optimization."""
 
-PenaltyFunction = Callable[
-    [
-        Type[Model],
-        ParameterGroup,
-        Dict[str, Union[List[str], List[List[str]]]],
-        Dict[str, List[np.ndarray]],
-        Dict[str, Union[np.ndarray, List[np.ndarray]]],
-        Dict[str, xr.Dataset],
-        float,
-    ],
-    np.ndarray,
-]
-"""A `PenaltyFunction` calculates additional penalties for the optimization."""
+    PenaltyFunction = Callable[
+        [
+            Type[Model],
+            ParameterGroup,
+            Dict[str, Union[List[str], List[List[str]]]],
+            Dict[str, List[np.ndarray]],
+            Dict[str, Union[np.ndarray, List[np.ndarray]]],
+            Dict[str, xr.Dataset],
+            float,
+        ],
+        np.ndarray,
+    ]
+    """A `PenaltyFunction` calculates additional penalties for the optimization."""
 
 
 def model(
     model_type: str,
-    attributes: Dict[str, Any] = None,
-    dataset_type: Type[DatasetDescriptor] = DatasetDescriptor,
+    attributes: dict[str, Any] = None,
+    dataset_type: type[DatasetDescriptor] = DatasetDescriptor,
     megacomplex_type: Any = None,
-    matrix: Union[MatrixFunction, IndexDependentMatrixFunction] = None,
+    matrix: MatrixFunction | IndexDependentMatrixFunction = None,
     global_matrix: GlobalMatrixFunction = None,
     model_dimension: str = None,
     global_dimension: str = None,
-    has_matrix_constraints_function: Callable[[Type[Model]], bool] = None,
+    has_matrix_constraints_function: Callable[[type[Model]], bool] = None,
     constrain_matrix_function: ConstrainMatrixFunction = None,
     retrieve_clp_function: RetrieveClpFunction = None,
-    has_additional_penalty_function: Callable[[Type[Model]], bool] = None,
+    has_additional_penalty_function: Callable[[type[Model]], bool] = None,
     additional_penalty_function: PenaltyFunction = None,
     finalize_data_function: FinalizeFunction = None,
-    grouped: Union[bool, Callable[[Type[Model]], bool]] = False,
-    index_dependent: Union[bool, Callable[[Type[Model]], bool]] = False,
-) -> Callable:
+    grouped: bool | Callable[[type[Model]], bool] = False,
+    index_dependent: bool | Callable[[type[Model]], bool] = False,
+) -> Callable[[type[Model]], type[Model]]:
     """The `@model` decorator is intended to be used on subclasses of :class:`glotaran.model.Model`.
     It creates properties for the given attributes as well as functions to add access them. Also it
     adds the functions (e.g. for `matrix`) to the model ensures they are added wrapped in a correct
@@ -294,20 +295,20 @@ def _create_init_func(cls, attributes):
     return __init__
 
 
-def _create_add_func(cls, name, type):
-    @wrap_func_as_method(cls, name=f"add_{name}")
-    def add_item(self, item: type):
-        f"""Adds an `{type.__name__}` object.
+def _create_add_func(cls, name, item_type):
+    @wrap_func_as_method(cls, name=f"add_{name}", annotations={"item": item_type})
+    def add_item(self, item: item_type):
+        f"""Adds an `{item_type.__name__}` object.
 
         Parameters
         ----------
         item :
-            The `{type.__name__}` item.
+            The `{item_type.__name__}` item.
         """
 
-        if not isinstance(item, type) and (
-            not hasattr(type, "_glotaran_model_attribute_typed")
-            or not isinstance(item, tuple(type._glotaran_model_attribute_types.values()))
+        if not isinstance(item, item_type) and (
+            not hasattr(item_type, "_glotaran_model_attribute_typed")
+            or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
         ):
             raise TypeError
         getattr(self, f"_{name}").append(item)
@@ -315,39 +316,39 @@ def _create_add_func(cls, name, type):
     return add_item
 
 
-def _create_get_func(cls, name, type):
-    @wrap_func_as_method(cls, name=f"get_{name}")
-    def get_item(self, label: str) -> type:
+def _create_get_func(cls, name, item_type):
+    @wrap_func_as_method(cls, name=f"get_{name}", annotations={"return": item_type})
+    def get_item(self, label: str) -> item_type:
         f"""
-        Returns the `{type.__name__}` object with the given label.
+        Returns the `{item_type.__name__}` object with the given label.
 
         Parameters
         ----------
         label :
-            The label of the `{type.__name__}` object.
+            The label of the `{item_type.__name__}` object.
         """
         return getattr(self, f"_{name}")[label]
 
     return get_item
 
 
-def _create_set_func(cls, name, type):
-    @wrap_func_as_method(cls, name=f"set_{name}")
-    def set_item(self, label: str, item: type):
+def _create_set_func(cls, name, item_type):
+    @wrap_func_as_method(cls, name=f"set_{name}", annotations={"item": item_type})
+    def set_item(self, label: str, item: item_type):
         f"""
-        Sets the `{type.__name__}` object with the given label with to the item.
+        Sets the `{item_type.__name__}` object with the given label with to the item.
 
         Parameters
         ----------
         label :
-            The label of the `{type.__name__}` object.
+            The label of the `{item_type.__name__}` object.
         item :
-            The `{type.__name__}` item.
+            The `{item_type.__name__}` item.
         """
 
-        if not isinstance(item, type) and (
-            not hasattr(type, "_glotaran_model_attribute_typed")
-            or not isinstance(item, tuple(type._glotaran_model_attribute_types.values()))
+        if not isinstance(item, item_type) and (
+            not hasattr(item_type, "_glotaran_model_attribute_typed")
+            or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
         ):
             raise TypeError
         getattr(self, f"_{name}")[label] = item
@@ -355,14 +356,18 @@ def _create_set_func(cls, name, type):
     return set_item
 
 
-def _create_property_for_attribute(cls, name, type):
+def _create_property_for_attribute(cls, name, attribute_type):
 
-    return_type = Dict[str, type] if hasattr(type, "_glotaran_has_label") else List[type]
+    return_type = (
+        Dict[str, attribute_type]
+        if hasattr(attribute_type, "_glotaran_has_label")
+        else List[attribute_type]
+    )
 
-    doc_type = "dictionary" if hasattr(type, "_glotaran_has_label") else "list"
+    doc_type = "dictionary" if hasattr(attribute_type, "_glotaran_has_label") else "list"
 
     @property
-    @wrap_func_as_method(cls, name=f"{name}")
+    @wrap_func_as_method(cls, name=f"{name}", annotations={"return": return_type})
     def attribute(self) -> return_type:
         f"""A {doc_type} containing {type.__name__}"""
         return getattr(self, f"_{name}")

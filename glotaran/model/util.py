@@ -1,11 +1,17 @@
 """Helper functions."""
+from __future__ import annotations
 
-import typing
+from typing import Any
+from typing import Callable
+from typing import TypeVar
+from typing import cast
+
+DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 
 def wrap_func_as_method(
-    cls: typing.Any, name: str = None, annotations: str = None, doc: str = None
-) -> typing.Callable:
+    cls: Any, name: str = None, annotations: dict[str, type] = None, doc: str = None
+) -> DecoratedFunc:
     """A decorator to wrap a function as class method.
 
     Notes
@@ -25,7 +31,7 @@ def wrap_func_as_method(
         The documentation of the method. If `None`, the original function's documentation is used.
     """
 
-    def decorator(func):
+    def decorator(func: DecoratedFunc) -> DecoratedFunc:
         if name:
             func.__name__ = name
         if annotations:
@@ -37,4 +43,4 @@ def wrap_func_as_method(
 
         return func
 
-    return decorator
+    return cast(DecoratedFunc, decorator)
