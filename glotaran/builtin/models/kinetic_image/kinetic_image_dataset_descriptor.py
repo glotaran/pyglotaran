@@ -37,9 +37,9 @@ class KineticImageDatasetDescriptor(DatasetDescriptor):
 
         return scales, matrices
 
-    def has_k_matrix(self):
-        _, matrices = self.get_megacomplex_k_matrices()
-        return len(matrices) != 0
+    def has_k_matrix(self) -> bool:
+        _, k_matrices = self.get_megacomplex_k_matrices()
+        return len(k_matrices) != 0
 
     def compartments(self):
         compartments = []
