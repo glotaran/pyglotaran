@@ -16,11 +16,8 @@ class KineticImageDatasetDescriptor(DatasetDescriptor):
         scales = (
             [
                 self.megacomplex_scale[i]
-                for i in [
-                    i
-                    for i, megacomplex in enumerate(self.megacomplex)
-                    if megacomplex.has_k_matrix()
-                ]
+                for i, megacomplex in enumerate(self.megacomplex)
+                if megacomplex.has_k_matrix()
             ]
             if self.megacomplex_scale is not None
             else None
