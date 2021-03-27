@@ -24,12 +24,9 @@ class KineticImageDatasetDescriptor(DatasetDescriptor):
         )
 
         matrices = [
-            matrix
-            for matrix in [
                 megacomplex.full_k_matrix()
                 for megacomplex in self.megacomplex
                 if megacomplex.has_k_matrix()
-            ]
         ]
 
         return scales, matrices
