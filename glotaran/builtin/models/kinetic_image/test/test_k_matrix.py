@@ -296,7 +296,7 @@ def test_combine_matrices():
 
     combined = mat1.combine(mat2)
 
-    assert combined.label == f"{mat1.label}+{mat2.label}"
-    assert combined.matrix[("s1", "s1")] == mat1.matrix[("s1", "s1")]
-    assert combined.matrix[("s2", "s2")] == mat2.matrix[("s2", "s2")]
-    assert combined.matrix[("s3", "s3")] == mat2.matrix[("s3", "s3")]
+    assert combined.label == "A+B"
+    assert combined.matrix[("s1", "s1")] == "1"
+    assert combined.matrix[("s2", "s2")] == "3"
+    assert combined.matrix[("s3", "s3")] == "4"
