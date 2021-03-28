@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
+
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import ThreeDatasetDecay as suite
@@ -10,10 +12,13 @@ from glotaran.io import save_result
 from glotaran.project import Scheme
 
 if TYPE_CHECKING:
+    from typing import Literal
+
     from py.path import local as TmpDir
 
 
-def test_save_result_folder(tmpdir: TmpDir):
+@pytest.mark.parametrize("format_names", ("folder", "legacy"))
+def test_save_result_folder(tmpdir: TmpDir, format_name: Literal["folder", "legacy"]):
     """Check all files exist."""
     model = suite.model
 
@@ -39,7 +44,7 @@ def test_save_result_folder(tmpdir: TmpDir):
     result = optimize(scheme)
 
     result_dir = Path(tmpdir / "testresult")
-    save_result(result_path=str(result_dir), format_name="folder", result=result)
+    save_result(result_path=str(result_dir), format_name=format_name, result=result)
 
     assert (result_dir / "result.md").exists()
     assert (result_dir / "optimized_parameters.csv").exists()
