@@ -49,11 +49,13 @@ class KMatrix:
     def combine(self, k_matrix: KMatrix) -> KMatrix:
         """Creates a combined matrix.
 
+        When combining k-matrices km1 and km2 (km1.combine(km2)),
+        entries in km1 will be overwritten by corresponding entries in km2.
+
         Parameters
         ----------
         k_matrix :
             KMatrix to combine with.
-
 
         Returns
         -------
