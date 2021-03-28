@@ -49,11 +49,13 @@ class KMatrix:
     def combine(self, k_matrix: KMatrix) -> KMatrix:
         """Creates a combined matrix.
 
+        When combining k-matrices km1 and km2 (km1.combine(km2)),
+        entries in km1 will be overwritten by corresponding entries in km2.
+
         Parameters
         ----------
         k_matrix :
             KMatrix to combine with.
-
 
         Returns
         -------
@@ -63,9 +65,9 @@ class KMatrix:
         """
         if not isinstance(k_matrix, KMatrix):
             raise TypeError("K-Matrices can only be combined with other K-Matrices.")
-        combined_matrix = {entry: k_matrix.matrix[entry] for entry in k_matrix.matrix}
-        for entry in self.matrix:
-            combined_matrix[entry] = self.matrix[entry]
+        combined_matrix = {entry: self.matrix[entry] for entry in self.matrix}
+        for entry in k_matrix.matrix:
+            combined_matrix[entry] = k_matrix.matrix[entry]
         combined = KMatrix()
         combined.label = f"{self.label}+{k_matrix.label}"
         combined.matrix = combined_matrix

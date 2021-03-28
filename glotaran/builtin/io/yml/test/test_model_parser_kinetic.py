@@ -123,7 +123,7 @@ def test_irf(model):
             assert irf.width_dispersion == want
             want = [9]
             assert irf.scale == want
-        assert not irf.normalize
+        assert irf.normalize == (i == 1)
 
         if i == 2:
             assert irf.backsweep

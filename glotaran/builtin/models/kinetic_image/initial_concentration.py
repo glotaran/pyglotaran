@@ -6,7 +6,6 @@ import typing
 
 import numpy as np
 
-from glotaran.model import DatasetDescriptor
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
@@ -22,16 +21,8 @@ class InitialConcentration:
     """An initial concentration describes the population of the compartments at
     the beginning of an experiment."""
 
-    def normalized(self, dataset: DatasetDescriptor) -> InitialConcentration:
-        parameters = self.parameters
-        for megacomplex in dataset.megacomplex:
-            scale = [
-                megacomplex.scale
-                if c in megacomplex.involved_compartments and megacomplex.scale
-                else 1
-                for c in self.compartments
-            ]
-            parameters = np.multiply(parameters, scale)
+    def normalized(self) -> InitialConcentration:
+        parameters = np.array(self.parameters)
         idx = [c not in self.exclude_from_normalize for c in self.compartments]
         parameters[idx] /= np.sum(parameters[idx])
         new = copy.deepcopy(self)
