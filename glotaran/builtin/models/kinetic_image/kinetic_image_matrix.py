@@ -31,7 +31,7 @@ def kinetic_matrix(
         )
     initial_concentration = dataset_descriptor.initial_concentration.normalized()
 
-    for i, k_matrix in enumerate(k_matrices):
+    for k_matrix_index, k_matrix in enumerate(k_matrices):
 
         if k_matrix is None:
             continue
@@ -47,7 +47,7 @@ def kinetic_matrix(
         )
 
         if megacomplex_scales is not None:
-            this_matrix *= megacomplex_scales[i]
+            this_matrix *= megacomplex_scales[k_matrix_index]
 
         if matrix is None:
             compartments = this_compartments
@@ -57,11 +57,11 @@ def kinetic_matrix(
                 c for c in this_compartments if c not in compartments
             ]
             new_matrix = np.zeros((matrix.shape[0], len(new_compartments)), dtype=np.float64)
-            for i, comp in enumerate(new_compartments):
+            for idx, comp in enumerate(new_compartments):
                 if comp in compartments:
-                    new_matrix[:, i] += matrix[:, compartments.index(comp)]
+                    new_matrix[:, idx] += matrix[:, compartments.index(comp)]
                 if comp in this_compartments:
-                    new_matrix[:, i] += this_matrix[:, this_compartments.index(comp)]
+                    new_matrix[:, idx] += this_matrix[:, this_compartments.index(comp)]
             compartments = new_compartments
             matrix = new_matrix
 
