@@ -1,0 +1,34 @@
+{
+    "title": "pyglotaran: a Python library for global and target analysis",
+    "creators": [
+        {
+            "name": "J\u00f6rn Wei\u00dfenborn",
+            "affiliation": "Vrije Universiteit Amsterdam"
+        },
+        {
+            "name": "Joris Snellenburg",
+            "affiliation": "Vrije Universiteit Amsterdam",
+            "orcid": "0000-0002-1428-0221"
+        },
+        {
+            "name": "Sebastian Weigand",
+            "affiliation": "Technical University Berlin"
+        },
+        {
+            "name": "Ivo H.M. van Stokkum",
+            "affiliation": "Vrije Universiteit Amsterdam",
+            "orcid": "0000-0002-6143-2021"
+        }
+    ],
+    "keywords": [
+        "global analysis",
+        "target analysis",
+        "time-resolved spectroscopy",
+        "biophysics",
+        "glotaran",
+        "python"
+    ],
+    "access_right": "open",
+    "license": "LGPL-3.0",
+    "upload_type": "software"
+}
