@@ -368,7 +368,9 @@ def save_result(
         of the project io plugin.
     """
     protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name or inferr_file_format(result_path, needs_to_exist=False))
+    io = get_project_io(
+        format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
+    )
     io.save_result(  # type: ignore[call-arg]
         result_path=result_path,
         result=result,
