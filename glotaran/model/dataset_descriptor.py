@@ -2,9 +2,8 @@
 
 from typing import List
 
+from glotaran.model.attribute import model_attribute
 from glotaran.parameter import Parameter
-
-from .attribute import model_attribute
 
 
 @model_attribute(

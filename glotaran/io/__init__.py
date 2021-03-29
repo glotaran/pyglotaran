@@ -6,6 +6,9 @@ Since Io functionality is purely plugin based this package mostly
 reexports functions from the pluginsystem from a common place.
 """
 
+from glotaran.io.interface import DataIoInterface
+from glotaran.io.interface import ProjectIoInterface
+from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 from glotaran.plugin_system.data_io_registration import data_io_plugin_table
 from glotaran.plugin_system.data_io_registration import get_dataloader
 from glotaran.plugin_system.data_io_registration import get_datasaver
@@ -25,7 +28,3 @@ from glotaran.plugin_system.project_io_registration import save_parameters
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.plugin_system.project_io_registration import save_scheme
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
-
-from .interface import DataIoInterface
-from .interface import ProjectIoInterface
-from .prepare_dataset import prepare_time_trace_dataset

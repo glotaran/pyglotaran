@@ -8,10 +8,9 @@ from collections import OrderedDict
 import numpy as np
 import scipy
 
+from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
-
-from .initial_concentration import InitialConcentration
 
 
 @model_attribute(

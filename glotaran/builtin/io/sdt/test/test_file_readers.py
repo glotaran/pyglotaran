@@ -4,8 +4,7 @@ import pytest
 import xarray as xr
 
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
-
-from . import TEMPORAL_DATA
+from glotaran.builtin.io.sdt.test import TEMPORAL_DATA
 
 
 @pytest.mark.parametrize(

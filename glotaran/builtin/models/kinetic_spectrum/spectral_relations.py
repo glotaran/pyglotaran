@@ -15,9 +15,10 @@ from glotaran.parameter import Parameter
 if TYPE_CHECKING:
     from typing import Any
 
+    from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
+        KineticSpectrumModel,
+    )
     from glotaran.parameter import ParameterGroup
-
-    from .kinetic_spectrum_model import KineticSpectrumModel
 
 
 @model_attribute(

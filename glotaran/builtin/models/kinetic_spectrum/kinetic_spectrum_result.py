@@ -3,13 +3,16 @@ from __future__ import annotations
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
-
-from ..kinetic_image.irf import IrfMultiGaussian
-from ..kinetic_image.kinetic_image_result import retrieve_decay_associated_data
-from ..kinetic_image.kinetic_image_result import retrieve_irf
-from ..kinetic_image.kinetic_image_result import retrieve_species_associated_data
-from .spectral_irf import IrfGaussianCoherentArtifact
-from .spectral_irf import IrfSpectralMultiGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
+    retrieve_decay_associated_data,
+)
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import retrieve_irf
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
+    retrieve_species_associated_data,
+)
+from glotaran.builtin.models.kinetic_spectrum.spectral_irf import IrfGaussianCoherentArtifact
+from glotaran.builtin.models.kinetic_spectrum.spectral_irf import IrfSpectralMultiGaussian
 
 
 def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr.Dataset]):

@@ -6,11 +6,10 @@ import xarray as xr
 
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
+from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
-
-from .models import MultichannelMulticomponentDecay as suite
-from .models import SimpleTestModel
 
 
 @pytest.fixture(

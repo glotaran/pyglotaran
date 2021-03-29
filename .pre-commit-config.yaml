@@ -28,6 +28,11 @@ repos:
         types_or: [python, pyi]
         language_version: python3
 
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.0
+    hooks:
+      - id: absolufy-imports
+
   - repo: https://github.com/PyCQA/isort
     rev: 5.7.0
     hooks:

@@ -1,6 +1,6 @@
 import click
 
-from . import util
+from glotaran.cli.commands import util
 
 
 @util.signature_analysis

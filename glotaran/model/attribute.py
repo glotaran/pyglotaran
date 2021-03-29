@@ -4,18 +4,16 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING
 
+from glotaran.model.property import ModelProperty
+from glotaran.model.util import wrap_func_as_method
 from glotaran.parameter import Parameter
-
-from .property import ModelProperty
-from .util import wrap_func_as_method
 
 if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
 
+    from glotaran.model.base_model import Model
     from glotaran.parameter import ParameterGroup
-
-    from .base_model import Model
 
 
 def model_attribute(
