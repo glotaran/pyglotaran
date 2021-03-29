@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate
 
-from .parameter import Parameter
+from glotaran.parameter.parameter import Parameter
 
 
 class ParameterNotFoundException(Exception):

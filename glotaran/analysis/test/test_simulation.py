@@ -1,9 +1,8 @@
 import numpy as np
 
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
-
-from .models import SimpleTestModel
 
 
 def test_simulate_dataset():

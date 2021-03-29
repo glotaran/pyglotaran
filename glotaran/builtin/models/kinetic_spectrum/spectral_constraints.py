@@ -13,7 +13,9 @@ if TYPE_CHECKING:
 
     import numpy as np
 
-    from .kinetic_spectrum_model import KineticSpectrumModel
+    from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
+        KineticSpectrumModel,
+    )
 
 
 @model_attribute(

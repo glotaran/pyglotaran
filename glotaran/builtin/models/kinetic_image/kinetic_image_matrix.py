@@ -3,7 +3,7 @@
 import numba as nb
 import numpy as np
 
-from .irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 
 sqrt2 = np.sqrt(2)
 

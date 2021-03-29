@@ -3,8 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
-
-from .irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 
 
 def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Dataset]):

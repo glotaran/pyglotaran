@@ -6,10 +6,9 @@ import numpy as np
 from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
+from glotaran.analysis.problem import Problem
 from glotaran.project import Result
 from glotaran.project import Scheme
-
-from .problem import Problem
 
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
