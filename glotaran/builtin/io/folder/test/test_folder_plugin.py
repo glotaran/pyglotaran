@@ -5,50 +5,22 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
-from glotaran.analysis.test.models import ThreeDatasetDecay as suite
 from glotaran.io import save_result
-from glotaran.project import Scheme
-from glotaran.project.result import Result
+from glotaran.project.test.test_result import dummy_result  # noqa: F401
 
 if TYPE_CHECKING:
     from typing import Literal
 
     from py.path import local as TmpDir
 
-
-@pytest.fixture(scope="module")
-def dummy_result():
-    """Dummy result for testing."""
-
-    model = suite.model
-
-    model.is_grouped = False
-    model.is_index_dependent = False
-
-    wanted_parameters = suite.wanted_parameters
-    data = {}
-    for i in range(3):
-        e_axis = getattr(suite, "e_axis" if i == 0 else f"e_axis{i+1}")
-        c_axis = getattr(suite, "c_axis" if i == 0 else f"c_axis{i+1}")
-
-        data[f"dataset{i+1}"] = simulate(
-            suite.sim_model, f"dataset{i+1}", wanted_parameters, {"e": e_axis, "c": c_axis}
-        )
-    scheme = Scheme(
-        model=suite.model,
-        parameters=suite.initial_parameters,
-        data=data,
-        maximum_number_function_evaluations=1,
-    )
-
-    yield optimize(scheme)
+    from glotaran.project.result import Result
 
 
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder(
-    tmpdir: TmpDir, dummy_result: Result, format_name: Literal["folder", "legacy"]
+    tmpdir: TmpDir,
+    dummy_result: Result,  # noqa: F811
+    format_name: Literal["folder", "legacy"],
 ):
     """Check all files exist."""
 
@@ -64,7 +36,9 @@ def test_save_result_folder(
 
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder_error_path_is_file(
-    tmpdir: TmpDir, dummy_result: Result, format_name: Literal["folder", "legacy"]
+    tmpdir: TmpDir,
+    dummy_result: Result,  # noqa: F811
+    format_name: Literal["folder", "legacy"],
 ):
     """Raise error if result_path is a file without extension and overwrite is true."""
 
