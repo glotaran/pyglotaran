@@ -15,7 +15,9 @@ from typing import cast
 DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 
-def inferr_file_format(file_path: str | os.PathLike[str], *, needs_to_exist: bool = True) -> str:
+def inferr_file_format(
+    file_path: str | os.PathLike[str], *, needs_to_exist: bool = True, allow_folder=False
+) -> str:
     """Inferr format of a file if it exists.
 
     Parameters
@@ -25,6 +27,9 @@ def inferr_file_format(file_path: str | os.PathLike[str], *, needs_to_exist: boo
     needs_to_exist : bool
         Whether or not a file need to exists for an successful format inferring.
         While write functions don't need the file to exists, load functions do.
+    allow_folder: bool
+        Whether or not to allow the format to be ``folder``.
+        This is only used in ``save_result``.
 
     Returns
     -------
@@ -38,14 +43,18 @@ def inferr_file_format(file_path: str | os.PathLike[str], *, needs_to_exist: boo
     ValueError
         If file has no extension.
     """
-    if not os.path.isfile(file_path) and needs_to_exist:
+    if not os.path.isfile(file_path) and needs_to_exist and not allow_folder:
         raise ValueError(f"There is no file {file_path!r}.")
 
     _, file_format = os.path.splitext(file_path)
     if file_format == "":
-        raise ValueError(
-            f"Cannot determine format of file {file_path!r}, please provide an explicit format."
-        )
+        if allow_folder:
+            return "folder"
+        else:
+            raise ValueError(
+                f"Cannot determine format of file {file_path!r}, "
+                "please provide an explicit format."
+            )
     else:
         return file_format.lstrip(".")
 

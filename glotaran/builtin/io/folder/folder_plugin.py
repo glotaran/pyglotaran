@@ -47,13 +47,13 @@ class FolderProjectIo(ProjectIoInterface):
 
         Raises
         ------
-        OSError
-            If the folder to save the result in doesn't exist or couldn't be created.
+        ValueError
+            If ``result_path`` is a file.
         """
         if not os.path.exists(result_path):
             os.makedirs(result_path)
-        elif not os.path.isdir(result_path):
-            raise OSError(f"The path '{result_path}' is not a directory.")
+        if not os.path.isdir(result_path):
+            raise ValueError(f"The path '{result_path}' is not a directory.")
 
         paths = []
 
