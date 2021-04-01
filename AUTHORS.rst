@@ -18,7 +18,7 @@ Special Thanks
 
 Supervision
 --------------
-* **dr. Ivo H.M. van Stokkum** <i.h.m.van.stokkum@vu.nl> (`VU University profile <https://research.vu.nl/en/persons/ihm-van-stokkum>`_, `personal homepage <http://www.nat.vu.nl/~ivo/>`_)
+* **dr. Ivo H.M. van Stokkum** <i.h.m.van.stokkum@vu.nl> (`University profile <https://research.vu.nl/en/persons/ihm-van-stokkum>`_)
 
 Original publications
 ---------------------
