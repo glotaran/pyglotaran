@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING
 
-import xarray as xr
+from glotaran.deprecation import deprecate
+from glotaran.io import load_scheme
 
-from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
+if TYPE_CHECKING:
+
+    from typing import Literal
+
+    import xarray as xr
+
+    from glotaran.model import Model
+    from glotaran.parameter import ParameterGroup
 
 default_data_filters = {"minimal": ["fitted_data", "residual"], "full": None}
 
@@ -63,3 +70,29 @@ class Scheme:
         s += f"* *group_tolerance*: {self.group_tolerance}\n"
 
         return s
+
+    @staticmethod
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.project.scheme.Scheme.from_yaml_file(filename)",
+        new_qual_name_usage="glotaran.io.load_scheme(filename)",
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 1),
+    )
+    def from_yaml_file(filename: str) -> Scheme:
+        """Create :class:`Scheme` from specs in yaml file.
+
+        Warning
+        -------
+        Deprecated use ``glotaran.io.load_scheme(filename)`` instead.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the spec file.
+
+        Returns
+        -------
+        Scheme
+            Analysis schmeme
+        """
+        return load_scheme(filename)

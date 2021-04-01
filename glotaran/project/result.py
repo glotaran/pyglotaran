@@ -8,6 +8,8 @@ import xarray as xr
 from numpy.typing import ArrayLike
 from tabulate import tabulate
 
+from glotaran.deprecation import deprecate
+from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project.scheme import Scheme
@@ -165,3 +167,64 @@ class Result:
 
     def __str__(self):
         return self.markdown(with_model=False)
+
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.project.result.Result.save(result_path)",
+        new_qual_name_usage=(
+            "glotaran.io.save_result("
+            "result_path=result_path, result=result, "
+            'format_name="legacy", allow_overwrite=True'
+            ")"
+        ),
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 1),
+    )
+    def save(self, path: str) -> list[str]:
+        """Saves the result to given folder.
+
+        Warning
+        -------
+        Deprecated use ``save_result(result_path=result_path, result=result,
+        format_name="legacy", allow_overwrite=True)`` instead.
+
+
+        Returns a list with paths of all saved items.
+        The following files are saved:
+
+        * `result.md`: The result with the model formatted as markdown text.
+
+        * `optimized_parameters.csv`: The optimized parameter as csv file.
+
+        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+
+        Parameters
+        ----------
+        path :
+            The path to the folder in which to save the result.
+        """
+        save_result(result_path=path, result=self, format_name="legacy", allow_overwrite=True)
+
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
+        new_qual_name_usage=("glotaran.project.result.Result.data[dataset_label]"),
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 2),
+    )
+    def get_dataset(self, dataset_label: str) -> xr.Dataset:
+        """Returns the result dataset for the given dataset label.
+
+        Warning
+        -------
+        Deprecated use ``glotaran.project.result.Result.data[dataset_label]``
+        instead.
+
+
+        Parameters
+        ----------
+        dataset_label :
+            The label of the dataset.
+        """
+        try:
+            return self.data[dataset_label]
+        except KeyError:
+            raise Exception(f"Unknown dataset '{dataset_label}'")

@@ -28,3 +28,23 @@ from glotaran.plugin_system.project_io_registration import save_parameters
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.plugin_system.project_io_registration import save_scheme
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
+
+
+def __getattr__(attribute_name: str):
+    from glotaran.deprecation.deprecation_utils import module_attribute
+    from glotaran.deprecation.deprecation_utils import warn_deprecated
+
+    if attribute_name == "read_data_file":
+        warn_deprecated(
+            deprecated_qual_name_usage="glotaran.io.read_data_file",
+            new_qual_name_usage="glotaran.io.load_dataset",
+            to_be_removed_in_version="0.6.0",
+            check_qualnames=(False, True),
+        )
+
+        return module_attribute(
+            module_qual_name="glotaran.io",
+            attribute_name="load_dataset",
+        )
+
+    raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
