@@ -3,7 +3,7 @@
 import numba as nb
 import numpy as np
 
-from .irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 
 sqrt2 = np.sqrt(2)
 
@@ -20,7 +20,7 @@ def kinetic_matrix(
 
     compartments = None
     matrix = None
-    k_matrices = dataset_descriptor.get_k_matrices()
+    megacomplex_scales, k_matrices = dataset_descriptor.get_megacomplex_k_matrices()
 
     if len(k_matrices) == 0:
         return (None, None)
@@ -29,9 +29,9 @@ def kinetic_matrix(
         raise Exception(
             f'No initial concentration specified in dataset "{dataset_descriptor.label}"'
         )
-    initial_concentration = dataset_descriptor.initial_concentration.normalized(dataset_descriptor)
+    initial_concentration = dataset_descriptor.initial_concentration.normalized()
 
-    for k_matrix in k_matrices:
+    for k_matrix_index, k_matrix in enumerate(k_matrices):
 
         if k_matrix is None:
             continue
@@ -46,6 +46,9 @@ def kinetic_matrix(
             matrix_implementation,
         )
 
+        if megacomplex_scales is not None:
+            this_matrix *= megacomplex_scales[k_matrix_index]
+
         if matrix is None:
             compartments = this_compartments
             matrix = this_matrix
@@ -54,11 +57,11 @@ def kinetic_matrix(
                 c for c in this_compartments if c not in compartments
             ]
             new_matrix = np.zeros((matrix.shape[0], len(new_compartments)), dtype=np.float64)
-            for i, comp in enumerate(new_compartments):
+            for idx, comp in enumerate(new_compartments):
                 if comp in compartments:
-                    new_matrix[:, i] += matrix[:, compartments.index(comp)]
+                    new_matrix[:, idx] += matrix[:, compartments.index(comp)]
                 if comp in this_compartments:
-                    new_matrix[:, i] += this_matrix[:, this_compartments.index(comp)]
+                    new_matrix[:, idx] += this_matrix[:, this_compartments.index(comp)]
             compartments = new_compartments
             matrix = new_matrix
 
@@ -129,7 +132,8 @@ def kinetic_image_matrix_implementation(
                 backsweep,
                 backsweep_period,
             )
-        matrix /= np.sum(irf_scale)
+        if dataset_descriptor.irf.normalize:
+            matrix /= np.sum(irf_scale)
 
     else:
         calculate_kinetic_matrix_no_irf(matrix, rates, axis)

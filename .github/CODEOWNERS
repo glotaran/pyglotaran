@@ -28,33 +28,33 @@ LICENSE                         @glotaran/pyglotaran_creators
 # /docs/**/*.md                 @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
-/glotaran/analysis/             @joernweissenborn
+/glotaran/analysis/             @jsnel @joernweissenborn
 
 # builtin module:
 /glotaran/builtin/io/*          @glotaran/admins
 /glotaran/builtin/io/ascii      @jsnel @glotaran/maintainers
-/glotaran/builtin/io/csv        @joernweissenborn @glotaran/maintainers
-/glotaran/builtin/io/netCDF     @joernweissenborn @glotaran/maintainers
-/glotaran/builtin/io/sdt        @s-weigand @glotaran/maintainers
+/glotaran/builtin/io/csv        @glotaran/maintainers
+/glotaran/builtin/io/netCDF     @glotaran/maintainers
+/glotaran/builtin/io/sdt        @glotaran/maintainers
 /glotaran/builtin/models/       @jsnel @joernweissenborn
 
 # cli
-/glotaran/cli/                  @jsnel @joernweissenborn
+/glotaran/cli/                  @jsnel @glotaran/admins
 
 # examples
-/glotaran/examples/             @jsnel @joernweissenborn
+/glotaran/examples/             @jsnel @glotaran/maintainers
 
 # io
-/glotaran/io/                   @jsnel @joernweissenborn
+/glotaran/io/                   @jsnel @glotaran/maintainers
 
 # model
-/glotaran/model/                @joernweissenborn
+/glotaran/model/                @jsnel @glotaran/admins @joernweissenborn
 
 # parameter
-/glotaran/parameter/            @jsnel @joernweissenborn
+/glotaran/parameter/            @jsnel @glotaran/admins @joernweissenborn
 
 # plugin_system
-glotaran/plugin_system          @s-weigand @glotaran/maintainers
+glotaran/plugin_system          @s-weigand @glotaran/admins
 
 # project
-/glotaran/project/              @jsnel @joernweissenborn
+/glotaran/project/              @jsnel @glotaran/admins

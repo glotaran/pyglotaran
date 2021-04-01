@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import yaml
 
+from glotaran.builtin.io.yml.sanatize import sanitize_yaml
 from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
@@ -18,8 +19,6 @@ from glotaran.model import get_model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
-
-from .sanatize import sanitize_yaml
 
 if TYPE_CHECKING:
     from glotaran.model import Model

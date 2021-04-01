@@ -3,13 +3,16 @@ from __future__ import annotations
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
-
-from ..kinetic_image.irf import IrfMultiGaussian
-from ..kinetic_image.kinetic_image_result import retrieve_decay_assocatiated_data
-from ..kinetic_image.kinetic_image_result import retrieve_irf
-from ..kinetic_image.kinetic_image_result import retrieve_species_assocatiated_data
-from .spectral_irf import IrfGaussianCoherentArtifact
-from .spectral_irf import IrfSpectralMultiGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
+    retrieve_decay_associated_data,
+)
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import retrieve_irf
+from glotaran.builtin.models.kinetic_image.kinetic_image_result import (
+    retrieve_species_associated_data,
+)
+from glotaran.builtin.models.kinetic_spectrum.spectral_irf import IrfGaussianCoherentArtifact
+from glotaran.builtin.models.kinetic_spectrum.spectral_irf import IrfSpectralMultiGaussian
 
 
 def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr.Dataset]):
@@ -17,15 +20,15 @@ def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr
     for label, dataset in data.items():
 
         dataset_descriptor = problem.filled_dataset_descriptors[label]
-        if not dataset_descriptor.get_k_matrices():
+        if not dataset_descriptor.has_k_matrix():
             continue
 
-        retrieve_species_assocatiated_data(problem.model, dataset, dataset_descriptor, "spectra")
+        retrieve_species_associated_data(problem.model, dataset, dataset_descriptor, "spectra")
 
         if dataset_descriptor.baseline:
             dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
-        retrieve_decay_assocatiated_data(problem.model, dataset, dataset_descriptor, "spectra")
+        retrieve_decay_associated_data(problem.model, dataset, dataset_descriptor, "spectra")
 
         irf = dataset_descriptor.irf
         if isinstance(irf, IrfMultiGaussian):

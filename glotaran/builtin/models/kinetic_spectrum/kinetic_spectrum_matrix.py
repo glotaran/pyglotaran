@@ -3,8 +3,7 @@
 import numpy as np
 
 from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
-
-from .spectral_irf import IrfGaussianCoherentArtifact
+from glotaran.builtin.models.kinetic_spectrum.spectral_irf import IrfGaussianCoherentArtifact
 
 
 def kinetic_spectrum_matrix(dataset_descriptor=None, axis=None, index=None, irf=None):

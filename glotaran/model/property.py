@@ -2,9 +2,8 @@
 
 import typing
 
+from glotaran.model.util import wrap_func_as_method
 from glotaran.parameter import Parameter
-
-from .util import wrap_func_as_method
 
 
 class ModelProperty(property):

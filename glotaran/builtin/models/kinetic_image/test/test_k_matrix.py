@@ -274,3 +274,29 @@ def test_unibranched():
 
     print(mat.a_matrix_unibranch(con))
     assert np.allclose(mat.a_matrix_unibranch(con), wanted_a_matrix)
+
+
+def test_combine_matrices():
+
+    matrix1 = {
+        ("s1", "s1"): "1",
+        ("s2", "s2"): "2",
+    }
+    mat1 = KMatrix()
+    mat1.label = "A"
+    mat1.matrix = matrix1
+
+    matrix2 = {
+        ("s2", "s2"): "3",
+        ("s3", "s3"): "4",
+    }
+    mat2 = KMatrix()
+    mat2.label = "B"
+    mat2.matrix = matrix2
+
+    combined = mat1.combine(mat2)
+
+    assert combined.label == "A+B"
+    assert combined.matrix[("s1", "s1")].full_label == "1"
+    assert combined.matrix[("s2", "s2")].full_label == "3"
+    assert combined.matrix[("s3", "s3")].full_label == "4"

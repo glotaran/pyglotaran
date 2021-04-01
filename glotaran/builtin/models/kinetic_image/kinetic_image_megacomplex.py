@@ -3,17 +3,18 @@
 from typing import List
 
 from glotaran.model import model_attribute
-from glotaran.parameter import Parameter
 
 
 @model_attribute(
     properties={
         "k_matrix": {"type": List[str], "default": []},
-        "scale": {"type": Parameter, "allow_none": True},
     }
 )
 class KineticImageMegacomplex:
     """A Megacomplex with one or more K-Matrices."""
+
+    def has_k_matrix(self) -> bool:
+        return len(self.k_matrix) != 0
 
     def full_k_matrix(self, model=None):
         full_k_matrix = None

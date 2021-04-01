@@ -3,7 +3,7 @@ from click import echo
 from click import pause
 from click import prompt
 
-from . import util
+from glotaran.cli.commands import util
 
 
 @click.option(

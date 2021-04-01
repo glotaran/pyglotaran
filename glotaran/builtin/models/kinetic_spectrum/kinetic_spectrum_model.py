@@ -5,24 +5,31 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
+    KineticSpectrumDatasetDescriptor,
+)
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix import (
+    kinetic_spectrum_matrix,
+)
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_result import (
+    finalize_kinetic_spectrum_result,
+)
+from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import SpectralConstraint
+from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import (
+    apply_spectral_constraints,
+)
+from glotaran.builtin.models.kinetic_spectrum.spectral_irf import IrfSpectralMultiGaussian
+from glotaran.builtin.models.kinetic_spectrum.spectral_matrix import spectral_matrix
+from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAreaPenalty
+from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import apply_spectral_penalties
+from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import has_spectral_penalties
+from glotaran.builtin.models.kinetic_spectrum.spectral_relations import SpectralRelation
+from glotaran.builtin.models.kinetic_spectrum.spectral_relations import apply_spectral_relations
+from glotaran.builtin.models.kinetic_spectrum.spectral_relations import retrieve_related_clps
+from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShape
 from glotaran.model import model
-
-from ..kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
-from ..kinetic_image.kinetic_image_model import KineticImageModel
-from .kinetic_spectrum_dataset_descriptor import KineticSpectrumDatasetDescriptor
-from .kinetic_spectrum_matrix import kinetic_spectrum_matrix
-from .kinetic_spectrum_result import finalize_kinetic_spectrum_result
-from .spectral_constraints import SpectralConstraint
-from .spectral_constraints import apply_spectral_constraints
-from .spectral_irf import IrfSpectralMultiGaussian
-from .spectral_matrix import spectral_matrix
-from .spectral_penalties import EqualAreaPenalty
-from .spectral_penalties import apply_spectral_penalties
-from .spectral_penalties import has_spectral_penalties
-from .spectral_relations import SpectralRelation
-from .spectral_relations import apply_spectral_relations
-from .spectral_relations import retrieve_related_clps
-from .spectral_shape import SpectralShape
 
 if TYPE_CHECKING:
     from glotaran.parameter import ParameterGroup

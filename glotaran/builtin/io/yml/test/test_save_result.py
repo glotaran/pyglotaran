@@ -1,44 +1,31 @@
-import os
+from __future__ import annotations
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
-from glotaran.analysis.test.models import ThreeDatasetDecay as suite
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from glotaran.io import save_result
-from glotaran.project import Scheme
+from glotaran.project.test.test_result import dummy_result  # noqa: F401
+
+if TYPE_CHECKING:
+    from py.path import local as TmpDir
+
+    from glotaran.project.result import Result
 
 
-def test_optimization(tmpdir):
-    model = suite.model
+def test_save_result_yml(
+    tmpdir: TmpDir,
+    dummy_result: Result,  # noqa: F811
+):
+    """Check all files exist."""
 
-    model.is_grouped = False
-    model.is_index_dependent = False
+    result_dir = Path(tmpdir / "testresult")
+    save_result(result_path=str(result_dir), format_name="yml", result=dummy_result)
 
-    wanted_parameters = suite.wanted_parameters
-    data = {}
-    for i in range(3):
-        e_axis = getattr(suite, "e_axis" if i == 0 else f"e_axis{i+1}")
-        c_axis = getattr(suite, "c_axis" if i == 0 else f"c_axis{i+1}")
-
-        data[f"dataset{i+1}"] = simulate(
-            suite.sim_model, f"dataset{i+1}", wanted_parameters, {"e": e_axis, "c": c_axis}
-        )
-    scheme = Scheme(
-        model=suite.model,
-        parameters=suite.initial_parameters,
-        data=data,
-        maximum_number_function_evaluations=1,
-    )
-
-    result = optimize(scheme)
-
-    result_dir = os.path.join(tmpdir, "testresult")
-    save_result(result_path=result_dir, format_name="yml", result=result)
-
-    assert os.path.exists(os.path.join(result_dir, "result.md"))
-    assert os.path.exists(os.path.join(result_dir, "scheme.yml"))
-    assert os.path.exists(os.path.join(result_dir, "result.yml"))
-    assert os.path.exists(os.path.join(result_dir, "initial_parameters.csv"))
-    assert os.path.exists(os.path.join(result_dir, "optimized_parameters.csv"))
-    assert os.path.exists(os.path.join(result_dir, "dataset1.nc"))
-    assert os.path.exists(os.path.join(result_dir, "dataset2.nc"))
-    assert os.path.exists(os.path.join(result_dir, "dataset3.nc"))
+    assert (result_dir / "result.md").exists()
+    assert (result_dir / "scheme.yml").exists()
+    assert (result_dir / "result.yml").exists()
+    assert (result_dir / "initial_parameters.csv").exists()
+    assert (result_dir / "optimized_parameters.csv").exists()
+    assert (result_dir / "dataset1.nc").exists()
+    assert (result_dir / "dataset2.nc").exists()
+    assert (result_dir / "dataset3.nc").exists()

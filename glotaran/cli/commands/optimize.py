@@ -4,11 +4,10 @@ import typing
 import click
 
 from glotaran.analysis.optimize import optimize
+from glotaran.cli.commands import util
 from glotaran.io import save_result
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.project.scheme import Scheme
-
-from . import util
 
 
 @click.option(

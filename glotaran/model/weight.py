@@ -3,7 +3,7 @@
 from typing import List
 from typing import Tuple
 
-from .attribute import model_attribute
+from glotaran.model.attribute import model_attribute
 
 
 @model_attribute(

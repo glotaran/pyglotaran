@@ -3,8 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
-
-from .irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 
 
 def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Dataset]):
@@ -12,11 +11,12 @@ def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Da
     for label, dataset in data.items():
 
         dataset_descriptor = problem.filled_dataset_descriptors[label]
-        if not dataset_descriptor.get_k_matrices():
+
+        if not dataset_descriptor.has_k_matrix():
             continue
 
-        retrieve_species_assocatiated_data(problem.model, dataset, dataset_descriptor, "images")
-        retrieve_decay_assocatiated_data(problem.model, dataset, dataset_descriptor, "images")
+        retrieve_species_associated_data(problem.model, dataset, dataset_descriptor, "images")
+        retrieve_decay_associated_data(problem.model, dataset, dataset_descriptor, "images")
 
         if dataset_descriptor.baseline:
             dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
@@ -24,7 +24,7 @@ def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Da
         retrieve_irf(problem.model, dataset, dataset_descriptor, "images")
 
 
-def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name):
+def retrieve_species_associated_data(model, dataset, dataset_descriptor, name):
     compartments = dataset_descriptor.initial_concentration.compartments
 
     compartments = [c for c in compartments if c in dataset_descriptor.compartments()]
@@ -59,7 +59,7 @@ def retrieve_species_assocatiated_data(model, dataset, dataset_descriptor, name)
         )
 
 
-def retrieve_decay_assocatiated_data(model, dataset, dataset_descriptor, name):
+def retrieve_decay_associated_data(model, dataset, dataset_descriptor, name):
     # get_das
     all_das = []
     all_a_matrix = []

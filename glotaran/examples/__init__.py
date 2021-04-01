@@ -1,1 +1,1 @@
-from . import sequential
+from glotaran.examples import sequential
