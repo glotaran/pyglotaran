@@ -320,15 +320,15 @@ def deprecate(
 
     def outer_wrapper(deprecated_object: DecoratedCallable) -> DecoratedCallable:
         """Wrap deprecated_object of all callable kinds."""
-        if type(deprecated_object) is type:
-            setattr(
-                deprecated_object,
-                "__new__",
-                inject_warn_into_call(deprecated_object.__new__),  # type: ignore [arg-type]
-            )
-            return deprecated_object
-        else:
+        if type(deprecated_object) is not type:
             return cast(DecoratedCallable, inject_warn_into_call(deprecated_object))
+
+        setattr(
+            deprecated_object,
+            "__new__",
+            inject_warn_into_call(deprecated_object.__new__),  # type: ignore [arg-type]
+        )
+        return deprecated_object
 
     return outer_wrapper
 

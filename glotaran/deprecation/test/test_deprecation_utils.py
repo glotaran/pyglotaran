@@ -97,12 +97,6 @@ def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
         glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "1.0.0"
     )
 
-    expected = (
-        "Support for 'glotaran.read_model_from_yaml' was supposed "
-        "to be dropped in version: '0.6.0'.\n"
-        "Current version is: '1.0.0'"
-    )
-
     with pytest.raises(OverDueDeprecation) as record:
         warn_deprecated(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
@@ -111,6 +105,12 @@ def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
         )
 
         assert len(record) == 1  # type: ignore [arg-type]
+        expected = (
+            "Support for 'glotaran.read_model_from_yaml' was supposed "
+            "to be dropped in version: '0.6.0'.\n"
+            "Current version is: '1.0.0'"
+        )
+
         assert record[0].message.args[0] == expected  # type: ignore [index]
         assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
 
