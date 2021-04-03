@@ -19,9 +19,9 @@ Report bugs at https://github.com/glotaran/pyglotaran/issues.
 
 If you are reporting a bug, please include:
 
-* Your operating system name and version.
-* Any details about your local setup that might be helpful in troubleshooting.
-* Detailed steps to reproduce the bug.
+*   Your operating system name and version.
+*   Any details about your local setup that might be helpful in troubleshooting.
+*   Detailed steps to reproduce the bug.
 
 Fix Bugs
 ~~~~~~~~
@@ -52,70 +52,70 @@ The best way to send feedback is to file an issue at https://github.com/glotaran
 
 If you are proposing a feature:
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+*   Explain in detail how it would work.
+*   Keep the scope as narrow as possible, to make it easier to implement.
+*   Remember that this is a volunteer-driven project, and that contributions
+    are welcome :)
 
 Get Started!
 ------------
 
 Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 
-1. Fork the ``pyglotaran`` repo on GitHub.
-2. Clone your fork locally::
+1.  Fork the ``pyglotaran`` repo on GitHub.
+2.  Clone your fork locally::
 
-    $ git clone https://github.com/<your_name_here>/pyglotaran.git
+        $ git clone https://github.com/<your_name_here>/pyglotaran.git
 
-3. Install your local copy into a virtualenv. Assuming you have
-   `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_
-   installed, this is how you set up your fork for local development::
+3.  Install your local copy into a virtualenv. Assuming you have
+    `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_
+    installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv pyglotaran
-    (pyglotaran)$ cd pyglotaran
-    (pyglotaran)$ python -m pip install -r requirements_dev.txt
-    (pyglotaran)$ pip install -e . --process-dependency-links
+        $ mkvirtualenv pyglotaran
+        (pyglotaran)$ cd pyglotaran
+        (pyglotaran)$ python -m pip install -r requirements_dev.txt
+        (pyglotaran)$ pip install -e . --process-dependency-links
 
-4. Install the ``pre-commit`` hooks, to automatically format and check your code::
+4.  Install the ``pre-commit`` hooks, to automatically format and check your code::
 
     $ pre-commit install
 
-5. Create a branch for local development::
+5.  Create a branch for local development::
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+        $ git checkout -b name-of-your-bugfix-or-feature
 
-   Now you can make your changes locally.
+    Now you can make your changes locally.
 
-6. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+6.  When you're done making changes, check that your changes pass flake8 and the
+    tests, including testing other Python versions with tox::
 
-    $ pre-commit run -a
-    $ py.test
+        $ pre-commit run -a
+        $ py.test
 
-   Or to run all at once::
+    Or to run all at once::
 
-    $ tox
+        $ tox
 
 
-7. Commit your changes and push your branch to GitHub::
+7.  Commit your changes and push your branch to GitHub::
 
-    $ git add .
-    $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
+        $ git add .
+        $ git commit -m "Your detailed description of your changes."
+        $ git push origin name-of-your-bugfix-or-feature
 
-8. Submit a pull request through the GitHub website.
+8.  Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a `docstring`_.
-3. The pull request should work for Python 3.8 and 3.9
-   Check your Github Actions ``https://github.com/<your_name_here>/pyglotaran/actions``
-   and make sure that the tests pass for all supported Python versions.
+1.  The pull request should include tests.
+2.  If the pull request adds functionality, the docs should be updated. Put
+    your new functionality into a function with a `docstring`_.
+3.  The pull request should work for Python 3.8 and 3.9
+    Check your Github Actions ``https://github.com/<your_name_here>/pyglotaran/actions``
+    and make sure that the tests pass for all supported Python versions.
 
 .. _docstring:
 
@@ -131,25 +131,160 @@ Some extensions for popular editors are:
 * `vim-python-docstring (Vim) <https://github.com/pixelneo/vim-python-docstring>`_
 
 .. note::
-   If your pull request improves the docstring coverage (check ``pre-commit run -a interrogate``),
-   please raise the value of the interrogate setting ``fail-under`` in
-   `pyproject.toml <https://github.com/glotaran/pyglotaran/blob/master/pyproject.toml#L31>`_.
-   That way the next person will improve the docstring coverage as well and
-   everyone can enjoy a better documentation.
+    If your pull request improves the docstring coverage (check ``pre-commit run -a interrogate``),
+    please raise the value of the interrogate setting ``fail-under`` in
+    `pyproject.toml <https://github.com/glotaran/pyglotaran/blob/master/pyproject.toml#L31>`_.
+    That way the next person will improve the docstring coverage as well and
+    everyone can enjoy a better documentation.
 
 .. warning::
 
-   As soon as all our docstrings in proper shape we will enforce that it stays that way.
-   If you want to check if your docstrings are fine you can use `pydocstyle <https://github.com/PyCQA/pydocstyle>`_
-   and `darglint <https://github.com/terrencepreilly/darglint>`_.
+    As soon as all our docstrings are in proper shape we will enforce that it stays that way.
+    If you want to check if your docstrings are fine you can use `pydocstyle <https://github.com/PyCQA/pydocstyle>`_
+    and `darglint <https://github.com/terrencepreilly/darglint>`_.
 
 Tips
 ----
 
 To run a subset of tests::
 
-$py.test tests.test_pyglotaran
+    $ py.test tests.test_pyglotaran
 
+
+Deprecations
+------------
+
+Only maintainers are allowed to decide about deprecations, thus you should first open an
+issue and check back with them if they are ok with deprecation something.
+
+To make deprecations as robust as possible and give users all needed information
+to adjust their code, we provide helper functions inside the module
+:mod:`glotaran.deprecation`.
+
+The functions you most likely want to use are
+
+*   :func:`deprecate` for functions, methods and classes
+*   :func:`warn_deprecated` for call arguments
+*   :func:`deprecate_module_attribute` for module attributes
+*   :func:`deprecate_submodule` for modules
+
+
+Those functions not only make it easier to deprecate something, but they also check that
+that deprecations will be removed when they are due and that at least the imports in the
+warning work. Thus all deprecations need to be tested.
+
+Tests for deprecations should be placed in ``glotaran/deprecation/modules/test`` which also
+provides the test helper functions ``deprecation_warning_on_call_test_helper`` and
+``changed_import_test_warn``.
+Since the tests for deprecation are mainly for maintainability and not to test the
+functionality (those tests should be in the appropriate place)
+``deprecation_warning_on_call_test_helper`` will by default just test that a
+``DeprecationWarning`` was raised and ignore all raise ``Exception`` s.
+An exception to this rule is when adding back removed functionality
+(which shouldn't happen in the first place but might), which should be
+implemented in a file under ``glotaran/deprecation/modules`` and filenames should be like the
+relative import path from glotaran root, but with ``_`` instead of ``.``.
+
+E.g. ``glotaran.analysis.scheme`` would map to ``analysis_scheme.py``
+
+The only exceptions to this rule are the root ``__init__.py`` which
+is named ``glotaran_root.py`` and testing changed imports which should
+be placed in ``test_changed_imports.py``.
+
+
+Deprecating a Function, method or class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deprecating a function, method or class is as easy as adding the ``deprecate``
+decorator to it. Other decorators (e.g. ``@staticmethod`` or ``@classmethod``)
+should be placed both ``deprecate`` in order to work.
+
+.. code-block:: python
+    :caption: glotaran/some_module.py
+
+    from glotaran.deprecation import deprecate
+
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.some_module.function_to_deprecate(filename)",
+        new_qual_name_usage='glotaran.some_module.new_function(filename, format_name="legacy")',
+        to_be_removed_in_version="0.6.0",
+    )
+    def function_to_deprecate(*args, **kwargs):
+        ...
+
+Deprecating a call argument
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When deprecating a call argument you should use ``warn_deprecated`` and set
+the argument to deprecate to a default value (e.g. ``"deprecated"``) to check against.
+Note that for this use case we need to set ``check_qual_names=(False, False)`` which
+will deactivate the import testing.
+This might not always be possible, e.g. if the argument is positional only,
+so it might make more sense to deprecate the whole callable, just discuss what to
+do with our trusted maintainers.
+
+.. code-block:: python
+    :caption: glotaran/some_module.py
+
+    from glotaran.deprecation import deprecate
+
+    def function_to_deprecate(args1, new_arg="new_default_behavior", deprecated_arg="deprecated", **kwargs):
+        if deprecated_arg != "deprecated":
+            warn_deprecated(
+                deprecated_qual_name_usage="deprecated_arg",
+                new_qual_name_usage='new_arg="legacy"',
+                to_be_removed_in_version="0.6.0",
+                check_qual_names=(False, False)
+            )
+            new_arg = "legacy"
+        ...
+
+
+Deprecating a module attribute
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes it might be necessary to remove an attribute (function, class, or constant)
+from a module to prevent circular imports or just to streamline the API.
+In those cases you would use ``deprecate_module_attribute`` inside a module ``__getattr__``
+function definition. This will import the attribute from the new location and return it when
+an import or use is requested.
+
+.. code-block:: python
+    :caption: glotaran/old_package/__init__.py
+
+
+    def __getattr__(attribute_name: str):
+        from glotaran.deprecation import deprecate_module_attribute
+
+        if attribute_name == "deprecated_attribute":
+            return deprecate_module_attribute(
+                deprecated_qual_name="glotaran.old_package.deprecated_attribute",
+                new_qual_name="glotaran.new_package.new_attribute_name",
+                to_be_removed_in_version="0.6.0",
+            )
+
+        raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
+
+
+Deprecating a submodule
+~~~~~~~~~~~~~~~~~~~~~~~
+
+For a better logical structure, it might be needed to move modules to a different
+location in the project. In those cases, you would use ``deprecate_submodule``,
+which imports the module from the new location, add it to ``sys.modules`` and
+as an attribute to the parent package.
+
+
+.. code-block:: python
+    :caption: glotaran/old_package/__init__.py
+
+    from glotaran.deprecation import deprecate_submodule
+
+    module_name = deprecate_submodule(
+        deprecated_module_name="glotaran.old_package.module_name",
+        new_module_name="glotaran.new_package.new_module_name",
+        to_be_removed_in_version="0.6.0",
+    )
 
 Deploying
 ---------
