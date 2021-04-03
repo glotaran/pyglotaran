@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import nan
 
 import numpy as np
 import xarray as xr
@@ -124,9 +123,9 @@ class Result:
             ["Number of variables", self.number_of_variables],
             ["Number of datapoints", self.number_of_data_points],
             ["Degrees of freedom", self.degrees_of_freedom],
-            ["Chi Square", f"{self.chi_square or nan:.2e}"],
-            ["Reduced Chi Square", f"{self.reduced_chi_square or nan:.2e}"],
-            ["Root Mean Square Error (RMSE)", f"{self.root_mean_square_error or nan:.2e}"],
+            ["Chi Square", f"{self.chi_square or np.nan:.2e}"],
+            ["Reduced Chi Square", f"{self.reduced_chi_square or np.nan:.2e}"],
+            ["Root Mean Square Error (RMSE)", f"{self.root_mean_square_error or np.nan:.2e}"],
         ]
         if self.additional_penalty is not None:
             general_table_rows.append(["RMSE additional penalty", self.additional_penalty])
