@@ -9,10 +9,10 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize  # noqa: F401
-from glotaran.analysis.result import Result
-from glotaran.analysis.scheme import Scheme  # noqa: F401
 from glotaran.analysis.simulation import simulate  # noqa: F401
 from glotaran.parameter import ParameterGroup
+from glotaran.project.result import Result
+from glotaran.project.scheme import Scheme  # noqa: F401
 
 from .dataset_descriptor import DatasetDescriptor
 from .decorator import FinalizeFunction
@@ -29,8 +29,8 @@ class Model:
     global_dimension: str
     global_matrix = None
     finalize_data: FinalizeFunction | None = ...
-    grouped: Callable[[type[Model]], bool]
-    index_dependent: Callable[[type[Model]], bool]
+    grouped: Callable[[], bool]
+    index_dependent: Callable[[], bool]
     @staticmethod
     def matrix(
         dataset_descriptor: DatasetDescriptor = ..., axis=..., index=...
@@ -41,7 +41,7 @@ class Model:
     @classmethod
     def from_dict(cls: type[_Cls], model_dict_ref: dict) -> _Cls: ...
     @property
-    def index_dependent_matrix(self): ...
+    def index_dependent_matrix(self) -> bool: ...
     @property
     def model_type(self) -> str: ...
     def simulate(  # noqa: F811
@@ -64,4 +64,6 @@ class Model:
     def problem_list(self, parameters: ParameterGroup = ...) -> list[str]: ...
     def validate(self, parameters: ParameterGroup = ...) -> str: ...
     def valid(self, parameters: ParameterGroup = ...) -> bool: ...
-    def markdown(self, parameters: ParameterGroup = ..., initial: ParameterGroup = ...) -> str: ...
+    def markdown(
+        self, parameters: ParameterGroup = ..., initial_parameters: ParameterGroup = ...
+    ) -> str: ...
