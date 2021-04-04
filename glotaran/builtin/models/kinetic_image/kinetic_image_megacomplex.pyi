@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from glotaran.model import model_attribute  # noqa: F401
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
 class KineticImageMegacomplex:

@@ -4,10 +4,9 @@ from typing import Any
 
 import numpy as np
 
-from glotaran.model import model_attribute  # noqa: F401
-from glotaran.model import model_attribute_typed  # noqa: F401
-
-from .kinetic_spectrum_model import KineticSpectrumModel
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
+from glotaran.model import model_attribute
+from glotaran.model import model_attribute_typed
 
 class OnlyConstraint:
     @property

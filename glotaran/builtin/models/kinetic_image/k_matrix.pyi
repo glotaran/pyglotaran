@@ -4,10 +4,9 @@ from typing import Any
 
 import numpy as np
 
-from glotaran.model import model_attribute  # noqa: F401
+from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
-
-from .initial_concentration import InitialConcentration
 
 class KMatrix:
     @classmethod

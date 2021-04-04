@@ -199,23 +199,17 @@ def model(
             setattr(cls, "has_additional_penalty_function", None)
             setattr(cls, "additional_penalty_function", None)
 
-        if not callable(grouped):
+        setattr(
+            cls,
+            "grouped",
+            grouped if callable(grouped) else lambda model: grouped,
+        )
 
-            def group_fun(model):
-                return grouped
-
-        else:
-            group_fun = grouped
-        setattr(cls, "grouped", group_fun)
-
-        if not callable(index_dependent):
-
-            def index_dep_fun(model):
-                return index_dependent
-
-        else:
-            index_dep_fun = index_dependent
-        setattr(cls, "index_dependent", index_dep_fun)
+        setattr(
+            cls,
+            "index_dependent",
+            index_dependent if callable(index_dependent) else lambda model: index_dependent,
+        )
 
         mat = wrap_func_as_method(cls, name="matrix")(matrix)
         mat = staticmethod(mat)

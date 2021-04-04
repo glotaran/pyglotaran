@@ -4,11 +4,10 @@ from typing import Any
 
 import numpy as np
 
-from glotaran.model import model_attribute  # noqa: F401
+from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
+from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
-
-from .kinetic_spectrum_model import KineticSpectrumModel
 
 class SpectralRelation:
     @property
