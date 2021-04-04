@@ -10,13 +10,12 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize  # noqa: F401
 from glotaran.analysis.simulation import simulate  # noqa: F401
+from glotaran.model.dataset_descriptor import DatasetDescriptor
+from glotaran.model.decorator import FinalizeFunction
+from glotaran.model.weight import Weight
 from glotaran.parameter import ParameterGroup
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme  # noqa: F401
-
-from .dataset_descriptor import DatasetDescriptor
-from .decorator import FinalizeFunction
-from .weight import Weight
 
 _Cls = TypeVar("_Cls")
 

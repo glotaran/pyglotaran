@@ -20,6 +20,13 @@ repos:
         types_or: [python, pyi]
         args: [--py38-plus]
 
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.0
+    hooks:
+      - id: absolufy-imports
+        types: [file]
+        types_or: [python, pyi]
+
   - repo: https://github.com/python/black
     rev: 20.8b1
     hooks:
@@ -27,11 +34,6 @@ repos:
         types: [file]
         types_or: [python, pyi]
         language_version: python3
-
-  - repo: https://github.com/MarcoGorelli/absolufy-imports
-    rev: v0.3.0
-    hooks:
-      - id: absolufy-imports
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.8.0
@@ -101,7 +103,10 @@ repos:
     rev: v1.2.2
     hooks:
       - id: yesqa
+        types: [file]
+        types_or: [python, pyi]
         additional_dependencies: [flake8-docstrings]
+
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.9.0
     hooks:
@@ -115,10 +120,12 @@ repos:
     hooks:
       - id: rstcheck
         additional_dependencies: [rstcheck, sphinx]
+
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.8.0
     hooks:
       - id: rst-backticks
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.0.0
     hooks:

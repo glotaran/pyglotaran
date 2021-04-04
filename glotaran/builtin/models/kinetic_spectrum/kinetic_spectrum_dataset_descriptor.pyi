@@ -3,7 +3,7 @@ from __future__ import annotations
 from glotaran.builtin.models.kinetic_image.kinetic_image_dataset_descriptor import (
     KineticImageDatasetDescriptor,
 )
-from glotaran.model import model_attribute  # noqa: F401
+from glotaran.model import model_attribute
 
 class KineticSpectrumDatasetDescriptor(KineticImageDatasetDescriptor):
     @property
