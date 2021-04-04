@@ -115,6 +115,22 @@ def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
         assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
 
 
+@pytest.mark.filterwarnings("ignore:Usage")
+@pytest.mark.xfail(strict=True, reason="Dev version aren't checked")
+def test_warn_deprecated_no_overdue_deprecation_on_dev(monkeypatch: MonkeyPatch):
+    """Current version is equal or bigger than drop_version but it's a dev version."""
+    monkeypatch.setattr(
+        glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "0.6.0-dev"
+    )
+
+    with pytest.raises(OverDueDeprecation):
+        warn_deprecated(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            new_qual_name_usage=NEW_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+
+
 @pytest.mark.parametrize(
     "deprecated_qual_name_usage,new_qual_name_usage",
     (

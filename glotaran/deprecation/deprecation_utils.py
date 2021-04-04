@@ -198,7 +198,10 @@ def warn_deprecated(
             return load_model(model_path)
 
     """
-    if parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version):
+    if (
+        parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
+        and "dev" not in glotaran_version()
+    ):
         raise OverDueDeprecation(
             f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
             f"supposed to be dropped in version: {to_be_removed_in_version!r}\n"
