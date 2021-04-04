@@ -233,7 +233,6 @@ def test_deprecated_decorator_function(recwarn: WarningsRecorder):
     )
     def dummy():
         """Dummy docstring for testing."""
-        pass
 
     dummy()
 

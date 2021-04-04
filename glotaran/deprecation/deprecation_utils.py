@@ -34,8 +34,6 @@ class OverDueDeprecation(Exception):
     deprecate_submodule
     """
 
-    pass
-
 
 def glotaran_version() -> str:
     """Version of the distribution.
