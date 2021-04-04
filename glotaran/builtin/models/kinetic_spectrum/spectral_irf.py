@@ -46,8 +46,10 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
 
     """
 
-    def parameter(self, index):
-        centers, widths, scale, backsweep, backsweep_period = super().parameter(index)
+    def parameter(self, index, compartments):
+        centers, widths, scale, backsweep, backsweep_period = super().parameter(
+            index, compartments
+        )
 
         if self.dispersion_center is not None:
             dist = (
@@ -73,7 +75,7 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
     def calculate_dispersion(self, axis):
         dispersion = []
         for index in axis:
-            center, _, _, _, _ = self.parameter(index)
+            center, _, _, _, _ = self.parameter(index, [])
             dispersion.append(center)
         return np.asarray(dispersion).T
 
@@ -104,7 +106,7 @@ class IrfGaussianCoherentArtifact(IrfSpectralGaussian):
         if not 1 <= self.coherent_artifact_order <= 3:
             raise Exception(self, "Coherent artifact order must be between in [1,3]")
 
-        center, width, _, _, _ = self.parameter(None)
+        center, width, _, _, _ = self.parameter(None, [])
 
         center = center[0]
         width = (

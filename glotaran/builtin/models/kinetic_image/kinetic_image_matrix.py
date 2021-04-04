@@ -83,11 +83,7 @@ def _calculate_for_k_matrix(
 ):
 
     # we might have more compartments in the model then in the k matrix
-    compartments = [
-        comp
-        for comp in initial_concentration.compartments
-        if comp in k_matrix.involved_compartments()
-    ]
+    compartments = k_matrix.involved_compartments(initial_concentration)
 
     # the rates are the eigenvalues of the k matrix
     rates = k_matrix.rates(initial_concentration)
@@ -96,7 +92,7 @@ def _calculate_for_k_matrix(
     size = (axis.size, rates.size)
     matrix = np.zeros(size, dtype=np.float64)
 
-    matrix_implementation(matrix, rates, axis, index, dataset_descriptor, irf)
+    matrix_implementation(matrix, compartments, rates, axis, index, dataset_descriptor, irf)
 
     if not np.all(np.isfinite(matrix)):
         raise ValueError(
@@ -112,13 +108,12 @@ def _calculate_for_k_matrix(
 
 
 def kinetic_image_matrix_implementation(
-    matrix, rates, axis, index, dataset_descriptor, measured_irf
+    matrix, compartments, rates, axis, index, dataset_descriptor, measured_irf
 ):
 
     if isinstance(dataset_descriptor.irf, IrfMultiGaussian):
-
         center, width, irf_scale, backsweep, backsweep_period = dataset_descriptor.irf.parameter(
-            index
+            index, compartments
         )
 
         for i in range(len(center)):
@@ -166,7 +161,7 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += (
                     scale * 0.5 * (1 + erf(thresh)) * np.exp(alpha * (alpha - 2 * beta))
                 )
-            if backsweep:
+            if backsweep[n_r]:  # and r_n>1E-8
                 x1 = np.exp(-r_n * (t_n - center + backsweep_period))
                 x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
                 x3 = np.exp(-r_n * backsweep_period)

@@ -22,6 +22,7 @@ class IrfMeasured:
         "normalize": {"type": bool, "default": True},
         "backsweep": {"type": bool, "default": False},
         "backsweep_period": {"type": Parameter, "allow_none": True},
+        "backsweep_exclude": {"type": List[str], "default": []},
     },
     has_type=True,
 )
@@ -53,7 +54,7 @@ class IrfMultiGaussian:
 
     """
 
-    def parameter(self, index):
+    def parameter(self, index, compartments):
 
         centers = self.center if isinstance(self.center, list) else [self.center]
         centers = np.asarray([c.value for c in centers])
@@ -80,14 +81,16 @@ class IrfMultiGaussian:
         scale = scale if isinstance(scale, list) else [scale]
         scale = np.asarray(scale)
 
-        backsweep = self.backsweep
+        backsweep = np.array(
+            [self.backsweep and c not in self.backsweep_exclude for c in compartments], dtype=bool
+        )
 
         backsweep_period = self.backsweep_period.value if self.backsweep else 0
 
         return centers, widths, scale, backsweep, backsweep_period
 
     def calculate(self, index, axis):
-        center, width, scale, _, _ = self.parameter(index)
+        center, width, scale, _, _ = self.parameter(index, [])
         irf = scale[0] * np.exp(-1 * (axis - center[0]) ** 2 / (2 * width[0] ** 2))
         if len(center) > 1:
             for i in range(1, len(center)):

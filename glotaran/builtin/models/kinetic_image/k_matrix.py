@@ -35,14 +35,14 @@ class KMatrix:
         """
         return cls(label, OrderedDict())
 
-    def involved_compartments(self) -> list[str]:
+    def involved_compartments(self, initial_concentration=None) -> list[str]:
         """ A list of all compartments in the Matrix. """
-        compartments = []
+        compartments = set()
         for index in self.matrix:
-            compartments.append(index[0])
-            compartments.append(index[1])
-
-        compartments = list(set(compartments))
+            for c in index:
+                compartments.add(c)
+        if initial_concentration is not None:
+            compartments = [c for c in initial_concentration.compartments if c in compartments]
         return compartments
 
     def combine(self, k_matrix: KMatrix) -> KMatrix:
