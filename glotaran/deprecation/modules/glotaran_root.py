@@ -1,4 +1,4 @@
-"""Deprecated attributes from ``glotaran.__init__`` which ere removed."""
+"""Deprecated attributes from ``glotaran.__init__`` which are removed."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

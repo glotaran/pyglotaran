@@ -1,4 +1,4 @@
-"""Package containing deprated code implementation which were removed.
+"""Package containing deprecated implementations which were removed.
 
 To keep things organized the filenames should be like the
 relative import path from glotaran root, but with ``_`` instead of ``.``.

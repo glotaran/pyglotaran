@@ -155,7 +155,7 @@ Deprecations
 ------------
 
 Only maintainers are allowed to decide about deprecations, thus you should first open an
-issue and check back with them if they are ok with deprecation something.
+issue and check back with them if they are ok with deprecating something.
 
 To make deprecations as robust as possible and give users all needed information
 to adjust their code, we provide helper functions inside the module

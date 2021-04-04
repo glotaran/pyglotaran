@@ -38,7 +38,7 @@ class OverDueDeprecation(Exception):
 
 
 def glotaran_version() -> str:
-    """Pyglotaran version of the distribution.
+    """Version of the distribution.
 
     This is basically the same as ``glotaran.__version__`` but independent from glotaran.
     This way all of the deprecation functionality can be used even in
@@ -48,7 +48,7 @@ def glotaran_version() -> str:
     Returns
     -------
     str
-        Versionstring of glotaran.
+        The version string.
     """
     return distribution("pyglotaran").version
 
