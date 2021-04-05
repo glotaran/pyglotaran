@@ -155,6 +155,7 @@ def calculate_kinetic_matrix_gaussian_irf(
     """Calculates a kinetic matrix with a gaussian irf."""
     for n_r in nb.prange(rates.size):
         r_n = -rates[n_r]
+        backsweep_valid = abs(r_n) * backsweep_period > 0.001
         alpha = (r_n * width) / sqrt2
         for n_t in nb.prange(times.size):
             t_n = times[n_t]
@@ -166,7 +167,7 @@ def calculate_kinetic_matrix_gaussian_irf(
                 matrix[n_t, n_r] += (
                     scale * 0.5 * (1 + erf(thresh)) * np.exp(alpha * (alpha - 2 * beta))
                 )
-            if backsweep:
+            if backsweep and backsweep_valid:
                 x1 = np.exp(-r_n * (t_n - center + backsweep_period))
                 x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
                 x3 = np.exp(-r_n * backsweep_period)
