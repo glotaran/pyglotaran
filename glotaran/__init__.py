@@ -8,7 +8,7 @@ from glotaran.plugin_system.base_registry import load_plugins
 
 load_plugins()
 
-__version__ = "0.3.3"
+__version__ = "0.4.0-dev"
 
 
 def __getattr__(attribute_name: str):
