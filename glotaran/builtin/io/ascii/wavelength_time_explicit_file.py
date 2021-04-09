@@ -75,7 +75,7 @@ class ExplicitFile:
         # TODO: write a more elegant method
 
         if os.path.isfile(self._file) and not overwrite:
-            print("File {} already exists".format(os.path.isfile(self._file)))
+            print(f"File {os.path.isfile(self._file)} already exists")
             raise Exception("File already exist.")
         comment = self._comment + " " + comment
 
