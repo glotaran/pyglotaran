@@ -487,10 +487,12 @@ def deprecate_submodule(
 
     def warn_getattr(attribute_name: str):
 
-        if attribute_name in dir(new_module):
+        if attribute_name == "__file__":
+            return module_attribute(new_module, attribute_name)
 
+        elif attribute_name in dir(new_module):
             return deprecate_module_attribute(
-                deprecated_qual_name=deprecated_module_name,
+                deprecated_qual_name=f"{deprecated_module_name}.{attribute_name}",
                 new_qual_name=f"{new_module_name}.{attribute_name}",
                 to_be_removed_in_version=to_be_removed_in_version,
             )
