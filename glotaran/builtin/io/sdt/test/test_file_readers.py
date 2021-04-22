@@ -11,8 +11,10 @@ from glotaran.builtin.io.sdt.test import TEMPORAL_DATA
     "test_file_path, result_file_path, index",
     [
         (TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], [1]),
+        (TEMPORAL_DATA["sdt"], TEMPORAL_DATA["csv"], None),
     ],
 )
+@pytest.mark.filterwarnings("ignore:There was no `index`:UserWarning")
 def test_read_sdt(test_file_path, result_file_path, index):
 
     sdt_reader = SdtDataIo("sdt")
