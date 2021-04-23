@@ -73,15 +73,16 @@ class SdtDataIo(DataIoInterface):
                         f"By default only the first Dataset will be read. "
                         f"If you only need the first Dataset and want get rid of "
                         f"this warning you can set dataset_index=0."
-                    )
+                    ),
+                    stacklevel=4,
                 )
             dataset_index = 0
-        times = sdt_parser.times[dataset_index]
-        data = sdt_parser.data[dataset_index]
+        times: np.ndarray = sdt_parser.times[dataset_index]
+        raw_data: np.ndarray = sdt_parser.data[dataset_index]
 
-        if index and len(index) is not data.shape[0]:
+        if index and len(index) is not raw_data.shape[0]:
             raise IndexError(
-                f"The Dataset contains {data.shape[0]} measurements, but the "
+                f"The Dataset contains {raw_data.shape[0]} measurements, but the "
                 f"indices supplied are {len(index)}."
             )
         elif not index and not flim:
@@ -90,16 +91,17 @@ class SdtDataIo(DataIoInterface):
                     f"There was no `index` provided."
                     f"That for the indices will be a entry count(integers)."
                     f"To prevent this warning from being shown, provide "
-                    f"a list of indices, with len(index)={data.shape[0]}"
-                )
+                    f"a list of indices, with len(index)={raw_data.shape[0]}"
+                ),
+                stacklevel=4,
             )
 
         if flim:
 
             if orig_time_axis_index != 2:
-                np.swapaxes(data, 2, orig_time_axis_index)
+                np.swapaxes(raw_data, 2, orig_time_axis_index)
 
-            full_data = xr.DataArray(data, coords={"time": times}, dims=["x", "y", "time"])
+            full_data = xr.DataArray(raw_data, coords={"time": times}, dims=["x", "y", "time"])
             data = full_data.stack(pixel=("x", "y")).to_dataset(name="data")
             data["full_data"] = full_data.rename({"x": "pixel_x", "y": "pixel_y"})
             data["data_intensity_map"] = (
@@ -107,9 +109,9 @@ class SdtDataIo(DataIoInterface):
             )
         else:
             if swap_axis:
-                data = data.T
+                raw_data = raw_data.T
             if not index:
-                index = np.array(range(data[0]))
-            data = xr.DataArray(data.T, coords=[("time", times), ("spectral", index)])
+                index = np.arange(raw_data.shape[0])
+            data = xr.DataArray(raw_data.T, coords=[("time", times), ("spectral", index)])
             data = prepare_time_trace_dataset(data)
         return data
