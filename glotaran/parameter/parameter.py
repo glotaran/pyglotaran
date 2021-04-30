@@ -325,7 +325,7 @@ class Parameter:
         return self._value
 
     def __repr__(self):
-        """String representation """
+        """String representation"""
         return (
             f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
             f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"

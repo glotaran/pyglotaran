@@ -61,7 +61,7 @@ class LabelAndMatrix(NamedTuple):
 
 
 class Problem:
-    """A Problem class """
+    """A Problem class"""
 
     def __init__(self, scheme: Scheme):
         """Initializes the Problem class from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
