@@ -13,7 +13,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.14.0
+    rev: v2.15.0
     hooks:
       - id: pyupgrade
         types: [file]
@@ -28,7 +28,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/python/black
-    rev: 21.5b0
+    rev: 21.5b1
     hooks:
       - id: black
         types: [file]
@@ -108,7 +108,7 @@ repos:
         additional_dependencies: [flake8-docstrings]
 
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.1
+    rev: 3.9.2
     hooks:
       - id: flake8
         types: [file]
