@@ -460,7 +460,7 @@ def test_parameter_to_csv(tmpdir):
         format_name="yml_str",
     )
 
-    save_parameters(csv_path, params, "csv")
+    save_parameters(params, csv_path, "csv")
 
     with open(csv_path) as f:
         print(f.read())

@@ -46,7 +46,7 @@ class MockProjectIo(ProjectIoInterface):
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_model(  # type:ignore[override]
-        self, file_name: str, model: Model, *, result_container: dict[str, Any], **kwargs: Any
+        self, model: Model, file_name: str, *, result_container: dict[str, Any], **kwargs: Any
     ):
         result_container.update(
             **{
@@ -61,8 +61,8 @@ class MockProjectIo(ProjectIoInterface):
 
     def save_parameters(  # type:ignore[override]
         self,
-        file_name: str,
         parameters: ParameterGroup,
+        file_name: str,
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -79,7 +79,7 @@ class MockProjectIo(ProjectIoInterface):
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_scheme(  # type:ignore[override]
-        self, file_name: str, scheme: Scheme, *, result_container: dict[str, Any], **kwargs: Any
+        self, scheme: Scheme, file_name: str, *, result_container: dict[str, Any], **kwargs: Any
     ):
         result_container.update(
             **{
@@ -94,8 +94,8 @@ class MockProjectIo(ProjectIoInterface):
 
     def save_result(  # type:ignore[override]
         self,
-        result_path: str,
         result: Result,
+        result_path: str,
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -209,8 +209,8 @@ def test_write_functions(tmp_path: Path, save_function: Callable[..., Any]):
     result: dict[str, Any] = {}
 
     save_function(
-        str(file_path),
         "data_object",  # type:ignore
+        str(file_path),
         "mock",
         result_container=result,
         dummy_arg="baz",
@@ -260,7 +260,7 @@ def test_save_functions_value_error(
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        save_function(str(file_path), "bar")
+        save_function("bar", str(file_path))
 
 
 @pytest.mark.parametrize(
@@ -275,7 +275,7 @@ def test_protect_from_overwrite_save_functions(tmp_path: Path, function: Callabl
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        function(str(file_path), "foo", "bar")
+        function("foo", str(file_path), "bar")
 
 
 @pytest.mark.usefixtures("mocked_registry")

@@ -179,8 +179,8 @@ def load_model(file_name: str, format_name: str = None, **kwargs: Any) -> Model:
 
 @not_implemented_to_value_error
 def save_model(
-    file_name: str,
     model: Model,
+    file_name: str,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -190,10 +190,10 @@ def save_model(
 
     Parameters
     ----------
-    file_name : str
-        File to write the model specs to.
     model: Model
         :class:`Model` instance to save to specs file.
+    file_name : str
+        File to write the model specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
@@ -232,8 +232,8 @@ def load_parameters(file_name: str, format_name: str = None, **kwargs) -> Parame
 
 @not_implemented_to_value_error
 def save_parameters(
-    file_name: str,
     parameters: ParameterGroup,
+    file_name: str,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -243,10 +243,10 @@ def save_parameters(
 
     Parameters
     ----------
-    file_name : str
-        File to write the parameter specs to.
     parameters : ParameterGroup
         :class:`ParameterGroup` instance to save to specs file.
+    file_name : str
+        File to write the parameter specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
@@ -289,8 +289,8 @@ def load_scheme(file_name: str, format_name: str = None, **kwargs: Any) -> Schem
 
 @not_implemented_to_value_error
 def save_scheme(
-    file_name: str,
     scheme: Scheme,
+    file_name: str,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -300,10 +300,10 @@ def save_scheme(
 
     Parameters
     ----------
-    file_name : str
-        File to write the scheme specs to.
     scheme : Scheme
         :class:`Scheme` instance to save to specs file.
+    file_name : str
+        File to write the scheme specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
@@ -343,8 +343,8 @@ def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Res
 
 @not_implemented_to_value_error
 def save_result(
-    result_path: str,
     result: Result,
+    result_path: str,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -354,10 +354,10 @@ def save_result(
 
     Parameters
     ----------
-    result_path : str
-        Path to write the result data to.
     result : Result
         :class:`Result` instance to write.
+    result_path : str
+        Path to write the result data to.
     format_name : str
         Format the result should be saved in, if not provided and it is a file
         it will be inferred from the file extension.
