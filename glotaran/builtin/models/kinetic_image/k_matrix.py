@@ -19,7 +19,7 @@ from glotaran.parameter import Parameter
     },
 )
 class KMatrix:
-    """ A K-Matrix represents a first order differental system."""
+    """A K-Matrix represents a first order differental system."""
 
     @classmethod
     def empty(cls, label: str, compartments: list[str]) -> KMatrix:
@@ -36,7 +36,7 @@ class KMatrix:
         return cls(label, OrderedDict())
 
     def involved_compartments(self) -> list[str]:
-        """ A list of all compartments in the Matrix. """
+        """A list of all compartments in the Matrix."""
         compartments = []
         for index in self.matrix:
             compartments.append(index[0])

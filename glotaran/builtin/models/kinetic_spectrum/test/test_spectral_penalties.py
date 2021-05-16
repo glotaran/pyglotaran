@@ -27,7 +27,7 @@ OptimizationSpec = namedtuple("OptimizationSpec", "nnls max_nfev")
 
 
 def plot_overview(res, title=None):
-    """ very simple plot helper function derived from pyglotaran_extras """
+    """very simple plot helper function derived from pyglotaran_extras"""
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(2, 2, figsize=(9, 8), constrained_layout=True)
