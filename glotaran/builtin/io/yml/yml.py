@@ -177,7 +177,7 @@ class YmlProjectIo(ProjectIoInterface):
         dataset_format = options.data_format
         for label, dataset in result.data.items():
             dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            save_dataset(dataset_path, dataset, dataset_format, saving_options=options)
+            save_dataset(dataset, dataset_path, dataset_format, saving_options=options)
             result.data[label] = dataset_path
             result_scheme.data[label] = dataset_path
 

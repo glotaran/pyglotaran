@@ -159,8 +159,8 @@ def load_dataset(
 
 @not_implemented_to_value_error
 def save_dataset(
-    file_name: str,
     dataset: xr.Dataset | xr.DataArray,
+    file_name: str,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -170,12 +170,12 @@ def save_dataset(
 
     Parameters
     ----------
+    dataset: xr.Dataset|xr.DataArray
+        Data to be written to file.
     file_name : str
         File to write the data to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
-    dataset: xr.Dataset|xr.DataArray
-        Data to be written to file.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs: Any

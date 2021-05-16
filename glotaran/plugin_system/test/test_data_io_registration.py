@@ -160,7 +160,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        save_dataset(str(file_path), "")  # type:ignore
+        save_dataset("", str(file_path))  # type:ignore
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -170,8 +170,8 @@ def test_write_dataset(tmp_path: Path):
 
     result: dict[str, Any] = {}
     save_dataset(
-        str(file_path),
         "no_dataset",  # type:ignore
+        str(file_path),
         result_container=result,
         dummy_arg="baz",
     )
