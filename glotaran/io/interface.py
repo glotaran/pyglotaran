@@ -63,17 +63,17 @@ class DataIoInterface:
 
     def save_dataset(
         self,
-        file_name: str,
         dataset: xr.Dataset | xr.DataArray,
+        file_name: str,
     ):
         """Save data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        file_name : str
-            File to write the data to.
         dataset : xr.Dataset
             Dataset to be saved to file.
+        file_name : str
+            File to write the data to.
 
 
         .. # noqa: DAR101
