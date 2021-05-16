@@ -164,14 +164,14 @@ class YmlProjectIo(ProjectIoInterface):
         initial_parameters_path = os.path.join(
             result_path, f"initial_parameters.{parameters_format}"
         )
-        save_parameters(initial_parameters_path, result.initial_parameters, parameters_format)
+        save_parameters(result.initial_parameters, initial_parameters_path, parameters_format)
         result.initial_parameters = initial_parameters_path
         result_scheme.parameters = initial_parameters_path
 
         optimized_parameters_path = os.path.join(
             result_path, f"optimized_parameters.{parameters_format}"
         )
-        save_parameters(optimized_parameters_path, result.optimized_parameters, parameters_format)
+        save_parameters(result.optimized_parameters, optimized_parameters_path, parameters_format)
         result.optimized_parameters = optimized_parameters_path
 
         dataset_format = options.data_format

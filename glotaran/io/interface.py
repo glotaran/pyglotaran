@@ -114,15 +114,15 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read models with format {self.format!r}")
 
-    def save_model(self, file_name: str, model: Model):
+    def save_model(self, model: Model, file_name: str):
         """Save a Model instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        file_name : str
-            File to write the model specs to.
         model: Model
             Model instance to save to specs file.
+        file_name : str
+            File to write the model specs to.
 
 
         .. # noqa: DAR101
@@ -149,15 +149,15 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
 
-    def save_parameters(self, file_name: str, parameters: ParameterGroup):
+    def save_parameters(self, parameters: ParameterGroup, file_name: str):
         """Save a ParameterGroup instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        file_name : str
-            File to write the parameter specs to.
         parameters : ParameterGroup
             ParameterGroup instance to save to specs file.
+        file_name : str
+            File to write the parameter specs to.
 
 
         .. # noqa: DAR101
@@ -183,15 +183,15 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read scheme with format {self.format!r}")
 
-    def save_scheme(self, file_name: str, scheme: Scheme):
+    def save_scheme(self, scheme: Scheme, file_name: str):
         """Save a Scheme instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        file_name : str
-            File to write the scheme specs to.
         scheme : Scheme
             Scheme instance to save to specs file.
+        file_name : str
+            File to write the scheme specs to.
 
 
         .. # noqa: DAR101
@@ -218,15 +218,15 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result_path: str, result: Result):
+    def save_result(self, result: Result, result_path: str):
         """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        result_path : str
-            Path to write the result data to.
         result : Result
             Result instance to save to specs file.
+        result_path : str
+            Path to write the result data to.
 
 
         .. # noqa: DAR101
