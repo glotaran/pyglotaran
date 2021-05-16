@@ -149,14 +149,24 @@ def test_add_plugin_to_register(
 
 
 def test_add_plugin_to_register_existing_plugin():
-    """Try plugin_overwrite"""
+    """Warn if different plugin overwrites existing."""
+
+    plugin_registy = copy(mock_registry_data_io)
+    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+sdt_gta") as record:
+        add_plugin_to_registry("sdt", YmlProjectIo("sdt"), plugin_registy)  # type:ignore
+        assert len(record) == 1
+    assert "sdt_gta" in plugin_registy
+    assert plugin_registy["sdt_gta"].format == "sdt"
+
+
+@pytest.mark.xfail(strict=True, reason="Should not warn")
+def test_add_plugin_to_register_existing_plugin_self():
+    """Don't warn if plugin overwrites itself."""
 
     plugin_registy = copy(mock_registry_data_io)
     with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+sdt_gta") as record:
         add_plugin_to_registry("sdt", SdtDataIo("sdt"), plugin_registy)
-        assert len(record) == 1
-    assert "sdt_gta" in plugin_registy
-    assert plugin_registy["sdt_gta"].format == "sdt"
+        assert len(record) == 0
 
 
 @pytest.mark.parametrize(
