@@ -98,7 +98,7 @@ class PluginOverwriteWarning(UserWarning):
         old_plugin_name = full_plugin_name(old_plugin)
         new_plugin_name = full_plugin_name(new_plugin)
         message = (
-            f"The plugin {new_plugin_name!r} tried to overwrite the plugin {old_plugin_name!r}, "
+            f"The plugin '{new_plugin_name}' tried to overwrite the plugin '{old_plugin_name}', "
             f"with the access_name {old_key!r}. Use {new_key!r} to access {new_plugin_name!r}."
         )
         super().__init__(message, *args)
@@ -192,7 +192,9 @@ def add_plugin_to_registry(
     --------
     add_instantiated_plugin_to_register
     """
-    if plugin_register_key in plugin_registry:
+    if plugin_register_key in plugin_registry and full_plugin_name(
+        plugin_registry[plugin_register_key]
+    ) != full_plugin_name(plugin):
         old_key = plugin_register_key
         plugin_register_key = extend_conflicting_plugin_key(
             plugin_register_key, plugin, plugin_registry
