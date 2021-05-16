@@ -1,0 +1,37 @@
+name: 'Codeowners validation'
+
+on:
+  push:
+    # paths:
+    # - '.github/CODEOWNERS'
+    # - '.github/workflows/codeowners-validator.yml'
+    # branches:
+    # - '**'
+    # tags-ignore:
+    # - '**'
+  schedule:
+  - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  codeowners-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Basic CODEOWNERS validation
+      if: ${{ github.repository_owner != 'glotaran' }}
+      uses: mszostok/codeowners-validator@v0.6.0
+      with:
+        checks: 'syntax,duppatterns,files'
+        github_access_token: '${{ secrets.GITHUB_TOKEN }}'
+
+    - name: Full CODEOWNERS validation
+      if: ${{ github.repository_owner == 'glotaran' }}
+      uses: mszostok/codeowners-validator@v0.6.0
+      with:
+        github_access_token: '${{ secrets.OWNERS_VALIDATOR_GITHUB_SECRET }}'
