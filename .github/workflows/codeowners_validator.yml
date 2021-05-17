@@ -2,18 +2,28 @@ name: "Codeowners Validator"
 
 on:
   push:
-  schedule:
-    # Runs at 08:00 UTC every day
-    - cron:  '0 8 * * *'
+    branches:
+      - "main"
+  pull_request_target:
   workflow_dispatch:
 
 jobs:
-  sanity:
+  validate:
+    name: "Validate"
     if: github.repository_owner == 'glotaran'
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository, which is validated in the next step
-      - uses: actions/checkout@v2
+      - name: show event name
+        run: echo "${{ github.event_name }}"
+      - name: Checkout pull request
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Checkout repo
+        if: github.event_name != 'pull_request_target'
+        uses: actions/checkout@v2
       - name: GitHub CODEOWNERS Validator
         uses: mszostok/codeowners-validator@v0.6.0
         with:
