@@ -172,12 +172,68 @@ def extend_conflicting_plugin_key(
         )
 
 
+def set_plugin(
+    plugin_register_key: str,
+    full_plugin_name: str,
+    plugin_registry: MutableMapping[str, _PluginType],
+    plugin_register_key_name: str = "format_name",
+) -> None:
+    """Set a plugins short name to a specific plugin referred by its full name.
+
+    This can be used to ensure that a specific plugin is used in case there
+    are conflicting plugins installed.
+
+    Parameters
+    ----------
+    plugin_register_key : str
+        Name of the plugin under which it is registered.
+    full_plugin_name : str
+        Full name (import path) of the registered plugin.
+    plugin_registry : MutableMapping[str, _PluginType]
+        Registry the plugin should be set in to.
+    plugin_register_key_name: str
+        Name of the arg passed ``plugin_register_key`` in the function that implements
+        ``set_plugin``.
+
+    Raises
+    ------
+    ValueError
+        If ``plugin_register_key`` has the character '.' in it.
+    ValueError
+        If there isn't a registered plugin with the key ``full_plugin_name``.
+
+    See Also
+    --------
+    add_plugin_to_registry
+    full_plugin_name
+    """
+    if "." in plugin_register_key:
+        raise ValueError(
+            f"The value of {plugin_register_key_name!r} isn't "
+            "allowed to contain the character '.' ."
+        )
+    if "." not in full_plugin_name or not is_registered_plugin(
+        plugin_register_key=full_plugin_name, plugin_registry=plugin_registry
+    ):
+        known_plugins = list(
+            filter(lambda plugin_name: "." in plugin_name, plugin_registry.keys())
+        )
+        raise ValueError(
+            f"There isn't a plugin registered under the full name {full_plugin_name!r}.\n"
+            f"Maybe you need to install a plugin? Known plugins are:\n {known_plugins}"
+        )
+    plugin_registry[plugin_register_key] = plugin_registry[full_plugin_name]
+
+
 def add_plugin_to_registry(
     plugin_register_key: str,
     plugin: _PluginType,
     plugin_registry: MutableMapping[str, _PluginType],
 ) -> None:
     """Add a plugin with name ``plugin_register_key`` to the given registry.
+
+    In addition it also adds the plugin with it full import path name as key,
+    which allows for a better reproducibility in case there are conflicting plugins.
 
     Parameters
     ----------
@@ -188,25 +244,36 @@ def add_plugin_to_registry(
     plugin_registry: MutableMapping[str, _PluginType]
         Registry the plugin should be added to.
 
+    Raises
+    ------
+    ValueError
+        If ``plugin_register_key`` has the character '.' in it.
+
     See Also
     --------
     add_instantiated_plugin_to_register
+    full_plugin_name
     """
-    if plugin_register_key in plugin_registry and full_plugin_name(
-        plugin_registry[plugin_register_key]
-    ) != full_plugin_name(plugin):
+    if "." in plugin_register_key:
+        raise ValueError(
+            "The character '.' isn't allowed in the name of a plugin, "
+            f"you provided the name {plugin_register_key!r}."
+        )
+    if plugin_register_key in plugin_registry:
         old_key = plugin_register_key
         plugin_register_key = extend_conflicting_plugin_key(
             plugin_register_key, plugin, plugin_registry
         )
-        warn(
-            PluginOverwriteWarning(
-                old_key=old_key,
-                new_key=plugin_register_key,
-                old_plugin=plugin_registry[old_key],
-                new_plugin=plugin,
+        if full_plugin_name(plugin_registry[old_key]) != full_plugin_name(plugin):
+            warn(
+                PluginOverwriteWarning(
+                    old_key=old_key,
+                    new_key=plugin_register_key,
+                    old_plugin=plugin_registry[old_key],
+                    new_plugin=plugin,
+                )
             )
-        )
+    plugin_registry[full_plugin_name(plugin)] = plugin
     plugin_registry[plugin_register_key] = plugin
 
 
@@ -243,20 +310,29 @@ def add_instantiated_plugin_to_registry(
         )
 
 
-def registered_plugins(plugin_registry: MutableMapping[str, _PluginType]) -> list[str]:
+def registered_plugins(
+    plugin_registry: MutableMapping[str, _PluginType], full_names: bool = False
+) -> list[str]:
     """Names of the plugins in the given registry.
 
     Parameters
     ----------
     plugin_registry : MutableMapping[str, _PluginType]
         Registry to search in.
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
     list[str]
         List of plugin names in plugin_registry.
     """
-    return list(plugin_registry.keys())
+    if full_names:
+        return sorted(list(plugin_registry.keys()))
+
+    else:
+        return sorted(list(filter(lambda key: "." not in key, plugin_registry.keys())))
 
 
 def is_registered_plugin(
@@ -447,5 +523,5 @@ def methods_differ_from_baseclass_table(
     for plugin_registry_key in plugin_registry_keys:
         plugin = get_plugin_function(plugin_registry_key)
         differs_list = methods_differ_from_baseclass(method_names, plugin, base_class)
-        differs_table.append([plugin_registry_key, *differs_list])
+        differs_table.append([f"`{plugin_registry_key}`", *differs_list])
     return differs_table

@@ -21,6 +21,7 @@ from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
@@ -120,15 +121,54 @@ def is_known_project_format(format_name: str) -> bool:
     )
 
 
-def known_project_formats() -> list[str]:
+def known_project_formats(full_names: bool = False) -> list[str]:
     """Names of the registered project io plugins.
+
+    Parameters
+    ----------
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
     list[str]
         List of registered project io plugins.
     """
-    return registered_plugins(plugin_registry=__PluginRegistry.project_io)
+    return registered_plugins(plugin_registry=__PluginRegistry.project_io, full_names=full_names)
+
+
+def set_project_plugin(
+    format_name: str,
+    full_plugin_name: str,
+) -> None:
+    """Set the plugin used for a specific project format.
+
+    This function is useful when you want to resolve conflicts of installed plugins
+    or overwrite the plugin used for a specific format.
+
+    Effected functions:
+    * ``load_model``
+    * ``save_model``
+    * ``load_parameters``
+    * ``save_parameters``
+    * ``load_scheme``
+    * ``save_scheme``
+    * ``load_result``
+    * ``save_result``
+
+    Parameters
+    ----------
+    format_name : str
+        Format to use the plugin for.
+    full_plugin_name : str
+        Full name (import path) of the registered plugin.
+    """
+    set_plugin(
+        plugin_register_key=format_name,
+        full_plugin_name=full_plugin_name,
+        plugin_registry=__PluginRegistry.project_io,
+    )
 
 
 def get_project_io(format_name: str) -> ProjectIoInterface:
@@ -423,10 +463,16 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     show_method_help(io, method_name)
 
 
-def project_io_plugin_table() -> str:
+def project_io_plugin_table(full_names: bool = False) -> str:
     """Return registered project io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
+
+    Parameters
+    ----------
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
@@ -434,7 +480,10 @@ def project_io_plugin_table() -> str:
         Markdown table of project io plugins.
     """
     table_data = methods_differ_from_baseclass_table(
-        PROJECT_IO_METHODS, known_project_formats(), get_project_io, ProjectIoInterface
+        PROJECT_IO_METHODS,
+        known_project_formats(full_names=full_names),
+        get_project_io,
+        ProjectIoInterface,
     )
     headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *PROJECT_IO_METHODS]))
     return tabulate(

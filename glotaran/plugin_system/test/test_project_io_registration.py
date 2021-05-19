@@ -24,6 +24,7 @@ from glotaran.plugin_system.project_io_registration import save_model
 from glotaran.plugin_system.project_io_registration import save_parameters
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.plugin_system.project_io_registration import save_scheme
+from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 
 if TYPE_CHECKING:
@@ -114,7 +115,11 @@ def mocked_registry(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
         __PluginRegistry,
         "project_io",
-        {"foo": ProjectIoInterface("foo"), "mock": MockProjectIo("bar")},
+        {
+            "foo": ProjectIoInterface("foo"),
+            "mock": MockProjectIo("bar"),
+            "test_project_io_registration.MockProjectIo": MockProjectIo("bar"),
+        },
     )
 
 
@@ -133,6 +138,10 @@ def test_register_project_io():
     for format_name, plugin_class in [("dummy", Dummy), ("dummy2", Dummy2), ("dummy3", Dummy2)]:
         assert format_name in __PluginRegistry.project_io
         assert isinstance(__PluginRegistry.project_io[format_name], plugin_class)
+        assert isinstance(
+            __PluginRegistry.project_io[f"test_project_io_registration.{plugin_class.__name__}"],
+            plugin_class,
+        )
         assert __PluginRegistry.project_io[format_name].format == format_name
 
 
@@ -150,6 +159,8 @@ def test_known_project_format_actual_register():
     assert is_known_project_format("yaml")
     assert is_known_project_format("yml_str")
     assert is_known_project_format("csv")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo")
+    assert is_known_project_format("glotaran.builtin.io.csv.csv.CsvProjectIo")
 
 
 @pytest.mark.parametrize(
@@ -171,6 +182,14 @@ def test_get_project_io(format_name: str, io_class: type[ProjectIoInterface]):
 def test_known_project_formats():
     """Known formats are the same as mocked register keys"""
     assert known_project_formats() == ["foo", "mock"]
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_set_project_plugin():
+    """Set Change Plugin used for format foo"""
+    assert isinstance(get_project_io("foo"), ProjectIoInterface)
+    set_project_plugin("foo", "test_project_io_registration.MockProjectIo")
+    assert isinstance(get_project_io("foo"), MockProjectIo)
 
 
 @pytest.mark.parametrize(
@@ -308,8 +327,8 @@ def test_project_io_plugin_table():
         """\
         |  __Plugin__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
         |--------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
-        |     foo      |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
-        |     mock     |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
+        |    `foo`     |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
+        |    `mock`    |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
         """  # noqa: E501
     )
 
