@@ -7,7 +7,6 @@ from typing import Type
 from typing import cast
 from warnings import warn
 
-import pandas as pd
 import pytest
 
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
@@ -19,7 +18,6 @@ from glotaran.model.base_model import Model
 from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import add_plugin_to_registry
-from glotaran.plugin_system.base_registry import extend_conflicting_plugin_key
 from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
@@ -32,7 +30,6 @@ from glotaran.plugin_system.base_registry import show_method_help
 
 if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture
-    from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.plugin_system.base_registry import _PluginInstantiableType
     from glotaran.plugin_system.base_registry import _PluginType
@@ -91,44 +88,22 @@ def test_PluginOverwriteWarning():
         "The plugin 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' tried to "
         "overwrite the plugin 'glotaran.builtin.io.yml.yml.YmlProjectIo', "
         "with the access_name 'yml'. "
-        "Use 'yml_gta' to access 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo'."
+        "Use set_plugin('yml', 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo') "
+        "to use 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' instead."
     )
 
     with pytest.warns(PluginOverwriteWarning) as record:
         warn(
             PluginOverwriteWarning(
-                old_key="yml", new_key="yml_gta", old_plugin=YmlProjectIo, new_plugin=SdtDataIo
+                old_key="yml",
+                old_plugin=YmlProjectIo,
+                new_plugin=SdtDataIo,
+                plugin_set_func_name="set_plugin",
             )
         )
 
         assert len(record) == 1
         assert record[0].message.args[0] == expected  # type: ignore
-
-
-@pytest.mark.parametrize(
-    "key, plugin, expected",
-    (
-        ("sdt", SdtDataIo("sdt"), "sdt_gta"),
-        ("yml", YmlProjectIo("yml"), "yml_gta"),
-        ("kinetic-image", KineticImageModel, "kinetic-image_gta"),
-        ("mock_plugin", MockPlugin, "mock_plugin_test_base_registry"),
-        ("mock_plugin", MockPlugin(), "mock_plugin_test_base_registry"),
-        ("imported_plugin", pd.DataFrame, "imported_plugin_pandas"),
-        ("imported_plugin", pd.DataFrame(), "imported_plugin_pandas"),
-    ),
-)
-def test_extend_conflicting_plugin_key(key: str, plugin: object | type[object], expected: str):
-    """Keys get proper postfix if there isn't a fixed key already."""
-    assert extend_conflicting_plugin_key(key, plugin, mock_registry_data_io) == expected
-
-
-def test_extend_conflicting_plugin_key_with_fixed_entry(monkeypatch: MonkeyPatch):
-    """Keys get proper postfix if there isn't a fixed key already."""
-    monkeypatch.setitem(mock_registry_data_io, "sdt_gta", SdtDataIo("sdt"))
-    assert (
-        extend_conflicting_plugin_key("sdt", SdtDataIo("sdt"), mock_registry_data_io)
-        == "sdt_gta_1"
-    )
 
 
 @pytest.mark.parametrize(
@@ -145,7 +120,7 @@ def test_add_plugin_to_register(
     plugin_registry: MutableMapping[str, _PluginType],
 ):
     """Add plugin with one key"""
-    add_plugin_to_registry(plugin_register_key, plugin, plugin_registry)
+    add_plugin_to_registry(plugin_register_key, plugin, plugin_registry, "set_plugin")
     assert plugin_register_key in plugin_registry
     assert plugin_registry[plugin_register_key] == plugin
 
@@ -159,18 +134,24 @@ def test_add_plugin_to_register_naming_error():
             r"you provided the name 'bad\.name'."
         ),
     ):
-        add_plugin_to_registry("bad.name", MockPlugin, mock_registry_model)  # type:ignore
+        add_plugin_to_registry(
+            "bad.name", MockPlugin, mock_registry_model, "set_plugin"  # type:ignore
+        )
 
 
 def test_add_plugin_to_register_existing_plugin():
     """Warn if different plugin overwrites existing."""
 
     plugin_registry = copy(mock_registry_data_io)
-    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+sdt_gta") as record:
-        add_plugin_to_registry("sdt", YmlProjectIo("sdt"), plugin_registry)  # type:ignore
+    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+YmlProjectIo") as record:
+        add_plugin_to_registry(
+            "sdt",
+            YmlProjectIo("sdt"),
+            plugin_registry,  # type:ignore
+            "set_plugin",
+        )
         assert len(record) == 1
-    assert "sdt_gta" in plugin_registry
-    assert plugin_registry["sdt_gta"].format == "sdt"
+    assert plugin_registry["glotaran.builtin.io.yml.yml.YmlProjectIo"].format == "sdt"
 
 
 @pytest.mark.xfail(strict=True, reason="Should not warn")
@@ -178,8 +159,8 @@ def test_add_plugin_to_register_existing_plugin_self():
     """Don't warn if plugin overwrites itself."""
 
     plugin_registry = copy(mock_registry_data_io)
-    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+sdt_gta") as record:
-        add_plugin_to_registry("sdt", SdtDataIo("sdt"), plugin_registry)
+    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+SdtDataIo") as record:
+        add_plugin_to_registry("sdt", SdtDataIo("sdt"), plugin_registry, "set_plugin")
         assert len(record) == 0
 
 
@@ -196,7 +177,7 @@ def test_add_instantiated_plugin_to_register(
     plugin_registry: MutableMapping[str, _PluginInstantiableType],
 ):
     """Add instantiated plugin"""
-    add_instantiated_plugin_to_registry(plugin_register_key, plugin, plugin_registry)
+    add_instantiated_plugin_to_registry(plugin_register_key, plugin, plugin_registry, "set_plugin")
     assert plugin_register_key in plugin_registry
     assert plugin_registry[plugin_register_key].format == plugin_register_key
 
@@ -214,7 +195,9 @@ def test_add_instantiated_plugin_to_register_multiple_keys(
     plugin_registry: MutableMapping[str, _PluginInstantiableType],
 ):
     """Add instantiated plugin with multiple keys"""
-    add_instantiated_plugin_to_registry(plugin_register_keys, plugin, plugin_registry)
+    add_instantiated_plugin_to_registry(
+        plugin_register_keys, plugin, plugin_registry, "set_plugin"
+    )
     for plugin_register_key in plugin_register_keys:
         assert plugin_register_key in plugin_registry
         assert plugin_registry[plugin_register_key].format == plugin_register_key
