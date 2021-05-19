@@ -148,14 +148,15 @@ def set_project_plugin(
     or overwrite the plugin used for a specific format.
 
     Effected functions:
-    * ``load_model``
-    * ``save_model``
-    * ``load_parameters``
-    * ``save_parameters``
-    * ``load_scheme``
-    * ``save_scheme``
-    * ``load_result``
-    * ``save_result``
+
+    - :func:`load_model`
+    - :func:`save_model`
+    - :func:`load_parameters`
+    - :func:`save_parameters`
+    - :func:`load_scheme`
+    - :func:`save_scheme`
+    - :func:`load_result`
+    - :func:`save_result`
 
     Parameters
     ----------
@@ -463,13 +464,15 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     show_method_help(io, method_name)
 
 
-def project_io_plugin_table(full_names: bool = False) -> str:
+def project_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
     """Return registered project io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
 
     Parameters
     ----------
+    plugin_names:bool
+        Whether or not to add the names of the plugins to the table.
     full_names: bool
         Whether to display the full names the plugins are
         registered under as well.
@@ -484,8 +487,12 @@ def project_io_plugin_table(full_names: bool = False) -> str:
         known_project_formats(full_names=full_names),
         get_project_io,
         ProjectIoInterface,
+        plugin_names=plugin_names,
     )
-    headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *PROJECT_IO_METHODS]))
+    header_values = ["Format name", *PROJECT_IO_METHODS]
+    if plugin_names:
+        header_values.append("Plugin name")
+    headers = tuple(map(lambda x: f"__{x}__", header_values))
     return tabulate(
         bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
     )

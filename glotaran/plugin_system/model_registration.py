@@ -3,8 +3,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tabulate import tabulate
+
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_plugin_to_registry
+from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
@@ -94,7 +97,8 @@ def set_model_plugin(model_name: str, full_plugin_name: str) -> None:
     or overwrite the plugin used for a specific model name.
 
     Effected functions:
-    * ``optimize``
+
+    - :func:`optimize`
 
     Parameters
     ----------
@@ -109,3 +113,34 @@ def set_model_plugin(model_name: str, full_plugin_name: str) -> None:
         plugin_registry=__PluginRegistry.model,
         plugin_register_key_name="model_name",
     )
+
+
+def model_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
+    """Return registered model plugins as markdown table.
+
+    This is especially useful when you work with new plugins.
+
+    Parameters
+    ----------
+    plugin_names:bool
+        Whether or not to add the names of the plugins to the table.
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
+
+    Returns
+    -------
+    str
+        Markdown table of modelnames.
+    """
+    table_data = []
+    model_names = known_model_names(full_names=full_names)
+    header_values = ["Model name"]
+    if plugin_names:
+        header_values.append("Plugin name")
+        for model_name in model_names:
+            table_data.append([f"`{model_name}`", f"`{full_plugin_name(get_model(model_name))}`"])
+    else:
+        table_data = [[f"`{model_name}`"] for model_name in model_names]
+    headers = tuple(map(lambda x: f"__{x}__", header_values))
+    return tabulate(table_data, tablefmt="github", headers=headers, stralign="center")

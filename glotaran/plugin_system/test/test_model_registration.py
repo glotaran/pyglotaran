@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,6 +11,7 @@ from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.model_registration import get_model
 from glotaran.plugin_system.model_registration import is_known_model
 from glotaran.plugin_system.model_registration import known_model_names
+from glotaran.plugin_system.model_registration import model_plugin_table
 from glotaran.plugin_system.model_registration import register_model
 from glotaran.plugin_system.model_registration import set_model_plugin
 
@@ -49,34 +51,70 @@ def test_register_model(mocked_registry):
     )
 
 
-def test_is_known_model(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_is_known_model():
     """Check if models are in registry"""
     assert is_known_model("foo")
     assert is_known_model("bar")
     assert not is_known_model("baz")
 
 
-def test_get_model(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_get_model():
     """Get model from registry"""
     assert get_model("foo") == Model
 
 
-def test_known_model_names(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_model_names():
     """Get model names from registry"""
     assert known_model_names() == sorted(["foo", "bar"])
 
 
-def test_known_set_model_plugin(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_set_model_plugin():
     """Overwrite foo model"""
     assert get_model("foo") == Model
     set_model_plugin("foo", "glotaran.builtin.models.kinetic_image.KineticImageModel")
     assert get_model("foo") == KineticImageModel
 
 
-def test_known_set_model_plugin_dot_in_model_name(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_known_set_model_plugin_dot_in_model_name():
     """Raise error if model_name contains '.'"""
     with pytest.raises(
         ValueError,
         match=r"The value of 'model_name' isn't allowed to contain the character '\.' \.",
     ):
         set_model_plugin("foo.bar", "glotaran.builtin.models.kinetic_image.KineticImageModel")
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_model_plugin_table():
+    """Short model table."""
+    expected = dedent(
+        """\
+        |  __Model name__  |
+        |------------------|
+        |      `bar`       |
+        |      `foo`       |
+        """
+    )
+
+    assert f"{model_plugin_table()}\n" == expected
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_model_plugin_table_full():
+    """Full Table with all extras."""
+    expected = dedent(
+        """\
+        |                      __Model name__                       |                                __Plugin name__                                |
+        |-----------------------------------------------------------|-------------------------------------------------------------------------------|
+        |                           `bar`                           | `glotaran.builtin.models.kinetic_image.kinetic_image_model.KineticImageModel` |
+        |                           `foo`                           |                       `glotaran.model.base_model.Model`                       |
+        | `glotaran.builtin.models.kinetic_image.KineticImageModel` | `glotaran.builtin.models.kinetic_image.kinetic_image_model.KineticImageModel` |
+        """  # noqa: E501
+    )
+
+    assert f"{model_plugin_table(plugin_names=True,full_names=True)}\n" == expected

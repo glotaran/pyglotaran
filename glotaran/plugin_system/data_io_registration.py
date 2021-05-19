@@ -126,8 +126,9 @@ def set_data_plugin(
     or overwrite the plugin used for a specific format.
 
     Effected functions:
-    * ``load_dataset``
-    * ``save_dataset``
+
+    - :func:`load_dataset`
+    - :func:`save_dataset`
 
     Parameters
     ----------
@@ -283,13 +284,15 @@ def show_data_io_method_help(
     show_method_help(io, method_name)
 
 
-def data_io_plugin_table(full_names: bool = False) -> str:
+def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
     """Return registered data io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
 
     Parameters
     ----------
+    plugin_names:bool
+        Whether or not to add the names of the plugins to the table.
     full_names: bool
         Whether to display the full names the plugins are
         registered under as well.
@@ -304,8 +307,12 @@ def data_io_plugin_table(full_names: bool = False) -> str:
         known_data_formats(full_names=full_names),
         get_data_io,
         DataIoInterface,
+        plugin_names=plugin_names,
     )
-    headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *DATA_IO_METHODS]))
+    header_values = ["Format name", *DATA_IO_METHODS]
+    if plugin_names:
+        header_values.append("Plugin name")
+    headers = tuple(map(lambda x: f"__{x}__", header_values))
     return tabulate(
         bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
     )

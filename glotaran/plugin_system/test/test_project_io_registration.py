@@ -325,11 +325,27 @@ def test_project_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\
-        |  __Plugin__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
-        |--------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
-        |    `foo`     |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
-        |    `mock`    |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
+        |  __Format name__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
+        |-------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
+        |       `foo`       |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
+        |      `mock`       |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
         """  # noqa: E501
     )
 
     assert f"{project_io_plugin_table()}\n" == expected
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_project_io_plugin_table_full():
+    """Full Table with all extras"""
+    expected = dedent(
+        """\
+        |               __Format name__                |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |               __Plugin name__                |
+        |----------------------------------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|----------------------------------------------|
+        |                    `foo`                     |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |  `glotaran.io.interface.ProjectIoInterface`  |
+        |                    `mock`                    |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo` |
+        | `test_project_io_registration.MockProjectIo` |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo` |
+        """  # noqa: E501
+    )
+
+    assert f"{project_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
