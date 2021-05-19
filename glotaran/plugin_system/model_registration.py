@@ -28,7 +28,10 @@ def register_model(model_type: str, model: type[Model]) -> None:
         model class to be registered.
     """
     add_plugin_to_registry(
-        plugin_register_key=model_type, plugin=model, plugin_registry=__PluginRegistry.model
+        plugin_register_key=model_type,
+        plugin=model,
+        plugin_registry=__PluginRegistry.model,
+        plugin_set_func_name="set_model_plugin",
     )
 
 

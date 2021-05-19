@@ -76,9 +76,9 @@ class PluginOverwriteWarning(UserWarning):
         self,
         *args: Any,
         old_key: str,
-        new_key: str,
         old_plugin: object | type[object],
         new_plugin: object | type[object],
+        plugin_set_func_name: str,
     ):
         """Use old and new plugin and keys to give verbose warning message.
 
@@ -86,12 +86,12 @@ class PluginOverwriteWarning(UserWarning):
         ----------
         old_key : str
             Old registry key.
-        new_key : str
-            New none conflicting registry key.
         old_plugin :  object | type[object]
             Old plugin ('registry[old_key]').
         new_plugin :  object | type[object]
             New Plugin ('registry[new_key]').
+        plugin_set_func_name: str
+            Name of the function used to pin a plugin.
         *args : Any
             Additional args passed to the super constructor.
         """
@@ -99,7 +99,9 @@ class PluginOverwriteWarning(UserWarning):
         new_plugin_name = full_plugin_name(new_plugin)
         message = (
             f"The plugin '{new_plugin_name}' tried to overwrite the plugin '{old_plugin_name}', "
-            f"with the access_name {old_key!r}. Use {new_key!r} to access {new_plugin_name!r}."
+            f"with the access_name {old_key!r}. "
+            f"Use {plugin_set_func_name}({old_key!r}, {new_plugin_name!r}) "
+            f"to use {new_plugin_name!r} instead."
         )
         super().__init__(message, *args)
 
@@ -121,55 +123,6 @@ def load_plugins():
             if entry_point_name.startswith("glotaran.plugins"):
                 for entry_point in entry_points:
                     entry_point.load()
-
-
-def extend_conflicting_plugin_key(
-    plugin_registry_key: str,
-    plugin: object | type[object],
-    plugin_registry: MutableMapping[str, _PluginType],
-    numerical_postfix: int = 0,
-) -> str:
-    """Postfix a plugin_registry_key with the module name the plugin originates from.
-
-    Parameters
-    ----------
-    plugin_registry_key : str
-        Original key a plugin tried to register itself with.
-    plugin : object | type[object]
-        Plugin instance or class to be added.
-    plugin_registry : MutableMapping[str, _PluginType]
-        Register the plugin should be added to.
-    numerical_postfix : int
-        Additional postfix if the fixed key already exists , by default 0
-
-    Returns
-    -------
-    str
-        New key for the plugin which isn't in the plugin register yet.
-
-    See Also
-    --------
-    add_plugin_to_register
-    """
-    origin_module = plugin.__module__
-    if origin_module.startswith("glotaran.builtin"):
-        new_plugin_registry_key = f"{plugin_registry_key}_gta"
-    else:
-        origin_module, _, _ = origin_module.partition(".")
-        new_plugin_registry_key = f"{plugin_registry_key}_{origin_module}"
-
-    if numerical_postfix != 0:
-        new_plugin_registry_key = f"{new_plugin_registry_key}_{numerical_postfix}"
-
-    if new_plugin_registry_key not in plugin_registry:
-        return new_plugin_registry_key
-    else:
-        return extend_conflicting_plugin_key(
-            plugin_registry_key,
-            plugin,
-            plugin_registry,
-            numerical_postfix + 1,
-        )
 
 
 def set_plugin(
@@ -229,6 +182,7 @@ def add_plugin_to_registry(
     plugin_register_key: str,
     plugin: _PluginType,
     plugin_registry: MutableMapping[str, _PluginType],
+    plugin_set_func_name: str,
 ) -> None:
     """Add a plugin with name ``plugin_register_key`` to the given registry.
 
@@ -243,6 +197,8 @@ def add_plugin_to_registry(
         Plugin to be added to the registry.
     plugin_registry: MutableMapping[str, _PluginType]
         Registry the plugin should be added to.
+    plugin_set_func_name: str
+        Name of the function used to pin a plugin.
 
     Raises
     ------
@@ -261,16 +217,14 @@ def add_plugin_to_registry(
         )
     if plugin_register_key in plugin_registry:
         old_key = plugin_register_key
-        plugin_register_key = extend_conflicting_plugin_key(
-            plugin_register_key, plugin, plugin_registry
-        )
+        plugin_register_key = full_plugin_name(plugin)
         if full_plugin_name(plugin_registry[old_key]) != full_plugin_name(plugin):
             warn(
                 PluginOverwriteWarning(
                     old_key=old_key,
-                    new_key=plugin_register_key,
                     old_plugin=plugin_registry[old_key],
                     new_plugin=plugin,
+                    plugin_set_func_name=plugin_set_func_name,
                 )
             )
     plugin_registry[full_plugin_name(plugin)] = plugin
@@ -281,6 +235,7 @@ def add_instantiated_plugin_to_registry(
     plugin_register_keys: str | list[str],
     plugin_class: type[_PluginInstantiableType],
     plugin_registry: MutableMapping[str, _PluginInstantiableType],
+    plugin_set_func_name: str,
 ) -> None:
     """Add instances of plugin_class to the given registry.
 
@@ -293,6 +248,8 @@ def add_instantiated_plugin_to_registry(
         and added to the registry.
     plugin_registry : MutableMapping[str, _PluginInstantiableType]
         Registry the plugin should be added to.
+    plugin_set_func_name: str
+        Name of the function used to pin a plugin.
 
     See Also
     --------
@@ -304,9 +261,10 @@ def add_instantiated_plugin_to_registry(
         # The type ignore is needed due to an issue with mypy
         # ``Cannot instantiate type "Type[Type[DataIoInterface]]"``
         add_plugin_to_registry(
-            plugin_register_key,
-            plugin_class(plugin_register_key),  # type:ignore[misc]
-            plugin_registry,
+            plugin_register_key=plugin_register_key,
+            plugin=plugin_class(plugin_register_key),  # type:ignore[misc]
+            plugin_registry=plugin_registry,
+            plugin_set_func_name=plugin_set_func_name,
         )
 
 

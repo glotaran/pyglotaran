@@ -97,6 +97,7 @@ def register_project_io(
             plugin_register_keys=format_names,
             plugin_class=cls,
             plugin_registry=__PluginRegistry.project_io,
+            plugin_set_func_name="set_project_plugin",
         )
         return cls
 

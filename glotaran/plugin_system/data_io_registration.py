@@ -75,6 +75,7 @@ def register_data_io(
             plugin_register_keys=format_names,
             plugin_class=cls,
             plugin_registry=__PluginRegistry.data_io,
+            plugin_set_func_name="set_data_plugin",
         )
         return cls
 
