@@ -240,11 +240,27 @@ def test_data_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\
-        |  __Plugin__  |  __load_dataset__  |  __save_dataset__  |
-        |--------------|--------------------|--------------------|
-        |    `foo`     |         /          |         /          |
-        |    `mock`    |         *          |         *          |
+        |  __Format name__  |  __load_dataset__  |  __save_dataset__  |
+        |-------------------|--------------------|--------------------|
+        |       `foo`       |         /          |         /          |
+        |      `mock`       |         *          |         *          |
         """
     )
 
     assert f"{data_io_plugin_table()}\n" == expected
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_data_io_plugin_table_full():
+    """Full Table with all extras"""
+    expected = dedent(
+        """\
+        |            __Format name__             |  __load_dataset__  |  __save_dataset__  |             __Plugin name__             |
+        |----------------------------------------|--------------------|--------------------|-----------------------------------------|
+        |                 `foo`                  |         /          |         /          | `glotaran.io.interface.DataIoInterface` |
+        |                 `mock`                 |         *          |         *          | `test_data_io_registration.MockDataIO`  |
+        | `test_data_io_registration.MockDataIO` |         *          |         *          | `test_data_io_registration.MockDataIO`  |
+        """  # noqa: E501
+    )
+
+    assert f"{data_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected

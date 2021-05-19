@@ -395,3 +395,19 @@ def test_methods_differ_from_baseclass_table(
     )
 
     assert result == expected
+
+
+def test_methods_differ_from_baseclass_table_plugin_names():
+    """Show plugin name"""
+
+    def get_plugin_function(plugin_registry_key: str):
+        if plugin_registry_key == "base":
+            return MockPlugin
+        elif plugin_registry_key == "sub_class":
+            return MockPluginSubclass
+
+    result = methods_differ_from_baseclass_table(
+        "some_method", "base", get_plugin_function, MockPlugin, plugin_names=True
+    )
+
+    assert result == [["`base`", False, "`test_base_registry.MockPlugin`"]]

@@ -482,6 +482,7 @@ def methods_differ_from_baseclass_table(
     plugin_registry_keys: str | Sequence[str],
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
     base_class: type[GenericPluginInstance],
+    plugin_names: bool = False,
 ) -> list[list[str | bool]]:
     """Create table of which plugins methods differ from their baseclass.
 
@@ -505,6 +506,8 @@ def methods_differ_from_baseclass_table(
         Function to get plugin from plugin registry.
     base_class : type[GenericPluginInstance]
         Base class the plugin inherited from.
+    plugin_names: bool
+        Whether or not to add the names of the plugins to the lists.
 
     Returns
     -------
@@ -523,5 +526,8 @@ def methods_differ_from_baseclass_table(
     for plugin_registry_key in plugin_registry_keys:
         plugin = get_plugin_function(plugin_registry_key)
         differs_list = methods_differ_from_baseclass(method_names, plugin, base_class)
-        differs_table.append([f"`{plugin_registry_key}`", *differs_list])
+        row: list[str | bool] = [f"`{plugin_registry_key}`", *differs_list]
+        if plugin_names:
+            row.append(f"`{full_plugin_name(plugin)}`")
+        differs_table.append(row)
     return differs_table
