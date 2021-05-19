@@ -20,6 +20,7 @@ from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.plugin_system.data_io_registration import register_data_io
 from glotaran.plugin_system.data_io_registration import save_dataset
+from glotaran.plugin_system.data_io_registration import set_data_plugin
 from glotaran.plugin_system.data_io_registration import show_data_io_method_help
 
 if TYPE_CHECKING:
@@ -56,7 +57,13 @@ class MockDataIO(DataIoInterface):
 @pytest.fixture(scope="function")
 def mocked_registry(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
-        __PluginRegistry, "data_io", {"foo": DataIoInterface("foo"), "mock": MockDataIO("bar")}
+        __PluginRegistry,
+        "data_io",
+        {
+            "foo": DataIoInterface("foo"),
+            "mock": MockDataIO("bar"),
+            "test_data_io_registration.MockDataIO": MockDataIO("bar"),
+        },
     )
 
 
@@ -76,10 +83,14 @@ def test_register_data_io():
         assert format_name in __PluginRegistry.data_io
         assert isinstance(__PluginRegistry.data_io[format_name], plugin_class)
         assert __PluginRegistry.data_io[format_name].format == format_name
+        assert isinstance(
+            __PluginRegistry.data_io[f"test_data_io_registration.{plugin_class.__name__}"],
+            plugin_class,
+        )
 
 
 @pytest.mark.usefixtures("mocked_registry")
-def test_known_data_format():
+def test_is_known_data_format():
     """Known format in mocked register"""
     assert is_known_data_format("foo")
     assert is_known_data_format("mock")
@@ -91,6 +102,11 @@ def test_known_data_format_actual_register():
     assert is_known_data_format("sdt")
     assert is_known_data_format("ascii")
     assert is_known_data_format("nc")
+    assert is_known_data_format("glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo")
+    assert is_known_data_format(
+        "glotaran.builtin.io.ascii.wavelength_time_explicit_file.AsciiDataIo"
+    )
+    assert is_known_data_format("glotaran.builtin.io.netCDF.netCDF.NetCDFDataIo")
 
 
 @pytest.mark.parametrize(
@@ -110,7 +126,15 @@ def test_get_data_io(format_name: str, io_class: type[DataIoInterface]):
 @pytest.mark.usefixtures("mocked_registry")
 def test_known_data_formats():
     """Known formats are the same as mocked register keys"""
-    assert known_data_formats() == ["foo", "mock"]
+    assert sorted(known_data_formats()) == sorted(["foo", "mock"])
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_set_data_plugin():
+    """Set Change Plugin used for format foo"""
+    assert isinstance(get_data_io("foo"), DataIoInterface)
+    set_data_plugin("foo", "test_data_io_registration.MockDataIO")
+    assert isinstance(get_data_io("foo"), MockDataIO)
 
 
 @pytest.mark.parametrize(
@@ -218,8 +242,8 @@ def test_data_io_plugin_table():
         """\
         |  __Plugin__  |  __load_dataset__  |  __save_dataset__  |
         |--------------|--------------------|--------------------|
-        |     foo      |         /          |         /          |
-        |     mock     |         *          |         *          |
+        |    `foo`     |         /          |         /          |
+        |    `mock`    |         *          |         *          |
         """
     )
 

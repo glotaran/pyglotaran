@@ -20,6 +20,7 @@ from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
@@ -98,15 +99,48 @@ def is_known_data_format(format_name: str) -> bool:
     )
 
 
-def known_data_formats() -> list[str]:
+def known_data_formats(full_names: bool = False) -> list[str]:
     """Names of the registered data io plugins.
+
+    Parameters
+    ----------
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
     list[str]
         List of registered data io plugins.
     """
-    return registered_plugins(plugin_registry=__PluginRegistry.data_io)
+    return registered_plugins(plugin_registry=__PluginRegistry.data_io, full_names=full_names)
+
+
+def set_data_plugin(
+    format_name: str,
+    full_plugin_name: str,
+) -> None:
+    """Set the plugin used for a specific data format.
+
+    This function is useful when you want to resolve conflicts of installed plugins
+    or overwrite the plugin used for a specific format.
+
+    Effected functions:
+    * ``load_dataset``
+    * ``save_dataset``
+
+    Parameters
+    ----------
+    format_name : str
+        Format to use the plugin for.
+    full_plugin_name : str
+        Full name (import path) of the registered plugin.
+    """
+    set_plugin(
+        plugin_register_key=format_name,
+        full_plugin_name=full_plugin_name,
+        plugin_registry=__PluginRegistry.data_io,
+    )
 
 
 def get_data_io(format_name: str) -> DataIoInterface:
@@ -249,10 +283,16 @@ def show_data_io_method_help(
     show_method_help(io, method_name)
 
 
-def data_io_plugin_table() -> str:
+def data_io_plugin_table(full_names: bool = False) -> str:
     """Return registered data io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
+
+    Parameters
+    ----------
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
@@ -260,7 +300,10 @@ def data_io_plugin_table() -> str:
         Markdown table of data io plugins.
     """
     table_data = methods_differ_from_baseclass_table(
-        DATA_IO_METHODS, known_data_formats(), get_data_io, DataIoInterface
+        DATA_IO_METHODS,
+        known_data_formats(full_names=full_names),
+        get_data_io,
+        DataIoInterface,
     )
     headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *DATA_IO_METHODS]))
     return tabulate(
