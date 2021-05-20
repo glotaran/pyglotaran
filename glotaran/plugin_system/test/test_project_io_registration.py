@@ -28,6 +28,7 @@ from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 
 if TYPE_CHECKING:
+    from os import PathLike
     from pathlib import Path
     from typing import Any
     from typing import Callable
@@ -42,12 +43,17 @@ if TYPE_CHECKING:
 
 class MockProjectIo(ProjectIoInterface):
     # TODO: Investigate why write methods raises an [override] type error and load functions don't
-    def load_model(self, file_name: str, **kwargs: Any) -> Model:
+    def load_model(self, file_name: str | PathLike[str], **kwargs: Any) -> Model:
         """This docstring is just for help testing of 'load_model'."""
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_model(  # type:ignore[override]
-        self, model: Model, file_name: str, *, result_container: dict[str, Any], **kwargs: Any
+        self,
+        model: Model,
+        file_name: str | PathLike[str],
+        *,
+        result_container: dict[str, Any],
+        **kwargs: Any,
     ):
         result_container.update(
             **{
@@ -57,13 +63,13 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_parameters(self, file_name: str, **kwargs: Any) -> ParameterGroup:
+    def load_parameters(self, file_name: str | PathLike[str], **kwargs: Any) -> ParameterGroup:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_parameters(  # type:ignore[override]
         self,
         parameters: ParameterGroup,
-        file_name: str,
+        file_name: str | PathLike[str],
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -76,11 +82,16 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_scheme(self, file_name: str, **kwargs: Any) -> Scheme:
+    def load_scheme(self, file_name: str | PathLike[str], **kwargs: Any) -> Scheme:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_scheme(  # type:ignore[override]
-        self, scheme: Scheme, file_name: str, *, result_container: dict[str, Any], **kwargs: Any
+        self,
+        scheme: Scheme,
+        file_name: str | PathLike[str],
+        *,
+        result_container: dict[str, Any],
+        **kwargs: Any,
     ):
         result_container.update(
             **{
@@ -90,13 +101,13 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_result(self, result_path: str, **kwargs: Any) -> Result:
+    def load_result(self, result_path: str | PathLike[str], **kwargs: Any) -> Result:
         return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
 
     def save_result(  # type:ignore[override]
         self,
         result: Result,
-        result_path: str,
+        result_path: str | PathLike[str],
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -207,7 +218,7 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
     file_path = tmp_path / "model.mock"
     file_path.touch()
 
-    result = load_function(str(file_path), dummy_arg="baz")
+    result = load_function(file_path, dummy_arg="baz")
 
     assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
 
@@ -229,7 +240,7 @@ def test_write_functions(tmp_path: Path, save_function: Callable[..., Any]):
 
     save_function(
         "data_object",  # type:ignore
-        str(file_path),
+        file_path,
         "mock",
         result_container=result,
         dummy_arg="baz",
@@ -259,7 +270,7 @@ def test_load_functions_value_error(
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        load_function(str(file_path), "foo")
+        load_function(file_path, "foo")
 
 
 @pytest.mark.parametrize(
@@ -279,7 +290,7 @@ def test_save_functions_value_error(
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        save_function("bar", str(file_path))
+        save_function("bar", file_path)
 
 
 @pytest.mark.parametrize(
@@ -294,7 +305,7 @@ def test_protect_from_overwrite_save_functions(tmp_path: Path, function: Callabl
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        function("foo", str(file_path), "bar")
+        function("foo", file_path, "bar")
 
 
 @pytest.mark.usefixtures("mocked_registry")

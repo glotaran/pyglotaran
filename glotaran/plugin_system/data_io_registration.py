@@ -28,6 +28,7 @@ from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_erro
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 
 if TYPE_CHECKING:
+    from os import PathLike
     from typing import Any
     from typing import Callable
     from typing import Literal
@@ -169,13 +170,13 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 @not_implemented_to_value_error
 def load_dataset(
-    file_name: str, format_name: str = None, **kwargs: Any
+    file_name: str | PathLike[str], format_name: str = None, **kwargs: Any
 ) -> xr.Dataset | xr.DataArray:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
     Parameters
     ----------
-    file_name : str
+    file_name : str | PathLike[str]
         File containing the data.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -190,13 +191,13 @@ def load_dataset(
         Data loaded from the file.
     """
     io = get_data_io(format_name or inferr_file_format(file_name))
-    return io.load_dataset(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_dataset(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_dataset(
     dataset: xr.Dataset | xr.DataArray,
-    file_name: str,
+    file_name: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -208,7 +209,7 @@ def save_dataset(
     ----------
     dataset: xr.Dataset|xr.DataArray
         Data to be written to file.
-    file_name : str
+    file_name : str | PathLike[str]
         File to write the data to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
@@ -222,7 +223,7 @@ def save_dataset(
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.save_dataset(  # type: ignore[call-arg]
-        file_name=file_name,
+        file_name=str(file_name),
         dataset=dataset,
         **kwargs,
     )
