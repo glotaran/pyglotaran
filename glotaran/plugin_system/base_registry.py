@@ -6,6 +6,7 @@ This is to prevent issues with circular imports.
 """
 from __future__ import annotations
 
+import os
 from importlib import metadata
 from typing import TYPE_CHECKING
 from warnings import warn
@@ -115,10 +116,11 @@ def load_plugins():
     - ``glotaran.plugins.model``
     - ``glotaran.plugins.project_io``
     """
-    for entry_point_name, entry_points in metadata.entry_points().items():
-        if entry_point_name.startswith("glotaran.plugins"):
-            for entry_point in entry_points:
-                entry_point.load()
+    if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
+        for entry_point_name, entry_points in metadata.entry_points().items():
+            if entry_point_name.startswith("glotaran.plugins"):
+                for entry_point in entry_points:
+                    entry_point.load()
 
 
 def extend_conflicting_plugin_key(
