@@ -24,6 +24,7 @@ from glotaran.plugin_system.data_io_registration import set_data_plugin
 from glotaran.plugin_system.data_io_registration import show_data_io_method_help
 
 if TYPE_CHECKING:
+    from os import PathLike
     from pathlib import Path
     from typing import Any
 
@@ -32,14 +33,16 @@ if TYPE_CHECKING:
 
 
 class MockDataIO(DataIoInterface):
-    def load_dataset(self, file_name: str, **kwargs: Any) -> xr.Dataset | xr.DataArray:
+    def load_dataset(
+        self, file_name: str | PathLike[str], **kwargs: Any
+    ) -> xr.Dataset | xr.DataArray:
         """This docstring is just for help testing of 'load_dataset'."""
         return {"file_name": file_name, **kwargs}  # type:ignore
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
     def save_dataset(  # type:ignore[override]
         self,
-        file_name: str,
+        file_name: str | PathLike[str],
         dataset: xr.Dataset | xr.DataArray,
         *,
         result_container: dict[str, Any],
@@ -171,7 +174,7 @@ def test_load_dataset(tmp_path: Path):
     file_path = tmp_path / "dummy.mock"
     file_path.write_text("mock")
 
-    result = load_dataset(str(file_path), dummy_arg="baz")
+    result = load_dataset(file_path, dummy_arg="baz")
 
     assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
 
@@ -195,7 +198,7 @@ def test_write_dataset(tmp_path: Path):
     result: dict[str, Any] = {}
     save_dataset(
         "no_dataset",  # type:ignore
-        str(file_path),
+        file_path,
         result_container=result,
         dummy_arg="baz",
     )
