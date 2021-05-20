@@ -112,9 +112,6 @@ def parameter():
 
 def test_model_misc(model):
     assert model.model_type == "mock_model"
-    assert not model.index_dependent_matrix
-    model.matrix = matrix_fun_index
-    assert model.index_dependent_matrix
 
 
 @pytest.mark.parametrize("attr", ["dataset", "megacomplex", "weights", "test"])

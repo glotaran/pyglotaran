@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import copy
-import inspect
 
 import numpy as np
 import xarray as xr
@@ -115,10 +114,6 @@ class Model:
                 del model_dict[name]
 
         return model
-
-    @property
-    def index_dependent_matrix(self):
-        return len(inspect.signature(self.matrix).parameters) == 3
 
     @property
     def model_type(self) -> str:
