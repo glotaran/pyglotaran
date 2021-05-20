@@ -6,6 +6,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model import DatasetDescriptor
+from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import model
 from glotaran.model import model_attribute
@@ -43,8 +44,21 @@ def calculate_e(dataset, axis):
         "indexdependent": bool,
     }
 )
-class SimpleTestMegacomplex:
-    pass
+class SimpleTestMegacomplex(Megacomplex):
+    def calculate_matrix(self, dataset_descriptor, indices, axis, **kwargs):
+        assert "c" in axis
+        assert "e" in axis
+
+        axis = axis["c"]
+        compartments = ["s1", "s2"]
+        r_compartments = []
+        array = np.zeros((axis.shape[0], len(compartments)))
+
+        for i in range(len(compartments)):
+            r_compartments.append(compartments[i])
+            for j in range(axis.shape[0]):
+                array[j, i] = (i + j) * axis[j]
+        return (r_compartments, array)
 
 
 @model(
@@ -60,15 +74,18 @@ class SimpleTestModel(Model):
     pass
 
 
-def calculate_kinetic(dataset_descriptor=None, axis=None, index=None, extra_stuff=None):
-    kinpar = -1 * np.asarray(dataset_descriptor.kinetic)
-    if dataset_descriptor.label == "dataset3":
-        # this case is for the ThreeDatasetDecay test
-        compartments = [f"s{i+2}" for i in range(len(kinpar))]
-    else:
-        compartments = [f"s{i+1}" for i in range(len(kinpar))]
-    array = np.exp(np.outer(axis, kinpar))
-    return (compartments, array)
+@model_attribute(properties={})
+class SimpleKineticMegacomplex(Megacomplex):
+    def calculate_matrix(self, dataset_descriptor, indices, axis, **kwargs):
+        axis = axis["c"]
+        kinpar = -1 * np.asarray(dataset_descriptor.kinetic)
+        if dataset_descriptor.label == "dataset3":
+            # this case is for the ThreeDatasetDecay test
+            compartments = [f"s{i+2}" for i in range(len(kinpar))]
+        else:
+            compartments = [f"s{i+1}" for i in range(len(kinpar))]
+        array = np.exp(np.outer(axis, kinpar))
+        return (compartments, array)
 
 
 def calculate_spectral_simple(dataset_descriptor, axis):
@@ -243,11 +260,11 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     "one_channel",
     attributes={},
     dataset_type=DecayDatasetDescriptor,
-    matrix=calculate_kinetic,
+    matrix=calculate_c,
     model_dimension="c",
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
-    megacomplex_type=SimpleTestMegacomplex,
+    megacomplex_type=SimpleKineticMegacomplex,
     has_additional_penalty_function=lambda model: True,
     additional_penalty_function=additional_penalty_typecheck,
     has_matrix_constraints_function=lambda model: True,
@@ -268,7 +285,7 @@ class DecayModel(Model):
     "multi_channel",
     attributes={},
     dataset_type=GaussianShapeDecayDatasetDescriptor,
-    matrix=calculate_kinetic,
+    matrix=calculate_c,
     model_dimension="c",
     global_matrix=calculate_spectral_gauss,
     global_dimension="e",
@@ -295,8 +312,9 @@ class OneCompartmentDecay:
     c_axis = np.arange(0, 150, 1.5)
 
     model_dict = {
+        "megacomplex": {"m1": {}},
         "dataset": {
-            "dataset1": {"initial_concentration": [], "megacomplex": [], "kinetic": ["1"]}
+            "dataset1": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["1"]}
         },
     }
     sim_model = DecayModel.from_dict(model_dict)

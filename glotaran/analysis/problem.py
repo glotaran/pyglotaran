@@ -3,8 +3,6 @@ from __future__ import annotations
 import collections
 import itertools
 import warnings
-from typing import Any
-from typing import Callable
 from typing import Deque
 from typing import Dict
 from typing import NamedTuple
@@ -35,8 +33,8 @@ class ProblemDescriptor(NamedTuple):
 
 class GroupedProblemDescriptor(NamedTuple):
     label: str
-    index: Any
-    axis: np.ndarray
+    indices: dict[str, int]
+    axis: dict[str, np.ndarray]
 
 
 class GroupedProblem(NamedTuple):
@@ -48,7 +46,7 @@ class GroupedProblem(NamedTuple):
     """The concatenated labels of the involved datasets."""
     data_sizes: list[int]
     """Holds the sizes of the concatenated datasets."""
-    descriptor: GroupedProblemDescriptor
+    descriptor: list[GroupedProblemDescriptor]
 
 
 UngroupedBag = Dict[str, ProblemDescriptor]
@@ -405,7 +403,18 @@ class Problem:
                         has_scaling=has_scaling,
                         group=label,
                         data_sizes=[data.isel({self._global_dimension: i}).values.size],
-                        descriptor=[GroupedProblemDescriptor(label, value, model_axis)],
+                        descriptor=[
+                            GroupedProblemDescriptor(
+                                label,
+                                {
+                                    self._global_dimension: i,
+                                },
+                                {
+                                    self._model_dimension: model_axis,
+                                    self._global_dimension: global_axis,
+                                },
+                            )
+                        ],
                     )
                     for i, value in enumerate(global_axis)
                 )
@@ -450,7 +459,18 @@ class Problem:
                 group=self._bag[j].group + label,
                 data_sizes=self._bag[j].data_sizes + [data_stripe.size],
                 descriptor=self._bag[j].descriptor
-                + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
+                + [
+                    GroupedProblemDescriptor(
+                        label,
+                        {
+                            self._global_dimension: i2[i],
+                        },
+                        {
+                            self._model_dimension: model_axis,
+                            self._global_dimension: global_axis,
+                        },
+                    )
+                ],
             )
 
         # Add non-overlaping regions
@@ -464,7 +484,19 @@ class Problem:
                 has_scaling=has_scaling,
                 group=label,
                 data_sizes=[data_stripe.size],
-                descriptor=[GroupedProblemDescriptor(label, global_axis[i], model_axis)],
+                descriptor=[
+                    GroupedProblemDescriptor(
+                        label,
+                        label,
+                        {
+                            self._global_dimension: i,
+                        },
+                        {
+                            self._model_dimension: model_axis,
+                            self._global_dimension: global_axis,
+                        },
+                    )
+                ],
             )
             if i < end_overlap:
                 datasets.appendleft([label])
@@ -504,17 +536,17 @@ class Problem:
             result = [
                 (
                     _calculate_matrix(
-                        self._model.matrix,
                         descriptors[problem.label],
+                        problem.indices,
                         problem.axis,
-                        {},
-                        index=problem.index,
                     ),
                     problem.label,
                 )
                 for problem in group.descriptor
             ]
-            return result, group.descriptor[0].index
+            global_index = group.descriptor[0].indices[self._global_dimension]
+            global_index = group.descriptor[0].axis[self._global_dimension][global_index]
+            return result, global_index
 
         def reduce_and_combine_matrices(
             results: tuple[list[tuple[LabelAndMatrix, str]], float],
@@ -579,11 +611,12 @@ class Problem:
 
             for index in problem.global_axis:
                 result = _calculate_matrix(
-                    self._model.matrix,
                     descriptor,
-                    problem.model_axis,
-                    {},
-                    index=index,
+                    {self._global_dimension: index},
+                    {
+                        self._model_dimension: problem.model_axis,
+                        self._global_dimension: problem.global_axis,
+                    },
                 )
 
                 self._clp_labels[label].append(result.clp_label)
@@ -633,12 +666,15 @@ class Problem:
         self._reduced_matrices = {}
 
         for label, descriptor in self._filled_dataset_descriptors.items():
-            axis = self._data[label].coords[self._model_dimension].values
+            model_axis = self._data[label].coords[self._model_dimension].values
+            global_axis = self._data[label].coords[self._global_dimension].values
             result = _calculate_matrix(
-                self._model.matrix,
                 descriptor,
-                axis,
                 {},
+                {
+                    self._model_dimension: model_axis,
+                    self._global_dimension: global_axis,
+                },
             )
 
             self._clp_labels[label] = result.clp_label
@@ -950,7 +986,9 @@ class Problem:
                 group_index = [
                     descriptor.label for descriptor in grouped_problem.descriptor
                 ].index(label)
-                global_index = grouped_problem.descriptor[group_index].index
+                group_descriptor = grouped_problem.descriptor[group_index]
+                global_index = group_descriptor.indices[self._global_dimension]
+                global_index = group_descriptor.axis[self._global_dimension][global_index]
 
                 self._add_grouped_residual_to_dataset(
                     dataset, grouped_problem, index, group_index, global_index
@@ -989,7 +1027,9 @@ class Problem:
                 group_index = [
                     descriptor.label for descriptor in grouped_problem.descriptor
                 ].index(label)
-                global_index = grouped_problem.descriptor[group_index].index
+                group_descriptor = grouped_problem.descriptor[group_index]
+                global_index = group_descriptor.indices[self._global_dimension]
+                global_index = group_descriptor.axis[self._global_dimension][global_index]
 
                 self._add_grouped_residual_to_dataset(
                     dataset, grouped_problem, index, group_index, global_index
@@ -1138,22 +1178,38 @@ def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
 
 
 def _calculate_matrix(
-    matrix_function: Callable,
     dataset_descriptor: DatasetDescriptor,
-    axis: np.ndarray,
-    extra: dict,
-    index: float = None,
+    indices: dict[str, int],
+    axis: dict[str, np.ndarray],
 ) -> LabelAndMatrix:
-    args = {
-        "dataset_descriptor": dataset_descriptor,
-        "axis": axis,
-    }
-    for k, v in extra:
-        args[k] = v
-    if index is not None:
-        args["index"] = index
-    clp_label, matrix = matrix_function(**args)
-    return LabelAndMatrix(clp_label, matrix)
+    clp_labels = None
+    matrix = None
+
+    for scale, megacomplex in dataset_descriptor.iterate_megacomplexes():
+        this_clp_labels, this_matrix = megacomplex.calculate_matrix(
+            dataset_descriptor, indices, axis
+        )
+
+        if scale is not None:
+            this_matrix *= scale
+
+        if matrix is None:
+            clp_labels = this_clp_labels
+            matrix = this_matrix
+        else:
+            new_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
+            new_matrix = np.zeros((matrix.shape[0], len(new_clp_labels)), dtype=np.float64)
+            for idx, label in enumerate(new_clp_labels):
+                if label in clp_labels:
+                    new_matrix[:, idx] += matrix[:, clp_labels.index(label)]
+                if label in this_clp_labels:
+                    new_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
+            clp_labels = new_clp_labels
+            matrix = new_matrix
+
+    #  raise Exception(clp_labels, matrix)
+
+    return LabelAndMatrix(clp_labels, matrix)
 
 
 def _reduce_matrix(

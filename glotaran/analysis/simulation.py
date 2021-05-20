@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from glotaran.analysis.problem import _calculate_matrix
+
 if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
@@ -66,11 +68,19 @@ def simulate(
 
     matrix = (
         [
-            model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=index)
+            _calculate_matrix(
+                filled_dataset,
+                {model.global_dimension: index},
+                {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
+            )
             for index in global_dimension
         ]
         if model.index_dependent()
-        else model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=None)
+        else _calculate_matrix(
+            filled_dataset,
+            {},
+            {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
+        )
     )
     if callable(model.constrain_matrix_function):
         matrix = (

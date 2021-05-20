@@ -5,10 +5,8 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import DecayModel
-from glotaran.analysis.test.models import MultichannelMulticomponentDecay
 from glotaran.analysis.test.models import OneCompartmentDecay
 from glotaran.analysis.test.models import ThreeDatasetDecay
-from glotaran.analysis.test.models import TwoCompartmentDecay
 from glotaran.project import Scheme
 
 
@@ -25,7 +23,8 @@ from glotaran.project import Scheme
 )
 @pytest.mark.parametrize(
     "suite",
-    [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
+    #  TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
+    [OneCompartmentDecay],
 )
 def test_optimization(suite, index_dependent, grouped, weight, method):
     model = suite.model
