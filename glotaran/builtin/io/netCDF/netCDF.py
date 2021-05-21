@@ -15,8 +15,8 @@ class NetCDFDataIo(DataIoInterface):
 
     def save_dataset(
         self,
-        file_name: str,
         dataset: xr.Dataset,
+        file_name: str,
         *,
         saving_options: SavingOptions = SavingOptions(),
     ):

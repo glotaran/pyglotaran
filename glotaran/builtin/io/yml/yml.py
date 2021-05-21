@@ -138,10 +138,10 @@ class YmlProjectIo(ProjectIoInterface):
             saving=saving,
         )
 
-    def save_scheme(self, file_name: str, scheme: Scheme):
+    def save_scheme(self, scheme: Scheme, file_name: str):
         _write_dict(file_name, dataclasses.asdict(scheme))
 
-    def save_result(self, result_path: str, result: Result):
+    def save_result(self, result: Result, result_path: str):
         options = result.scheme.saving
 
         if os.path.exists(result_path):
@@ -185,7 +185,7 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(result_file_path, dataclasses.asdict(result))
         result_scheme.result_path = result_file_path
 
-        self.save_scheme(scheme_path, result_scheme)
+        self.save_scheme(scheme=result_scheme, file_name=scheme_path)
 
 
 def _write_dict(file_name: str, d: dict):
