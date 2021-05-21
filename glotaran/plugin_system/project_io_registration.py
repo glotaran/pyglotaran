@@ -128,7 +128,7 @@ def known_project_formats(full_names: bool = False) -> list[str]:
 
     Parameters
     ----------
-    full_names: bool
+    full_names : bool
         Whether to display the full names the plugins are
         registered under as well.
 
@@ -163,7 +163,7 @@ def set_project_plugin(
     Parameters
     ----------
     format_name : str
-        Format to use the plugin for.
+        Format name used to refer to the plugin when used for ``save`` and ``load`` functions.
     full_plugin_name : str
         Full name (import path) of the registered plugin.
     """
@@ -241,7 +241,7 @@ def save_model(
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_model`` implementation
         of the project io plugin.
     """
@@ -296,7 +296,7 @@ def save_parameters(
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_parameters`` implementation
         of the project io plugin.
     """
@@ -319,7 +319,7 @@ def load_scheme(file_name: str | PathLike[str], format_name: str = None, **kwarg
         File containing the parameter specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``load_scheme`` implementation
         of the project io plugin.
 
@@ -353,7 +353,7 @@ def save_scheme(
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_scheme`` implementation
         of the project io plugin.
     """
@@ -375,7 +375,7 @@ def load_result(
     format_name : str
         Format the result is in, if not provided and it is a file
         it will be inferred from the file extension.
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``load_result`` implementation
         of the project io plugin.
 
@@ -410,7 +410,7 @@ def save_result(
         it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
     """
@@ -477,9 +477,9 @@ def project_io_plugin_table(*, plugin_names: bool = False, full_names: bool = Fa
 
     Parameters
     ----------
-    plugin_names:bool
+    plugin_names : bool
         Whether or not to add the names of the plugins to the table.
-    full_names: bool
+    full_names : bool
         Whether to display the full names the plugins are
         registered under as well.
 

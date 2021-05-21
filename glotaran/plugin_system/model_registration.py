@@ -81,7 +81,7 @@ def known_model_names(full_names: bool = False) -> list[str]:
 
     Parameters
     ----------
-    full_names: bool
+    full_names : bool
         Whether to display the full names the plugins are
         registered under as well.
 
@@ -125,9 +125,9 @@ def model_plugin_table(*, plugin_names: bool = False, full_names: bool = False) 
 
     Parameters
     ----------
-    plugin_names:bool
+    plugin_names : bool
         Whether or not to add the names of the plugins to the table.
-    full_names: bool
+    full_names : bool
         Whether to display the full names the plugins are
         registered under as well.
 

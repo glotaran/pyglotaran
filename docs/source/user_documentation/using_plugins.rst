@@ -39,7 +39,7 @@ Plugins reading and writing, :class:`Model`,:class:`Schema`,:class:`ParameterGro
 Reproducibility and plugins
 ---------------------------
 
-With a  plugin ecosystem there always is the possibility that multiple plugins try register under the same format/name.
+With a plugin ecosystem there always is the possibility that multiple plugins try register under the same format/name.
 This is why plugins are registered at least twice. Once under the name the developer intended and secondly
 under their full name (full import path).
 This allows to ensure that a specific plugin is used by manually specifying the plugin,

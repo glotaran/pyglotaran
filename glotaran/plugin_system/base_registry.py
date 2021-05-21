@@ -472,7 +472,7 @@ def methods_differ_from_baseclass_table(
         Function to get plugin from plugin registry.
     base_class : type[GenericPluginInstance]
         Base class the plugin inherited from.
-    plugin_names: bool
+    plugin_names : bool
         Whether or not to add the names of the plugins to the lists.
 
     Returns

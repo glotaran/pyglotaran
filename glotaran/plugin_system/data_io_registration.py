@@ -106,7 +106,7 @@ def known_data_formats(full_names: bool = False) -> list[str]:
 
     Parameters
     ----------
-    full_names: bool
+    full_names : bool
         Whether to display the full names the plugins are
         registered under as well.
 
@@ -135,7 +135,7 @@ def set_data_plugin(
     Parameters
     ----------
     format_name : str
-        Format to use the plugin for.
+        Format name used to refer to the plugin when used for ``save`` and ``load`` functions.
     full_plugin_name : str
         Full name (import path) of the registered plugin.
     """
@@ -180,7 +180,7 @@ def load_dataset(
         File containing the data.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``read_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_dataloader``
         to get the implementation with the proper help and autocomplete.
@@ -207,7 +207,7 @@ def save_dataset(
 
     Parameters
     ----------
-    dataset: xr.Dataset|xr.DataArray
+    dataset : xr.Dataset | xr.DataArray
         Data to be written to file.
     file_name : str | PathLike[str]
         File to write the data to.
@@ -215,7 +215,7 @@ def save_dataset(
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``write_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_datawriter``
         to get the implementation with the proper help and autocomplete.
@@ -293,9 +293,9 @@ def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False
 
     Parameters
     ----------
-    plugin_names:bool
+    plugin_names : bool
         Whether or not to add the names of the plugins to the table.
-    full_names: bool
+    full_names : bool
         Whether to display the full names the plugins are
         registered under as well.
 
