@@ -7,7 +7,6 @@ from typing import Type
 from typing import cast
 from warnings import warn
 
-import pandas as pd
 import pytest
 
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
@@ -19,7 +18,6 @@ from glotaran.model.base_model import Model
 from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import add_plugin_to_registry
-from glotaran.plugin_system.base_registry import extend_conflicting_plugin_key
 from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.base_registry import get_method_from_plugin
 from glotaran.plugin_system.base_registry import get_plugin_from_registry
@@ -27,11 +25,11 @@ from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import methods_differ_from_baseclass
 from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 
 if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture
-    from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.plugin_system.base_registry import _PluginInstantiableType
     from glotaran.plugin_system.base_registry import _PluginType
@@ -58,6 +56,7 @@ mock_registry_data_io = cast(
     {
         "sdt": SdtDataIo("sdt"),
         "yml": YmlProjectIo("yml"),
+        "glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo": SdtDataIo("sdt"),
         "kinetic-image": KineticImageModel,
         "mock_plugin": MockPlugin,
         "imported_plugin": MockPlugin,
@@ -85,52 +84,30 @@ def test_full_plugin_name(plugin: object | type[object], expected: str):
 def test_PluginOverwriteWarning():
     """Ignore the values this is just for testing, even if it doesn't make sense."""
 
-    expected = (
-        "The plugin 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' tried to "
-        "overwrite the plugin 'glotaran.builtin.io.yml.yml.YmlProjectIo', "
-        "with the access_name 'yml'. "
-        "Use 'yml_gta' to access 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo'."
-    )
-
     with pytest.warns(PluginOverwriteWarning) as record:
         warn(
             PluginOverwriteWarning(
-                old_key="yml", new_key="yml_gta", old_plugin=YmlProjectIo, new_plugin=SdtDataIo
+                old_key="yml",
+                old_plugin=YmlProjectIo,
+                new_plugin=SdtDataIo,
+                plugin_set_func_name="set_plugin",
             )
         )
 
         assert len(record) == 1
+        expected = (
+            "The plugin 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' tried to "
+            "overwrite the plugin 'glotaran.builtin.io.yml.yml.YmlProjectIo', "
+            "with the access_name 'yml'. "
+            "Use set_plugin('yml', 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo') "
+            "to use 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' instead."
+        )
+
         assert record[0].message.args[0] == expected  # type: ignore
 
 
 @pytest.mark.parametrize(
-    "key, plugin, expected",
-    (
-        ("sdt", SdtDataIo("sdt"), "sdt_gta"),
-        ("yml", YmlProjectIo("yml"), "yml_gta"),
-        ("kinetic-image", KineticImageModel, "kinetic-image_gta"),
-        ("mock_plugin", MockPlugin, "mock_plugin_test_base_registry"),
-        ("mock_plugin", MockPlugin(), "mock_plugin_test_base_registry"),
-        ("imported_plugin", pd.DataFrame, "imported_plugin_pandas"),
-        ("imported_plugin", pd.DataFrame(), "imported_plugin_pandas"),
-    ),
-)
-def test_extend_conflicting_plugin_key(key: str, plugin: object | type[object], expected: str):
-    """Keys get proper postfix if there isn't a fixed key already."""
-    assert extend_conflicting_plugin_key(key, plugin, mock_registry_data_io) == expected
-
-
-def test_extend_conflicting_plugin_key_with_fixed_entry(monkeypatch: MonkeyPatch):
-    """Keys get proper postfix if there isn't a fixed key already."""
-    monkeypatch.setitem(mock_registry_data_io, "sdt_gta", SdtDataIo("sdt"))
-    assert (
-        extend_conflicting_plugin_key("sdt", SdtDataIo("sdt"), mock_registry_data_io)
-        == "sdt_gta_1"
-    )
-
-
-@pytest.mark.parametrize(
-    "plugin_register_key, plugin, plugin_registy",
+    "plugin_register_key, plugin, plugin_registry",
     (
         ("sdt_new", SdtDataIo("sdt"), copy(mock_registry_data_io)),
         ("yml_new", YmlProjectIo("yml"), copy(mock_registry_project_io)),
@@ -140,27 +117,55 @@ def test_extend_conflicting_plugin_key_with_fixed_entry(monkeypatch: MonkeyPatch
 def test_add_plugin_to_register(
     plugin_register_key: str,
     plugin: _PluginType,
-    plugin_registy: MutableMapping[str, _PluginType],
+    plugin_registry: MutableMapping[str, _PluginType],
 ):
     """Add plugin with one key"""
-    add_plugin_to_registry(plugin_register_key, plugin, plugin_registy)
-    assert plugin_register_key in plugin_registy
-    assert plugin_registy[plugin_register_key] == plugin
+    add_plugin_to_registry(plugin_register_key, plugin, plugin_registry, "set_plugin")
+    assert plugin_register_key in plugin_registry
+    assert plugin_registry[plugin_register_key] == plugin
+
+
+def test_add_plugin_to_register_naming_error():
+    """Raise error if pluginkey contains '.'"""
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"The character '\.' isn't allowed in the name of a plugin, "
+            r"you provided the name 'bad\.name'."
+        ),
+    ):
+        add_plugin_to_registry(
+            "bad.name", MockPlugin, mock_registry_model, "set_plugin"  # type:ignore
+        )
 
 
 def test_add_plugin_to_register_existing_plugin():
-    """Try plugin_overwrite"""
+    """Warn if different plugin overwrites existing."""
 
-    plugin_registy = copy(mock_registry_data_io)
-    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+sdt_gta") as record:
-        add_plugin_to_registry("sdt", SdtDataIo("sdt"), plugin_registy)
+    plugin_registry = copy(mock_registry_data_io)
+    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+YmlProjectIo") as record:
+        add_plugin_to_registry(
+            "sdt",
+            YmlProjectIo("sdt"),
+            plugin_registry,  # type:ignore
+            "set_plugin",
+        )
         assert len(record) == 1
-    assert "sdt_gta" in plugin_registy
-    assert plugin_registy["sdt_gta"].format == "sdt"
+    assert plugin_registry["glotaran.builtin.io.yml.yml.YmlProjectIo"].format == "sdt"
+
+
+@pytest.mark.xfail(strict=True, reason="Should not warn")
+def test_add_plugin_to_register_existing_plugin_self():
+    """Don't warn if plugin overwrites itself."""
+
+    plugin_registry = copy(mock_registry_data_io)
+    with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+SdtDataIo") as record:
+        add_plugin_to_registry("sdt", SdtDataIo("sdt"), plugin_registry, "set_plugin")
+        assert len(record) == 0
 
 
 @pytest.mark.parametrize(
-    "plugin_register_key, plugin, plugin_registy",
+    "plugin_register_key, plugin, plugin_registry",
     (
         ("sdt_new", SdtDataIo, copy(mock_registry_data_io)),
         ("yml_new", YmlProjectIo, copy(mock_registry_project_io)),
@@ -169,16 +174,16 @@ def test_add_plugin_to_register_existing_plugin():
 def test_add_instantiated_plugin_to_register(
     plugin_register_key: str,
     plugin: type[_PluginInstantiableType],
-    plugin_registy: MutableMapping[str, _PluginInstantiableType],
+    plugin_registry: MutableMapping[str, _PluginInstantiableType],
 ):
     """Add instantiated plugin"""
-    add_instantiated_plugin_to_registry(plugin_register_key, plugin, plugin_registy)
-    assert plugin_register_key in plugin_registy
-    assert plugin_registy[plugin_register_key].format == plugin_register_key
+    add_instantiated_plugin_to_registry(plugin_register_key, plugin, plugin_registry, "set_plugin")
+    assert plugin_register_key in plugin_registry
+    assert plugin_registry[plugin_register_key].format == plugin_register_key
 
 
 @pytest.mark.parametrize(
-    "plugin_register_keys, plugin, plugin_registy",
+    "plugin_register_keys, plugin, plugin_registry",
     (
         (["sdt_new", "sdt_new2"], SdtDataIo, copy(mock_registry_data_io)),
         (["yml_new", "yaml_new"], YmlProjectIo, copy(mock_registry_project_io)),
@@ -187,13 +192,60 @@ def test_add_instantiated_plugin_to_register(
 def test_add_instantiated_plugin_to_register_multiple_keys(
     plugin_register_keys: list[str],
     plugin: type[_PluginInstantiableType],
-    plugin_registy: MutableMapping[str, _PluginInstantiableType],
+    plugin_registry: MutableMapping[str, _PluginInstantiableType],
 ):
     """Add instantiated plugin with multiple keys"""
-    add_instantiated_plugin_to_registry(plugin_register_keys, plugin, plugin_registy)
+    add_instantiated_plugin_to_registry(
+        plugin_register_keys, plugin, plugin_registry, "set_plugin"
+    )
     for plugin_register_key in plugin_register_keys:
-        assert plugin_register_key in plugin_registy
-        assert plugin_registy[plugin_register_key].format == plugin_register_key
+        assert plugin_register_key in plugin_registry
+        assert plugin_registry[plugin_register_key].format == plugin_register_key
+
+
+def test_set_plugin():
+    """Overwrite existing plugin"""
+    plugin_registry = copy(mock_registry_data_io)
+    set_plugin("yml", "glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo", plugin_registry)
+    assert isinstance(plugin_registry["yml"], SdtDataIo)
+
+
+def test_set_plugin_dot_in_plugin_key():
+    """Raise error if plugin_register_key contains '.'"""
+    plugin_registry = copy(mock_registry_data_io)
+    with pytest.raises(
+        ValueError,
+        match=r"The value of 'format_name' isn't allowed to contain the character '\.' \.",
+    ):
+        set_plugin("foo.bar", "glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo", plugin_registry)
+
+
+def test_set_plugin_plugin_not_registered():
+    """Raise error if the is not plugin"""
+    plugin_registry = copy(mock_registry_data_io)
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"There isn't a plugin registered under the full name 'mymodul\.NotRegistered'\.\n"
+            r"Maybe you need to install a plugin\? Known plugins are:\n "
+            r"\['glotaran\.builtin\.io\.sdt\.sdt_file_reader\.SdtDataIo'\]"
+        ),
+    ):
+        set_plugin("yml", "mymodul.NotRegistered", plugin_registry)
+
+
+def test_set_plugin_no_dot_full_name():
+    """Raise error if full_plugin_name doesn't contains '.'"""
+    plugin_registry = copy(mock_registry_data_io)
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"There isn't a plugin registered under the full name 'sdt'\.\n"
+            r"Maybe you need to install a plugin\? Known plugins are:\n "
+            r"\['glotaran\.builtin\.io\.sdt\.sdt_file_reader\.SdtDataIo'\]"
+        ),
+    ):
+        set_plugin("yml", "sdt", plugin_registry)
 
 
 def test_registered_plugins():
@@ -205,7 +257,7 @@ def test_registered_plugins():
         "mock_plugin",
         "imported_plugin",
     ]
-    assert registered_plugins(mock_registry_data_io) == result
+    assert registered_plugins(mock_registry_data_io) == sorted(result)
 
 
 def test_is_registered_plugin():
@@ -292,13 +344,17 @@ def test_methods_differ_from_baseclass(
 @pytest.mark.parametrize(
     "method_names,plugin_registry_keys,expected",
     (
-        ("some_method", "base", [["base", False]]),
-        ("some_method", "sub_class", [["sub_class", True]]),
-        ("some_method", "sub_class_inst", [["sub_class_inst", True]]),
+        ("some_method", "base", [["`base`", False]]),
+        ("some_method", "sub_class", [["`sub_class`", True]]),
+        ("some_method", "sub_class_inst", [["`sub_class_inst`", True]]),
         (
             ["some_method", "some_other_method"],
             ["base", "sub_class", "sub_class_inst"],
-            [["base", False, False], ["sub_class", True, False], ["sub_class_inst", True, False]],
+            [
+                ["`base`", False, False],
+                ["`sub_class`", True, False],
+                ["`sub_class_inst`", True, False],
+            ],
         ),
     ),
 )
@@ -312,9 +368,7 @@ def test_methods_differ_from_baseclass_table(
     def get_plugin_function(plugin_registry_key: str):
         if plugin_registry_key == "base":
             return MockPlugin
-        elif plugin_registry_key == "sub_class":
-            return MockPluginSubclass
-        elif plugin_registry_key == "sub_class_inst":
+        elif plugin_registry_key in ["sub_class", "sub_class_inst"]:
             return MockPluginSubclass
 
     result = methods_differ_from_baseclass_table(
@@ -322,3 +376,19 @@ def test_methods_differ_from_baseclass_table(
     )
 
     assert result == expected
+
+
+def test_methods_differ_from_baseclass_table_plugin_names():
+    """Show plugin name"""
+
+    def get_plugin_function(plugin_registry_key: str):
+        if plugin_registry_key == "base":
+            return MockPlugin
+        elif plugin_registry_key == "sub_class":
+            return MockPluginSubclass
+
+    result = methods_differ_from_baseclass_table(
+        "some_method", "base", get_plugin_function, MockPlugin, plugin_names=True
+    )
+
+    assert result == [["`base`", False, "`test_base_registry.MockPlugin`"]]

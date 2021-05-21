@@ -21,6 +21,7 @@ from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
@@ -28,6 +29,7 @@ from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_erro
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 
 if TYPE_CHECKING:
+    from os import PathLike
     from typing import Any
     from typing import Callable
     from typing import Literal
@@ -96,6 +98,7 @@ def register_project_io(
             plugin_register_keys=format_names,
             plugin_class=cls,
             plugin_registry=__PluginRegistry.project_io,
+            plugin_set_func_name="set_project_plugin",
         )
         return cls
 
@@ -120,15 +123,55 @@ def is_known_project_format(format_name: str) -> bool:
     )
 
 
-def known_project_formats() -> list[str]:
+def known_project_formats(full_names: bool = False) -> list[str]:
     """Names of the registered project io plugins.
+
+    Parameters
+    ----------
+    full_names : bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
     list[str]
         List of registered project io plugins.
     """
-    return registered_plugins(plugin_registry=__PluginRegistry.project_io)
+    return registered_plugins(plugin_registry=__PluginRegistry.project_io, full_names=full_names)
+
+
+def set_project_plugin(
+    format_name: str,
+    full_plugin_name: str,
+) -> None:
+    """Set the plugin used for a specific project format.
+
+    This function is useful when you want to resolve conflicts of installed plugins
+    or overwrite the plugin used for a specific format.
+
+    Effected functions:
+
+    - :func:`load_model`
+    - :func:`save_model`
+    - :func:`load_parameters`
+    - :func:`save_parameters`
+    - :func:`load_scheme`
+    - :func:`save_scheme`
+    - :func:`load_result`
+    - :func:`save_result`
+
+    Parameters
+    ----------
+    format_name : str
+        Format name used to refer to the plugin when used for ``save`` and ``load`` functions.
+    full_plugin_name : str
+        Full name (import path) of the registered plugin.
+    """
+    set_plugin(
+        plugin_register_key=format_name,
+        full_plugin_name=full_plugin_name,
+        plugin_registry=__PluginRegistry.project_io,
+    )
 
 
 def get_project_io(format_name: str) -> ProjectIoInterface:
@@ -155,12 +198,12 @@ def get_project_io(format_name: str) -> ProjectIoInterface:
 
 
 @not_implemented_to_value_error
-def load_model(file_name: str, format_name: str = None, **kwargs: Any) -> Model:
+def load_model(file_name: str | PathLike[str], format_name: str = None, **kwargs: Any) -> Model:
     """Create a Model instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : str
+    file_name : str | PathLike[str]
         File containing the model specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -174,13 +217,13 @@ def load_model(file_name: str, format_name: str = None, **kwargs: Any) -> Model:
         Model instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_model(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_model(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_model(
-    file_name: str,
     model: Model,
+    file_name: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -190,30 +233,32 @@ def save_model(
 
     Parameters
     ----------
-    file_name : str
-        File to write the model specs to.
     model: Model
         :class:`Model` instance to save to specs file.
+    file_name : str | PathLike[str]
+        File to write the model specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_model`` implementation
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_model(file_name=file_name, model=model, **kwargs)  # type: ignore[call-arg]
+    io.save_model(file_name=str(file_name), model=model, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
-def load_parameters(file_name: str, format_name: str = None, **kwargs) -> ParameterGroup:
+def load_parameters(
+    file_name: str | PathLike[str], format_name: str = None, **kwargs
+) -> ParameterGroup:
     """Create a :class:`ParameterGroup` instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : str
+    file_name : str | PathLike[str]
         File containing the parameter specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -227,13 +272,13 @@ def load_parameters(file_name: str, format_name: str = None, **kwargs) -> Parame
         :class:`ParameterGroup` instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_parameters(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_parameters(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_parameters(
-    file_name: str,
     parameters: ParameterGroup,
+    file_name: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -243,38 +288,38 @@ def save_parameters(
 
     Parameters
     ----------
-    file_name : str
-        File to write the parameter specs to.
     parameters : ParameterGroup
         :class:`ParameterGroup` instance to save to specs file.
+    file_name : str | PathLike[str]
+        File to write the parameter specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_parameters`` implementation
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.save_parameters(  # type: ignore[call-arg]
-        file_name=file_name,
+        file_name=str(file_name),
         parameters=parameters,
         **kwargs,
     )
 
 
 @not_implemented_to_value_error
-def load_scheme(file_name: str, format_name: str = None, **kwargs: Any) -> Scheme:
+def load_scheme(file_name: str | PathLike[str], format_name: str = None, **kwargs: Any) -> Scheme:
     """Create a :class:`Scheme` instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : str
+    file_name : str | PathLike[str]
         File containing the parameter specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``load_scheme`` implementation
         of the project io plugin.
 
@@ -284,13 +329,13 @@ def load_scheme(file_name: str, format_name: str = None, **kwargs: Any) -> Schem
         :class:`Scheme` instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_scheme(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_scheme(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_scheme(
-    file_name: str,
     scheme: Scheme,
+    file_name: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -300,35 +345,37 @@ def save_scheme(
 
     Parameters
     ----------
-    file_name : str
-        File to write the scheme specs to.
     scheme : Scheme
         :class:`Scheme` instance to save to specs file.
+    file_name : str | PathLike[str]
+        File to write the scheme specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_scheme`` implementation
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_scheme(file_name=file_name, scheme=scheme, **kwargs)  # type: ignore[call-arg]
+    io.save_scheme(file_name=str(file_name), scheme=scheme, **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
-def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Result:
+def load_result(
+    result_path: str | PathLike[str], format_name: str = None, **kwargs: Any
+) -> Result:
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
     ----------
-    result_path : str
+    result_path : str | PathLike[str]
         Path containing the result data.
     format_name : str
         Format the result is in, if not provided and it is a file
         it will be inferred from the file extension.
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``load_result`` implementation
         of the project io plugin.
 
@@ -338,13 +385,13 @@ def load_result(result_path: str, format_name: str = None, **kwargs: Any) -> Res
         :class:`Result` instance created from the saved format.
     """
     io = get_project_io(format_name or inferr_file_format(result_path))
-    return io.load_result(result_path, **kwargs)  # type: ignore[call-arg]
+    return io.load_result(str(result_path), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_result(
-    result_path: str,
     result: Result,
+    result_path: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -354,16 +401,16 @@ def save_result(
 
     Parameters
     ----------
-    result_path : str
-        Path to write the result data to.
     result : Result
         :class:`Result` instance to write.
+    result_path : str | PathLike[str]
+        Path to write the result data to.
     format_name : str
         Format the result should be saved in, if not provided and it is a file
         it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
     """
@@ -372,7 +419,7 @@ def save_result(
         format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
     io.save_result(  # type: ignore[call-arg]
-        result_path=result_path,
+        result_path=str(result_path),
         result=result,
         **kwargs,
     )
@@ -423,10 +470,18 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     show_method_help(io, method_name)
 
 
-def project_io_plugin_table() -> str:
+def project_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
     """Return registered project io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
+
+    Parameters
+    ----------
+    plugin_names : bool
+        Whether or not to add the names of the plugins to the table.
+    full_names : bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
@@ -434,9 +489,16 @@ def project_io_plugin_table() -> str:
         Markdown table of project io plugins.
     """
     table_data = methods_differ_from_baseclass_table(
-        PROJECT_IO_METHODS, known_project_formats(), get_project_io, ProjectIoInterface
+        PROJECT_IO_METHODS,
+        known_project_formats(full_names=full_names),
+        get_project_io,
+        ProjectIoInterface,
+        plugin_names=plugin_names,
     )
-    headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *PROJECT_IO_METHODS]))
+    header_values = ["Format name", *PROJECT_IO_METHODS]
+    if plugin_names:
+        header_values.append("Plugin name")
+    headers = tuple(map(lambda x: f"__{x}__", header_values))
     return tabulate(
         bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
     )

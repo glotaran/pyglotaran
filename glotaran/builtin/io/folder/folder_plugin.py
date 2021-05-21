@@ -24,7 +24,7 @@ class FolderProjectIo(ProjectIoInterface):
     a markdown summary output and the important data saved to files.
     """
 
-    def save_result(self, result_path: str, result: Result) -> list[str]:
+    def save_result(self, result: Result, result_path: str) -> list[str]:
         """Save the result to a given folder.
 
         Returns a list with paths of all saved items.
@@ -35,10 +35,10 @@ class FolderProjectIo(ProjectIoInterface):
 
         Parameters
         ----------
-        result_path : str
-            The path to the folder in which to save the result.
         result : Result
             Result instance to be saved.
+        result_path : str
+            The path to the folder in which to save the result.
 
         Returns
         -------

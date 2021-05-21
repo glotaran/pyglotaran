@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
@@ -9,6 +10,7 @@ from glotaran.builtin.io.csv.csv import CsvProjectIo
 from glotaran.builtin.io.yml.yml import YmlProjectIo
 from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
+from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.project_io_registration import get_project_io
 from glotaran.plugin_system.project_io_registration import get_project_io_method
@@ -24,10 +26,11 @@ from glotaran.plugin_system.project_io_registration import save_model
 from glotaran.plugin_system.project_io_registration import save_parameters
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.plugin_system.project_io_registration import save_scheme
+from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from os import PathLike
     from typing import Any
     from typing import Callable
 
@@ -41,12 +44,17 @@ if TYPE_CHECKING:
 
 class MockProjectIo(ProjectIoInterface):
     # TODO: Investigate why write methods raises an [override] type error and load functions don't
-    def load_model(self, file_name: str, **kwargs: Any) -> Model:
+    def load_model(self, file_name: str | PathLike[str], **kwargs: Any) -> Model:
         """This docstring is just for help testing of 'load_model'."""
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_model(  # type:ignore[override]
-        self, file_name: str, model: Model, *, result_container: dict[str, Any], **kwargs: Any
+        self,
+        model: Model,
+        file_name: str | PathLike[str],
+        *,
+        result_container: dict[str, Any],
+        **kwargs: Any,
     ):
         result_container.update(
             **{
@@ -56,13 +64,13 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_parameters(self, file_name: str, **kwargs: Any) -> ParameterGroup:
+    def load_parameters(self, file_name: str | PathLike[str], **kwargs: Any) -> ParameterGroup:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_parameters(  # type:ignore[override]
         self,
-        file_name: str,
         parameters: ParameterGroup,
+        file_name: str | PathLike[str],
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -75,11 +83,16 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_scheme(self, file_name: str, **kwargs: Any) -> Scheme:
+    def load_scheme(self, file_name: str | PathLike[str], **kwargs: Any) -> Scheme:
         return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_scheme(  # type:ignore[override]
-        self, file_name: str, scheme: Scheme, *, result_container: dict[str, Any], **kwargs: Any
+        self,
+        scheme: Scheme,
+        file_name: str | PathLike[str],
+        *,
+        result_container: dict[str, Any],
+        **kwargs: Any,
     ):
         result_container.update(
             **{
@@ -89,13 +102,13 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_result(self, result_path: str, **kwargs: Any) -> Result:
+    def load_result(self, result_path: str | PathLike[str], **kwargs: Any) -> Result:
         return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
 
     def save_result(  # type:ignore[override]
         self,
-        result_path: str,
         result: Result,
+        result_path: str | PathLike[str],
         *,
         result_container: dict[str, Any],
         **kwargs: Any,
@@ -114,7 +127,11 @@ def mocked_registry(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
         __PluginRegistry,
         "project_io",
-        {"foo": ProjectIoInterface("foo"), "mock": MockProjectIo("bar")},
+        {
+            "foo": ProjectIoInterface("foo"),
+            "mock": MockProjectIo("bar"),
+            "test_project_io_registration.MockProjectIo_bar": MockProjectIo("bar"),
+        },
     )
 
 
@@ -133,7 +150,31 @@ def test_register_project_io():
     for format_name, plugin_class in [("dummy", Dummy), ("dummy2", Dummy2), ("dummy3", Dummy2)]:
         assert format_name in __PluginRegistry.project_io
         assert isinstance(__PluginRegistry.project_io[format_name], plugin_class)
+        assert isinstance(
+            __PluginRegistry.project_io[
+                f"test_project_io_registration.{plugin_class.__name__}_{format_name}"
+            ],
+            plugin_class,
+        )
         assert __PluginRegistry.project_io[format_name].format == format_name
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_project_io_warning():
+    """PluginOverwriteWarning raised pointing to correct file."""
+
+    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:
+
+        @register_project_io("dummy")
+        class Dummy(ProjectIoInterface):
+            pass
+
+        @register_project_io("dummy")
+        class Dummy2(ProjectIoInterface):
+            pass
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -150,6 +191,10 @@ def test_known_project_format_actual_register():
     assert is_known_project_format("yaml")
     assert is_known_project_format("yml_str")
     assert is_known_project_format("csv")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yml")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yaml")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yml_str")
+    assert is_known_project_format("glotaran.builtin.io.csv.csv.CsvProjectIo_csv")
 
 
 @pytest.mark.parametrize(
@@ -173,6 +218,14 @@ def test_known_project_formats():
     assert known_project_formats() == ["foo", "mock"]
 
 
+@pytest.mark.usefixtures("mocked_registry")
+def test_set_project_plugin():
+    """Set Change Plugin used for format foo"""
+    assert isinstance(get_project_io("foo"), ProjectIoInterface)
+    set_project_plugin("foo", "test_project_io_registration.MockProjectIo_bar")
+    assert isinstance(get_project_io("foo"), MockProjectIo)
+
+
 @pytest.mark.parametrize(
     "load_function",
     (
@@ -188,7 +241,7 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
     file_path = tmp_path / "model.mock"
     file_path.touch()
 
-    result = load_function(str(file_path), dummy_arg="baz")
+    result = load_function(file_path, dummy_arg="baz")
 
     assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
 
@@ -209,8 +262,8 @@ def test_write_functions(tmp_path: Path, save_function: Callable[..., Any]):
     result: dict[str, Any] = {}
 
     save_function(
-        str(file_path),
         "data_object",  # type:ignore
+        file_path,
         "mock",
         result_container=result,
         dummy_arg="baz",
@@ -240,7 +293,7 @@ def test_load_functions_value_error(
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        load_function(str(file_path), "foo")
+        load_function(file_path, "foo")
 
 
 @pytest.mark.parametrize(
@@ -260,7 +313,7 @@ def test_save_functions_value_error(
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        save_function(str(file_path), "bar")
+        save_function("bar", file_path)
 
 
 @pytest.mark.parametrize(
@@ -275,7 +328,7 @@ def test_protect_from_overwrite_save_functions(tmp_path: Path, function: Callabl
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        function(str(file_path), "foo", "bar")
+        function("foo", file_path, "bar")
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -306,11 +359,27 @@ def test_project_io_plugin_table():
     """Plugin foo supports no function and mock supports all"""
     expected = dedent(
         """\
-        |  __Plugin__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
-        |--------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
-        |     foo      |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
-        |     mock     |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
+        |  __Format name__  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |
+        |-------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|
+        |       `foo`       |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |
+        |      `mock`       |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         |
         """  # noqa: E501
     )
 
     assert f"{project_io_plugin_table()}\n" == expected
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_project_io_plugin_table_full():
+    """Full Table with all extras"""
+    expected = dedent(
+        """\
+        |                 __Format name__                  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |                  __Plugin name__                  |
+        |--------------------------------------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|---------------------------------------------------|
+        |                      `foo`                       |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |  `glotaran.io.interface.ProjectIoInterface_foo`   |
+        |                      `mock`                      |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo_mock` |
+        | `test_project_io_registration.MockProjectIo_bar` |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo_bar`  |
+        """  # noqa: E501
+    )
+
+    assert f"{project_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected

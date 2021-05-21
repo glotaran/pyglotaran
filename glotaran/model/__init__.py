@@ -13,3 +13,5 @@ from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import get_model
 from glotaran.plugin_system.model_registration import is_known_model
 from glotaran.plugin_system.model_registration import known_model_names
+from glotaran.plugin_system.model_registration import model_plugin_table
+from glotaran.plugin_system.model_registration import set_model_plugin

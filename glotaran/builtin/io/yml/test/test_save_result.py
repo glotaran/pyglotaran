@@ -19,7 +19,7 @@ def test_save_result_yml(
     """Check all files exist."""
 
     result_dir = Path(tmpdir / "testresult")
-    save_result(result_path=str(result_dir), format_name="yml", result=dummy_result)
+    save_result(result_path=result_dir, format_name="yml", result=dummy_result)
 
     assert (result_dir / "result.md").exists()
     assert (result_dir / "scheme.yml").exists()
