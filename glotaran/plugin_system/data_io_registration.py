@@ -20,6 +20,7 @@ from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
 from glotaran.plugin_system.base_registry import registered_plugins
+from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
@@ -27,6 +28,7 @@ from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_erro
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 
 if TYPE_CHECKING:
+    from os import PathLike
     from typing import Any
     from typing import Callable
     from typing import Literal
@@ -74,6 +76,7 @@ def register_data_io(
             plugin_register_keys=format_names,
             plugin_class=cls,
             plugin_registry=__PluginRegistry.data_io,
+            plugin_set_func_name="set_data_plugin",
         )
         return cls
 
@@ -98,15 +101,49 @@ def is_known_data_format(format_name: str) -> bool:
     )
 
 
-def known_data_formats() -> list[str]:
+def known_data_formats(full_names: bool = False) -> list[str]:
     """Names of the registered data io plugins.
+
+    Parameters
+    ----------
+    full_names : bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
     list[str]
         List of registered data io plugins.
     """
-    return registered_plugins(plugin_registry=__PluginRegistry.data_io)
+    return registered_plugins(plugin_registry=__PluginRegistry.data_io, full_names=full_names)
+
+
+def set_data_plugin(
+    format_name: str,
+    full_plugin_name: str,
+) -> None:
+    """Set the plugin used for a specific data format.
+
+    This function is useful when you want to resolve conflicts of installed plugins
+    or overwrite the plugin used for a specific format.
+
+    Effected functions:
+
+    - :func:`load_dataset`
+    - :func:`save_dataset`
+
+    Parameters
+    ----------
+    format_name : str
+        Format name used to refer to the plugin when used for ``save`` and ``load`` functions.
+    full_plugin_name : str
+        Full name (import path) of the registered plugin.
+    """
+    set_plugin(
+        plugin_register_key=format_name,
+        full_plugin_name=full_plugin_name,
+        plugin_registry=__PluginRegistry.data_io,
+    )
 
 
 def get_data_io(format_name: str) -> DataIoInterface:
@@ -133,17 +170,17 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 @not_implemented_to_value_error
 def load_dataset(
-    file_name: str, format_name: str = None, **kwargs: Any
+    file_name: str | PathLike[str], format_name: str = None, **kwargs: Any
 ) -> xr.Dataset | xr.DataArray:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
     Parameters
     ----------
-    file_name : str
+    file_name : str | PathLike[str]
         File containing the data.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``read_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_dataloader``
         to get the implementation with the proper help and autocomplete.
@@ -154,13 +191,13 @@ def load_dataset(
         Data loaded from the file.
     """
     io = get_data_io(format_name or inferr_file_format(file_name))
-    return io.load_dataset(file_name, **kwargs)  # type: ignore[call-arg]
+    return io.load_dataset(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_dataset(
-    file_name: str,
     dataset: xr.Dataset | xr.DataArray,
+    file_name: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -170,15 +207,15 @@ def save_dataset(
 
     Parameters
     ----------
-    file_name : str
+    dataset : xr.Dataset | xr.DataArray
+        Data to be written to file.
+    file_name : str | PathLike[str]
         File to write the data to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
-    dataset: xr.Dataset|xr.DataArray
-        Data to be written to file.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs: Any
+    **kwargs : Any
         Additional keyword arguments passes to the ``write_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_datawriter``
         to get the implementation with the proper help and autocomplete.
@@ -186,7 +223,7 @@ def save_dataset(
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.save_dataset(  # type: ignore[call-arg]
-        file_name=file_name,
+        file_name=str(file_name),
         dataset=dataset,
         **kwargs,
     )
@@ -249,10 +286,18 @@ def show_data_io_method_help(
     show_method_help(io, method_name)
 
 
-def data_io_plugin_table() -> str:
+def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
     """Return registered data io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
+
+    Parameters
+    ----------
+    plugin_names : bool
+        Whether or not to add the names of the plugins to the table.
+    full_names : bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
@@ -260,9 +305,16 @@ def data_io_plugin_table() -> str:
         Markdown table of data io plugins.
     """
     table_data = methods_differ_from_baseclass_table(
-        DATA_IO_METHODS, known_data_formats(), get_data_io, DataIoInterface
+        DATA_IO_METHODS,
+        known_data_formats(full_names=full_names),
+        get_data_io,
+        DataIoInterface,
+        plugin_names=plugin_names,
     )
-    headers = tuple(map(lambda x: f"__{x}__", ["Plugin", *DATA_IO_METHODS]))
+    header_values = ["Format name", *DATA_IO_METHODS]
+    if plugin_names:
+        header_values.append("Plugin name")
+    headers = tuple(map(lambda x: f"__{x}__", header_values))
     return tabulate(
         bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
     )

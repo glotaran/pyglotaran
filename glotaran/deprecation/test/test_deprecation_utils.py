@@ -345,3 +345,15 @@ def test_deprecate_submodule_import_error(recwarn: WarningsRecorder):
         )
         assert len(recwarn) == 0
         assert Path(record[0].filename) == Path(__file__)  # type:ignore[index]
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_submodule_attr__file__(recwarn: WarningsRecorder):
+    """Now warning when inspecting __file__ attribute (pytest using inspect)"""
+    warnings.simplefilter("always")
+
+    from glotaran.deprecation.test import dummy_package
+
+    dummy_package.__file__
+
+    assert len(recwarn) == 0

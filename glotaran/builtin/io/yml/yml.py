@@ -138,10 +138,10 @@ class YmlProjectIo(ProjectIoInterface):
             saving=saving,
         )
 
-    def save_scheme(self, file_name: str, scheme: Scheme):
+    def save_scheme(self, scheme: Scheme, file_name: str):
         _write_dict(file_name, dataclasses.asdict(scheme))
 
-    def save_result(self, result_path: str, result: Result):
+    def save_result(self, result: Result, result_path: str):
         options = result.scheme.saving
 
         if os.path.exists(result_path):
@@ -164,20 +164,20 @@ class YmlProjectIo(ProjectIoInterface):
         initial_parameters_path = os.path.join(
             result_path, f"initial_parameters.{parameters_format}"
         )
-        save_parameters(initial_parameters_path, result.initial_parameters, parameters_format)
+        save_parameters(result.initial_parameters, initial_parameters_path, parameters_format)
         result.initial_parameters = initial_parameters_path
         result_scheme.parameters = initial_parameters_path
 
         optimized_parameters_path = os.path.join(
             result_path, f"optimized_parameters.{parameters_format}"
         )
-        save_parameters(optimized_parameters_path, result.optimized_parameters, parameters_format)
+        save_parameters(result.optimized_parameters, optimized_parameters_path, parameters_format)
         result.optimized_parameters = optimized_parameters_path
 
         dataset_format = options.data_format
         for label, dataset in result.data.items():
             dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            save_dataset(dataset_path, dataset, dataset_format, saving_options=options)
+            save_dataset(dataset, dataset_path, dataset_format, saving_options=options)
             result.data[label] = dataset_path
             result_scheme.data[label] = dataset_path
 
@@ -185,7 +185,7 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(result_file_path, dataclasses.asdict(result))
         result_scheme.result_path = result_file_path
 
-        self.save_scheme(scheme_path, result_scheme)
+        self.save_scheme(scheme=result_scheme, file_name=scheme_path)
 
 
 def _write_dict(file_name: str, d: dict):

@@ -279,8 +279,8 @@ class AsciiDataIo(DataIoInterface):
 
     def save_dataset(
         self,
-        file_name: str,
         dataset: xr.DataArray,
+        file_name: str,
         *,
         comment: str = "",
         file_format: DataFileType = DataFileType.time_explicit,

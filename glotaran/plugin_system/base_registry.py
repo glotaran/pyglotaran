@@ -6,6 +6,7 @@ This is to prevent issues with circular imports.
 """
 from __future__ import annotations
 
+import os
 from importlib import metadata
 from typing import TYPE_CHECKING
 from warnings import warn
@@ -75,9 +76,9 @@ class PluginOverwriteWarning(UserWarning):
         self,
         *args: Any,
         old_key: str,
-        new_key: str,
         old_plugin: object | type[object],
         new_plugin: object | type[object],
+        plugin_set_func_name: str,
     ):
         """Use old and new plugin and keys to give verbose warning message.
 
@@ -85,20 +86,22 @@ class PluginOverwriteWarning(UserWarning):
         ----------
         old_key : str
             Old registry key.
-        new_key : str
-            New none conflicting registry key.
         old_plugin :  object | type[object]
             Old plugin ('registry[old_key]').
         new_plugin :  object | type[object]
             New Plugin ('registry[new_key]').
+        plugin_set_func_name: str
+            Name of the function used to pin a plugin.
         *args : Any
             Additional args passed to the super constructor.
         """
         old_plugin_name = full_plugin_name(old_plugin)
         new_plugin_name = full_plugin_name(new_plugin)
         message = (
-            f"The plugin {new_plugin_name!r} tried to overwrite the plugin {old_plugin_name!r}, "
-            f"with the access_name {old_key!r}. Use {new_key!r} to access {new_plugin_name!r}."
+            f"The plugin '{new_plugin_name}' tried to overwrite the plugin '{old_plugin_name}', "
+            f"with the access_name {old_key!r}. "
+            f"Use {plugin_set_func_name}({old_key!r}, {new_plugin_name!r}) "
+            f"to use {new_plugin_name!r} instead."
         )
         super().__init__(message, *args)
 
@@ -115,67 +118,77 @@ def load_plugins():
     - ``glotaran.plugins.model``
     - ``glotaran.plugins.project_io``
     """
-    for entry_point_name, entry_points in metadata.entry_points().items():
-        if entry_point_name.startswith("glotaran.plugins"):
-            for entry_point in entry_points:
-                entry_point.load()
+    if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
+        for entry_point_name, entry_points in metadata.entry_points().items():
+            if entry_point_name.startswith("glotaran.plugins"):
+                for entry_point in entry_points:
+                    entry_point.load()
 
 
-def extend_conflicting_plugin_key(
-    plugin_registry_key: str,
-    plugin: object | type[object],
+def set_plugin(
+    plugin_register_key: str,
+    full_plugin_name: str,
     plugin_registry: MutableMapping[str, _PluginType],
-    numerical_postfix: int = 0,
-) -> str:
-    """Postfix a plugin_registry_key with the module name the plugin originates from.
+    plugin_register_key_name: str = "format_name",
+) -> None:
+    """Set a plugins short name to a specific plugin referred by its full name.
+
+    This can be used to ensure that a specific plugin is used in case there
+    are conflicting plugins installed.
 
     Parameters
     ----------
-    plugin_registry_key : str
-        Original key a plugin tried to register itself with.
-    plugin : object | type[object]
-        Plugin instance or class to be added.
+    plugin_register_key : str
+        Name of the plugin under which it is registered.
+    full_plugin_name : str
+        Full name (import path) of the registered plugin.
     plugin_registry : MutableMapping[str, _PluginType]
-        Register the plugin should be added to.
-    numerical_postfix : int
-        Additional postfix if the fixed key already exists , by default 0
+        Registry the plugin should be set in to.
+    plugin_register_key_name: str
+        Name of the arg passed ``plugin_register_key`` in the function that implements
+        ``set_plugin``.
 
-    Returns
-    -------
-    str
-        New key for the plugin which isn't in the plugin register yet.
+    Raises
+    ------
+    ValueError
+        If ``plugin_register_key`` has the character '.' in it.
+    ValueError
+        If there isn't a registered plugin with the key ``full_plugin_name``.
 
     See Also
     --------
-    add_plugin_to_register
+    add_plugin_to_registry
+    full_plugin_name
     """
-    origin_module = plugin.__module__
-    if origin_module.startswith("glotaran.builtin"):
-        new_plugin_registry_key = f"{plugin_registry_key}_gta"
-    else:
-        origin_module, _, _ = origin_module.partition(".")
-        new_plugin_registry_key = f"{plugin_registry_key}_{origin_module}"
-
-    if numerical_postfix != 0:
-        new_plugin_registry_key = f"{new_plugin_registry_key}_{numerical_postfix}"
-
-    if new_plugin_registry_key not in plugin_registry:
-        return new_plugin_registry_key
-    else:
-        return extend_conflicting_plugin_key(
-            plugin_registry_key,
-            plugin,
-            plugin_registry,
-            numerical_postfix + 1,
+    if "." in plugin_register_key:
+        raise ValueError(
+            f"The value of {plugin_register_key_name!r} isn't "
+            "allowed to contain the character '.' ."
         )
+    if "." not in full_plugin_name or not is_registered_plugin(
+        plugin_register_key=full_plugin_name, plugin_registry=plugin_registry
+    ):
+        known_plugins = list(
+            filter(lambda plugin_name: "." in plugin_name, plugin_registry.keys())
+        )
+        raise ValueError(
+            f"There isn't a plugin registered under the full name {full_plugin_name!r}.\n"
+            f"Maybe you need to install a plugin? Known plugins are:\n {known_plugins}"
+        )
+    plugin_registry[plugin_register_key] = plugin_registry[full_plugin_name]
 
 
 def add_plugin_to_registry(
     plugin_register_key: str,
     plugin: _PluginType,
     plugin_registry: MutableMapping[str, _PluginType],
+    plugin_set_func_name: str,
+    instance_identifier: str = "",
 ) -> None:
     """Add a plugin with name ``plugin_register_key`` to the given registry.
+
+    In addition it also adds the plugin with it full import path name as key,
+    which allows for a better reproducibility in case there are conflicting plugins.
 
     Parameters
     ----------
@@ -185,24 +198,43 @@ def add_plugin_to_registry(
         Plugin to be added to the registry.
     plugin_registry: MutableMapping[str, _PluginType]
         Registry the plugin should be added to.
+    plugin_set_func_name: str
+        Name of the function used to pin a plugin.
+    instance_identifier: str
+        Used to differentiate between plugin instances
+        (e.g. different format for IO plugins)
+
+    Raises
+    ------
+    ValueError
+        If ``plugin_register_key`` has the character '.' in it.
 
     See Also
     --------
     add_instantiated_plugin_to_register
+    full_plugin_name
     """
+    if "." in plugin_register_key:
+        raise ValueError(
+            "The character '.' isn't allowed in the name of a plugin, "
+            f"you provided the name {plugin_register_key!r}."
+        )
     if plugin_register_key in plugin_registry:
         old_key = plugin_register_key
-        plugin_register_key = extend_conflicting_plugin_key(
-            plugin_register_key, plugin, plugin_registry
-        )
-        warn(
-            PluginOverwriteWarning(
-                old_key=old_key,
-                new_key=plugin_register_key,
-                old_plugin=plugin_registry[old_key],
-                new_plugin=plugin,
+        plugin_register_key = full_plugin_name(plugin)
+        if full_plugin_name(plugin_registry[old_key]) != full_plugin_name(plugin):
+            warn(
+                PluginOverwriteWarning(
+                    old_key=old_key,
+                    old_plugin=plugin_registry[old_key],
+                    new_plugin=plugin,
+                    plugin_set_func_name=plugin_set_func_name,
+                ),
+                stacklevel=4,
             )
-        )
+    if instance_identifier:
+        instance_identifier = f"_{instance_identifier}"
+    plugin_registry[f"{full_plugin_name(plugin)}{instance_identifier}"] = plugin
     plugin_registry[plugin_register_key] = plugin
 
 
@@ -210,6 +242,7 @@ def add_instantiated_plugin_to_registry(
     plugin_register_keys: str | list[str],
     plugin_class: type[_PluginInstantiableType],
     plugin_registry: MutableMapping[str, _PluginInstantiableType],
+    plugin_set_func_name: str,
 ) -> None:
     """Add instances of plugin_class to the given registry.
 
@@ -222,6 +255,8 @@ def add_instantiated_plugin_to_registry(
         and added to the registry.
     plugin_registry : MutableMapping[str, _PluginInstantiableType]
         Registry the plugin should be added to.
+    plugin_set_func_name: str
+        Name of the function used to pin a plugin.
 
     See Also
     --------
@@ -233,26 +268,37 @@ def add_instantiated_plugin_to_registry(
         # The type ignore is needed due to an issue with mypy
         # ``Cannot instantiate type "Type[Type[DataIoInterface]]"``
         add_plugin_to_registry(
-            plugin_register_key,
-            plugin_class(plugin_register_key),  # type:ignore[misc]
-            plugin_registry,
+            plugin_register_key=plugin_register_key,
+            plugin=plugin_class(plugin_register_key),  # type:ignore[misc]
+            plugin_registry=plugin_registry,
+            plugin_set_func_name=plugin_set_func_name,
+            instance_identifier=plugin_register_key,
         )
 
 
-def registered_plugins(plugin_registry: MutableMapping[str, _PluginType]) -> list[str]:
+def registered_plugins(
+    plugin_registry: MutableMapping[str, _PluginType], full_names: bool = False
+) -> list[str]:
     """Names of the plugins in the given registry.
 
     Parameters
     ----------
     plugin_registry : MutableMapping[str, _PluginType]
         Registry to search in.
+    full_names: bool
+        Whether to display the full names the plugins are
+        registered under as well.
 
     Returns
     -------
     list[str]
         List of plugin names in plugin_registry.
     """
-    return list(plugin_registry.keys())
+    if full_names:
+        return sorted(list(plugin_registry.keys()))
+
+    else:
+        return sorted(list(filter(lambda key: "." not in key, plugin_registry.keys())))
 
 
 def is_registered_plugin(
@@ -402,6 +448,7 @@ def methods_differ_from_baseclass_table(
     plugin_registry_keys: str | Sequence[str],
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
     base_class: type[GenericPluginInstance],
+    plugin_names: bool = False,
 ) -> list[list[str | bool]]:
     """Create table of which plugins methods differ from their baseclass.
 
@@ -425,6 +472,8 @@ def methods_differ_from_baseclass_table(
         Function to get plugin from plugin registry.
     base_class : type[GenericPluginInstance]
         Base class the plugin inherited from.
+    plugin_names : bool
+        Whether or not to add the names of the plugins to the lists.
 
     Returns
     -------
@@ -443,5 +492,14 @@ def methods_differ_from_baseclass_table(
     for plugin_registry_key in plugin_registry_keys:
         plugin = get_plugin_function(plugin_registry_key)
         differs_list = methods_differ_from_baseclass(method_names, plugin, base_class)
-        differs_table.append([plugin_registry_key, *differs_list])
+        row: list[str | bool] = [f"`{plugin_registry_key}`", *differs_list]
+        if plugin_names:
+            if type(plugin) is not type:
+                if "." in plugin_registry_key:
+                    row.append(f"`{plugin_registry_key}`")
+                else:
+                    row.append(f"`{full_plugin_name(plugin)}_{plugin_registry_key}`")
+            else:
+                row.append(f"`{full_plugin_name(plugin)}`")
+        differs_table.append(row)
     return differs_table
