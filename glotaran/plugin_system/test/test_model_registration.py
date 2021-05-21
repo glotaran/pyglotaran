@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
@@ -7,6 +8,8 @@ import pytest
 
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.model import Model
+from glotaran.model import model
+from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.model_registration import get_model
 from glotaran.plugin_system.model_registration import is_known_model
@@ -32,7 +35,8 @@ def mocked_registry(monkeypatch: MonkeyPatch):
     )
 
 
-def test_register_model(mocked_registry):
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_model():
     """Register new model."""
     register_model("base-model", Model)
 
@@ -49,6 +53,30 @@ def test_register_model(mocked_registry):
             "glotaran.model.base_model.Model",
         ]
     )
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_model_warning():
+    """PluginOverwriteWarning raised pointing to correct file."""
+
+    class DummyAttr:
+        _glotaran_has_label = False
+
+    with pytest.warns(PluginOverwriteWarning, match="KineticImageModel.+bar.+Dummy") as record:
+
+        @model(
+            "bar",
+            attributes={},
+            megacomplex_type=DummyAttr,
+            matrix=lambda: None,  # type:ignore
+            model_dimension="",
+            global_dimension="",
+        )
+        class Dummy(Model):
+            pass
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
 
 
 @pytest.mark.usefixtures("mocked_registry")

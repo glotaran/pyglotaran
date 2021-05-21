@@ -225,7 +225,8 @@ def add_plugin_to_registry(
                     old_plugin=plugin_registry[old_key],
                     new_plugin=plugin,
                     plugin_set_func_name=plugin_set_func_name,
-                )
+                ),
+                stacklevel=4,
             )
     plugin_registry[full_plugin_name(plugin)] = plugin
     plugin_registry[plugin_register_key] = plugin
