@@ -49,7 +49,7 @@ class OnlyConstraint:
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return not any([applies(i) for i in self.interval])
+        return not any(applies(i) for i in self.interval)
 
 
 @model_attribute(
@@ -83,7 +83,7 @@ class ZeroConstraint:
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return any([applies(i) for i in self.interval])
+        return any(applies(i) for i in self.interval)
 
 
 @model_attribute_typed(

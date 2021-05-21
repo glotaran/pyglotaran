@@ -58,7 +58,7 @@ class EqualAreaPenalty:
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return any([applies(i) for i in self.interval])
+        return any(applies(i) for i in self.interval)
 
 
 def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
