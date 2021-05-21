@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
@@ -10,6 +11,7 @@ from glotaran.builtin.io.ascii.wavelength_time_explicit_file import AsciiDataIo
 from glotaran.builtin.io.netCDF.netCDF import NetCDFDataIo
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
 from glotaran.io import DataIoInterface
+from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.data_io_registration import data_io_plugin_table
 from glotaran.plugin_system.data_io_registration import get_data_io
@@ -25,7 +27,6 @@ from glotaran.plugin_system.data_io_registration import show_data_io_method_help
 
 if TYPE_CHECKING:
     from os import PathLike
-    from pathlib import Path
     from typing import Any
 
     from _pytest.capture import CaptureFixture
@@ -90,6 +91,24 @@ def test_register_data_io():
             __PluginRegistry.data_io[f"test_data_io_registration.{plugin_class.__name__}"],
             plugin_class,
         )
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_data_io_warning():
+    """PluginOverwriteWarning raised pointing to correct file."""
+
+    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:
+
+        @register_data_io("dummy")
+        class Dummy(DataIoInterface):
+            pass
+
+        @register_data_io("dummy")
+        class Dummy2(DataIoInterface):
+            pass
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
 
 
 @pytest.mark.usefixtures("mocked_registry")

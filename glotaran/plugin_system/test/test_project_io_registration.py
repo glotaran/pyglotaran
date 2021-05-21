@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
@@ -9,6 +10,7 @@ from glotaran.builtin.io.csv.csv import CsvProjectIo
 from glotaran.builtin.io.yml.yml import YmlProjectIo
 from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
+from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.project_io_registration import get_project_io
 from glotaran.plugin_system.project_io_registration import get_project_io_method
@@ -29,7 +31,6 @@ from glotaran.plugin_system.project_io_registration import show_project_io_metho
 
 if TYPE_CHECKING:
     from os import PathLike
-    from pathlib import Path
     from typing import Any
     from typing import Callable
 
@@ -154,6 +155,24 @@ def test_register_project_io():
             plugin_class,
         )
         assert __PluginRegistry.project_io[format_name].format == format_name
+
+
+@pytest.mark.usefixtures("mocked_registry")
+def test_register_project_io_warning():
+    """PluginOverwriteWarning raised pointing to correct file."""
+
+    with pytest.warns(PluginOverwriteWarning, match="Dummy.+dummy.+Dummy2") as record:
+
+        @register_project_io("dummy")
+        class Dummy(ProjectIoInterface):
+            pass
+
+        @register_project_io("dummy")
+        class Dummy2(ProjectIoInterface):
+            pass
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
 
 
 @pytest.mark.usefixtures("mocked_registry")
