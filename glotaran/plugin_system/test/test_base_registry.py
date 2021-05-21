@@ -84,14 +84,6 @@ def test_full_plugin_name(plugin: object | type[object], expected: str):
 def test_PluginOverwriteWarning():
     """Ignore the values this is just for testing, even if it doesn't make sense."""
 
-    expected = (
-        "The plugin 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' tried to "
-        "overwrite the plugin 'glotaran.builtin.io.yml.yml.YmlProjectIo', "
-        "with the access_name 'yml'. "
-        "Use set_plugin('yml', 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo') "
-        "to use 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' instead."
-    )
-
     with pytest.warns(PluginOverwriteWarning) as record:
         warn(
             PluginOverwriteWarning(
@@ -103,6 +95,14 @@ def test_PluginOverwriteWarning():
         )
 
         assert len(record) == 1
+        expected = (
+            "The plugin 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' tried to "
+            "overwrite the plugin 'glotaran.builtin.io.yml.yml.YmlProjectIo', "
+            "with the access_name 'yml'. "
+            "Use set_plugin('yml', 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo') "
+            "to use 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' instead."
+        )
+
         assert record[0].message.args[0] == expected  # type: ignore
 
 
@@ -368,9 +368,7 @@ def test_methods_differ_from_baseclass_table(
     def get_plugin_function(plugin_registry_key: str):
         if plugin_registry_key == "base":
             return MockPlugin
-        elif plugin_registry_key == "sub_class":
-            return MockPluginSubclass
-        elif plugin_registry_key == "sub_class_inst":
+        elif plugin_registry_key in ["sub_class", "sub_class_inst"]:
             return MockPluginSubclass
 
     result = methods_differ_from_baseclass_table(
