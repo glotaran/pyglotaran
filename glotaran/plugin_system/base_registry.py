@@ -183,6 +183,7 @@ def add_plugin_to_registry(
     plugin: _PluginType,
     plugin_registry: MutableMapping[str, _PluginType],
     plugin_set_func_name: str,
+    instance_identifier: str = "",
 ) -> None:
     """Add a plugin with name ``plugin_register_key`` to the given registry.
 
@@ -199,6 +200,9 @@ def add_plugin_to_registry(
         Registry the plugin should be added to.
     plugin_set_func_name: str
         Name of the function used to pin a plugin.
+    instance_identifier: str
+        Used to differentiate between plugin instances
+        (e.g. different format for IO plugins)
 
     Raises
     ------
@@ -228,7 +232,9 @@ def add_plugin_to_registry(
                 ),
                 stacklevel=4,
             )
-    plugin_registry[full_plugin_name(plugin)] = plugin
+    if instance_identifier:
+        instance_identifier = f"_{instance_identifier}"
+    plugin_registry[f"{full_plugin_name(plugin)}{instance_identifier}"] = plugin
     plugin_registry[plugin_register_key] = plugin
 
 
@@ -266,6 +272,7 @@ def add_instantiated_plugin_to_registry(
             plugin=plugin_class(plugin_register_key),  # type:ignore[misc]
             plugin_registry=plugin_registry,
             plugin_set_func_name=plugin_set_func_name,
+            instance_identifier=plugin_register_key,
         )
 
 
@@ -487,6 +494,12 @@ def methods_differ_from_baseclass_table(
         differs_list = methods_differ_from_baseclass(method_names, plugin, base_class)
         row: list[str | bool] = [f"`{plugin_registry_key}`", *differs_list]
         if plugin_names:
-            row.append(f"`{full_plugin_name(plugin)}`")
+            if type(plugin) is not type:
+                if "." in plugin_registry_key:
+                    row.append(f"`{plugin_registry_key}`")
+                else:
+                    row.append(f"`{full_plugin_name(plugin)}_{plugin_registry_key}`")
+            else:
+                row.append(f"`{full_plugin_name(plugin)}`")
         differs_table.append(row)
     return differs_table

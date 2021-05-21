@@ -56,7 +56,7 @@ to the beginning of your analysis code.
 .. code-block:: python
 
     from glotaran.io import set_data_plugin
-    set_data_plugin("sdt", "glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo")
+    set_data_plugin("sdt", "glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo_sdt")
 
 Models
 ^^^^^^

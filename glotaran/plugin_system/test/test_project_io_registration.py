@@ -130,7 +130,7 @@ def mocked_registry(monkeypatch: MonkeyPatch):
         {
             "foo": ProjectIoInterface("foo"),
             "mock": MockProjectIo("bar"),
-            "test_project_io_registration.MockProjectIo": MockProjectIo("bar"),
+            "test_project_io_registration.MockProjectIo_bar": MockProjectIo("bar"),
         },
     )
 
@@ -151,7 +151,9 @@ def test_register_project_io():
         assert format_name in __PluginRegistry.project_io
         assert isinstance(__PluginRegistry.project_io[format_name], plugin_class)
         assert isinstance(
-            __PluginRegistry.project_io[f"test_project_io_registration.{plugin_class.__name__}"],
+            __PluginRegistry.project_io[
+                f"test_project_io_registration.{plugin_class.__name__}_{format_name}"
+            ],
             plugin_class,
         )
         assert __PluginRegistry.project_io[format_name].format == format_name
@@ -189,8 +191,10 @@ def test_known_project_format_actual_register():
     assert is_known_project_format("yaml")
     assert is_known_project_format("yml_str")
     assert is_known_project_format("csv")
-    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo")
-    assert is_known_project_format("glotaran.builtin.io.csv.csv.CsvProjectIo")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yml")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yaml")
+    assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yml_str")
+    assert is_known_project_format("glotaran.builtin.io.csv.csv.CsvProjectIo_csv")
 
 
 @pytest.mark.parametrize(
@@ -218,7 +222,7 @@ def test_known_project_formats():
 def test_set_project_plugin():
     """Set Change Plugin used for format foo"""
     assert isinstance(get_project_io("foo"), ProjectIoInterface)
-    set_project_plugin("foo", "test_project_io_registration.MockProjectIo")
+    set_project_plugin("foo", "test_project_io_registration.MockProjectIo_bar")
     assert isinstance(get_project_io("foo"), MockProjectIo)
 
 
@@ -370,11 +374,11 @@ def test_project_io_plugin_table_full():
     """Full Table with all extras"""
     expected = dedent(
         """\
-        |               __Format name__                |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |               __Plugin name__                |
-        |----------------------------------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|----------------------------------------------|
-        |                    `foo`                     |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |  `glotaran.io.interface.ProjectIoInterface`  |
-        |                    `mock`                    |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo` |
-        | `test_project_io_registration.MockProjectIo` |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo` |
+        |                 __Format name__                  |  __load_model__  |  __save_model__  |  __load_parameters__  |  __save_parameters__  |  __load_scheme__  |  __save_scheme__  |  __load_result__  |  __save_result__  |                  __Plugin name__                  |
+        |--------------------------------------------------|------------------|------------------|-----------------------|-----------------------|-------------------|-------------------|-------------------|-------------------|---------------------------------------------------|
+        |                      `foo`                       |        /         |        /         |           /           |           /           |         /         |         /         |         /         |         /         |  `glotaran.io.interface.ProjectIoInterface_foo`   |
+        |                      `mock`                      |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo_mock` |
+        | `test_project_io_registration.MockProjectIo_bar` |        *         |        *         |           *           |           *           |         *         |         *         |         *         |         *         | `test_project_io_registration.MockProjectIo_bar`  |
         """  # noqa: E501
     )
 

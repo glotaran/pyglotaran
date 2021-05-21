@@ -66,7 +66,7 @@ def mocked_registry(monkeypatch: MonkeyPatch):
         {
             "foo": DataIoInterface("foo"),
             "mock": MockDataIO("bar"),
-            "test_data_io_registration.MockDataIO": MockDataIO("bar"),
+            "test_data_io_registration.MockDataIO_bar": MockDataIO("bar"),
         },
     )
 
@@ -88,7 +88,9 @@ def test_register_data_io():
         assert isinstance(__PluginRegistry.data_io[format_name], plugin_class)
         assert __PluginRegistry.data_io[format_name].format == format_name
         assert isinstance(
-            __PluginRegistry.data_io[f"test_data_io_registration.{plugin_class.__name__}"],
+            __PluginRegistry.data_io[
+                f"test_data_io_registration.{plugin_class.__name__}_{format_name}"
+            ],
             plugin_class,
         )
 
@@ -124,11 +126,11 @@ def test_known_data_format_actual_register():
     assert is_known_data_format("sdt")
     assert is_known_data_format("ascii")
     assert is_known_data_format("nc")
-    assert is_known_data_format("glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo")
+    assert is_known_data_format("glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo_sdt")
     assert is_known_data_format(
-        "glotaran.builtin.io.ascii.wavelength_time_explicit_file.AsciiDataIo"
+        "glotaran.builtin.io.ascii.wavelength_time_explicit_file.AsciiDataIo_ascii"
     )
-    assert is_known_data_format("glotaran.builtin.io.netCDF.netCDF.NetCDFDataIo")
+    assert is_known_data_format("glotaran.builtin.io.netCDF.netCDF.NetCDFDataIo_nc")
 
 
 @pytest.mark.parametrize(
@@ -155,7 +157,7 @@ def test_known_data_formats():
 def test_set_data_plugin():
     """Set Change Plugin used for format foo"""
     assert isinstance(get_data_io("foo"), DataIoInterface)
-    set_data_plugin("foo", "test_data_io_registration.MockDataIO")
+    set_data_plugin("foo", "test_data_io_registration.MockDataIO_bar")
     assert isinstance(get_data_io("foo"), MockDataIO)
 
 
@@ -277,11 +279,11 @@ def test_data_io_plugin_table_full():
     """Full Table with all extras"""
     expected = dedent(
         """\
-        |            __Format name__             |  __load_dataset__  |  __save_dataset__  |             __Plugin name__             |
-        |----------------------------------------|--------------------|--------------------|-----------------------------------------|
-        |                 `foo`                  |         /          |         /          | `glotaran.io.interface.DataIoInterface` |
-        |                 `mock`                 |         *          |         *          | `test_data_io_registration.MockDataIO`  |
-        | `test_data_io_registration.MockDataIO` |         *          |         *          | `test_data_io_registration.MockDataIO`  |
+        |              __Format name__               |  __load_dataset__  |  __save_dataset__  |               __Plugin name__               |
+        |--------------------------------------------|--------------------|--------------------|---------------------------------------------|
+        |                   `foo`                    |         /          |         /          | `glotaran.io.interface.DataIoInterface_foo` |
+        |                   `mock`                   |         *          |         *          | `test_data_io_registration.MockDataIO_mock` |
+        | `test_data_io_registration.MockDataIO_bar` |         *          |         *          | `test_data_io_registration.MockDataIO_bar`  |
         """  # noqa: E501
     )
 
