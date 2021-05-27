@@ -78,9 +78,8 @@ def model(
     model_type: str,
     attributes: dict[str, Any] = None,
     dataset_type: type[DatasetDescriptor] = DatasetDescriptor,
-    megacomplex_type: type[Megacomplex] = None,
-    #  megacomplex_types: dict[str, Megacomplex] = None,
-    matrix: Any = None,
+    default_megacomplex_type: str = None,
+    megacomplex_types: dict[str, Megacomplex] | type[Megacomplex] = None,
     global_matrix: GlobalMatrixFunction = None,
     model_dimension: str = None,
     global_dimension: str = None,
@@ -167,10 +166,6 @@ def model(
 
         _set_dimensions(cls, model_type, model_dimension, global_dimension)
 
-        mat = wrap_func_as_method(cls, name="matrix")(matrix)
-        mat = staticmethod(mat)
-        setattr(cls, "matrix", mat)
-
         if global_matrix:
             g_mat = wrap_func_as_method(cls, name="global_matrix")(global_matrix)
             g_mat = staticmethod(g_mat)
@@ -187,15 +182,15 @@ def model(
                 getattr(cls, "_glotaran_model_attributes").copy(),
             )
 
+        _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_types)
+
         # We add the standard attributes here.
         if not issubclass(dataset_type, DatasetDescriptor):
             raise ValueError(
                 f"Dataset descriptor of model {model_type} is not a subclass of DatasetDescriptor"
             )
         attributes["dataset"] = dataset_type
-        if not issubclass(megacomplex_type, Megacomplex):
-            warnings.warn(f"Megacomplex of model {model_type} is not a subclass of Megacomplex")
-        attributes["megacomplex"] = megacomplex_type
+        attributes["megacomplex"] = Megacomplex
         attributes["weights"] = Weight
 
         # Set annotations and methods for attributes
@@ -302,6 +297,21 @@ def _create_set_func(cls, name, item_type):
         getattr(self, f"_{name}")[label] = item
 
     return set_item
+
+
+def _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_types):
+    if not isinstance(megacomplex_types, dict):
+        megacomplex_types = {model_type: megacomplex_types}
+    for name, megacomplex_type in megacomplex_types.items():
+        if not issubclass(megacomplex_type, Megacomplex):
+            warnings.warn(
+                f"Megacomplex type {name}(megacomplex_type) is not a subclass of Megacomplex"
+            )
+    if default_megacomplex_type is None:
+        default_megacomplex_type = next(iter(megacomplex_types.keys()))
+
+    setattr(cls, "default_megacomplex_type", default_megacomplex_type)
+    setattr(cls, "megacomplex_types", megacomplex_types)
 
 
 def _create_property_for_attribute(cls, name, attribute_type):

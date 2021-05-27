@@ -10,9 +10,6 @@ from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticIma
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
     KineticSpectrumDatasetDescriptor,
 )
-from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix import (
-    kinetic_spectrum_matrix,
-)
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_result import (
     finalize_kinetic_spectrum_result,
 )
@@ -105,8 +102,8 @@ def grouped(model: KineticSpectrumModel):
         "spectral_relations": SpectralRelation,
     },
     dataset_type=KineticSpectrumDatasetDescriptor,
-    megacomplex_type=KineticImageMegacomplex,
-    matrix=kinetic_spectrum_matrix,
+    megacomplex_types=KineticImageMegacomplex,
+    #  matrix=kinetic_spectrum_matrix,
     model_dimension="time",
     global_matrix=spectral_matrix,
     global_dimension="spectral",

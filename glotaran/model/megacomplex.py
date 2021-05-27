@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from glotaran.model.dataset_descriptor import DatasetDescriptor
+from glotaran.model import DatasetDescriptor
+from glotaran.model import model_attribute
 
 
+@model_attribute(properties={"type": {"type": str, "allow_none": True}})
 class Megacomplex:
     def calculate_matrix(
         self,

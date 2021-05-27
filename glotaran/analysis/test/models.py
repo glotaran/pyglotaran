@@ -14,18 +14,6 @@ from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
 
-def calculate_c(dataset_descriptor=None, axis=None, index=None):
-    compartments = ["s1", "s2"]
-    r_compartments = []
-    array = np.zeros((axis.shape[0], len(compartments)))
-
-    for i in range(len(compartments)):
-        r_compartments.append(compartments[i])
-        for j in range(axis.shape[0]):
-            array[j, i] = (i + j) * axis[j]
-    return (r_compartments, array)
-
-
 def calculate_e(dataset, axis):
     compartments = ["s1", "s2"]
     r_compartments = []
@@ -38,12 +26,7 @@ def calculate_e(dataset, axis):
     return (r_compartments, array)
 
 
-@model_attribute(
-    properties={
-        #  "grouped": bool,
-        #  "indexdependent": bool,
-    }
-)
+@model_attribute()
 class SimpleTestMegacomplex(Megacomplex):
     def calculate_matrix(self, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
@@ -64,11 +47,10 @@ class SimpleTestMegacomplex(Megacomplex):
 @model(
     "simple_test",
     attributes={},
-    matrix=calculate_c,
     model_dimension="c",
     global_matrix=calculate_e,
     global_dimension="e",
-    megacomplex_type=SimpleTestMegacomplex,
+    megacomplex_types=SimpleTestMegacomplex,
 )
 class SimpleTestModel(Model):
     pass
@@ -262,11 +244,10 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     "one_channel",
     attributes={},
     dataset_type=DecayDatasetDescriptor,
-    matrix=calculate_c,
     model_dimension="c",
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
-    megacomplex_type=SimpleKineticMegacomplex,
+    megacomplex_types=SimpleKineticMegacomplex,
     has_additional_penalty_function=lambda model: True,
     additional_penalty_function=additional_penalty_typecheck,
     has_matrix_constraints_function=lambda model: True,
@@ -287,11 +268,10 @@ class DecayModel(Model):
     "multi_channel",
     attributes={},
     dataset_type=GaussianShapeDecayDatasetDescriptor,
-    matrix=calculate_c,
     model_dimension="c",
     global_matrix=calculate_spectral_gauss,
     global_dimension="e",
-    megacomplex_type=SimpleKineticMegacomplex,
+    megacomplex_types=SimpleKineticMegacomplex,
     grouped=lambda model: model.is_grouped,
     index_dependent=lambda model: model.is_index_dependent,
     has_additional_penalty_function=lambda model: True,
