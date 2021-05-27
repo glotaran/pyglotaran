@@ -40,8 +40,8 @@ def calculate_e(dataset, axis):
 
 @model_attribute(
     properties={
-        "grouped": bool,
-        "indexdependent": bool,
+        #  "grouped": bool,
+        #  "indexdependent": bool,
     }
 )
 class SimpleTestMegacomplex(Megacomplex):
