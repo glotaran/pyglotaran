@@ -2,10 +2,9 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
+from glotaran.analysis.problem import _calculate_matrix
+from glotaran.analysis.simulation import simulate
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
-from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_matrix import (
-    kinetic_spectrum_matrix,
-)
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
@@ -16,7 +15,8 @@ def test_coherent_artifact():
             "j1": {"compartments": ["s1"], "parameters": ["2"]},
         },
         "megacomplex": {
-            "mc1": {"k_matrix": ["k1"]},
+            "mc1": {"type": "kinetic-decay", "k_matrix": ["k1"]},
+            "mc2": {"type": "coherent-artifact", "order": 3},
         },
         "k_matrix": {
             "k1": {
@@ -27,16 +27,15 @@ def test_coherent_artifact():
         },
         "irf": {
             "irf1": {
-                "type": "gaussian-coherent-artifact",
+                "type": "spectral-gaussian",
                 "center": "2",
                 "width": "3",
-                "coherent_artifact_order": 3,
             },
         },
         "dataset": {
             "dataset1": {
                 "initial_concentration": "j1",
-                "megacomplex": ["mc1"],
+                "megacomplex": ["mc1", "mc2"],
                 "irf": "irf1",
             },
         },
@@ -54,20 +53,8 @@ def test_coherent_artifact():
 
     time = np.asarray(np.arange(0, 50, 1.5))
 
-    irf = model.irf["irf1"].fill(model, parameters)
-    irf_same_width = irf.calculate_coherent_artifact(time)
-
-    model_dict["irf"]["irf1"]["coherent_artifact_width"] = "4"
-    model = KineticSpectrumModel.from_dict(model_dict)
-
-    irf = model.irf["irf1"].fill(model, parameters)
-    irf_diff_width = irf.calculate_coherent_artifact(time)
-
-    assert np.array_equal(irf_same_width[0], irf_diff_width[0])  # labels the same
-    assert not np.array_equal(irf_same_width[1], irf_diff_width[1])  # but content is not
-
     data = model.dataset["dataset1"].fill(model, parameters)
-    compartments, matrix = kinetic_spectrum_matrix(data, time, 0)
+    compartments, matrix = _calculate_matrix(model, data, {}, {"time": time})
 
     assert len(compartments) == 4
     for i in range(1, 4):
@@ -91,7 +78,7 @@ def test_coherent_artifact():
         ],
     )
     axis = {"time": time, "spectral": clp.spectral}
-    data = model.simulate("dataset1", parameters, axis, clp)
+    data = simulate(model, "dataset1", parameters, axis, clp)
 
     dataset = {"dataset1": data}
     scheme = Scheme(

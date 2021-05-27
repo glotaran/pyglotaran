@@ -609,11 +609,11 @@ class Problem:
             self._reduced_matrices[label] = []
             descriptor = self._filled_dataset_descriptors[label]
 
-            for index in problem.global_axis:
+            for i, index in enumerate(problem.global_axis):
                 result = _calculate_matrix(
                     self._model,
                     descriptor,
-                    {self._global_dimension: index},
+                    {self._global_dimension: i},
                     {
                         self._model_dimension: problem.model_axis,
                         self._global_dimension: problem.global_axis,

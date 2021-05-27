@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
+from glotaran.analysis.simulation import simulate
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.project import Scheme
@@ -116,7 +117,7 @@ def test_spectral_irf(suite):
     print(model.validate(parameters))
     assert model.valid(parameters)
 
-    dataset = model.simulate("dataset1", parameters, suite.axis)
+    dataset = simulate(model, "dataset1", parameters, suite.axis)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 

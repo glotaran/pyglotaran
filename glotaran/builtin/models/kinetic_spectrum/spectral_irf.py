@@ -141,4 +141,3 @@ class IrfGaussianCoherentArtifact(IrfSpectralGaussian):
 
 Irf.add_type("spectral-multi-gaussian", IrfSpectralMultiGaussian)
 Irf.add_type("spectral-gaussian", IrfSpectralGaussian)
-Irf.add_type("gaussian-coherent-artifact", IrfGaussianCoherentArtifact)

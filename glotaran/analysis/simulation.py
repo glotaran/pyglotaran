@@ -36,7 +36,7 @@ def simulate(
     axes :
         A dictionary with axes for simulation.
     clp :
-        Conditionally linear parameters. Will be used instead of `model.global_matrix` if given.
+        conditionally linear parameters. Will be used instead of `model.global_matrix` if given.
     noise :
         Add noise to the simulation.
     noise_std_dev :
@@ -74,7 +74,7 @@ def simulate(
                 {model.global_dimension: index},
                 {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
             )
-            for index in global_dimension
+            for index, _ in enumerate(global_dimension)
         ]
         if model.index_dependent()
         else _calculate_matrix(

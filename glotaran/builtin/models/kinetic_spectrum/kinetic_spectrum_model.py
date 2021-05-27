@@ -10,6 +10,9 @@ from glotaran.builtin.models.kinetic_image.kinetic_baseline_megacomplex import (
 )
 from glotaran.builtin.models.kinetic_image.kinetic_decay_megacomplex import KineticDecayMegacomplex
 from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
+from glotaran.builtin.models.kinetic_spectrum.coherent_artifact_megacomplex import (
+    CoherentArtifactMegacomplex,
+)
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
     KineticSpectrumDatasetDescriptor,
 )
@@ -105,7 +108,9 @@ def grouped(model: KineticSpectrumModel):
         "spectral_relations": SpectralRelation,
     },
     dataset_type=KineticSpectrumDatasetDescriptor,
+    default_megacomplex_type="kinetic-decay",
     megacomplex_types={
+        "coherent-artifact": CoherentArtifactMegacomplex,
         "kinetic-decay": KineticDecayMegacomplex,
         "kinetic-baseline": KineticBaselineMegacomplex,
     },
