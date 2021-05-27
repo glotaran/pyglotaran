@@ -10,6 +10,7 @@ from glotaran.model import model_attribute
 class Megacomplex:
     def calculate_matrix(
         self,
+        model,
         dataset_descriptor: DatasetDescriptor,
         indices: dict[str, int],
         axis: dict[str, np.ndarray],

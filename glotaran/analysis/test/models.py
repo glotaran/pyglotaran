@@ -28,7 +28,7 @@ def calculate_e(dataset, axis):
 
 @model_attribute()
 class SimpleTestMegacomplex(Megacomplex):
-    def calculate_matrix(self, dataset_descriptor, indices, axis, **kwargs):
+    def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
         assert "e" in axis
 
@@ -58,7 +58,7 @@ class SimpleTestModel(Model):
 
 @model_attribute(properties={})
 class SimpleKineticMegacomplex(Megacomplex):
-    def calculate_matrix(self, dataset_descriptor, indices, axis, **kwargs):
+    def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
         assert "e" in axis
         axis = axis["c"]

@@ -535,6 +535,7 @@ class Problem:
             result = [
                 (
                     _calculate_matrix(
+                        self._model,
                         descriptors[problem.label],
                         problem.indices,
                         problem.axis,
@@ -610,6 +611,7 @@ class Problem:
 
             for index in problem.global_axis:
                 result = _calculate_matrix(
+                    self._model,
                     descriptor,
                     {self._global_dimension: index},
                     {
@@ -668,6 +670,7 @@ class Problem:
             model_axis = self._data[label].coords[self._model_dimension].values
             global_axis = self._data[label].coords[self._global_dimension].values
             result = _calculate_matrix(
+                self._model,
                 descriptor,
                 {},
                 {
@@ -1177,6 +1180,7 @@ def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
 
 
 def _calculate_matrix(
+    model: Model,
     dataset_descriptor: DatasetDescriptor,
     indices: dict[str, int],
     axis: dict[str, np.ndarray],
@@ -1186,7 +1190,7 @@ def _calculate_matrix(
 
     for scale, megacomplex in dataset_descriptor.iterate_megacomplexes():
         this_clp_labels, this_matrix = megacomplex.calculate_matrix(
-            dataset_descriptor, indices, axis
+            model, dataset_descriptor, indices, axis
         )
 
         if scale is not None:

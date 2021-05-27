@@ -5,7 +5,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.builtin.models.kinetic_image.kinetic_baseline_megacomplex import (
+    KineticBaselineMegacomplex,
+)
+from glotaran.builtin.models.kinetic_image.kinetic_decay_megacomplex import KineticDecayMegacomplex
 from glotaran.builtin.models.kinetic_image.kinetic_image_model import KineticImageModel
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
     KineticSpectrumDatasetDescriptor,
@@ -102,8 +105,10 @@ def grouped(model: KineticSpectrumModel):
         "spectral_relations": SpectralRelation,
     },
     dataset_type=KineticSpectrumDatasetDescriptor,
-    megacomplex_types=KineticImageMegacomplex,
-    #  matrix=kinetic_spectrum_matrix,
+    megacomplex_types={
+        "kinetic-decay": KineticDecayMegacomplex,
+        "kinetic-baseline": KineticBaselineMegacomplex,
+    },
     model_dimension="time",
     global_matrix=spectral_matrix,
     global_dimension="spectral",

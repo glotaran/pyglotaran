@@ -4,6 +4,10 @@ import xarray as xr
 
 from glotaran.analysis.problem import Problem
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
+from glotaran.builtin.models.kinetic_image.kinetic_baseline_megacomplex import (
+    KineticBaselineMegacomplex,
+)
+from glotaran.builtin.models.kinetic_image.kinetic_decay_megacomplex import KineticDecayMegacomplex
 
 
 def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Dataset]):
@@ -12,13 +16,13 @@ def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Da
 
         dataset_descriptor = problem.filled_dataset_descriptors[label]
 
-        if not dataset_descriptor.has_k_matrix():
-            continue
-
         retrieve_species_associated_data(problem.model, dataset, dataset_descriptor, "images")
         retrieve_decay_associated_data(problem.model, dataset, dataset_descriptor, "images")
 
-        if dataset_descriptor.baseline:
+        if any(
+            isinstance(megacomplex, KineticBaselineMegacomplex)
+            for megacomplex in dataset_descriptor.megacomplex
+        ):
             dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
 
         retrieve_irf(problem.model, dataset, dataset_descriptor, "images")
@@ -26,8 +30,6 @@ def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Da
 
 def retrieve_species_associated_data(model, dataset, dataset_descriptor, name):
     compartments = dataset_descriptor.initial_concentration.compartments
-
-    compartments = [c for c in compartments if c in dataset_descriptor.compartments()]
 
     dataset.coords["species"] = compartments
     dataset[f"species_associated_{name}"] = (
@@ -68,46 +70,47 @@ def retrieve_decay_associated_data(model, dataset, dataset_descriptor, name):
     all_das_labels = []
     for megacomplex in dataset_descriptor.megacomplex:
 
-        k_matrix = megacomplex.full_k_matrix()
-        if k_matrix is None:
-            continue
+        if isinstance(megacomplex, KineticDecayMegacomplex):
+            k_matrix = megacomplex.full_k_matrix()
 
-        compartments = dataset_descriptor.initial_concentration.compartments
-        compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
+            compartments = dataset_descriptor.initial_concentration.compartments
+            compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
 
-        matrix = k_matrix.full(compartments)
-        matrix_reduced = k_matrix.reduced(compartments)
-        a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
-        rates = k_matrix.rates(dataset_descriptor.initial_concentration)
-        lifetimes = 1 / rates
+            matrix = k_matrix.full(compartments)
+            matrix_reduced = k_matrix.reduced(compartments)
+            a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
+            rates = k_matrix.rates(dataset_descriptor.initial_concentration)
+            lifetimes = 1 / rates
 
-        das = dataset[f"species_associated_{name}"].sel(species=compartments).values @ a_matrix.T
-
-        component_coords = {"rate": ("component", rates), "lifetime": ("component", lifetimes)}
-
-        das_coords = component_coords.copy()
-        das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
-        all_das_labels.append(megacomplex.label)
-        all_das.append(
-            xr.DataArray(das, dims=(model.global_dimension, "component"), coords=das_coords)
-        )
-        a_matrix_coords = component_coords.copy()
-        a_matrix_coords["species"] = compartments
-        all_a_matrix.append(
-            xr.DataArray(a_matrix, coords=a_matrix_coords, dims=("component", "species"))
-        )
-        all_k_matrix.append(
-            xr.DataArray(
-                matrix, coords=[("to_species", compartments), ("from_species", compartments)]
+            das = (
+                dataset[f"species_associated_{name}"].sel(species=compartments).values @ a_matrix.T
             )
-        )
 
-        all_k_matrix_reduced.append(
-            xr.DataArray(
-                matrix_reduced,
-                coords=[("to_species", compartments), ("from_species", compartments)],
+            component_coords = {"rate": ("component", rates), "lifetime": ("component", lifetimes)}
+
+            das_coords = component_coords.copy()
+            das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
+            all_das_labels.append(megacomplex.label)
+            all_das.append(
+                xr.DataArray(das, dims=(model.global_dimension, "component"), coords=das_coords)
             )
-        )
+            a_matrix_coords = component_coords.copy()
+            a_matrix_coords["species"] = compartments
+            all_a_matrix.append(
+                xr.DataArray(a_matrix, coords=a_matrix_coords, dims=("component", "species"))
+            )
+            all_k_matrix.append(
+                xr.DataArray(
+                    matrix, coords=[("to_species", compartments), ("from_species", compartments)]
+                )
+            )
+
+            all_k_matrix_reduced.append(
+                xr.DataArray(
+                    matrix_reduced,
+                    coords=[("to_species", compartments), ("from_species", compartments)],
+                )
+            )
 
     if all_das:
         if len(all_das) == 1:

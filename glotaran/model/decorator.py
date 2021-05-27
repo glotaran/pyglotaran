@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from glotaran.parameter import ParameterGroup
 
     MegacomplexMatrixFunction = Callable[
-        [Type[object], Type[DatasetDescriptor], dict[str, int], Any],
+        [Type[object], Type[Model], Type[DatasetDescriptor], dict[str, int], Any],
         Tuple[List[str], np.ndarray],
     ]
     """A `MatrixFunction` calculates the matrix for a model."""

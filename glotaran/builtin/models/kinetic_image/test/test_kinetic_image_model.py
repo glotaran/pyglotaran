@@ -3,6 +3,7 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
+from glotaran.analysis.simulation import simulate
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -320,7 +321,7 @@ def test_kinetic_model(suite, nnls):
 
     print(model.markdown(initial_parameters))
 
-    dataset = model.simulate("dataset1", wanted_parameters, suite.axis, suite.clp)
+    dataset = simulate(model, "dataset1", wanted_parameters, suite.axis, suite.clp)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["pixel"].size)
 

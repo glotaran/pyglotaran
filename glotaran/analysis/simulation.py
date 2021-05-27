@@ -69,6 +69,7 @@ def simulate(
     matrix = (
         [
             _calculate_matrix(
+                model,
                 filled_dataset,
                 {model.global_dimension: index},
                 {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
@@ -77,6 +78,7 @@ def simulate(
         ]
         if model.index_dependent()
         else _calculate_matrix(
+            model,
             filled_dataset,
             {},
             {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
