@@ -487,7 +487,6 @@ class Problem:
                 descriptor=[
                     GroupedProblemDescriptor(
                         label,
-                        label,
                         {
                             self._global_dimension: i,
                         },
@@ -634,7 +633,7 @@ class Problem:
     ) -> tuple[dict[str, list[str]], dict[str, np.ndarray], dict[str, LabelAndMatrix],]:
         # We just need to create groups from the ungrouped matrices
         self.calculate_index_independent_ungrouped_matrices()
-        for group_label, group in self._groups.items():
+        for group_label, group in self.groups.items():
             if group_label not in self._matrices:
                 reduced_labels_and_matrix = _combine_matrices(
                     [
@@ -1206,8 +1205,6 @@ def _calculate_matrix(
                     new_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
             clp_labels = new_clp_labels
             matrix = new_matrix
-
-    #  raise Exception(clp_labels, matrix)
 
     return LabelAndMatrix(clp_labels, matrix)
 
