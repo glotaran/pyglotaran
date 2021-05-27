@@ -289,9 +289,13 @@ def _create_set_func(cls, name, item_type):
             The `{item_type.__name__}` item.
         """
 
-        if not isinstance(item, item_type) and (
-            not hasattr(item_type, "_glotaran_model_attribute_typed")
-            or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
+        if (
+            not isinstance(item, item_type)
+            and (
+                not hasattr(item_type, "_glotaran_model_attribute_typed")
+                or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
+            )
+            and not isinstance(item, Megacomplex)
         ):
             raise TypeError
         getattr(self, f"_{name}")[label] = item

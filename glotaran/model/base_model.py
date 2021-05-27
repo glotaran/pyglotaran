@@ -66,7 +66,9 @@ class Model:
                                 raise ValueError(f"Missing type for attribute '{name}'")
                             item_type = (
                                 item[1]
-                                if len(item) != 1 and hasattr(item_cls, "label")
+                                if len(item) != 1
+                                and hasattr(item_cls, "label")
+                                and name != "megacomplex"
                                 else item[0]
                             )
                             types = (
@@ -75,6 +77,7 @@ class Model:
                                 else item_cls._glotaran_model_attribute_types
                             )
 
+                            print(label, item, item_type, types, hasattr(item_cls, "label"))
                             if item_type not in types:
                                 raise ValueError(
                                     f"Unknown type '{item_type}' for attribute '{name}'"

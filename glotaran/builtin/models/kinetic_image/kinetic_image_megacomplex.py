@@ -2,6 +2,7 @@
 
 from typing import List
 
+from glotaran.model import Megacomplex
 from glotaran.model import model_attribute
 
 
@@ -10,7 +11,7 @@ from glotaran.model import model_attribute
         "k_matrix": {"type": List[str], "default": []},
     }
 )
-class KineticImageMegacomplex:
+class KineticImageMegacomplex(Megacomplex):
     """A Megacomplex with one or more K-Matrices."""
 
     def has_k_matrix(self) -> bool:
