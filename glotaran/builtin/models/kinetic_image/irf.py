@@ -1,9 +1,11 @@
 """This package contains irf items."""
 
 from typing import List
+from typing import Tuple
 
 import numpy as np
 
+from glotaran.model import ModelError
 from glotaran.model import model_attribute
 from glotaran.model import model_attribute_typed
 from glotaran.parameter import Parameter
@@ -19,6 +21,7 @@ class IrfMeasured:
         "center": List[Parameter],
         "width": List[Parameter],
         "scale": {"type": List[Parameter], "allow_none": True},
+        "shift": {"type": List[Parameter], "allow_none": True},
         "normalize": {"type": bool, "default": True},
         "backsweep": {"type": bool, "default": False},
         "backsweep_period": {"type": Parameter, "allow_none": True},
@@ -53,7 +56,9 @@ class IrfMultiGaussian:
 
     """
 
-    def parameter(self, index):
+    def parameter(
+        self, global_index: int, global_axis: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, bool, float]:
 
         centers = self.center if isinstance(self.center, list) else [self.center]
         centers = np.asarray([c.value for c in centers])
@@ -65,7 +70,7 @@ class IrfMultiGaussian:
         len_widths = len(widths)
         if len_centers != len_widths:
             if min(len_centers, len_widths) != 1:
-                raise ValueError(
+                raise ModelError(
                     f"len(centers) ({len_centers}) not equal "
                     f"len(widths) ({len_widths}) none of is 1."
                 )
@@ -76,22 +81,31 @@ class IrfMultiGaussian:
                 widths = [widths[0] for _ in range(len_centers)]
                 len_widths = len_centers
 
-        scale = self.scale if self.scale is not None else [1.0 for _ in centers]
-        scale = scale if isinstance(scale, list) else [scale]
-        scale = np.asarray(scale)
+        scales = self.scale if self.scale is not None else [1.0 for _ in centers]
+        scales = scales if isinstance(scales, list) else [scales]
+        scales = np.asarray(scales)
+
+        shift = 0
+        if self.shift is not None:
+            if global_index >= len(self.shift):
+                raise ModelError(
+                    f"No shift parameter for index {global_index} "
+                    f"({global_axis[global_index]}) in irf {self.label}"
+                )
+            shift = self.shift[global_index]
 
         backsweep = self.backsweep
 
         backsweep_period = self.backsweep_period.value if self.backsweep else 0
 
-        return centers, widths, scale, backsweep, backsweep_period
+        return centers, widths, scales, shift, backsweep, backsweep_period
 
-    def calculate(self, index, axis):
-        center, width, scale, _, _ = self.parameter(index)
-        irf = scale[0] * np.exp(-1 * (axis - center[0]) ** 2 / (2 * width[0] ** 2))
+    def calculate(self, index: int, global_axis: np.ndarray, model_axis: np.ndarray):
+        center, width, scales, _, _, _ = self.parameter(index, global_axis)
+        irf = scales[0] * np.exp(-1 * (model_axis - center[0]) ** 2 / (2 * width[0] ** 2))
         if len(center) > 1:
             for i in range(1, len(center)):
-                irf += scale[i] * np.exp(-1 * (axis - center[i]) ** 2 / (2 * width[i] ** 2))
+                irf += scales[i] * np.exp(-1 * (model_axis - center[i]) ** 2 / (2 * width[i] ** 2))
         return irf
 
 
