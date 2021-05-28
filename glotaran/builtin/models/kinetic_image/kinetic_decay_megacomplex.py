@@ -66,17 +66,16 @@ class KineticDecayMegacomplex(Megacomplex):
         # the rates are the eigenvalues of the k matrix
         rates = k_matrix.rates(initial_concentration)
 
-        model_axis = axis[model.model_dimension]
         global_index = indices.get(model.global_dimension, None)
-        if global_index is not None:
-            global_index = axis[model.global_dimension][global_index]
+        global_axis = axis.get(model.global_dimension, None)
+        model_axis = axis[model.model_dimension]
 
         # init the matrix
         size = (model_axis.size, rates.size)
         matrix = np.zeros(size, dtype=np.float64)
 
         kinetic_image_matrix_implementation(
-            matrix, rates, model_axis, global_index, dataset_descriptor
+            matrix, rates, global_index, global_axis, model_axis, dataset_descriptor
         )
 
         if not np.all(np.isfinite(matrix)):
@@ -92,24 +91,31 @@ class KineticDecayMegacomplex(Megacomplex):
         return (compartments, matrix)
 
 
-def kinetic_image_matrix_implementation(matrix, rates, axis, index, dataset_descriptor):
-
+def kinetic_image_matrix_implementation(
+    matrix: np.ndarray,
+    rates: np.ndarray,
+    global_index: int,
+    global_axis: np.ndarray,
+    model_axis: np.ndarray,
+    dataset_descriptor: DatasetDescriptor,
+):
     if isinstance(dataset_descriptor.irf, IrfMultiGaussian):
 
         (
             centers,
             widths,
             irf_scales,
+            shift,
             backsweep,
             backsweep_period,
-        ) = dataset_descriptor.irf.parameter(index)
+        ) = dataset_descriptor.irf.parameter(global_index, global_axis)
 
         for center, width, irf_scale in zip(centers, widths, irf_scales):
             calculate_kinetic_matrix_gaussian_irf(
                 matrix,
                 rates,
-                axis,
-                center,
+                model_axis,
+                center - shift,
                 width,
                 irf_scale,
                 backsweep,
@@ -119,7 +125,7 @@ def kinetic_image_matrix_implementation(matrix, rates, axis, index, dataset_desc
             matrix /= np.sum(irf_scale)
 
     else:
-        calculate_kinetic_matrix_no_irf(matrix, rates, axis)
+        calculate_kinetic_matrix_no_irf(matrix, rates, model_axis)
 
 
 @nb.jit(nopython=True, parallel=True)

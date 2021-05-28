@@ -37,11 +37,10 @@ class CoherentArtifactMegacomplex(Megacomplex):
             raise ModelError(f'Irf in dataset "{dataset_descriptor.label} is not a gaussian irf."')
 
         global_index = indices.get(model.global_dimension, None)
-        if global_index is not None:
-            global_index = axis[model.global_dimension][global_index]
+        global_axis = axis.get(model.global_dimension, None)
         irf = dataset_descriptor.irf
 
-        center, width, _, _, _ = irf.parameter(global_index)
+        center, width, _, _, _, _ = irf.parameter(global_index, global_axis)
         center = center[0]
         width = self.width.value if self.width is not None else width[0]
 

@@ -61,7 +61,7 @@ class OneComponentOneChannelGaussianIrf:
     model = KineticImageModel.from_dict(
         {
             "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["2"]},
+                "j1": {"compartments": ["s1"], "parameters": ["5"]},
             },
             "megacomplex": {
                 "mc1": {"k_matrix": ["k1"]},
@@ -74,7 +74,7 @@ class OneComponentOneChannelGaussianIrf:
                 }
             },
             "irf": {
-                "irf1": {"type": "gaussian", "center": "2", "width": "3"},
+                "irf1": {"type": "gaussian", "center": "2", "width": "3", "shift": ["4"]},
             },
             "dataset": {
                 "dataset1": {
@@ -87,13 +87,14 @@ class OneComponentOneChannelGaussianIrf:
     )
 
     initial_parameters = ParameterGroup.from_list(
-        [101e-4, 0.1, 1, [1, {"vary": False, "non-negative": False}]]
+        [101e-4, 0.1, 1, [0.1, {"vary": False}], [1, {"vary": False, "non-negative": False}]]
     )
     wanted_parameters = ParameterGroup.from_list(
         [
             [101e-3, {"non-negative": True}],
             [0.2, {"non-negative": True}],
             [2, {"non-negative": True}],
+            [0.1, {"vary": False}],
             [1, {"vary": False, "non-negative": False}],
         ]
     )

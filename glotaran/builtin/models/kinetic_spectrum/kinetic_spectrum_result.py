@@ -45,12 +45,11 @@ def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr
                 dataset["irf_center"] = irf.center.value
                 dataset["irf_width"] = irf.width.value
         elif isinstance(irf, IrfSpectralMultiGaussian):
-            index = (
-                irf.dispersion_center
-                or dataset.coords[problem.model.global_dimension].min().values
-            )
 
-            dataset["irf"] = (("time"), irf.calculate(index, dataset.coords["time"]))
+            dataset["irf"] = (
+                ("time"),
+                irf.calculate(0, dataset.coords["spectral"], dataset.coords["time"]),
+            )
 
             if irf.dispersion_center:
                 for i, dispersion in enumerate(
