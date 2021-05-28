@@ -1200,15 +1200,15 @@ def _calculate_matrix(
             clp_labels = this_clp_labels
             matrix = this_matrix
         else:
-            new_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
-            new_matrix = np.zeros((matrix.shape[0], len(new_clp_labels)), dtype=np.float64)
-            for idx, label in enumerate(new_clp_labels):
+            tmp_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
+            tmp_matrix = np.zeros((matrix.shape[0], len(tmp_clp_labels)), dtype=np.float64)
+            for idx, label in enumerate(tmp_clp_labels):
                 if label in clp_labels:
-                    new_matrix[:, idx] += matrix[:, clp_labels.index(label)]
+                    tmp_matrix[:, idx] += matrix[:, clp_labels.index(label)]
                 if label in this_clp_labels:
-                    new_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
-            clp_labels = new_clp_labels
-            matrix = new_matrix
+                    tmp_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
+            clp_labels = tmp_clp_labels
+            matrix = tmp_matrix
 
     return LabelAndMatrix(clp_labels, matrix)
 
