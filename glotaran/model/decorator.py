@@ -1,7 +1,6 @@
 """The model decorator."""
 from __future__ import annotations
 
-import warnings
 from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
@@ -308,7 +307,7 @@ def _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_ty
         megacomplex_types = {model_type: megacomplex_types}
     for name, megacomplex_type in megacomplex_types.items():
         if not issubclass(megacomplex_type, Megacomplex):
-            warnings.warn(
+            raise TypeError(
                 f"Megacomplex type {name}(megacomplex_type) is not a subclass of Megacomplex"
             )
     if default_megacomplex_type is None:
