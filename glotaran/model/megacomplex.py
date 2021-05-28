@@ -6,7 +6,7 @@ from glotaran.model import DatasetDescriptor
 from glotaran.model import model_attribute
 
 
-@model_attribute(properties={"type": {"type": str, "allow_none": True}})
+@model_attribute(has_type=True)
 class Megacomplex:
     def calculate_matrix(
         self,
@@ -17,3 +17,4 @@ class Megacomplex:
         **kwargs,
     ):
         raise NotImplementedError
+

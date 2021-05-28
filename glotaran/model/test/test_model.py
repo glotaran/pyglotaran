@@ -112,8 +112,6 @@ def parameter():
 
 def test_model_misc(model):
     assert model.model_type == "mock_model"
-    assert model.default_megacomplex_type == "mock_megacomplex"
-    assert model.megacomplex_types["mock_megacomplex"] == MockMegacomplex
     assert isinstance(model.megacomplex["m1"], MockMegacomplex)
     assert isinstance(model.megacomplex["m2"], MockMegacomplex2)
 

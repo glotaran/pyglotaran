@@ -7,6 +7,7 @@ from typing import List
 
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.megacomplex import Megacomplex
+from glotaran.model import model_attribute_typed
 from glotaran.model.util import wrap_func_as_method
 from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import register_model
@@ -181,7 +182,9 @@ def model(
                 getattr(cls, "_glotaran_model_attributes").copy(),
             )
 
-        _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_types)
+        megacomplex_cls = _set_megacomplexes(
+            cls, model_type, default_megacomplex_type, megacomplex_types
+        )
 
         # We add the standard attributes here.
         if not issubclass(dataset_type, DatasetDescriptor):
@@ -189,7 +192,7 @@ def model(
                 f"Dataset descriptor of model {model_type} is not a subclass of DatasetDescriptor"
             )
         attributes["dataset"] = dataset_type
-        attributes["megacomplex"] = Megacomplex
+        attributes["megacomplex"] = megacomplex_cls
         attributes["weights"] = Weight
 
         # Set annotations and methods for attributes
@@ -303,6 +306,10 @@ def _create_set_func(cls, name, item_type):
 
 
 def _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_types):
+    @model_attribute_typed({})
+    class MetaMegacomplex:
+        """This class holds all Megacomplex types defined by a model."""
+
     if not isinstance(megacomplex_types, dict):
         megacomplex_types = {model_type: megacomplex_types}
     for name, megacomplex_type in megacomplex_types.items():
@@ -310,11 +317,12 @@ def _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_ty
             raise TypeError(
                 f"Megacomplex type {name}(megacomplex_type) is not a subclass of Megacomplex"
             )
+        MetaMegacomplex.add_type(name, megacomplex_type)
+
     if default_megacomplex_type is None:
         default_megacomplex_type = next(iter(megacomplex_types.keys()))
-
-    setattr(cls, "default_megacomplex_type", default_megacomplex_type)
-    setattr(cls, "megacomplex_types", megacomplex_types)
+    setattr(MetaMegacomplex, "_glotaran_model_attribute_default_type", default_megacomplex_type)
+    return MetaMegacomplex
 
 
 def _create_property_for_attribute(cls, name, attribute_type):

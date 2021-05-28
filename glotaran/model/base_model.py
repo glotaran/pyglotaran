@@ -44,21 +44,15 @@ class Model:
                     # we retrieve the actual class from the signature
                     item_cls = model_set.__func__.__annotations__["item"]
 
-                    is_typed = (
-                        hasattr(item_cls, "_glotaran_model_attribute_typed")
-                        or name == "megacomplex"
-                    )
+                    is_typed = hasattr(item_cls, "_glotaran_model_attribute_typed")
+
                     if isinstance(item, dict):
                         if is_typed:
-                            if "type" not in item and name != "megacomplex":
+                            if "type" not in item and item_cls.get_default_type() is None:
                                 raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = item.get("type", model.default_megacomplex_type)
+                            item_type = item.get("type", item_cls.get_default_type())
 
-                            types = (
-                                model.megacomplex_types
-                                if name == "megacomplex"
-                                else item_cls._glotaran_model_attribute_types
-                            )
+                            types = item_cls._glotaran_model_attribute_types
                             if item_type not in types:
                                 raise ValueError(
                                     f"Unknown type '{item_type}' for attribute '{name}'"
@@ -70,20 +64,9 @@ class Model:
                         if is_typed:
                             if len(item) < 2 and len(item) != 1:
                                 raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = (
-                                item[1]
-                                if len(item) != 1
-                                and hasattr(item_cls, "label")
-                                and name != "megacomplex"
-                                else item[0]
-                            )
-                            types = (
-                                model.megacomplex_types
-                                if name == "megacomplex"
-                                else item_cls._glotaran_model_attribute_types
-                            )
+                            item_type = item[0]
+                            types = item_cls._glotaran_model_attribute_types
 
-                            print(label, item, item_type, types, hasattr(item_cls, "label"))
                             if item_type not in types:
                                 raise ValueError(
                                     f"Unknown type '{item_type}' for attribute '{name}'"
