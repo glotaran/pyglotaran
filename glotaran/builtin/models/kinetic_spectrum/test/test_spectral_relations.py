@@ -2,7 +2,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.problem import _calculate_matrix
+from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.simulation import simulate
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_relations import (
@@ -69,7 +69,7 @@ def test_spectral_relation():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset["dataset1"].fill(model, parameters)
-    compartments, matrix = _calculate_matrix(model, dataset, {}, {"time": time})
+    compartments, matrix = calculate_matrix(model, dataset, {}, {"time": time})
 
     assert len(compartments) == 4
     assert matrix.shape == (time.size, 4)

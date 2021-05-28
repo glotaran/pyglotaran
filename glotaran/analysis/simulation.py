@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.problem import _calculate_matrix
+from glotaran.analysis.util import calculate_matrix
 
 if TYPE_CHECKING:
     from glotaran.model import Model
@@ -68,7 +68,7 @@ def simulate(
 
     matrix = (
         [
-            _calculate_matrix(
+            calculate_matrix(
                 model,
                 filled_dataset,
                 {model.global_dimension: index},
@@ -77,7 +77,7 @@ def simulate(
             for index, _ in enumerate(global_dimension)
         ]
         if model.index_dependent()
-        else _calculate_matrix(
+        else calculate_matrix(
             model,
             filled_dataset,
             {},

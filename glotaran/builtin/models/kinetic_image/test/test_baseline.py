@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.analysis.problem import _calculate_matrix
+from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.parameter import ParameterGroup
 
@@ -41,7 +41,7 @@ def test_baseline():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset["dataset1"].fill(model, parameter)
-    compartments, matrix = _calculate_matrix(model, dataset, {}, {"time": time})
+    compartments, matrix = calculate_matrix(model, dataset, {}, {"time": time})
 
     assert len(compartments) == 2
     assert compartments[1] == "dataset1_baseline"
