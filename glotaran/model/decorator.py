@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 
+from glotaran.model.attribute import model_attribute_typed
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.megacomplex import Megacomplex
-from glotaran.model import model_attribute_typed
 from glotaran.model.util import wrap_func_as_method
 from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import register_model

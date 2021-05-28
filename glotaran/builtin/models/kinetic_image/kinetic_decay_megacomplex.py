@@ -9,6 +9,7 @@ import numpy as np
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
+from glotaran.model import ModelError
 from glotaran.model import model_attribute
 
 
@@ -48,7 +49,7 @@ class KineticDecayMegacomplex(Megacomplex):
         **kwargs,
     ):
         if dataset_descriptor.initial_concentration is None:
-            raise Exception(
+            raise ModelError(
                 f'No initial concentration specified in dataset "{dataset_descriptor.label}"'
             )
         initial_concentration = dataset_descriptor.initial_concentration.normalized()

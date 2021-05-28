@@ -4,8 +4,10 @@ from __future__ import annotations
 import numba as nb
 import numpy as np
 
+from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
+from glotaran.model import ModelError
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 
@@ -26,7 +28,13 @@ class CoherentArtifactMegacomplex(Megacomplex):
         **kwargs,
     ):
         if not 1 <= self.order <= 3:
-            raise Exception(self, "Coherent artifact order must be between in [1,3]")
+            raise ModelError("Coherent artifact order must be between in [1,3]")
+
+        if dataset_descriptor.irf is None:
+            raise ModelError(f'No irf in dataset "{dataset_descriptor.label}"')
+
+        if not isinstance(dataset_descriptor.irf, IrfMultiGaussian):
+            raise ModelError(f'Irf in dataset "{dataset_descriptor.label} is not a gaussian irf."')
 
         global_index = indices.get(model.global_dimension, None)
         if global_index is not None:

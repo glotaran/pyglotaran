@@ -82,7 +82,7 @@ def reduce_matrix(
     label: str,
     parameters: ParameterGroup,
     result: LabelAndMatrix,
-    index: float,
+    index: float | None,
 ) -> LabelAndMatrix:
     clp_labels = result.clp_label.copy()
     if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():

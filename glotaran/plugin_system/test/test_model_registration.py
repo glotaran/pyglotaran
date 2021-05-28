@@ -63,7 +63,6 @@ def test_register_model_warning():
 
     @model_attribute()
     class DummyAttr(Megacomplex):
-        # _glotaran_has_label = False
         pass
 
     with pytest.warns(PluginOverwriteWarning, match="KineticImageModel.+bar.+Dummy") as record:
