@@ -2,8 +2,14 @@
 from __future__ import annotations
 
 import copy
+from typing import TYPE_CHECKING
 
+from glotaran.deprecation import deprecate
 from glotaran.parameter import ParameterGroup
+
+if TYPE_CHECKING:
+    import numpy as np
+    import xarray as xr
 
 
 class Model:
@@ -156,6 +162,54 @@ class Model:
                     problems += item.validate(self, parameters=parameters)
 
         return problems
+
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.model.base_model.Model.simulate",
+        new_qual_name_usage="glotaran.analysis.simulation.simulate",
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 1),
+    )
+    def simulate(
+        self,
+        dataset: str,
+        parameters: ParameterGroup,
+        axes: dict[str, np.ndarray] = None,
+        clp: np.ndarray | xr.DataArray = None,
+        noise: bool = False,
+        noise_std_dev: float = 1.0,
+        noise_seed: int = None,
+    ) -> xr.Dataset:
+        """Simulates the model.
+
+        Parameters
+        ----------
+        dataset :
+            Label of the dataset to simulate.
+        parameter :
+            The parameters for the simulation.
+        axes :
+            A dictionary with axes for simulation.
+        clp :
+            Conditionally linear parameters. Used instead of `model.global_matrix` if provided.
+        noise :
+            If `True` noise is added to the simulated data.
+        noise_std_dev :
+            The standard deviation of the noise.
+        noise_seed :
+            Seed for the noise.
+        """
+        from glotaran.analysis.simulation import simulate
+
+        return simulate(
+            self,
+            dataset,
+            parameters,
+            axes=axes,
+            clp=clp,
+            noise=noise,
+            noise_std_dev=noise_std_dev,
+            noise_seed=noise_seed,
+        )
 
     def validate(self, parameters: ParameterGroup = None) -> str:
         """
