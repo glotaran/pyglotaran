@@ -62,7 +62,7 @@ def model_attribute(
                 getattr(cls, "_glotaran_properties").append("label")
             if has_type:
                 doc = f"The type string of {cls.__name__}."
-                prop = ModelProperty(cls, "type", str, doc, None, False)
+                prop = ModelProperty(cls, "type", str, doc, None, True)
                 setattr(cls, "type", prop)
                 getattr(cls, "_glotaran_properties").append("type")
 
@@ -117,7 +117,11 @@ def model_attribute(
     return decorator
 
 
-def model_attribute_typed(types: dict[str, Any], no_label=False):
+def model_attribute_typed(
+    types: dict[str, Any],
+    no_label=False,
+    default_type: str = None,
+):
     """The model_attribute_typed decorator adds attributes to the class to enable
     the glotaran model parser to infer the correct class for an item when there
     are multiple variants.
@@ -135,6 +139,10 @@ def model_attribute_typed(types: dict[str, Any], no_label=False):
         setattr(cls, "_glotaran_model_attribute", True)
         setattr(cls, "_glotaran_model_attribute_typed", True)
         setattr(cls, "_glotaran_model_attribute_types", types)
+        setattr(cls, "_glotaran_model_attribute_default_type", default_type)
+
+        get_default_type = _create_get_default_type_func(cls)
+        setattr(cls, "get_default_type", get_default_type)
 
         add_type = _create_add_type_func(cls)
         setattr(cls, "add_type", add_type)
@@ -144,6 +152,15 @@ def model_attribute_typed(types: dict[str, Any], no_label=False):
         return cls
 
     return decorator
+
+
+def _create_get_default_type_func(cls):
+    @classmethod
+    @wrap_func_as_method(cls)
+    def get_default_type(cls) -> str:
+        return getattr(cls, "_glotaran_model_attribute_default_type")
+
+    return get_default_type
 
 
 def _create_add_type_func(cls):

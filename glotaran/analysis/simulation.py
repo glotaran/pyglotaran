@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from glotaran.analysis.util import calculate_matrix
+
 if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
@@ -34,7 +36,7 @@ def simulate(
     axes :
         A dictionary with axes for simulation.
     clp :
-        Conditionally linear parameters. Will be used instead of `model.global_matrix` if given.
+        conditionally linear parameters. Will be used instead of `model.global_matrix` if given.
     noise :
         Add noise to the simulation.
     noise_std_dev :
@@ -66,11 +68,21 @@ def simulate(
 
     matrix = (
         [
-            model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=index)
-            for index in global_dimension
+            calculate_matrix(
+                model,
+                filled_dataset,
+                {model.global_dimension: index},
+                {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
+            )
+            for index, _ in enumerate(global_dimension)
         ]
         if model.index_dependent()
-        else model.matrix(dataset_descriptor=filled_dataset, axis=model_dimension, index=None)
+        else calculate_matrix(
+            model,
+            filled_dataset,
+            {},
+            {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
+        )
     )
     if callable(model.constrain_matrix_function):
         matrix = (

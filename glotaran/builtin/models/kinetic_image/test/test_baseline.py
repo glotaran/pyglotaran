@@ -1,7 +1,7 @@
 import numpy as np
 
+from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.models.kinetic_image import KineticImageModel
-from glotaran.builtin.models.kinetic_image.kinetic_image_matrix import kinetic_image_matrix
 from glotaran.parameter import ParameterGroup
 
 
@@ -12,7 +12,8 @@ def test_baseline():
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "kinetic-decay", "k_matrix": ["k1"]},
+                "mc2": {"type": "kinetic-baseline"},
             },
             "k_matrix": {
                 "k1": {
@@ -24,8 +25,7 @@ def test_baseline():
             "dataset": {
                 "dataset1": {
                     "initial_concentration": "j1",
-                    "megacomplex": ["mc1"],
-                    "baseline": True,
+                    "megacomplex": ["mc1", "mc2"],
                 },
             },
         }
@@ -41,7 +41,7 @@ def test_baseline():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset["dataset1"].fill(model, parameter)
-    compartments, matrix = kinetic_image_matrix(dataset, time, 0)
+    compartments, matrix = calculate_matrix(model, dataset, {}, {"time": time})
 
     assert len(compartments) == 2
     assert compartments[1] == "dataset1_baseline"

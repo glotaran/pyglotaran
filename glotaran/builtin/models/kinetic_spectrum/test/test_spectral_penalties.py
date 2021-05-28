@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
+from glotaran.analysis.simulation import simulate
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import _get_idx_from_interval
 from glotaran.io import prepare_time_trace_dataset
@@ -223,7 +224,8 @@ def test_equal_area_penalties(debug=False):
     print(model_np.markdown(param_np))
 
     # %%
-    simulated_data = model_sim.simulate(
+    simulated_data = simulate(
+        model_sim,
         "dataset1",
         param_sim,
         axes={"time": times, "spectral": wavelengths},

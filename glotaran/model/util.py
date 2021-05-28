@@ -11,6 +11,13 @@ if TYPE_CHECKING:
     DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 
+class ModelError(Exception):
+    """Raised when a model contains errors."""
+
+    def __init__(self, error: str):
+        super().__init__(f"ModelError: {error}")
+
+
 def wrap_func_as_method(
     cls: Any, name: str = None, annotations: dict[str, type] = None, doc: str = None
 ) -> Callable[[DecoratedFunc], DecoratedFunc]:

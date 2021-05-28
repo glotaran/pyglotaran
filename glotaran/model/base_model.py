@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import copy
-import inspect
+from typing import TYPE_CHECKING
 
-import numpy as np
-import xarray as xr
-
-from glotaran.analysis.simulation import simulate
+from glotaran.deprecation import deprecate
 from glotaran.parameter import ParameterGroup
+
+if TYPE_CHECKING:
+    import numpy as np
+    import xarray as xr
 
 
 class Model:
@@ -31,7 +32,7 @@ class Model:
         # iterate over items
         for name, attribute in list(model_dict.items()):
 
-            # we determine if we the item is known by the model by looking for
+            # we determine if the item is known by the model by looking for
             # a setter with same name.
 
             if hasattr(model, f"set_{name}"):
@@ -39,38 +40,38 @@ class Model:
                 # get the set function
                 model_set = getattr(model, f"set_{name}")
 
-                # we retrieve the actual class from the signature
                 for label, item in attribute.items():
+                    # we retrieve the actual class from the signature
                     item_cls = model_set.__func__.__annotations__["item"]
+
                     is_typed = hasattr(item_cls, "_glotaran_model_attribute_typed")
+
                     if isinstance(item, dict):
                         if is_typed:
-                            if "type" not in item:
+                            if "type" not in item and item_cls.get_default_type() is None:
                                 raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = item["type"]
+                            item_type = item.get("type", item_cls.get_default_type())
 
-                            if item_type not in item_cls._glotaran_model_attribute_types:
+                            types = item_cls._glotaran_model_attribute_types
+                            if item_type not in types:
                                 raise ValueError(
                                     f"Unknown type '{item_type}' for attribute '{name}'"
                                 )
-                            item_cls = item_cls._glotaran_model_attribute_types[item_type]
+                            item_cls = types[item_type]
                         item["label"] = label
                         model_set(label, item_cls.from_dict(item))
                     elif isinstance(item, list):
                         if is_typed:
                             if len(item) < 2 and len(item) != 1:
                                 raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = (
-                                item[1]
-                                if len(item) != 1 and hasattr(item_cls, "label")
-                                else item[0]
-                            )
+                            item_type = item[0]
+                            types = item_cls._glotaran_model_attribute_types
 
-                            if item_type not in item_cls._glotaran_model_attribute_types:
+                            if item_type not in types:
                                 raise ValueError(
                                     f"Unknown type '{item_type}' for attribute '{name}'"
                                 )
-                            item_cls = item_cls._glotaran_model_attribute_types[item_type]
+                            item_cls = types[item_type]
                         item = [label] + item
                         model_set(label, item_cls.from_list(item))
                 del model_dict[name]
@@ -117,14 +118,40 @@ class Model:
         return model
 
     @property
-    def index_dependent_matrix(self):
-        return len(inspect.signature(self.matrix).parameters) == 3
-
-    @property
     def model_type(self) -> str:
         """The type of the model as human readable string."""
         return self._model_type
 
+    def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
+        """
+        Returns a list with all problems in the model and missing parameters if specified.
+
+        Parameters
+        ----------
+
+        parameter :
+            The parameter to validate.
+        """
+        problems = []
+
+        attrs = getattr(self, "_glotaran_model_attributes")
+        for attr in attrs:
+            attr = getattr(self, attr)
+            if isinstance(attr, list):
+                for item in attr:
+                    problems += item.validate(self, parameters=parameters)
+            else:
+                for _, item in attr.items():
+                    problems += item.validate(self, parameters=parameters)
+
+        return problems
+
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.model.base_model.Model.simulate",
+        new_qual_name_usage="glotaran.analysis.simulation.simulate",
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 1),
+    )
     def simulate(
         self,
         dataset: str,
@@ -154,6 +181,8 @@ class Model:
         noise_seed :
             Seed for the noise.
         """
+        from glotaran.analysis.simulation import simulate
+
         return simulate(
             self,
             dataset,
@@ -164,30 +193,6 @@ class Model:
             noise_std_dev=noise_std_dev,
             noise_seed=noise_seed,
         )
-
-    def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
-        """
-        Returns a list with all problems in the model and missing parameters if specified.
-
-        Parameters
-        ----------
-
-        parameter :
-            The parameter to validate.
-        """
-        problems = []
-
-        attrs = getattr(self, "_glotaran_model_attributes")
-        for attr in attrs:
-            attr = getattr(self, attr)
-            if isinstance(attr, list):
-                for item in attr:
-                    problems += item.validate(self, parameters=parameters)
-            else:
-                for _, item in attr.items():
-                    problems += item.validate(self, parameters=parameters)
-
-        return problems
 
     def validate(self, parameters: ParameterGroup = None) -> str:
         """

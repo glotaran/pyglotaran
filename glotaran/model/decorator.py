@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 
+from glotaran.model.attribute import model_attribute_typed
 from glotaran.model.dataset_descriptor import DatasetDescriptor
+from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.util import wrap_func_as_method
 from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import register_model
@@ -24,11 +26,8 @@ if TYPE_CHECKING:
     from glotaran.model.base_model import Model
     from glotaran.parameter import ParameterGroup
 
-    MatrixFunction = Callable[[Type[DatasetDescriptor], xr.Dataset], Tuple[List[str], np.ndarray]]
-    """A `MatrixFunction` calculates the matrix for a model."""
-
-    IndexDependentMatrixFunction = Callable[
-        [Type[DatasetDescriptor], xr.Dataset, Any],
+    MegacomplexMatrixFunction = Callable[
+        [Type[object], Type[Model], Type[DatasetDescriptor], dict[str, int], Any],
         Tuple[List[str], np.ndarray],
     ]
     """A `MatrixFunction` calculates the matrix for a model."""
@@ -79,8 +78,8 @@ def model(
     model_type: str,
     attributes: dict[str, Any] = None,
     dataset_type: type[DatasetDescriptor] = DatasetDescriptor,
-    megacomplex_type: Any = None,
-    matrix: MatrixFunction | IndexDependentMatrixFunction = None,
+    default_megacomplex_type: str = None,
+    megacomplex_types: dict[str, Megacomplex] | type[Megacomplex] = None,
     global_matrix: GlobalMatrixFunction = None,
     model_dimension: str = None,
     global_dimension: str = None,
@@ -155,69 +154,17 @@ def model(
         setattr(cls, "_model_type", model_type)
         setattr(cls, "finalize_data", finalize_data_function)
 
-        if has_matrix_constraints_function:
-            if not constrain_matrix_function:
-                raise ValueError(
-                    "Model implements `has_matrix_constraints_function` "
-                    "but not `constrain_matrix_function`"
-                )
-            if not retrieve_clp_function:
-                raise ValueError(
-                    "Model implements `has_matrix_constraints_function` "
-                    "but not `retrieve_clp_function`"
-                )
-            has_c_mat = wrap_func_as_method(cls, name="has_matrix_constraints_function")(
-                has_matrix_constraints_function
-            )
-            c_mat = wrap_func_as_method(cls, name="constrain_matrix_function")(
-                constrain_matrix_function
-            )
-            r_clp = wrap_func_as_method(cls, name="retrieve_clp_function")(retrieve_clp_function)
-            setattr(cls, "has_matrix_constraints_function", has_c_mat)
-            setattr(cls, "constrain_matrix_function", c_mat)
-            setattr(cls, "retrieve_clp_function", r_clp)
-        else:
-            setattr(cls, "has_matrix_constraints_function", None)
-            setattr(cls, "constrain_matrix_function", None)
-            setattr(cls, "retrieve_clp_function", None)
-
-        if has_additional_penalty_function:
-            if not additional_penalty_function:
-                raise ValueError(
-                    "Model implements `has_additional_penalty_function`"
-                    "but not `additional_penalty_function`"
-                )
-            has_pen = wrap_func_as_method(cls, name="has_additional_penalty_function")(
-                has_additional_penalty_function
-            )
-            pen = wrap_func_as_method(cls, name="additional_penalty_function")(
-                additional_penalty_function
-            )
-            setattr(cls, "additional_penalty_function", pen)
-            setattr(cls, "has_additional_penalty_function", has_pen)
-        else:
-            setattr(cls, "has_additional_penalty_function", None)
-            setattr(cls, "additional_penalty_function", None)
-
-        setattr(
-            cls,
-            "grouped",
-            grouped if callable(grouped) else lambda model: grouped,
+        _set_constraints_functions(
+            cls, has_matrix_constraints_function, constrain_matrix_function, retrieve_clp_function
         )
 
-        setattr(
-            cls,
-            "index_dependent",
-            index_dependent if callable(index_dependent) else lambda model: index_dependent,
+        _set_additional_penalty_functions(
+            cls, has_additional_penalty_function, additional_penalty_function
         )
 
-        mat = wrap_func_as_method(cls, name="matrix")(matrix)
-        mat = staticmethod(mat)
-        setattr(cls, "matrix", mat)
+        _set_grouped_and_indexdependent(cls, grouped, index_dependent)
 
-        if model_dimension is None:
-            raise ValueError(f"Model dimension not specified for model {model_type}")
-        setattr(cls, "model_dimension", model_dimension)
+        _set_dimensions(cls, model_type, model_dimension, global_dimension)
 
         if global_matrix:
             g_mat = wrap_func_as_method(cls, name="global_matrix")(global_matrix)
@@ -225,10 +172,6 @@ def model(
             setattr(cls, "global_matrix", g_mat)
         else:
             setattr(cls, "global_matrix", None)
-
-        if global_dimension is None:
-            raise ValueError(f"Global dimension not specified for model {model_type}")
-        setattr(cls, "global_dimension", global_dimension)
 
         if not hasattr(cls, "_glotaran_model_attributes"):
             setattr(cls, "_glotaran_model_attributes", {})
@@ -239,9 +182,17 @@ def model(
                 getattr(cls, "_glotaran_model_attributes").copy(),
             )
 
+        megacomplex_cls = _set_megacomplexes(
+            cls, model_type, default_megacomplex_type, megacomplex_types
+        )
+
         # We add the standard attributes here.
+        if not issubclass(dataset_type, DatasetDescriptor):
+            raise ValueError(
+                f"Dataset descriptor of model {model_type} is not a subclass of DatasetDescriptor"
+            )
         attributes["dataset"] = dataset_type
-        attributes["megacomplex"] = megacomplex_type
+        attributes["megacomplex"] = megacomplex_cls
         attributes["weights"] = Weight
 
         # Set annotations and methods for attributes
@@ -340,14 +291,38 @@ def _create_set_func(cls, name, item_type):
             The `{item_type.__name__}` item.
         """
 
-        if not isinstance(item, item_type) and (
-            not hasattr(item_type, "_glotaran_model_attribute_typed")
-            or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
+        if (
+            not isinstance(item, item_type)
+            and (
+                not hasattr(item_type, "_glotaran_model_attribute_typed")
+                or not isinstance(item, tuple(item_type._glotaran_model_attribute_types.values()))
+            )
+            and not isinstance(item, Megacomplex)
         ):
             raise TypeError
         getattr(self, f"_{name}")[label] = item
 
     return set_item
+
+
+def _set_megacomplexes(cls, model_type, default_megacomplex_type, megacomplex_types):
+    @model_attribute_typed({})
+    class MetaMegacomplex:
+        """This class holds all Megacomplex types defined by a model."""
+
+    if not isinstance(megacomplex_types, dict):
+        megacomplex_types = {model_type: megacomplex_types}
+    for name, megacomplex_type in megacomplex_types.items():
+        if not issubclass(megacomplex_type, Megacomplex):
+            raise TypeError(
+                f"Megacomplex type {name}(megacomplex_type) is not a subclass of Megacomplex"
+            )
+        MetaMegacomplex.add_type(name, megacomplex_type)
+
+    if default_megacomplex_type is None:
+        default_megacomplex_type = next(iter(megacomplex_types.keys()))
+    setattr(MetaMegacomplex, "_glotaran_model_attribute_default_type", default_megacomplex_type)
+    return MetaMegacomplex
 
 
 def _create_property_for_attribute(cls, name, attribute_type):
@@ -367,3 +342,79 @@ def _create_property_for_attribute(cls, name, attribute_type):
         return getattr(self, f"_{name}")
 
     return attribute
+
+
+def _set_constraints_functions(
+    cls, has_matrix_constraints_function, constrain_matrix_function, retrieve_clp_function
+):
+    if has_matrix_constraints_function:
+        if not constrain_matrix_function:
+            raise ValueError(
+                "Model implements `has_matrix_constraints_function` "
+                "but not `constrain_matrix_function`"
+            )
+        if not retrieve_clp_function:
+            raise ValueError(
+                "Model implements `has_matrix_constraints_function` "
+                "but not `retrieve_clp_function`"
+            )
+        has_c_mat = wrap_func_as_method(cls, name="has_matrix_constraints_function")(
+            has_matrix_constraints_function
+        )
+        c_mat = wrap_func_as_method(cls, name="constrain_matrix_function")(
+            constrain_matrix_function
+        )
+        r_clp = wrap_func_as_method(cls, name="retrieve_clp_function")(retrieve_clp_function)
+        setattr(cls, "has_matrix_constraints_function", has_c_mat)
+        setattr(cls, "constrain_matrix_function", c_mat)
+        setattr(cls, "retrieve_clp_function", r_clp)
+    else:
+        setattr(cls, "has_matrix_constraints_function", None)
+        setattr(cls, "constrain_matrix_function", None)
+        setattr(cls, "retrieve_clp_function", None)
+
+
+def _set_additional_penalty_functions(
+    cls, has_additional_penalty_function, additional_penalty_function
+):
+    if has_additional_penalty_function:
+        if not additional_penalty_function:
+            raise ValueError(
+                "Model implements `has_additional_penalty_function`"
+                "but not `additional_penalty_function`"
+            )
+        has_pen = wrap_func_as_method(cls, name="has_additional_penalty_function")(
+            has_additional_penalty_function
+        )
+        pen = wrap_func_as_method(cls, name="additional_penalty_function")(
+            additional_penalty_function
+        )
+        setattr(cls, "additional_penalty_function", pen)
+        setattr(cls, "has_additional_penalty_function", has_pen)
+    else:
+        setattr(cls, "has_additional_penalty_function", None)
+        setattr(cls, "additional_penalty_function", None)
+
+
+def _set_grouped_and_indexdependent(cls, grouped, index_dependent):
+    setattr(
+        cls,
+        "grouped",
+        grouped if callable(grouped) else lambda model: grouped,
+    )
+
+    setattr(
+        cls,
+        "index_dependent",
+        index_dependent if callable(index_dependent) else lambda model: index_dependent,
+    )
+
+
+def _set_dimensions(cls, model_type, model_dimension, global_dimension):
+    if model_dimension is None:
+        raise ValueError(f"Model dimension not specified for model {model_type}")
+    setattr(cls, "model_dimension", model_dimension)
+
+    if global_dimension is None:
+        raise ValueError(f"Global dimension not specified for model {model_type}")
+    setattr(cls, "global_dimension", global_dimension)

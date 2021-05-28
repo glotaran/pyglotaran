@@ -9,6 +9,8 @@ import pytest
 from glotaran.builtin.models.kinetic_image import KineticImageModel
 from glotaran.model import Model
 from glotaran.model import model
+from glotaran.model.attribute import model_attribute
+from glotaran.model.megacomplex import Megacomplex
 from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.model_registration import get_model
@@ -59,16 +61,16 @@ def test_register_model():
 def test_register_model_warning():
     """PluginOverwriteWarning raised pointing to correct file."""
 
-    class DummyAttr:
-        _glotaran_has_label = False
+    @model_attribute()
+    class DummyAttr(Megacomplex):
+        pass
 
     with pytest.warns(PluginOverwriteWarning, match="KineticImageModel.+bar.+Dummy") as record:
 
         @model(
             "bar",
             attributes={},
-            megacomplex_type=DummyAttr,
-            matrix=lambda: None,  # type:ignore
+            megacomplex_types=DummyAttr,
             model_dimension="",
             global_dimension="",
         )

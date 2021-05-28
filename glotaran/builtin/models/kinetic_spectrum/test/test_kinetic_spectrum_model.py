@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
+from glotaran.analysis.simulation import simulate
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.project import Scheme
@@ -260,7 +261,7 @@ def test_kinetic_model(suite, nnls):
 
     print(model.markdown(wanted_parameters))
 
-    dataset = model.simulate("dataset1", wanted_parameters, suite.axis)
+    dataset = simulate(model, "dataset1", wanted_parameters, suite.axis)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 

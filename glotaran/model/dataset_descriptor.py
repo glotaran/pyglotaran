@@ -1,9 +1,15 @@
 """The DatasetDescriptor class."""
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from typing import Generator
 from typing import List
 
 from glotaran.model.attribute import model_attribute
 from glotaran.parameter import Parameter
+
+if TYPE_CHECKING:
+    from glotaran.model.megacomplex import Megacomplex
 
 
 @model_attribute(
@@ -21,3 +27,8 @@ class DatasetDescriptor:
     A general dataset describtor assigns one or more megacomplexes and a scale
     parameter.
     """
+
+    def iterate_megacomplexes(self) -> Generator[tuple[Parameter | int, Megacomplex | str]]:
+        for i, megacomplex in enumerate(self.megacomplex):
+            scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
+            yield scale, megacomplex

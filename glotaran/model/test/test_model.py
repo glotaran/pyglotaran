@@ -4,6 +4,7 @@ from typing import Tuple
 
 import pytest
 
+from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import model
 from glotaran.model import model_attribute
@@ -25,23 +26,22 @@ class MockAttr:
 
 
 @model_attribute()
-class MockMegacomplex:
+class MockMegacomplex(Megacomplex):
     pass
 
 
-def matrix_fun(dataset, axis):
-    pass
-
-
-def matrix_fun_index(dataset, axis, index):
+@model_attribute()
+class MockMegacomplex2(Megacomplex):
     pass
 
 
 @model(
     "mock_model",
     attributes={"test": MockAttr},
-    megacomplex_type=MockMegacomplex,
-    matrix=matrix_fun,
+    megacomplex_types={
+        "mock_megacomplex": MockMegacomplex,
+        "mock_megacomplex2": MockMegacomplex2,
+    },
     model_dimension="model",
     global_dimension="global",
 )
@@ -52,7 +52,7 @@ class MockModel(Model):
 @pytest.fixture
 def model():
     d = {
-        "megacomplex": {"m1": [], "m2": []},
+        "megacomplex": {"m1": {}, "m2": ["mock_megacomplex2"]},
         "weights": [
             {
                 "datasets": ["d1", "d2"],
@@ -84,7 +84,7 @@ def model():
 @pytest.fixture
 def model_error():
     d = {
-        "megacomplex": {"m1": [], "m2": []},
+        "megacomplex": {"m1": {}, "m2": {}},
         "test": {
             "t1": {
                 "param": "fool",
@@ -112,9 +112,8 @@ def parameter():
 
 def test_model_misc(model):
     assert model.model_type == "mock_model"
-    assert not model.index_dependent_matrix
-    model.matrix = matrix_fun_index
-    assert model.index_dependent_matrix
+    assert isinstance(model.megacomplex["m1"], MockMegacomplex)
+    assert isinstance(model.megacomplex["m2"], MockMegacomplex2)
 
 
 @pytest.mark.parametrize("attr", ["dataset", "megacomplex", "weights", "test"])

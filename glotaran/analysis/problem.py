@@ -3,8 +3,6 @@ from __future__ import annotations
 import collections
 import itertools
 import warnings
-from typing import Any
-from typing import Callable
 from typing import Deque
 from typing import Dict
 from typing import NamedTuple
@@ -13,6 +11,13 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.nnls import residual_nnls
+from glotaran.analysis.util import LabelAndMatrix
+from glotaran.analysis.util import calculate_matrix
+from glotaran.analysis.util import combine_matrices
+from glotaran.analysis.util import find_closest_index
+from glotaran.analysis.util import find_overlap
+from glotaran.analysis.util import get_min_max_from_interval
+from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
@@ -35,8 +40,8 @@ class ProblemDescriptor(NamedTuple):
 
 class GroupedProblemDescriptor(NamedTuple):
     label: str
-    index: Any
-    axis: np.ndarray
+    indices: dict[str, int]
+    axis: dict[str, np.ndarray]
 
 
 class GroupedProblem(NamedTuple):
@@ -48,16 +53,11 @@ class GroupedProblem(NamedTuple):
     """The concatenated labels of the involved datasets."""
     data_sizes: list[int]
     """Holds the sizes of the concatenated datasets."""
-    descriptor: GroupedProblemDescriptor
+    descriptor: list[GroupedProblemDescriptor]
 
 
 UngroupedBag = Dict[str, ProblemDescriptor]
 GroupedBag = Deque[GroupedProblem]
-
-
-class LabelAndMatrix(NamedTuple):
-    clp_label: list[str]
-    matrix: np.ndarray
 
 
 class Problem:
@@ -351,11 +351,11 @@ class Problem:
 
                 idx = {}
                 if weight.global_interval is not None:
-                    idx[self.model.global_dimension] = _get_min_max_from_interval(
+                    idx[self.model.global_dimension] = get_min_max_from_interval(
                         weight.global_interval, global_axis
                     )
                 if weight.model_interval is not None:
-                    idx[self.model.model_dimension] = _get_min_max_from_interval(
+                    idx[self.model.model_dimension] = get_min_max_from_interval(
                         weight.model_interval, model_axis
                     )
                 dataset.weight[idx] *= weight.value
@@ -405,7 +405,18 @@ class Problem:
                         has_scaling=has_scaling,
                         group=label,
                         data_sizes=[data.isel({self._global_dimension: i}).values.size],
-                        descriptor=[GroupedProblemDescriptor(label, value, model_axis)],
+                        descriptor=[
+                            GroupedProblemDescriptor(
+                                label,
+                                {
+                                    self._global_dimension: i,
+                                },
+                                {
+                                    self._model_dimension: model_axis,
+                                    self._global_dimension: global_axis,
+                                },
+                            )
+                        ],
                     )
                     for i, value in enumerate(global_axis)
                 )
@@ -428,7 +439,7 @@ class Problem:
         weight: xr.DataArray,
         has_scaling: bool,
     ):
-        i1, i2 = _find_overlap(self._full_axis, global_axis, atol=self._scheme.group_tolerance)
+        i1, i2 = find_overlap(self._full_axis, global_axis, atol=self._scheme.group_tolerance)
 
         for i, j in enumerate(i1):
             datasets[j].append(label)
@@ -450,7 +461,18 @@ class Problem:
                 group=self._bag[j].group + label,
                 data_sizes=self._bag[j].data_sizes + [data_stripe.size],
                 descriptor=self._bag[j].descriptor
-                + [GroupedProblemDescriptor(label, global_axis[i2[i]], model_axis)],
+                + [
+                    GroupedProblemDescriptor(
+                        label,
+                        {
+                            self._global_dimension: i2[i],
+                        },
+                        {
+                            self._model_dimension: model_axis,
+                            self._global_dimension: global_axis,
+                        },
+                    )
+                ],
             )
 
         # Add non-overlaping regions
@@ -464,7 +486,18 @@ class Problem:
                 has_scaling=has_scaling,
                 group=label,
                 data_sizes=[data_stripe.size],
-                descriptor=[GroupedProblemDescriptor(label, global_axis[i], model_axis)],
+                descriptor=[
+                    GroupedProblemDescriptor(
+                        label,
+                        {
+                            self._global_dimension: i,
+                        },
+                        {
+                            self._model_dimension: model_axis,
+                            self._global_dimension: global_axis,
+                        },
+                    )
+                ],
             )
             if i < end_overlap:
                 datasets.appendleft([label])
@@ -503,18 +536,19 @@ class Problem:
         ) -> tuple[list[tuple[LabelAndMatrix, str]], float]:
             result = [
                 (
-                    _calculate_matrix(
-                        self._model.matrix,
+                    calculate_matrix(
+                        self._model,
                         descriptors[problem.label],
+                        problem.indices,
                         problem.axis,
-                        {},
-                        index=problem.index,
                     ),
                     problem.label,
                 )
                 for problem in group.descriptor
             ]
-            return result, group.descriptor[0].index
+            global_index = group.descriptor[0].indices[self._global_dimension]
+            global_index = group.descriptor[0].axis[self._global_dimension][global_index]
+            return result, global_index
 
         def reduce_and_combine_matrices(
             results: tuple[list[tuple[LabelAndMatrix, str]], float],
@@ -522,13 +556,13 @@ class Problem:
             index_results, index = results
             constraint_labels_and_matrices = list(
                 map(
-                    lambda result: _reduce_matrix(
+                    lambda result: reduce_matrix(
                         self._model, result[1], self.parameters, result[0], index
                     ),
                     index_results,
                 )
             )
-            clp, matrix = _combine_matrices(constraint_labels_and_matrices)
+            clp, matrix = combine_matrices(constraint_labels_and_matrices)
             return LabelAndMatrix(clp, matrix)
 
         results = list(
@@ -577,18 +611,20 @@ class Problem:
             self._reduced_matrices[label] = []
             descriptor = self._filled_dataset_descriptors[label]
 
-            for index in problem.global_axis:
-                result = _calculate_matrix(
-                    self._model.matrix,
+            for i, index in enumerate(problem.global_axis):
+                result = calculate_matrix(
+                    self._model,
                     descriptor,
-                    problem.model_axis,
-                    {},
-                    index=index,
+                    {self._global_dimension: i},
+                    {
+                        self._model_dimension: problem.model_axis,
+                        self._global_dimension: problem.global_axis,
+                    },
                 )
 
                 self._clp_labels[label].append(result.clp_label)
                 self._matrices[label].append(result.matrix)
-                reduced_labels_and_matrix = _reduce_matrix(
+                reduced_labels_and_matrix = reduce_matrix(
                     self._model, label, self._parameters, result, index
                 )
                 self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
@@ -601,9 +637,9 @@ class Problem:
     ) -> tuple[dict[str, list[str]], dict[str, np.ndarray], dict[str, LabelAndMatrix],]:
         # We just need to create groups from the ungrouped matrices
         self.calculate_index_independent_ungrouped_matrices()
-        for group_label, group in self._groups.items():
+        for group_label, group in self.groups.items():
             if group_label not in self._matrices:
-                reduced_labels_and_matrix = _combine_matrices(
+                reduced_labels_and_matrix = combine_matrices(
                     [
                         LabelAndMatrix(
                             self._reduced_clp_labels[label], self._reduced_matrices[label]
@@ -633,17 +669,21 @@ class Problem:
         self._reduced_matrices = {}
 
         for label, descriptor in self._filled_dataset_descriptors.items():
-            axis = self._data[label].coords[self._model_dimension].values
-            result = _calculate_matrix(
-                self._model.matrix,
+            model_axis = self._data[label].coords[self._model_dimension].values
+            global_axis = self._data[label].coords[self._global_dimension].values
+            result = calculate_matrix(
+                self._model,
                 descriptor,
-                axis,
                 {},
+                {
+                    self._model_dimension: model_axis,
+                    self._global_dimension: global_axis,
+                },
             )
 
             self._clp_labels[label] = result.clp_label
             self._matrices[label] = result.matrix
-            reduced_result = _reduce_matrix(self._model, label, self._parameters, result, None)
+            reduced_result = reduce_matrix(self._model, label, self._parameters, result, None)
             self._reduced_clp_labels[label] = reduced_result.clp_label
             self._reduced_matrices[label] = reduced_result.matrix
 
@@ -838,7 +878,7 @@ class Problem:
         for label, clp_labels in self.clp_labels.items():
 
             # find offset in the full axis
-            offset = _find_closest_index(
+            offset = find_closest_index(
                 self.data[label].coords[self._global_dimension][0].values, self._full_axis
             )
 
@@ -950,7 +990,9 @@ class Problem:
                 group_index = [
                     descriptor.label for descriptor in grouped_problem.descriptor
                 ].index(label)
-                global_index = grouped_problem.descriptor[group_index].index
+                group_descriptor = grouped_problem.descriptor[group_index]
+                global_index = group_descriptor.indices[self._global_dimension]
+                global_index = group_descriptor.axis[self._global_dimension][global_index]
 
                 self._add_grouped_residual_to_dataset(
                     dataset, grouped_problem, index, group_index, global_index
@@ -989,7 +1031,9 @@ class Problem:
                 group_index = [
                     descriptor.label for descriptor in grouped_problem.descriptor
                 ].index(label)
-                global_index = grouped_problem.descriptor[group_index].index
+                group_descriptor = grouped_problem.descriptor[group_index]
+                global_index = group_descriptor.indices[self._global_dimension]
+                global_index = group_descriptor.axis[self._global_dimension][global_index]
 
                 self._add_grouped_residual_to_dataset(
                     dataset, grouped_problem, index, group_index, global_index
@@ -1119,95 +1163,3 @@ class Problem:
         )
 
         dataset[f"{name}_singular_values"] = (("singular_value_index"), v)
-
-
-def _find_overlap(a, b, rtol=1e-05, atol=1e-08):
-    ovr_a = []
-    ovr_b = []
-    start_b = 0
-    for i, ai in enumerate(a):
-        for j, bj in itertools.islice(enumerate(b), start_b, None):
-            if np.isclose(ai, bj, rtol=rtol, atol=atol, equal_nan=False):
-                ovr_a.append(i)
-                ovr_b.append(j)
-            elif bj > ai:  # (more than tolerance)
-                break  # all the rest will be farther away
-            else:  # bj < ai (more than tolerance)
-                start_b += 1  # ignore further tests of this item
-    return (ovr_a, ovr_b)
-
-
-def _calculate_matrix(
-    matrix_function: Callable,
-    dataset_descriptor: DatasetDescriptor,
-    axis: np.ndarray,
-    extra: dict,
-    index: float = None,
-) -> LabelAndMatrix:
-    args = {
-        "dataset_descriptor": dataset_descriptor,
-        "axis": axis,
-    }
-    for k, v in extra:
-        args[k] = v
-    if index is not None:
-        args["index"] = index
-    clp_label, matrix = matrix_function(**args)
-    return LabelAndMatrix(clp_label, matrix)
-
-
-def _reduce_matrix(
-    model: Model,
-    label: str,
-    parameters: ParameterGroup,
-    result: LabelAndMatrix,
-    index: float,
-) -> LabelAndMatrix:
-    clp_labels = result.clp_label.copy()
-    if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
-        clp_label, matrix = model.constrain_matrix_function(
-            label, parameters, clp_labels, result.matrix, index
-        )
-        return LabelAndMatrix(clp_label, matrix)
-    return LabelAndMatrix(clp_labels, result.matrix)
-
-
-def _combine_matrices(labels_and_matrices: list[LabelAndMatrix]) -> LabelAndMatrix:
-    masks = []
-    full_clp_labels = None
-    sizes = []
-    for label_and_matrix in labels_and_matrices:
-        (clp_label, matrix) = label_and_matrix
-        sizes.append(matrix.shape[0])
-        if full_clp_labels is None:
-            full_clp_labels = clp_label
-            masks.append([i for i, _ in enumerate(clp_label)])
-        else:
-            mask = []
-            for c in clp_label:
-                if c not in full_clp_labels:
-                    full_clp_labels.append(c)
-                mask.append(full_clp_labels.index(c))
-            masks.append(mask)
-    dim1 = np.sum(sizes)
-    dim2 = len(full_clp_labels)
-    full_matrix = np.zeros((dim1, dim2), dtype=np.float64)
-    start = 0
-    for i, m in enumerate(labels_and_matrices):
-        end = start + sizes[i]
-        full_matrix[start:end, masks[i]] = m[1]
-        start = end
-
-    return LabelAndMatrix(full_clp_labels, full_matrix)
-
-
-def _find_closest_index(index: float, axis: np.ndarray):
-    return np.abs(axis - index).argmin()
-
-
-def _get_min_max_from_interval(interval, axis):
-    minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
-    maximum = (
-        np.abs(axis.values - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
-    )
-    return slice(minimum, maximum)

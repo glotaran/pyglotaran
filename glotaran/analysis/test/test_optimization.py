@@ -25,6 +25,7 @@ from glotaran.project import Scheme
 )
 @pytest.mark.parametrize(
     "suite",
+    # MultichannelMulticomponentDecay],
     [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
 def test_optimization(suite, index_dependent, grouped, weight, method):

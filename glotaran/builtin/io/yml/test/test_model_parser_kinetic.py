@@ -7,7 +7,7 @@ import pytest
 
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
-from glotaran.builtin.models.kinetic_image.kinetic_image_megacomplex import KineticImageMegacomplex
+from glotaran.builtin.models.kinetic_image.kinetic_decay_megacomplex import KineticDecayMegacomplex
 from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
     KineticSpectrumDatasetDescriptor,
 )
@@ -170,6 +170,6 @@ def test_megacomplexes(model):
         label = f"cmplx{i}"
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
-        assert isinstance(megacomplex, KineticImageMegacomplex)
+        assert isinstance(megacomplex, KineticDecayMegacomplex)
         assert megacomplex.label == label
         assert megacomplex.k_matrix == [f"km{i}"]
