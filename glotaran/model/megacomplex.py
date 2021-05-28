@@ -17,4 +17,3 @@ class Megacomplex:
         **kwargs,
     ):
         raise NotImplementedError
-

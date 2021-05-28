@@ -3,8 +3,8 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.problem import calculate_matrix
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import (
     apply_spectral_constraints,

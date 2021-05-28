@@ -2,8 +2,8 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.builtin.models.kinetic_spectrum.spectral_relations import (
     create_spectral_relation_matrix,

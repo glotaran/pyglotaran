@@ -10,14 +10,14 @@ from typing import NamedTuple
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.util import LabelAndMatrix
-from glotaran.analysis.util import find_overlap
-from glotaran.analysis.util import find_closest_index
-from glotaran.analysis.util import combine_matrices
-from glotaran.analysis.util import reduce_matrix
-from glotaran.analysis.util import calculate_matrix
-from glotaran.analysis.util import get_min_max_from_interval
 from glotaran.analysis.nnls import residual_nnls
+from glotaran.analysis.util import LabelAndMatrix
+from glotaran.analysis.util import calculate_matrix
+from glotaran.analysis.util import combine_matrices
+from glotaran.analysis.util import find_closest_index
+from glotaran.analysis.util import find_overlap
+from glotaran.analysis.util import get_min_max_from_interval
+from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
