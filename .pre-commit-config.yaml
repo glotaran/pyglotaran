@@ -53,6 +53,7 @@ repos:
     rev: 0.4.0
     hooks:
       - id: nbstripout
+        args: [--strip-empty-cells]
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 0.8.1
@@ -68,14 +69,6 @@ repos:
       - id: nbqa-isort
         additional_dependencies: [isort==5.7.0]
         args: [--nbqa-mutate]
-
-  - repo: local
-    hooks:
-      - id: nbstripout-empty
-        name: Strip empty notebook cells
-        language: system
-        entry: python docs/strip_empty_notebook_cells.py
-        types: [jupyter]
 
   # Linters
 
