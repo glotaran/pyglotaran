@@ -75,8 +75,8 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
 
     def calculate_dispersion(self, axis):
         dispersion = []
-        for index in axis:
-            center, _, _, _, _ = self.parameter(index)
+        for index, _ in enumerate(axis):
+            center, _, _, _, _, _ = self.parameter(index, axis)
             dispersion.append(center)
         return np.asarray(dispersion).T
 
