@@ -47,7 +47,7 @@ class OneCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "gaussian",
+                    "type": "lorentzian-bandshape",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
@@ -118,22 +118,23 @@ class ThreeCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "gaussian",
+                    "type": "lorentzian-bandshape",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
                 },
                 "sh2": {
-                    "type": "gaussian",
+                    "type": "lorentzian-bandshape",
                     "amplitude": "4",
                     "location": "5",
                     "width": "6",
                 },
                 "sh3": {
-                    "type": "gaussian",
+                    "type": "lorentzian-bandshape",
                     "amplitude": "7",
                     "location": "8",
                     "width": "9",
+                    "skew": "10",
                 },
             },
             "dataset": {
@@ -155,6 +156,7 @@ class ThreeCompartmentModel:
             15,
             50,
             20,
+            0.1,
         ]
     )
 

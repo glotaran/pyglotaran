@@ -12,10 +12,11 @@ from glotaran.parameter import Parameter
         "amplitude": Parameter,
         "location": Parameter,
         "width": Parameter,
+        "skew": {"type": Parameter, "allow_none": True},
     },
     has_type=True,
 )
-class SpectralShapeGaussian:
+class SpectralShapeLorentzianBandshape:
     """A gaussian spectral shape"""
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
@@ -31,8 +32,23 @@ class SpectralShapeGaussian:
         shape: numpy.ndarray
 
         """
+        return (
+            self._calculate_skewed(axis)
+            if self.skew is not None
+            else self._calculate_unskewed(axis)
+        )
+
+    def _calculate_unskewed(self, axis: np.ndarray) -> np.ndarray:
         return self.amplitude * np.exp(
             -np.log(2) * np.square(2 * (axis - self.location) / self.width)
+        )
+
+    def _calculate_skewed(self, axis: np.ndarray) -> np.ndarray:
+        return self.amplitude * np.exp(
+            -np.log(2)
+            * np.square(
+                np.log(1 + 2 * self.skew * (axis - self.location) / self.width) / self.skew
+            )
         )
 
 
@@ -80,7 +96,7 @@ class SpectralShapeZero:
 
 @model_attribute_typed(
     types={
-        "gaussian": SpectralShapeGaussian,
+        "lorentzian-bandshape": SpectralShapeLorentzianBandshape,
         "one": SpectralShapeOne,
         "zero": SpectralShapeZero,
     }
