@@ -95,18 +95,22 @@ def kinetic_image_matrix_implementation(matrix, rates, axis, index, dataset_desc
 
     if isinstance(dataset_descriptor.irf, IrfMultiGaussian):
 
-        center, width, irf_scale, backsweep, backsweep_period = dataset_descriptor.irf.parameter(
-            index
-        )
+        (
+            centers,
+            widths,
+            irf_scales,
+            backsweep,
+            backsweep_period,
+        ) = dataset_descriptor.irf.parameter(index)
 
-        for i in range(len(center)):
+        for center, width, irf_scale in zip(centers, widths, irf_scales):
             calculate_kinetic_matrix_gaussian_irf(
                 matrix,
                 rates,
                 axis,
-                center[i],
-                width[i],
-                irf_scale[i],
+                center,
+                width,
+                irf_scale,
                 backsweep,
                 backsweep_period,
             )
