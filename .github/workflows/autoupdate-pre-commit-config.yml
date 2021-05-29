@@ -5,8 +5,6 @@ name: "Update pre-commit config"
 # If you don't want the PR to trigger the CI (NOT RECOMMENDED), comment out the GITHUB_TOKEN line.
 
 on:
-  schedule:
-    - cron: "0 20 * * 5" # At 20:00 on each Friday.
   workflow_dispatch:
 
 jobs:
