@@ -101,12 +101,11 @@ class IrfMultiGaussian:
         return centers, widths, scales, shift, backsweep, backsweep_period
 
     def calculate(self, index: int, global_axis: np.ndarray, model_axis: np.ndarray):
-        center, width, scales, _, _, _ = self.parameter(index, global_axis)
-        irf = scales[0] * np.exp(-1 * (model_axis - center[0]) ** 2 / (2 * width[0] ** 2))
-        if len(center) > 1:
-            for i in range(1, len(center)):
-                irf += scales[i] * np.exp(-1 * (model_axis - center[i]) ** 2 / (2 * width[i] ** 2))
-        return irf
+        centers, widths, scales, _, _, _ = self.parameter(index, global_axis)
+        return sum(
+            scale * np.exp(-1 * (model_axis - center) ** 2 / (2 * width ** 2))
+            for center, width, scale in zip(centers, widths, scales)
+        )
 
 
 @model_attribute(
