@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
-from typing import Any
-
-if TYPE_CHECKING:
-    from glotaran.parameter import ParameterGroup
 
 import asteval
 import numpy as np
+from numpy.typing._array_like import _SupportsArray
 
-RESERVED_LABELS = [symbol for symbol in asteval.make_symbol_table()] + ["group"]
+if TYPE_CHECKING:
+    from typing import Any
+
+    from glotaran.parameter import ParameterGroup
+
+RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["group"]
 
 
 class Keys:
@@ -25,7 +27,7 @@ class Keys:
     VARY = "vary"
 
 
-class Parameter:
+class Parameter(_SupportsArray):
     """A parameter for optimization."""
 
     _find_parameter = re.compile(r"(\$[\w\d\.]+)")
@@ -41,21 +43,36 @@ class Parameter:
         maximum: int | float = np.inf,
         minimum: int | float = -np.inf,
         non_negative: bool = False,
-        value: float = None,
+        value: float | int = np.nan,
         vary: bool = True,
     ):
-        """
+        """Optimization Parameter supporting numpy array operations.
 
         Parameters
         ----------
-        label :
-            The label of the parameter.
-        full_label : str
+        label : str, optional
+            The label of the parameter., by default None
+        full_label : str, optional
             The label of the parameter with its path in a parameter group prepended.
-        """  # TODO: update docstring.
+            , by default None
+        expression : str, optional
+            Expression to calculate the parameters value from,
+            e.g. if used in relation to another parameter. , by default None
+        maximum : int, optional
+            Upper boundary for the parameter to be varied to., by default np.inf
+        minimum : int, optional
+            Lower boundary for the parameter to be varied to., by default -np.inf
+        non_negative : bool, optional
+            Whether the parameter should always be bigger than zero., by default False
+        value : float, optional
+            Value of the parameter, by default np.nan
+        vary : bool, optional
+            Whether the parameter should be changed during optimization or not.
+            , by default True
+        """
 
         self.label = label
-        self.full_label = full_label
+        self.full_label = full_label or ""
         self.expression = expression
         self.maximum = maximum
         self.minimum = minimum
@@ -64,7 +81,7 @@ class Parameter:
         self.value = value
         self.vary = vary
 
-        self._transformed_expression = None
+        self._transformed_expression: str | None = None
 
     @classmethod
     def valid_label(cls, label: str) -> bool:
@@ -89,7 +106,6 @@ class Parameter:
         label :
             The label of the parameter.
         """
-
         param = cls(label=label)
         options = None
 
@@ -145,14 +161,16 @@ class Parameter:
             self.vary = options[Keys.VARY]
 
     @property
-    def label(self) -> str:
+    def label(self) -> str | None:
         """Label of the parameter"""
         return self._label
 
     @label.setter
-    def label(self, label: str):
+    def label(self, label: str | None):
+        # ensure that label is str | None even if an int is passed
+        label = None if label is None else str(label)
         if label is not None and not Parameter.valid_label(label):
-            raise ValueError("'{label}' is not a valid group label.")
+            raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
 
     @property
@@ -162,7 +180,7 @@ class Parameter:
 
     @full_label.setter
     def full_label(self, full_label: str):
-        self._full_label = full_label
+        self._full_label = str(full_label)
 
     @property
     def non_negative(self) -> bool:
@@ -228,17 +246,20 @@ class Parameter:
         self._minimum = minimum
 
     @property
-    def expression(self) -> str:
-        """The expression of the parameter."""  # TODO: Formulate better docstring.
+    def expression(self) -> str | None:
+        """Expression to calculate the parameters value from.
+
+        This can used to set a relation to another parameter.
+        """
         return self._expression
 
     @expression.setter
-    def expression(self, expression: str):
+    def expression(self, expression: str | None):
         self._expression = expression
         self._transformed_expression = None
 
     @property
-    def transformed_expression(self) -> str:
+    def transformed_expression(self) -> str | None:
         """The expression of the parameter transformed for evaluation within a `ParameterGroup`."""
         if self.expression is not None and self._transformed_expression is None:
             self._transformed_expression = self.expression
@@ -264,7 +285,7 @@ class Parameter:
 
     @value.setter
     def value(self, value: int | float):
-        if not isinstance(value, float) and value is not None:
+        if not isinstance(value, float) and value is not np.nan:
             try:
                 value = float(value)
             except Exception:
@@ -473,7 +494,7 @@ def _sanatize_parameter_list(li: list) -> list:
     return li
 
 
-def _retrieve_from_list_by_type(li: list, t: type, default: Any):
+def _retrieve_from_list_by_type(li: list, t: type | tuple[type, ...], default: Any):
     tmp = list(filter(lambda x: isinstance(x, t), li))
     if not tmp:
         return default

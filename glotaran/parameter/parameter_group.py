@@ -258,7 +258,7 @@ class ParameterGroup(dict):
         Parameters
         ----------
         label :
-            The label of the parameter.
+            The label of the parameter, with its path in a parameter group prepended.
         """
 
         try:
@@ -273,7 +273,7 @@ class ParameterGroup(dict):
         Parameters
         ----------
         label :
-            The label of the parameter.
+            The label of the parameter, with its path in a parameter group prepended.
         """
 
         # sometimes the spec parser delivers the labels as int
