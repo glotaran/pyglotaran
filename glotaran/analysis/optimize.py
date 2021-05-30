@@ -7,6 +7,8 @@ from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
 from glotaran.analysis.problem import Problem
+from glotaran.analysis.problem_grouped import GroupedProblem
+from glotaran.analysis.problem_ungrouped import UngroupedProblem
 from glotaran.project import Result
 from glotaran.project import Scheme
 
@@ -18,7 +20,7 @@ SUPPORTED_METHODS = {
 
 
 def optimize(scheme: Scheme, verbose: bool = True) -> Result:
-    problem = Problem(scheme)
+    problem = GroupedProblem(scheme) if scheme.model.grouped() else UngroupedProblem(scheme)
     return optimize_problem(problem, verbose=verbose)
 
 

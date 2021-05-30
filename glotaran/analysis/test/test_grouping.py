@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.problem import Problem
+from glotaran.analysis.problem_grouped import GroupedProblem
 from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -35,7 +35,7 @@ def test_single_dataset():
     }
 
     scheme = Scheme(model, parameters, data)
-    problem = Problem(scheme)
+    problem = GroupedProblem(scheme)
     bag = problem.bag
     datasets = problem.groups
     assert len(datasets) == 1
@@ -84,7 +84,7 @@ def test_multi_dataset_no_overlap():
     }
 
     scheme = Scheme(model, parameters, data)
-    problem = Problem(scheme)
+    problem = GroupedProblem(scheme)
     bag = list(problem.bag)
     assert len(problem.groups) == 2
     assert len(bag) == 6
@@ -138,7 +138,7 @@ def test_multi_dataset_overlap():
     }
 
     scheme = Scheme(model, parameters, data, group_tolerance=5e-1)
-    problem = Problem(scheme)
+    problem = GroupedProblem(scheme)
     bag = list(problem.bag)
     assert len(problem.groups) == 3
     assert "dataset1dataset2" in problem.groups
