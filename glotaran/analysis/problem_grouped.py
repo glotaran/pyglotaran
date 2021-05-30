@@ -20,7 +20,10 @@ from glotaran.model import DatasetDescriptor
 
 
 class GroupedProblem(Problem):
+    """Represents a problem where the data is grouped."""
+
     def init_bag(self):
+        """Initializes a grouped problem bag."""
         datasets = None
         for label in self._model.dataset:
             dataset = self._data[label]
@@ -153,6 +156,8 @@ class GroupedProblem(Problem):
         list[list[str]],
         list[np.ndarray],
     ]:
+        """Calculates the index dependent model matrices."""
+
         def calculate_group(
             group: ProblemGroup, descriptors: dict[str, DatasetDescriptor]
         ) -> tuple[list[tuple[LabelAndMatrix, str]], float]:
@@ -213,6 +218,7 @@ class GroupedProblem(Problem):
     def calculate_index_independent_matrices(
         self,
     ) -> tuple[dict[str, list[str]], dict[str, np.ndarray], dict[str, LabelAndMatrix],]:
+        """Calculates the index independent model matrices."""
         self._clp_labels = {}
         self._matrices = {}
         self._reduced_clp_labels = {}
@@ -255,6 +261,8 @@ class GroupedProblem(Problem):
     def calculate_index_dependent_residual(
         self,
     ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray],]:
+        """Calculates the index dependent residuals."""
+
         def residual_function(
             problem: ProblemGroup, matrix: np.ndarray
         ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -287,6 +295,8 @@ class GroupedProblem(Problem):
     def calculate_index_independent_residual(
         self,
     ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray],]:
+        """Calculates the index independent residuals."""
+
         def residual_function(problem: ProblemGroup):
             matrix = self.reduced_matrices[problem.group].copy()
             for i in range(matrix.shape[1]):
@@ -359,6 +369,7 @@ class GroupedProblem(Problem):
         )
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
+        """Creates a result datasets for index dependent matrices."""
 
         for index, grouped_problem in enumerate(self.bag):
 
@@ -398,6 +409,7 @@ class GroupedProblem(Problem):
     def create_index_independent_result_dataset(
         self, label: str, dataset: xr.Dataset
     ) -> xr.Dataset:
+        """Creates a result datasets for index independent matrices."""
 
         self._add_index_independent_matrix_to_dataset(label, dataset)
 

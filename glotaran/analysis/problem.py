@@ -439,6 +439,7 @@ class Problem:
         dataset[f"{name}_singular_values"] = (("singular_value_index"), v)
 
     def init_bag(self):
+        """Initializes a problem bag."""
         raise NotImplementedError
 
     def calculate_index_dependent_matrices(
@@ -449,6 +450,7 @@ class Problem:
         dict[str, list[str]],
         dict[str, list[np.ndarray]],
     ]:
+        """Calculates the index dependent model matrices."""
         raise NotImplementedError
 
     def calculate_index_independent_matrices(
@@ -459,6 +461,7 @@ class Problem:
         dict[str, list[str]],
         dict[str, np.ndarray],
     ]:
+        """Calculates the index independent model matrices."""
         raise NotImplementedError
 
     def calculate_index_dependent_residual(
@@ -469,6 +472,7 @@ class Problem:
         dict[str, list[np.ndarray]],
         dict[str, list[np.ndarray]],
     ]:
+        """Calculates the index dependent residuals."""
         raise NotImplementedError
 
     def calculate_index_independent_residual(
@@ -479,12 +483,15 @@ class Problem:
         dict[str, list[np.ndarray]],
         dict[str, list[np.ndarray]],
     ]:
+        """Calculates the index independent residuals."""
         raise NotImplementedError
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
+        """Creates a result datasets for index dependent matrices."""
         raise NotImplementedError
 
     def create_index_independent_result_dataset(
         self, label: str, dataset: xr.Dataset
     ) -> xr.Dataset:
+        """Creates a result datasets for index independent matrices."""
         raise NotImplementedError

@@ -10,7 +10,10 @@ from glotaran.analysis.util import reduce_matrix
 
 
 class UngroupedProblem(Problem):
+    """Represents a problem where the data is not grouped."""
+
     def init_bag(self):
+        """Initializes an ungrouped problem bag."""
         self._bag = {}
         for label in self._scheme.model.dataset:
             dataset = self._data[label]
@@ -35,6 +38,7 @@ class UngroupedProblem(Problem):
         dict[str, list[str]],
         dict[str, list[np.ndarray]],
     ]:
+        """Calculates the index dependent model matrices."""
 
         self._clp_labels = {}
         self._matrices = {}
@@ -77,6 +81,7 @@ class UngroupedProblem(Problem):
         dict[str, list[str]],
         dict[str, np.ndarray],
     ]:
+        """Calculates the index independent model matrices."""
 
         self._clp_labels = {}
         self._matrices = {}
@@ -112,6 +117,7 @@ class UngroupedProblem(Problem):
         dict[str, list[np.ndarray]],
         dict[str, list[np.ndarray]],
     ]:
+        """Calculates the index dependent residuals."""
 
         self._reduced_clps = {}
         self._weighted_residuals = {}
@@ -142,6 +148,7 @@ class UngroupedProblem(Problem):
         dict[str, list[np.ndarray]],
         dict[str, list[np.ndarray]],
     ]:
+        """Calculates the index independent residuals."""
         return self.calculate_index_dependent_residual()
 
     def _calculate_residual_for_problem(self, label: str, problem: UngroupedProblemDescriptor):
@@ -176,6 +183,7 @@ class UngroupedProblem(Problem):
                 self._residuals[label].append(residual)
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
+        """Creates a result datasets for index dependent matrices."""
 
         self._add_index_dependent_matrix_to_dataset(label, dataset)
 
@@ -186,6 +194,7 @@ class UngroupedProblem(Problem):
     def create_index_independent_result_dataset(
         self, label: str, dataset: xr.Dataset
     ) -> xr.Dataset:
+        """Creates a result datasets for index independent matrices."""
 
         self._add_index_independent_matrix_to_dataset(label, dataset)
 
