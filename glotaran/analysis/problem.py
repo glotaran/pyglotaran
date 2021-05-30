@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import warnings
 from typing import Deque
+from typing import Dict
 from typing import NamedTuple
 
 import numpy as np
@@ -47,7 +48,7 @@ class ProblemGroup(NamedTuple):
     descriptor: list[GroupedProblemDescriptor]
 
 
-UngroupedBag = dict[str, UngroupedProblemDescriptor]
+UngroupedBag = Dict[str, UngroupedProblemDescriptor]
 GroupedBag = Deque[ProblemGroup]
 
 
@@ -351,9 +352,6 @@ class Problem:
                     )
                 dataset.weight[idx] *= weight.value
 
-    def init_bag(self):
-        raise NotImplementedError
-
     def calculate_matrices(self):
         if self._parameters is None:
             raise ParameterError
@@ -362,51 +360,11 @@ class Problem:
         else:
             self.calculate_index_independent_matrices()
 
-    def calculate_index_dependent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[list[str]]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[str]],
-        dict[str, list[np.ndarray]],
-    ]:
-        raise NotImplementedError
-
-    def calculate_index_independent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-    ]:
-        raise NotImplementedError
-
     def calculate_residual(self):
         if self._index_dependent:
             self.calculate_index_dependent_residual()
         else:
             self.calculate_index_independent_residual()
-
-    def calculate_index_dependent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        raise NotImplementedError
-
-    def calculate_index_independent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        raise NotImplementedError
 
     def calculate_additional_penalty(self) -> np.ndarray | dict[str, np.ndarray]:
         """Calculates additional penalties by calling the model.additional_penalty function."""
@@ -465,14 +423,6 @@ class Problem:
         dataset["fitted_data"] = dataset.data - dataset.residual
         return dataset
 
-    def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
-        raise NotImplementedError
-
-    def create_index_independent_result_dataset(
-        self, label: str, dataset: xr.Dataset
-    ) -> xr.Dataset:
-        raise NotImplementedError
-
     def _create_svd(self, name: str, dataset: xr.Dataset):
         l, v, r = np.linalg.svd(dataset[name], full_matrices=False)
 
@@ -487,3 +437,54 @@ class Problem:
         )
 
         dataset[f"{name}_singular_values"] = (("singular_value_index"), v)
+
+    def init_bag(self):
+        raise NotImplementedError
+
+    def calculate_index_dependent_matrices(
+        self,
+    ) -> tuple[
+        dict[str, list[list[str]]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[str]],
+        dict[str, list[np.ndarray]],
+    ]:
+        raise NotImplementedError
+
+    def calculate_index_independent_matrices(
+        self,
+    ) -> tuple[
+        dict[str, list[str]],
+        dict[str, np.ndarray],
+        dict[str, list[str]],
+        dict[str, np.ndarray],
+    ]:
+        raise NotImplementedError
+
+    def calculate_index_dependent_residual(
+        self,
+    ) -> tuple[
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+    ]:
+        raise NotImplementedError
+
+    def calculate_index_independent_residual(
+        self,
+    ) -> tuple[
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray]],
+    ]:
+        raise NotImplementedError
+
+    def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
+        raise NotImplementedError
+
+    def create_index_independent_result_dataset(
+        self, label: str, dataset: xr.Dataset
+    ) -> xr.Dataset:
+        raise NotImplementedError

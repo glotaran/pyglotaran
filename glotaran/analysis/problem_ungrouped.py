@@ -118,31 +118,7 @@ class UngroupedProblem(Problem):
         self._residuals = {}
 
         for label, problem in self.bag.items():
-            self._reduced_clps[label] = []
-            self._residuals[label] = []
-            self._weighted_residuals[label] = []
-            data = problem.data
-            for i in range(len(problem.global_axis)):
-                matrix_at_index = self.reduced_matrices[label][i]
-
-                if problem.dataset.scale is not None:
-                    matrix_at_index *= self.filled_dataset_descriptors[label].scale
-                if problem.weight is not None:
-                    matrix_at_index = matrix_at_index.copy()
-                    for j in range(matrix_at_index.shape[1]):
-                        matrix_at_index[:, j] *= problem.weight.isel({self._global_dimension: i})
-                clp, residual = self._residual_function(
-                    matrix_at_index, data.isel({self._global_dimension: i}).values
-                )
-
-                self._reduced_clps[label].append(clp)
-                self._weighted_residuals[label].append(residual)
-                if problem.weight is not None:
-                    self._residuals[label].append(
-                        residual / problem.weight.isel({self._global_dimension: i})
-                    )
-                else:
-                    self._residuals[label].append(residual)
+            self._calculate_residual_for_problem(label, problem)
 
         self._clps = (
             self.model.retrieve_clp_function(
@@ -166,53 +142,38 @@ class UngroupedProblem(Problem):
         dict[str, list[np.ndarray]],
         dict[str, list[np.ndarray]],
     ]:
+        return self.calculate_index_dependent_residual()
 
-        self._clps = {}
-        self._reduced_clps = {}
-        self._weighted_residuals = {}
-        self._residuals = {}
-        for label, problem in self.bag.items():
+    def _calculate_residual_for_problem(self, label: str, problem: UngroupedProblemDescriptor):
+        self._reduced_clps[label] = []
+        self._weighted_residuals[label] = []
+        self._residuals[label] = []
+        data = problem.data
 
-            self._clps[label] = []
-            self._reduced_clps[label] = []
-            self._weighted_residuals[label] = []
-            self._residuals[label] = []
-            data = problem.data
+        for i in range(len(problem.global_axis)):
+            matrix = (
+                self.reduced_matrices[label][i]
+                if self.index_dependent
+                else self.reduced_matrices[label].copy()
+            )  # TODO: .copy() or not
+            if problem.dataset.scale is not None:
+                matrix *= self.filled_dataset_descriptors[label].scale
 
-            for i in range(len(problem.global_axis)):
-                matrix = self.reduced_matrices[label].copy()  # TODO: .copy() or not
-                if problem.dataset.scale is not None:
-                    matrix *= self.filled_dataset_descriptors[label].scale
+            if problem.weight is not None:
+                for j in range(matrix.shape[1]):
+                    matrix[:, j] *= problem.weight.isel({self._global_dimension: i}).values
 
-                if problem.weight is not None:
-                    for j in range(matrix.shape[1]):
-                        matrix[:, j] *= problem.weight.isel({self._global_dimension: i}).values
-
-                clp, residual = self._residual_function(
-                    matrix, data.isel({self._global_dimension: i}).values
-                )
-                self._reduced_clps[label].append(clp)
-                self._weighted_residuals[label].append(residual)
-                if problem.weight is not None:
-                    self._residuals[label].append(
-                        residual / problem.weight.isel({self._global_dimension: i})
-                    )
-                else:
-                    self._residuals[label].append(residual)
-
-        self._clps = (
-            self.model.retrieve_clp_function(
-                self.parameters,
-                self.clp_labels,
-                self.reduced_clp_labels,
-                self.reduced_clps,
-                self.data,
+            clp, residual = self._residual_function(
+                matrix, data.isel({self._global_dimension: i}).values
             )
-            if callable(self.model.retrieve_clp_function)
-            else self._reduced_clps
-        )
-
-        return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
+            self._reduced_clps[label].append(clp)
+            self._weighted_residuals[label].append(residual)
+            if problem.weight is not None:
+                self._residuals[label].append(
+                    residual / problem.weight.isel({self._global_dimension: i})
+                )
+            else:
+                self._residuals[label].append(residual)
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
 
