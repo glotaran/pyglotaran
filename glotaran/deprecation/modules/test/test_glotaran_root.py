@@ -98,7 +98,7 @@ def test_read_parameters_from_yaml():
 
     assert isinstance(result, ParameterGroup)
     assert isinstance(result["foo"], ParameterGroup)
-    assert result["foo"].get(1) == 123
+    assert result["foo"].get("1") == 123
 
 
 def test_read_parameters_from_yaml_file(tmp_path: Path):
@@ -111,4 +111,4 @@ def test_read_parameters_from_yaml_file(tmp_path: Path):
 
     assert isinstance(result, ParameterGroup)
     assert isinstance(result["foo"], ParameterGroup)
-    assert result["foo"].get(1) == 123
+    assert result["foo"].get("1") == 123

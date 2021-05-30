@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pickle
 
 import numpy as np
@@ -6,6 +8,23 @@ import pytest
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.parameter import Parameter
+
+
+@pytest.mark.parametrize("label, expected", (("foo", "foo"), (0, "0"), (1, "1"), (None, None)))
+def test_parameter_label_always_str_or_None(label: str | int | None, expected: str | None):
+    """Parameter.label is always a string or None"""
+    parameter = Parameter(label=label)  # type:ignore[arg-type]
+    assert parameter.label == expected
+
+
+@pytest.mark.parametrize(
+    "label",
+    (2.0, np.nan, "foo.bar"),
+)
+def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
+    """Error if label can't be casted to a valid label str"""
+    with pytest.raises(ValueError, match=f"'{label}' is not a valid group label."):
+        Parameter(label=label)  # type:ignore[arg-type]
 
 
 def test_param_array():
@@ -160,7 +179,43 @@ def test_nested_param_group():
     assert [p.value for _, p in group.all()] == list(range(7, 10))
 
 
-def test_non_negative():
+def test_parameter_set_from_group():
+    """Parameter extracted from group has correct values"""
+    group = load_parameters(
+        "foo:\n  - [\"1\", 123,{non-negative: true, min: 10, max: 8e2, vary: true, expr:'2'}]",
+        format_name="yml_str",
+    )
+    parameter = Parameter(full_label="foo.1")
+    parameter.set_from_group(group=group)
+
+    assert parameter.value == 123
+    assert parameter.non_negative is True
+    assert np.allclose(parameter.minimum, 10)
+    assert np.allclose(parameter.maximum, 800)
+    assert parameter.vary is True
+    # Set to None since value and expr were provided?
+    assert parameter.expression is None
+
+
+def test_parameter_value_not_numeric_error():
+    """Error if value isn't numeric."""
+    with pytest.raises(TypeError, match="Parameter value must be numeric"):
+        Parameter(value="foo")  # type:ignore[arg-type]
+
+
+def test_parameter_maximum_not_numeric_error():
+    """Error if maximum isn't numeric."""
+    with pytest.raises(TypeError, match="Parameter maximum must be numeric"):
+        Parameter(maximum="foo")  # type:ignore[arg-type]
+
+
+def test_parameter_minimum_not_numeric_error():
+    """Error if minimum isn't numeric."""
+    with pytest.raises(TypeError, match="Parameter minimum must be numeric"):
+        Parameter(minimum="foo")  # type:ignore[arg-type]
+
+
+def test_parameter_non_negative():
 
     notnonneg = Parameter(value=1, non_negative=False)
     valuenotnoneg, _, _ = notnonneg.get_value_and_bounds_for_optimization()
@@ -275,6 +330,8 @@ def test_transform_expression(case):
     expression, wanted_parameters = case
     parameter = Parameter(expression=expression)
     assert parameter.transformed_expression == wanted_parameters
+    # just for the test coverage so the if condition is wrong
+    assert parameter.transformed_expression == wanted_parameters
 
 
 def test_label_validator():
@@ -317,6 +374,7 @@ def test_parameter_expressions():
 
     assert params.get("3").expression is not None
     assert not params.get("3").vary
+    assert params.get("3").value == 2 * np.exp(5)
     assert params.get("3").value == params.get("1") * np.exp(params.get("2"))
     assert params.get("4").value == 2
 
@@ -380,6 +438,37 @@ def test_parameter_pickle(tmpdir):
         pickled_parameter = pickle.load(f)
 
     assert parameter == pickled_parameter
+
+
+def test_parameter_numpy_operations():
+    """Operators work like a float"""
+    parm1 = Parameter(value=1)
+    parm1_neg = Parameter(value=-1)
+    parm2 = Parameter(value=2)
+    parm3 = Parameter(value=3)
+    parm3_5 = Parameter(value=3.5)
+
+    assert parm1 == 1
+    assert parm1 != 2
+    assert -parm1 == -1
+    assert abs(parm1_neg) == 1
+    assert int(parm1) == 1
+    assert np.allclose(float(parm1), 1)
+    assert np.allclose(parm1 + parm2, 3)
+    assert np.allclose(parm3 - parm2, 1)
+    assert np.allclose(parm3 * parm2, 6)
+    assert np.allclose(parm3 / parm2, 1.5)
+    assert parm3 // parm2 == 1
+    assert np.trunc(parm3_5) == 3
+    assert parm2 % 2 == 0
+    assert 2 % parm2 == 0
+    assert divmod(parm3, 2) == (1, 1)
+    assert divmod(3, parm2) == (1, 1)
+    assert np.allclose(parm3 ** parm2, 9)
+    assert parm3 > parm2
+    assert parm3 >= parm2
+    assert parm1 < parm2
+    assert parm1 <= parm2
 
 
 TEST_CSV = """
