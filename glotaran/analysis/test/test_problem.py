@@ -5,6 +5,8 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.problem import Problem
+from glotaran.analysis.problem_grouped import GroupedProblem
+from glotaran.analysis.problem_ungrouped import UngroupedProblem
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
 from glotaran.analysis.test.models import SimpleTestModel
@@ -27,7 +29,7 @@ def problem(request) -> Problem:
         {"e": suite.e_axis, "c": suite.c_axis},
     )
     scheme = Scheme(model=model, parameters=suite.initial_parameters, data={"dataset1": dataset})
-    return Problem(scheme)
+    return GroupedProblem(scheme) if request.param[0] else UngroupedProblem(scheme)
 
 
 def test_problem(problem: Problem):
