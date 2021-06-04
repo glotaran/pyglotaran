@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 from typing import Deque
 from typing import Dict
 from typing import NamedTuple
+from typing import TypeVar
 
 import numpy as np
 import xarray as xr
@@ -11,10 +13,14 @@ import xarray as xr
 from glotaran.analysis.nnls import residual_nnls
 from glotaran.analysis.util import get_min_max_from_interval
 from glotaran.analysis.variable_projection import residual_variable_projection
+from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+
+if TYPE_CHECKING:
+    from typing import Hashable
 
 
 class ParameterError(ValueError):
@@ -50,6 +56,8 @@ class ProblemGroup(NamedTuple):
 
 UngroupedBag = Dict[str, UngroupedProblemDescriptor]
 GroupedBag = Deque[ProblemGroup]
+
+XrDataContainer = TypeVar("XrDataContainer", xr.DataArray, xr.Dataset)
 
 
 class Problem:
@@ -281,44 +289,76 @@ class Problem:
     def _prepare_data(self, data: dict[str, xr.DataArray | xr.Dataset]):
         self._data = {}
         for label, dataset in data.items():
-            if self.model.model_dimension not in dataset.dims:
+            if self._model_dimension not in dataset.dims:
                 raise ValueError(
                     "Missing coordinates for dimension "
-                    f"'{self.model.model_dimension}' in data for dataset "
+                    f"'{self._model_dimension}' in data for dataset "
                     f"'{label}'"
                 )
-            if self.model.global_dimension not in dataset.dims:
+            if self._global_dimension not in dataset.dims:
                 raise ValueError(
                     "Missing coordinates for dimension "
-                    f"'{self.model.global_dimension}' in data for dataset "
+                    f"'{self._global_dimension}' in data for dataset "
                     f"'{label}'"
                 )
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            dataset = self._transpose_dataset(dataset)
-            self._add_weight(label, dataset)
+            lsv_dim, rsv_dim = self._preferred_svd_dims(dataset)
 
-            # TODO: avoid computation if not requested
-            l, s, r = np.linalg.svd(dataset.data, full_matrices=False)
-            dataset["data_left_singular_vectors"] = (("time", "left_singular_value_index"), l)
-            dataset["data_singular_values"] = (("singular_value_index"), s)
-            dataset["data_right_singular_vectors"] = (
-                ("right_singular_value_index", "spectral"),
-                r,
+            if lsv_dim == "time" and rsv_dim == "spectral":
+                add_svd_to_dataset(dataset)
+
+            dataset = self._transpose_dataset(
+                dataset, ordered_dims=[self._model_dimension, self._global_dimension]
             )
 
+            if lsv_dim != "time" or rsv_dim != "spectral":
+                add_svd_to_dataset(dataset, lsv_dim=lsv_dim, rsv_dim=rsv_dim)
+
+            self._add_weight(label, dataset)
             self._data[label] = dataset
 
-    def _transpose_dataset(self, dataset):
-        new_dims = [self.model.model_dimension, self.model.global_dimension]
-        new_dims += [
-            dim
-            for dim in dataset.dims
-            if dim not in [self.model.model_dimension, self.model.global_dimension]
-        ]
+    def _preferred_svd_dims(self, datacontainer: XrDataContainer) -> tuple[str, str]:
+        """Get preferrer dimension for the SVD, with fallback to model and global dimensions.
 
-        return dataset.transpose(*new_dims)
+        Parameters
+        ----------
+        dataset : XrDataContainer
+            Dataset to check if the preferred dimensions exist in.
+
+        Returns
+        -------
+        tuple[str, str]: (lsv_dim, rsv_dim)
+            lsv_dim: Dimension of the left singular vectors.
+            rsv_dim: Dimension of the right singular vectors.
+        """
+
+        lsv_dim = "time" if "time" in datacontainer.dims else self._model_dimension
+        rsv_dim = "spectral" if "spectral" in datacontainer.dims else self._global_dimension
+
+        return lsv_dim, rsv_dim
+
+    def _transpose_dataset(
+        self, datacontainer: XrDataContainer, ordered_dims: list[Hashable]
+    ) -> XrDataContainer:
+        """Reorder dimension of the datacontainer with the order provided by ``ordered_dims``.
+
+        Parameters
+        ----------
+        dataset: XrDataContainer
+            Dataset to be reordered
+        ordered_dims: list[Hashable]
+            Order the dimensions should be in.
+
+        Returns
+        -------
+        XrDataContainer
+            Datacontainer with reordered dimensions.
+        """
+        ordered_dims = list(filter(lambda dim: dim in datacontainer.dims, ordered_dims))
+        ordered_dims += list(filter(lambda dim: dim not in ordered_dims, datacontainer.dims))
+        return datacontainer.transpose(*ordered_dims)
 
     def _add_weight(self, label, dataset):
 
@@ -424,19 +464,24 @@ class Problem:
         return dataset
 
     def _create_svd(self, name: str, dataset: xr.Dataset):
-        l, v, r = np.linalg.svd(dataset[name], full_matrices=False)
+        """Calculate the SVD of a data matrix in the dataset and add it to the dataset.
 
-        dataset[f"{name}_left_singular_vectors"] = (
-            (self._model_dimension, "left_singular_value_index"),
-            l,
+        Parameters
+        ----------
+        name : str
+            Name of the data matrix.
+        dataset : xr.Dataset
+            Dataset containing the data, which will be updated with the SVD values.
+        """
+        lsv_dim, rsv_dim = self._preferred_svd_dims(dataset[name])
+        data_array: xr.DataArray = self._transpose_dataset(
+            dataset[name],
+            ordered_dims=[lsv_dim, rsv_dim],
         )
 
-        dataset[f"{name}_right_singular_vectors"] = (
-            ("right_singular_value_index", self._global_dimension),
-            r,
+        add_svd_to_dataset(
+            dataset, name=name, lsv_dim=lsv_dim, rsv_dim=rsv_dim, data_array=data_array
         )
-
-        dataset[f"{name}_singular_values"] = (("singular_value_index"), v)
 
     def init_bag(self):
         """Initializes a problem bag."""
