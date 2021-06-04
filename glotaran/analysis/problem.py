@@ -11,6 +11,7 @@ import xarray as xr
 from glotaran.analysis.nnls import residual_nnls
 from glotaran.analysis.util import get_min_max_from_interval
 from glotaran.analysis.variable_projection import residual_variable_projection
+from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
@@ -296,14 +297,7 @@ class Problem:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            # TODO: avoid computation if not requested
-            l, s, r = np.linalg.svd(dataset.data, full_matrices=False)
-            dataset["data_left_singular_vectors"] = (("time", "left_singular_value_index"), l)
-            dataset["data_singular_values"] = (("singular_value_index"), s)
-            dataset["data_right_singular_vectors"] = (
-                ("right_singular_value_index", "spectral"),
-                r,
-            )
+            add_svd_to_dataset(dataset)
 
             dataset = self._transpose_dataset(dataset)
             self._add_weight(label, dataset)
