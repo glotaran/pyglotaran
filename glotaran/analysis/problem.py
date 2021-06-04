@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 from typing import Deque
 from typing import Dict
 from typing import NamedTuple
+from typing import Union
 
 import numpy as np
 import xarray as xr
@@ -16,6 +18,9 @@ from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+
+if TYPE_CHECKING:
+    from typing import Hashable
 
 
 class ParameterError(ValueError):
@@ -51,6 +56,8 @@ class ProblemGroup(NamedTuple):
 
 UngroupedBag = Dict[str, UngroupedProblemDescriptor]
 GroupedBag = Deque[ProblemGroup]
+
+XrDataContainer = Union[xr.DataArray, xr.Dataset]
 
 
 class Problem:
@@ -299,19 +306,18 @@ class Problem:
 
             add_svd_to_dataset(dataset)
 
-            dataset = self._transpose_dataset(dataset)
+            dataset = self._transpose_dataset(
+                dataset, ordered_dims=[self._model_dimension, self._global_dimension]
+            )
             self._add_weight(label, dataset)
             self._data[label] = dataset
 
-    def _transpose_dataset(self, dataset):
-        new_dims = [self.model.model_dimension, self.model.global_dimension]
-        new_dims += [
-            dim
-            for dim in dataset.dims
-            if dim not in [self.model.model_dimension, self.model.global_dimension]
-        ]
-
-        return dataset.transpose(*new_dims)
+    def _transpose_dataset(
+        self, dataset: XrDataContainer, ordered_dims: list[Hashable]
+    ) -> XrDataContainer:
+        ordered_dims = list(filter(lambda dim: dim in dataset.dims, ordered_dims))
+        ordered_dims += list(filter(lambda dim: dim not in ordered_dims, dataset.dims))
+        return dataset.transpose(*ordered_dims)
 
     def _add_weight(self, label, dataset):
 
@@ -417,15 +423,16 @@ class Problem:
         return dataset
 
     def _create_svd(self, name: str, dataset: xr.Dataset):
-        l, v, r = np.linalg.svd(dataset[name], full_matrices=False)
+        data_subset = self._transpose_dataset(dataset[name], ordered_dims=["time", "spectral"])
+        l, v, r = np.linalg.svd(data_subset, full_matrices=False)
 
         dataset[f"{name}_left_singular_vectors"] = (
-            (self._model_dimension, "left_singular_value_index"),
+            ("time", "left_singular_value_index"),
             l,
         )
 
         dataset[f"{name}_right_singular_vectors"] = (
-            ("right_singular_value_index", self._global_dimension),
+            ("right_singular_value_index", "spectral"),
             r,
         )
 
