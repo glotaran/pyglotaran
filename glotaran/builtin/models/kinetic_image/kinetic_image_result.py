@@ -138,5 +138,9 @@ def retrieve_irf(model, dataset, dataset_descriptor, name):
     if isinstance(irf, IrfMultiGaussian):
         dataset["irf"] = (
             (model.model_dimension),
-            irf.calculate(0, dataset.coords["spectral"], dataset.coords["time"]),
+            irf.calculate(
+                index=0,
+                global_axis=dataset.coords[model.global_dimension],
+                model_axis=dataset.coords[model.model_dimension],
+            ),
         )
