@@ -296,9 +296,6 @@ class Problem:
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            dataset = self._transpose_dataset(dataset)
-            self._add_weight(label, dataset)
-
             # TODO: avoid computation if not requested
             l, s, r = np.linalg.svd(dataset.data, full_matrices=False)
             dataset["data_left_singular_vectors"] = (("time", "left_singular_value_index"), l)
@@ -308,6 +305,8 @@ class Problem:
                 r,
             )
 
+            dataset = self._transpose_dataset(dataset)
+            self._add_weight(label, dataset)
             self._data[label] = dataset
 
     def _transpose_dataset(self, dataset):
