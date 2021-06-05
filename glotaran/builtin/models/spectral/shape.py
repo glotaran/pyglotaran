@@ -34,22 +34,24 @@ class SpectralShapeLorentzianBandshape:
         """
         return (
             self._calculate_skewed(axis)
-            if self.skew is not None
+            if self.skew is not None and not np.allclose(self.skew, 0)
             else self._calculate_unskewed(axis)
         )
 
     def _calculate_unskewed(self, axis: np.ndarray) -> np.ndarray:
         return self.amplitude * np.exp(
-            -np.log(2) * np.square(2 * (axis - self.location) / self.width)
+            -np.log(2) * np.square(2 * ((10 ** 7 / axis) - self.location) / self.width)
         )
 
     def _calculate_skewed(self, axis: np.ndarray) -> np.ndarray:
-        return self.amplitude * np.exp(
-            -np.log(2)
-            * np.square(
-                np.log(1 + 2 * self.skew * (axis - self.location) / self.width) / self.skew
-            )
+        arg = 1 + (2 * self.skew * ((10 ** 7 / axis) - self.location) / self.width)
+        result = arg
+        result[np.where(arg > 0)] = np.exp(
+            -np.log(2) * np.square(np.log(arg[np.where(arg > 0)]) / self.skew)
         )
+        result[np.where(arg <= 0)] = 0
+
+        return result
 
 
 @model_attribute(properties={}, has_type=True)
