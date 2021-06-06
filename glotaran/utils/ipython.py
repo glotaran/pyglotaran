@@ -1,6 +1,8 @@
 """Glotaran module with utilities for ``ipython`` integration (e.g. ``notebooks``)."""
+from __future__ import annotations
 
 from collections import UserString
+from os import PathLike
 
 
 class MarkdownStr(UserString):
@@ -46,3 +48,22 @@ class MarkdownStr(UserString):
     def __str__(self) -> str:
         """Representation used by print and str."""
         return self._repr_markdown_()
+
+
+def display_file(path: str | PathLike[str], *, syntax: str = None) -> MarkdownStr:
+    """Display a file with syntax highlighting ``syntax``.
+
+    Parameters
+    ----------
+    path : str | PathLike[str]
+        Paths to the file
+    syntax : str, optional
+        Syntax highlighting which should be applied, by default None
+
+    Returns
+    -------
+    MarkdownStr
+        File content with syntax highlighting to render in ipython.
+    """
+    with open(path, encoding="utf8") as file:
+        return MarkdownStr(file.read(), syntax=syntax)
