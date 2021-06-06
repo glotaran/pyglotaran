@@ -12,6 +12,7 @@ import pandas as pd
 from tabulate import tabulate
 
 from glotaran.parameter.parameter import Parameter
+from glotaran.utils.ipython import MarkdownStr
 
 
 class ParameterNotFoundException(Exception):
@@ -378,7 +379,7 @@ class ParameterGroup(dict):
                     )
                 parameter.value = value
 
-    def markdown(self) -> str:
+    def markdown(self) -> MarkdownStr:
         """Formats the :class:`ParameterGroup` as markdown string.
 
         This is done by recursing the nested :class:`ParameterGroup` tree.
@@ -420,7 +421,11 @@ class ParameterGroup(dict):
             return_string += f"\n{parameter_table}\n\n"
         for _, child_group in sorted(self.items()):
             return_string += f"{child_group.__str__()}"
-        return return_string
+        return MarkdownStr(return_string)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown())
 
     def __repr__(self):
         """Representation used by repl and tracebacks."""
@@ -437,4 +442,4 @@ class ParameterGroup(dict):
 
     def __str__(self):
         """Representation used by print and str."""
-        return self.markdown()
+        return str(self.markdown())

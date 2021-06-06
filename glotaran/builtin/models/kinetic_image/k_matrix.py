@@ -11,6 +11,7 @@ import scipy
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
+from glotaran.utils.ipython import MarkdownStr
 
 
 @model_attribute(
@@ -76,7 +77,7 @@ class KMatrix:
         self,
         compartments: list[str] = None,
         fill_parameters: bool = False,
-    ) -> str:
+    ) -> MarkdownStr:
         """Returns the KMatrix as markdown formatted table.
 
         Parameters
@@ -106,7 +107,11 @@ class KMatrix:
             )
         return self._array_as_markdown(array, compartments, compartments)
 
-    def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> str:
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.matrix_as_markdown())
+
+    def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> MarkdownStr:
         """Returns the A Matrix as markdown formatted table.
 
         Parameters
@@ -124,7 +129,7 @@ class KMatrix:
         )
 
     @staticmethod
-    def _array_as_markdown(array, row_header, column_header):
+    def _array_as_markdown(array, row_header, column_header) -> MarkdownStr:
         markdown = "| compartment | "
         markdown += " | ".join(f"{e:.4e}" if not isinstance(e, str) else e for e in column_header)
 
@@ -142,7 +147,7 @@ class KMatrix:
 
             markdown += "|\n"
 
-        return markdown
+        return MarkdownStr(markdown)
 
     def reduced(self, compartments: list[str]) -> np.ndarray:
         """The reduced representation of the KMatrix as numpy array.
@@ -258,7 +263,7 @@ class KMatrix:
 
         return a_matrix.T
 
-    def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.array:
+    def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
         """The resulting A matrix of the KMatrix for an unibranched model.
 
         Parameters

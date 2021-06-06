@@ -12,6 +12,7 @@ from glotaran.plugin_system.base_registry import get_plugin_from_registry
 from glotaran.plugin_system.base_registry import is_registered_plugin
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import set_plugin
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     from glotaran.model import Model
@@ -118,7 +119,7 @@ def set_model_plugin(model_name: str, full_plugin_name: str) -> None:
     )
 
 
-def model_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
+def model_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> MarkdownStr:
     """Return registered model plugins as markdown table.
 
     This is especially useful when you work with new plugins.
@@ -146,4 +147,4 @@ def model_plugin_table(*, plugin_names: bool = False, full_names: bool = False) 
     else:
         table_data = [[f"`{model_name}`"] for model_name in model_names]
     headers = tuple(map(lambda x: f"__{x}__", header_values))
-    return tabulate(table_data, tablefmt="github", headers=headers, stralign="center")
+    return MarkdownStr(tabulate(table_data, tablefmt="github", headers=headers, stralign="center"))

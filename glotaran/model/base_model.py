@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
 from glotaran.parameter import ParameterGroup
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     import numpy as np
@@ -231,7 +232,7 @@ class Model:
         parameters: ParameterGroup = None,
         initial_parameters: ParameterGroup = None,
         base_heading_level: int = 1,
-    ) -> str:
+    ) -> MarkdownStr:
         """Formats the model as Markdown string.
 
         Parameters will be included if specified.
@@ -272,7 +273,11 @@ class Model:
                 for s in item_str[1:]:
                     string += f"  {s}\n"
             string += "\n"
-        return string
+        return MarkdownStr(string)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown(base_heading_level=3))
 
     def __str__(self):
-        return self.markdown()
+        return str(self.markdown())

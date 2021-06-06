@@ -3,6 +3,7 @@ from typing import List
 from typing import Tuple
 
 import pytest
+from IPython.core.formatters import format_display_data
 
 from glotaran.model import Megacomplex
 from glotaran.model import Model
@@ -206,3 +207,16 @@ def test_model_markdown_base_heading_level(mock_model: Model):
     assert "## Test" in mock_model.markdown()
     assert mock_model.markdown(base_heading_level=3).startswith("### Model")
     assert "#### Test" in mock_model.markdown(base_heading_level=3)
+
+
+def test_model_ipython_rendering(mock_model: Model):
+    """Autorendering in ipython"""
+    rendered_obj = format_display_data(mock_model)[0]
+
+    assert "text/markdown" in rendered_obj
+    assert rendered_obj["text/markdown"].startswith("### Model")
+
+    rendered_markdown_return = format_display_data(mock_model.markdown())[0]
+
+    assert "text/markdown" in rendered_markdown_return
+    assert rendered_markdown_return["text/markdown"].startswith("# Model")

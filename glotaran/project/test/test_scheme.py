@@ -1,9 +1,13 @@
+import pytest
 import xarray as xr
+from IPython.core.formatters import format_display_data
 
 from glotaran.io import load_scheme
+from glotaran.project import Scheme
 
 
-def test_scheme(tmpdir):
+@pytest.fixture
+def mock_scheme(tmpdir):
 
     model_path = tmpdir.join("model.yml")
     with open(model_path, "w") as f:
@@ -39,22 +43,39 @@ def test_scheme(tmpdir):
     with open(scheme_path, "w") as f:
         f.write(scheme)
 
-    scheme = load_scheme(scheme_path)
-    assert scheme.model is not None
-    assert scheme.model.model_type == "kinetic-spectrum"
+    yield load_scheme(scheme_path)
 
-    assert scheme.parameters is not None
-    assert scheme.parameters.get("1") == 1.0
-    assert scheme.parameters.get("2") == 67.0
 
-    assert scheme.non_negative_least_squares
-    assert scheme.maximum_number_function_evaluations == 42
+def test_scheme(mock_scheme: Scheme):
+    assert mock_scheme.model is not None
+    assert mock_scheme.model.model_type == "kinetic-spectrum"
 
-    assert "dataset1" in scheme.data
-    assert scheme.data["dataset1"].data.shape == (1, 3)
+    assert mock_scheme.parameters is not None
+    assert mock_scheme.parameters.get("1") == 1.0
+    assert mock_scheme.parameters.get("2") == 67.0
 
-    assert scheme.saving.level == "minimal"
-    assert scheme.saving.data_filter == ["a", "b", "c"]
-    assert scheme.saving.data_format == "csv"
-    assert scheme.saving.parameter_format == "yaml"
-    assert not scheme.saving.report
+    assert mock_scheme.non_negative_least_squares
+    assert mock_scheme.maximum_number_function_evaluations == 42
+
+    assert "dataset1" in mock_scheme.data
+    assert mock_scheme.data["dataset1"].data.shape == (1, 3)
+
+    assert mock_scheme.saving.level == "minimal"
+    assert mock_scheme.saving.data_filter == ["a", "b", "c"]
+    assert mock_scheme.saving.data_format == "csv"
+    assert mock_scheme.saving.parameter_format == "yaml"
+    assert not mock_scheme.saving.report
+
+
+def test_scheme_ipython_rendering(mock_scheme: Scheme):
+    """Autorendering in ipython"""
+
+    rendered_obj = format_display_data(mock_scheme)[0]
+
+    assert "text/markdown" in rendered_obj
+    assert rendered_obj["text/markdown"].startswith("# Model")
+
+    rendered_markdown_return = format_display_data(mock_scheme.markdown())[0]
+
+    assert "text/markdown" in rendered_markdown_return
+    assert rendered_markdown_return["text/markdown"].startswith("# Model")

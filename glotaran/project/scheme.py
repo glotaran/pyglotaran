@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
 from glotaran.io import load_scheme
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
@@ -60,16 +61,25 @@ class Scheme:
         return self.model.valid(parameters)
 
     def markdown(self):
-        s = self.model.markdown(parameters=self.parameters)
+        """Formats the :class:`Scheme` as markdown string."""
+        markdown_str = self.model.markdown(parameters=self.parameters)
 
-        s += "\n\n"
-        s += "__Scheme__\n\n"
+        markdown_str += "\n\n"
+        markdown_str += "__Scheme__\n\n"
 
-        s += f"* *nnls*: {self.nnls}\n"
-        s += f"* *nfev*: {self.nfev}\n"
-        s += f"* *group_tolerance*: {self.group_tolerance}\n"
+        markdown_str += f"* *nnls*: {self.non_negative_least_squares}\n"
+        markdown_str += f"* *nfev*: {self.maximum_number_function_evaluations}\n"
+        markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
 
-        return s
+        return MarkdownStr(markdown_str)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown())
+
+    def __str__(self):
+        """Representation used by print and str."""
+        return str(self.markdown())
 
     @staticmethod
     @deprecate(

@@ -152,7 +152,7 @@ class YmlProjectIo(ProjectIoInterface):
         if options.report:
             md_path = os.path.join(result_path, "result.md")
             with open(md_path, "w") as f:
-                f.write(result.markdown())
+                f.write(str(result.markdown()))
 
         scheme_path = os.path.join(result_path, "scheme.yml")
         result_scheme = dataclasses.replace(result.scheme)
