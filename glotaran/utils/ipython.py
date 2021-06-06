@@ -49,6 +49,13 @@ class MarkdownStr(UserString):
         """Representation used by print and str."""
         return self._repr_markdown_()
 
+    def __eq__(self, other: object) -> bool:
+        """Equality check."""
+        if isinstance(other, (str, MarkdownStr)):
+            return str(self) == str(other)
+        else:
+            return NotImplemented
+
 
 def display_file(path: str | PathLike[str], *, syntax: str = None) -> MarkdownStr:
     """Display a file with syntax highlighting ``syntax``.

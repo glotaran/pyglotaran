@@ -24,6 +24,7 @@ def test_markdown_str_render(raw_str: str, result_str: str, syntax: str):
     result = MarkdownStr(raw_str, syntax=syntax)
 
     assert str(result) == result_str
+    assert result == result_str
 
     rendered_result = format_display_data(result)[0]
 
