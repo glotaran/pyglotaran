@@ -18,7 +18,7 @@ class ParameterNotFoundException(Exception):
     """Raised when a Parameter is not found in the Group."""
 
     def __init__(self, path, label):
-        super().__init__(f"Cannot find parameter {'.'.join(path)}.{label}")
+        super().__init__(f"Cannot find parameter {'.'.join(path+[label])!r}")
 
 
 class ParameterGroup(dict):
