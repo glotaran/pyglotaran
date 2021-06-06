@@ -47,7 +47,7 @@ class OneCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "lorentzian-bandshape",
+                    "type": "lorentzian",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
@@ -118,19 +118,19 @@ class ThreeCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "lorentzian-bandshape",
+                    "type": "lorentzian",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
                 },
                 "sh2": {
-                    "type": "lorentzian-bandshape",
+                    "type": "lorentzian",
                     "amplitude": "4",
                     "location": "5",
                     "width": "6",
                 },
                 "sh3": {
-                    "type": "lorentzian-bandshape",
+                    "type": "lorentzian",
                     "amplitude": "7",
                     "location": "8",
                     "width": "9",

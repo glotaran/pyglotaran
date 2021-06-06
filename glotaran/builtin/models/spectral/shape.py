@@ -16,7 +16,7 @@ from glotaran.parameter import Parameter
     },
     has_type=True,
 )
-class SpectralShapeLorentzianBandshape:
+class SpectralShapeLorentzian:
     """A lorentzian spectral shape"""
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
@@ -188,7 +188,7 @@ class SpectralShapeZero:
 
 @model_attribute_typed(
     types={
-        "lorentzian-bandshape": SpectralShapeLorentzianBandshape,
+        "lorentzian": SpectralShapeLorentzian,
         "one": SpectralShapeOne,
         "zero": SpectralShapeZero,
     }
