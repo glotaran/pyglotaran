@@ -50,7 +50,7 @@ class MockModel(Model):
 
 
 @pytest.fixture
-def model():
+def mock_model():
     d = {
         "megacomplex": {"m1": {}, "m2": ["mock_megacomplex2"]},
         "weights": [
@@ -110,28 +110,28 @@ def parameter():
     return ParameterGroup.from_list(params)
 
 
-def test_model_misc(model):
-    assert model.model_type == "mock_model"
-    assert isinstance(model.megacomplex["m1"], MockMegacomplex)
-    assert isinstance(model.megacomplex["m2"], MockMegacomplex2)
+def test_model_misc(mock_model: Model):
+    assert mock_model.model_type == "mock_model"
+    assert isinstance(mock_model.megacomplex["m1"], MockMegacomplex)
+    assert isinstance(mock_model.megacomplex["m2"], MockMegacomplex2)
 
 
 @pytest.mark.parametrize("attr", ["dataset", "megacomplex", "weights", "test"])
-def test_model_attr(model, attr):
-    assert hasattr(model, attr)
+def test_model_attr(mock_model: Model, attr: str):
+    assert hasattr(mock_model, attr)
     if attr != "weights":
-        assert hasattr(model, f"get_{attr}")
-        assert hasattr(model, f"set_{attr}")
+        assert hasattr(mock_model, f"get_{attr}")
+        assert hasattr(mock_model, f"set_{attr}")
     else:
-        assert hasattr(model, f"add_{attr}")
+        assert hasattr(mock_model, f"add_{attr}")
 
 
-def test_model_validity(model, model_error, parameter):
-    print(model.test["t1"])
-    print(model.problem_list())
-    print(model.problem_list(parameter))
-    assert model.valid()
-    assert model.valid(parameter)
+def test_model_validity(mock_model: Model, model_error: Model, parameter: ParameterGroup):
+    print(mock_model.test["t1"])
+    print(mock_model.problem_list())
+    print(mock_model.problem_list(parameter))
+    assert mock_model.valid()
+    assert mock_model.valid(parameter)
     print(model_error.problem_list())
     print(model_error.problem_list(parameter))
     assert not model_error.valid()
@@ -140,61 +140,69 @@ def test_model_validity(model, model_error, parameter):
     assert len(model_error.problem_list(parameter)) == 8
 
 
-def test_items(model):
+def test_items(mock_model: Model):
 
-    assert "m1" in model.megacomplex
-    assert "m2" in model.megacomplex
+    assert "m1" in mock_model.megacomplex
+    assert "m2" in mock_model.megacomplex
 
-    assert "t1" in model.test
-    t = model.get_test("t1")
+    assert "t1" in mock_model.test
+    t = mock_model.get_test("t1")
     assert t.param.full_label == "foo"
     assert t.megacomplex == "m1"
     assert [p.full_label for p in t.param_list] == ["bar", "baz"]
     assert t.default_item == 42
     assert ("s1", "s2") in t.complex
     assert t.complex[("s1", "s2")].full_label == "baz"
-    assert "t2" in model.test
-    t = model.get_test("t2")
+    assert "t2" in mock_model.test
+    t = mock_model.get_test("t2")
     assert t.param.full_label == "baz"
     assert t.megacomplex == "m2"
     assert [p.full_label for p in t.param_list] == ["foo"]
     assert t.default_item == 7
     assert t.complex == {}
 
-    assert "dataset1" in model.dataset
-    assert model.get_dataset("dataset1").megacomplex == ["m1", "m2"]
-    assert model.get_dataset("dataset1").scale.full_label == "scale_1"
+    assert "dataset1" in mock_model.dataset
+    assert mock_model.get_dataset("dataset1").megacomplex == ["m1", "m2"]
+    assert mock_model.get_dataset("dataset1").scale.full_label == "scale_1"
 
-    assert "dataset2" in model.dataset
-    assert model.get_dataset("dataset2").megacomplex == ["m2"]
-    assert model.get_dataset("dataset2").scale.full_label == "scale_2"
+    assert "dataset2" in mock_model.dataset
+    assert mock_model.get_dataset("dataset2").megacomplex == ["m2"]
+    assert mock_model.get_dataset("dataset2").scale.full_label == "scale_2"
 
-    assert len(model.weights) == 1
-    w = model.weights[0]
+    assert len(mock_model.weights) == 1
+    w = mock_model.weights[0]
     assert w.datasets == ["d1", "d2"]
     assert w.global_interval == (1, 4)
     assert w.model_interval == (2, 3)
     assert w.value == 5.4
 
 
-def test_fill(model, parameter):
-    dataset = model.get_dataset("dataset1").fill(model, parameter)
+def test_fill(mock_model: Model, parameter: ParameterGroup):
+    dataset = mock_model.get_dataset("dataset1").fill(mock_model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1", "m2"]
     assert dataset.scale == 2
 
-    dataset = model.get_dataset("dataset2").fill(model, parameter)
+    dataset = mock_model.get_dataset("dataset2").fill(mock_model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m2"]
     assert dataset.scale == 8
 
-    t = model.get_test("t1").fill(model, parameter)
+    t = mock_model.get_test("t1").fill(mock_model, parameter)
     assert t.param == 3
     assert t.megacomplex.label == "m1"
     assert t.param_list == [4, 2]
     assert t.default_item == 42
     assert t.complex == {("s1", "s2"): 2}
-    t = model.get_test("t2").fill(model, parameter)
+    t = mock_model.get_test("t2").fill(mock_model, parameter)
     assert t.param == 2
     assert t.megacomplex.label == "m2"
     assert t.param_list == [3]
     assert t.default_item == 7
     assert t.complex == {}
+
+
+def test_model_markdown_base_heading_level(mock_model: Model):
+    """base_heading_level applies to all sections."""
+    assert mock_model.markdown().startswith("# Model")
+    assert "## Test" in mock_model.markdown()
+    assert mock_model.markdown(base_heading_level=3).startswith("### Model")
+    assert "#### Test" in mock_model.markdown(base_heading_level=3)
