@@ -27,6 +27,18 @@ def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
         Parameter(label=label)  # type:ignore[arg-type]
 
 
+def test_param_repr():
+    """Repr creates code to recreate the object."""
+    result = Parameter(label="foo", value=1.0, expression="$foo.bar", vary=False)
+    result_short = Parameter(label="foo", value=1, expression="$foo.bar")
+    expected = "Parameter(label='foo', value=1.0, expression='$foo.bar', vary=False)"
+
+    assert result == result_short
+    assert result.vary == result_short.vary
+    assert result.__repr__() == expected
+    assert result_short.__repr__() == expected
+
+
 def test_param_array():
     params = """
     - 5

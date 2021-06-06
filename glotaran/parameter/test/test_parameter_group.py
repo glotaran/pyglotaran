@@ -64,3 +64,14 @@ def test_markdown_is_order_independent():
     assert initial_parameters1.markdown() == RENDERED_MARKDOWN
     assert initial_parameters2.markdown() == RENDERED_MARKDOWN
     assert initial_parameters_ref.markdown() == RENDERED_MARKDOWN
+
+
+def test_repr():
+    """Repr creates code to recreate the object."""
+    result = ParameterGroup.from_dict({"foo": {"bar": [["1", 1.0], ["2", 2.0], ["3", 3.0]]}})
+    result_short = ParameterGroup.from_dict({"foo": {"bar": [1, 2, 3]}})
+    expected = "ParameterGroup.from_dict({'foo': {'bar': [['1', 1.0], ['2', 2.0], ['3', 3.0]]}})"
+
+    assert result == result_short
+    assert result_short.__repr__() == expected
+    assert result.__repr__() == expected
