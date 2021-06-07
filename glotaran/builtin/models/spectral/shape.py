@@ -12,19 +12,19 @@ from glotaran.parameter import Parameter
         "amplitude": Parameter,
         "location": Parameter,
         "width": Parameter,
-        "skew": {"type": Parameter, "allow_none": True},
+        "skewness": {"type": Parameter, "allow_none": True},
     },
     has_type=True,
 )
-class SpectralShapeLorentzian:
-    """A lorentzian spectral shape"""
+class SpectralShapeSkewedGaussian:
+    """A (skewed) Gaussian spectral shape"""
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
-        r"""Calculate the lorentzian shape over ``axis``.
+        r"""Calculate a (skewed) Gaussian shape for a given ``axis``.
 
-        If ``skew`` parameter was added and isn't close to zero
-        :func:`calculate_skewed` will be used.
-        Else it will use :func:`calculate_unskewed`.
+        If a non-zero ``skewness`` parameter was added
+        :func:`calculate_skewed_gaussian` will be used.
+        Otherwise it will use :func:`calculate_gaussian`.
 
         Parameters
         ----------
@@ -34,12 +34,12 @@ class SpectralShapeLorentzian:
         Returns
         -------
         shape: numpy.ndarray
-            Skewed or unskewed lorentzian shape.
+            A Gaussian shape.
 
         See Also
         --------
-        calculate_unskewed
-        calculate_skewed
+        calculate_gaussian
+        calculate_skewed_gaussian
 
         Note
         ----
@@ -49,22 +49,22 @@ class SpectralShapeLorentzian:
 
         """
         return (
-            self.calculate_skewed(axis)
-            if self.skew is not None and not np.allclose(self.skew, 0)
-            else self.calculate_unskewed(axis)
+            self.calculate_skewed_gaussian(axis)
+            if self.skewness is not None and not np.allclose(self.skewness, 0)
+            else self.calculate_gaussian(axis)
         )
 
-    def calculate_unskewed(self, axis: np.ndarray) -> np.ndarray:
-        r"""Calcute the unskewed lorentzian shape for ``axis``.
+    def calculate_gaussian(self, axis: np.ndarray) -> np.ndarray:
+        r"""Calculate a normal Gaussian shape for a given ``axis``.
 
         The following equation is used for the calculation:
 
         .. math::
-            f(x, A, x_0, \sigma) = A \exp \left({-
+            f(x, A, x_0, \Delta) = A \exp \left({-
             \frac{
                 \log{\left(2 \right)
                 \left(2(x - x_{0})\right)^{2}
-            }}{\sigma^{2}}}\right)
+            }}{\Delta^{2}}}\right)
 
         The parameters of the equation represent the following attributes of the shape:
 
@@ -74,7 +74,11 @@ class SpectralShapeLorentzian:
 
         - :math:`x_0` :     ``location``
 
-        - :math:`\sigma` :  ``width``
+        - :math:`\Delta` :  ``width``
+
+        In this formalism, :math:`\Delta` represents the full width at half maximum (FWHM).
+        Compared to the more common definition :math:`\exp \left(- (x-\mu )^{2}/(2\sigma^{2})\right)`
+        we have :math:`\sigma = \Delta/(2\sqrt{2\ln(2)})=\Delta/2.35482`
 
         Parameters
         ----------
@@ -84,24 +88,24 @@ class SpectralShapeLorentzian:
         Returns
         -------
         np.ndarray
-            Unskewed lorentzian shape.
+            An array representing a Gaussian shape.
         """
         return self.amplitude * np.exp(
             -np.log(2) * np.square(2 * ((1e7 / axis) - self.location) / self.width)
         )
 
-    def calculate_skewed(self, axis: np.ndarray) -> np.ndarray:
-        r"""Calcute the skewed lorentzian shape for ``axis``.
+    def calculate_skewed_gaussian(self, axis: np.ndarray) -> np.ndarray:
+        r"""Calculate the skewed Gaussian shape for ``axis``.
 
         The following equation is used for the calculation:
 
         .. math::
-            f(x, x_0, A, \sigma, b) =
+            f(x, x_0, A, \Delta, b) =
             \left\{
                 \begin{array}{ll}
                     0                                               & \mbox{if } \theta \leq 0 \\
                     A \exp \left({- \dfrac{\log{\left(2 \right)}
-                    \log{\left(\theta(x, x_0, \sigma, b) \right)}^{2}}{b^{2}}}\right)
+                    \log{\left(\theta(x, x_0, \Delta, b) \right)}^{2}}{b^{2}}}\right)
                                                                     & \mbox{if } \theta > 0
                 \end{array}
             \right.
@@ -109,7 +113,7 @@ class SpectralShapeLorentzian:
         With:
 
         .. math::
-            \theta(x, x_0, \sigma, b) = \frac{2 b \left(x - x_{0}\right) + \sigma}{\sigma}
+            \theta(x, x_0, \Delta, b) = \frac{2 b \left(x - x_{0}\right) + \Delta}{\Delta}
 
         The parameters of the equation represent the following attributes of the shape:
 
@@ -119,9 +123,14 @@ class SpectralShapeLorentzian:
 
         - :math:`x_0` :     ``location``
 
-        - :math:`\sigma` :  ``width``
+        - :math:`\Delta` :  ``width``
 
-        - :math:`b` :       ``skew``
+        - :math:`b` :       ``skewness``
+
+        Where :math:`\Delta` represents the full width at half maximum (FWHM), see :func:`calculate_gaussian`.
+
+        Note that in the limit of skewness parameter :math:`b` equal to zero :math:`f(x, x_0, A, \Delta, b)` simplifies to a normal gaussian
+        (since :math:`\lim_{b \to 0} \frac{\ln(1+bx)}{b}=x`), see the defintion in :func:`calculate_gaussian`.
 
         Parameters
         ----------
@@ -132,13 +141,13 @@ class SpectralShapeLorentzian:
         Returns
         -------
         np.ndarray
-            Skewed lorentzian shape.
+            An array representing a skewed Gaussian shape.
         """
-        log_args = 1 + (2 * self.skew * ((1e7 / axis) - self.location) / self.width)
+        log_args = 1 + (2 * self.skewness * ((1e7 / axis) - self.location) / self.width)
         result = np.zeros(log_args.shape)
         valid_arg_mask = np.where(log_args > 0)
         result[valid_arg_mask] = self.amplitude * np.exp(
-            -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skew)
+            -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
 
         return result
@@ -188,7 +197,7 @@ class SpectralShapeZero:
 
 @model_attribute_typed(
     types={
-        "lorentzian": SpectralShapeLorentzian,
+        "skewed-gaussian": SpectralShapeSkewedGaussian,
         "one": SpectralShapeOne,
         "zero": SpectralShapeZero,
     }

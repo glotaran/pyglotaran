@@ -47,7 +47,7 @@ class OneCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "lorentzian",
+                    "type": "skewed-gaussian",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
@@ -61,10 +61,10 @@ class OneCompartmentModel:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([7, 100, 50])
+    spectral_parameters = ParameterGroup.from_list([7, 20000, 800])
 
     time = np.arange(-10, 50, 1.5)
-    spectral = np.arange(0, 200, 5)
+    spectral = np.arange(400, 600, 5)
     axis = {"time": time, "spectral": spectral}
 
     dataset = kinetic_model.dataset["dataset1"].fill(kinetic_model, kinetic_parameters)
@@ -118,23 +118,23 @@ class ThreeCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "lorentzian",
+                    "type": "skewed-gaussian",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
                 },
                 "sh2": {
-                    "type": "lorentzian",
+                    "type": "skewed-gaussian",
                     "amplitude": "4",
                     "location": "5",
                     "width": "6",
                 },
                 "sh3": {
-                    "type": "lorentzian",
+                    "type": "skewed-gaussian",
                     "amplitude": "7",
                     "location": "8",
                     "width": "9",
-                    "skew": "10",
+                    "skewness": "10",
                 },
             },
             "dataset": {
@@ -148,20 +148,20 @@ class ThreeCompartmentModel:
     spectral_parameters = ParameterGroup.from_list(
         [
             7,
-            100,
-            50,
+            20000,
+            800,
             20,
-            150,
+            22000,
+            500,
             10,
-            15,
-            50,
-            20,
+            18000,
+            650,
             0.1,
         ]
     )
 
     time = np.arange(-10, 50, 1.5)
-    spectral = np.arange(0, 200, 5)
+    spectral = np.arange(400, 600, 5)
     axis = {"time": time, "spectral": spectral}
 
     dataset = kinetic_model.dataset["dataset1"].fill(kinetic_model, kinetic_parameters)
