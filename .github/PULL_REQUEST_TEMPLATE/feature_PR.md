@@ -1,10 +1,3 @@
----
-name: ✨ New Feature
-about: Add new functionality
-title: "✨ "
-labels: "Type: Enhancement"
----
-
 **IMPORTANT: Please do not create a Pull Request without creating an issue first.**
 
 _Any change needs to be discussed before proceeding. Failure to do so may result in the rejection of the pull request._

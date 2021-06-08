@@ -1,10 +1,3 @@
----
-name: 📚 Documentation
-about: Update documentation or fix typos
-title: "📚 "
-labels: "Type: Documentation"
----
-
 <!-- Only needed if bigger changes were made -->
 
 ### Change summary
