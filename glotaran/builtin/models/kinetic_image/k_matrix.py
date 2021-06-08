@@ -97,7 +97,7 @@ class KMatrix:
             else self.involved_compartments()
         )
         size = len(compartments)
-        array = np.zeros((size, size), dtype=np.object)
+        array = np.zeros((size, size), dtype=object)
         # Matrix is a dict
         for index in self.matrix:
             i = compartments.index(index[0])
