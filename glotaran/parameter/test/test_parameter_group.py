@@ -1,3 +1,5 @@
+from IPython.core.formatters import format_display_data
+
 from glotaran.io import load_parameters
 from glotaran.parameter.parameter_group import ParameterGroup
 
@@ -41,7 +43,7 @@ RENDERED_MARKDOWN = """\
 """  # noqa: E501
 
 
-def test_markdown_is_order_independent():
+def test_param_group_markdown_is_order_independent():
     """Markdown output of ParameterGroup.markdown() is independent of initial order"""
     PARAMETERS_3C_INITIAL1 = f"""{PARAMETERS_3C_BASE}\n{PARAMETERS_3C_KINETIC}"""
     PARAMETERS_3C_INITIAL2 = f"""{PARAMETERS_3C_KINETIC}\n{PARAMETERS_3C_BASE}"""
@@ -64,3 +66,28 @@ def test_markdown_is_order_independent():
     assert initial_parameters1.markdown() == RENDERED_MARKDOWN
     assert initial_parameters2.markdown() == RENDERED_MARKDOWN
     assert initial_parameters_ref.markdown() == RENDERED_MARKDOWN
+
+
+def test_param_group_repr():
+    """Repr creates code to recreate the object."""
+    result = ParameterGroup.from_dict({"foo": {"bar": [["1", 1.0], ["2", 2.0], ["3", 3.0]]}})
+    result_short = ParameterGroup.from_dict({"foo": {"bar": [1, 2, 3]}})
+    expected = "ParameterGroup.from_dict({'foo': {'bar': [['1', 1.0], ['2', 2.0], ['3', 3.0]]}})"
+
+    assert result == result_short
+    assert result_short.__repr__() == expected
+    assert result.__repr__() == expected
+
+
+def test_param_group_ipython_rendering():
+    """Autorendering in ipython"""
+    param_group = ParameterGroup.from_dict({"foo": {"bar": [["1", 1.0], ["2", 2.0], ["3", 3.0]]}})
+    rendered_obj = format_display_data(param_group)[0]
+
+    assert "text/markdown" in rendered_obj
+    assert rendered_obj["text/markdown"].startswith("  * __foo__")
+
+    rendered_markdown_return = format_display_data(param_group.markdown())[0]
+
+    assert "text/markdown" in rendered_markdown_return
+    assert rendered_markdown_return["text/markdown"].startswith("  * __foo__")

@@ -59,7 +59,7 @@ class FolderProjectIo(ProjectIoInterface):
 
         md_path = os.path.join(result_path, "result.md")
         with open(md_path, "w") as f:
-            f.write(result.markdown())
+            f.write(str(result.markdown()))
         paths.append(md_path)
 
         csv_path = os.path.join(result_path, "optimized_parameters.csv")

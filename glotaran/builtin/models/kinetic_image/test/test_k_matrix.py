@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from IPython.core.formatters import format_display_data
 
 from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
 from glotaran.builtin.models.kinetic_image.k_matrix import KMatrix
@@ -300,3 +301,25 @@ def test_combine_matrices():
     assert combined.matrix[("s1", "s1")].full_label == "1"
     assert combined.matrix[("s2", "s2")].full_label == "3"
     assert combined.matrix[("s3", "s3")].full_label == "4"
+
+
+def test_kmatrix_ipython_rendering():
+    """Autorendering in ipython"""
+
+    matrix = {
+        ("s1", "s1"): "1",
+        ("s2", "s2"): "2",
+    }
+    kmatrix = KMatrix()
+    kmatrix.label = "A"
+    kmatrix.matrix = matrix
+
+    rendered_obj = format_display_data(kmatrix)[0]
+
+    assert "text/markdown" in rendered_obj
+    assert rendered_obj["text/markdown"].startswith("| compartment")
+
+    rendered_markdown_return = format_display_data(kmatrix.matrix_as_markdown())[0]
+
+    assert "text/markdown" in rendered_markdown_return
+    assert rendered_markdown_return["text/markdown"].startswith("| compartment")

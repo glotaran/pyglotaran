@@ -346,11 +346,10 @@ class Parameter(_SupportsArray):
         return self._value
 
     def __repr__(self):
-        """String representation"""
+        """Representation used by repl and tracebacks."""
         return (
-            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
-            f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
-            f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
+            f"{type(self).__name__}(label={self.label!r}, value={self.value!r},"
+            f" expression={self.expression!r}, vary={self.vary!r})"
         )
 
     def __array__(self):
@@ -358,8 +357,12 @@ class Parameter(_SupportsArray):
         return np.array(float(self._getval()), dtype=float)
 
     def __str__(self):
-        """string"""
-        return self.__repr__()
+        """Representation used by print and str."""
+        return (
+            f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
+            f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
+            f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
+        )
 
     def __abs__(self):
         """abs"""

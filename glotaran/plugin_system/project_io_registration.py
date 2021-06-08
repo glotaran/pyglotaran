@@ -27,6 +27,7 @@ from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     from os import PathLike
@@ -470,7 +471,9 @@ def show_project_io_method_help(format_name: str, method_name: ProjectIoMethods)
     show_method_help(io, method_name)
 
 
-def project_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False) -> str:
+def project_io_plugin_table(
+    *, plugin_names: bool = False, full_names: bool = False
+) -> MarkdownStr:
     """Return registered project io plugins and which functions they support as markdown table.
 
     This is especially useful when you work with new plugins.
@@ -499,6 +502,8 @@ def project_io_plugin_table(*, plugin_names: bool = False, full_names: bool = Fa
     if plugin_names:
         header_values.append("Plugin name")
     headers = tuple(map(lambda x: f"__{x}__", header_values))
-    return tabulate(
-        bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
+    return MarkdownStr(
+        tabulate(
+            bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
+        )
     )

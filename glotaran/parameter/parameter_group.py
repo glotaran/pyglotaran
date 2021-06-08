@@ -12,6 +12,7 @@ import pandas as pd
 from tabulate import tabulate
 
 from glotaran.parameter.parameter import Parameter
+from glotaran.utils.ipython import MarkdownStr
 
 
 class ParameterNotFoundException(Exception):
@@ -218,7 +219,7 @@ class ParameterGroup(dict):
         if not isinstance(parameter, list):
             parameter = [parameter]
         if any(not isinstance(p, Parameter) for p in parameter):
-            raise TypeError("Parameter must be  instance of glotaran.model.Parameter")
+            raise TypeError("Parameter must be  instance of glotaran.parameter.Parameter")
         for p in parameter:
             p.index = len(self._parameters) + 1
             if p.label is None:
@@ -235,7 +236,7 @@ class ParameterGroup(dict):
             The group to add.
         """
         if not isinstance(group, ParameterGroup):
-            raise TypeError("Group must be glotaran.model.ParameterGroup")
+            raise TypeError("Group must be glotaran.parameter.ParameterGroup")
         self[group.label] = group
 
     def get_nr_roots(self) -> int:
@@ -378,7 +379,7 @@ class ParameterGroup(dict):
                     )
                 parameter.value = value
 
-    def markdown(self) -> str:
+    def markdown(self) -> MarkdownStr:
         """Formats the :class:`ParameterGroup` as markdown string.
 
         This is done by recursing the nested :class:`ParameterGroup` tree.
@@ -420,10 +421,25 @@ class ParameterGroup(dict):
             return_string += f"\n{parameter_table}\n\n"
         for _, child_group in sorted(self.items()):
             return_string += f"{child_group.__str__()}"
-        return return_string
+        return MarkdownStr(return_string)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown())
 
     def __repr__(self):
-        return self.markdown()
+        """Representation used by repl and tracebacks."""
+        if self.label is None:
+            return f"{type(self).__name__}.from_dict({super().__repr__()})"
+        elif len(self._parameters):
+            parameter_short_notations = [
+                f"[{parameter.label!r}, {parameter.value}]"
+                for _, parameter in self._parameters.items()
+            ]
+            return f"[{', '.join(parameter_short_notations)}]"
+        else:
+            return super().__repr__()
 
     def __str__(self):
-        return self.__repr__()
+        """Representation used by print and str."""
+        return str(self.markdown())

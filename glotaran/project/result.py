@@ -13,6 +13,7 @@ from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project.scheme import Scheme
+from glotaran.utils.ipython import MarkdownStr
 
 
 @dataclass
@@ -111,7 +112,7 @@ class Result:
             optimization_method=self.scheme.optimization_method,
         )
 
-    def markdown(self, with_model=True) -> str:
+    def markdown(self, with_model: bool = True) -> MarkdownStr:
         """Formats the model as a markdown text.
 
         Parameters
@@ -159,14 +160,20 @@ class Result:
             result_table = f"{result_table}\n\n{RMSE_table}"
 
         if with_model:
-            result_table += "\n\n" + self.model.markdown(
-                parameters=self.optimized_parameters, initial_parameters=self.initial_parameters
+            model_md = self.model.markdown(
+                parameters=self.optimized_parameters,
+                initial_parameters=self.initial_parameters,
             )
+            result_table = f"{result_table}\n\n{model_md}"
 
-        return result_table
+        return MarkdownStr(result_table)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown())
 
     def __str__(self):
-        return self.markdown(with_model=False)
+        return str(self.markdown(with_model=False))
 
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.save(result_path)",

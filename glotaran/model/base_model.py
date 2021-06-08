@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
 from glotaran.parameter import ParameterGroup
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     import numpy as np
@@ -227,34 +228,44 @@ class Model:
         return len(self.problem_list(parameters)) == 0
 
     def markdown(
-        self, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
-    ) -> str:
+        self,
+        parameters: ParameterGroup = None,
+        initial_parameters: ParameterGroup = None,
+        base_heading_level: int = 1,
+    ) -> MarkdownStr:
         """Formats the model as Markdown string.
 
         Parameters will be included if specified.
 
         Parameters
         ----------
-        parameter :
+        parameter: ParameterGroup
             Parameter to include.
-        initial :
+        initial_parameters: ParameterGroup
             Initial values for the parameters.
+        base_heading_level: int
+            Base heading level of the markdown sections.
+
+            E.g.:
+
+            - If it is 1 the string will start with '# Model'.
+            - If it is 3 the string will start with '### Model'.
         """
+        base_heading = "#" * base_heading_level
         attrs = getattr(self, "_glotaran_model_attributes")
-        string = "# Model\n\n"
+        string = f"{base_heading} Model\n\n"
         string += f"_Type_: {self.model_type}\n\n"
 
         for attr in attrs:
-            items = getattr(self, attr)
-            if not items:
+            child_attr = getattr(self, attr)
+            if not child_attr:
                 continue
 
-            string += f"## {attr.replace('_', ' ').title()}\n"
-            string += "\n"
+            string += f"{base_heading}# {attr.replace('_', ' ').title()}\n\n"
 
-            if isinstance(items, dict):
-                items = items.values()
-            for item in items:
+            if isinstance(child_attr, dict):
+                child_attr = child_attr.values()
+            for item in child_attr:
                 item_str = item.mprint(
                     parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
@@ -262,7 +273,11 @@ class Model:
                 for s in item_str[1:]:
                     string += f"  {s}\n"
             string += "\n"
-        return string
+        return MarkdownStr(string)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown(base_heading_level=3))
 
     def __str__(self):
-        return self.markdown()
+        return str(self.markdown())
