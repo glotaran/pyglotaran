@@ -55,8 +55,6 @@ def simulate(
     model_dimension = axes[model.model_dimension]
     global_dimension = axes[model.global_dimension]
 
-    # dim1 = model_dimension.size
-    dim2 = global_dimension.size
     result = xr.DataArray(
         data=0.0,
         coords=[
@@ -132,7 +130,7 @@ def simulate(
         clp = xr.DataArray(
             clp, coords=[(model.global_dimension, global_dimension), ("clp_label", clp_labels)]
         )
-    for i in range(dim2):
+    for i in range(global_dimension.size):
         index_matrix = matrix[i] if model.index_dependent() else matrix
         result.data[:, i] = np.dot(
             index_matrix, clp[i].sel(clp_label=index_matrix.coords["clp_label"])
