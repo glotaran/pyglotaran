@@ -77,7 +77,8 @@ class SpectralShapeSkewedGaussian:
         - :math:`\Delta` :  ``width``
 
         In this formalism, :math:`\Delta` represents the full width at half maximum (FWHM).
-        Compared to the more common definition :math:`\exp \left(- (x-\mu )^{2}/(2\sigma^{2})\right)`
+        Compared to the more common definition
+        :math:`\exp \left(- (x-\mu )^{2}/(2\sigma^{2})\right)`
         we have :math:`\sigma = \Delta/(2\sqrt{2\ln(2)})=\Delta/2.35482`
 
         Parameters
@@ -127,10 +128,13 @@ class SpectralShapeSkewedGaussian:
 
         - :math:`b` :       ``skewness``
 
-        Where :math:`\Delta` represents the full width at half maximum (FWHM), see :func:`calculate_gaussian`.
+        Where :math:`\Delta` represents the full width at half maximum (FWHM),
+        see :func:`calculate_gaussian`.
 
-        Note that in the limit of skewness parameter :math:`b` equal to zero :math:`f(x, x_0, A, \Delta, b)` simplifies to a normal gaussian
-        (since :math:`\lim_{b \to 0} \frac{\ln(1+bx)}{b}=x`), see the defintion in :func:`calculate_gaussian`.
+        Note that in the limit of skewness parameter :math:`b` equal to zero
+        :math:`f(x, x_0, A, \Delta, b)` simplifies to a normal gaussian
+        (since :math:`\lim_{b \to 0} \frac{\ln(1+bx)}{b}=x`),
+        see the definition in :func:`calculate_gaussian`.
 
         Parameters
         ----------

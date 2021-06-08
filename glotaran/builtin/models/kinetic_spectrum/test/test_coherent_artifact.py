@@ -77,7 +77,7 @@ def test_coherent_artifact():
             ),
         ],
     )
-    axis = {"time": time, "spectral": clp.spectral}
+    axis = {"time": time, "spectral": clp.spectral.data}
     data = simulate(model, "dataset1", parameters, axis, clp)
 
     dataset = {"dataset1": data}

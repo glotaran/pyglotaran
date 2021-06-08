@@ -37,7 +37,7 @@ def retrieve_species_associated_data(model, dataset, dataset_descriptor, name):
             model.global_dimension,
             "species",
         ),
-        dataset.clp.sel(clp_label=compartments),
+        dataset.clp.sel(clp_label=compartments).data,
     )
 
     if len(dataset.matrix.shape) == 3:
@@ -142,5 +142,5 @@ def retrieve_irf(model, dataset, dataset_descriptor, name):
                 index=0,
                 global_axis=dataset.coords[model.global_dimension],
                 model_axis=dataset.coords[model.model_dimension],
-            ),
+            ).data,
         )

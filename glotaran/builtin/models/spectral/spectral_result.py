@@ -38,5 +38,5 @@ def retrieve_spectral_data(model, dataset, dataset_descriptor):
             model.global_dimension,
             "species",
         ),
-        dataset.clp.sel(clp_label=spectral_compartments),
+        dataset.clp.sel(clp_label=spectral_compartments).data,
     )
