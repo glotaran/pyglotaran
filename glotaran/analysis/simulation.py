@@ -55,10 +55,10 @@ def simulate(
     model_dimension = axes[model.model_dimension]
     global_dimension = axes[model.global_dimension]
 
-    dim1 = model_dimension.size
+    # dim1 = model_dimension.size
     dim2 = global_dimension.size
     result = xr.DataArray(
-        np.empty((dim1, dim2), dtype=np.float64),
+        data=0.0,
         coords=[
             (model.model_dimension, model_dimension),
             (model.global_dimension, global_dimension),

@@ -24,7 +24,7 @@ class SpectralShapeGaussian:
         Parameters
         ----------
         axis: np.ndarray
-            The axies to calculate the shape on.
+            The axis to calculate the shape on.
 
         Returns
         -------
