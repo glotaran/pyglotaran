@@ -24,10 +24,10 @@ Explain the **details** for making this change. What existing problem does the p
 
 ### Checklist
 
-[ ] ✔️ Passing the tests (mandatory for all PR's)
-[ ] 👌 Closes issue (mandatory for ✨ feature and 🩹 bug fix PR's)
-[ ] 🧪 Adds new tests for the feature (mandatory for ✨ feature and 🩹 bug fix PR's)
-[ ] 📚 Adds documentation of the feature
+- [ ] ✔️ Passing the tests (mandatory for all PR's)
+- [ ] 👌 Closes issue (mandatory for ✨ feature and 🩹 bug fix PR's)
+- [ ] 🧪 Adds new tests for the feature (mandatory for ✨ feature and 🩹 bug fix PR's)
+- [ ] 📚 Adds documentation of the feature
 
 ### Closes issues
 

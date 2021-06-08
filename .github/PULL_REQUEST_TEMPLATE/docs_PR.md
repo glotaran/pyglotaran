@@ -9,7 +9,7 @@ Links to the changed sections
 
 ### Checklist
 
-[ ] ✔️ Passing the tests (mandatory!)
+- [ ] ✔️ Passing the tests (mandatory!)
 
 ### Closes issues
 
