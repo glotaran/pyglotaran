@@ -1,0 +1,34 @@
+name: "Benchmarks"
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    name: "Run"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install ASV
+        run: |
+          pip install asv virtualenv
+      - name:
+          Run benchmarks
+          # asv run
+        run: |
+          pushd benchmark
+          asv machine --yes
+          asv run f4fcbe148dc834a2be24a46f9688f9797a54fa98..main
+      - name: Upload results
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results
+          path: benchmark/.asv/results
