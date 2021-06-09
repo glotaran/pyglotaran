@@ -1,0 +1,66 @@
+type: kinetic-spectrum
+
+dataset:
+  dataset1:
+    megacomplex: [complex1]
+    initial_concentration: input1
+    irf: irf1
+    scale: scale.1
+  dataset2:
+    megacomplex: [complex1]
+    initial_concentration: input2
+    irf: irf1
+    scale: scale.2
+
+megacomplex:
+  complex1:
+    k_matrix: [km1]
+
+k_matrix:
+  km1:
+    matrix:
+      (s1, s1): "rates.k1"
+      (s2, s2): "rates.k2"
+      (s3, s3): "rates.k3"
+
+initial_concentration:
+  input1:
+    compartments: [s1, s2, s3]
+    parameters: [inputs.1, inputs.2, inputs.3]
+  input2:
+    compartments: [s1, s2, s3]
+    parameters: [inputs.1, inputs.7, inputs.8]
+
+irf:
+  irf1:
+    type: spectral-multi-gaussian
+    center: [irf.center]
+    width: [irf.width]
+  irf1_no_dispersion:
+    type: spectral-multi-gaussian
+    center: [irf.center]
+    width: [irf.width]
+
+# It works without equal_area_penalties but then the inputs cannot be estimated
+equal_area_penalties:
+  - type: equal_area
+    source: s1
+    source_intervals: [[300, 3000]]
+    target: s2
+    target_intervals: [[300, 3000]]
+    parameter: area.1
+    weight: 0.1
+  - type: equal_area
+    source: s1
+    source_intervals: [[300, 3000]]
+    target: s3
+    target_intervals: [[300, 3000]]
+    parameter: area.1
+    weight: 0.1
+
+# Example of weight application:
+# weights:
+#   - datasets: [dataset1, dataset2]
+#     global_interval: [100, 102]
+#     model_interval: [301, 502]
+#     value: 0.95

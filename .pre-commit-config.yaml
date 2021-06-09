@@ -24,6 +24,7 @@ repos:
     rev: v0.3.0
     hooks:
       - id: absolufy-imports
+        exclude: ^benchmark
         types: [file]
         types_or: [python, pyi]
 
