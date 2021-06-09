@@ -105,6 +105,20 @@ Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 
 8.  Submit a pull request through the GitHub website.
 
+.. note::
+    By default pull requests will use the template located at ``.github/PULL_REQUEST_TEMPLATE.md``.
+    But we also provide custom tailored templates located inside of ``.github/PULL_REQUEST_TEMPLATE``.
+    Sadly the GitHub Web Interface doesn't provide an easy way to select them as it does for issue templates
+    (`see this comment for more details <https://github.com/glotaran/pyglotaran/pull/692#issuecomment-856960802>`_).
+
+    To use them you need to add the following query parameters to the url when creating the pull request and hit enter:
+
+    - ✨ Feature PR: ``?expand=1&template=feature_PR.md``
+    - 🩹 Bug Fix PR: ``?expand=1&template=bug_fix_PR``
+    - 📚 Documentation PR: ``?expand=1&template=docs_PR.md``
+
+
+
 Pull Request Guidelines
 -----------------------
 
