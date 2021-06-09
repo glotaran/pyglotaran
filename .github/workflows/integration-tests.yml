@@ -1,45 +1,45 @@
-name: "Run Examples"
+# name: "Run Examples"
 
-on:
-  push:
-  pull_request:
-  workflow_dispatch:
+# on:
+#   push:
+#   pull_request:
+#   workflow_dispatch:
 
-jobs:
-  run-examples:
-    name: "Run Example: "
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        example_name: [
-            quick-start,
-            fluorescence,
-            # transient-absorption,  # Not working with 0.3.2
-            spectral-constraints,
-            # spectral-guidance,  # Not working with 0.3.2
-            two-datasets,
-            sim-3d-disp,
-            sim-3d-nodisp,
-            sim-3d-weight,
-            sim-6d-disp,
-          ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install pyglotaran
-        run: |
-          pip install wheel
-          pip install .
-      - name: ${{ matrix.example_name }}
-        id: example-run
-        uses: glotaran/pyglotaran-examples@main
-        with:
-          example_name: ${{ matrix.example_name }}
-      - name: Upload Example Plots Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: example-results
-          path: ${{ steps.example-run.outputs.plots-path }}
+# jobs:
+#   run-examples:
+#     name: "Run Example: "
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         example_name: [
+#             quick-start,
+#             fluorescence,
+#             # transient-absorption,  # Not working with 0.3.2
+#             spectral-constraints,
+#             # spectral-guidance,  # Not working with 0.3.2
+#             two-datasets,
+#             sim-3d-disp,
+#             sim-3d-nodisp,
+#             sim-3d-weight,
+#             sim-6d-disp,
+#           ]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.8
+#       - name: Install pyglotaran
+#         run: |
+#           pip install wheel
+#           pip install .
+#       - name: ${{ matrix.example_name }}
+#         id: example-run
+#         uses: glotaran/pyglotaran-examples@main
+#         with:
+#           example_name: ${{ matrix.example_name }}
+#       - name: Upload Example Plots Artifact
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: example-results
+#           path: ${{ steps.example-run.outputs.plots-path }}

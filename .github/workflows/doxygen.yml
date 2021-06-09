@@ -1,23 +1,23 @@
-name: "Doxygen"
+# name: "Doxygen"
 
-on: [push, pull_request, workflow_dispatch]
+# on: [push, pull_request, workflow_dispatch]
 
-jobs:
-  run-doxygen:
-    name: Doxygen callgraph
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Create Doxygen Docs
-        uses: mattnotmitt/doxygen-action@v1
-        with:
-          doxyfile-path: "docs/Doxyfile.ini"
-      - name: Upload Doxygen Docs Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: doxygen_docs_pyglotaran
-          path: doxygen_docs_pyglotaran
+# jobs:
+#   run-doxygen:
+#     name: Doxygen callgraph
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.8
+#       - name: Create Doxygen Docs
+#         uses: mattnotmitt/doxygen-action@v1
+#         with:
+#           doxyfile-path: "docs/Doxyfile.ini"
+#       - name: Upload Doxygen Docs Artifact
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: doxygen_docs_pyglotaran
+#           path: doxygen_docs_pyglotaran

@@ -1,0 +1,24 @@
+inputs:
+  - ["1", 0.5, {"vary": False}]
+  - ["2", 0.251]
+  - ["3", 0.252]
+  - ["7", 0.21]
+  - ["8", 0.22]
+  - {"non-negative": True}
+
+scale:
+  - ["1", 1, {"vary": False}]
+  - ["2", 1.2, {"vary": True}]
+
+rates:
+  - ["k1", 0.199]
+  - ["k2", 0.5]
+  - ["k3", 1.1]
+  - {"vary": True,"non-negative": True}
+
+irf:
+  - ["center",0.5]
+  - ["width", 0.1]
+
+area:
+  - ["1", 1, {"vary": False}]

@@ -1,140 +1,140 @@
-name: Tests
+# name: Tests
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-      - name: Run pre-commit
-        uses: pre-commit/action@v2.0.3
+# jobs:
+#   pre-commit:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Check out repo
+#         uses: actions/checkout@v2
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#       - name: Run pre-commit
+#         uses: pre-commit/action@v2.0.3
 
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          conda-channels: conda-forge
-          activate-conda: false
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          conda install -y pandoc
-          python -m pip install -U pip wheel
-          pip install .
-          python -m pip install -U -r docs/requirements.txt
-      - name: Show installed packages
-        run: pip freeze
-      - name: Build docs
-        run: |
-          make --directory=docs clean html
+#   docs:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Setup conda
+#         uses: s-weigand/setup-conda@v1
+#         with:
+#           conda-channels: conda-forge
+#           activate-conda: false
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.8
+#       - name: Install dependencies
+#         run: |
+#           conda install -y pandoc
+#           python -m pip install -U pip wheel
+#           pip install .
+#           python -m pip install -U -r docs/requirements.txt
+#       - name: Show installed packages
+#         run: pip freeze
+#       - name: Build docs
+#         run: |
+#           make --directory=docs clean html
 
-  docs-links:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          conda-channels: conda-forge
-          activate-conda: false
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          conda install -y pandoc
-          python -m pip install -U pip wheel
-          pip install .
-          python -m pip install -U -r docs/requirements.txt
-      - name: Show installed packages
-        run: pip freeze
-      - name: Check doc links
-        run: |
-          make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
-          exit ${PIPESTATUS[0]}
-      - name: Linkcheck summary
-        if: ${{ always() }}
-        run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
+#   docs-links:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Setup conda
+#         uses: s-weigand/setup-conda@v1
+#         with:
+#           conda-channels: conda-forge
+#           activate-conda: false
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.8
+#       - name: Install dependencies
+#         run: |
+#           conda install -y pandoc
+#           python -m pip install -U pip wheel
+#           pip install .
+#           python -m pip install -U -r docs/requirements.txt
+#       - name: Show installed packages
+#         run: pip freeze
+#       - name: Check doc links
+#         run: |
+#           make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
+#           exit ${PIPESTATUS[0]}
+#       - name: Linkcheck summary
+#         if: ${{ always() }}
+#         run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
 
-  docs-notebooks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip wheel
-          python -m pip install -U -r requirements_dev.txt
-          pip install .
-      - name: Show installed packages
-        run: pip freeze
-      - name: Build docs
-        run: |
-          py.test -vv --nbval docs/source/notebooks
+#   docs-notebooks:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.8
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install -U pip wheel
+#           python -m pip install -U -r requirements_dev.txt
+#           pip install .
+#       - name: Show installed packages
+#         run: pip freeze
+#       - name: Build docs
+#         run: |
+#           py.test -vv --nbval docs/source/notebooks
 
-  test:
-    runs-on: ${{ matrix.os }}
-    needs: pre-commit
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: [3.8, 3.9]
+#   test:
+#     runs-on: ${{ matrix.os }}
+#     needs: pre-commit
+#     strategy:
+#       matrix:
+#         os: [ubuntu-latest, windows-latest, macOS-latest]
+#         python-version: [3.8, 3.9]
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip wheel
-          python -m pip install -r requirements_dev.txt
-          pip install -e .
-      - name: Show installed packages
-        run: pip freeze
-      - name: Run tests
-        run: |
-          pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml -k 'not IrfDispersion' glotaran
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python ${{ matrix.python-version }}
+#         uses: actions/setup-python@v1
+#         with:
+#           python-version: ${{ matrix.python-version }}
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip wheel
+#           python -m pip install -r requirements_dev.txt
+#           pip install -e .
+#       - name: Show installed packages
+#         run: pip freeze
+#       - name: Run tests
+#         run: |
+#           pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml -k 'not IrfDispersion' glotaran
 
-      - name: Codecov Upload
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage.xml
+#       - name: Codecov Upload
+#         uses: codecov/codecov-action@v1
+#         with:
+#           file: ./coverage.xml
 
-  deploy:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    needs: [test, docs, docs-notebooks]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip wheel
-      - name: Build dist
-        run: |
-          python setup.py sdist bdist_wheel
+#   deploy:
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+#     needs: [test, docs, docs-notebooks]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.8
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install -U pip wheel
+#       - name: Build dist
+#         run: |
+#           python setup.py sdist bdist_wheel
 
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_pyglotaran_token }}
+#       - name: Publish package
+#         uses: pypa/gh-action-pypi-publish@master
+#         with:
+#           user: __token__
+#           password: ${{ secrets.pypi_pyglotaran_token }}
