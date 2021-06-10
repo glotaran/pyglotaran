@@ -20,13 +20,39 @@ jobs:
       - name: Install ASV
         run: |
           pip install asv virtualenv
+
+      - name: show home file
+        run: |
+          ls -lah ~
+          realpath ~
+      - name: Create machine-file
+        shell: python
+        run: |
+          from pathlib import Path
+          machine_file = Path("/home/runner/.asv-machine.json")
+          machine_file_content = '''
+          {
+            "gh_action": {
+              "arch": "x86_64",
+              "cpu": "Intel(R) Xeon(R) Platinum 8171M CPU @ 2.60GHz",
+              "num_cpu": "2",
+              "machine": "gh_action",
+              "os": "Linux 5.8.0-1033-azure",
+              "ram": "7GB"
+            },
+            "version": 1
+          }'''
+          machine_file.write_text(machine_file_content)
+
+      - name: show machine file
+        run: cat ~/.asv-machine.json
+
       - name:
           Run benchmarks
           # asv run
         run: |
           pushd benchmark
-          asv machine --yes
-          asv run f4fcbe148dc834a2be24a46f9688f9797a54fa98..main
+          asv run f4fcbe148dc834a2be24a46f9688f9797a54fa98..main --machine gh_action
       - name: Upload results
         uses: actions/upload-artifact@v2
         with:
