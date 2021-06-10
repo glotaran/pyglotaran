@@ -1,13 +1,12 @@
 name: "Benchmarks"
 
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
 jobs:
-  benchmark:
-    name: "Run"
+  run_benchmark:
+    name: "Run AVS"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -39,12 +38,19 @@ jobs:
           }'''
           machine_file.write_text(machine_file_content)
 
-      - name:
-          Run benchmarks
-          # asv run
+      - name: Run PR compare benchmarks
+        if: github.event_name == 'pull_request'
         run: |
           pushd benchmark
-          asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..cc168aeb026a01583ef2e63b015c56c8abfe9904 --machine gh_action
+          asv run main..HEAD --machine gh_action
+
+      - name: Run benchmarks
+        if:
+          github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+          # asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..main --machine gh_action
+        run: |
+          pushd benchmark
+          asv run d57164a65935f66e2821d6938a6ee429694c9762..main --machine gh_action
       - name: Upload results
         uses: actions/upload-artifact@v2
         with:
