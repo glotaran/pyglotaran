@@ -56,3 +56,37 @@ jobs:
         with:
           name: benchmark-results
           path: benchmark/.asv/results
+
+  upload_main_results:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: [run_benchmark]
+    name: "Upload Main Results"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout benchmark result repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+          repository: "s-weigand/pyglotaran-benchmarks"
+          ref: main
+
+      - name: Download result artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: benchmark-results
+          path: results
+
+      - name: Commit results
+        run: |
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add results
+          git commit -m "Update benchmark"
+
+      - name: Push result repo
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+          repository: "s-weigand/pyglotaran-benchmarks"
+          branch: main
