@@ -20,11 +20,6 @@ jobs:
       - name: Install ASV
         run: |
           pip install asv virtualenv
-
-      - name: show home file
-        run: |
-          ls -lah ~
-          realpath ~
       - name: Create machine-file
         shell: python
         run: |
@@ -44,15 +39,12 @@ jobs:
           }'''
           machine_file.write_text(machine_file_content)
 
-      - name: show machine file
-        run: cat ~/.asv-machine.json
-
       - name:
           Run benchmarks
           # asv run
         run: |
           pushd benchmark
-          asv run f4fcbe148dc834a2be24a46f9688f9797a54fa98..main --machine gh_action
+          asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..cc168aeb026a01583ef2e63b015c56c8abfe9904 --machine gh_action
       - name: Upload results
         uses: actions/upload-artifact@v2
         with:
