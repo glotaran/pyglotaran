@@ -1,26 +1,27 @@
 from pathlib import Path
 
-from glotaran import read_model_from_yaml_file
-from glotaran import read_parameters_from_yaml_file
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.scheme import Scheme
-from glotaran.io import read_data_file
+from glotaran.io import load_dataset
+from glotaran.io import load_model
+from glotaran.io import load_parameters
+from glotaran.project.scheme import Scheme
 
 SCRIPT_DIR = Path(__file__).parent
 
 
 class IntegrationTwoDatasets:
-    version = "all-versions"
     """
-    An example benchmark that times the performance of various kinds
-    of iterating over dictionaries in Python.
+    Integration test for a two dataset analysis.
+
+    Ref:
+    https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/ex_two_datasets
     """
 
     def setup(self):
-        dataset1 = read_data_file(SCRIPT_DIR / "data/data1.ascii")
-        dataset2 = read_data_file(SCRIPT_DIR / "data/data2.ascii")
-        model = read_model_from_yaml_file(str(SCRIPT_DIR / "models/model.yml"))
-        parameters = read_parameters_from_yaml_file(str(SCRIPT_DIR / "models/parameters.yml"))
+        dataset1 = load_dataset(SCRIPT_DIR / "data/data1.ascii")
+        dataset2 = load_dataset(SCRIPT_DIR / "data/data2.ascii")
+        model = load_model(str(SCRIPT_DIR / "models/model.yml"))
+        parameters = load_parameters(str(SCRIPT_DIR / "models/parameters.yml"))
         self.scheme = Scheme(
             model,
             parameters,
