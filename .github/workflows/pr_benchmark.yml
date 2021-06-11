@@ -51,6 +51,17 @@ jobs:
           asv run upstream/main^..HEAD --machine gh_action
           asv publish
 
+      - name: Checkout benchmark result repo
+        uses: actions/checkout@v2
+        with:
+          repository: "s-weigand/pyglotaran-benchmarks"
+          ref: main
+          path: benchmark-repo
+      - name: Copy benchmark workflows to html folder
+        run: |
+          cp -r benchmark-repo/.github benchmark/.asv/html
+          ls -lah benchmark/.asv/html
+
       - name: Create PR comment body
         id: bench_diff
         shell: python
@@ -84,7 +95,6 @@ jobs:
 
       - name: Show comment
         run: echo "${{ steps.bench_diff.outputs.comment }}"
-
       - name: Comment on PR
         uses: hasura/comment-progress@v2
         with:
@@ -113,7 +123,7 @@ jobs:
           path: .
 
       - name: Show tree
-        run: tree .
+        run: tree -a .
 
       - name: Commit PR results
         env:
