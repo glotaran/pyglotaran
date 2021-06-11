@@ -39,12 +39,10 @@ jobs:
             "version": 1
           }'''
           machine_file.write_text(machine_file_content)
-      - name:
-          Run benchmarks
-          # asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..main --machine gh_action
+      - name: Run benchmarks
         run: |
           pushd benchmark
-          asv run 1a33c367890a7d14467d1fa31508704662814882..main --machine gh_action
+          asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..main --machine gh_action
       - name: Upload results
         uses: actions/upload-artifact@v2
         with:
@@ -61,7 +59,7 @@ jobs:
         with:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
-          repository: "s-weigand/pyglotaran-benchmarks"
+          repository: "glotaran/pyglotaran-benchmarks"
           ref: main
 
       - name: Download result artifact
@@ -75,11 +73,11 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git config user.name 'github-actions[bot]'
           git add results
-          git commit -m "Update full benchmark"
+          git commit -m "⬆️ Update full benchmark"
 
       - name: Push result repo
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
-          repository: "s-weigand/pyglotaran-benchmarks"
+          repository: "glotaran/pyglotaran-benchmarks"
           branch: main

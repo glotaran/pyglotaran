@@ -54,7 +54,7 @@ jobs:
       - name: Checkout benchmark result repo
         uses: actions/checkout@v2
         with:
-          repository: "s-weigand/pyglotaran-benchmarks"
+          repository: "glotaran/pyglotaran-benchmarks"
           ref: main
           path: benchmark-repo
       - name: Copy benchmark workflows to html folder
@@ -77,7 +77,8 @@ jobs:
               capture_output=True,
           )
           comment = f"""\
-          [Benchmark results](https://s-weigand.github.io/pyglotaran-benchmarks/prs/pr-{pr_nr})
+          Benchmark is done. Checkout the [benchmark result page](https://glotaran.github.io/pyglotaran-benchmarks/prs/pr-{pr_nr}).
+          Benchmark differences below 5% might be due to CI noise.
           <details>
           <summary>
           Benchmark diff
@@ -99,7 +100,7 @@ jobs:
         uses: hasura/comment-progress@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "s-weigand/pyglotaran"
+          repository: "glotaran/pyglotaran"
           number: ${{ github.event.number }}
           id: benchmark-comment
           message: ${{ steps.bench_diff.outputs.comment }}
@@ -134,12 +135,12 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git config user.name 'github-actions[bot]'
           git add .
-          git commit -m "PR benchmark"
+          git commit -m "🧪 PR benchmark"
 
       - name: Push result repo
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
-          repository: "s-weigand/pyglotaran-benchmarks"
+          repository: "glotaran/pyglotaran-benchmarks"
           branch: pr-${{github.event.number}}
           force: true
