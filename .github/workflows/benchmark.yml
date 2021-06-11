@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -41,8 +42,17 @@ jobs:
       - name: Run PR compare benchmarks
         if: github.event_name == 'pull_request'
         run: |
+          git remote add upstream https://github.com/glotaran/pyglotaran
+          git fetch upstream
           pushd benchmark
-          asv run main..HEAD --machine gh_action
+          asv run upstream/main^..HEAD --machine gh_action
+          asv publish
+      - name: Upload PR html results
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-pr-html
+          path: benchmark/.asv/html
 
       - name: Run benchmarks
         if:
@@ -52,15 +62,50 @@ jobs:
           pushd benchmark
           asv run d57164a65935f66e2821d6938a6ee429694c9762..main --machine gh_action
       - name: Upload results
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results
           path: benchmark/.asv/results
 
+  upload_pr_results:
+    name: "Upload PR Results"
+    if: github.event_name == 'pull_request'
+    needs: [run_benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download result artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: benchmark-pr-html
+          path: .
+
+      - name: Show tree
+        run: tree .
+
+      - name: Commit PR results
+        env:
+          PR_RESULT_BRANCH: pr-${{github.event.number}}
+        run: |
+          git init
+          git checkout --orphan $PR_RESULT_BRANCH
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add .
+          git commit -m "PR benchmark"
+
+      - name: Push result repo
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+          repository: "s-weigand/pyglotaran-benchmarks"
+          branch: pr-${{github.event.number}}
+          force: true
+
   upload_main_results:
+    name: "Upload Main Results"
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: [run_benchmark]
-    name: "Upload Main Results"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout benchmark result repo
