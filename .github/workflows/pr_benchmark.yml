@@ -51,6 +51,48 @@ jobs:
           asv run upstream/main^..HEAD --machine gh_action
           asv publish
 
+      - name: Create PR comment body
+        id: bench_diff
+        shell: python
+        env:
+          PR_NR: ${{github.event.number}}
+        run: |
+          import os
+          import subprocess
+
+          pr_nr = os.environ.get("PR_NR")
+          diff_result = subprocess.run(
+              ["asv", "--config=benchmark/asv.conf.json", "compare", "upstream/main", "HEAD"],
+              capture_output=True,
+          )
+          comment = f"""\
+          [Benchmark results](https://s-weigand.github.io/pyglotaran-benchmarks/prs/pr-{pr_nr})
+          <details>
+          <summary>
+          Benchmark diff
+          </summary>
+
+          ```
+          {diff_result.stdout.decode()}
+          ```
+          </details>
+          """
+
+          print(f"::set-output name=comment::{comment}")
+
+      - name: Show comment
+        run: echo "${{ steps.bench_diff.outputs.comment }}"
+
+      - name: Comment on PR
+        uses: hasura/comment-progress@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "s-weigand/pyglotaran"
+          number: ${{ github.event.number }}
+          id: benchmark-comment
+          message: ${{ steps.bench_diff.outputs.comment }}
+          recreate: true
+
       - name: Upload PR html results
         uses: actions/upload-artifact@v2
         with:
