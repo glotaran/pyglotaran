@@ -167,3 +167,6 @@ _summary.ps
 
 # vscode config files
 .vscode
+
+# benchmark results
+benchmark/.asv

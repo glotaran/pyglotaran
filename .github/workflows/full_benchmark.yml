@@ -1,0 +1,83 @@
+name: "Full Benchmarks"
+
+on:
+  schedule:
+    - cron: "0 5 * * 5"
+  workflow_dispatch:
+
+jobs:
+  run_benchmark:
+    name: "Run AVS"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install ASV
+        run: |
+          pip install asv virtualenv
+      - name: Create machine-file
+        shell: python
+        run: |
+          from pathlib import Path
+          machine_file = Path("/home/runner/.asv-machine.json")
+          machine_file_content = '''
+          {
+            "gh_action": {
+              "arch": "x86_64",
+              "cpu": "Intel(R) Xeon(R) Platinum 8171M CPU @ 2.60GHz",
+              "num_cpu": "2",
+              "machine": "gh_action",
+              "os": "Linux 5.8.0-1033-azure",
+              "ram": "7GB"
+            },
+            "version": 1
+          }'''
+          machine_file.write_text(machine_file_content)
+      - name: Run benchmarks
+        run: |
+          pushd benchmark
+          asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..main --machine gh_action
+      - name: Upload results
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results
+          path: benchmark/.asv/results
+
+  upload_results:
+    name: "Upload Results"
+    needs: [run_benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout benchmark result repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+          repository: "glotaran/pyglotaran-benchmarks"
+          ref: main
+
+      - name: Download result artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: benchmark-results
+          path: results
+
+      - name: Commit results
+        run: |
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add results
+          git commit -m "⬆️ Update full benchmark"
+
+      - name: Push result repo
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+          repository: "glotaran/pyglotaran-benchmarks"
+          branch: main

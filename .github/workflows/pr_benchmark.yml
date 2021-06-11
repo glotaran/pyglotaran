@@ -1,0 +1,146 @@
+name: "PR Benchmarks"
+
+on:
+  pull_request:
+
+jobs:
+  run_benchmark:
+    name: "Run AVS"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install ASV
+        run: |
+          pip install asv virtualenv
+
+      - name: show home file
+        run: |
+          ls -lah ~
+          realpath ~
+      - name: Create machine-file
+        shell: python
+        run: |
+          from pathlib import Path
+          machine_file = Path("/home/runner/.asv-machine.json")
+          machine_file_content = '''
+          {
+            "gh_action": {
+              "arch": "x86_64",
+              "cpu": "Intel(R) Xeon(R) Platinum 8171M CPU @ 2.60GHz",
+              "num_cpu": "2",
+              "machine": "gh_action",
+              "os": "Linux 5.8.0-1033-azure",
+              "ram": "7GB"
+            },
+            "version": 1
+          }'''
+          machine_file.write_text(machine_file_content)
+
+      - name: Run PR compare benchmarks
+        run: |
+          git remote add upstream https://github.com/glotaran/pyglotaran
+          git fetch upstream
+          pushd benchmark
+          asv run upstream/main^..HEAD --machine gh_action
+          asv publish
+
+      - name: Checkout benchmark result repo
+        uses: actions/checkout@v2
+        with:
+          repository: "glotaran/pyglotaran-benchmarks"
+          ref: main
+          path: benchmark-repo
+      - name: Copy benchmark workflows to html folder
+        run: |
+          cp -r benchmark-repo/.github benchmark/.asv/html
+          ls -lah benchmark/.asv/html
+
+      - name: Create PR comment body
+        id: bench_diff
+        shell: python
+        env:
+          PR_NR: ${{github.event.number}}
+        run: |
+          import os
+          import subprocess
+
+          pr_nr = os.environ.get("PR_NR")
+          diff_result = subprocess.run(
+              ["asv", "--config=benchmark/asv.conf.json", "compare", "upstream/main", "HEAD"],
+              capture_output=True,
+          )
+          comment = f"""\
+          Benchmark is done. Checkout the [benchmark result page](https://glotaran.github.io/pyglotaran-benchmarks/prs/pr-{pr_nr}).
+          Benchmark differences below 5% might be due to CI noise.
+          <details>
+          <summary>
+          Benchmark diff
+          </summary>
+
+          ```
+          {diff_result.stdout.decode()}
+          ```
+          </details>
+          """
+
+          comment = comment.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D")
+
+          print(f"::set-output name=comment::{comment}")
+
+      - name: Show comment
+        run: echo "${{ steps.bench_diff.outputs.comment }}"
+      - name: Comment on PR
+        uses: hasura/comment-progress@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "glotaran/pyglotaran"
+          number: ${{ github.event.number }}
+          id: benchmark-comment
+          message: ${{ steps.bench_diff.outputs.comment }}
+          recreate: true
+
+      - name: Upload PR html results
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-pr-html
+          path: benchmark/.asv/html
+
+  upload_results:
+    name: "Upload Results"
+    needs: [run_benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download result artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: benchmark-pr-html
+          path: .
+
+      - name: Show tree
+        run: tree -a .
+
+      - name: Commit PR results
+        env:
+          PR_RESULT_BRANCH: pr-${{github.event.number}}
+        run: |
+          git init
+          git checkout --orphan $PR_RESULT_BRANCH
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add .
+          git commit -m "🧪 PR benchmark"
+
+      - name: Push result repo
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
+          repository: "glotaran/pyglotaran-benchmarks"
+          branch: pr-${{github.event.number}}
+          force: true
