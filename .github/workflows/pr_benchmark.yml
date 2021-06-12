@@ -63,12 +63,12 @@ jobs:
           ls -lah benchmark/.asv/html
 
       - name: Create PR comment body
-        id: bench_diff
         shell: python
         env:
           PR_NR: ${{github.event.number}}
         run: |
           import os
+          from pathlib import Path
           import subprocess
 
           pr_nr = os.environ.get("PR_NR")
@@ -92,55 +92,10 @@ jobs:
 
           comment = comment.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D")
 
-          print(f"::set-output name=comment::{comment}")
-
-      - name: Show comment
-        run: echo "${{ steps.bench_diff.outputs.comment }}"
-      - name: Comment on PR
-        uses: hasura/comment-progress@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "glotaran/pyglotaran"
-          number: ${{ github.event.number }}
-          id: benchmark-comment
-          message: ${{ steps.bench_diff.outputs.comment }}
-          recreate: true
+          Path("benchmark/.asv/html/pr-diff-comment.txt").write_text(comment)
 
       - name: Upload PR html results
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-pr-html
           path: benchmark/.asv/html
-
-  upload_results:
-    name: "Upload Results"
-    needs: [run_benchmark]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download result artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: benchmark-pr-html
-          path: .
-
-      - name: Show tree
-        run: tree -a .
-
-      - name: Commit PR results
-        env:
-          PR_RESULT_BRANCH: pr-${{github.event.number}}
-        run: |
-          git init
-          git checkout --orphan $PR_RESULT_BRANCH
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git config user.name 'github-actions[bot]'
-          git add .
-          git commit -m "🧪 PR benchmark"
-
-      - name: Push result repo
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
-          repository: "glotaran/pyglotaran-benchmarks"
-          branch: pr-${{github.event.number}}
-          force: true
