@@ -93,6 +93,7 @@ jobs:
           comment = comment.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D")
 
           Path("benchmark/.asv/html/pr-diff-comment.txt").write_text(comment)
+          Path("benchmark/.asv/html/origin_pr_nr.txt").write_text(pr_nr)
 
       - name: Upload PR html results
         uses: actions/upload-artifact@v2
