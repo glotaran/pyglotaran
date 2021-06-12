@@ -54,22 +54,29 @@ jobs:
           comment_file_path = Path("pr-diff-comment.txt")
           print(f"::set-output name=comment::{comment_file_path.read_text()}")
           comment_file_path.unlink()
+          origin_pr_nr_file_path = Path("origin_pr_nr.txt")
+          print(f"::set-output name=pr_nr::{origin_pr_nr_file_path.read_text()}")
+          origin_pr_nr_file_path.unlink()
 
-      - name: Show comment
-        run: echo "${{ steps.bench_diff.outputs.comment }}"
+      - name: Show PR Number and Comment
+        shell: python
+        run: |
+          print(f"PR Number:\n{ ${{ steps.bench_diff.outputs.pr_nr }} }")
+          print("Comment Body:")
+          print("""${{ steps.bench_diff.outputs.comment }}""")
       - name: Comment on PR
         uses: hasura/comment-progress@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: "glotaran/pyglotaran"
-          number: ${{github.event.workflow_run.pull_requests[0].number }}
+          number: ${{ steps.bench_diff.outputs.pr_nr }}
           id: benchmark-comment
           message: ${{ steps.bench_diff.outputs.comment }}
           recreate: true
 
       - name: Commit PR results
         env:
-          PR_RESULT_BRANCH: pr-${{github.event.workflow_run.pull_requests[0].number}}
+          PR_RESULT_BRANCH: pr-${{steps.bench_diff.outputs.pr_nr}}
         run: |
           git init
           git checkout --orphan $PR_RESULT_BRANCH
@@ -83,5 +90,5 @@ jobs:
         with:
           github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
           repository: "glotaran/pyglotaran-benchmarks"
-          branch: pr-${{github.event.workflow_run.pull_requests[0].number}}
+          branch: pr-${{steps.bench_diff.outputs.pr_nr}}
           force: true
