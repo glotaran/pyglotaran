@@ -198,12 +198,11 @@ def _create_from_dict_func(cls):
         item = ncls()
 
         for name in ncls._glotaran_properties:
-            if name not in values:
-                if not getattr(ncls, name).allow_none and getattr(item, name) is None:
-                    raise ValueError(f"Missing Property '{name}' For Item '{ncls.__name__}'")
-            else:
+            if name in values:
                 setattr(item, name, values[name])
 
+            elif not getattr(ncls, name).allow_none and getattr(item, name) is None:
+                raise ValueError(f"Missing Property '{name}' For Item '{ncls.__name__}'")
         return item
 
     return from_dict
