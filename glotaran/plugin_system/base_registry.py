@@ -494,7 +494,7 @@ def methods_differ_from_baseclass_table(
         differs_list = methods_differ_from_baseclass(method_names, plugin, base_class)
         row: list[str | bool] = [f"`{plugin_registry_key}`", *differs_list]
         if plugin_names:
-            if type(plugin) is type:
+            if isinstance(plugin, type):
                 row.append(f"`{full_plugin_name(plugin)}`")
             elif "." in plugin_registry_key:
                 row.append(f"`{plugin_registry_key}`")
