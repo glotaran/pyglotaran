@@ -295,10 +295,10 @@ def registered_plugins(
         List of plugin names in plugin_registry.
     """
     if full_names:
-        return sorted(list(plugin_registry.keys()))
+        return sorted(plugin_registry.keys())
 
     else:
-        return sorted(list(filter(lambda key: "." not in key, plugin_registry.keys())))
+        return sorted(filter(lambda key: "." not in key, plugin_registry.keys()))
 
 
 def is_registered_plugin(

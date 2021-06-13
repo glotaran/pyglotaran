@@ -70,7 +70,7 @@ def model_attribute(
             setattr(
                 cls,
                 "_glotaran_properties",
-                [attr for attr in getattr(cls, "_glotaran_properties")],
+                list(getattr(cls, "_glotaran_properties")),
             )
 
         for name, options in properties.items():

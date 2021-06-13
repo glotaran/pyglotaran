@@ -69,7 +69,7 @@ def load_dataset_file(filename, fmt=None, verbose=False):
 
 def select_name(filename, dataset):
 
-    names = [n for n in dataset]
+    names = list(dataset)
     echo(f"\nDataset names in in '{filename}':\n")
     for i, n in enumerate(names):
         echo(f"* [{i}] {n}")
