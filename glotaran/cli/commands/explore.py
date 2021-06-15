@@ -74,7 +74,7 @@ def export(filename: str, select, out: str, name: str):
         elif choice == "select":
             cont = True
             while cont:
-                dims = [d for d in data.dims]
+                dims = list(data.dims)
                 choice = prompt(
                     "Please select a dimension or action",
                     default="back",
