@@ -179,7 +179,7 @@ class Result:
         deprecated_qual_name_usage="glotaran.project.result.Result.save(result_path)",
         new_qual_name_usage=(
             "glotaran.io.save_result("
-            "result_path=result_path, result=result, "
+            "result=result, result_path=result_path, "
             'format_name="legacy", allow_overwrite=True'
             ")"
         ),
