@@ -1,5 +1,6 @@
 import numpy as np
 
+from glotaran.analysis.simulation import simulate
 from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
 from glotaran.parameter import ParameterGroup
 
@@ -97,7 +98,8 @@ parameter = ParameterGroup.from_dict(
 _time = np.arange(-1, 20, 0.01)
 _spectral = np.arange(600, 700, 1.4)
 
-dataset = sim_model.simulate(
+dataset = simulate(
+    sim_model,
     "dataset1",
     wanted_parameter,
     {"time": _time, "spectral": _spectral},
