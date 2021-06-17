@@ -3,10 +3,12 @@ from typing import List
 from typing import Tuple
 
 import pytest
+import xarray as xr
 from IPython.core.formatters import format_display_data
 
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import megacomplex
 from glotaran.model import model
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
@@ -26,12 +28,12 @@ class MockAttr:
     pass
 
 
-@model_attribute()
+@megacomplex("model")
 class MockMegacomplex(Megacomplex):
     pass
 
 
-@model_attribute()
+@megacomplex("model")
 class MockMegacomplex2(Megacomplex):
     pass
 
@@ -53,7 +55,7 @@ class MockModel(Model):
 @pytest.fixture
 def mock_model():
     d = {
-        "megacomplex": {"m1": {}, "m2": ["mock_megacomplex2"]},
+        "megacomplex": {"m1": {}, "m2": ["mock_megacomplex2", "model2"]},
         "weights": [
             {
                 "datasets": ["d1", "d2"],
@@ -73,7 +75,7 @@ def mock_model():
         },
         "dataset": {
             "dataset1": {
-                "megacomplex": ["m1", "m2"],
+                "megacomplex": ["m1"],
                 "scale": "scale_1",
             },
             "dataset2": [["m2"], ["bar"], "scale_2"],
@@ -115,6 +117,8 @@ def test_model_misc(mock_model: Model):
     assert mock_model.model_type == "mock_model"
     assert isinstance(mock_model.megacomplex["m1"], MockMegacomplex)
     assert isinstance(mock_model.megacomplex["m2"], MockMegacomplex2)
+    assert mock_model.megacomplex["m1"].dimension == "model"
+    assert mock_model.megacomplex["m2"].dimension == "model2"
 
 
 @pytest.mark.parametrize("attr", ["dataset", "megacomplex", "weights", "test"])
@@ -163,7 +167,7 @@ def test_items(mock_model: Model):
     assert t.complex == {}
 
     assert "dataset1" in mock_model.dataset
-    assert mock_model.get_dataset("dataset1").megacomplex == ["m1", "m2"]
+    assert mock_model.get_dataset("dataset1").megacomplex == ["m1"]
     assert mock_model.get_dataset("dataset1").scale.full_label == "scale_1"
 
     assert "dataset2" in mock_model.dataset
@@ -179,13 +183,21 @@ def test_items(mock_model: Model):
 
 
 def test_fill(mock_model: Model, parameter: ParameterGroup):
+    data = xr.DataArray([[1]], dims=("global", "model")).to_dataset(name="data")
     dataset = mock_model.get_dataset("dataset1").fill(mock_model, parameter)
-    assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1", "m2"]
+    dataset.set_data(data)
+    assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1"]
     assert dataset.scale == 2
+    assert dataset.get_model_dimension() == "model"
+    assert dataset.get_global_dimension() == "global"
 
+    data = xr.DataArray([[1]], dims=("global2", "model2")).to_dataset(name="data")
     dataset = mock_model.get_dataset("dataset2").fill(mock_model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m2"]
     assert dataset.scale == 8
+    dataset.set_data(data)
+    assert dataset.get_model_dimension() == "model2"
+    assert dataset.get_global_dimension() == "global2"
 
     t = mock_model.get_test("t1").fill(mock_model, parameter)
     assert t.param == 3
