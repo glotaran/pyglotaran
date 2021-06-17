@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from typing import Generator
 from typing import List
 
+import xarray as xr
+
 from glotaran.model.attribute import model_attribute
 from glotaran.parameter import Parameter
 
@@ -32,3 +34,24 @@ class DatasetDescriptor:
         for i, megacomplex in enumerate(self.megacomplex):
             scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
             yield scale, megacomplex
+
+    def get_model_dimension(self) -> str:
+        if not hasattr(self, "_model_dimension"):
+            if len(self.megacomplex) == 0:
+                raise ValueError(f"No megacomplex set for dataset describtor '{self.label}'")
+            if isinstance(self.megacomplex[0], str):
+                raise ValueError(f"Dataset describtor '{self.label}' was not filled")
+            self._model_dimension = self.megacomplex[0].dimension
+            if any(self._model_dimension != m.dimension for m in self.megacomplex):
+                raise ValueError(
+                    f"Megacomplex dimensions do not match for dataset describtor '{self.label}'."
+                )
+        return self._model_dimension
+
+    def get_global_dimension(self) -> str:
+        if not hasattr(self, "_data"):
+            raise ValueError(f"Data not set for dataset describtor '{self.label}'")
+        return [dim for dim in self._data.data.dims if dim != self.get_model_dimension()][0]
+
+    def set_data(self, data: xr.Dataset):
+        self._data = data

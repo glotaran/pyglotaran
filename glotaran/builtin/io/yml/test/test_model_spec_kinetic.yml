@@ -56,7 +56,9 @@ megacomplex:
       k_matrix: [km1] # A megacomplex has one or more k-matrices
   cmplx2:
       k_matrix: [km2]
-  cmplx3: ["kinetic-decay", [km3]]
+  cmplx3:
+    type: "kinetic-decay"
+    k_matrix: [km3]
 
 spectral_constraints:
   - type: zero
