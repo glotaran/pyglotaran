@@ -110,7 +110,7 @@ def _create_result(
     if success:
         try:
             covariance_matrix = np.linalg.inv(jacobian.T.dot(jacobian))
-            standard_errors = np.sqrt(np.diagonal(covariance_matrix))
+            standard_errors = root_mean_square_error * np.sqrt(np.diagonal(covariance_matrix))
             for label, error in zip(free_parameter_labels, standard_errors):
                 parameters.get(label).standard_error = error
         except np.linalg.LinAlgError:
