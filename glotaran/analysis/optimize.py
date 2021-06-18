@@ -108,16 +108,18 @@ def _create_result(
     parameters = problem.parameters
     covariance_matrix = None
     if success:
-        try:
-            covariance_matrix = np.linalg.inv(jacobian.T.dot(jacobian))
-            standard_errors = root_mean_square_error * np.sqrt(np.diagonal(covariance_matrix))
-            for label, error in zip(free_parameter_labels, standard_errors):
-                parameters.get(label).standard_error = error
-        except np.linalg.LinAlgError:
-            warn(
-                "The resulting Jacobian is singular, cannot compute covariance matrix and "
-                "standard errors."
-            )
+        # robust covariance matrix calculation
+        # Refs:
+        # https://stackoverflow.com/a/67023688/3990615
+        # http://www.ceres-solver.org/nnls_covariance.html#_CPPv4N5ceres10Covariance7Options14algorithm_typeE
+        # https://www.cse.unr.edu/~bebis/CS791E/Notes/SVD.pdf
+        _, jacobian_SV, jacobian_RSV = np.linalg.svd(jacobian, full_matrices=False)
+        jacobian_SV_square = jacobian_SV ** 2
+        mask = jacobian_SV_square > np.finfo(float).eps
+        covariance_matrix = (jacobian_RSV[mask].T / jacobian_SV_square[mask]) @ jacobian_RSV[mask]
+        standard_errors = root_mean_square_error * np.sqrt(np.diag(covariance_matrix))
+        for label, error in zip(free_parameter_labels, standard_errors):
+            parameters.get(label).standard_error = error
 
     return Result(
         additional_penalty=problem.additional_penalty,
