@@ -112,7 +112,7 @@ class Result:
             optimization_method=self.scheme.optimization_method,
         )
 
-    def markdown(self, with_model: bool = True) -> MarkdownStr:
+    def markdown(self, with_model: bool = True, base_heading_level: int = 1) -> MarkdownStr:
         """Formats the model as a markdown text.
 
         Parameters
@@ -163,6 +163,7 @@ class Result:
             model_md = self.model.markdown(
                 parameters=self.optimized_parameters,
                 initial_parameters=self.initial_parameters,
+                base_heading_level=base_heading_level,
             )
             result_table = f"{result_table}\n\n{model_md}"
 
@@ -170,7 +171,7 @@ class Result:
 
     def _repr_markdown_(self) -> str:
         """Special method used by ``ipython`` to render markdown."""
-        return str(self.markdown())
+        return str(self.markdown(base_heading_level=3))
 
     def __str__(self):
         return str(self.markdown(with_model=False))
