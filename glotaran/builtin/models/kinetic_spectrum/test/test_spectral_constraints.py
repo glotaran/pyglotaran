@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
@@ -100,9 +99,7 @@ def test_spectral_constraint():
         maximum_number_function_evaluations=20,
     )
 
-    # the resulting jacobian is singular
-    with pytest.warns(UserWarning):
-        result = optimize(scheme)
+    result = optimize(scheme)
 
     result_data = result.data["dataset1"]
     print(result_data.clp_label)
