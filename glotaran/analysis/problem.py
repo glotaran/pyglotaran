@@ -75,7 +75,6 @@ class Problem:
 
         self._model = scheme.model
 
-        self._index_dependent = scheme.model.index_dependent()
         self._grouped = scheme.model.grouped()
         self._bag = None
         self._groups = None
@@ -86,6 +85,7 @@ class Problem:
         self._parameters = None
         self._filled_dataset_descriptors = None
 
+        self._overwrite_index_dependent = hasattr(scheme.model, "overwrite_index_dependent")
         self._parameters = scheme.parameters.copy()
         self._parameter_history = []
         self._prepare_data(scheme.data)
@@ -149,10 +149,6 @@ class Problem:
     @property
     def grouped(self) -> bool:
         return self._grouped
-
-    @property
-    def index_dependent(self) -> bool:
-        return self._index_dependent
 
     @property
     def filled_dataset_descriptors(self) -> dict[str, DatasetDescriptor]:
@@ -270,6 +266,9 @@ class Problem:
             label: dataset_model.fill(self._model, self._parameters).set_data(self.data[label])
             for label, dataset_model in self._model.dataset.items()
         }
+        if self._overwrite_index_dependent:
+            for d in self._filled_dataset_descriptors.values():
+                d.overwrite_index_dependent(self.model.overwrite_index_dependent())
         self._reset_results()
 
     def _reset_results(self):
@@ -294,6 +293,8 @@ class Problem:
             dataset_model = self._model.dataset[label]
             dataset_model = dataset_model.fill(self.model, self.parameters)
             dataset_model.set_data(dataset)
+            if self._overwrite_index_dependent:
+                dataset_model.overwrite_index_dependent(self.model.overwrite_index_dependent())
             self._filled_dataset_descriptors[label] = dataset_model
             global_dimension = dataset_model.get_global_dimension()
             model_dimension = dataset_model.get_model_dimension()
@@ -366,18 +367,10 @@ class Problem:
                 dataset.weight[idx] *= weight.value
 
     def calculate_matrices(self):
-        if self._parameters is None:
-            raise ParameterError
-        if self.index_dependent:
-            self.calculate_index_dependent_matrices()
-        else:
-            self.calculate_index_independent_matrices()
+        raise NotImplementedError
 
     def calculate_residual(self):
-        if self._index_dependent:
-            self.calculate_index_dependent_residual()
-        else:
-            self.calculate_index_independent_residual()
+        raise NotImplementedError
 
     def calculate_additional_penalty(self) -> np.ndarray | dict[str, np.ndarray]:
         """Calculates additional penalties by calling the model.additional_penalty function."""
@@ -417,7 +410,7 @@ class Problem:
         model_dimension = dataset_model.get_model_dimension()
         if copy:
             dataset = dataset.copy()
-        if self.index_dependent:
+        if dataset_model.index_dependent():
             dataset = self.create_index_dependent_result_dataset(label, dataset)
         else:
             dataset = self.create_index_independent_result_dataset(label, dataset)

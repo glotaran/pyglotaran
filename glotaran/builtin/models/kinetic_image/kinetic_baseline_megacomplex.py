@@ -22,3 +22,6 @@ class KineticBaselineMegacomplex(Megacomplex):
         compartments = [f"{dataset_model.label}_baseline"]
         matrix = np.ones((size, 1), dtype=np.float64)
         return (compartments, matrix)
+
+    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+        return False

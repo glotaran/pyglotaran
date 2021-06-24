@@ -31,3 +31,6 @@ class Megacomplex:
         **kwargs,
     ):
         raise NotImplementedError
+
+    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+        raise NotImplementedError

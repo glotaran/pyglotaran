@@ -404,11 +404,20 @@ def _set_grouped_and_indexdependent(cls, grouped, index_dependent):
         grouped if callable(grouped) else lambda model: grouped,
     )
 
-    setattr(
-        cls,
-        "index_dependent",
-        index_dependent if callable(index_dependent) else lambda model: index_dependent,
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.model.base_model.Model.index_dependent",
+        new_qual_name_usage=("glotaran.model.megacomplex.Megacomplex.index_dependent"),
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 2),
     )
+    def idep(self):
+        return index_dependent(self) if callable(index_dependent) else index_dependent
+
+    setattr(cls, "index_dependent", idep)
+
+    # TODO: This is temporary
+    if callable(index_dependent):
+        setattr(cls, "overwrite_index_dependent", index_dependent)
 
 
 def _set_dimensions(cls, model_type, model_dimension, global_dimension):

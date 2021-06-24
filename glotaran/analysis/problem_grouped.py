@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.problem import GroupedProblemDescriptor
+from glotaran.analysis.problem import ParameterError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import ProblemGroup
 from glotaran.analysis.util import LabelAndMatrix
@@ -45,6 +46,9 @@ class GroupedProblem(Problem):
             for d in self.filled_dataset_descriptors.values()
         ):
             raise ValueError("Cannot group datasets. Global dimensions do not match.")
+        self._index_dependent = any(
+            d.index_dependent() for d in self.filled_dataset_descriptors.values()
+        )
 
     def init_bag(self):
         """Initializes a grouped problem bag."""
@@ -172,6 +176,14 @@ class GroupedProblem(Problem):
                 self._full_axis.append(global_axis[i])
                 self._bag.append(problem)
 
+    def calculate_matrices(self):
+        if self._parameters is None:
+            raise ParameterError
+        if self._index_dependent:
+            self.calculate_index_dependent_matrices()
+        else:
+            self.calculate_index_independent_matrices()
+
     def calculate_index_dependent_matrices(
         self,
     ) -> tuple[
@@ -281,6 +293,12 @@ class GroupedProblem(Problem):
                 self._reduced_matrices[group_label] = reduced_labels_and_matrix.matrix
 
         return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
+
+    def calculate_residual(self):
+        if self._index_dependent:
+            self.calculate_index_dependent_residual()
+        else:
+            self.calculate_index_independent_residual()
 
     def calculate_index_dependent_residual(
         self,

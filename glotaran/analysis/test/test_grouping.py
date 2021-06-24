@@ -10,7 +10,7 @@ from glotaran.project import Scheme
 def test_single_dataset():
     model = SimpleTestModel.from_dict(
         {
-            "megacomplex": {"m1": {}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],
@@ -51,7 +51,7 @@ def test_single_dataset():
 def test_multi_dataset_no_overlap():
     model = SimpleTestModel.from_dict(
         {
-            "megacomplex": {"m1": {}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],
@@ -106,7 +106,7 @@ def test_multi_dataset_no_overlap():
 def test_multi_dataset_overlap():
     model = SimpleTestModel.from_dict(
         {
-            "megacomplex": {"m1": {}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],

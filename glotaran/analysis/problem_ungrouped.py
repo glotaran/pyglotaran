@@ -3,10 +3,12 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
+from glotaran.analysis.problem import ParameterError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import UngroupedProblemDescriptor
 from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import reduce_matrix
+from glotaran.model import DatasetDescriptor
 
 
 class UngroupedProblem(Problem):
@@ -30,15 +32,17 @@ class UngroupedProblem(Problem):
                 weight,
             )
 
-    def calculate_index_dependent_matrices(
+    def calculate_matrices(
         self,
     ) -> tuple[
-        dict[str, list[list[str]]],
-        dict[str, list[np.ndarray]],
+        dict[str, list[list[str]] | list[str]],
+        dict[str, list[np.ndarray]] | np.ndarray,
         dict[str, list[str]],
-        dict[str, list[np.ndarray]],
+        dict[str, list[np.ndarray] | np.ndarray],
     ]:
-        """Calculates the index dependent model matrices."""
+        """Calculates the model matrices."""
+        if self._parameters is None:
+            raise ParameterError
 
         self._clp_labels = {}
         self._matrices = {}
@@ -52,66 +56,58 @@ class UngroupedProblem(Problem):
             self._reduced_matrices[label] = []
             dataset_model = self._filled_dataset_descriptors[label]
 
-            for i, index in enumerate(problem.global_axis):
-                result = calculate_matrix(
-                    self._model,
-                    dataset_model,
-                    {dataset_model.get_global_dimension(): i},
-                    {
-                        dataset_model.get_model_dimension(): problem.model_axis,
-                        dataset_model.get_global_dimension(): problem.global_axis,
-                    },
-                )
-
-                self._clp_labels[label].append(result.clp_label)
-                self._matrices[label].append(result.matrix)
-                reduced_labels_and_matrix = reduce_matrix(
-                    self._model, label, self._parameters, result, index
-                )
-                self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
-                self._reduced_matrices[label].append(reduced_labels_and_matrix.matrix)
+            if dataset_model.index_dependent():
+                self._calculate_index_dependent_matrix(label, problem, dataset_model)
+            else:
+                self._calculate_index_independent_matrix(label, problem, dataset_model)
 
         return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
 
-    def calculate_index_independent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-    ]:
-        """Calculates the index independent model matrices."""
-
-        self._clp_labels = {}
-        self._matrices = {}
-        self._reduced_clp_labels = {}
-        self._reduced_matrices = {}
-
-        for label, dataset_model in self._filled_dataset_descriptors.items():
-            model_dimension = dataset_model.get_model_dimension()
-            global_dimension = dataset_model.get_global_dimension()
-            model_axis = self._data[label].coords[model_dimension].values
-            global_axis = self._data[label].coords[global_dimension].values
+    def _calculate_index_dependent_matrix(
+        self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetDescriptor
+    ):
+        for i, index in enumerate(problem.global_axis):
             result = calculate_matrix(
                 self._model,
                 dataset_model,
-                {},
+                {dataset_model.get_global_dimension(): i},
                 {
-                    model_dimension: model_axis,
-                    global_dimension: global_axis,
+                    dataset_model.get_model_dimension(): problem.model_axis,
+                    dataset_model.get_global_dimension(): problem.global_axis,
                 },
             )
 
-            self._clp_labels[label] = result.clp_label
-            self._matrices[label] = result.matrix
-            reduced_result = reduce_matrix(self._model, label, self._parameters, result, None)
-            self._reduced_clp_labels[label] = reduced_result.clp_label
-            self._reduced_matrices[label] = reduced_result.matrix
+            self._clp_labels[label].append(result.clp_label)
+            self._matrices[label].append(result.matrix)
+            reduced_labels_and_matrix = reduce_matrix(
+                self._model, label, self._parameters, result, index
+            )
+            self._reduced_clp_labels[label].append(reduced_labels_and_matrix.clp_label)
+            self._reduced_matrices[label].append(reduced_labels_and_matrix.matrix)
 
-        return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
+    def _calculate_index_independent_matrix(
+        self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetDescriptor
+    ):
 
-    def calculate_index_dependent_residual(
+        model_dimension = dataset_model.get_model_dimension()
+        global_dimension = dataset_model.get_global_dimension()
+        result = calculate_matrix(
+            self._model,
+            dataset_model,
+            {},
+            {
+                model_dimension: problem.model_axis,
+                global_dimension: problem.global_axis,
+            },
+        )
+
+        self._clp_labels[label] = result.clp_label
+        self._matrices[label] = result.matrix
+        reduced_result = reduce_matrix(self._model, label, self._parameters, result, None)
+        self._reduced_clp_labels[label] = reduced_result.clp_label
+        self._reduced_matrices[label] = reduced_result.matrix
+
+    def calculate_residual(
         self,
     ) -> tuple[
         dict[str, list[np.ndarray]],
@@ -119,7 +115,7 @@ class UngroupedProblem(Problem):
         dict[str, list[np.ndarray]],
         dict[str, list[np.ndarray]],
     ]:
-        """Calculates the index dependent residuals."""
+        """Calculates the residuals."""
 
         self._reduced_clps = {}
         self._weighted_residuals = {}
@@ -142,28 +138,18 @@ class UngroupedProblem(Problem):
 
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
 
-    def calculate_index_independent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index independent residuals."""
-        return self.calculate_index_dependent_residual()
-
     def _calculate_residual_for_problem(self, label: str, problem: UngroupedProblemDescriptor):
         self._reduced_clps[label] = []
         self._weighted_residuals[label] = []
         self._residuals[label] = []
         data = problem.data
-        global_dimension = problem.dataset.get_global_dimension()
+        dataset_model = self._filled_dataset_descriptors[label]
+        global_dimension = dataset_model.get_global_dimension()
 
         for i in range(len(problem.global_axis)):
             matrix = (
                 self.reduced_matrices[label][i]
-                if self.index_dependent
+                if dataset_model.index_dependent()
                 else self.reduced_matrices[label].copy()
             )  # TODO: .copy() or not
             if problem.dataset.scale is not None:
