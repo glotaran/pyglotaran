@@ -36,7 +36,7 @@ class UngroupedProblem(Problem):
         self,
     ) -> tuple[
         dict[str, list[list[str]] | list[str]],
-        dict[str, list[np.ndarray]] | np.ndarray,
+        dict[str, list[np.ndarray] | np.ndarray],
         dict[str, list[str]],
         dict[str, list[np.ndarray] | np.ndarray],
     ]:

@@ -33,22 +33,26 @@ class GroupedProblem(Problem):
         """
         super().__init__(scheme=scheme)
 
-        first_dataset = next(iter(self.filled_dataset_descriptors.values()))
-        self._global_dimension = first_dataset.get_global_dimension()
-        if any(
-            self._global_dimension != d.get_global_dimension()
-            for d in self.filled_dataset_descriptors.values()
-        ):
-            raise ValueError("Cannot group datasets. Global dimensions do not match.")
-        self._model_dimension = first_dataset.get_model_dimension()
-        if any(
-            self._model_dimension != d.get_model_dimension()
-            for d in self.filled_dataset_descriptors.values()
-        ):
-            raise ValueError("Cannot group datasets. Global dimensions do not match.")
+        # TODO: grouping should be user controlled not inferred automatically
+        global_dimensions = {
+            d.get_global_dimension() for d in self.filled_dataset_descriptors.values()
+        }
+        model_dimensions = {
+            d.get_model_dimension() for d in self.filled_dataset_descriptors.values()
+        }
+        if len(global_dimensions) != 1:
+            raise ValueError(
+                f"Cannot group datasets. Global dimensions '{global_dimensions}' do not match."
+            )
+        if len(model_dimensions) != 1:
+            raise ValueError(
+                f"Cannot group datasets. Model dimension '{model_dimensions}' do not match."
+            )
         self._index_dependent = any(
             d.index_dependent() for d in self.filled_dataset_descriptors.values()
         )
+        self._global_dimension = global_dimensions.pop()
+        self._model_dimension = model_dimensions.pop()
 
     def init_bag(self):
         """Initializes a grouped problem bag."""
