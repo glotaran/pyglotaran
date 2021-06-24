@@ -33,7 +33,7 @@ class GroupedProblem(Problem):
         """
         super().__init__(scheme=scheme)
 
-        first_dataset = list(d for d in self.filled_dataset_descriptors.values())[0]
+        first_dataset = next(iter(self.filled_dataset_descriptors.values()))
         self._global_dimension = first_dataset.get_global_dimension()
         if any(
             self._global_dimension != d.get_global_dimension()
