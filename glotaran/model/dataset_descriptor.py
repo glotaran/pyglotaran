@@ -27,7 +27,7 @@ class DatasetDescriptor:
     It contains references to model items which describe the physical model for
     a given dataset.
 
-    A general dataset describtor assigns one or more megacomplexes and a scale
+    A general dataset descriptor assigns one or more megacomplexes and a scale
     parameter.
     """
 
@@ -39,13 +39,13 @@ class DatasetDescriptor:
     def get_model_dimension(self) -> str:
         if not hasattr(self, "_model_dimension"):
             if len(self.megacomplex) == 0:
-                raise ValueError(f"No megacomplex set for dataset describtor '{self.label}'")
+                raise ValueError(f"No megacomplex set for dataset descriptor '{self.label}'")
             if isinstance(self.megacomplex[0], str):
-                raise ValueError(f"Dataset describtor '{self.label}' was not filled")
+                raise ValueError(f"Dataset descriptor '{self.label}' was not filled")
             self._model_dimension = self.megacomplex[0].dimension
             if any(self._model_dimension != m.dimension for m in self.megacomplex):
                 raise ValueError(
-                    f"Megacomplex dimensions do not match for dataset describtor '{self.label}'."
+                    f"Megacomplex dimensions do not match for dataset descriptor '{self.label}'."
                 )
         return self._model_dimension
 
@@ -55,7 +55,7 @@ class DatasetDescriptor:
     def get_global_dimension(self) -> str:
         if not hasattr(self, "_global_dimension"):
             if not hasattr(self, "_data"):
-                raise ValueError(f"Data not set for dataset describtor '{self.label}'")
+                raise ValueError(f"Data not set for dataset descriptor '{self.label}'")
             self._global_dimension = [
                 dim for dim in self._data.data.dims if dim != self.get_model_dimension()
             ][0]
