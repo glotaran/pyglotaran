@@ -8,7 +8,7 @@ from glotaran.parameter import ParameterGroup
 def test_simulate_dataset():
     model = SimpleTestModel.from_dict(
         {
-            "megacomplex": {"m1": {"grouped": False, "indexdependent": False}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],

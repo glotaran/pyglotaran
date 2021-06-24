@@ -54,6 +54,9 @@ class CoherentArtifactMegacomplex(Megacomplex):
     def compartments(self):
         return [f"coherent_artifact_{i}" for i in range(1, self.order + 1)]
 
+    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+        return False
+
 
 @nb.jit(nopython=True, parallel=True)
 def _calculate_coherent_artifact_matrix(center, width, axis, order):

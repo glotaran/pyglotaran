@@ -52,6 +52,8 @@ def simulate(
 
     filled_dataset = model.dataset[dataset].fill(model, parameters)
     filled_dataset.overwrite_global_dimension(model.global_dimension)
+    if hasattr(model, "overwrite_index_dependent"):
+        filled_dataset.overwrite_index_dependent(model.overwrite_index_dependent())
 
     model_dimension = filled_dataset.get_model_dimension()
     model_axis = axes[model_dimension]
@@ -77,7 +79,7 @@ def simulate(
             )
             for index, _ in enumerate(global_axis)
         ]
-        if model.index_dependent()
+        if filled_dataset.index_dependent()
         else calculate_matrix(
             model,
             filled_dataset,
@@ -91,7 +93,7 @@ def simulate(
                 model.constrain_matrix_function(dataset, parameters, clp, mat, global_axis[i])
                 for i, (clp, mat) in enumerate(matrix)
             ]
-            if model.index_dependent()
+            if filled_dataset.index_dependent()
             else model.constrain_matrix_function(dataset, parameters, matrix[0], matrix[1], None)
         )
     matrix = (
@@ -99,7 +101,7 @@ def simulate(
             xr.DataArray(mat, coords=[(model_dimension, model_axis), ("clp_label", clp_label)])
             for clp_label, mat in matrix
         ]
-        if model.index_dependent()
+        if filled_dataset.index_dependent()
         else xr.DataArray(
             matrix[1], coords=[(model_dimension, model_axis), ("clp_label", matrix[0])]
         )
@@ -132,7 +134,7 @@ def simulate(
             clp, coords=[(global_dimension, global_axis), ("clp_label", clp_labels)]
         )
     for i in range(global_axis.size):
-        index_matrix = matrix[i] if model.index_dependent() else matrix
+        index_matrix = matrix[i] if filled_dataset.index_dependent() else matrix
         result.data[:, i] = np.dot(
             index_matrix, clp[i].sel(clp_label=index_matrix.coords["clp_label"])
         )

@@ -111,6 +111,8 @@ class ModelProperty(property):
                     k: getattr(model, self._name)[v].fill(model, parameter)
                     for (k, v) in value.items()
                 }
+            elif isinstance(value, bool):
+                pass
             else:
                 value = getattr(model, self._name)[value].fill(model, parameter)
 

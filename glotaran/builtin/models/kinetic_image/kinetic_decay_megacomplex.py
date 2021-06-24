@@ -41,6 +41,9 @@ class KineticDecayMegacomplex(Megacomplex):
     def involved_compartments(self):
         return self.full_k_matrix().involved_compartments() if self.full_k_matrix() else []
 
+    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+        return False
+
     def calculate_matrix(
         self,
         model,

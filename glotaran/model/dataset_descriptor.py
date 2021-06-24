@@ -7,6 +7,7 @@ from typing import List
 
 import xarray as xr
 
+from glotaran.deprecation import deprecate
 from glotaran.model.attribute import model_attribute
 from glotaran.parameter import Parameter
 
@@ -66,3 +67,20 @@ class DatasetDescriptor:
     def set_data(self, data: xr.Dataset) -> DatasetDescriptor:
         self._data = data
         return self
+
+    def index_dependent(self) -> bool:
+        if hasattr(self, "_index_dependent"):
+            return self._index_dependent
+        return any(m.index_dependent(self) for m in self.megacomplex)
+
+    @deprecate(
+        deprecated_qual_name_usage=(
+            "glotaran.model.dataset_descriptor.DatasetDescriptor.overwrite_index_dependent"
+        ),
+        new_qual_name_usage="",
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 2),
+        has_glotaran_replacement=False,
+    )
+    def overwrite_index_dependent(self, index_dependent: bool):
+        self._index_dependent = index_dependent

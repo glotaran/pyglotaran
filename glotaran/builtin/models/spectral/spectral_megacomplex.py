@@ -39,3 +39,6 @@ class SpectralMegacomplex(Megacomplex):
         for i, shape in enumerate(self.shape.values()):
             matrix[:, i] += shape.calculate(axis[dataset_model.get_model_dimension()])
         return compartments, matrix
+
+    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+        return False
