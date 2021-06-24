@@ -415,8 +415,10 @@ class Problem:
         else:
             dataset = self.create_index_independent_result_dataset(label, dataset)
 
-        self._create_svd("weighted_residual", dataset, model_dimension, global_dimension)
-        self._create_svd("residual", dataset, model_dimension, global_dimension)
+        # TODO: adapt tests to handle add_svd=False
+        if self.scheme.add_svd:
+            self._create_svd("weighted_residual", dataset, model_dimension, global_dimension)
+            self._create_svd("residual", dataset, model_dimension, global_dimension)
 
         # Calculate RMS
         size = dataset.residual.shape[0] * dataset.residual.shape[1]
