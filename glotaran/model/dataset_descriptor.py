@@ -52,6 +52,11 @@ class DatasetDescriptor:
     def overwrite_model_dimension(self, model_dimension: str):
         self._model_dimension = model_dimension
 
+    # TODO: make explicit we only support 2 dimensions at present
+    # TODO: the global dimension should become a flexible index (MultiIndex)
+    # the user can then specify the name of the MultiIndex global dimension
+    # using the function overwrite_global_dimension
+    # e.g. in FLIM, x, y dimension may get 'flattened' to a MultiIndex 'pixel'
     def get_global_dimension(self) -> str:
         if not hasattr(self, "_global_dimension"):
             if not hasattr(self, "_data"):
