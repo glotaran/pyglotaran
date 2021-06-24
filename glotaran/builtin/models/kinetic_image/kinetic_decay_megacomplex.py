@@ -71,8 +71,8 @@ class KineticDecayMegacomplex(Megacomplex):
         rates = k_matrix.rates(initial_concentration)
 
         global_dimension = dataset_model.get_global_dimension()
-        global_index = indices.get(global_dimension, None)
-        global_axis = axis.get(global_dimension, None)
+        global_index = indices.get(global_dimension)
+        global_axis = axis.get(global_dimension)
         model_dimension = dataset_model.get_model_dimension()
         model_axis = axis[model_dimension]
 
