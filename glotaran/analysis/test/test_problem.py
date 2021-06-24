@@ -113,19 +113,21 @@ def test_problem_residuals(problem: Problem):
 def test_problem_result_data(problem: Problem):
 
     data = problem.create_result_data()
+    label = "dataset1"
 
-    assert "dataset1" in data
+    assert label in data
 
-    dataset = data["dataset1"]
+    dataset = data[label]
+    dataset_model = problem.filled_dataset_descriptors[label]
 
     assert "clp_label" in dataset.coords
     assert np.array_equal(dataset.clp_label, ["s1", "s2", "s3", "s4"])
 
-    assert problem.model.global_dimension in dataset.coords
-    assert np.array_equal(dataset.coords[problem.model.global_dimension], suite.e_axis)
+    assert dataset_model.get_global_dimension() in dataset.coords
+    assert np.array_equal(dataset.coords[dataset_model.get_global_dimension()], suite.e_axis)
 
-    assert problem.model.model_dimension in dataset.coords
-    assert np.array_equal(dataset.coords[problem.model.model_dimension], suite.c_axis)
+    assert dataset_model.get_model_dimension() in dataset.coords
+    assert np.array_equal(dataset.coords[dataset_model.get_model_dimension()], suite.c_axis)
 
     assert "matrix" in dataset
     matrix = dataset.matrix
@@ -157,9 +159,10 @@ def test_problem_result_data(problem: Problem):
 
 def test_prepare_data():
     model_dict = {
+        "megacomplex": {"m1": {}},
         "dataset": {
             "dataset1": {
-                "megacomplex": [],
+                "megacomplex": ["m1"],
             },
         },
         "weights": [

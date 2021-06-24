@@ -21,7 +21,6 @@ def megacomplex(
     return model_attribute(properties=properties, has_type=True)
 
 
-#  @model_attribute(has_type=True)
 class Megacomplex:
     def calculate_matrix(
         self,

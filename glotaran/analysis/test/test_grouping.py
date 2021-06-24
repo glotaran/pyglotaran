@@ -10,11 +10,12 @@ from glotaran.project import Scheme
 def test_single_dataset():
     model = SimpleTestModel.from_dict(
         {
+            "megacomplex": {"m1": {}},
             "dataset": {
                 "dataset1": {
-                    "megacomplex": [],
+                    "megacomplex": ["m1"],
                 },
-            }
+            },
         }
     )
     model.grouped = lambda: True
@@ -50,14 +51,15 @@ def test_single_dataset():
 def test_multi_dataset_no_overlap():
     model = SimpleTestModel.from_dict(
         {
+            "megacomplex": {"m1": {}},
             "dataset": {
                 "dataset1": {
-                    "megacomplex": [],
+                    "megacomplex": ["m1"],
                 },
                 "dataset2": {
-                    "megacomplex": [],
+                    "megacomplex": ["m1"],
                 },
-            }
+            },
         }
     )
 
@@ -104,14 +106,15 @@ def test_multi_dataset_no_overlap():
 def test_multi_dataset_overlap():
     model = SimpleTestModel.from_dict(
         {
+            "megacomplex": {"m1": {}},
             "dataset": {
                 "dataset1": {
-                    "megacomplex": [],
+                    "megacomplex": ["m1"],
                 },
                 "dataset2": {
-                    "megacomplex": [],
+                    "megacomplex": ["m1"],
                 },
-            }
+            },
         }
     )
 

@@ -8,6 +8,7 @@ import xarray as xr
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import megacomplex
 from glotaran.model import model
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
@@ -26,7 +27,7 @@ def calculate_e(dataset, axis):
     return (r_compartments, array)
 
 
-@model_attribute()
+@megacomplex("c")
 class SimpleTestMegacomplex(Megacomplex):
     def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
@@ -56,7 +57,7 @@ class SimpleTestModel(Model):
     pass
 
 
-@model_attribute(properties={})
+@megacomplex("c")
 class SimpleKineticMegacomplex(Megacomplex):
     def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
