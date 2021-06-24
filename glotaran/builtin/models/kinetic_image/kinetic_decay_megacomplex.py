@@ -10,13 +10,14 @@ from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
-from glotaran.model import model_attribute
+from glotaran.model import megacomplex
 
 
-@model_attribute(
+@megacomplex(
+    "time",
     properties={
         "k_matrix": List[str],
-    }
+    },
 )
 class KineticDecayMegacomplex(Megacomplex):
     """A Megacomplex with one or more K-Matrices."""
@@ -43,16 +44,16 @@ class KineticDecayMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         model,
-        dataset_descriptor: DatasetDescriptor,
+        dataset_model: DatasetDescriptor,
         indices: dict[str, int],
         axis: dict[str, np.ndarray],
         **kwargs,
     ):
-        if dataset_descriptor.initial_concentration is None:
+        if dataset_model.initial_concentration is None:
             raise ModelError(
-                f'No initial concentration specified in dataset "{dataset_descriptor.label}"'
+                f'No initial concentration specified in dataset "{dataset_model.label}"'
             )
-        initial_concentration = dataset_descriptor.initial_concentration.normalized()
+        initial_concentration = dataset_model.initial_concentration.normalized()
 
         k_matrix = self.full_k_matrix()
 
@@ -66,16 +67,18 @@ class KineticDecayMegacomplex(Megacomplex):
         # the rates are the eigenvalues of the k matrix
         rates = k_matrix.rates(initial_concentration)
 
-        global_index = indices.get(model.global_dimension, None)
-        global_axis = axis.get(model.global_dimension, None)
-        model_axis = axis[model.model_dimension]
+        global_dimension = dataset_model.get_global_dimension()
+        global_index = indices.get(global_dimension, None)
+        global_axis = axis.get(global_dimension, None)
+        model_dimension = dataset_model.get_model_dimension()
+        model_axis = axis[model_dimension]
 
         # init the matrix
         size = (model_axis.size, rates.size)
         matrix = np.zeros(size, dtype=np.float64)
 
         kinetic_image_matrix_implementation(
-            matrix, rates, global_index, global_axis, model_axis, dataset_descriptor
+            matrix, rates, global_index, global_axis, model_axis, dataset_model
         )
 
         if not np.all(np.isfinite(matrix)):
@@ -97,9 +100,9 @@ def kinetic_image_matrix_implementation(
     global_index: int,
     global_axis: np.ndarray,
     model_axis: np.ndarray,
-    dataset_descriptor: DatasetDescriptor,
+    dataset_model: DatasetDescriptor,
 ):
-    if isinstance(dataset_descriptor.irf, IrfMultiGaussian):
+    if isinstance(dataset_model.irf, IrfMultiGaussian):
 
         (
             centers,
@@ -108,7 +111,7 @@ def kinetic_image_matrix_implementation(
             shift,
             backsweep,
             backsweep_period,
-        ) = dataset_descriptor.irf.parameter(global_index, global_axis)
+        ) = dataset_model.irf.parameter(global_index, global_axis)
 
         for center, width, irf_scale in zip(centers, widths, irf_scales):
             calculate_kinetic_matrix_gaussian_irf(
@@ -121,7 +124,7 @@ def kinetic_image_matrix_implementation(
                 backsweep,
                 backsweep_period,
             )
-        if dataset_descriptor.irf.normalize:
+        if dataset_model.irf.normalize:
             matrix /= np.sum(irf_scale)
 
     else:

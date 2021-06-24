@@ -74,9 +74,6 @@ class Problem:
         self._scheme = scheme
 
         self._model = scheme.model
-        self._global_dimension = scheme.model.global_dimension
-        self._model_dimension = scheme.model.model_dimension
-        self._prepare_data(scheme.data)
 
         self._index_dependent = scheme.model.index_dependent()
         self._grouped = scheme.model.grouped()
@@ -89,8 +86,9 @@ class Problem:
         self._parameters = None
         self._filled_dataset_descriptors = None
 
-        self.parameters = scheme.parameters.copy()
+        self._parameters = scheme.parameters.copy()
         self._parameter_history = []
+        self._prepare_data(scheme.data)
 
         # all of the above are always not None
 
@@ -269,8 +267,8 @@ class Problem:
     def reset(self):
         """Resets all results and `DatasetDescriptors`. Use after updating parameters."""
         self._filled_dataset_descriptors = {
-            label: descriptor.fill(self._model, self._parameters)
-            for label, descriptor in self._model.dataset.items()
+            label: dataset_model.fill(self._model, self._parameters).set_data(self.data[label])
+            for label, dataset_model in self._model.dataset.items()
         }
         self._reset_results()
 
@@ -288,56 +286,27 @@ class Problem:
 
     def _prepare_data(self, data: dict[str, xr.DataArray | xr.Dataset]):
         self._data = {}
+        self._filled_dataset_descriptors = {}
         for label, dataset in data.items():
-            if self._model_dimension not in dataset.dims:
-                raise ValueError(
-                    "Missing coordinates for dimension "
-                    f"'{self._model_dimension}' in data for dataset "
-                    f"'{label}'"
-                )
-            if self._global_dimension not in dataset.dims:
-                raise ValueError(
-                    "Missing coordinates for dimension "
-                    f"'{self._global_dimension}' in data for dataset "
-                    f"'{label}'"
-                )
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
-            lsv_dim, rsv_dim = self._preferred_svd_dims(dataset)
-
-            if lsv_dim == "time" and rsv_dim == "spectral":
-                add_svd_to_dataset(dataset)
+            dataset_model = self._model.dataset[label]
+            dataset_model = dataset_model.fill(self.model, self.parameters)
+            dataset_model.set_data(dataset)
+            self._filled_dataset_descriptors[label] = dataset_model
+            global_dimension = dataset_model.get_global_dimension()
+            model_dimension = dataset_model.get_model_dimension()
 
             dataset = self._transpose_dataset(
-                dataset, ordered_dims=[self._model_dimension, self._global_dimension]
+                dataset, ordered_dims=[model_dimension, global_dimension]
             )
 
-            if lsv_dim != "time" or rsv_dim != "spectral":
-                add_svd_to_dataset(dataset, lsv_dim=lsv_dim, rsv_dim=rsv_dim)
+            if self.scheme.add_svd:
+                add_svd_to_dataset(dataset, lsv_dim=model_dimension, rsv_dim=global_dimension)
 
             self._add_weight(label, dataset)
             self._data[label] = dataset
-
-    def _preferred_svd_dims(self, datacontainer: XrDataContainer) -> tuple[str, str]:
-        """Get preferrer dimension for the SVD, with fallback to model and global dimensions.
-
-        Parameters
-        ----------
-        dataset : XrDataContainer
-            Dataset to check if the preferred dimensions exist in.
-
-        Returns
-        -------
-        tuple[str, str]: (lsv_dim, rsv_dim)
-            lsv_dim: Dimension of the left singular vectors.
-            rsv_dim: Dimension of the right singular vectors.
-        """
-
-        lsv_dim = "time" if "time" in datacontainer.dims else self._model_dimension
-        rsv_dim = "spectral" if "spectral" in datacontainer.dims else self._global_dimension
-
-        return lsv_dim, rsv_dim
 
     def _transpose_dataset(
         self, datacontainer: XrDataContainer, ordered_dims: list[Hashable]
@@ -370,9 +339,13 @@ class Problem:
                     " because weight is already supplied by dataset."
                 )
             return
+        dataset_model = self._filled_dataset_descriptors[label]
+        dataset_model.set_data(dataset)
+        global_dimension = dataset_model.get_global_dimension()
+        model_dimension = dataset_model.get_model_dimension()
 
-        global_axis = dataset.coords[self.model.global_dimension]
-        model_axis = dataset.coords[self.model.model_dimension]
+        global_axis = dataset.coords[global_dimension]
+        model_axis = dataset.coords[model_dimension]
 
         for weight in self.model.weights:
             if label in weight.datasets:
@@ -383,11 +356,11 @@ class Problem:
 
                 idx = {}
                 if weight.global_interval is not None:
-                    idx[self.model.global_dimension] = get_min_max_from_interval(
+                    idx[global_dimension] = get_min_max_from_interval(
                         weight.global_interval, global_axis
                     )
                 if weight.model_interval is not None:
-                    idx[self.model.model_dimension] = get_min_max_from_interval(
+                    idx[model_dimension] = get_min_max_from_interval(
                         weight.model_interval, model_axis
                     )
                 dataset.weight[idx] *= weight.value
@@ -439,6 +412,9 @@ class Problem:
 
     def create_result_dataset(self, label: str, copy: bool = True) -> xr.Dataset:
         dataset = self.data[label]
+        dataset_model = self._filled_dataset_descriptors[label]
+        global_dimension = dataset_model.get_global_dimension()
+        model_dimension = dataset_model.get_model_dimension()
         if copy:
             dataset = dataset.copy()
         if self.index_dependent:
@@ -446,8 +422,8 @@ class Problem:
         else:
             dataset = self.create_index_independent_result_dataset(label, dataset)
 
-        self._create_svd("weighted_residual", dataset)
-        self._create_svd("residual", dataset)
+        self._create_svd("weighted_residual", dataset, model_dimension, global_dimension)
+        self._create_svd("residual", dataset, model_dimension, global_dimension)
 
         # Calculate RMS
         size = dataset.residual.shape[0] * dataset.residual.shape[1]
@@ -463,7 +439,7 @@ class Problem:
         dataset["fitted_data"] = dataset.data - dataset.residual
         return dataset
 
-    def _create_svd(self, name: str, dataset: xr.Dataset):
+    def _create_svd(self, name: str, dataset: xr.Dataset, lsv_dim, rsv_dim):
         """Calculate the SVD of a data matrix in the dataset and add it to the dataset.
 
         Parameters
@@ -473,7 +449,6 @@ class Problem:
         dataset : xr.Dataset
             Dataset containing the data, which will be updated with the SVD values.
         """
-        lsv_dim, rsv_dim = self._preferred_svd_dims(dataset[name])
         data_array: xr.DataArray = self._transpose_dataset(
             dataset[name],
             ordered_dims=[lsv_dim, rsv_dim],

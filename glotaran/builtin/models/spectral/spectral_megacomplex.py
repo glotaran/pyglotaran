@@ -7,19 +7,20 @@ import numpy as np
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
-from glotaran.model import model_attribute
+from glotaran.model import megacomplex
 
 
-@model_attribute(
+@megacomplex(
+    "spectral",
     properties={
         "shape": Dict[str, str],
-    }
+    },
 )
 class SpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         model,
-        dataset_descriptor: DatasetDescriptor,
+        dataset_model: DatasetDescriptor,
         indices: dict[str, int],
         axis: dict[str, np.ndarray],
         **kwargs,
@@ -31,10 +32,10 @@ class SpectralMegacomplex(Megacomplex):
                 raise ModelError(f"More then one shape defined for compartment '{compartment}'")
             compartments.append(compartment)
 
-        dim1 = axis[model.model_dimension].size
+        dim1 = axis[dataset_model.get_model_dimension()].size
         dim2 = len(self.shape)
         matrix = np.zeros((dim1, dim2))
 
         for i, shape in enumerate(self.shape.values()):
-            matrix[:, i] += shape.calculate(axis[model.model_dimension])
+            matrix[:, i] += shape.calculate(axis[dataset_model.get_model_dimension()])
         return compartments, matrix

@@ -17,10 +17,34 @@ from glotaran.analysis.util import find_closest_index
 from glotaran.analysis.util import find_overlap
 from glotaran.analysis.util import reduce_matrix
 from glotaran.model import DatasetDescriptor
+from glotaran.project import Scheme
 
 
 class GroupedProblem(Problem):
     """Represents a problem where the data is grouped."""
+
+    def __init__(self, scheme: Scheme):
+        """Initializes the Problem class from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
+
+        Args:
+            scheme (Scheme): An instance of :class:`glotaran.analysis.scheme.Scheme`
+                which defines your model, parameters, and data
+        """
+        super().__init__(scheme=scheme)
+
+        first_dataset = list(d for d in self.filled_dataset_descriptors.values())[0]
+        self._global_dimension = first_dataset.get_global_dimension()
+        if any(
+            self._global_dimension != d.get_global_dimension()
+            for d in self.filled_dataset_descriptors.values()
+        ):
+            raise ValueError("Cannot group datasets. Global dimensions do not match.")
+        self._model_dimension = first_dataset.get_model_dimension()
+        if any(
+            self._model_dimension != d.get_model_dimension()
+            for d in self.filled_dataset_descriptors.values()
+        ):
+            raise ValueError("Cannot group datasets. Global dimensions do not match.")
 
     def init_bag(self):
         """Initializes a grouped problem bag."""

@@ -48,10 +48,21 @@ class DatasetDescriptor:
                 )
         return self._model_dimension
 
-    def get_global_dimension(self) -> str:
-        if not hasattr(self, "_data"):
-            raise ValueError(f"Data not set for dataset describtor '{self.label}'")
-        return [dim for dim in self._data.data.dims if dim != self.get_model_dimension()][0]
+    def overwrite_model_dimension(self, model_dimension: str):
+        self._model_dimension = model_dimension
 
-    def set_data(self, data: xr.Dataset):
+    def get_global_dimension(self) -> str:
+        if not hasattr(self, "_global_dimension"):
+            if not hasattr(self, "_data"):
+                raise ValueError(f"Data not set for dataset describtor '{self.label}'")
+            self._global_dimension = [
+                dim for dim in self._data.data.dims if dim != self.get_model_dimension()
+            ][0]
+        return self._global_dimension
+
+    def overwrite_global_dimension(self, global_dimension: str):
+        self._global_dimension = global_dimension
+
+    def set_data(self, data: xr.Dataset) -> DatasetDescriptor:
         self._data = data
+        return self
