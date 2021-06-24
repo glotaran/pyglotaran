@@ -118,9 +118,9 @@ def simulate(
                 raise ValueError(f"Missing coordinate '{global_dimension}' in clp.")
             if "clp_label" not in clp.coords:
                 raise ValueError("Missing coordinate 'clp_label' in clp.")
+        elif "clp_label" not in axes:
+            raise ValueError("Missing axis 'clp_label'")
         else:
-            if "clp_label" not in axes:
-                raise ValueError("Missing axis 'clp_label'")
             clp = xr.DataArray(
                 clp,
                 coords=[

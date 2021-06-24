@@ -61,9 +61,8 @@ class ModelProperty(property):
                 for item in value.values():
                     if item not in attr:
                         missing_model.append((self._name, item))
-            else:
-                if value not in attr:
-                    missing_model.append((self._name, value))
+            elif value not in attr:
+                missing_model.append((self._name, value))
         missing_model = [
             f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model
         ]
@@ -111,9 +110,7 @@ class ModelProperty(property):
                     k: getattr(model, self._name)[v].fill(model, parameter)
                     for (k, v) in value.items()
                 }
-            elif isinstance(value, bool):
-                pass
-            else:
+            elif not isinstance(value, bool):
                 value = getattr(model, self._name)[value].fill(model, parameter)
 
         return value
