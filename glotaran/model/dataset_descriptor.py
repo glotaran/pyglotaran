@@ -73,6 +73,9 @@ class DatasetDescriptor:
         self._data = data
         return self
 
+    def get_data(self) -> xr.Dataset:
+        return self._data
+
     def index_dependent(self) -> bool:
         if hasattr(self, "_index_dependent"):
             return self._index_dependent
