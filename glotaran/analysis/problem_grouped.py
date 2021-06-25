@@ -15,6 +15,7 @@ from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import find_closest_index
 from glotaran.analysis.util import find_overlap
 from glotaran.analysis.util import reduce_matrix
+from glotaran.analysis.util import retrieve_clps
 from glotaran.model import DatasetDescriptor
 from glotaran.project import Scheme
 
@@ -345,6 +346,7 @@ class GroupedProblem(Problem):
 
     def _ungroup_clps(self, reduced_clps: list(xr.DataArray)):
         self._reduced_clps = {}
+        self._clps = {}
         for label, matrix in self.matrices.items():
             clp_labels = (
                 [m.coords["clp_label"] for m in self.matrices[label]]
@@ -358,22 +360,42 @@ class GroupedProblem(Problem):
             )
 
             self._reduced_clps[label] = []
-            for i in range(self.data[label].coords[self._global_dimension].size):
-                index_reduced_clps = reduced_clps[i + offset]
+            self._clps[label] = []
+
+            for i, index in enumerate(self.data[label].coords[self._global_dimension]):
+
                 index_clp_labels = clp_labels[i] if self._index_dependent else clp_labels
-                index_clp_labels, _ = xr.align(
+                index_reduced_clps = reduced_clps[i + offset]
+                index_reduced_clp_labels, _ = xr.align(
                     index_clp_labels, index_reduced_clps.coords["clp_label"]
                 )
-                self._reduced_clps[label].append(
-                    index_reduced_clps.sel({"clp_label": index_clp_labels})
+
+                index_reduced_clps = index_reduced_clps.sel(
+                    {"clp_label": index_reduced_clp_labels}
                 )
+                self._reduced_clps[label].append(index_reduced_clps)
+
+                self._clps[label].append(
+                    retrieve_clps(
+                        self.model,
+                        self.parameters,
+                        index_clp_labels,
+                        index_reduced_clps,
+                        index.values,
+                    )
+                )
+
             self._reduced_clps[label] = xr.concat(
                 self.reduced_clps[label], dim=self._global_dimension
             )
             self._reduced_clps[label].coords[self._global_dimension] = self.data[label].coords[
                 self._global_dimension
             ]
-        self._clps = self._reduced_clps
+
+            self._clps[label] = xr.concat(self._clps[label], dim=self._global_dimension)
+            self._clps[label].coords[self._global_dimension] = self.data[label].coords[
+                self._global_dimension
+            ]
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""

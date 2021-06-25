@@ -8,6 +8,7 @@ from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import UngroupedProblemDescriptor
 from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import reduce_matrix
+from glotaran.analysis.util import retrieve_clps
 from glotaran.model import DatasetDescriptor
 
 
@@ -96,29 +97,18 @@ class UngroupedProblem(Problem):
         """Calculates the residuals."""
 
         self._reduced_clps = {}
+        self._clps = {}
         self._weighted_residuals = {}
         self._residuals = {}
 
         for label, problem in self.bag.items():
             self._calculate_residual_for_problem(label, problem)
 
-        #  self._clps = (
-        #      self.model.retrieve_clp_function(
-        #          self.parameters,
-        #          self.clp_labels,
-        #          self.reduced_clp_labels,
-        #          self.reduced_clps,
-        #          self.data,
-        #      )
-        #      if callable(self.model.retrieve_clp_function)
-        #      else self.reduced_clps
-        #  )
-        self._clps = self.reduced_clps
-
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
 
     def _calculate_residual_for_problem(self, label: str, problem: UngroupedProblemDescriptor):
         self._reduced_clps[label] = []
+        self._clps[label] = []
         self._weighted_residuals[label] = []
         self._residuals[label] = []
         data = problem.data
@@ -126,31 +116,41 @@ class UngroupedProblem(Problem):
         model_dimension = dataset_model.get_model_dimension()
         global_dimension = dataset_model.get_global_dimension()
 
-        for i in range(len(problem.global_axis)):
-            matrix = (
+        for i, index in enumerate(problem.global_axis):
+            clp_labels = (
+                self.matrices[label][i].coords["clp_label"]
+                if dataset_model.index_dependent()
+                else self.matrices[label].coords["clp_label"]
+            )
+            reduced_matrix = (
                 self.reduced_matrices[label][i]
                 if dataset_model.index_dependent()
-                else self.reduced_matrices[label].copy()
-            )  # TODO: .copy() or not
+                else self.reduced_matrices[label]
+            )
             if problem.dataset.scale is not None:
-                matrix *= self.filled_dataset_descriptors[label].scale
+                reduced_matrix *= self.filled_dataset_descriptors[label].scale
 
             if problem.weight is not None:
-                for j in range(matrix.shape[1]):
-                    matrix[:, j] *= problem.weight.isel({global_dimension: i}).values
+                for j in range(reduced_matrix.shape[1]):
+                    reduced_matrix[:, j] *= problem.weight.isel({global_dimension: i}).values
 
-            clp, residual = self._residual_function(
-                matrix.values, data.isel({global_dimension: i}).values
+            reduced_clps, residual = self._residual_function(
+                reduced_matrix.values, data.isel({global_dimension: i}).values
             )
-            clp = xr.DataArray(
-                clp, dims=["clp_label"], coords={"clp_label": matrix.coords["clp_label"]}
+            reduced_clps = xr.DataArray(
+                reduced_clps,
+                dims=["clp_label"],
+                coords={"clp_label": reduced_matrix.coords["clp_label"]},
+            )
+            self._reduced_clps[label].append(reduced_clps)
+            self._clps[label].append(
+                retrieve_clps(self.model, self.parameters, clp_labels, reduced_clps, index)
             )
             residual = xr.DataArray(
                 residual,
                 dims=[model_dimension],
-                coords={model_dimension: matrix.coords[model_dimension]},
+                coords={model_dimension: reduced_matrix.coords[model_dimension]},
             )
-            self._reduced_clps[label].append(clp)
             self._weighted_residuals[label].append(residual)
             if problem.weight is not None:
                 self._residuals[label].append(
@@ -158,6 +158,11 @@ class UngroupedProblem(Problem):
                 )
             else:
                 self._residuals[label].append(residual)
+
+        self._reduced_clps[label] = xr.concat(self._reduced_clps[label], dim=global_dimension)
+        self._reduced_clps[label].coords[global_dimension] = data.coords[global_dimension]
+        self._clps[label] = xr.concat(self._clps[label], dim=global_dimension)
+        self._clps[label].coords[global_dimension] = data.coords[global_dimension]
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""
@@ -182,16 +187,17 @@ class UngroupedProblem(Problem):
     def _add_index_dependent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
         model_dimension = self.filled_dataset_descriptors[label].get_model_dimension()
         global_dimension = self.filled_dataset_descriptors[label].get_global_dimension()
-        matrices = xr.concat(self.matrices[label], dim=global_dimension)
-        matrices.coords[global_dimension] = dataset.coords[global_dimension]
-        dataset.coords["clp_label"] = matrices.coords["clp_label"]
+
+        matrix = xr.concat(self.matrices[label], dim=global_dimension)
+        matrix.coords[global_dimension] = dataset.coords[global_dimension]
+        dataset.coords["clp_label"] = matrix.coords["clp_label"]
         dataset["matrix"] = (
             (
                 (global_dimension),
                 (model_dimension),
                 ("clp_label"),
             ),
-            matrices,
+            matrix,
         )
 
     def _add_index_independent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
@@ -208,24 +214,18 @@ class UngroupedProblem(Problem):
     def _add_residual_and_full_clp_to_dataset(self, label: str, dataset: xr.Dataset):
         model_dimension = self.filled_dataset_descriptors[label].get_model_dimension()
         global_dimension = self.filled_dataset_descriptors[label].get_global_dimension()
-        dataset["clp"] = (
-            (
-                (global_dimension),
-                ("clp_label"),
-            ),
-            np.asarray(self.clps[label]),
-        )
+        dataset["clp"] = self.clps[label]
         dataset["weighted_residual"] = (
             (
                 (model_dimension),
                 (global_dimension),
             ),
-            np.transpose(np.asarray(self.weighted_residuals[label])),
+            xr.concat(self.weighted_residuals[label], dim=global_dimension).T,
         )
         dataset["residual"] = (
             (
                 (model_dimension),
                 (global_dimension),
             ),
-            np.transpose(np.asarray(self.residuals[label])),
+            xr.concat(self.residuals[label], dim=global_dimension).T,
         )

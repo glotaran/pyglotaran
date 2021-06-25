@@ -22,15 +22,6 @@ class OnlyConstraint(IntervalProperty):
     """A only constraint sets the calculated matrix row of a compartment to 0
     outside the given intervals."""
 
-
-@model_attribute(
-    has_type=True,
-    no_label=True,
-)
-class ZeroConstraint(OnlyConstraint):
-    """A zero constraint sets the calculated matrix row of a compartment to 0
-    in the given intervals."""
-
     def applies(self, index: Any) -> bool:
         """
         Returns true if the indexx is in one of the intervals.
@@ -44,8 +35,19 @@ class ZeroConstraint(OnlyConstraint):
         applies : bool
 
         """
+        return not super().applies(index)
 
-        return not super().applies()
+
+@model_attribute(
+    properties={
+        "target": str,
+    },
+    has_type=True,
+    no_label=True,
+)
+class ZeroConstraint(IntervalProperty):
+    """A zero constraint sets the calculated matrix row of a compartment to 0
+    in the given intervals."""
 
 
 @model_attribute_typed(

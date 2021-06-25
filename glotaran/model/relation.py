@@ -17,5 +17,5 @@ from glotaran.parameter import Parameter
 class Relation(IntervalProperty):
     """Applies a relation between clps as
 
-    :math:`source = parameter * target`.
+    :math:`target = parameter * source`.
     """

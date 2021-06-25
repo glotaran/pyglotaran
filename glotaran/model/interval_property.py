@@ -10,8 +10,9 @@ from glotaran.model import model_attribute
 
 @model_attribute(
     properties={
-        "interval": {"type": List[Tuple[Any, Any]], "default": None},
+        "interval": {"type": List[Tuple[Any, Any]], "default": None, "allow_none": True},
     },
+    no_label=True,
 )
 class IntervalProperty:
     """Applies a relation between clps as

@@ -82,11 +82,11 @@ def apply_constraints(
     if len(model.constraints) == 0:
         return matrix
 
-    clp_label = list(matrix.coords["clp_label"])
+    clp_labels = matrix.coords["clp_label"].values
     removed_clp = [
-        c.target for c in model.constraints if c.target in clp_label and c.applies(index)
+        c.target for c in model.constraints if c.target in clp_labels and c.applies(index)
     ]
-    reduced_clp_label = [c for c in clp_label if c not in removed_clp]
+    reduced_clp_label = [c for c in clp_labels if c not in removed_clp]
 
     return matrix.sel({"clp_label": reduced_clp_label})
 
@@ -102,23 +102,23 @@ def apply_relations(
     if len(model.relations) == 0:
         return matrix
 
-    clp_label = list(matrix.coords["clp_label"])
-    relation_matrix = np.diagflat([1.0 for _ in clp_label])
+    clp_labels = list(matrix.coords["clp_label"].values)
+    relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
     idx_to_delete = []
     for relation in model.relations:
-        if relation.target in clp_label and relation.applies(index):
+        if relation.target in clp_labels and relation.applies(index):
 
-            if relation.source not in clp_label:
+            if relation.source not in clp_labels:
                 continue
 
             relation = relation.fill(model, parameters)
-            source_idx = clp_label.index(relation.compartment)
-            target_idx = clp_label.index(relation.target)
+            source_idx = clp_labels.index(relation.source)
+            target_idx = clp_labels.index(relation.target)
             relation_matrix[target_idx, source_idx] = relation.parameter
             idx_to_delete.append(target_idx)
 
-    reduced_clp_label = [label for i, label in enumerate(clp_label) if i not in idx_to_delete]
+    reduced_clp_label = [label for i, label in enumerate(clp_labels) if i not in idx_to_delete]
     relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
     return xr.DataArray(
         matrix.values @ relation_matrix,
@@ -128,3 +128,30 @@ def apply_relations(
             model_dimension: matrix.coords[model_dimension],
         },
     )
+
+
+def retrieve_clps(
+    model: Model,
+    parameters: Parameter,
+    clp_labels: xr.DataArray,
+    reduced_clps: xr.DataArray,
+    index: Any | None,
+) -> xr.DataArray:
+    if len(model.relations) == 0 and len(model.constraints) == 0:
+        return reduced_clps
+
+    clps = xr.DataArray(np.zeros((clp_labels.size), dtype=np.float64), coords=[clp_labels])
+    clps.loc[{"clp_label": reduced_clps.coords["clp_label"]}] = reduced_clps.values
+
+    print("ret", clps)
+    for relation in model.relations:
+        relation = relation.fill(model, parameters)
+        print("YYY", relation.target, relation.source, relation.parameter)
+        if relation.target in clp_labels and relation.applies(index):
+            if relation.source not in clp_labels:
+                continue
+            clps.loc[{"clp_label": relation.target}] = relation.parameter * clps.sel(
+                clp_label=relation.source
+            )
+
+    return clps
