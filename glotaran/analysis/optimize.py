@@ -108,11 +108,7 @@ def _create_result(
     parameters = problem.parameters
     covariance_matrix = None
     if success:
-        # robust covariance matrix calculation
-        # Refs:
-        # https://stackoverflow.com/a/67023688/3990615
-        # http://www.ceres-solver.org/nnls_covariance.html#_CPPv4N5ceres10Covariance7Options14algorithm_typeE
-        # https://www.cse.unr.edu/~bebis/CS791E/Notes/SVD.pdf
+        # See PR #706: More robust covariance matrix calculation
         _, jacobian_SV, jacobian_RSV = np.linalg.svd(jacobian, full_matrices=False)
         jacobian_SV_square = jacobian_SV ** 2
         mask = jacobian_SV_square > np.finfo(float).eps
