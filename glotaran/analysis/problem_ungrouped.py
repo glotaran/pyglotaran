@@ -34,18 +34,14 @@ class UngroupedProblem(Problem):
     def calculate_matrices(
         self,
     ) -> tuple[
-        dict[str, list[list[str]] | list[str]],
         dict[str, list[np.ndarray] | np.ndarray],
-        dict[str, list[str]],
         dict[str, list[np.ndarray] | np.ndarray],
     ]:
         """Calculates the model matrices."""
         if self._parameters is None:
             raise ParameterError
 
-        self._clp_labels = {}
         self._matrices = {}
-        self._reduced_clp_labels = {}
         self._reduced_matrices = {}
 
         for label, problem in self.bag.items():
@@ -56,7 +52,7 @@ class UngroupedProblem(Problem):
             else:
                 self._calculate_index_independent_matrix(label, problem, dataset_model)
 
-        return self._clp_labels, self._matrices, self._reduced_clp_labels, self._reduced_matrices
+        return self._matrices, self._reduced_matrices
 
     def _calculate_index_dependent_matrix(
         self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetDescriptor
@@ -177,20 +173,18 @@ class UngroupedProblem(Problem):
         return dataset
 
     def _add_index_dependent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
-        # we assume that the labels are the same, this might not be true in
-        # future models
-        dataset.coords["clp_label"] = self.matrices[label][0].coords["clp_label"]
         model_dimension = self.filled_dataset_descriptors[label].get_model_dimension()
         global_dimension = self.filled_dataset_descriptors[label].get_global_dimension()
-
-        #  dataset["matrix"] = xr.concat(self.matrices[label], dim=global_dimension)
+        matrices = xr.concat(self.matrices[label], dim=global_dimension)
+        matrices.coords[global_dimension] = dataset.coords[global_dimension]
+        dataset.coords["clp_label"] = matrices.coords["clp_label"]
         dataset["matrix"] = (
             (
                 (global_dimension),
                 (model_dimension),
                 ("clp_label"),
             ),
-            self.matrices[label],
+            matrices,
         )
 
     def _add_index_independent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
