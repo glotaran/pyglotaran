@@ -4,10 +4,9 @@ import itertools
 from typing import NamedTuple
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetDescriptor
-from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
 
 
 class LabelAndMatrix(NamedTuple):
@@ -44,79 +43,22 @@ def get_min_max_from_interval(interval, axis):
 
 
 def calculate_matrix(
-    model: Model,
     dataset_descriptor: DatasetDescriptor,
     indices: dict[str, int],
-    axis: dict[str, np.ndarray],
-) -> LabelAndMatrix:
-    clp_labels = None
+) -> xr.DataArray:
     matrix = None
 
     for scale, megacomplex in dataset_descriptor.iterate_megacomplexes():
-        this_clp_labels, this_matrix = megacomplex.calculate_matrix(
-            model, dataset_descriptor, indices, axis
-        )
+        this_matrix = megacomplex.calculate_matrix(dataset_descriptor, indices)
 
         if scale is not None:
             this_matrix *= scale
 
         if matrix is None:
-            clp_labels = this_clp_labels
             matrix = this_matrix
         else:
-            tmp_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
-            tmp_matrix = np.zeros((matrix.shape[0], len(tmp_clp_labels)), dtype=np.float64)
-            for idx, label in enumerate(tmp_clp_labels):
-                if label in clp_labels:
-                    tmp_matrix[:, idx] += matrix[:, clp_labels.index(label)]
-                if label in this_clp_labels:
-                    tmp_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
-            clp_labels = tmp_clp_labels
-            matrix = tmp_matrix
+            matrix, this_matrix = xr.align(matrix, this_matrix, join="outer", copy=False)
+            matrix = matrix.fillna(0)
+            matrix += this_matrix.fillna(0)
 
-    return LabelAndMatrix(clp_labels, matrix)
-
-
-def reduce_matrix(
-    model: Model,
-    label: str,
-    parameters: ParameterGroup,
-    result: LabelAndMatrix,
-    index: float | None,
-) -> LabelAndMatrix:
-    clp_labels = result.clp_label.copy()
-    if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
-        clp_label, matrix = model.constrain_matrix_function(
-            label, parameters, clp_labels, result.matrix, index
-        )
-        return LabelAndMatrix(clp_label, matrix)
-    return LabelAndMatrix(clp_labels, result.matrix)
-
-
-def combine_matrices(labels_and_matrices: list[LabelAndMatrix]) -> LabelAndMatrix:
-    masks = []
-    full_clp_labels = None
-    sizes = []
-    for label_and_matrix in labels_and_matrices:
-        (clp_label, matrix) = label_and_matrix
-        sizes.append(matrix.shape[0])
-        if full_clp_labels is None:
-            full_clp_labels = clp_label
-            masks.append([i for i, _ in enumerate(clp_label)])
-        else:
-            mask = []
-            for c in clp_label:
-                if c not in full_clp_labels:
-                    full_clp_labels.append(c)
-                mask.append(full_clp_labels.index(c))
-            masks.append(mask)
-    dim1 = np.sum(sizes)
-    dim2 = len(full_clp_labels)
-    full_matrix = np.zeros((dim1, dim2), dtype=np.float64)
-    start = 0
-    for i, m in enumerate(labels_and_matrices):
-        end = start + sizes[i]
-        full_matrix[start:end, masks[i]] = m[1]
-        start = end
-
-    return LabelAndMatrix(full_clp_labels, full_matrix)
+    return matrix

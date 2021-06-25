@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import model_attribute
@@ -37,12 +37,10 @@ class Megacomplex:
 
     def calculate_matrix(
         self,
-        model,
-        dataset_descriptor: DatasetDescriptor,
+        dataset_model: DatasetDescriptor,
         indices: dict[str, int],
-        axis: dict[str, np.ndarray],
         **kwargs,
-    ):
+    ) -> xr.DataArray:
         raise NotImplementedError
 
     def index_dependent(self, dataset: DatasetDescriptor) -> bool:

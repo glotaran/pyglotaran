@@ -68,23 +68,20 @@ def simulate(
         ],
     )
     result = result.to_dataset(name="data")
+    filled_dataset.set_data(result)
 
     matrix = (
         [
             calculate_matrix(
-                model,
                 filled_dataset,
                 {global_dimension: index},
-                {model_dimension: model_axis, global_dimension: global_axis},
             )
             for index, _ in enumerate(global_axis)
         ]
         if filled_dataset.index_dependent()
         else calculate_matrix(
-            model,
             filled_dataset,
             {},
-            {model_dimension: model_axis, global_dimension: global_axis},
         )
     )
     if callable(model.constrain_matrix_function):
@@ -96,16 +93,16 @@ def simulate(
             if filled_dataset.index_dependent()
             else model.constrain_matrix_function(dataset, parameters, matrix[0], matrix[1], None)
         )
-    matrix = (
-        [
-            xr.DataArray(mat, coords=[(model_dimension, model_axis), ("clp_label", clp_label)])
-            for clp_label, mat in matrix
-        ]
-        if filled_dataset.index_dependent()
-        else xr.DataArray(
-            matrix[1], coords=[(model_dimension, model_axis), ("clp_label", matrix[0])]
-        )
-    )
+    #  matrix = (
+    #      [
+    #          xr.DataArray(mat, coords=[(model_dimension, model_axis), ("clp_label", clp_label)])
+    #          for clp_label, mat in matrix
+    #      ]
+    #      if filled_dataset.index_dependent()
+    #      else xr.DataArray(
+    #          matrix[1], coords=[(model_dimension, model_axis), ("clp_label", matrix[0])]
+    #      )
+    #  )
 
     if clp is not None:
         if clp.shape[0] != global_axis.size:
