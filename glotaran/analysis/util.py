@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import itertools
 from typing import Any
-from typing import NamedTuple
 
 import numpy as np
 import xarray as xr
@@ -10,11 +9,6 @@ import xarray as xr
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import Parameter
-
-
-class LabelAndMatrix(NamedTuple):
-    clp_label: list[str]
-    matrix: np.ndarray
 
 
 def find_overlap(a, b, rtol=1e-05, atol=1e-08):
@@ -126,7 +120,7 @@ def apply_relations(
 
     reduced_clp_label = [label for i, label in enumerate(clp_label) if i not in idx_to_delete]
     relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
-    reduced_matrix = xr.DataArray(
+    return xr.DataArray(
         matrix.values @ relation_matrix,
         dims=matrix.dims,
         coords={
@@ -134,4 +128,3 @@ def apply_relations(
             model_dimension: matrix.coords[model_dimension],
         },
     )
-    return reduced_matrix
