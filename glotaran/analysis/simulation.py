@@ -51,15 +51,20 @@ def simulate(
         )
 
     filled_dataset = model.dataset[dataset].fill(model, parameters)
+    filled_dataset.overwrite_global_dimension(model.global_dimension)
+    if hasattr(model, "overwrite_index_dependent"):
+        filled_dataset.overwrite_index_dependent(model.overwrite_index_dependent())
 
-    model_dimension = axes[model.model_dimension]
-    global_dimension = axes[model.global_dimension]
+    model_dimension = filled_dataset.get_model_dimension()
+    model_axis = axes[model_dimension]
+    global_dimension = filled_dataset.get_global_dimension()
+    global_axis = axes[global_dimension]
 
     result = xr.DataArray(
         data=0.0,
         coords=[
-            (model.model_dimension, model_dimension),
-            (model.global_dimension, global_dimension),
+            (model_dimension, model_axis),
+            (global_dimension, global_axis),
         ],
     )
     result = result.to_dataset(name="data")
@@ -69,69 +74,67 @@ def simulate(
             calculate_matrix(
                 model,
                 filled_dataset,
-                {model.global_dimension: index},
-                {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
+                {global_dimension: index},
+                {model_dimension: model_axis, global_dimension: global_axis},
             )
-            for index, _ in enumerate(global_dimension)
+            for index, _ in enumerate(global_axis)
         ]
-        if model.index_dependent()
+        if filled_dataset.index_dependent()
         else calculate_matrix(
             model,
             filled_dataset,
             {},
-            {model.model_dimension: model_dimension, model.global_dimension: global_dimension},
+            {model_dimension: model_axis, global_dimension: global_axis},
         )
     )
     if callable(model.constrain_matrix_function):
         matrix = (
             [
-                model.constrain_matrix_function(dataset, parameters, clp, mat, global_dimension[i])
+                model.constrain_matrix_function(dataset, parameters, clp, mat, global_axis[i])
                 for i, (clp, mat) in enumerate(matrix)
             ]
-            if model.index_dependent()
+            if filled_dataset.index_dependent()
             else model.constrain_matrix_function(dataset, parameters, matrix[0], matrix[1], None)
         )
     matrix = (
         [
-            xr.DataArray(
-                mat, coords=[(model.model_dimension, model_dimension), ("clp_label", clp_label)]
-            )
+            xr.DataArray(mat, coords=[(model_dimension, model_axis), ("clp_label", clp_label)])
             for clp_label, mat in matrix
         ]
-        if model.index_dependent()
+        if filled_dataset.index_dependent()
         else xr.DataArray(
-            matrix[1], coords=[(model.model_dimension, model_dimension), ("clp_label", matrix[0])]
+            matrix[1], coords=[(model_dimension, model_axis), ("clp_label", matrix[0])]
         )
     )
 
     if clp is not None:
-        if clp.shape[0] != global_dimension.size:
+        if clp.shape[0] != global_axis.size:
             raise ValueError(
                 f"Size of dimension 0 of clp ({clp.shape[0]}) != size of axis"
-                f" '{model.global_dimension}' ({global_dimension.size})"
+                f" '{global_dimension}' ({global_axis.size})"
             )
         if isinstance(clp, xr.DataArray):
-            if model.global_dimension not in clp.coords:
-                raise ValueError(f"Missing coordinate '{model.global_dimension}' in clp.")
+            if global_dimension not in clp.coords:
+                raise ValueError(f"Missing coordinate '{global_dimension}' in clp.")
             if "clp_label" not in clp.coords:
                 raise ValueError("Missing coordinate 'clp_label' in clp.")
+        elif "clp_label" not in axes:
+            raise ValueError("Missing axis 'clp_label'")
         else:
-            if "clp_label" not in axes:
-                raise ValueError("Missing axis 'clp_label'")
             clp = xr.DataArray(
                 clp,
                 coords=[
-                    (model.global_dimension, global_dimension),
+                    (global_dimension, global_axis),
                     ("clp_label", axes["clp_label"]),
                 ],
             )
     else:
-        clp_labels, clp = model.global_matrix(filled_dataset, global_dimension)
+        clp_labels, clp = model.global_matrix(filled_dataset, global_axis)
         clp = xr.DataArray(
-            clp, coords=[(model.global_dimension, global_dimension), ("clp_label", clp_labels)]
+            clp, coords=[(global_dimension, global_axis), ("clp_label", clp_labels)]
         )
-    for i in range(global_dimension.size):
-        index_matrix = matrix[i] if model.index_dependent() else matrix
+    for i in range(global_axis.size):
+        index_matrix = matrix[i] if filled_dataset.index_dependent() else matrix
         result.data[:, i] = np.dot(
             index_matrix, clp[i].sel(clp_label=index_matrix.coords["clp_label"])
         )
@@ -140,7 +143,7 @@ def simulate(
         if noise_seed is not None:
             np.random.seed(noise_seed)
         result["data"] = (
-            (model.model_dimension, model.global_dimension),
+            (model_dimension, global_dimension),
             np.random.normal(result.data, noise_std_dev),
         )
 

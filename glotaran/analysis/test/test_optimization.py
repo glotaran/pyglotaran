@@ -32,12 +32,12 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     model = suite.model
 
     model.is_grouped = grouped
-    model.is_index_dependent = index_dependent
+    model.megacomplex["m1"].is_index_dependent = index_dependent
+
     print("Grouped:", grouped)
     print("Index dependent:", index_dependent)
 
     assert model.grouped() == grouped
-    assert model.index_dependent() == index_dependent
 
     sim_model = suite.sim_model
     sim_model.is_grouped = grouped
@@ -58,6 +58,10 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     print(initial_parameters)
     print(model.validate(initial_parameters))
     assert model.valid(initial_parameters)
+    assert (
+        model.dataset["dataset1"].fill(model, initial_parameters).index_dependent()
+        == index_dependent
+    )
 
     nr_datasets = 3 if issubclass(suite, ThreeDatasetDecay) else 1
     data = {}

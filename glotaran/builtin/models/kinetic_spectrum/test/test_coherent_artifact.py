@@ -53,8 +53,9 @@ def test_coherent_artifact():
 
     time = np.asarray(np.arange(0, 50, 1.5))
 
-    data = model.dataset["dataset1"].fill(model, parameters)
-    compartments, matrix = calculate_matrix(model, data, {}, {"time": time})
+    dataset_model = model.dataset["dataset1"].fill(model, parameters)
+    dataset_model.overwrite_global_dimension("spectral")
+    compartments, matrix = calculate_matrix(model, dataset_model, {}, {"time": time})
 
     assert len(compartments) == 4
     for i in range(1, 4):

@@ -19,6 +19,7 @@ from glotaran.project import Scheme
 )
 def problem(request) -> Problem:
     model = suite.model
+    model.megacomplex["m1"].is_index_dependent = request.param[1]
     model.is_grouped = request.param[0]
     model.is_index_dependent = request.param[1]
 
@@ -30,11 +31,6 @@ def problem(request) -> Problem:
     )
     scheme = Scheme(model=model, parameters=suite.initial_parameters, data={"dataset1": dataset})
     return GroupedProblem(scheme) if request.param[0] else UngroupedProblem(scheme)
-
-
-def test_problem(problem: Problem):
-    assert problem.grouped == problem.model.is_grouped
-    assert problem.index_dependent == problem.model.is_index_dependent
 
 
 def test_problem_bag(problem: Problem):
@@ -54,7 +50,7 @@ def test_problem_matrices(problem: Problem):
     problem.calculate_matrices()
 
     if problem.grouped:
-        if problem.index_dependent:
+        if problem.model.is_index_dependent:
             assert all(isinstance(m, list) for m in problem.reduced_clp_labels)
             assert all(isinstance(m, np.ndarray) for m in problem.reduced_matrices)
             assert len(problem.reduced_clp_labels) == suite.e_axis.size
@@ -65,7 +61,7 @@ def test_problem_matrices(problem: Problem):
             assert isinstance(problem.reduced_clp_labels["dataset1"], list)
             assert isinstance(problem.reduced_matrices["dataset1"], np.ndarray)
     else:
-        if problem.index_dependent:
+        if problem.model.is_index_dependent:
             assert isinstance(problem.reduced_clp_labels, dict)
             assert isinstance(problem.reduced_matrices, dict)
             assert isinstance(problem.reduced_matrices["dataset1"], list)
@@ -113,23 +109,25 @@ def test_problem_residuals(problem: Problem):
 def test_problem_result_data(problem: Problem):
 
     data = problem.create_result_data()
+    label = "dataset1"
 
-    assert "dataset1" in data
+    assert label in data
 
-    dataset = data["dataset1"]
+    dataset = data[label]
+    dataset_model = problem.filled_dataset_descriptors[label]
 
     assert "clp_label" in dataset.coords
     assert np.array_equal(dataset.clp_label, ["s1", "s2", "s3", "s4"])
 
-    assert problem.model.global_dimension in dataset.coords
-    assert np.array_equal(dataset.coords[problem.model.global_dimension], suite.e_axis)
+    assert dataset_model.get_global_dimension() in dataset.coords
+    assert np.array_equal(dataset.coords[dataset_model.get_global_dimension()], suite.e_axis)
 
-    assert problem.model.model_dimension in dataset.coords
-    assert np.array_equal(dataset.coords[problem.model.model_dimension], suite.c_axis)
+    assert dataset_model.get_model_dimension() in dataset.coords
+    assert np.array_equal(dataset.coords[dataset_model.get_model_dimension()], suite.c_axis)
 
     assert "matrix" in dataset
     matrix = dataset.matrix
-    if problem.index_dependent:
+    if problem.model.is_index_dependent:
         assert len(matrix.shape) == 3
         assert matrix.shape[0] == suite.e_axis.size
         assert matrix.shape[1] == suite.c_axis.size
@@ -157,9 +155,10 @@ def test_problem_result_data(problem: Problem):
 
 def test_prepare_data():
     model_dict = {
+        "megacomplex": {"m1": {"is_index_dependent": False}},
         "dataset": {
             "dataset1": {
-                "megacomplex": [],
+                "megacomplex": ["m1"],
             },
         },
         "weights": [

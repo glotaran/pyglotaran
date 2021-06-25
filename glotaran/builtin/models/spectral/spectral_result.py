@@ -10,14 +10,14 @@ def finalize_spectral_result(model, problem: Problem, data: dict[str, xr.Dataset
 
     for label, dataset in data.items():
 
-        dataset_descriptor = problem.filled_dataset_descriptors[label]
+        dataset_model = problem.filled_dataset_descriptors[label]
 
-        retrieve_spectral_data(problem.model, dataset, dataset_descriptor)
+        retrieve_spectral_data(problem.model, dataset, dataset_model)
 
 
-def retrieve_spectral_data(model, dataset, dataset_descriptor):
+def retrieve_spectral_data(model, dataset, dataset_model):
     spectral_compartments = []
-    for megacomplex in dataset_descriptor.megacomplex:
+    for megacomplex in dataset_model.megacomplex:
         if isinstance(megacomplex, SpectralMegacomplex):
             spectral_compartments += [
                 compartment
@@ -28,14 +28,14 @@ def retrieve_spectral_data(model, dataset, dataset_descriptor):
     dataset.coords["species"] = spectral_compartments
     dataset["species_spectra"] = (
         (
-            model.model_dimension,
+            dataset_model.get_model_dimension(),
             "species",
         ),
         dataset.matrix.sel(clp_label=spectral_compartments).values,
     )
     dataset["species_associated_concentrations"] = (
         (
-            model.global_dimension,
+            dataset_model.get_global_dimension(),
             "species",
         ),
         dataset.clp.sel(clp_label=spectral_compartments).data,

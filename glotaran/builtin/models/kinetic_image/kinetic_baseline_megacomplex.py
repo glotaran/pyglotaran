@@ -5,20 +5,23 @@ import numpy as np
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
-from glotaran.model import model_attribute
+from glotaran.model import megacomplex
 
 
-@model_attribute()
+@megacomplex("time")
 class KineticBaselineMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         model,
-        dataset_descriptor: DatasetDescriptor,
+        dataset_model: DatasetDescriptor,
         indices: dict[str, int],
         axis: dict[str, np.ndarray],
         **kwargs,
     ):
-        size = axis[model.model_dimension].size
-        compartments = [f"{dataset_descriptor.label}_baseline"]
+        size = axis[dataset_model.get_model_dimension()].size
+        compartments = [f"{dataset_model.label}_baseline"]
         matrix = np.ones((size, 1), dtype=np.float64)
         return (compartments, matrix)
+
+    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+        return False

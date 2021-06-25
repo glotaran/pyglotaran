@@ -14,27 +14,29 @@ def finalize_kinetic_image_result(model, problem: Problem, data: dict[str, xr.Da
 
     for label, dataset in data.items():
 
-        dataset_descriptor = problem.filled_dataset_descriptors[label]
+        dataset_model = problem.filled_dataset_descriptors[label]
 
-        retrieve_species_associated_data(problem.model, dataset, dataset_descriptor, "images")
-        retrieve_decay_associated_data(problem.model, dataset, dataset_descriptor, "images")
+        retrieve_species_associated_data(problem.model, dataset, dataset_model, "images")
+        retrieve_decay_associated_data(problem.model, dataset, dataset_model, "images")
 
         if any(
             isinstance(megacomplex, KineticBaselineMegacomplex)
-            for megacomplex in dataset_descriptor.megacomplex
+            for megacomplex in dataset_model.megacomplex
         ):
-            dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
+            dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_model.label}_baseline")
 
-        retrieve_irf(problem.model, dataset, dataset_descriptor, "images")
+        retrieve_irf(problem.model, dataset, dataset_model, "images")
 
 
-def retrieve_species_associated_data(model, dataset, dataset_descriptor, name):
-    compartments = dataset_descriptor.initial_concentration.compartments
+def retrieve_species_associated_data(model, dataset, dataset_model, name):
+    compartments = dataset_model.initial_concentration.compartments
+    global_dimension = dataset_model.get_global_dimension()
+    model_dimension = dataset_model.get_model_dimension()
 
     dataset.coords["species"] = compartments
     dataset[f"species_associated_{name}"] = (
         (
-            model.global_dimension,
+            global_dimension,
             "species",
         ),
         dataset.clp.sel(clp_label=compartments).data,
@@ -44,8 +46,8 @@ def retrieve_species_associated_data(model, dataset, dataset_descriptor, name):
         #  index dependent
         dataset["species_concentration"] = (
             (
-                model.global_dimension,
-                model.model_dimension,
+                global_dimension,
+                model_dimension,
                 "species",
             ),
             dataset.matrix.sel(clp_label=compartments).values,
@@ -54,32 +56,35 @@ def retrieve_species_associated_data(model, dataset, dataset_descriptor, name):
         #  index independent
         dataset["species_concentration"] = (
             (
-                model.model_dimension,
+                model_dimension,
                 "species",
             ),
             dataset.matrix.sel(clp_label=compartments).values,
         )
 
 
-def retrieve_decay_associated_data(model, dataset, dataset_descriptor, name):
+def retrieve_decay_associated_data(model, dataset, dataset_model, name):
     # get_das
     all_das = []
     all_a_matrix = []
     all_k_matrix = []
     all_k_matrix_reduced = []
     all_das_labels = []
-    for megacomplex in dataset_descriptor.megacomplex:
+
+    global_dimension = dataset_model.get_global_dimension()
+
+    for megacomplex in dataset_model.megacomplex:
 
         if isinstance(megacomplex, KineticDecayMegacomplex):
             k_matrix = megacomplex.full_k_matrix()
 
-            compartments = dataset_descriptor.initial_concentration.compartments
+            compartments = dataset_model.initial_concentration.compartments
             compartments = [c for c in compartments if c in k_matrix.involved_compartments()]
 
             matrix = k_matrix.full(compartments)
             matrix_reduced = k_matrix.reduced(compartments)
-            a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
-            rates = k_matrix.rates(dataset_descriptor.initial_concentration)
+            a_matrix = k_matrix.a_matrix(dataset_model.initial_concentration)
+            rates = k_matrix.rates(dataset_model.initial_concentration)
             lifetimes = 1 / rates
 
             das = (
@@ -89,10 +94,10 @@ def retrieve_decay_associated_data(model, dataset, dataset_descriptor, name):
             component_coords = {"rate": ("component", rates), "lifetime": ("component", lifetimes)}
 
             das_coords = component_coords.copy()
-            das_coords[model.global_dimension] = dataset.coords[model.global_dimension]
+            das_coords[global_dimension] = dataset.coords[global_dimension]
             all_das_labels.append(megacomplex.label)
             all_das.append(
-                xr.DataArray(das, dims=(model.global_dimension, "component"), coords=das_coords)
+                xr.DataArray(das, dims=(global_dimension, "component"), coords=das_coords)
             )
             a_matrix_coords = component_coords.copy()
             a_matrix_coords["species"] = compartments
@@ -131,16 +136,18 @@ def retrieve_decay_associated_data(model, dataset, dataset_descriptor, name):
                 dataset[f"k_matrix_reduced_{das_label}"] = all_k_matrix_reduced[i]
 
 
-def retrieve_irf(model, dataset, dataset_descriptor, name):
+def retrieve_irf(model, dataset, dataset_model, name):
 
-    irf = dataset_descriptor.irf
+    irf = dataset_model.irf
+    global_dimension = dataset_model.get_global_dimension()
+    model_dimension = dataset_model.get_model_dimension()
 
     if isinstance(irf, IrfMultiGaussian):
         dataset["irf"] = (
-            (model.model_dimension),
+            (model_dimension),
             irf.calculate(
                 index=0,
-                global_axis=dataset.coords[model.global_dimension],
-                model_axis=dataset.coords[model.model_dimension],
+                global_axis=dataset.coords[global_dimension],
+                model_axis=dataset.coords[model_dimension],
             ).data,
         )

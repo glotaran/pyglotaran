@@ -68,6 +68,7 @@ class OneCompartmentModel:
     axis = {"time": time, "spectral": spectral}
 
     dataset = kinetic_model.dataset["dataset1"].fill(kinetic_model, kinetic_parameters)
+    dataset.overwrite_global_dimension("spectral")
     kinetic_compartments, kinetic_matrix = calculate_matrix(kinetic_model, dataset, {}, axis)
     clp = xr.DataArray(
         kinetic_matrix, coords=[("time", time), ("clp_label", kinetic_compartments)]
@@ -165,6 +166,7 @@ class ThreeCompartmentModel:
     axis = {"time": time, "spectral": spectral}
 
     dataset = kinetic_model.dataset["dataset1"].fill(kinetic_model, kinetic_parameters)
+    dataset.overwrite_global_dimension("spectral")
     kinetic_compartments, kinetic_matrix = calculate_matrix(kinetic_model, dataset, {}, axis)
     clp = xr.DataArray(
         kinetic_matrix, coords=[("time", time), ("clp_label", kinetic_compartments)]

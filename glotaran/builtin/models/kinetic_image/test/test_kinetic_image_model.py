@@ -85,6 +85,7 @@ class OneComponentOneChannelGaussianIrf:
             },
         }
     )
+    assert model.overwrite_index_dependent()
 
     initial_parameters = ParameterGroup.from_list(
         [101e-4, 0.1, 1, [0.1, {"vary": False}], [1, {"vary": False, "non-negative": False}]]
