@@ -7,8 +7,10 @@ from typing import List
 
 from glotaran.deprecation import deprecate
 from glotaran.model.attribute import model_attribute_typed
+from glotaran.model.constraint import Constraint
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.relation import Relation
 from glotaran.model.util import wrap_func_as_method
 from glotaran.model.weight import Weight
 from glotaran.plugin_system.model_registration import register_model
@@ -195,6 +197,8 @@ def model(
         attributes["dataset"] = dataset_type
         attributes["megacomplex"] = megacomplex_cls
         attributes["weights"] = Weight
+        attributes["relations"] = Relation
+        attributes["constraints"] = Constraint
 
         # Set annotations and methods for attributes
         for attr_name, attr_type in attributes.items():
