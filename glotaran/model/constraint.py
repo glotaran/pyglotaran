@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.model import model_attribute
 from glotaran.model import model_attribute_typed
-from glotaran.model.util import IntervalProperty
+from glotaran.model.interval_property import IntervalProperty
 
 if TYPE_CHECKING:
     from typing import Any
