@@ -8,6 +8,7 @@ import xarray as xr
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import megacomplex
 from glotaran.model import model
 from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
@@ -26,7 +27,7 @@ def calculate_e(dataset, axis):
     return (r_compartments, array)
 
 
-@model_attribute()
+@megacomplex("c", properties={"is_index_dependent": bool})
 class SimpleTestMegacomplex(Megacomplex):
     def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
@@ -43,6 +44,9 @@ class SimpleTestMegacomplex(Megacomplex):
                 array[j, i] = (i + j) * axis[j]
         return (r_compartments, array)
 
+    def index_dependent(self, dataset_model):
+        return self.is_index_dependent
+
 
 @model(
     "simple_test",
@@ -56,7 +60,7 @@ class SimpleTestModel(Model):
     pass
 
 
-@model_attribute(properties={})
+@megacomplex("c", properties={"is_index_dependent": bool})
 class SimpleKineticMegacomplex(Megacomplex):
     def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
         assert "c" in axis
@@ -70,6 +74,9 @@ class SimpleKineticMegacomplex(Megacomplex):
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(axis, kinpar))
         return (compartments, array)
+
+    def index_dependent(self, dataset_model):
+        return self.is_index_dependent
 
 
 def calculate_spectral_simple(dataset_descriptor, axis):
@@ -110,11 +117,6 @@ def constrain_matrix_function_typecheck(
     assert all(isinstance(clp_label, str) for clp_label in clp_labels)
     assert isinstance(matrix, np.ndarray)
 
-    if model.index_dependent():
-        assert isinstance(index, float)
-    else:
-        assert index is None
-
     model.constrain_matrix_function_called = True
 
     return (clp_labels, matrix)
@@ -151,21 +153,6 @@ def retrieve_clp_typecheck(
         [[isinstance(label, str) for label in index_labels] for index_labels in dataset_clp_labels]
         for dataset_clp_labels in reduced_clp_labels.values()
     )
-    if model.index_dependent():
-        for dataset_clp_labels in clp_labels.values():
-            assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
-            assert all(
-                [isinstance(label, str) for label in index_label]
-                for index_label in dataset_clp_labels
-            )
-        assert all(
-            [isinstance(index_labels, list) for index_labels in dataset_clp_labels]
-            for dataset_clp_labels in reduced_clp_labels.values()
-        )
-
-    else:
-        for dataset_clp_labels in clp_labels.values():
-            assert all(isinstance(label, str) for label in dataset_clp_labels)
 
     model.retrieve_clp_function_called = True
 
@@ -197,7 +184,7 @@ def additional_penalty_typecheck(
 
     assert isinstance(clp_labels, dict)
     assert isinstance(matrices, dict)
-    if model.index_dependent():
+    if model.megacomplex["m1"].index_dependent(model.dataset["dataset1"]):
         for dataset_clp_labels in clp_labels.values():
             assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
             assert all(
@@ -254,14 +241,12 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     constrain_matrix_function=constrain_matrix_function_typecheck,
     retrieve_clp_function=retrieve_clp_typecheck,
     grouped=lambda model: model.is_grouped,
-    index_dependent=lambda model: model.is_index_dependent,
 )
 class DecayModel(Model):
     additional_penalty_function_called = False
     constrain_matrix_function_called = False
     retrieve_clp_function_called = False
     is_grouped = False
-    is_index_dependent = False
 
 
 @model(
@@ -273,7 +258,6 @@ class DecayModel(Model):
     global_dimension="e",
     megacomplex_types=SimpleKineticMegacomplex,
     grouped=lambda model: model.is_grouped,
-    index_dependent=lambda model: model.is_index_dependent,
     has_additional_penalty_function=lambda model: True,
     additional_penalty_function=additional_penalty_typecheck,
 )
@@ -282,7 +266,6 @@ class GaussianDecayModel(Model):
     constrain_matrix_function_called = False
     retrieve_clp_function_called = False
     is_grouped = False
-    is_index_dependent = False
 
 
 class OneCompartmentDecay:
@@ -294,7 +277,7 @@ class OneCompartmentDecay:
     c_axis = np.arange(0, 150, 1.5)
 
     model_dict = {
-        "megacomplex": {"m1": {}},
+        "megacomplex": {"m1": {"is_index_dependent": False}},
         "dataset": {
             "dataset1": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["1"]}
         },
@@ -313,7 +296,7 @@ class TwoCompartmentDecay:
 
     model = DecayModel.from_dict(
         {
-            "megacomplex": {"m1": {}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "initial_concentration": [],
@@ -340,7 +323,7 @@ class ThreeDatasetDecay:
     c_axis3 = np.arange(0, 150, 1.5)
 
     model_dict = {
-        "megacomplex": {"m1": {}},
+        "megacomplex": {"m1": {"is_index_dependent": False}},
         "dataset": {
             "dataset1": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["1"]},
             "dataset2": {
@@ -387,7 +370,7 @@ class MultichannelMulticomponentDecay:
     sim_model = GaussianDecayModel.from_dict(
         {
             "compartment": ["s1", "s2", "s3", "s4"],
-            "megacomplex": {"m1": {}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "initial_concentration": [],
@@ -403,7 +386,7 @@ class MultichannelMulticomponentDecay:
     model = GaussianDecayModel.from_dict(
         {
             "compartment": ["s1", "s2", "s3", "s4"],
-            "megacomplex": {"m1": {}},
+            "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "initial_concentration": [],

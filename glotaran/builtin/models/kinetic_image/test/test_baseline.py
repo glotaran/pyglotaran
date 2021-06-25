@@ -41,6 +41,7 @@ def test_baseline():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset["dataset1"].fill(model, parameter)
+    dataset.overwrite_global_dimension("pixel")
     compartments, matrix = calculate_matrix(model, dataset, {}, {"time": time})
 
     assert len(compartments) == 2

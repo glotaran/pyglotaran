@@ -24,19 +24,21 @@ def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr
 
     for label, dataset in data.items():
 
-        dataset_descriptor = problem.filled_dataset_descriptors[label]
+        dataset_model = problem.filled_dataset_descriptors[label]
+        global_dimension = dataset_model.get_global_dimension()
+        model_dimension = dataset_model.get_model_dimension()
 
         if any(
             isinstance(megacomplex, KineticBaselineMegacomplex)
-            for megacomplex in dataset_descriptor.megacomplex
+            for megacomplex in dataset_model.megacomplex
         ):
-            dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_descriptor.label}_baseline")
+            dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_model.label}_baseline")
 
-        retrieve_species_associated_data(problem.model, dataset, dataset_descriptor, "spectra")
+        retrieve_species_associated_data(problem.model, dataset, dataset_model, "spectra")
 
-        retrieve_decay_associated_data(problem.model, dataset, dataset_descriptor, "spectra")
+        retrieve_decay_associated_data(problem.model, dataset, dataset_model, "spectra")
 
-        irf = dataset_descriptor.irf
+        irf = dataset_model.irf
         if isinstance(irf, IrfMultiGaussian):
             if isinstance(irf.center, list):
                 dataset["irf_center"] = irf.center[0].value
@@ -56,27 +58,25 @@ def finalize_kinetic_spectrum_result(model, problem: Problem, data: dict[str, xr
                     irf.calculate_dispersion(dataset.coords["spectral"].values)
                 ):
                     dataset[f"center_dispersion_{i+1}"] = (
-                        problem.model.global_dimension,
+                        global_dimension,
                         dispersion,
                     )
         else:
-            retrieve_irf(problem.model, dataset, dataset_descriptor, "images")
+            retrieve_irf(problem.model, dataset, dataset_model, "images")
 
         if any(
             isinstance(megacomplex, CoherentArtifactMegacomplex)
-            for megacomplex in dataset_descriptor.megacomplex
+            for megacomplex in dataset_model.megacomplex
         ):
             coherent_artifact = [
-                c
-                for c in dataset_descriptor.megacomplex
-                if isinstance(c, CoherentArtifactMegacomplex)
+                c for c in dataset_model.megacomplex if isinstance(c, CoherentArtifactMegacomplex)
             ][0]
             dataset.coords["coherent_artifact_order"] = list(range(1, coherent_artifact.order + 1))
             dataset["coherent_artifact_concentration"] = (
-                (problem.model.model_dimension, "coherent_artifact_order"),
+                (model_dimension, "coherent_artifact_order"),
                 dataset.matrix.sel(clp_label=coherent_artifact.compartments()).values,
             )
             dataset["coherent_artifact_associated_spectra"] = (
-                (problem.model.global_dimension, "coherent_artifact_order"),
+                (global_dimension, "coherent_artifact_order"),
                 dataset.clp.sel(clp_label=coherent_artifact.compartments()).values,
             )

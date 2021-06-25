@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 
+from glotaran.deprecation import deprecate
 from glotaran.model.attribute import model_attribute_typed
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.megacomplex import Megacomplex
@@ -403,18 +404,51 @@ def _set_grouped_and_indexdependent(cls, grouped, index_dependent):
         grouped if callable(grouped) else lambda model: grouped,
     )
 
-    setattr(
-        cls,
-        "index_dependent",
-        index_dependent if callable(index_dependent) else lambda model: index_dependent,
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.model.base_model.Model.index_dependent",
+        new_qual_name_usage=("glotaran.model.megacomplex.Megacomplex.index_dependent"),
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 2),
     )
+    def idep(self):
+        return index_dependent(self) if callable(index_dependent) else index_dependent
+
+    setattr(cls, "index_dependent", idep)
+
+    # TODO: This is temporary
+    if callable(index_dependent):
+        setattr(cls, "overwrite_index_dependent", index_dependent)
 
 
 def _set_dimensions(cls, model_type, model_dimension, global_dimension):
+    @property
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.model.base_model.Model.model_dimension",
+        new_qual_name_usage=(
+            "glotaran.model.dataset_descriptor.DatasetDescriptor.get_model_dimension"
+        ),
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 2),
+    )
+    def mdim(self):
+        return model_dimension
+
     if model_dimension is None:
         raise ValueError(f"Model dimension not specified for model {model_type}")
-    setattr(cls, "model_dimension", model_dimension)
+    setattr(cls, "model_dimension", mdim)
+
+    @property
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.model.base_model.Model.global_dimension",
+        new_qual_name_usage=(
+            "glotaran.model.dataset_descriptor.DatasetDescriptor.get_global_dimension"
+        ),
+        to_be_removed_in_version="0.6.0",
+        importable_indices=(2, 2),
+    )
+    def gdim(self):
+        return global_dimension
 
     if global_dimension is None:
         raise ValueError(f"Global dimension not specified for model {model_type}")
-    setattr(cls, "global_dimension", global_dimension)
+    setattr(cls, "global_dimension", gdim)

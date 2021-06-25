@@ -60,6 +60,7 @@ def test_spectral_constraint():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     dataset = model.dataset["dataset1"].fill(model, wanted_parameters)
+    dataset.overwrite_global_dimension("spectral")
     compartments, matrix = calculate_matrix(model, dataset, {}, {"time": time})
 
     assert len(compartments) == 2
