@@ -7,6 +7,7 @@ from glotaran.analysis.problem import ParameterError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import UngroupedProblemDescriptor
 from glotaran.analysis.util import calculate_matrix
+from glotaran.analysis.util import reduce_matrix
 from glotaran.model import DatasetDescriptor
 
 
@@ -34,8 +35,8 @@ class UngroupedProblem(Problem):
     def calculate_matrices(
         self,
     ) -> tuple[
-        dict[str, list[np.ndarray] | np.ndarray],
-        dict[str, list[np.ndarray] | np.ndarray],
+        dict[str, list[xr.DataArray] | xr.DataArray],
+        dict[str, list[xr.DataArray] | xr.DataArray],
     ]:
         """Calculates the model matrices."""
         if self._parameters is None:
@@ -65,7 +66,10 @@ class UngroupedProblem(Problem):
                 {dataset_model.get_global_dimension(): i},
             )
             self._matrices[label].append(matrix)
-            self._reduced_matrices[label].append(matrix)
+            reduced_matrix = reduce_matrix(
+                matrix, self.model, self.parameters, dataset_model.get_model_dimension(), index
+            )
+            self._reduced_matrices[label].append(reduced_matrix)
 
     def _calculate_index_independent_matrix(
         self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetDescriptor
@@ -76,7 +80,10 @@ class UngroupedProblem(Problem):
             {},
         )
         self._matrices[label] = matrix
-        self._reduced_matrices[label] = matrix
+        reduced_matrix = reduce_matrix(
+            matrix, self.model, self.parameters, dataset_model.get_model_dimension(), None
+        )
+        self._reduced_matrices[label] = reduced_matrix
 
     def calculate_residual(
         self,

@@ -14,6 +14,7 @@ from glotaran.analysis.problem import ProblemGroup
 from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import find_closest_index
 from glotaran.analysis.util import find_overlap
+from glotaran.analysis.util import reduce_matrix
 from glotaran.model import DatasetDescriptor
 from glotaran.project import Scheme
 
@@ -206,6 +207,9 @@ class GroupedProblem(Problem):
 
         def reduce_and_combine_matrices(results: tuple[list[xr.DataArray], any]) -> xr.DataArray:
             matrix = xr.concat(results[0], dim=self._model_dimension).fillna(0)
+            matrix = reduce_matrix(
+                matrix, self.model, self.parameters, self._model_dimension, results[1]
+            )
             return matrix
 
         results = list(
@@ -237,7 +241,13 @@ class GroupedProblem(Problem):
                 dataset_model,
                 {},
             )
-            self._reduced_matrices[label] = self._matrices[label]
+            self._reduced_matrices[label] = reduce_matrix(
+                self._matrices[label],
+                self.model,
+                self.parameters,
+                self._model_dimension,
+                None,
+            )
 
         for group_label, group in self.groups.items():
             if group_label not in self._matrices:

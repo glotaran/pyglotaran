@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import itertools
+from typing import Any
 from typing import NamedTuple
 
 import numpy as np
 import xarray as xr
 
 from glotaran.model import DatasetDescriptor
+from glotaran.model import Model
+from glotaran.parameter import Parameter
 
 
 class LabelAndMatrix(NamedTuple):
@@ -44,7 +47,7 @@ def get_min_max_from_interval(interval, axis):
 
 def calculate_matrix(
     dataset_descriptor: DatasetDescriptor,
-    indices: dict[str, int],
+    indices: dict[str, int] | None,
 ) -> xr.DataArray:
     matrix = None
 
@@ -62,3 +65,73 @@ def calculate_matrix(
             matrix += this_matrix.fillna(0)
 
     return matrix
+
+
+def reduce_matrix(
+    matrix: xr.DataArray,
+    model: Model,
+    parameters: Parameter,
+    model_dimension: str,
+    index: Any | None,
+) -> xr.DataArray:
+    matrix = apply_relations(matrix, model, parameters, model_dimension, index)
+    matrix = apply_constraints(matrix, model, index)
+    return matrix
+
+
+def apply_constraints(
+    matrix: xr.DataArray,
+    model: Model,
+    index: Any | None,
+) -> xr.DataArray:
+
+    if len(model.constraints) == 0:
+        return matrix
+
+    clp_label = list(matrix.coords["clp_label"])
+    removed_clp = [
+        c.target for c in model.constraints if c.target in clp_label and c.applies(index)
+    ]
+    reduced_clp_label = [c for c in clp_label if c not in removed_clp]
+
+    return matrix.sel({"clp_label": reduced_clp_label})
+
+
+def apply_relations(
+    matrix: xr.DataArray,
+    model: Model,
+    parameters: Parameter,
+    model_dimension: str,
+    index: Any | None,
+) -> xr.DataArray:
+
+    if len(model.relations) == 0:
+        return matrix
+
+    clp_label = list(matrix.coords["clp_label"])
+    relation_matrix = np.diagflat([1.0 for _ in clp_label])
+
+    idx_to_delete = []
+    for relation in model.relations:
+        if relation.target in clp_label and relation.applies(index):
+
+            if relation.source not in clp_label:
+                continue
+
+            relation = relation.fill(model, parameters)
+            source_idx = clp_label.index(relation.compartment)
+            target_idx = clp_label.index(relation.target)
+            relation_matrix[target_idx, source_idx] = relation.parameter
+            idx_to_delete.append(target_idx)
+
+    reduced_clp_label = [label for i, label in enumerate(clp_label) if i not in idx_to_delete]
+    relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
+    reduced_matrix = xr.DataArray(
+        matrix.values @ relation_matrix,
+        dims=matrix.dims,
+        coords={
+            "clp_label": reduced_clp_label,
+            model_dimension: matrix.coords[model_dimension],
+        },
+    )
+    return reduced_matrix

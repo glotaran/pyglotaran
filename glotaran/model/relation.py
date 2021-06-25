@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from glotaran.model import model_attribute
-from glotaran.model.util import IntervalProperty
+from glotaran.model.interval_property import IntervalProperty
 from glotaran.parameter import Parameter
 
 
