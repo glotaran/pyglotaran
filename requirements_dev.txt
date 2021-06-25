@@ -3,7 +3,7 @@ pip>=18.0
 wheel>=0.30.0
 
 # glotaran setup dependencies
-asteval==0.9.23
+asteval==0.9.25
 numpy==1.20.3
 scipy==1.6.3
 click==8.0.1
