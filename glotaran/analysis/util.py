@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import itertools
 from typing import Any
-from typing import NamedTuple
 
 import numpy as np
 import xarray as xr
@@ -10,11 +9,6 @@ import xarray as xr
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import Parameter
-
-
-class LabelAndMatrix(NamedTuple):
-    clp_label: list[str]
-    matrix: np.ndarray
 
 
 def find_overlap(a, b, rtol=1e-05, atol=1e-08):
