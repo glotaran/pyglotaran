@@ -77,7 +77,6 @@ class SimpleKineticMegacomplex(Megacomplex):
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(axis, kinpar))
         return xr.DataArray(array, coords=(("c", axis), ("clp_label", compartments)))
-        return (compartments, array)
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent

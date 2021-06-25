@@ -120,7 +120,7 @@ def apply_relations(
 
     reduced_clp_label = [label for i, label in enumerate(clp_label) if i not in idx_to_delete]
     relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
-    reduced_matrix = xr.DataArray(
+    return xr.DataArray(
         matrix.values @ relation_matrix,
         dims=matrix.dims,
         coords={
@@ -128,4 +128,3 @@ def apply_relations(
             model_dimension: matrix.coords[model_dimension],
         },
     )
-    return reduced_matrix
