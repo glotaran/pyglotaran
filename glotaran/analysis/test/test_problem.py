@@ -100,6 +100,7 @@ def test_problem_residuals(problem: Problem):
 
 def test_problem_result_data(problem: Problem):
 
+    print("Grouped", problem.model.is_grouped, "Indexdep", problem.model.is_index_dependent)
     data = problem.create_result_data()
     label = "dataset1"
 
