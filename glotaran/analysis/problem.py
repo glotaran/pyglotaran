@@ -434,7 +434,7 @@ class Problem:
         dataset["fitted_data"] = dataset.data - dataset.residual
         return dataset
 
-    def _create_svd(self, name: str, dataset: xr.Dataset, lsv_dim, rsv_dim):
+    def _create_svd(self, name: str, dataset: xr.Dataset, lsv_dim: str, rsv_dim: str):
         """Calculate the SVD of a data matrix in the dataset and add it to the dataset.
 
         Parameters
