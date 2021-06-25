@@ -13,7 +13,7 @@ Welcome to pyglotaran's documentation!
    introduction
    installation
    notebooks/quickstart/quickstart
-   history
+   changelog
    authors
 
 .. toctree::

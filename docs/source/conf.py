@@ -51,6 +51,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "nbsphinx",
     "sphinx_last_updated_by_git",
+    "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
 ]
@@ -70,8 +71,8 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
+# source_suffix = ".rst"
 
 linkcheck_ignore = [
     r"https://github\.com/.+?#.+",
