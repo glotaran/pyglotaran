@@ -22,6 +22,8 @@ class IntegrationTwoDatasets:
     https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/ex_two_datasets
     """
 
+    timeout = 300
+
     def setup(self):
         dataset1 = load_dataset(SCRIPT_DIR / "data/data1.ascii")
         dataset2 = load_dataset(SCRIPT_DIR / "data/data2.ascii")
@@ -69,3 +71,9 @@ class IntegrationTwoDatasets:
         _create_result(
             self.problem, self.ls_result, self.free_parameter_labels, self.termination_reason
         )
+
+
+if __name__ == "__main__":
+    test = IntegrationTwoDatasets()
+    test.setup()
+    test.time_optimize()
