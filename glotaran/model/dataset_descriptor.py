@@ -81,6 +81,14 @@ class DatasetDescriptor:
             return self._index_dependent
         return any(m.index_dependent(self) for m in self.megacomplex)
 
+    def set_coords(self, coords: xr.Dataset):
+        self._coords = coords
+
+    def get_coords(self) -> xr.Dataset:
+        if hasattr(self, "_coords"):
+            return self._coords
+        return self._data.coords
+
     @deprecate(
         deprecated_qual_name_usage=(
             "glotaran.model.dataset_descriptor.DatasetDescriptor.overwrite_index_dependent"
