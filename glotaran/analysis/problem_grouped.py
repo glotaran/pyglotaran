@@ -356,7 +356,7 @@ class GroupedProblem(Problem):
     def _ungroup_clps(self, clps: xr.DataArray, reduced_clps: xr.DataArray):
         self._reduced_clps = {}
         self._clps = {}
-        for label, matrix in self.matrices.items():
+        for label in self.matrices:
             clp_labels = (
                 [m.coords["clp_label"] for m in self.matrices[label]]
                 if self._index_dependent
@@ -371,7 +371,7 @@ class GroupedProblem(Problem):
             self._reduced_clps[label] = []
             self._clps[label] = []
 
-            for i, index in enumerate(self.data[label].coords[self._global_dimension]):
+            for i in range(self.data[label].coords[self._global_dimension].size):
 
                 index_clp_labels = clp_labels[i] if self._index_dependent else clp_labels
                 index_clps = clps[i + offset]

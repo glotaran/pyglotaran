@@ -64,5 +64,3 @@ class Constraint:
     There are two types: zero and equal. See the documentation of
     the respective classes for details.
     """
-
-    pass

@@ -46,7 +46,6 @@ def test_constraint(index_dependent, grouped):
     assert isinstance(problem.additional_penalty, np.ndarray)
     assert problem.additional_penalty.size == 1
     assert problem.additional_penalty[0] != 0
-    problem.full_penalty
     assert isinstance(problem.full_penalty, np.ndarray)
     assert (
         problem.full_penalty.size
