@@ -44,7 +44,6 @@ class SimpleTestMegacomplex(Megacomplex):
             for j in range(axis.shape[0]):
                 array[j, i] = (i + j) * axis[j]
         return xr.DataArray(array, coords=(("c", axis), ("clp_label", r_compartments)))
-        #  return (r_compartments, array)
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent

@@ -38,8 +38,6 @@ def test_constraint(index_dependent, grouped):
         reduced_matrix = problem.reduced_matrices["dataset1"]
     matrix = problem.matrices["dataset1"][0] if index_dependent else problem.matrices["dataset1"]
     clps = problem.clps["dataset1"]
-    matrix = problem.matrices["dataset1"][0] if index_dependent else problem.matrices["dataset1"]
-    clps = problem.clps["dataset1"]
 
     assert "s2" not in reduced_clps.coords["clp_label"]
     assert "s2" not in reduced_matrix.coords["clp_label"]
