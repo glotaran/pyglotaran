@@ -48,7 +48,7 @@ jobs:
           git remote add upstream https://github.com/glotaran/pyglotaran
           git fetch upstream
           pushd benchmark
-          asv run v0.4.0..HEAD --machine gh_action
+          asv run v0.4.0^..HEAD --machine gh_action
           asv publish
 
       - name: Checkout benchmark result repo
