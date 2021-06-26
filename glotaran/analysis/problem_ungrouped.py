@@ -6,6 +6,7 @@ import xarray as xr
 from glotaran.analysis.problem import ParameterError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import UngroupedProblemDescriptor
+from glotaran.analysis.util import calculate_clp_penalties
 from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.util import retrieve_clps
@@ -100,10 +101,14 @@ class UngroupedProblem(Problem):
         self._clps = {}
         self._weighted_residuals = {}
         self._residuals = {}
+        self._additional_penalty = []
 
         for label, problem in self.bag.items():
             self._calculate_residual_for_problem(label, problem)
 
+        self._additional_penalty = (
+            np.concatenate(self._additional_penalty) if len(self._additional_penalty) != 0 else []
+        )
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
 
     def _calculate_residual_for_problem(self, label: str, problem: UngroupedProblemDescriptor):
@@ -163,6 +168,11 @@ class UngroupedProblem(Problem):
         self._reduced_clps[label].coords[global_dimension] = data.coords[global_dimension]
         self._clps[label] = xr.concat(self._clps[label], dim=global_dimension)
         self._clps[label].coords[global_dimension] = data.coords[global_dimension]
+        additional_penalty = calculate_clp_penalties(
+            self.model, self.parameters, self._clps[label], global_dimension
+        )
+        if additional_penalty.size != 0:
+            self._additional_penalty.append(additional_penalty)
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""
@@ -229,3 +239,18 @@ class UngroupedProblem(Problem):
             ),
             xr.concat(self.residuals[label], dim=global_dimension).T,
         )
+
+    @property
+    def full_penalty(self) -> np.ndarray:
+        if self._full_penalty is None:
+            residuals = self.weighted_residuals
+            additional_penalty = self.additional_penalty
+            print(residuals)
+            residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
+
+            self._full_penalty = (
+                np.concatenate((np.concatenate(residuals), additional_penalty))
+                if additional_penalty is not None
+                else np.concatenate(residuals)
+            )
+        return self._full_penalty

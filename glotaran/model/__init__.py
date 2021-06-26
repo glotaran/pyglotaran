@@ -7,6 +7,7 @@ common model items.
 from glotaran.model.attribute import model_attribute
 from glotaran.model.attribute import model_attribute_typed
 from glotaran.model.base_model import Model
+from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.constraint import OnlyConstraint
 from glotaran.model.constraint import ZeroConstraint

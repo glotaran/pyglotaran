@@ -7,6 +7,7 @@ from typing import List
 
 from glotaran.deprecation import deprecate
 from glotaran.model.attribute import model_attribute_typed
+from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.megacomplex import Megacomplex
@@ -199,6 +200,7 @@ def model(
         attributes["weights"] = Weight
         attributes["relations"] = Relation
         attributes["constraints"] = Constraint
+        attributes["clp_area_penalties"] = EqualAreaPenalty
 
         # Set annotations and methods for attributes
         for attr_name, attr_type in attributes.items():

@@ -8,7 +8,7 @@ import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
-from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 
 def find_overlap(a, b, rtol=1e-05, atol=1e-08):
@@ -64,7 +64,7 @@ def calculate_matrix(
 def reduce_matrix(
     matrix: xr.DataArray,
     model: Model,
-    parameters: Parameter,
+    parameters: ParameterGroup,
     model_dimension: str,
     index: Any | None,
 ) -> xr.DataArray:
@@ -94,7 +94,7 @@ def apply_constraints(
 def apply_relations(
     matrix: xr.DataArray,
     model: Model,
-    parameters: Parameter,
+    parameters: ParameterGroup,
     model_dimension: str,
     index: Any | None,
 ) -> xr.DataArray:
@@ -132,7 +132,7 @@ def apply_relations(
 
 def retrieve_clps(
     model: Model,
-    parameters: Parameter,
+    parameters: ParameterGroup,
     clp_labels: xr.DataArray,
     reduced_clps: xr.DataArray,
     index: Any | None,
@@ -155,3 +155,50 @@ def retrieve_clps(
             )
 
     return clps
+
+
+def calculate_clp_penalties(
+    model: Model,
+    parameters: ParameterGroup,
+    clps: xr.DataArray,
+    global_dimension: str,
+) -> np.ndarray:
+
+    penalties = []
+    for penalty in model.clp_area_penalties:
+        if (
+            penalty.source in clps.coords["clp_label"]
+            and penalty.target in clps.coords["clp_label"]
+        ):
+            penalty = penalty.fill(model, parameters)
+
+            source_area = xr.concat(
+                [
+                    clps.sel(
+                        {
+                            "clp_label": penalty.source,
+                            global_dimension: slice(interval[0], interval[1]),
+                        }
+                    )
+                    for interval in penalty.source_intervals
+                ],
+                dim=global_dimension,
+            )
+
+            target_area = xr.concat(
+                [
+                    clps.sel(
+                        {
+                            "clp_label": penalty.target,
+                            global_dimension: slice(interval[0], interval[1]),
+                        }
+                    )
+                    for interval in penalty.target_intervals
+                ],
+                dim=global_dimension,
+            )
+
+            area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
+            penalties.append(area_penalty * penalty.weight)
+
+    return np.asarray(penalties)

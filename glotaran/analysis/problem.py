@@ -217,23 +217,12 @@ class Problem:
         self,
     ) -> dict[str, list[float]]:
         if self._additional_penalty is None:
-            self.calculate_additional_penalty()
+            self.calculate_residual()
         return self._additional_penalty
 
     @property
     def full_penalty(self) -> np.ndarray:
-        if self._full_penalty is None:
-            residuals = self.weighted_residuals
-            additional_penalty = self.additional_penalty
-            if not self.grouped:
-                residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
-
-            self._full_penalty = (
-                np.concatenate((np.concatenate(residuals), additional_penalty))
-                if additional_penalty is not None
-                else np.concatenate(residuals)
-            )
-        return self._full_penalty
+        raise NotImplementedError
 
     @property
     def cost(self) -> float:
@@ -351,24 +340,6 @@ class Problem:
 
     def calculate_residual(self):
         raise NotImplementedError
-
-    def calculate_additional_penalty(self) -> np.ndarray | dict[str, np.ndarray]:
-        """Calculates additional penalties by calling the model.additional_penalty function."""
-        #  if (
-        #      callable(self.model.has_additional_penalty_function)
-        #      and self.model.has_additional_penalty_function()
-        #  ):
-        #      self._additional_penalty = self.model.additional_penalty_function(
-        #          self.parameters,
-        #          self.clp_labels,
-        #          self.clps,
-        #          self.matrices,
-        #          self.data,
-        #          self._scheme.group_tolerance,
-        #      )
-        #  else:
-        self._additional_penalty = None
-        return self._additional_penalty
 
     def create_result_data(
         self, copy: bool = True, history_index: int | None = None

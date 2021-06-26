@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 
 from glotaran.analysis.problem_grouped import GroupedProblem
@@ -11,7 +13,7 @@ from glotaran.project import Scheme
 @pytest.mark.parametrize("index_dependent", [True, False])
 @pytest.mark.parametrize("grouped", [True, False])
 def test_constraint(index_dependent, grouped):
-    model = suite.model
+    model = deepcopy(suite.model)
     model.megacomplex["m1"].is_index_dependent = index_dependent
     model.constraints.append(ZeroConstraint.from_dict({"target": "s2"}))
 

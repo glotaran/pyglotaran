@@ -69,10 +69,11 @@ def test_problem_matrices(problem: Problem):
 
 
 def test_problem_residuals(problem: Problem):
+    print("Grouped", problem.model.is_grouped, "Indexdep", problem.model.is_index_dependent)
     problem.calculate_residual()
     if problem.grouped:
         assert isinstance(problem.residuals, list)
-        assert all(isinstance(r, xr.DataArray) for r in problem.residuals)
+        assert all(isinstance(r, np.ndarray) for r in problem.residuals)
         assert len(problem.residuals) == suite.e_axis.size
     else:
         assert isinstance(problem.residuals, dict)
@@ -87,15 +88,6 @@ def test_problem_residuals(problem: Problem):
     assert "dataset1" in problem.clps
     assert all(isinstance(c, xr.DataArray) for c in problem.clps["dataset1"])
     assert len(problem.clps["dataset1"]) == suite.e_axis.size
-    # TODO: reactivate
-    #  assert isinstance(problem.additional_penalty, np.ndarray)
-    #  assert problem.additional_penalty.size == 1
-    #  assert problem.additional_penalty[0] == 0.1
-    #  assert isinstance(problem.full_penalty, np.ndarray)
-    #  assert (
-    #      problem.full_penalty.size
-    #      == (suite.c_axis.size * suite.e_axis.size) + problem.additional_penalty.size
-    #  )
 
 
 def test_problem_result_data(problem: Problem):
