@@ -71,3 +71,9 @@ class IntegrationTwoDatasets:
         _create_result(
             self.problem, self.ls_result, self.free_parameter_labels, self.termination_reason
         )
+
+
+if __name__ == "__main__":
+    test = IntegrationTwoDatasets()
+    test.setup()
+    test.time_optimize()
