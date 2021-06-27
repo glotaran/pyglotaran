@@ -63,8 +63,8 @@ def simulate(
     result = xr.DataArray(
         data=0.0,
         coords=[
-            (model_dimension, model_axis),
-            (global_dimension, global_axis),
+            (model_dimension, model_axis.data),
+            (global_dimension, global_axis.data),
         ],
     )
     result = result.to_dataset(name="data")

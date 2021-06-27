@@ -22,7 +22,7 @@ class KineticBaselineMegacomplex(Megacomplex):
         compartments = [f"{dataset_model.label}_baseline"]
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return xr.DataArray(
-            matrix, coords=((model_dimension, model_axis), ("clp_label", compartments))
+            matrix, coords=((model_dimension, model_axis.data), ("clp_label", compartments))
         )
 
     def index_dependent(self, dataset: DatasetDescriptor) -> bool:

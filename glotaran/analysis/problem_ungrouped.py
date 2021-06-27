@@ -207,7 +207,7 @@ class UngroupedProblem(Problem):
                 (model_dimension),
                 ("clp_label"),
             ),
-            matrix,
+            matrix.data,
         )
 
     def _add_index_independent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
@@ -218,7 +218,7 @@ class UngroupedProblem(Problem):
                 (model_dimension),
                 ("clp_label"),
             ),
-            self.matrices[label],
+            self.matrices[label].data,
         )
 
     def _add_residual_and_full_clp_to_dataset(self, label: str, dataset: xr.Dataset):
@@ -230,14 +230,14 @@ class UngroupedProblem(Problem):
                 (model_dimension),
                 (global_dimension),
             ),
-            xr.concat(self.weighted_residuals[label], dim=global_dimension).T,
+            xr.concat(self.weighted_residuals[label], dim=global_dimension).T.data,
         )
         dataset["residual"] = (
             (
                 (model_dimension),
                 (global_dimension),
             ),
-            xr.concat(self.residuals[label], dim=global_dimension).T,
+            xr.concat(self.residuals[label], dim=global_dimension).T.data,
         )
 
     @property

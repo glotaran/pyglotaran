@@ -43,7 +43,7 @@ class SimpleTestMegacomplex(Megacomplex):
             r_compartments.append(compartments[i])
             for j in range(axis.shape[0]):
                 array[j, i] = (i + j) * axis[j]
-        return xr.DataArray(array, coords=(("c", axis), ("clp_label", r_compartments)))
+        return xr.DataArray(array, coords=(("c", axis.data), ("clp_label", r_compartments)))
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
@@ -75,7 +75,7 @@ class SimpleKineticMegacomplex(Megacomplex):
         else:
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(axis, kinpar))
-        return xr.DataArray(array, coords=(("c", axis), ("clp_label", compartments)))
+        return xr.DataArray(array, coords=(("c", axis.data), ("clp_label", compartments)))
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent

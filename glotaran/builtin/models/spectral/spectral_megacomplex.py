@@ -41,7 +41,7 @@ class SpectralMegacomplex(Megacomplex):
         for i, shape in enumerate(self.shape.values()):
             matrix[:, i] += shape.calculate(model_axis.values)
         return xr.DataArray(
-            matrix, coords=((model_dimension, model_axis), ("clp_label", compartments))
+            matrix, coords=((model_dimension, model_axis.data), ("clp_label", compartments))
         )
 
     def index_dependent(self, dataset: DatasetDescriptor) -> bool:
