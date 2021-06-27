@@ -9,17 +9,15 @@ from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
-from glotaran.model import megacomplex
-from glotaran.parameter import Parameter
 
 
-@megacomplex(
-    "time",
-    properties={
-        "order": {"type": int},
-        "width": {"type": Parameter, "allow_none": True},
-    },
-)
+#  @megacomplex(
+#      "time",
+#      properties={
+#          "order": {"type": int},
+#          "width": {"type": Parameter, "allow_none": True},
+#      },
+#  )
 class CoherentArtifactMegacomplex(Megacomplex):
     def calculate_matrix(
         self,

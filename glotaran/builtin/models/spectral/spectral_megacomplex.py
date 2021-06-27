@@ -1,22 +1,19 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import numpy as np
 import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
-from glotaran.model import megacomplex
 
 
-@megacomplex(
-    "spectral",
-    properties={
-        "shape": Dict[str, str],
-    },
-)
+#  @megacomplex(
+#      "spectral",
+#      properties={
+#          "shape": Dict[str, str],
+#      },
+#  )
 class SpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
