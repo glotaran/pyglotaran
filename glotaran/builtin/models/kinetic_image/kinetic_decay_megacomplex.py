@@ -1,8 +1,6 @@
 """This package contains the kinetic megacomplex item."""
 from __future__ import annotations
 
-from typing import List
-
 import numba as nb
 import numpy as np
 import xarray as xr
@@ -11,15 +9,14 @@ from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
-from glotaran.model import megacomplex
 
 
-@megacomplex(
-    "time",
-    properties={
-        "k_matrix": List[str],
-    },
-)
+#  @megacomplex(
+#      "time",
+#      properties={
+#          "k_matrix": List[str],
+#      },
+#  )
 class KineticDecayMegacomplex(Megacomplex):
     """A Megacomplex with one or more K-Matrices."""
 

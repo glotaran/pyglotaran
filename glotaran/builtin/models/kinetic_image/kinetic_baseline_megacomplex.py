@@ -6,10 +6,9 @@ import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
-from glotaran.model import megacomplex
 
 
-@megacomplex("time")
+#  @megacomplex("time")
 class KineticBaselineMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
