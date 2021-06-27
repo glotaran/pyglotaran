@@ -6,7 +6,11 @@ from typing import Tuple
 from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
 from glotaran.model import model_attribute
+from glotaran.model.clp_penalties import EqualAreaPenalty
+from glotaran.model.constraint import Constraint
 from glotaran.model.model import Model
+from glotaran.model.relation import Relation
+from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 
 #  import pytest
@@ -47,32 +51,73 @@ class MockMegacomplex2(Megacomplex):
     pass
 
 
+@megacomplex("model", items={"test_item3": List[MockItem]})
+class MockMegacomplex3(Megacomplex):
+    pass
+
+
+@megacomplex("model", items={"test_item4": Dict[str, MockItem]})
+class MockMegacomplex4(Megacomplex):
+    pass
+
+
 def test_model_init():
-    model = Model(megacomplex_types={"type1": MockMegacomplex1, "type2": MockMegacomplex2})
+    model = Model(
+        megacomplex_types={
+            "type1": MockMegacomplex1,
+            "type2": MockMegacomplex2,
+            "type3": MockMegacomplex3,
+            "type4": MockMegacomplex4,
+        }
+    )
 
     assert model.default_megacomplex == "type1"
 
-    assert len(model.megacomplex_types) == 2
+    assert len(model.megacomplex_types) == 4
     assert "type1" in model.megacomplex_types
     assert model.megacomplex_types["type1"] == MockMegacomplex1
     assert "type2" in model.megacomplex_types
     assert model.megacomplex_types["type2"] == MockMegacomplex2
+
     assert hasattr(model, "test_item1")
     assert isinstance(model.test_item1, dict)
+    assert "test_item1" in model._model_items
+    assert issubclass(model._model_items["test_item1"], MockItem)
+
     assert hasattr(model, "test_item2")
     assert isinstance(model.test_item2, list)
+    assert "test_item2" in model._model_items
+    assert issubclass(model._model_items["test_item2"], MockItemNoLabel)
+
+    assert hasattr(model, "test_item3")
+    assert isinstance(model.test_item3, dict)
+    assert "test_item3" in model._model_items
+    assert issubclass(model._model_items["test_item3"], MockItem)
+
+    assert hasattr(model, "test_item4")
+    assert isinstance(model.test_item4, dict)
+    assert "test_item3" in model._model_items
+    assert issubclass(model._model_items["test_item4"], MockItem)
 
     assert hasattr(model, "clp_area_penalties")
     assert isinstance(model.clp_area_penalties, list)
+    assert "clp_area_penalties" in model._model_items
+    assert issubclass(model._model_items["clp_area_penalties"], EqualAreaPenalty)
 
     assert hasattr(model, "constraints")
     assert isinstance(model.constraints, list)
+    assert "constraints" in model._model_items
+    assert issubclass(model._model_items["constraints"], Constraint)
 
     assert hasattr(model, "relations")
     assert isinstance(model.relations, list)
+    assert "relations" in model._model_items
+    assert issubclass(model._model_items["relations"], Relation)
 
     assert hasattr(model, "weights")
     assert isinstance(model.weights, list)
+    assert "weights" in model._model_items
+    assert issubclass(model._model_items["weights"], Weight)
 
 
 #
