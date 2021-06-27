@@ -5,6 +5,8 @@ from typing import Dict
 from typing import List
 
 import xarray as xr
+from typing_inspect import get_args
+from typing_inspect import is_generic_type
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import model_attribute
@@ -23,23 +25,26 @@ def megacomplex(
     :class:`glotaran.model.Megacomplex`. It registers the megacomplex model
     and makes it available in analysis models.
     """
-    # TODO: this is temporary and will change in follow up PR
     properties = properties if properties is not None else {}
     properties["dimension"] = {"type": str, "default": dimension}
 
     items = items if items is not None else {}
     for name, item in items.items():
+        item_type = item["type"] if isinstance(item, dict) else item
         property_type = str
 
-        if hasattr(item, "_name") and item._name == "List":
-            property_type = List[str]
-
-        elif hasattr(item, "_name") and item._name == "Dict":
-            property_type = Dict[str, str]
+        if is_generic_type(item_type):
+            if item_type._name == "List":
+                property_type = List[str]
+                item_type = get_args(item_type)[0]
+            elif item_type._name == "Dict":
+                property_type = Dict[str, str]
+                item_type = get_args(item_type)[1]
 
         property_dict = item.copy() if isinstance(item, dict) else {}
         property_dict["type"] = property_type
         properties[name] = property_dict
+        items[name] = item_type
 
     def decorator(cls):
 
