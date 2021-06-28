@@ -3,15 +3,15 @@ pip>=18.0
 wheel>=0.30.0
 
 # glotaran setup dependencies
-asteval==0.9.23
-numpy==1.20.3
-scipy==1.6.3
+asteval==0.9.25
+numpy==1.21.0
+scipy==1.7.0
 click==8.0.1
 numba==0.53.1
-pandas==1.2.4
+pandas==1.2.5
 pyyaml==5.4.1
 xarray==0.18.2
-netCDF4==1.5.6
+netCDF4==1.5.7
 setuptools==41.2
 sdtfile==2021.3.21
 tabulate==0.8.9
