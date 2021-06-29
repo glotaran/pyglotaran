@@ -124,5 +124,6 @@ repos:
     rev: v2.1.0
     hooks:
       - id: codespell
-        files: ".py|.rst|.ipynb"
+        types: [file]
+        types_or: [python, pyi, markdown, rst]
         args: [-L doas]
