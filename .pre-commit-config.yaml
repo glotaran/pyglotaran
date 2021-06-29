@@ -125,5 +125,5 @@ repos:
     hooks:
       - id: codespell
         types: [file]
-        types_or: [python, pyi, markdown, rst]
+        types_or: [python, pyi, markdown, rst, jupyter]
         args: [-L doas]
