@@ -26,12 +26,12 @@ def test_single_dataset():
     parameters = ParameterGroup.from_list([1, 10])
     print(model.validate(parameters))
     assert model.valid(parameters)
-    axis_e = [1, 2, 3]
-    axis_c = [5, 7, 9, 12]
+    global_axis = [1, 2, 3]
+    model_axis = [5, 7, 9, 12]
 
     data = {
         "dataset1": xr.DataArray(
-            np.ones((3, 4)), coords=[("e", axis_e), ("c", axis_c)]
+            np.ones((3, 4)), coords=[("global", global_axis), ("model", model_axis)]
         ).to_dataset(name="data")
     }
 
@@ -43,9 +43,9 @@ def test_single_dataset():
     assert len(bag) == 3
     assert all(p.data.size == 4 for p in bag)
     assert all(p.descriptor[0].label == "dataset1" for p in bag)
-    assert all(all(p.descriptor[0].axis["c"] == axis_c) for p in bag)
-    assert all(all(p.descriptor[0].axis["e"] == axis_e) for p in bag)
-    assert [p.descriptor[0].indices["e"] for p in bag] == [0, 1, 2]
+    assert all(all(p.descriptor[0].axis["model"] == model_axis) for p in bag)
+    assert all(all(p.descriptor[0].axis["global"] == global_axis) for p in bag)
+    assert [p.descriptor[0].indices["global"] for p in bag] == [0, 1, 2]
 
 
 def test_multi_dataset_no_overlap():
@@ -72,16 +72,16 @@ def test_multi_dataset_no_overlap():
     print(model.validate(parameters))
     assert model.valid(parameters)
 
-    axis_e_1 = [1, 2, 3]
-    axis_c_1 = [5, 7]
-    axis_e_2 = [4, 5, 6]
-    axis_c_2 = [5, 7, 9]
+    global_axis_1 = [1, 2, 3]
+    model_axis_1 = [5, 7]
+    global_axis_2 = [4, 5, 6]
+    model_axis_2 = [5, 7, 9]
     data = {
         "dataset1": xr.DataArray(
-            np.ones((3, 2)), coords=[("e", axis_e_1), ("c", axis_c_1)]
+            np.ones((3, 2)), coords=[("global", global_axis_1), ("model", model_axis_1)]
         ).to_dataset(name="data"),
         "dataset2": xr.DataArray(
-            np.ones((3, 3)), coords=[("e", axis_e_2), ("c", axis_c_2)]
+            np.ones((3, 3)), coords=[("global", global_axis_2), ("model", model_axis_2)]
         ).to_dataset(name="data"),
     }
 
@@ -92,15 +92,15 @@ def test_multi_dataset_no_overlap():
     assert len(bag) == 6
     assert all(p.data.size == 2 for p in bag[:3])
     assert all(p.descriptor[0].label == "dataset1" for p in bag[:3])
-    assert all(all(p.descriptor[0].axis["c"] == axis_c_1) for p in bag[:3])
-    assert all(all(p.descriptor[0].axis["e"] == axis_e_1) for p in bag[:3])
-    assert [p.descriptor[0].indices["e"] for p in bag[:3]] == [0, 1, 2]
+    assert all(all(p.descriptor[0].axis["model"] == model_axis_1) for p in bag[:3])
+    assert all(all(p.descriptor[0].axis["global"] == global_axis_1) for p in bag[:3])
+    assert [p.descriptor[0].indices["global"] for p in bag[:3]] == [0, 1, 2]
 
     assert all(p.data.size == 3 for p in bag[3:])
     assert all(p.descriptor[0].label == "dataset2" for p in bag[3:])
-    assert all(all(p.descriptor[0].axis["c"] == axis_c_2) for p in bag[3:])
-    assert all(all(p.descriptor[0].axis["e"] == axis_e_2) for p in bag[3:])
-    assert [p.descriptor[0].indices["e"] for p in bag[3:]] == [0, 1, 2]
+    assert all(all(p.descriptor[0].axis["model"] == model_axis_2) for p in bag[3:])
+    assert all(all(p.descriptor[0].axis["global"] == global_axis_2) for p in bag[3:])
+    assert [p.descriptor[0].indices["global"] for p in bag[3:]] == [0, 1, 2]
 
 
 def test_multi_dataset_overlap():
@@ -127,16 +127,16 @@ def test_multi_dataset_overlap():
     print(model.validate(parameters))
     assert model.valid(parameters)
 
-    axis_e_1 = [1, 2, 3, 5]
-    axis_c_1 = [5, 7]
-    axis_e_2 = [0, 1.4, 2.4, 3.4, 9]
-    axis_c_2 = [5, 7, 9, 12]
+    global_axis_1 = [1, 2, 3, 5]
+    model_axis_1 = [5, 7]
+    global_axis_2 = [0, 1.4, 2.4, 3.4, 9]
+    model_axis_2 = [5, 7, 9, 12]
     data = {
         "dataset1": xr.DataArray(
-            np.ones((4, 2)), coords=[("e", axis_e_1), ("c", axis_c_1)]
+            np.ones((4, 2)), coords=[("global", global_axis_1), ("model", model_axis_1)]
         ).to_dataset(name="data"),
         "dataset2": xr.DataArray(
-            np.ones((5, 4)), coords=[("e", axis_e_2), ("c", axis_c_2)]
+            np.ones((5, 4)), coords=[("global", global_axis_2), ("model", model_axis_2)]
         ).to_dataset(name="data"),
     }
 
@@ -150,19 +150,19 @@ def test_multi_dataset_overlap():
 
     assert all(p.data.size == 4 for p in bag[:1])
     assert all(p.descriptor[0].label == "dataset1" for p in bag[1:5])
-    assert all(all(p.descriptor[0].axis["c"] == axis_c_1) for p in bag[1:5])
-    assert all(all(p.descriptor[0].axis["e"] == axis_e_1) for p in bag[1:5])
-    assert [p.descriptor[0].indices["e"] for p in bag[1:5]] == [0, 1, 2, 3]
+    assert all(all(p.descriptor[0].axis["model"] == model_axis_1) for p in bag[1:5])
+    assert all(all(p.descriptor[0].axis["global"] == global_axis_1) for p in bag[1:5])
+    assert [p.descriptor[0].indices["global"] for p in bag[1:5]] == [0, 1, 2, 3]
 
     assert all(p.data.size == 6 for p in bag[1:4])
     assert all(p.descriptor[1].label == "dataset2" for p in bag[1:4])
-    assert all(all(p.descriptor[1].axis["c"] == axis_c_2) for p in bag[1:4])
-    assert all(all(p.descriptor[1].axis["e"] == axis_e_2) for p in bag[1:4])
-    assert [p.descriptor[1].indices["e"] for p in bag[1:4]] == [1, 2, 3]
+    assert all(all(p.descriptor[1].axis["model"] == model_axis_2) for p in bag[1:4])
+    assert all(all(p.descriptor[1].axis["global"] == global_axis_2) for p in bag[1:4])
+    assert [p.descriptor[1].indices["global"] for p in bag[1:4]] == [1, 2, 3]
 
     assert all(p.data.size == 4 for p in bag[5:])
     assert bag[4].descriptor[0].label == "dataset1"
     assert bag[5].descriptor[0].label == "dataset2"
-    assert np.array_equal(bag[4].descriptor[0].axis["c"], axis_c_1)
-    assert np.array_equal(bag[5].descriptor[0].axis["c"], axis_c_2)
-    assert [p.descriptor[0].indices["e"] for p in bag[1:4]] == [0, 1, 2]
+    assert np.array_equal(bag[4].descriptor[0].axis["model"], model_axis_1)
+    assert np.array_equal(bag[5].descriptor[0].axis["model"], model_axis_2)
+    assert [p.descriptor[0].indices["global"] for p in bag[1:4]] == [0, 1, 2]

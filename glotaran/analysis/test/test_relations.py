@@ -24,7 +24,7 @@ def test_constraint(index_dependent, grouped):
         suite.sim_model,
         "dataset1",
         parameters,
-        {"e": suite.e_axis, "c": suite.c_axis},
+        {"global": suite.global_axis, "model": suite.model_axis},
     )
     scheme = Scheme(model=model, parameters=parameters, data={"dataset1": dataset})
     problem = GroupedProblem(scheme) if grouped else UngroupedProblem(scheme)

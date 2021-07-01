@@ -1,14 +1,19 @@
 import numpy as np
+import pytest
 
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
 
 
-def test_simulate_dataset():
+@pytest.mark.parametrize("index_dependent", [True, False])
+def test_simulate_dataset(index_dependent):
     model = SimpleTestModel.from_dict(
         {
-            "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+            "megacomplex": {
+                "m1": {"is_index_dependent": index_dependent},
+                "m2": {"type": "global_complex"},
+            },
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],

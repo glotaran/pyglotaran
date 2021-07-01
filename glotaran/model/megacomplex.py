@@ -108,7 +108,10 @@ class Megacomplex:
     ) -> xr.DataArray:
         raise NotImplementedError
 
-    def index_dependent(self, dataset: DatasetModel) -> bool:
+    def index_dependent(self, dataset_model: DatasetModel) -> bool:
+        raise NotImplementedError
+
+    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
         raise NotImplementedError
 
     @classmethod
