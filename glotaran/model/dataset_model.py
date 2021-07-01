@@ -119,11 +119,11 @@ class DatasetModel:
         """Indicates if the dataset model can model the global dimension."""
         return len(self.global_megacomplex) != 0
 
-    def set_coords(self, coords: xr.Dataset):
+    def set_coordinates(self, coords: xr.Dataset):
         """Sets the dataset model's coordinates."""
         self._coords = coords
 
-    def get_coords(self) -> xr.Dataset:
+    def get_coordinates(self) -> xr.Dataset:
         """Gets the dataset model's coordinates."""
         if hasattr(self, "_coords"):
             return self._coords

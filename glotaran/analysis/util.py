@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DatasetDescriptor
+from glotaran.model import DatasetModel
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
@@ -40,13 +40,20 @@ def get_min_max_from_interval(interval, axis):
 
 
 def calculate_matrix(
-    dataset_descriptor: DatasetDescriptor,
+    dataset_model: DatasetModel,
     indices: dict[str, int] | None,
+    global_model: bool = False,
 ) -> xr.DataArray:
     matrix = None
 
-    for scale, megacomplex in dataset_descriptor.iterate_megacomplexes():
-        this_matrix = megacomplex.calculate_matrix(dataset_descriptor, indices)
+    megacomplex_iterator = dataset_model.iterate_megacomplexes
+
+    if global_model:
+        megacomplex_iterator = dataset_model.iterate_global_megacomplexes
+        dataset_model.swap_dimensions()
+
+    for scale, megacomplex in megacomplex_iterator():
+        this_matrix = megacomplex.calculate_matrix(dataset_model, indices)
 
         if scale is not None:
             this_matrix *= scale
@@ -57,6 +64,9 @@ def calculate_matrix(
             matrix, this_matrix = xr.align(matrix, this_matrix, join="outer", copy=False)
             matrix = matrix.fillna(0)
             matrix += this_matrix.fillna(0)
+
+    if global_model:
+        dataset_model.swap_dimensions()
 
     return matrix
 
