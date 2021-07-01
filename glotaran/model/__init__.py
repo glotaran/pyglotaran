@@ -13,6 +13,8 @@ from glotaran.model.constraint import OnlyConstraint
 from glotaran.model.constraint import ZeroConstraint
 from glotaran.model.dataset_descriptor import DatasetDescriptor
 from glotaran.model.decorator import model
+from glotaran.model.item import model_item
+from glotaran.model.item import model_item_typed
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.megacomplex import megacomplex
 from glotaran.model.relation import Relation
