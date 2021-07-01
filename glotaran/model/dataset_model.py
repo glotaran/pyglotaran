@@ -60,6 +60,10 @@ class DatasetModel:
                 )
         return self._model_dimension
 
+    def finalize_data(self, data: xr.Dataset):
+        for megacomplex in self.megacomplex:
+            megacomplex.finalize_data(self, data)
+
     def overwrite_model_dimension(self, model_dimension: str):
         """Overwrites the dataset model's model dimension."""
         self._model_dimension = model_dimension

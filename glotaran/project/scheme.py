@@ -33,6 +33,7 @@ class Scheme:
     model: Model | str
     parameters: ParameterGroup | str
     data: dict[str, xr.DataArray | xr.Dataset | str]
+    group: bool = False
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
     maximum_number_function_evaluations: int = None

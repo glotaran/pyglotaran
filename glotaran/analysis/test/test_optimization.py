@@ -24,23 +24,18 @@ from glotaran.project import Scheme
 )
 @pytest.mark.parametrize(
     "suite",
-    # MultichannelMulticomponentDecay],
     [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
 def test_optimization(suite, index_dependent, grouped, weight, method):
     model = suite.model
 
-    model.is_grouped = grouped
     model.megacomplex["m1"].is_index_dependent = index_dependent
 
     print("Grouped:", grouped)
     print("Index dependent:", index_dependent)
 
-    assert model.grouped() == grouped
-
     sim_model = suite.sim_model
-    sim_model.is_grouped = grouped
-    sim_model.is_index_dependent = index_dependent
+    sim_model.megacomplex["m1"].is_index_dependent = index_dependent
 
     print(model.validate())
     assert model.valid()
@@ -65,11 +60,14 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     nr_datasets = 3 if issubclass(suite, ThreeDatasetDecay) else 1
     data = {}
     for i in range(nr_datasets):
-        e_axis = getattr(suite, "e_axis" if i == 0 else f"e_axis{i+1}")
-        c_axis = getattr(suite, "c_axis" if i == 0 else f"c_axis{i+1}")
+        global_axis = getattr(suite, "global_axis" if i == 0 else f"global_axis{i+1}")
+        model_axis = getattr(suite, "model_axis" if i == 0 else f"model_axis{i+1}")
 
         dataset = simulate(
-            sim_model, f"dataset{i+1}", wanted_parameters, {"e": e_axis, "c": c_axis}
+            sim_model,
+            f"dataset{i+1}",
+            wanted_parameters,
+            {"global": global_axis, "model": model_axis},
         )
         print(f"Dataset {i+1}")
         print("=============")
@@ -80,10 +78,10 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
 
         if weight:
             dataset["weight"] = xr.DataArray(
-                np.ones_like(dataset.data) * 0.5, coords=dataset.coords
+                np.ones_like(dataset.data) * 0.5, coords=dataset.data.coords
             )
 
-        assert dataset.data.shape == (c_axis.size, e_axis.size)
+        assert dataset.data.shape == (model_axis.size, global_axis.size)
 
         data[f"dataset{i+1}"] = dataset
 
@@ -92,6 +90,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         parameters=initial_parameters,
         data=data,
         maximum_number_function_evaluations=10,
+        group=grouped,
         group_tolerance=0.1,
         optimization_method=method,
     )
@@ -118,8 +117,8 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         assert "residual_left_singular_vectors" in resultdata
         assert "residual_right_singular_vectors" in resultdata
         assert "residual_singular_values" in resultdata
-        assert np.array_equal(dataset.c, resultdata.c)
-        assert np.array_equal(dataset.e, resultdata.e)
+        assert np.array_equal(dataset.coords["model"], resultdata.coords["model"])
+        assert np.array_equal(dataset.coords["global"], resultdata.coords["global"])
         assert dataset.data.shape == resultdata.data.shape
         print(dataset.data[0, 0], resultdata.data[0, 0])
         assert np.allclose(dataset.data, resultdata.data)
@@ -131,15 +130,3 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
             assert "weighted_residual_left_singular_vectors" in resultdata
             assert "weighted_residual_right_singular_vectors" in resultdata
             assert "weighted_residual_singular_values" in resultdata
-
-    #  assert callable(model.additional_penalty_function)
-    #  assert model.additional_penalty_function_called
-    #
-    #  if isinstance(model, DecayModel):
-    #      assert callable(model.constrain_matrix_function)
-    #      assert model.constrain_matrix_function_called
-    #      assert callable(model.retrieve_clp_function)
-    #      assert model.retrieve_clp_function_called
-    #  else:
-    #      assert not model.constrain_matrix_function_called
-    #      assert not model.retrieve_clp_function_called

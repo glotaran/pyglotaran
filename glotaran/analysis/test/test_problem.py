@@ -20,17 +20,18 @@ from glotaran.project import Scheme
 def problem(request) -> Problem:
     model = suite.model
     model.megacomplex["m1"].is_index_dependent = request.param[1]
-    model.is_grouped = request.param[0]
     model.is_index_dependent = request.param[1]
 
     dataset = simulate(
         suite.sim_model,
         "dataset1",
         suite.wanted_parameters,
-        {"e": suite.e_axis, "c": suite.c_axis},
+        {"global": suite.global_axis, "model": suite.model_axis},
     )
     scheme = Scheme(model=model, parameters=suite.initial_parameters, data={"dataset1": dataset})
-    return GroupedProblem(scheme) if request.param[0] else UngroupedProblem(scheme)
+    problem = GroupedProblem(scheme) if request.param[0] else UngroupedProblem(scheme)
+    problem.grouped = request.param[0]
+    return problem
 
 
 def test_problem_bag(problem: Problem):
@@ -39,7 +40,7 @@ def test_problem_bag(problem: Problem):
 
     if problem.grouped:
         assert isinstance(bag, collections.deque)
-        assert len(bag) == suite.e_axis.size
+        assert len(bag) == suite.global_axis.size
         assert problem.groups == {"dataset1": ["dataset1"]}
     else:
         assert isinstance(bag, dict)
@@ -52,7 +53,7 @@ def test_problem_matrices(problem: Problem):
     if problem.grouped:
         if problem.model.is_index_dependent:
             assert all(isinstance(m, xr.DataArray) for m in problem.reduced_matrices)
-            assert len(problem.reduced_matrices) == suite.e_axis.size
+            assert len(problem.reduced_matrices) == suite.global_axis.size
         else:
             assert "dataset1" in problem.reduced_matrices
             assert isinstance(problem.reduced_matrices["dataset1"], xr.DataArray)
@@ -69,63 +70,61 @@ def test_problem_matrices(problem: Problem):
 
 
 def test_problem_residuals(problem: Problem):
-    print("Grouped", problem.model.is_grouped, "Indexdep", problem.model.is_index_dependent)
     problem.calculate_residual()
     if problem.grouped:
         assert isinstance(problem.residuals, list)
         assert all(isinstance(r, np.ndarray) for r in problem.residuals)
-        assert len(problem.residuals) == suite.e_axis.size
+        assert len(problem.residuals) == suite.global_axis.size
     else:
         assert isinstance(problem.residuals, dict)
         assert "dataset1" in problem.residuals
         assert all(isinstance(r, xr.DataArray) for r in problem.residuals["dataset1"])
-        assert len(problem.residuals["dataset1"]) == suite.e_axis.size
+        assert len(problem.residuals["dataset1"]) == suite.global_axis.size
     assert isinstance(problem.reduced_clps, dict)
     assert "dataset1" in problem.reduced_clps
     assert all(isinstance(c, xr.DataArray) for c in problem.reduced_clps["dataset1"])
-    assert len(problem.reduced_clps["dataset1"]) == suite.e_axis.size
+    assert len(problem.reduced_clps["dataset1"]) == suite.global_axis.size
     assert isinstance(problem.clps, dict)
     assert "dataset1" in problem.clps
     assert all(isinstance(c, xr.DataArray) for c in problem.clps["dataset1"])
-    assert len(problem.clps["dataset1"]) == suite.e_axis.size
+    assert len(problem.clps["dataset1"]) == suite.global_axis.size
 
 
 def test_problem_result_data(problem: Problem):
 
-    print("Grouped", problem.model.is_grouped, "Indexdep", problem.model.is_index_dependent)
     data = problem.create_result_data()
     label = "dataset1"
 
     assert label in data
 
     dataset = data[label]
-    dataset_model = problem.filled_dataset_descriptors[label]
+    dataset_model = problem.dataset_models[label]
 
     assert "clp_label" in dataset.coords
     assert np.array_equal(dataset.clp_label, ["s1", "s2", "s3", "s4"])
 
     assert dataset_model.get_global_dimension() in dataset.coords
-    assert np.array_equal(dataset.coords[dataset_model.get_global_dimension()], suite.e_axis)
+    assert np.array_equal(dataset.coords[dataset_model.get_global_dimension()], suite.global_axis)
 
     assert dataset_model.get_model_dimension() in dataset.coords
-    assert np.array_equal(dataset.coords[dataset_model.get_model_dimension()], suite.c_axis)
+    assert np.array_equal(dataset.coords[dataset_model.get_model_dimension()], suite.model_axis)
 
     assert "matrix" in dataset
     matrix = dataset.matrix
     if problem.model.is_index_dependent:
         assert len(matrix.shape) == 3
-        assert matrix.shape[0] == suite.e_axis.size
-        assert matrix.shape[1] == suite.c_axis.size
+        assert matrix.shape[0] == suite.global_axis.size
+        assert matrix.shape[1] == suite.model_axis.size
         assert matrix.shape[2] == 4
     else:
         assert len(matrix.shape) == 2
-        assert matrix.shape[0] == suite.c_axis.size
+        assert matrix.shape[0] == suite.model_axis.size
         assert matrix.shape[1] == 4
 
     assert "clp" in dataset
     clp = dataset.clp
     assert len(clp.shape) == 2
-    assert clp.shape[0] == suite.e_axis.size
+    assert clp.shape[0] == suite.global_axis.size
     assert clp.shape[1] == 4
 
     assert "weighted_residual" in dataset
@@ -166,8 +165,8 @@ def test_prepare_data():
 
     dataset = xr.DataArray(
         np.ones((global_axis.size, model_axis.size)),
-        coords={"e": global_axis, "c": model_axis},
-        dims=("e", "c"),
+        coords={"global": global_axis, "model": model_axis},
+        dims=("global", "model"),
     )
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
@@ -180,8 +179,8 @@ def test_prepare_data():
 
     assert data.data.shape == (model_axis.size, global_axis.size)
     assert data.data.shape == data.weight.shape
-    assert np.all(data.weight.sel(e=slice(0, 200), c=slice(4, 8)).values == 0.5)
-    assert np.all(data.weight.sel(c=slice(0, 3)).values == 1)
+    assert np.all(data.weight.sel({"global": slice(0, 200), "model": slice(4, 8)}).values == 0.5)
+    assert np.all(data.weight.sel(model=slice(0, 3)).values == 1)
 
     model_dict["weights"].append(
         {
@@ -196,8 +195,10 @@ def test_prepare_data():
     scheme = Scheme(model, parameters, {"dataset1": dataset})
     problem = Problem(scheme)
     data = problem.data["dataset1"]
-    assert np.all(data.weight.sel(e=slice(0, 200), c=slice(4, 8)).values == 0.5 * 0.2)
-    assert np.all(data.weight.sel(c=slice(0, 3)).values == 0.2)
+    assert np.all(
+        data.weight.sel({"global": slice(0, 200), "model": slice(4, 8)}).values == 0.5 * 0.2
+    )
+    assert np.all(data.weight.sel(model=slice(0, 3)).values == 0.2)
 
     with pytest.warns(
         UserWarning,
