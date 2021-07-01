@@ -3,15 +3,18 @@ from __future__ import annotations
 
 import copy
 from typing import TYPE_CHECKING
+from typing import List
 
 from glotaran.deprecation import deprecate
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
+from glotaran.model.dataset_model import create_dataset_model_type
 from glotaran.model.megacomplex import Megacomplex
-from glotaran.model.megacomplex import create_model_megacomplex
+from glotaran.model.megacomplex import create_model_megacomplex_type
 from glotaran.model.relation import Relation
 from glotaran.model.util import ModelError
 from glotaran.model.weight import Weight
+from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 from glotaran.utils.ipython import MarkdownStr
 
@@ -33,50 +36,88 @@ class Model:
         self._default_megacomplex_type = default_megacomplex_type or next(iter(megacomplex_types))
 
         self._model_items = {}
-        self._add_default_items()
+        self._dataset_properties = {}
+        self._add_default_items_and_properties()
         self._add_megacomplexe_types()
+        self._add_dataset_type()
 
     def _add_megacomplexe_types(self):
 
         for name, megacomplex_type in self._megacomplex_types.items():
             if not issubclass(megacomplex_type, Megacomplex):
                 raise TypeError(
-                    f"Megacomplex type {name}(megacomplex_type) is not a subclass of Megacomplex"
+                    f"Megacomplex type {name}({megacomplex_type}) is not a subclass of Megacomplex"
                 )
             self._add_megacomplex_type(megacomplex_type)
 
-        model_megacomplex = create_model_megacomplex(
+        model_megacomplex_type = create_model_megacomplex_type(
             self._megacomplex_types, self.default_megacomplex
         )
-        self._add_model_item("megacomplex", model_megacomplex)
+        self._add_model_item("megacomplex", model_megacomplex_type)
 
     def _add_megacomplex_type(self, megacomplex_type: type[Megacomplex]):
 
         for name, item in megacomplex_type.glotaran_model_items().items():
-
-            if name in self._model_items:
-                if self._model_items[name] != megacomplex_type:
-                    raise ModelError(
-                        f"Cannot add megacomplex of type. Model item '{name}' was already defined"
-                        "by another megacomplex as a different type."
-                    )
-                continue
             self._add_model_item(name, item)
 
-    def _add_model_item(self, name: str, item: object):
+        for name, item in megacomplex_type.glotaran_dataset_model_items().items():
+            self._add_model_item(name, item)
+
+        for name, prop in megacomplex_type.glotaran_dataset_properties().items():
+            self._add_dataset_property(name, prop)
+
+    def _add_model_item(self, name: str, item: type):
+        if name in self._model_items:
+            if self._model_items[name] != item:
+                raise ModelError(
+                    f"Cannot add item of type {name}. Model item '{name}' was already defined"
+                    "as a different type."
+                )
+            return
         self._model_items[name] = item
-        print("Add item", name, item)
 
         if getattr(item, "_glotaran_has_label"):
             setattr(self, f"{name}", {})
         else:
             setattr(self, f"{name}", [])
 
-    def _add_default_items(self):
+    def _add_dataset_property(self, name: str, dataset_property: dict[str, any]):
+        if name in self._dataset_properties:
+            known_type = (
+                self._dataset_properties[name]
+                if not isinstance(self._dataset_properties, dict)
+                else self._dataset_properties[name]["type"]
+            )
+            new_type = (
+                dataset_property
+                if not isinstance(dataset_property, dict)
+                else dataset_property["type"]
+            )
+            if known_type != new_type:
+                raise ModelError(
+                    f"Cannot add dataset property of type {name} as it was already defined"
+                    "as a different type."
+                )
+            return
+        self._dataset_properties[name] = dataset_property
+
+    def _add_default_items_and_properties(self):
         self._add_model_item("clp_area_penalties", EqualAreaPenalty)
         self._add_model_item("constraints", Constraint)
         self._add_model_item("relations", Relation)
         self._add_model_item("weights", Weight)
+
+        self._add_dataset_property("megacomplex", List[str])
+        self._add_dataset_property(
+            "megacomplex_scale", {"type": List[Parameter], "default": None, "allow_none": True}
+        )
+        self._add_dataset_property(
+            "scale", {"type": Parameter, "default": None, "allow_none": True}
+        )
+
+    def _add_dataset_type(self):
+        dataset_model_type = create_dataset_model_type(self._dataset_properties)
+        self._add_model_item("dataset", dataset_model_type)
 
     @classmethod
     def from_dict(cls, model_dict_ref: dict) -> Model:

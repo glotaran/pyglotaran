@@ -3,6 +3,7 @@ from typing import List
 from typing import Tuple
 
 #  from glotaran.model import model
+from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
 from glotaran.model import model_item
@@ -36,28 +37,35 @@ class MockItemNoLabel:
     pass
 
 
-@megacomplex("model")
-class MockMegacomplex(Megacomplex):
-    pass
-
-
-@megacomplex("model", items={"test_item1": MockItem})
+@megacomplex(dimension="model", model_items={"test_item1": MockItem})
 class MockMegacomplex1(Megacomplex):
     pass
 
 
-@megacomplex("model", items={"test_item2": MockItemNoLabel})
+@megacomplex(dimension="model", model_items={"test_item2": MockItemNoLabel})
 class MockMegacomplex2(Megacomplex):
     pass
 
 
-@megacomplex("model", items={"test_item3": List[MockItem]})
+@megacomplex(dimension="model", model_items={"test_item3": List[MockItem]})
 class MockMegacomplex3(Megacomplex):
     pass
 
 
-@megacomplex("model", items={"test_item4": Dict[str, MockItem]})
+@megacomplex(dimension="model", model_items={"test_item4": Dict[str, MockItem]})
 class MockMegacomplex4(Megacomplex):
+    pass
+
+
+@megacomplex(
+    dimension="model",
+    dataset_model_items={"test_item_dataset": MockItem},
+    dataset_properties={
+        "test_property_dataset1": int,
+        "test_property_dataset2": {"type": Parameter},
+    },
+)
+class MockMegacomplex5(Megacomplex):
     pass
 
 
@@ -68,12 +76,13 @@ def test_model_init():
             "type2": MockMegacomplex2,
             "type3": MockMegacomplex3,
             "type4": MockMegacomplex4,
+            "type5": MockMegacomplex5,
         }
     )
 
     assert model.default_megacomplex == "type1"
 
-    assert len(model.megacomplex_types) == 4
+    assert len(model.megacomplex_types) == 5
     assert "type1" in model.megacomplex_types
     assert model.megacomplex_types["type1"] == MockMegacomplex1
     assert "type2" in model.megacomplex_types
@@ -96,8 +105,19 @@ def test_model_init():
 
     assert hasattr(model, "test_item4")
     assert isinstance(model.test_item4, dict)
-    assert "test_item3" in model._model_items
+    assert "test_item4" in model._model_items
     assert issubclass(model._model_items["test_item4"], MockItem)
+
+    assert hasattr(model, "test_item_dataset")
+    assert isinstance(model.test_item_dataset, dict)
+    assert "test_item_dataset" in model._model_items
+    assert issubclass(model._model_items["test_item_dataset"], MockItem)
+    assert "test_item_dataset" in model._dataset_properties
+    assert issubclass(model._dataset_properties["test_item_dataset"]["type"], str)
+    assert "test_property_dataset1" in model._dataset_properties
+    assert issubclass(model._dataset_properties["test_property_dataset1"], int)
+    assert "test_property_dataset2" in model._dataset_properties
+    assert issubclass(model._dataset_properties["test_property_dataset2"]["type"], Parameter)
 
     assert hasattr(model, "clp_area_penalties")
     assert isinstance(model.clp_area_penalties, list)
@@ -118,6 +138,11 @@ def test_model_init():
     assert isinstance(model.weights, list)
     assert "weights" in model._model_items
     assert issubclass(model._model_items["weights"], Weight)
+
+    assert hasattr(model, "dataset")
+    assert isinstance(model.dataset, dict)
+    assert "dataset" in model._model_items
+    assert issubclass(model._model_items["dataset"], DatasetModel)
 
 
 #
