@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING
 from typing import List
+from warnings import warn
 
 from glotaran.deprecation import deprecate
 from glotaran.model.clp_penalties import EqualAreaPenalty
@@ -40,6 +41,78 @@ class Model:
         self._add_default_items_and_properties()
         self._add_megacomplexe_types()
         self._add_dataset_type()
+
+    @classmethod
+    def from_dict(
+        cls,
+        model_dict_ref: dict,
+        *,
+        megacomplex_types: dict[str, type[Megacomplex]],
+        default_megacomplex_type: str | None = None,
+    ) -> Model:
+        """Creates a model from a dictionary.
+
+        Parameters
+        ----------
+        model_dict :
+            Dictionary containing the model.
+        """
+
+        model = cls(
+            megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex_type
+        )
+
+        model_dict = copy.deepcopy(model_dict_ref)
+
+        # iterate over items
+        for name, items in list(model_dict.items()):
+
+            if name not in model._model_items:
+                warn(f"Unknown model item type '{name}'.")
+                continue
+
+            is_list = isinstance(getattr(model, name), list)
+
+            if is_list:
+                model._add_list_items(name, items)
+            else:
+                model._add_dict_items(name, items)
+
+        return model
+
+    def _add_dict_items(self, name: str, items: dict):
+
+        for label, item in items.items():
+            item_cls = self._model_items[name]
+            is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+            if is_typed:
+                if "type" not in item and item_cls.get_default_type() is None:
+                    raise ValueError(f"Missing type for attribute '{name}'")
+                item_type = item.get("type", item_cls.get_default_type())
+
+                types = item_cls._glotaran_model_item_types
+                if item_type not in types:
+                    raise ValueError(f"Unknown type '{item_type}' for attribute '{name}'")
+                item_cls = types[item_type]
+            item["label"] = label
+            item = item_cls.from_dict(item)
+            getattr(self, name)[label] = item
+
+    def _add_list_items(self, name: str, items: list):
+
+        for item in items:
+            item_cls = self._model_items[name]
+            is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
+            if is_typed:
+                if "type" not in item:
+                    raise ValueError(f"Missing type for attribute '{name}'")
+                item_type = item["type"]
+
+                if item_type not in item_cls._glotaran_model_item_types:
+                    raise ValueError(f"Unknown type '{item_type}' for attribute '{name}'")
+                item_cls = item_cls._glotaran_model_item_types[item_type]
+            item = item_cls.from_dict(item)
+            getattr(self, name).append(item)
 
     def _add_megacomplexe_types(self):
 
@@ -119,108 +192,6 @@ class Model:
         dataset_model_type = create_dataset_model_type(self._dataset_properties)
         self._add_model_item("dataset", dataset_model_type)
 
-    @classmethod
-    def from_dict(cls, model_dict_ref: dict) -> Model:
-        """Creates a model from a dictionary.
-
-        Parameters
-        ----------
-        model_dict :
-            Dictionary containing the model.
-        """
-
-        model = cls()
-
-        model_dict = copy.deepcopy(model_dict_ref)
-
-        # iterate over items
-        for name, attribute in list(model_dict.items()):
-
-            # we determine if the item is known by the model by looking for
-            # a setter with same name.
-
-            if hasattr(model, f"set_{name}"):
-
-                # get the set function
-                model_set = getattr(model, f"set_{name}")
-
-                for label, item in attribute.items():
-                    # we retrieve the actual class from the signature
-                    item_cls = model_set.__func__.__annotations__["item"]
-
-                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-
-                    if isinstance(item, dict):
-                        if is_typed:
-                            if "type" not in item and item_cls.get_default_type() is None:
-                                raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = item.get("type", item_cls.get_default_type())
-
-                            types = item_cls._glotaran_model_item_types
-                            if item_type not in types:
-                                raise ValueError(
-                                    f"Unknown type '{item_type}' for attribute '{name}'"
-                                )
-                            item_cls = types[item_type]
-                        item["label"] = label
-                        model_set(label, item_cls.from_dict(item))
-                    elif isinstance(item, list):
-                        if is_typed:
-                            if len(item) < 2 and len(item) != 1:
-                                raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = item[0]
-                            types = item_cls._glotaran_model_item_types
-
-                            if item_type not in types:
-                                raise ValueError(
-                                    f"Unknown type '{item_type}' for attribute '{name}'"
-                                )
-                            item_cls = types[item_type]
-                        item = [label] + item
-                        model_set(label, item_cls.from_list(item))
-                del model_dict[name]
-
-            elif hasattr(model, f"add_{name}"):
-
-                # get the set function
-                add = getattr(model, f"add_{name}")
-
-                # we retrieve the actual class from the signature
-                for item in attribute:
-                    item_cls = add.__func__.__annotations__["item"]
-                    is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-                    if isinstance(item, dict):
-                        if is_typed:
-                            if "type" not in item:
-                                raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = item["type"]
-
-                            if item_type not in item_cls._glotaran_model_item_types:
-                                raise ValueError(
-                                    f"Unknown type '{item_type}' for attribute '{name}'"
-                                )
-                            item_cls = item_cls._glotaran_model_item_types[item_type]
-                        add(item_cls.from_dict(item))
-                    elif isinstance(item, list):
-                        if is_typed:
-                            if len(item) < 2 and len(item) != 1:
-                                raise ValueError(f"Missing type for attribute '{name}'")
-                            item_type = (
-                                item[1]
-                                if len(item) != 1 and hasattr(item_cls, "label")
-                                else item[0]
-                            )
-
-                            if item_type not in item_cls._glotaran_model_item_types:
-                                raise ValueError(
-                                    f"Unknown type '{item_type}' for attribute '{name}'"
-                                )
-                            item_cls = item_cls._glotaran_model_item_types[item_type]
-                        add(item_cls.from_list(item))
-                del model_dict[name]
-
-        return model
-
     @property
     def default_megacomplex(self) -> str:
         """The default megacomplex used by this model."""
@@ -243,14 +214,13 @@ class Model:
         """
         problems = []
 
-        attrs = getattr(self, "_glotaran_model_items")
-        for attr in attrs:
-            attr = getattr(self, attr)
-            if isinstance(attr, list):
-                for item in attr:
+        for name in self._model_items:
+            items = getattr(self, name)
+            if isinstance(items, list):
+                for item in items:
                     problems += item.validate(self, parameters=parameters)
             else:
-                for _, item in attr.items():
+                for _, item in items.items():
                     problems += item.validate(self, parameters=parameters)
 
         return problems
@@ -360,20 +330,21 @@ class Model:
             - If it is 3 the string will start with '### Model'.
         """
         base_heading = "#" * base_heading_level
-        attrs = getattr(self, "_glotaran_model_items")
         string = f"{base_heading} Model\n\n"
-        string += f"_Type_: {self.model_type}\n\n"
+        string += "_Megacomplex Types_: "
+        string += ", ".join(name for name in self._megacomplex_types)
+        string += "\n\n"
 
-        for attr in attrs:
-            child_attr = getattr(self, attr)
-            if not child_attr:
+        for name in self._model_items:
+            items = getattr(self, name)
+            if not items:
                 continue
 
-            string += f"{base_heading}# {attr.replace('_', ' ').title()}\n\n"
+            string += f"{base_heading}# {name.replace('_', ' ').title()}\n\n"
 
-            if isinstance(child_attr, dict):
-                child_attr = child_attr.values()
-            for item in child_attr:
+            if isinstance(items, dict):
+                items = items.values()
+            for item in items:
                 item_str = item.mprint(
                     parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
