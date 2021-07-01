@@ -182,7 +182,12 @@ class Model:
 
         self._add_dataset_property("megacomplex", List[str])
         self._add_dataset_property(
-            "megacomplex_scale", {"type": List[Parameter], "default": None, "allow_none": True}
+            "megacomplex_scale", {"type": List[Parameter], "allow_none": True}
+        )
+        self._add_dataset_property("global_megacomplex", {"type": List[str], "default": []})
+        self._add_dataset_property(
+            "global_megacomplex_scale",
+            {"type": List[Parameter], "default": None, "allow_none": True},
         )
         self._add_dataset_property(
             "scale", {"type": Parameter, "default": None, "allow_none": True}
@@ -201,6 +206,11 @@ class Model:
     def megacomplex_types(self) -> dict[str, type[Megacomplex]]:
         """The megacomplex types used by this model."""
         return self._megacomplex_types
+
+    @property
+    def global_megacomplex(self) -> dict[str, Megacomplex]:
+        """Alias for `glotaran.model.megacomplex`. Needed internally."""
+        return self.megacomplex
 
     def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
         """

@@ -36,6 +36,16 @@ class DatasetModel:
             scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
             yield scale, megacomplex
 
+    def iterate_global_megacomplexes(self) -> Generator[tuple[Parameter | int, Megacomplex | str]]:
+        """Iterates of der dataset model's global megacomplexes."""
+        for i, megacomplex in enumerate(self.global_megacomplex):
+            scale = (
+                self.global_megacomplex_scale[i]
+                if self.global_megacomplex_scale is not None
+                else None
+            )
+            yield scale, megacomplex
+
     def get_model_dimension(self) -> str:
         """Returns the dataset model's model dimension."""
         if not hasattr(self, "_model_dimension"):
@@ -62,16 +72,33 @@ class DatasetModel:
     def get_global_dimension(self) -> str:
         """Returns the dataset model's global dimension."""
         if not hasattr(self, "_global_dimension"):
-            if not hasattr(self, "_data"):
-                raise ValueError(f"Data not set for dataset descriptor '{self.label}'")
-            self._global_dimension = [
-                dim for dim in self._data.data.dims if dim != self.get_model_dimension()
-            ][0]
+            if self.global_model():
+                if isinstance(self.global_megacomplex[0], str):
+                    raise ValueError(f"Dataset descriptor '{self.label}' was not filled")
+                self._global_dimension = self.global_megacomplex[0].dimension
+                if any(self._global_dimension != m.dimension for m in self.global_megacomplex):
+                    raise ValueError(
+                        "Global megacomplex dimensions do not "
+                        f"match for dataset model '{self.label}'."
+                    )
+            else:
+                if not hasattr(self, "_data"):
+                    raise ValueError(f"Data not set for dataset descriptor '{self.label}'")
+                self._global_dimension = next(
+                    dim for dim in self._data.data.dims if dim != self.get_model_dimension()
+                )
         return self._global_dimension
 
     def overwrite_global_dimension(self, global_dimension: str):
         """Overwrites the dataset model's global dimension."""
         self._global_dimension = global_dimension
+
+    def swap_dimensions(self):
+        """Swaps the dataset model's global and model dimension."""
+        global_dimension = self.get_model_dimension()
+        model_dimension = self.get_global_dimension()
+        self.overwrite_global_dimension(global_dimension)
+        self.overwrite_model_dimension(model_dimension)
 
     def set_data(self, data: xr.Dataset) -> DatasetModel:
         """Sets the dataset model's data."""
@@ -87,6 +114,10 @@ class DatasetModel:
         if hasattr(self, "_index_dependent"):
             return self._index_dependent
         return any(m.index_dependent(self) for m in self.megacomplex)
+
+    def global_model(self) -> bool:
+        """Indicates if the dataset model can model the global dimension."""
+        return len(self.global_megacomplex) != 0
 
     def set_coords(self, coords: xr.Dataset):
         """Sets the dataset model's coordinates."""

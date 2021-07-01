@@ -109,6 +109,7 @@ def test_model():
             },
             "dataset2": {
                 "megacomplex": ["m2"],
+                "global_megacomplex": ["m1"],
                 "scale": "scale_2",
                 "test_item_dataset": "t2",
                 "test_property_dataset1": 1,
@@ -287,6 +288,7 @@ def test_items(test_model: Model):
 
     assert "dataset2" in test_model.dataset
     assert test_model.dataset.get("dataset2").megacomplex == ["m2"]
+    assert test_model.dataset.get("dataset2").global_megacomplex == ["m1"]
     assert test_model.dataset.get("dataset2").scale.full_label == "scale_2"
 
     assert len(test_model.weights) == 1
@@ -303,17 +305,27 @@ def test_fill(test_model: Model, parameter: ParameterGroup):
     dataset.set_data(data)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1"]
     assert dataset.scale == 2
+
+    assert dataset.get_model_dimension() == "model"
+    assert dataset.get_global_dimension() == "global"
+    dataset.swap_dimensions()
+    assert dataset.get_model_dimension() == "global"
+    assert dataset.get_global_dimension() == "model"
+    dataset.swap_dimensions()
     assert dataset.get_model_dimension() == "model"
     assert dataset.get_global_dimension() == "global"
 
-    data = xr.DataArray([[1]], dims=("global2", "model2")).to_dataset(name="data")
+    assert not dataset.global_model()
+
     dataset = test_model.dataset.get("dataset2").fill(test_model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m2"]
     assert dataset.scale == 8
-    dataset.set_data(data)
     assert dataset.get_model_dimension() == "model2"
-    assert dataset.get_global_dimension() == "global2"
-    #
+    assert dataset.get_global_dimension() == "model"
+
+    assert dataset.global_model()
+    assert [cmplx.label for cmplx in dataset.global_megacomplex] == ["m1"]
+
     t = test_model.test_item1.get("t1").fill(test_model, parameter)
     assert t.param == 3
     assert t.megacomplex.label == "m1"
