@@ -8,10 +8,11 @@ from glotaran.parameter import ParameterGroup
 def test_simulate_dataset():
     model = SimpleTestModel.from_dict(
         {
-            "megacomplex": {"m1": {"is_index_dependent": False}},
+            "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],
+                    "global_megacomplex": ["m2"],
                 },
             },
         }
@@ -23,12 +24,12 @@ def test_simulate_dataset():
     print(model.validate(parameter))
     assert model.valid(parameter)
 
-    est_axis = np.asarray([1, 1, 1, 1])
-    cal_axis = np.asarray([2, 2, 2])
+    global_axis = np.asarray([1, 1, 1, 1])
+    model_axis = np.asarray([2, 2, 2])
 
-    data = simulate(model, "dataset1", parameter, {"e": est_axis, "c": cal_axis})
-    assert np.array_equal(data["c"], cal_axis)
-    assert np.array_equal(data["e"], est_axis)
+    data = simulate(model, "dataset1", parameter, {"global": global_axis, "model": model_axis})
+    assert np.array_equal(data["global"], global_axis)
+    assert np.array_equal(data["model"], model_axis)
     assert data.data.shape == (3, 4)
     assert np.array_equal(
         data.data,

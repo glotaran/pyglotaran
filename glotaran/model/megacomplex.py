@@ -8,12 +8,13 @@ import xarray as xr
 from typing_inspect import get_args
 from typing_inspect import is_generic_type
 
-from glotaran.model import DatasetDescriptor
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_typed
 
 if TYPE_CHECKING:
     from typing import Any
+
+    from glotaran.model import DatasetModel
 
 
 def create_model_megacomplex_type(
@@ -101,13 +102,13 @@ class Megacomplex:
 
     def calculate_matrix(
         self,
-        dataset_model: DatasetDescriptor,
+        dataset_model: DatasetModel,
         indices: dict[str, int],
         **kwargs,
     ) -> xr.DataArray:
         raise NotImplementedError
 
-    def index_dependent(self, dataset: DatasetDescriptor) -> bool:
+    def index_dependent(self, dataset: DatasetModel) -> bool:
         raise NotImplementedError
 
     @classmethod
