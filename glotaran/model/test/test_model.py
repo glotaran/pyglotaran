@@ -5,7 +5,7 @@ from typing import Tuple
 #  from glotaran.model import model
 from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
-from glotaran.model import model_attribute
+from glotaran.model import model_item
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.model import Model
@@ -18,7 +18,7 @@ from glotaran.parameter import Parameter
 #  from IPython.core.formatters import format_display_data
 
 
-@model_attribute(
+@model_item(
     properties={
         "param": Parameter,
         "megacomplex": str,
@@ -31,7 +31,7 @@ class MockItem:
     pass
 
 
-@model_attribute(no_label=True)
+@model_item(has_label=False)
 class MockItemNoLabel:
     pass
 

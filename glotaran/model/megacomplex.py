@@ -9,10 +9,21 @@ from typing_inspect import get_args
 from typing_inspect import is_generic_type
 
 from glotaran.model import DatasetDescriptor
-from glotaran.model import model_attribute
+from glotaran.model.item import model_item
+from glotaran.model.item import model_item_typed
 
 if TYPE_CHECKING:
     from typing import Any
+
+
+def create_model_megacomplex(
+    megacomplex_types: dict[str, Megacomplex], default_type: str = None
+) -> object:
+    @model_item_typed(types=megacomplex_types, default_type=default_type)
+    class ModelMegacomplex:
+        """This class holds all Megacomplex types defined by a model."""
+
+    return ModelMegacomplex
 
 
 def megacomplex(
@@ -50,7 +61,7 @@ def megacomplex(
 
         setattr(cls, "_glotaran_megacomplex_model_items", items)
 
-        return model_attribute(properties=properties, has_type=True)(cls)
+        return model_item(properties=properties, has_type=True)(cls)
 
     return decorator
 
