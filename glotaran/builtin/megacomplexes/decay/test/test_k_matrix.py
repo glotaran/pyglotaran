@@ -316,10 +316,11 @@ def test_kmatrix_ipython_rendering():
 
     rendered_obj = format_display_data(kmatrix)[0]
 
-    assert "text/markdown" in rendered_obj
-    assert rendered_obj["text/markdown"].startswith("| compartment")
+    test_markdown_str = "text/markdown"
+    assert test_markdown_str in rendered_obj
+    assert rendered_obj[test_markdown_str].startswith("| compartment")
 
     rendered_markdown_return = format_display_data(kmatrix.matrix_as_markdown())[0]
 
-    assert "text/markdown" in rendered_markdown_return
-    assert rendered_markdown_return["text/markdown"].startswith("| compartment")
+    assert test_markdown_str in rendered_markdown_return
+    assert rendered_markdown_return[test_markdown_str].startswith("| compartment")

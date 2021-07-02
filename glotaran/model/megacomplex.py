@@ -90,13 +90,6 @@ def _add_model_items_to_properties(model_items: dict, properties: dict) -> tuple
     return model_items, properties
 
 
-def _create_dataset_model_proper(dataset_model_items: dict) -> dict:
-    return {
-        name: {"type": item} if not isinstance(item, dict) else item
-        for name, item in dataset_model_items()
-    }
-
-
 class Megacomplex:
     """A base class for megacomplex models.
 

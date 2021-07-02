@@ -254,7 +254,7 @@ def _create_from_list_func(cls):
             A list of values.
         """
         item = ncls()
-        if len(values) is not len(ncls._glotaran_properties):
+        if len(values) != len(ncls._glotaran_properties):
             raise ValueError(
                 f"To few or much parameters for '{ncls.__name__}'"
                 f"\nGot: {values}\nWant: {ncls._glotaran_properties}"

@@ -77,10 +77,8 @@ class IrfMultiGaussian:
                 )
             if len_centers == 1:
                 centers = [centers[0] for _ in range(len_widths)]
-                len_centers = len_widths
             else:
                 widths = [widths[0] for _ in range(len_centers)]
-                len_widths = len_centers
 
         scales = self.scale if self.scale is not None else [1.0 for _ in centers]
         scales = scales if isinstance(scales, list) else [scales]
@@ -174,13 +172,13 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
 
         if len(self.center_dispersion) != 0:
             if self.dispersion_center is None:
-                raise Exception(self, f'No dispersion center defined for irf "{self.label}"')
+                raise ModelError(self, f'No dispersion center defined for irf "{self.label}"')
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i + 1)
 
         if len(self.width_dispersion) != 0:
             if self.dispersion_center is None:
-                raise Exception(self, f'No dispersion center defined for irf "{self.label}"')
+                raise ModelError(self, f'No dispersion center defined for irf "{self.label}"')
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i + 1)
 
