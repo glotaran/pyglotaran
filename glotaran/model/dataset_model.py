@@ -7,10 +7,12 @@ from typing import Generator
 import xarray as xr
 
 from glotaran.model.item import model_item
+from glotaran.model.item import model_item_validator
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
     from glotaran.model.megacomplex import Megacomplex
+    from glotaran.model.model import Model
 
 
 def create_dataset_model_type(properties: dict[str, any]) -> type:
@@ -134,3 +136,23 @@ class DatasetModel:
         if hasattr(self, "_coords"):
             return self._coords
         return self._data.coords
+
+    @model_item_validator(False)
+    def ensure_unique_megacomplexes(self, model: Model) -> list[str]:
+
+        megacomplexes = [model.megacomplex[m] for m in self.megacomplex if m in model.megacomplex]
+        types = {type(m) for m in megacomplexes}
+        problems = []
+
+        for megacomplex_type in types:
+            if not megacomplex_type.glotaran_unique:
+                continue
+            instances = [m for m in megacomplexes if isinstance(m, megacomplex_type)]
+            n = len(instances)
+            if n != 1:
+                problems.append(
+                    f"Multiple instances of unique megacomplex type '{instances[0].type}' "
+                    "in dataset {self.label}"
+                )
+
+        return problems

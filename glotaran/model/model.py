@@ -283,7 +283,7 @@ class Model:
             noise_seed=noise_seed,
         )
 
-    def validate(self, parameters: ParameterGroup = None) -> str:
+    def validate(self, parameters: ParameterGroup = None, raise_exception: bool = False) -> str:
         """
         Returns a string listing all problems in the model and missing parameters if specified.
 
@@ -300,6 +300,8 @@ class Model:
             result = f"Your model has {len(problems)} problems:\n"
             for p in problems:
                 result += f"\n * {p}"
+            if raise_exception:
+                raise ModelError(result)
         else:
             result = "Your model is valid."
         return result

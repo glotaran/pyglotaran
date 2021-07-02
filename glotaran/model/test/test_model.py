@@ -47,7 +47,7 @@ class MockMegacomplex2(Megacomplex):
     pass
 
 
-@megacomplex(dimension="model", model_items={"test_item3": List[MockItem]})
+@megacomplex(model_items={"test_item3": List[MockItem]})
 class MockMegacomplex3(Megacomplex):
     pass
 
@@ -66,6 +66,11 @@ class MockMegacomplex4(Megacomplex):
     },
 )
 class MockMegacomplex5(Megacomplex):
+    pass
+
+
+@megacomplex(dimension="model", unique=True)
+class MockMegacomplex6(Megacomplex):
     pass
 
 
@@ -130,7 +135,7 @@ def test_model():
 @pytest.fixture
 def model_error():
     model_dict = {
-        "megacomplex": {"m1": {}, "m2": {}},
+        "megacomplex": {"m1": {}, "m2": {"type": "type2"}, "m3": {"type": "type2"}},
         "test_item1": {
             "t1": {
                 "param": "fool",
@@ -148,12 +153,16 @@ def model_error():
                 "megacomplex": ["mrX"],
                 "scale": "scale_3",
             },
+            "dataset3": {
+                "megacomplex": ["m2", "m3"],
+            },
         },
     }
     return Model.from_dict(
         model_dict,
         megacomplex_types={
             "type1": MockMegacomplex1,
+            "type2": MockMegacomplex6,
         },
     )
 
@@ -256,9 +265,9 @@ def test_model_validity(test_model: Model, model_error: Model, parameter: Parame
     print(model_error.problem_list())
     print(model_error.problem_list(parameter))
     assert not model_error.valid()
-    assert len(model_error.problem_list()) == 4
+    assert len(model_error.problem_list()) == 5
     assert not model_error.valid(parameter)
-    assert len(model_error.problem_list(parameter)) == 8
+    assert len(model_error.problem_list(parameter)) == 9
 
 
 def test_items(test_model: Model):
