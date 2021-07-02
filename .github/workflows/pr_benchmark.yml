@@ -73,7 +73,7 @@ jobs:
 
           pr_nr = os.environ.get("PR_NR")
           diff_result = subprocess.run(
-              ["asv", "--config=benchmark/asv.conf.json", "compare", "upstream/main", "HEAD"],
+              ["asv", "--config=benchmark/asv.conf.json", "compare", "v0.4.0", "HEAD"],
               capture_output=True,
           )
           comment = f"""\
