@@ -5,14 +5,26 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.util import calculate_matrix
-from glotaran.builtin.models.kinetic_image import KineticImageModel
-from glotaran.builtin.models.spectral.spectral_model import SpectralModel
+from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import DecayModel
+from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
 
+class SpectralModel(Model):
+    @classmethod
+    def from_dict(cls, model_dict):
+        return super().from_dict(
+            model_dict,
+            megacomplex_types={
+                "spectral": SpectralMegacomplex,
+            },
+        )
+
+
 class OneCompartmentModel:
-    kinetic_model = KineticImageModel.from_dict(
+    decay_model = DecayModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
@@ -36,7 +48,7 @@ class OneCompartmentModel:
         }
     )
 
-    kinetic_parameters = ParameterGroup.from_list(
+    decay_parameters = ParameterGroup.from_list(
         [101e-4, [1, {"vary": False, "non-negative": False}]]
     )
 
@@ -67,17 +79,15 @@ class OneCompartmentModel:
     spectral = xr.DataArray(np.arange(400, 600, 5))
     axis = {"time": time, "spectral": spectral}
 
-    kinetic_dataset_model = kinetic_model.dataset["dataset1"].fill(
-        kinetic_model, kinetic_parameters
-    )
-    kinetic_dataset_model.overwrite_global_dimension("spectral")
-    kinetic_dataset_model.set_coords(axis)
-    clp = calculate_matrix(kinetic_dataset_model, {})
-    kinetic_compartments = clp.coords["clp_label"].values
+    decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
+    decay_dataset_model.overwrite_global_dimension("spectral")
+    decay_dataset_model.set_coordinates(axis)
+    clp = calculate_matrix(decay_dataset_model, {})
+    decay_compartments = clp.coords["clp_label"].values
 
 
 class ThreeCompartmentModel:
-    kinetic_model = KineticImageModel.from_dict(
+    decay_model = DecayModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["4", "4", "4"]},
@@ -103,7 +113,7 @@ class ThreeCompartmentModel:
         }
     )
 
-    kinetic_parameters = ParameterGroup.from_list(
+    decay_parameters = ParameterGroup.from_list(
         [101e-4, 101e-5, 101e-6, [1, {"vary": False, "non-negative": False}]]
     )
 
@@ -166,13 +176,11 @@ class ThreeCompartmentModel:
     spectral = xr.DataArray(np.arange(400, 600, 5))
     axis = {"time": time, "spectral": spectral}
 
-    kinetic_dataset_model = kinetic_model.dataset["dataset1"].fill(
-        kinetic_model, kinetic_parameters
-    )
-    kinetic_dataset_model.overwrite_global_dimension("spectral")
-    kinetic_dataset_model.set_coords(axis)
-    clp = calculate_matrix(kinetic_dataset_model, {})
-    kinetic_compartments = clp.coords["clp_label"].values
+    decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
+    decay_dataset_model.overwrite_global_dimension("spectral")
+    decay_dataset_model.set_coordinates(axis)
+    clp = calculate_matrix(decay_dataset_model, {})
+    decay_compartments = clp.coords["clp_label"].values
 
 
 @pytest.mark.parametrize(
@@ -226,10 +234,10 @@ def test_spectral_model(suite):
     assert "species_associated_concentrations" in resultdata
     assert resultdata.species_associated_concentrations.shape == (
         suite.axis["time"].size,
-        len(suite.kinetic_compartments),
+        len(suite.decay_compartments),
     )
     assert "species_spectra" in resultdata
     assert resultdata.species_spectra.shape == (
         suite.axis["spectral"].size,
-        len(suite.kinetic_compartments),
+        len(suite.decay_compartments),
     )
