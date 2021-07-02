@@ -153,10 +153,8 @@ def retrieve_clps(
     clps = xr.DataArray(np.zeros((clp_labels.size), dtype=np.float64), coords=[clp_labels])
     clps.loc[{"clp_label": reduced_clps.coords["clp_label"]}] = reduced_clps.values
 
-    print("ret", clps)
     for relation in model.relations:
         relation = relation.fill(model, parameters)
-        print("YYY", relation.target, relation.source, relation.parameter)
         if relation.target in clp_labels and relation.applies(index):
             if relation.source not in clp_labels:
                 continue

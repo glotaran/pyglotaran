@@ -4,7 +4,8 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
-from glotaran.builtin.models.kinetic_image import KineticImageModel
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
@@ -19,8 +20,19 @@ def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
     ).T
 
 
+class DecayModel(Model):
+    @classmethod
+    def from_dict(cls, model_dict):
+        return super().from_dict(
+            model_dict,
+            megacomplex_types={
+                "decay": DecayMegacomplex,
+            },
+        )
+
+
 class OneComponentOneChannel:
-    model = KineticImageModel.from_dict(
+    model = DecayModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
@@ -51,14 +63,15 @@ class OneComponentOneChannel:
         [101e-3, [1, {"vary": False, "non-negative": False}]]
     )
 
-    time = np.asarray(np.arange(0, 50, 1.5))
-    axis = {"time": time, "pixel": np.asarray([0])}
+    time = xr.DataArray(np.arange(0, 50, 1.5))
+    pixel = xr.DataArray([0])
+    axis = {"time": time, "pixel": pixel}
 
-    clp = xr.DataArray([[1]], coords=[("pixel", [0]), ("clp_label", ["s1"])])
+    clp = xr.DataArray([[1]], coords=[("pixel", pixel), ("clp_label", ["s1"])])
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = KineticImageModel.from_dict(
+    model = DecayModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["5"]},
@@ -85,10 +98,12 @@ class OneComponentOneChannelGaussianIrf:
             },
         }
     )
-    assert model.overwrite_index_dependent()
 
     initial_parameters = ParameterGroup.from_list(
         [101e-4, 0.1, 1, [0.1, {"vary": False}], [1, {"vary": False, "non-negative": False}]]
+    )
+    assert model.megacomplex["mc1"].index_dependent(
+        model.dataset["dataset1"].fill(model, initial_parameters)
     )
     wanted_parameters = ParameterGroup.from_list(
         [
@@ -100,62 +115,15 @@ class OneComponentOneChannelGaussianIrf:
         ]
     )
 
-    time = np.asarray(np.arange(-10, 50, 1.5))
-    axis = {"time": time, "pixel": np.asarray([0])}
-    clp = xr.DataArray([[1]], coords=[("pixel", [0]), ("clp_label", ["s1"])])
+    time = xr.DataArray(np.arange(0, 50, 1.5))
+    pixel = xr.DataArray([0])
+    axis = {"time": time, "pixel": pixel}
 
-
-class OneComponentOneChannelMeasuredIrf:
-    model = KineticImageModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["2"]},
-            },
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "1",
-                    }
-                }
-            },
-            "irf": {
-                "irf1": {"type": "measured"},
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "irf": "irf1",
-                    "megacomplex": ["mc1"],
-                },
-            },
-        }
-    )
-
-    initial_parameters = ParameterGroup.from_list(
-        [101e-4, [1, {"vary": False, "non-negative": False}]]
-    )
-    wanted_parameters = ParameterGroup.from_list(
-        [101e-3, [1, {"vary": False, "non-negative": False}]]
-    )
-
-    time = np.asarray(np.arange(-10, 50, 1.5))
-    axis = {"time": time, "pixel": np.asarray([0])}
-
-    center = 0
-    width = 5
-    irf = (1 / np.sqrt(2 * np.pi)) * np.exp(
-        -(time - center) * (time - center) / (2 * width * width)
-    )
-    model.irf["irf1"].irfdata = irf
-
-    clp = xr.DataArray([[1]], coords=[("pixel", [0]), ("clp_label", ["s1"])])
+    clp = xr.DataArray([[1]], coords=[("pixel", pixel), ("clp_label", ["s1"])])
 
 
 class ThreeComponentParallel:
-    model = KineticImageModel.from_dict(
+    model = DecayModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.1", "j.1"]},
@@ -211,9 +179,9 @@ class ThreeComponentParallel:
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
         }
     )
+    time = xr.DataArray(np.arange(-10, 100, 1.5))
+    pixel = xr.DataArray(np.arange(600, 750, 10))
 
-    time = np.arange(-10, 100, 1.5)
-    pixel = np.arange(600, 750, 10)
     axis = {"time": time, "pixel": pixel}
 
     clp = _create_gaussian_clp(
@@ -222,7 +190,7 @@ class ThreeComponentParallel:
 
 
 class ThreeComponentSequential:
-    model = KineticImageModel.from_dict(
+    model = DecayModel.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
@@ -286,8 +254,8 @@ class ThreeComponentSequential:
         }
     )
 
-    time = np.asarray(np.arange(-10, 50, 1.0))
-    pixel = np.arange(600, 750, 10)
+    time = xr.DataArray(np.arange(-10, 50, 1.0))
+    pixel = xr.DataArray(np.arange(600, 750, 10))
     axis = {"time": time, "pixel": pixel}
 
     clp = _create_gaussian_clp(
@@ -300,7 +268,6 @@ class ThreeComponentSequential:
     [
         OneComponentOneChannel,
         OneComponentOneChannelGaussianIrf,
-        #  OneComponentOneChannelMeasuredIrf,
         ThreeComponentParallel,
         ThreeComponentSequential,
     ],

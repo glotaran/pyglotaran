@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from IPython.core.formatters import format_display_data
 
-from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
-from glotaran.builtin.models.kinetic_image.k_matrix import KMatrix
+from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
+from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.parameter import ParameterGroup
 
 

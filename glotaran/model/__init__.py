@@ -4,8 +4,6 @@ This package contains the Glotaran's base model object, the model decorators and
 common model items.
 """
 
-from glotaran.model.attribute import model_attribute
-from glotaran.model.attribute import model_attribute_typed
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.constraint import OnlyConstraint

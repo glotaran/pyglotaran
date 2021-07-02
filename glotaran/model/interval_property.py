@@ -5,14 +5,14 @@ from typing import Any
 from typing import List
 from typing import Tuple
 
-from glotaran.model import model_attribute
+from glotaran.model.item import model_item
 
 
-@model_attribute(
+@model_item(
     properties={
         "interval": {"type": List[Tuple[Any, Any]], "default": None, "allow_none": True},
     },
-    no_label=True,
+    has_label=False,
 )
 class IntervalProperty:
     """Applies a relation between clps as

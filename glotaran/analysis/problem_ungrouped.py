@@ -245,7 +245,6 @@ class UngroupedProblem(Problem):
         if self._full_penalty is None:
             residuals = self.weighted_residuals
             additional_penalty = self.additional_penalty
-            print(residuals)
             residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
 
             self._full_penalty = (
