@@ -101,7 +101,6 @@ def model_item(
                 getattr(cls, "_glotaran_properties").append(name)
 
         validators = _get_validators(cls)
-        print("VALI", validators)
         setattr(cls, "_glotaran_validators", validators)
 
         init = _create_init_func(cls)
