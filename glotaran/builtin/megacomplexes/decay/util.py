@@ -7,6 +7,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
+from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.model import DatasetModel
 
 if TYPE_CHECKING:
@@ -207,3 +208,11 @@ def retrieve_irf(dataset_model: DatasetModel, data: xr.Dataset, global_dimension
             model_axis=data.coords[model_dimension],
         ).data,
     )
+    data["irf_center"] = irf.center
+    data["irf_width"] = irf.width
+    if isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center:
+        for i, dispersion in enumerate(irf.calculate_dispersion(data.coords["spectral"].values)):
+            data[f"center_dispersion_{i+1}"] = (
+                global_dimension,
+                dispersion,
+            )

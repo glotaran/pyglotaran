@@ -59,6 +59,7 @@ class IrfMultiGaussian:
     def parameter(
         self, global_index: int, global_axis: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, bool, float]:
+        """Returns the properties of the irf with shift applied."""
 
         centers = self.center if isinstance(self.center, list) else [self.center]
         centers = np.asarray([c.value for c in centers])
@@ -157,6 +158,7 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
     """
 
     def parameter(self, global_index: int, global_axis: np.ndarray):
+        """Returns the properties of the irf with shift and dispersion applied."""
         centers, widths, scale, shift, backsweep, backsweep_period = super().parameter(
             global_index, global_axis
         )

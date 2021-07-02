@@ -87,7 +87,7 @@ class Problem:
         self._parameters = scheme.parameters.copy()
         self._parameter_history = []
 
-        self._model.valid(raise_exception=True)
+        self._model.validate(raise_exception=True)
 
         self._prepare_data(scheme.data)
 
