@@ -4,7 +4,9 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.util import calculate_matrix
-from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.builtin.megacomplexes.coherent_artifact import CoherentArtifactMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
@@ -15,7 +17,7 @@ def test_coherent_artifact():
             "j1": {"compartments": ["s1"], "parameters": ["2"]},
         },
         "megacomplex": {
-            "mc1": {"type": "kinetic-decay", "k_matrix": ["k1"]},
+            "mc1": {"type": "decay", "k_matrix": ["k1"]},
             "mc2": {"type": "coherent-artifact", "order": 3},
         },
         "k_matrix": {
@@ -40,7 +42,13 @@ def test_coherent_artifact():
             },
         },
     }
-    model = KineticSpectrumModel.from_dict(model_dict.copy())
+    model = Model.from_dict(
+        model_dict.copy(),
+        megacomplex_types={
+            "decay": DecayMegacomplex,
+            "coherent-artifact": CoherentArtifactMegacomplex,
+        },
+    )
 
     parameters = ParameterGroup.from_list(
         [
@@ -57,7 +65,7 @@ def test_coherent_artifact():
 
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
     dataset_model.overwrite_global_dimension("spectral")
-    dataset_model.set_coords(coords)
+    dataset_model.set_coordinates(coords)
     matrix = calculate_matrix(dataset_model, {})
     compartments = matrix.coords["clp_label"].values
 
@@ -83,7 +91,7 @@ def test_coherent_artifact():
             ),
         ],
     )
-    axis = {"time": time, "spectral": clp.spectral.data}
+    axis = {"time": time, "spectral": clp.spectral}
     data = simulate(model, "dataset1", parameters, axis, clp)
 
     dataset = {"dataset1": data}
