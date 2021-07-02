@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import copy
 from typing import TYPE_CHECKING
+from typing import Callable
+from typing import List
+from typing import Type
 
 from glotaran.model.property import ModelProperty
 from glotaran.model.util import wrap_func_as_method
@@ -10,10 +13,19 @@ from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
     from typing import Any
-    from typing import Callable
 
-    from glotaran.model.base_model import Model
+    from glotaran.model.model import Model
     from glotaran.parameter import ParameterGroup
+
+    Validator = Callable[
+        [Type[object], Type[Model]],
+        List[str],
+    ]
+
+    ValidatorParameter = Callable[
+        [Type[object], Type[Model], Type[ParameterGroup]],
+        List[str],
+    ]
 
 
 def model_item(
@@ -88,6 +100,10 @@ def model_item(
             if name not in getattr(cls, "_glotaran_properties"):
                 getattr(cls, "_glotaran_properties").append(name)
 
+        validators = _get_validators(cls)
+        print("VALI", validators)
+        setattr(cls, "_glotaran_validators", validators)
+
         init = _create_init_func(cls)
         setattr(cls, "__init__", init)
 
@@ -153,6 +169,24 @@ def model_item_typed(
         return cls
 
     return decorator
+
+
+def model_item_validator(need_parameter: bool):
+    """The model_item_validator marks a method of a model item as validation function"""
+
+    def decorator(method: Validator | ValidatorParameter):
+        setattr(method, "_glotaran_validator", need_parameter)
+        return method
+
+    return decorator
+
+
+def _get_validators(cls):
+    return {
+        method: getattr(getattr(cls, method), "_glotaran_validator")
+        for method in dir(cls)
+        if hasattr(getattr(cls, method), "_glotaran_validator")
+    }
 
 
 def _create_get_default_type_func(cls):
@@ -237,7 +271,7 @@ def _create_from_list_func(cls):
 
 def _create_validation_func(cls):
     @wrap_func_as_method(cls)
-    def validate(self, model: Model, parameters=None) -> list[str]:
+    def validate(self, model: Model, parameters: ParameterGroup | None = None) -> list[str]:
         f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
         set of parameters.
 
@@ -250,12 +284,19 @@ def _create_validation_func(cls):
         missing :
             A list the missing will be appended to.
         """
-        errors = []
+        problems = []
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            errors += prop.validate(value, model, parameters)
-        return errors
+            problems += prop.validate(value, model, parameters)
+        for validator, need_parameter in self._glotaran_validators.items():
+            if need_parameter:
+                if parameters is not None:
+                    problems += getattr(self, validator)(model, parameters)
+            else:
+                problems += getattr(self, validator)(model)
+
+        return problems
 
     return validate
 

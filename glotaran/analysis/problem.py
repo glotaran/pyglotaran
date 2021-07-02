@@ -86,6 +86,9 @@ class Problem:
         self._overwrite_index_dependent = hasattr(scheme.model, "overwrite_index_dependent")
         self._parameters = scheme.parameters.copy()
         self._parameter_history = []
+
+        self._model.valid(raise_exception=True)
+
         self._prepare_data(scheme.data)
 
         # all of the above are always not None

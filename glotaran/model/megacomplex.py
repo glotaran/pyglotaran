@@ -29,18 +29,21 @@ def create_model_megacomplex_type(
 
 def megacomplex(
     *,
-    dimension: str,
+    dimension: str | None = None,
     model_items: dict[str, dict[str, Any]] = None,
     properties: Any | dict[str, dict[str, Any]] = None,
     dataset_model_items: dict[str, dict[str, Any]] = None,
     dataset_properties: Any | dict[str, dict[str, Any]] = None,
+    unique: bool = False,
 ):
     """The `@megacomplex` decorator is intended to be used on subclasses of
     :class:`glotaran.model.Megacomplex`. It registers the megacomplex model
     and makes it available in analysis models.
     """
     properties = properties if properties is not None else {}
-    properties["dimension"] = {"type": str, "default": dimension}
+    properties["dimension"] = {"type": str}
+    if dimension is not None:
+        properties["dimension"]["default"] = dimension
 
     if model_items is None:
         model_items = {}
@@ -60,6 +63,7 @@ def megacomplex(
         setattr(cls, "_glotaran_megacomplex_model_items", model_items)
         setattr(cls, "_glotaran_megacomplex_dataset_model_items", dataset_model_items)
         setattr(cls, "_glotaran_megacomplex_dataset_properties", dataset_properties)
+        setattr(cls, "_glotaran_megacomplex_unique", unique)
 
         return model_item(properties=properties, has_type=True)(cls)
 
@@ -125,3 +129,7 @@ class Megacomplex:
     @classmethod
     def glotaran_dataset_properties(cls) -> str:
         return cls._glotaran_megacomplex_dataset_properties
+
+    @classmethod
+    def glotaran_unique(cls) -> bool:
+        return cls._glotaran_megacomplex_unique
