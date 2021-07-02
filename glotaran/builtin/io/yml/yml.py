@@ -122,6 +122,7 @@ class YmlProjectIo(ProjectIoInterface):
         ftol = scheme.get("ftol", 1e-8)
         gtol = scheme.get("gtol", 1e-8)
         xtol = scheme.get("xtol", 1e-8)
+        group = scheme.get("group", False)
         group_tolerance = scheme.get("group_tolerance", 0.0)
         saving = SavingOptions(**scheme.get("saving", {}))
         return Scheme(
@@ -133,6 +134,7 @@ class YmlProjectIo(ProjectIoInterface):
             ftol=ftol,
             gtol=gtol,
             xtol=xtol,
+            group=group,
             group_tolerance=group_tolerance,
             optimization_method=optimization_method,
             saving=saving,
