@@ -2,19 +2,21 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.util import calculate_matrix
-from glotaran.builtin.models.kinetic_image import KineticImageModel
+from glotaran.builtin.megacomplexes.baseline import BaselineMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
 
 def test_baseline():
-    model = KineticImageModel.from_dict(
+    model = Model.from_dict(
         {
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
             },
             "megacomplex": {
-                "mc1": {"type": "kinetic-decay", "k_matrix": ["k1"]},
-                "mc2": {"type": "kinetic-baseline"},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
+                "mc2": {"type": "baseline", "dimension": "time"},
             },
             "k_matrix": {
                 "k1": {
@@ -29,7 +31,8 @@ def test_baseline():
                     "megacomplex": ["mc1", "mc2"],
                 },
             },
-        }
+        },
+        megacomplex_types={"decay": DecayMegacomplex, "baseline": BaselineMegacomplex},
     )
 
     parameter = ParameterGroup.from_list(
@@ -45,7 +48,7 @@ def test_baseline():
     coords = {"time": time, "pixel": pixel}
     dataset_model = model.dataset["dataset1"].fill(model, parameter)
     dataset_model.overwrite_global_dimension("pixel")
-    dataset_model.set_coords(coords)
+    dataset_model.set_coordinates(coords)
     matrix = calculate_matrix(dataset_model, {})
     compartments = matrix.coords["clp_label"]
 
