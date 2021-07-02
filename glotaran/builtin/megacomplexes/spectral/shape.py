@@ -2,12 +2,12 @@
 
 import numpy as np
 
-from glotaran.model import model_attribute
-from glotaran.model import model_attribute_typed
+from glotaran.model import model_item
+from glotaran.model import model_item_typed
 from glotaran.parameter import Parameter
 
 
-@model_attribute(
+@model_item(
     properties={
         "amplitude": Parameter,
         "location": Parameter,
@@ -157,7 +157,7 @@ class SpectralShapeSkewedGaussian:
         return result
 
 
-@model_attribute(properties={}, has_type=True)
+@model_item(properties={}, has_type=True)
 class SpectralShapeOne:
     """A constant spectral shape with value 1"""
 
@@ -177,7 +177,7 @@ class SpectralShapeOne:
         return np.ones(axis.shape[0])
 
 
-@model_attribute(properties={}, has_type=True)
+@model_item(properties={}, has_type=True)
 class SpectralShapeZero:
     """A constant spectral shape with value 0"""
 
@@ -199,7 +199,7 @@ class SpectralShapeZero:
         return np.zeros(axis.shape[0])
 
 
-@model_attribute_typed(
+@model_item_typed(
     types={
         "skewed-gaussian": SpectralShapeSkewedGaussian,
         "one": SpectralShapeOne,

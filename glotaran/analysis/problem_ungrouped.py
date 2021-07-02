@@ -10,7 +10,7 @@ from glotaran.analysis.util import calculate_clp_penalties
 from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.util import retrieve_clps
-from glotaran.model import DatasetDescriptor
+from glotaran.model import DatasetModel
 
 
 class UngroupedProblem(Problem):
@@ -58,7 +58,7 @@ class UngroupedProblem(Problem):
         return self._matrices, self._reduced_matrices
 
     def _calculate_index_dependent_matrix(
-        self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetDescriptor
+        self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetModel
     ):
         self._matrices[label] = []
         self._reduced_matrices[label] = []
@@ -74,7 +74,7 @@ class UngroupedProblem(Problem):
             self._reduced_matrices[label].append(reduced_matrix)
 
     def _calculate_index_independent_matrix(
-        self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetDescriptor
+        self, label: str, problem: UngroupedProblemDescriptor, dataset_model: DatasetModel
     ):
 
         matrix = calculate_matrix(

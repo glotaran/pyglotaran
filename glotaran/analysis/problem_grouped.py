@@ -17,7 +17,7 @@ from glotaran.analysis.util import find_closest_index
 from glotaran.analysis.util import find_overlap
 from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.util import retrieve_clps
-from glotaran.model import DatasetDescriptor
+from glotaran.model import DatasetModel
 from glotaran.project import Scheme
 
 
@@ -196,7 +196,7 @@ class GroupedProblem(Problem):
         """Calculates the index dependent model matrices."""
 
         def calculate_group(
-            group: ProblemGroup, descriptors: dict[str, DatasetDescriptor]
+            group: ProblemGroup, descriptors: dict[str, DatasetModel]
         ) -> tuple[list[xr.DataArray], xr.DataArray, xr.DataArray]:
             matrices = [
                 calculate_matrix(

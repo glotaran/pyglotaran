@@ -16,7 +16,7 @@ def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
             amplitudes[i] * np.exp(-np.log(2) * np.square(2 * (axis - centers[i]) / widths[i]))
             for i, _ in enumerate(labels)
         ],
-        coords=[("clp_label", labels), ("pixel", axis)],
+        coords=[("clp_label", labels), ("pixel", axis.data)],
     ).T
 
 
@@ -67,7 +67,7 @@ class OneComponentOneChannel:
     pixel = xr.DataArray([0])
     axis = {"time": time, "pixel": pixel}
 
-    clp = xr.DataArray([[1]], coords=[("pixel", pixel), ("clp_label", ["s1"])])
+    clp = xr.DataArray([[1]], coords=[("pixel", pixel.data), ("clp_label", ["s1"])])
 
 
 class OneComponentOneChannelGaussianIrf:
@@ -119,7 +119,7 @@ class OneComponentOneChannelGaussianIrf:
     pixel = xr.DataArray([0])
     axis = {"time": time, "pixel": pixel}
 
-    clp = xr.DataArray([[1]], coords=[("pixel", pixel), ("clp_label", ["s1"])])
+    clp = xr.DataArray([[1]], coords=[("pixel", pixel.data), ("clp_label", ["s1"])])
 
 
 class ThreeComponentParallel:
