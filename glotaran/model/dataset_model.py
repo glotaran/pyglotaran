@@ -85,6 +85,8 @@ class DatasetModel:
                         "Global megacomplex dimensions do not "
                         f"match for dataset model '{self.label}'."
                     )
+            elif hasattr(self, "_coords"):
+                return next(dim for dim in self._coords if dim != self.get_model_dimension())
             else:
                 if not hasattr(self, "_data"):
                     raise ValueError(f"Data not set for dataset descriptor '{self.label}'")

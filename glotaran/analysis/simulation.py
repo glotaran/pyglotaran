@@ -61,7 +61,7 @@ def simulate(
                 f"Cannot simulate dataset {dataset} without global megacomplex "
                 "and no clp provided."
             )
-        simulate_clp(
+        result = simulate_clp(
             dataset_model,
             parameters,
             clp,
