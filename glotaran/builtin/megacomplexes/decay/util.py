@@ -204,8 +204,8 @@ def retrieve_irf(dataset_model: DatasetModel, data: xr.Dataset, global_dimension
         (model_dimension),
         irf.calculate(
             index=0,
-            global_axis=data.coords[global_dimension],
-            model_axis=data.coords[model_dimension],
+            global_axis=data.coords[global_dimension].values,
+            model_axis=data.coords[model_dimension].values,
         ).data,
     )
     data["irf_center"] = irf.center

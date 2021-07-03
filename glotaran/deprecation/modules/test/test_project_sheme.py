@@ -16,8 +16,17 @@ def test_Scheme_from_yaml_file_method(tmp_path: Path):
     """Create Scheme from file."""
     scheme_path = tmp_path / "scheme.yml"
 
+    model_yml_str = """
+    megacomplex:
+        m1:
+            type: decay
+            k_matrix: []
+    dataset:
+        dataset1:
+            megacomplex: [m1]
+    """
     model_path = tmp_path / "model.yml"
-    model_path.write_text("type: kinetic-spectrum\ndataset:\n  dataset1:\n    megacomplex: []")
+    model_path.write_text(model_yml_str)
 
     parameter_path = tmp_path / "parameters.yml"
     parameter_path.write_text("[1.0, 67.0]")

@@ -11,10 +11,10 @@ import pytest
 
 from glotaran.builtin.io.sdt.sdt_file_reader import SdtDataIo
 from glotaran.builtin.io.yml.yml import YmlProjectIo
-from glotaran.builtin.models.kinetic_image import KineticImageModel
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.io.interface import DataIoInterface
 from glotaran.io.interface import ProjectIoInterface
-from glotaran.model.base_model import Model
+from glotaran.model.megacomplex import Megacomplex
 from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import add_plugin_to_registry
@@ -57,7 +57,7 @@ mock_registry_data_io = cast(
         "sdt": SdtDataIo("sdt"),
         "yml": YmlProjectIo("yml"),
         "glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo": SdtDataIo("sdt"),
-        "kinetic-image": KineticImageModel,
+        "decay": DecayMegacomplex,
         "mock_plugin": MockPlugin,
         "imported_plugin": MockPlugin,
     },
@@ -66,7 +66,7 @@ mock_registry_data_io = cast(
 mock_registry_project_io = cast(
     MutableMapping[str, ProjectIoInterface], copy(mock_registry_data_io)
 )
-mock_registry_model = cast(MutableMapping[str, Type[Model]], copy(mock_registry_data_io))
+mock_registry_model = cast(MutableMapping[str, Type[Megacomplex]], copy(mock_registry_data_io))
 
 
 @pytest.mark.parametrize(
@@ -111,7 +111,7 @@ def test_PluginOverwriteWarning():
     (
         ("sdt_new", SdtDataIo("sdt"), copy(mock_registry_data_io)),
         ("yml_new", YmlProjectIo("yml"), copy(mock_registry_project_io)),
-        ("kinetic-image_new", KineticImageModel, copy(mock_registry_model)),
+        ("decay_new", DecayMegacomplex, copy(mock_registry_model)),
     ),
 )
 def test_add_plugin_to_register(
@@ -253,7 +253,7 @@ def test_registered_plugins():
     result = [
         "sdt",
         "yml",
-        "kinetic-image",
+        "decay",
         "mock_plugin",
         "imported_plugin",
     ]
