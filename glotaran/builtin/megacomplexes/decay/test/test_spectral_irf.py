@@ -144,7 +144,7 @@ def test_spectral_irf(suite):
 
     resultdata = result.data["dataset1"]
 
-    # print(resultdata)
+    print(resultdata)
 
     assert np.array_equal(dataset["time"], resultdata["time"])
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
@@ -160,3 +160,4 @@ def test_spectral_irf(suite):
 
     assert "species_associated_spectra" in resultdata
     assert "decay_associated_spectra" in resultdata
+    assert "irf_center" in resultdata
