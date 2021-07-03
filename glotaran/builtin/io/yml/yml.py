@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 
 import yaml
 
+from glotaran.builtin.io.yml.sanatize import check_deprecations
 from glotaran.builtin.io.yml.sanatize import sanitize_yaml
-from glotaran.deprecation import warn_deprecated
 from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
@@ -49,24 +49,7 @@ class YmlProjectIo(ProjectIoInterface):
             with open(file_name) as f:
                 spec = yaml.safe_load(f)
 
-        if "type" in spec:
-            if spec["type"] == "kinetic-spectrum":
-                warn_deprecated(
-                    deprecated_qual_name_usage="type: kinectic-spectrum",
-                    new_qual_name_usage="default-megacomplex: decay",
-                    to_be_removed_in_version="0.6.0",
-                    check_qual_names=(False, False),
-                )
-                spec["default-megacomplex"] = "decay"
-            elif spec["type"] == "spectral":
-                warn_deprecated(
-                    deprecated_qual_name_usage="type: spectral",
-                    new_qual_name_usage="default-megacomplex: spectral",
-                    to_be_removed_in_version="0.6.0",
-                    check_qual_names=(False, False),
-                )
-                spec["default-megacomplex"] = "spectral"
-            del spec["type"]
+        check_deprecations(spec)
 
         spec = sanitize_yaml(spec)
 
