@@ -172,13 +172,13 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
 
         if len(self.center_dispersion) != 0:
             if self.dispersion_center is None:
-                raise ModelError(self, f'No dispersion center defined for irf "{self.label}"')
+                raise ModelError(f"No dispersion center defined for irf '{self.label}'")
             for i, disp in enumerate(self.center_dispersion):
                 centers += disp * np.power(dist, i + 1)
 
         if len(self.width_dispersion) != 0:
             if self.dispersion_center is None:
-                raise ModelError(self, f'No dispersion center defined for irf "{self.label}"')
+                raise ModelError(f"No dispersion center defined for irf '{self.label}'")
             for i, disp in enumerate(self.width_dispersion):
                 widths = widths + disp * np.power(dist, i + 1)
 
