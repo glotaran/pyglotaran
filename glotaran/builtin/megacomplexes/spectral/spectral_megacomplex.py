@@ -17,6 +17,7 @@ from glotaran.model import megacomplex
     model_items={
         "shape": Dict[str, SpectralShape],
     },
+    register_as="spectral",
 )
 class SpectralMegacomplex(Megacomplex):
     def calculate_matrix(

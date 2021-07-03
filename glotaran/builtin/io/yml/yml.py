@@ -15,7 +15,7 @@ from glotaran.io import load_parameters
 from glotaran.io import register_project_io
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
-from glotaran.model import get_model
+from glotaran.model import get_megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
@@ -56,7 +56,7 @@ class YmlProjectIo(ProjectIoInterface):
         model_type = spec["type"]
         del spec["type"]
 
-        model = get_model(model_type)
+        model = get_megacomplex(model_type)
         return model.from_dict(spec)
 
     def load_parameters(self, file_name: str) -> ParameterGroup:

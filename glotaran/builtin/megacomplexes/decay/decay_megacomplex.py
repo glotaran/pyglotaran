@@ -31,7 +31,7 @@ from glotaran.model import megacomplex
         "initial_concentration": {"type": InitialConcentration, "allow_none": True},
         "irf": {"type": Irf, "allow_none": True},
     },
-    dataset_properties={},
+    register_as="decay",
 )
 class DecayMegacomplex(Megacomplex):
     """A Megacomplex with one or more K-Matrices."""
