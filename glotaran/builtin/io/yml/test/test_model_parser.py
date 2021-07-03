@@ -5,18 +5,17 @@ from os.path import join
 import numpy as np
 import pytest
 
-from glotaran.builtin.models.kinetic_image.initial_concentration import InitialConcentration
-from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
-from glotaran.builtin.models.kinetic_image.kinetic_decay_megacomplex import KineticDecayMegacomplex
-from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_dataset_descriptor import (
-    KineticSpectrumDatasetDescriptor,
-)
-from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import KineticSpectrumModel
-from glotaran.builtin.models.kinetic_spectrum.spectral_constraints import ZeroConstraint
-from glotaran.builtin.models.kinetic_spectrum.spectral_penalties import EqualAreaPenalty
-from glotaran.builtin.models.kinetic_spectrum.spectral_shape import SpectralShapeGaussian
+from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
+from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
+from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
+from glotaran.builtin.megacomplexes.spectral.shape import SpectralShapeSkewedGaussian
 from glotaran.io import load_model
+from glotaran.model import DatasetModel
+from glotaran.model import Model
 from glotaran.model import Weight
+from glotaran.model.clp_penalties import EqualAreaPenalty
+from glotaran.model.constraint import OnlyConstraint
+from glotaran.model.constraint import ZeroConstraint
 from glotaran.parameter import ParameterGroup
 
 THIS_DIR = dirname(abspath(__file__))
@@ -24,15 +23,17 @@ THIS_DIR = dirname(abspath(__file__))
 
 @pytest.fixture
 def model():
-    spec_path = join(THIS_DIR, "test_model_spec_kinetic.yml")
+    spec_path = join(THIS_DIR, "test_model_spec.yml")
     m = load_model(spec_path)
     print(m.markdown())
     return m
 
 
 def test_correct_model(model):
-    assert type(model).__name__ == "KineticSpectrumModel"
-    assert isinstance(model, KineticSpectrumModel)
+    assert isinstance(model, Model)
+    assert "decay" == model.default_megacomplex
+    assert "decay" in model.megacomplex_types
+    assert "spectral" in model.megacomplex_types
 
 
 def test_dataset(model):
@@ -40,37 +41,33 @@ def test_dataset(model):
 
     assert "dataset1" in model.dataset
     dataset = model.dataset["dataset1"]
-    assert isinstance(dataset, KineticSpectrumDatasetDescriptor)
+    assert isinstance(dataset, DatasetModel)
     assert dataset.label == "dataset1"
     assert dataset.megacomplex == ["cmplx1"]
     assert dataset.initial_concentration == "inputD1"
     assert dataset.irf == "irf1"
     assert dataset.scale == 1
 
-    assert len(dataset.shape) == 2
-    assert dataset.shape["s1"] == "shape1"
-    assert dataset.shape["s2"] == "shape2"
 
-    dataset = model.dataset["dataset2"]
+def test_constraints(model):
+    print(model.constraints)
+    assert len(model.constraints) == 2
 
+    zero = model.constraints[0]
+    assert isinstance(zero, ZeroConstraint)
+    assert zero.target == "s1"
+    assert zero.interval == [[1, 100], [2, 200]]
 
-def test_spectral_constraints(model):
-    print(model.spectral_constraints)
-    assert len(model.spectral_constraints) == 2
-
-    assert any(isinstance(c, ZeroConstraint) for c in model.spectral_constraints)
-
-    zcs = [zc for zc in model.spectral_constraints if zc.type == "zero"]
-    assert len(zcs) == 2
-    for zc in zcs:
-        assert zc.compartment == "s1"
-        assert zc.interval == [[1, 100], [2, 200]]
+    only = model.constraints[1]
+    assert isinstance(only, OnlyConstraint)
+    assert only.target == "s1"
+    assert only.interval == [[1, 100], [2, 200]]
 
 
-def test_spectral_penalties(model):
-    assert len(model.equal_area_penalties) == 1
-    assert all(isinstance(c, EqualAreaPenalty) for c in model.equal_area_penalties)
-    eac = model.equal_area_penalties[0]
+def test_penalties(model):
+    assert len(model.clp_area_penalties) == 1
+    assert all(isinstance(c, EqualAreaPenalty) for c in model.clp_area_penalties)
+    eac = model.clp_area_penalties[0]
     assert eac.source == "s3"
     assert eac.source_intervals == [[670, 810]]
     assert eac.target == "s2"
@@ -79,13 +76,13 @@ def test_spectral_penalties(model):
     assert eac.weight == 0.0016
 
 
-def test_spectral_relations(model):
-    print(model.spectral_relations)
-    assert len(model.spectral_relations) == 1
+def test_relations(model):
+    print(model.relations)
+    assert len(model.relations) == 1
 
-    rel = model.spectral_relations[0]
+    rel = model.relations[0]
 
-    assert rel.compartment == "s1"
+    assert rel.source == "s1"
     assert rel.target == "s2"
     assert rel.interval == [[1, 100], [2, 200]]
 
@@ -157,7 +154,7 @@ def test_shapes(model):
     assert "shape1" in model.shape
 
     shape = model.shape["shape1"]
-    assert isinstance(shape, SpectralShapeGaussian)
+    assert isinstance(shape, SpectralShapeSkewedGaussian)
     assert shape.amplitude.full_label == "shape.1"
     assert shape.location.full_label == "shape.2"
     assert shape.width.full_label == "shape.3"
@@ -166,10 +163,16 @@ def test_shapes(model):
 def test_megacomplexes(model):
     assert len(model.megacomplex) == 3
 
-    for i, _ in enumerate(model.megacomplex, start=1):
+    for i in range(1, 3):
         label = f"cmplx{i}"
         assert label in model.megacomplex
         megacomplex = model.megacomplex[label]
-        assert isinstance(megacomplex, KineticDecayMegacomplex)
+        assert isinstance(megacomplex, DecayMegacomplex)
         assert megacomplex.label == label
         assert megacomplex.k_matrix == [f"km{i}"]
+
+    assert "cmplx3" in model.megacomplex
+    megacomplex = model.megacomplex["cmplx3"]
+    assert len(megacomplex.shape) == 2
+    assert megacomplex.shape["s1"] == "shape1"
+    assert megacomplex.shape["s2"] == "shape2"
