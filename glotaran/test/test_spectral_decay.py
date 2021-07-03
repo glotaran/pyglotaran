@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
@@ -8,20 +9,23 @@ from glotaran.io import load_parameters
 from glotaran.project import Scheme
 
 MODEL_1C_BASE = """\
-type: kinetic-spectrum
 dataset:
     dataset1: &dataset1
         megacomplex: [mc1]
+        global_megacomplex: [mc2]
         initial_concentration: j1
-        shape:
-            s1: sh1
 initial_concentration:
     j1:
         compartments: [s1]
         parameters: ["1"]
 megacomplex:
     mc1:
+        type: decay
         k_matrix: [k1]
+    mc2:
+        type: spectral
+        shape:
+            s1: sh1
 k_matrix:
     k1:
         matrix:
@@ -78,8 +82,8 @@ class OneComponentOneChannel:
     model = load_model(MODEL_1C_NO_IRF, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_1C_INITIAL, format_name="yml_str")
     wanted_parameters = load_parameters(PARAMETERS_1C_WANTED, format_name="yml_str")
-    time = np.asarray(np.arange(0, 50, 1.5))
-    spectral = np.asarray([0])
+    time = xr.DataArray(np.arange(0, 50, 1.5))
+    spectral = xr.DataArray([0])
     axis = {"time": time, "spectral": spectral}
 
 
@@ -87,25 +91,28 @@ class OneComponentOneChannelGaussianIrf:
     model = load_model(MODEL_1C_GAUSSIAN_IRF, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL, format_name="yml_str")
     wanted_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_WANTED, format_name="yml_str")
-    time = np.asarray(np.arange(-10, 50, 1.5))
-    spectral = np.asarray([0])
+    time = xr.DataArray(np.arange(-10, 50, 1.5))
+    spectral = xr.DataArray([0])
     axis = {"time": time, "spectral": spectral}
 
 
 MODEL_3C_BASE = """\
-type: kinetic-spectrum
 dataset:
     dataset1: &dataset1
         megacomplex: [mc1]
+        global_megacomplex: [mc2]
         initial_concentration: j1
         irf: irf1
+megacomplex:
+    mc1:
+        type: decay
+        k_matrix: [k1]
+    mc2:
+        type: spectral
         shape:
             s1: sh1
             s2: sh2
             s3: sh3
-megacomplex:
-    mc1:
-        k_matrix: [k1]
 irf:
     irf1:
         type: spectral-multi-gaussian
@@ -113,17 +120,17 @@ irf:
         width: [irf.width]
 shape:
     sh1:
-        type: gaussian
+        type: skewed-gaussian
         amplitude: shapes.amps.1
         location: shapes.locs.1
         width: shapes.width.1
     sh2:
-        type: gaussian
+        type: skewed-gaussian
         amplitude: shapes.amps.2
         location: shapes.locs.2
         width: shapes.width.2
     sh3:
-        type: gaussian
+        type: skewed-gaussian
         amplitude: shapes.amps.3
         location: shapes.locs.3
         width: shapes.width.3
@@ -220,8 +227,8 @@ class ThreeComponentParallel:
     model = load_model(MODEL_3C_PARALLEL, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_PARALLEL, format_name="yml_str")
     wanted_parameters = load_parameters(PARAMETERS_3C_PARALLEL_WANTED, format_name="yml_str")
-    time = np.arange(-10, 100, 1.5)
-    spectral = np.arange(600, 750, 10)
+    time = xr.DataArray(np.arange(-10, 100, 1.5))
+    spectral = xr.DataArray(np.arange(600, 750, 10))
     axis = {"time": time, "spectral": spectral}
 
 
@@ -229,8 +236,8 @@ class ThreeComponentSequential:
     model = load_model(MODEL_3C_SEQUENTIAL, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_SEQUENTIAL, format_name="yml_str")
     wanted_parameters = load_parameters(PARAMETERS_3C_SIM_SEQUENTIAL, format_name="yml_str")
-    time = np.asarray(np.arange(-10, 50, 1.0))
-    spectral = np.arange(600, 750, 5.0)
+    time = xr.DataArray(np.arange(-10, 50, 1.0))
+    spectral = xr.DataArray(np.arange(600, 750, 5.0))
     axis = {"time": time, "spectral": spectral}
 
 
