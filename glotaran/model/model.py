@@ -298,7 +298,7 @@ class Model:
         base_heading = "#" * base_heading_level
         string = f"{base_heading} Model\n\n"
         string += "_Megacomplex Types_: "
-        string += ", ".join(name for name in self._megacomplex_types)
+        string += ", ".join(self._megacomplex_types)
         string += "\n\n"
 
         for name in self._model_items:

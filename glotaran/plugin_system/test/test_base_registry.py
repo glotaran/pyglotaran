@@ -368,7 +368,7 @@ def test_methods_differ_from_baseclass_table(
     def get_plugin_function(plugin_registry_key: str):
         if plugin_registry_key == "base":
             return MockPlugin
-        elif plugin_registry_key in ["sub_class", "sub_class_inst"]:
+        elif plugin_registry_key in {"sub_class", "sub_class_inst"}:
             return MockPluginSubclass
 
     result = methods_differ_from_baseclass_table(

@@ -55,12 +55,12 @@ def simulate(
             parameters,
             clp,
         )
+    elif clp is None:
+        raise ValueError(
+            f"Cannot simulate dataset {dataset} without global megacomplex "
+            "and no clp provided."
+        )
     else:
-        if clp is None:
-            raise ValueError(
-                f"Cannot simulate dataset {dataset} without global megacomplex "
-                "and no clp provided."
-            )
         result = simulate_clp(
             dataset_model,
             parameters,
