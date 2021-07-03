@@ -24,6 +24,22 @@ if TYPE_CHECKING:
     import xarray as xr
 
 
+default_model_items = {
+    "clp_area_penalties": EqualAreaPenalty,
+    "constraints": Constraint,
+    "relations": Relation,
+    "weights": Weight,
+}
+
+default_dataset_properties = {
+    "megacomplex": List[str],
+    "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
+    "global_megacomplex": {"type": List[str], "default": []},
+    "global_megacomplex_scale": {"type": List[Parameter], "default": None, "allow_none": True},
+    "scale": {"type": Parameter, "default": None, "allow_none": True},
+}
+
+
 class Model:
     """A base class for global analysis models."""
 
@@ -175,23 +191,11 @@ class Model:
         self._dataset_properties[name] = dataset_property
 
     def _add_default_items_and_properties(self):
-        self._add_model_item("clp_area_penalties", EqualAreaPenalty)
-        self._add_model_item("constraints", Constraint)
-        self._add_model_item("relations", Relation)
-        self._add_model_item("weights", Weight)
+        for name, item in default_model_items.items():
+            self._add_model_item(name, item)
 
-        self._add_dataset_property("megacomplex", List[str])
-        self._add_dataset_property(
-            "megacomplex_scale", {"type": List[Parameter], "allow_none": True}
-        )
-        self._add_dataset_property("global_megacomplex", {"type": List[str], "default": []})
-        self._add_dataset_property(
-            "global_megacomplex_scale",
-            {"type": List[Parameter], "default": None, "allow_none": True},
-        )
-        self._add_dataset_property(
-            "scale", {"type": Parameter, "default": None, "allow_none": True}
-        )
+        for name, prop in default_dataset_properties.items():
+            self._add_dataset_property(name, prop)
 
     def _add_dataset_type(self):
         dataset_model_type = create_dataset_model_type(self._dataset_properties)

@@ -1,4 +1,4 @@
-type: kinetic-spectrum
+default-megacomplex: decay
 
 
 dataset:
@@ -7,9 +7,6 @@ dataset:
     initial_concentration: inputD1
     irf: irf1
     scale: 1
-    shape:
-      s1: shape1
-      s2: shape2
   dataset2:
     megacomplex: [cmplx2]
     initial_concentration: inputD2
@@ -21,7 +18,18 @@ irf:
     type: gaussian
     center: [1]
     width: [2]
-  irf2: [spectral-gaussian, [1, 2], [3,4], [9], None, false, true, 55, 55, [5,6], [7,8], true] # compact
+  irf2:
+    type: spectral-gaussian
+    center: [1, 2]
+    width: [3,4]
+    scale: [9]
+    normalize: false
+    backsweep: true
+    backsweep_period: 55
+    dispersion_center: 55
+    center_dispersion: [5,6]
+    width_dispersion: [7,8]
+    model_dispersion_with_wavenumber: true
 
 initial_concentration:
   inputD1:
@@ -46,7 +54,7 @@ k_matrix:
 
 shape:
   shape1:
-    type: "gaussian"
+    type: "skewed-gaussian"
     amplitude: shape.1
     location: shape.2
     width: shape.3
@@ -57,18 +65,24 @@ megacomplex:
   cmplx2:
       k_matrix: [km2]
   cmplx3:
-    type: "kinetic-decay"
-    k_matrix: [km3]
+    type: "spectral"
+    shape:
+      s1: shape1
+      s2: shape2
 
-spectral_constraints:
+constraints:
   - type: zero
-    compartment: s1
+    target: s1
     interval:
       - [1, 100]
       - [2, 200]
-  - [zero, s1, [[1, 100], [2, 200]]]
+  - type: only
+    target: s1
+    interval:
+      - [1, 100]
+      - [2, 200]
 
-equal_area_penalties:
+clp_area_penalties:
   - type: equal_area
     source: s3
     source_intervals: [[670, 810]]
@@ -77,8 +91,8 @@ equal_area_penalties:
     parameter: 55
     weight: 0.0016
 
-spectral_relations:
-  - compartment: s1
+relations:
+  - source: s1
     target: s2
     parameter: 8
     interval: [[1,100], [2,200]]

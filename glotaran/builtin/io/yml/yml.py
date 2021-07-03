@@ -15,13 +15,13 @@ from glotaran.io import load_parameters
 from glotaran.io import register_project_io
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
+from glotaran.model import Model
 from glotaran.model import get_megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
 
 if TYPE_CHECKING:
-    from glotaran.model import Model
     from glotaran.project import Result
 
 
@@ -50,14 +50,28 @@ class YmlProjectIo(ProjectIoInterface):
 
         spec = sanitize_yaml(spec)
 
-        if "type" not in spec:
-            raise Exception("Model type not defined")
+        default_megacomplex = spec.get("default-megacomplex")
 
-        model_type = spec["type"]
-        del spec["type"]
+        if default_megacomplex is None and any(
+            "type" not in m for m in spec["megacomplex"].values()
+        ):
+            raise ValueError(
+                "Default megacomplex is not defined in model and "
+                "at least one megacomplex does not have a type."
+            )
 
-        model = get_megacomplex(model_type)
-        return model.from_dict(spec)
+        megacomplex_types = {
+            m["type"]: get_megacomplex(m["type"])
+            for m in spec["megacomplex"].values()
+            if "type" in m
+        }
+        if default_megacomplex is not None:
+            megacomplex_types[default_megacomplex] = get_megacomplex(default_megacomplex)
+            del spec["default-megacomplex"]
+
+        return Model.from_dict(
+            spec, megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex
+        )
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
 
