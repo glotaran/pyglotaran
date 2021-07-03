@@ -115,7 +115,7 @@ class DecayMegacomplex(Megacomplex):
 
     def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
         global_dimension = dataset_model.get_global_dimension()
-        name = "images" if global_dimension == "pixel" else "image"
+        name = "images" if global_dimension == "pixel" else "spectra"
 
         if "species" not in data.coords:
             # We are the first Decay complex called and add SAD for all decay megacomplexes
