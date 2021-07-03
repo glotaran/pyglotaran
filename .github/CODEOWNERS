@@ -36,7 +36,7 @@ LICENSE                         @glotaran/pyglotaran_creators
 /glotaran/builtin/io/csv        @glotaran/maintainers
 /glotaran/builtin/io/netCDF     @glotaran/maintainers
 /glotaran/builtin/io/sdt        @glotaran/maintainers
-/glotaran/builtin/models/       @jsnel @joernweissenborn
+/glotaran/builtin/megacomplexes/       @jsnel @joernweissenborn
 
 # cli
 /glotaran/cli/                  @jsnel @glotaran/admins
