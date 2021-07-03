@@ -70,7 +70,7 @@ def simulate(
     if noise:
         if noise_seed is not None:
             np.random.seed(noise_seed)
-        result["data"] = (np.random.normal(result.data, noise_std_dev),)
+        result["data"] = (result.data.dims, np.random.normal(result.data, noise_std_dev))
 
     return result
 
