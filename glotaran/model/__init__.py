@@ -17,8 +17,8 @@ from glotaran.model.model import Model
 from glotaran.model.relation import Relation
 from glotaran.model.util import ModelError
 from glotaran.model.weight import Weight
-from glotaran.plugin_system.model_registration import get_model
-from glotaran.plugin_system.model_registration import is_known_model
-from glotaran.plugin_system.model_registration import known_model_names
-from glotaran.plugin_system.model_registration import model_plugin_table
-from glotaran.plugin_system.model_registration import set_model_plugin
+from glotaran.plugin_system.megacomplex_registration import get_megacomplex
+from glotaran.plugin_system.megacomplex_registration import is_known_megacomplex
+from glotaran.plugin_system.megacomplex_registration import known_megacomplex_names
+from glotaran.plugin_system.megacomplex_registration import megacomplex_plugin_table
+from glotaran.plugin_system.megacomplex_registration import set_megacomplex_plugin

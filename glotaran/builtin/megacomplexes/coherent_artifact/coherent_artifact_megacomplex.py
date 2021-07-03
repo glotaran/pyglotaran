@@ -24,6 +24,7 @@ from glotaran.parameter import Parameter
     dataset_model_items={
         "irf": {"type": Irf, "allow_none": True},
     },
+    register_as="coherent-artifact",
 )
 class CoherentArtifactMegacomplex(Megacomplex):
     def calculate_matrix(

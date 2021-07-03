@@ -10,6 +10,7 @@ from typing_inspect import is_generic_type
 
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_typed
+from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 
 if TYPE_CHECKING:
     from typing import Any
@@ -35,6 +36,7 @@ def megacomplex(
     dataset_model_items: dict[str, dict[str, Any]] = None,
     dataset_properties: Any | dict[str, dict[str, Any]] = None,
     unique: bool = False,
+    register_as: str | None = None,
 ):
     """The `@megacomplex` decorator is intended to be used on subclasses of
     :class:`glotaran.model.Megacomplex`. It registers the megacomplex model
@@ -65,7 +67,12 @@ def megacomplex(
         setattr(cls, "_glotaran_megacomplex_dataset_properties", dataset_properties)
         setattr(cls, "_glotaran_megacomplex_unique", unique)
 
-        return model_item(properties=properties, has_type=True)(cls)
+        megacomplex_type = model_item(properties=properties, has_type=True)(cls)
+
+        if register_as is not None:
+            register_megacomplex(register_as, megacomplex_type)
+
+        return megacomplex_type
 
     return decorator
 

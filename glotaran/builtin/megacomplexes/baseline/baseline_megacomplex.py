@@ -8,7 +8,7 @@ from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
 
 
-@megacomplex(unique=True)
+@megacomplex(unique=True, register_as="baseline")
 class BaselineMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
