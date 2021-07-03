@@ -123,6 +123,10 @@ class DatasetModel:
             return self._index_dependent
         return any(m.index_dependent(self) for m in self.megacomplex)
 
+    def overwrite_index_dependent(self, index_dependent: bool):
+        """Overrides the index dependency of the dataset"""
+        self._index_dependent = index_dependent
+
     def global_model(self) -> bool:
         """Indicates if the dataset model can model the global dimension."""
         return len(self.global_megacomplex) != 0
