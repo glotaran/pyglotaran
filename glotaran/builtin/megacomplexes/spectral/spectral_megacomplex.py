@@ -14,6 +14,7 @@ from glotaran.model import megacomplex
 
 @megacomplex(
     dimension="spectral",
+    properties={"energy_spectrum": {"type": bool, "default": False}},
     model_items={
         "shape": Dict[str, SpectralShape],
     },
@@ -34,16 +35,18 @@ class SpectralMegacomplex(Megacomplex):
             compartments.append(compartment)
 
         model_dimension = dataset_model.get_model_dimension()
-        model_axis = dataset_model.get_coordinates()[model_dimension]
+        model_axis = dataset_model.get_coordinates()[model_dimension].data
+        if self.energy_spectrum:
+            model_axis = 1e7 / model_axis
 
         dim1 = model_axis.size
         dim2 = len(self.shape)
         matrix = np.zeros((dim1, dim2))
 
         for i, shape in enumerate(self.shape.values()):
-            matrix[:, i] += shape.calculate(model_axis.values)
+            matrix[:, i] += shape.calculate(model_axis)
         return xr.DataArray(
-            matrix, coords=((model_dimension, model_axis.data), ("clp_label", compartments))
+            matrix, coords=((model_dimension, model_axis), ("clp_label", compartments))
         )
 
     def index_dependent(self, dataset: DatasetModel) -> bool:

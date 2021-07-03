@@ -147,7 +147,7 @@ class SpectralShapeSkewedGaussian:
         np.ndarray
             An array representing a skewed Gaussian shape.
         """
-        log_args = 1 + (2 * self.skewness * ((1e7 / axis) - self.location) / self.width)
+        log_args = 1 + (2 * self.skewness * (axis - self.location) / self.width)
         result = np.zeros(log_args.shape)
         valid_arg_mask = np.where(log_args > 0)
         result[valid_arg_mask] = self.amplitude * np.exp(
