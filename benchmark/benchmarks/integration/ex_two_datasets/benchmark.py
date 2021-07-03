@@ -37,6 +37,8 @@ class IntegrationTwoDatasets:
             non_negative_least_squares=True,
             optimization_method="TrustRegionReflection",
         )
+        # monkey patch for consistent behavior after PR730
+        self.scheme.group = True  # type:ignore
         # Values extracted from a previous run of IntegrationTwoDatasets.time_optimize()
         self.problem = GroupedProblem(self.scheme)
         # pickled OptimizeResult
