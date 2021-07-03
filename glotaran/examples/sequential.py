@@ -1,10 +1,13 @@
 import numpy as np
+import xarray as xr
 
 from glotaran.analysis.simulation import simulate
-from glotaran.builtin.models.kinetic_spectrum import KineticSpectrumModel
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
+from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
-sim_model = KineticSpectrumModel.from_dict(
+sim_model = Model.from_dict(
     {
         "initial_concentration": {
             "j1": {
@@ -23,24 +26,33 @@ sim_model = KineticSpectrumModel.from_dict(
         },
         "megacomplex": {
             "m1": {
+                "type": "decay",
                 "k_matrix": ["k1"],
-            }
+            },
+            "m2": {
+                "type": "spectral",
+                "shape": {
+                    "s1": "sh1",
+                    "s2": "sh2",
+                    "s3": "sh3",
+                },
+            },
         },
         "shape": {
             "sh1": {
-                "type": "gaussian",
+                "type": "skewed-gaussian",
                 "amplitude": "shapes.amps.1",
                 "location": "shapes.locs.1",
                 "width": "shapes.width.1",
             },
             "sh2": {
-                "type": "gaussian",
+                "type": "skewed-gaussian",
                 "amplitude": "shapes.amps.2",
                 "location": "shapes.locs.2",
                 "width": "shapes.width.2",
             },
             "sh3": {
-                "type": "gaussian",
+                "type": "skewed-gaussian",
                 "amplitude": "shapes.amps.3",
                 "location": "shapes.locs.3",
                 "width": "shapes.width.3",
@@ -53,15 +65,12 @@ sim_model = KineticSpectrumModel.from_dict(
             "dataset1": {
                 "initial_concentration": "j1",
                 "megacomplex": ["m1"],
-                "shape": {
-                    "s1": "sh1",
-                    "s2": "sh2",
-                    "s3": "sh3",
-                },
+                "global_megacomplex": ["m2"],
                 "irf": "irf1",
             }
         },
-    }
+    },
+    megacomplex_types={"decay": DecayMegacomplex, "spectral": SpectralMegacomplex},
 )
 
 wanted_parameter = ParameterGroup.from_dict(
@@ -95,8 +104,8 @@ parameter = ParameterGroup.from_dict(
     }
 )
 
-_time = np.arange(-1, 20, 0.01)
-_spectral = np.arange(600, 700, 1.4)
+_time = xr.DataArray(np.arange(-1, 20, 0.01))
+_spectral = xr.DataArray(np.arange(600, 700, 1.4))
 
 dataset = simulate(
     sim_model,
@@ -107,7 +116,7 @@ dataset = simulate(
     noise_std_dev=1e-2,
 )
 
-model = KineticSpectrumModel.from_dict(
+model = Model.from_dict(
     {
         "initial_concentration": {
             "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
@@ -123,6 +132,7 @@ model = KineticSpectrumModel.from_dict(
         },
         "megacomplex": {
             "m1": {
+                "type": "decay",
                 "k_matrix": ["k1"],
             }
         },
@@ -136,5 +146,6 @@ model = KineticSpectrumModel.from_dict(
                 "irf": "irf1",
             }
         },
-    }
+    },
+    megacomplex_types={"decay": DecayMegacomplex},
 )
