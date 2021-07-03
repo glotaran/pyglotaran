@@ -92,7 +92,7 @@ class SpectralShapeSkewedGaussian:
             An array representing a Gaussian shape.
         """
         return self.amplitude * np.exp(
-            -np.log(2) * np.square(2 * ((1e7 / axis) - self.location) / self.width)
+            -np.log(2) * np.square(2 * (axis - self.location) / self.width)
         )
 
     def calculate_skewed_gaussian(self, axis: np.ndarray) -> np.ndarray:

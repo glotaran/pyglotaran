@@ -273,7 +273,7 @@ def test_equal_area_penalties(debug=False):
     area1_np = np.sum(result_np.data["dataset1"].species_associated_spectra.sel(species="s1"))
     area2_np = np.sum(result_np.data["dataset1"].species_associated_spectra.sel(species="s2"))
     print("area_np", area1_np, area2_np)
-    assert not np.isclose(area1_np, area2_np, atol=1e-11)
+    assert not np.isclose(area1_np, area2_np)
 
     area1_wp = np.sum(result_wp.data["dataset1"].species_associated_spectra.sel(species="s1"))
     area2_wp = np.sum(result_wp.data["dataset1"].species_associated_spectra.sel(species="s2"))
@@ -283,8 +283,7 @@ def test_equal_area_penalties(debug=False):
         "i.2"
     )
     print("input", input_ratio)
-    # TODO FIX
-    #  assert np.isclose(input_ratio, 1.5038858115)
+    assert np.isclose(input_ratio, 1.5038858115)
 
 
 if __name__ == "__main__":
