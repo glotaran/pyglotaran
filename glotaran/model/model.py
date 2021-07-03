@@ -214,6 +214,10 @@ class Model:
         """Alias for `glotaran.model.megacomplex`. Needed internally."""
         return self.megacomplex
 
+    def need_index_dependent(self):
+        """Returns true if e.g. relations with intervals are present."""
+        return any(i.interval is not None for i in self.constraints + self.relations)
+
     def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
         """
         Returns a list with all problems in the model and missing parameters if specified.

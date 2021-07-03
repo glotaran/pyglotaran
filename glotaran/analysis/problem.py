@@ -83,7 +83,7 @@ class Problem:
         self._parameters = None
         self._dataset_models = None
 
-        self._overwrite_index_dependent = hasattr(scheme.model, "overwrite_index_dependent")
+        self._overwrite_index_dependent = self.model.need_index_dependent()
         self._parameters = scheme.parameters.copy()
         self._parameter_history = []
 
@@ -230,7 +230,7 @@ class Problem:
         }
         if self._overwrite_index_dependent:
             for d in self._dataset_models.values():
-                d.overwrite_index_dependent(self.model.overwrite_index_dependent())
+                d.overwrite_index_dependent(self._overwrite_index_dependent)
         self._reset_results()
 
     def _reset_results(self):
@@ -254,7 +254,7 @@ class Problem:
             dataset_model = dataset_model.fill(self.model, self.parameters)
             dataset_model.set_data(dataset)
             if self._overwrite_index_dependent:
-                dataset_model.overwrite_index_dependent(self.model.overwrite_index_dependent())
+                dataset_model.overwrite_index_dependent(self._overwrite_index_dependent)
             self._dataset_models[label] = dataset_model
             global_dimension = dataset_model.get_global_dimension()
             model_dimension = dataset_model.get_model_dimension()
