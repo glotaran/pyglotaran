@@ -50,7 +50,7 @@ class ModelProperty(property):
             return []
 
         missing_model = []
-        if hasattr(model, self._name):
+        if self._name in model.model_items:
             items = getattr(model, self._name)
 
             if isinstance(value, list):

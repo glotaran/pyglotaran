@@ -1,5 +1,8 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
+import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
@@ -8,14 +11,12 @@ from glotaran.io import load_parameters
 from glotaran.project import Scheme
 
 MODEL_BASE = """\
-type: kinetic-spectrum
+default-megacomplex: decay
 dataset:
     dataset1:
         megacomplex: [mc1]
         initial_concentration: j1
         irf: irf1
-        shape:
-            s1: sh1
 initial_concentration:
     j1:
         compartments: [s1]
@@ -23,6 +24,10 @@ initial_concentration:
 megacomplex:
     mc1:
         k_matrix: [k1]
+    mc2:
+        type: spectral
+        shape:
+            s1: sh1
 k_matrix:
     k1:
         matrix:
@@ -87,16 +92,16 @@ class SimpleIrfDispersion:
     time_p1 = np.linspace(-1, 2, 50, endpoint=False)
     time_p2 = np.linspace(2, 5, 30, endpoint=False)
     time_p3 = np.geomspace(5, 10, num=20)
-    time = np.concatenate([time_p1, time_p2, time_p3])
-    spectral = np.arange(300, 500, 100)
+    time = xr.DataArray(np.concatenate([time_p1, time_p2, time_p3]))
+    spectral = xr.DataArray(np.arange(300, 500, 100))
     axis = {"time": time, "spectral": spectral}
 
 
 class MultiIrfDispersion:
     model = load_model(MODEL_MULTI_IRF_DISPERSION, format_name="yml_str")
     parameters = load_parameters(PARAMETERS_MULTI_IRF_DISPERSION, format_name="yml_str")
-    time = np.arange(-1, 5, 0.2)
-    spectral = np.arange(300, 500, 100)
+    time = xr.DataArray(np.arange(-1, 5, 0.2))
+    spectral = xr.DataArray(np.arange(300, 500, 100))
     axis = {"time": time, "spectral": spectral}
 
 
@@ -117,7 +122,9 @@ def test_spectral_irf(suite):
     print(model.validate(parameters))
     assert model.valid(parameters)
 
-    dataset = simulate(model, "dataset1", parameters, suite.axis)
+    sim_model = deepcopy(model)
+    sim_model.dataset["dataset1"].global_megacomplex = ["mc2"]
+    dataset = simulate(sim_model, "dataset1", parameters, suite.axis)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 

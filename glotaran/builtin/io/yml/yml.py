@@ -80,6 +80,9 @@ class YmlProjectIo(ProjectIoInterface):
                 "at least one megacomplex does not have a type."
             )
 
+        if "megacomplex" not in spec:
+            raise ValueError("No megacomplex defined in model")
+
         megacomplex_types = {
             m["type"]: get_megacomplex(m["type"])
             for m in spec["megacomplex"].values()
@@ -192,6 +195,7 @@ class YmlProjectIo(ProjectIoInterface):
 
         scheme_path = os.path.join(result_path, "scheme.yml")
         result_scheme = dataclasses.replace(result.scheme)
+        result_scheme.model = result_scheme.model.markdown()
         result = dataclasses.replace(result)
         result.scheme = scheme_path
 
