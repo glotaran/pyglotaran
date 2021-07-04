@@ -134,7 +134,7 @@ def model_plugin_table(*, plugin_names: bool = False, full_names: bool = False) 
 
     Returns
     -------
-    str
+    MarkdownStr
         Markdown table of modelnames.
     """
     table_data = []

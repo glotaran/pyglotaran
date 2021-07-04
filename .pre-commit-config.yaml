@@ -57,34 +57,38 @@ repos:
         args: [--strip-empty-cells]
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 0.13.0
+    rev: 0.13.1
     hooks:
       - id: nbqa-black
-        additional_dependencies: [black==20.8b1]
+        additional_dependencies: [black==21.6b0]
         args: [--nbqa-mutate]
       - id: nbqa-pyupgrade
-        additional_dependencies: [pyupgrade==2.9.0]
+        additional_dependencies: [pyupgrade==2.19.4]
         args: [--nbqa-mutate, --py38-plus]
       - id: nbqa-flake8
       - id: nbqa-check-ast
       - id: nbqa-isort
-        additional_dependencies: [isort==5.7.0]
+        additional_dependencies: [isort==5.9.1]
         args: [--nbqa-mutate]
 
   # Linters
 
-  # - repo: https://github.com/PyCQA/pydocstyle
-  #   rev: 5.1.1
-  #   hooks:
-  #     - id: pydocstyle
-  #       exclude: "docs|tests"
-  #       # this is needed due to the following issue:
-  #       # https://github.com/PyCQA/pydocstyle/issues/368
-  #       args: [--ignore-decorators=wrap_func_as_method]
-  # - repo: https://github.com/terrencepreilly/darglint
-  #   rev: v1.5.5
-  #   hooks:
-  #     - id: darglint
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.1.1
+    hooks:
+      - id: pydocstyle
+        files: "^glotaran/(plugin_system|utils|deprecation)"
+        exclude: "docs|tests?"
+        # this is needed due to the following issue:
+        # https://github.com/PyCQA/pydocstyle/issues/368
+        args: [--ignore-decorators=wrap_func_as_method]
+
+  - repo: https://github.com/terrencepreilly/darglint
+    rev: v1.8.0
+    hooks:
+      - id: darglint
+        files: "^glotaran/(plugin_system|utils|deprecation)"
+        exclude: "docs|tests?"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910
