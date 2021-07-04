@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 import itertools
-from typing import NamedTuple
+from typing import Any
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetDescriptor
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
-
-
-class LabelAndMatrix(NamedTuple):
-    clp_label: list[str]
-    matrix: np.ndarray
 
 
 def find_overlap(a, b, rtol=1e-05, atol=1e-08):
@@ -44,79 +40,165 @@ def get_min_max_from_interval(interval, axis):
 
 
 def calculate_matrix(
-    model: Model,
     dataset_descriptor: DatasetDescriptor,
-    indices: dict[str, int],
-    axis: dict[str, np.ndarray],
-) -> LabelAndMatrix:
-    clp_labels = None
+    indices: dict[str, int] | None,
+) -> xr.DataArray:
     matrix = None
 
     for scale, megacomplex in dataset_descriptor.iterate_megacomplexes():
-        this_clp_labels, this_matrix = megacomplex.calculate_matrix(
-            model, dataset_descriptor, indices, axis
-        )
+        this_matrix = megacomplex.calculate_matrix(dataset_descriptor, indices)
 
         if scale is not None:
             this_matrix *= scale
 
         if matrix is None:
-            clp_labels = this_clp_labels
             matrix = this_matrix
         else:
-            tmp_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
-            tmp_matrix = np.zeros((matrix.shape[0], len(tmp_clp_labels)), dtype=np.float64)
-            for idx, label in enumerate(tmp_clp_labels):
-                if label in clp_labels:
-                    tmp_matrix[:, idx] += matrix[:, clp_labels.index(label)]
-                if label in this_clp_labels:
-                    tmp_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
-            clp_labels = tmp_clp_labels
-            matrix = tmp_matrix
+            matrix, this_matrix = xr.align(matrix, this_matrix, join="outer", copy=False)
+            matrix = matrix.fillna(0)
+            matrix += this_matrix.fillna(0)
 
-    return LabelAndMatrix(clp_labels, matrix)
+    return matrix
 
 
 def reduce_matrix(
+    matrix: xr.DataArray,
     model: Model,
-    label: str,
     parameters: ParameterGroup,
-    result: LabelAndMatrix,
-    index: float | None,
-) -> LabelAndMatrix:
-    clp_labels = result.clp_label.copy()
-    if callable(model.has_matrix_constraints_function) and model.has_matrix_constraints_function():
-        clp_label, matrix = model.constrain_matrix_function(
-            label, parameters, clp_labels, result.matrix, index
-        )
-        return LabelAndMatrix(clp_label, matrix)
-    return LabelAndMatrix(clp_labels, result.matrix)
+    model_dimension: str,
+    index: Any | None,
+) -> xr.DataArray:
+    matrix = apply_relations(matrix, model, parameters, model_dimension, index)
+    matrix = apply_constraints(matrix, model, index)
+    return matrix
 
 
-def combine_matrices(labels_and_matrices: list[LabelAndMatrix]) -> LabelAndMatrix:
-    masks = []
-    full_clp_labels = None
-    sizes = []
-    for label_and_matrix in labels_and_matrices:
-        (clp_label, matrix) = label_and_matrix
-        sizes.append(matrix.shape[0])
-        if full_clp_labels is None:
-            full_clp_labels = clp_label
-            masks.append([i for i, _ in enumerate(clp_label)])
-        else:
-            mask = []
-            for c in clp_label:
-                if c not in full_clp_labels:
-                    full_clp_labels.append(c)
-                mask.append(full_clp_labels.index(c))
-            masks.append(mask)
-    dim1 = np.sum(sizes)
-    dim2 = len(full_clp_labels)
-    full_matrix = np.zeros((dim1, dim2), dtype=np.float64)
-    start = 0
-    for i, m in enumerate(labels_and_matrices):
-        end = start + sizes[i]
-        full_matrix[start:end, masks[i]] = m[1]
-        start = end
+def apply_constraints(
+    matrix: xr.DataArray,
+    model: Model,
+    index: Any | None,
+) -> xr.DataArray:
 
-    return LabelAndMatrix(full_clp_labels, full_matrix)
+    if len(model.constraints) == 0:
+        return matrix
+
+    clp_labels = matrix.coords["clp_label"].values
+    removed_clp = [
+        c.target for c in model.constraints if c.target in clp_labels and c.applies(index)
+    ]
+    reduced_clp_label = [c for c in clp_labels if c not in removed_clp]
+
+    return matrix.sel({"clp_label": reduced_clp_label})
+
+
+def apply_relations(
+    matrix: xr.DataArray,
+    model: Model,
+    parameters: ParameterGroup,
+    model_dimension: str,
+    index: Any | None,
+) -> xr.DataArray:
+
+    if len(model.relations) == 0:
+        return matrix
+
+    clp_labels = list(matrix.coords["clp_label"].values)
+    relation_matrix = np.diagflat([1.0 for _ in clp_labels])
+
+    idx_to_delete = []
+    for relation in model.relations:
+        if relation.target in clp_labels and relation.applies(index):
+
+            if relation.source not in clp_labels:
+                continue
+
+            relation = relation.fill(model, parameters)
+            source_idx = clp_labels.index(relation.source)
+            target_idx = clp_labels.index(relation.target)
+            relation_matrix[target_idx, source_idx] = relation.parameter
+            idx_to_delete.append(target_idx)
+
+    reduced_clp_label = [label for i, label in enumerate(clp_labels) if i not in idx_to_delete]
+    relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
+    return xr.DataArray(
+        matrix.values @ relation_matrix,
+        dims=matrix.dims,
+        coords={
+            "clp_label": reduced_clp_label,
+            model_dimension: matrix.coords[model_dimension],
+        },
+    )
+
+
+def retrieve_clps(
+    model: Model,
+    parameters: ParameterGroup,
+    clp_labels: xr.DataArray,
+    reduced_clps: xr.DataArray,
+    index: Any | None,
+) -> xr.DataArray:
+    if len(model.relations) == 0 and len(model.constraints) == 0:
+        return reduced_clps
+
+    clps = xr.DataArray(np.zeros((clp_labels.size), dtype=np.float64), coords=[clp_labels])
+    clps.loc[{"clp_label": reduced_clps.coords["clp_label"]}] = reduced_clps.values
+
+    print("ret", clps)
+    for relation in model.relations:
+        relation = relation.fill(model, parameters)
+        print("YYY", relation.target, relation.source, relation.parameter)
+        if relation.target in clp_labels and relation.applies(index):
+            if relation.source not in clp_labels:
+                continue
+            clps.loc[{"clp_label": relation.target}] = relation.parameter * clps.sel(
+                clp_label=relation.source
+            )
+
+    return clps
+
+
+def calculate_clp_penalties(
+    model: Model,
+    parameters: ParameterGroup,
+    clps: xr.DataArray,
+    global_dimension: str,
+) -> np.ndarray:
+
+    penalties = []
+    for penalty in model.clp_area_penalties:
+        if (
+            penalty.source in clps.coords["clp_label"]
+            and penalty.target in clps.coords["clp_label"]
+        ):
+            penalty = penalty.fill(model, parameters)
+
+            source_area = xr.concat(
+                [
+                    clps.sel(
+                        {
+                            "clp_label": penalty.source,
+                            global_dimension: slice(interval[0], interval[1]),
+                        }
+                    )
+                    for interval in penalty.source_intervals
+                ],
+                dim=global_dimension,
+            )
+
+            target_area = xr.concat(
+                [
+                    clps.sel(
+                        {
+                            "clp_label": penalty.target,
+                            global_dimension: slice(interval[0], interval[1]),
+                        }
+                    )
+                    for interval in penalty.target_intervals
+                ],
+                dim=global_dimension,
+            )
+
+            area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
+            penalties.append(area_penalty * penalty.weight)
+
+    return np.asarray(penalties)

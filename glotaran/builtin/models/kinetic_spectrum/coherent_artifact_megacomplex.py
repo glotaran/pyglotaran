@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import numba as nb
 import numpy as np
+import xarray as xr
 
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
@@ -22,10 +23,8 @@ from glotaran.parameter import Parameter
 class CoherentArtifactMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
-        model,
         dataset_model: DatasetDescriptor,
         indices: dict[str, int],
-        axis: dict[str, np.ndarray],
         **kwargs,
     ):
         if not 1 <= self.order <= 3:
@@ -39,9 +38,10 @@ class CoherentArtifactMegacomplex(Megacomplex):
 
         global_dimension = dataset_model.get_global_dimension()
         global_index = indices.get(global_dimension)
-        global_axis = axis.get(global_dimension)
+        global_axis = dataset_model.get_coords().get(global_dimension).values
         model_dimension = dataset_model.get_model_dimension()
-        model_axis = axis[model_dimension]
+        model_axis = dataset_model.get_coords()[model_dimension].values
+
         irf = dataset_model.irf
 
         center, width, _, _, _, _ = irf.parameter(global_index, global_axis)
@@ -49,7 +49,9 @@ class CoherentArtifactMegacomplex(Megacomplex):
         width = self.width.value if self.width is not None else width[0]
 
         matrix = _calculate_coherent_artifact_matrix(center, width, model_axis, self.order)
-        return (self.compartments(), matrix)
+        return xr.DataArray(
+            matrix, coords=((model_dimension, model_axis), ("clp_label", self.compartments()))
+        )
 
     def compartments(self):
         return [f"coherent_artifact_{i}" for i in range(1, self.order + 1)]

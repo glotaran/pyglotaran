@@ -29,7 +29,8 @@ def calculate_e(dataset, axis):
 
 @megacomplex("c", properties={"is_index_dependent": bool})
 class SimpleTestMegacomplex(Megacomplex):
-    def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
+    def calculate_matrix(self, dataset_model, indices, **kwargs):
+        axis = dataset_model.get_data().coords
         assert "c" in axis
         assert "e" in axis
 
@@ -42,7 +43,7 @@ class SimpleTestMegacomplex(Megacomplex):
             r_compartments.append(compartments[i])
             for j in range(axis.shape[0]):
                 array[j, i] = (i + j) * axis[j]
-        return (r_compartments, array)
+        return xr.DataArray(array, coords=(("c", axis.data), ("clp_label", r_compartments)))
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
@@ -62,18 +63,19 @@ class SimpleTestModel(Model):
 
 @megacomplex("c", properties={"is_index_dependent": bool})
 class SimpleKineticMegacomplex(Megacomplex):
-    def calculate_matrix(self, model, dataset_descriptor, indices, axis, **kwargs):
+    def calculate_matrix(self, dataset_model, indices, **kwargs):
+        axis = dataset_model.get_data().coords
         assert "c" in axis
         assert "e" in axis
         axis = axis["c"]
-        kinpar = -1 * np.asarray(dataset_descriptor.kinetic)
-        if dataset_descriptor.label == "dataset3":
+        kinpar = -1 * np.asarray(dataset_model.kinetic)
+        if dataset_model.label == "dataset3":
             # this case is for the ThreeDatasetDecay test
             compartments = [f"s{i+2}" for i in range(len(kinpar))]
         else:
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(axis, kinpar))
-        return (compartments, array)
+        return xr.DataArray(array, coords=(("c", axis.data), ("clp_label", compartments)))
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
@@ -235,11 +237,11 @@ class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
     global_matrix=calculate_spectral_simple,
     global_dimension="e",
     megacomplex_types=SimpleKineticMegacomplex,
-    has_additional_penalty_function=lambda model: True,
-    additional_penalty_function=additional_penalty_typecheck,
-    has_matrix_constraints_function=lambda model: True,
-    constrain_matrix_function=constrain_matrix_function_typecheck,
-    retrieve_clp_function=retrieve_clp_typecheck,
+    #  has_additional_penalty_function=lambda model: True,
+    #  additional_penalty_function=additional_penalty_typecheck,
+    #  has_matrix_constraints_function=lambda model: True,
+    #  constrain_matrix_function=constrain_matrix_function_typecheck,
+    #  retrieve_clp_function=retrieve_clp_typecheck,
     grouped=lambda model: model.is_grouped,
 )
 class DecayModel(Model):
@@ -258,8 +260,8 @@ class DecayModel(Model):
     global_dimension="e",
     megacomplex_types=SimpleKineticMegacomplex,
     grouped=lambda model: model.is_grouped,
-    has_additional_penalty_function=lambda model: True,
-    additional_penalty_function=additional_penalty_typecheck,
+    #  has_additional_penalty_function=lambda model: True,
+    #  additional_penalty_function=additional_penalty_typecheck,
 )
 class GaussianDecayModel(Model):
     additional_penalty_function_called = False
