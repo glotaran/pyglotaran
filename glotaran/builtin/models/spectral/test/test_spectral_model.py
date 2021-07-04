@@ -63,16 +63,17 @@ class OneCompartmentModel:
 
     spectral_parameters = ParameterGroup.from_list([7, 20000, 800])
 
-    time = np.arange(-10, 50, 1.5)
-    spectral = np.arange(400, 600, 5)
+    time = xr.DataArray(np.arange(-10, 50, 1.5))
+    spectral = xr.DataArray(np.arange(400, 600, 5))
     axis = {"time": time, "spectral": spectral}
 
-    dataset = kinetic_model.dataset["dataset1"].fill(kinetic_model, kinetic_parameters)
-    dataset.overwrite_global_dimension("spectral")
-    kinetic_compartments, kinetic_matrix = calculate_matrix(kinetic_model, dataset, {}, axis)
-    clp = xr.DataArray(
-        kinetic_matrix, coords=[("time", time), ("clp_label", kinetic_compartments)]
+    kinetic_dataset_model = kinetic_model.dataset["dataset1"].fill(
+        kinetic_model, kinetic_parameters
     )
+    kinetic_dataset_model.overwrite_global_dimension("spectral")
+    kinetic_dataset_model.set_coords(axis)
+    clp = calculate_matrix(kinetic_dataset_model, {})
+    kinetic_compartments = clp.coords["clp_label"].values
 
 
 class ThreeCompartmentModel:
@@ -161,16 +162,17 @@ class ThreeCompartmentModel:
         ]
     )
 
-    time = np.arange(-10, 50, 1.5)
-    spectral = np.arange(400, 600, 5)
+    time = xr.DataArray(np.arange(-10, 50, 1.5))
+    spectral = xr.DataArray(np.arange(400, 600, 5))
     axis = {"time": time, "spectral": spectral}
 
-    dataset = kinetic_model.dataset["dataset1"].fill(kinetic_model, kinetic_parameters)
-    dataset.overwrite_global_dimension("spectral")
-    kinetic_compartments, kinetic_matrix = calculate_matrix(kinetic_model, dataset, {}, axis)
-    clp = xr.DataArray(
-        kinetic_matrix, coords=[("time", time), ("clp_label", kinetic_compartments)]
+    kinetic_dataset_model = kinetic_model.dataset["dataset1"].fill(
+        kinetic_model, kinetic_parameters
     )
+    kinetic_dataset_model.overwrite_global_dimension("spectral")
+    kinetic_dataset_model.set_coords(axis)
+    clp = calculate_matrix(kinetic_dataset_model, {})
+    kinetic_compartments = clp.coords["clp_label"].values
 
 
 @pytest.mark.parametrize(
