@@ -39,5 +39,6 @@ def test_display_file(tmp_path: Path):
     expected = MarkdownStr(file_content, syntax="yaml")
     tmp_file = tmp_path / "test.yml"
     tmp_file.write_text(file_content)
-    for path in (tmp_file, str(tmp_file)):
-        assert display_file(path, syntax="yaml") == expected
+
+    assert display_file(tmp_file, syntax="yaml") == expected
+    assert display_file(str(tmp_file), syntax="yaml") == expected

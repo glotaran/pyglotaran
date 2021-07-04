@@ -321,7 +321,7 @@ def deprecate(
 
     def outer_wrapper(deprecated_object: DecoratedCallable) -> DecoratedCallable:
         """Wrap deprecated_object of all callable kinds."""
-        if type(deprecated_object) is not type:
+        if not isinstance(deprecated_object, type):
             return cast(DecoratedCallable, inject_warn_into_call(deprecated_object))
 
         setattr(
@@ -329,9 +329,9 @@ def deprecate(
             "__new__",
             inject_warn_into_call(deprecated_object.__new__),  # type: ignore [arg-type]
         )
-        return deprecated_object
+        return deprecated_object  # type: ignore[return-value]
 
-    return outer_wrapper
+    return cast(Callable[[DecoratedCallable], DecoratedCallable], outer_wrapper)
 
 
 def module_attribute(module_qual_name: str, attribute_name: str) -> Any:
@@ -488,7 +488,7 @@ def deprecate_submodule(
     def warn_getattr(attribute_name: str):
 
         if attribute_name == "__file__":
-            return module_attribute(new_module, attribute_name)
+            return new_module.__file__
 
         elif attribute_name in dir(new_module):
             return deprecate_module_attribute(
