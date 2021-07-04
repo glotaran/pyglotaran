@@ -5,6 +5,7 @@ from typing import List
 
 import numba as nb
 import numpy as np
+import xarray as xr
 
 from glotaran.builtin.models.kinetic_image.irf import IrfMultiGaussian
 from glotaran.model import DatasetDescriptor
@@ -46,10 +47,8 @@ class KineticDecayMegacomplex(Megacomplex):
 
     def calculate_matrix(
         self,
-        model,
         dataset_model: DatasetDescriptor,
         indices: dict[str, int],
-        axis: dict[str, np.ndarray],
         **kwargs,
     ):
         if dataset_model.initial_concentration is None:
@@ -72,9 +71,9 @@ class KineticDecayMegacomplex(Megacomplex):
 
         global_dimension = dataset_model.get_global_dimension()
         global_index = indices.get(global_dimension)
-        global_axis = axis.get(global_dimension)
+        global_axis = dataset_model.get_coords().get(global_dimension).values
         model_dimension = dataset_model.get_model_dimension()
-        model_axis = axis[model_dimension]
+        model_axis = dataset_model.get_coords()[model_dimension].values
 
         # init the matrix
         size = (model_axis.size, rates.size)
@@ -94,7 +93,9 @@ class KineticDecayMegacomplex(Megacomplex):
         matrix = matrix @ k_matrix.a_matrix(initial_concentration)
 
         # done
-        return (compartments, matrix)
+        return xr.DataArray(
+            matrix, coords=((model_dimension, model_axis), ("clp_label", compartments))
+        )
 
 
 def kinetic_image_matrix_implementation(
