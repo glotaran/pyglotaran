@@ -488,7 +488,7 @@ def project_io_plugin_table(
 
     Returns
     -------
-    str
+    MarkdownStr
         Markdown table of project io plugins.
     """
     table_data = methods_differ_from_baseclass_table(
