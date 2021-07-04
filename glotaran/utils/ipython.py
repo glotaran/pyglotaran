@@ -9,8 +9,7 @@ class MarkdownStr(UserString):
     """String wrapper class for rich display integration of markdown in ipython."""
 
     def __init__(self, wrapped_str: str, *, syntax: str = None):
-        """String class automatically displayed as markdown by ipython.
-
+        """Initialize string class that is automatically displayed as markdown by ``ipython``.
 
         Parameters
         ----------
@@ -23,13 +22,16 @@ class MarkdownStr(UserString):
         ----
         Possible syntax highlighting values can e.g. be found here:
         https://support.codebasehq.com/articles/tips-tricks/syntax-highlighting-in-markdown
+
+
+        .. # noqa: DAR101
         """
         # This needs to be called data since ipython is looking for this attr
         self.data = str(wrapped_str)
         self.syntax = syntax
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown.
+        """Render markdown automatically when in a ``ipython`` context.
 
         See:
         https://ipython.readthedocs.io/en/latest/config/integrating.html?highlight=_repr_markdown_#rich-display
@@ -64,7 +66,7 @@ def display_file(path: str | PathLike[str], *, syntax: str = None) -> MarkdownSt
     ----------
     path : str | PathLike[str]
         Paths to the file
-    syntax : str, optional
+    syntax : str
         Syntax highlighting which should be applied, by default None
 
     Returns

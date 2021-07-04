@@ -302,7 +302,7 @@ def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False
 
     Returns
     -------
-    str
+    MarkdownStr
         Markdown table of data io plugins.
     """
     table_data = methods_differ_from_baseclass_table(
