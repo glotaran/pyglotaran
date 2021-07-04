@@ -136,7 +136,7 @@ def megacomplex_plugin_table(
 
     Returns
     -------
-    str
+    MarkdownStr
         Markdown table of megacomplexnames.
     """
     table_data = []
