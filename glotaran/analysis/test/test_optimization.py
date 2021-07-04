@@ -4,7 +4,6 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
-from glotaran.analysis.test.models import DecayModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay
 from glotaran.analysis.test.models import OneCompartmentDecay
 from glotaran.analysis.test.models import ThreeDatasetDecay
@@ -133,14 +132,14 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
             assert "weighted_residual_right_singular_vectors" in resultdata
             assert "weighted_residual_singular_values" in resultdata
 
-    assert callable(model.additional_penalty_function)
-    assert model.additional_penalty_function_called
-
-    if isinstance(model, DecayModel):
-        assert callable(model.constrain_matrix_function)
-        assert model.constrain_matrix_function_called
-        assert callable(model.retrieve_clp_function)
-        assert model.retrieve_clp_function_called
-    else:
-        assert not model.constrain_matrix_function_called
-        assert not model.retrieve_clp_function_called
+    #  assert callable(model.additional_penalty_function)
+    #  assert model.additional_penalty_function_called
+    #
+    #  if isinstance(model, DecayModel):
+    #      assert callable(model.constrain_matrix_function)
+    #      assert model.constrain_matrix_function_called
+    #      assert callable(model.retrieve_clp_function)
+    #      assert model.retrieve_clp_function_called
+    #  else:
+    #      assert not model.constrain_matrix_function_called
+    #      assert not model.retrieve_clp_function_called
