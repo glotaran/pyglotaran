@@ -147,9 +147,11 @@ def retrieve_clps(
     for relation in model.relations:
         relation = relation.fill(model, parameters)
         print("YYY", relation.target, relation.source, relation.parameter)
-        if relation.target in clp_labels and relation.applies(index):
-            if relation.source not in clp_labels:
-                continue
+        if (
+            relation.target in clp_labels
+            and relation.applies(index)
+            and relation.source in clp_labels
+        ):
             clps.loc[{"clp_label": relation.target}] = relation.parameter * clps.sel(
                 clp_label=relation.source
             )
