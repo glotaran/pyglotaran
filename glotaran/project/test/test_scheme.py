@@ -9,10 +9,18 @@ from glotaran.project import Scheme
 @pytest.fixture
 def mock_scheme(tmpdir):
 
+    model_yml_str = """
+    megacomplex:
+        m1:
+            type: decay
+            k_matrix: []
+    dataset:
+        dataset1:
+            megacomplex: [m1]
+    """
     model_path = tmpdir.join("model.yml")
     with open(model_path, "w") as f:
-        model = "type: kinetic-spectrum\ndataset:\n  dataset1:\n    megacomplex: []"
-        f.write(model)
+        f.write(model_yml_str)
 
     parameter_path = tmpdir.join("parameters.yml")
     with open(parameter_path, "w") as f:
@@ -48,7 +56,6 @@ def mock_scheme(tmpdir):
 
 def test_scheme(mock_scheme: Scheme):
     assert mock_scheme.model is not None
-    assert mock_scheme.model.model_type == "kinetic-spectrum"
 
     assert mock_scheme.parameters is not None
     assert mock_scheme.parameters.get("1") == 1.0

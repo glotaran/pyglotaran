@@ -31,14 +31,14 @@ def test_constraint(index_dependent, grouped):
     )
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
-    e_axis = np.arange(50)
+    global_axis = np.arange(50)
 
     print("grouped", grouped, "index_dependent", index_dependent)
     dataset = simulate(
         suite.sim_model,
         "dataset1",
         parameters,
-        {"e": e_axis, "c": suite.c_axis},
+        {"global": global_axis, "model": suite.model_axis},
     )
     scheme = Scheme(model=model, parameters=parameters, data={"dataset1": dataset})
     problem = GroupedProblem(scheme) if grouped else UngroupedProblem(scheme)
@@ -49,5 +49,5 @@ def test_constraint(index_dependent, grouped):
     assert isinstance(problem.full_penalty, np.ndarray)
     assert (
         problem.full_penalty.size
-        == (suite.c_axis.size * e_axis.size) + problem.additional_penalty.size
+        == (suite.model_axis.size * global_axis.size) + problem.additional_penalty.size
     )

@@ -14,19 +14,17 @@ from glotaran.project.result import Result
 def dummy_result():
     """Dummy result for testing."""
 
-    model = suite.model
-
-    model.is_grouped = False
-    model.is_index_dependent = False
-
     wanted_parameters = suite.wanted_parameters
     data = {}
     for i in range(3):
-        e_axis = getattr(suite, "e_axis" if i == 0 else f"e_axis{i+1}")
-        c_axis = getattr(suite, "c_axis" if i == 0 else f"c_axis{i+1}")
+        global_axis = getattr(suite, "global_axis" if i == 0 else f"global_axis{i+1}")
+        model_axis = getattr(suite, "model_axis" if i == 0 else f"model_axis{i+1}")
 
         data[f"dataset{i+1}"] = simulate(
-            suite.sim_model, f"dataset{i+1}", wanted_parameters, {"e": e_axis, "c": c_axis}
+            suite.sim_model,
+            f"dataset{i+1}",
+            wanted_parameters,
+            {"global": global_axis, "model": model_axis},
         )
     scheme = Scheme(
         model=suite.model,

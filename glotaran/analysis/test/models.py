@@ -5,36 +5,20 @@ from typing import List
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DatasetDescriptor
 from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import megacomplex
-from glotaran.model import model
-from glotaran.model import model_attribute
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
 
-def calculate_e(dataset, axis):
-    compartments = ["s1", "s2"]
-    r_compartments = []
-    array = np.zeros((axis.shape[0], len(compartments)))
-
-    for i in range(len(compartments)):
-        r_compartments.append(compartments[i])
-        for j in range(axis.shape[0]):
-            array[j, i] = (i + j) * axis[j]
-    return (r_compartments, array)
-
-
-@megacomplex("c", properties={"is_index_dependent": bool})
-class SimpleTestMegacomplex(Megacomplex):
+@megacomplex(dimension="global", properties={})
+class SimpleTestMegacomplexGlobal(Megacomplex):
     def calculate_matrix(self, dataset_model, indices, **kwargs):
-        axis = dataset_model.get_data().coords
-        assert "c" in axis
-        assert "e" in axis
-
-        axis = axis["c"]
+        axis = dataset_model.get_coordinates()
+        assert "model" in axis
+        assert "global" in axis
+        axis = axis["global"]
         compartments = ["s1", "s2"]
         r_compartments = []
         array = np.zeros((axis.shape[0], len(compartments)))
@@ -43,31 +27,57 @@ class SimpleTestMegacomplex(Megacomplex):
             r_compartments.append(compartments[i])
             for j in range(axis.shape[0]):
                 array[j, i] = (i + j) * axis[j]
-        return xr.DataArray(array, coords=(("c", axis.data), ("clp_label", r_compartments)))
+        return xr.DataArray(array, coords=(("global", axis.data), ("clp_label", r_compartments)))
+
+    def index_dependent(self, dataset_model):
+        return False
+
+
+@megacomplex(dimension="model", properties={"is_index_dependent": bool})
+class SimpleTestMegacomplex(Megacomplex):
+    def calculate_matrix(self, dataset_model, indices, **kwargs):
+        axis = dataset_model.get_coordinates()
+        assert "model" in axis
+        assert "global" in axis
+
+        axis = axis["model"]
+        compartments = ["s1", "s2"]
+        r_compartments = []
+        array = np.zeros((axis.shape[0], len(compartments)))
+
+        for i in range(len(compartments)):
+            r_compartments.append(compartments[i])
+            for j in range(axis.shape[0]):
+                array[j, i] = (i + j) * axis[j]
+        return xr.DataArray(array, coords=(("model", axis.data), ("clp_label", r_compartments)))
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
 
 
-@model(
-    "simple_test",
-    attributes={},
-    model_dimension="c",
-    global_matrix=calculate_e,
-    global_dimension="e",
-    megacomplex_types=SimpleTestMegacomplex,
-)
 class SimpleTestModel(Model):
-    pass
+    @classmethod
+    def from_dict(cls, model_dict):
+        return super().from_dict(
+            model_dict,
+            megacomplex_types={
+                "model_complex": SimpleTestMegacomplex,
+                "global_complex": SimpleTestMegacomplexGlobal,
+            },
+        )
 
 
-@megacomplex("c", properties={"is_index_dependent": bool})
+@megacomplex(
+    dimension="model",
+    properties={"is_index_dependent": bool},
+    dataset_properties={
+        "kinetic": List[Parameter],
+    },
+)
 class SimpleKineticMegacomplex(Megacomplex):
     def calculate_matrix(self, dataset_model, indices, **kwargs):
-        axis = dataset_model.get_data().coords
-        assert "c" in axis
-        assert "e" in axis
-        axis = axis["c"]
+        axis = dataset_model.get_coordinates()
+        axis = axis["model"]
         kinpar = -1 * np.asarray(dataset_model.kinetic)
         if dataset_model.label == "dataset3":
             # this case is for the ThreeDatasetDecay test
@@ -75,199 +85,73 @@ class SimpleKineticMegacomplex(Megacomplex):
         else:
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(axis, kinpar))
-        return xr.DataArray(array, coords=(("c", axis.data), ("clp_label", compartments)))
+        return xr.DataArray(array, coords=(("model", axis.data), ("clp_label", compartments)))
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
 
-
-def calculate_spectral_simple(dataset_descriptor, axis):
-    kinpar = -1 * np.array(dataset_descriptor.kinetic)
-    if dataset_descriptor.label == "dataset3":
-        # this case is for the ThreeDatasetDecay test
-        compartments = [f"s{i+2}" for i in range(len(kinpar))]
-    else:
-        compartments = [f"s{i+1}" for i in range(len(kinpar))]
-    array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments])
-    return compartments, array.T
+    def finalize_data(self, dataset_model, data):
+        pass
 
 
-def calculate_spectral_gauss(dataset, axis):
-    location = np.asarray(dataset.location)
-    amp = np.asarray(dataset.amplitude)
-    delta = np.asarray(dataset.delta)
+@megacomplex(dimension="global", properties={})
+class SimpleSpectralMegacomplex(Megacomplex):
+    def calculate_matrix(self, dataset_model, indices, **kwargs):
+        axis = dataset_model.get_coordinates()
+        axis = axis["global"]
+        kinpar = dataset_model.kinetic
+        if dataset_model.label == "dataset3":
+            # this case is for the ThreeDatasetDecay test
+            compartments = [f"s{i+2}" for i in range(len(kinpar))]
+        else:
+            compartments = [f"s{i+1}" for i in range(len(kinpar))]
+        array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments]).T
+        return xr.DataArray(array, coords=(("global", axis.data), ("clp_label", compartments)))
 
-    array = np.empty((location.size, axis.size), dtype=np.float64)
-
-    for i in range(location.size):
-        array[i, :] = amp[i] * np.exp(-np.log(2) * np.square(2 * (axis - location[i]) / delta[i]))
-    compartments = [f"s{i+1}" for i in range(location.size)]
-    return compartments, array.T
-
-
-def constrain_matrix_function_typecheck(
-    model: type[Model],
-    label: str,
-    parameters: ParameterGroup,
-    clp_labels: list[str],
-    matrix: np.ndarray,
-    index: float,
-):
-    assert isinstance(label, str)
-    assert isinstance(parameters, ParameterGroup)
-    assert isinstance(clp_labels, list)
-    assert all(isinstance(clp_label, str) for clp_label in clp_labels)
-    assert isinstance(matrix, np.ndarray)
-
-    model.constrain_matrix_function_called = True
-
-    return (clp_labels, matrix)
+    def index_dependent(self, dataset_model):
+        return False
 
 
-def retrieve_clp_typecheck(
-    model: type[Model],
-    parameters: ParameterGroup,
-    clp_labels: dict[str, list[str] | list[list[str]]],
-    reduced_clp_labels: dict[str, list[str] | list[list[str]]],
-    reduced_clps: dict[str, list[np.ndarray]],
-    data: dict[str, xr.Dataset],
-) -> dict[str, list[np.ndarray]]:
-    assert isinstance(parameters, ParameterGroup)
-
-    assert isinstance(reduced_clps, dict)
-    assert all(isinstance(dataset_clps, list) for dataset_clps in reduced_clps.values())
-
-    assert all(
-        [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
-        for dataset_clps in reduced_clps.values()
-    )
-
-    assert isinstance(data, dict)
-    assert all(isinstance(label, str) for label in data)
-    assert all(isinstance(dataset, xr.Dataset) for dataset in data.values())
-
-    assert isinstance(clp_labels, dict)
-    assert isinstance(reduced_clp_labels, dict)
-    assert all(
-        isinstance(dataset_clp_labels, list) for dataset_clp_labels in reduced_clp_labels.values()
-    )
-    assert all(
-        [[isinstance(label, str) for label in index_labels] for index_labels in dataset_clp_labels]
-        for dataset_clp_labels in reduced_clp_labels.values()
-    )
-
-    model.retrieve_clp_function_called = True
-
-    return reduced_clps
-
-
-def additional_penalty_typecheck(
-    model: type[Model],
-    parameters: ParameterGroup,
-    clp_labels: dict[str, list[str] | list[list[str]]],
-    clps: dict[str, list[np.ndarray]],
-    matrices: dict[str, np.ndarray | list[np.ndarray]],
-    data: dict[str, xr.Dataset],
-    group_tolerance: float,
-) -> np.ndarray:
-    assert isinstance(parameters, ParameterGroup)
-    assert isinstance(group_tolerance, float)
-
-    assert isinstance(clps, dict)
-    assert all(isinstance(dataset_clps, list) for dataset_clps in clps.values())
-    assert all(
-        [isinstance(index_clps, np.ndarray) for index_clps in dataset_clps]
-        for dataset_clps in clps.values()
-    )
-
-    assert isinstance(data, dict)
-    assert all(isinstance(label, str) for label in data)
-    assert all(isinstance(dataset, xr.Dataset) for dataset in data.values())
-
-    assert isinstance(clp_labels, dict)
-    assert isinstance(matrices, dict)
-    if model.megacomplex["m1"].index_dependent(model.dataset["dataset1"]):
-        for dataset_clp_labels in clp_labels.values():
-            assert all(isinstance(index_label, list) for index_label in dataset_clp_labels)
-            assert all(
-                [isinstance(label, str) for label in index_label]
-                for index_label in dataset_clp_labels
-            )
-
-        for matrix in matrices.values():
-            assert isinstance(matrix, list)
-            assert all(isinstance(index_matrix, np.ndarray) for index_matrix in matrix)
-    else:
-        for dataset_clp_labels in clp_labels.values():
-            assert all(isinstance(label, str) for label in dataset_clp_labels)
-        for matrix in matrices.values():
-            assert isinstance(matrix, np.ndarray)
-
-    model.additional_penalty_function_called = True
-
-    return np.asarray([0.1])
-
-
-@model_attribute(
+@megacomplex(
+    dimension="global",
     properties={
-        "kinetic": List[Parameter],
-    }
-)
-class DecayDatasetDescriptor(DatasetDescriptor):
-    pass
-
-
-@model_attribute(
-    properties={
-        "kinetic": List[Parameter],
         "location": {"type": List[Parameter], "allow_none": True},
         "amplitude": {"type": List[Parameter], "allow_none": True},
         "delta": {"type": List[Parameter], "allow_none": True},
-    }
+    },
 )
-class GaussianShapeDecayDatasetDescriptor(DatasetDescriptor):
-    pass
+class ShapedSpectralMegacomplex(Megacomplex):
+    def calculate_matrix(self, dataset_model, indices, **kwargs):
+        location = np.asarray(self.location)
+        amp = np.asarray(self.amplitude)
+        delta = np.asarray(self.delta)
+
+        axis = dataset_model.get_coordinates()
+        axis = axis["global"]
+        array = np.empty((location.size, axis.size), dtype=np.float64)
+
+        for i in range(location.size):
+            array[i, :] = amp[i] * np.exp(
+                -np.log(2) * np.square(2 * (axis - location[i]) / delta[i])
+            )
+        compartments = [f"s{i+1}" for i in range(location.size)]
+        return xr.DataArray(array.T, coords=(("global", axis.data), ("clp_label", compartments)))
+
+    def index_dependent(self, dataset_model):
+        return False
 
 
-@model(
-    "one_channel",
-    attributes={},
-    dataset_type=DecayDatasetDescriptor,
-    model_dimension="c",
-    global_matrix=calculate_spectral_simple,
-    global_dimension="e",
-    megacomplex_types=SimpleKineticMegacomplex,
-    #  has_additional_penalty_function=lambda model: True,
-    #  additional_penalty_function=additional_penalty_typecheck,
-    #  has_matrix_constraints_function=lambda model: True,
-    #  constrain_matrix_function=constrain_matrix_function_typecheck,
-    #  retrieve_clp_function=retrieve_clp_typecheck,
-    grouped=lambda model: model.is_grouped,
-)
 class DecayModel(Model):
-    additional_penalty_function_called = False
-    constrain_matrix_function_called = False
-    retrieve_clp_function_called = False
-    is_grouped = False
-
-
-@model(
-    "multi_channel",
-    attributes={},
-    dataset_type=GaussianShapeDecayDatasetDescriptor,
-    model_dimension="c",
-    global_matrix=calculate_spectral_gauss,
-    global_dimension="e",
-    megacomplex_types=SimpleKineticMegacomplex,
-    grouped=lambda model: model.is_grouped,
-    #  has_additional_penalty_function=lambda model: True,
-    #  additional_penalty_function=additional_penalty_typecheck,
-)
-class GaussianDecayModel(Model):
-    additional_penalty_function_called = False
-    constrain_matrix_function_called = False
-    retrieve_clp_function_called = False
-    is_grouped = False
+    @classmethod
+    def from_dict(cls, model_dict):
+        return super().from_dict(
+            model_dict,
+            megacomplex_types={
+                "model_complex": SimpleKineticMegacomplex,
+                "global_complex": SimpleSpectralMegacomplex,
+                "global_complex_shaped": ShapedSpectralMegacomplex,
+            },
+        )
 
 
 class OneCompartmentDecay:
@@ -275,16 +159,32 @@ class OneCompartmentDecay:
     wanted_parameters = ParameterGroup.from_list([101e-4])
     initial_parameters = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
 
-    e_axis = np.asarray([1.0])
-    c_axis = np.arange(0, 150, 1.5)
+    global_axis = np.asarray([1.0])
+    model_axis = np.arange(0, 150, 1.5)
 
+    sim_model_dict = {
+        "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+        "dataset": {
+            "dataset1": {
+                "initial_concentration": [],
+                "megacomplex": ["m1"],
+                "global_megacomplex": ["m2"],
+                "kinetic": ["1"],
+            }
+        },
+    }
+    sim_model = DecayModel.from_dict(sim_model_dict)
     model_dict = {
         "megacomplex": {"m1": {"is_index_dependent": False}},
         "dataset": {
-            "dataset1": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["1"]}
+            "dataset1": {
+                "initial_concentration": [],
+                "megacomplex": ["m1"],
+                "kinetic": ["1"],
+                "scale": "2",
+            }
         },
     }
-    sim_model = DecayModel.from_dict(model_dict)
     model_dict["dataset"]["dataset1"]["scale"] = "2"
     model = DecayModel.from_dict(model_dict)
 
@@ -293,9 +193,22 @@ class TwoCompartmentDecay:
     wanted_parameters = ParameterGroup.from_list([11e-4, 22e-5])
     initial_parameters = ParameterGroup.from_list([10e-4, 20e-5])
 
-    e_axis = np.asarray([1.0])
-    c_axis = np.arange(0, 150, 1.5)
+    global_axis = np.asarray([1.0])
+    model_axis = np.arange(0, 150, 1.5)
 
+    sim_model = DecayModel.from_dict(
+        {
+            "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": [],
+                    "megacomplex": ["m1"],
+                    "global_megacomplex": ["m2"],
+                    "kinetic": ["1", "2"],
+                }
+            },
+        }
+    )
     model = DecayModel.from_dict(
         {
             "megacomplex": {"m1": {"is_index_dependent": False}},
@@ -308,21 +221,45 @@ class TwoCompartmentDecay:
             },
         }
     )
-    sim_model = model
 
 
 class ThreeDatasetDecay:
     wanted_parameters = ParameterGroup.from_list([101e-4, 201e-3])
     initial_parameters = ParameterGroup.from_list([100e-5, 200e-3])
 
-    e_axis = np.asarray([1.0])
-    c_axis = np.arange(0, 150, 1.5)
+    global_axis = np.asarray([1.0])
+    model_axis = np.arange(0, 150, 1.5)
 
-    e_axis2 = np.asarray([1.0, 2.01])
-    c_axis2 = np.arange(0, 100, 1.5)
+    global_axis2 = np.asarray([1.0, 2.01])
+    model_axis2 = np.arange(0, 100, 1.5)
 
-    e_axis3 = np.asarray([0.99, 3.0])
-    c_axis3 = np.arange(0, 150, 1.5)
+    global_axis3 = np.asarray([0.99, 3.0])
+    model_axis3 = np.arange(0, 150, 1.5)
+
+    sim_model_dict = {
+        "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+        "dataset": {
+            "dataset1": {
+                "initial_concentration": [],
+                "megacomplex": ["m1"],
+                "global_megacomplex": ["m2"],
+                "kinetic": ["1"],
+            },
+            "dataset2": {
+                "initial_concentration": [],
+                "megacomplex": ["m1"],
+                "global_megacomplex": ["m2"],
+                "kinetic": ["1", "2"],
+            },
+            "dataset3": {
+                "initial_concentration": [],
+                "megacomplex": ["m1"],
+                "global_megacomplex": ["m2"],
+                "kinetic": ["2"],
+            },
+        },
+    }
+    sim_model = DecayModel.from_dict(sim_model_dict)
 
     model_dict = {
         "megacomplex": {"m1": {"is_index_dependent": False}},
@@ -336,8 +273,7 @@ class ThreeDatasetDecay:
             "dataset3": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["2"]},
         },
     }
-    sim_model = DecayModel.from_dict(model_dict)
-    model = sim_model
+    model = DecayModel.from_dict(model_dict)
 
 
 class MultichannelMulticomponentDecay:
@@ -366,32 +302,36 @@ class MultichannelMulticomponentDecay:
     )
     initial_parameters = ParameterGroup.from_dict({"k": [0.006, 0.003, 0.0003, 0.03]})
 
-    e_axis = np.arange(12820, 15120, 50)
-    c_axis = np.arange(0, 150, 1.5)
+    global_axis = np.arange(12820, 15120, 50)
+    model_axis = np.arange(0, 150, 1.5)
 
-    sim_model = GaussianDecayModel.from_dict(
+    sim_model = DecayModel.from_dict(
         {
-            "compartment": ["s1", "s2", "s3", "s4"],
-            "megacomplex": {"m1": {"is_index_dependent": False}},
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": [],
-                    "megacomplex": ["m1"],
-                    "kinetic": ["k.1", "k.2", "k.3", "k.4"],
+            #  "compartment": ["s1", "s2", "s3", "s4"],
+            "megacomplex": {
+                "m1": {"is_index_dependent": False},
+                "m2": {
+                    "type": "global_complex_shaped",
                     "location": ["loc.1", "loc.2", "loc.3", "loc.4"],
                     "delta": ["del.1", "del.2", "del.3", "del.4"],
                     "amplitude": ["amp.1", "amp.2", "amp.3", "amp.4"],
+                },
+            },
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": ["m1"],
+                    "global_megacomplex": ["m2"],
+                    "kinetic": ["k.1", "k.2", "k.3", "k.4"],
                 }
             },
         }
     )
-    model = GaussianDecayModel.from_dict(
+    model = DecayModel.from_dict(
         {
-            "compartment": ["s1", "s2", "s3", "s4"],
+            #  "compartment": ["s1", "s2", "s3", "s4"],
             "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
-                    "initial_concentration": [],
                     "megacomplex": ["m1"],
                     "kinetic": ["k.1", "k.2", "k.3", "k.4"],
                 }

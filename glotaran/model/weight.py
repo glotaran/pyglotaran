@@ -3,10 +3,10 @@
 from typing import List
 from typing import Tuple
 
-from glotaran.model.attribute import model_attribute
+from glotaran.model.item import model_item
 
 
-@model_attribute(
+@model_item(
     properties={
         "datasets": {type: List[str]},
         "global_interval": {
@@ -21,7 +21,7 @@ from glotaran.model.attribute import model_attribute
         },
         "value": {"type": float},
     },
-    no_label=True,
+    has_label=False,
 )
 class Weight:
     """The `Weight` class describes a value by which a dataset will scaled.
