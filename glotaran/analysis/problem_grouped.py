@@ -90,10 +90,8 @@ class GroupedProblem(Problem):
                     for i, value in enumerate(global_axis)
                 )
                 datasets = collections.deque([label] for _, _ in enumerate(global_axis))
-                print(label, "DSET", datasets is None)
                 self._full_axis = collections.deque(global_axis)
             else:
-                print(label, "DSET2", datasets is None)
                 self._append_to_grouped_bag(
                     label, datasets, global_axis, model_axis, data, weight, has_scaling
                 )
