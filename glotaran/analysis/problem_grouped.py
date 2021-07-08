@@ -52,6 +52,7 @@ class GroupedProblem(Problem):
 
     def init_bag(self):
         """Initializes a grouped problem bag."""
+        self._bag = None
         datasets = None
         for label in self._model.dataset:
             dataset = self._data[label]
@@ -89,8 +90,10 @@ class GroupedProblem(Problem):
                     for i, value in enumerate(global_axis)
                 )
                 datasets = collections.deque([label] for _, _ in enumerate(global_axis))
+                print(label, "DSET", datasets is None)
                 self._full_axis = collections.deque(global_axis)
             else:
+                print(label, "DSET2", datasets is None)
                 self._append_to_grouped_bag(
                     label, datasets, global_axis, model_axis, data, weight, has_scaling
                 )
