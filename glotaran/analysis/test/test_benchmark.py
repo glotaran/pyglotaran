@@ -48,16 +48,15 @@ def setup_model(index_dependent):
             "dataset3": {"megacomplex": ["m1"]},
         },
     }
-    model = Model.from_dict(
+    return Model.from_dict(
         model_dict,
         megacomplex_types={"benchmark": BenchmarkMegacomplex},
         default_megacomplex_type="benchmark",
     )
-    return model
 
 
 def setup_scheme(model):
-    scheme = Scheme(
+    return Scheme(
         model=model,
         parameters=TEST_PARAMETER,
         data={
@@ -66,12 +65,10 @@ def setup_scheme(model):
             "dataset3": TEST_DATA,
         },
     )
-    return scheme
 
 
 def setup_problem(scheme, grouped):
-    problem = GroupedProblem(scheme) if grouped else UngroupedProblem(scheme)
-    return problem
+    return GroupedProblem(scheme) if grouped else UngroupedProblem(scheme)
 
 
 @pytest.mark.parametrize("grouped", [True, False])
