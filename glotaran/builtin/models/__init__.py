@@ -1,1 +1,0 @@
-"""Glotaran Models Package"""

@@ -17,7 +17,7 @@ from glotaran.analysis.util import find_closest_index
 from glotaran.analysis.util import find_overlap
 from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.util import retrieve_clps
-from glotaran.model import DatasetDescriptor
+from glotaran.model import DatasetModel
 from glotaran.project import Scheme
 
 
@@ -34,12 +34,8 @@ class GroupedProblem(Problem):
         super().__init__(scheme=scheme)
 
         # TODO: grouping should be user controlled not inferred automatically
-        global_dimensions = {
-            d.get_global_dimension() for d in self.filled_dataset_descriptors.values()
-        }
-        model_dimensions = {
-            d.get_model_dimension() for d in self.filled_dataset_descriptors.values()
-        }
+        global_dimensions = {d.get_global_dimension() for d in self.dataset_models.values()}
+        model_dimensions = {d.get_model_dimension() for d in self.dataset_models.values()}
         if len(global_dimensions) != 1:
             raise ValueError(
                 f"Cannot group datasets. Global dimensions '{global_dimensions}' do not match."
@@ -48,12 +44,11 @@ class GroupedProblem(Problem):
             raise ValueError(
                 f"Cannot group datasets. Model dimension '{model_dimensions}' do not match."
             )
-        self._index_dependent = any(
-            d.index_dependent() for d in self.filled_dataset_descriptors.values()
-        )
+        self._index_dependent = any(d.index_dependent() for d in self.dataset_models.values())
         self._global_dimension = global_dimensions.pop()
         self._model_dimension = model_dimensions.pop()
         self._group_clp_labels = None
+        self._groups = None
 
     def init_bag(self):
         """Initializes a grouped problem bag."""
@@ -181,6 +176,12 @@ class GroupedProblem(Problem):
                 self._full_axis.append(global_axis[i])
                 self._bag.append(problem)
 
+    @property
+    def groups(self) -> dict[str, list[str]]:
+        if not self._groups:
+            self.init_bag()
+        return self._groups
+
     def calculate_matrices(self):
         if self._parameters is None:
             raise ParameterError
@@ -195,7 +196,7 @@ class GroupedProblem(Problem):
         """Calculates the index dependent model matrices."""
 
         def calculate_group(
-            group: ProblemGroup, descriptors: dict[str, DatasetDescriptor]
+            group: ProblemGroup, descriptors: dict[str, DatasetModel]
         ) -> tuple[list[xr.DataArray], xr.DataArray, xr.DataArray]:
             matrices = [
                 calculate_matrix(
@@ -213,9 +214,7 @@ class GroupedProblem(Problem):
             )
             return matrices, group_clp_labels, reduced_matrix
 
-        results = list(
-            map(lambda group: calculate_group(group, self._filled_dataset_descriptors), self._bag)
-        )
+        results = list(map(lambda group: calculate_group(group, self.dataset_models), self._bag))
 
         matrices = list(map(lambda result: result[0], results))
 
@@ -238,7 +237,7 @@ class GroupedProblem(Problem):
         self._group_clp_labels = {}
         self._reduced_matrices = {}
 
-        for label, dataset_model in self._filled_dataset_descriptors.items():
+        for label, dataset_model in self.dataset_models.items():
             self._matrices[label] = calculate_matrix(
                 dataset_model,
                 {},
@@ -310,10 +309,10 @@ class GroupedProblem(Problem):
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
                 label = descriptor.label
-                if self.filled_dataset_descriptors[label] is not None:
+                if self.dataset_models[label] is not None:
                     start = sum(problem.data_sizes[0:i])
                     end = start + problem.data_sizes[i]
-                    matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
+                    matrix[start:end, :] *= self.dataset_models[label].scale
 
         reduced_clps, residual = self._residual_function(matrix.values, data)
         reduced_clps = xr.DataArray(
@@ -336,10 +335,10 @@ class GroupedProblem(Problem):
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
                 label = descriptor.label
-                if self.filled_dataset_descriptors[label] is not None:
+                if self.dataset_models[label] is not None:
                     start = sum(problem.data_sizes[0:i])
                     end = start + problem.data_sizes[i]
-                    matrix[start:end, :] *= self.filled_dataset_descriptors[label].scale
+                    matrix[start:end, :] *= self.dataset_models[label].scale
         reduced_clps, residual = self._residual_function(matrix.values, data)
         reduced_clps = xr.DataArray(
             reduced_clps, dims=["clp_label"], coords={"clp_label": matrix.coords["clp_label"]}

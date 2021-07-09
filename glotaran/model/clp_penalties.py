@@ -9,7 +9,7 @@ from typing import Tuple
 import numpy as np
 import xarray as xr
 
-from glotaran.model import model_attribute
+from glotaran.model.item import model_item
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from glotaran.parameter import ParameterGroup
 
 
-@model_attribute(
+@model_item(
     properties={
         "source": str,
         "source_intervals": List[Tuple[float, float]],
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
         "parameter": Parameter,
         "weight": str,
     },
-    no_label=True,
+    has_label=False,
 )
 class EqualAreaPenalty:
     """An equal area constraint adds a the differenc of the sum of a

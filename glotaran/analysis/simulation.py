@@ -7,6 +7,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.util import calculate_matrix
+from glotaran.model import DatasetModel
 
 if TYPE_CHECKING:
     from glotaran.model import Model
@@ -17,11 +18,11 @@ def simulate(
     model: Model,
     dataset: str,
     parameters: ParameterGroup,
-    axes: dict[str, np.ndarray] = None,
-    clp: np.ndarray | xr.DataArray = None,
-    noise=False,
-    noise_std_dev=1.0,
-    noise_seed=None,
+    coordinates: dict[str, np.ndarray],
+    clp: xr.DataArray | None = None,
+    noise: bool = False,
+    noise_std_dev: float = 1.0,
+    noise_seed: int | None = None,
 ):
     """Simulates a model.
 
@@ -45,21 +46,59 @@ def simulate(
         The seed for the noise simulation.
     """
 
-    if model.global_matrix is None and clp is None:
+    dataset_model = model.dataset[dataset].fill(model, parameters)
+    dataset_model.set_coordinates(coordinates)
+
+    if dataset_model.global_model():
+        result = simulate_global_model(
+            dataset_model,
+            parameters,
+            clp,
+        )
+    elif clp is None:
         raise ValueError(
-            "Cannot simulate models without implementation for global matrix and no clp given."
+            f"Cannot simulate dataset {dataset} without global megacomplex " "and no clp provided."
+        )
+    else:
+        result = simulate_clp(
+            dataset_model,
+            parameters,
+            clp,
         )
 
-    filled_dataset = model.dataset[dataset].fill(model, parameters)
-    filled_dataset.overwrite_global_dimension(model.global_dimension)
-    if hasattr(model, "overwrite_index_dependent"):
-        filled_dataset.overwrite_index_dependent(model.overwrite_index_dependent())
+    if noise:
+        if noise_seed is not None:
+            np.random.seed(noise_seed)
+        result["data"] = (result.data.dims, np.random.normal(result.data, noise_std_dev))
 
-    model_dimension = filled_dataset.get_model_dimension()
-    model_axis = axes[model_dimension]
-    global_dimension = filled_dataset.get_global_dimension()
-    global_axis = axes[global_dimension]
+    return result
 
+
+def simulate_clp(
+    dataset_model: DatasetModel,
+    parameters: ParameterGroup,
+    clp: xr.DataArray,
+):
+
+    if "clp_label" not in clp.coords:
+        raise ValueError("Missing coordinate 'clp_label' in clp.")
+    global_dimension = next(dim for dim in clp.coords if dim != "clp_label")
+
+    global_axis = clp.coords[global_dimension]
+    matrices = (
+        [
+            calculate_matrix(
+                dataset_model,
+                {global_dimension: index},
+            )
+            for index, _ in enumerate(global_axis)
+        ]
+        if dataset_model.index_dependent()
+        else calculate_matrix(dataset_model, {})
+    )
+
+    model_dimension = dataset_model.get_model_dimension()
+    model_axis = dataset_model.get_coordinates()[model_dimension]
     result = xr.DataArray(
         data=0.0,
         coords=[
@@ -68,62 +107,35 @@ def simulate(
         ],
     )
     result = result.to_dataset(name="data")
-    filled_dataset.set_data(result)
-
-    matrix = (
-        [
-            calculate_matrix(
-                filled_dataset,
-                {global_dimension: index},
-            )
-            for index, _ in enumerate(global_axis)
-        ]
-        if filled_dataset.index_dependent()
-        else calculate_matrix(
-            filled_dataset,
-            {},
-        )
-    )
-
-    if clp is not None:
-        if clp.shape[0] != global_axis.size:
-            raise ValueError(
-                f"Size of dimension 0 of clp ({clp.shape[0]}) != size of axis"
-                f" '{global_dimension}' ({global_axis.size})"
-            )
-        if isinstance(clp, xr.DataArray):
-            if global_dimension not in clp.coords:
-                raise ValueError(f"Missing coordinate '{global_dimension}' in clp.")
-            if "clp_label" not in clp.coords:
-                raise ValueError("Missing coordinate 'clp_label' in clp.")
-        elif "clp_label" not in axes:
-            raise ValueError("Missing axis 'clp_label'")
-        else:
-            clp = xr.DataArray(
-                clp,
-                coords=[
-                    (global_dimension, global_axis),
-                    ("clp_label", axes["clp_label"]),
-                ],
-            )
-    else:
-        clp_labels, clp = model.global_matrix(filled_dataset, global_axis)
-        clp = xr.DataArray(
-            clp, coords=[(global_dimension, global_axis), ("clp_label", clp_labels)]
-        )
     for i in range(global_axis.size):
-        index_matrix = matrix[i] if filled_dataset.index_dependent() else matrix
-        print(index_matrix.coords)
+        index_matrix = matrices[i] if dataset_model.index_dependent() else matrices
         result.data[:, i] = np.dot(
-            index_matrix, clp[i].sel(clp_label=index_matrix.coords["clp_label"])
-        )
-
-    if noise:
-        if noise_seed is not None:
-            np.random.seed(noise_seed)
-        result["data"] = (
-            (model_dimension, global_dimension),
-            np.random.normal(result.data, noise_std_dev),
+            index_matrix,
+            clp.isel({global_dimension: i}).sel({"clp_label": index_matrix.coords["clp_label"]}),
         )
 
     return result
+
+
+def simulate_global_model(
+    dataset_model: DatasetModel,
+    parameters: ParameterGroup,
+    clp: xr.DataArray = None,
+):
+    """Simulates a global model."""
+
+    # TODO: implement full model clp
+    if clp is not None:
+        raise NotImplementedError("Simulation of full models with clp is not supported yet.")
+
+    if any(m.index_dependent(dataset_model) for m in dataset_model.global_megacomplex):
+        raise ValueError("Index dependent models for global dimension are not supported.")
+
+    global_matrix = calculate_matrix(dataset_model, {}, global_model=True)
+    global_matrix = global_matrix.T
+
+    return simulate_clp(
+        dataset_model,
+        parameters,
+        global_matrix,
+    )
