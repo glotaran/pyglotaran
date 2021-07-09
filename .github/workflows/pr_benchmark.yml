@@ -84,6 +84,11 @@ jobs:
           Benchmark diff
           </summary>
 
+          Parametrized benchmark signatures:
+          ```python
+          BenchmarkOptimize.time_optimize(index_dependent, grouped, weight)
+          ```
+
           ```
           {diff_result.stdout.decode()}
           ```
