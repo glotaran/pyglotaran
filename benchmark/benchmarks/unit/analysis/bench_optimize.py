@@ -77,9 +77,3 @@ class BenchmarkOptimize:
 
     def time_optimize(self, index_dependent, grouped, weight):
         optimize(self.scheme)
-
-
-if __name__ == "__main__":
-    bench = BenchmarkOptimize()
-    bench.setup(True, True, True)
-    bench.time_optimize(True, True, True)
