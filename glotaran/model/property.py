@@ -50,18 +50,18 @@ class ModelProperty(property):
             return []
 
         missing_model = []
-        if hasattr(model, f"set_{self._name}") or hasattr(model, f"add_{self._name}"):
-            attr = getattr(model, self._name)
+        if self._name in model.model_items:
+            items = getattr(model, self._name)
 
             if isinstance(value, list):
                 for item in value:
-                    if item not in attr:
+                    if item not in items:
                         missing_model.append((self._name, item))
             elif isinstance(value, dict):
                 for item in value.values():
-                    if item not in attr:
+                    if item not in items:
                         missing_model.append((self._name, item))
-            elif value not in attr:
+            elif value not in items:
                 missing_model.append((self._name, value))
         missing_model = [
             f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model

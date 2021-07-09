@@ -3,20 +3,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from glotaran.model import model_attribute
-from glotaran.model import model_attribute_typed
 from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.item import model_item
+from glotaran.model.item import model_item_typed
 
 if TYPE_CHECKING:
     from typing import Any
 
 
-@model_attribute(
+@model_item(
     properties={
         "target": str,
     },
     has_type=True,
-    no_label=True,
+    has_label=False,
 )
 class OnlyConstraint(IntervalProperty):
     """A only constraint sets the calculated matrix row of a compartment to 0
@@ -38,24 +38,24 @@ class OnlyConstraint(IntervalProperty):
         return not super().applies(index)
 
 
-@model_attribute(
+@model_item(
     properties={
         "target": str,
     },
     has_type=True,
-    no_label=True,
+    has_label=False,
 )
 class ZeroConstraint(IntervalProperty):
     """A zero constraint sets the calculated matrix row of a compartment to 0
     in the given intervals."""
 
 
-@model_attribute_typed(
+@model_item_typed(
     types={
         "only": OnlyConstraint,
         "zero": ZeroConstraint,
     },
-    no_label=True,
+    has_label=False,
 )
 class Constraint:
     """A constraint is applied on one clp on one or many
