@@ -1,0 +1,1 @@
+from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex

@@ -56,24 +56,30 @@ def test_deprecation_warning_on_call_test_helper_no_warn():
 
 def test_read_model_from_yaml():
     """read_model_from_yaml raises warning"""
+    yaml = """
+    type: kinetic-spectrum
+    megacomplex: {}
+    """
     result = deprecation_warning_on_call_test_helper(
-        read_model_from_yaml, args=["type: kinetic-spectrum"], raise_exception=True
+        read_model_from_yaml, args=[yaml], raise_exception=True
     )
 
     assert isinstance(result, Model)
-    assert result.model_type == "kinetic-spectrum"
 
 
 def test_read_model_from_yaml_file(tmp_path: Path):
     """read_model_from_yaml_file raises warning"""
+    yaml = """
+    type: kinetic-spectrum
+    megacomplex: {}
+    """
     model_file = tmp_path / "model.yaml"
-    model_file.write_text("type: kinetic-spectrum")
+    model_file.write_text(yaml)
     result = deprecation_warning_on_call_test_helper(
         read_model_from_yaml_file, args=[str(model_file)], raise_exception=True
     )
 
     assert isinstance(result, Model)
-    assert result.model_type == "kinetic-spectrum"
 
 
 def test_read_parameters_from_csv_file(tmp_path: Path):

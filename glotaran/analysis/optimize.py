@@ -20,7 +20,7 @@ SUPPORTED_METHODS = {
 
 
 def optimize(scheme: Scheme, verbose: bool = True) -> Result:
-    problem = GroupedProblem(scheme) if scheme.model.grouped() else UngroupedProblem(scheme)
+    problem = GroupedProblem(scheme) if scheme.group else UngroupedProblem(scheme)
     return optimize_problem(problem, verbose=verbose)
 
 

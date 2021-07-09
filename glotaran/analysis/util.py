@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DatasetDescriptor
+from glotaran.model import DatasetModel
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 
@@ -40,13 +40,20 @@ def get_min_max_from_interval(interval, axis):
 
 
 def calculate_matrix(
-    dataset_descriptor: DatasetDescriptor,
+    dataset_model: DatasetModel,
     indices: dict[str, int] | None,
+    global_model: bool = False,
 ) -> xr.DataArray:
     matrix = None
 
-    for scale, megacomplex in dataset_descriptor.iterate_megacomplexes():
-        this_matrix = megacomplex.calculate_matrix(dataset_descriptor, indices)
+    megacomplex_iterator = dataset_model.iterate_megacomplexes
+
+    if global_model:
+        megacomplex_iterator = dataset_model.iterate_global_megacomplexes
+        dataset_model.swap_dimensions()
+
+    for scale, megacomplex in megacomplex_iterator():
+        this_matrix = megacomplex.calculate_matrix(dataset_model, indices)
 
         if scale is not None:
             this_matrix *= scale
@@ -57,6 +64,9 @@ def calculate_matrix(
             matrix, this_matrix = xr.align(matrix, this_matrix, join="outer", copy=False)
             matrix = matrix.fillna(0)
             matrix += this_matrix.fillna(0)
+
+    if global_model:
+        dataset_model.swap_dimensions()
 
     return matrix
 
@@ -143,13 +153,13 @@ def retrieve_clps(
     clps = xr.DataArray(np.zeros((clp_labels.size), dtype=np.float64), coords=[clp_labels])
     clps.loc[{"clp_label": reduced_clps.coords["clp_label"]}] = reduced_clps.values
 
-    print("ret", clps)
     for relation in model.relations:
         relation = relation.fill(model, parameters)
-        print("YYY", relation.target, relation.source, relation.parameter)
-        if relation.target in clp_labels and relation.applies(index):
-            if relation.source not in clp_labels:
-                continue
+        if (
+            relation.target in clp_labels
+            and relation.applies(index)
+            and relation.source in clp_labels
+        ):
             clps.loc[{"clp_label": relation.target}] = relation.parameter * clps.sel(
                 clp_label=relation.source
             )

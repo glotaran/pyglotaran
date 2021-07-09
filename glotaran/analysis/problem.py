@@ -14,7 +14,7 @@ from glotaran.analysis.nnls import residual_nnls
 from glotaran.analysis.util import get_min_max_from_interval
 from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.io.prepare_dataset import add_svd_to_dataset
-from glotaran.model import DatasetDescriptor
+from glotaran.model import DatasetModel
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -29,7 +29,7 @@ class ParameterError(ValueError):
 
 
 class UngroupedProblemDescriptor(NamedTuple):
-    dataset: DatasetDescriptor
+    dataset: DatasetModel
     data: xr.DataArray
     model_axis: np.ndarray
     global_axis: np.ndarray
@@ -75,19 +75,20 @@ class Problem:
 
         self._model = scheme.model
 
-        self._grouped = scheme.model.grouped()
         self._bag = None
-        self._groups = None
 
         self._residual_function = (
             residual_nnls if scheme.non_negative_least_squares else residual_variable_projection
         )
         self._parameters = None
-        self._filled_dataset_descriptors = None
+        self._dataset_models = None
 
-        self._overwrite_index_dependent = hasattr(scheme.model, "overwrite_index_dependent")
+        self._overwrite_index_dependent = self.model.need_index_dependent()
         self._parameters = scheme.parameters.copy()
         self._parameter_history = []
+
+        self._model.validate(raise_exception=True)
+
         self._prepare_data(scheme.data)
 
         # all of the above are always not None
@@ -145,24 +146,14 @@ class Problem:
         return self._parameter_history
 
     @property
-    def grouped(self) -> bool:
-        return self._grouped
-
-    @property
-    def filled_dataset_descriptors(self) -> dict[str, DatasetDescriptor]:
-        return self._filled_dataset_descriptors
+    def dataset_models(self) -> dict[str, DatasetModel]:
+        return self._dataset_models
 
     @property
     def bag(self) -> UngroupedBag | GroupedBag:
         if not self._bag:
             self.init_bag()
         return self._bag
-
-    @property
-    def groups(self) -> dict[str, list[str]]:
-        if not self._groups and self._grouped:
-            self.init_bag()
-        return self._groups
 
     @property
     def matrices(
@@ -232,14 +223,14 @@ class Problem:
         self._parameter_history.append(self._parameters)
 
     def reset(self):
-        """Resets all results and `DatasetDescriptors`. Use after updating parameters."""
-        self._filled_dataset_descriptors = {
+        """Resets all results and `DatasetModels`. Use after updating parameters."""
+        self._dataset_models = {
             label: dataset_model.fill(self._model, self._parameters).set_data(self.data[label])
             for label, dataset_model in self._model.dataset.items()
         }
         if self._overwrite_index_dependent:
-            for d in self._filled_dataset_descriptors.values():
-                d.overwrite_index_dependent(self.model.overwrite_index_dependent())
+            for d in self._dataset_models.values():
+                d.overwrite_index_dependent(self._overwrite_index_dependent)
         self._reset_results()
 
     def _reset_results(self):
@@ -254,7 +245,7 @@ class Problem:
 
     def _prepare_data(self, data: dict[str, xr.DataArray | xr.Dataset]):
         self._data = {}
-        self._filled_dataset_descriptors = {}
+        self._dataset_models = {}
         for label, dataset in data.items():
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
@@ -263,8 +254,8 @@ class Problem:
             dataset_model = dataset_model.fill(self.model, self.parameters)
             dataset_model.set_data(dataset)
             if self._overwrite_index_dependent:
-                dataset_model.overwrite_index_dependent(self.model.overwrite_index_dependent())
-            self._filled_dataset_descriptors[label] = dataset_model
+                dataset_model.overwrite_index_dependent(self._overwrite_index_dependent)
+            self._dataset_models[label] = dataset_model
             global_dimension = dataset_model.get_global_dimension()
             model_dimension = dataset_model.get_model_dimension()
 
@@ -309,7 +300,7 @@ class Problem:
                     " because weight is already supplied by dataset."
                 )
             return
-        dataset_model = self._filled_dataset_descriptors[label]
+        dataset_model = self.dataset_models[label]
         dataset_model.set_data(dataset)
         global_dimension = dataset_model.get_global_dimension()
         model_dimension = dataset_model.get_model_dimension()
@@ -348,15 +339,15 @@ class Problem:
         if history_index is not None and history_index != -1:
             self.parameters = self.parameter_history[history_index]
         result_data = {label: self.create_result_dataset(label, copy=copy) for label in self.data}
-
-        if callable(self.model.finalize_data):
-            self.model.finalize_data(self, result_data)
+        for label, dataset_model in self.dataset_models.items():
+            result_data[label] = self.create_result_dataset(label, copy=copy)
+            dataset_model.finalize_data(result_data[label])
 
         return result_data
 
     def create_result_dataset(self, label: str, copy: bool = True) -> xr.Dataset:
         dataset = self.data[label]
-        dataset_model = self._filled_dataset_descriptors[label]
+        dataset_model = self.dataset_models[label]
         global_dimension = dataset_model.get_global_dimension()
         model_dimension = dataset_model.get_model_dimension()
         if copy:
