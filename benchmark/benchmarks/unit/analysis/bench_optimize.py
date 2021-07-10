@@ -1,3 +1,5 @@
+from unittest import mock
+
 import numpy as np
 import xarray as xr
 
@@ -5,6 +7,10 @@ from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay
 from glotaran.project import Scheme
+
+
+def mocked_create_result(*args, **kwargs):
+    pass
 
 
 class BenchmarkOptimize:
@@ -76,4 +82,5 @@ class BenchmarkOptimize:
             self.scheme.group = grouped
 
     def time_optimize(self, index_dependent, grouped, weight):
-        optimize(self.scheme)
+        with mock.patch("glotaran.analysis.optimize._create_result", new=mocked_create_result):
+            optimize(self.scheme)
