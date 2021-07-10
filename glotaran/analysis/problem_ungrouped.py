@@ -97,7 +97,9 @@ class UngroupedProblem(Problem):
     ]:
         """Calculates the residuals."""
 
+        self._reduced_clp_labels = {}
         self._reduced_clps = {}
+        self._clp_labels = {}
         self._clps = {}
         self._weighted_residuals = {}
         self._residuals = {}
@@ -112,26 +114,29 @@ class UngroupedProblem(Problem):
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
 
     def _calculate_residual_for_problem(self, label: str, problem: UngroupedProblemDescriptor):
+        self._reduced_clp_labels[label] = []
         self._reduced_clps[label] = []
+        self._clp_labels[label] = []
         self._clps[label] = []
         self._weighted_residuals[label] = []
         self._residuals[label] = []
         data = problem.data
         dataset_model = self.dataset_models[label]
-        model_dimension = dataset_model.get_model_dimension()
         global_dimension = dataset_model.get_global_dimension()
+        global_axis = problem.data.coords[global_dimension].values
 
         for i, index in enumerate(problem.global_axis):
-            clp_labels = (
-                self.matrices[label][i].coords["clp_label"]
+            self._clp_labels[label].append(
+                self.matrices[label][i].coords["clp_label"].values
                 if dataset_model.index_dependent()
-                else self.matrices[label].coords["clp_label"]
+                else self.matrices[label].coords["clp_label"].values
             )
             reduced_matrix = (
                 self.reduced_matrices[label][i]
                 if dataset_model.index_dependent()
                 else self.reduced_matrices[label]
             )
+            self._reduced_clp_labels[label].append(reduced_matrix.coords["clp_label"])
             if problem.dataset.scale is not None:
                 reduced_matrix *= self.dataset_models[label].scale
 
@@ -142,19 +147,16 @@ class UngroupedProblem(Problem):
             reduced_clps, residual = self._residual_function(
                 reduced_matrix.values, data.isel({global_dimension: i}).values
             )
-            reduced_clps = xr.DataArray(
-                reduced_clps,
-                dims=["clp_label"],
-                coords={"clp_label": reduced_matrix.coords["clp_label"]},
-            )
             self._reduced_clps[label].append(reduced_clps)
             self._clps[label].append(
-                retrieve_clps(self.model, self.parameters, clp_labels, reduced_clps, index)
-            )
-            residual = xr.DataArray(
-                residual,
-                dims=[model_dimension],
-                coords={model_dimension: reduced_matrix.coords[model_dimension]},
+                retrieve_clps(
+                    self.model,
+                    self.parameters,
+                    self._clp_labels[label][i],
+                    self._reduced_clp_labels[label][i],
+                    reduced_clps,
+                    index,
+                )
             )
             self._weighted_residuals[label].append(residual)
             if problem.weight is not None:
@@ -164,12 +166,8 @@ class UngroupedProblem(Problem):
             else:
                 self._residuals[label].append(residual)
 
-        self._reduced_clps[label] = xr.concat(self._reduced_clps[label], dim=global_dimension)
-        self._reduced_clps[label].coords[global_dimension] = data.coords[global_dimension]
-        self._clps[label] = xr.concat(self._clps[label], dim=global_dimension)
-        self._clps[label].coords[global_dimension] = data.coords[global_dimension]
         additional_penalty = calculate_clp_penalties(
-            self.model, self.parameters, self._clps[label], global_dimension
+            self.model, self.parameters, self._clp_labels[label], self._clps[label], global_axis
         )
         if additional_penalty.size != 0:
             self._additional_penalty.append(additional_penalty)
@@ -198,16 +196,14 @@ class UngroupedProblem(Problem):
         model_dimension = self.dataset_models[label].get_model_dimension()
         global_dimension = self.dataset_models[label].get_global_dimension()
 
-        matrix = xr.concat(self.matrices[label], dim=global_dimension)
-        matrix.coords[global_dimension] = dataset.coords[global_dimension]
-        dataset.coords["clp_label"] = matrix.coords["clp_label"]
+        dataset.coords["clp_label"] = self.matrices[label][0].coords["clp_label"]
         dataset["matrix"] = (
             (
                 (global_dimension),
                 (model_dimension),
                 ("clp_label"),
             ),
-            matrix.data,
+            np.asarray(self.matrices[label]),
         )
 
     def _add_index_independent_matrix_to_dataset(self, label: str, dataset: xr.Dataset):
@@ -224,20 +220,26 @@ class UngroupedProblem(Problem):
     def _add_residual_and_full_clp_to_dataset(self, label: str, dataset: xr.Dataset):
         model_dimension = self.dataset_models[label].get_model_dimension()
         global_dimension = self.dataset_models[label].get_global_dimension()
-        dataset["clp"] = self.clps[label]
+        dataset["clp"] = (
+            (
+                (global_dimension),
+                ("clp_label"),
+            ),
+            np.asarray(self.clps[label]),
+        )
         dataset["weighted_residual"] = (
             (
                 (model_dimension),
                 (global_dimension),
             ),
-            xr.concat(self.weighted_residuals[label], dim=global_dimension).T.data,
+            np.transpose(np.asarray(self.weighted_residuals[label])),
         )
         dataset["residual"] = (
             (
                 (model_dimension),
                 (global_dimension),
             ),
-            xr.concat(self.residuals[label], dim=global_dimension).T.data,
+            np.transpose(np.asarray(self.residuals[label])),
         )
 
     @property

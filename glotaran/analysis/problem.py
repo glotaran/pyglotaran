@@ -332,12 +332,17 @@ class Problem:
     def calculate_residual(self):
         raise NotImplementedError
 
+    def prepare_result_creation(self):
+        pass
+
     def create_result_data(
         self, copy: bool = True, history_index: int | None = None
     ) -> dict[str, xr.Dataset]:
 
         if history_index is not None and history_index != -1:
             self.parameters = self.parameter_history[history_index]
+
+        self.prepare_result_creation()
         result_data = {label: self.create_result_dataset(label, copy=copy) for label in self.data}
         for label, dataset_model in self.dataset_models.items():
             result_data[label] = self.create_result_dataset(label, copy=copy)

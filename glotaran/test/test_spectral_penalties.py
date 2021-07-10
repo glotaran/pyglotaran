@@ -92,7 +92,7 @@ def test_equal_area_penalties(debug=False):
     dataset_spec = DatasetSpec(times, wavelengths, irf, [shape1, shape2])
 
     wavelengths = dataset_spec.wavelengths
-    equ_interval = [(min(wavelengths), max(wavelengths))]
+    equ_interval = [(min(wavelengths.values), max(wavelengths.values))]
     weight = 0.01
     # %% The base model specification (mspec)
     base = {

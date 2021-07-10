@@ -129,3 +129,25 @@ def test_benchmark_calculate_result_data(benchmark, grouped, index_dependent):
     problem.calculate_residual()
 
     benchmark(problem.create_result_data)
+
+
+#  @pytest.mark.skip(reason="To time consuming atm.")
+@pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("index_dependent", [True, False])
+def test_benchmark_optimize_20_runs(benchmark, grouped, index_dependent):
+
+    model = setup_model(index_dependent)
+    assert model.valid()
+
+    scheme = setup_scheme(model)
+    problem = setup_problem(scheme, grouped)
+
+    @benchmark
+    def run():
+        problem.init_bag()
+
+        for _ in range(20):
+            problem.reset()
+            problem.full_penalty
+
+        problem.create_result_data()
