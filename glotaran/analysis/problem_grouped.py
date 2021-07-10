@@ -50,6 +50,7 @@ class GroupedProblem(Problem):
         self._model_dimension = model_dimensions.pop()
         self._group_clp_labels = None
         self._groups = None
+        self._has_weights = any("weight" in d for d in self._data.values())
 
     def init_bag(self):
         """Initializes a grouped problem bag."""
@@ -57,13 +58,14 @@ class GroupedProblem(Problem):
         datasets = None
         for label in self._model.dataset:
             dataset = self._data[label]
+            weight = None
+            data = dataset.data
             if "weight" in dataset:
                 weight = dataset.weight
                 data = dataset.data * weight
                 dataset["weighted_data"] = data
-            else:
+            elif self._has_weights:
                 weight = xr.DataArray(np.ones_like(dataset.data), coords=dataset.data.coords)
-                data = dataset.data
             global_axis = dataset.coords[self._global_dimension].values
             model_axis = dataset.coords[self._model_dimension].values
             has_scaling = self._model.dataset[label].scale is not None
@@ -71,7 +73,9 @@ class GroupedProblem(Problem):
                 self._bag = collections.deque(
                     ProblemGroup(
                         data=data.isel({self._global_dimension: i}).values,
-                        weight=weight.isel({self._global_dimension: i}).values,
+                        weight=weight.isel({self._global_dimension: i}).values
+                        if weight is not None
+                        else None,
                         has_scaling=has_scaling,
                         group=label,
                         data_sizes=[data.isel({self._global_dimension: i}).values.size],
@@ -126,7 +130,9 @@ class GroupedProblem(Problem):
                         self._bag[j].weight,
                         weight.isel({self._global_dimension: i2[i]}).values,
                     ]
-                ),
+                )
+                if weight is not None
+                else None,
                 has_scaling=has_scaling or self._bag[j].has_scaling,
                 group=self._bag[j].group + label,
                 data_sizes=self._bag[j].data_sizes + [data_stripe.size],
@@ -152,7 +158,9 @@ class GroupedProblem(Problem):
             data_stripe = data.isel({self._global_dimension: i}).values
             problem = ProblemGroup(
                 data=data_stripe,
-                weight=weight.isel({self._global_dimension: i}).values,
+                weight=weight.isel({self._global_dimension: i}).values
+                if weight is not None
+                else None,
                 has_scaling=has_scaling,
                 group=label,
                 data_sizes=[data_stripe.size],
@@ -301,7 +309,8 @@ class GroupedProblem(Problem):
 
         reduced_clp_labels = matrix.coords["clp_label"]
         matrix = matrix.values
-        _apply_weight(matrix, problem.weight)
+        if problem.weight is not None:
+            _apply_weight(matrix, problem.weight)
         data = problem.data
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
@@ -311,7 +320,7 @@ class GroupedProblem(Problem):
                     end = start + problem.data_sizes[i]
                     matrix[start:end, :] *= self.dataset_models[label].scale
 
-        reduced_clps, residual = self._residual_function(matrix, data)
+        reduced_clps, weighted_residual = self._residual_function(matrix, data)
         clps = retrieve_clps(
             self.model,
             self.parameters,
@@ -320,13 +329,17 @@ class GroupedProblem(Problem):
             reduced_clps,
             index,
         )
-        return clp_labels, clps, residual, residual / problem.weight
+        residual = (
+            weighted_residual / problem.weight if problem.weight is not None else weighted_residual
+        )
+        return clp_labels, clps, weighted_residual, residual
 
     def _index_independent_residual(self, problem: ProblemGroup, index: any):
         matrix = self.reduced_matrices[problem.group]
         reduced_clp_labels = matrix.coords["clp_label"]
         matrix = matrix.values
-        _apply_weight(matrix, problem.weight)
+        if problem.weight is not None:
+            _apply_weight(matrix, problem.weight)
         data = problem.data
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
@@ -335,7 +348,7 @@ class GroupedProblem(Problem):
                     start = sum(problem.data_sizes[0:i])
                     end = start + problem.data_sizes[i]
                     matrix[start:end, :] *= self.dataset_models[label].scale
-        reduced_clps, residual = self._residual_function(matrix, data)
+        reduced_clps, weighted_residual = self._residual_function(matrix, data)
         clp_labels = self._group_clp_labels[problem.group]
         clps = retrieve_clps(
             self.model,
@@ -345,7 +358,10 @@ class GroupedProblem(Problem):
             reduced_clps,
             index,
         )
-        return clp_labels, clps, residual, residual / problem.weight
+        residual = (
+            weighted_residual / problem.weight if problem.weight is not None else weighted_residual
+        )
+        return clp_labels, clps, weighted_residual, residual
 
     def prepare_result_creation(self):
         if self._residuals is None:
