@@ -4,6 +4,7 @@ import collections
 import itertools
 from typing import Deque
 
+import numba as nb
 import numpy as np
 import xarray as xr
 
@@ -208,14 +209,14 @@ class GroupedProblem(Problem):
             ]
             global_index = group.descriptor[0].indices[self._global_dimension]
             global_index = group.descriptor[0].axis[self._global_dimension][global_index]
-            combined_matrix = xr.concat(matrices, dim=self._model_dimension).fillna(0)
+            combined_matrix = combine_matrices(self._model_dimension, matrices)
             group_clp_labels = combined_matrix.coords["clp_label"]
             reduced_matrix = reduce_matrix(
                 combined_matrix, self.model, self.parameters, self._model_dimension, global_index
             )
             return matrices, group_clp_labels, reduced_matrix
 
-        results = list(map(lambda group: calculate_group(group, self.dataset_models), self._bag))
+        results = list(map(lambda group: calculate_group(group, self.dataset_models), self.bag))
 
         matrices = list(map(lambda result: result[0], results))
 
@@ -279,18 +280,13 @@ class GroupedProblem(Problem):
             else list(map(self._index_independent_residual, self.bag, self._full_axis))
         )
 
-        clps = xr.concat(list(map(lambda result: result[0], results)), dim=self._global_dimension)
-        clps.coords[self._global_dimension] = self._full_axis
-        reduced_clps = xr.concat(
-            list(map(lambda result: result[1], results)), dim=self._global_dimension
-        )
-        reduced_clps.coords[self._global_dimension] = self._full_axis
-        self._ungroup_clps(clps, reduced_clps)
+        self._clp_labels = list(map(lambda result: result[0], results))
+        self._grouped_clps = list(map(lambda result: result[1], results))
 
         self._weighted_residuals = list(map(lambda result: result[2], results))
         self._residuals = list(map(lambda result: result[3], results))
         self._additional_penalty = calculate_clp_penalties(
-            self.model, self.parameters, clps, self._global_dimension
+            self.model, self.parameters, self._clp_labels, self._grouped_clps, self._full_axis
         )
 
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
@@ -299,13 +295,13 @@ class GroupedProblem(Problem):
         self,
         problem: ProblemGroup,
         matrix: np.ndarray,
-        group_clp_labels: str,
+        clp_labels: str,
         index: any,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
-        matrix = matrix.copy()
-        for i in range(matrix.shape[1]):
-            matrix[:, i] *= problem.weight
+        reduced_clp_labels = matrix.coords["clp_label"]
+        matrix = matrix.values
+        _apply_weight(matrix, problem.weight)
         data = problem.data
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
@@ -315,23 +311,22 @@ class GroupedProblem(Problem):
                     end = start + problem.data_sizes[i]
                     matrix[start:end, :] *= self.dataset_models[label].scale
 
-        reduced_clps, residual = self._residual_function(matrix.values, data)
-        reduced_clps = xr.DataArray(
-            reduced_clps, dims=["clp_label"], coords={"clp_label": matrix.coords["clp_label"]}
-        )
+        reduced_clps, residual = self._residual_function(matrix, data)
         clps = retrieve_clps(
             self.model,
             self.parameters,
-            group_clp_labels,
+            clp_labels,
+            reduced_clp_labels,
             reduced_clps,
             index,
         )
-        return clps, reduced_clps, residual, residual / problem.weight
+        return clp_labels, clps, residual, residual / problem.weight
 
     def _index_independent_residual(self, problem: ProblemGroup, index: any):
-        matrix = self.reduced_matrices[problem.group].copy()
-        for i in range(matrix.shape[1]):
-            matrix[:, i] *= problem.weight
+        matrix = self.reduced_matrices[problem.group]
+        reduced_clp_labels = matrix.coords["clp_label"]
+        matrix = matrix.values
+        _apply_weight(matrix, problem.weight)
         data = problem.data
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
@@ -340,64 +335,49 @@ class GroupedProblem(Problem):
                     start = sum(problem.data_sizes[0:i])
                     end = start + problem.data_sizes[i]
                     matrix[start:end, :] *= self.dataset_models[label].scale
-        reduced_clps, residual = self._residual_function(matrix.values, data)
-        reduced_clps = xr.DataArray(
-            reduced_clps, dims=["clp_label"], coords={"clp_label": matrix.coords["clp_label"]}
-        )
+        reduced_clps, residual = self._residual_function(matrix, data)
+        clp_labels = self._group_clp_labels[problem.group]
         clps = retrieve_clps(
             self.model,
             self.parameters,
-            self._group_clp_labels[problem.group],
+            clp_labels,
+            reduced_clp_labels,
             reduced_clps,
             index,
         )
-        return clps, reduced_clps, residual, residual / problem.weight
+        return clp_labels, clps, residual, residual / problem.weight
 
-    def _ungroup_clps(self, clps: xr.DataArray, reduced_clps: xr.DataArray):
-        self._reduced_clps = {}
+    def prepare_result_creation(self):
+        if self._residuals is None:
+            self.calculate_residual()
+        full_clp_labels = self._clp_labels
+        full_clps = self._grouped_clps
         self._clps = {}
         for label in self.matrices:
-            clp_labels = (
-                [m.coords["clp_label"] for m in self.matrices[label]]
+            # TODO deal with different clps at indices
+            clp_labels = list(
+                self.matrices[label][0].coords["clp_label"].values
                 if self._index_dependent
-                else self.matrices[label].coords["clp_label"]
+                else self.matrices[label].coords["clp_label"].values
             )
-
+            global_axis = self.data[label].coords[self._global_dimension].values
             # find offset in the full axis
-            offset = find_closest_index(
-                self.data[label].coords[self._global_dimension][0].values, self._full_axis
-            )
+            offset = find_closest_index(global_axis[0], self._full_axis)
 
-            self._reduced_clps[label] = []
-            self._clps[label] = []
+            clps = []
 
             for i in range(self.data[label].coords[self._global_dimension].size):
+                full_index_clp_labels = full_clp_labels[i + offset]
+                index_clps = full_clps[i + offset]
+                mask = [
+                    np.where(full_index_clp_labels == clp_label)[0][0] for clp_label in clp_labels
+                ]
+                clps.append(index_clps[mask])
 
-                index_clp_labels = clp_labels[i] if self._index_dependent else clp_labels
-                index_clps = clps[i + offset]
-                index_clps = index_clps.sel({"clp_label": index_clp_labels})
-                self._clps[label].append(index_clps)
-
-                index_reduced_clps = reduced_clps[i + offset]
-                index_reduced_clp_labels, _ = xr.align(
-                    index_clp_labels, index_reduced_clps.coords["clp_label"]
-                )
-                index_reduced_clps = index_reduced_clps.sel(
-                    {"clp_label": index_reduced_clp_labels}
-                )
-                self._reduced_clps[label].append(index_reduced_clps)
-
-            self._reduced_clps[label] = xr.concat(
-                self.reduced_clps[label], dim=self._global_dimension
+            self._clps[label] = xr.DataArray(
+                clps,
+                coords=((self._global_dimension, global_axis), ("clp_label", clp_labels)),
             )
-            self._reduced_clps[label].coords[self._global_dimension] = self.data[label].coords[
-                self._global_dimension
-            ]
-
-            self._clps[label] = xr.concat(self._clps[label], dim=self._global_dimension)
-            self._clps[label].coords[self._global_dimension] = self.data[label].coords[
-                self._global_dimension
-            ]
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""
@@ -497,3 +477,49 @@ class GroupedProblem(Problem):
                 else np.concatenate(residuals)
             )
         return self._full_penalty
+
+
+@nb.jit(nopython=True, parallel=True)
+def _apply_weight(matrix, weight):
+    for i in range(matrix.shape[1]):
+        matrix[:, i] *= weight
+
+
+def combine_matrices(model_dimension: str, matrices: list[xr.DataArray]) -> xr.DataArray:
+    masks = []
+    full_clp_labels = None
+    full_model_axis = None
+    sizes = []
+    dim1 = 0
+    for matrix in matrices:
+        clp_label = matrix.coords["clp_label"].values
+        model_axis = matrix.coords[model_dimension].values
+        sizes.append(model_axis.size)
+        dim1 += model_axis.size
+        if full_clp_labels is None:
+            full_model_axis = [model_axis]
+            full_clp_labels = list(clp_label)
+            masks.append([i for i, _ in enumerate(clp_label)])
+        else:
+            full_model_axis.append(model_axis)
+            mask = []
+            for c in clp_label:
+                if c not in full_clp_labels:
+                    full_clp_labels.append(c)
+                mask.append(full_clp_labels.index(c))
+            masks.append(mask)
+    dim2 = len(full_clp_labels)
+    full_matrix = np.zeros((dim1, dim2), dtype=np.float64)
+    start = 0
+    for i, m in enumerate(matrices):
+        end = start + sizes[i]
+        full_matrix[start:end, masks[i]] = m.values
+        start = end
+
+    return xr.DataArray(
+        full_matrix,
+        coords=(
+            (model_dimension, np.concatenate(full_model_axis)),
+            ("clp_label", full_clp_labels),
+        ),
+    )

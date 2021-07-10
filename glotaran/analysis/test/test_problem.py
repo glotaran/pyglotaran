@@ -78,16 +78,8 @@ def test_problem_residuals(problem: Problem):
     else:
         assert isinstance(problem.residuals, dict)
         assert "dataset1" in problem.residuals
-        assert all(isinstance(r, xr.DataArray) for r in problem.residuals["dataset1"])
+        assert all(isinstance(r, np.ndarray) for r in problem.residuals["dataset1"])
         assert len(problem.residuals["dataset1"]) == suite.global_axis.size
-    assert isinstance(problem.reduced_clps, dict)
-    assert "dataset1" in problem.reduced_clps
-    assert all(isinstance(c, xr.DataArray) for c in problem.reduced_clps["dataset1"])
-    assert len(problem.reduced_clps["dataset1"]) == suite.global_axis.size
-    assert isinstance(problem.clps, dict)
-    assert "dataset1" in problem.clps
-    assert all(isinstance(c, xr.DataArray) for c in problem.clps["dataset1"])
-    assert len(problem.clps["dataset1"]) == suite.global_axis.size
 
 
 def test_problem_result_data(problem: Problem):
@@ -155,7 +147,7 @@ def test_prepare_data():
         ],
     }
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())
+    print(model.validate())  # T001
     assert model.valid()
 
     parameters = ParameterGroup.from_list([])
@@ -173,7 +165,7 @@ def test_prepare_data():
     problem = Problem(scheme)
 
     data = problem.data["dataset1"]
-    print(data)
+    print(data)  # T001
     assert "data" in data
     assert "weight" in data
 
@@ -189,7 +181,7 @@ def test_prepare_data():
         }
     )
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())
+    print(model.validate())  # T001
     assert model.valid()
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})

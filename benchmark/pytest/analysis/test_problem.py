@@ -131,7 +131,7 @@ def test_benchmark_calculate_result_data(benchmark, grouped, index_dependent):
     benchmark(problem.create_result_data)
 
 
-@pytest.mark.skip(reason="To time consuming atm.")
+#  @pytest.mark.skip(reason="To time consuming atm.")
 @pytest.mark.parametrize("grouped", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
 def test_benchmark_optimize_20_runs(benchmark, grouped, index_dependent):
