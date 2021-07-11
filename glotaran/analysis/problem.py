@@ -326,15 +326,6 @@ class Problem:
                     )
                 dataset.weight[idx] *= weight.value
 
-    def calculate_matrices(self):
-        raise NotImplementedError
-
-    def calculate_residual(self):
-        raise NotImplementedError
-
-    def prepare_result_creation(self):
-        pass
-
     #  @profile
     def create_result_data(
         self, copy: bool = True, history_index: int | None = None
@@ -405,50 +396,6 @@ class Problem:
         """Initializes a problem bag."""
         raise NotImplementedError
 
-    def calculate_index_dependent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[list[str]]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[str]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index dependent model matrices."""
-        raise NotImplementedError
-
-    def calculate_index_independent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-    ]:
-        """Calculates the index independent model matrices."""
-        raise NotImplementedError
-
-    def calculate_index_dependent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index dependent residuals."""
-        raise NotImplementedError
-
-    def calculate_index_independent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index independent residuals."""
-        raise NotImplementedError
-
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""
         raise NotImplementedError
@@ -458,3 +405,12 @@ class Problem:
     ) -> xr.Dataset:
         """Creates a result datasets for index independent matrices."""
         raise NotImplementedError
+
+    def calculate_matrices(self):
+        raise NotImplementedError
+
+    def calculate_residual(self):
+        raise NotImplementedError
+
+    def prepare_result_creation(self):
+        pass
