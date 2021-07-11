@@ -63,8 +63,8 @@ class OneComponentOneChannel:
         [101e-3, [1, {"vary": False, "non-negative": False}]]
     )
 
-    time = xr.DataArray(np.arange(0, 50, 1.5))
-    pixel = xr.DataArray([0])
+    time = np.arange(0, 50, 1.5)
+    pixel = np.asarray([0])
     axis = {"time": time, "pixel": pixel}
 
     clp = xr.DataArray([[1]], coords=[("pixel", pixel.data), ("clp_label", ["s1"])])
@@ -115,8 +115,8 @@ class OneComponentOneChannelGaussianIrf:
         ]
     )
 
-    time = xr.DataArray(np.arange(0, 50, 1.5))
-    pixel = xr.DataArray([0])
+    time = np.arange(0, 50, 1.5)
+    pixel = np.asarray([0])
     axis = {"time": time, "pixel": pixel}
 
     clp = xr.DataArray([[1]], coords=[("pixel", pixel.data), ("clp_label", ["s1"])])
@@ -179,8 +179,8 @@ class ThreeComponentParallel:
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
         }
     )
-    time = xr.DataArray(np.arange(-10, 100, 1.5))
-    pixel = xr.DataArray(np.arange(600, 750, 10))
+    time = np.arange(-10, 100, 1.5)
+    pixel = np.arange(600, 750, 10)
 
     axis = {"time": time, "pixel": pixel}
 
@@ -254,8 +254,8 @@ class ThreeComponentSequential:
         }
     )
 
-    time = xr.DataArray(np.arange(-10, 50, 1.0))
-    pixel = xr.DataArray(np.arange(600, 750, 10))
+    time = np.arange(-10, 50, 1.0)
+    pixel = np.arange(600, 750, 10)
     axis = {"time": time, "pixel": pixel}
 
     clp = _create_gaussian_clp(

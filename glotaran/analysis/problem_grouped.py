@@ -12,6 +12,8 @@ from glotaran.analysis.problem import GroupedProblemDescriptor
 from glotaran.analysis.problem import ParameterError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import ProblemGroup
+from glotaran.analysis.util import CalculatedMatrix
+from glotaran.analysis.util import apply_weight
 from glotaran.analysis.util import calculate_clp_penalties
 from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import find_closest_index
@@ -56,29 +58,25 @@ class GroupedProblem(Problem):
         """Initializes a grouped problem bag."""
         self._bag = None
         datasets = None
-        for label in self._model.dataset:
-            dataset = self._data[label]
-            weight = None
-            data = dataset.data
-            if "weight" in dataset:
-                weight = dataset.weight
-                data = dataset.data * weight
-                dataset["weighted_data"] = data
-            elif self._has_weights:
-                weight = xr.DataArray(np.ones_like(dataset.data), coords=dataset.data.coords)
-            global_axis = dataset.coords[self._global_dimension].values
-            model_axis = dataset.coords[self._model_dimension].values
-            has_scaling = self._model.dataset[label].scale is not None
+        for label, dataset_model in self.dataset_models.items():
+
+            data = dataset_model.get_data()
+            weight = dataset_model.get_weight()
+            if weight is None and self._has_weights:
+                weight = np.ones_like(data)
+
+            global_axis = dataset_model.get_global_axis()
+            model_axis = dataset_model.get_model_axis()
+            has_scaling = dataset_model.scale is not None
+
             if self._bag is None:
                 self._bag = collections.deque(
                     ProblemGroup(
-                        data=data.isel({self._global_dimension: i}).values,
-                        weight=weight.isel({self._global_dimension: i}).values
-                        if weight is not None
-                        else None,
+                        data=data[:, i],
+                        weight=weight[:, i] if weight is not None else None,
                         has_scaling=has_scaling,
                         group=label,
-                        data_sizes=[data.isel({self._global_dimension: i}).values.size],
+                        data_sizes=[model_axis.size],
                         descriptor=[
                             GroupedProblemDescriptor(
                                 label,
@@ -117,7 +115,7 @@ class GroupedProblem(Problem):
 
         for i, j in enumerate(i1):
             datasets[j].append(label)
-            data_stripe = data.isel({self._global_dimension: i2[i]}).values
+            data_stripe = data[:, i2[i]]
             self._bag[j] = ProblemGroup(
                 data=np.concatenate(
                     [
@@ -125,12 +123,7 @@ class GroupedProblem(Problem):
                         data_stripe,
                     ]
                 ),
-                weight=np.concatenate(
-                    [
-                        self._bag[j].weight,
-                        weight.isel({self._global_dimension: i2[i]}).values,
-                    ]
-                )
+                weight=np.concatenate([self._bag[j].weight, weight[:, i2[i]]])
                 if weight is not None
                 else None,
                 has_scaling=has_scaling or self._bag[j].has_scaling,
@@ -155,12 +148,10 @@ class GroupedProblem(Problem):
         begin_overlap = i2[0] if len(i2) != 0 else 0
         end_overlap = i2[-1] + 1 if len(i2) != 0 else 0
         for i in itertools.chain(range(begin_overlap), range(end_overlap, len(global_axis))):
-            data_stripe = data.isel({self._global_dimension: i}).values
+            data_stripe = data[:, i]
             problem = ProblemGroup(
                 data=data_stripe,
-                weight=weight.isel({self._global_dimension: i}).values
-                if weight is not None
-                else None,
+                weight=weight[:, i] if weight is not None else None,
                 has_scaling=has_scaling,
                 group=label,
                 data_sizes=[data_stripe.size],
@@ -202,12 +193,12 @@ class GroupedProblem(Problem):
 
     def calculate_index_dependent_matrices(
         self,
-    ) -> tuple[dict[str, list[np.ndarray]], list[np.ndarray],]:
+    ) -> tuple[dict[str, list[CalculatedMatrix]], list[CalculatedMatrix],]:
         """Calculates the index dependent model matrices."""
 
         def calculate_group(
             group: ProblemGroup, descriptors: dict[str, DatasetModel]
-        ) -> tuple[list[xr.DataArray], xr.DataArray, xr.DataArray]:
+        ) -> tuple[list[CalculatedMatrix], list[str], CalculatedMatrix]:
             matrices = [
                 calculate_matrix(
                     descriptors[problem.label],
@@ -217,10 +208,10 @@ class GroupedProblem(Problem):
             ]
             global_index = group.descriptor[0].indices[self._global_dimension]
             global_index = group.descriptor[0].axis[self._global_dimension][global_index]
-            combined_matrix = combine_matrices(self._model_dimension, matrices)
-            group_clp_labels = combined_matrix.coords["clp_label"]
+            combined_matrix = combine_matrices(matrices)
+            group_clp_labels = combined_matrix.clp_labels
             reduced_matrix = reduce_matrix(
-                combined_matrix, self.model, self.parameters, self._model_dimension, global_index
+                combined_matrix, self.model, self.parameters, global_index
             )
             return matrices, group_clp_labels, reduced_matrix
 
@@ -241,7 +232,7 @@ class GroupedProblem(Problem):
 
     def calculate_index_independent_matrices(
         self,
-    ) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray],]:
+    ) -> tuple[dict[str, CalculatedMatrix], dict[str, CalculatedMatrix],]:
         """Calculates the index independent model matrices."""
         self._matrices = {}
         self._group_clp_labels = {}
@@ -252,24 +243,22 @@ class GroupedProblem(Problem):
                 dataset_model,
                 {},
             )
-            self._group_clp_labels[label] = self._matrices[label].coords["clp_label"]
+            self._group_clp_labels[label] = self._matrices[label].clp_labels
             self._reduced_matrices[label] = reduce_matrix(
                 self._matrices[label],
                 self.model,
                 self.parameters,
-                self._model_dimension,
                 None,
             )
 
         for group_label, group in self.groups.items():
             if group_label not in self._matrices:
-                self._reduced_matrices[group_label] = xr.concat(
-                    [self._reduced_matrices[label] for label in group], dim=self._model_dimension
-                ).fillna(0)
-                group_clp_labels = xr.align(
-                    *(self._matrices[label].coords["clp_label"] for label in group), join="outer"
+                self._reduced_matrices[group_label] = combine_matrices(
+                    [self._reduced_matrices[label] for label in group]
                 )
-                self._group_clp_labels[group_label] = group_clp_labels[0].coords["clp_label"]
+                self._group_clp_labels[group_label] = list(
+                    set(itertools.chain(*(self._matrices[label].clp_labels for label in group)))
+                )
 
         return self._matrices, self._reduced_matrices
 
@@ -302,15 +291,15 @@ class GroupedProblem(Problem):
     def _index_dependent_residual(
         self,
         problem: ProblemGroup,
-        matrix: np.ndarray,
+        matrix: CalculatedMatrix,
         clp_labels: str,
         index: any,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
-        reduced_clp_labels = matrix.coords["clp_label"]
-        matrix = matrix.values
+        reduced_clp_labels = matrix.clp_labels
+        matrix = matrix.matrix
         if problem.weight is not None:
-            _apply_weight(matrix, problem.weight)
+            apply_weight(matrix, problem.weight)
         data = problem.data
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
@@ -336,10 +325,10 @@ class GroupedProblem(Problem):
 
     def _index_independent_residual(self, problem: ProblemGroup, index: any):
         matrix = self.reduced_matrices[problem.group]
-        reduced_clp_labels = matrix.coords["clp_label"]
-        matrix = matrix.values
+        reduced_clp_labels = matrix.clp_labels
+        matrix = matrix.matrix.copy()
         if problem.weight is not None:
-            _apply_weight(matrix, problem.weight)
+            apply_weight(matrix, problem.weight)
         data = problem.data
         if problem.has_scaling:
             for i, descriptor in enumerate(problem.descriptor):
@@ -369,25 +358,19 @@ class GroupedProblem(Problem):
         full_clp_labels = self._clp_labels
         full_clps = self._grouped_clps
         self._clps = {}
-        for label in self.matrices:
+        for label, matrix in self.matrices.items():
             # TODO deal with different clps at indices
-            clp_labels = list(
-                self.matrices[label][0].coords["clp_label"].values
-                if self._index_dependent
-                else self.matrices[label].coords["clp_label"].values
-            )
-            global_axis = self.data[label].coords[self._global_dimension].values
+            clp_labels = matrix[0].clp_labels if self._index_dependent else matrix.clp_labels
+
             # find offset in the full axis
+            global_axis = self.dataset_models[label].get_global_axis()
             offset = find_closest_index(global_axis[0], self._full_axis)
 
             clps = []
-
-            for i in range(self.data[label].coords[self._global_dimension].size):
+            for i in range(global_axis.size):
                 full_index_clp_labels = full_clp_labels[i + offset]
                 index_clps = full_clps[i + offset]
-                mask = [
-                    np.where(full_index_clp_labels == clp_label)[0][0] for clp_label in clp_labels
-                ]
+                mask = [full_index_clp_labels.index(clp_label) for clp_label in clp_labels]
                 clps.append(index_clps[mask])
 
             self._clps[label] = xr.DataArray(
@@ -418,7 +401,7 @@ class GroupedProblem(Problem):
                 (self._model_dimension),
                 ("clp_label"),
             ),
-            self.matrices[label],
+            np.asarray([m.matrix for m in self.matrices[label]]),
         )
         dataset["clp"] = self.clps[label]
 
@@ -429,7 +412,13 @@ class GroupedProblem(Problem):
     ) -> xr.Dataset:
         """Creates a result datasets for index independent matrices."""
 
-        dataset["matrix"] = self.matrices[label]
+        dataset["matrix"] = (
+            (
+                (self._model_dimension),
+                ("clp_label"),
+            ),
+            self.matrices[label].matrix,
+        )
         dataset["clp"] = self.clps[label]
 
         for index, grouped_problem in enumerate(self.bag):
@@ -501,25 +490,22 @@ def _apply_weight(matrix, weight):
         matrix[:, i] *= weight
 
 
-def combine_matrices(model_dimension: str, matrices: list[xr.DataArray]) -> xr.DataArray:
+def combine_matrices(matrices: list[CalculatedMatrix]) -> CalculatedMatrix:
     masks = []
     full_clp_labels = None
-    full_model_axis = None
     sizes = []
     dim1 = 0
     for matrix in matrices:
-        clp_label = matrix.coords["clp_label"].values
-        model_axis = matrix.coords[model_dimension].values
-        sizes.append(model_axis.size)
-        dim1 += model_axis.size
+        clp_labels = matrix.clp_labels
+        model_axis_size = matrix.matrix.shape[0]
+        sizes.append(model_axis_size)
+        dim1 += model_axis_size
         if full_clp_labels is None:
-            full_model_axis = [model_axis]
-            full_clp_labels = list(clp_label)
-            masks.append([i for i, _ in enumerate(clp_label)])
+            full_clp_labels = clp_labels.copy()
+            masks.append([i for i, _ in enumerate(clp_labels)])
         else:
-            full_model_axis.append(model_axis)
             mask = []
-            for c in clp_label:
+            for c in clp_labels:
                 if c not in full_clp_labels:
                     full_clp_labels.append(c)
                 mask.append(full_clp_labels.index(c))
@@ -529,13 +515,7 @@ def combine_matrices(model_dimension: str, matrices: list[xr.DataArray]) -> xr.D
     start = 0
     for i, m in enumerate(matrices):
         end = start + sizes[i]
-        full_matrix[start:end, masks[i]] = m.values
+        full_matrix[start:end, masks[i]] = m.matrix
         start = end
 
-    return xr.DataArray(
-        full_matrix,
-        coords=(
-            (model_dimension, np.concatenate(full_model_axis)),
-            ("clp_label", full_clp_labels),
-        ),
-    )
+    return CalculatedMatrix(full_clp_labels, full_matrix)

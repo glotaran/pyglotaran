@@ -16,10 +16,11 @@ TEST_AXIS_GLOBAL_SIZE = 100
 TEST_AXIS_GLOBAL = xr.DataArray(np.arange(0, TEST_AXIS_GLOBAL_SIZE))
 TEST_CLP_SIZE = 20
 TEST_CLP_LABELS = [f"{i+1}" for i in range(TEST_CLP_SIZE)]
-TEST_MATRIX = xr.DataArray(
-    np.ones((TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE)),
-    coords=(("test", TEST_AXIS_MODEL.data), ("clp_label", TEST_CLP_LABELS)),
-)
+TEST_MATRIX = np.ones((TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE))
+#  TEST_MATRIX = xr.DataArray(
+#      np.ones((TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE)),
+#      coords=(("test", TEST_AXIS_MODEL.data), ("clp_label", TEST_CLP_LABELS)),
+#  )
 TEST_DATA = xr.DataArray(
     np.ones((TEST_AXIS_GLOBAL_SIZE, TEST_AXIS_MODEL_SIZE)),
     coords=(("global", TEST_AXIS_GLOBAL.data), ("test", TEST_AXIS_MODEL.data)),
@@ -30,7 +31,7 @@ TEST_PARAMETER = ParameterGroup.from_list([])
 @megacomplex(dimension="test", properties={"is_index_dependent": bool})
 class BenchmarkMegacomplex(Megacomplex):
     def calculate_matrix(self, dataset_model, indices, **kwargs):
-        return TEST_MATRIX
+        return TEST_CLP_LABELS, TEST_MATRIX
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
@@ -71,14 +72,13 @@ def setup_problem(scheme, grouped):
     return GroupedProblem(scheme) if grouped else UngroupedProblem(scheme)
 
 
-@pytest.mark.parametrize("grouped", [True, False])
-def test_benchmark_bag_creation(benchmark, grouped):
+def test_benchmark_bag_creation(benchmark):
 
     model = setup_model(False)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    problem = setup_problem(scheme, grouped)
+    problem = setup_problem(scheme, True)
 
     benchmark(problem.init_bag)
 
@@ -93,7 +93,8 @@ def test_benchmark_calculate_matrix(benchmark, grouped, index_dependent):
     scheme = setup_scheme(model)
     problem = setup_problem(scheme, grouped)
 
-    problem.init_bag()
+    if grouped:
+        problem.init_bag()
 
     benchmark(problem.calculate_matrices)
 
@@ -108,7 +109,8 @@ def test_benchmark_calculate_residual(benchmark, grouped, index_dependent):
     scheme = setup_scheme(model)
     problem = setup_problem(scheme, grouped)
 
-    problem.init_bag()
+    if grouped:
+        problem.init_bag()
     problem.calculate_matrices()
 
     benchmark(problem.calculate_residual)
@@ -124,7 +126,8 @@ def test_benchmark_calculate_result_data(benchmark, grouped, index_dependent):
     scheme = setup_scheme(model)
     problem = setup_problem(scheme, grouped)
 
-    problem.init_bag()
+    if grouped:
+        problem.init_bag()
     problem.calculate_matrices()
     problem.calculate_residual()
 
@@ -144,7 +147,8 @@ def test_benchmark_optimize_20_runs(benchmark, grouped, index_dependent):
 
     @benchmark
     def run():
-        problem.init_bag()
+        if grouped:
+            problem.init_bag()
 
         for _ in range(20):
             problem.reset()

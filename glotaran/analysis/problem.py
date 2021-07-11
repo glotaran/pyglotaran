@@ -326,7 +326,6 @@ class Problem:
                     )
                 dataset.weight[idx] *= weight.value
 
-    #  @profile
     def create_result_data(
         self, copy: bool = True, history_index: int | None = None
     ) -> dict[str, xr.Dataset]:

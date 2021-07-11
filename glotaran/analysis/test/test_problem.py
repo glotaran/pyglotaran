@@ -10,6 +10,7 @@ from glotaran.analysis.problem_ungrouped import UngroupedProblem
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
 from glotaran.analysis.test.models import SimpleTestModel
+from glotaran.analysis.util import CalculatedMatrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
@@ -36,15 +37,11 @@ def problem(request) -> Problem:
 
 def test_problem_bag(problem: Problem):
 
-    bag = problem.bag
-
     if problem.grouped:
+        bag = problem.bag
         assert isinstance(bag, collections.deque)
         assert len(bag) == suite.global_axis.size
         assert problem.groups == {"dataset1": ["dataset1"]}
-    else:
-        assert isinstance(bag, dict)
-        assert "dataset1" in bag
 
 
 def test_problem_matrices(problem: Problem):
@@ -52,18 +49,20 @@ def test_problem_matrices(problem: Problem):
 
     if problem.grouped:
         if problem.model.is_index_dependent:
-            assert all(isinstance(m, xr.DataArray) for m in problem.reduced_matrices)
+            assert all(isinstance(m, CalculatedMatrix) for m in problem.reduced_matrices)
             assert len(problem.reduced_matrices) == suite.global_axis.size
         else:
             assert "dataset1" in problem.reduced_matrices
-            assert isinstance(problem.reduced_matrices["dataset1"], xr.DataArray)
+            assert isinstance(problem.reduced_matrices["dataset1"], CalculatedMatrix)
     else:
         if problem.model.is_index_dependent:
             assert isinstance(problem.reduced_matrices, dict)
             assert isinstance(problem.reduced_matrices["dataset1"], list)
-            assert all(isinstance(m, xr.DataArray) for m in problem.reduced_matrices["dataset1"])
+            assert all(
+                isinstance(m, CalculatedMatrix) for m in problem.reduced_matrices["dataset1"]
+            )
         else:
-            assert isinstance(problem.reduced_matrices["dataset1"], xr.DataArray)
+            assert isinstance(problem.reduced_matrices["dataset1"], CalculatedMatrix)
 
         assert isinstance(problem.matrices, dict)
         assert "dataset1" in problem.reduced_matrices

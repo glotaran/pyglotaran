@@ -1,5 +1,4 @@
 import numpy as np
-import xarray as xr
 
 from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.megacomplexes.baseline import BaselineMegacomplex
@@ -43,17 +42,17 @@ def test_baseline():
         ]
     )
 
-    time = xr.DataArray(np.asarray(np.arange(0, 50, 1.5)))
-    pixel = xr.DataArray([0])
+    time = np.asarray(np.arange(0, 50, 1.5))
+    pixel = np.asarray([0])
     coords = {"time": time, "pixel": pixel}
     dataset_model = model.dataset["dataset1"].fill(model, parameter)
     dataset_model.overwrite_global_dimension("pixel")
     dataset_model.set_coordinates(coords)
     matrix = calculate_matrix(dataset_model, {})
-    compartments = matrix.coords["clp_label"]
+    compartments = matrix.clp_labels
 
     assert len(compartments) == 2
-    assert compartments[0] == "dataset1_baseline"
+    assert "dataset1_baseline" in compartments
 
-    assert matrix.shape == (time.size, 2)
-    assert np.all(matrix[:, 0] == 1)
+    assert matrix.matrix.shape == (time.size, 2)
+    assert np.all(matrix.matrix[:, 1] == 1)

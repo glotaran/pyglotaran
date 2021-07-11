@@ -89,9 +89,8 @@ class DecayMegacomplex(Megacomplex):
 
         global_dimension = dataset_model.get_global_dimension()
         global_index = indices.get(global_dimension)
-        global_axis = dataset_model.get_coordinates().get(global_dimension).values
-        model_dimension = dataset_model.get_model_dimension()
-        model_axis = dataset_model.get_coordinates()[model_dimension].values
+        global_axis = dataset_model.get_global_axis()
+        model_axis = dataset_model.get_model_axis()
 
         # init the matrix
         size = (model_axis.size, rates.size)
@@ -111,7 +110,7 @@ class DecayMegacomplex(Megacomplex):
         matrix = matrix @ k_matrix.a_matrix(initial_concentration)
 
         # done
-        return xr.DataArray(matrix, coords=((model_dimension, model_axis), ("clp_label", species)))
+        return species, matrix
 
     def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
         global_dimension = dataset_model.get_global_dimension()

@@ -6,7 +6,6 @@ from collections import namedtuple
 from copy import deepcopy
 
 import numpy as np
-import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
@@ -72,11 +71,11 @@ def test_equal_area_penalties(debug=False):
     optim_spec = OptimizationSpec(nnls=True, max_nfev=999)
     noise_spec = NoiseSpec(active=True, seed=1, std_dev=1e-8)
 
-    wavelengths = xr.DataArray(np.arange(650, 670, 2))
-    time_p1 = xr.DataArray(np.linspace(-1, 2, 50, endpoint=False))
-    time_p2 = xr.DataArray(np.linspace(2, 10, 30, endpoint=False))
-    time_p3 = xr.DataArray(np.geomspace(10, 50, num=20))
-    times = xr.DataArray(np.concatenate([time_p1, time_p2, time_p3]))
+    wavelengths = np.arange(650, 670, 2)
+    time_p1 = np.linspace(-1, 2, 50, endpoint=False)
+    time_p2 = np.linspace(2, 10, 30, endpoint=False)
+    time_p3 = np.geomspace(10, 50, num=20)
+    times = np.concatenate([time_p1, time_p2, time_p3])
 
     irf_loc = float(times[20])
     irf_width = float((times[1] - times[0]) * 10)
@@ -92,7 +91,7 @@ def test_equal_area_penalties(debug=False):
     dataset_spec = DatasetSpec(times, wavelengths, irf, [shape1, shape2])
 
     wavelengths = dataset_spec.wavelengths
-    equ_interval = [(min(wavelengths.values), max(wavelengths.values))]
+    equ_interval = [(min(wavelengths), max(wavelengths))]
     weight = 0.01
     # %% The base model specification (mspec)
     base = {
