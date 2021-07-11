@@ -1,5 +1,4 @@
 import numpy as np
-import xarray as xr
 
 from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
@@ -104,8 +103,8 @@ parameter = ParameterGroup.from_dict(
     }
 )
 
-_time = xr.DataArray(np.arange(-1, 20, 0.01))
-_spectral = xr.DataArray(np.arange(600, 700, 1.4))
+_time = np.arange(-1, 20, 0.01)
+_spectral = np.arange(600, 700, 1.4)
 
 dataset = simulate(
     sim_model,
