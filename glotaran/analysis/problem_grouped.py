@@ -4,7 +4,6 @@ import collections
 import itertools
 from typing import Deque
 
-import numba as nb
 import numpy as np
 import xarray as xr
 
@@ -22,6 +21,8 @@ from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.util import retrieve_clps
 from glotaran.model import DatasetModel
 from glotaran.project import Scheme
+
+Bag = Deque[ProblemGroup]
 
 
 class GroupedProblem(Problem):
@@ -53,6 +54,12 @@ class GroupedProblem(Problem):
         self._group_clp_labels = None
         self._groups = None
         self._has_weights = any("weight" in d for d in self._data.values())
+
+    @property
+    def bag(self) -> Bag:
+        if not self._bag:
+            self.init_bag()
+        return self._bag
 
     def init_bag(self):
         """Initializes a grouped problem bag."""
@@ -482,12 +489,6 @@ class GroupedProblem(Problem):
                 else np.concatenate(residuals)
             )
         return self._full_penalty
-
-
-@nb.jit(nopython=True, parallel=True)
-def _apply_weight(matrix, weight):
-    for i in range(matrix.shape[1]):
-        matrix[:, i] *= weight
 
 
 def combine_matrices(matrices: list[CalculatedMatrix]) -> CalculatedMatrix:

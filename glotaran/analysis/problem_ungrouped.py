@@ -129,7 +129,6 @@ class UngroupedProblem(Problem):
                 self._residuals[label].append(residual)
 
         clp_labels = self._get_clp_labels(label)
-        print(self._get_clp_labels(label))
         additional_penalty = calculate_clp_penalties(
             self.model, self.parameters, clp_labels, self._clps[label], global_axis
         )

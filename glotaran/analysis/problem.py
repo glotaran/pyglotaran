@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import warnings
 from typing import TYPE_CHECKING
-from typing import Deque
 from typing import Dict
 from typing import NamedTuple
 from typing import TypeVar
@@ -55,7 +54,6 @@ class ProblemGroup(NamedTuple):
 
 
 UngroupedBag = Dict[str, UngroupedProblemDescriptor]
-GroupedBag = Deque[ProblemGroup]
 
 XrDataContainer = TypeVar("XrDataContainer", xr.DataArray, xr.Dataset)
 
@@ -148,12 +146,6 @@ class Problem:
     @property
     def dataset_models(self) -> dict[str, DatasetModel]:
         return self._dataset_models
-
-    @property
-    def bag(self) -> UngroupedBag | GroupedBag:
-        if not self._bag:
-            self.init_bag()
-        return self._bag
 
     @property
     def matrices(
@@ -390,10 +382,6 @@ class Problem:
         add_svd_to_dataset(
             dataset, name=name, lsv_dim=lsv_dim, rsv_dim=rsv_dim, data_array=data_array
         )
-
-    def init_bag(self):
-        """Initializes a problem bag."""
-        raise NotImplementedError
 
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""
