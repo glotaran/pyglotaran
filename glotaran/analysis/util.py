@@ -89,7 +89,7 @@ def calculate_matrix(
 
 @nb.jit(nopython=True, parallel=True)
 def apply_weight(matrix, weight):
-    for i in range(matrix.shape[1]):
+    for i in nb.prange(matrix.shape[1]):
         matrix[:, i] *= weight
 
 
