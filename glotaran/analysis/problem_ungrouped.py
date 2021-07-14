@@ -20,8 +20,8 @@ class UngroupedProblem(Problem):
     def calculate_matrices(
         self,
     ) -> tuple[
-        dict[str, list[CalculatedMatrix] | CalculatedMatrix],
-        dict[str, list[CalculatedMatrix] | CalculatedMatrix],
+        dict[str, CalculatedMatrix | list[CalculatedMatrix]],
+        dict[str, CalculatedMatrix | list[CalculatedMatrix]],
     ]:
         """Calculates the model matrices."""
         if self._parameters is None:
