@@ -137,7 +137,7 @@ class UngroupedProblem(Problem):
 
     def _get_clp_labels(self, label: str, index: int = 0):
         return (
-            self.matrices[label][0].clp_labels
+            self.matrices[label][index].clp_labels
             if self.dataset_models[label].index_dependent()
             else self.matrices[label].clp_labels
         )
