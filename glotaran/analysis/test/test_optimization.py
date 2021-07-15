@@ -164,4 +164,4 @@ def test_optimization_full_model():
     clp = result_data.clp
     print(clp)
     assert clp.shape == (4, 4)
-    assert all([np.isclose(1.0, c) for c in np.diagonal(clp)])
+    assert all(np.isclose(1.0, c) for c in np.diagonal(clp))

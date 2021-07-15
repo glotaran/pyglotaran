@@ -117,10 +117,7 @@ def retrieve_species_associated_data(
     species = dataset_model.initial_concentration.compartments
     model_dimension = dataset_model.get_model_dimension()
     if as_global:
-        tmp = model_dimension
-        model_dimension = global_dimension
-        global_dimension = tmp
-
+        model_dimension, global_dimension = global_dimension, model_dimension
     data.coords[species_dimension] = species
     matrix = data.global_matrix if as_global else data.matrix
     clp_dim = "global_clp_label" if as_global else "clp_label"
