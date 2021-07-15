@@ -48,7 +48,7 @@ def get_min_max_from_interval(interval, axis):
 
 def calculate_matrix(
     dataset_model: DatasetModel,
-    indices: dict[str, int] | None,
+    indices: dict[str, int],
     global_model: bool = False,
 ) -> CalculatedMatrix:
 
