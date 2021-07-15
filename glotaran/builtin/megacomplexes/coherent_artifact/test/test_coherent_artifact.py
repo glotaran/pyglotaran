@@ -59,22 +59,22 @@ def test_coherent_artifact():
         ]
     )
 
-    time = xr.DataArray(np.arange(0, 50, 1.5))
-    spectral = xr.DataArray([0])
+    time = np.arange(0, 50, 1.5)
+    spectral = np.asarray([0])
     coords = {"time": time, "spectral": spectral}
 
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
     dataset_model.overwrite_global_dimension("spectral")
     dataset_model.set_coordinates(coords)
     matrix = calculate_matrix(dataset_model, {})
-    compartments = matrix.coords["clp_label"].values
+    compartments = matrix.clp_labels
 
     print(compartments)
     assert len(compartments) == 4
     for i in range(1, 4):
-        assert compartments[i - 1] == f"coherent_artifact_{i}"
+        assert compartments[i] == f"coherent_artifact_{i}"
 
-    assert matrix.shape == (time.size, 4)
+    assert matrix.matrix.shape == (time.size, 4)
 
     clp = xr.DataArray(
         [[1, 1, 1, 1]],

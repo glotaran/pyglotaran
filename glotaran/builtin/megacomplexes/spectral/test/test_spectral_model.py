@@ -75,15 +75,16 @@ class OneCompartmentModel:
 
     spectral_parameters = ParameterGroup.from_list([7, 20000, 800])
 
-    time = xr.DataArray(np.arange(-10, 50, 1.5))
-    spectral = xr.DataArray(np.arange(400, 600, 5))
+    time = np.arange(-10, 50, 1.5)
+    spectral = np.arange(400, 600, 5)
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
     decay_dataset_model.overwrite_global_dimension("spectral")
     decay_dataset_model.set_coordinates(axis)
-    clp = calculate_matrix(decay_dataset_model, {})
-    decay_compartments = clp.coords["clp_label"].values
+    matrix = calculate_matrix(decay_dataset_model, {})
+    decay_compartments = matrix.clp_labels
+    clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
 
 class ThreeCompartmentModel:
@@ -172,15 +173,16 @@ class ThreeCompartmentModel:
         ]
     )
 
-    time = xr.DataArray(np.arange(-10, 50, 1.5))
-    spectral = xr.DataArray(np.arange(400, 600, 5))
+    time = np.arange(-10, 50, 1.5)
+    spectral = np.arange(400, 600, 5)
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
     decay_dataset_model.overwrite_global_dimension("spectral")
     decay_dataset_model.set_coordinates(axis)
-    clp = calculate_matrix(decay_dataset_model, {})
-    decay_compartments = clp.coords["clp_label"].values
+    matrix = calculate_matrix(decay_dataset_model, {})
+    decay_compartments = matrix.clp_labels
+    clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
 
 @pytest.mark.parametrize(

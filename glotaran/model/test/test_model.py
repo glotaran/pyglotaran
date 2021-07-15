@@ -309,7 +309,7 @@ def test_items(test_model: Model):
 
 
 def test_fill(test_model: Model, parameter: ParameterGroup):
-    data = xr.DataArray([[1]], dims=("global", "model")).to_dataset(name="data")
+    data = xr.DataArray([[1]], coords=(("global", [0]), ("model", [0]))).to_dataset(name="data")
     dataset = test_model.dataset.get("dataset1").fill(test_model, parameter)
     dataset.set_data(data)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1"]
