@@ -44,9 +44,8 @@ class CoherentArtifactMegacomplex(Megacomplex):
 
         global_dimension = dataset_model.get_global_dimension()
         global_index = indices.get(global_dimension)
-        global_axis = dataset_model.get_coordinates().get(global_dimension).values
-        model_dimension = dataset_model.get_model_dimension()
-        model_axis = dataset_model.get_coordinates()[model_dimension].values
+        global_axis = dataset_model.get_global_axis()
+        model_axis = dataset_model.get_model_axis()
 
         irf = dataset_model.irf
 
@@ -55,9 +54,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
         width = self.width.value if self.width is not None else width[0]
 
         matrix = _calculate_coherent_artifact_matrix(center, width, model_axis, self.order)
-        return xr.DataArray(
-            matrix, coords=((model_dimension, model_axis), ("clp_label", self.compartments()))
-        )
+        return self.compartments(), matrix
 
     def compartments(self):
         return [f"coherent_artifact_{i}" for i in range(1, self.order + 1)]

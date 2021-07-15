@@ -110,8 +110,8 @@ def simulate_clp(
     for i in range(global_axis.size):
         index_matrix = matrices[i] if dataset_model.index_dependent() else matrices
         result.data[:, i] = np.dot(
-            index_matrix,
-            clp.isel({global_dimension: i}).sel({"clp_label": index_matrix.coords["clp_label"]}),
+            index_matrix.matrix,
+            clp.isel({global_dimension: i}).sel({"clp_label": index_matrix.clp_labels}),
         )
 
     return result
@@ -132,7 +132,14 @@ def simulate_global_model(
         raise ValueError("Index dependent models for global dimension are not supported.")
 
     global_matrix = calculate_matrix(dataset_model, {}, global_model=True)
-    global_matrix = global_matrix.T
+    global_clp_labels = global_matrix.clp_labels
+    global_matrix = xr.DataArray(
+        global_matrix.matrix.T,
+        coords=[
+            ("clp_label", global_clp_labels),
+            (dataset_model.get_global_dimension(), dataset_model.get_global_axis()),
+        ],
+    )
 
     return simulate_clp(
         dataset_model,

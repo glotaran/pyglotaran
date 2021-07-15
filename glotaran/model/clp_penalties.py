@@ -16,9 +16,7 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Sequence
 
-    from glotaran.builtin.models.kinetic_spectrum.kinetic_spectrum_model import (
-        KineticSpectrumModel,
-    )
+    from glotaran.model.model import Model
     from glotaran.parameter import ParameterGroup
 
 
@@ -61,12 +59,12 @@ class EqualAreaPenalty:
         return any([applies(i) for i in self.interval])
 
 
-def has_spectral_penalties(model: KineticSpectrumModel) -> bool:
+def has_spectral_penalties(model: Model) -> bool:
     return len(model.equal_area_penalties) != 0
 
 
 def apply_spectral_penalties(
-    model: KineticSpectrumModel,
+    model: Model,
     parameters: ParameterGroup,
     clp_labels: dict[str, list[str] | list[list[str]]],
     clps: dict[str, list[np.ndarray]],

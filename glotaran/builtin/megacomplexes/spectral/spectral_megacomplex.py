@@ -34,8 +34,7 @@ class SpectralMegacomplex(Megacomplex):
                 raise ModelError(f"More then one shape defined for compartment '{compartment}'")
             compartments.append(compartment)
 
-        model_dimension = dataset_model.get_model_dimension()
-        model_axis = dataset_model.get_coordinates()[model_dimension].data
+        model_axis = dataset_model.get_model_axis()
         if self.energy_spectrum:
             model_axis = 1e7 / model_axis
 
@@ -45,9 +44,8 @@ class SpectralMegacomplex(Megacomplex):
 
         for i, shape in enumerate(self.shape.values()):
             matrix[:, i] += shape.calculate(model_axis)
-        return xr.DataArray(
-            matrix, coords=((model_dimension, model_axis), ("clp_label", compartments))
-        )
+
+        return compartments, matrix
 
     def index_dependent(self, dataset: DatasetModel) -> bool:
         return False

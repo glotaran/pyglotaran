@@ -10,6 +10,7 @@ from glotaran.analysis.problem_ungrouped import UngroupedProblem
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
 from glotaran.analysis.test.models import SimpleTestModel
+from glotaran.analysis.util import CalculatedMatrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
@@ -36,15 +37,11 @@ def problem(request) -> Problem:
 
 def test_problem_bag(problem: Problem):
 
-    bag = problem.bag
-
     if problem.grouped:
+        bag = problem.bag
         assert isinstance(bag, collections.deque)
         assert len(bag) == suite.global_axis.size
         assert problem.groups == {"dataset1": ["dataset1"]}
-    else:
-        assert isinstance(bag, dict)
-        assert "dataset1" in bag
 
 
 def test_problem_matrices(problem: Problem):
@@ -52,18 +49,20 @@ def test_problem_matrices(problem: Problem):
 
     if problem.grouped:
         if problem.model.is_index_dependent:
-            assert all(isinstance(m, xr.DataArray) for m in problem.reduced_matrices)
+            assert all(isinstance(m, CalculatedMatrix) for m in problem.reduced_matrices)
             assert len(problem.reduced_matrices) == suite.global_axis.size
         else:
             assert "dataset1" in problem.reduced_matrices
-            assert isinstance(problem.reduced_matrices["dataset1"], xr.DataArray)
+            assert isinstance(problem.reduced_matrices["dataset1"], CalculatedMatrix)
     else:
         if problem.model.is_index_dependent:
             assert isinstance(problem.reduced_matrices, dict)
             assert isinstance(problem.reduced_matrices["dataset1"], list)
-            assert all(isinstance(m, xr.DataArray) for m in problem.reduced_matrices["dataset1"])
+            assert all(
+                isinstance(m, CalculatedMatrix) for m in problem.reduced_matrices["dataset1"]
+            )
         else:
-            assert isinstance(problem.reduced_matrices["dataset1"], xr.DataArray)
+            assert isinstance(problem.reduced_matrices["dataset1"], CalculatedMatrix)
 
         assert isinstance(problem.matrices, dict)
         assert "dataset1" in problem.reduced_matrices
@@ -78,16 +77,8 @@ def test_problem_residuals(problem: Problem):
     else:
         assert isinstance(problem.residuals, dict)
         assert "dataset1" in problem.residuals
-        assert all(isinstance(r, xr.DataArray) for r in problem.residuals["dataset1"])
+        assert all(isinstance(r, np.ndarray) for r in problem.residuals["dataset1"])
         assert len(problem.residuals["dataset1"]) == suite.global_axis.size
-    assert isinstance(problem.reduced_clps, dict)
-    assert "dataset1" in problem.reduced_clps
-    assert all(isinstance(c, xr.DataArray) for c in problem.reduced_clps["dataset1"])
-    assert len(problem.reduced_clps["dataset1"]) == suite.global_axis.size
-    assert isinstance(problem.clps, dict)
-    assert "dataset1" in problem.clps
-    assert all(isinstance(c, xr.DataArray) for c in problem.clps["dataset1"])
-    assert len(problem.clps["dataset1"]) == suite.global_axis.size
 
 
 def test_problem_result_data(problem: Problem):
@@ -155,7 +146,7 @@ def test_prepare_data():
         ],
     }
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())
+    print(model.validate())  # T001
     assert model.valid()
 
     parameters = ParameterGroup.from_list([])
@@ -173,7 +164,7 @@ def test_prepare_data():
     problem = Problem(scheme)
 
     data = problem.data["dataset1"]
-    print(data)
+    print(data)  # T001
     assert "data" in data
     assert "weight" in data
 
@@ -189,7 +180,7 @@ def test_prepare_data():
         }
     )
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())
+    print(model.validate())  # T001
     assert model.valid()
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})

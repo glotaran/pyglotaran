@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List
 
 import numpy as np
-import xarray as xr
 
 from glotaran.model import Megacomplex
 from glotaran.model import Model
@@ -27,7 +26,7 @@ class SimpleTestMegacomplexGlobal(Megacomplex):
             r_compartments.append(compartments[i])
             for j in range(axis.shape[0]):
                 array[j, i] = (i + j) * axis[j]
-        return xr.DataArray(array, coords=(("global", axis.data), ("clp_label", r_compartments)))
+        return r_compartments, array
 
     def index_dependent(self, dataset_model):
         return False
@@ -49,7 +48,7 @@ class SimpleTestMegacomplex(Megacomplex):
             r_compartments.append(compartments[i])
             for j in range(axis.shape[0]):
                 array[j, i] = (i + j) * axis[j]
-        return xr.DataArray(array, coords=(("model", axis.data), ("clp_label", r_compartments)))
+        return r_compartments, array
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
@@ -85,7 +84,7 @@ class SimpleKineticMegacomplex(Megacomplex):
         else:
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(axis, kinpar))
-        return xr.DataArray(array, coords=(("model", axis.data), ("clp_label", compartments)))
+        return compartments, array
 
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
@@ -106,7 +105,7 @@ class SimpleSpectralMegacomplex(Megacomplex):
         else:
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.asarray([[1 for _ in range(axis.size)] for _ in compartments]).T
-        return xr.DataArray(array, coords=(("global", axis.data), ("clp_label", compartments)))
+        return compartments, array
 
     def index_dependent(self, dataset_model):
         return False
@@ -135,7 +134,7 @@ class ShapedSpectralMegacomplex(Megacomplex):
                 -np.log(2) * np.square(2 * (axis - location[i]) / delta[i])
             )
         compartments = [f"s{i+1}" for i in range(location.size)]
-        return xr.DataArray(array.T, coords=(("global", axis.data), ("clp_label", compartments)))
+        return compartments, array.T
 
     def index_dependent(self, dataset_model):
         return False
