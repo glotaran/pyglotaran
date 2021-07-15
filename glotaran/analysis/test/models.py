@@ -89,7 +89,13 @@ class SimpleKineticMegacomplex(Megacomplex):
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
 
-    def finalize_data(self, dataset_model, data):
+    def finalize_data(
+        self,
+        dataset_model,
+        data,
+        full_model: bool = False,
+        as_global: bool = False,
+    ):
         pass
 
 
@@ -138,6 +144,15 @@ class ShapedSpectralMegacomplex(Megacomplex):
 
     def index_dependent(self, dataset_model):
         return False
+
+    def finalize_data(
+        self,
+        dataset_model,
+        data,
+        full_model: bool = False,
+        as_global: bool = False,
+    ):
+        pass
 
 
 class DecayModel(Model):

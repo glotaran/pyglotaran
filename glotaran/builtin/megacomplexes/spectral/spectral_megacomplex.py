@@ -50,8 +50,15 @@ class SpectralMegacomplex(Megacomplex):
     def index_dependent(self, dataset: DatasetModel) -> bool:
         return False
 
-    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
-        if "species" in data.coords:
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        data: xr.Dataset,
+        full_model: bool = False,
+        as_global: bool = False,
+    ):
+        species_dimension = "spectral_species" if as_global else "species"
+        if species_dimension in data.coords:
             return
 
         species = []
@@ -61,18 +68,23 @@ class SpectralMegacomplex(Megacomplex):
                     compartment for compartment in megacomplex.shape if compartment not in species
                 ]
 
-        data.coords["species"] = species
+        data.coords[species_dimension] = species
+        matrix = data.global_matrix if as_global else data.matrix
+        clp_dim = "global_clp_label" if as_global else "clp_label"
         data["species_spectra"] = (
             (
-                dataset_model.get_model_dimension(),
-                "species",
+                dataset_model.get_model_dimension()
+                if not as_global
+                else dataset_model.get_global_dimension(),
+                species_dimension,
             ),
-            data.matrix.sel(clp_label=species).values,
+            matrix.sel({clp_dim: species}).values,
         )
-        data["species_associated_concentrations"] = (
-            (
-                dataset_model.get_global_dimension(),
-                "species",
-            ),
-            data.clp.sel(clp_label=species).data,
-        )
+        if not full_model:
+            data["species_associated_concentrations"] = (
+                (
+                    dataset_model.get_global_dimension(),
+                    species_dimension,
+                ),
+                data.clp.sel(clp_label=species).data,
+            )

@@ -106,19 +106,24 @@ erfcx = functype(erfcx_addr)
 
 
 def retrieve_species_associated_data(
-    dataset_model: DatasetModel, data: xr.Dataset, global_dimension: str, name: str
+    dataset_model: DatasetModel,
+    data: xr.Dataset,
+    species_dimension: str,
+    global_dimension: str,
+    name: str,
+    full_model: bool,
+    as_global: bool,
 ):
     species = dataset_model.initial_concentration.compartments
     model_dimension = dataset_model.get_model_dimension()
+    if as_global:
+        tmp = model_dimension
+        model_dimension = global_dimension
+        global_dimension = tmp
 
-    data.coords["species"] = species
-    data[f"species_associated_{name}"] = (
-        (
-            global_dimension,
-            "species",
-        ),
-        data.clp.sel(clp_label=species).data,
-    )
+    data.coords[species_dimension] = species
+    matrix = data.global_matrix if as_global else data.matrix
+    clp_dim = "global_clp_label" if as_global else "clp_label"
 
     if len(data.matrix.shape) == 3:
         #  index dependent
@@ -126,18 +131,27 @@ def retrieve_species_associated_data(
             (
                 global_dimension,
                 model_dimension,
-                "species",
+                species_dimension,
             ),
-            data.matrix.sel(clp_label=species).values,
+            matrix.sel({clp_dim: species}).values,
         )
     else:
         #  index independent
         data["species_concentration"] = (
             (
                 model_dimension,
-                "species",
+                species_dimension,
             ),
-            data.matrix.sel(clp_label=species).values,
+            matrix.sel({clp_dim: species}).values,
+        )
+
+    if not full_model:
+        data[f"species_associated_{name}"] = (
+            (
+                global_dimension,
+                species_dimension,
+            ),
+            data.clp.sel(clp_label=species).data,
         )
 
 

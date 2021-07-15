@@ -115,7 +115,13 @@ class Megacomplex:
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
         raise NotImplementedError
 
-    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        data: xr.Dataset,
+        full_model: bool = False,
+        as_global: bool = False,
+    ):
         raise NotImplementedError
 
     @classmethod
