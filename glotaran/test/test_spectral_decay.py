@@ -1,100 +1,11 @@
 import numpy as np
 import pytest
-import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.project import Scheme
-
-MODEL_1C_BASE = """\
-dataset:
-    dataset1: &dataset1
-        megacomplex: [mc1]
-        global_megacomplex: [mc2]
-        initial_concentration: j1
-initial_concentration:
-    j1:
-        compartments: [s1]
-        parameters: ["1"]
-megacomplex:
-    mc1:
-        type: decay
-        k_matrix: [k1]
-    mc2:
-        type: spectral
-        shape:
-            s1: sh1
-k_matrix:
-    k1:
-        matrix:
-            (s1, s1): "2"
-shape:
-    sh1:
-        type: one
-"""
-MODEL_1C_NO_IRF = MODEL_1C_BASE
-
-PARAMETERS_1C_NO_IRF_BASE = """\
-- [1, {"vary": False, "non-negative": False}]
-"""
-
-PARAMETERS_1C_INITIAL = f"""\
-{PARAMETERS_1C_NO_IRF_BASE}
-- 101e-4
-"""
-
-PARAMETERS_1C_WANTED = f"""\
-{PARAMETERS_1C_NO_IRF_BASE}
-- 101e-3
-"""
-
-MODEL_1C_GAUSSIAN_IRF = f"""\
-{MODEL_1C_BASE}
-irf:
-    irf1:
-        type: spectral-gaussian
-        center: "3"
-        width: "4"
-dataset:
-    dataset1:
-        <<: *dataset1
-        irf: irf1
-"""
-
-PARAMETERS_1C_GAUSSIAN_IRF_INITIAL = f"""\
-{PARAMETERS_1C_NO_IRF_BASE}
-- 100e-4
-- 0.1
-- 1
-"""
-
-PARAMETERS_1C_GAUSSIAN_WANTED = f"""\
-{PARAMETERS_1C_NO_IRF_BASE}
-- 101e-3
-- 0.3
-- 2
-"""
-
-
-class OneComponentOneChannel:
-    model = load_model(MODEL_1C_NO_IRF, format_name="yml_str")
-    initial_parameters = load_parameters(PARAMETERS_1C_INITIAL, format_name="yml_str")
-    wanted_parameters = load_parameters(PARAMETERS_1C_WANTED, format_name="yml_str")
-    time = xr.DataArray(np.arange(0, 50, 1.5))
-    spectral = xr.DataArray([0])
-    axis = {"time": time, "spectral": spectral}
-
-
-class OneComponentOneChannelGaussianIrf:
-    model = load_model(MODEL_1C_GAUSSIAN_IRF, format_name="yml_str")
-    initial_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_IRF_INITIAL, format_name="yml_str")
-    wanted_parameters = load_parameters(PARAMETERS_1C_GAUSSIAN_WANTED, format_name="yml_str")
-    time = xr.DataArray(np.arange(-10, 50, 1.5))
-    spectral = xr.DataArray([0])
-    axis = {"time": time, "spectral": spectral}
-
 
 MODEL_3C_BASE = """\
 dataset:
@@ -227,8 +138,8 @@ class ThreeComponentParallel:
     model = load_model(MODEL_3C_PARALLEL, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_PARALLEL, format_name="yml_str")
     wanted_parameters = load_parameters(PARAMETERS_3C_PARALLEL_WANTED, format_name="yml_str")
-    time = xr.DataArray(np.arange(-10, 100, 1.5))
-    spectral = xr.DataArray(np.arange(600, 750, 10))
+    time = np.arange(-10, 100, 1.5)
+    spectral = np.arange(600, 750, 10)
     axis = {"time": time, "spectral": spectral}
 
 
@@ -236,16 +147,14 @@ class ThreeComponentSequential:
     model = load_model(MODEL_3C_SEQUENTIAL, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_SEQUENTIAL, format_name="yml_str")
     wanted_parameters = load_parameters(PARAMETERS_3C_SIM_SEQUENTIAL, format_name="yml_str")
-    time = xr.DataArray(np.arange(-10, 50, 1.0))
-    spectral = xr.DataArray(np.arange(600, 750, 5.0))
+    time = np.arange(-10, 50, 1.0)
+    spectral = np.arange(600, 750, 5.0)
     axis = {"time": time, "spectral": spectral}
 
 
 @pytest.mark.parametrize(
     "suite",
     [
-        OneComponentOneChannel,
-        OneComponentOneChannelGaussianIrf,
         ThreeComponentParallel,
         ThreeComponentSequential,
     ],

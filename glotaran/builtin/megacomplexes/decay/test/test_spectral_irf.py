@@ -2,7 +2,6 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
-import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
@@ -92,16 +91,16 @@ class SimpleIrfDispersion:
     time_p1 = np.linspace(-1, 2, 50, endpoint=False)
     time_p2 = np.linspace(2, 5, 30, endpoint=False)
     time_p3 = np.geomspace(5, 10, num=20)
-    time = xr.DataArray(np.concatenate([time_p1, time_p2, time_p3]))
-    spectral = xr.DataArray(np.arange(300, 500, 100))
+    time = np.array(np.concatenate([time_p1, time_p2, time_p3]))
+    spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}
 
 
 class MultiIrfDispersion:
     model = load_model(MODEL_MULTI_IRF_DISPERSION, format_name="yml_str")
     parameters = load_parameters(PARAMETERS_MULTI_IRF_DISPERSION, format_name="yml_str")
-    time = xr.DataArray(np.arange(-1, 5, 0.2))
-    spectral = xr.DataArray(np.arange(300, 500, 100))
+    time = np.arange(-1, 5, 0.2)
+    spectral = np.arange(300, 500, 100)
     axis = {"time": time, "spectral": spectral}
 
 

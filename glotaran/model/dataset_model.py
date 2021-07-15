@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Generator
 
+import numpy as np
 import xarray as xr
 
 from glotaran.model.item import model_item
@@ -110,12 +111,20 @@ class DatasetModel:
 
     def set_data(self, data: xr.Dataset) -> DatasetModel:
         """Sets the dataset model's data."""
-        self._data = data
+        self._coords = {name: dim.values for name, dim in data.coords.items()}
+        self._data = data.data.values
+        self._weight = data.weight.values if "weight" in data else None
+        if self._weight is not None:
+            self._data = self._data * self._weight
         return self
 
-    def get_data(self) -> xr.Dataset:
+    def get_data(self) -> np.ndarray:
         """Gets the dataset model's data."""
         return self._data
+
+    def get_weight(self) -> np.ndarray:
+        """Gets the dataset model's weight."""
+        return self._weight
 
     def index_dependent(self) -> bool:
         """Indicates if the dataset model is index dependent."""
@@ -131,15 +140,21 @@ class DatasetModel:
         """Indicates if the dataset model can model the global dimension."""
         return len(self.global_megacomplex) != 0
 
-    def set_coordinates(self, coords: xr.Dataset):
+    def set_coordinates(self, coords: dict[str, np.ndarray]):
         """Sets the dataset model's coordinates."""
         self._coords = coords
 
-    def get_coordinates(self) -> xr.Dataset:
+    def get_coordinates(self) -> np.ndarray:
         """Gets the dataset model's coordinates."""
-        if hasattr(self, "_coords"):
-            return self._coords
-        return self._data.coords
+        return self._coords
+
+    def get_model_axis(self) -> np.ndarray:
+        """Gets the dataset model's model axis."""
+        return self._coords[self.get_model_dimension()]
+
+    def get_global_axis(self) -> np.ndarray:
+        """Gets the dataset model's global axis."""
+        return self._coords[self.get_global_dimension()]
 
     @model_item_validator(False)
     def ensure_unique_megacomplexes(self, model: Model) -> list[str]:

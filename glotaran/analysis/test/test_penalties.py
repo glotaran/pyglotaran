@@ -14,7 +14,7 @@ from glotaran.project import Scheme
 
 @pytest.mark.parametrize("index_dependent", [True, False])
 @pytest.mark.parametrize("grouped", [True, False])
-def test_constraint(index_dependent, grouped):
+def test_penalties(index_dependent, grouped):
     model = deepcopy(suite.model)
     model.megacomplex["m1"].is_index_dependent = index_dependent
     model.clp_area_penalties.append(
@@ -33,7 +33,7 @@ def test_constraint(index_dependent, grouped):
 
     global_axis = np.arange(50)
 
-    print("grouped", grouped, "index_dependent", index_dependent)
+    print("grouped", grouped, "index_dependent", index_dependent)  # T001
     dataset = simulate(
         suite.sim_model,
         "dataset1",

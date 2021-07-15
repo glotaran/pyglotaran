@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import warnings
 from typing import TYPE_CHECKING
-from typing import Deque
 from typing import Dict
 from typing import NamedTuple
 from typing import TypeVar
@@ -55,7 +54,6 @@ class ProblemGroup(NamedTuple):
 
 
 UngroupedBag = Dict[str, UngroupedProblemDescriptor]
-GroupedBag = Deque[ProblemGroup]
 
 XrDataContainer = TypeVar("XrDataContainer", xr.DataArray, xr.Dataset)
 
@@ -148,12 +146,6 @@ class Problem:
     @property
     def dataset_models(self) -> dict[str, DatasetModel]:
         return self._dataset_models
-
-    @property
-    def bag(self) -> UngroupedBag | GroupedBag:
-        if not self._bag:
-            self.init_bag()
-        return self._bag
 
     @property
     def matrices(
@@ -326,19 +318,15 @@ class Problem:
                     )
                 dataset.weight[idx] *= weight.value
 
-    def calculate_matrices(self):
-        raise NotImplementedError
-
-    def calculate_residual(self):
-        raise NotImplementedError
-
     def create_result_data(
         self, copy: bool = True, history_index: int | None = None
     ) -> dict[str, xr.Dataset]:
 
         if history_index is not None and history_index != -1:
             self.parameters = self.parameter_history[history_index]
-        result_data = {label: self.create_result_dataset(label, copy=copy) for label in self.data}
+
+        self.prepare_result_creation()
+        result_data = {}
         for label, dataset_model in self.dataset_models.items():
             result_data[label] = self.create_result_dataset(label, copy=copy)
             dataset_model.finalize_data(result_data[label])
@@ -395,54 +383,6 @@ class Problem:
             dataset, name=name, lsv_dim=lsv_dim, rsv_dim=rsv_dim, data_array=data_array
         )
 
-    def init_bag(self):
-        """Initializes a problem bag."""
-        raise NotImplementedError
-
-    def calculate_index_dependent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[list[str]]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[str]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index dependent model matrices."""
-        raise NotImplementedError
-
-    def calculate_index_independent_matrices(
-        self,
-    ) -> tuple[
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-        dict[str, list[str]],
-        dict[str, np.ndarray],
-    ]:
-        """Calculates the index independent model matrices."""
-        raise NotImplementedError
-
-    def calculate_index_dependent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index dependent residuals."""
-        raise NotImplementedError
-
-    def calculate_index_independent_residual(
-        self,
-    ) -> tuple[
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-        dict[str, list[np.ndarray]],
-    ]:
-        """Calculates the index independent residuals."""
-        raise NotImplementedError
-
     def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
         """Creates a result datasets for index dependent matrices."""
         raise NotImplementedError
@@ -452,3 +392,12 @@ class Problem:
     ) -> xr.Dataset:
         """Creates a result datasets for index independent matrices."""
         raise NotImplementedError
+
+    def calculate_matrices(self):
+        raise NotImplementedError
+
+    def calculate_residual(self):
+        raise NotImplementedError
+
+    def prepare_result_creation(self):
+        pass

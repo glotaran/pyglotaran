@@ -124,8 +124,6 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         assert np.allclose(dataset.data, resultdata.data)
         if weight:
             assert "weight" in resultdata
-            assert "weighted_data" in resultdata
-            assert np.allclose(resultdata.data, resultdata.weighted_data * 2)
             assert "weighted_residual" in resultdata
             assert "weighted_residual_left_singular_vectors" in resultdata
             assert "weighted_residual_right_singular_vectors" in resultdata
