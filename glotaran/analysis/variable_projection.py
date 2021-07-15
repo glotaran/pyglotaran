@@ -9,7 +9,7 @@ from scipy.linalg import lapack
 
 def residual_variable_projection(
     matrix: np.ndarray, data: np.ndarray
-) -> typing.Tuple[typing.List[str], np.ndarray]:
+) -> typing.Tuple[np.ndarray, np.ndarray]:
     """Calculates the conditionally linear parameters and residual with the variable projection
     method.
 

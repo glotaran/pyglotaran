@@ -12,10 +12,36 @@ from glotaran.analysis.util import calculate_matrix
 from glotaran.analysis.util import reduce_matrix
 from glotaran.analysis.util import retrieve_clps
 from glotaran.model import DatasetModel
+from glotaran.project import Scheme
 
 
 class UngroupedProblem(Problem):
     """Represents a problem where the data is not grouped."""
+
+    def __init__(self, scheme: Scheme):
+        """Initializes the Problem class from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
+
+        Args:
+            scheme (Scheme): An instance of :class:`glotaran.analysis.scheme.Scheme`
+                which defines your model, parameters, and data
+        """
+        super().__init__(scheme=scheme)
+
+        self._global_matrices = {}
+        self._flattened_data = {}
+        self._flattened_weights = {}
+        for label, dataset_model in self.dataset_models.items():
+            if dataset_model.global_model():
+                self._flattened_data[label] = dataset_model.get_data().T.flatten()
+                weight = dataset_model.get_weight()
+                if weight is not None:
+                    weight = weight.T.flatten()
+                    self._flattened_data[label] *= weight
+                    self._flattened_weight[label] = weight
+
+    @property
+    def global_matrices(self) -> dict[str, CalculatedMatrix]:
+        return self._global_matrices
 
     def calculate_matrices(
         self,
@@ -28,6 +54,7 @@ class UngroupedProblem(Problem):
             raise ParameterError
 
         self._matrices = {}
+        self._global_matrices = {}
         self._reduced_matrices = {}
 
         for label, dataset_model in self.dataset_models.items():
@@ -36,6 +63,9 @@ class UngroupedProblem(Problem):
                 self._calculate_index_dependent_matrix(label, dataset_model)
             else:
                 self._calculate_index_independent_matrix(label, dataset_model)
+
+            if dataset_model.global_model:
+                self._calculate_global_matrix(label, dataset_model)
 
         return self._matrices, self._reduced_matrices
 
@@ -52,11 +82,14 @@ class UngroupedProblem(Problem):
             self._reduced_matrices[label].append(reduced_matrix)
 
     def _calculate_index_independent_matrix(self, label: str, dataset_model: DatasetModel):
-
         matrix = calculate_matrix(dataset_model, {})
         self._matrices[label] = matrix
         reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, None)
         self._reduced_matrices[label] = reduced_matrix
+
+    def _calculate_global_matrix(self, label: str, dataset_model: DatasetModel):
+        matrix = calculate_matrix(dataset_model, {}, global_model=True)
+        self._global_matrices[label] = matrix
 
     def calculate_residual(
         self,
@@ -75,7 +108,10 @@ class UngroupedProblem(Problem):
         self._additional_penalty = []
 
         for label, dataset_model in self._dataset_models.items():
-            self._calculate_residual(label, dataset_model)
+            if dataset_model.global_model():
+                self._calculate_full_model_residual(label, dataset_model)
+            else:
+                self._calculate_residual(label, dataset_model)
 
         self._additional_penalty = (
             np.concatenate(self._additional_penalty) if len(self._additional_penalty) != 0 else []
@@ -135,6 +171,21 @@ class UngroupedProblem(Problem):
         if additional_penalty.size != 0:
             self._additional_penalty.append(additional_penalty)
 
+    def _calculate_full_model_residual(self, label: str, dataset_model: DatasetModel):
+        model_matrix = self.matrices["dataset1"].matrix
+        global_matrix = self.global_matrices["dataset1"].matrix
+
+        matrix = np.kron(global_matrix, model_matrix)
+        weight = self._flattened_weights.get(label)
+        if weight is not None:
+            apply_weight(matrix, weight)
+        data = self._flattened_data[label]
+        self._clps[label], self._weighted_residuals[label] = self._residual_function(matrix, data)
+
+        self._residuals[label] = self._weighted_residuals[label]
+        if weight is not None:
+            self._residuals[label] /= weight
+
     def _get_clp_labels(self, label: str, index: int = 0):
         return (
             self.matrices[label][index].clp_labels
@@ -158,7 +209,7 @@ class UngroupedProblem(Problem):
             np.asarray([m.matrix for m in self.matrices[label]]),
         )
 
-        self._add_residual_and_full_clp_to_dataset(label, dataset)
+        self._add_residual_and_clp_to_dataset(label, dataset)
 
         return dataset
 
@@ -178,11 +229,27 @@ class UngroupedProblem(Problem):
             matrix.matrix,
         )
 
-        self._add_residual_and_full_clp_to_dataset(label, dataset)
+        if self.dataset_models[label].global_model():
+            self._add_global_matrix_to_dataset(label, dataset)
+            self._add_full_model_residual_and_clp_to_dataset(label, dataset)
+        else:
+            self._add_residual_and_clp_to_dataset(label, dataset)
 
         return dataset
 
-    def _add_residual_and_full_clp_to_dataset(self, label: str, dataset: xr.Dataset):
+    def _add_global_matrix_to_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
+        matrix = self.global_matrices[label]
+        dataset.coords["global_clp_label"] = matrix.clp_labels
+        global_dimension = self.dataset_models[label].get_global_dimension()
+        dataset["global_matrix"] = (
+            (
+                (global_dimension),
+                ("global_clp_label"),
+            ),
+            matrix.matrix,
+        )
+
+    def _add_residual_and_clp_to_dataset(self, label: str, dataset: xr.Dataset):
         model_dimension = self.dataset_models[label].get_model_dimension()
         global_dimension = self.dataset_models[label].get_global_dimension()
         dataset["clp"] = (
@@ -207,12 +274,44 @@ class UngroupedProblem(Problem):
             np.transpose(np.asarray(self.residuals[label])),
         )
 
+    def _add_full_model_residual_and_clp_to_dataset(self, label: str, dataset: xr.Dataset):
+        model_dimension = self.dataset_models[label].get_model_dimension()
+        global_dimension = self.dataset_models[label].get_global_dimension()
+        dataset["clp"] = (
+            (
+                ("global_clp_label"),
+                ("clp_label"),
+            ),
+            self.clps[label].reshape(
+                (dataset.coords["global_clp_label"].size, dataset.coords["clp_label"].size)
+            ),
+        )
+        dataset["weighted_residual"] = (
+            (
+                (model_dimension),
+                (global_dimension),
+            ),
+            self.weighted_residuals[label].T.reshape(dataset.data.shape),
+        )
+        dataset["residual"] = (
+            (
+                (model_dimension),
+                (global_dimension),
+            ),
+            self.residuals[label].T.reshape(dataset.data.shape),
+        )
+
     @property
     def full_penalty(self) -> np.ndarray:
         if self._full_penalty is None:
             residuals = self.weighted_residuals
             additional_penalty = self.additional_penalty
-            residuals = [np.concatenate(residuals[label]) for label in residuals.keys()]
+            residuals = [
+                np.concatenate(residuals[label])
+                if isinstance(residuals[label], list)
+                else residuals[label]
+                for label in residuals.keys()
+            ]
 
             self._full_penalty = (
                 np.concatenate((np.concatenate(residuals), additional_penalty))

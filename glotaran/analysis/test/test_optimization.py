@@ -4,6 +4,7 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.models import FullModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay
 from glotaran.analysis.test.models import OneCompartmentDecay
 from glotaran.analysis.test.models import ThreeDatasetDecay
@@ -128,3 +129,39 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
             assert "weighted_residual_left_singular_vectors" in resultdata
             assert "weighted_residual_right_singular_vectors" in resultdata
             assert "weighted_residual_singular_values" in resultdata
+
+
+def test_optimization_full_model():
+    model = FullModel.model
+
+    print(model.validate())
+    assert model.valid()
+
+    parameters = FullModel.parameters
+    assert model.valid(parameters)
+
+    dataset = simulate(model, "dataset1", parameters, FullModel.coordinates)
+
+    scheme = Scheme(
+        model=model,
+        parameters=parameters,
+        data={"dataset1": dataset},
+        maximum_number_function_evaluations=10,
+        group=False,
+    )
+
+    result = optimize(scheme, raise_exception=True)
+    assert result.success
+    optimized_scheme = result.get_scheme()
+    assert result.optimized_parameters == optimized_scheme.parameters
+
+    result_data = result.data["dataset1"]
+    assert "fitted_data" in result_data
+    for label, param in result.optimized_parameters.all():
+        if param.vary:
+            assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
+
+    clp = result_data.clp
+    print(clp)
+    assert clp.shape == (4, 4)
+    assert all([np.isclose(1.0, c) for c in np.diagonal(clp)])
