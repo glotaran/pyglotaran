@@ -215,4 +215,4 @@ def test_full_model_problem():
 
     assert clp.shape == (4, 4)
     print(np.diagonal(clp))
-    assert all([np.isclose(1.0, c) for c in np.diagonal(clp)])
+    assert all(np.isclose(1.0, c) for c in np.diagonal(clp))

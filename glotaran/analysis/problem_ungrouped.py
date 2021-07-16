@@ -172,8 +172,8 @@ class UngroupedProblem(Problem):
             self._additional_penalty.append(additional_penalty)
 
     def _calculate_full_model_residual(self, label: str, dataset_model: DatasetModel):
-        model_matrix = self.matrices["dataset1"].matrix
-        global_matrix = self.global_matrices["dataset1"].matrix
+        model_matrix = self.matrices[label].matrix
+        global_matrix = self.global_matrices[label].matrix
 
         matrix = np.kron(global_matrix, model_matrix)
         weight = self._flattened_weights.get(label)
