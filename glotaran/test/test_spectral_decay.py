@@ -7,6 +7,50 @@ from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.project import Scheme
 
+MODEL_3C_NO_IRF = """\
+dataset:
+    dataset1: &dataset1
+        megacomplex: [mc1]
+        global_megacomplex: [mc2]
+        initial_concentration: j1
+megacomplex:
+    mc1:
+        type: decay
+        k_matrix: [k1]
+    mc2:
+        type: spectral
+        shape:
+            s1: sh1
+            s2: sh2
+            s3: sh3
+shape:
+    sh1:
+        type: skewed-gaussian
+        amplitude: shapes.amps.1
+        location: shapes.locs.1
+        width: shapes.width.1
+    sh2:
+        type: skewed-gaussian
+        amplitude: shapes.amps.2
+        location: shapes.locs.2
+        width: shapes.width.2
+    sh3:
+        type: skewed-gaussian
+        amplitude: shapes.amps.3
+        location: shapes.locs.3
+        width: shapes.width.3
+initial_concentration:
+    j1:
+        compartments: [s1, s2, s3]
+        parameters: [j.1, j.1, j.1]
+k_matrix:
+    k1:
+        matrix:
+            (s1, s1): "kinetic.1"
+            (s2, s2): "kinetic.2"
+            (s3, s3): "kinetic.3"
+"""
+
 MODEL_3C_BASE = """\
 dataset:
     dataset1: &dataset1
@@ -75,6 +119,32 @@ k_matrix:
             (s3, s3): "kinetic.3"
 """
 
+PARAMETERS_3C_NO_IRF = """\
+j:
+    - ["1", 1, {"vary": False, "non-negative": False}]
+    - ["0", 0, {"vary": False, "non-negative": False}]
+shapes:
+    amps: [7, 3, 30, {"vary": False}]
+    locs: [620, 670, 720, {"vary": False}]
+    width: [10, 30, 50, {"vary": False}]
+"""
+
+PARAMETERS_3C_NO_IRF_WANTED = f"""\
+kinetic:
+    - ["1", 301e-3]
+    - ["2", 502e-4]
+    - ["3", 705e-5]
+{PARAMETERS_3C_NO_IRF}
+"""
+
+PARAMETERS_3C_NO_IRF_INITIAL = f"""\
+kinetic:
+    - ["1", 300e-3]
+    - ["2", 500e-4]
+    - ["3", 700e-5]
+{PARAMETERS_3C_NO_IRF}
+"""
+
 PARAMETERS_3C_BASE = """\
 irf:
     - ["center", 1.3]
@@ -134,6 +204,15 @@ kinetic:
 """
 
 
+class ThreeComponentNoIrf:
+    model = load_model(MODEL_3C_NO_IRF, format_name="yml_str")
+    initial_parameters = load_parameters(PARAMETERS_3C_NO_IRF_INITIAL, format_name="yml_str")
+    wanted_parameters = load_parameters(PARAMETERS_3C_NO_IRF_WANTED, format_name="yml_str")
+    time = np.arange(0, 100, 1.5)
+    spectral = np.arange(600, 750, 10)
+    axis = {"time": time, "spectral": spectral}
+
+
 class ThreeComponentParallel:
     model = load_model(MODEL_3C_PARALLEL, format_name="yml_str")
     initial_parameters = load_parameters(PARAMETERS_3C_INITIAL_PARALLEL, format_name="yml_str")
@@ -155,6 +234,7 @@ class ThreeComponentSequential:
 @pytest.mark.parametrize(
     "suite",
     [
+        ThreeComponentNoIrf,
         ThreeComponentParallel,
         ThreeComponentSequential,
     ],
@@ -195,7 +275,7 @@ def test_kinetic_model(suite, nnls):
     print(result.optimized_parameters)  # noqa T001
 
     for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+        assert np.allclose(param.value, wanted_parameters.get(label).value)
 
     resultdata = result.data["dataset1"]
 

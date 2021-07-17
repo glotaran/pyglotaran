@@ -83,8 +83,6 @@ def optimize_problem(
             termination_reason = str(e)
             ls_result = None
 
-    problem.save_parameters_for_history()
-
     return _create_result(problem, ls_result, free_parameter_labels, termination_reason)
 
 
@@ -119,7 +117,8 @@ def _create_result(
     root_mean_square_error = np.sqrt(reduced_chi_square) if success else None
     jacobian = ls_result.jac if success else None
 
-    problem.save_parameters_for_history()
+    problem.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
+    problem.reset()
     history_index = None if success else -2
     data = problem.create_result_data(history_index=history_index)
     # the optimized parameters are those of the last run if the optimization has crashed
