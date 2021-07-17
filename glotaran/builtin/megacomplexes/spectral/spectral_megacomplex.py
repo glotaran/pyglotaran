@@ -62,11 +62,12 @@ class SpectralMegacomplex(Megacomplex):
             return
 
         species = []
-        for megacomplex in dataset_model.megacomplex:  # noqa F402
-            if isinstance(megacomplex, SpectralMegacomplex):
-                species += [
-                    compartment for compartment in megacomplex.shape if compartment not in species
-                ]
+        megacomplexes = (
+            dataset_model.global_megacomplex if as_global else dataset_model.megacomplex
+        )
+        for m in megacomplexes:
+            if isinstance(m, SpectralMegacomplex):
+                species += [compartment for compartment in m.shape if compartment not in species]
 
         data.coords[species_dimension] = species
         matrix = data.global_matrix if as_global else data.matrix
