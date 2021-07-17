@@ -96,7 +96,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         optimization_method=method,
     )
 
-    result = optimize(scheme)
+    result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)  # noqa T001
     assert result.success
     optimized_scheme = result.get_scheme()

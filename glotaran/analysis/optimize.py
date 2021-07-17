@@ -20,7 +20,7 @@ SUPPORTED_METHODS = {
 
 
 def optimize(scheme: Scheme, verbose: bool = True, raise_exception: bool = False) -> Result:
-    problem = GroupedProblem(scheme) if scheme.group else UngroupedProblem(scheme)
+    problem = GroupedProblem(scheme) if scheme.grouped() else UngroupedProblem(scheme)
     return optimize_problem(problem, verbose=verbose, raise_exception=raise_exception)
 
 
@@ -117,7 +117,8 @@ def _create_result(
     root_mean_square_error = np.sqrt(reduced_chi_square) if success else None
     jacobian = ls_result.jac if success else None
 
-    problem.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
+    if success:
+        problem.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
     problem.reset()
     history_index = None if success else -2
     data = problem.create_result_data(history_index=history_index)

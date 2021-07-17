@@ -5,6 +5,8 @@ import copy
 from typing import List
 from warnings import warn
 
+import xarray as xr
+
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.dataset_model import create_dataset_model_type
@@ -214,9 +216,22 @@ class Model:
         """Alias for `glotaran.model.megacomplex`. Needed internally."""
         return self.megacomplex
 
-    def need_index_dependent(self):
+    def need_index_dependent(self) -> bool:
         """Returns true if e.g. relations with intervals are present."""
         return any(i.interval is not None for i in self.constraints + self.relations)
+
+    def can_group(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
+        if any(d.global_model() for d in self.dataset.values()):
+            return False
+        global_dimensions = {
+            d.fill(self, parameters).set_data(data[k]).get_global_dimension()
+            for k, d in self.dataset.items()
+        }
+        model_dimensions = {
+            d.fill(self, parameters).set_data(data[k]).get_model_dimension()
+            for k, d in self.dataset.items()
+        }
+        return len(global_dimensions) == 1 and len(model_dimensions) == 1
 
     def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
         """
