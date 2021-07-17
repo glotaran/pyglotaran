@@ -113,7 +113,7 @@ repos:
       - id: yesqa
         types: [file]
         types_or: [python, pyi]
-        additional_dependencies: [flake8-docstrings]
+        additional_dependencies: [flake8-docstrings, flake8-print]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 3.9.2
@@ -121,7 +121,7 @@ repos:
       - id: flake8
         types: [file]
         types_or: [python, pyi]
-        additional_dependencies: [flake8-pyi, flake8-comprehensions]
+        additional_dependencies: [flake8-pyi, flake8-comprehensions, flake8-print]
 
   - repo: https://github.com/myint/rstcheck
     rev: "3f92957478422df87bd730abde66f089cc1ee19b"
