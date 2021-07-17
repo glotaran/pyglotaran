@@ -171,3 +171,8 @@ _summary.ps
 # benchmark results
 benchmark/.asv
 .benchmarks/
+
+# results to validate result consistency
+# https://github.com/glotaran/pyglotaran-examples/tree/comparison-results
+comparison-results
+comparison-results-current
