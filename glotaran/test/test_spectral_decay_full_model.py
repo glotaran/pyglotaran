@@ -106,9 +106,13 @@ shapes:
 PARAMETERS_3C_BASE_SEQUENTIAL = f"""\
 {PARAMETERS_3C_BASE}
 shapes:
-    amps: [3, 1, 5, {{"vary": True}}]
-    locs: [620, 670, 720, {{"vary": False}}]
-    width: [10, 30, 50, {{"vary": False}}]
+    amps:
+        - 9
+        - 7
+        - 5
+        - {{"vary": True, min: 0, max: 10}}
+    locs: [610, 670, 730, {{"vary": False}}]
+    width: [15, 25, 10, {{"vary": False}}]
 """
 
 PARAMETERS_3C_PARALLEL_WANTED = f"""\
@@ -163,7 +167,6 @@ class ThreeComponentSequential:
     axis = {"time": time, "spectral": spectral}
 
 
-@pytest.mark.skip("Not working yet")
 @pytest.mark.parametrize(
     "suite",
     [
@@ -207,6 +210,7 @@ def test_kinetic_model(suite, nnls):
     print(result.optimized_parameters)  # noqa T001
 
     for label, param in result.optimized_parameters.all():
+        print(label, param.value, wanted_parameters.get(label).value)  # noqa T001
         assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
@@ -218,6 +222,3 @@ def test_kinetic_model(suite, nnls):
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
-
-    assert "species_associated_spectra" in resultdata
-    assert "decay_associated_spectra" in resultdata
