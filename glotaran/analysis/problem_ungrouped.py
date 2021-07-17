@@ -172,10 +172,19 @@ class UngroupedProblem(Problem):
             self._additional_penalty.append(additional_penalty)
 
     def _calculate_full_model_residual(self, label: str, dataset_model: DatasetModel):
-        model_matrix = self.matrices[label].matrix
+
+        model_matrix = self.matrices[label]
         global_matrix = self.global_matrices[label].matrix
 
-        matrix = np.kron(global_matrix, model_matrix)
+        if dataset_model.index_dependent():
+            matrix = np.concatenate(
+                [
+                    np.kron(global_matrix[i, :], model_matrix[i].matrix)
+                    for i in range(global_matrix.shape[0])
+                ]
+            )
+        else:
+            matrix = np.kron(global_matrix, model_matrix.matrix)
         weight = self._flattened_weights.get(label)
         if weight is not None:
             apply_weight(matrix, weight)
@@ -209,7 +218,11 @@ class UngroupedProblem(Problem):
             np.asarray([m.matrix for m in self.matrices[label]]),
         )
 
-        self._add_residual_and_clp_to_dataset(label, dataset)
+        if self.dataset_models[label].global_model():
+            self._add_global_matrix_to_dataset(label, dataset)
+            self._add_full_model_residual_and_clp_to_dataset(label, dataset)
+        else:
+            self._add_residual_and_clp_to_dataset(label, dataset)
 
         return dataset
 
