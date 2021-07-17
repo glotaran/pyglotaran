@@ -78,14 +78,16 @@ class UngroupedProblem(Problem):
                 {dataset_model.get_global_dimension(): i},
             )
             self._matrices[label].append(matrix)
-            reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, index)
-            self._reduced_matrices[label].append(reduced_matrix)
+            if not dataset_model.full_model:
+                reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, index)
+                self._reduced_matrices[label].append(reduced_matrix)
 
     def _calculate_index_independent_matrix(self, label: str, dataset_model: DatasetModel):
         matrix = calculate_matrix(dataset_model, {})
         self._matrices[label] = matrix
-        reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, None)
-        self._reduced_matrices[label] = reduced_matrix
+        if not dataset_model.full_model:
+            reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, None)
+            self._reduced_matrices[label] = reduced_matrix
 
     def _calculate_global_matrix(self, label: str, dataset_model: DatasetModel):
         matrix = calculate_matrix(dataset_model, {}, global_model=True)
