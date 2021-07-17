@@ -64,7 +64,7 @@ class UngroupedProblem(Problem):
             else:
                 self._calculate_index_independent_matrix(label, dataset_model)
 
-            if dataset_model.global_model:
+            if dataset_model.global_model():
                 self._calculate_global_matrix(label, dataset_model)
 
         return self._matrices, self._reduced_matrices
