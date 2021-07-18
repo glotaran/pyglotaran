@@ -72,7 +72,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
         if not full_model:
             global_dimension = dataset_model.get_global_dimension()
             model_dimension = dataset_model.get_model_dimension()
-            data.coords["coherent_artifact_order"] = list(range(1, self.order + 1))
+            data.coords["coherent_artifact_order"] = np.arange(1, self.order + 1)
             data["coherent_artifact_concentration"] = (
                 (model_dimension, "coherent_artifact_order"),
                 data.matrix.sel(clp_label=self.compartments()).values,
