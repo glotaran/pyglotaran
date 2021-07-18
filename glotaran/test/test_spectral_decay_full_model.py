@@ -9,21 +9,21 @@ from glotaran.project import Scheme
 
 MODEL_3C_BASE = """\
 dataset:
-    dataset1: &dataset1
+    dataset1:
         megacomplex: [mc1]
         global_megacomplex: [mc2]
         initial_concentration: j1
         irf: irf1
-    dataset2: &dataset2
+    dataset2:
         megacomplex: [mc2]
         global_megacomplex: [mc1]
         initial_concentration: j1
         irf: irf1
-    dataset3: &dataset3
+    dataset3:
         megacomplex: [mc1]
         initial_concentration: j1
         irf: irf1
-    dataset4: &dataset4
+    dataset4:
         megacomplex: [mc2]
 megacomplex:
     mc1:
