@@ -9,7 +9,7 @@ from glotaran.project import Scheme
 
 MODEL_3C_NO_IRF = """\
 dataset:
-    dataset1: &dataset1
+    dataset1:
         megacomplex: [mc1]
         global_megacomplex: [mc2]
         initial_concentration: j1
