@@ -92,7 +92,7 @@ class SimpleKineticMegacomplex(Megacomplex):
     def finalize_data(
         self,
         dataset_model,
-        data,
+        dataset,
         is_full_model: bool = False,
         as_global: bool = False,
     ):
@@ -148,7 +148,7 @@ class ShapedSpectralMegacomplex(Megacomplex):
     def finalize_data(
         self,
         dataset_model,
-        data,
+        dataset,
         is_full_model: bool = False,
         as_global: bool = False,
     ):

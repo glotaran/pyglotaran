@@ -53,12 +53,12 @@ class SpectralMegacomplex(Megacomplex):
     def finalize_data(
         self,
         dataset_model: DatasetModel,
-        data: xr.Dataset,
+        dataset: xr.Dataset,
         is_full_model: bool = False,
         as_global: bool = False,
     ):
         species_dimension = "spectral_species" if as_global else "species"
-        if species_dimension in data.coords:
+        if species_dimension in dataset.coords:
             return
 
         species = []
@@ -69,10 +69,10 @@ class SpectralMegacomplex(Megacomplex):
             if isinstance(m, SpectralMegacomplex):
                 species += [compartment for compartment in m.shape if compartment not in species]
 
-        data.coords[species_dimension] = species
-        matrix = data.global_matrix if as_global else data.matrix
+        dataset.coords[species_dimension] = species
+        matrix = dataset.global_matrix if as_global else dataset.matrix
         clp_dim = "global_clp_label" if as_global else "clp_label"
-        data["species_spectra"] = (
+        dataset["species_spectra"] = (
             (
                 dataset_model.get_model_dimension()
                 if not as_global
@@ -82,10 +82,10 @@ class SpectralMegacomplex(Megacomplex):
             matrix.sel({clp_dim: species}).values,
         )
         if not is_full_model:
-            data["species_associated_concentrations"] = (
+            dataset["species_associated_concentrations"] = (
                 (
                     dataset_model.get_global_dimension(),
                     species_dimension,
                 ),
-                data.clp.sel(clp_label=species).data,
+                dataset.clp.sel(clp_label=species).data,
             )
