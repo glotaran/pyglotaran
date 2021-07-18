@@ -27,9 +27,9 @@ class BaselineMegacomplex(Megacomplex):
     def finalize_data(
         self,
         dataset_model: DatasetModel,
-        data: xr.Dataset,
-        full_model: bool = False,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
         as_global: bool = False,
     ):
-        if not full_model:
-            data[f"{dataset_model.label}_baseline"] = data.clp.sel(clp_label="baseline")
+        if not is_full_model:
+            dataset[f"{dataset_model.label}_baseline"] = dataset.clp.sel(clp_label="baseline")

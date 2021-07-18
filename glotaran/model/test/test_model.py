@@ -257,13 +257,13 @@ def test_model_misc(test_model: Model):
 
 
 def test_model_validity(test_model: Model, model_error: Model, parameter: ParameterGroup):
-    print(test_model.test_item1["t1"])
-    print(test_model.problem_list())
-    print(test_model.problem_list(parameter))
+    print(test_model.test_item1["t1"])  # noqa T001
+    print(test_model.problem_list())  # noqa T001
+    print(test_model.problem_list(parameter))  # noqa T001
     assert test_model.valid()
     assert test_model.valid(parameter)
-    print(model_error.problem_list())
-    print(model_error.problem_list(parameter))
+    print(model_error.problem_list())  # noqa T001
+    print(model_error.problem_list(parameter))  # noqa T001
     assert not model_error.valid()
     assert len(model_error.problem_list()) == 5
     assert not model_error.valid(parameter)
@@ -324,7 +324,7 @@ def test_fill(test_model: Model, parameter: ParameterGroup):
     assert dataset.get_model_dimension() == "model"
     assert dataset.get_global_dimension() == "global"
 
-    assert not dataset.global_model()
+    assert not dataset.has_global_model()
 
     dataset = test_model.dataset.get("dataset2").fill(test_model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m2"]
@@ -332,7 +332,7 @@ def test_fill(test_model: Model, parameter: ParameterGroup):
     assert dataset.get_model_dimension() == "model2"
     assert dataset.get_global_dimension() == "model"
 
-    assert dataset.global_model()
+    assert dataset.has_global_model()
     assert [cmplx.label for cmplx in dataset.global_megacomplex] == ["m1"]
 
     t = test_model.test_item1.get("t1").fill(test_model, parameter)

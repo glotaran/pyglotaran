@@ -118,8 +118,8 @@ class Megacomplex:
     def finalize_data(
         self,
         dataset_model: DatasetModel,
-        data: xr.Dataset,
-        full_model: bool = False,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
         as_global: bool = False,
     ):
         raise NotImplementedError

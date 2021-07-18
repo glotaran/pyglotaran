@@ -220,8 +220,8 @@ class Model:
         """Returns true if e.g. relations with intervals are present."""
         return any(i.interval is not None for i in self.constraints + self.relations)
 
-    def can_group(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
-        if any(d.global_model() for d in self.dataset.values()):
+    def is_groupable(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
+        if any(d.has_global_model() for d in self.dataset.values()):
             return False
         global_dimensions = {
             d.fill(self, parameters).set_data(data[k]).get_global_dimension()

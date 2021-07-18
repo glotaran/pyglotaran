@@ -31,7 +31,7 @@ class UngroupedProblem(Problem):
         self._flattened_data = {}
         self._flattened_weights = {}
         for label, dataset_model in self.dataset_models.items():
-            if dataset_model.global_model():
+            if dataset_model.has_global_model():
                 self._flattened_data[label] = dataset_model.get_data().T.flatten()
                 weight = dataset_model.get_weight()
                 if weight is not None:
@@ -64,7 +64,7 @@ class UngroupedProblem(Problem):
             else:
                 self._calculate_index_independent_matrix(label, dataset_model)
 
-            if dataset_model.global_model():
+            if dataset_model.has_global_model():
                 self._calculate_global_matrix(label, dataset_model)
 
         return self._matrices, self._reduced_matrices
@@ -78,19 +78,19 @@ class UngroupedProblem(Problem):
                 {dataset_model.get_global_dimension(): i},
             )
             self._matrices[label].append(matrix)
-            if not dataset_model.global_model():
+            if not dataset_model.has_global_model():
                 reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, index)
                 self._reduced_matrices[label].append(reduced_matrix)
 
     def _calculate_index_independent_matrix(self, label: str, dataset_model: DatasetModel):
         matrix = calculate_matrix(dataset_model, {})
         self._matrices[label] = matrix
-        if not dataset_model.global_model():
+        if not dataset_model.has_global_model():
             reduced_matrix = reduce_matrix(matrix, self.model, self.parameters, None)
             self._reduced_matrices[label] = reduced_matrix
 
     def _calculate_global_matrix(self, label: str, dataset_model: DatasetModel):
-        matrix = calculate_matrix(dataset_model, {}, global_model=True)
+        matrix = calculate_matrix(dataset_model, {}, as_global_model=True)
         self._global_matrices[label] = matrix
 
     def calculate_residual(
@@ -110,7 +110,7 @@ class UngroupedProblem(Problem):
         self._additional_penalty = []
 
         for label, dataset_model in self._dataset_models.items():
-            if dataset_model.global_model():
+            if dataset_model.has_global_model():
                 self._calculate_full_model_residual(label, dataset_model)
             else:
                 self._calculate_residual(label, dataset_model)
@@ -220,7 +220,7 @@ class UngroupedProblem(Problem):
             np.asarray([m.matrix for m in self.matrices[label]]),
         )
 
-        if self.dataset_models[label].global_model():
+        if self.dataset_models[label].has_global_model():
             self._add_global_matrix_to_dataset(label, dataset)
             self._add_full_model_residual_and_clp_to_dataset(label, dataset)
         else:
@@ -244,7 +244,7 @@ class UngroupedProblem(Problem):
             matrix.matrix,
         )
 
-        if self.dataset_models[label].global_model():
+        if self.dataset_models[label].has_global_model():
             self._add_global_matrix_to_dataset(label, dataset)
             self._add_full_model_residual_and_clp_to_dataset(label, dataset)
         else:

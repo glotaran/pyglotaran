@@ -20,7 +20,7 @@ SUPPORTED_METHODS = {
 
 
 def optimize(scheme: Scheme, verbose: bool = True, raise_exception: bool = False) -> Result:
-    problem = GroupedProblem(scheme) if scheme.grouped() else UngroupedProblem(scheme)
+    problem = GroupedProblem(scheme) if scheme.is_grouped() else UngroupedProblem(scheme)
     return optimize_problem(problem, verbose=verbose, raise_exception=raise_exception)
 
 
@@ -48,7 +48,7 @@ def optimize_problem(
     verbose = 2 if verbose else 0
     termination_reason = ""
 
-    if raise_exception:
+    try:
         ls_result = least_squares(
             _calculate_penalty,
             initial_parameter,
@@ -62,26 +62,12 @@ def optimize_problem(
             kwargs={"free_parameter_labels": free_parameter_labels, "problem": problem},
         )
         termination_reason = ls_result.message
-
-    else:
-        try:
-            ls_result = least_squares(
-                _calculate_penalty,
-                initial_parameter,
-                bounds=(lower_bounds, upper_bounds),
-                method=method,
-                max_nfev=nfev,
-                verbose=verbose,
-                ftol=ftol,
-                gtol=gtol,
-                xtol=xtol,
-                kwargs={"free_parameter_labels": free_parameter_labels, "problem": problem},
-            )
-            termination_reason = ls_result.message
-        except Exception as e:
-            warn(f"Optimization failed:\n\n{e}")
-            termination_reason = str(e)
-            ls_result = None
+    except Exception as e:
+        if raise_exception:
+            raise e
+        warn(f"Optimization failed:\n\n{e}")
+        termination_reason = str(e)
+        ls_result = None
 
     return _create_result(problem, ls_result, free_parameter_labels, termination_reason)
 

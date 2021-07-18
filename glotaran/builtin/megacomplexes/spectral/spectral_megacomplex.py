@@ -54,7 +54,7 @@ class SpectralMegacomplex(Megacomplex):
         self,
         dataset_model: DatasetModel,
         data: xr.Dataset,
-        full_model: bool = False,
+        is_full_model: bool = False,
         as_global: bool = False,
     ):
         species_dimension = "spectral_species" if as_global else "species"
@@ -81,7 +81,7 @@ class SpectralMegacomplex(Megacomplex):
             ),
             matrix.sel({clp_dim: species}).values,
         )
-        if not full_model:
+        if not is_full_model:
             data["species_associated_concentrations"] = (
                 (
                     dataset_model.get_global_dimension(),

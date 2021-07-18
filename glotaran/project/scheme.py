@@ -76,14 +76,14 @@ class Scheme:
 
         return MarkdownStr(markdown_str)
 
-    def grouped(self) -> bool:
+    def is_grouped(self) -> bool:
         """Returns whether the scheme should be grouped."""
         if self.group is not None and not self.group:
             return False
-        can_group = self.model.can_group(self.parameters, self.data)
-        if not can_group and self.group is not None:
+        is_groupable = self.model.is_groupable(self.parameters, self.data)
+        if not is_groupable and self.group is not None:
             warnings.warn("Cannot group scheme. Continuing ungrouped.")
-        return can_group
+        return is_groupable
 
     def _repr_markdown_(self) -> str:
         """Special method used by ``ipython`` to render markdown."""

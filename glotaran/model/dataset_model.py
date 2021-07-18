@@ -63,13 +63,15 @@ class DatasetModel:
                 )
         return self._model_dimension
 
-    def finalize_data(self, data: xr.Dataset):
-        full_model = self.global_model()
+    def finalize_data(self, dataset: xr.Dataset):
+        is_full_model = self.has_global_model()
         for megacomplex in self.megacomplex:
-            megacomplex.finalize_data(self, data, full_model=full_model)
-        if full_model:
+            megacomplex.finalize_data(self, dataset, is_full_model=is_full_model)
+        if is_full_model:
             for megacomplex in self.global_megacomplex:
-                megacomplex.finalize_data(self, data, full_model=full_model, as_global=True)
+                megacomplex.finalize_data(
+                    self, dataset, is_full_model=is_full_model, as_global=True
+                )
 
     def overwrite_model_dimension(self, model_dimension: str):
         """Overwrites the dataset model's model dimension."""
@@ -83,7 +85,7 @@ class DatasetModel:
     def get_global_dimension(self) -> str:
         """Returns the dataset model's global dimension."""
         if not hasattr(self, "_global_dimension"):
-            if self.global_model():
+            if self.has_global_model():
                 if isinstance(self.global_megacomplex[0], str):
                     raise ValueError(f"Dataset descriptor '{self.label}' was not filled")
                 self._global_dimension = self.global_megacomplex[0].dimension
@@ -113,11 +115,13 @@ class DatasetModel:
         self.overwrite_global_dimension(global_dimension)
         self.overwrite_model_dimension(model_dimension)
 
-    def set_data(self, data: xr.Dataset) -> DatasetModel:
+    def set_data(self, dataset: xr.Dataset) -> DatasetModel:
         """Sets the dataset model's data."""
-        self._coords = {name: dim.values for name, dim in data.coords.items()}
-        self._data = data.data.values
-        self._weight = data.weight.values if "weight" in data else None
+        self._coords: dict[str, np.ndarray] = {
+            name: dim.values for name, dim in dataset.coords.items()
+        }
+        self._data: np.ndarray = dataset.data.values
+        self._weight: np.ndarray | None = dataset.weight.values if "weight" in dataset else None
         if self._weight is not None:
             self._data = self._data * self._weight
         return self
@@ -126,7 +130,7 @@ class DatasetModel:
         """Gets the dataset model's data."""
         return self._data
 
-    def get_weight(self) -> np.ndarray:
+    def get_weight(self) -> np.ndarray | None:
         """Gets the dataset model's weight."""
         return self._weight
 
@@ -140,7 +144,7 @@ class DatasetModel:
         """Overrides the index dependency of the dataset"""
         self._index_dependent = index_dependent
 
-    def global_model(self) -> bool:
+    def has_global_model(self) -> bool:
         """Indicates if the dataset model can model the global dimension."""
         return len(self.global_megacomplex) != 0
 
