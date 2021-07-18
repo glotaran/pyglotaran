@@ -1,7 +1,6 @@
 """Helper functions."""
 from __future__ import annotations
 
-from typing import Any
 from typing import List
 from typing import Tuple
 
@@ -10,7 +9,7 @@ from glotaran.model.item import model_item
 
 @model_item(
     properties={
-        "interval": {"type": List[Tuple[Any, Any]], "default": None, "allow_none": True},
+        "interval": {"type": List[Tuple[float, float]], "default": None, "allow_none": True},
     },
     has_label=False,
 )
@@ -20,13 +19,13 @@ class IntervalProperty:
     :math:`source = parameter * target`.
     """
 
-    def applies(self, index: Any) -> bool:
+    def applies(self, value: float) -> bool:
         """
         Returns true if the index is in one of the intervals.
 
         Parameters
         ----------
-        index :
+        value : float
 
         Returns
         -------
@@ -37,8 +36,8 @@ class IntervalProperty:
             return True
 
         def applies(interval):
-            return interval[0] <= index <= interval[1]
+            return interval[0] <= value <= interval[1]
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return not any([applies(i) for i in self.interval])
+        return any([applies(i) for i in self.interval])

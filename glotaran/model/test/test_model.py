@@ -1,3 +1,5 @@
+from math import inf
+from math import nan
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -12,6 +14,9 @@ from glotaran.model import megacomplex
 from glotaran.model import model_item
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
+from glotaran.model.constraint import OnlyConstraint
+from glotaran.model.constraint import ZeroConstraint
+from glotaran.model.interval_property import IntervalProperty
 from glotaran.model.model import Model
 from glotaran.model.relation import Relation
 from glotaran.model.weight import Weight
@@ -368,3 +373,32 @@ def test_model_ipython_rendering(test_model: Model):
 
     assert "text/markdown" in rendered_markdown_return
     assert rendered_markdown_return["text/markdown"].startswith("# Model")
+
+
+def test_interval_property():
+    ip1 = IntervalProperty.from_dict({"interval": [[1, 1000]]})
+    assert all(ip1.applies(x) for x in (1, 500, 100))
+    assert all(not ip1.applies(x) for x in (9999, inf, nan))
+
+
+def test_zero_constraint():
+    zc1 = ZeroConstraint.from_dict({"interval": [[1, 400], [600, 1000]], "target": "s1"})
+    assert all(zc1.applies(x) for x in (1, 2, 400, 600, 1000))
+    assert all(not zc1.applies(x) for x in (400.01, 500, 599.99, 9999, inf, nan))
+    assert zc1.target == "s1"
+    zc2 = ZeroConstraint.from_dict({"interval": [[600, 700]], "target": "s2"})
+    assert all(zc2.applies(x) for x in range(600, 700, 50))
+    assert all(not zc2.applies(x) for x in (599.9999, 700.0001))
+    assert zc2.target == "s2"
+
+
+def test_only_constraint():
+    oc1 = OnlyConstraint.from_dict({"interval": [[1, 400], (600, 1000)], "target": "spectra1"})
+    assert all(oc1.applies(x) for x in (400.01, 500, 599.99, 9999, inf))
+    assert all(not oc1.applies(x) for x in (1, 400, 600, 1000))
+    assert oc1.target == "spectra1"
+    oc2 = OnlyConstraint.from_dict({"interval": [(600, 700)], "target": "spectra2"})
+    assert oc2.applies(599)
+    assert not oc2.applies(650)
+    assert oc2.applies(701)
+    assert oc2.target == "spectra2"

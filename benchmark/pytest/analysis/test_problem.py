@@ -40,7 +40,7 @@ class BenchmarkMegacomplex(Megacomplex):
         self,
         dataset_model,
         data,
-        full_model: bool = False,
+        is_full_model: bool = False,
         as_global: bool = False,
     ):
         pass
