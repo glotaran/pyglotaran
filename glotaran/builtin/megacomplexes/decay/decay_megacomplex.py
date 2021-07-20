@@ -112,19 +112,40 @@ class DecayMegacomplex(Megacomplex):
         # done
         return species, matrix
 
-    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
         global_dimension = dataset_model.get_global_dimension()
         name = "images" if global_dimension == "pixel" else "spectra"
 
-        if "species" not in data.coords:
+        species_dimension = "decay_species" if as_global else "species"
+        if species_dimension not in dataset.coords:
             # We are the first Decay complex called and add SAD for all decay megacomplexes
-            retrieve_species_associated_data(dataset_model, data, global_dimension, name)
-        if isinstance(dataset_model.irf, IrfMultiGaussian) and "irf" not in data:
-            retrieve_irf(dataset_model, data, global_dimension)
+            retrieve_species_associated_data(
+                dataset_model,
+                dataset,
+                species_dimension,
+                global_dimension,
+                name,
+                is_full_model,
+                as_global,
+            )
+        if isinstance(dataset_model.irf, IrfMultiGaussian) and "irf" not in dataset:
+            retrieve_irf(dataset_model, dataset, global_dimension)
 
-        multiple_complexes = (
-            len([m for m in dataset_model.megacomplex if isinstance(m, DecayMegacomplex)]) > 1
-        )
-        retrieve_decay_associated_data(
-            self, dataset_model, data, global_dimension, name, multiple_complexes
-        )
+        if not is_full_model:
+            multiple_complexes = (
+                len([m for m in dataset_model.megacomplex if isinstance(m, DecayMegacomplex)]) > 1
+            )
+            retrieve_decay_associated_data(
+                self,
+                dataset_model,
+                dataset,
+                global_dimension,
+                name,
+                multiple_complexes,
+            )

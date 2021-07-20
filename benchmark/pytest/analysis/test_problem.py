@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -9,6 +13,9 @@ from glotaran.model import Model
 from glotaran.model import megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+
+if TYPE_CHECKING:
+    from glotaran.model import DatasetModel
 
 TEST_AXIS_MODEL_SIZE = 100
 TEST_AXIS_MODEL = xr.DataArray(np.arange(0, TEST_AXIS_MODEL_SIZE))
@@ -36,7 +43,13 @@ class BenchmarkMegacomplex(Megacomplex):
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
 
-    def finalize_data(self, dataset_model, data):
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
         pass
 
 

@@ -49,7 +49,7 @@ def simulate(
     dataset_model = model.dataset[dataset].fill(model, parameters)
     dataset_model.set_coordinates(coordinates)
 
-    if dataset_model.global_model():
+    if dataset_model.has_global_model():
         result = simulate_global_model(
             dataset_model,
             parameters,
@@ -131,7 +131,7 @@ def simulate_global_model(
     if any(m.index_dependent(dataset_model) for m in dataset_model.global_megacomplex):
         raise ValueError("Index dependent models for global dimension are not supported.")
 
-    global_matrix = calculate_matrix(dataset_model, {}, global_model=True)
+    global_matrix = calculate_matrix(dataset_model, {}, as_global_model=True)
     global_clp_labels = global_matrix.clp_labels
     global_matrix = xr.DataArray(
         global_matrix.matrix.T,

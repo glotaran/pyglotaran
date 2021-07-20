@@ -106,45 +106,56 @@ erfcx = functype(erfcx_addr)
 
 
 def retrieve_species_associated_data(
-    dataset_model: DatasetModel, data: xr.Dataset, global_dimension: str, name: str
+    dataset_model: DatasetModel,
+    dataset: xr.Dataset,
+    species_dimension: str,
+    global_dimension: str,
+    name: str,
+    is_full_model: bool,
+    as_global: bool,
 ):
     species = dataset_model.initial_concentration.compartments
     model_dimension = dataset_model.get_model_dimension()
+    if as_global:
+        model_dimension, global_dimension = global_dimension, model_dimension
+    dataset.coords[species_dimension] = species
+    matrix = dataset.global_matrix if as_global else dataset.matrix
+    clp_dim = "global_clp_label" if as_global else "clp_label"
 
-    data.coords["species"] = species
-    data[f"species_associated_{name}"] = (
-        (
-            global_dimension,
-            "species",
-        ),
-        data.clp.sel(clp_label=species).data,
-    )
-
-    if len(data.matrix.shape) == 3:
+    if len(dataset.matrix.shape) == 3:
         #  index dependent
-        data["species_concentration"] = (
+        dataset["species_concentration"] = (
             (
                 global_dimension,
                 model_dimension,
-                "species",
+                species_dimension,
             ),
-            data.matrix.sel(clp_label=species).values,
+            matrix.sel({clp_dim: species}).values,
         )
     else:
         #  index independent
-        data["species_concentration"] = (
+        dataset["species_concentration"] = (
             (
                 model_dimension,
-                "species",
+                species_dimension,
             ),
-            data.matrix.sel(clp_label=species).values,
+            matrix.sel({clp_dim: species}).values,
+        )
+
+    if not is_full_model:
+        dataset[f"species_associated_{name}"] = (
+            (
+                global_dimension,
+                species_dimension,
+            ),
+            dataset.clp.sel(clp_label=species).data,
         )
 
 
 def retrieve_decay_associated_data(
     megacomplex: DecayMegacomplex,
     dataset_model: DatasetModel,
-    data: xr.Dataset,
+    dataset: xr.Dataset,
     global_dimension: str,
     name: str,
     multiple_complexes: bool,
@@ -160,11 +171,11 @@ def retrieve_decay_associated_data(
     rates = k_matrix.rates(dataset_model.initial_concentration)
     lifetimes = 1 / rates
 
-    das = data[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
+    das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
 
     component_coords = {"rate": ("component", rates), "lifetime": ("component", lifetimes)}
     das_coords = component_coords.copy()
-    das_coords[global_dimension] = data.coords[global_dimension]
+    das_coords[global_dimension] = dataset.coords[global_dimension]
     das_name = f"decay_associated_{name}"
     das = xr.DataArray(das, dims=(global_dimension, "component"), coords=das_coords)
 
@@ -189,32 +200,34 @@ def retrieve_decay_associated_data(
         k_matrix_name = f"k_matrix_{megacomplex.label}"
         k_matrix_reduced_name = f"k_matrix_reduced_{megacomplex.label}"
 
-    data[das_name] = das
-    data[a_matrix_name] = a_matrix
-    data[k_matrix_name] = k_matrix
-    data[k_matrix_reduced_name] = k_matrix_reduced
+    dataset[das_name] = das
+    dataset[a_matrix_name] = a_matrix
+    dataset[k_matrix_name] = k_matrix
+    dataset[k_matrix_reduced_name] = k_matrix_reduced
 
 
-def retrieve_irf(dataset_model: DatasetModel, data: xr.Dataset, global_dimension: str):
+def retrieve_irf(dataset_model: DatasetModel, dataset: xr.Dataset, global_dimension: str):
 
     irf = dataset_model.irf
     model_dimension = dataset_model.get_model_dimension()
 
-    data["irf"] = (
+    dataset["irf"] = (
         (model_dimension),
         irf.calculate(
             index=0,
-            global_axis=data.coords[global_dimension].values,
-            model_axis=data.coords[model_dimension].values,
+            global_axis=dataset.coords[global_dimension].values,
+            model_axis=dataset.coords[model_dimension].values,
         ).data,
     )
     center = irf.center if isinstance(irf.center, list) else [irf.center]
     width = irf.width if isinstance(irf.width, list) else [irf.width]
-    data["irf_center"] = ("irf_nr", center) if len(center) > 1 else center[0]
-    data["irf_width"] = ("irf_nr", width) if len(width) > 1 else width[0]
+    dataset["irf_center"] = ("irf_nr", center) if len(center) > 1 else center[0]
+    dataset["irf_width"] = ("irf_nr", width) if len(width) > 1 else width[0]
     if isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center:
-        for i, dispersion in enumerate(irf.calculate_dispersion(data.coords["spectral"].values)):
-            data[f"center_dispersion_{i+1}"] = (
+        for i, dispersion in enumerate(
+            irf.calculate_dispersion(dataset.coords["spectral"].values)
+        ):
+            dataset[f"center_dispersion_{i+1}"] = (
                 global_dimension,
                 dispersion,
             )

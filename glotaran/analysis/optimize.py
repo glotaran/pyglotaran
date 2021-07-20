@@ -19,12 +19,14 @@ SUPPORTED_METHODS = {
 }
 
 
-def optimize(scheme: Scheme, verbose: bool = True) -> Result:
-    problem = GroupedProblem(scheme) if scheme.group else UngroupedProblem(scheme)
-    return optimize_problem(problem, verbose=verbose)
+def optimize(scheme: Scheme, verbose: bool = True, raise_exception: bool = False) -> Result:
+    problem = GroupedProblem(scheme) if scheme.is_grouped() else UngroupedProblem(scheme)
+    return optimize_problem(problem, verbose=verbose, raise_exception=raise_exception)
 
 
-def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
+def optimize_problem(
+    problem: Problem, verbose: bool = True, raise_exception: bool = False
+) -> Result:
 
     if problem.scheme.optimization_method not in SUPPORTED_METHODS:
         raise ValueError(
@@ -61,11 +63,11 @@ def optimize_problem(problem: Problem, verbose: bool = True) -> Result:
         )
         termination_reason = ls_result.message
     except Exception as e:
+        if raise_exception:
+            raise e
         warn(f"Optimization failed:\n\n{e}")
         termination_reason = str(e)
         ls_result = None
-
-    problem.save_parameters_for_history()
 
     return _create_result(problem, ls_result, free_parameter_labels, termination_reason)
 
@@ -101,7 +103,9 @@ def _create_result(
     root_mean_square_error = np.sqrt(reduced_chi_square) if success else None
     jacobian = ls_result.jac if success else None
 
-    problem.save_parameters_for_history()
+    if success:
+        problem.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
+    problem.reset()
     history_index = None if success else -2
     data = problem.create_result_data(history_index=history_index)
     # the optimized parameters are those of the last run if the optimization has crashed

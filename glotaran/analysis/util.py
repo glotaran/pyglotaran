@@ -48,8 +48,8 @@ def get_min_max_from_interval(interval, axis):
 
 def calculate_matrix(
     dataset_model: DatasetModel,
-    indices: dict[str, int] | None,
-    global_model: bool = False,
+    indices: dict[str, int],
+    as_global_model: bool = False,
 ) -> CalculatedMatrix:
 
     clp_labels = None
@@ -57,7 +57,7 @@ def calculate_matrix(
 
     megacomplex_iterator = dataset_model.iterate_megacomplexes
 
-    if global_model:
+    if as_global_model:
         megacomplex_iterator = dataset_model.iterate_global_megacomplexes
         dataset_model.swap_dimensions()
 
@@ -81,7 +81,7 @@ def calculate_matrix(
             clp_labels = tmp_clp_labels
             matrix = tmp_matrix
 
-    if global_model:
+    if as_global_model:
         dataset_model.swap_dimensions()
 
     return CalculatedMatrix(clp_labels, matrix)
