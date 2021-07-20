@@ -89,7 +89,13 @@ class SimpleKineticMegacomplex(Megacomplex):
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
 
-    def finalize_data(self, dataset_model, data):
+    def finalize_data(
+        self,
+        dataset_model,
+        dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
         pass
 
 
@@ -138,6 +144,15 @@ class ShapedSpectralMegacomplex(Megacomplex):
 
     def index_dependent(self, dataset_model):
         return False
+
+    def finalize_data(
+        self,
+        dataset_model,
+        dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
+        pass
 
 
 class DecayModel(Model):
@@ -306,7 +321,6 @@ class MultichannelMulticomponentDecay:
 
     sim_model = DecayModel.from_dict(
         {
-            #  "compartment": ["s1", "s2", "s3", "s4"],
             "megacomplex": {
                 "m1": {"is_index_dependent": False},
                 "m2": {
@@ -327,7 +341,6 @@ class MultichannelMulticomponentDecay:
     )
     model = DecayModel.from_dict(
         {
-            #  "compartment": ["s1", "s2", "s3", "s4"],
             "megacomplex": {"m1": {"is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
@@ -337,3 +350,52 @@ class MultichannelMulticomponentDecay:
             },
         }
     )
+
+
+class FullModel:
+    model = DecayModel.from_dict(
+        {
+            "megacomplex": {
+                "m1": {"is_index_dependent": False},
+                "m2": {
+                    "type": "global_complex_shaped",
+                    "location": ["loc.1", "loc.2", "loc.3", "loc.4"],
+                    "delta": ["del.1", "del.2", "del.3", "del.4"],
+                    "amplitude": ["amp.1", "amp.2", "amp.3", "amp.4"],
+                },
+            },
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": ["m1"],
+                    "global_megacomplex": ["m2"],
+                    "kinetic": ["k.1", "k.2", "k.3", "k.4"],
+                }
+            },
+        }
+    )
+    parameters = ParameterGroup.from_dict(
+        {
+            "k": [0.006, 0.003, 0.0003, 0.03],
+            "loc": [
+                ["1", 14705],
+                ["2", 13513],
+                ["3", 14492],
+                ["4", 14388],
+            ],
+            "amp": [
+                ["1", 1],
+                ["2", 2],
+                ["3", 5],
+                ["4", 20],
+            ],
+            "del": [
+                ["1", 400],
+                ["2", 100],
+                ["3", 300],
+                ["4", 200],
+            ],
+        }
+    )
+    global_axis = np.arange(12820, 15120, 50)
+    model_axis = np.arange(0, 150, 1.5)
+    coordinates = {"global": global_axis, "model": model_axis}

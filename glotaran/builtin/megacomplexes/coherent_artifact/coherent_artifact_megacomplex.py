@@ -62,18 +62,25 @@ class CoherentArtifactMegacomplex(Megacomplex):
     def index_dependent(self, dataset: DatasetModel) -> bool:
         return False
 
-    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
-        global_dimension = dataset_model.get_global_dimension()
-        model_dimension = dataset_model.get_model_dimension()
-        data.coords["coherent_artifact_order"] = list(range(1, self.order + 1))
-        data["coherent_artifact_concentration"] = (
-            (model_dimension, "coherent_artifact_order"),
-            data.matrix.sel(clp_label=self.compartments()).values,
-        )
-        data["coherent_artifact_associated_spectra"] = (
-            (global_dimension, "coherent_artifact_order"),
-            data.clp.sel(clp_label=self.compartments()).values,
-        )
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
+        if not is_full_model:
+            global_dimension = dataset_model.get_global_dimension()
+            model_dimension = dataset_model.get_model_dimension()
+            dataset.coords["coherent_artifact_order"] = np.arange(1, self.order + 1)
+            dataset["coherent_artifact_concentration"] = (
+                (model_dimension, "coherent_artifact_order"),
+                dataset.matrix.sel(clp_label=self.compartments()).values,
+            )
+            dataset["coherent_artifact_associated_spectra"] = (
+                (global_dimension, "coherent_artifact_order"),
+                dataset.clp.sel(clp_label=self.compartments()).values,
+            )
 
 
 @nb.jit(nopython=True, parallel=True)

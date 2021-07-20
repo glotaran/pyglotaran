@@ -8,6 +8,7 @@ from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem_grouped import GroupedProblem
 from glotaran.analysis.problem_ungrouped import UngroupedProblem
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.models import FullModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
 from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.analysis.util import CalculatedMatrix
@@ -146,7 +147,7 @@ def test_prepare_data():
         ],
     }
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())  # T001
+    print(model.validate())  # T001 # noqa T001
     assert model.valid()
 
     parameters = ParameterGroup.from_list([])
@@ -164,7 +165,7 @@ def test_prepare_data():
     problem = Problem(scheme)
 
     data = problem.data["dataset1"]
-    print(data)  # T001
+    print(data)  # noqa T001
     assert "data" in data
     assert "weight" in data
 
@@ -180,7 +181,7 @@ def test_prepare_data():
         }
     )
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())  # T001
+    print(model.validate())  # T001 # noqa T001
     assert model.valid()
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
@@ -197,3 +198,21 @@ def test_prepare_data():
         " because weight is already supplied by dataset.",
     ):
         Problem(Scheme(model, parameters, {"dataset1": data}))
+
+
+def test_full_model_problem():
+    dataset = simulate(FullModel.model, "dataset1", FullModel.parameters, FullModel.coordinates)
+    scheme = Scheme(
+        model=FullModel.model, parameters=FullModel.parameters, data={"dataset1": dataset}
+    )
+    problem = UngroupedProblem(scheme)
+
+    result = problem.create_result_data()["dataset1"]
+    assert "global_matrix" in result
+    assert "global_clp_label" in result
+
+    clp = result.clp
+
+    assert clp.shape == (4, 4)
+    print(np.diagonal(clp))  # noqa T001
+    assert all(np.isclose(1.0, c) for c in np.diagonal(clp))

@@ -17,7 +17,7 @@ def test_constraint(index_dependent, grouped):
     model.megacomplex["m1"].is_index_dependent = index_dependent
     model.constraints.append(ZeroConstraint.from_dict({"target": "s2"}))
 
-    print("grouped", grouped, "index_dependent", index_dependent)  # T001
+    print("grouped", grouped, "index_dependent", index_dependent)  # noqa T001
     dataset = simulate(
         suite.sim_model,
         "dataset1",
@@ -36,7 +36,7 @@ def test_constraint(index_dependent, grouped):
     matrix = problem.matrices["dataset1"][0] if index_dependent else problem.matrices["dataset1"]
 
     result_data = problem.create_result_data()
-    print(result_data)  # T001
+    print(result_data)  # noqa T001
     clps = result_data["dataset1"].clp
 
     assert "s2" not in reduced_matrix.clp_labels

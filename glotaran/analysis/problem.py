@@ -209,7 +209,7 @@ class Problem:
 
     @property
     def cost(self) -> float:
-        return np.sum(self._full_penalty)
+        return 0.5 * np.dot(self.full_penalty, self.full_penalty)
 
     def save_parameters_for_history(self):
         self._parameter_history.append(self._parameters)

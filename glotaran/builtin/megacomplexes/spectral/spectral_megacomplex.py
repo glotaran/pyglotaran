@@ -50,29 +50,42 @@ class SpectralMegacomplex(Megacomplex):
     def index_dependent(self, dataset: DatasetModel) -> bool:
         return False
 
-    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
-        if "species" in data.coords:
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
+        species_dimension = "spectral_species" if as_global else "species"
+        if species_dimension in dataset.coords:
             return
 
         species = []
-        for megacomplex in dataset_model.megacomplex:  # noqa F402
-            if isinstance(megacomplex, SpectralMegacomplex):
-                species += [
-                    compartment for compartment in megacomplex.shape if compartment not in species
-                ]
+        megacomplexes = (
+            dataset_model.global_megacomplex if as_global else dataset_model.megacomplex
+        )
+        for m in megacomplexes:
+            if isinstance(m, SpectralMegacomplex):
+                species += [compartment for compartment in m.shape if compartment not in species]
 
-        data.coords["species"] = species
-        data["species_spectra"] = (
+        dataset.coords[species_dimension] = species
+        matrix = dataset.global_matrix if as_global else dataset.matrix
+        clp_dim = "global_clp_label" if as_global else "clp_label"
+        dataset["species_spectra"] = (
             (
-                dataset_model.get_model_dimension(),
-                "species",
+                dataset_model.get_model_dimension()
+                if not as_global
+                else dataset_model.get_global_dimension(),
+                species_dimension,
             ),
-            data.matrix.sel(clp_label=species).values,
+            matrix.sel({clp_dim: species}).values,
         )
-        data["species_associated_concentrations"] = (
-            (
-                dataset_model.get_global_dimension(),
-                "species",
-            ),
-            data.clp.sel(clp_label=species).data,
-        )
+        if not is_full_model:
+            dataset["species_associated_concentrations"] = (
+                (
+                    dataset_model.get_global_dimension(),
+                    species_dimension,
+                ),
+                dataset.clp.sel(clp_label=species).data,
+            )
