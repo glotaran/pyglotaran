@@ -24,5 +24,12 @@ class BaselineMegacomplex(Megacomplex):
     def index_dependent(self, dataset: DatasetModel) -> bool:
         return False
 
-    def finalize_data(self, dataset_model: DatasetModel, data: xr.Dataset):
-        data[f"{dataset_model.label}_baseline"] = data.clp.sel(clp_label="baseline")
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
+        if not is_full_model:
+            dataset[f"{dataset_model.label}_baseline"] = dataset.clp.sel(clp_label="baseline")

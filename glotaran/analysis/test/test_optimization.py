@@ -4,6 +4,7 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
+from glotaran.analysis.test.models import FullModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay
 from glotaran.analysis.test.models import OneCompartmentDecay
 from glotaran.analysis.test.models import ThreeDatasetDecay
@@ -31,26 +32,26 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
 
     model.megacomplex["m1"].is_index_dependent = index_dependent
 
-    print("Grouped:", grouped)
-    print("Index dependent:", index_dependent)
+    print("Grouped:", grouped)  # noqa T001
+    print("Index dependent:", index_dependent)  # noqa T001
 
     sim_model = suite.sim_model
     sim_model.megacomplex["m1"].is_index_dependent = index_dependent
 
-    print(model.validate())
+    print(model.validate())  # noqa T001
     assert model.valid()
 
-    print(sim_model.validate())
+    print(sim_model.validate())  # noqa T001
     assert sim_model.valid()
 
     wanted_parameters = suite.wanted_parameters
-    print(wanted_parameters)
-    print(sim_model.validate(wanted_parameters))
+    print(wanted_parameters)  # noqa T001
+    print(sim_model.validate(wanted_parameters))  # noqa T001
     assert sim_model.valid(wanted_parameters)
 
     initial_parameters = suite.initial_parameters
-    print(initial_parameters)
-    print(model.validate(initial_parameters))
+    print(initial_parameters)  # noqa T001
+    print(model.validate(initial_parameters))  # noqa T001
     assert model.valid(initial_parameters)
     assert (
         model.dataset["dataset1"].fill(model, initial_parameters).index_dependent()
@@ -69,9 +70,9 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
             wanted_parameters,
             {"global": global_axis, "model": model_axis},
         )
-        print(f"Dataset {i+1}")
-        print("=============")
-        print(dataset)
+        print(f"Dataset {i+1}")  # noqa T001
+        print("=============")  # noqa T001
+        print(dataset)  # noqa T001
 
         if hasattr(suite, "scale"):
             dataset["data"] /= suite.scale
@@ -95,8 +96,8 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         optimization_method=method,
     )
 
-    result = optimize(scheme)
-    print(result.optimized_parameters)
+    result = optimize(scheme, raise_exception=True)
+    print(result.optimized_parameters)  # noqa T001
     assert result.success
     optimized_scheme = result.get_scheme()
     assert result.optimized_parameters == optimized_scheme.parameters
@@ -110,9 +111,9 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
 
     for i, dataset in enumerate(data.values()):
         resultdata = result.data[f"dataset{i+1}"]
-        print(f"Result Data {i+1}")
-        print("=================")
-        print(resultdata)
+        print(f"Result Data {i+1}")  # noqa T001
+        print("=================")  # noqa T001
+        print(resultdata)  # noqa T001
         assert "residual" in resultdata
         assert "residual_left_singular_vectors" in resultdata
         assert "residual_right_singular_vectors" in resultdata
@@ -120,7 +121,7 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
         assert np.array_equal(dataset.coords["model"], resultdata.coords["model"])
         assert np.array_equal(dataset.coords["global"], resultdata.coords["global"])
         assert dataset.data.shape == resultdata.data.shape
-        print(dataset.data[0, 0], resultdata.data[0, 0])
+        print(dataset.data[0, 0], resultdata.data[0, 0])  # noqa T001
         assert np.allclose(dataset.data, resultdata.data)
         if weight:
             assert "weight" in resultdata
@@ -128,3 +129,41 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
             assert "weighted_residual_left_singular_vectors" in resultdata
             assert "weighted_residual_right_singular_vectors" in resultdata
             assert "weighted_residual_singular_values" in resultdata
+
+
+@pytest.mark.parametrize("index_dependent", [True, False])
+def test_optimization_full_model(index_dependent):
+    model = FullModel.model
+    model.megacomplex["m1"].is_index_dependent = index_dependent
+
+    print(model.validate())  # noqa T001
+    assert model.valid()
+
+    parameters = FullModel.parameters
+    assert model.valid(parameters)
+
+    dataset = simulate(model, "dataset1", parameters, FullModel.coordinates)
+
+    scheme = Scheme(
+        model=model,
+        parameters=parameters,
+        data={"dataset1": dataset},
+        maximum_number_function_evaluations=10,
+        group=False,
+    )
+
+    result = optimize(scheme, raise_exception=True)
+    assert result.success
+    optimized_scheme = result.get_scheme()
+    assert result.optimized_parameters == optimized_scheme.parameters
+
+    result_data = result.data["dataset1"]
+    assert "fitted_data" in result_data
+    for label, param in result.optimized_parameters.all():
+        if param.vary:
+            assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
+
+    clp = result_data.clp
+    print(clp)  # noqa T001
+    assert clp.shape == (4, 4)
+    assert all(np.isclose(1.0, c) for c in np.diagonal(clp))

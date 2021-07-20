@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -33,7 +34,7 @@ class Scheme:
     model: Model | str
     parameters: ParameterGroup | str
     data: dict[str, xr.DataArray | xr.Dataset | str]
-    group: bool = True
+    group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
     maximum_number_function_evaluations: int = None
@@ -74,6 +75,15 @@ class Scheme:
         markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
 
         return MarkdownStr(markdown_str)
+
+    def is_grouped(self) -> bool:
+        """Returns whether the scheme should be grouped."""
+        if self.group is not None and not self.group:
+            return False
+        is_groupable = self.model.is_groupable(self.parameters, self.data)
+        if not is_groupable and self.group is not None:
+            warnings.warn("Cannot group scheme. Continuing ungrouped.")
+        return is_groupable
 
     def _repr_markdown_(self) -> str:
         """Special method used by ``ipython`` to render markdown."""
