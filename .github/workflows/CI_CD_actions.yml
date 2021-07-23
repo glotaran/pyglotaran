@@ -112,7 +112,7 @@ jobs:
           pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml -k 'not IrfDispersion' glotaran
 
       - name: Codecov Upload
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2.0.2
         with:
           file: ./coverage.xml
 
