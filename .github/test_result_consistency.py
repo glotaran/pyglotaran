@@ -19,16 +19,21 @@ if TYPE_CHECKING:
 
 REPO_ROOT = Path(__file__).parent.parent
 RUN_EXAMPLES_MSG = (
-    "run 'python scripts/run_examples.py run-all' in the 'pyglotaran-examples' repo root."
+    "run 'python scripts/run_examples.py run-all --headless' "
+    "in the 'pyglotaran-examples' repo root."
 )
+
+
+class GitError(Exception):
+    """Error raised when a git interaction didn't exit with a 0 returncode."""
 
 
 def get_compare_results_path() -> Path:
     """Ensure that the comparison-results exist, are up to date and return their path."""
     compare_result_folder = REPO_ROOT / "comparison-results"
+    example_repo = "git@github.com:glotaran/pyglotaran-examples.git"
     if not compare_result_folder.exists():
-        example_repo = "git@github.com:glotaran/pyglotaran-examples.git"
-        subprocess.run(
+        proc_clone = subprocess.run(
             [
                 "git",
                 "clone",
@@ -37,17 +42,27 @@ def get_compare_results_path() -> Path:
                 "-b",
                 "comparison-results",
                 example_repo,
-                compare_result_folder,
-            ]
+                str(compare_result_folder),
+            ],
+            capture_output=True,
         )
+        if proc_clone.returncode != 0:
+            raise GitError(f"Error cloning {example_repo}:\n{proc_clone.stderr.decode()}")
     if "GITHUB" not in os.environ:
-        subprocess.run(
+        proc_fetch = subprocess.run(
             ["git", "fetch", "--depth", "1", "origin", "comparison-results"],
             cwd=compare_result_folder,
+            capture_output=True,
         )
-        subprocess.run(
-            ["git", "reset", "--hard", "origin/comparison-results"], cwd=compare_result_folder
+        if proc_fetch.returncode != 0:
+            raise GitError(f"Error fetching {example_repo}:\n{proc_fetch.stderr.decode()}")
+        proc_reset = subprocess.run(
+            ["git", "reset", "--hard", "origin/comparison-results"],
+            cwd=compare_result_folder,
+            capture_output=True,
         )
+        if proc_reset.returncode != 0:
+            raise GitError(f"Error resetting {example_repo}:\n{proc_reset.stderr.decode()}")
     return compare_result_folder
 
 
