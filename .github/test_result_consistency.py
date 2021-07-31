@@ -96,24 +96,24 @@ def get_current_result_path() -> Path:
 
 
 def coord_test(
-    compare_coords: DataArrayCoordinates,
+    expected_coords: DataArrayCoordinates,
     current_coords: DataArrayCoordinates,
     allclose: AllCloseFixture,
     exact_match=False,
 ):
     """Tests that coordinates are exactly equal if exact match or string coords or close."""
-    for compare_coord_name, compare_coord_value in compare_coords.items():
+    for expected_coord_name, expected_coord_value in expected_coords.items():
         assert (
-            compare_coord_name in current_coords.keys()
-        ), f"Missing coordinate: {compare_coord_name!r}"
+            expected_coord_name in current_coords.keys()
+        ), f"Missing coordinate: {expected_coord_name!r}"
 
-        if exact_match or compare_coord_value.data.dtype == object:
+        if exact_match or expected_coord_value.data.dtype == object:
             assert np.array_equal(
-                compare_coord_value, current_coords[compare_coord_name]
+                expected_coord_value, current_coords[expected_coord_name]
             ), "Coordinate value mismatch"
         else:
             assert allclose(
-                compare_coord_value, current_coords[compare_coord_name], rtol=1e-5
+                expected_coord_value, current_coords[expected_coord_name], rtol=1e-5
             ), "Coordinate value mismatch"
 
 
@@ -122,14 +122,22 @@ def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]
     result_map = defaultdict(list)
     compare_results_path = get_compare_results_path()
     current_result_path = get_current_result_path()
-    for result_file in compare_results_path.rglob(file_glob_pattern):
-        key = result_file.relative_to(compare_results_path).parent.as_posix().replace("/", "_")
-        current_result_file = current_result_path / result_file.relative_to(compare_results_path)
+    for expected_result_file in compare_results_path.rglob(file_glob_pattern):
+        key = (
+            expected_result_file.relative_to(compare_results_path)
+            .parent.as_posix()
+            .replace("/", "_")
+        )
+        current_result_file = current_result_path / expected_result_file.relative_to(
+            compare_results_path
+        )
         if current_result_file.exists():
-            result_map[key].append((result_file, current_result_file))
+            result_map[key].append((expected_result_file, current_result_file))
         else:
             warn(
-                UserWarning(f"No current result for: {result_file.as_posix()}, {RUN_EXAMPLES_MSG}")
+                UserWarning(
+                    f"No current result for: {expected_result_file.as_posix()}, {RUN_EXAMPLES_MSG}"
+                )
             )
     return result_map
 
@@ -140,9 +148,9 @@ def map_result_data() -> dict[str, list[tuple[xr.Dataset, xr.Dataset]]]:
     result_map = defaultdict(list)
     result_file_map = map_result_files(file_glob_pattern="*.nc")
     for key, path_list in result_file_map.items():
-        for result_file, current_result_file in path_list:
+        for expected_result_file, current_result_file in path_list:
             result_map[key].append(
-                (xr.open_dataset(result_file), xr.open_dataset(current_result_file))
+                (xr.open_dataset(expected_result_file), xr.open_dataset(current_result_file))
             )
     return result_map
 
@@ -154,11 +162,11 @@ def map_result_parameters() -> dict[str, list[pd.DataFrame]]:
     result_map = defaultdict(list)
     result_file_map = map_result_files(file_glob_pattern="*.csv")
     for key, path_list in result_file_map.items():
-        for result_file, current_result_file in path_list:
+        for expected_result_file, current_result_file in path_list:
             compare_df = pd.DataFrame(
                 {
-                    "result": pd.read_csv(result_file, index_col="label")["value"],
-                    "current_result": pd.read_csv(current_result_file, index_col="label")["value"],
+                    "expected": pd.read_csv(expected_result_file, index_col="label")["value"],
+                    "current": pd.read_csv(current_result_file, index_col="label")["value"],
                 }
             )
             result_map[key].append(compare_df)
@@ -171,12 +179,12 @@ def test_original_data_exact_consistency(
     result_name: str,
 ):
     """The original data need to be exactly the same."""
-    for compare_result, current_result in map_result_data()[result_name]:
+    for expected_result, current_result in map_result_data()[result_name]:
         assert np.array_equal(
-            compare_result.data.data, current_result.data.data
+            expected_result.data.data, current_result.data.data
         ), f"Original data mismatch: {result_name!r}"
         coord_test(
-            compare_result.data.coords, current_result.data.coords, allclose, exact_match=True
+            expected_result.data.coords, current_result.data.coords, allclose, exact_match=True
         )
 
 
@@ -187,7 +195,7 @@ def test_result_parameter_consistency(
 ):
     """Optimized parameters need to be approximately the same"""
     for compare_df in map_result_parameters()[result_name]:
-        assert allclose(compare_df["result"].values, compare_df["current_result"].values)
+        assert allclose(compare_df["expected"].values, compare_df["current"].values)
 
 
 @pytest.mark.parametrize("result_name", map_result_data().keys())
@@ -196,16 +204,16 @@ def test_result_attr_consistency(
     result_name: str,
 ):
     """Resultdataset attributes need to be approximately the same."""
-    for compare_result, current_result in map_result_data()[result_name]:
-        for compare_attr_name, compare_attr_value in compare_result.attrs.items():
+    for expected, current in map_result_data()[result_name]:
+        for cexpected_attr_name, expected_attr_value in expected.attrs.items():
 
             assert (
-                compare_attr_name in current_result.attrs.keys()
-            ), f"Missing result attribute: {compare_attr_name!r}"
+                cexpected_attr_name in current.attrs.keys()
+            ), f"Missing result attribute: {cexpected_attr_name!r}"
 
             assert allclose(
-                compare_attr_value, current_result.attrs[compare_attr_name], rtol=1e-4
-            ), f"Result attr value mismatch: {compare_attr_name!r}"
+                expected_attr_value, current.attrs[cexpected_attr_name], rtol=1e-4
+            ), f"Result attr value mismatch: {cexpected_attr_name!r}"
 
 
 @pytest.mark.parametrize("result_name", map_result_data().keys())
@@ -214,17 +222,17 @@ def test_result_data_var_consistency(
     result_name: str,
 ):
     """Result dataset data variables need to be approximately the same."""
-    for compare_result, current_result in map_result_data()[result_name]:
-        for compare_var_name, compare_var_value in compare_result.data_vars.items():
-            if compare_var_name != "data":
+    for expected_result, current_result in map_result_data()[result_name]:
+        for expected_var_name, expected_var_value in expected_result.data_vars.items():
+            if expected_var_name != "data":
 
                 assert (
-                    compare_var_name in current_result.data_vars
-                ), f"Missing data_var: {compare_var_name!r}"
-                current_data = current_result.data_vars[compare_var_name]
+                    expected_var_name in current_result.data_vars
+                ), f"Missing data_var: {expected_var_name!r}"
+                current_data = current_result.data_vars[expected_var_name]
 
                 assert allclose(
-                    compare_var_value.data, current_data.data, rtol=1e-4
-                ), f"Result data_var data mismatch: {compare_var_name!r}"
+                    expected_var_value.data, current_data.data, rtol=1e-4
+                ), f"Result data_var data mismatch: {expected_var_name!r}"
 
-                coord_test(compare_var_value.coords, current_data.coords, allclose)
+                coord_test(expected_var_value.coords, current_data.coords, allclose)
