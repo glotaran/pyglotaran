@@ -84,4 +84,4 @@ jobs:
 
       - name: Compare Results
         run: |
-          python -m pytest .github/test_result_consistency.py -vv
+          python -m pytest --color=yes .github/test_result_consistency.py
