@@ -80,7 +80,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install xarray pytest netCDF4
+          pip install xarray pytest pytest-allclose netCDF4
 
       - name: Compare Results
         run: |
