@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example_name: [
+        example_name:
+          [
             quick-start,
             fluorescence,
-            # transient-absorption,  # Not working with 0.3.2
+            transient-absorption,
+            transient-absorption-two-datasets,
             spectral-constraints,
-            # spectral-guidance,  # Not working with 0.3.2
+            spectral-guidance,
             two-datasets,
             sim-3d-disp,
             sim-3d-nodisp,
