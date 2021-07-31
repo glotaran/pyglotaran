@@ -113,7 +113,7 @@ def coord_test(
             ), "Coordinate value mismatch"
         else:
             assert allclose(
-                expected_coord_value, current_coords[expected_coord_name], rtol=1e-5
+                expected_coord_value, current_coords[expected_coord_name], rtol=1e-5, print_fail=20
             ), "Coordinate value mismatch"
 
 
@@ -195,7 +195,7 @@ def test_result_parameter_consistency(
 ):
     """Optimized parameters need to be approximately the same"""
     for compare_df in map_result_parameters()[result_name]:
-        assert allclose(compare_df["expected"].values, compare_df["current"].values)
+        assert allclose(compare_df["expected"].values, compare_df["current"].values, print_fail=20)
 
 
 @pytest.mark.parametrize("result_name", map_result_data().keys())
@@ -212,7 +212,7 @@ def test_result_attr_consistency(
             ), f"Missing result attribute: {cexpected_attr_name!r}"
 
             assert allclose(
-                expected_attr_value, current.attrs[cexpected_attr_name], rtol=1e-4
+                expected_attr_value, current.attrs[cexpected_attr_name], rtol=1e-4, print_fail=20
             ), f"Result attr value mismatch: {cexpected_attr_name!r}"
 
 
@@ -232,7 +232,7 @@ def test_result_data_var_consistency(
                 current_data = current_result.data_vars[expected_var_name]
 
                 assert allclose(
-                    expected_var_value.data, current_data.data, rtol=1e-4
+                    expected_var_value.data, current_data.data, rtol=1e-4, print_fail=20
                 ), f"Result data_var data mismatch: {expected_var_name!r}"
 
                 coord_test(expected_var_value.coords, current_data.coords, allclose)
