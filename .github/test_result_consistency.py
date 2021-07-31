@@ -11,6 +11,7 @@ from typing import Protocol
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -116,19 +117,16 @@ def coord_test(
             ), "Coordinate value mismatch"
 
 
-@lru_cache(maxsize=1)
-def map_result_files() -> dict[str, list[tuple[xr.Dataset, xr.Dataset]]]:
+def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]]]:
     """Load all datasets and map them in a dict."""
     result_map = defaultdict(list)
     compare_results_path = get_compare_results_path()
     current_result_path = get_current_result_path()
-    for result_file in compare_results_path.rglob("*.nc"):
+    for result_file in compare_results_path.rglob(file_glob_pattern):
         key = result_file.relative_to(compare_results_path).parent.as_posix().replace("/", "_")
         current_result_file = current_result_path / result_file.relative_to(compare_results_path)
         if current_result_file.exists():
-            result_map[key].append(
-                (xr.open_dataset(result_file), xr.open_dataset(current_result_file))
-            )
+            result_map[key].append((result_file, current_result_file))
         else:
             warn(
                 UserWarning(f"No current result for: {result_file.as_posix()}, {RUN_EXAMPLES_MSG}")
@@ -136,13 +134,44 @@ def map_result_files() -> dict[str, list[tuple[xr.Dataset, xr.Dataset]]]:
     return result_map
 
 
-@pytest.mark.parametrize("result_name", map_result_files().keys())
+@lru_cache(maxsize=1)
+def map_result_data() -> dict[str, list[tuple[xr.Dataset, xr.Dataset]]]:
+    """Load all datasets and map them in a dict."""
+    result_map = defaultdict(list)
+    result_file_map = map_result_files(file_glob_pattern="*.nc")
+    for key, path_list in result_file_map.items():
+        for result_file, current_result_file in path_list:
+            result_map[key].append(
+                (xr.open_dataset(result_file), xr.open_dataset(current_result_file))
+            )
+    return result_map
+
+
+@lru_cache(maxsize=1)
+def map_result_parameters() -> dict[str, list[pd.DataFrame]]:
+    """Load all optimized parameter files and map them in a dict."""
+
+    result_map = defaultdict(list)
+    result_file_map = map_result_files(file_glob_pattern="*.csv")
+    for key, path_list in result_file_map.items():
+        for result_file, current_result_file in path_list:
+            compare_df = pd.DataFrame(
+                {
+                    "result": pd.read_csv(result_file, index_col="label")["value"],
+                    "current_result": pd.read_csv(current_result_file, index_col="label")["value"],
+                }
+            )
+            result_map[key].append(compare_df)
+    return result_map
+
+
+@pytest.mark.parametrize("result_name", map_result_data().keys())
 def test_original_data_exact_consistency(
     allclose: AllCloseFixture,
     result_name: str,
 ):
     """The original data need to be exactly the same."""
-    for compare_result, current_result in map_result_files()[result_name]:
+    for compare_result, current_result in map_result_data()[result_name]:
         assert np.array_equal(
             compare_result.data.data, current_result.data.data
         ), f"Original data mismatch: {result_name!r}"
@@ -151,13 +180,23 @@ def test_original_data_exact_consistency(
         )
 
 
-@pytest.mark.parametrize("result_name", map_result_files().keys())
+@pytest.mark.parametrize("result_name", map_result_parameters().keys())
+def test_result_parameter_consistency(
+    allclose: AllCloseFixture,
+    result_name: str,
+):
+    """Optimized parameters need to be approximately the same"""
+    for compare_df in map_result_parameters()[result_name]:
+        assert allclose(compare_df["result"].values, compare_df["current_result"].values)
+
+
+@pytest.mark.parametrize("result_name", map_result_data().keys())
 def test_result_attr_consistency(
     allclose: AllCloseFixture,
     result_name: str,
 ):
     """Resultdataset attributes need to be approximately the same."""
-    for compare_result, current_result in map_result_files()[result_name]:
+    for compare_result, current_result in map_result_data()[result_name]:
         for compare_attr_name, compare_attr_value in compare_result.attrs.items():
 
             assert (
@@ -169,13 +208,13 @@ def test_result_attr_consistency(
             ), f"Result attr value mismatch: {compare_attr_name!r}"
 
 
-@pytest.mark.parametrize("result_name", map_result_files().keys())
+@pytest.mark.parametrize("result_name", map_result_data().keys())
 def test_result_data_var_consistency(
     allclose: AllCloseFixture,
     result_name: str,
 ):
     """Result dataset data variables need to be approximately the same."""
-    for compare_result, current_result in map_result_files()[result_name]:
+    for compare_result, current_result in map_result_data()[result_name]:
         for compare_var_name, compare_var_value in compare_result.data_vars.items():
             if compare_var_name != "data":
 
