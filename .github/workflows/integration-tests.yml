@@ -73,6 +73,16 @@ jobs:
           name: example-results
           path: comparison-results-current
 
+      - name: Show used versions for result creation
+        run: |
+          echo "::group:: ✔️ Compare-Results"
+          echo "✔️ pyglotaran-examples commit: $(< comparison-results/example_commit_sha.txt)"
+          echo "✔️ pyglotaran commit: $(< comparison-results/pyglotaran_commit_sha.txt)"
+          echo "::endgroup::"
+          echo "::group:: ♻️ Current-Results"
+          echo "♻️ pyglotaran-examples commit: $(< comparison-results-current/example_commit_sha.txt)"
+          echo "::endgroup::"
+
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
