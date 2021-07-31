@@ -7,6 +7,7 @@ from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Protocol
 from warnings import warn
 
 import numpy as np
@@ -22,6 +23,21 @@ RUN_EXAMPLES_MSG = (
     "run 'python scripts/run_examples.py run-all --headless' "
     "in the 'pyglotaran-examples' repo root."
 )
+
+
+class AllCloseFixture(Protocol):
+    def __call__(
+        self,
+        a: np.ndarray | xr.DataArray,
+        b: np.ndarray | xr.DataArray,
+        rtol: float = 1e-5,
+        atol: float = 1e-8,
+        xtol: int = 0,
+        equal_nan: bool = False,
+        print_fail: int = 5,
+        record_rmse: bool = True,
+    ) -> bool:
+        ...
 
 
 class GitError(Exception):
@@ -81,6 +97,7 @@ def get_current_result_path() -> Path:
 def coord_test(
     compare_coords: DataArrayCoordinates,
     current_coords: DataArrayCoordinates,
+    allclose: AllCloseFixture,
     exact_match=False,
 ):
     """Tests that coordinates are exactly equal if exact match or string coords or close."""
@@ -94,7 +111,7 @@ def coord_test(
                 compare_coord_value, current_coords[compare_coord_name]
             ), "Coordinate value mismatch"
         else:
-            assert np.allclose(
+            assert allclose(
                 compare_coord_value, current_coords[compare_coord_name], rtol=1e-5
             ), "Coordinate value mismatch"
 
@@ -120,17 +137,25 @@ def map_result_files() -> dict[str, list[tuple[xr.Dataset, xr.Dataset]]]:
 
 
 @pytest.mark.parametrize("result_name", map_result_files().keys())
-def test_original_data_exact_consistency(result_name):
+def test_original_data_exact_consistency(
+    allclose: AllCloseFixture,
+    result_name: str,
+):
     """The original data need to be exactly the same."""
     for compare_result, current_result in map_result_files()[result_name]:
         assert np.array_equal(
             compare_result.data.data, current_result.data.data
         ), f"Original data mismatch: {result_name!r}"
-        coord_test(compare_result.data.coords, current_result.data.coords, exact_match=True)
+        coord_test(
+            compare_result.data.coords, current_result.data.coords, allclose, exact_match=True
+        )
 
 
 @pytest.mark.parametrize("result_name", map_result_files().keys())
-def test_result_attr_consistency(result_name):
+def test_result_attr_consistency(
+    allclose: AllCloseFixture,
+    result_name: str,
+):
     """Resultdataset attributes need to be approximately the same."""
     for compare_result, current_result in map_result_files()[result_name]:
         for compare_attr_name, compare_attr_value in compare_result.attrs.items():
@@ -139,13 +164,16 @@ def test_result_attr_consistency(result_name):
                 compare_attr_name in current_result.attrs.keys()
             ), f"Missing result attribute: {compare_attr_name!r}"
 
-            assert np.allclose(
+            assert allclose(
                 compare_attr_value, current_result.attrs[compare_attr_name], rtol=1e-4
             ), f"Result attr value mismatch: {compare_attr_name!r}"
 
 
 @pytest.mark.parametrize("result_name", map_result_files().keys())
-def test_result_data_var_consistency(result_name):
+def test_result_data_var_consistency(
+    allclose: AllCloseFixture,
+    result_name: str,
+):
     """Result dataset data variables need to be approximately the same."""
     for compare_result, current_result in map_result_files()[result_name]:
         for compare_var_name, compare_var_value in compare_result.data_vars.items():
@@ -156,8 +184,8 @@ def test_result_data_var_consistency(result_name):
                 ), f"Missing data_var: {compare_var_name!r}"
                 current_data = current_result.data_vars[compare_var_name]
 
-                assert np.allclose(
+                assert allclose(
                     compare_var_value.data, current_data.data, rtol=1e-4
                 ), f"Result data_var data mismatch: {compare_var_name!r}"
 
-                coord_test(compare_var_value.coords, current_data.coords)
+                coord_test(compare_var_value.coords, current_data.coords, allclose)
