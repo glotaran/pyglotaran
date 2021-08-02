@@ -232,7 +232,7 @@ def test_result_data_var_consistency(
                 current_data = current_result.data_vars[expected_var_name]
 
                 assert allclose(
-                    expected_var_value.data, current_data.data, rtol=1e-4, print_fail=20
+                    expected_var_value.data, current_data.data, atol=1e-6, rtol=1e-3, print_fail=20
                 ), f"Result data_var data mismatch: {expected_var_name!r}"
 
                 coord_test(expected_var_value.coords, current_data.coords, allclose)
