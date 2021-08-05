@@ -25,6 +25,9 @@ RUN_EXAMPLES_MSG = (
     "in the 'pyglotaran-examples' repo root."
 )
 
+# in general this list should be empty, but for none stable examples this might be needed
+EXAMPLE_BLOCKLIST = ["study_transient_absorption_two_dataset_analysis_result_2d_co_co2"]
+
 
 class AllCloseFixture(Protocol):
     def __call__(
@@ -142,6 +145,8 @@ def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]
             .parent.as_posix()
             .replace("/", "_")
         )
+        if key in EXAMPLE_BLOCKLIST:
+            continue
         current_result_file = current_result_path / expected_result_file.relative_to(
             compare_results_path
         )
