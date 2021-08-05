@@ -67,15 +67,29 @@ def get_compare_results_path() -> Path:
             raise GitError(f"Error cloning {example_repo}:\n{proc_clone.stderr.decode()}")
     if "GITHUB" not in os.environ:
         proc_fetch = subprocess.run(
-            ["git", "fetch", "--depth", "1", "origin", "comparison-results"],
-            cwd=compare_result_folder,
+            [
+                "git",
+                "-C",
+                compare_result_folder.as_posix(),
+                "fetch",
+                "--depth",
+                "1",
+                "origin",
+                "comparison-results",
+            ],
             capture_output=True,
         )
         if proc_fetch.returncode != 0:
             raise GitError(f"Error fetching {example_repo}:\n{proc_fetch.stderr.decode()}")
         proc_reset = subprocess.run(
-            ["git", "reset", "--hard", "origin/comparison-results"],
-            cwd=compare_result_folder,
+            [
+                "git",
+                "-C",
+                compare_result_folder.as_posix(),
+                "reset",
+                "--hard",
+                "origin/comparison-results",
+            ],
             capture_output=True,
         )
         if proc_reset.returncode != 0:
