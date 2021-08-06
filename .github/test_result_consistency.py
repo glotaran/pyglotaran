@@ -26,7 +26,10 @@ RUN_EXAMPLES_MSG = (
 )
 
 # in general this list should be empty, but for none stable examples this might be needed
-EXAMPLE_BLOCKLIST = ["study_transient_absorption_two_dataset_analysis_result_2d_co_co2"]
+EXAMPLE_BLOCKLIST = [
+    "study_transient_absorption_two_dataset_analysis_result_2d_co_co2",
+    "ex_spectral_guidance",
+]
 
 
 class AllCloseFixture(Protocol):
