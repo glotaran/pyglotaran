@@ -32,4 +32,4 @@ class BaselineMegacomplex(Megacomplex):
         as_global: bool = False,
     ):
         if not is_full_model:
-            dataset[f"{dataset_model.label}_baseline"] = dataset.clp.sel(clp_label="baseline")
+            dataset["baseline"] = dataset.clp.sel(clp_label=f"{dataset_model.label}_baseline")
