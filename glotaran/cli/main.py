@@ -8,6 +8,8 @@ from glotaran.cli.commands.validate import validate_cmd
 
 
 class Cli(click.Group):
+    """The glotaran CLI implementation of :class:`click.group`"""
+
     def __init__(self, *args, **kwargs):
         self.help_priorities = {}
         super().__init__(*args, **kwargs)
@@ -44,6 +46,7 @@ class Cli(click.Group):
 @click.group(cls=Cli)
 @click.version_option(version=gta.__version__)
 def glotaran():
+    """The glotaran CLI main function."""
     pass
 
 
