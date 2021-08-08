@@ -118,6 +118,7 @@ def get_current_result_path() -> Path:
 def coord_test(
     expected_coords: DataArrayCoordinates,
     current_coords: DataArrayCoordinates,
+    file_name: str,
     allclose: AllCloseFixture,
     exact_match=False,
 ):
@@ -125,16 +126,16 @@ def coord_test(
     for expected_coord_name, expected_coord_value in expected_coords.items():
         assert (
             expected_coord_name in current_coords.keys()
-        ), f"Missing coordinate: {expected_coord_name!r}"
+        ), f"Missing coordinate: {expected_coord_name!r} in {file_name!r}"
 
         if exact_match or expected_coord_value.data.dtype == object:
             assert np.array_equal(
                 expected_coord_value, current_coords[expected_coord_name]
-            ), "Coordinate value mismatch"
+            ), f"Coordinate value mismatch in {file_name!r}"
         else:
             assert allclose(
                 expected_coord_value, current_coords[expected_coord_name], rtol=1e-5, print_fail=20
-            ), "Coordinate value mismatch"
+            ), f"Coordinate value mismatch in {file_name!r}"
 
 
 def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]]]:
@@ -165,14 +166,18 @@ def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]
 
 
 @lru_cache(maxsize=1)
-def map_result_data() -> dict[str, list[tuple[xr.Dataset, xr.Dataset]]]:
+def map_result_data() -> dict[str, list[tuple[xr.Dataset, xr.Dataset, str]]]:
     """Load all datasets and map them in a dict."""
     result_map = defaultdict(list)
     result_file_map = map_result_files(file_glob_pattern="*.nc")
     for key, path_list in result_file_map.items():
         for expected_result_file, current_result_file in path_list:
             result_map[key].append(
-                (xr.open_dataset(expected_result_file), xr.open_dataset(current_result_file))
+                (
+                    xr.open_dataset(expected_result_file),
+                    xr.open_dataset(current_result_file),
+                    expected_result_file.name,
+                )
             )
     return result_map
 
@@ -201,12 +206,16 @@ def test_original_data_exact_consistency(
     result_name: str,
 ):
     """The original data need to be exactly the same."""
-    for expected_result, current_result in map_result_data()[result_name]:
+    for expected_result, current_result, file_name in map_result_data()[result_name]:
         assert np.array_equal(
             expected_result.data.data, current_result.data.data
-        ), f"Original data mismatch: {result_name!r}"
+        ), f"Original data mismatch: {result_name!r} in {file_name!r}"
         coord_test(
-            expected_result.data.coords, current_result.data.coords, allclose, exact_match=True
+            expected_result.data.coords,
+            current_result.data.coords,
+            file_name,
+            allclose,
+            exact_match=True,
         )
 
 
@@ -226,16 +235,16 @@ def test_result_attr_consistency(
     result_name: str,
 ):
     """Resultdataset attributes need to be approximately the same."""
-    for expected, current in map_result_data()[result_name]:
+    for expected, current, file_name in map_result_data()[result_name]:
         for cexpected_attr_name, expected_attr_value in expected.attrs.items():
 
             assert (
                 cexpected_attr_name in current.attrs.keys()
-            ), f"Missing result attribute: {cexpected_attr_name!r}"
+            ), f"Missing result attribute: {cexpected_attr_name!r} in {file_name!r}"
 
             assert allclose(
                 expected_attr_value, current.attrs[cexpected_attr_name], rtol=1e-4, print_fail=20
-            ), f"Result attr value mismatch: {cexpected_attr_name!r}"
+            ), f"Result attr value mismatch: {cexpected_attr_name!r} in {file_name!r}"
 
 
 @pytest.mark.parametrize("result_name", map_result_data().keys())
@@ -244,13 +253,13 @@ def test_result_data_var_consistency(
     result_name: str,
 ):
     """Result dataset data variables need to be approximately the same."""
-    for expected_result, current_result in map_result_data()[result_name]:
+    for expected_result, current_result, file_name in map_result_data()[result_name]:
         for expected_var_name, expected_var_value in expected_result.data_vars.items():
             if expected_var_name != "data":
 
                 assert (
                     expected_var_name in current_result.data_vars
-                ), f"Missing data_var: {expected_var_name!r}"
+                ), f"Missing data_var: {expected_var_name!r} in {file_name!r}"
                 current_data = current_result.data_vars[expected_var_name]
 
                 abs_tol = 1e-8  # default value
@@ -266,6 +275,6 @@ def test_result_data_var_consistency(
                     atol=abs_tol,
                     rtol=1e-3,
                     print_fail=20,
-                ), f"Result data_var data mismatch: {expected_var_name!r}"
+                ), f"Result data_var data mismatch: {expected_var_name!r} in {file_name!r}"
 
-                coord_test(expected_var_value.coords, current_data.coords, allclose)
+                coord_test(expected_var_value.coords, current_data.coords, file_name, allclose)
