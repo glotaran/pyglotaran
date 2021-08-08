@@ -9,7 +9,6 @@ import xarray as xr
 from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
 from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
-from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.builtin.megacomplexes.decay.util import decay_matrix_implementation
 from glotaran.builtin.megacomplexes.decay.util import retrieve_decay_associated_data
@@ -57,10 +56,8 @@ class DecayMegacomplex(Megacomplex):
 
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return (
-            isinstance(dataset_model.irf, IrfSpectralMultiGaussian)
-            and dataset_model.irf.dispersion_center is not None
-        ) or (
-            isinstance(dataset_model.irf, IrfMultiGaussian) and dataset_model.irf.shift is not None
+            isinstance(dataset_model.irf, IrfMultiGaussian)
+            and dataset_model.irf.is_index_dependent()
         )
 
     def calculate_matrix(
