@@ -121,6 +121,9 @@ def model_item(
         fill = _create_fill_func(cls)
         setattr(cls, "fill", fill)
 
+        get_parameters = _create_get_parameters(cls)
+        setattr(cls, "get_parameters", get_parameters)
+
         mprint = _create_mprint_func(cls)
         setattr(cls, "mprint", mprint)
 
@@ -299,6 +302,15 @@ def _create_fill_func(cls):
         return item
 
     return fill
+
+
+def _create_get_parameters(cls):
+    @wrap_func_as_method(cls)
+    def get_parameters(self) -> list[str]:
+        """Returns all parameter full labels of the item."""
+        return [p for p in self._glotaran_properties if p._is_parameter_value]
+
+    return get_parameters
 
 
 def _create_get_state_func(cls):
