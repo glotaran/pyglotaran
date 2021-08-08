@@ -113,7 +113,9 @@ class DampedOscillationMegacomplex(Megacomplex):
 
         prefix = "damped_oscillation" if unique else f"{self.label}_damped_oscillation"
 
-        dataset.coords[prefix] = self.labels
+        dataset.coords[f"{prefix}"] = self.labels
+        dataset.coords[f"{prefix}_frequency"] = (prefix, self.frequencies)
+        dataset.coords[f"{prefix}_rate"] = (prefix, self.rates)
 
         dim1 = dataset_model.get_global_axis().size
         dim2 = len(self.labels)
