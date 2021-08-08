@@ -6,6 +6,7 @@ import click
 from glotaran.analysis.optimize import optimize
 from glotaran.cli.commands import util
 from glotaran.plugin_system.data_io_registration import known_data_formats
+from glotaran.plugin_system.project_io_registration import known_project_formats
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.project.scheme import Scheme
 
@@ -33,6 +34,14 @@ from glotaran.project.scheme import Scheme
     show_default=True,
 )
 @click.option(
+    "--outformat",
+    "-ofmt",
+    default="folder",
+    type=click.Choice(known_project_formats()),
+    help="The format of the output.",
+    show_default=True,
+)
+@click.option(
     "--nfev",
     "-n",
     default=None,
@@ -47,6 +56,7 @@ def optimize_cmd(
     dataformat: str,
     data: typing.List[str],
     out: str,
+    outformat: str,
     nfev: int,
     nnls: bool,
     yes: bool,
@@ -115,7 +125,7 @@ def optimize_cmd(
             try:
                 click.echo(f"Saving directory is '{out}'")
                 if yes or click.confirm("Do you want to save the data?", default=True):
-                    save_result(result_path=out, format_name="folder", result=result)
+                    save_result(result_path=out, format_name=outformat, result=result)
                     click.echo("File saving successful.")
             except Exception as e:
                 click.echo(f"An error occurred during saving: \n\n{e}", err=True)
