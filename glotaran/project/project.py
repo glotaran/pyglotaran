@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from os import getcwd
 from os import mkdir
 from pathlib import Path
-from typing import List
 from typing import Literal
 
 from yaml import dump
@@ -63,12 +62,16 @@ class Project:
         if not self.model_dir.exists():
             return {}
         #  print(model_file)
-        return {model_file.name: load_model(model_file) for model_file in self.model_dir.iterdir()}
+        return {
+            model_file.name: load_model(model_file)
+            for model_file in self.model_dir.iterdir()
+            if "yml" in model_file
+        }
 
     def has_models(self):
         return len(self.models()) != 0
 
-    def create_model(self, model_type: Literal[list[generators.keys()]] = "decay_parallel"):
+    def create_model(self, model_type: Literal[generators.keys()] = "decay_parallel"):
         self.create_model_dir_if_not_exist()
         model = generators[model_type]
         with open(self.model_dir / "p_model.yml", "w") as f:

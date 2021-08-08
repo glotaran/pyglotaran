@@ -96,7 +96,7 @@ class Model:
         # iterate over items
         for name, items in list(model_dict_local.items()):
 
-            if name not in model._model_items:
+            if name not in model.model_items:
                 warn(f"Unknown model item type '{name}'.")
                 continue
 
@@ -112,7 +112,7 @@ class Model:
     def _add_dict_items(self, name: str, items: dict):
 
         for label, item in items.items():
-            item_cls = self._model_items[name]
+            item_cls = self.model_items[name]
             is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
             if is_typed:
                 if "type" not in item and item_cls.get_default_type() is None:
@@ -130,7 +130,7 @@ class Model:
     def _add_list_items(self, name: str, items: list):
 
         for item in items:
-            item_cls = self._model_items[name]
+            item_cls = self.model_items[name]
             is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
             if is_typed:
                 if "type" not in item:
@@ -169,14 +169,14 @@ class Model:
             self._add_dataset_property(name, prop)
 
     def _add_model_item(self, name: str, item: type):
-        if name in self._model_items:
-            if self._model_items[name] != item:
+        if name in self.model_items:
+            if self.model_items[name] != item:
                 raise ModelError(
                     f"Cannot add item of type {name}. Model item '{name}' was already defined"
                     "as a different type."
                 )
             return
-        self._model_items[name] = item
+        self.model_items[name] = item
 
         if getattr(item, "_glotaran_has_label"):
             setattr(self, f"{name}", {})
@@ -263,7 +263,7 @@ class Model:
         """
         problems = []
 
-        for name in self._model_items:
+        for name in self.model_items:
             items = getattr(self, name)
             if isinstance(items, list):
                 for item in items:
@@ -308,6 +308,20 @@ class Model:
         """
         return len(self.problem_list(parameters)) == 0
 
+    @property
+    def parameters(self) -> list[str]:
+        r = []
+        for item_name in self.model_items:
+            print(item_name)
+            items = getattr(self, item_name)
+            if isinstance(items, list):
+                for item in items:
+                    print(item.get_parameters())
+            else:
+                for item in items.values():
+                    print(item.get_parameters())
+        return r
+
     def markdown(
         self,
         parameters: ParameterGroup = None,
@@ -338,7 +352,7 @@ class Model:
         string += ", ".join(self._megacomplex_types)
         string += "\n\n"
 
-        for name in self._model_items:
+        for name in self.model_items:
             items = getattr(self, name)
             if not items:
                 continue
