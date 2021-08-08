@@ -100,14 +100,6 @@ def optimize_cmd(
     click.echo(f"Saving directory: is '{out if out is not None else 'None'}'")
 
     if yes or click.confirm("Do you want to start optimization?", abort=True, default=True):
-        #  try:
-        #      click.echo('Preparing optimization...', nl=False)
-        #      optimizer = gta.analysis.optimizer.Optimizer(scheme)
-        #      click.echo(' Success')
-        #  except Exception as e:
-        #      click.echo(" Error")
-        #      click.echo(e, err=True)
-        #      sys.exit(1)
         try:
             click.echo("Optimizing...")
             result = optimize(scheme)

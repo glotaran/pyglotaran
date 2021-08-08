@@ -1,7 +1,7 @@
 import click
 
-from glotaran.model import known_model_names
 from glotaran.plugin_system.data_io_registration import known_data_formats
+from glotaran.plugin_system.megacomplex_registration import known_megacomplex_names
 from glotaran.plugin_system.project_io_registration import known_project_formats
 
 
@@ -11,11 +11,11 @@ def plugin_list_cmd():
     output = """
     Installed Glotaran Plugins:
 
-    Models:
+    Megacomplex Models:
     """
     output += "\n"
 
-    for name in known_model_names():
+    for name in known_megacomplex_names():
         output += f"    * {name}\n"
 
     output += "\nData file Formats\n\n"
