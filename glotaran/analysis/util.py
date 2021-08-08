@@ -71,20 +71,23 @@ def calculate_matrix(
             clp_labels = this_clp_labels
             matrix = this_matrix
         else:
-            tmp_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
-            tmp_matrix = np.zeros((matrix.shape[0], len(tmp_clp_labels)), dtype=np.float64)
-            for idx, label in enumerate(tmp_clp_labels):
-                if label in clp_labels:
-                    tmp_matrix[:, idx] += matrix[:, clp_labels.index(label)]
-                if label in this_clp_labels:
-                    tmp_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
-            clp_labels = tmp_clp_labels
-            matrix = tmp_matrix
+            clp_labels, matrix = combine_matrix(matrix, this_matrix, clp_labels, this_clp_labels)
 
     if as_global_model:
         dataset_model.swap_dimensions()
 
     return CalculatedMatrix(clp_labels, matrix)
+
+
+def combine_matrix(matrix, this_matrix, clp_labels, this_clp_labels):
+    tmp_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
+    tmp_matrix = np.zeros((matrix.shape[0], len(tmp_clp_labels)), dtype=np.float64)
+    for idx, label in enumerate(tmp_clp_labels):
+        if label in clp_labels:
+            tmp_matrix[:, idx] += matrix[:, clp_labels.index(label)]
+        if label in this_clp_labels:
+            tmp_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
+    return tmp_clp_labels, tmp_matrix
 
 
 @nb.jit(nopython=True, parallel=True)
