@@ -5,6 +5,8 @@ from click import echo
 from click import prompt
 
 import glotaran as gta
+from glotaran.io import load_dataset
+from glotaran.io import load_parameters
 
 
 def signature_analysis(cmd):
@@ -55,14 +57,14 @@ def load_model_file(filename, verbose=False):
 
 def load_parameter_file(filename, fmt=None, verbose=False):
     def loader(filename):
-        return gta.parameter.ParameterGroup.from_file(filename, fmt=fmt)
+        return load_parameters(filename, format_name=fmt)
 
     return _load_file(filename, loader, "parameter", verbose)
 
 
 def load_dataset_file(filename, fmt=None, verbose=False):
     def loader(filename):
-        return gta.io.read_data_file(filename, fmt=fmt)
+        return load_dataset(filename, format_name=fmt)
 
     return _load_file(filename, loader, "parameter", verbose)
 

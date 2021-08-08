@@ -49,7 +49,7 @@ from glotaran.project.scheme import Scheme
     help="Maximum number of function evaluations.",
     show_default=True,
 )
-@click.option("--nnls", is_flag=True, help="Use non-negative least squares.")
+@click.option("--nnls", is_flag=True, default=None, help="Use non-negative least squares.")
 @click.option("--yes", "-y", is_flag=True, help="Don't ask for confirmation.")
 @util.signature_analysis
 def optimize_cmd(
@@ -73,6 +73,8 @@ def optimize_cmd(
         scheme = util.load_scheme_file(scheme_file, verbose=True)
         if nfev is not None:
             scheme.maximum_number_function_evaluations = nfev
+        if nnls is not None:
+            scheme.non_negative_least_squares = nnls
     else:
         if model_file is None:
             click.echo("Error: Neither scheme nor model specified", err=True)
