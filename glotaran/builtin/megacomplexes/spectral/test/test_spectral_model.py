@@ -23,7 +23,7 @@ class SpectralModel(Model):
         )
 
 
-class OneCompartmentModel:
+class OneCompartmentModelNegativeSkew:
     decay_model = DecayModel.from_dict(
         {
             "initial_concentration": {
@@ -84,6 +84,14 @@ class OneCompartmentModel:
     matrix = calculate_matrix(decay_dataset_model, {})
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
+
+
+class OneCompartmentModelPositivSkew(OneCompartmentModelNegativeSkew):
+    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, 1])
+
+
+class OneCompartmentModelZeroSkew(OneCompartmentModelNegativeSkew):
+    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, 0])
 
 
 class ThreeCompartmentModel:
@@ -187,7 +195,9 @@ class ThreeCompartmentModel:
 @pytest.mark.parametrize(
     "suite",
     [
-        OneCompartmentModel,
+        OneCompartmentModelNegativeSkew,
+        OneCompartmentModelPositivSkew,
+        OneCompartmentModelZeroSkew,
         ThreeCompartmentModel,
     ],
 )
@@ -231,7 +241,6 @@ def test_spectral_model(suite):
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
-    print(dataset.data[0, 0], resultdata.fitted_data[0, 0])
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
     assert "species_associated_concentrations" in resultdata
     assert resultdata.species_associated_concentrations.shape == (

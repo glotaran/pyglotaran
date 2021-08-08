@@ -62,14 +62,11 @@ class SpectralShapeGaussian:
 
 @model_item(
     properties={
-        "amplitude": Parameter,
-        "location": Parameter,
-        "width": Parameter,
         "skewness": Parameter,
     },
     has_type=True,
 )
-class SpectralShapeSkewedGaussian:
+class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
     """A skewed Gaussian spectral shape"""
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
@@ -125,10 +122,7 @@ class SpectralShapeSkewedGaussian:
             An array representing a skewed Gaussian shape.
         """
         if np.allclose(self.skewness, 0):
-            raise ValueError(
-                f"The value of the skewness of shape {self.label} is close to zero. "
-                "This leads to divergence in the model. Consider usage of a 'gaussian' shape."
-            )
+            return super().calculate(axis)
         log_args = 1 + (2 * self.skewness * (axis - self.location) / self.width)
         result = np.zeros(log_args.shape)
         valid_arg_mask = np.where(log_args > 0)
