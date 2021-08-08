@@ -54,7 +54,7 @@ k_matrix:
 
 shape:
   shape1:
-    type: "skewed-gaussian"
+    type: "gaussian"
     amplitude: shape.1
     location: shape.2
     width: shape.3

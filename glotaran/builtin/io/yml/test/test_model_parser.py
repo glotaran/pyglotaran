@@ -8,7 +8,7 @@ import pytest
 from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
 from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
-from glotaran.builtin.megacomplexes.spectral.shape import SpectralShapeSkewedGaussian
+from glotaran.builtin.megacomplexes.spectral.shape import SpectralShapeGaussian
 from glotaran.io import load_model
 from glotaran.model import DatasetModel
 from glotaran.model import Model
@@ -25,7 +25,7 @@ THIS_DIR = dirname(abspath(__file__))
 def model():
     spec_path = join(THIS_DIR, "test_model_spec.yml")
     m = load_model(spec_path)
-    print(m.markdown())
+    print(m.markdown())  # noqa
     return m
 
 
@@ -50,7 +50,7 @@ def test_dataset(model):
 
 
 def test_constraints(model):
-    print(model.constraints)
+    print(model.constraints)  # noqa
     assert len(model.constraints) == 2
 
     zero = model.constraints[0]
@@ -77,7 +77,7 @@ def test_penalties(model):
 
 
 def test_relations(model):
-    print(model.relations)
+    print(model.relations)  # noqa
     assert len(model.relations) == 1
 
     rel = model.relations[0]
@@ -154,7 +154,7 @@ def test_shapes(model):
     assert "shape1" in model.shape
 
     shape = model.shape["shape1"]
-    assert isinstance(shape, SpectralShapeSkewedGaussian)
+    assert isinstance(shape, SpectralShapeGaussian)
     assert shape.amplitude.full_label == "shape.1"
     assert shape.location.full_label == "shape.2"
     assert shape.width.full_label == "shape.3"

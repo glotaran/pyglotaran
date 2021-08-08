@@ -63,6 +63,7 @@ class OneCompartmentModel:
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
+                    "skewness": "4",
                 }
             },
             "dataset": {
@@ -73,7 +74,7 @@ class OneCompartmentModel:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([7, 20000, 800])
+    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, 1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(400, 600, 5)
@@ -131,19 +132,19 @@ class ThreeCompartmentModel:
             },
             "shape": {
                 "sh1": {
-                    "type": "skewed-gaussian",
+                    "type": "gaussian",
                     "amplitude": "1",
                     "location": "2",
                     "width": "3",
                 },
                 "sh2": {
-                    "type": "skewed-gaussian",
+                    "type": "gaussian",
                     "amplitude": "4",
                     "location": "5",
                     "width": "6",
                 },
                 "sh3": {
-                    "type": "skewed-gaussian",
+                    "type": "gaussian",
                     "amplitude": "7",
                     "location": "8",
                     "width": "9",
@@ -195,19 +196,19 @@ class ThreeCompartmentModel:
 def test_spectral_model(suite):
 
     model = suite.spectral_model
-    print(model.validate())
+    print(model.validate())  # noqa
     assert model.valid()
 
     wanted_parameters = suite.spectral_parameters
-    print(model.validate(wanted_parameters))
-    print(wanted_parameters)
+    print(model.validate(wanted_parameters))  # noqa
+    print(wanted_parameters)  # noqa
     assert model.valid(wanted_parameters)
 
     initial_parameters = suite.spectral_parameters
-    print(model.validate(initial_parameters))
+    print(model.validate(initial_parameters))  # noqa
     assert model.valid(initial_parameters)
 
-    print(model.markdown(initial_parameters))
+    print(model.markdown(initial_parameters))  # noqa
 
     dataset = simulate(model, "dataset1", wanted_parameters, suite.axis, suite.clp)
 
@@ -222,7 +223,7 @@ def test_spectral_model(suite):
         maximum_number_function_evaluations=20,
     )
     result = optimize(scheme)
-    print(result.optimized_parameters)
+    print(result.optimized_parameters)  # noqa
 
     for label, param in result.optimized_parameters.all():
         assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
