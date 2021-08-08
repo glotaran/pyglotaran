@@ -135,7 +135,6 @@ class SpectralShapeSkewedGaussian:
         result[valid_arg_mask] = self.amplitude * np.exp(
             -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
-
         return result
 
 

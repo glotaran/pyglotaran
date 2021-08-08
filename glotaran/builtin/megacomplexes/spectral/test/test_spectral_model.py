@@ -72,7 +72,7 @@ class OneCompartmentModel:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, 1])
+    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, -1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(400, 600, 5)
@@ -231,6 +231,7 @@ def test_spectral_model(suite):
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
+    print(dataset.data[0, 0], resultdata.fitted_data[0, 0])
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
     assert "species_associated_concentrations" in resultdata
     assert resultdata.species_associated_concentrations.shape == (

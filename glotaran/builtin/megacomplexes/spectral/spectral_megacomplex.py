@@ -41,7 +41,7 @@ class SpectralMegacomplex(Megacomplex):
         if dataset_model.spectral_axis_inverted:
             model_axis = dataset_model.spectral_axis_scale / model_axis
         elif dataset_model.spectral_axis_scale != 1:
-            model_axis *= dataset_model.spectral_axis_scale
+            model_axis = model_axis * dataset_model.spectral_axis_scale
 
         dim1 = model_axis.size
         dim2 = len(self.shape)
