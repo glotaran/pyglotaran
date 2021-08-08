@@ -14,7 +14,10 @@ from glotaran.model import megacomplex
 
 @megacomplex(
     dimension="spectral",
-    properties={"energy_spectrum": {"type": bool, "default": False}},
+    properties={
+        "invert": {"type": bool, "default": False},
+        "axis_scale": {"type": float, "default": 1},
+    },
     model_items={
         "shape": Dict[str, SpectralShape],
     },
@@ -35,8 +38,10 @@ class SpectralMegacomplex(Megacomplex):
             compartments.append(compartment)
 
         model_axis = dataset_model.get_model_axis()
-        if self.energy_spectrum:
-            model_axis = 1e7 / model_axis
+        if self.invert:
+            model_axis = self.axis_scale / model_axis
+        elif self.axis_scale != 1:
+            model_axis *= self.axis_scale
 
         dim1 = model_axis.size
         dim2 = len(self.shape)

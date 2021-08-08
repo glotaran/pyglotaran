@@ -55,7 +55,7 @@ class OneCompartmentModel:
     spectral_model = SpectralModel.from_dict(
         {
             "megacomplex": {
-                "mc1": {"shape": {"s1": "sh1"}},
+                "mc1": {"shape": {"s1": "sh1"}, "axis_scale": 2},
             },
             "shape": {
                 "sh1": {
