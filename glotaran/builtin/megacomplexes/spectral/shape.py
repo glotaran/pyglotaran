@@ -108,7 +108,7 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
         Note that in the limit of skewness parameter :math:`b` equal to zero
         :math:`f(x, x_0, A, \Delta, b)` simplifies to a normal gaussian
         (since :math:`\lim_{b \to 0} \frac{\ln(1+bx)}{b}=x`),
-        see the definition in :func:`calculate_gaussian`.
+        see the definition in :func:`SpectralShapeGaussian.calculate`.
 
         Parameters
         ----------
