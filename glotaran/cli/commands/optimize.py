@@ -5,8 +5,8 @@ import click
 
 from glotaran.analysis.optimize import optimize
 from glotaran.cli.commands import util
-from glotaran.io import save_result
 from glotaran.plugin_system.data_io_registration import known_data_formats
+from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.project.scheme import Scheme
 
 
@@ -62,7 +62,7 @@ def optimize_cmd(
     if scheme_file is not None:
         scheme = util.load_scheme_file(scheme_file, verbose=True)
         if nfev is not None:
-            scheme.nfev = nfev
+            scheme.maximum_number_function_evaluations = nfev
     else:
         if model_file is None:
             click.echo("Error: Neither scheme nor model specified", err=True)
@@ -115,7 +115,7 @@ def optimize_cmd(
             try:
                 click.echo(f"Saving directory is '{out}'")
                 if yes or click.confirm("Do you want to save the data?", default=True):
-                    save_result(result_path=out, format_name="yml", result=result)
+                    save_result(result_path=out, format_name="folder", result=result)
                     click.echo("File saving successful.")
             except Exception as e:
                 click.echo(f"An error occurred during saving: \n\n{e}", err=True)
