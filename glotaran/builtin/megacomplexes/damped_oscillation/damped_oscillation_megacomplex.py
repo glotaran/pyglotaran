@@ -27,7 +27,7 @@ from glotaran.parameter import Parameter
         "frequencies": List[Parameter],
         "rates": List[Parameter],
     },
-    register_as="damped_oscillation",
+    register_as="damped-oscillation",
 )
 class DampedOscillationMegacomplex(Megacomplex):
     @model_item_validator(False)
