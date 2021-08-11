@@ -113,7 +113,7 @@ class Parameter(_SupportsArray):
             param.value = value
 
         else:
-            values = _sanatize_parameter_list(value)
+            values = _sanitize_parameter_list(value)
             param.label = _retrieve_from_list_by_type(values, str, label)
             param.value = float(_retrieve_from_list_by_type(values, (int, float), 0))
             options = _retrieve_from_list_by_type(values, dict, None)
@@ -489,7 +489,7 @@ def _log_value(value: float):
 _match_scientific = re.compile(r"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)")
 
 
-def _sanatize_parameter_list(li: list) -> list:
+def _sanitize_parameter_list(li: list) -> list:
     for i, value in enumerate(li):
         if isinstance(value, str) and _match_scientific.match(value):
             li[i] = float(value)
