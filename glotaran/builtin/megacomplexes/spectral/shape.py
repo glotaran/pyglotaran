@@ -9,7 +9,7 @@ from glotaran.parameter import Parameter
 
 @model_item(
     properties={
-        "amplitude": Parameter,
+        "amplitude": {"type": Parameter, "allow_none": True},
         "location": Parameter,
         "width": Parameter,
     },
@@ -55,9 +55,10 @@ class SpectralShapeGaussian:
         np.ndarray
             An array representing a Gaussian shape.
         """
-        return self.amplitude * np.exp(
-            -np.log(2) * np.square(2 * (axis - self.location) / self.width)
-        )
+        shape = np.exp(-np.log(2) * np.square(2 * (axis - self.location) / self.width))
+        if self.amplitude is not None:
+            shape *= self.amplitude
+        return shape
 
 
 @model_item(
@@ -124,12 +125,14 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
         if np.allclose(self.skewness, 0):
             return super().calculate(axis)
         log_args = 1 + (2 * self.skewness * (axis - self.location) / self.width)
-        result = np.zeros(log_args.shape)
+        shape = np.zeros(log_args.shape)
         valid_arg_mask = np.where(log_args > 0)
-        result[valid_arg_mask] = self.amplitude * np.exp(
+        shape[valid_arg_mask] = np.exp(
             -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
-        return result
+        if self.amplitude is not None:
+            shape *= self.amplitude
+        return shape
 
 
 @model_item(properties={}, has_type=True)

@@ -126,10 +126,9 @@ class OneCompartmentModelNegativeSkew:
             "shape": {
                 "sh1": {
                     "type": "skewed-gaussian",
-                    "amplitude": "1",
-                    "location": "2",
-                    "width": "3",
-                    "skewness": "4",
+                    "location": "1",
+                    "width": "2",
+                    "skewness": "3",
                 }
             },
             "dataset": {
@@ -138,7 +137,7 @@ class OneCompartmentModelNegativeSkew:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([7, 500, 80, -1])
+    spectral_parameters = ParameterGroup.from_list([1000, 80, -1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(400, 600, 5)
