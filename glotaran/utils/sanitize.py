@@ -1,19 +1,10 @@
 """Glotaran module with utilities for sanitation of parsed content."""
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from glotaran.deprecation import warn_deprecated
-
-# tuple_pattern = re.compile(r"(\(.*?,.*?\))")
-tuple_number_pattern = re.compile(r"(\([\s\d.+-]+?[,\s\d.+-]*?\))")
-number_pattern = re.compile(r"[\d.+-]+")
-tuple_name_pattern = re.compile(r"(\([.\s\w\d]+?[,.\s\w\d]*?\))")
-name_pattern = re.compile(r"[\w]+")
-group_pattern = re.compile(r"(\(.+?\))")
-match_list_with_tuples = re.compile(r"(\[.+\(.+\).+\])")
-match_elements_in_string_of_list = re.compile(r"(\(.+?\)|[-+.\d]+)")
+from glotaran.utils.regex import RegexPattern as rp
 
 
 def sanitize_list_with_broken_tuples(mangled_list: list[str | float]) -> list[str]:
@@ -36,7 +27,7 @@ def sanitize_list_with_broken_tuples(mangled_list: list[str | float]) -> list[st
         converted back to numbered tuples using `list_string_to_tuple`
     """
     sanitized_string = str(mangled_list).replace("'", "")
-    return list(match_elements_in_string_of_list.findall(sanitized_string))
+    return list(rp.elements_in_string_of_list.findall(sanitized_string))
 
 
 def sanitize_dict_keys(d: dict) -> dict:
@@ -59,8 +50,8 @@ def sanitize_dict_keys(d: dict) -> dict:
         return {}
     d_new = {}
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
-        if isinstance(d, dict) and isinstance(k, str) and tuple_name_pattern.match(k):
-            k_new = tuple(map(str, name_pattern.findall(k)))
+        if isinstance(d, dict) and isinstance(k, str) and rp.tuple_word.match(k):
+            k_new = tuple(map(str, rp.word.findall(k)))
             d_new.update({k_new: v})
         elif isinstance(d, (dict, list)):
             new_v = sanitize_dict_keys(v)
@@ -81,8 +72,6 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
     d : dict
         A (complex) dict containing (possibly nested) values of broken tuple strings.
     """
-    print(f"{'#'*10}")
-    print(d)
     if not isinstance(d, (dict, list)):
         return
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[attr-defined]
@@ -119,11 +108,11 @@ def string_to_tuple(
     tuple[float], tuple[str], float, str
         Returns the tuple intended by the string
     """
-    if tuple_number_pattern.match(tuple_str):
-        return tuple(map(float, number_pattern.findall(tuple_str)))
-    elif tuple_name_pattern.match(tuple_str):
-        return tuple(map(str, name_pattern.findall(tuple_str)))
-    elif from_list and number_pattern.match(tuple_str):
+    if rp.tuple_number.match(tuple_str):
+        return tuple(map(float, rp.number.findall(tuple_str)))
+    elif rp.tuple_word.match(tuple_str):
+        return tuple(map(str, rp.word.findall(tuple_str)))
+    elif from_list and rp.number.match(tuple_str):
         return float(tuple_str)
     else:
         return tuple_str
@@ -170,6 +159,26 @@ def sanitize_yaml(d: dict, do_keys: bool = True, do_values: bool = False) -> dic
         # this is only needed to allow for tuple parsing in specification
         sanitize_dict_values(d)
     return d
+
+
+def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | float]:
+    """Replace in a list strings matching scientific notation with floats.
+
+    Parameters
+    ----------
+    parameter_list : list
+        A list of parameters where some elements may be strings like 1E7
+
+    Returns
+    -------
+    list
+        A list where strings matching a scientific number have been converted to float
+    """
+    for i, value in enumerate(parameter_list):
+        if isinstance(value, str) and rp.number_scientific.match(value):
+            parameter_list[i] = float(value)
+
+    return parameter_list
 
 
 def check_deprecations(spec: dict):
