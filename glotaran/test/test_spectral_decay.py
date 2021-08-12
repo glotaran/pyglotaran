@@ -25,17 +25,17 @@ megacomplex:
             s3: sh3
 shape:
     sh1:
-        type: skewed-gaussian
+        type: gaussian
         amplitude: shapes.amps.1
         location: shapes.locs.1
         width: shapes.width.1
     sh2:
-        type: skewed-gaussian
+        type: gaussian
         amplitude: shapes.amps.2
         location: shapes.locs.2
         width: shapes.width.2
     sh3:
-        type: skewed-gaussian
+        type: gaussian
         amplitude: shapes.amps.3
         location: shapes.locs.3
         width: shapes.width.3
@@ -75,17 +75,17 @@ irf:
         width: [irf.width]
 shape:
     sh1:
-        type: skewed-gaussian
+        type: gaussian
         amplitude: shapes.amps.1
         location: shapes.locs.1
         width: shapes.width.1
     sh2:
-        type: skewed-gaussian
+        type: gaussian
         amplitude: shapes.amps.2
         location: shapes.locs.2
         width: shapes.width.2
     sh3:
-        type: skewed-gaussian
+        type: gaussian
         amplitude: shapes.amps.3
         location: shapes.locs.3
         width: shapes.width.3

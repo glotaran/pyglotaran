@@ -12,6 +12,8 @@ dataset:
     initial_concentration: inputD2
     irf: irf2
     scale: 2
+    spectral_axis_scale: 1e7
+    spectral_axis_inverted: true
 
 irf:
   irf1:
@@ -54,7 +56,7 @@ k_matrix:
 
 shape:
   shape1:
-    type: "skewed-gaussian"
+    type: "gaussian"
     amplitude: shape.1
     location: shape.2
     width: shape.3
