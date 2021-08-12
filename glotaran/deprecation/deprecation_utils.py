@@ -171,8 +171,8 @@ def warn_deprecated(
         will import ``package.module.class`` and check if ``class`` has an attribute
         ``mapping``.
 
-    Warns
-    -----
+    Raises
+    ------
     OverDueDeprecation
         If the current version is greater or equal to ``end_of_life_version``.
 
@@ -270,8 +270,8 @@ def deprecate(
     DecoratedCallable
         Original function or class throwing a Deprecation warning when used.
 
-    Warns
-    -----
+    Raises
+    ------
     OverDueDeprecation
         If the current version is greater or equal to ``end_of_life_version``.
 
@@ -437,7 +437,6 @@ def deprecate_dict_entry(
     {"default-megacomplex": "decay"}
 
 
-
     .. # noqa: DAR402
     """
     dict_changed = False
@@ -519,6 +518,11 @@ def deprecate_module_attribute(
     Any
         Module attribute from its new location.
 
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``end_of_life_version``.
+
     See Also
     --------
     deprecate
@@ -547,6 +551,8 @@ def deprecate_module_attribute(
 
             raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
 
+
+    .. # noqa: DAR402
     """
     module_name = ".".join(new_qual_name.split(".")[:-1])
     attribute_name = new_qual_name.split(".")[-1]
@@ -592,6 +598,11 @@ def deprecate_submodule(
     ModuleType
         Module containing
 
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``end_of_life_version``.
+
     See Also
     --------
     deprecate
@@ -613,6 +624,9 @@ def deprecate_submodule(
             new_module_name="glotaran.project.result",
             to_be_removed_in_version="0.6.0",
         )
+
+
+    .. # noqa: DAR402
     """
     new_module = import_module(new_module_name)
     deprecated_module = ModuleType(
