@@ -13,10 +13,10 @@ class ModelProperty(property):
         self._allow_none = allow_none
         self._determine_if_parameter(prop_type)
 
-        set_type = prop_type if not self._is_parameter else typing.Union[str, prop_type]
+        self._type = prop_type if not self._is_parameter else typing.Union[str, prop_type]
 
         @wrap_func_as_method(cls, name=name)
-        def setter(that_self, value: set_type):
+        def setter(that_self, value: self._type):
             if value is None and not self._allow_none:
                 raise Exception(
                     f"Property '{name}' of '{cls.__name__}' is not allowed to set to None."
@@ -43,6 +43,10 @@ class ModelProperty(property):
     @property
     def allow_none(self) -> bool:
         return self._allow_none
+
+    @property
+    def property_type(self) -> typing.Type:
+        return self._type
 
     def validate(self, value, model, parameters=None) -> typing.List[str]:
 

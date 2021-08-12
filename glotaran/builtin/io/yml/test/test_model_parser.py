@@ -48,6 +48,17 @@ def test_dataset(model):
     assert dataset.irf == "irf1"
     assert dataset.scale == 1
 
+    assert "dataset2" in model.dataset
+    dataset = model.dataset["dataset2"]
+    assert isinstance(dataset, DatasetModel)
+    assert dataset.label == "dataset2"
+    assert dataset.megacomplex == ["cmplx2"]
+    assert dataset.initial_concentration == "inputD2"
+    assert dataset.irf == "irf2"
+    assert dataset.scale == 2
+    assert dataset.spectral_axis_scale == 1e7
+    assert dataset.spectral_axis_inverted
+
 
 def test_constraints(model):
     print(model.constraints)  # noqa

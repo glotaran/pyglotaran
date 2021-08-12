@@ -12,6 +12,8 @@ dataset:
     initial_concentration: inputD2
     irf: irf2
     scale: 2
+    spectral_axis_scale: 1e7
+    spectral_axis_inverted: true
 
 irf:
   irf1:
