@@ -4,9 +4,10 @@ import click
 from click import echo
 from click import prompt
 
-import glotaran as gta
 from glotaran.io import load_dataset
+from glotaran.io import load_model
 from glotaran.io import load_parameters
+from glotaran.io import load_scheme
 
 
 def signature_analysis(cmd):
@@ -48,11 +49,13 @@ def _load_file(filename, loader, name, verbose):
 
 
 def load_scheme_file(filename, verbose=False):
-    return _load_file(filename, gta.analysis.scheme.Scheme.from_yaml_file, "scheme", verbose)
+    return _load_file(
+        filename, lambda file: load_scheme(file, format_name="yml"), "scheme", verbose
+    )
 
 
 def load_model_file(filename, verbose=False):
-    return _load_file(filename, gta.read_model_from_yaml_file, "model", verbose)
+    return _load_file(filename, lambda file: load_model(file, format_name="yml"), "model", verbose)
 
 
 def load_parameter_file(filename, fmt=None, verbose=False):

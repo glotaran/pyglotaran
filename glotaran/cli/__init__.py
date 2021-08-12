@@ -1,1 +1,1 @@
-from glotaran.cli.main import glotaran
+from glotaran.cli.main import main
