@@ -25,7 +25,7 @@ THIS_DIR = dirname(abspath(__file__))
 def model():
     spec_path = join(THIS_DIR, "test_model_spec.yml")
     m = load_model(spec_path)
-    print(m.markdown())  # noqa
+    print(m.markdown())
     return m
 
 
@@ -61,7 +61,7 @@ def test_dataset(model):
 
 
 def test_constraints(model):
-    print(model.constraints)  # noqa
+    print(model.constraints)
     assert len(model.constraints) == 2
 
     zero = model.constraints[0]
@@ -88,7 +88,7 @@ def test_penalties(model):
 
 
 def test_relations(model):
-    print(model.relations)  # noqa
+    print(model.relations)
     assert len(model.relations) == 1
 
     rel = model.relations[0]

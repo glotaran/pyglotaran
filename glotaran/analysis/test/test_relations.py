@@ -19,7 +19,7 @@ def test_relations(index_dependent, grouped):
     model.relations.append(Relation.from_dict({"source": "s1", "target": "s2", "parameter": "3"}))
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
-    print("grouped", grouped, "index_dependent", index_dependent)  # T001
+    print("grouped", grouped, "index_dependent", index_dependent)
     dataset = simulate(
         suite.sim_model,
         "dataset1",
@@ -38,7 +38,7 @@ def test_relations(index_dependent, grouped):
     matrix = problem.matrices["dataset1"][0] if index_dependent else problem.matrices["dataset1"]
 
     result_data = problem.create_result_data()
-    print(result_data)  # T001
+    print(result_data)
     clps = result_data["dataset1"].clp
 
     assert "s2" not in reduced_matrix.clp_labels

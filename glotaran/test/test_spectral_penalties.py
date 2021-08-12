@@ -204,7 +204,7 @@ def test_equal_area_penalties(debug=False):
     model_sim = SpectralDecayModel.from_dict(mspec_sim)
     model_wp = SpectralDecayModel.from_dict(mspec_fit_wp)
     model_np = SpectralDecayModel.from_dict(mspec_fit_np)
-    print(model_np)  # noqa T001
+    print(model_np)
 
     # %% Parameter specification (pspec)
 
@@ -224,9 +224,9 @@ def test_equal_area_penalties(debug=False):
     param_np = ParameterGroup.from_dict(pspec_np)
 
     # %% Print models with parameters
-    print(model_sim.markdown(param_sim))  # noqa T001
-    print(model_wp.markdown(param_wp))  # noqa T001
-    print(model_np.markdown(param_np))  # noqa T001
+    print(model_sim.markdown(param_sim))
+    print(model_wp.markdown(param_wp))
+    print(model_np.markdown(param_np))
 
     # %%
     simulated_data = simulate(
@@ -254,7 +254,7 @@ def test_equal_area_penalties(debug=False):
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_np = optimize(scheme_np)
-    print(result_np)  # noqa T001
+    print(result_np)
 
     # %% Optimizing model with penalty fixed inputs (wp_ifix)
     scheme_wp = Scheme(
@@ -265,7 +265,7 @@ def test_equal_area_penalties(debug=False):
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_wp = optimize(scheme_wp)
-    print(result_wp)  # noqa T001
+    print(result_wp)
 
     if debug:
         # %% Plot results
@@ -278,10 +278,10 @@ def test_equal_area_penalties(debug=False):
             plt.show()
 
     # %% Test calculation
-    print(result_wp.data["dataset1"])  # noqa T001
+    print(result_wp.data["dataset1"])
     area1_np = np.sum(result_np.data["dataset1"].species_associated_spectra.sel(species="s1"))
     area2_np = np.sum(result_np.data["dataset1"].species_associated_spectra.sel(species="s2"))
-    print("area_np", area1_np, area2_np)  # noqa T001
+    print("area_np", area1_np, area2_np)
     assert not np.isclose(area1_np, area2_np)
 
     area1_wp = np.sum(result_wp.data["dataset1"].species_associated_spectra.sel(species="s1"))
@@ -291,7 +291,7 @@ def test_equal_area_penalties(debug=False):
     input_ratio = result_wp.optimized_parameters.get("i.1") / result_wp.optimized_parameters.get(
         "i.2"
     )
-    print("input", input_ratio)  # noqa T001
+    print("input", input_ratio)
     assert np.isclose(input_ratio, 1.5038858115)
 
 
