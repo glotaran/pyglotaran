@@ -1,22 +1,14 @@
-import re
-from typing import List
-from typing import Tuple
-from typing import Union
+"""Glotaran module with utilities for sanitation of parsed content."""
+from __future__ import annotations
+
+from typing import Any
 
 from glotaran.deprecation import warn_deprecated
-
-# tuple_pattern = re.compile(r"(\(.*?,.*?\))")
-tuple_number_pattern = re.compile(r"(\([\s\d.+-]+?[,\s\d.+-]*?\))")
-number_pattern = re.compile(r"[\d.+-]+")
-tuple_name_pattern = re.compile(r"(\([.\s\w\d]+?[,.\s\w\d]*?\))")
-name_pattern = re.compile(r"[\w]+")
-group_pattern = re.compile(r"(\(.+?\))")
-match_list_with_tuples = re.compile(r"(\[.+\(.+\).+\])")
-match_elements_in_string_of_list = re.compile(r"(\(.+?\)|[-+.\d]+)")
+from glotaran.utils.regex import RegexPattern as rp
 
 
-def sanitize_list_with_broken_tuples(mangled_list: List[Union[str, float]]) -> List[str]:
-    """Sanitize a list with 'broken' tuples
+def sanitize_list_with_broken_tuples(mangled_list: list[str | float]) -> list[str]:
+    """Sanitize a list with 'broken' tuples.
 
     A list of broken tuples as returned by yaml when parsing tuples.
     e.g parsing the list of tuples [(3,100), (4,200)] results in
@@ -34,13 +26,12 @@ def sanitize_list_with_broken_tuples(mangled_list: List[Union[str, float]]) -> L
         A list containing the restores tuples (in string form) which can be
         converted back to numbered tuples using `list_string_to_tuple`
     """
-
     sanitized_string = str(mangled_list).replace("'", "")
-    return list(match_elements_in_string_of_list.findall(sanitized_string))
+    return list(rp.elements_in_string_of_list.findall(sanitized_string))
 
 
 def sanitize_dict_keys(d: dict) -> dict:
-    """Sanitize the stringified tuple dict keys in a yaml parsed dict
+    """Sanitize the stringified tuple dict keys in a yaml parsed dict.
 
     Keys representing a tuple, e.g. '(s1, s2)' are converted to a tuple of strings
         e.g. ('s1', 's2')
@@ -59,8 +50,8 @@ def sanitize_dict_keys(d: dict) -> dict:
         return {}
     d_new = {}
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
-        if isinstance(d, dict) and isinstance(k, str) and tuple_name_pattern.match(k):
-            k_new = tuple(map(str, name_pattern.findall(k)))
+        if isinstance(d, dict) and isinstance(k, str) and rp.tuple_word.match(k):
+            k_new = tuple(map(str, rp.word.findall(k)))
             d_new.update({k_new: v})
         elif isinstance(d, (dict, list)):
             new_v = sanitize_dict_keys(v)
@@ -69,18 +60,38 @@ def sanitize_dict_keys(d: dict) -> dict:
     return d_new
 
 
-def sanitize_dict_values(d: dict):
-    """Sanitizes a dict with broken tuples inside modifying it in-place
+def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
+    """Convert scientific notation string values to floats.
+
+    Parameters
+    ----------
+    d : dict[str, Any] | list[Any]
+        Iterable which should be checked for scientific notation values.
+    """
+    if not isinstance(d, (dict, list)):
+        return
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[attr-defined]
+        if isinstance(v, (list, dict)):
+            sanity_scientific_notation_conversion(v)
+        if isinstance(v, str):
+            d[k] = convert_scientific_to_float(v)
+
+
+def sanitize_dict_values(d: dict[str, Any] | list[Any]):
+    """Sanitizes a dict with broken tuples inside modifying it in-place.
+
     Broken tuples are tuples that are turned into strings by the yaml parser.
     This functions calls `sanitize_list_with_broken_tuples` to glue the broken strings together
     and then calls list_to_tuple to turn the list with tuple strings back to number tuples.
 
-    Args:
-        d (dict): A (complex) dict containing (possibly nested) values of broken tuple strings
+    Parameters
+    ----------
+    d : dict
+        A (complex) dict containing (possibly nested) values of broken tuple strings.
     """
     if not isinstance(d, (dict, list)):
         return
-    for k, v in d.items() if isinstance(d, dict) else enumerate(d):
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[attr-defined]
         if isinstance(v, list):
             leaf = all(isinstance(el, (str, tuple, float)) for el in v)
             if leaf:
@@ -96,8 +107,8 @@ def sanitize_dict_values(d: dict):
 
 def string_to_tuple(
     tuple_str: str, from_list=False
-) -> Union[Tuple[float], Tuple[str], float, str]:
-    """[summary]
+) -> tuple[float, ...] | tuple[str, ...] | float | str:
+    """Convert a string to a tuple if it matches a tuple pattern.
 
     Parameters
     ----------
@@ -111,22 +122,23 @@ def string_to_tuple(
 
     Returns
     -------
-    Union[Tuple[float], Tuple[str], float, str]
+    tuple[float], tuple[str], float, str
         Returns the tuple intended by the string
     """
-
-    if tuple_number_pattern.match(tuple_str):
-        return tuple(map(float, number_pattern.findall(tuple_str)))
-    elif tuple_name_pattern.match(tuple_str):
-        return tuple(map(str, name_pattern.findall(tuple_str)))
-    elif from_list and number_pattern.match(tuple_str):
+    if rp.tuple_number.match(tuple_str):
+        return tuple(map(float, rp.number.findall(tuple_str)))
+    elif rp.tuple_word.match(tuple_str):
+        return tuple(map(str, rp.word.findall(tuple_str)))
+    elif from_list and rp.number.match(tuple_str):
         return float(tuple_str)
     else:
         return tuple_str
 
 
-def list_string_to_tuple(a_list: List[str]) -> List[Union[float, str]]:
-    """Converts a list of strings (representing tuples) to a list of tuples
+def list_string_to_tuple(
+    a_list: list[str],
+) -> list[tuple[float, ...] | tuple[str, ...] | float | str]:
+    """Convert a list of strings (representing tuples) to a list of tuples.
 
     Parameters
     ----------
@@ -138,18 +150,20 @@ def list_string_to_tuple(a_list: List[str]) -> List[Union[float, str]]:
     List[Union[float, str]]
         A list of the (numbered) tuples represted by the incoming a_list
     """
-    for i, v in enumerate(a_list):
-        a_list[i] = string_to_tuple(v, from_list=True)
-    return a_list
+    return [string_to_tuple(v, from_list=True) for v in a_list]
 
 
 def sanitize_yaml(d: dict, do_keys: bool = True, do_values: bool = False) -> dict:
-    """Sanitize a yaml-returned dict for key or (list) values containing tuples
+    """Sanitize a yaml-returned dict for key or (list) values containing tuples.
 
     Parameters
     ----------
     d : dict
         a dict resulting from parsing a pyglotaran model spec yml file
+    do_keys : bool
+        toggle sanitization of dict keys, by default True
+    do_values : bool
+        toggle sanitization of dict values, by default False
 
     Returns
     -------
@@ -161,10 +175,57 @@ def sanitize_yaml(d: dict, do_keys: bool = True, do_values: bool = False) -> dic
     if do_values:
         # this is only needed to allow for tuple parsing in specification
         sanitize_dict_values(d)
+    sanity_scientific_notation_conversion(d)
     return d
 
 
+def convert_scientific_to_float(value: str) -> float | str:
+    """Convert value to float if it matches scientific notation string.
+
+    Parameters
+    ----------
+    value : str
+        value to convert from string to float if it matches scientific notation
+
+    Returns
+    -------
+    float | string
+        return float if value was scientific notation string, else turn original value
+    """
+    if rp.number_scientific.match(value):
+        return float(value)
+    else:
+        return value
+
+
+def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | float]:
+    """Replace in a list strings matching scientific notation with floats.
+
+    Parameters
+    ----------
+    parameter_list : list
+        A list of parameters where some elements may be strings like 1E7
+
+    Returns
+    -------
+    list
+        A list where strings matching a scientific number have been converted to float
+    """
+    for i, value in enumerate(parameter_list):
+        if isinstance(value, str):
+            parameter_list[i] = convert_scientific_to_float(value)
+
+    return parameter_list
+
+
 def check_deprecations(spec: dict):
+    """Check deprecations in a `spec` dict.
+
+    Parameters
+    ----------
+    spec : dict
+        A specification dictionary
+    """
     if "type" in spec:
         if spec["type"] == "kinetic-spectrum":
             warn_deprecated(
