@@ -127,13 +127,13 @@ def test_equal_area_penalties(debug=False):
     shape = {
         "shape": {
             "sh1": {
-                "type": "skewed-gaussian",
+                "type": "gaussian",
                 "amplitude": "shapes.amps.1",
                 "location": "shapes.locs.1",
                 "width": "shapes.width.1",
             },
             "sh2": {
-                "type": "skewed-gaussian",
+                "type": "gaussian",
                 "amplitude": "shapes.amps.2",
                 "location": "shapes.locs.2",
                 "width": "shapes.width.2",

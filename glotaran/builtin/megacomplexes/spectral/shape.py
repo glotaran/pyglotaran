@@ -9,52 +9,16 @@ from glotaran.parameter import Parameter
 
 @model_item(
     properties={
-        "amplitude": Parameter,
+        "amplitude": {"type": Parameter, "allow_none": True},
         "location": Parameter,
         "width": Parameter,
-        "skewness": {"type": Parameter, "allow_none": True},
     },
     has_type=True,
 )
-class SpectralShapeSkewedGaussian:
-    """A (skewed) Gaussian spectral shape"""
+class SpectralShapeGaussian:
+    """A Gaussian spectral shape"""
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
-        r"""Calculate a (skewed) Gaussian shape for a given ``axis``.
-
-        If a non-zero ``skewness`` parameter was added
-        :func:`calculate_skewed_gaussian` will be used.
-        Otherwise it will use :func:`calculate_gaussian`.
-
-        Parameters
-        ----------
-        axis: np.ndarray
-            The axis to calculate the shape for.
-
-        Returns
-        -------
-        shape: numpy.ndarray
-            A Gaussian shape.
-
-        See Also
-        --------
-        calculate_gaussian
-        calculate_skewed_gaussian
-
-        Note
-        ----
-        Internally ``axis`` is converted from :math:`\mbox{nm}` to
-        :math:`1/\mbox{cm}`, thus ``location`` and ``width`` also need to
-        be provided in :math:`1/\mbox{cm}` (``1e7/value_in_nm``).
-
-        """
-        return (
-            self.calculate_skewed_gaussian(axis)
-            if self.skewness is not None and not np.allclose(self.skewness, 0)
-            else self.calculate_gaussian(axis)
-        )
-
-    def calculate_gaussian(self, axis: np.ndarray) -> np.ndarray:
         r"""Calculate a normal Gaussian shape for a given ``axis``.
 
         The following equation is used for the calculation:
@@ -91,11 +55,22 @@ class SpectralShapeSkewedGaussian:
         np.ndarray
             An array representing a Gaussian shape.
         """
-        return self.amplitude * np.exp(
-            -np.log(2) * np.square(2 * (axis - self.location) / self.width)
-        )
+        shape = np.exp(-np.log(2) * np.square(2 * (axis - self.location) / self.width))
+        if self.amplitude is not None:
+            shape *= self.amplitude
+        return shape
 
-    def calculate_skewed_gaussian(self, axis: np.ndarray) -> np.ndarray:
+
+@model_item(
+    properties={
+        "skewness": Parameter,
+    },
+    has_type=True,
+)
+class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
+    """A skewed Gaussian spectral shape"""
+
+    def calculate(self, axis: np.ndarray) -> np.ndarray:
         r"""Calculate the skewed Gaussian shape for ``axis``.
 
         The following equation is used for the calculation:
@@ -134,7 +109,7 @@ class SpectralShapeSkewedGaussian:
         Note that in the limit of skewness parameter :math:`b` equal to zero
         :math:`f(x, x_0, A, \Delta, b)` simplifies to a normal gaussian
         (since :math:`\lim_{b \to 0} \frac{\ln(1+bx)}{b}=x`),
-        see the definition in :func:`calculate_gaussian`.
+        see the definition in :func:`SpectralShapeGaussian.calculate`.
 
         Parameters
         ----------
@@ -147,14 +122,17 @@ class SpectralShapeSkewedGaussian:
         np.ndarray
             An array representing a skewed Gaussian shape.
         """
+        if np.allclose(self.skewness, 0):
+            return super().calculate(axis)
         log_args = 1 + (2 * self.skewness * (axis - self.location) / self.width)
-        result = np.zeros(log_args.shape)
+        shape = np.zeros(log_args.shape)
         valid_arg_mask = np.where(log_args > 0)
-        result[valid_arg_mask] = self.amplitude * np.exp(
+        shape[valid_arg_mask] = np.exp(
             -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
-
-        return result
+        if self.amplitude is not None:
+            shape *= self.amplitude
+        return shape
 
 
 @model_item(properties={}, has_type=True)
@@ -201,6 +179,7 @@ class SpectralShapeZero:
 
 @model_item_typed(
     types={
+        "gaussian": SpectralShapeGaussian,
         "skewed-gaussian": SpectralShapeSkewedGaussian,
         "one": SpectralShapeOne,
         "zero": SpectralShapeZero,

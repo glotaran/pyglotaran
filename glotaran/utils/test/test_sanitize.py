@@ -5,12 +5,12 @@ from typing import NamedTuple
 
 import pytest
 
-from glotaran.builtin.io.yml.sanatize import sanitize_list_with_broken_tuples
+from glotaran.utils.sanitize import sanitize_list_with_broken_tuples
 
 
 class MangledListTestData(NamedTuple):
     input: list[Any]
-    input_sanitized: list[str]
+    input_sanitized: list[str] | str
     output: list[str]
 
 
