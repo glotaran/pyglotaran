@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from os import getcwd
 from os import mkdir
 from pathlib import Path
+from typing import Any
 from typing import Literal
 
 from yaml import dump
@@ -11,6 +12,7 @@ from yaml import load
 
 from glotaran import __version__ as gta_version
 from glotaran.io import load_model
+from glotaran.model import Model
 from glotaran.project.generators.generator import generators
 
 TEMPLATE = """version: {gta_version}
@@ -77,24 +79,38 @@ class Project:
         if not self.model_dir.exists():
             mkdir(self.model_dir)
 
+    @property
+    def has_models(self) -> bool:
+        return len(self.models) != 0
+
+    @property
     def models(self):
         if not self.model_dir.exists():
             return {}
-        #  print(model_file)
         return {
             model_file.name: load_model(model_file)
             for model_file in self.model_dir.iterdir()
-            if "yml" in model_file
+            if model_file.suffix == ".yml" or model_file.suffix == "yaml"
         }
 
-    def has_models(self):
-        return len(self.models()) != 0
-
-    def create_model(self, model_type: Literal[generators.keys()] = "decay_parallel"):
+    def generate_model(
+        self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
+    ):
+        if generator not in generators:
+            raise ValueError(
+                f"Unknown model generator '{generator}'. "
+                f"Known generators are: {list(generators.keys())}"
+            )
         self.create_model_dir_if_not_exist()
-        model = generators[model_type]
-        with open(self.model_dir / "p_model.yml", "w") as f:
-            f.write(dump(model()))
+        model = generators[generator](**generator_arguments)
+        with open(self.model_dir / f"{name}.yml", "w") as f:
+            f.write(dump(model))
+
+    def load_model(self, name: str) -> Model:
+        model_path = self.model_dir / f"{name}.yml"
+        if not model_path.exists():
+            raise ValueError(f"Model file for model '{name}' does not exist.")
+        return load_model(model_path)
 
     def run(self):
         if not self.models:
