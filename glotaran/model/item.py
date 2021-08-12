@@ -109,9 +109,6 @@ def model_item(
         from_dict = _create_from_dict_func(cls)
         setattr(cls, "from_dict", from_dict)
 
-        from_list = _create_from_list_func(cls)
-        setattr(cls, "from_list", from_list)
-
         validate = _create_validation_func(cls)
         setattr(cls, "validate", validate)
 
@@ -240,32 +237,6 @@ def _create_from_dict_func(cls):
         return item
 
     return from_dict
-
-
-def _create_from_list_func(cls):
-    @classmethod
-    @wrap_func_as_method(cls)
-    def from_list(ncls, values: list) -> cls:
-        f"""Creates an instance of {cls.__name__} from a list of values. Intended only for internal use.
-
-        Parameters
-        ----------
-        values :
-            A list of values.
-        """
-        item = ncls()
-        if len(values) != len(ncls._glotaran_properties):
-            raise ValueError(
-                f"To few or much parameters for '{ncls.__name__}'"
-                f"\nGot: {values}\nWant: {ncls._glotaran_properties}"
-            )
-
-        for i, name in enumerate(ncls._glotaran_properties):
-            setattr(item, name, values[i])
-
-        return item
-
-    return from_list
 
 
 def _create_validation_func(cls):
