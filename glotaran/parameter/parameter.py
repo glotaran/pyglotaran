@@ -9,6 +9,8 @@ import asteval
 import numpy as np
 from numpy.typing._array_like import _SupportsArray
 
+from glotaran.utils.sanitize import sanitize_parameter_list
+
 if TYPE_CHECKING:
     from typing import Any
 
@@ -113,7 +115,7 @@ class Parameter(_SupportsArray):
             param.value = value
 
         else:
-            values = _sanatize_parameter_list(value)
+            values = sanitize_parameter_list(value)
             param.label = _retrieve_from_list_by_type(values, str, label)
             param.value = float(_retrieve_from_list_by_type(values, (int, float), 0))
             options = _retrieve_from_list_by_type(values, dict, None)
@@ -483,18 +485,6 @@ def _log_value(value: float):
     if value == 1:
         value += 1e-10
     return np.log(value)
-
-
-# A reexp for ONLY matching scientific
-_match_scientific = re.compile(r"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)")
-
-
-def _sanatize_parameter_list(li: list) -> list:
-    for i, value in enumerate(li):
-        if isinstance(value, str) and _match_scientific.match(value):
-            li[i] = float(value)
-
-    return li
 
 
 def _retrieve_from_list_by_type(li: list, t: type | tuple[type, ...], default: Any):

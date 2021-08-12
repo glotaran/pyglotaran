@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 
 import yaml
 
-from glotaran.builtin.io.yml.sanatize import check_deprecations
-from glotaran.builtin.io.yml.sanatize import sanitize_yaml
 from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
@@ -21,6 +19,8 @@ from glotaran.model import get_megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
+from glotaran.utils.sanitize import check_deprecations
+from glotaran.utils.sanitize import sanitize_yaml
 
 if TYPE_CHECKING:
     from glotaran.project import Result
