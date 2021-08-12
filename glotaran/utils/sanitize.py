@@ -60,6 +60,23 @@ def sanitize_dict_keys(d: dict) -> dict:
     return d_new
 
 
+def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
+    """Convert scientific notation string values to floats.
+
+    Parameters
+    ----------
+    d : dict[str, Any] | list[Any]
+        Iterable which should be checked for scientific notation values.
+    """
+    if not isinstance(d, (dict, list)):
+        return
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[attr-defined]
+        if isinstance(v, (list, dict)):
+            sanity_scientific_notation_conversion(v)
+        if isinstance(v, str):
+            d[k] = convert_scientific_to_float(v)
+
+
 def sanitize_dict_values(d: dict[str, Any] | list[Any]):
     """Sanitizes a dict with broken tuples inside modifying it in-place.
 
@@ -158,7 +175,27 @@ def sanitize_yaml(d: dict, do_keys: bool = True, do_values: bool = False) -> dic
     if do_values:
         # this is only needed to allow for tuple parsing in specification
         sanitize_dict_values(d)
+    sanity_scientific_notation_conversion(d)
     return d
+
+
+def convert_scientific_to_float(value: str) -> float | str:
+    """Convert value to float if it matches scientific notation string.
+
+    Parameters
+    ----------
+    value : str
+        value to convert from string to float if it matches scientific notation
+
+    Returns
+    -------
+    float | string
+        return float if value was scientific notation string, else turn original value
+    """
+    if rp.number_scientific.match(value):
+        return float(value)
+    else:
+        return value
 
 
 def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | float]:
@@ -175,8 +212,8 @@ def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | flo
         A list where strings matching a scientific number have been converted to float
     """
     for i, value in enumerate(parameter_list):
-        if isinstance(value, str) and rp.number_scientific.match(value):
-            parameter_list[i] = float(value)
+        if isinstance(value, str):
+            parameter_list[i] = convert_scientific_to_float(value)
 
     return parameter_list
 
