@@ -28,4 +28,4 @@ def generate_parallel_model(nr_species: int = 1):
     }
 
 
-generators = {"decay_parallel": generate_parallel_model}
+generators = {"decay-parallel": generate_parallel_model}
