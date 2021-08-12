@@ -18,6 +18,8 @@ TEMPLATE = """version: {gta_version}
 name: {name}
 """
 
+PROJECT_FILE_NAME = "project.gta"
+
 
 @dataclass
 class Project:
@@ -27,27 +29,44 @@ class Project:
 
     """
 
-    folder: str | Path
+    file: str | Path
     name: str
     version: str
 
+    folder: str | Path = None
+
     def __post_init__(self):
+        if isinstance(self.file, str):
+            self.file = Path(self.file)
+        if self.folder is None:
+            self.folder = self.file.parent
         if isinstance(self.folder, str):
-            self.folder = Path(self.folder).parent
+            self.folder = Path(self.folder)
         pass
 
     @classmethod
-    def create(cls, name: str | None = None):
-        project_folder = Path(getcwd())
+    def create(cls, name: str | None = None, project_folder: str | None = None):
+        if project_folder is None:
+            project_folder = getcwd()
+        project_folder = Path(project_folder)
         name = name if name else project_folder.name
-        project_file = project_folder / "project.gta"
+        project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
             f.write(TEMPLATE.format(gta_version=gta_version, name=name))
 
         with open(project_file) as f:
             project_dict = load(f)
-        project_dict["folder"] = project_folder
-        print("ass", project_file)
+        project_dict["file"] = project_folder
+        return cls(**project_dict)
+
+    @classmethod
+    def open(cls, project_folder: str):
+        project_file = Path(project_folder)
+        if not project_file.match(PROJECT_FILE_NAME):
+            project_file = project_file / PROJECT_FILE_NAME
+        with open(project_file) as f:
+            project_dict = load(f)
+        project_dict["file"] = project_file
         return cls(**project_dict)
 
     @property
@@ -75,7 +94,6 @@ class Project:
         self.create_model_dir_if_not_exist()
         model = generators[model_type]
         with open(self.model_dir / "p_model.yml", "w") as f:
-            print(model())
             f.write(dump(model()))
 
     def run(self):
