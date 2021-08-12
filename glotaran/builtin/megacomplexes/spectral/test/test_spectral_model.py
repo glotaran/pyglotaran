@@ -23,6 +23,72 @@ class SpectralModel(Model):
         )
 
 
+class OneCompartmentModelInvertedAxis:
+    decay_model = DecayModel.from_dict(
+        {
+            "initial_concentration": {
+                "j1": {"compartments": ["s1"], "parameters": ["2"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "1",
+                    }
+                }
+            },
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["mc1"],
+                },
+            },
+        }
+    )
+
+    decay_parameters = ParameterGroup.from_list(
+        [101e-4, [1, {"vary": False, "non-negative": False}]]
+    )
+
+    spectral_model = SpectralModel.from_dict(
+        {
+            "megacomplex": {
+                "mc1": {"shape": {"s1": "sh1"}},
+            },
+            "shape": {
+                "sh1": {
+                    "type": "gaussian",
+                    "amplitude": "1",
+                    "location": "2",
+                    "width": "3",
+                }
+            },
+            "dataset": {
+                "dataset1": {
+                    "megacomplex": ["mc1"],
+                    "spectral_axis_scale": 1e7,
+                    "spectral_axis_inverted": True,
+                },
+            },
+        }
+    )
+
+    spectral_parameters = ParameterGroup.from_list([7, 1e7 / 10000, 800, -1])
+
+    time = np.arange(-10, 50, 1.5)
+    spectral = np.arange(5000, 15000, 20)
+    axis = {"time": time, "spectral": spectral}
+
+    decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
+    decay_dataset_model.overwrite_global_dimension("spectral")
+    decay_dataset_model.set_coordinates(axis)
+    matrix = calculate_matrix(decay_dataset_model, {})
+    decay_compartments = matrix.clp_labels
+    clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
+
+
 class OneCompartmentModelNegativeSkew:
     decay_model = DecayModel.from_dict(
         {
@@ -72,7 +138,7 @@ class OneCompartmentModelNegativeSkew:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, -1])
+    spectral_parameters = ParameterGroup.from_list([7, 500, 80, -1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(400, 600, 5)
@@ -154,7 +220,6 @@ class ThreeCompartmentModel:
                     "amplitude": "7",
                     "location": "8",
                     "width": "9",
-                    "skewness": "10",
                 },
             },
             "dataset": {
@@ -168,15 +233,14 @@ class ThreeCompartmentModel:
     spectral_parameters = ParameterGroup.from_list(
         [
             7,
-            20000,
-            800,
+            450,
+            80,
             20,
-            22000,
-            500,
+            550,
+            50,
             10,
-            18000,
-            650,
-            0.1,
+            580,
+            10,
         ]
     )
 
