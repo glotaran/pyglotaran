@@ -243,19 +243,19 @@ class ThreeComponentSequential:
 def test_kinetic_model(suite, nnls):
 
     model = suite.model
-    print(model.validate())  # noqa T001
+    print(model.validate())
     assert model.valid()
 
     wanted_parameters = suite.wanted_parameters
-    print(model.validate(wanted_parameters))  # noqa T001
-    print(wanted_parameters)  # noqa T001
+    print(model.validate(wanted_parameters))
+    print(wanted_parameters)
     assert model.valid(wanted_parameters)
 
     initial_parameters = suite.initial_parameters
-    print(model.validate(initial_parameters))  # noqa T001
+    print(model.validate(initial_parameters))
     assert model.valid(initial_parameters)
 
-    print(model.markdown(wanted_parameters))  # noqa T001
+    print(model.markdown(wanted_parameters))
 
     dataset = simulate(model, "dataset1", wanted_parameters, suite.axis)
 
@@ -272,14 +272,14 @@ def test_kinetic_model(suite, nnls):
         group=False,
     )
     result = optimize(scheme)
-    print(result.optimized_parameters)  # noqa T001
+    print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
         assert np.allclose(param.value, wanted_parameters.get(label).value)
 
     resultdata = result.data["dataset1"]
 
-    print(resultdata)  # noqa T001
+    print(resultdata)
 
     assert np.array_equal(dataset["time"], resultdata["time"])
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
