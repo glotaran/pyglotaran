@@ -9,12 +9,17 @@ import pytest
 import glotaran
 from glotaran.deprecation.deprecation_utils import OverDueDeprecation
 from glotaran.deprecation.deprecation_utils import deprecate
+from glotaran.deprecation.deprecation_utils import deprecate_dict_entry
 from glotaran.deprecation.deprecation_utils import glotaran_version
 from glotaran.deprecation.deprecation_utils import module_attribute
 from glotaran.deprecation.deprecation_utils import parse_version
 from glotaran.deprecation.deprecation_utils import warn_deprecated
 
 if TYPE_CHECKING:
+    from typing import Any
+    from typing import Hashable
+    from typing import Mapping
+
     from _pytest.monkeypatch import MonkeyPatch
     from _pytest.recwarn import WarningsRecorder
 
@@ -276,6 +281,139 @@ def test_deprecated_decorator_class(recwarn: WarningsRecorder):
     Foo.from_string("foo")
 
     assert len(recwarn) == 2
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_dict_key_swap_keys():
+    """Replace old with new key while keeping the value."""
+    test_dict = {"foo": 123}
+    with pytest.warns(DeprecationWarning, match="'foo'.+was deprecated, use 'bar'") as record:
+        deprecate_dict_entry(
+            dict_to_check=test_dict,
+            deprecated_usage="foo",
+            new_usage="bar",
+            to_be_removed_in_version="0.6.0",
+            swap_keys=("foo", "bar"),
+        )
+
+        assert "bar" in test_dict
+        assert test_dict["bar"] == 123
+        assert "foo" not in test_dict
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_dict_key_replace_rules_only_values():
+    """Replace old value for key with new value."""
+    test_dict = {"foo": 123}
+    with pytest.warns(
+        DeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"
+    ) as record:
+        deprecate_dict_entry(
+            dict_to_check=test_dict,
+            deprecated_usage="foo: 123",
+            new_usage="foo: 321",
+            to_be_removed_in_version="0.6.0",
+            replace_rules=({"foo": 123}, {"foo": 321}),
+        )
+
+        assert "foo" in test_dict
+        assert test_dict["foo"] == 321
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_dict_key_replace_rules_keys_and_values():
+    """Replace old with new key AND replace old value for key with new value."""
+    test_dict = {"foo": 123}
+    with pytest.warns(
+        DeprecationWarning, match="'foo: 123'.+was deprecated, use 'bar: 321'"
+    ) as record:
+        deprecate_dict_entry(
+            dict_to_check=test_dict,
+            deprecated_usage="foo: 123",
+            new_usage="bar: 321",
+            to_be_removed_in_version="0.6.0",
+            replace_rules=({"foo": 123}, {"bar": 321}),
+        )
+
+        assert "bar" in test_dict
+        assert test_dict["bar"] == 321
+        assert "foo" not in test_dict
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
+
+
+@pytest.mark.xfail(strict=True)
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_dict_key_does_not_apply_swap_keys():
+    """Don't warn if the dict doesn't change because old_key didn't match"""
+
+    with pytest.warns(DeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"):
+        deprecate_dict_entry(
+            dict_to_check={"foo": 123},
+            deprecated_usage="foo: 123",
+            new_usage="foo: 321",
+            to_be_removed_in_version="0.6.0",
+            swap_keys=("bar", "baz"),
+        )
+
+
+@pytest.mark.xfail(strict=True)
+@pytest.mark.parametrize(
+    "replace_rules",
+    (
+        ({"bar": 123}, {"bar": 321}),
+        ({"foo": 111}, {"bar": 321}),
+    ),
+)
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_dict_key_does_not_apply(
+    replace_rules: tuple[Mapping[Hashable, Any], Mapping[Hashable, Any]]
+):
+    """Don't warn if the dict doesn't change because old_key or old_value didn't match"""
+    with pytest.warns(DeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"):
+        deprecate_dict_entry(
+            dict_to_check={"foo": 123},
+            deprecated_usage="foo: 123",
+            new_usage="foo: 321",
+            to_be_removed_in_version="0.6.0",
+            replace_rules=replace_rules,
+        )
+
+
+@pytest.mark.parametrize(
+    "swap_keys, replace_rules",
+    (
+        (None, None),
+        (("bar", "baz"), ({"bar": 1}, {"baz": 2})),
+    ),
+)
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_dict_key_error_no_action(
+    swap_keys: tuple[Hashable, Hashable] | None,
+    replace_rules: tuple[Mapping[Hashable, Any], Mapping[Hashable, Any]] | None,
+):
+    """Raise error if none or both `swap_keys` and `replace_rules` were provided."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"Exactly one of the parameters `swap_keys` or `replace_rules` needs to be provided\."
+        ),
+    ):
+        deprecate_dict_entry(
+            dict_to_check={},
+            deprecated_usage="",
+            new_usage="",
+            to_be_removed_in_version="",
+            swap_keys=swap_keys,
+            replace_rules=replace_rules,
+        )
 
 
 def test_module_attribute():
