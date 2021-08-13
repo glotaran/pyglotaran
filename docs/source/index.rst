@@ -26,7 +26,6 @@ Welcome to pyglotaran's documentation!
    user_documentation/modelling
    user_documentation/parameter
    user_documentation/optimizing
-   user_documentation/api_documentation
    user_documentation/using_plugins
 
 .. toctree::
@@ -34,6 +33,7 @@ Welcome to pyglotaran's documentation!
    :caption: Developer Documentation:
 
    contributing
+   api_documentation
    plugin_dev
 
 
