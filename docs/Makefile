@@ -23,7 +23,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = $(PYTHON_TO_USE) -msphinx
 SOURCEDIR     = source
 BUILDDIR      = build
-API_TOCTREE_DIR	= $(SOURCEDIR)/user_documentation/api
+API_TOCTREE_DIR	= $(SOURCEDIR)/api
 
 # Put it first so that "make" without argument is like "make help".
 help:
