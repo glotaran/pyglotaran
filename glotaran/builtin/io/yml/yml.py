@@ -125,8 +125,8 @@ class YmlProjectIo(ProjectIoInterface):
                 raise ValueError(f"Error loading dataset '{label}': {e}")
 
         optimization_method = scheme.get("optimization_method", "TrustRegionReflection")
-        nnls = scheme.get("non-negative-least-squares", False)
-        nfev = scheme.get("maximum-number-function-evaluations", None)
+        nnls = scheme.get("non_negative_least_squares", False)
+        nfev = scheme.get("maximum_number_function_evaluations", None)
         ftol = scheme.get("ftol", 1e-8)
         gtol = scheme.get("gtol", 1e-8)
         xtol = scheme.get("xtol", 1e-8)
