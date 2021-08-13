@@ -37,7 +37,7 @@ class Scheme:
     group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
-    maximum_number_function_evaluations: int = None
+    maximum_number_function_evaluations: int | None = None
     add_svd: bool = True
     ftol: float = 1e-8
     gtol: float = 1e-8
