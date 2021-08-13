@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
+
 if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
@@ -52,7 +54,7 @@ def deprecation_warning_on_call_test_helper(
     Exception
         Exception caused by deprecated_callable if raise_exception is True.
     """
-    with pytest.warns(DeprecationWarning) as record:
+    with pytest.warns(GlotaranApiDeprecationWarning) as record:
         try:
             result = deprecated_callable(*args, **kwargs)
 

@@ -11,6 +11,7 @@ from glotaran import read_model_from_yaml_file
 from glotaran import read_parameters_from_csv_file
 from glotaran import read_parameters_from_yaml
 from glotaran import read_parameters_from_yaml_file
+from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
 
 
 def dummy_warn(foo, bar=False):
-    warn(DeprecationWarning("foo"), stacklevel=2)
+    warn(GlotaranApiDeprecationWarning("foo"), stacklevel=2)
     if not isinstance(bar, bool):
         raise ValueError("not a bool")
     return foo, bar

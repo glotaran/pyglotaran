@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 import glotaran
+from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import OverDueDeprecation
 from glotaran.deprecation.deprecation_utils import deprecate
 from glotaran.deprecation.deprecation_utils import deprecate_dict_entry
@@ -84,7 +85,7 @@ def test_parse_version_errors(version_str: str):
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_warn_deprecated():
     """Warning gets shown when all is in order."""
-    with pytest.warns(DeprecationWarning) as record:
+    with pytest.warns(GlotaranApiDeprecationWarning) as record:
         warn_deprecated(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             new_qual_name_usage=NEW_QUAL_NAME,
@@ -174,7 +175,7 @@ def test_warn_deprecated_broken_qualname_no_check(
     deprecated_qual_name_usage: str, new_qual_name_usage: str, check_qualnames: tuple[bool, bool]
 ):
     """Not checking broken imports."""
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(GlotaranApiDeprecationWarning):
         warn_deprecated(
             deprecated_qual_name_usage=deprecated_qual_name_usage,
             new_qual_name_usage=new_qual_name_usage,
@@ -186,7 +187,7 @@ def test_warn_deprecated_broken_qualname_no_check(
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_warn_deprecated_sliced_method():
     """Slice away method for importing and check class for attribute"""
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(GlotaranApiDeprecationWarning):
         warn_deprecated(
             deprecated_qual_name_usage=(
                 "glotaran.deprecation.test.test_deprecation_utils.DummyClass.foo()"
@@ -200,7 +201,7 @@ def test_warn_deprecated_sliced_method():
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_warn_deprecated_sliced_mapping():
     """Slice away mapping for importing and check class for attribute"""
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(GlotaranApiDeprecationWarning):
         warn_deprecated(
             deprecated_qual_name_usage=(
                 "glotaran.deprecation.test.test_deprecation_utils.DummyClass.foo['bar']"
@@ -243,7 +244,7 @@ def test_deprecated_decorator_function(recwarn: WarningsRecorder):
 
     assert dummy.__doc__ == "Dummy docstring for testing."
     assert len(recwarn) == 1
-    assert recwarn[0].category == DeprecationWarning
+    assert recwarn[0].category == GlotaranApiDeprecationWarning
     assert recwarn[0].message.args[0] == DEPRECATION_WARN_MESSAGE  # type: ignore [union-attr]
     assert Path(recwarn[0].filename) == Path(__file__)
 
@@ -274,7 +275,7 @@ def test_deprecated_decorator_class(recwarn: WarningsRecorder):
 
     assert Foo.__doc__ == "Foo class docstring for testing."
     assert len(recwarn) == 1
-    assert recwarn[0].category == DeprecationWarning
+    assert recwarn[0].category == GlotaranApiDeprecationWarning
     assert recwarn[0].message.args[0] == DEPRECATION_WARN_MESSAGE  # type: ignore [union-attr]
     assert Path(recwarn[0].filename) == Path(__file__)
 
@@ -287,7 +288,9 @@ def test_deprecated_decorator_class(recwarn: WarningsRecorder):
 def test_deprecate_dict_key_swap_keys():
     """Replace old with new key while keeping the value."""
     test_dict = {"foo": 123}
-    with pytest.warns(DeprecationWarning, match="'foo'.+was deprecated, use 'bar'") as record:
+    with pytest.warns(
+        GlotaranApiDeprecationWarning, match="'foo'.+was deprecated, use 'bar'"
+    ) as record:
         deprecate_dict_entry(
             dict_to_check=test_dict,
             deprecated_usage="foo",
@@ -309,7 +312,7 @@ def test_deprecate_dict_key_replace_rules_only_values():
     """Replace old value for key with new value."""
     test_dict = {"foo": 123}
     with pytest.warns(
-        DeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"
+        GlotaranApiDeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"
     ) as record:
         deprecate_dict_entry(
             dict_to_check=test_dict,
@@ -331,7 +334,7 @@ def test_deprecate_dict_key_replace_rules_keys_and_values():
     """Replace old with new key AND replace old value for key with new value."""
     test_dict = {"foo": 123}
     with pytest.warns(
-        DeprecationWarning, match="'foo: 123'.+was deprecated, use 'bar: 321'"
+        GlotaranApiDeprecationWarning, match="'foo: 123'.+was deprecated, use 'bar: 321'"
     ) as record:
         deprecate_dict_entry(
             dict_to_check=test_dict,
@@ -354,7 +357,9 @@ def test_deprecate_dict_key_replace_rules_keys_and_values():
 def test_deprecate_dict_key_does_not_apply_swap_keys():
     """Don't warn if the dict doesn't change because old_key didn't match"""
 
-    with pytest.warns(DeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"):
+    with pytest.warns(
+        GlotaranApiDeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"
+    ):
         deprecate_dict_entry(
             dict_to_check={"foo": 123},
             deprecated_usage="foo: 123",
@@ -377,7 +382,9 @@ def test_deprecate_dict_key_does_not_apply(
     replace_rules: tuple[Mapping[Hashable, Any], Mapping[Hashable, Any]]
 ):
     """Don't warn if the dict doesn't change because old_key or old_value didn't match"""
-    with pytest.warns(DeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"):
+    with pytest.warns(
+        GlotaranApiDeprecationWarning, match="'foo: 123'.+was deprecated, use 'foo: 321'"
+    ):
         deprecate_dict_entry(
             dict_to_check={"foo": 123},
             deprecated_usage="foo: 123",
@@ -428,7 +435,7 @@ def test_module_attribute():
 def test_deprecate_module_attribute():
     """Same code as the original import and warning"""
 
-    with pytest.warns(DeprecationWarning) as record:
+    with pytest.warns(GlotaranApiDeprecationWarning) as record:
 
         from glotaran.deprecation.test.dummy_package.deprecated_module_attribute import (
             deprecated_attribute,
@@ -450,7 +457,7 @@ def test_deprecate_submodule(recwarn: WarningsRecorder):
     )
 
     assert len(recwarn) == 1
-    assert recwarn[0].category == DeprecationWarning
+    assert recwarn[0].category == GlotaranApiDeprecationWarning
 
 
 @pytest.mark.usefixtures("glotaran_0_3_0")
@@ -462,7 +469,7 @@ def test_deprecate_submodule_from_import(recwarn: WarningsRecorder):
     )
 
     assert len(recwarn) == 1
-    assert recwarn[0].category == DeprecationWarning
+    assert recwarn[0].category == GlotaranApiDeprecationWarning
     assert Path(recwarn[0].filename) == Path(__file__)
 
 

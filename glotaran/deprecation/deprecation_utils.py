@@ -37,6 +37,20 @@ class OverDueDeprecation(Exception):
     warn_deprecated
     deprecate_module_attribute
     deprecate_submodule
+    deprecate_dict_entry
+    """
+
+
+class GlotaranApiDeprecationWarning(UserWarning):
+    """Warning to give users about API changes.
+
+    See Also
+    --------
+    deprecate
+    warn_deprecated
+    deprecate_module_attribute
+    deprecate_submodule
+    deprecate_dict_entry
     """
 
 
@@ -217,7 +231,7 @@ def warn_deprecated(
     selected_indices = importable_indices[: len(selected_qual_names)]
     check_qualnames_in_tests(qual_names=selected_qual_names, importable_indices=selected_indices)
     warn(
-        DeprecationWarning(
+        GlotaranApiDeprecationWarning(
             f"Usage of {deprecated_qual_name_usage!r} was deprecated, "
             f"use {new_qual_name_usage!r} instead.\n"
             f"This usage will be an error in version: {to_be_removed_in_version!r}."

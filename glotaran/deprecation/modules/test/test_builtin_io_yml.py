@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
@@ -73,7 +72,6 @@ def test_model_spec_deprecations(
     expected_value: Any,
 ):
     """Warning gets emitted by load_model"""
-    warnings.simplefilter("always", DeprecationWarning)
     return_dicts = []
     with monkeypatch.context() as m:
         m.setattr(yml_module, "sanitize_yaml", lambda spec: return_dicts.append(spec))
