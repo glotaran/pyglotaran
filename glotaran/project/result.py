@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import replace
 
 import numpy as np
 import xarray as xr
@@ -44,18 +45,21 @@ class Result:
     termination_reason: str
     """The reason (message when) the optimizer terminated"""
 
+    glotaran_version: str
+    """The glotaran version used to create the result."""
+
     # The below can be none in case of unsuccessful optimization
     chi_square: float | None = None
     r"""The chi-square of the optimization.
 
     :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
-    covariance_matrix: ArrayLike | None = None
+    covariance_matrix: ArrayLike | list | None = None
     """Covariance matrix.
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
-    jacobian: ArrayLike | None = None
+    jacobian: ArrayLike | list | None = None
     """Modified Jacobian matrix at the solution
 
     See also: :func:`scipy.optimize.least_squares`
@@ -79,6 +83,11 @@ class Result:
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
 
+    def __post_init__(self):
+        if isinstance(self.jacobian, list):
+            self.jacobian = np.array(self.jacobian)
+            self.covariance_matrix = np.array(self.covariance_matrix)
+
     @property
     def model(self) -> Model:
         return self.scheme.model
@@ -99,18 +108,8 @@ class Result:
             if "weight" in dataset:
                 data[label]["weight"] = dataset.weight
 
-        return Scheme(
-            model=self.model,
-            parameters=self.optimized_parameters,
-            data=data,
-            group_tolerance=self.scheme.group_tolerance,
-            non_negative_least_squares=self.scheme.non_negative_least_squares,
-            maximum_number_function_evaluations=self.scheme.maximum_number_function_evaluations,
-            ftol=self.scheme.ftol,
-            gtol=self.scheme.gtol,
-            xtol=self.scheme.xtol,
-            optimization_method=self.scheme.optimization_method,
-        )
+        new_scheme = replace(self.scheme, parameters=self.optimized_parameters)
+        return new_scheme
 
     def markdown(self, with_model: bool = True, base_heading_level: int = 1) -> MarkdownStr:
         """Formats the model as a markdown text.
