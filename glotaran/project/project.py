@@ -7,10 +7,12 @@ from pathlib import Path
 from typing import Any
 from typing import Literal
 
+import xarray as xr
 from yaml import dump
 from yaml import load
 
 from glotaran import __version__ as gta_version
+from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.model import Model
@@ -76,6 +78,47 @@ class Project:
         return cls(**project_dict)
 
     @property
+    def data_dir(self) -> Path:
+        return self.folder / "data/"
+
+    def create_data_dir_if_not_exist(self):
+        if not self.data_dir.exists():
+            mkdir(self.data_dir)
+
+    @property
+    def has_data(self) -> bool:
+        return len(self.data) != 0
+
+    @property
+    def data(self):
+        if not self.data_dir.exists():
+            return {}
+        return {
+            data_file.name: load_dataset(data_file)
+            for data_file in self.data_dir.iterdir()
+            if data_file.suffix == ".nc"
+        }
+
+    def load_data(self, name: str) -> xr.DataSet:
+        try:
+            data_path = next(p for p in self.data_dir.iterdir() if name in p.name)
+        except StopIteration:
+            raise ValueError(f"Model file for model '{name}' does not exist.")
+        return load_dataset(data_path)
+
+    def import_data(self, path: str | Path, name: str | None = None) -> xr.DataSet:
+
+        if not isinstance(path, Path):
+            path = Path(path)
+
+        name = name or path.with_suffix("").name
+        data_path = self.data_dir / f"{name}.nc"
+
+        self.create_data_dir_if_not_exist()
+        dataset = load_dataset(path)
+        dataset.to_netcdf(data_path)
+
+    @property
     def model_dir(self) -> Path:
         return self.folder / "models/"
 
@@ -103,6 +146,19 @@ class Project:
             raise ValueError(f"Model file for model '{name}' does not exist.")
         return load_model(model_path)
 
+    def generate_model(
+        self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
+    ):
+        if generator not in generators:
+            raise ValueError(
+                f"Unknown model generator '{generator}'. "
+                f"Known generators are: {list(generators.keys())}"
+            )
+        self.create_model_dir_if_not_exist()
+        model = generators[generator](**generator_arguments)
+        with open(self.model_dir / f"{name}.yml", "w") as f:
+            f.write(dump(model))
+
     @property
     def parameters_dir(self) -> Path:
         return self.folder / "parameters/"
@@ -126,25 +182,11 @@ class Project:
         }
 
     def load_parameters(self, name: str) -> Model:
-
         try:
             parameters_path = next(p for p in self.parameters_dir.iterdir() if name in p.name)
         except StopIteration:
             raise ValueError(f"Parameters file for parameters '{name}' does not exist.")
         return load_parameters(parameters_path)
-
-    def generate_model(
-        self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
-    ):
-        if generator not in generators:
-            raise ValueError(
-                f"Unknown model generator '{generator}'. "
-                f"Known generators are: {list(generators.keys())}"
-            )
-        self.create_model_dir_if_not_exist()
-        model = generators[generator](**generator_arguments)
-        with open(self.model_dir / f"{name}.yml", "w") as f:
-            f.write(dump(model))
 
     def generate_parameters(
         self,
