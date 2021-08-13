@@ -6,7 +6,6 @@ import click
 from glotaran.analysis.optimize import optimize
 from glotaran.cli.commands import util
 from glotaran.plugin_system.data_io_registration import known_data_formats
-from glotaran.plugin_system.project_io_registration import known_project_formats
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.project.scheme import Scheme
 
@@ -37,7 +36,7 @@ from glotaran.project.scheme import Scheme
     "--outformat",
     "-ofmt",
     default="folder",
-    type=click.Choice(known_project_formats()),
+    type=click.Choice(util.project_io_list_supporting_plugins("save_result", ("yml_str"))),
     help="The format of the output.",
     show_default=True,
 )

@@ -1,13 +1,20 @@
+from __future__ import annotations
+
 import sys
+from typing import Iterable
 
 import click
 from click import echo
 from click import prompt
 
+from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import load_scheme
+from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_table
+from glotaran.plugin_system.project_io_registration import get_project_io
+from glotaran.plugin_system.project_io_registration import known_project_formats
 
 
 def signature_analysis(cmd):
@@ -119,6 +126,31 @@ def write_data(data, out):
     if len(data.dims) == 2:
         df = df.reset_index().pivot(index=data.dims[0], columns=data.dims[1], values=data.name)
     df.to_csv(out)
+
+
+def project_io_list_supporting_plugins(
+    method_name: str, block_list: Iterable[str] | None = None
+) -> Iterable[str]:
+    """List all project-io plugin that implement ``method_name``.
+
+    Parameters
+    ----------
+    method_name: str
+        Name of the method which should be supported.
+    block_list: Iterable[str]
+        Iterable of plugin names which should be omitted.
+    """
+    if block_list is None:
+        block_list = []
+    support_table = methods_differ_from_baseclass_table(
+        method_names=method_name,
+        plugin_registry_keys=known_project_formats(full_names=False),
+        get_plugin_function=get_project_io,
+        base_class=ProjectIoInterface,
+    )
+    support_table = filter(lambda entry: entry[1], support_table)
+    supporting_list: Iterable[str] = (entry[0].replace("`", "") for entry in support_table)
+    return list(filter(lambda entry: entry not in block_list, supporting_list))
 
 
 class ValOrRangeOrList(click.ParamType):
