@@ -23,7 +23,7 @@ def simulate(
     noise: bool = False,
     noise_std_dev: float = 1.0,
     noise_seed: int | None = None,
-):
+) -> xr.Dataset:
     """Simulates a model.
 
     Parameters
