@@ -193,7 +193,11 @@ class YmlProjectIo(ProjectIoInterface):
             result_scheme.data[label] = dataset_path
 
         result_file_path = os.path.join(result_path, "result.yml")
-        _write_dict(result_file_path, dataclasses.asdict(result))
+        result_dict = dataclasses.asdict(result)
+        if result_dict["jacobian"] is not None:
+            result_dict["jacobian"] = result_dict["jacobian"].tolist()
+            result_dict["covariance_matrix"] = result_dict["covariance_matrix"].tolist()
+        _write_dict(result_file_path, result_dict)
         result_scheme.result_path = result_file_path
 
         self.save_scheme(scheme=result_scheme, file_name=scheme_path)
