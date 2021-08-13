@@ -15,12 +15,15 @@ from glotaran import __version__ as gta_version
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
+from glotaran.io import load_scheme
+from glotaran.io import save_scheme
 from glotaran.model import Model
 from glotaran.model import ModelError
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter.parameter import Keys
 from glotaran.project.generators.generator import generate_model_yml
 from glotaran.project.generators.generator import generators
+from glotaran.project.scheme import Scheme
 
 TEMPLATE = """version: {gta_version}
 
@@ -95,7 +98,7 @@ class Project:
         if not self.data_dir.exists():
             return {}
         return {
-            data_file.name: load_dataset(data_file)
+            data_file.with_suffix("").name: data_file
             for data_file in self.data_dir.iterdir()
             if data_file.suffix == ".nc"
         }
@@ -136,9 +139,9 @@ class Project:
         if not self.model_dir.exists():
             return {}
         return {
-            model_file.name: load_model(model_file)
+            model_file.with_suffix("").name: model_file
             for model_file in self.model_dir.iterdir()
-            if model_file.suffix == ".yml" or model_file.suffix == "yaml"
+            if model_file.suffix in [".yml", ".yaml"]
         }
 
     def load_model(self, name: str) -> Model:
@@ -151,9 +154,83 @@ class Project:
         self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
     ):
         self.create_model_dir_if_not_exist()
-        model = generate_model_yml(generator, generator_arguments)
+        model = generate_model_yml(generator, **generator_arguments)
         with open(self.model_dir / f"{name}.yml", "w") as f:
             f.write(model)
+
+    @property
+    def scheme_dir(self) -> Path:
+        return self.folder / "schemes/"
+
+    def create_scheme_dir_if_not_exist(self):
+        if not self.scheme_dir.exists():
+            mkdir(self.scheme_dir)
+
+    @property
+    def has_schemes(self) -> bool:
+        return len(self.schemes) != 0
+
+    @property
+    def schemes(self):
+        if not self.scheme_dir.exists():
+            return {}
+        return {
+            scheme_file.with_suffix("").name: scheme_file
+            for scheme_file in self.scheme_dir.iterdir()
+            if scheme_file.suffix in [".yml", ".yaml"]
+        }
+
+    def load_scheme(self, name: str) -> Scheme:
+        scheme_path = self.scheme_dir / f"{name}.yml"
+        if not scheme_path.exists():
+            raise ValueError(f"Scheme file for scheme '{name}' does not exist.")
+        return load_scheme(scheme_path)
+
+    def create_scheme(
+        self,
+        model: str,
+        parameter: str,
+        name: str | None = None,
+        nfev: int = None,
+        nnls: bool = False,
+    ):
+
+        self.create_scheme_dir_if_not_exist()
+        if name is None:
+            n = 1
+            name = "scheme-1"
+            scheme_path = self.scheme_dir / f"{name}.yml"
+            while scheme_path.exists():
+                n += 1
+                scheme_path = self.scheme_dir / f"scheme-{n}.yml"
+        else:
+            scheme_path = self.scheme_dir / f"{name}.yml"
+
+        models = self.models
+        if model not in models:
+            raise ValueError(f"Unknown model '{model}'")
+        model = str(models[model])
+
+        parameters = self.parameters
+        if parameter not in parameters:
+            raise ValueError(f"Unknown parameter '{parameter}'")
+        parameter = str(parameters[parameter])
+
+        data = self.data
+        datasets = {}
+        for dataset in load_model(model).dataset:
+            if dataset not in data:
+                raise ValueError(f"Data missing for dataset '{dataset}'")
+            datasets[dataset] = str(data[dataset])
+
+        scheme = Scheme(
+            model,
+            parameter,
+            datasets,
+            non_negative_least_squares=nnls,
+            maximum_number_function_evaluations=nfev,
+        )
+        save_scheme(scheme, scheme_path)
 
     @property
     def parameters_dir(self) -> Path:
@@ -172,7 +249,7 @@ class Project:
         if not self.parameters_dir.exists():
             return {}
         return {
-            parameters_file.name: load_parameters(parameters_file)
+            parameters_file.with_suffix("").name: parameters_file
             for parameters_file in self.parameters_dir.iterdir()
             if parameters_file.suffix in [".yml", ".yaml", ".csv"]
         }

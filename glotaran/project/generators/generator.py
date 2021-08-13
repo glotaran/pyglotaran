@@ -75,11 +75,13 @@ def generate_sequential_model(nr_species: int = 1, irf: bool = False) -> dict:
     return model
 
 
-generators = {"decay-parallel": generate_parallel_model}
-generators = {"decay-sequential": generate_parallel_model}
+generators = {
+    "decay-parallel": generate_parallel_model,
+    "decay-sequential": generate_sequential_model,
+}
 
 
-def generate_model_yml(generator: str, generator_arguments: dict[str, Any]) -> str:
+def generate_model_yml(generator: str, **generator_arguments: dict[str, Any]) -> str:
     if generator not in generators:
         raise ValueError(
             f"Unknown model generator '{generator}'. "
