@@ -308,7 +308,12 @@ def _create_get_parameters(cls):
     @wrap_func_as_method(cls)
     def get_parameters(self) -> list[str]:
         """Returns all parameter full labels of the item."""
-        return [p for p in self._glotaran_properties if p._is_parameter_value]
+        parameters = []
+        for name in self._glotaran_properties:
+            value = getattr(self, name)
+            prop = getattr(self.__class__, name)
+            parameters += prop.get_parameters(value)
+        return parameters
 
     return get_parameters
 

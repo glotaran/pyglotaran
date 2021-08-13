@@ -3,7 +3,7 @@ from __future__ import annotations
 
 def generate_parallel_model(nr_species: int = 1):
     species = [f"species_{i}" for i in range(nr_species)]
-    initial_concentration_parameters = [f"intital_concentration.{i}" for i in range(nr_species)]
+    initial_concentration_parameters = [f"intitial_concentration.{i}" for i in range(nr_species)]
     k_matrix = {f"(species_{i}, species_{i})": f"decay_species.{i}" for i in range(nr_species)}
     return {
         "initial_concentration": {
