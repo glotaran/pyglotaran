@@ -19,7 +19,7 @@ def test_generate_parallel_model(tmpdir_factory):
     initial_concentration = model.initial_concentration["initial_concentration_dataset_1"]
     assert initial_concentration.compartments == [f"species_{i}" for i in range(nr_species)]
     for i in range(nr_species):
-        assert initial_concentration.parameters[i].full_label == f"intital_concentration.{i}"
+        assert initial_concentration.parameters[i].full_label == f"intitial_concentration.{i}"
 
     assert "k_matrix_parallel" in model.k_matrix
     k_matrix = model.k_matrix["k_matrix_parallel"]

@@ -12,7 +12,10 @@ from yaml import load
 
 from glotaran import __version__ as gta_version
 from glotaran.io import load_model
+from glotaran.io import load_parameters
 from glotaran.model import Model
+from glotaran.model import ModelError
+from glotaran.parameter.parameter import Keys
 from glotaran.project.generators.generator import generators
 
 TEMPLATE = """version: {gta_version}
@@ -93,6 +96,40 @@ class Project:
             if model_file.suffix == ".yml" or model_file.suffix == "yaml"
         }
 
+    def load_model(self, name: str) -> Model:
+        model_path = self.model_dir / f"{name}.yml"
+        if not model_path.exists():
+            raise ValueError(f"Model file for model '{name}' does not exist.")
+        return load_model(model_path)
+
+    @property
+    def parameters_dir(self) -> Path:
+        return self.folder / "parameters/"
+
+    def create_parameters_dir_if_not_exist(self):
+        if not self.parameters_dir.exists():
+            mkdir(self.parameters_dir)
+
+    @property
+    def has_parameters(self) -> bool:
+        return len(self.parameters) != 0
+
+    @property
+    def parameters(self):
+        if not self.parameters_dir.exists():
+            return {}
+        return {
+            parameters_file.name: load_parameters(parameters_file)
+            for parameters_file in self.parameters_dir.iterdir()
+            if parameters_file.suffix == ".yml" or parameters_file.suffix == "yaml"
+        }
+
+    def load_parameters(self, name: str) -> Model:
+        parameters_path = self.parameters_dir / f"{name}.yml"
+        if not parameters_path.exists():
+            raise ValueError(f"Parameters file for parameters '{name}' does not exist.")
+        return load_parameters(parameters_path)
+
     def generate_model(
         self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
     ):
@@ -106,11 +143,65 @@ class Project:
         with open(self.model_dir / f"{name}.yml", "w") as f:
             f.write(dump(model))
 
-    def load_model(self, name: str) -> Model:
-        model_path = self.model_dir / f"{name}.yml"
-        if not model_path.exists():
-            raise ValueError(f"Model file for model '{name}' does not exist.")
-        return load_model(model_path)
+    def generate_parameters(
+        self, model_name: str, name: str | None = None, fmt: Literal[["yml", "yaml"]] = "yml"
+    ):
+        self.create_parameters_dir_if_not_exist()
+        model = self.load_model(model_name)
+        parameters = {}
+        for parameter in model.get_parameters():
+            groups = parameter.split(".")
+            label = groups.pop()
+            if len(groups) == 0:
+                if isinstance(parameters, dict) and len(parameters) != 0:
+                    raise ModelError(
+                        "The root parameter group cannot contain both groups and parameters."
+                    )
+                elif isinstance(parameters, dict):
+                    parameters = []
+                    parameters.append(
+                        [
+                            label,
+                            0.0,
+                            {
+                                Keys.EXPR: "None",
+                                Keys.MAX: "None",
+                                Keys.MIN: "None",
+                                Keys.NON_NEG: "false",
+                                Keys.VARY: "true",
+                            },
+                        ]
+                    )
+            else:
+                if isinstance(parameters, list):
+                    raise ModelError(
+                        "The root parameter group cannot contain both groups and parameters."
+                    )
+                this_group = groups.pop()
+                group = parameters
+                for name in groups:
+                    if name not in group:
+                        group[name] = {}
+                    group = group[name]
+                if this_group not in group:
+                    group[this_group] = []
+                group[this_group].append(
+                    [
+                        label,
+                        0.0,
+                        {
+                            Keys.EXPR: None,
+                            Keys.MAX: "inf",
+                            Keys.MIN: "-inf",
+                            Keys.NON_NEG: "false",
+                            Keys.VARY: "true",
+                        },
+                    ]
+                )
+        parameter_yml = dump(parameters)
+        name = name if name is not None else model_name + "_parameters"
+        with open(self.parameters_dir / f"{name}.{fmt}", "w") as f:
+            f.write(parameter_yml)
 
     def run(self):
         if not self.models:
