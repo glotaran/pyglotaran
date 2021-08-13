@@ -33,7 +33,7 @@ def test_Result_save_method(tmpdir: LocalPath, dummy_result: Result):  # noqa: F
 def test_Result_get_dataset_method(dummy_result: Result):  # noqa: F811
     """Result.get_dataset(dataset_label) gives correct dataset."""
 
-    result = deprecation_warning_on_call_test_helper(
+    _, result = deprecation_warning_on_call_test_helper(
         dummy_result.get_dataset, args=["dataset1"], raise_exception=True
     )
 
