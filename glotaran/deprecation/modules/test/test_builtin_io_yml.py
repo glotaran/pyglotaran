@@ -36,6 +36,18 @@ if TYPE_CHECKING:
         (
             dedent(
                 """
+                spectral_constraints:
+                    - compartment: s1
+                    - compartment: s2
+                """
+            ),
+            3,
+            "constraints",
+            [{"target": "s1"}, {"target": "s2"}],
+        ),
+        (
+            dedent(
+                """
                 equal_area_penalties:
                     - type: equal_area
                 """
@@ -45,7 +57,13 @@ if TYPE_CHECKING:
             [{"type": "equal_area"}],
         ),
     ),
-    ids=("type: kinetic-spectrum", "type: spectrum", "spectral_relations", "equal_area_penalties"),
+    ids=(
+        "type: kinetic-spectrum",
+        "type: spectrum",
+        "spectral_relations",
+        "spectral_constraints",
+        "equal_area_penalties",
+    ),
 )
 def test_model_spec_deprecations(
     monkeypatch: MonkeyPatch,
