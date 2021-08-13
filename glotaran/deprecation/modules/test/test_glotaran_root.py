@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 def dummy_warn(foo, bar=False):
-    warn(DeprecationWarning("foo"))
+    warn(DeprecationWarning("foo"), stacklevel=2)
     if not isinstance(bar, bool):
         raise ValueError("not a bool")
     return foo, bar
@@ -32,10 +32,10 @@ def dummy_no_warn(foo, bar=False):
 
 def test_deprecation_warning_on_call_test_helper():
     """Correct result passed on"""
-    result = deprecation_warning_on_call_test_helper(
+    record, result = deprecation_warning_on_call_test_helper(
         dummy_warn, args=["foo"], kwargs={"bar": True}
     )
-
+    assert len(record) == 1
     assert result == ("foo", True)
 
 
@@ -60,7 +60,7 @@ def test_read_model_from_yaml():
     type: kinetic-spectrum
     megacomplex: {}
     """
-    result = deprecation_warning_on_call_test_helper(
+    _, result = deprecation_warning_on_call_test_helper(
         read_model_from_yaml, args=[yaml], raise_exception=True
     )
 
@@ -75,7 +75,7 @@ def test_read_model_from_yaml_file(tmp_path: Path):
     """
     model_file = tmp_path / "model.yaml"
     model_file.write_text(yaml)
-    result = deprecation_warning_on_call_test_helper(
+    _, result = deprecation_warning_on_call_test_helper(
         read_model_from_yaml_file, args=[str(model_file)], raise_exception=True
     )
 
@@ -86,7 +86,7 @@ def test_read_parameters_from_csv_file(tmp_path: Path):
     """read_parameters_from_csv_file raises warning"""
     parameters_file = tmp_path / "parameters.csv"
     parameters_file.write_text("label,value\nfoo,123")
-    result = deprecation_warning_on_call_test_helper(
+    _, result = deprecation_warning_on_call_test_helper(
         read_parameters_from_csv_file,
         args=[str(parameters_file)],
         raise_exception=True,
@@ -98,7 +98,7 @@ def test_read_parameters_from_csv_file(tmp_path: Path):
 
 def test_read_parameters_from_yaml():
     """read_parameters_from_yaml raises warning"""
-    result = deprecation_warning_on_call_test_helper(
+    _, result = deprecation_warning_on_call_test_helper(
         read_parameters_from_yaml, args=["foo:\n  - 123"], raise_exception=True
     )
 
@@ -111,7 +111,7 @@ def test_read_parameters_from_yaml_file(tmp_path: Path):
     """read_parameters_from_yaml_file raises warning"""
     parameters_file = tmp_path / "parameters.yaml"
     parameters_file.write_text("foo:\n  - 123")
-    result = deprecation_warning_on_call_test_helper(
+    _, result = deprecation_warning_on_call_test_helper(
         read_parameters_from_yaml_file, args=[str(parameters_file)], raise_exception=True
     )
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import warnings
-from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
 import pytest
 
 import glotaran.builtin.io.yml.yml as yml_module
+from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
 from glotaran.io import load_model
 
 if TYPE_CHECKING:
@@ -59,16 +59,13 @@ def test_model_spec_deprecations(
     return_dicts = []
     with monkeypatch.context() as m:
         m.setattr(yml_module, "sanitize_yaml", lambda spec: return_dicts.append(spec))
-        with pytest.warns(DeprecationWarning) as record:
-            try:
-                load_model(model_yml_str, format_name="yml_str")
-            except Exception:
-                pass
+        record, _ = deprecation_warning_on_call_test_helper(
+            load_model, args=(model_yml_str,), kwargs={"format_name": "yml_str"}
+        )
 
-            return_dict = return_dicts[0]
+        return_dict = return_dicts[0]
 
-            assert expected_key in return_dict
-            assert return_dict[expected_key] == expected_value
+        assert expected_key in return_dict
+        assert return_dict[expected_key] == expected_value
 
-            assert len(record) == expected_nr_of_warnings
-            assert Path(record[0].filename) == Path(__file__)
+        assert len(record) == expected_nr_of_warnings

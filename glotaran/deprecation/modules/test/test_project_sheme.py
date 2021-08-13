@@ -46,7 +46,7 @@ def test_Scheme_from_yaml_file_method(tmp_path: Path):
             dataset1: {dataset_path}"""
     )
 
-    result = deprecation_warning_on_call_test_helper(
+    record, result = deprecation_warning_on_call_test_helper(
         Scheme.from_yaml_file, args=[str(scheme_path)], raise_exception=True
     )
 

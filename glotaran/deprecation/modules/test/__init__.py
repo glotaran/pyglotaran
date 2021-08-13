@@ -1,6 +1,7 @@
 """Package with deprecation tests and helper functions."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -11,6 +12,8 @@ if TYPE_CHECKING:
     from typing import Mapping
     from typing import Sequence
 
+    from _pytest.recwarn import WarningsRecorder
+
 
 def deprecation_warning_on_call_test_helper(
     deprecated_callable: Callable[..., Any],
@@ -18,7 +21,7 @@ def deprecation_warning_on_call_test_helper(
     raise_exception=False,
     args: Sequence[Any] = [],
     kwargs: Mapping[str, Any] = {},
-) -> Any:
+) -> tuple[WarningsRecorder, Any]:
     """Helperfunction to quickly test that a deprecated class or function warns.
 
     By default this ignores error when calling the function/class,
@@ -41,17 +44,24 @@ def deprecation_warning_on_call_test_helper(
 
     Returns
     -------
-    Any
-        Return value of deprecated_callable
+    tuple[WarningsRecorder, Any]
+        Tuple of the WarningsRecorder and return value of deprecated_callable
 
     Raises
     ------
     Exception
         Exception caused by deprecated_callable if raise_exception is True.
     """
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning) as record:
         try:
-            return deprecated_callable(*args, **kwargs)
-        except Exception:
+            result = deprecated_callable(*args, **kwargs)
+
+            assert len(record) >= 1
+            assert Path(record[0].filename) == Path(__file__)
+
+            return record, result
+
+        except Exception as e:
             if raise_exception:
-                raise
+                raise e
+            return record, None
