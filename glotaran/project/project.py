@@ -19,6 +19,7 @@ from glotaran.model import Model
 from glotaran.model import ModelError
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter.parameter import Keys
+from glotaran.project.generators.generator import generate_model_yml
 from glotaran.project.generators.generator import generators
 
 TEMPLATE = """version: {gta_version}
@@ -149,15 +150,10 @@ class Project:
     def generate_model(
         self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
     ):
-        if generator not in generators:
-            raise ValueError(
-                f"Unknown model generator '{generator}'. "
-                f"Known generators are: {list(generators.keys())}"
-            )
         self.create_model_dir_if_not_exist()
-        model = generators[generator](**generator_arguments)
+        model = generate_model_yml(generator, generator_arguments)
         with open(self.model_dir / f"{name}.yml", "w") as f:
-            f.write(dump(model))
+            f.write(model)
 
     @property
     def parameters_dir(self) -> Path:
