@@ -5,8 +5,8 @@ import click
 
 from glotaran.analysis.optimize import optimize
 from glotaran.cli.commands import util
-from glotaran.io import save_result
 from glotaran.plugin_system.data_io_registration import known_data_formats
+from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.project.scheme import Scheme
 
 
@@ -33,6 +33,14 @@ from glotaran.project.scheme import Scheme
     show_default=True,
 )
 @click.option(
+    "--outformat",
+    "-ofmt",
+    default="folder",
+    type=click.Choice(util.project_io_list_supporting_plugins("save_result", ("yml_str"))),
+    help="The format of the output.",
+    show_default=True,
+)
+@click.option(
     "--nfev",
     "-n",
     default=None,
@@ -40,13 +48,14 @@ from glotaran.project.scheme import Scheme
     help="Maximum number of function evaluations.",
     show_default=True,
 )
-@click.option("--nnls", is_flag=True, help="Use non-negative least squares.")
+@click.option("--nnls", is_flag=True, default=False, help="Use non-negative least squares.")
 @click.option("--yes", "-y", is_flag=True, help="Don't ask for confirmation.")
 @util.signature_analysis
 def optimize_cmd(
     dataformat: str,
     data: typing.List[str],
     out: str,
+    outformat: str,
     nfev: int,
     nnls: bool,
     yes: bool,
@@ -62,7 +71,9 @@ def optimize_cmd(
     if scheme_file is not None:
         scheme = util.load_scheme_file(scheme_file, verbose=True)
         if nfev is not None:
-            scheme.nfev = nfev
+            scheme.maximum_number_function_evaluations = nfev
+
+        scheme.non_negative_least_squares = nnls
     else:
         if model_file is None:
             click.echo("Error: Neither scheme nor model specified", err=True)
@@ -100,14 +111,6 @@ def optimize_cmd(
     click.echo(f"Saving directory: is '{out if out is not None else 'None'}'")
 
     if yes or click.confirm("Do you want to start optimization?", abort=True, default=True):
-        #  try:
-        #      click.echo('Preparing optimization...', nl=False)
-        #      optimizer = gta.analysis.optimizer.Optimizer(scheme)
-        #      click.echo(' Success')
-        #  except Exception as e:
-        #      click.echo(" Error")
-        #      click.echo(e, err=True)
-        #      sys.exit(1)
         try:
             click.echo("Optimizing...")
             result = optimize(scheme)
@@ -123,7 +126,7 @@ def optimize_cmd(
             try:
                 click.echo(f"Saving directory is '{out}'")
                 if yes or click.confirm("Do you want to save the data?", default=True):
-                    save_result(result_path=out, format_name="yml", result=result)
+                    save_result(result_path=out, format_name=outformat, result=result)
                     click.echo("File saving successful.")
             except Exception as e:
                 click.echo(f"An error occurred during saving: \n\n{e}", err=True)
