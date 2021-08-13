@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import click
 
 from glotaran.plugin_system.data_io_registration import known_data_formats
@@ -8,11 +10,13 @@ from glotaran.plugin_system.project_io_registration import known_project_formats
 def plugin_list_cmd():
     """Prints a list of installed plugins."""
 
-    output = """
-    Installed Glotaran Plugins:
+    output = dedent(
+        """
+        Installed Glotaran Plugins:
 
-    Megacomplex Models:
-    """
+        Megacomplex Models:
+        """
+    )
     output += "\n"
 
     for name in known_megacomplex_names():
