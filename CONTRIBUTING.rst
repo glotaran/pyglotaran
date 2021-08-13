@@ -175,12 +175,15 @@ To make deprecations as robust as possible and give users all needed information
 to adjust their code, we provide helper functions inside the module
 :mod:`glotaran.deprecation`.
 
+.. currentmodule:: glotaran.deprecation.deprecation_utils
+
 The functions you most likely want to use are
 
 *   :func:`deprecate` for functions, methods and classes
 *   :func:`warn_deprecated` for call arguments
 *   :func:`deprecate_module_attribute` for module attributes
 *   :func:`deprecate_submodule` for modules
+*   :func:`deprecate_dict_entry` for dict entries
 
 
 Those functions not only make it easier to deprecate something, but they also check that
@@ -299,6 +302,17 @@ as an attribute to the parent package.
         new_module_name="glotaran.new_package.new_module_name",
         to_be_removed_in_version="0.6.0",
     )
+
+Deprecating dict entries
+~~~~~~~~~~~~~~~~~~~~~~~~
+The possible dict deprecation actions are:
+
+- Swapping of keys ``{"foo": 1} -> {"bar": 1}`` (done via ``swap_keys=("foo", "bar")``)
+- Replacing of matching values ``{"foo": 1} -> {"foo": 2}`` (done via ``replace_rules=({"foo": 1}, {"foo": 2})``)
+- Replacing of matching values and swapping of keys ``{"foo": 1} -> {"bar": 2}`` (done via ``replace_rules=({"foo": 1}, {"bar": 2})``)
+
+For full examples have a look at the examples from the docstring (:func:`deprecate_dict_entry`).
+
 
 Deploying
 ---------

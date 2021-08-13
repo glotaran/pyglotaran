@@ -383,15 +383,14 @@ def deprecate_dict_entry(
     OverDueDeprecation
         If the current version is greater or equal to ``end_of_life_version``.
 
+    See Also
+    --------
+    warn_deprecated
 
     Notes
     -----
     To prevent confusion exactly one of ``replace_rules`` and ``swap_keys``
     needs to be passed.
-
-    See Also
-    --------
-    warn_deprecated
 
     Examples
     --------
