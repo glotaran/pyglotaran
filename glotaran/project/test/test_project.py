@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -38,12 +39,12 @@ def test_open(project_folder, project_file):
 
     assert project.name == "testproject"
     assert project.version == gta_version
+    assert not project.has_parameters
+    assert not project.has_models
 
 
 def test_generate_model(project_folder, project_file):
     project = Project.open(project_file)
-
-    assert not project.has_models
 
     project.generate_model("test_model", "decay-parallel", {"nr_species": 5})
 
@@ -59,24 +60,27 @@ def test_generate_model(project_folder, project_file):
     assert "megacomplex_parallel_decay" in model.megacomplex
 
 
-def test_generate_parameters(project_folder, project_file):
+@pytest.mark.parametrize("name", ["test_parameter", None])
+@pytest.mark.parametrize("fmt", ["yml", "yaml", "csv"])
+def test_generate_parameters(project_folder, project_file, name, fmt):
     project = Project.open(project_file)
 
     assert project.has_models
-    assert not project.has_parameters
 
-    project.generate_parameters("test_model")
+    project.generate_parameters("test_model", name=name, fmt=fmt)
 
     parameter_folder = Path(project_folder) / "parameters"
     assert parameter_folder.exists()
 
-    parameter_file = parameter_folder / "test_model_parameters.yml"
+    parameter_file_name = f"{'test_model_parameters' if name is None else name}.{fmt}"
+    parameter_file = parameter_folder / parameter_file_name
     assert parameter_file.exists()
 
     assert project.has_parameters
 
     model = project.load_model("test_model")
-    parameters = project.load_parameters("test_model_parameters")
+    parameters = project.load_parameters("test_model_parameters" if name is None else name)
 
     for parameter in model.get_parameters():
         assert parameters.has(parameter)
+    os.remove(parameter_file)
