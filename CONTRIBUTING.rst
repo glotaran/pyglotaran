@@ -196,7 +196,7 @@ provides the test helper functions ``deprecation_warning_on_call_test_helper`` a
 Since the tests for deprecation are mainly for maintainability and not to test the
 functionality (those tests should be in the appropriate place)
 ``deprecation_warning_on_call_test_helper`` will by default just test that a
-``DeprecationWarning`` was raised and ignore all raise ``Exception`` s.
+``GlotaranApiDeprecationWarning`` was raised and ignore all raise ``Exception`` s.
 An exception to this rule is when adding back removed functionality
 (which shouldn't happen in the first place but might), which should be
 implemented in a file under ``glotaran/deprecation/modules`` and filenames should be like the
