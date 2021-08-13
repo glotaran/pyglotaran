@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from glotaran.deprecation import warn_deprecated
 from glotaran.utils.regex import RegexPattern as rp
 
 
@@ -216,83 +215,3 @@ def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | flo
             parameter_list[i] = convert_scientific_to_float(value)
 
     return parameter_list
-
-
-def check_deprecations(spec: dict):
-    """Check deprecations in a `spec` dict.
-
-    Parameters
-    ----------
-    spec : dict
-        A specification dictionary
-    """
-    if "type" in spec:
-        if spec["type"] == "kinetic-spectrum":
-            warn_deprecated(
-                deprecated_qual_name_usage="type: kinectic-spectrum",
-                new_qual_name_usage="default-megacomplex: decay",
-                to_be_removed_in_version="0.6.0",
-                check_qual_names=(False, False),
-            )
-            spec["default-megacomplex"] = "decay"
-        elif spec["type"] == "spectral":
-            warn_deprecated(
-                deprecated_qual_name_usage="type: spectral",
-                new_qual_name_usage="default-megacomplex: spectral",
-                to_be_removed_in_version="0.6.0",
-                check_qual_names=(False, False),
-            )
-            spec["default-megacomplex"] = "spectral"
-        del spec["type"]
-
-    if "spectral_relations" in spec:
-        warn_deprecated(
-            deprecated_qual_name_usage="spectral_relations",
-            new_qual_name_usage="relations",
-            to_be_removed_in_version="0.6.0",
-            check_qual_names=(False, False),
-        )
-        spec["relations"] = spec["spectral_relations"]
-        del spec["spectral_relations"]
-
-        for i, relation in enumerate(spec["relations"]):
-            if "compartment" in relation:
-                warn_deprecated(
-                    deprecated_qual_name_usage="relation.compartment",
-                    new_qual_name_usage="relation.source",
-                    to_be_removed_in_version="0.6.0",
-                    check_qual_names=(False, False),
-                )
-                relation["source"] = relation["compartment"]
-                del relation["compartment"]
-
-    if "spectral_constraints" in spec:
-        warn_deprecated(
-            deprecated_qual_name_usage="spectral_constraints",
-            new_qual_name_usage="constraints",
-            to_be_removed_in_version="0.6.0",
-            check_qual_names=(False, False),
-        )
-        spec["constraints"] = spec["spectral_constraints"]
-        del spec["spectral_constraints"]
-
-        for i, constraint in enumerate(spec["constraints"]):
-            if "compartment" in constraint:
-                warn_deprecated(
-                    deprecated_qual_name_usage="constraint.compartment",
-                    new_qual_name_usage="constraint.target",
-                    to_be_removed_in_version="0.6.0",
-                    check_qual_names=(False, False),
-                )
-                constraint["target"] = constraint["compartment"]
-                del constraint["compartment"]
-
-    if "equal_area_penalties" in spec:
-        warn_deprecated(
-            deprecated_qual_name_usage="equal_area_penalties",
-            new_qual_name_usage="clp_area_penalties",
-            to_be_removed_in_version="0.6.0",
-            check_qual_names=(False, False),
-        )
-        spec["clp_area_penalties"] = spec["equal_area_penalties"]
-        del spec["equal_area_penalties"]

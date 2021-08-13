@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import yaml
 
+from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
@@ -19,7 +20,6 @@ from glotaran.model import get_megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
-from glotaran.utils.sanitize import check_deprecations
 from glotaran.utils.sanitize import sanitize_yaml
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class YmlProjectIo(ProjectIoInterface):
             with open(file_name) as f:
                 spec = yaml.safe_load(f)
 
-        check_deprecations(spec)
+        model_spec_deprecations(spec)
 
         spec = sanitize_yaml(spec)
 

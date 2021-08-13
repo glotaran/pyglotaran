@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import module_attribute
 from glotaran.io import load_dataset
 from glotaran.parameter import ParameterGroup
@@ -24,7 +25,7 @@ def check_recwarn(records: WarningsRecorder, warn_nr=1):
         print(record)
 
     assert len(records) == warn_nr
-    assert records[0].category == DeprecationWarning
+    assert records[0].category == GlotaranApiDeprecationWarning
 
     records.clear()
 

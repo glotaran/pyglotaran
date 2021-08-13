@@ -11,9 +11,14 @@ from types import ModuleType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import Hashable
+from typing import Mapping
+from typing import MutableMapping
 from typing import TypeVar
 from typing import cast
 from warnings import warn
+
+import numpy as np
 
 DecoratedCallable = TypeVar(
     "DecoratedCallable", bound=Callable[..., Any]
@@ -32,6 +37,20 @@ class OverDueDeprecation(Exception):
     warn_deprecated
     deprecate_module_attribute
     deprecate_submodule
+    deprecate_dict_entry
+    """
+
+
+class GlotaranApiDeprecationWarning(UserWarning):
+    """Warning to give users about API changes.
+
+    See Also
+    --------
+    deprecate
+    warn_deprecated
+    deprecate_module_attribute
+    deprecate_submodule
+    deprecate_dict_entry
     """
 
 
@@ -166,8 +185,8 @@ def warn_deprecated(
         will import ``package.module.class`` and check if ``class`` has an attribute
         ``mapping``.
 
-    Warns
-    -----
+    Raises
+    ------
     OverDueDeprecation
         If the current version is greater or equal to ``end_of_life_version``.
 
@@ -212,7 +231,7 @@ def warn_deprecated(
     selected_indices = importable_indices[: len(selected_qual_names)]
     check_qualnames_in_tests(qual_names=selected_qual_names, importable_indices=selected_indices)
     warn(
-        DeprecationWarning(
+        GlotaranApiDeprecationWarning(
             f"Usage of {deprecated_qual_name_usage!r} was deprecated, "
             f"use {new_qual_name_usage!r} instead.\n"
             f"This usage will be an error in version: {to_be_removed_in_version!r}."
@@ -265,8 +284,8 @@ def deprecate(
     DecoratedCallable
         Original function or class throwing a Deprecation warning when used.
 
-    Warns
-    -----
+    Raises
+    ------
     OverDueDeprecation
         If the current version is greater or equal to ``end_of_life_version``.
 
@@ -334,6 +353,134 @@ def deprecate(
     return cast(Callable[[DecoratedCallable], DecoratedCallable], outer_wrapper)
 
 
+def deprecate_dict_entry(
+    *,
+    dict_to_check: MutableMapping[Hashable, Any],
+    deprecated_usage: str,
+    new_usage: str,
+    to_be_removed_in_version: str,
+    swap_keys: tuple[Hashable, Hashable] | None = None,
+    replace_rules: tuple[Mapping[Hashable, Any], Mapping[Hashable, Any]] | None = None,
+    stacklevel: int = 3,
+) -> None:
+    """Replace dict entry inplace and warn about usage change, if present in the dict.
+
+    Parameters
+    ----------
+    dict_to_check : MutableMapping[Hashable, Any]
+        Dict which should be checked.
+    deprecated_usage : str
+        Old usage to inform user (only used in warning).
+    new_usage : str
+        New usage to inform user (only used in warning).
+    to_be_removed_in_version : str
+        Version the support for this usage will be removed.
+    swap_keys : tuple[Hashable, Hashable]
+        (old_key, new_key),
+        ``dict_to_check[new_key]`` will be assigned the value ``dict_to_check[old_key]``
+        and ``old_key`` will be removed from the dict.
+        by default None
+    replace_rules : Mapping[Hashable, tuple[Any, Any]]
+        ({old_key: old_value}, {new_key: new_value}),
+        If ``dict_to_check[old_key]`` has the value ``old_value``,
+        ``dict_to_check[new_key]`` it will be set to ``new_value``.
+        ``old_key`` will be removed from the dict if ``old_key`` and ``new_key`` aren't equal.
+        by default None
+    stacklevel : int
+        Stack at which the warning should be shown as raise. , by default 3
+
+
+    Raises
+    ------
+    ValueError
+        If both ``swap_keys`` and ``replace_rules`` are None (default) or not None.
+    OverDueDeprecation
+        If the current version is greater or equal to ``end_of_life_version``.
+
+    See Also
+    --------
+    warn_deprecated
+
+    Notes
+    -----
+    To prevent confusion exactly one of ``replace_rules`` and ``swap_keys``
+    needs to be passed.
+
+    Examples
+    --------
+    For readability sake the warnings won't be shown in the examples.
+
+    Swapping key names:
+
+    >>> dict_to_check = {"foo": 123}
+    >>> deprecate_dict_entry(
+            dict_to_check=dict_to_check,
+            deprecated_usage="foo",
+            new_usage="bar",
+            to_be_removed_in_version="0.6.0",
+            swap_keys=("foo", "bar")
+        )
+    >>> dict_to_check
+    {"bar": 123}
+
+    Changing values:
+
+    >>> dict_to_check = {"foo": 123}
+    >>> deprecate_dict_entry(
+            dict_to_check=dict_to_check,
+            deprecated_usage="foo: 123",
+            new_usage="foo: 123.0",
+            to_be_removed_in_version="0.6.0",
+            replace_rules=({"foo": 123}, {"foo": 123.0})
+        )
+    >>> dict_to_check
+    {"foo": 123.0}
+
+    Swapping key names AND changing values:
+
+    >>> dict_to_check = {"type": "kinetic-spectrum"}
+    >>> deprecate_dict_entry(
+            dict_to_check=dict_to_check,
+            deprecated_usage="type: kinectic-spectrum",
+            new_usage="default-megacomplex: decay",
+            to_be_removed_in_version="0.6.0",
+            replace_rules=({"type": "kinetic-spectrum"}, {"default-megacomplex": "decay"})
+        )
+    >>> dict_to_check
+    {"default-megacomplex": "decay"}
+
+
+    .. # noqa: DAR402
+    """
+    dict_changed = False
+
+    if not np.logical_xor(swap_keys is None, replace_rules is None):
+        raise ValueError(
+            "Exactly one of the parameters `swap_keys` or `replace_rules` needs to be provided."
+        )
+    if swap_keys is not None and swap_keys[0] in dict_to_check:
+        dict_changed = True
+        dict_to_check[swap_keys[1]] = dict_to_check[swap_keys[0]]
+        del dict_to_check[swap_keys[0]]
+    if replace_rules is not None:
+        old_key, old_value = next(iter(replace_rules[0].items()))
+        new_key, new_value = next(iter(replace_rules[1].items()))
+        if old_key in dict_to_check and dict_to_check[old_key] == old_value:
+            dict_changed = True
+            dict_to_check[new_key] = new_value
+            if new_key != old_key:
+                del dict_to_check[old_key]
+
+    if dict_changed:
+        warn_deprecated(
+            deprecated_qual_name_usage=deprecated_usage,
+            new_qual_name_usage=new_usage,
+            to_be_removed_in_version=to_be_removed_in_version,
+            stacklevel=stacklevel,
+            check_qual_names=(False, False),
+        )
+
+
 def module_attribute(module_qual_name: str, attribute_name: str) -> Any:
     """Import and return the attribute (e.g. function or class) of a module.
 
@@ -384,6 +531,11 @@ def deprecate_module_attribute(
     Any
         Module attribute from its new location.
 
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``end_of_life_version``.
+
     See Also
     --------
     deprecate
@@ -412,6 +564,8 @@ def deprecate_module_attribute(
 
             raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
 
+
+    .. # noqa: DAR402
     """
     module_name = ".".join(new_qual_name.split(".")[:-1])
     attribute_name = new_qual_name.split(".")[-1]
@@ -457,6 +611,11 @@ def deprecate_submodule(
     ModuleType
         Module containing
 
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``end_of_life_version``.
+
     See Also
     --------
     deprecate
@@ -478,6 +637,9 @@ def deprecate_submodule(
             new_module_name="glotaran.project.result",
             to_be_removed_in_version="0.6.0",
         )
+
+
+    .. # noqa: DAR402
     """
     new_module = import_module(new_module_name)
     deprecated_module = ModuleType(
