@@ -308,19 +308,14 @@ class Model:
         """
         return len(self.problem_list(parameters)) == 0
 
-    @property
-    def parameters(self) -> list[str]:
-        r = []
+    def get_parameters(self) -> list[str]:
+        parameters = []
         for item_name in self.model_items:
-            print(item_name)
             items = getattr(self, item_name)
-            if isinstance(items, list):
-                for item in items:
-                    print(item.get_parameters())
-            else:
-                for item in items.values():
-                    print(item.get_parameters())
-        return r
+            item_iterator = items if isinstance(items, list) else items.values()
+            for item in item_iterator:
+                parameters += item.get_parameters()
+        return parameters
 
     def markdown(
         self,

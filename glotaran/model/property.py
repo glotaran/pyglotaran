@@ -1,4 +1,5 @@
 """The model property class."""
+from __future__ import annotations
 
 import typing
 
@@ -45,10 +46,10 @@ class ModelProperty(property):
         return self._allow_none
 
     @property
-    def property_type(self) -> typing.Type:
+    def property_type(self) -> type:
         return self._type
 
-    def validate(self, value, model, parameters=None) -> typing.List[str]:
+    def validate(self, value, model, parameters=None) -> list[str]:
 
         if value is None and self.allow_none:
             return []
@@ -134,3 +135,14 @@ class ModelProperty(property):
         self._is_parameter = (
             self._is_parameter_value or self._is_parameter_list or self._is_parameter_dict
         )
+
+    def get_parameters(self, value: typing.Any) -> list[str]:
+        if value is None:
+            return []
+        elif self._is_parameter_value:
+            return [value.full_label]
+        elif self._is_parameter_list:
+            return [v.full_label for v in value]
+        elif self._is_parameter_dict:
+            return [v.full_label for v in value.values()]
+        return []
