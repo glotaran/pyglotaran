@@ -30,10 +30,18 @@ def dummy_result():
         model=suite.model,
         parameters=suite.initial_parameters,
         data=data,
-        maximum_number_function_evaluations=1,
+        maximum_number_function_evaluations=9,
     )
 
     yield optimize(scheme)
+
+
+def test_get_scheme(dummy_result: Result):
+    scheme = dummy_result.get_scheme()
+    assert all(scheme.parameters.to_dataframe() != dummy_result.scheme.parameters.to_dataframe())
+    assert all(
+        scheme.parameters.to_dataframe() == dummy_result.optimized_parameters.to_dataframe()
+    )
 
 
 def test_result_ipython_rendering(dummy_result: Result):
