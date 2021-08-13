@@ -15,6 +15,7 @@ from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.model import Model
 from glotaran.model import ModelError
+from glotaran.parameter import ParameterGroup
 from glotaran.parameter.parameter import Keys
 from glotaran.project.generators.generator import generators
 
@@ -121,12 +122,14 @@ class Project:
         return {
             parameters_file.name: load_parameters(parameters_file)
             for parameters_file in self.parameters_dir.iterdir()
-            if parameters_file.suffix == ".yml" or parameters_file.suffix == "yaml"
+            if parameters_file.suffix in [".yml", ".yaml", ".csv"]
         }
 
     def load_parameters(self, name: str) -> Model:
-        parameters_path = self.parameters_dir / f"{name}.yml"
-        if not parameters_path.exists():
+
+        try:
+            parameters_path = next(p for p in self.parameters_dir.iterdir() if name in p.name)
+        except StopIteration:
             raise ValueError(f"Parameters file for parameters '{name}' does not exist.")
         return load_parameters(parameters_path)
 
@@ -144,7 +147,10 @@ class Project:
             f.write(dump(model))
 
     def generate_parameters(
-        self, model_name: str, name: str | None = None, fmt: Literal[["yml", "yaml"]] = "yml"
+        self,
+        model_name: str,
+        name: str | None = None,
+        fmt: Literal[["yml", "yaml", "csv"]] = "csv",
     ):
         self.create_parameters_dir_if_not_exist()
         model = self.load_model(model_name)
@@ -198,10 +204,16 @@ class Project:
                         },
                     ]
                 )
-        parameter_yml = dump(parameters)
+
         name = name if name is not None else model_name + "_parameters"
-        with open(self.parameters_dir / f"{name}.{fmt}", "w") as f:
-            f.write(parameter_yml)
+        parameter_file = self.parameters_dir / f"{name}.{fmt}"
+        if fmt in ["yml", "yaml"]:
+            parameter_yml = dump(parameters)
+            with open(parameter_file, "w") as f:
+                f.write(parameter_yml)
+        elif fmt == "csv":
+            parameter_group = ParameterGroup.from_dict(parameters)
+            parameter_group.to_csv(parameter_file)
 
     def run(self):
         if not self.models:
