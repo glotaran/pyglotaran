@@ -160,6 +160,19 @@ class YmlProjectIo(ProjectIoInterface):
     def save_scheme(self, scheme: Scheme, file_name: str):
         _write_dict(file_name, dataclasses.asdict(scheme))
 
+    def save_model(self, model: Model, file_name: str):
+        model_dict = model.as_dict()
+        # We replace tuples with strings
+        for name, items in model_dict.items():
+            if not isinstance(items, (list, dict)):
+                continue
+            item_iterator = items if isinstance(items, list) else items.values()
+            for item in item_iterator:
+                for prop_name, prop in item.items():
+                    if isinstance(prop, dict) and any(isinstance(k, tuple) for k in prop):
+                        item[prop_name] = {str(k): v for k, v in prop}
+        _write_dict(file_name, model_dict)
+
     def save_result(self, result: Result, file_name: str):
         options = result.scheme.saving
 
