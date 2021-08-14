@@ -199,13 +199,13 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot save scheme with format {self.format!r}")
 
-    def load_result(self, result_path: str) -> Result:
+    def load_result(self, file_name: str) -> Result:
         """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        result_path : str
-            Path containing the result data.
+        file_name : str
+            File containing the result specs.
 
         Returns
         -------
@@ -218,15 +218,15 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result: Result, result_path: str):
+    def save_result(self, result: Result, file_name: str):
         """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         result : Result
             Result instance to save to specs file.
-        result_path : str
-            Path to write the result data to.
+        file_name : str
+            File to write the result specs to.
 
 
         .. # noqa: DAR101

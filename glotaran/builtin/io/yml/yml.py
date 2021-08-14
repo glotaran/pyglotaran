@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import os
 import pathlib
 from typing import TYPE_CHECKING
 
@@ -13,8 +12,6 @@ from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import register_project_io
-from glotaran.io import save_dataset
-from glotaran.io import save_parameters
 from glotaran.model import Model
 from glotaran.model import get_megacomplex
 from glotaran.parameter import ParameterGroup
@@ -163,56 +160,45 @@ class YmlProjectIo(ProjectIoInterface):
     def save_scheme(self, scheme: Scheme, file_name: str):
         _write_dict(file_name, dataclasses.asdict(scheme))
 
-    def save_result(self, result: Result, result_path: str):
+    def save_result(self, result: Result, file_name: str):
         options = result.scheme.saving
 
-        if os.path.exists(result_path):
-            raise FileExistsError(f"The path '{result_path}' is already existing.")
+        result_file_path = pathlib.Path(file_name)
+        if result_file_path.exists():
+            raise FileExistsError(f"The path '{file_name}' is already existing.")
 
-        os.makedirs(result_path)
-
-        if options.report:
-            md_path = os.path.join(result_path, "result.md")
-            with open(md_path, "w") as f:
-                f.write(str(result.markdown()))
-
-        scheme_path = os.path.join(result_path, "scheme.yml")
-        result_scheme = dataclasses.replace(result.scheme)
-        result_scheme.model = result_scheme.model.markdown()
-        result = dataclasses.replace(result)
-        result.scheme = scheme_path
+        scheme_path = result_file_path.with_name("scheme.yml")
 
         parameters_format = options.parameter_format
-
-        initial_parameters_path = os.path.join(
-            result_path, f"initial_parameters.{parameters_format}"
+        initial_parameters_path = result_file_path.with_name(
+            f"initial_parameters.{parameters_format}"
         )
-        save_parameters(result.initial_parameters, initial_parameters_path, parameters_format)
-        result.initial_parameters = initial_parameters_path
-        result_scheme.parameters = initial_parameters_path
-
-        optimized_parameters_path = os.path.join(
-            result_path, f"optimized_parameters.{parameters_format}"
+        optimized_parameters_path = result_file_path.with_name(
+            f"optimized_parameters.{parameters_format}"
         )
-        save_parameters(result.optimized_parameters, optimized_parameters_path, parameters_format)
-        result.optimized_parameters = optimized_parameters_path
 
         dataset_format = options.data_format
-        for label, dataset in result.data.items():
-            dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            save_dataset(dataset, dataset_path, dataset_format, saving_options=options)
-            result.data[label] = dataset_path
-            result_scheme.data[label] = dataset_path
+        data_paths = {
+            label: result_file_path.with_name(f"{label}.{dataset_format}") for label in result.data
+        }
 
-        result_file_path = os.path.join(result_path, "result.yml")
-        result_dict = dataclasses.asdict(result)
-        if result_dict["jacobian"] is not None:
-            result_dict["jacobian"] = result_dict["jacobian"].tolist()
-            result_dict["covariance_matrix"] = result_dict["covariance_matrix"].tolist()
+        jacobian = result.jacobian.tolist() if result.jacobian is not None else None
+        covariance_matrix = (
+            result.covariance_matrix.tolist() if result.covariance_matrix is not None else None
+        )
+
+        result_dict = dataclasses.asdict(
+            dataclasses.replace(
+                result,
+                scheme=scheme_path,
+                initial_parameters=initial_parameters_path,
+                optimized_parameters=optimized_parameters_path,
+                data=data_paths,
+                jacobian=jacobian,
+                covariance_matrix=covariance_matrix,
+            )
+        )
         _write_dict(result_file_path, result_dict)
-        result_scheme.result_path = result_file_path
-
-        self.save_scheme(scheme=result_scheme, file_name=scheme_path)
 
 
 def _write_dict(file_name: str, d: dict):

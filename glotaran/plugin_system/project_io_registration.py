@@ -364,14 +364,12 @@ def save_scheme(
 
 
 @not_implemented_to_value_error
-def load_result(
-    result_path: str | PathLike[str], format_name: str = None, **kwargs: Any
-) -> Result:
+def load_result(file_name: str | PathLike[str], format_name: str = None, **kwargs: Any) -> Result:
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
     ----------
-    result_path : str | PathLike[str]
+    file_name : str | PathLike[str]
         Path containing the result data.
     format_name : str
         Format the result is in, if not provided and it is a file
@@ -385,14 +383,14 @@ def load_result(
     Result
         :class:`Result` instance created from the saved format.
     """
-    io = get_project_io(format_name or inferr_file_format(result_path))
-    return io.load_result(str(result_path), **kwargs)  # type: ignore[call-arg]
+    io = get_project_io(format_name or inferr_file_format(file_name))
+    return io.load_result(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
 def save_result(
     result: Result,
-    result_path: str | PathLike[str],
+    file_name: str | PathLike[str],
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
@@ -404,7 +402,7 @@ def save_result(
     ----------
     result : Result
         :class:`Result` instance to write.
-    result_path : str | PathLike[str]
+    file_name : str | PathLike[str]
         Path to write the result data to.
     format_name : str
         Format the result should be saved in, if not provided and it is a file
@@ -415,12 +413,12 @@ def save_result(
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
     """
-    protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
+    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(
-        format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
+        format_name or inferr_file_format(file_name, needs_to_exist=False, allow_folder=True)
     )
     io.save_result(  # type: ignore[call-arg]
-        result_path=str(result_path),
+        file_name=str(file_name),
         result=result,
         **kwargs,
     )
