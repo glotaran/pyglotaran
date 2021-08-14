@@ -24,7 +24,7 @@ default_data_filters = {"minimal": ["fitted_data", "residual"], "full": None}
 class SavingOptions:
     level: Literal["minimal", "full"] = "full"
     data_filter: list[str] | None = None
-    data_format: str = "nc"
+    data_format: Literal["nc"] = "nc"
     parameter_format: str = "csv"
     report: bool = True
 
