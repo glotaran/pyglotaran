@@ -56,13 +56,22 @@ class SimpleTestMegacomplex(Megacomplex):
 
 class SimpleTestModel(Model):
     @classmethod
-    def from_dict(cls, model_dict):
-        return super().from_dict(
-            model_dict,
-            megacomplex_types={
+    def from_dict(
+        cls,
+        model_dict,
+        *,
+        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
+        default_megacomplex_type: str | None = None,
+    ):
+        if megacomplex_types is None:
+            megacomplex_types = {
                 "model_complex": SimpleTestMegacomplex,
                 "global_complex": SimpleTestMegacomplexGlobal,
-            },
+            }
+        return super().from_dict(
+            model_dict,
+            megacomplex_types=megacomplex_types,
+            default_megacomplex_type=default_megacomplex_type,
         )
 
 
@@ -157,7 +166,19 @@ class ShapedSpectralMegacomplex(Megacomplex):
 
 class DecayModel(Model):
     @classmethod
-    def from_dict(cls, model_dict):
+    def from_dict(
+        cls,
+        model_dict,
+        *,
+        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
+        default_megacomplex_type: str | None = None,
+    ):
+        if megacomplex_types is None:
+            megacomplex_types = {
+                "model_complex": SimpleKineticMegacomplex,
+                "global_complex": SimpleSpectralMegacomplex,
+                "global_complex_shaped": ShapedSpectralMegacomplex,
+            }
         return super().from_dict(
             model_dict,
             megacomplex_types={

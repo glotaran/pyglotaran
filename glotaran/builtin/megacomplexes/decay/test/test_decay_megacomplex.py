@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -5,6 +7,7 @@ import xarray as xr
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -22,12 +25,21 @@ def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
 
 class DecayModel(Model):
     @classmethod
-    def from_dict(cls, model_dict):
+    def from_dict(
+        cls,
+        model_dict,
+        *,
+        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
+        default_megacomplex_type: str | None = None,
+    ):
+        if megacomplex_types is None:
+            megacomplex_types = {
+                "decay": DecayMegacomplex,
+            }
         return super().from_dict(
             model_dict,
-            megacomplex_types={
-                "decay": DecayMegacomplex,
-            },
+            megacomplex_types=megacomplex_types,
+            default_megacomplex_type=default_megacomplex_type,
         )
 
 
