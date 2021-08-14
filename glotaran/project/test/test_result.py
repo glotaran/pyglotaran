@@ -57,3 +57,7 @@ def test_result_ipython_rendering(dummy_result: Result):
 
     assert "text/markdown" in rendered_markdown_return
     assert rendered_markdown_return["text/markdown"].startswith("| Optimization Result")
+
+
+def test_save_result(tmp_path, dummy_result: Result):
+    dummy_result.save(tmp_path / "test_result")

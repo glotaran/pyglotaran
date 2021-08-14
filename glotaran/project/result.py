@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import xarray as xr
@@ -10,10 +11,13 @@ from numpy.typing import ArrayLike
 from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
+from glotaran.io import save_dataset
+from glotaran.io import save_model
 from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project.scheme import Scheme
+from glotaran.project.scheme import default_data_filters
 from glotaran.utils.ipython import MarkdownStr
 
 
@@ -176,42 +180,6 @@ class Result:
         return str(self.markdown(with_model=False))
 
     @deprecate(
-        deprecated_qual_name_usage="glotaran.project.result.Result.save(result_path)",
-        new_qual_name_usage=(
-            "glotaran.io.save_result("
-            "result=result, result_path=result_path, "
-            'format_name="legacy", allow_overwrite=True'
-            ")"
-        ),
-        to_be_removed_in_version="0.6.0",
-        importable_indices=(2, 1),
-    )
-    def save(self, path: str) -> list[str]:
-        """Saves the result to given folder.
-
-        Warning
-        -------
-        Deprecated use ``save_result(result_path=result_path, result=result,
-        format_name="legacy", allow_overwrite=True)`` instead.
-
-
-        Returns a list with paths of all saved items.
-        The following files are saved:
-
-        * `result.md`: The result with the model formatted as markdown text.
-
-        * `optimized_parameters.csv`: The optimized parameter as csv file.
-
-        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
-
-        Parameters
-        ----------
-        path :
-            The path to the folder in which to save the result.
-        """
-        save_result(result_path=path, result=self, format_name="legacy", allow_overwrite=True)
-
-    @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
         new_qual_name_usage=("glotaran.project.result.Result.data[dataset_label]"),
         to_be_removed_in_version="0.6.0",
@@ -236,51 +204,60 @@ class Result:
         except KeyError:
             raise ValueError(f"Unknown dataset '{dataset_label}'")
 
-    #  def save_result(self, result: Result, result_path: str) -> list[str]:
-    #      """Save the result to a given folder.
-    #
-    #      Returns a list with paths of all saved items.
-    #      The following files are saved:
-    #      * `result.md`: The result with the model formatted as markdown text.
-    #      * `optimized_parameters.csv`: The optimized parameter as csv file.
-    #      * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
-    #
-    #      Parameters
-    #      ----------
-    #      result : Result
-    #          Result instance to be saved.
-    #      result_path : str
-    #          The path to the folder in which to save the result.
-    #
-    #      Returns
-    #      -------
-    #      list[str]
-    #          List of file paths which were created.
-    #
-    #      Raises
-    #      ------
-    #      ValueError
-    #          If ``result_path`` is a file.
-    #      """
-    #      if not os.path.exists(result_path):
-    #          os.makedirs(result_path)
-    #      if not os.path.isdir(result_path):
-    #          raise ValueError(f"The path '{result_path}' is not a directory.")
-    #
-    #      paths = []
-    #
-    #      md_path = os.path.join(result_path, "result.md")
-    #      with open(md_path, "w") as f:
-    #          f.write(str(result.markdown()))
-    #      paths.append(md_path)
-    #
-    #      csv_path = os.path.join(result_path, "optimized_parameters.csv")
-    #      result.optimized_parameters.to_csv(csv_path)
-    #      paths.append(csv_path)
-    #
-    #      for label, data in result.data.items():
-    #          nc_path = os.path.join(result_path, f"{label}.nc")
-    #          data.to_netcdf(nc_path, engine="netcdf4")
-    #          paths.append(nc_path)
-    #
-    #      return paths
+    def save(self, result_path: str | Path, overwrite: bool = False):
+        """Save the result to a given folder.
+
+        Returns a list with paths of all saved items.
+        The following files are saved:
+        * `result.md`: The result with the model formatted as markdown text.
+        * `optimized_parameters.csv`: The optimized parameter as csv file.
+        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+
+        Parameters
+        ----------
+        result : Result
+            Result instance to be saved.
+        result_path : str | Path
+            The path to the folder in which to save the result.
+
+        Raises
+        ------
+        ValueError
+            If ``result_path`` is a file.
+        FileExistsError
+            If ``result_path`` exists and ``overwrite`` is ``False``.
+        """
+        result_path = Path(result_path) if isinstance(result_path, str) else result_path
+        if result_path.exists() and not overwrite:
+            raise FileExistsError(f"The path '{result_path}' exists.")
+        else:
+            result_path.mkdir()
+        if not result_path.is_dir():
+            raise ValueError(f"The path '{result_path}' is not a directory.")
+
+        result_file_path = result_path / "gloataran_result.yml"
+        save_result(self, result_file_path)
+
+        model_path = result_path / "model.yml"
+        save_model(self.scheme.model, model_path)
+
+        initial_parameters_path = result_path / "initial_parameters.csv"
+        self.initial_parameters.to_csv(initial_parameters_path)
+
+        optimized_parameters_path = result_path / "optimized_parameters.csv"
+        self.optimized_parameters.to_csv(optimized_parameters_path)
+
+        save_level = self.scheme.saving.level
+        data_filter = self.scheme.saving.data_filter or default_data_filters[save_level]
+        datasets = {}
+        for label, dataset in self.data.items():
+            dataset_path = result_path / f"{label}.nc"
+            datasets[label] = dataset_path
+            if data_filter is not None:
+                dataset = dataset[data_filter]
+            save_dataset(dataset, dataset_path)
+
+        if self.scheme.saving.report:
+            report_path = result_path / "result.md"
+            with open(report_path, "w") as f:
+                f.write(str(self.markdown()))
