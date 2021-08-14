@@ -11,8 +11,8 @@ from glotaran.project.result import Result
 
 
 @pytest.fixture(scope="session")
-def dummy_data():
-    """Dummy data for testing."""
+def dummy_result():
+    """Dummy result for testing."""
 
     wanted_parameters = suite.wanted_parameters
     data = {}
@@ -26,17 +26,11 @@ def dummy_data():
             wanted_parameters,
             {"global": global_axis, "model": model_axis},
         )
-    yield data
-
-
-@pytest.fixture(scope="session")
-def dummy_result(dummy_data):
-    """Dummy result for testing."""
 
     scheme = Scheme(
         model=suite.model,
         parameters=suite.initial_parameters,
-        data=dummy_data,
+        data=data,
         maximum_number_function_evaluations=9,
     )
 

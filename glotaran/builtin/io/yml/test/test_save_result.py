@@ -18,14 +18,7 @@ def test_save_result_yml(
 ):
     """Check all files exist."""
 
-    result_dir = Path(tmpdir / "testresult")
-    save_result(result_path=result_dir, format_name="yml", result=dummy_result)
+    result_path = Path(tmpdir / "testresult.yml")
+    save_result(file_name=result_path, format_name="yml", result=dummy_result)
 
-    assert (result_dir / "result.md").exists()
-    assert (result_dir / "scheme.yml").exists()
-    assert (result_dir / "result.yml").exists()
-    assert (result_dir / "initial_parameters.csv").exists()
-    assert (result_dir / "optimized_parameters.csv").exists()
-    assert (result_dir / "dataset1.nc").exists()
-    assert (result_dir / "dataset2.nc").exists()
-    assert (result_dir / "dataset3.nc").exists()
+    assert result_path.exists()
