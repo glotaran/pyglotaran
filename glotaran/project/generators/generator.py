@@ -37,7 +37,7 @@ def generate_parallel_model(nr_species: int = 1):
 
 
 def generate_sequential_model(nr_species: int = 1, irf: bool = False) -> dict:
-    species = [f"species_{i}" for i in range(nr_species)]
+    species = [f"species_{i+1}" for i in range(nr_species)]
     initial_concentration_parameters = ["initial_concentration.1"] + [
         "initial_concentration.0" for i in range(1, nr_species)
     ]

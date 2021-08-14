@@ -109,7 +109,7 @@ initial_concentration:
   - ["0", 0]
   - {"vary": False, "non-negative": False}
 
-kinetic:
+decay:
   - [species_1, 0.5]
   - [species_2, 0.3]
   - [species_3, 0.1]
