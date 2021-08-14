@@ -9,7 +9,6 @@ from glotaran.examples.sequential import model_yml
 from glotaran.examples.sequential import parameter as example_parameter
 from glotaran.project.project import TEMPLATE
 from glotaran.project.project import Project
-from glotaran.project.test.test_result import dummy_data  # noqa F401
 
 
 @pytest.fixture(scope="module")
@@ -23,9 +22,9 @@ def project_file(project_folder):
 
 
 @pytest.fixture(scope="module")
-def dummy_data_path(tmpdir_factory, dummy_data):  # noqa F811
-    path = Path(tmpdir_factory.mktemp("test_project")) / "dummydata.nc"
-    dummy_data["dataset1"].to_netcdf(path)
+def test_data(tmpdir_factory):
+    path = Path(tmpdir_factory.mktemp("test_project")) / "dataset_1.nc"
+    example_dataset.to_netcdf(path)
     return path
 
 
@@ -98,23 +97,23 @@ def test_generate_parameters(project_folder, project_file, name, fmt):
     os.remove(parameter_file)
 
 
-@pytest.mark.parametrize("name", ["dataset_1", None])
-def test_import_data(project_folder, project_file, dummy_data, dummy_data_path, name):  # noqa F811
+@pytest.mark.parametrize("name", ["test_data", None])
+def test_import_data(project_folder, project_file, test_data, name):
     project = Project.open(project_file)
 
-    project.import_data(dummy_data_path, name=name)
+    project.import_data(test_data, name=name)
 
     data_folder = Path(project_folder) / "data"
     assert data_folder.exists()
 
-    data_file_name = f"{'dummydata' if name is None else name}.nc"
+    data_file_name = f"{'dataset_1' if name is None else name}.nc"
     data_file = data_folder / data_file_name
     assert data_file.exists()
 
     assert project.has_data
 
-    data = project.load_data("dummydata" if name is None else name)
-    assert data == dummy_data["dataset1"]
+    data = project.load_data("dataset_1" if name is None else name)
+    assert data == example_dataset
 
 
 @pytest.mark.parametrize("name", ["test_scheme", None])
