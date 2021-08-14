@@ -115,6 +115,9 @@ def model_item(
         validate = _create_validation_func(cls)
         setattr(cls, "validate", validate)
 
+        as_dict = _create_as_dict_func(cls)
+        setattr(cls, "as_dict", as_dict)
+
         get_state = _create_get_state_func(cls)
         setattr(cls, "__getstate__", get_state)
 
@@ -319,6 +322,18 @@ def _create_get_parameters(cls):
         return parameters
 
     return get_parameters
+
+
+def _create_as_dict_func(cls):
+    @wrap_func_as_method(cls)
+    def as_dict(self) -> dict:
+        return {
+            name: getattr(self.__class__, name).as_dict_value(getattr(self, name))
+            for name in self._glotaran_properties
+            if name != "label" and getattr(self, name) is not None
+        }
+
+    return as_dict
 
 
 def _create_get_state_func(cls):
