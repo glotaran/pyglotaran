@@ -77,7 +77,7 @@ repos:
     rev: 6.1.1
     hooks:
       - id: pydocstyle
-        files: "^glotaran/(plugin_system|utils|deprecation|testing)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|project)"
         exclude: "docs|tests?/"
         # this is needed due to the following issue:
         # https://github.com/PyCQA/pydocstyle/issues/368
@@ -87,14 +87,14 @@ repos:
     rev: v1.8.0
     hooks:
       - id: darglint
-        files: "^glotaran/(plugin_system|utils|deprecation|testing)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|project)"
         exclude: "docs|tests?/"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910
     hooks:
       - id: mypy
-        files: "^glotaran/(plugin_system|utils|deprecation|testing)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|project)"
         exclude: "docs"
         additional_dependencies: [types-all]
 
