@@ -1,3 +1,4 @@
+"""The package for :class:``Scheme``."""
 from __future__ import annotations
 
 import warnings
@@ -22,15 +23,22 @@ default_data_filters = {"minimal": ["fitted_data", "residual"], "full": None}
 
 @dataclass
 class SavingOptions:
+    """A collection of options for result saving."""
+
     level: Literal["minimal", "full"] = "full"
     data_filter: list[str] | None = None
     data_format: Literal["nc"] = "nc"
-    parameter_format: str = "csv"
+    parameter_format: Literal["csv"] = "csv"
     report: bool = True
 
 
 @dataclass
 class Scheme:
+    """A scheme is a collection of a model, parameters and a dataset.
+
+    A scheme also holds options for optimization.
+    """
+
     model: Model | str
     parameters: ParameterGroup | str
     data: dict[str, xr.DataArray | xr.Dataset | str]
@@ -51,20 +59,36 @@ class Scheme:
     result_path: str | None = None
 
     def problem_list(self) -> list[str]:
-        """Returns a list with all problems in the model and missing parameters."""
+        """Return a list with all problems in the model and missing parameters.
+
+        Returns
+        -------
+        list[str]
+            A list of all problems found in the scheme's model.
+
+        """
         return self.model.problem_list(self.parameters)
 
     def validate(self) -> str:
-        """Returns a string listing all problems in the model and missing parameters."""
+        """Return a string listing all problems in the model and missing parameters.
+
+        Returns
+        -------
+        str
+            A user-friendly string containing all the problems of a model if any.
+            Defaults to 'Your model is valid.' if no problems are found.
+
+        """
         return self.model.validate(self.parameters)
 
-    def valid(self, parameters: ParameterGroup = None) -> bool:
-        """Returns `True` if there are no problems with the model or the parameters,
-        else `False`."""
-        return self.model.valid(parameters)
+    def markdown(self) -> MarkdownStr:
+        """Format the :class:`Scheme` as markdown string.
 
-    def markdown(self):
-        """Formats the :class:`Scheme` as markdown string."""
+        Returns
+        -------
+        MarkdownStr
+            The scheme as markdown string.
+        """
         markdown_str = self.model.markdown(parameters=self.parameters)
 
         markdown_str += "\n\n"
@@ -77,7 +101,13 @@ class Scheme:
         return MarkdownStr(markdown_str)
 
     def is_grouped(self) -> bool:
-        """Returns whether the scheme should be grouped."""
+        """Return whether the scheme should be grouped.
+
+        Returns
+        -------
+        bool
+            Weather the scheme should be grouped.
+        """
         if self.group is not None and not self.group:
             return False
         is_groupable = self.model.is_groupable(self.parameters, self.data)
@@ -86,7 +116,15 @@ class Scheme:
         return is_groupable
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown."""
+        """Return a markdown representation str.
+
+        Special method used by ``ipython`` to render markdown.
+
+        Returns
+        -------
+        str
+            The scheme as markdown string.
+        """
         return str(self.markdown())
 
     def __str__(self):
