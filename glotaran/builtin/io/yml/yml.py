@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
-from typing import TYPE_CHECKING
 
 import yaml
 
@@ -11,15 +10,14 @@ from glotaran.io import ProjectIoInterface
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
+from glotaran.io import load_scheme
 from glotaran.io import register_project_io
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Result
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
 from glotaran.utils.sanitize import sanitize_yaml
-
-if TYPE_CHECKING:
-    from glotaran.project import Result
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
@@ -38,12 +36,7 @@ class YmlProjectIo(ProjectIoInterface):
             The content of the file as dictionary.
         """
 
-        if self.format == "yml_str":
-            spec = yaml.safe_load(file_name)
-
-        else:
-            with open(file_name) as f:
-                spec = yaml.safe_load(f)
+        spec = self._load_yml(file_name)
 
         model_spec_deprecations(spec)
 
@@ -64,13 +57,18 @@ class YmlProjectIo(ProjectIoInterface):
 
         return Model.from_dict(spec, megacomplex_types=None, default_megacomplex_type=None)
 
+    def load_result(self, file_name: str) -> Result:
+
+        spec = self._load_yml(file_name)
+
+        spec["scheme"] = load_scheme(spec["scheme"])
+        spec["data"] = spec["scheme"].data
+
+        return Result(**spec)
+
     def load_parameters(self, file_name: str) -> ParameterGroup:
 
-        if self.format == "yml_str":
-            spec = yaml.safe_load(file_name)
-        else:
-            with open(file_name) as f:
-                spec = yaml.safe_load(f)
+        spec = self._load_yml(file_name)
 
         if isinstance(spec, list):
             return ParameterGroup.from_list(spec)
@@ -146,7 +144,16 @@ class YmlProjectIo(ProjectIoInterface):
         )
 
     def save_scheme(self, scheme: Scheme, file_name: str):
-        _write_dict(file_name, dataclasses.asdict(scheme))
+        file_name = pathlib.Path(file_name)
+        scheme_dict = dataclasses.asdict(
+            dataclasses.replace(
+                scheme,
+                model=str(file_name.with_name("model.yml")),
+                parameters=str(file_name.with_name("initial_parameters.csv")),
+                data={label: str(file_name.with_name(f"{label}.nc")) for label in scheme.data},
+            )
+        )
+        _write_dict(file_name, scheme_dict)
 
     def save_model(self, model: Model, file_name: str):
         model_dict = model.as_dict()
@@ -180,26 +187,32 @@ class YmlProjectIo(ProjectIoInterface):
 
         dataset_format = options.data_format
         data_paths = {
-            label: result_file_path.with_name(f"{label}.{dataset_format}") for label in result.data
+            label: str(result_file_path.with_name(f"{label}.{dataset_format}"))
+            for label in result.data
         }
-
-        jacobian = result.jacobian.tolist() if result.jacobian is not None else None
-        covariance_matrix = (
-            result.covariance_matrix.tolist() if result.covariance_matrix is not None else None
-        )
 
         result_dict = dataclasses.asdict(
             dataclasses.replace(
                 result,
-                scheme=scheme_path,
-                initial_parameters=initial_parameters_path,
-                optimized_parameters=optimized_parameters_path,
+                scheme=str(scheme_path),
+                initial_parameters=str(initial_parameters_path),
+                optimized_parameters=str(optimized_parameters_path),
                 data=data_paths,
-                jacobian=jacobian,
-                covariance_matrix=covariance_matrix,
             )
         )
+        del result_dict["additional_penalty"]
+        del result_dict["cost"]
+        del result_dict["jacobian"]
+        del result_dict["covariance_matrix"]
         _write_dict(result_file_path, result_dict)
+
+    def _load_yml(self, file_name: str) -> dict:
+        if self.format == "yml_str":
+            spec = yaml.safe_load(file_name)
+        else:
+            with open(file_name) as f:
+                spec = yaml.safe_load(f)
+        return spec
 
 
 def _write_dict(file_name: str, d: dict):
