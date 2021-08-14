@@ -35,8 +35,8 @@ def mock_scheme(tmpdir):
     scheme = f"""
     model: {model_path}
     parameters: {parameter_path}
-    non-negative-least-squares: True
-    maximum-number-function-evaluations: 42
+    non_negative_least_squares: True
+    maximum_number_function_evaluations: 42
     data:
       dataset1: {dataset_path}
 
