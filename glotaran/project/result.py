@@ -23,7 +23,7 @@ from glotaran.utils.ipython import MarkdownStr
 
 @dataclass
 class Result:
-    """The result of a global analysis"""
+    """The result of a global analysis."""
 
     additional_penalty: np.ndarray | None
     """A vector with the value for each additional penalty, or None"""
@@ -88,12 +88,21 @@ class Result:
     """
 
     def __post_init__(self):
+        """Overwrite of ``__post_init__``."""
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
             self.covariance_matrix = np.array(self.covariance_matrix)
 
     @property
     def model(self) -> Model:
+        """Return the model used to fit result.
+
+        Returns
+        -------
+        Model
+            The model instance.
+
+        """
         return self.scheme.model
 
     def get_scheme(self) -> Scheme:
@@ -116,14 +125,20 @@ class Result:
         return new_scheme
 
     def markdown(self, with_model: bool = True, base_heading_level: int = 1) -> MarkdownStr:
-        """Formats the model as a markdown text.
+        """Format the model as a markdown text.
 
         Parameters
         ----------
-        with_model :
+        with_model : bool
             If `True`, the model will be printed with initial and optimized parameters filled in.
-        """
+        base_heading_level : int
+            The level of the base heading.
 
+        Returns
+        -------
+        MarkdownStr
+            The scheme as markdown string.
+        """
         general_table_rows = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
             ["Number of variables", self.number_of_variables],
@@ -173,10 +188,19 @@ class Result:
         return MarkdownStr(result_table)
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown."""
+        """Return a markdown representation str.
+
+        Special method used by ``ipython`` to render markdown.
+
+        Returns
+        -------
+        str
+            The scheme as markdown string.
+        """
         return str(self.markdown(base_heading_level=3))
 
     def __str__(self):
+        """Overwrite of ``__str__``."""
         return str(self.markdown(with_model=False))
 
     @deprecate(
@@ -186,7 +210,7 @@ class Result:
         importable_indices=(2, 2),
     )
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
-        """Returns the result dataset for the given dataset label.
+        """Return the result dataset for the given dataset label.
 
         Warning
         -------
@@ -196,15 +220,25 @@ class Result:
 
         Parameters
         ----------
-        dataset_label :
+        dataset_label : str
             The label of the dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset.
+
+        Raises
+        ------
+        ValueError
+            If the dataset_label is not in result datasets.
         """
         try:
             return self.data[dataset_label]
         except KeyError:
             raise ValueError(f"Unknown dataset '{dataset_label}'")
 
-    def save(self, result_path: str | Path, overwrite: bool = False):
+    def save(self, result_path: str | Path, overwrite: bool = False) -> None:
         """Save the result to a given folder.
 
         Returns a list with paths of all saved items.
@@ -215,10 +249,10 @@ class Result:
 
         Parameters
         ----------
-        result : Result
-            Result instance to be saved.
         result_path : str | Path
             The path to the folder in which to save the result.
+        overwrite : bool
+            Weather to overwrite an existing folder.
 
         Raises
         ------
@@ -235,7 +269,7 @@ class Result:
         if not result_path.is_dir():
             raise ValueError(f"The path '{result_path}' is not a directory.")
 
-        result_file_path = result_path / "gloataran_result.yml"
+        result_file_path = result_path / "glotaran_result.yml"
         save_result(self, result_file_path)
 
         model_path = result_path / "model.yml"
