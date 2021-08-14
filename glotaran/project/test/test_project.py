@@ -167,3 +167,5 @@ def test_run_optimization(project_folder, project_file):
     assert project.has_parameters
     assert project.has_data
     assert project.has_schemes
+
+    project.run("sequential")

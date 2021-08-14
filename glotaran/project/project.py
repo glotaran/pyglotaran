@@ -12,6 +12,7 @@ from yaml import dump
 from yaml import load
 
 from glotaran import __version__ as gta_version
+from glotaran.analysis.optimize import optimize
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
@@ -330,6 +331,10 @@ class Project:
             parameter_group = ParameterGroup.from_dict(parameters)
             parameter_group.to_csv(parameter_file)
 
-    def run(self):
-        if not self.models:
-            raise ValueError(f"No models defined for project {self.name}")
+    def run(self, scheme_name: str):
+        schemes = self.schemes
+        if scheme_name not in schemes:
+            raise ValueError(f"Unknown scheme {scheme_name}.")
+        scheme = self.load_scheme(scheme_name)
+
+        optimize(scheme)
