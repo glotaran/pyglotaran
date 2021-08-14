@@ -221,7 +221,7 @@ class Model:
 
     def as_dict(self) -> dict:
         model_dict = {}
-        model_dict["default_megacomplex"] = self.default_megacomplex
+        model_dict["default-megacomplex"] = self.default_megacomplex
 
         for name in self._model_items:
             items = getattr(self, name)

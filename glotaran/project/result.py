@@ -14,6 +14,7 @@ from glotaran.deprecation import deprecate
 from glotaran.io import save_dataset
 from glotaran.io import save_model
 from glotaran.io import save_result
+from glotaran.io import save_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project.scheme import Scheme
@@ -25,9 +26,6 @@ from glotaran.utils.ipython import MarkdownStr
 class Result:
     """The result of a global analysis."""
 
-    additional_penalty: np.ndarray | None
-    """A vector with the value for each additional penalty, or None"""
-    cost: ArrayLike
     data: dict[str, xr.Dataset]
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
@@ -53,6 +51,13 @@ class Result:
     """The glotaran version used to create the result."""
 
     # The below can be none in case of unsuccessful optimization
+
+    additional_penalty: np.ndarray | None = None
+    """A vector with the value for each additional penalty, or None"""
+
+    cost: ArrayLike | None = None
+    """The final cost."""
+
     chi_square: float | None = None
     r"""The chi-square of the optimization.
 
@@ -271,6 +276,9 @@ class Result:
 
         result_file_path = result_path / "glotaran_result.yml"
         save_result(self, result_file_path)
+
+        scheme_path = result_path / "scheme.yml"
+        save_scheme(self.scheme, scheme_path)
 
         model_path = result_path / "model.yml"
         save_model(self.scheme.model, model_path)

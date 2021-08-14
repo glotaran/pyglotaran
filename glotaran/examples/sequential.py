@@ -7,6 +7,7 @@ from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Scheme
 from glotaran.project.generators.generator import generate_model_yml
 
 sim_model = Model.from_dict(
@@ -122,3 +123,9 @@ parameter = load_parameters(parameter_yml, format_name="yml_str")
 
 model_yml = generate_model_yml("decay-sequential", nr_species=3, irf=True)
 model = load_model(model_yml, format_name="yml_str")
+
+scheme = Scheme(
+    model=model,
+    parameters=parameter,
+    data={"dataset_1": dataset},
+)
