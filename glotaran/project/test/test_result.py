@@ -42,6 +42,8 @@ def dummy_result():
 
 def test_get_scheme(dummy_result: Result):
     scheme = dummy_result.get_scheme()
+    assert "residual" not in dummy_result.scheme.data["dataset1"]
+    assert "residual" not in scheme.data["dataset1"]
     assert all(scheme.parameters.to_dataframe() != dummy_result.scheme.parameters.to_dataframe())
     assert all(
         scheme.parameters.to_dataframe() == dummy_result.optimized_parameters.to_dataframe()
@@ -98,3 +100,12 @@ def test_save_result(tmp_path, level, data_filter, report, dummy_result: Result)
             data_filter = default_data_filters[level]
             assert len(data_filter) == len(dataset)
             assert all(d in dataset for d in data_filter)
+
+
+def test_recreate(dummy_result):
+    recreated_result = dummy_result.recreate()
+    assert recreated_result.success
+
+
+def test_verify(dummy_result):
+    assert dummy_result.verify()

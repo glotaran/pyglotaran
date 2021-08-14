@@ -303,3 +303,37 @@ class Result:
             report_path = result_path / "result.md"
             with open(report_path, "w") as f:
                 f.write(str(self.markdown()))
+
+    def recreate(self) -> Result:
+        """Recrate a resulf from the initial parameters.
+
+        Returns
+        -------
+        Result :
+            The recreated result.
+
+        """
+        from glotaran.analysis.optimize import optimize
+
+        return optimize(self.scheme)
+
+    def verify(self) -> bool:
+        """Verify a result.
+
+        Returns
+        -------
+        bool :
+            Weather the recreated result is equal to this result.
+
+        """
+        recreated = self.recreate()
+
+        if self.root_mean_square_error != recreated.root_mean_square_error:
+            return False
+
+        for label, dataset in self.data.items():
+            for attr, array in dataset.items():
+                if not np.allclose(array, recreated.data[label][attr]):
+                    return False
+
+        return True
