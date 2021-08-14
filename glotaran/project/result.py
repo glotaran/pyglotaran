@@ -235,3 +235,52 @@ class Result:
             return self.data[dataset_label]
         except KeyError:
             raise ValueError(f"Unknown dataset '{dataset_label}'")
+
+    #  def save_result(self, result: Result, result_path: str) -> list[str]:
+    #      """Save the result to a given folder.
+    #
+    #      Returns a list with paths of all saved items.
+    #      The following files are saved:
+    #      * `result.md`: The result with the model formatted as markdown text.
+    #      * `optimized_parameters.csv`: The optimized parameter as csv file.
+    #      * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+    #
+    #      Parameters
+    #      ----------
+    #      result : Result
+    #          Result instance to be saved.
+    #      result_path : str
+    #          The path to the folder in which to save the result.
+    #
+    #      Returns
+    #      -------
+    #      list[str]
+    #          List of file paths which were created.
+    #
+    #      Raises
+    #      ------
+    #      ValueError
+    #          If ``result_path`` is a file.
+    #      """
+    #      if not os.path.exists(result_path):
+    #          os.makedirs(result_path)
+    #      if not os.path.isdir(result_path):
+    #          raise ValueError(f"The path '{result_path}' is not a directory.")
+    #
+    #      paths = []
+    #
+    #      md_path = os.path.join(result_path, "result.md")
+    #      with open(md_path, "w") as f:
+    #          f.write(str(result.markdown()))
+    #      paths.append(md_path)
+    #
+    #      csv_path = os.path.join(result_path, "optimized_parameters.csv")
+    #      result.optimized_parameters.to_csv(csv_path)
+    #      paths.append(csv_path)
+    #
+    #      for label, data in result.data.items():
+    #          nc_path = os.path.join(result_path, f"{label}.nc")
+    #          data.to_netcdf(nc_path, engine="netcdf4")
+    #          paths.append(nc_path)
+    #
+    #      return paths

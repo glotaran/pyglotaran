@@ -102,8 +102,8 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_result(self, result_path: str | PathLike[str], **kwargs: Any) -> Result:
-        return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
+    def load_result(self, file_name: str | PathLike[str], **kwargs: Any) -> Result:
+        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
 
     def save_result(  # type:ignore[override]
         self,
