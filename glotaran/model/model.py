@@ -31,7 +31,7 @@ default_model_items = {
 default_dataset_properties = {
     "megacomplex": List[str],
     "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
-    "global_megacomplex": {"type": List[str], "default": []},
+    "global_megacomplex": {"type": List[str], "allow_none": True},
     "global_megacomplex_scale": {"type": List[Parameter], "default": None, "allow_none": True},
     "scale": {"type": Parameter, "default": None, "allow_none": True},
 }
@@ -213,6 +213,21 @@ class Model:
     def _add_dataset_type(self):
         dataset_model_type = create_dataset_model_type(self._dataset_properties)
         self._add_model_item("dataset", dataset_model_type)
+
+    def as_dict(self) -> dict:
+        model_dict = {}
+        model_dict["default_megacomplex"] = self.default_megacomplex
+
+        for name in self._model_items:
+            items = getattr(self, name)
+            if len(items) == 0:
+                continue
+            if isinstance(items, list):
+                model_dict[name] = [item.as_dict() for item in items]
+            else:
+                model_dict[name] = {label: item.as_dict() for label, item in items.items()}
+
+        return model_dict
 
     @property
     def default_megacomplex(self) -> str:

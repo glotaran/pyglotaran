@@ -49,6 +49,17 @@ class ModelProperty(property):
     def property_type(self) -> type:
         return self._type
 
+    def as_dict_value(self, value):
+        if value is None:
+            return None
+        elif self._is_parameter_value:
+            return value.full_label
+        elif self._is_parameter_list:
+            return [v.full_label for v in value]
+        elif self._is_parameter_dict:
+            return {k: v.full_label for k, v in value.items()}
+        return value
+
     def validate(self, value, model, parameters=None) -> list[str]:
 
         if value is None and self.allow_none:
