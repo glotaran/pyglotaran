@@ -173,7 +173,11 @@ def retrieve_decay_associated_data(
 
     das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
 
-    component_coords = {"rate": ("component", rates), "lifetime": ("component", lifetimes)}
+    component_coords = {
+        "component": np.arange(rates.size),
+        "rate": ("component", rates),
+        "lifetime": ("component", lifetimes),
+    }
     das_coords = component_coords.copy()
     das_coords[global_dimension] = dataset.coords[global_dimension]
     das_name = f"decay_associated_{name}"

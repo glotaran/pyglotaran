@@ -1,6 +1,5 @@
-# To add a new cell, type '# %%'
-# To add a new markdown cell, type '# %% [markdown]'
-# %%
+from __future__ import annotations
+
 import importlib
 from collections import namedtuple
 from copy import deepcopy
@@ -12,6 +11,7 @@ from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.io import prepare_time_trace_dataset
+from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -28,13 +28,23 @@ OptimizationSpec = namedtuple("OptimizationSpec", "nnls max_nfev")
 
 class SpectralDecayModel(Model):
     @classmethod
-    def from_dict(cls, model_dict):
+    def from_dict(
+        cls,
+        model_dict,
+        *,
+        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
+        default_megacomplex_type: str | None = None,
+    ):
+        defaults: dict[str, type[Megacomplex]] = {
+            "decay": DecayMegacomplex,
+            "spectral": SpectralMegacomplex,
+        }
+        if megacomplex_types is not None:
+            defaults.update(megacomplex_types)
         return super().from_dict(
             model_dict,
-            megacomplex_types={
-                "decay": DecayMegacomplex,
-                "spectral": SpectralMegacomplex,
-            },
+            megacomplex_types=defaults,
+            default_megacomplex_type=default_megacomplex_type,
         )
 
 

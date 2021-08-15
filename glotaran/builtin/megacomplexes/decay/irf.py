@@ -106,6 +106,9 @@ class IrfMultiGaussian:
             for center, width, scale in zip(centers, widths, scales)
         )
 
+    def is_index_dependent(self):
+        return self.shift is not None
+
 
 @model_item(
     properties={
@@ -190,6 +193,9 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
             center, _, _, _, _, _ = self.parameter(index, axis)
             dispersion.append(center)
         return np.asarray(dispersion).T
+
+    def is_index_dependent(self):
+        return super().is_index_dependent() or self.dispersion_center is not None
 
 
 @model_item(
