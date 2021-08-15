@@ -24,13 +24,14 @@ class SpectralModel(Model):
         megacomplex_types: dict[str, type[Megacomplex]] | None = None,
         default_megacomplex_type: str | None = None,
     ):
-        if megacomplex_types is None:
-            megacomplex_types = {
-                "spectral": SpectralMegacomplex,
-            }
+        defaults: dict[str, type[Megacomplex]] = {
+            "spectral": SpectralMegacomplex,
+        }
+        if megacomplex_types is not None:
+            defaults.update(megacomplex_types)
         return super().from_dict(
             model_dict,
-            megacomplex_types=megacomplex_types,
+            megacomplex_types=defaults,
             default_megacomplex_type=default_megacomplex_type,
         )
 
