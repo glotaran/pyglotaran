@@ -259,6 +259,10 @@ def test_result_data_var_consistency(
         for expected_var_name, expected_var_value in expected_result.data_vars.items():
             if expected_var_name != "data":
 
+                # weighted_data were always calculated and now will only be calculated when weights are applied
+                if expected_var_name == "weighted_data" and expected_var_name not in current_result.data_vars:
+                    continue
+
                 assert (
                     expected_var_name in current_result.data_vars
                 ), f"Missing data_var: {expected_var_name!r} in {file_name!r}"
