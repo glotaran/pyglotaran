@@ -228,7 +228,9 @@ def test_result_parameter_consistency(
 ):
     """Optimized parameters need to be approximately the same"""
     for compare_df in map_result_parameters()[result_name]:
-        assert allclose(compare_df["expected"].values, compare_df["current"].values, print_fail=20)
+        assert allclose(
+            compare_df["expected"].values, compare_df["current"].values, print_fail=20
+        ), f"Parameter Mismatch: {compare_df.index}"
 
 
 @pytest.mark.parametrize("result_name", map_result_data().keys())
@@ -260,7 +262,10 @@ def test_result_data_var_consistency(
             if expected_var_name != "data":
 
                 # weighted_data were always calculated and now will only be calculated when weights are applied
-                if expected_var_name == "weighted_data" and expected_var_name not in current_result.data_vars:
+                if (
+                    expected_var_name == "weighted_data"
+                    and expected_var_name not in current_result.data_vars
+                ):
                     continue
 
                 assert (
