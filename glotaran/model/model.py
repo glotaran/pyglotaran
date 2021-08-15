@@ -56,7 +56,7 @@ class Model:
     @classmethod
     def from_dict(
         cls,
-        model_dict_ref: dict,
+        model_dict: dict,
         *,
         megacomplex_types: dict[str, type[Megacomplex]],
         default_megacomplex_type: str | None = None,
@@ -73,10 +73,10 @@ class Model:
             megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex_type
         )
 
-        model_dict = copy.deepcopy(model_dict_ref)
+        model_dict_local = copy.deepcopy(model_dict)  # TODO: maybe redundant?
 
         # iterate over items
-        for name, items in list(model_dict.items()):
+        for name, items in list(model_dict_local.items()):
 
             if name not in model._model_items:
                 warn(f"Unknown model item type '{name}'.")
