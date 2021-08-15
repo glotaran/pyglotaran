@@ -121,21 +121,22 @@ def coord_test(
     file_name: str,
     allclose: AllCloseFixture,
     exact_match=False,
+    data_var_name: str = "unknown",
 ):
     """Tests that coordinates are exactly equal if exact match or string coords or close."""
     for expected_coord_name, expected_coord_value in expected_coords.items():
         assert (
             expected_coord_name in current_coords.keys()
-        ), f"Missing coordinate: {expected_coord_name!r} in {file_name!r}"
+        ), f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, data_var {data_var_name!r}"
 
         if exact_match or expected_coord_value.data.dtype == object:
             assert np.array_equal(
                 expected_coord_value, current_coords[expected_coord_name]
-            ), f"Coordinate value mismatch in {file_name!r}"
+            ), f"Coordinate value mismatch in {file_name!r}, data_var {data_var_name!r}"
         else:
             assert allclose(
                 expected_coord_value, current_coords[expected_coord_name], rtol=1e-5, print_fail=20
-            ), f"Coordinate value mismatch in {file_name!r}"
+            ), f"Coordinate value mismatch in {file_name!r}, data_var {data_var_name!r}"
 
 
 def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]]]:
@@ -216,6 +217,7 @@ def test_original_data_exact_consistency(
             file_name,
             allclose,
             exact_match=True,
+            data_var_name="data",
         )
 
 
@@ -236,15 +238,15 @@ def test_result_attr_consistency(
 ):
     """Resultdataset attributes need to be approximately the same."""
     for expected, current, file_name in map_result_data()[result_name]:
-        for cexpected_attr_name, expected_attr_value in expected.attrs.items():
+        for expected_attr_name, expected_attr_value in expected.attrs.items():
 
             assert (
-                cexpected_attr_name in current.attrs.keys()
-            ), f"Missing result attribute: {cexpected_attr_name!r} in {file_name!r}"
+                expected_attr_name in current.attrs.keys()
+            ), f"Missing result attribute: {expected_attr_name!r} in {file_name!r}"
 
             assert allclose(
-                expected_attr_value, current.attrs[cexpected_attr_name], rtol=1e-4, print_fail=20
-            ), f"Result attr value mismatch: {cexpected_attr_name!r} in {file_name!r}"
+                expected_attr_value, current.attrs[expected_attr_name], rtol=1e-4, print_fail=20
+            ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
 
 
 @pytest.mark.parametrize("result_name", map_result_data().keys())
@@ -277,4 +279,10 @@ def test_result_data_var_consistency(
                     print_fail=20,
                 ), f"Result data_var data mismatch: {expected_var_name!r} in {file_name!r}"
 
-                coord_test(expected_var_value.coords, current_data.coords, file_name, allclose)
+                coord_test(
+                    expected_var_value.coords,
+                    current_data.coords,
+                    file_name,
+                    allclose,
+                    data_var_name=expected_var_name,
+                )
