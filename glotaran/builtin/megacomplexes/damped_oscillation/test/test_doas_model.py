@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
@@ -6,6 +8,7 @@ from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.damped_oscillation import DampedOscillationMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
+from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -13,14 +16,24 @@ from glotaran.project import Scheme
 
 class DampedOscillationsModel(Model):
     @classmethod
-    def from_dict(cls, model_dict):
+    def from_dict(
+        cls,
+        model_dict,
+        *,
+        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
+        default_megacomplex_type: str | None = None,
+    ):
+        defaults: dict[str, type[Megacomplex]] = {
+            "damped_oscillation": DampedOscillationMegacomplex,
+            "decay": DecayMegacomplex,
+            "spectral": SpectralMegacomplex,
+        }
+        if megacomplex_types is not None:
+            defaults.update(megacomplex_types)
         return super().from_dict(
             model_dict,
-            megacomplex_types={
-                "damped_oscillation": DampedOscillationMegacomplex,
-                "decay": DecayMegacomplex,
-                "spectral": SpectralMegacomplex,
-            },
+            megacomplex_types=defaults,
+            default_megacomplex_type=default_megacomplex_type,
         )
 
 
