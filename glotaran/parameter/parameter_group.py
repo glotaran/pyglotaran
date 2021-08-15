@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from copy import copy
+from pathlib import Path
 from textwrap import indent
 from typing import Generator
 
@@ -196,7 +197,7 @@ class ParameterGroup(dict):
             parameter_dict["expression"].append(parameter.expression)
         return pd.DataFrame(parameter_dict)
 
-    def to_csv(self, filename: str, delimiter: str = ","):
+    def to_csv(self, filename: str | Path, delimiter: str = ","):
         """Writes a :class:`ParameterGroup` to a CSV file.
 
         Parameters

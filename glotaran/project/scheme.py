@@ -7,6 +7,9 @@ from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
 from glotaran.io import load_scheme
+from glotaran.project.dataclasses import asdict
+from glotaran.project.dataclasses import serialize_to_file_name_dict_field
+from glotaran.project.dataclasses import serialize_to_file_name_field
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -39,9 +42,13 @@ class Scheme:
     A scheme also holds options for optimization.
     """
 
-    model: Model | str
-    parameters: ParameterGroup | str
-    data: dict[str, xr.DataArray | xr.Dataset | str]
+    model: Model = serialize_to_file_name_field("model.yml")  # type: ignore
+    parameters: ParameterGroup = serialize_to_file_name_field(
+        "initial_parameters.csv"
+    )  # type: ignore
+    data: dict[str, xr.DataArray | xr.Dataset] = serialize_to_file_name_dict_field(
+        "nc"
+    )  # type: ignore
     group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
@@ -67,7 +74,8 @@ class Scheme:
             A list of all problems found in the scheme's model.
 
         """
-        return self.model.problem_list(self.parameters)
+        model: Model = self.model
+        return model.problem_list(self.parameters)
 
     def validate(self) -> str:
         """Return a string listing all problems in the model and missing parameters.
@@ -89,16 +97,16 @@ class Scheme:
         MarkdownStr
             The scheme as markdown string.
         """
-        markdown_str = self.model.markdown(parameters=self.parameters)
+        model_markdown_str = self.model.markdown(parameters=self.parameters)
 
-        markdown_str += "\n\n"
+        markdown_str = "\n\n"
         markdown_str += "__Scheme__\n\n"
 
         markdown_str += f"* *nnls*: {self.non_negative_least_squares}\n"
         markdown_str += f"* *nfev*: {self.maximum_number_function_evaluations}\n"
         markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
 
-        return MarkdownStr(markdown_str)
+        return model_markdown_str + MarkdownStr(markdown_str)
 
     def is_grouped(self) -> bool:
         """Return whether the scheme should be grouped.
