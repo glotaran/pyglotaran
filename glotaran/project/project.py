@@ -22,8 +22,8 @@ from glotaran.model import Model
 from glotaran.model import ModelError
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter.parameter import Keys
+from glotaran.project.generators.generator import available_generators
 from glotaran.project.generators.generator import generate_model_yml
-from glotaran.project.generators.generator import generators
 from glotaran.project.scheme import Scheme
 
 TEMPLATE = """version: {gta_version}
@@ -42,11 +42,11 @@ class Project:
 
     """
 
-    file: str | Path
+    file: Path
     name: str
     version: str
 
-    folder: str | Path = None
+    folder: Path
 
     def __post_init__(self):
         if isinstance(self.file, str):
@@ -58,28 +58,29 @@ class Project:
         pass
 
     @classmethod
-    def create(cls, name: str | None = None, project_folder: str | None = None):
-        if project_folder is None:
-            project_folder = getcwd()
-        project_folder = Path(project_folder)
+    def create(cls, name: str | None = None, folder: str | Path | None = None):
+        if folder is None:
+            folder = getcwd()
+        project_folder = Path(folder)
         name = name if name else project_folder.name
         project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
             f.write(TEMPLATE.format(gta_version=gta_version, name=name))
 
-        with open(project_file) as f:
-            project_dict = load(f)
-        project_dict["file"] = project_folder
-        return cls(**project_dict)
+        return cls.open(project_file)
 
     @classmethod
-    def open(cls, project_folder: str):
-        project_file = Path(project_folder)
-        if not project_file.match(PROJECT_FILE_NAME):
-            project_file = project_file / PROJECT_FILE_NAME
-        with open(project_file) as f:
+    def open(cls, project_folder_or_file: str | Path):
+        folder = Path(project_folder_or_file)
+        if folder.is_dir():
+            file = folder / PROJECT_FILE_NAME
+        else:
+            folder, file = folder.parent, folder
+
+        with open(file) as f:
             project_dict = load(f)
-        project_dict["file"] = project_file
+        project_dict["file"] = file
+        project_dict["folder"] = folder
         return cls(**project_dict)
 
     @property
@@ -152,8 +153,13 @@ class Project:
         return load_model(model_path)
 
     def generate_model(
-        self, name: str, generator: Literal[generators.keys()], generator_arguments: dict[str, Any]
+        self,
+        name: str,
+        generator: str,
+        generator_arguments: dict[str, Any],
     ):
+        if generator not in available_generators:
+            raise ValueError(f"Unknown generator '{generator}'.")
         self.create_model_dir_if_not_exist()
         model = generate_model_yml(generator, **generator_arguments)
         with open(self.model_dir / f"{name}.yml", "w") as f:
@@ -255,7 +261,7 @@ class Project:
             if parameters_file.suffix in [".yml", ".yaml", ".csv"]
         }
 
-    def load_parameters(self, name: str) -> Model:
+    def load_parameters(self, name: str) -> ParameterGroup:
         try:
             parameters_path = next(p for p in self.parameters_dir.iterdir() if name in p.name)
         except StopIteration:
@@ -266,11 +272,11 @@ class Project:
         self,
         model_name: str,
         name: str | None = None,
-        fmt: Literal[["yml", "yaml", "csv"]] = "csv",
+        fmt: Literal["yml", "yaml", "csv"] = "csv",
     ):
         self.create_parameters_dir_if_not_exist()
         model = self.load_model(model_name)
-        parameters = {}
+        parameters: dict | list = {}
         for parameter in model.get_parameters():
             groups = parameter.split(".")
             label = groups.pop()
@@ -281,19 +287,19 @@ class Project:
                     )
                 elif isinstance(parameters, dict):
                     parameters = []
-                    parameters.append(
-                        [
-                            label,
-                            0.0,
-                            {
-                                Keys.EXPR: "None",
-                                Keys.MAX: "None",
-                                Keys.MIN: "None",
-                                Keys.NON_NEG: "false",
-                                Keys.VARY: "true",
-                            },
-                        ]
-                    )
+                parameters.append(
+                    [
+                        label,
+                        0.0,
+                        {
+                            Keys.EXPR: "None",
+                            Keys.MAX: "None",
+                            Keys.MIN: "None",
+                            Keys.NON_NEG: "false",
+                            Keys.VARY: "true",
+                        },
+                    ]
+                )
             else:
                 if isinstance(parameters, list):
                     raise ModelError(
@@ -328,7 +334,11 @@ class Project:
             with open(parameter_file, "w") as f:
                 f.write(parameter_yml)
         elif fmt == "csv":
-            parameter_group = ParameterGroup.from_dict(parameters)
+            parameter_group = (
+                ParameterGroup.from_dict(parameters)
+                if isinstance(parameters, dict)
+                else ParameterGroup.from_list(parameters)
+            )
             parameter_group.to_csv(parameter_file)
 
     def run(self, scheme_name: str):

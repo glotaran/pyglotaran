@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import xarray as xr
@@ -144,7 +145,7 @@ class Result:
         MarkdownStr
             The scheme as markdown string.
         """
-        general_table_rows = [
+        general_table_rows: list[Any] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
             ["Number of variables", self.number_of_variables],
             ["Number of datapoints", self.number_of_data_points],
