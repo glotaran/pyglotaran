@@ -125,9 +125,10 @@ def coord_test(
 ):
     """Tests that coordinates are exactly equal if exact match or string coords or close."""
     for expected_coord_name, expected_coord_value in expected_coords.items():
-        assert (
-            expected_coord_name in current_coords.keys()
-        ), f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, data_var {data_var_name!r}"
+        assert expected_coord_name in current_coords.keys(), (
+            f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
+            f"data_var {data_var_name!r}"
+        )
 
         if exact_match or expected_coord_value.data.dtype == object:
             assert np.array_equal(
@@ -261,7 +262,8 @@ def test_result_data_var_consistency(
         for expected_var_name, expected_var_value in expected_result.data_vars.items():
             if expected_var_name != "data":
 
-                # weighted_data were always calculated and now will only be calculated when weights are applied
+                # weighted_data were always calculated and now will only be calculated
+                # when weights are applied
                 if (
                     expected_var_name == "weighted_data"
                     and expected_var_name not in current_result.data_vars
