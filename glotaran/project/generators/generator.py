@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Callable
 
 from yaml import dump
 
@@ -75,10 +76,12 @@ def generate_sequential_model(nr_species: int = 1, irf: bool = False) -> dict:
     return model
 
 
-generators = {
+generators: dict[str, Callable] = {
     "decay-parallel": generate_parallel_model,
     "decay-sequential": generate_sequential_model,
 }
+
+available_generators: list[str] = list(generators.keys())
 
 
 def generate_model_yml(generator: str, **generator_arguments: dict[str, Any]) -> str:
