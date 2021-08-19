@@ -16,7 +16,7 @@ want = """dataset:
     irf: gaussian_irf
     megacomplex:
     - megacomplex_parallel_decay
-default_megacomplex: decay
+default-megacomplex: decay
 initial_concentration:
   initial_concentration_dataset_1:
     compartments:
@@ -38,8 +38,9 @@ irf:
 k_matrix:
   k_matrix_sequential:
     matrix:
-      species_2: species_1
-      species_3: species_3
+      (species_2, species_1): decay.species_1
+      (species_3, species_2): decay.species_2
+      (species_3, species_3): decay.species_3
 megacomplex:
   megacomplex_parallel_decay:
     dimension: time
