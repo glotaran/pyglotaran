@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import dataclasses
 import pathlib
 
 import yaml
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.io import ProjectIoInterface
-from glotaran.io import load_scheme
 from glotaran.io import register_project_io
 from glotaran.model import Model
 from glotaran.model import get_megacomplex
@@ -67,14 +65,9 @@ class YmlProjectIo(ProjectIoInterface):
             spec, megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex
         )
 
-    def load_result(self, file_name: str) -> Result:
-
+    def load_result_file(self, file_name: str) -> Result:
         spec = self._load_yml(file_name)
-
-        spec["scheme"] = load_scheme(spec["scheme"])
-        spec["data"] = spec["scheme"].data
-
-        return Result(**spec)
+        return fromdict(Result, spec)
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
 
@@ -89,72 +82,6 @@ class YmlProjectIo(ProjectIoInterface):
         spec = self._load_yml(file_name)
         file_path = pathlib.Path(file_name)
         return fromdict(Scheme, spec, folder=file_path.parent)
-        #  if self.format == "yml_str":
-        #      yml = file_name
-        #  else:
-        #      try:
-        #          with open(file_name) as f:
-        #              yml = f.read()
-        #      except Exception as e:
-        #          raise OSError(f"Error opening scheme: {e}")
-        #
-        #  try:
-        #      scheme = yaml.safe_load(yml)
-        #  except Exception as e:
-        #      raise ValueError(f"Error parsing scheme: {e}")
-        #
-        #  if "model" not in scheme:
-        #      raise ValueError("Model file not specified.")
-        #
-        #  try:
-        #      model = load_model(scheme["model"])
-        #  except Exception as e:
-        #      raise ValueError(f"Error loading model: {e}")
-        #
-        #  if "parameters" not in scheme:
-        #      raise ValueError("Parameters file not specified.")
-        #
-        #  try:
-        #      parameters = load_parameters(scheme["parameters"])
-        #  except Exception as e:
-        #      raise ValueError(f"Error loading parameters: {e}")
-        #
-        #  if "data" not in scheme:
-        #      raise ValueError("No data specified.")
-        #
-        #  data = {}
-        #  for label, path in scheme["data"].items():
-        #      data_format = scheme.get("data_format", None)
-        #      path = str(pathlib.Path(path).resolve())
-        #
-        #      try:
-        #          data[label] = load_dataset(path, format_name=data_format)
-        #      except Exception as e:
-        #          raise ValueError(f"Error loading dataset '{label}': {e}")
-        #
-        #  optimization_method = scheme.get("optimization_method", "TrustRegionReflection")
-        #  nnls = scheme.get("non_negative_least_squares", False)
-        #  nfev = scheme.get("maximum_number_function_evaluations", None)
-        #  ftol = scheme.get("ftol", 1e-8)
-        #  gtol = scheme.get("gtol", 1e-8)
-        #  xtol = scheme.get("xtol", 1e-8)
-        #  group = scheme.get("group", False)
-        #  group_tolerance = scheme.get("group_tolerance", 0.0)
-        #  saving = SavingOptions(**scheme.get("saving", {}))
-        #  return Scheme(
-        #      model=model,
-        #      parameters=parameters,
-        #      data=data,
-        #      non_negative_least_squares=nnls,
-        #      maximum_number_function_evaluations=nfev,
-        #      ftol=ftol,
-        #      gtol=gtol,
-        #      xtol=xtol,
-        #      group=group,
-        #      group_tolerance=group_tolerance,
-        #      optimization_method=optimization_method,
-        #      saving=saving,
-        #  )
 
     def save_scheme(self, scheme: Scheme, file_name: str):
         file_name = pathlib.Path(file_name)
@@ -175,43 +102,9 @@ class YmlProjectIo(ProjectIoInterface):
                         item[prop_name] = {f"{k}": v for k, v in zip(keys, prop.values())}
         _write_dict(file_name, model_dict)
 
-    def save_result(self, result: Result, file_name: str):
-        options = result.scheme.saving
-
-        result_file_path = pathlib.Path(file_name)
-        if result_file_path.exists():
-            raise FileExistsError(f"The path '{file_name}' is already existing.")
-
-        scheme_path = result_file_path.with_name("scheme.yml")
-
-        parameters_format = options.parameter_format
-        initial_parameters_path = result_file_path.with_name(
-            f"initial_parameters.{parameters_format}"
-        )
-        optimized_parameters_path = result_file_path.with_name(
-            f"optimized_parameters.{parameters_format}"
-        )
-
-        dataset_format = options.data_format
-        data_paths = {
-            label: str(result_file_path.with_name(f"{label}.{dataset_format}"))
-            for label in result.data
-        }
-
-        result_dict = dataclasses.asdict(
-            dataclasses.replace(
-                result,
-                scheme=str(scheme_path),
-                initial_parameters=str(initial_parameters_path),
-                optimized_parameters=str(optimized_parameters_path),
-                data=data_paths,
-            )
-        )
-        del result_dict["additional_penalty"]
-        del result_dict["cost"]
-        del result_dict["jacobian"]
-        del result_dict["covariance_matrix"]
-        _write_dict(result_file_path, result_dict)
+    def save_result_file(self, result: Result, file_name: str):
+        result_dict = asdict(result)
+        _write_dict(file_name, result_dict)
 
     def _load_yml(self, file_name: str) -> dict:
         if self.format == "yml_str":

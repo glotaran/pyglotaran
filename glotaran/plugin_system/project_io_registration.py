@@ -364,7 +364,9 @@ def save_scheme(
 
 
 @not_implemented_to_value_error
-def load_result(file_name: str | PathLike[str], format_name: str = None, **kwargs: Any) -> Result:
+def load_result_file(
+    file_name: str | PathLike[str], format_name: str = None, **kwargs: Any
+) -> Result:
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
@@ -384,11 +386,11 @@ def load_result(file_name: str | PathLike[str], format_name: str = None, **kwarg
         :class:`Result` instance created from the saved format.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_result(str(file_name), **kwargs)  # type: ignore[call-arg]
+    return io.load_result_file(str(file_name), **kwargs)  # type: ignore[call-arg]
 
 
 @not_implemented_to_value_error
-def save_result(
+def save_result_file(
     result: Result,
     file_name: str | PathLike[str],
     format_name: str = None,
@@ -417,8 +419,65 @@ def save_result(
     io = get_project_io(
         format_name or inferr_file_format(file_name, needs_to_exist=False, allow_folder=True)
     )
-    io.save_result(  # type: ignore[call-arg]
+    io.save_result_file(  # type: ignore[call-arg]
         file_name=str(file_name),
+        result=result,
+        **kwargs,
+    )
+
+
+@not_implemented_to_value_error
+def load_result(folder: str | PathLike[str], format_name: str, **kwargs: Any) -> Result:
+    """Create a :class:`Result` instance from the specs defined in a folder.
+
+    Parameters
+    ----------
+    folder : str | PathLike[str]
+        Path containing the result data.
+    format_name : str
+        Format the result is in.
+    **kwargs : Any
+        Additional keyword arguments passes to the ``load_result`` implementation
+        of the project io plugin.
+
+    Returns
+    -------
+    Result
+        :class:`Result` instance created from the saved format.
+    """
+    io = get_project_io(format_name)
+    return io.load_result(str(folder), **kwargs)  # type: ignore[call-arg]
+
+
+@not_implemented_to_value_error
+def save_result(
+    result: Result,
+    folder: str | PathLike[str],
+    format_name: str,
+    *,
+    allow_overwrite: bool = False,
+    **kwargs: Any,
+) -> None:
+    """Write a :class:`Result` instance to a spec file.
+
+    Parameters
+    ----------
+    result : Result
+        :class:`Result` instance to write.
+    folder : str | PathLike[str]
+        Path to write the result data to.
+    format_name : str
+        Format the result should be saved in.
+    allow_overwrite : bool
+        Whether or not to allow overwriting existing files, by default False
+    **kwargs : Any
+        Additional keyword arguments passes to the ``save_result`` implementation
+        of the project io plugin.
+    """
+    protect_from_overwrite(folder, allow_overwrite=allow_overwrite)
+    io = get_project_io(format_name)
+    io.save_result(  # type: ignore[call-arg]
+        folder=str(folder),
         result=result,
         **kwargs,
     )
