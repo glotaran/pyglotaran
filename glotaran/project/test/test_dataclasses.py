@@ -1,25 +1,37 @@
 from dataclasses import dataclass
 
 from glotaran.project.dataclasses import asdict
-from glotaran.project.dataclasses import serialize_to_file_name_field
+from glotaran.project.dataclasses import exclude_from_dict_field
+from glotaran.project.dataclasses import file_representation_field
+from glotaran.project.dataclasses import fromdict
+
+
+def dummy_loader(file: str) -> int:
+    return {"foo.file": 21, "bar.file": 42}[file]
 
 
 def test_serialize_to_file_name_field():
     @dataclass
     class DummyDataclass:
-        foo: int = serialize_to_file_name_field("foo.file")
-        bar: int = serialize_to_file_name_field("bar.file", default=42)
+        foo: int = exclude_from_dict_field()
+        foo_file: int = file_representation_field("foo", dummy_loader)
+        bar: int = exclude_from_dict_field(default=42)
+        bar_file: int = file_representation_field("bar", dummy_loader, default="bar.file")
         baz: int = 84
 
-    dummy_class = DummyDataclass(foo=21)
+    dummy_class = DummyDataclass(foo=21, foo_file="foo.file")
 
     dummy_class_dict = asdict(dummy_class)
 
-    assert dummy_class_dict["foo"] == "foo.file"
-    assert dummy_class_dict["foo"] != dummy_class.foo
+    assert "foo" not in dummy_class_dict
+    assert dummy_class_dict["foo_file"] == "foo.file"
 
-    assert dummy_class_dict["bar"] == "bar.file"
-    assert dummy_class_dict["bar"] != dummy_class.bar
+    assert "bar" not in dummy_class_dict
+    assert dummy_class_dict["bar_file"] == "bar.file"
 
     assert dummy_class_dict["baz"] == 84
     assert dummy_class_dict["baz"] == dummy_class.baz
+
+    loaded = fromdict(DummyDataclass, dummy_class_dict)
+
+    assert loaded == dummy_class

@@ -2,21 +2,16 @@
 from __future__ import annotations
 
 import dataclasses
+from pathlib import Path
 from typing import Any
+from typing import Callable
 
 
-def serialize_to_file_name_field(
-    file_name: str, default: Any = dataclasses.MISSING
-) -> dataclasses.Field:
-    """Create a dataclass field with file_name as metadata.
-
-    The field will be replace with the file_name as value. within
-    :function:``glotaran.project.dataclasses.asdict``.
+def exclude_from_dict_field(default: Any = dataclasses.MISSING) -> dataclasses.Field:
+    """Create a dataclass field with which will be excluded from ``asdict``.
 
     Parameters
     ----------
-    file_name : str
-        The file_name with which the field gets replaced in asdict.
     default : Any
         The default value of the field.
 
@@ -25,21 +20,20 @@ def serialize_to_file_name_field(
     dataclasses.Field
         The created field.
     """
-    return dataclasses.field(default=default, metadata={"file_name": file_name})
+    return dataclasses.field(default=default, metadata={"exclude_from_dict": True})
 
 
-def serialize_to_file_name_dict_field(
-    file_suffix: str, default: Any = dataclasses.MISSING
+def file_representation_field(
+    target: str, loader: Callable[[str], Any], default: Any = dataclasses.MISSING
 ) -> dataclasses.Field:
-    """Create a dataclass field with file_name as metadata.
-
-    The field will be replace with the file_name as value. within
-    :function:``glotaran.project.dataclasses.asdict``.
+    """Creates a dataclass field with target and loader as metadata.
 
     Parameters
     ----------
-    file_name : str
-        The file_name with which the field gets replaced in asdict.
+    target : str
+        The name of the represented field.
+    loader : Callable[[str]
+        A function to load the target field froma file.
     default : Any
         The default value of the field.
 
@@ -48,14 +42,11 @@ def serialize_to_file_name_dict_field(
     dataclasses.Field
         The created field.
     """
-    return dataclasses.field(default=default, metadata={"file_suffix": file_suffix})
+    return dataclasses.field(default=default, metadata={"target": target, "loader": loader})
 
 
 def asdict(dataclass: object) -> dict[str, Any]:
-    """Create a dictinory from a dataclass.
-
-    A wrappper for ``dataclasses.asdict`` which recognizes fields created
-    with :function:``glotaran.project.dataclasses.serialize_to_file_name_field``.
+    """Creates a dictinory containing all dfields of the dataclass.
 
     Parameters
     ----------
@@ -69,13 +60,54 @@ def asdict(dataclass: object) -> dict[str, Any]:
     """
     fields = dataclasses.fields(dataclass)
 
-    def dict_factory(values: list):
-        for i, field in enumerate(fields):
-            if "file_name" in field.metadata:
-                values[i] = (field.name, field.metadata["file_name"])
-            elif "file_suffix" in field.metadata:
-                file_suffix = field.metadata["file_name"]
-                values[i] = (field.name, {key: f"{key}.{file_suffix}" for key in values[i][1]})
-        return dict(values)
+    dataclass_dict = {}
+    for field in fields:
+        if "exclude_from_dict" not in field.metadata:
+            value = getattr(dataclass, field.name)
+            dataclass_dict[field.name] = (
+                asdict(value) if dataclasses.is_dataclass(value) else value
+            )
 
-    return dataclasses.asdict(dataclass, dict_factory=dict_factory)
+    return dataclass_dict
+
+
+def fromdict(dataclass_type: type, dataclass_dict: dict, folder: Path = None) -> object:
+    """Creates a dataclass instance from a dict and loads all file represented fields.
+
+    Parameters
+    ----------
+    dataclass_type : type
+        A dataclass type.
+    dataclass_dict : dict
+        A dict for instancing the the dataclass.
+    folder : Path
+        The root folder for file paths. If ``None`` file paths are consider absolute.
+
+    Returns
+    -------
+    object
+        Created instance of dataclass_type.
+    """
+    fields = dataclasses.fields(dataclass_type)
+
+    for field in fields:
+        if "target" in field.metadata and "loader" in field.metadata:
+            file_path = dataclass_dict.get(field.name)
+            if file_path is None:
+                continue
+            elif isinstance(file_path, list):
+                dataclass_dict[field.metadata["target"]] = [
+                    field.metadata["loader"](f if folder is None else folder / f)
+                    for f in file_path
+                ]
+            elif isinstance(file_path, dict):
+                dataclass_dict[field.metadata["target"]] = {
+                    k: field.metadata["loader"](f if folder is None else folder / f)
+                    for k, f in file_path.items()
+                }
+            else:
+                dataclass_dict[field.metadata["target"]] = field.metadata["loader"](
+                    file_path if folder is None else folder / file_path
+                )
+
+    return dataclass_type(**dataclass_dict)
