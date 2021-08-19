@@ -26,7 +26,7 @@ def exclude_from_dict_field(default: Any = dataclasses.MISSING) -> dataclasses.F
 def file_representation_field(
     target: str, loader: Callable[[str], Any], default: Any = dataclasses.MISSING
 ) -> dataclasses.Field:
-    """Creates a dataclass field with target and loader as metadata.
+    """Create a dataclass field with target and loader as metadata.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ def file_representation_field(
 
 
 def asdict(dataclass: object) -> dict[str, Any]:
-    """Creates a dictinory containing all dfields of the dataclass.
+    """Create a dictinory containing all dfields of the dataclass.
 
     Parameters
     ----------
@@ -55,7 +55,7 @@ def asdict(dataclass: object) -> dict[str, Any]:
 
     Returns
     -------
-    dict[str, Any]
+    dict[str, Any] :
         The dataclass represented as a dictionary.
     """
     fields = dataclasses.fields(dataclass)
@@ -72,7 +72,7 @@ def asdict(dataclass: object) -> dict[str, Any]:
 
 
 def fromdict(dataclass_type: type, dataclass_dict: dict, folder: Path = None) -> object:
-    """Creates a dataclass instance from a dict and loads all file represented fields.
+    """Create a dataclass instance from a dict and loads all file represented fields.
 
     Parameters
     ----------
@@ -109,5 +109,7 @@ def fromdict(dataclass_type: type, dataclass_dict: dict, folder: Path = None) ->
                 dataclass_dict[field.metadata["target"]] = field.metadata["loader"](
                     file_path if folder is None else folder / file_path
                 )
+        elif dataclasses.is_dataclass(field.default) and field.name in dataclass_dict:
+            dataclass_dict[field.name] = type(field.default)(**dataclass_dict[field.name])
 
     return dataclass_type(**dataclass_dict)
