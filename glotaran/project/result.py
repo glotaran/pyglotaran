@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import replace
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -12,14 +11,14 @@ from numpy.typing import ArrayLike
 from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
-from glotaran.io import save_dataset
-from glotaran.io import save_model
-from glotaran.io import save_result
-from glotaran.io import save_scheme
+from glotaran.io import load_dataset
+from glotaran.io import load_parameters
+from glotaran.io import load_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project.dataclasses import exclude_from_dict_field
+from glotaran.project.dataclasses import file_representation_field
 from glotaran.project.scheme import Scheme
-from glotaran.project.scheme import default_data_filters
 from glotaran.utils.ipython import MarkdownStr
 
 
@@ -27,22 +26,8 @@ from glotaran.utils.ipython import MarkdownStr
 class Result:
     """The result of a global analysis."""
 
-    data: dict[str, xr.Dataset]
-    """The resulting data as a dictionary of :xarraydoc:`Dataset`.
-
-    Notes
-    -----
-    The actual content of the data depends on the actual model and can be found in the
-    documentation for the model.
-    """
-    free_parameter_labels: list[str]
-    """List of labels of the free parameters used in optimization."""
     number_of_function_evaluations: int
     """The number of function evaluations."""
-    initial_parameters: ParameterGroup
-    optimized_parameters: ParameterGroup
-    """The optimized parameters, organized in a :class:`ParameterGroup`"""
-    scheme: Scheme
     success: bool
     """Indicates if the optimization was successful."""
     termination_reason: str
@@ -51,25 +36,51 @@ class Result:
     glotaran_version: str
     """The glotaran version used to create the result."""
 
+    scheme: Scheme = exclude_from_dict_field(None)  # type: ignore
+    scheme_file: str | None = file_representation_field("scheme", load_scheme, None)  # type: ignore  # noqa E501
+
+    initial_parameters: ParameterGroup = exclude_from_dict_field(None)  # type: ignore
+    initial_parameters_file: str | None = file_representation_field(
+        "initial_parameters", load_parameters, None
+    )  # type: ignore
+
+    optimized_parameters: ParameterGroup = exclude_from_dict_field(None)  # type: ignore
+    """The optimized parameters, organized in a :class:`ParameterGroup`"""
+    optimized_parameters_file: str | None = file_representation_field(
+        "optimized_parameters", load_parameters, None
+    )  # type: ignore
+
+    data: dict[str, xr.Dataset] = exclude_from_dict_field(None)  # type: ignore
+    """The resulting data as a dictionary of :xarraydoc:`Dataset`.
+
+    Notes
+    -----
+    The actual content of the data depends on the actual model and can be found in the
+    documentation for the model.
+    """
+    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)  # type: ignore  # noqa E501
+
+    free_parameter_labels: list[str] = exclude_from_dict_field(None)  # type: ignore
+    """List of labels of the free parameters used in optimization."""
     # The below can be none in case of unsuccessful optimization
 
-    additional_penalty: np.ndarray | None = None
+    additional_penalty: np.ndarray | None = exclude_from_dict_field(None)  # type: ignore
     """A vector with the value for each additional penalty, or None"""
 
-    cost: ArrayLike | None = None
+    cost: ArrayLike | None = exclude_from_dict_field(None)  # type: ignore
     """The final cost."""
 
     chi_square: float | None = None
     r"""The chi-square of the optimization.
 
     :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
-    covariance_matrix: ArrayLike | list | None = None
+    covariance_matrix: ArrayLike | list | None = exclude_from_dict_field(None)  # type: ignore
     """Covariance matrix.
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
-    jacobian: ArrayLike | list | None = None
+    jacobian: ArrayLike | list | None = exclude_from_dict_field(None)  # type: ignore
     """Modified Jacobian matrix at the solution
 
     See also: :func:`scipy.optimize.least_squares`
@@ -244,66 +255,66 @@ class Result:
         except KeyError:
             raise ValueError(f"Unknown dataset '{dataset_label}'")
 
-    def save(self, result_path: str | Path, overwrite: bool = False) -> None:
-        """Save the result to a given folder.
-
-        Returns a list with paths of all saved items.
-        The following files are saved:
-        * `result.md`: The result with the model formatted as markdown text.
-        * `optimized_parameters.csv`: The optimized parameter as csv file.
-        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
-
-        Parameters
-        ----------
-        result_path : str | Path
-            The path to the folder in which to save the result.
-        overwrite : bool
-            Weather to overwrite an existing folder.
-
-        Raises
-        ------
-        ValueError
-            If ``result_path`` is a file.
-        FileExistsError
-            If ``result_path`` exists and ``overwrite`` is ``False``.
-        """
-        result_path = Path(result_path) if isinstance(result_path, str) else result_path
-        if result_path.exists() and not overwrite:
-            raise FileExistsError(f"The path '{result_path}' exists.")
-        else:
-            result_path.mkdir()
-        if not result_path.is_dir():
-            raise ValueError(f"The path '{result_path}' is not a directory.")
-
-        result_file_path = result_path / "glotaran_result.yml"
-        save_result(self, result_file_path)
-
-        scheme_path = result_path / "scheme.yml"
-        save_scheme(self.scheme, scheme_path)
-
-        model_path = result_path / "model.yml"
-        save_model(self.scheme.model, model_path)
-
-        initial_parameters_path = result_path / "initial_parameters.csv"
-        self.initial_parameters.to_csv(initial_parameters_path)
-
-        optimized_parameters_path = result_path / "optimized_parameters.csv"
-        self.optimized_parameters.to_csv(optimized_parameters_path)
-
-        save_level = self.scheme.saving.level
-        data_filter = self.scheme.saving.data_filter or default_data_filters[save_level]
-        datasets = {}
-        for label, dataset in self.data.items():
-            dataset_path = result_path / f"{label}.nc"
-            datasets[label] = dataset_path
-            if data_filter is not None:
-                dataset = dataset[data_filter]
-            save_dataset(dataset, dataset_path)
-
-        if self.scheme.saving.report:
-            report_path = result_path / "result.md"
-            with open(report_path, "w") as f:
-                f.write(str(self.markdown()))
+    #  def save(self, result_path: str | Path, overwrite: bool = False) -> None:
+    #      """Save the result to a given folder.
+    #
+    #      Returns a list with paths of all saved items.
+    #      The following files are saved:
+    #      * `result.md`: The result with the model formatted as markdown text.
+    #      * `optimized_parameters.csv`: The optimized parameter as csv file.
+    #      * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+    #
+    #      Parameters
+    #      ----------
+    #      result_path : str | Path
+    #          The path to the folder in which to save the result.
+    #      overwrite : bool
+    #          Weather to overwrite an existing folder.
+    #
+    #      Raises
+    #      ------
+    #      ValueError
+    #          If ``result_path`` is a file.
+    #      FileExistsError
+    #          If ``result_path`` exists and ``overwrite`` is ``False``.
+    #      """
+    #      result_path = Path(result_path) if isinstance(result_path, str) else result_path
+    #      if result_path.exists() and not overwrite:
+    #          raise FileExistsError(f"The path '{result_path}' exists.")
+    #      else:
+    #          result_path.mkdir()
+    #      if not result_path.is_dir():
+    #          raise ValueError(f"The path '{result_path}' is not a directory.")
+    #
+    #      result_file_path = result_path / "glotaran_result.yml"
+    #      save_result(self, result_file_path)
+    #
+    #      scheme_path = result_path / "scheme.yml"
+    #      save_scheme(self.scheme, scheme_path)
+    #
+    #      model_path = result_path / "model.yml"
+    #      save_model(self.scheme.model, model_path)
+    #
+    #      initial_parameters_path = result_path / "initial_parameters.csv"
+    #      self.initial_parameters.to_csv(initial_parameters_path)
+    #
+    #      optimized_parameters_path = result_path / "optimized_parameters.csv"
+    #      self.optimized_parameters.to_csv(optimized_parameters_path)
+    #
+    #      save_level = self.scheme.saving.level
+    #      data_filter = self.scheme.saving.data_filter or default_data_filters[save_level]
+    #      datasets = {}
+    #      for label, dataset in self.data.items():
+    #          dataset_path = result_path / f"{label}.nc"
+    #          datasets[label] = dataset_path
+    #          if data_filter is not None:
+    #              dataset = dataset[data_filter]
+    #          save_dataset(dataset, dataset_path)
+    #
+    #      if self.scheme.saving.report:
+    #          report_path = result_path / "result.md"
+    #          with open(report_path, "w") as f:
+    #              f.write(str(self.markdown()))
 
     def recreate(self) -> Result:
         """Recrate a resulf from the initial parameters.

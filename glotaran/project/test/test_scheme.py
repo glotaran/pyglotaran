@@ -33,11 +33,11 @@ def mock_scheme(tmpdir):
     ).to_netcdf(dataset_path)
 
     scheme = f"""
-    model: {model_path}
-    parameters: {parameter_path}
+    model_file: {model_path}
+    parameters_file: {parameter_path}
     non_negative_least_squares: True
     maximum_number_function_evaluations: 42
-    data:
+    data_files:
       dataset1: {dataset_path}
 
     saving:
