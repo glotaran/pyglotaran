@@ -171,7 +171,7 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 @not_implemented_to_value_error
 def load_dataset(
-    file_name: str | PathLike[str], format_name: str = None, **kwargs: Any
+    file_name: str | PathLike[str], format_name: str | None = None, **kwargs: Any
 ) -> xr.Dataset | xr.DataArray:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
@@ -179,7 +179,7 @@ def load_dataset(
     ----------
     file_name : str | PathLike[str]
         File containing the data.
-    format_name : str
+    format_name : str | None
         Format the file is in, if not provided it will be inferred from the file extension.
     **kwargs : Any
         Additional keyword arguments passes to the ``read_dataset`` implementation
@@ -199,7 +199,8 @@ def load_dataset(
 def save_dataset(
     dataset: xr.Dataset | xr.DataArray,
     file_name: str | PathLike[str],
-    format_name: str = None,
+    format_name: str | None = None,
+    data_filters: list[str] | None = None,
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
@@ -212,8 +213,10 @@ def save_dataset(
         Data to be written to file.
     file_name : str | PathLike[str]
         File to write the data to.
-    format_name : str
+    format_name : str | None
         Format the file should be in, if not provided it will be inferred from the file extension.
+    data_filters : list[str] | None
+        Optional list of items in the dataset to be saved.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs : Any
