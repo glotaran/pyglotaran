@@ -6,10 +6,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
+from glotaran.io import load_dataset
+from glotaran.io import load_model
+from glotaran.io import load_parameters
 from glotaran.io import load_scheme
-from glotaran.project.dataclasses import asdict
-from glotaran.project.dataclasses import serialize_to_file_name_dict_field
-from glotaran.project.dataclasses import serialize_to_file_name_field
+from glotaran.project.dataclasses import exclude_from_dict_field
+from glotaran.project.dataclasses import file_representation_field
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -42,13 +44,12 @@ class Scheme:
     A scheme also holds options for optimization.
     """
 
-    model: Model = serialize_to_file_name_field("model.yml")  # type: ignore
-    parameters: ParameterGroup = serialize_to_file_name_field(
-        "initial_parameters.csv"
-    )  # type: ignore
-    data: dict[str, xr.DataArray | xr.Dataset] = serialize_to_file_name_dict_field(
-        "nc"
-    )  # type: ignore
+    model: Model = exclude_from_dict_field()  # type: ignore
+    parameters: ParameterGroup = exclude_from_dict_field()  # type: ignore
+    data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()  # type: ignore
+    model_file: str = file_representation_field("model", load_model, default=None)  # type: ignore # noqa E501
+    parameters_file: str = file_representation_field("parameters", load_parameters, None)  # type: ignore # noqa E501
+    data_files: dict[str, str] = file_representation_field("data", load_dataset, None)  # type: ignore # noqa E501
     group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False

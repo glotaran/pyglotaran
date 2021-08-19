@@ -58,7 +58,23 @@ class Project:
         pass
 
     @classmethod
-    def create(cls, name: str | None = None, folder: str | Path | None = None):
+    def create(cls, name: str | None = None, folder: str | Path | None = None) -> Project:
+        """Creates a new project.
+
+        Parameters
+        ----------
+            name : str | None
+                The name of the project. If ``None``, the name of the project folder will be used.
+            folder : str | Path | None
+                The folder where the project will be created. If ``None``, the current work
+                directory will be used.
+
+        Returns
+        -------
+        Project :
+            The created project.
+
+        """
         if folder is None:
             folder = getcwd()
         project_folder = Path(folder)
@@ -225,7 +241,7 @@ class Project:
 
         data = self.data
         datasets = {}
-        for dataset in load_model(model).dataset:
+        for dataset in load_model(model).dataset:  # type: ignore
             if dataset not in data:
                 raise ValueError(f"Data missing for dataset '{dataset}'")
             datasets[dataset] = str(data[dataset])
