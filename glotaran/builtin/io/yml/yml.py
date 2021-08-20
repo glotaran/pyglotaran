@@ -54,10 +54,34 @@ class YmlProjectIo(ProjectIoInterface):
         return Model.from_dict(spec, megacomplex_types=None, default_megacomplex_type=None)
 
     def load_result_file(self, file_name: str) -> Result:
+        """Create a :class:`Result` instance from the specs defined in a file.
+
+        Parameters
+        ----------
+        file_name : str | PathLike[str]
+            Path containing the result data.
+
+        Returns
+        -------
+        Result
+            :class:`Result` instance created from the saved format.
+        """
         spec = self._load_yml(file_name)
         return fromdict(Result, spec)
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
+        """Create a ParameterGroup instance from the specs defined in a file.
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the parameter specs.
+
+        Returns
+        -------
+        ParameterGroup
+            ParameterGroup instance created from the file.
+        """
 
         spec = self._load_yml(file_name)
 
@@ -77,6 +101,15 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(file_name, scheme_dict)
 
     def save_model(self, model: Model, file_name: str):
+        """Save a Model instance to a spec file.
+
+        Parameters
+        ----------
+        model: Model
+            Model instance to save to specs file.
+        file_name : str
+            File to write the model specs to.
+        """
         model_dict = model.as_dict()
         # We replace tuples with strings
         for name, items in model_dict.items():
@@ -91,6 +124,15 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(file_name, model_dict)
 
     def save_result_file(self, result: Result, file_name: str):
+        """Write a :class:`Result` instance to a spec file.
+
+        Parameters
+        ----------
+        result : Result
+            :class:`Result` instance to write.
+        file_name : str | PathLike[str]
+            Path to write the result data to.
+        """
         result_dict = asdict(result)
         _write_dict(file_name, result_dict)
 

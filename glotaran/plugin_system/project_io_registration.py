@@ -8,6 +8,7 @@ and causing an [override] type error in the plugins implementation.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
@@ -50,8 +51,23 @@ if TYPE_CHECKING:
         Literal["save_scheme"],
         Literal["load_result"],
         Literal["save_result"],
+        Literal["load_result_file"],
+        Literal["save_result_file"],
     )
 
+
+@dataclass
+class SavingOptions:
+    """A collection of options for result saving."""
+
+    data_filter: list[str] | None = None
+    data_format: Literal["nc"] = "nc"
+    parameter_format: Literal["csv"] = "csv"
+    report: bool = True
+
+
+SAVING_OPTIONS_DEFAULT = SavingOptions()
+SAVING_OPTIONS_MINIMAL = SavingOptions(data_filter=["fitted_data", "residual"], report=False)
 
 PROJECT_IO_METHODS = (
     "load_model",
@@ -62,6 +78,8 @@ PROJECT_IO_METHODS = (
     "save_scheme",
     "load_result",
     "save_result",
+    "load_result_file",
+    "save_result_file",
 )
 
 
@@ -160,6 +178,8 @@ def set_project_plugin(
     - :func:`save_scheme`
     - :func:`load_result`
     - :func:`save_result`
+    - :func:`load_result_file`
+    - :func:`save_result_file`
 
     Parameters
     ----------
@@ -396,7 +416,6 @@ def save_result_file(
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
-    **kwargs: Any,
 ) -> None:
     """Write a :class:`Result` instance to a spec file.
 
@@ -411,9 +430,6 @@ def save_result_file(
         it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs : Any
-        Additional keyword arguments passes to the ``save_result`` implementation
-        of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(
@@ -422,7 +438,6 @@ def save_result_file(
     io.save_result_file(  # type: ignore[call-arg]
         file_name=str(file_name),
         result=result,
-        **kwargs,
     )
 
 
@@ -453,10 +468,10 @@ def load_result(folder: str | PathLike[str], format_name: str, **kwargs: Any) ->
 def save_result(
     result: Result,
     folder: str | PathLike[str],
-    format_name: str,
     *,
+    format_name: str = "folder",
+    saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     allow_overwrite: bool = False,
-    **kwargs: Any,
 ) -> None:
     """Write a :class:`Result` instance to a spec file.
 
@@ -468,18 +483,18 @@ def save_result(
         Path to write the result data to.
     format_name : str
         Format the result should be saved in.
+    saving_options :SavingOptions
+        Options for saving the the result.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
-    **kwargs : Any
-        Additional keyword arguments passes to the ``save_result`` implementation
-        of the project io plugin.
     """
     protect_from_overwrite(folder, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name)
     io.save_result(  # type: ignore[call-arg]
-        folder=str(folder),
         result=result,
-        **kwargs,
+        folder=str(folder),
+        saving_options=saving_options,
+        allow_overwrite=allow_overwrite,
     )
 
 

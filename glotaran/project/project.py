@@ -121,14 +121,14 @@ class Project:
             if data_file.suffix == ".nc"
         }
 
-    def load_data(self, name: str) -> xr.DataSet:
+    def load_data(self, name: str) -> xr.Dataset | xr.DataArray:
         try:
             data_path = next(p for p in self.data_dir.iterdir() if name in p.name)
         except StopIteration:
             raise ValueError(f"Model file for model '{name}' does not exist.")
         return load_dataset(data_path)
 
-    def import_data(self, path: str | Path, name: str | None = None) -> xr.DataSet:
+    def import_data(self, path: str | Path, name: str | None = None):
 
         if not isinstance(path, Path):
             path = Path(path)
@@ -246,14 +246,14 @@ class Project:
                 raise ValueError(f"Data missing for dataset '{dataset}'")
             datasets[dataset] = str(data[dataset])
 
-        scheme = Scheme(
-            model,
-            parameter,
-            datasets,
-            non_negative_least_squares=nnls,
-            maximum_number_function_evaluations=nfev,
-        )
-        save_scheme(scheme, scheme_path)
+        #  scheme = Scheme(
+        #      model,
+        #      parameter,
+        #      datasets,
+        #      non_negative_least_squares=nnls,
+        #      maximum_number_function_evaluations=nfev,
+        #  )
+        #  save_scheme(scheme, scheme_path)
 
     @property
     def parameters_dir(self) -> Path:
