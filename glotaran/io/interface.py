@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
+    from glotaran.project import SavingOptions
     from glotaran.project import Scheme
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
@@ -218,19 +219,25 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result: Result, folder: str):
+    def save_result(
+        self, result: Result, folder: str, saving_options: SavingOptions, allow_overwrite: bool
+    ):
         """Save a Result instance to a folder (**NOT IMPLEMENTED**).
 
-        Parameters
-        ----------
-        result : Result
-            Result instance to save to specs file.
-        folder : str
-            Folder to write the result specs to.
+            Parameters
+            ----------
+            result : Result
+                Result instance to save to specs file.
+            folder : str
+                Folder to write the result specs to.
+            saving_options : SavingOptions
+                Options for saving the the result.
+        allow_overwrite : bool
+            Whether or not to allow overwriting existing files, by default False
 
 
-        .. # noqa: DAR101
-        .. # noqa: DAR401
+            .. # noqa: DAR101
+            .. # noqa: DAR401
         """
         raise NotImplementedError(f"Cannot save result with format {self.format!r}")
 
