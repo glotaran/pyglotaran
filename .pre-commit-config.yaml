@@ -104,7 +104,7 @@ repos:
     rev: 1.4.0
     hooks:
       - id: interrogate
-        args: [-vv, --config=pyproject.toml]
+        args: [-vv, --config=pyproject.toml, glotaran]
         pass_filenames: false
 
   - repo: https://github.com/asottile/yesqa
