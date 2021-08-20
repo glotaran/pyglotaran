@@ -23,19 +23,6 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
 
-default_data_filters = {"minimal": ["fitted_data", "residual"], "full": None}
-
-
-@dataclass
-class SavingOptions:
-    """A collection of options for result saving."""
-
-    level: Literal["minimal", "full"] = "full"
-    data_filter: list[str] | None = None
-    data_format: Literal["nc"] = "nc"
-    parameter_format: Literal["csv"] = "csv"
-    report: bool = True
-
 
 @dataclass
 class Scheme:
@@ -63,7 +50,6 @@ class Scheme:
         "Dogbox",
         "Levenberg-Marquardt",
     ] = "TrustRegionReflection"
-    saving: SavingOptions = SavingOptions()
     result_path: str | None = None
 
     def problem_list(self) -> list[str]:

@@ -39,13 +39,6 @@ def mock_scheme(tmpdir):
     maximum_number_function_evaluations: 42
     data_files:
       dataset1: {dataset_path}
-
-    saving:
-        level: minimal
-        data_filter: [a, b, c]
-        data_format: csv
-        parameter_format: yaml
-        report: false
     """
     scheme_path = tmpdir.join("scheme.yml")
     with open(scheme_path, "w") as f:
@@ -55,6 +48,7 @@ def mock_scheme(tmpdir):
 
 
 def test_scheme(mock_scheme: Scheme):
+    """Test scheme attributes."""
     assert mock_scheme.model is not None
 
     assert mock_scheme.parameters is not None
@@ -66,12 +60,6 @@ def test_scheme(mock_scheme: Scheme):
 
     assert "dataset1" in mock_scheme.data
     assert mock_scheme.data["dataset1"].data.shape == (1, 3)
-
-    assert mock_scheme.saving.level == "minimal"
-    assert mock_scheme.saving.data_filter == ["a", "b", "c"]
-    assert mock_scheme.saving.data_format == "csv"
-    assert mock_scheme.saving.parameter_format == "yaml"
-    assert not mock_scheme.saving.report
 
 
 def test_scheme_ipython_rendering(mock_scheme: Scheme):
