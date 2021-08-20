@@ -28,7 +28,7 @@ remove_redundant_aliases = true
 [tool.interrogate]
 exclude = ["setup.py", "docs", "*test/*", "benchmark/*"]
 ignore-init-module = true
-fail-under = 52
+fail-under = 55
 
 [tool.nbqa.addopts]
 flake8 = [
