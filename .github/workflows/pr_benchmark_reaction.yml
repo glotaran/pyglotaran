@@ -72,7 +72,6 @@ jobs:
           number: ${{ steps.bench_diff.outputs.pr_nr }}
           id: benchmark-comment
           message: ${{ steps.bench_diff.outputs.comment }}
-          recreate: true
 
       - name: Commit PR results
         env:
