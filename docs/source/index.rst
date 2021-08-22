@@ -27,6 +27,7 @@ Welcome to pyglotaran's documentation!
    user_documentation/parameter
    user_documentation/optimizing
    user_documentation/using_plugins
+   user_documentation/cli
 
 .. toctree::
    :maxdepth: 1

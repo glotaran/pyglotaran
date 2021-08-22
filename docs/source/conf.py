@@ -49,6 +49,7 @@ extensions = [
     "sphinx.ext.imgmath",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    "sphinx_click",
     "nbsphinx",
     "sphinx_last_updated_by_git",
     "myst_parser",
