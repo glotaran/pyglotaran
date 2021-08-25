@@ -39,12 +39,16 @@ class KMatrix:
 
     def involved_compartments(self) -> list[str]:
         """A list of all compartments in the Matrix."""
+        # TODO: find a better way that preserves ordering as defined in initial_concentrations
         compartments = []
         for index in self.matrix:
-            compartments.append(index[0])
-            compartments.append(index[1])
+            if index[0] not in compartments:
+                compartments.append(index[0])
+            if index[1] not in compartments:
+                compartments.append(index[1])
 
-        compartments = list(set(compartments))
+        # Don't use set, it randomly reorders the compartments.
+        # compartments = list(set(compartments))
         return compartments
 
     def combine(self, k_matrix: KMatrix) -> KMatrix:
