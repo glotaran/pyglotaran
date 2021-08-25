@@ -60,7 +60,7 @@ class EqualAreaPenalty:
 
 
 def has_spectral_penalties(model: Model) -> bool:
-    return len(model.equal_area_penalties) != 0
+    return len(model.clp_area_penalties) != 0
 
 
 def apply_spectral_penalties(
@@ -74,7 +74,7 @@ def apply_spectral_penalties(
 ) -> np.ndarray:
 
     penalties = []
-    for penalty in model.equal_area_penalties:
+    for penalty in model.clp_area_penalties:
 
         penalty = penalty.fill(model, parameters)
         source_area = _get_area(
