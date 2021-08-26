@@ -55,6 +55,32 @@ if TYPE_CHECKING:
             "clp_area_penalties",
             [{"type": "equal_area"}],
         ),
+        (
+            dedent(
+                """
+                irf:
+                    irf1:
+                        center_dispersion: [cdc1]
+
+                """
+            ),
+            1,
+            "irf",
+            {"irf1": {"center_dispersion_coefficients": ["cdc1"]}},
+        ),
+        (
+            dedent(
+                """
+                irf:
+                    irf1:
+                        "width_dispersion": [wdc1]
+
+                """
+            ),
+            1,
+            "irf",
+            {"irf1": {"width_dispersion_coefficients": ["wdc1"]}},
+        ),
     ),
     ids=(
         "type: kinetic-spectrum",
@@ -62,6 +88,8 @@ if TYPE_CHECKING:
         "spectral_relations",
         "spectral_constraints",
         "equal_area_penalties",
+        "center_dispersion",
+        "width_dispersion",
     ),
 )
 def test_model_spec_deprecations(

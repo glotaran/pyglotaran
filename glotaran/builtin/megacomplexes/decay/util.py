@@ -228,10 +228,9 @@ def retrieve_irf(dataset_model: DatasetModel, dataset: xr.Dataset, global_dimens
     dataset["irf_center"] = ("irf_nr", center) if len(center) > 1 else center[0]
     dataset["irf_width"] = ("irf_nr", width) if len(width) > 1 else width[0]
     if isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center:
-        for i, dispersion in enumerate(
-            irf.calculate_dispersion(dataset.coords["spectral"].values)
-        ):
-            dataset[f"center_dispersion_{i+1}"] = (
-                global_dimension,
-                dispersion,
-            )
+        dataset["irf_center_location"] = (
+            ("irf_nr", global_dimension),
+            irf.calculate_dispersion(dataset.coords["spectral"].values),
+        )
+        # center_dispersion_1 for backwards compatibility (0.3-0.4.1)
+        dataset["center_dispersion_1"] = dataset["irf_center_location"].sel(irf_nr=0)

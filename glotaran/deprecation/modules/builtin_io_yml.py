@@ -85,3 +85,24 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
         swap_keys=("equal_area_penalties", "clp_area_penalties"),
         stacklevel=load_model_stack_level,
     )
+
+    if "irf" in spec:
+        for _, irf in spec["irf"].items():
+            deprecate_dict_entry(
+                dict_to_check=irf,
+                deprecated_usage="center_dispersion",
+                new_usage="center_dispersion_coefficients",
+                to_be_removed_in_version="0.7.0",
+                swap_keys=("center_dispersion", "center_dispersion_coefficients"),
+                stacklevel=load_model_stack_level,
+            )
+
+        for _, irf in spec["irf"].items():
+            deprecate_dict_entry(
+                dict_to_check=irf,
+                deprecated_usage="width_dispersion",
+                new_usage="width_dispersion_coefficients",
+                to_be_removed_in_version="0.7.0",
+                swap_keys=("width_dispersion", "width_dispersion_coefficients"),
+                stacklevel=load_model_stack_level,
+            )
