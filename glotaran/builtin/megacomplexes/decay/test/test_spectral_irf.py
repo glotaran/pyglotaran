@@ -53,7 +53,7 @@ irf:
         center: irf.center
         width: irf.width
         dispersion_center: irf.dispersion_center
-        center_dispersion: [irf.center_dispersion]
+        center_dispersion_coefficients: [irf.cdc1]
 """
 MODEL_MULTI_IRF_DISPERSION = f"""\
 {MODEL_BASE}
@@ -63,8 +63,8 @@ irf:
         center: [irf.center]
         width: [irf.width]
         dispersion_center: irf.dispersion_center
-        center_dispersion: [irf.center_dispersion1, irf.center_dispersion2]
-        width_dispersion: [irf.width_dispersion]
+        center_dispersion_coefficients: [irf.cdc1, irf.cdc2]
+        width_dispersion_coefficients: [irf.wdc1]
 """
 
 MODEL_MULTIPULSE_IRF_DISPERSION = f"""\
@@ -75,7 +75,7 @@ irf:
         center: [irf.center1, irf.center2]
         width: [irf.width]
         dispersion_center: irf.dispersion_center
-        center_dispersion: [irf.center_dispersion1, irf.center_dispersion2, irf.center_dispersion3]
+        center_dispersion_coefficients: [irf.cdc1, irf.cdc2, irf.cdc3]
 """
 
 PARAMETERS_BASE = """\
@@ -98,7 +98,7 @@ irf:
     - ['center', 0.3]
     - ['width', 0.1]
     - ['dispersion_center', 400, {{'vary': False}}]
-    - ['center_dispersion', 0.5]
+    - ['cdc1', 0.5]
 """
 
 # What is this?
@@ -108,9 +108,9 @@ irf:
     - ["center", 0.3]
     - ["width", 0.1]
     - ["dispersion_center", 400, {{"vary": False}}]
-    - ["center_dispersion1", 0.1]
-    - ["center_dispersion2", 0.01]
-    - ["width_dispersion", 0.025]
+    - ["cdc1", 0.1]
+    - ["cdc2", 0.01]
+    - ["wdc1", 0.025]
 """
 
 PARAMETERS_MULTIPULSE_IRF_DISPERSION = f"""\
@@ -120,9 +120,9 @@ irf:
     - ["center2", 0.4]
     - ['width', 0.1]
     - ['dispersion_center', 400, {{'vary': False}}]
-    - ["center_dispersion1", 0.5]
-    - ["center_dispersion2", 0.1]
-    - ["center_dispersion3", -0.01]
+    - ["cdc1", 0.5]
+    - ["cdc2", 0.1]
+    - ["cdc3", -0.01]
 """
 
 
@@ -137,13 +137,15 @@ def _spectral_axis():
     return np.linspace(300, 500, 3)
 
 
-def _calculate_irf_position(index, center, dispersion_center=None, center_dispersion=None):
-    if center_dispersion is None:
-        center_dispersion = []
+def _calculate_irf_position(
+    index, center, dispersion_center=None, center_dispersion_coefficients=None
+):
+    if center_dispersion_coefficients is None:
+        center_dispersion_coefficients = []
     if dispersion_center is not None:
         distance = (index - dispersion_center) / 100
     if dispersion_center is not None:
-        for i, coefficient in enumerate(center_dispersion):
+        for i, coefficient in enumerate(center_dispersion_coefficients):
             center += coefficient * np.power(distance, i + 1)
     return center
 
@@ -184,10 +186,10 @@ class MultiCenterIrfDispersion:
 def test_spectral_irf(suite):
 
     model = suite.model
-    assert model.valid()
+    assert model.valid(), model.validate()
 
     parameters = suite.parameters
-    assert model.valid(parameters)
+    assert model.valid(parameters), model.validate(parameters)
 
     sim_model = deepcopy(model)
     sim_model.dataset["dataset1"].global_megacomplex = ["mc2"]
@@ -243,12 +245,14 @@ def test_spectral_irf(suite):
             # calculated irf location
             model_irf_center = suite.model.irf["irf1"].center
             model_dispersion_center = suite.model.irf["irf1"].dispersion_center
-            model_center_dispersion = suite.model.irf["irf1"].center_dispersion
+            model_center_dispersion_coefficients = suite.model.irf[
+                "irf1"
+            ].center_dispersion_coefficients
             calc_irf_location_at_x = _calculate_irf_position(
-                x, model_irf_center, model_dispersion_center, model_center_dispersion
+                x, model_irf_center, model_dispersion_center, model_center_dispersion_coefficients
             )
             # fitted irf location
-            fitted_irf_loc_at_x = resultdata["center_dispersion"].sel(spectral=x)
+            fitted_irf_loc_at_x = resultdata["irf_center_location"].sel(spectral=x)
             assert np.allclose(calc_irf_location_at_x, fitted_irf_loc_at_x)
 
     assert "species_associated_spectra" in resultdata
