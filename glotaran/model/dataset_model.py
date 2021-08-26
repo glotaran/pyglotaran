@@ -176,7 +176,7 @@ class DatasetModel:
                 continue
             instances = [m for m in megacomplexes if isinstance(m, megacomplex_type)]
             n = len(instances)
-            if n != 1:
+            if n != 1 and instances[0].type is not None:
                 problems.append(
                     f"Multiple instances of unique megacomplex type '{instances[0].type}' "
                     f"in dataset {self.label}"
