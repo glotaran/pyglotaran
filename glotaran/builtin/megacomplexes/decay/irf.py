@@ -47,10 +47,10 @@ class IrfMultiGaussian:
         one or more center of the irf as parameter indices
     width:
         one or more widths of the gaussian as parameter index
-    center_dispersion:
+    center_dispersion_coefficients:
         polynomial coefficients for the dispersion of the
         center as list of parameter indices. None for no dispersion.
-    width_dispersion:
+    width_dispersion_coefficients:
         polynomial coefficients for the dispersion of the
         width as parameter indices. None for no dispersion.
 
@@ -124,8 +124,8 @@ class IrfGaussian(IrfMultiGaussian):
 @model_item(
     properties={
         "dispersion_center": {"type": Parameter, "allow_none": True},
-        "center_dispersion": {"type": List[Parameter], "default": []},
-        "width_dispersion": {"type": List[Parameter], "default": []},
+        "center_dispersion_coefficients": {"type": List[Parameter], "default": []},
+        "width_dispersion_coefficients": {"type": List[Parameter], "default": []},
         "model_dispersion_with_wavenumber": {"type": bool, "default": False},
     },
     has_type=True,
@@ -149,12 +149,12 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
         one or more center of the irf as parameter indices
     width:
         one or more widths of the gaussian as parameter index
-    center_dispersion:
-        polynomial coefficients for the dispersion of the
-        center as list of parameter indices. None for no dispersion.
-    width_dispersion:
-        polynomial coefficients for the dispersion of the
-        width as parameter indices. None for no dispersion.
+    center_dispersion_coefficients:
+        list of parameters with polynomial coefficients describing
+        the dispersion of the irf center location. None for no dispersion.
+    width_dispersion_coefficients:
+        list of parameters with polynomial coefficients describing
+        the dispersion of the width of the irf. None for no dispersion.
 
     """
 
@@ -173,16 +173,16 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
                 else (index - self.dispersion_center) / 100
             )
 
-        if len(self.center_dispersion) != 0:
+        if len(self.center_dispersion_coefficients) != 0:
             if self.dispersion_center is None:
                 raise ModelError(f"No dispersion center defined for irf '{self.label}'")
-            for i, disp in enumerate(self.center_dispersion):
+            for i, disp in enumerate(self.center_dispersion_coefficients):
                 centers += disp * np.power(dist, i + 1)
 
-        if len(self.width_dispersion) != 0:
+        if len(self.width_dispersion_coefficients) != 0:
             if self.dispersion_center is None:
                 raise ModelError(f"No dispersion center defined for irf '{self.label}'")
-            for i, disp in enumerate(self.width_dispersion):
+            for i, disp in enumerate(self.width_dispersion_coefficients):
                 widths = widths + disp * np.power(dist, i + 1)
 
         return centers, widths, scale, shift, backsweep, backsweep_period

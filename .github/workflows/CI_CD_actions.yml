@@ -109,7 +109,7 @@ jobs:
         run: pip freeze
       - name: Run tests
         run: |
-          pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml -k 'not IrfDispersion' glotaran
+          pytest --cov=./ --cov-report term --cov-report xml --cov-config pyproject.toml glotaran
 
       - name: Codecov Upload
         uses: codecov/codecov-action@v2

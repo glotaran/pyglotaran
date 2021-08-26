@@ -1,6 +1,5 @@
 default-megacomplex: decay
 
-
 dataset:
   dataset1:
     megacomplex: [cmplx1]
@@ -23,36 +22,36 @@ irf:
   irf2:
     type: spectral-gaussian
     center: [1, 2]
-    width: [3,4]
+    width: [3, 4]
     scale: [9]
     normalize: false
     backsweep: true
     backsweep_period: 55
     dispersion_center: 55
-    center_dispersion: [5,6]
-    width_dispersion: [7,8]
+    center_dispersion_coefficients: [5, 6]
+    width_dispersion_coefficients: [7, 8]
     model_dispersion_with_wavenumber: true
 
 initial_concentration:
   inputD1:
-    compartments: [s1,s2,s3]
-    parameters: [1,2,3]
+    compartments: [s1, s2, s3]
+    parameters: [1, 2, 3]
   inputD2:
-    compartments: [s1,s2,s3]
-    parameters: [1,2,3]
+    compartments: [s1, s2, s3]
+    parameters: [1, 2, 3]
 
 # Convention matrix notation column = source, row = target compartment
 # (2,1) means from 1 to 2
 k_matrix:
   km1:
     matrix:
-      (s1, s1): '1'
-      (s2, s1): '2'
-      (s1, s2): '3'
-      (s3, s1): '4'
-      (s1, s3): '5'
-      (s4, s1): '6'
-      (s1, s4): '7'
+      (s1, s1): "1"
+      (s2, s1): "2"
+      (s1, s2): "3"
+      (s3, s1): "4"
+      (s1, s3): "5"
+      (s4, s1): "6"
+      (s1, s4): "7"
 
 shape:
   shape1:
@@ -63,9 +62,9 @@ shape:
 
 megacomplex:
   cmplx1:
-      k_matrix: [km1] # A megacomplex has one or more k-matrices
+    k_matrix: [km1] # A megacomplex has one or more k-matrices
   cmplx2:
-      k_matrix: [km2]
+    k_matrix: [km2]
   cmplx3:
     type: "spectral"
     shape:
@@ -97,7 +96,7 @@ relations:
   - source: s1
     target: s2
     parameter: 8
-    interval: [[1,100], [2,200]]
+    interval: [[1, 100], [2, 200]]
 
 weights:
   - datasets: [d1, d2]
