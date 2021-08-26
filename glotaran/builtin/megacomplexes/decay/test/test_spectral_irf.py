@@ -144,7 +144,6 @@ def _calculate_irf_position(
         center_dispersion_coefficients = []
     if dispersion_center is not None:
         distance = (index - dispersion_center) / 100
-    if dispersion_center is not None:
         for i, coefficient in enumerate(center_dispersion_coefficients):
             center += coefficient * np.power(distance, i + 1)
     return center
