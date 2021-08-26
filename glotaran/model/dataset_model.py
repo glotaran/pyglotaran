@@ -179,7 +179,7 @@ class DatasetModel:
             if n != 1:
                 problems.append(
                     f"Multiple instances of unique megacomplex type '{instances[0].type}' "
-                    "in dataset {self.label}"
+                    f"in dataset {self.label}"
                 )
 
         return problems
