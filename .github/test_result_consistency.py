@@ -284,9 +284,8 @@ def test_result_data_var_consistency(
                 expected_values = expected_var_value
                 current_values = current_data
 
-                rtol = 1e-8
-
-                eps = np.finfo(float).eps
+                eps = np.finfo(np.float64).eps
+                rtol = np.finfo(np.float32).eps
                 if "singular_vectors" in expected_var_name:  # type:ignore[operator]
                     rtol = 1e-5
                     pre_fix = SVD_PATTERN.match(expected_var_name).group(  # type:ignore[operator]
