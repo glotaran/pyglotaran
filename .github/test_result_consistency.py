@@ -317,8 +317,8 @@ def test_result_data_var_consistency(
                 abs_diff = np.abs(expected_values - current_values)
 
                 assert allclose(
-                    abs_diff,
                     float_resolution,
+                    abs_diff,
                     atol=rtol,  # we compare the difference so atol -> rtol
                     print_fail=20,
                 ), (
