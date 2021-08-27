@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     "model_yml_str, expected_nr_of_warnings, expected_key, expected_value",
     (
         ("type: kinetic-spectrum", 1, "default-megacomplex", "decay"),
-        ("type: spectrum", 1, "default-megacomplex", "spectral"),
+        ("type: spectral-model", 1, "default-megacomplex", "spectral"),
         (
             dedent(
                 """
