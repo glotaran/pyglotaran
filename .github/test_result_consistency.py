@@ -323,7 +323,9 @@ def test_result_data_var_consistency(
                 ), (
                     f"Result data_var data mismatch: {expected_var_name!r} in {file_name!r}.\n"
                     "With sum of absolute difference: "
-                    f"{float(np.sum(abs_diff))} and shape: {expected_var_value.shape}"
+                    f"{float(np.sum(abs_diff))} and shape: {expected_var_value.shape}\n"
+                    "Mean difference: "
+                    f"{float(np.sum(abs_diff))/np.prod(expected_var_value.shape)}\n"
                 )
 
                 coord_test(
