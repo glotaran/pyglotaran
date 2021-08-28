@@ -40,8 +40,8 @@ class AllCloseFixture(Protocol):
         self,
         a: float | np.ndarray | xr.DataArray,
         b: float | np.ndarray | xr.DataArray,
-        rtol: float = 1e-5,
-        atol: float = 1e-8,
+        rtol: float | np.ndarray = 1e-5,
+        atol: float | np.ndarray = 1e-8,
         xtol: int = 0,
         equal_nan: bool = False,
         print_fail: int = 5,
@@ -125,8 +125,8 @@ def coord_test(
     allclose: AllCloseFixture,
     exact_match=False,
     data_var_name: str = "unknown",
-):
-    """Tests that coordinates are exactly equal if exact match or string coords or close."""
+) -> None:
+    """Run tests that coordinates are exactly equal if string coords or close."""
     for expected_coord_name, expected_coord_value in expected_coords.items():
         assert expected_coord_name in current_coords.keys(), (
             f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
@@ -145,6 +145,80 @@ def coord_test(
             assert allclose(
                 expected_coord_value, current_coords[expected_coord_name], rtol=1e-5, print_fail=20
             ), f"Coordinate value mismatch in {file_name!r}, data_var {data_var_name!r}"
+
+
+def data_var_test(
+    allclose: AllCloseFixture,
+    expected_result: xr.Dataset,
+    current_result: xr.Dataset,
+    file_name: str,
+    expected_var_name: str,
+) -> None:
+    """Run test that a data_var of the current_result is close to the expected_result."""
+    expected_var_value = expected_result.data_vars[expected_var_name]
+
+    # weighted_data were always calculated and now will only be calculated
+    # when weights are applied
+    if expected_var_name == "weighted_data" and expected_var_name not in current_result.data_vars:
+        return
+
+    assert (
+        expected_var_name in current_result.data_vars
+    ), f"Missing data_var: {expected_var_name!r} in {file_name!r}"
+    current_data = current_result.data_vars[expected_var_name]
+    expected_values = expected_var_value
+    current_values = current_data
+
+    eps = np.finfo(np.float32).eps
+    rtol = 1e-5
+    # if "residual" in expected_var_name:  # type:ignore[operator]
+    #     eps = 1e-5
+
+    if "singular_vectors" in expected_var_name:  # type:ignore[operator]
+        rtol = 1e-4
+        eps = 1e-5
+        pre_fix = SVD_PATTERN.match(expected_var_name).group(  # type:ignore[operator]
+            "pre_fix"
+        )
+        expected_singular_values = expected_result.data_vars[f"{pre_fix}singular_values"]
+
+        if expected_var_value.shape[0] == expected_singular_values.shape[0]:
+            expected_values_scaled = np.diag(expected_singular_values).dot(expected_var_value.data)
+        else:
+            expected_values_scaled = expected_var_value.data.dot(np.diag(expected_singular_values))
+
+        float_resolution = np.maximum(
+            np.abs(eps * expected_values_scaled),
+            np.ones(expected_var_value.data.shape) * eps,
+        )
+    else:
+        float_resolution = np.maximum(
+            np.abs(eps * expected_var_value.data),
+            np.ones(expected_var_value.data.shape) * eps,
+        )
+    abs_diff = np.abs(expected_values - current_values)
+
+    assert allclose(
+        expected_values,
+        current_values,
+        atol=float_resolution,
+        rtol=rtol,
+        print_fail=20,
+    ), (
+        f"Result data_var data mismatch: {expected_var_name!r} in {file_name!r}.\n"
+        "With sum of absolute difference: "
+        f"{float(np.sum(abs_diff))} and shape: {expected_var_value.shape}\n"
+        "Mean difference: "
+        f"{float(np.sum(abs_diff))/np.prod(expected_var_value.shape)}\n"
+    )
+
+    coord_test(
+        expected_var_value.coords,
+        current_data.coords,
+        file_name,
+        allclose,
+        data_var_name=expected_var_name,  # type:ignore[operator]
+    )
 
 
 def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]]]:
@@ -175,20 +249,25 @@ def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]
 
 
 @lru_cache(maxsize=1)
-def map_result_data() -> dict[str, list[tuple[xr.Dataset, xr.Dataset, str]]]:
-    """Load all datasets and map them in a dict."""
+def map_result_data() -> tuple[dict[str, list[tuple[xr.Dataset, xr.Dataset, str]]], set[str]]:
+    """Load all datasets and map them in a tuple of dict and set of data_var names."""
     result_map = defaultdict(list)
+    data_var_names = set()
     result_file_map = map_result_files(file_glob_pattern="*.nc")
     for key, path_list in result_file_map.items():
         for expected_result_file, current_result_file in path_list:
+            expected_result: xr.Dataset = xr.open_dataset(expected_result_file)
             result_map[key].append(
                 (
-                    xr.open_dataset(expected_result_file),
+                    expected_result,
                     xr.open_dataset(current_result_file),
                     expected_result_file.name,
                 )
             )
-    return result_map
+            for data_var_name in expected_result.data_vars.keys():
+                if data_var_name != "data":
+                    data_var_names.add(data_var_name)
+    return result_map, data_var_names
 
 
 @lru_cache(maxsize=1)
@@ -209,13 +288,13 @@ def map_result_parameters() -> dict[str, list[pd.DataFrame]]:
     return result_map
 
 
-@pytest.mark.parametrize("result_name", map_result_data().keys())
+@pytest.mark.parametrize("result_name", map_result_data()[0].keys())
 def test_original_data_exact_consistency(
     allclose: AllCloseFixture,
     result_name: str,
 ):
     """The original data need to be exactly the same."""
-    for expected_result, current_result, file_name in map_result_data()[result_name]:
+    for expected_result, current_result, file_name in map_result_data()[0][result_name]:
         assert np.array_equal(
             expected_result.data.data, current_result.data.data
         ), f"Original data mismatch: {result_name!r} in {file_name!r}"
@@ -241,13 +320,13 @@ def test_result_parameter_consistency(
         ), f"Parameter Mismatch: {compare_df.index}"
 
 
-@pytest.mark.parametrize("result_name", map_result_data().keys())
+@pytest.mark.parametrize("result_name", map_result_data()[0].keys())
 def test_result_attr_consistency(
     allclose: AllCloseFixture,
     result_name: str,
 ):
     """Resultdataset attributes need to be approximately the same."""
-    for expected, current, file_name in map_result_data()[result_name]:
+    for expected, current, file_name in map_result_data()[0][result_name]:
         for expected_attr_name, expected_attr_value in expected.attrs.items():
 
             assert (
@@ -255,83 +334,16 @@ def test_result_attr_consistency(
             ), f"Missing result attribute: {expected_attr_name!r} in {file_name!r}"
 
             assert allclose(
-                expected_attr_value, current.attrs[expected_attr_name], rtol=1e-4, print_fail=20
+                expected_attr_value, current.attrs[expected_attr_name], rtol=1e-5, print_fail=20
             ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
 
 
-@pytest.mark.parametrize("result_name", map_result_data().keys())
+@pytest.mark.parametrize("expected_var_name", map_result_data()[1])
+@pytest.mark.parametrize("result_name", map_result_data()[0].keys())
 def test_result_data_var_consistency(
-    allclose: AllCloseFixture,
-    result_name: str,
+    allclose: AllCloseFixture, result_name: str, expected_var_name: str
 ):
     """Result dataset data variables need to be approximately the same."""
-    for expected_result, current_result, file_name in map_result_data()[result_name]:
-        for expected_var_name, expected_var_value in expected_result.data_vars.items():
-            if expected_var_name != "data":
-
-                # weighted_data were always calculated and now will only be calculated
-                # when weights are applied
-                if (
-                    expected_var_name == "weighted_data"
-                    and expected_var_name not in current_result.data_vars
-                ):
-                    continue
-
-                assert (
-                    expected_var_name in current_result.data_vars
-                ), f"Missing data_var: {expected_var_name!r} in {file_name!r}"
-                current_data = current_result.data_vars[expected_var_name]
-                expected_values = expected_var_value
-                current_values = current_data
-
-                eps = np.finfo(np.float64).eps
-                rtol = np.finfo(np.float32).eps
-                if "singular_vectors" in expected_var_name:  # type:ignore[operator]
-                    rtol = 1e-5
-                    pre_fix = SVD_PATTERN.match(expected_var_name).group(  # type:ignore[operator]
-                        "pre_fix"
-                    )
-                    expected_singular_values = expected_result.data_vars[
-                        f"{pre_fix}singular_values"
-                    ]
-
-                    if expected_var_value.shape[0] == expected_singular_values.shape[0]:
-                        expected_values_scaled = np.diag(expected_singular_values).dot(
-                            expected_var_value.data
-                        )
-                    else:
-                        expected_values_scaled = expected_var_value.data.dot(
-                            np.diag(expected_singular_values)
-                        )
-
-                    float_resolution = np.maximum(
-                        eps * expected_values_scaled,
-                        np.ones(expected_var_value.data.shape) * 2.0 * eps,
-                    )
-                else:
-                    float_resolution = np.maximum(
-                        eps * expected_var_value.data,
-                        np.ones(expected_var_value.data.shape) * 2.0 * eps,
-                    )
-                abs_diff = np.abs(expected_values - current_values)
-
-                assert allclose(
-                    float_resolution,
-                    abs_diff,
-                    atol=rtol,  # we compare the difference so atol -> rtol
-                    print_fail=20,
-                ), (
-                    f"Result data_var data mismatch: {expected_var_name!r} in {file_name!r}.\n"
-                    "With sum of absolute difference: "
-                    f"{float(np.sum(abs_diff))} and shape: {expected_var_value.shape}\n"
-                    "Mean difference: "
-                    f"{float(np.sum(abs_diff))/np.prod(expected_var_value.shape)}\n"
-                )
-
-                coord_test(
-                    expected_var_value.coords,
-                    current_data.coords,
-                    file_name,
-                    allclose,
-                    data_var_name=expected_var_name,  # type:ignore[operator]
-                )
+    for expected_result, current_result, file_name in map_result_data()[0][result_name]:
+        if expected_var_name in expected_result.data_vars.keys():
+            data_var_test(allclose, expected_result, current_result, file_name, expected_var_name)
