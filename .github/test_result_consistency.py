@@ -171,8 +171,8 @@ def data_var_test(
 
     eps = np.finfo(np.float32).eps
     rtol = 1e-5
-    # if "residual" in expected_var_name:  # type:ignore[operator]
-    #     eps = 1e-5
+    if expected_var_name.endswith("residual"):  # type:ignore[operator]
+        eps = expected_result["data"].values.max() * 1e-8
 
     if "singular_vectors" in expected_var_name:  # type:ignore[operator]
         rtol = 1e-4
