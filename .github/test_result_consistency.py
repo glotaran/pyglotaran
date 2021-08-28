@@ -7,6 +7,7 @@ import subprocess
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
+from textwrap import dedent
 from typing import TYPE_CHECKING
 from typing import Protocol
 from warnings import warn
@@ -170,13 +171,13 @@ def data_var_test(
     current_values = current_data
 
     eps = np.finfo(np.float32).eps
-    rtol = 1e-5
+    rtol = 1e-5  # default value of allclose
     if expected_var_name.endswith("residual"):  # type:ignore[operator]
         eps = expected_result["data"].values.max() * 1e-8
 
     if "singular_vectors" in expected_var_name:  # type:ignore[operator]
-        rtol = 1e-4
-        eps = 1e-5
+        rtol = 1e-4  # instead of 1e-5
+        eps = 1e-5  # instead of ~1.2e-7
         pre_fix = SVD_PATTERN.match(expected_var_name).group(  # type:ignore[operator]
             "pre_fix"
         )
@@ -224,7 +225,34 @@ def data_var_test(
 def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]]]:
     """Load all datasets and map them in a dict."""
     result_map = defaultdict(list)
-    compare_results_path = get_compare_results_path()
+    if os.getenv("COMPARE_RESULTS_LOCAL"):
+        compare_results_path = Path(os.getenv(key="COMPARE_RESULTS_LOCAL"))
+        warn(
+            dedent(
+                f"""
+                Using Path in environment variable COMPARE_RESULTS_LOCAL:
+                {compare_results_path.as_posix()}
+                """
+            )
+        )
+        try:
+            if not compare_results_path.exists():
+                raise FileNotFoundError(
+                    dedent(
+                        f"""
+                        Path in COMPARE_RESULTS_LOCAL not valid:
+                        {compare_results_path}  <- does not exist
+                        """
+                    )
+                )
+        except OSError as exception:
+            if str(compare_results_path).startswith(('"', "'")):
+                raise Exception(
+                    "Path in COMPARE_RESULTS_LOCAL should not start with ' or \""
+                ) from exception
+            raise exception
+    else:
+        compare_results_path = get_compare_results_path()
     current_result_path = get_current_result_path()
     for expected_result_file in compare_results_path.rglob(file_glob_pattern):
         key = (
@@ -334,7 +362,7 @@ def test_result_attr_consistency(
             ), f"Missing result attribute: {expected_attr_name!r} in {file_name!r}"
 
             assert allclose(
-                expected_attr_value, current.attrs[expected_attr_name], rtol=1e-5, print_fail=20
+                expected_attr_value, current.attrs[expected_attr_name], print_fail=20
             ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
 
 
