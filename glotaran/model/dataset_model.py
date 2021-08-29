@@ -12,11 +12,13 @@ from glotaran.model.item import model_item_validator
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from glotaran.model.megacomplex import Megacomplex
     from glotaran.model.model import Model
 
 
-def create_dataset_model_type(properties: dict[str, any]) -> type:
+def create_dataset_model_type(properties: dict[str, Any]) -> type[DatasetModel]:
     @model_item(properties=properties)
     class ModelDatasetModel(DatasetModel):
         pass
