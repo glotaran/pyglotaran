@@ -168,10 +168,19 @@ class DatasetModel:
 
     @model_item_validator(False)
     def ensure_unique_megacomplexes(self, model: Model) -> list[str]:
-
+        problems = []
         megacomplexes = [model.megacomplex[m] for m in self.megacomplex if m in model.megacomplex]
         types = {type(m) for m in megacomplexes}
-        problems = []
+        megacomplex_types = []
+
+        for megacomplex_name in self.megacomplex:
+            try:
+                megacomplex_types.append(type(model.megacomplex[megacomplex_name]))
+            except KeyError:
+                problems.append(
+                    f"The megacomplex {megacomplex_name!r} used in dataset {self.label!r} "
+                    "wasn't defined in the megacomplex section of the model specification."
+                )
 
         for megacomplex_type in types:
             if megacomplex_type.glotaran_unique() is False:
