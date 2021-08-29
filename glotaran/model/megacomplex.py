@@ -70,6 +70,7 @@ def megacomplex(
         megacomplex_type = model_item(properties=properties, has_type=True)(cls)
 
         if register_as is not None:
+            megacomplex_type.name = register_as
             register_megacomplex(register_as, megacomplex_type)
 
         return megacomplex_type

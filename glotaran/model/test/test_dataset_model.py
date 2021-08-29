@@ -59,17 +59,18 @@ class MockModel:
         ),
         (
             ["d1", "b1", "b2"],
-            ["Multiple instances of unique megacomplex type 'None' in dataset 'ds1'"],
+            ["Multiple instances of unique megacomplex type 'baseline' in dataset 'ds1'"],
         ),
         (
             ["d1", "c1", "c2"],
-            ["Multiple instances of unique megacomplex type 'None' in dataset 'ds1'"],
+            ["Multiple instances of unique megacomplex type 'coherent-artifact' in dataset 'ds1'"],
         ),
         (
-            ["d1", "c1", "c2", "b1", "b2"],
+            ["d1", "b1", "b2", "c1", "c2"],
             [
-                "Multiple instances of unique megacomplex type 'None' in dataset 'ds1'",
-                "Multiple instances of unique megacomplex type 'None' in dataset 'ds1'",
+                "Multiple instances of unique megacomplex type 'baseline' in dataset 'ds1'",
+                "Multiple instances of unique megacomplex type "
+                "'coherent-artifact' in dataset 'ds1'",
             ],
         ),
     ),
