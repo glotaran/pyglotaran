@@ -172,14 +172,14 @@ class DatasetModel:
         problems = []
 
         for megacomplex_type in types:
-            if not megacomplex_type.glotaran_unique:
+            if megacomplex_type.glotaran_unique() is False:
                 continue
             instances = [m for m in megacomplexes if isinstance(m, megacomplex_type)]
             n = len(instances)
-            if n != 1 and instances[0].type is not None:
+            if n != 1:
                 problems.append(
                     f"Multiple instances of unique megacomplex type '{instances[0].type}' "
-                    f"in dataset {self.label}"
+                    f"in dataset {self.label!r}"
                 )
 
         return problems
