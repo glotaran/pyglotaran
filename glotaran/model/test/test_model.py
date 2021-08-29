@@ -270,9 +270,9 @@ def test_model_validity(test_model: Model, model_error: Model, parameter: Parame
     print(model_error.problem_list())  # noqa T001
     print(model_error.problem_list(parameter))  # noqa T001
     assert not model_error.valid()
-    assert len(model_error.problem_list()) == 8
+    assert len(model_error.problem_list()) == 5
     assert not model_error.valid(parameter)
-    assert len(model_error.problem_list(parameter)) == 12
+    assert len(model_error.problem_list(parameter)) == 9
 
 
 def test_items(test_model: Model):

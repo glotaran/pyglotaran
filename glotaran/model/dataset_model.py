@@ -172,13 +172,7 @@ class DatasetModel:
 
     @model_item_validator(False)
     def ensure_unique_megacomplexes(self, model: Model) -> list[str]:
-        """Ensure that all megacomplexes in a dataset used correctly.
-
-        Correct usage means in this context:
-
-        -   Each megcomplex key is defined in the ``megacomplex`` section
-            of the model specification.
-        -   Unique megacomplexes are only used once per dataset
+        """Ensure that unique megacomplexes Are only used once per dataset.
 
         Parameters
         ----------
@@ -190,7 +184,6 @@ class DatasetModel:
         list[str]
             Error messages to be shown when the model gets validated.
         """
-        problems = []
         glotaran_unique_megacomplex_types = []
 
         for megacomplex_name in self.megacomplex:
@@ -200,16 +193,11 @@ class DatasetModel:
                     type_name = megacomplex_instance.type or megacomplex_instance.name
                     glotaran_unique_megacomplex_types.append(type_name)
             except KeyError:
-                problems.append(
-                    f"The megacomplex {megacomplex_name!r} used in dataset {self.label!r} "
-                    "wasn't defined in the megacomplex section of the model specification."
-                )
+                pass
 
-        for type_name, count in Counter(glotaran_unique_megacomplex_types).most_common():
-            if count > 1:
-                problems.append(
-                    f"Multiple instances of unique megacomplex type {type_name!r} "
-                    f"in dataset {self.label!r}"
-                )
-
-        return problems
+        return [
+            f"Multiple instances of unique megacomplex type {type_name!r} "
+            f"in dataset {self.label!r}"
+            for type_name, count in Counter(glotaran_unique_megacomplex_types).most_common()
+            if count > 1
+        ]
