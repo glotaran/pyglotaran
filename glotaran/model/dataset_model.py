@@ -37,14 +37,6 @@ class DatasetModel:
     parameter.
     """
 
-    label: str
-    megacomplex: list[str]
-    megacomplex_scale: list[Parameter] | None
-    global_megacomplex: list[str]
-    global_megacomplex_scale: list[Parameter] | None
-    scale: Parameter | None
-    _coords: dict[Hashable, np.ndarray]
-
     def iterate_megacomplexes(
         self,
     ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
@@ -79,7 +71,7 @@ class DatasetModel:
                 )
         return self._model_dimension
 
-    def finalize_data(self, dataset: xr.Dataset):
+    def finalize_data(self, dataset: xr.Dataset) -> None:
         is_full_model = self.has_global_model()
         for megacomplex in self.megacomplex:
             megacomplex.finalize_data(self, dataset, is_full_model=is_full_model)
@@ -89,7 +81,7 @@ class DatasetModel:
                     self, dataset, is_full_model=is_full_model, as_global=True
                 )
 
-    def overwrite_model_dimension(self, model_dimension: str):
+    def overwrite_model_dimension(self, model_dimension: str) -> None:
         """Overwrites the dataset model's model dimension."""
         self._model_dimension = model_dimension
 
@@ -120,11 +112,11 @@ class DatasetModel:
                 )
         return self._global_dimension
 
-    def overwrite_global_dimension(self, global_dimension: str):
+    def overwrite_global_dimension(self, global_dimension: str) -> None:
         """Overwrites the dataset model's global dimension."""
         self._global_dimension = global_dimension
 
-    def swap_dimensions(self):
+    def swap_dimensions(self) -> None:
         """Swaps the dataset model's global and model dimension."""
         global_dimension = self.get_model_dimension()
         model_dimension = self.get_global_dimension()
