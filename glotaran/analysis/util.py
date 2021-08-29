@@ -196,6 +196,9 @@ def calculate_clp_penalties(
     global_axis: np.ndarray,
 ) -> np.ndarray:
 
+    # TODO: make a decision on how to handle clp_penalties per dataset
+    # temporary workaround to better match v0.4.1 output
+    debug_scale = len(model.dataset)
     penalties = []
     for penalty in model.clp_area_penalties:
         penalty = penalty.fill(model, parameters)
@@ -214,8 +217,10 @@ def calculate_clp_penalties(
             penalty.target_intervals,
             global_axis,
         )
-
-        area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
+        area_penalty = np.abs(
+            debug_scale * np.sum(source_area)
+            - penalty.parameter * debug_scale * np.sum(target_area)
+        )
 
         penalties.append(area_penalty * penalty.weight)
 
