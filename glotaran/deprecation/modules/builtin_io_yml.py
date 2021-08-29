@@ -30,10 +30,10 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
 
     deprecate_dict_entry(
         dict_to_check=spec,
-        deprecated_usage="type: spectrum",
+        deprecated_usage="type: spectral-model",
         new_usage="default-megacomplex: spectral",
         to_be_removed_in_version="0.7.0",
-        replace_rules=({"type": "spectrum"}, {"default-megacomplex": "spectral"}),
+        replace_rules=({"type": "spectral-model"}, {"default-megacomplex": "spectral"}),
         stacklevel=load_model_stack_level,
     )
 
