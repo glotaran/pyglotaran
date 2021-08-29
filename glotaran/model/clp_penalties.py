@@ -73,6 +73,7 @@ def apply_spectral_penalties(
     group_tolerance: float,
 ) -> np.ndarray:
 
+    # TODO: seems to duplicate calculate_clp_penalties
     penalties = []
     for penalty in model.clp_area_penalties:
 
