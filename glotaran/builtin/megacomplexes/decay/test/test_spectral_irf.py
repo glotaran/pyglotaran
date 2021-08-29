@@ -144,7 +144,6 @@ def _calculate_irf_position(
         center_dispersion_coefficients = []
     if dispersion_center is not None:
         distance = (index - dispersion_center) / 100
-    if dispersion_center is not None:
         for i, coefficient in enumerate(center_dispersion_coefficients):
             center += coefficient * np.power(distance, i + 1)
     return center
@@ -206,10 +205,14 @@ def test_spectral_irf(suite):
         maximum_number_function_evaluations=20,
     )
     result = optimize(scheme)
-    # print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
+        assert np.allclose(param.value, parameters.get(label).value), dedent(
+            f"""
+            Error in {suite.__name__} comparing {param.full_label},
+            - diff={param.value-parameters.get(label).value}
+            """
+        )
 
     resultdata = result.data["dataset1"]
 
@@ -253,15 +256,13 @@ def test_spectral_irf(suite):
             )
             # fitted irf location
             fitted_irf_loc_at_x = resultdata["irf_center_location"].sel(spectral=x)
-            assert np.allclose(calc_irf_location_at_x, fitted_irf_loc_at_x)
+            assert np.allclose(calc_irf_location_at_x, fitted_irf_loc_at_x.values), dedent(
+                f"""
+                Error in {suite.__name__} comparing irf_center_location,
+                - diff={calc_irf_location_at_x-fitted_irf_loc_at_x.values}
+                """
+            )
 
     assert "species_associated_spectra" in resultdata
     assert "decay_associated_spectra" in resultdata
     assert "irf_center" in resultdata
-
-
-if __name__ == "__main__":
-    test_spectral_irf(NoIrfDispersion)
-    test_spectral_irf(SimpleIrfDispersion)
-    test_spectral_irf(MultiIrfDispersion)
-    test_spectral_irf(MultiCenterIrfDispersion)
