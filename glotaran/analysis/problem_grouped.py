@@ -263,9 +263,12 @@ class GroupedProblem(Problem):
                 self._reduced_matrices[group_label] = combine_matrices(
                     [self._reduced_matrices[label] for label in group]
                 )
-                self._group_clp_labels[group_label] = list(
-                    set(itertools.chain(*(self._matrices[label].clp_labels for label in group)))
-                )
+                group_clp_labels = []
+                for label in group:
+                    for clp_label in self._matrices[label].clp_labels:
+                        if clp_label not in group_clp_labels:
+                            group_clp_labels.append(clp_label)
+                self._group_clp_labels[group_label] = group_clp_labels
 
         return self._matrices, self._reduced_matrices
 
