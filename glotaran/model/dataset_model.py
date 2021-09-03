@@ -1,22 +1,26 @@
 """The DatasetModel class."""
 from __future__ import annotations
 
+from collections import Counter
 from typing import TYPE_CHECKING
-from typing import Generator
 
 import numpy as np
 import xarray as xr
 
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_validator
-from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from typing import Any
+    from typing import Generator
+    from typing import Hashable
+
     from glotaran.model.megacomplex import Megacomplex
     from glotaran.model.model import Model
+    from glotaran.parameter import Parameter
 
 
-def create_dataset_model_type(properties: dict[str, any]) -> type:
+def create_dataset_model_type(properties: dict[str, Any]) -> type[DatasetModel]:
     @model_item(properties=properties)
     class ModelDatasetModel(DatasetModel):
         pass
@@ -33,13 +37,17 @@ class DatasetModel:
     parameter.
     """
 
-    def iterate_megacomplexes(self) -> Generator[tuple[Parameter | int, Megacomplex | str]]:
+    def iterate_megacomplexes(
+        self,
+    ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
         """Iterates of der dataset model's megacomplexes."""
         for i, megacomplex in enumerate(self.megacomplex):
             scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
             yield scale, megacomplex
 
-    def iterate_global_megacomplexes(self) -> Generator[tuple[Parameter | int, Megacomplex | str]]:
+    def iterate_global_megacomplexes(
+        self,
+    ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
         """Iterates of der dataset model's global megacomplexes."""
         for i, megacomplex in enumerate(self.global_megacomplex):
             scale = (
@@ -63,7 +71,7 @@ class DatasetModel:
                 )
         return self._model_dimension
 
-    def finalize_data(self, dataset: xr.Dataset):
+    def finalize_data(self, dataset: xr.Dataset) -> None:
         is_full_model = self.has_global_model()
         for megacomplex in self.megacomplex:
             megacomplex.finalize_data(self, dataset, is_full_model=is_full_model)
@@ -73,7 +81,7 @@ class DatasetModel:
                     self, dataset, is_full_model=is_full_model, as_global=True
                 )
 
-    def overwrite_model_dimension(self, model_dimension: str):
+    def overwrite_model_dimension(self, model_dimension: str) -> None:
         """Overwrites the dataset model's model dimension."""
         self._model_dimension = model_dimension
 
@@ -104,11 +112,11 @@ class DatasetModel:
                 )
         return self._global_dimension
 
-    def overwrite_global_dimension(self, global_dimension: str):
+    def overwrite_global_dimension(self, global_dimension: str) -> None:
         """Overwrites the dataset model's global dimension."""
         self._global_dimension = global_dimension
 
-    def swap_dimensions(self):
+    def swap_dimensions(self) -> None:
         """Swaps the dataset model's global and model dimension."""
         global_dimension = self.get_model_dimension()
         model_dimension = self.get_global_dimension()
@@ -117,9 +125,7 @@ class DatasetModel:
 
     def set_data(self, dataset: xr.Dataset) -> DatasetModel:
         """Sets the dataset model's data."""
-        self._coords: dict[str, np.ndarray] = {
-            name: dim.values for name, dim in dataset.coords.items()
-        }
+        self._coords = {name: dim.values for name, dim in dataset.coords.items()}
         self._data: np.ndarray = dataset.data.values
         self._weight: np.ndarray | None = dataset.weight.values if "weight" in dataset else None
         if self._weight is not None:
@@ -152,7 +158,7 @@ class DatasetModel:
         """Sets the dataset model's coordinates."""
         self._coords = coords
 
-    def get_coordinates(self) -> np.ndarray:
+    def get_coordinates(self) -> dict[Hashable, np.ndarray]:
         """Gets the dataset model's coordinates."""
         return self._coords
 
@@ -166,20 +172,32 @@ class DatasetModel:
 
     @model_item_validator(False)
     def ensure_unique_megacomplexes(self, model: Model) -> list[str]:
+        """Ensure that unique megacomplexes Are only used once per dataset.
 
-        megacomplexes = [model.megacomplex[m] for m in self.megacomplex if m in model.megacomplex]
-        types = {type(m) for m in megacomplexes}
-        problems = []
+        Parameters
+        ----------
+        model : Model
+            Model object using this dataset model.
 
-        for megacomplex_type in types:
-            if not megacomplex_type.glotaran_unique:
-                continue
-            instances = [m for m in megacomplexes if isinstance(m, megacomplex_type)]
-            n = len(instances)
-            if n != 1:
-                problems.append(
-                    f"Multiple instances of unique megacomplex type '{instances[0].type}' "
-                    "in dataset {self.label}"
-                )
+        Returns
+        -------
+        list[str]
+            Error messages to be shown when the model gets validated.
+        """
+        glotaran_unique_megacomplex_types = []
 
-        return problems
+        for megacomplex_name in self.megacomplex:
+            try:
+                megacomplex_instance = model.megacomplex[megacomplex_name]
+                if type(megacomplex_instance).glotaran_unique() is True:
+                    type_name = megacomplex_instance.type or megacomplex_instance.name
+                    glotaran_unique_megacomplex_types.append(type_name)
+            except KeyError:
+                pass
+
+        return [
+            f"Multiple instances of unique megacomplex type {type_name!r} "
+            f"in dataset {self.label!r}"
+            for type_name, count in Counter(glotaran_unique_megacomplex_types).most_common()
+            if count > 1
+        ]
