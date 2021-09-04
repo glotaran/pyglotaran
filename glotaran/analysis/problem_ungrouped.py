@@ -168,7 +168,12 @@ class UngroupedProblem(Problem):
 
         clp_labels = self._get_clp_labels(label)
         additional_penalty = calculate_clp_penalties(
-            self.model, self.parameters, clp_labels, self._clps[label], global_axis
+            self.model,
+            self.parameters,
+            clp_labels,
+            self._clps[label],
+            global_axis,
+            self.dataset_models,
         )
         if additional_penalty.size != 0:
             self._additional_penalty.append(additional_penalty)

@@ -194,33 +194,49 @@ def calculate_clp_penalties(
     clp_labels: list[list[str]] | list[str],
     clps: list[np.ndarray],
     global_axis: np.ndarray,
+    dataset_models: dict[str, DatasetModel],
 ) -> np.ndarray:
 
     # TODO: make a decision on how to handle clp_penalties per dataset
-    # temporary workaround to better match v0.4.1 output
-    debug_scale = len(model.dataset)
+    # 1. sum up contributions per dataset on each dataset_axis (v0.4.1)
+    # 2. sum up contributions on the global_axis (future?)
+
     penalties = []
     for penalty in model.clp_area_penalties:
         penalty = penalty.fill(model, parameters)
-        source_area = _get_area(
-            penalty.source,
-            clp_labels,
-            clps,
-            penalty.source_intervals,
-            global_axis,
-        )
+        source_area = np.array([])
+        target_area = np.array([])
+        for _, dataset_model in dataset_models.items():
+            dataset_axis = dataset_model.get_global_axis()
 
-        target_area = _get_area(
-            penalty.target,
-            clp_labels,
-            clps,
-            penalty.target_intervals,
-            global_axis,
-        )
-        area_penalty = np.abs(
-            debug_scale * np.sum(source_area)
-            - penalty.parameter * debug_scale * np.sum(target_area)
-        )
+            source_area = np.concatenate(
+                [
+                    source_area,
+                    _get_area(
+                        penalty.source,
+                        clp_labels,
+                        clps,
+                        penalty.source_intervals,
+                        global_axis,
+                        dataset_axis,
+                    ),
+                ]
+            )
+
+            target_area = np.concatenate(
+                [
+                    target_area,
+                    _get_area(
+                        penalty.target,
+                        clp_labels,
+                        clps,
+                        penalty.target_intervals,
+                        global_axis,
+                        dataset_axis,
+                    ),
+                ]
+            )
+        area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
 
         penalties.append(area_penalty * penalty.weight)
 
@@ -233,14 +249,18 @@ def _get_area(
     clps: list[np.ndarray],
     intervals: list[tuple[float, float]],
     global_axis: np.ndarray,
+    dataset_axis: np.ndarray,
 ) -> np.ndarray:
     area = []
 
     for interval in intervals:
         if interval[0] > global_axis[-1]:
             continue
-
-        start_idx, end_idx = get_idx_from_interval(interval, global_axis)
+        bounded_interval = (
+            max(interval[0], np.min(dataset_axis)),
+            min(interval[1], np.max(dataset_axis)),
+        )
+        start_idx, end_idx = get_idx_from_interval(bounded_interval, global_axis)
         for i in range(start_idx, end_idx + 1):
             index_clp_labels = clp_labels[i] if isinstance(clp_labels[0], list) else clp_labels
             if clp_label in index_clp_labels:
