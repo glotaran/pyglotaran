@@ -32,6 +32,7 @@ EXAMPLE_BLOCKLIST = [
     "study_transient_absorption_two_dataset_analysis_result_2d_co_co2",
     "ex_spectral_guidance",
 ]
+ALLOW_MISSING_COORDS = {"spectral": ("matrix", "species_concentration")}
 
 SVD_PATTERN = re.compile(r"(?P<pre_fix>.+?)(right|left)_singular_vectors")
 
@@ -129,6 +130,12 @@ def coord_test(
 ) -> None:
     """Run tests that coordinates are exactly equal if string coords or close."""
     for expected_coord_name, expected_coord_value in expected_coords.items():
+        if (
+            expected_coord_name in ALLOW_MISSING_COORDS
+            and data_var_name in ALLOW_MISSING_COORDS[expected_coord_name]
+        ):
+            print(f"- allow missing coordinate: {expected_coord_name} in variable {data_var_name}")
+            continue
         assert expected_coord_name in current_coords.keys(), (
             f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
             f"data_var {data_var_name!r}"
