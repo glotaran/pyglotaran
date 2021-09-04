@@ -293,7 +293,12 @@ class GroupedProblem(Problem):
         self._weighted_residuals = list(map(lambda result: result[2], results))
         self._residuals = list(map(lambda result: result[3], results))
         self._additional_penalty = calculate_clp_penalties(
-            self.model, self.parameters, self._clp_labels, self._grouped_clps, self._full_axis
+            self.model,
+            self.parameters,
+            self._clp_labels,
+            self._grouped_clps,
+            self._full_axis,
+            self.dataset_models,
         )
 
         return self._reduced_clps, self._clps, self._weighted_residuals, self._residuals
