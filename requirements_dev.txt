@@ -31,6 +31,7 @@ pytest-cov>=2.5.1
 pytest-env>=0.6.2
 pytest-runner>=2.11.1
 pytest-benchmark>=3.1.1
+pytest-allclose>=1.0.0
 
 # code quality assurance
 flake8>=3.8.3
