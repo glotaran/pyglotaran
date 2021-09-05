@@ -183,6 +183,18 @@ def data_var_test(
         eps = expected_result["data"].values.max() * 1e-8
 
     if "singular_vectors" in expected_var_name:  # type:ignore[operator]
+        # Sometimes the coords in the (right) singular vectors are swapped
+        if expected_values.dims != current_values.dims:
+            warn(
+                dedent(
+                    f"""\n
+                    Dimensions transposed for {expected_var_name!r} in {file_name!r}.
+                    - expected: {expected_values.dims}
+                    - current:  {current_values.dims}
+                    """
+                )
+            )
+            expected_values = expected_values.transpose(*current_values.dims)
         rtol = 1e-4  # instead of 1e-5
         eps = 1e-5  # instead of ~1.2e-7
         pre_fix = SVD_PATTERN.match(expected_var_name).group(  # type:ignore[operator]
