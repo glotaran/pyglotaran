@@ -300,6 +300,32 @@ as an attribute to the parent package.
         to_be_removed_in_version="0.6.0",
     )
 
+
+Testing Result consistency
+--------------------------
+To test the consistency of results  locally you need to clone the
+`pyglotaran-examples <https://github.com/glotaran/pyglotaran-examples>`_
+and run them::
+
+    $ git clone https://github.com/glotaran/pyglotaran-examples
+    $ cd pyglotaran-examples
+    $ python scripts/run_examples.py run-all --headless
+
+.. note::
+    Make sure you got the the latest version (``git pull``) and are
+    on the correct branch for both ``pyglotaran`` and ``pyglotaran-examples``.
+
+The results from the examples will be saved in you home folder under ``pyglotaran_examples_results``.
+Those results than will be compared to the 'gold standard' defined by the maintainers.
+
+To test the result consistency run::
+
+    $ pytest .github/test_result_consistency.py
+
+If needed this will clone the `'gold standard' results <https://github.com/glotaran/pyglotaran-examples/tree/comparison-results>`_
+to the folder ``comparison-results``, update them and test your current results against them.
+
+
 Deploying
 ---------
 
