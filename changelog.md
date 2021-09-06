@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.1 (2021-09-07)
+
+### ✨ Features
+
+- Integration test result validation (#760)
+
+### 🩹 Bug fixes
+
+- Fix unintended saving of sub-optimal parameters (0ece818, backport from #747)
+- Improve ordering in k_matrix involved_compartments function (#791)
+
 ## 0.4.0 (2021-06-25)
 
 ### ✨ Features
