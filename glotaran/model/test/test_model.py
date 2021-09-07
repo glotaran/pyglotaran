@@ -262,13 +262,13 @@ def test_model_misc(test_model: Model):
 
 
 def test_model_validity(test_model: Model, model_error: Model, parameter: ParameterGroup):
-    print(test_model.test_item1["t1"])  # noqa T001
-    print(test_model.problem_list())  # noqa T001
-    print(test_model.problem_list(parameter))  # noqa T001
+    print(test_model.test_item1["t1"])
+    print(test_model.problem_list())
+    print(test_model.problem_list(parameter))
     assert test_model.valid()
     assert test_model.valid(parameter)
-    print(model_error.problem_list())  # noqa T001
-    print(model_error.problem_list(parameter))  # noqa T001
+    print(model_error.problem_list())
+    print(model_error.problem_list(parameter))
     assert not model_error.valid()
     assert len(model_error.problem_list()) == 5
     assert not model_error.valid(parameter)

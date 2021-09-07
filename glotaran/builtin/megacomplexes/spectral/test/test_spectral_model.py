@@ -280,19 +280,19 @@ class ThreeCompartmentModel:
 def test_spectral_model(suite):
 
     model = suite.spectral_model
-    print(model.validate())  # noqa
+    print(model.validate())
     assert model.valid()
 
     wanted_parameters = suite.spectral_parameters
-    print(model.validate(wanted_parameters))  # noqa
-    print(wanted_parameters)  # noqa
+    print(model.validate(wanted_parameters))
+    print(wanted_parameters)
     assert model.valid(wanted_parameters)
 
     initial_parameters = suite.spectral_parameters
-    print(model.validate(initial_parameters))  # noqa
+    print(model.validate(initial_parameters))
     assert model.valid(initial_parameters)
 
-    print(model.markdown(initial_parameters))  # noqa
+    print(model.markdown(initial_parameters))
 
     dataset = simulate(model, "dataset1", wanted_parameters, suite.axis, suite.clp)
 
@@ -307,7 +307,7 @@ def test_spectral_model(suite):
         maximum_number_function_evaluations=20,
     )
     result = optimize(scheme)
-    print(result.optimized_parameters)  # noqa
+    print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
         assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
