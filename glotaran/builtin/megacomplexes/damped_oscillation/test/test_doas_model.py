@@ -364,25 +364,25 @@ class OneOscillationWithSequentialModel:
 )
 def test_doas_model(suite):
 
-    print(suite.sim_model.validate())  # noqa
+    print(suite.sim_model.validate())
     assert suite.sim_model.valid()
 
-    print(suite.model.validate())  # noqa
+    print(suite.model.validate())
     assert suite.model.valid()
 
-    print(suite.sim_model.validate(suite.wanted_parameter))  # noqa
+    print(suite.sim_model.validate(suite.wanted_parameter))
     assert suite.sim_model.valid(suite.wanted_parameter)
 
-    print(suite.model.validate(suite.parameter))  # noqa
+    print(suite.model.validate(suite.parameter))
     assert suite.model.valid(suite.parameter)
 
     dataset = simulate(suite.sim_model, "dataset1", suite.wanted_parameter, suite.axis)
-    print(dataset)  # noqa
+    print(dataset)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 
-    print(suite.parameter)  # noqa
-    print(suite.wanted_parameter)  # noqa
+    print(suite.parameter)
+    print(suite.wanted_parameter)
 
     data = {"dataset1": dataset}
     scheme = Scheme(
@@ -392,7 +392,7 @@ def test_doas_model(suite):
         maximum_number_function_evaluations=20,
     )
     result = optimize(scheme, raise_exception=True)
-    print(result.optimized_parameters)  # noqa
+    print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
         assert np.allclose(param.value, suite.wanted_parameter.get(label).value, rtol=1e-1)

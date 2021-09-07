@@ -33,7 +33,7 @@ def test_penalties(index_dependent, grouped):
 
     global_axis = np.arange(50)
 
-    print("grouped", grouped, "index_dependent", index_dependent)  # T001
+    print("grouped", grouped, "index_dependent", index_dependent)
     dataset = simulate(
         suite.sim_model,
         "dataset1",

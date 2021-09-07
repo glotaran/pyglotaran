@@ -75,8 +75,7 @@ class ExplicitFile:
         # TODO: write a more elegant method
 
         if os.path.isfile(self._file) and not overwrite:
-            print(f"File {os.path.isfile(self._file)} already exists")
-            raise Exception("File already exist.")
+            raise FileExistsError(f"File already exist:\n{self._file}")
         comment = self._comment + " " + comment
 
         comments = "# Filename: " + str(self._file) + "\n" + " ".join(comment.splitlines()) + "\n"
@@ -215,10 +214,8 @@ class TimeExplicitFile(ExplicitFile):
 
 
 def get_interval_number(line):
-    interval_number = None
     match = re.search(r"intervalnr\s(.*)", line.strip().lower())
-    if match:
-        interval_number = match.group(1)
+    interval_number = match.group(1) if match else None
     if not interval_number:
         interval_number = re.search(r"\d+", line[::-1]).group()[::-1]
     try:

@@ -147,7 +147,7 @@ def test_prepare_data():
         ],
     }
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())  # T001 # noqa T001
+    print(model.validate())
     assert model.valid()
 
     parameters = ParameterGroup.from_list([])
@@ -165,7 +165,7 @@ def test_prepare_data():
     problem = Problem(scheme)
 
     data = problem.data["dataset1"]
-    print(data)  # noqa T001
+    print(data)
     assert "data" in data
     assert "weight" in data
 
@@ -181,7 +181,7 @@ def test_prepare_data():
         }
     )
     model = SimpleTestModel.from_dict(model_dict)
-    print(model.validate())  # T001 # noqa T001
+    print(model.validate())
     assert model.valid()
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
@@ -214,5 +214,5 @@ def test_full_model_problem():
     clp = result.clp
 
     assert clp.shape == (4, 4)
-    print(np.diagonal(clp))  # noqa T001
+    print(np.diagonal(clp))
     assert all(np.isclose(1.0, c) for c in np.diagonal(clp))
