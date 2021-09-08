@@ -21,7 +21,7 @@ class BaselineMegacomplex(Megacomplex):
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return clp_label, matrix
 
-    def index_dependent(self, dataset: DatasetModel) -> bool:
+    def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return False
 
     def finalize_data(
