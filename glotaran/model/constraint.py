@@ -1,14 +1,9 @@
 """This package contains compartment constraint items."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from glotaran.model.interval_property import IntervalProperty
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_typed
-
-if TYPE_CHECKING:
-    from typing import Any
 
 
 @model_item(
@@ -22,20 +17,20 @@ class OnlyConstraint(IntervalProperty):
     """A only constraint sets the calculated matrix row of a compartment to 0
     outside the given intervals."""
 
-    def applies(self, index: Any) -> bool:
+    def applies(self, value: float) -> bool:
         """
-        Returns true if the indexx is in one of the intervals.
+        Returns true if ``value`` is in one of the intervals.
 
         Parameters
         ----------
-        index :
+        index : float
 
         Returns
         -------
         applies : bool
 
         """
-        return not super().applies(index)
+        return not super().applies(value)
 
 
 @model_item(
