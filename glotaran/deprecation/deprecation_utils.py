@@ -98,7 +98,7 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
     if len(split_version) < 3:
         raise ValueError(error_message)
     try:
-        return tuple(map(int, split_version[:3]))  # type:ignore [return-value]
+        return tuple(map(int, split_version[:3]))  # type:ignore[return-value]
     except ValueError:
         raise ValueError(error_message)
 
@@ -346,7 +346,7 @@ def deprecate(
         setattr(
             deprecated_object,
             "__new__",
-            inject_warn_into_call(deprecated_object.__new__),  # type: ignore [arg-type]
+            inject_warn_into_call(deprecated_object.__new__),  # type: ignore[arg-type]
         )
         return deprecated_object  # type: ignore[return-value]
 
