@@ -59,7 +59,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
     def compartments(self):
         return [f"coherent_artifact_{i}" for i in range(1, self.order + 1)]
 
-    def index_dependent(self, dataset: DatasetModel) -> bool:
+    def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return False
 
     def finalize_data(

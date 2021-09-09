@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 def model_item(
-    properties: Any | dict[str, dict[str, Any]] = {},
+    properties: None | dict[str, dict[str, Any]] = None,
     has_type: bool = False,
     has_label: bool = True,
 ) -> Callable:
@@ -58,6 +58,9 @@ def model_item(
     has_label :
         If false no label property will be added.
     """
+
+    if properties is None:
+        properties = {}
 
     def decorator(cls):
 

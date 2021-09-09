@@ -52,7 +52,7 @@ class SpectralMegacomplex(Megacomplex):
 
         return compartments, matrix
 
-    def index_dependent(self, dataset: DatasetModel) -> bool:
+    def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return False
 
     def finalize_data(
