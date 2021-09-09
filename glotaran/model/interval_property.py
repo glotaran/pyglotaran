@@ -21,7 +21,7 @@ class IntervalProperty:
 
     def applies(self, value: float) -> bool:
         """
-        Returns true if the index is in one of the intervals.
+        Returns true if ``value`` is in one of the intervals.
 
         Parameters
         ----------
