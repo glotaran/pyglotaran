@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
@@ -11,7 +12,11 @@ from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
 
-def test_coherent_artifact():
+@pytest.mark.parametrize(
+    "is_index_dependent",
+    (True, False),
+)
+def test_coherent_artifact(is_index_dependent: bool):
     model_dict = {
         "initial_concentration": {
             "j1": {"compartments": ["s1"], "parameters": ["irf_center"]},
@@ -49,6 +54,17 @@ def test_coherent_artifact():
         ["irf_width", 20, {"vary": False, "non-negative": False}],
     ]
 
+    if is_index_dependent is True:
+        irf_spec = model_dict["irf"]["irf1"]
+        irf_spec["dispersion_center"] = "irf_dispc"
+        irf_spec["center_dispersion"] = ["irf_disp1", "irf_disp2"]
+
+        parameter_list += [
+            ["irf_dispc", 300, {"vary": False, "non-negative": False}],
+            ["irf_disp1", 0.01, {"vary": False, "non-negative": False}],
+            ["irf_disp2", 0.001, {"vary": False, "non-negative": False}],
+        ]
+
     model = Model.from_dict(
         model_dict.copy(),
         megacomplex_types={
@@ -60,13 +76,13 @@ def test_coherent_artifact():
     parameters = ParameterGroup.from_list(parameter_list)
 
     time = np.arange(0, 50, 1.5)
-    spectral = np.asarray([0])
+    spectral = np.asarray([200, 300, 400])
     coords = {"time": time, "spectral": spectral}
 
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
     dataset_model.overwrite_global_dimension("spectral")
     dataset_model.set_coordinates(coords)
-    matrix = calculate_matrix(dataset_model, {})
+    matrix = calculate_matrix(dataset_model, {"spectral": [0, 1, 2]})
     compartments = matrix.clp_labels
 
     print(compartments)
@@ -77,9 +93,9 @@ def test_coherent_artifact():
     assert matrix.matrix.shape == (time.size, 4)
 
     clp = xr.DataArray(
-        [[1, 1, 1, 1]],
+        np.ones((3, 4)),
         coords=[
-            ("spectral", [0]),
+            ("spectral", spectral),
             (
                 "clp_label",
                 [
@@ -102,17 +118,20 @@ def test_coherent_artifact():
     print(result.optimized_parameters)
 
     for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
+        assert np.allclose(param.value, parameters.get(label).value, rtol=1e-8)
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(data.time, resultdata.time)
     assert np.array_equal(data.spectral, resultdata.spectral)
     assert data.data.shape == resultdata.data.shape
     assert data.data.shape == resultdata.fitted_data.shape
-    assert np.allclose(data.data, resultdata.fitted_data, rtol=1e-2)
+    assert np.allclose(data.data, resultdata.fitted_data)
 
     assert "coherent_artifact_concentration" in resultdata
-    assert resultdata["coherent_artifact_concentration"].shape == (time.size, 3)
+    if is_index_dependent:
+        assert resultdata["coherent_artifact_concentration"].shape == (spectral.size, time.size, 3)
+    else:
+        assert resultdata["coherent_artifact_concentration"].shape == (time.size, 3)
 
     assert "coherent_artifact_associated_spectra" in resultdata
-    assert resultdata["coherent_artifact_associated_spectra"].shape == (1, 3)
+    assert resultdata["coherent_artifact_associated_spectra"].shape == (3, 3)
