@@ -140,7 +140,7 @@ class DatasetModel:
         """Gets the dataset model's weight."""
         return self._weight
 
-    def index_dependent(self) -> bool:
+    def is_index_dependent(self) -> bool:
         """Indicates if the dataset model is index dependent."""
         if hasattr(self, "_index_dependent"):
             return self._index_dependent

@@ -93,7 +93,7 @@ def simulate_clp(
             )
             for index, _ in enumerate(global_axis)
         ]
-        if dataset_model.index_dependent()
+        if dataset_model.is_index_dependent()
         else calculate_matrix(dataset_model, {})
     )
 
@@ -108,7 +108,7 @@ def simulate_clp(
     )
     result = result.to_dataset(name="data")
     for i in range(global_axis.size):
-        index_matrix = matrices[i] if dataset_model.index_dependent() else matrices
+        index_matrix = matrices[i] if dataset_model.is_index_dependent() else matrices
         result.data[:, i] = np.dot(
             index_matrix.matrix,
             clp.isel({global_dimension: i}).sel({"clp_label": index_matrix.clp_labels}),
