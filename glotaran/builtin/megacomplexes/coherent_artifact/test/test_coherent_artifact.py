@@ -14,7 +14,7 @@ from glotaran.project import Scheme
 def test_coherent_artifact():
     model_dict = {
         "initial_concentration": {
-            "j1": {"compartments": ["s1"], "parameters": ["2"]},
+            "j1": {"compartments": ["s1"], "parameters": ["irf_center"]},
         },
         "megacomplex": {
             "mc1": {"type": "decay", "k_matrix": ["k1"]},
@@ -23,15 +23,15 @@ def test_coherent_artifact():
         "k_matrix": {
             "k1": {
                 "matrix": {
-                    ("s1", "s1"): "1",
+                    ("s1", "s1"): "rate",
                 }
             }
         },
         "irf": {
             "irf1": {
-                "type": "spectral-gaussian",
-                "center": "2",
-                "width": "3",
+                "type": "spectral-multi-gaussian",
+                "center": ["irf_center"],
+                "width": ["irf_width"],
             },
         },
         "dataset": {
@@ -42,6 +42,13 @@ def test_coherent_artifact():
             },
         },
     }
+
+    parameter_list = [
+        ["rate", 101e-4],
+        ["irf_center", 10, {"vary": False, "non-negative": False}],
+        ["irf_width", 20, {"vary": False, "non-negative": False}],
+    ]
+
     model = Model.from_dict(
         model_dict.copy(),
         megacomplex_types={
@@ -50,14 +57,7 @@ def test_coherent_artifact():
         },
     )
 
-    parameters = ParameterGroup.from_list(
-        [
-            101e-4,
-            [10, {"vary": False, "non-negative": False}],
-            [20, {"vary": False, "non-negative": False}],
-            [30, {"vary": False, "non-negative": False}],
-        ]
-    )
+    parameters = ParameterGroup.from_list(parameter_list)
 
     time = np.arange(0, 50, 1.5)
     spectral = np.asarray([0])
