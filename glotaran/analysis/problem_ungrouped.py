@@ -59,7 +59,7 @@ class UngroupedProblem(Problem):
 
         for label, dataset_model in self.dataset_models.items():
 
-            if dataset_model.index_dependent():
+            if dataset_model.is_index_dependent():
                 self._calculate_index_dependent_matrix(label, dataset_model)
             else:
                 self._calculate_index_independent_matrix(label, dataset_model)
@@ -132,10 +132,10 @@ class UngroupedProblem(Problem):
         for i, index in enumerate(global_axis):
             reduced_clp_labels, reduced_matrix = (
                 self.reduced_matrices[label][i]
-                if dataset_model.index_dependent()
+                if dataset_model.is_index_dependent()
                 else self.reduced_matrices[label]
             )
-            if not dataset_model.index_dependent():
+            if not dataset_model.is_index_dependent():
                 reduced_matrix = reduced_matrix.copy()
 
             if dataset_model.scale is not None:
@@ -183,7 +183,7 @@ class UngroupedProblem(Problem):
         model_matrix = self.matrices[label]
         global_matrix = self.global_matrices[label].matrix
 
-        if dataset_model.index_dependent():
+        if dataset_model.is_index_dependent():
             matrix = np.concatenate(
                 [
                     np.kron(global_matrix[i, :], model_matrix[i].matrix)
@@ -205,7 +205,7 @@ class UngroupedProblem(Problem):
     def _get_clp_labels(self, label: str, index: int = 0):
         return (
             self.matrices[label][index].clp_labels
-            if self.dataset_models[label].index_dependent()
+            if self.dataset_models[label].is_index_dependent()
             else self.matrices[label].clp_labels
         )
 

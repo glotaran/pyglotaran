@@ -48,7 +48,7 @@ class GroupedProblem(Problem):
             raise ValueError(
                 f"Cannot group datasets. Model dimension '{model_dimensions}' do not match."
             )
-        self._index_dependent = any(d.index_dependent() for d in self.dataset_models.values())
+        self._index_dependent = any(d.is_index_dependent() for d in self.dataset_models.values())
         self._global_dimension = global_dimensions.pop()
         self._model_dimension = model_dimensions.pop()
         self._group_clp_labels = None

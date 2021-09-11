@@ -340,7 +340,7 @@ class Problem:
         model_dimension = dataset_model.get_model_dimension()
         if copy:
             dataset = dataset.copy()
-        if dataset_model.index_dependent():
+        if dataset_model.is_index_dependent():
             dataset = self.create_index_dependent_result_dataset(label, dataset)
         else:
             dataset = self.create_index_independent_result_dataset(label, dataset)
