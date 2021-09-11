@@ -16,7 +16,6 @@ from glotaran.io import register_project_io
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.model import Model
-from glotaran.model import get_megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import SavingOptions
 from glotaran.project import Scheme
@@ -66,18 +65,7 @@ class YmlProjectIo(ProjectIoInterface):
         if "megacomplex" not in spec:
             raise ValueError("No megacomplex defined in model")
 
-        megacomplex_types = {
-            m["type"]: get_megacomplex(m["type"])
-            for m in spec["megacomplex"].values()
-            if "type" in m
-        }
-        if default_megacomplex is not None:
-            megacomplex_types[default_megacomplex] = get_megacomplex(default_megacomplex)
-            del spec["default-megacomplex"]
-
-        return Model.from_dict(
-            spec, megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex
-        )
+        return Model.from_dict(spec, megacomplex_types=None, default_megacomplex_type=None)
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
 
