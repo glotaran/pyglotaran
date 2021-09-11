@@ -96,8 +96,6 @@ repos:
       - id: mypy
         files: "^glotaran/(plugin_system|utils|deprecation)"
         exclude: "docs"
-        args: [glotaran]
-        pass_filenames: false
         additional_dependencies: [types-all]
 
   - repo: https://github.com/econchick/interrogate
