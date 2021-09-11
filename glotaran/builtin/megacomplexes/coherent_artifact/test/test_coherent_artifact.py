@@ -127,11 +127,11 @@ def test_coherent_artifact(is_index_dependent: bool):
     assert data.data.shape == resultdata.fitted_data.shape
     assert np.allclose(data.data, resultdata.fitted_data)
 
-    assert "coherent_artifact_concentration" in resultdata
+    assert "coherent_artifact_response" in resultdata
     if is_index_dependent:
-        assert resultdata["coherent_artifact_concentration"].shape == (spectral.size, time.size, 3)
+        assert resultdata["coherent_artifact_response"].shape == (spectral.size, time.size, 3)
     else:
-        assert resultdata["coherent_artifact_concentration"].shape == (time.size, 3)
+        assert resultdata["coherent_artifact_response"].shape == (time.size, 3)
 
     assert "coherent_artifact_associated_spectra" in resultdata
     assert resultdata["coherent_artifact_associated_spectra"].shape == (3, 3)
