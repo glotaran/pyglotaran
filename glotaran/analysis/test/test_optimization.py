@@ -12,7 +12,7 @@ from glotaran.analysis.test.models import TwoCompartmentDecay
 from glotaran.project import Scheme
 
 
-@pytest.mark.parametrize("index_dependent", [True, False])
+@pytest.mark.parametrize("is_index_dependent", [True, False])
 @pytest.mark.parametrize("grouped", [True, False])
 @pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
@@ -27,16 +27,16 @@ from glotaran.project import Scheme
     "suite",
     [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
-def test_optimization(suite, index_dependent, grouped, weight, method):
+def test_optimization(suite, is_index_dependent, grouped, weight, method):
     model = suite.model
 
-    model.megacomplex["m1"].is_index_dependent = index_dependent
+    model.megacomplex["m1"].is_index_dependent = is_index_dependent
 
     print("Grouped:", grouped)
-    print("Index dependent:", index_dependent)
+    print("Index dependent:", is_index_dependent)
 
     sim_model = suite.sim_model
-    sim_model.megacomplex["m1"].is_index_dependent = index_dependent
+    sim_model.megacomplex["m1"].is_index_dependent = is_index_dependent
 
     print(model.validate())
     assert model.valid()
@@ -54,8 +54,8 @@ def test_optimization(suite, index_dependent, grouped, weight, method):
     print(model.validate(initial_parameters))
     assert model.valid(initial_parameters)
     assert (
-        model.dataset["dataset1"].fill(model, initial_parameters).index_dependent()
-        == index_dependent
+        model.dataset["dataset1"].fill(model, initial_parameters).is_index_dependent()
+        == is_index_dependent
     )
 
     nr_datasets = 3 if issubclass(suite, ThreeDatasetDecay) else 1
