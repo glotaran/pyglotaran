@@ -54,7 +54,7 @@ def test_coherent_artifact(is_index_dependent: bool):
         ["irf_width", 20, {"vary": False, "non-negative": False}],
     ]
 
-    if is_index_dependent is True:
+    if is_index_dependent:
         irf_spec = model_dict["irf"]["irf1"]
         irf_spec["dispersion_center"] = "irf_dispc"
         irf_spec["center_dispersion"] = ["irf_disp1", "irf_disp2"]
