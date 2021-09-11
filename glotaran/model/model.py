@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from typing import Any
 from typing import List
 from warnings import warn
 
@@ -17,6 +18,7 @@ from glotaran.model.util import ModelError
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
+from glotaran.plugin_system.megacomplex_registration import get_megacomplex
 from glotaran.utils.ipython import MarkdownStr
 
 default_model_items = {
@@ -56,18 +58,34 @@ class Model:
     @classmethod
     def from_dict(
         cls,
-        model_dict: dict,
+        model_dict: dict[str, Any],
         *,
-        megacomplex_types: dict[str, type[Megacomplex]],
+        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
         default_megacomplex_type: str | None = None,
     ) -> Model:
         """Creates a model from a dictionary.
 
         Parameters
         ----------
-        model_dict :
+        model_dict: dict[str, Any]
             Dictionary containing the model.
+        megacomplex_types: dict[str, type[Megacomplex]] | None
+            Overwrite 'megacomplex_types' in ``model_dict`` for testing.
+        default_megacomplex_type: str | None
+            Overwrite 'default-megacomplex' in ``model_dict`` for testing.
         """
+        if default_megacomplex_type is None:
+            default_megacomplex_type = model_dict.get("default-megacomplex")
+
+        if megacomplex_types is None:
+            megacomplex_types = {
+                m["type"]: get_megacomplex(m["type"])
+                for m in model_dict["megacomplex"].values()
+                if "type" in m
+            }
+        if default_megacomplex_type is not None:
+            megacomplex_types[default_megacomplex_type] = get_megacomplex(default_megacomplex_type)
+            del model_dict["default-megacomplex"]
 
         model = cls(
             megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex_type
