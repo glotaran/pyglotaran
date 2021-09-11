@@ -73,8 +73,11 @@ class CoherentArtifactMegacomplex(Megacomplex):
             global_dimension = dataset_model.get_global_dimension()
             model_dimension = dataset_model.get_model_dimension()
             dataset.coords["coherent_artifact_order"] = np.arange(1, self.order + 1)
+            concentration_dimensions = (model_dimension, "coherent_artifact_order")
+            if dataset_model.index_dependent() is True:
+                concentration_dimensions = (global_dimension, *concentration_dimensions)
             dataset["coherent_artifact_concentration"] = (
-                (model_dimension, "coherent_artifact_order"),
+                concentration_dimensions,
                 dataset.matrix.sel(clp_label=self.compartments()).values,
             )
             dataset["coherent_artifact_associated_spectra"] = (
