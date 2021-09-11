@@ -6,8 +6,6 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
-from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
-from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -28,20 +26,9 @@ class DecayModel(Model):
     def from_dict(
         cls,
         model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
     ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "decay": DecayMegacomplex,
-        }
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+        model_dict = {**model_dict, "default-megacomplex": "decay"}
+        return super().from_dict(model_dict)
 
 
 class OneComponentOneChannel:
