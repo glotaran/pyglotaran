@@ -65,12 +65,7 @@ REF_MODEL_DICT = {
 
 
 def simple_diff_between_string(string1, string2):
-    # finding the common chars from both strings
-    result = ""
-    for c1, c2 in zip(string1, string2):
-        if not c1 == c2:
-            result += c2
-    return result
+    return "".join(c2 for c1, c2 in zip(string1, string2) if c1 != c2)
 
 
 def test_simple_model_3comp_seq():
