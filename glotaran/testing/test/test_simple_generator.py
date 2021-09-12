@@ -76,7 +76,7 @@ def test_simple_model_3comp_seq():
         irf={"center": 1.3, "width": 7.8},
         k_matrix="sequential",
     )
-    for key, value in REF_PARAMETER_DICT.items():
+    for key, _ in REF_PARAMETER_DICT.items():
         assert key in generator.parameters_dict
         # TODO: check contents
 

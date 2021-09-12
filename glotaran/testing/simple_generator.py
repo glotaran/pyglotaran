@@ -13,9 +13,9 @@ from glotaran.parameter.parameter_group import ParameterGroup
 pretty.install()
 
 
-def _split_iterable_in_values_and_dicts(input) -> tuple[list, list]:
-    values: list = [val for val in input if not isinstance(val, dict)]
-    defaults: list = [val for val in input if isinstance(val, dict)]
+def _split_iterable_in_values_and_dicts(input_list: list) -> tuple[list, list]:
+    values: list = [val for val in input_list if not isinstance(val, dict)]
+    defaults: list = [val for val in input_list if isinstance(val, dict)]
     return values, defaults
 
 
