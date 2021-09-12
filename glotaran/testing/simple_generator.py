@@ -69,26 +69,25 @@ class SimpleGenerator:
         items.update({"irf": [[key, value] for key, value in self.irf.items()]})
         if self.initial_concentration:
             items.update({"inputs": self.initial_concentration})
-        else:
-            if self.k_matrix == "parallel":
-                items.update(
-                    {
-                        "inputs": [
-                            ["1", 1],
-                            {"vary": False},
-                        ]
-                    }
-                )
-            if self.k_matrix == "sequential":
-                items.update(
-                    {
-                        "inputs": [
-                            ["1", 1],
-                            ["0", 0],
-                            {"vary": False},
-                        ]
-                    }
-                )
+        elif self.k_matrix == "parallel":
+            items.update(
+                {
+                    "inputs": [
+                        ["1", 1],
+                        {"vary": False},
+                    ]
+                }
+            )
+        elif self.k_matrix == "sequential":
+            items.update(
+                {
+                    "inputs": [
+                        ["1", 1],
+                        ["0", 0],
+                        {"vary": False},
+                    ]
+                }
+            )
         return items
 
     def _model_dict_items(self):
@@ -113,7 +112,7 @@ class SimpleGenerator:
         if self.k_matrix == "parallel":
             items.update({"input_parameters": ["inputs.1"] * nr})
             items.update({"k_matrix": {(f"s{i}", f"s{i}"): f"rates.{i}" for i in indices}})
-        if self.k_matrix == "sequential":
+        elif self.k_matrix == "sequential":
             items.update({"input_parameters": ["inputs.1"] + ["inputs.0"] * (nr - 1)})
             items.update(
                 {"k_matrix": {(f"s{i if i==nr else i+1}", f"s{i}"): f"rates.{i}" for i in indices}}
