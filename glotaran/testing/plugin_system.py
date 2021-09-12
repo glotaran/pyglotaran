@@ -48,10 +48,13 @@ def _monkeypatch_plugin_registry(
     monkeypatch_plugin_registry_data_io
     monkeypatch_plugin_registry_project_io
     """
-    initila_plugins = {}
-    if create_new_registry is False:
-        initila_plugins = __PluginRegistry.__dict__[register_name]
     if test_registry is not None:
+        initila_plugins = (
+            __PluginRegistry.__dict__[register_name]
+            if not create_new_registry
+            else {}
+        )
+
         with mock.patch.object(
             __PluginRegistry, register_name, {**initila_plugins, **test_registry}
         ):
