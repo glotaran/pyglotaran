@@ -2,15 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from typing import TYPE_CHECKING
 from typing import Literal
-
-from rich import pretty
-from rich import print
 
 from glotaran.model import Model
 from glotaran.parameter.parameter_group import ParameterGroup
 
-pretty.install()
+if TYPE_CHECKING:
+    from glotaran.utils.ipython import MarkdownStr
 
 
 def _split_iterable_in_values_and_dicts(input_list: list) -> tuple[list, list]:
@@ -19,20 +18,45 @@ def _split_iterable_in_values_and_dicts(input_list: list) -> tuple[list, list]:
     return values, defaults
 
 
+class SimpleGeneratorError(Exception):
+    """Exception raised for errors in the simple_generator.
+
+    Attributes:
+        generator -- generator which is invalid
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="Invalid generator state"):
+        self.message = message
+        super().__init__(self.message)
+
+
 @dataclass
 class SimpleGenerator:
-    rates: list[float] = field(default_factory=list)
+    """A minimal boilerplate model and parameters generator"""
+
+    rates: list[int | float] = field(default_factory=list)
+    """A list of values representing decay rates"""
     k_matrix: Literal["parallel", "sequential"] | dict[tuple[str, str], str] = "parallel"
+    """"A `dict` with a k_matrix specification or `Literal["parallel", "sequential"]`"""
     compartments: list[str] | None = None
     irf: dict[str, float] = field(default_factory=dict)
     initial_concentration: list[float] = field(default_factory=list)
     dispersion_coefficients: list[float] = field(default_factory=list)
     dispersion_center: float | None = None
     default_megacomplex: str = "decay"
+    # TODO: add:
     # shapes: list[float] = field(default_factory=list, init=False)
 
-    # def __post_init__(self):
-    #     self._parameters = {}
+    @property
+    def valid(self) -> bool:
+        try:
+            return self.model.valid(parameters=self.parameters)
+        except SimpleGeneratorError:
+            return False
+
+    def validate(self) -> str:
+        return self.model.validate(parameters=self.parameters)
 
     @property
     def model(self) -> Model:
@@ -40,7 +64,6 @@ class SimpleGenerator:
 
     @property
     def model_dict(self) -> dict:
-        # return REF_MODEL_DICT
         return self._model_dict()
 
     @property
@@ -49,16 +72,28 @@ class SimpleGenerator:
 
     @property
     def parameters_dict(self) -> dict:
-        # return REF_PARAMETER_DICT
         return self._parameters_dict()
 
     @property
-    def model_and_parameters(self):
+    def model_and_parameters(self) -> tuple[Model, ParameterGroup]:
         return self.model, self.parameters
+
+    def _validate_rates(self) -> tuple[bool, str]:
+        if not isinstance(self.rates, list):
+            return False, f"generator.rates: must be a `list`, got: {self.rates}"
+        if len(self.rates) == 0:
+            return False, "generator.rates: must be a `list` with 1 or more rates"
+        if not isinstance(self.rates[0], (int, float)):
+            return False, f"generator.rates: 1st element must be numeric, got: {self.rates[0]}"
+        return True, "generators.rates are valid"
 
     @property
     def _rates(self):
-        return _split_iterable_in_values_and_dicts(self.rates)
+        rates_valid, message = self._validate_rates()
+        if rates_valid:
+            return _split_iterable_in_values_and_dicts(self.rates)
+        else:
+            raise SimpleGeneratorError(message=message)
 
     def _parameters_dict_items(self):
         items = {}
@@ -90,20 +125,21 @@ class SimpleGenerator:
             )
         return items
 
-    def _model_dict_items(self):
+    def _model_dict_items(self) -> dict:
         rates, _ = self._rates
         nr = len(rates)
         indices = list(range(1, 1 + nr))
         items = {"default-megacomplex": self.default_megacomplex}
-        items.update(
-            {
-                "irf": {
-                    "type": "multi-gaussian",
-                    "center": ["irf.center"],
-                    "width": ["irf.width"],
+        if self.irf:
+            items.update(
+                {
+                    "irf": {
+                        "type": "multi-gaussian",
+                        "center": ["irf.center"],
+                        "width": ["irf.width"],
+                    }
                 }
-            }
-        )
+            )
         if isinstance(self.k_matrix, dict):
             items.update({"k_matrix": self.k_matrix})
             items.update({"input_parameters": [f"inputs.{i}" for i in indices]})
@@ -121,18 +157,19 @@ class SimpleGenerator:
             items.update({"compartments": [f"s{i}" for i in indices]})
         return items
 
-    def _parameters_dict(self):
+    def _parameters_dict(self) -> dict:
+        result = {}
         items = self._parameters_dict_items()
         rates = items["rates"]
         if "rates_defaults" in items:
             rates += [items["rates_defaults"]]
-        return {
-            "rates": rates,
-            "irf": items["irf"],
-            "inputs": items["inputs"],
-        }
+        result.update({"rates": rates})
+        if items["irf"]:
+            result.update({"irf": items["irf"]})
+        result.update({"inputs": items["inputs"]})
+        return result
 
-    def _model_dict(self):
+    def _model_dict(self) -> dict:
         items = self._model_dict_items()
         result = {"default-megacomplex": items["default-megacomplex"]}
         result.update(
@@ -155,7 +192,7 @@ class SimpleGenerator:
                 },
             }
         )
-        if items["irf"]:
+        if "irf" in items:
             result["dataset"]["dataset1"].update({"irf": "irf1"})
             result.update(
                 {
@@ -166,16 +203,5 @@ class SimpleGenerator:
             )
         return result
 
-    def markdown(self):
-        print(self.model.markdown(parameters=self.parameters))  # noqa T001
-
-
-if __name__ == "__main__":
-    generator = SimpleGenerator()
-    generator.rates = [501e-3, 202e-4, 105e-5, {"non-negative": True, "vary": False}]
-    generator.irf = {"center": 1.3, "width": 7.8}
-    generator.k_matrix = "sequential"
-    model, parameters = generator.model_and_parameters
-    print(generator.markdown())  # noqa T001
-    generator.rates = [500e-3, 200e-4, 101e-5]
-    print(generator.markdown())  # noqa T001
+    def markdown(self) -> MarkdownStr:
+        return self.model.markdown(parameters=self.parameters)

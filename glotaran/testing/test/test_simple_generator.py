@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import pytest
 from rich import pretty
 from rich import print
 
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.testing.simple_generator import SimpleGenerator
+from glotaran.testing.simple_generator import SimpleGeneratorError
 
 pretty.install()
 
@@ -89,5 +91,30 @@ def test_simple_model_3comp_seq():
     )
 
 
-if __name__ == "__main__":
-    test_simple_model_3comp_seq()
+def test_only_rates_no_irf():
+    generator = SimpleGenerator(rates=[0.1, 0.02, 0.003])
+    assert "irf" not in generator.model_dict.keys()
+
+
+def test_no_rates():
+    generator = SimpleGenerator()
+    assert generator.valid is False
+
+
+def test_one_rate():
+    generator = SimpleGenerator([1])
+    assert generator.valid is True
+    assert "is valid" in generator.validate()
+
+
+def test_rates_not_a_list():
+    generator = SimpleGenerator(1)
+    assert generator.valid is False
+    with pytest.raises(SimpleGeneratorError):
+        print(generator.validate())
+
+
+def test_set_rates_delayed():
+    generator = SimpleGenerator()
+    generator.rates = [1, 2, 3]
+    assert generator.valid is True
