@@ -123,8 +123,11 @@ class SimpleGenerator:
 
     def _parameters_dict(self):
         items = self._parameters_dict_items()
+        rates = items["rates"]
+        if "rates_defaults" in items:
+            rates += [items["rates_defaults"]]
         return {
-            "rates": [*items["rates"], items["rates_defaults"]],
+            "rates": rates,
             "irf": items["irf"],
             "inputs": items["inputs"],
         }
@@ -173,4 +176,6 @@ if __name__ == "__main__":
     generator.irf = {"center": 1.3, "width": 7.8}
     generator.k_matrix = "sequential"
     model, parameters = generator.model_and_parameters
+    print(generator.markdown())  # noqa T001
+    generator.rates = [500e-3, 200e-4, 101e-5]
     print(generator.markdown())  # noqa T001
