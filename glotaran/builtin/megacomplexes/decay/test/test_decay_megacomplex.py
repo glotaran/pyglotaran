@@ -134,8 +134,8 @@ class ThreeComponentParallel:
             "k_matrix": {
                 "k1": {
                     "matrix": {
-                        ("s2", "s1"): "kinetic.1",
-                        ("s3", "s2"): "kinetic.2",
+                        ("s1", "s1"): "kinetic.1",
+                        ("s2", "s2"): "kinetic.2",
                         ("s3", "s3"): "kinetic.3",
                     }
                 }
