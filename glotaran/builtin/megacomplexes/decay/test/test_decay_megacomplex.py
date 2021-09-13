@@ -130,70 +130,10 @@ class ThreeComponentParallel:
         k_matrix="parallel",
     )
     model, initial_parameters = generator.model_and_parameters
-    ref_model = DecayModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {
-                    "compartments": ["s1", "s2", "s3"],
-                    "parameters": ["inputs.1", "inputs.1", "inputs.1"],
-                },
-            },
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "rates.1",
-                        ("s2", "s2"): "rates.2",
-                        ("s3", "s3"): "rates.3",
-                    }
-                }
-            },
-            "irf": {
-                "irf1": {
-                    "type": "multi-gaussian",
-                    "center": ["irf.center"],
-                    "width": ["irf.width"],
-                },
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "irf": "irf1",
-                    "megacomplex": ["mc1"],
-                },
-            },
-        }
-    )
-    assert str(model) == str(ref_model)
 
-    initial_parameters_ref = ParameterGroup.from_dict(
-        {
-            "rates": [
-                ["1", 300e-3],
-                ["2", 500e-4],
-                ["3", 700e-5],
-            ],
-            "irf": [["center", 1.3], ["width", 7.8]],
-            "inputs": [["1", 1, {"vary": False}]],
-        }
-    )
-    assert str(initial_parameters) == str(initial_parameters_ref)
     generator.rates = [301e-3, 502e-4, 705e-5]
     wanted_parameters = generator.parameters
-    wanted_parameters_ref = ParameterGroup.from_dict(
-        {
-            "rates": [
-                ["1", 301e-3],
-                ["2", 502e-4],
-                ["3", 705e-5],
-            ],
-            "irf": [["center", 1.3], ["width", 7.8]],
-            "inputs": [["1", 1, {"vary": False}]],
-        }
-    )
-    assert str(wanted_parameters) == str(wanted_parameters_ref)
+
     time = np.arange(-10, 100, 1.5)
     pixel = np.arange(600, 750, 10)
 
