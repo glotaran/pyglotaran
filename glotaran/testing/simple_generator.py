@@ -96,9 +96,8 @@ class SimpleGenerator:
             raise SimpleGeneratorError(message=message)
 
     def _parameters_dict_items(self):
-        items = {}
         rates, rates_defaults = self._rates
-        items.update({"rates": rates})
+        items = {"rates": rates}
         if rates_defaults:
             items.update({"rates_defaults": rates_defaults[0]})
         items.update({"irf": [[key, value] for key, value in self.irf.items()]})
@@ -158,12 +157,11 @@ class SimpleGenerator:
         return items
 
     def _parameters_dict(self) -> dict:
-        result = {}
         items = self._parameters_dict_items()
         rates = items["rates"]
         if "rates_defaults" in items:
             rates += [items["rates_defaults"]]
-        result.update({"rates": rates})
+        result = {"rates": rates}
         if items["irf"]:
             result.update({"irf": items["irf"]})
         result.update({"inputs": items["inputs"]})
