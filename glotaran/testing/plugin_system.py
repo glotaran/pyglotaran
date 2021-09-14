@@ -24,7 +24,7 @@ def _monkeypatch_plugin_registry(
     test_registry: MutableMapping[str, _PluginType] | None = None,
     create_new_registry: bool = False,
 ) -> Generator[None, None, None]:
-    """Generic implementation of a plugin system mock context manager.
+    """Contextmanager to monkeypatch any Pluginregistry with name ``register_name``.
 
     Parameters
     ----------
@@ -38,7 +38,7 @@ def _monkeypatch_plugin_registry(
         , by default False
 
     Yields
-    -------
+    ------
     Generator[None, None, None]
         Just to keep the context alive.
 
@@ -78,7 +78,7 @@ def monkeypatch_plugin_registry_megacomplex(
         , by default False
 
     Yields
-    -------
+    ------
     Generator[None, None, None]
         Just to keep the context alive.
     """
@@ -103,7 +103,7 @@ def monkeypatch_plugin_registry_data_io(
         , by default False
 
     Yields
-    -------
+    ------
     Generator[None, None, None]
         Just to keep the context alive.
     """
@@ -128,7 +128,7 @@ def monkeypatch_plugin_registry_project_io(
         , by default False
 
     Yields
-    -------
+    ------
     Generator[None, None, None]
         Just to keep the context alive.
     """
@@ -137,13 +137,14 @@ def monkeypatch_plugin_registry_project_io(
 
 
 @contextmanager
-def monkeypatch_plugin_registry_full(
+def monkeypatch_plugin_registry(
+    *,
     test_megacomplex: MutableMapping[str, type[Megacomplex]] | None = None,
     test_data_io: MutableMapping[str, DataIoInterface] | None = None,
     test_project_io: MutableMapping[str, ProjectIoInterface] | None = None,
     create_new_registry: bool = False,
 ) -> Generator[None, None, None]:
-    """[summary]
+    """Contextmanager to monkeypatch multiple plugin registries at once.
 
     Parameters
     ----------
@@ -161,7 +162,7 @@ def monkeypatch_plugin_registry_full(
         , by default False
 
     Yields
-    -------
+    ------
     Generator[None, None, None]
         Just keeps all context manager alive
 
