@@ -78,7 +78,7 @@ repos:
     hooks:
       - id: pydocstyle
         files: "^glotaran/(plugin_system|utils|deprecation|testing)"
-        exclude: "docs|tests?"
+        exclude: "docs|tests?/"
         # this is needed due to the following issue:
         # https://github.com/PyCQA/pydocstyle/issues/368
         args: [--ignore-decorators=wrap_func_as_method]
@@ -88,7 +88,7 @@ repos:
     hooks:
       - id: darglint
         files: "^glotaran/(plugin_system|utils|deprecation|testing)"
-        exclude: "docs|tests?"
+        exclude: "docs|tests?/"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910
