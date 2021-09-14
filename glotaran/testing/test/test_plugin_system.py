@@ -7,8 +7,8 @@ from glotaran.model import megacomplex
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.plugin_system.megacomplex_registration import known_megacomplex_names
 from glotaran.plugin_system.project_io_registration import known_project_formats
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
-from glotaran.testing.plugin_system import monkeypatch_plugin_registry_full
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_megacomplex
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_project_io
 
@@ -32,7 +32,7 @@ def test_monkeypatch_megacomplexes():
         assert "test_mc" in known_megacomplex_names()
 
     assert "test_mc" not in known_megacomplex_names()
-    with monkeypatch_plugin_registry_full(test_megacomplex={"test_full": DummyMegacomplex}):
+    with monkeypatch_plugin_registry(test_megacomplex={"test_full": DummyMegacomplex}):
         assert "test_full" in known_megacomplex_names()
 
     assert "test_full" not in known_megacomplex_names()
@@ -47,9 +47,7 @@ def test_monkeypatch_data_io():
 
     assert "test_mc" not in known_data_formats()
 
-    with monkeypatch_plugin_registry_full(
-        test_data_io={"test_full": DummyDataIo(format_name="test")}
-    ):
+    with monkeypatch_plugin_registry(test_data_io={"test_full": DummyDataIo(format_name="test")}):
         assert "test_full" in known_data_formats()
 
     assert "test_full" not in known_data_formats()
@@ -63,7 +61,7 @@ def test_monkeypatch_project_io():
         assert "test_pio" in known_project_formats()
 
     assert "test_pio" not in known_megacomplex_names()
-    with monkeypatch_plugin_registry_full(
+    with monkeypatch_plugin_registry(
         test_project_io={"test_full": DummyProjectIo(format_name="test")}
     ):
         assert "test_full" in known_project_formats()
@@ -79,7 +77,7 @@ def test_monkeypatch_plugin_registry_full(create_new_registry: bool):
     assert "yml" in known_project_formats()
     assert "sdt" in known_data_formats()
 
-    with monkeypatch_plugin_registry_full(
+    with monkeypatch_plugin_registry(
         test_megacomplex={"test_mc": DummyMegacomplex},
         test_project_io={"test_pio": DummyProjectIo(format_name="test")},
         test_data_io={"test_dio": DummyDataIo(format_name="test")},
