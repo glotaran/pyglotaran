@@ -1,3 +1,5 @@
+"""Simple generators for model and parameters."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -18,22 +20,9 @@ def _split_iterable_in_values_and_dicts(input_list: list) -> tuple[list, list]:
     return values, defaults
 
 
-class SimpleGeneratorError(Exception):
-    """Exception raised for errors in the simple_generator.
-
-    Attributes:
-        generator -- generator which is invalid
-        message -- explanation of the error
-    """
-
-    def __init__(self, message="Invalid generator state"):
-        self.message = message
-        super().__init__(self.message)
-
-
 @dataclass
 class SimpleGenerator:
-    """A minimal boilerplate model and parameters generator"""
+    """A minimal boilerplate model and parameters generator."""
 
     rates: list[int | float] = field(default_factory=list)
     """A list of values representing decay rates"""
@@ -50,50 +39,94 @@ class SimpleGenerator:
 
     @property
     def valid(self) -> bool:
+        """Check if the generator state is valid.
+
+        Returns
+        -------
+        bool
+            Generator state obtained by calling the generated model's
+            `valid` function with the generated parameters as input.
+        """
         try:
             return self.model.valid(parameters=self.parameters)
-        except SimpleGeneratorError:
+        except ValueError:
             return False
 
     def validate(self) -> str:
+        """Call `validate` on the generated model and return its output.
+
+        Returns
+        -------
+        str
+            A string listing problems in the generated model and parameters if any.
+        """
         return self.model.validate(parameters=self.parameters)
 
     @property
     def model(self) -> Model:
+        """Return the generated model.
+
+        Returns
+        -------
+        Model
+            The generated model of type :class:`glotaran.model.Model`.
+        """
         return Model.from_dict(self.model_dict)
 
     @property
     def model_dict(self) -> dict:
+        """Return a dict representation of the generated model.
+
+        Returns
+        -------
+        dict
+            A dict representation of the generated model.
+        """
         return self._model_dict()
 
     @property
     def parameters(self) -> ParameterGroup:
+        """Return the generated parameters of type :class:`glotaran.parameter.ParameterGroup`.
+
+        Returns
+        -------
+        ParameterGroup
+            The generated parameters of type of type :class:`glotaran.parameter.ParameterGroup`.
+        """
         return ParameterGroup.from_dict(self.parameters_dict)
 
     @property
     def parameters_dict(self) -> dict:
+        """Return a dict representation of the generated parameters.
+
+        Returns
+        -------
+        dict
+            A dict representing the generated parameters.
+        """
         return self._parameters_dict()
 
     @property
     def model_and_parameters(self) -> tuple[Model, ParameterGroup]:
+        """Return generated model and parameters.
+
+        Returns
+        -------
+        tuple[Model, ParameterGroup]
+            A model of type :class:`glotaran.model.Model` and
+            and parameters of type :class:`glotaran.parameter.ParameterGroup`.
+        """
         return self.model, self.parameters
 
-    def _validate_rates(self) -> tuple[bool, str]:
-        if not isinstance(self.rates, list):
-            return False, f"generator.rates: must be a `list`, got: {self.rates}"
-        if len(self.rates) == 0:
-            return False, "generator.rates: must be a `list` with 1 or more rates"
-        if not isinstance(self.rates[0], (int, float)):
-            return False, f"generator.rates: 1st element must be numeric, got: {self.rates[0]}"
-        return True, "generators.rates are valid"
-
     @property
-    def _rates(self):
-        rates_valid, message = self._validate_rates()
-        if rates_valid:
-            return _split_iterable_in_values_and_dicts(self.rates)
-        else:
-            raise SimpleGeneratorError(message=message)
+    def _rates(self) -> tuple[bool, str]:
+        if not isinstance(self.rates, list):
+            raise ValueError(f"generator.rates: must be a `list`, got: {self.rates}")
+        if len(self.rates) == 0:
+            raise ValueError("generator.rates: must be a `list` with 1 or more rates")
+        if not isinstance(self.rates[0], (int, float)):
+            raise ValueError(f"generator.rates: 1st element must be numeric, got: {self.rates[0]}")
+        return _split_iterable_in_values_and_dicts(self.rates)
 
     def _parameters_dict_items(self):
         rates, rates_defaults = self._rates
@@ -202,4 +235,11 @@ class SimpleGenerator:
         return result
 
     def markdown(self) -> MarkdownStr:
+        """Return a markdown string representation of the generated model and parameters.
+
+        Returns
+        -------
+        MarkdownStr
+            A markdown string
+        """
         return self.model.markdown(parameters=self.parameters)

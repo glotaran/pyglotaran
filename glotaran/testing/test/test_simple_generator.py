@@ -9,7 +9,6 @@ from rich import print
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.testing.simple_generator import SimpleGenerator
-from glotaran.testing.simple_generator import SimpleGeneratorError
 
 pretty.install()
 
@@ -110,7 +109,7 @@ def test_one_rate():
 def test_rates_not_a_list():
     generator = SimpleGenerator(1)
     assert generator.valid is False
-    with pytest.raises(SimpleGeneratorError):
+    with pytest.raises(ValueError):
         print(generator.validate())
 
 
