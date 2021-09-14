@@ -14,7 +14,9 @@ if TYPE_CHECKING:
     from glotaran.utils.ipython import MarkdownStr
 
 
-def _split_iterable_in_values_and_dicts(input_list: list) -> tuple[list, list]:
+def _split_iterable_in_values_and_dicts(
+    input_list: list,
+) -> tuple[list[float], list[dict[str, bool | float]]]:
     values: list = [val for val in input_list if not isinstance(val, dict)]
     defaults: list = [val for val in input_list if isinstance(val, dict)]
     return values, defaults
@@ -24,7 +26,7 @@ def _split_iterable_in_values_and_dicts(input_list: list) -> tuple[list, list]:
 class SimpleGenerator:
     """A minimal boilerplate model and parameters generator."""
 
-    rates: list[int | float] = field(default_factory=list)
+    rates: list[float] = field(default_factory=list)
     """A list of values representing decay rates"""
     k_matrix: Literal["parallel", "sequential"] | dict[tuple[str, str], str] = "parallel"
     """"A `dict` with a k_matrix specification or `Literal["parallel", "sequential"]`"""
@@ -119,7 +121,7 @@ class SimpleGenerator:
         return self.model, self.parameters
 
     @property
-    def _rates(self) -> tuple[bool, str]:
+    def _rates(self) -> tuple[list[float], list[dict[str, bool | float]]]:
         if not isinstance(self.rates, list):
             raise ValueError(f"generator.rates: must be a `list`, got: {self.rates}")
         if len(self.rates) == 0:
@@ -128,7 +130,7 @@ class SimpleGenerator:
             raise ValueError(f"generator.rates: 1st element must be numeric, got: {self.rates[0]}")
         return _split_iterable_in_values_and_dicts(self.rates)
 
-    def _parameters_dict_items(self):
+    def _parameters_dict_items(self) -> dict:
         rates, rates_defaults = self._rates
         items = {"rates": rates}
         if rates_defaults:
