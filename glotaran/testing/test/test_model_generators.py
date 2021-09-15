@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 from rich import pretty
-from rich import print
+from rich import print  # pylint: disable=W0622
 
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
