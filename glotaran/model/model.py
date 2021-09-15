@@ -85,7 +85,7 @@ class Model:
             }
         if default_megacomplex_type is not None:
             megacomplex_types[default_megacomplex_type] = get_megacomplex(default_megacomplex_type)
-            del model_dict["default-megacomplex"]
+            model_dict.pop("default-megacomplex", None)
 
         model = cls(
             megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex_type

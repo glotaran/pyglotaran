@@ -13,6 +13,7 @@ from glotaran.model import Model
 from glotaran.model import megacomplex
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry
 
 if TYPE_CHECKING:
     from glotaran.model import DatasetModel
@@ -53,6 +54,7 @@ class BenchmarkMegacomplex(Megacomplex):
         pass
 
 
+@monkeypatch_plugin_registry(test_megacomplex={"benchmark": BenchmarkMegacomplex})
 def setup_model(index_dependent):
     model_dict = {
         "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
