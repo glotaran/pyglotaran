@@ -9,7 +9,7 @@ from glotaran.analysis.simulation import simulate
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
-from glotaran.testing.simple_generator import SimpleGenerator
+from glotaran.testing.model_generators import SimpleModelGenerator
 
 
 def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
@@ -124,7 +124,7 @@ class OneComponentOneChannelGaussianIrf:
 
 
 class ThreeComponentParallel:
-    generator = SimpleGenerator(
+    generator = SimpleModelGenerator(
         rates=[300e-3, 500e-4, 700e-5],
         irf={"center": 1.3, "width": 7.8},
         k_matrix="parallel",

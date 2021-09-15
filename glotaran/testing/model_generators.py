@@ -1,4 +1,4 @@
-"""Simple generators for model and parameters."""
+"""Model generators used to generate simple models from a set of inputs."""
 
 from __future__ import annotations
 
@@ -14,29 +14,53 @@ if TYPE_CHECKING:
     from glotaran.utils.ipython import MarkdownStr
 
 
-def _split_iterable_in_values_and_dicts(
-    input_list: list,
+def _split_iterable_in_non_dict_and_dict_items(
+    input_list: list[float, dict[str, bool | float]],
 ) -> tuple[list[float], list[dict[str, bool | float]]]:
+    """Split an iterable (list) into non-dict and dict items.
+
+    Parameters
+    ----------
+    input_list : list[float, dict[str, bool | float]]
+        A list of values of type `float` and a dict with parameter options, e.g.
+        `[1, 2, 3, {"vary": False, "non-negative": True}]`
+
+    Returns
+    -------
+    tuple[list[float], list[dict[str, bool | float]]]
+        Split a list into non-dict (`values`) and dict items (`defaults`),
+        return a tuple (`values`, `defaults`)
+    """
     values: list = [val for val in input_list if not isinstance(val, dict)]
     defaults: list = [val for val in input_list if isinstance(val, dict)]
     return values, defaults
 
 
 @dataclass
-class SimpleGenerator:
-    """A minimal boilerplate model and parameters generator."""
+class SimpleModelGenerator:
+    """A minimal boilerplate model and parameters generator.
+
+    Generates a model (together with the parameters specification) based on
+    parameter input values assigned to the generator's attributes
+    """
 
     rates: list[float] = field(default_factory=list)
     """A list of values representing decay rates"""
     k_matrix: Literal["parallel", "sequential"] | dict[tuple[str, str], str] = "parallel"
     """"A `dict` with a k_matrix specification or `Literal["parallel", "sequential"]`"""
     compartments: list[str] | None = None
+    """A list of compartment names"""
     irf: dict[str, float] = field(default_factory=dict)
+    """A dict of items specifying an irf"""
     initial_concentration: list[float] = field(default_factory=list)
+    """A list values representing the initial concentration"""
     dispersion_coefficients: list[float] = field(default_factory=list)
+    """A list of values representing the dispersion coefficients"""
     dispersion_center: float | None = None
+    """A value representing the dispersion center"""
     default_megacomplex: str = "decay"
-    # TODO: add:
+    """The default_megacomplex identifier"""
+    # TODO: add support for a spectral model:
     # shapes: list[float] = field(default_factory=list, init=False)
 
     @property
@@ -122,15 +146,34 @@ class SimpleGenerator:
 
     @property
     def _rates(self) -> tuple[list[float], list[dict[str, bool | float]]]:
+        """Validate input to rates, return a tuple of rates and parameter defaults.
+
+        Returns
+        -------
+        tuple[list[float], list[dict[str, bool | float]]]
+            A tuple of a list of rates and a dict containing parameter defaults
+
+        Raises
+        ------
+        ValueError
+            Raised if rates is not a list of at least one number.
+        """
         if not isinstance(self.rates, list):
             raise ValueError(f"generator.rates: must be a `list`, got: {self.rates}")
         if len(self.rates) == 0:
             raise ValueError("generator.rates: must be a `list` with 1 or more rates")
         if not isinstance(self.rates[0], (int, float)):
             raise ValueError(f"generator.rates: 1st element must be numeric, got: {self.rates[0]}")
-        return _split_iterable_in_values_and_dicts(self.rates)
+        return _split_iterable_in_non_dict_and_dict_items(self.rates)
 
     def _parameters_dict_items(self) -> dict:
+        """Return a dict with items used in constructing the parameters.
+
+        Returns
+        -------
+        dict
+            A dict with items used in constructing a parameters dict.
+        """
         rates, rates_defaults = self._rates
         items = {"rates": rates}
         if rates_defaults:
@@ -160,6 +203,13 @@ class SimpleGenerator:
         return items
 
     def _model_dict_items(self) -> dict:
+        """Return a dict with items used in constructing the model.
+
+        Returns
+        -------
+        dict
+            A dict with items used in constructing a model dict.
+        """
         rates, _ = self._rates
         nr = len(rates)
         indices = list(range(1, 1 + nr))
@@ -192,6 +242,13 @@ class SimpleGenerator:
         return items
 
     def _parameters_dict(self) -> dict:
+        """Return a parameters dict.
+
+        Returns
+        -------
+        dict
+            A dict that can be passed to the `ParameterGroup` `from_dict` method.
+        """
         items = self._parameters_dict_items()
         rates = items["rates"]
         if "rates_defaults" in items:
@@ -203,6 +260,13 @@ class SimpleGenerator:
         return result
 
     def _model_dict(self) -> dict:
+        """Return a model dict.
+
+        Returns
+        -------
+        dict
+            A dict that can be passed to the `Model` `from_dict` method.
+        """
         items = self._model_dict_items()
         result = {"default-megacomplex": items["default-megacomplex"]}
         result.update(

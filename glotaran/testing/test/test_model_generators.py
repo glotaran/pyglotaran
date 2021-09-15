@@ -8,7 +8,7 @@ from rich import print
 
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
-from glotaran.testing.simple_generator import SimpleGenerator
+from glotaran.testing.model_generators import SimpleModelGenerator
 
 pretty.install()
 
@@ -69,10 +69,10 @@ def simple_diff_between_string(string1, string2):
     return "".join(c2 for c1, c2 in zip(string1, string2) if c1 != c2)
 
 
-def test_simple_model_3comp_seq():
+def test_three_component_sequential_model():
     ref_model = Model.from_dict(deepcopy(REF_MODEL_DICT))
     ref_parameters = ParameterGroup.from_dict(deepcopy(REF_PARAMETER_DICT))
-    generator = SimpleGenerator(
+    generator = SimpleModelGenerator(
         rates=[501e-3, 202e-4, 105e-5, {"non-negative": True}],
         irf={"center": 1.3, "width": 7.8},
         k_matrix="sequential",
@@ -91,29 +91,29 @@ def test_simple_model_3comp_seq():
 
 
 def test_only_rates_no_irf():
-    generator = SimpleGenerator(rates=[0.1, 0.02, 0.003])
+    generator = SimpleModelGenerator(rates=[0.1, 0.02, 0.003])
     assert "irf" not in generator.model_dict.keys()
 
 
 def test_no_rates():
-    generator = SimpleGenerator()
+    generator = SimpleModelGenerator()
     assert generator.valid is False
 
 
 def test_one_rate():
-    generator = SimpleGenerator([1])
+    generator = SimpleModelGenerator([1])
     assert generator.valid is True
     assert "is valid" in generator.validate()
 
 
 def test_rates_not_a_list():
-    generator = SimpleGenerator(1)
+    generator = SimpleModelGenerator(1)
     assert generator.valid is False
     with pytest.raises(ValueError):
         print(generator.validate())
 
 
 def test_set_rates_delayed():
-    generator = SimpleGenerator()
+    generator = SimpleModelGenerator()
     generator.rates = [1, 2, 3]
     assert generator.valid is True
