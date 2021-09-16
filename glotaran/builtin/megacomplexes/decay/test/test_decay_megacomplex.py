@@ -6,11 +6,10 @@ import xarray as xr
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
-from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
-from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.testing.model_generators import SimpleModelGenerator
 
 
 def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
@@ -28,20 +27,9 @@ class DecayModel(Model):
     def from_dict(
         cls,
         model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
     ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "decay": DecayMegacomplex,
-        }
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+        model_dict = {**model_dict, "default-megacomplex": "decay"}
+        return super().from_dict(model_dict)
 
 
 class OneComponentOneChannel:
@@ -136,62 +124,16 @@ class OneComponentOneChannelGaussianIrf:
 
 
 class ThreeComponentParallel:
-    model = DecayModel.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.1", "j.1"]},
-            },
-            "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s2", "s1"): "kinetic.1",
-                        ("s3", "s2"): "kinetic.2",
-                        ("s3", "s3"): "kinetic.3",
-                    }
-                }
-            },
-            "irf": {
-                "irf1": {
-                    "type": "multi-gaussian",
-                    "center": ["irf.center"],
-                    "width": ["irf.width"],
-                },
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "irf": "irf1",
-                    "megacomplex": ["mc1"],
-                },
-            },
-        }
+    generator = SimpleModelGenerator(
+        rates=[300e-3, 500e-4, 700e-5],
+        irf={"center": 1.3, "width": 7.8},
+        k_matrix="parallel",
     )
+    model, initial_parameters = generator.model_and_parameters
 
-    initial_parameters = ParameterGroup.from_dict(
-        {
-            "kinetic": [
-                ["1", 300e-3],
-                ["2", 500e-4],
-                ["3", 700e-5],
-            ],
-            "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [["1", 1, {"vary": False, "non-negative": False}]],
-        }
-    )
-    wanted_parameters = ParameterGroup.from_dict(
-        {
-            "kinetic": [
-                ["1", 301e-3],
-                ["2", 502e-4],
-                ["3", 705e-5],
-            ],
-            "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [["1", 1, {"vary": False, "non-negative": False}]],
-        }
-    )
+    generator.rates = [301e-3, 502e-4, 705e-5]
+    wanted_parameters = generator.parameters
+
     time = np.arange(-10, 100, 1.5)
     pixel = np.arange(600, 750, 10)
 
