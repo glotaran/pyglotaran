@@ -53,6 +53,15 @@ def glotaran_0_3_0(monkeypatch: MonkeyPatch):
     yield
 
 
+@pytest.fixture
+def glotaran_1_0_0(monkeypatch: MonkeyPatch):
+    """Mock glotaran version to always be 1.0.0 for the test."""
+    monkeypatch.setattr(
+        glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "1.0.0"
+    )
+    yield
+
+
 def test_glotaran_version():
     """Versions are the same."""
     assert glotaran_version() == glotaran.__version__
@@ -97,11 +106,9 @@ def test_warn_deprecated():
         assert Path(record[0].filename) == Path(__file__)
 
 
+@pytest.mark.usefixtures("glotaran_1_0_0")
 def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
     """Current version is equal or bigger than drop_version."""
-    monkeypatch.setattr(
-        glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "1.0.0"
-    )
 
     with pytest.raises(OverDueDeprecation) as record:
         warn_deprecated(
