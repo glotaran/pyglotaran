@@ -25,11 +25,25 @@ DecoratedCallable = TypeVar(
 )  # decorated function or class
 
 if TYPE_CHECKING:
+    from typing import NoReturn
     from typing import Sequence
 
 
 class OverDueDeprecation(Exception):
     """Error thrown when a deprecation should have been removed.
+
+    See Also
+    --------
+    deprecate
+    warn_deprecated
+    deprecate_module_attribute
+    deprecate_submodule
+    deprecate_dict_entry
+    """
+
+
+class GlotaranDeprectedApiError(Exception):
+    """Exception raised when a deprecation has no replacement.
 
     See Also
     --------
@@ -164,6 +178,51 @@ def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str
             f"supposed to be dropped in version: {to_be_removed_in_version!r}\n"
             f"Current version is: {glotaran_version()!r}"
         )
+
+
+def raise_deprecation_error(
+    *,
+    deprecated_qual_name_usage: str,
+    new_qual_name_usage: str,
+    to_be_removed_in_version: str,
+) -> NoReturn:
+    """Raise :class:`GlotaranDeprectedApiError` error, with formatted message.
+
+    This should only be used if there is no reasonable way to keep the deprecated
+    usage functional!
+
+    Parameters
+    ----------
+    deprecated_qual_name_usage : str
+        Old usage with fully qualified name e.g.:
+        ``'glotaran.read_model_from_yaml(model_yml_str)'``
+    new_qual_name_usage : str
+        New usage as fully qualified name e.g.:
+        ``'glotaran.io.load_model(model_yml_str, format_name="yml_str")'``
+    to_be_removed_in_version : str
+        Version the support for this usage will be removed.
+
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``to_be_removed_in_version``.
+    GlotaranDeprectedApiError
+        If :class:`OverDueDeprecation` wasn't raised before.
+
+
+    .. # noqa: DAR402 OverDueDeprecation
+    .. # noqa: DAR401 GlotaranDeprectedApiError
+    """
+    check_overdue(deprecated_qual_name_usage, to_be_removed_in_version)
+    message = (
+        f"Usage of {deprecated_qual_name_usage!r} was deprecated, "
+        f"use {new_qual_name_usage!r} instead.\n"
+        "It wasn't possible to restore the original behavior of this usage "
+        "(mostlikely due to an object hierarchy change)."
+        "This usage change message won't be show as of version: "
+        f"{to_be_removed_in_version!r}."
+    )
+    raise GlotaranDeprectedApiError(message)
 
 
 def warn_deprecated(

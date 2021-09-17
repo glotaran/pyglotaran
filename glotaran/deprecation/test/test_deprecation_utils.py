@@ -8,6 +8,7 @@ import pytest
 
 import glotaran
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
+from glotaran.deprecation.deprecation_utils import GlotaranDeprectedApiError
 from glotaran.deprecation.deprecation_utils import OverDueDeprecation
 from glotaran.deprecation.deprecation_utils import check_overdue
 from glotaran.deprecation.deprecation_utils import deprecate
@@ -15,6 +16,7 @@ from glotaran.deprecation.deprecation_utils import deprecate_dict_entry
 from glotaran.deprecation.deprecation_utils import glotaran_version
 from glotaran.deprecation.deprecation_utils import module_attribute
 from glotaran.deprecation.deprecation_utils import parse_version
+from glotaran.deprecation.deprecation_utils import raise_deprecation_error
 from glotaran.deprecation.deprecation_utils import warn_deprecated
 
 if TYPE_CHECKING:
@@ -36,6 +38,18 @@ DEPRECATION_WARN_MESSAGE = (
     "was deprecated, use "
     "'glotaran.deprecation.deprecation_utils.check_qualnames_in_tests(qualnames)' "
     "instead.\nThis usage will be an error in version: '0.6.0'."
+)
+DEPRECATION_ERROR_MESSAGE = (
+    "Usage of 'glotaran.deprecation.deprecation_utils' was deprecated, "
+    "use 'glotaran.deprecation.deprecation_utils.check_qualnames_in_tests(qualnames)' instead.\n"
+    "It wasn't possible to restore the original behavior of this usage "
+    "(mostlikely due to an object hierarchy change)."
+    "This usage change message won't be show as of version: '0.6.0'."
+)
+OVERDUE_ERROR_MESSAGE = (
+    "Support for 'glotaran.read_model_from_yaml' was supposed "
+    "to be dropped in version: '0.6.0'.\n"
+    "Current version is: '1.0.0'"
 )
 
 
@@ -111,13 +125,41 @@ def test_check_overdue_raises(monkeypatch: MonkeyPatch):
         )
 
         assert len(record) == 1  # type: ignore [arg-type]
-        expected = (
-            "Support for 'glotaran.read_model_from_yaml' was supposed "
-            "to be dropped in version: '0.6.0'.\n"
-            "Current version is: '1.0.0'"
-        )
+        expected = OVERDUE_ERROR_MESSAGE
 
         assert record[0].message.args[0] == expected  # type: ignore [index]
+        assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_raise_deprecation_error(monkeypatch: MonkeyPatch):
+    """Current version smaller then drop_version."""
+    with pytest.raises(GlotaranDeprectedApiError) as record:
+        raise_deprecation_error(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            new_qual_name_usage=NEW_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+
+        assert len(record) == 1  # type: ignore [arg-type]
+
+        assert record[0].message.args[0] == DEPRECATION_ERROR_MESSAGE  # type: ignore [index]
+        assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
+
+
+@pytest.mark.usefixtures("glotaran_1_0_0")
+def test_raise_deprecation_error_overdue(monkeypatch: MonkeyPatch):
+    """Current version is equal or bigger than drop_version."""
+    with pytest.raises(OverDueDeprecation) as record:
+        raise_deprecation_error(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            new_qual_name_usage=NEW_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+
+        assert len(record) == 1  # type: ignore [arg-type]
+
+        assert record[0].message.args[0] == OVERDUE_ERROR_MESSAGE  # type: ignore [index]
         assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
 
 
@@ -148,13 +190,8 @@ def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
         )
 
         assert len(record) == 1  # type: ignore [arg-type]
-        expected = (
-            "Support for 'glotaran.read_model_from_yaml' was supposed "
-            "to be dropped in version: '0.6.0'.\n"
-            "Current version is: '1.0.0'"
-        )
 
-        assert record[0].message.args[0] == expected  # type: ignore [index]
+        assert record[0].message.args[0] == OVERDUE_ERROR_MESSAGE  # type: ignore [index]
         assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
 
 
