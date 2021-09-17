@@ -91,7 +91,7 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
         If ``version_str`` 's first three elements can not be casted to int.
     """
     error_message = (
-        "version_str need to be a fully qualified version consisting of "
+        "version_str needs to be a fully qualified version consisting of "
         f"int parts (e.g. '0.0.1'), got {version_str!r}"
     )
     split_version = version_str.partition("-")[0].split(".")
@@ -215,7 +215,7 @@ def warn_deprecated(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -308,7 +308,7 @@ def deprecate(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -416,7 +416,7 @@ def deprecate_dict_entry(
     ValueError
         If both ``swap_keys`` and ``replace_rules`` are None (default) or not None.
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -555,7 +555,7 @@ def deprecate_module_attribute(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -635,7 +635,7 @@ def deprecate_submodule(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
