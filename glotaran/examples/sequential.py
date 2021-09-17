@@ -3,12 +3,10 @@ import numpy as np
 from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
-from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
-from glotaran.project.generators.generator import generate_model_yml
 
 sim_model = Model.from_dict(
     {
@@ -76,6 +74,40 @@ sim_model = Model.from_dict(
     megacomplex_types={"decay": DecayMegacomplex, "spectral": SpectralMegacomplex},
 )
 
+model = Model.from_dict(
+    {
+        "initial_concentration": {
+            "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
+        },
+        "k_matrix": {
+            "k1": {
+                "matrix": {
+                    ("s2", "s1"): "kinetic.1",
+                    ("s3", "s2"): "kinetic.2",
+                    ("s3", "s3"): "kinetic.3",
+                }
+            }
+        },
+        "megacomplex": {
+            "m1": {
+                "type": "decay",
+                "k_matrix": ["k1"],
+            }
+        },
+        "irf": {
+            "irf1": {"type": "gaussian", "center": "irf.center", "width": "irf.width"},
+        },
+        "dataset": {
+            "dataset1": {
+                "initial_concentration": "j1",
+                "megacomplex": ["m1"],
+                "irf": "irf1",
+            }
+        },
+    },
+    megacomplex_types={"decay": DecayMegacomplex},
+)
+
 wanted_parameter = ParameterGroup.from_dict(
     {
         "j": [
@@ -88,6 +120,21 @@ wanted_parameter = ParameterGroup.from_dict(
             ["3", 0.1],
         ],
         "shapes": {"amps": [30, 20, 40], "locs": [620, 630, 650], "width": [40, 20, 60]},
+        "irf": [["center", 0.3], ["width", 0.1]],
+    }
+)
+
+parameter = ParameterGroup.from_dict(
+    {
+        "j": [
+            ["1", 1, {"vary": False, "non-negative": False}],
+            ["0", 0, {"vary": False, "non-negative": False}],
+        ],
+        "kinetic": [
+            ["1", 0.5],
+            ["2", 0.3],
+            ["3", 0.1],
+        ],
         "irf": [["center", 0.3], ["width", 0.1]],
     }
 )
@@ -105,15 +152,15 @@ dataset = simulate(
 )
 
 parameter_yml = """
-initial_concentration:
+j:
   - ["1", 1]
   - ["0", 0]
   - {"vary": False, "non-negative": False}
 
-decay:
-  - [species_1, 0.5]
-  - [species_2, 0.3]
-  - [species_3, 0.1]
+kinetic:
+  - ["1", 0.5]
+  - ["2", 0.3]
+  - ["3", 0.1]
 
 irf:
   - [center, 0.3]
@@ -121,11 +168,8 @@ irf:
 """
 parameter = load_parameters(parameter_yml, format_name="yml_str")
 
-model_yml = generate_model_yml("decay-sequential", nr_species=3, irf=True)
-model = load_model(model_yml, format_name="yml_str")
-
 scheme = Scheme(
     model=model,
     parameters=parameter,
-    data={"dataset_1": dataset},
+    data={"dataset1": dataset},
 )

@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
+    from glotaran.plugin_system.project_io_registration import SavingOptions
     from glotaran.project import Result
-    from glotaran.project import SavingOptions
     from glotaran.project import Scheme
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
