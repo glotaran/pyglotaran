@@ -9,6 +9,7 @@ import pytest
 import glotaran
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import OverDueDeprecation
+from glotaran.deprecation.deprecation_utils import check_overdue
 from glotaran.deprecation.deprecation_utils import deprecate
 from glotaran.deprecation.deprecation_utils import deprecate_dict_entry
 from glotaran.deprecation.deprecation_utils import glotaran_version
@@ -89,6 +90,35 @@ def test_parse_version_errors(version_str: str):
     """Invalid version strings"""
     with pytest.raises(ValueError, match=f"'{version_str}'"):
         parse_version(version_str)
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_check_overdue_no_raise(monkeypatch: MonkeyPatch):
+    """Current version smaller then drop_version."""
+    check_overdue(
+        deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+        to_be_removed_in_version="0.6.0",
+    )
+
+
+@pytest.mark.usefixtures("glotaran_1_0_0")
+def test_check_overdue_raises(monkeypatch: MonkeyPatch):
+    """Current version is equal or bigger than drop_version."""
+    with pytest.raises(OverDueDeprecation) as record:
+        check_overdue(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+
+        assert len(record) == 1  # type: ignore [arg-type]
+        expected = (
+            "Support for 'glotaran.read_model_from_yaml' was supposed "
+            "to be dropped in version: '0.6.0'.\n"
+            "Current version is: '1.0.0'"
+        )
+
+        assert record[0].message.args[0] == expected  # type: ignore [index]
+        assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
 
 
 @pytest.mark.usefixtures("glotaran_0_3_0")

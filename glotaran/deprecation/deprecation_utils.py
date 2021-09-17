@@ -139,6 +139,33 @@ def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequ
                 hasattr(item, qual_name_parts[-slice_index + 1])
 
 
+def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str) -> None:
+    """Check if a deprecation  is overdue being removed.
+
+    Parameters
+    ----------
+    deprecated_qual_name_usage : str
+        Old usage with fully qualified name e.g.:
+        ``'glotaran.read_model_from_yaml(model_yml_str)'``
+    to_be_removed_in_version : str
+        Version the support for this usage will be removed.
+
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``to_be_removed_in_version``.
+    """
+    if (
+        parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
+        and "dev" not in glotaran_version()
+    ):
+        raise OverDueDeprecation(
+            f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
+            f"supposed to be dropped in version: {to_be_removed_in_version!r}\n"
+            f"Current version is: {glotaran_version()!r}"
+        )
+
+
 def warn_deprecated(
     *,
     deprecated_qual_name_usage: str,
@@ -214,16 +241,10 @@ def warn_deprecated(
             )
             return load_model(model_path)
 
+
+    .. # noqa: DAR402
     """
-    if (
-        parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
-        and "dev" not in glotaran_version()
-    ):
-        raise OverDueDeprecation(
-            f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
-            f"supposed to be dropped in version: {to_be_removed_in_version!r}\n"
-            f"Current version is: {glotaran_version()!r}"
-        )
+    check_overdue(deprecated_qual_name_usage, to_be_removed_in_version)
     qual_names = (deprecated_qual_name_usage, new_qual_name_usage)
     selected_qual_names = [
         qual_name for qual_name, check in zip(qual_names, check_qual_names) if check
