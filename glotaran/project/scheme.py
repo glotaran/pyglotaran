@@ -31,12 +31,12 @@ class Scheme:
     A scheme also holds options for optimization.
     """
 
-    model: Model = exclude_from_dict_field()  # type: ignore
-    parameters: ParameterGroup = exclude_from_dict_field()  # type: ignore
-    data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()  # type: ignore
-    model_file: str = file_representation_field("model", load_model, default=None)  # type: ignore # noqa E501
-    parameters_file: str = file_representation_field("parameters", load_parameters, None)  # type: ignore # noqa E501
-    data_files: dict[str, str] = file_representation_field("data", load_dataset, None)  # type: ignore # noqa E501
+    model: Model = exclude_from_dict_field()
+    parameters: ParameterGroup = exclude_from_dict_field()
+    data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()
+    model_file: str = file_representation_field("model", load_model, default=None)
+    parameters_file: str = file_representation_field("parameters", load_parameters, None)
+    data_files: dict[str, str] = file_representation_field("data", load_dataset, None)
     group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False

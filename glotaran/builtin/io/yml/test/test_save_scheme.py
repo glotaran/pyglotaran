@@ -31,14 +31,14 @@ non_negative_least_squares: false
 optimization_method: TrustRegionReflection
 parameters_file: p.csv
 result_path: null
-saving:
-  data_filter: null
-  data_format: nc
-  level: full
-  parameter_format: csv
-  report: true
 xtol: 1.0e-08
 """
+# saving:
+#   data_filter: null
+#   data_format: nc
+#   level: full
+#   parameter_format: csv
+#   report: true
 
 
 def test_save_scheme(tmpdir: TmpDir):
