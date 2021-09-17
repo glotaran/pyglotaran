@@ -138,8 +138,7 @@ class Result:
             if "weight" in dataset:
                 data[label]["weight"] = dataset.weight
 
-        new_scheme = replace(self.scheme, parameters=self.optimized_parameters)
-        return new_scheme
+        return replace(self.scheme, parameters=self.optimized_parameters)
 
     def markdown(self, with_model: bool = True, base_heading_level: int = 1) -> MarkdownStr:
         """Format the model as a markdown text.
