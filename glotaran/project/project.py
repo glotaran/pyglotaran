@@ -55,7 +55,6 @@ class Project:
             self.folder = self.file.parent
         if isinstance(self.folder, str):
             self.folder = Path(self.folder)
-        pass
 
     @classmethod
     def create(cls, name: str | None = None, folder: str | Path | None = None) -> Project:
@@ -78,7 +77,7 @@ class Project:
         if folder is None:
             folder = getcwd()
         project_folder = Path(folder)
-        name = name if name else project_folder.name
+        name = name or project_folder.name
         project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
             f.write(TEMPLATE.format(gta_version=gta_version, name=name))
@@ -297,12 +296,13 @@ class Project:
             groups = parameter.split(".")
             label = groups.pop()
             if len(groups) == 0:
-                if isinstance(parameters, dict) and len(parameters) != 0:
-                    raise ModelError(
-                        "The root parameter group cannot contain both groups and parameters."
-                    )
-                elif isinstance(parameters, dict):
-                    parameters = []
+                if isinstance(parameters, dict):
+                    if len(parameters) != 0:
+                        raise ModelError(
+                            "The root parameter group cannot contain both groups and parameters."
+                        )
+                    else:
+                        parameters = []
                 parameters.append(
                     [
                         label,
