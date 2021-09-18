@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
+    from glotaran.project import SavingOptions
     from glotaran.project import Scheme
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
@@ -199,13 +200,13 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot save scheme with format {self.format!r}")
 
-    def load_result(self, result_path: str) -> Result:
-        """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
+    def load_result(self, folder: str) -> Result:
+        """Create a Result instance from a result folder (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
-        result_path : str
-            Path containing the result data.
+        folder : str
+            Folder containing the result specs.
 
         Returns
         -------
@@ -218,15 +219,56 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result: Result, result_path: str):
+    def save_result(
+        self, result: Result, folder: str, saving_options: SavingOptions, allow_overwrite: bool
+    ):
+        """Save a Result instance to a folder (**NOT IMPLEMENTED**).
+
+            Parameters
+            ----------
+            result : Result
+                Result instance to save to specs file.
+            folder : str
+                Folder to write the result specs to.
+            saving_options : SavingOptions
+                Options for saving the the result.
+        allow_overwrite : bool
+            Whether or not to allow overwriting existing files, by default False
+
+
+            .. # noqa: DAR101
+            .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot save result with format {self.format!r}")
+
+    def load_result_file(self, file_name: str) -> Result:
+        """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
+        Parameters
+        ----------
+        file_name : str
+            File containing the result specs.
+
+        Returns
+        -------
+        Result
+            Result instance created from the file.
+
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError(f"Cannot read result with format {self.format!r}")
+
+    def save_result_file(self, result: Result, file_name: str):
         """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         result : Result
             Result instance to save to specs file.
-        result_path : str
-            Path to write the result data to.
+        file_name : str
+            File to write the result specs to.
 
 
         .. # noqa: DAR101

@@ -146,7 +146,7 @@ class DatasetModel:
 
     def has_global_model(self) -> bool:
         """Indicates if the dataset model can model the global dimension."""
-        return len(self.global_megacomplex) != 0
+        return self.global_megacomplex is not None and len(self.global_megacomplex) != 0
 
     def set_coordinates(self, coords: dict[str, np.ndarray]):
         """Sets the dataset model's coordinates."""

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import replace
+from typing import Any
 
 import numpy as np
 import xarray as xr
@@ -9,21 +11,46 @@ from numpy.typing import ArrayLike
 from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
-from glotaran.io import save_result
+from glotaran.io import load_dataset
+from glotaran.io import load_parameters
+from glotaran.io import load_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project.dataclasses import exclude_from_dict_field
+from glotaran.project.dataclasses import file_representation_field
 from glotaran.project.scheme import Scheme
 from glotaran.utils.ipython import MarkdownStr
 
 
 @dataclass
 class Result:
-    """The result of a global analysis"""
+    """The result of a global analysis."""
 
-    additional_penalty: np.ndarray | None
-    """A vector with the value for each additional penalty, or None"""
-    cost: ArrayLike
-    data: dict[str, xr.Dataset]
+    number_of_function_evaluations: int
+    """The number of function evaluations."""
+    success: bool
+    """Indicates if the optimization was successful."""
+    termination_reason: str
+    """The reason (message when) the optimizer terminated"""
+
+    glotaran_version: str
+    """The glotaran version used to create the result."""
+
+    scheme: Scheme = exclude_from_dict_field(None)  # type: ignore
+    scheme_file: str | None = file_representation_field("scheme", load_scheme, None)  # type: ignore  # noqa E501
+
+    initial_parameters: ParameterGroup = exclude_from_dict_field(None)  # type: ignore
+    initial_parameters_file: str | None = file_representation_field(
+        "initial_parameters", load_parameters, None
+    )  # type: ignore
+
+    optimized_parameters: ParameterGroup = exclude_from_dict_field(None)  # type: ignore
+    """The optimized parameters, organized in a :class:`ParameterGroup`"""
+    optimized_parameters_file: str | None = file_representation_field(
+        "optimized_parameters", load_parameters, None
+    )  # type: ignore
+
+    data: dict[str, xr.Dataset] = exclude_from_dict_field(None)  # type: ignore
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
     Notes
@@ -31,31 +58,29 @@ class Result:
     The actual content of the data depends on the actual model and can be found in the
     documentation for the model.
     """
-    free_parameter_labels: list[str]
-    """List of labels of the free parameters used in optimization."""
-    number_of_function_evaluations: int
-    """The number of function evaluations."""
-    initial_parameters: ParameterGroup
-    optimized_parameters: ParameterGroup
-    """The optimized parameters, organized in a :class:`ParameterGroup`"""
-    scheme: Scheme
-    success: bool
-    """Indicates if the optimization was successful."""
-    termination_reason: str
-    """The reason (message when) the optimizer terminated"""
+    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)  # type: ignore  # noqa E501
 
+    free_parameter_labels: list[str] = exclude_from_dict_field(None)  # type: ignore
+    """List of labels of the free parameters used in optimization."""
     # The below can be none in case of unsuccessful optimization
+
+    additional_penalty: np.ndarray | None = exclude_from_dict_field(None)  # type: ignore
+    """A vector with the value for each additional penalty, or None"""
+
+    cost: ArrayLike | None = exclude_from_dict_field(None)  # type: ignore
+    """The final cost."""
+
     chi_square: float | None = None
     r"""The chi-square of the optimization.
 
     :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
-    covariance_matrix: ArrayLike | None = None
+    covariance_matrix: ArrayLike | list | None = exclude_from_dict_field(None)  # type: ignore
     """Covariance matrix.
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
-    jacobian: ArrayLike | None = None
+    jacobian: ArrayLike | list | None = exclude_from_dict_field(None)  # type: ignore
     """Modified Jacobian matrix at the solution
 
     See also: :func:`scipy.optimize.least_squares`
@@ -79,8 +104,22 @@ class Result:
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
 
+    def __post_init__(self):
+        """Overwrite of ``__post_init__``."""
+        if isinstance(self.jacobian, list):
+            self.jacobian = np.array(self.jacobian)
+            self.covariance_matrix = np.array(self.covariance_matrix)
+
     @property
     def model(self) -> Model:
+        """Return the model used to fit result.
+
+        Returns
+        -------
+        Model
+            The model instance.
+
+        """
         return self.scheme.model
 
     def get_scheme(self) -> Scheme:
@@ -99,29 +138,25 @@ class Result:
             if "weight" in dataset:
                 data[label]["weight"] = dataset.weight
 
-        return Scheme(
-            model=self.model,
-            parameters=self.optimized_parameters,
-            data=data,
-            group_tolerance=self.scheme.group_tolerance,
-            non_negative_least_squares=self.scheme.non_negative_least_squares,
-            maximum_number_function_evaluations=self.scheme.maximum_number_function_evaluations,
-            ftol=self.scheme.ftol,
-            gtol=self.scheme.gtol,
-            xtol=self.scheme.xtol,
-            optimization_method=self.scheme.optimization_method,
-        )
+        new_scheme = replace(self.scheme, parameters=self.optimized_parameters)
+        return new_scheme
 
     def markdown(self, with_model: bool = True, base_heading_level: int = 1) -> MarkdownStr:
-        """Formats the model as a markdown text.
+        """Format the model as a markdown text.
 
         Parameters
         ----------
-        with_model :
+        with_model : bool
             If `True`, the model will be printed with initial and optimized parameters filled in.
-        """
+        base_heading_level : int
+            The level of the base heading.
 
-        general_table_rows = [
+        Returns
+        -------
+        MarkdownStr
+            The scheme as markdown string.
+        """
+        general_table_rows: list[Any] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
             ["Number of variables", self.number_of_variables],
             ["Number of datapoints", self.number_of_data_points],
@@ -170,47 +205,20 @@ class Result:
         return MarkdownStr(result_table)
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown."""
+        """Return a markdown representation str.
+
+        Special method used by ``ipython`` to render markdown.
+
+        Returns
+        -------
+        str
+            The scheme as markdown string.
+        """
         return str(self.markdown(base_heading_level=3))
 
     def __str__(self):
+        """Overwrite of ``__str__``."""
         return str(self.markdown(with_model=False))
-
-    @deprecate(
-        deprecated_qual_name_usage="glotaran.project.result.Result.save(result_path)",
-        new_qual_name_usage=(
-            "glotaran.io.save_result("
-            "result=result, result_path=result_path, "
-            'format_name="legacy", allow_overwrite=True'
-            ")"
-        ),
-        to_be_removed_in_version="0.6.0",
-        importable_indices=(2, 1),
-    )
-    def save(self, path: str) -> list[str]:
-        """Saves the result to given folder.
-
-        Warning
-        -------
-        Deprecated use ``save_result(result_path=result_path, result=result,
-        format_name="legacy", allow_overwrite=True)`` instead.
-
-
-        Returns a list with paths of all saved items.
-        The following files are saved:
-
-        * `result.md`: The result with the model formatted as markdown text.
-
-        * `optimized_parameters.csv`: The optimized parameter as csv file.
-
-        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
-
-        Parameters
-        ----------
-        path :
-            The path to the folder in which to save the result.
-        """
-        save_result(result_path=path, result=self, format_name="legacy", allow_overwrite=True)
 
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
@@ -219,7 +227,7 @@ class Result:
         importable_indices=(2, 2),
     )
     def get_dataset(self, dataset_label: str) -> xr.Dataset:
-        """Returns the result dataset for the given dataset label.
+        """Return the result dataset for the given dataset label.
 
         Warning
         -------
@@ -229,10 +237,115 @@ class Result:
 
         Parameters
         ----------
-        dataset_label :
+        dataset_label : str
             The label of the dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset.
+
+        Raises
+        ------
+        ValueError
+            If the dataset_label is not in result datasets.
         """
         try:
             return self.data[dataset_label]
         except KeyError:
             raise ValueError(f"Unknown dataset '{dataset_label}'")
+
+    #  def save(self, result_path: str | Path, overwrite: bool = False) -> None:
+    #      """Save the result to a given folder.
+    #
+    #      Returns a list with paths of all saved items.
+    #      The following files are saved:
+    #      * `result.md`: The result with the model formatted as markdown text.
+    #      * `optimized_parameters.csv`: The optimized parameter as csv file.
+    #      * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+    #
+    #      Parameters
+    #      ----------
+    #      result_path : str | Path
+    #          The path to the folder in which to save the result.
+    #      overwrite : bool
+    #          Weather to overwrite an existing folder.
+    #
+    #      Raises
+    #      ------
+    #      ValueError
+    #          If ``result_path`` is a file.
+    #      FileExistsError
+    #          If ``result_path`` exists and ``overwrite`` is ``False``.
+    #      """
+    #      result_path = Path(result_path) if isinstance(result_path, str) else result_path
+    #      if result_path.exists() and not overwrite:
+    #          raise FileExistsError(f"The path '{result_path}' exists.")
+    #      else:
+    #          result_path.mkdir()
+    #      if not result_path.is_dir():
+    #          raise ValueError(f"The path '{result_path}' is not a directory.")
+    #
+    #      result_file_path = result_path / "glotaran_result.yml"
+    #      save_result(self, result_file_path)
+    #
+    #      scheme_path = result_path / "scheme.yml"
+    #      save_scheme(self.scheme, scheme_path)
+    #
+    #      model_path = result_path / "model.yml"
+    #      save_model(self.scheme.model, model_path)
+    #
+    #      initial_parameters_path = result_path / "initial_parameters.csv"
+    #      self.initial_parameters.to_csv(initial_parameters_path)
+    #
+    #      optimized_parameters_path = result_path / "optimized_parameters.csv"
+    #      self.optimized_parameters.to_csv(optimized_parameters_path)
+    #
+    #      save_level = self.scheme.saving.level
+    #      data_filter = self.scheme.saving.data_filter or default_data_filters[save_level]
+    #      datasets = {}
+    #      for label, dataset in self.data.items():
+    #          dataset_path = result_path / f"{label}.nc"
+    #          datasets[label] = dataset_path
+    #          if data_filter is not None:
+    #              dataset = dataset[data_filter]
+    #          save_dataset(dataset, dataset_path)
+    #
+    #      if self.scheme.saving.report:
+    #          report_path = result_path / "result.md"
+    #          with open(report_path, "w") as f:
+    #              f.write(str(self.markdown()))
+
+    def recreate(self) -> Result:
+        """Recrate a resulf from the initial parameters.
+
+        Returns
+        -------
+        Result :
+            The recreated result.
+
+        """
+        from glotaran.analysis.optimize import optimize
+
+        return optimize(self.scheme)
+
+    def verify(self) -> bool:
+        """Verify a result.
+
+        Returns
+        -------
+        bool :
+            Weather the recreated result is equal to this result.
+
+        """
+        recreated = self.recreate()
+
+        if self.root_mean_square_error != recreated.root_mean_square_error:
+            return False
+
+        for label, dataset in self.data.items():
+            for attr, array in dataset.items():
+                if not np.allclose(array, recreated.data[label][attr]):
+                    return False
+
+        return True
