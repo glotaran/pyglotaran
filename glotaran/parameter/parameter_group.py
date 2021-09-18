@@ -429,14 +429,17 @@ class ParameterGroup(dict):
 
     def __repr__(self):
         """Representation used by repl and tracebacks."""
+
+        parameter_short_notations = [
+            [str(parameter.label), parameter.value] for parameter in self._parameters.values()
+        ]
         if self.label is None:
-            return f"{type(self).__name__}.from_dict({super().__repr__()})"
-        elif len(self._parameters):
-            parameter_short_notations = [
-                f"[{parameter.label!r}, {parameter.value}]"
-                for _, parameter in self._parameters.items()
-            ]
-            return f"[{', '.join(parameter_short_notations)}]"
+            if len(self._parameters) == 0:
+                return f"{type(self).__name__}.from_dict({super().__repr__()})"
+            else:
+                return f"{type(self).__name__}.from_list({parameter_short_notations})"
+        if len(self._parameters):
+            return parameter_short_notations.__repr__()
         else:
             return super().__repr__()
 
