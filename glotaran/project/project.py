@@ -17,7 +17,7 @@ from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import load_scheme
-from glotaran.io import save_scheme
+# from glotaran.io import save_scheme
 from glotaran.model import Model
 from glotaran.model import ModelError
 from glotaran.parameter import ParameterGroup
