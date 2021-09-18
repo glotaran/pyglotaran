@@ -175,7 +175,7 @@ def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str
     ):
         raise OverDueDeprecation(
             f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
-            f"supposed to be dropped in version: {to_be_removed_in_version!r}\n"
+            f"supposed to be dropped in version: {to_be_removed_in_version!r}.\n"
             f"Current version is: {glotaran_version()!r}"
         )
 
