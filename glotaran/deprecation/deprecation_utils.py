@@ -154,7 +154,7 @@ def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequ
 
 
 def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str) -> None:
-    """Check if a deprecation  is overdue being removed.
+    """Check if a deprecation is overdue for removal.
 
     Parameters
     ----------

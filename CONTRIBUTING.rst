@@ -184,7 +184,7 @@ The functions you most likely want to use are
 *   :func:`deprecate_module_attribute` for module attributes
 *   :func:`deprecate_submodule` for modules
 *   :func:`deprecate_dict_entry` for dict entries
-*   :func:`raise_deprecation_error` if the original behavior can't be kept intact
+*   :func:`raise_deprecation_error` if the original behavior cannot be maintained
 
 
 Those functions not only make it easier to deprecate something, but they also check that
@@ -318,9 +318,9 @@ For full examples have a look at the examples from the docstring (:func:`depreca
 
 Deprecation Errors
 ~~~~~~~~~~~~~~~~~~
-In some cases deprecations can't have a replacement with the original behavior being kept intact.
-This will be mostly the case when at this point in time and in the object hierarchy there aren't
-enough information about the whole system available to calculate the appropriate values.
+In some cases deprecations cannot have a replacement with the original behavior maintained.
+This will be mostly the case when at this point in time and in the object hierarchy there isn't
+enough information available to calculate the appropriate values.
 Rather than using a 'dummy' value not to break the API, which could cause undefined behavior
 down the line, those cases should throw an error which informs the users about the new usage.
 In general this should only be used if it is unavoidable due to massive refactoring of the
