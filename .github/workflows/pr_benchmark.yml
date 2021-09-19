@@ -44,13 +44,17 @@ jobs:
           machine_file.write_text(machine_file_content)
 
       - name: Run PR compare benchmarks
+        id: benchmark_run
         run: |
           git remote add upstream https://github.com/glotaran/pyglotaran
           git fetch upstream
           pushd benchmark
-          asv run v0.4.0^..v0.4.0 --machine gh_action
+          last_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          asv run $last_tag^..$last_tag --machine gh_action
+          asv run upstream/main^..upstream/main --machine gh_action
           asv run HEAD^..HEAD --machine gh_action
           asv publish
+          echo ::set-output name=last_tag::$last_tag
 
       - name: Checkout benchmark result repo
         uses: actions/checkout@v2
@@ -73,8 +77,12 @@ jobs:
           import subprocess
 
           pr_nr = os.environ.get("PR_NR")
-          diff_result = subprocess.run(
-              ["asv", "--config=benchmark/asv.conf.json", "compare", "v0.4.0", "HEAD"],
+          diff_release_main = subprocess.run(
+              ["asv", "--config=benchmark/asv.conf.json", "compare", "${{steps.benchmark_run.outputs.last_tag}}", "HEAD"],
+              capture_output=True,
+          )
+          diff_main_PR = subprocess.run(
+              ["asv", "--config=benchmark/asv.conf.json", "compare", "upstream/main", "HEAD"],
               capture_output=True,
           )
           comment = f"""\
@@ -82,7 +90,7 @@ jobs:
           Benchmark differences below 5% might be due to CI noise.
           <details>
           <summary>
-          Benchmark diff
+          Benchmark diff ${{steps.benchmark_run.outputs.last_tag}} vs. main
           </summary>
 
           Parametrized benchmark signatures:
@@ -91,7 +99,22 @@ jobs:
           ```
 
           ```
-          {diff_result.stdout.decode()}
+          {diff_release_main.stdout.decode()}
+          ```
+          </details>
+
+          <details>
+          <summary>
+          Benchmark diff main vs. PR
+          </summary>
+
+          Parametrized benchmark signatures:
+          ```python
+          BenchmarkOptimize.time_optimize(index_dependent, grouped, weight)
+          ```
+
+          ```
+          {diff_main_PR.stdout.decode()}
           ```
           </details>
           """
