@@ -93,6 +93,28 @@ class Scheme:
         """Representation used by print and str."""
         return str(self.markdown())
 
+    @property
+    def model_dimensions(self) -> dict[str, str]:
+        """Returns the dataset model's model dimension."""
+        return {
+            dataset_name: self.model.dataset[dataset_name]
+            .fill(self.model, self.parameters)
+            .set_data(self.data[dataset_name])
+            .get_model_dimension()
+            for dataset_name in self.data
+        }
+
+    @property
+    def global_dimensions(self) -> dict[str, str]:
+        """Returns the dataset model's global dimension."""
+        return {
+            dataset_name: self.model.dataset[dataset_name]
+            .fill(self.model, self.parameters)
+            .set_data(self.data[dataset_name])
+            .get_global_dimension()
+            for dataset_name in self.data
+        }
+
     @staticmethod
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.scheme.Scheme.from_yaml_file(filename)",

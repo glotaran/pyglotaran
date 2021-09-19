@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
@@ -7,7 +9,7 @@ from glotaran.project import Scheme
 
 
 @pytest.fixture
-def mock_scheme(tmpdir):
+def mock_scheme(tmp_path: Path) -> Scheme:
 
     model_yml_str = """
     megacomplex:
@@ -18,27 +20,24 @@ def mock_scheme(tmpdir):
         dataset1:
             megacomplex: [m1]
     """
-    model_path = tmpdir.join("model.yml")
-    with open(model_path, "w") as f:
-        f.write(model_yml_str)
+    model_path = tmp_path / "model.yml"
+    model_path.write_text(model_yml_str)
 
-    parameter_path = tmpdir.join("parameters.yml")
-    with open(parameter_path, "w") as f:
-        parameter = "[1.0, 67.0]"
-        f.write(parameter)
+    parameter_path = tmp_path / "parameters.yml"
+    parameter_path.write_text("[1.0, 67.0]")
 
-    dataset_path = tmpdir.join("dataset.nc")
-    xr.DataArray([[1, 2, 3]], coords=[("e", [1]), ("c", [1, 2, 3])]).to_dataset(
+    dataset_path = tmp_path / "dataset.nc"
+    xr.DataArray([[1, 2, 3]], coords=[("spectral", [1]), ("time", [1, 2, 3])]).to_dataset(
         name="data"
     ).to_netcdf(dataset_path)
 
-    scheme = f"""
+    scheme_yml_str = f"""
     model: {model_path}
     parameters: {parameter_path}
     non-negative-least-squares: True
     maximum-number-function-evaluations: 42
     data:
-      dataset1: {dataset_path}
+        dataset1: {dataset_path}
 
     saving:
         level: minimal
@@ -47,16 +46,17 @@ def mock_scheme(tmpdir):
         parameter_format: yaml
         report: false
     """
-    scheme_path = tmpdir.join("scheme.yml")
-    with open(scheme_path, "w") as f:
-        f.write(scheme)
+    scheme_path = tmp_path / "scheme.yml"
+    scheme_path.write_text(scheme_yml_str)
 
-    yield load_scheme(scheme_path)
+    return load_scheme(scheme_path)
 
 
 def test_scheme(mock_scheme: Scheme):
     assert mock_scheme.model is not None
 
+    assert mock_scheme.model_dimensions["dataset1"] == "time"
+    assert mock_scheme.global_dimensions["dataset1"] == "spectral"
     assert mock_scheme.parameters is not None
     assert mock_scheme.parameters.get("1") == 1.0
     assert mock_scheme.parameters.get("2") == 67.0
