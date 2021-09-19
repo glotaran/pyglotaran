@@ -1,4 +1,4 @@
-type: kinetic-spectrum
+default-megacomplex: decay
 
 initial_concentration:
  input:
