@@ -8,6 +8,7 @@ from warnings import warn
 
 import xarray as xr
 
+from glotaran.deprecation import raise_deprecation_error
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.dataset_model import create_dataset_model_type
@@ -108,6 +109,24 @@ class Model:
                 model._add_dict_items(name, items)
 
         return model
+
+    @property
+    def model_dimension(self):
+        """Deprecated use ``Scheme.model_dimensions['<dataset_name>']`` instead"""
+        raise_deprecation_error(
+            deprecated_qual_name_usage="Model.model_dimension",
+            new_qual_name_usage=("Scheme.model_dimensions['<dataset_name>']"),
+            to_be_removed_in_version="0.7.0",
+        )
+
+    @property
+    def global_dimension(self):
+        """Deprecated use ``Scheme.global_dimensions['<dataset_name>']`` instead"""
+        raise_deprecation_error(
+            deprecated_qual_name_usage="Model.global_dimension",
+            new_qual_name_usage=("Scheme.global_dimensions['<dataset_name>']"),
+            to_be_removed_in_version="0.7.0",
+        )
 
     def _add_dict_items(self, name: str, items: dict):
 

@@ -61,13 +61,13 @@ class DatasetModel:
         """Returns the dataset model's model dimension."""
         if not hasattr(self, "_model_dimension"):
             if len(self.megacomplex) == 0:
-                raise ValueError(f"No megacomplex set for dataset descriptor '{self.label}'")
+                raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
             if isinstance(self.megacomplex[0], str):
-                raise ValueError(f"Dataset descriptor '{self.label}' was not filled")
+                raise ValueError(f"Dataset model '{self.label}' was not filled")
             self._model_dimension = self.megacomplex[0].dimension
             if any(self._model_dimension != m.dimension for m in self.megacomplex):
                 raise ValueError(
-                    f"Megacomplex dimensions do not match for dataset descriptor '{self.label}'."
+                    f"Megacomplex dimensions do not match for dataset model '{self.label}'."
                 )
         return self._model_dimension
 
@@ -95,7 +95,7 @@ class DatasetModel:
         if not hasattr(self, "_global_dimension"):
             if self.has_global_model():
                 if isinstance(self.global_megacomplex[0], str):
-                    raise ValueError(f"Dataset descriptor '{self.label}' was not filled")
+                    raise ValueError(f"Dataset model '{self.label}' was not filled")
                 self._global_dimension = self.global_megacomplex[0].dimension
                 if any(self._global_dimension != m.dimension for m in self.global_megacomplex):
                     raise ValueError(
@@ -106,7 +106,7 @@ class DatasetModel:
                 return next(dim for dim in self._coords if dim != self.get_model_dimension())
             else:
                 if not hasattr(self, "_data"):
-                    raise ValueError(f"Data not set for dataset descriptor '{self.label}'")
+                    raise ValueError(f"Data not set for dataset model '{self.label}'")
                 self._global_dimension = next(
                     dim for dim in self._data.data.dims if dim != self.get_model_dimension()
                 )

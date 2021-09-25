@@ -25,11 +25,25 @@ DecoratedCallable = TypeVar(
 )  # decorated function or class
 
 if TYPE_CHECKING:
+    from typing import NoReturn
     from typing import Sequence
 
 
 class OverDueDeprecation(Exception):
     """Error thrown when a deprecation should have been removed.
+
+    See Also
+    --------
+    deprecate
+    warn_deprecated
+    deprecate_module_attribute
+    deprecate_submodule
+    deprecate_dict_entry
+    """
+
+
+class GlotaranDeprectedApiError(Exception):
+    """Exception raised when a deprecation has no replacement.
 
     See Also
     --------
@@ -91,7 +105,7 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
         If ``version_str`` 's first three elements can not be casted to int.
     """
     error_message = (
-        "version_str need to be a fully qualified version consisting of "
+        "version_str needs to be a fully qualified version consisting of "
         f"int parts (e.g. '0.0.1'), got {version_str!r}"
     )
     split_version = version_str.partition("-")[0].split(".")
@@ -137,6 +151,78 @@ def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequ
             if slice_index != 1:
                 item = getattr(module, object_name)
                 hasattr(item, qual_name_parts[-slice_index + 1])
+
+
+def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str) -> None:
+    """Check if a deprecation is overdue for removal.
+
+    Parameters
+    ----------
+    deprecated_qual_name_usage : str
+        Old usage with fully qualified name e.g.:
+        ``'glotaran.read_model_from_yaml(model_yml_str)'``
+    to_be_removed_in_version : str
+        Version the support for this usage will be removed.
+
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``to_be_removed_in_version``.
+    """
+    if (
+        parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
+        and "dev" not in glotaran_version()
+    ):
+        raise OverDueDeprecation(
+            f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
+            f"supposed to be dropped in version: {to_be_removed_in_version!r}.\n"
+            f"Current version is: {glotaran_version()!r}"
+        )
+
+
+def raise_deprecation_error(
+    *,
+    deprecated_qual_name_usage: str,
+    new_qual_name_usage: str,
+    to_be_removed_in_version: str,
+) -> NoReturn:
+    """Raise :class:`GlotaranDeprectedApiError` error, with formatted message.
+
+    This should only be used if there is no reasonable way to keep the deprecated
+    usage functional!
+
+    Parameters
+    ----------
+    deprecated_qual_name_usage : str
+        Old usage with fully qualified name e.g.:
+        ``'glotaran.read_model_from_yaml(model_yml_str)'``
+    new_qual_name_usage : str
+        New usage as fully qualified name e.g.:
+        ``'glotaran.io.load_model(model_yml_str, format_name="yml_str")'``
+    to_be_removed_in_version : str
+        Version the support for this usage will be removed.
+
+    Raises
+    ------
+    OverDueDeprecation
+        If the current version is greater or equal to ``to_be_removed_in_version``.
+    GlotaranDeprectedApiError
+        If :class:`OverDueDeprecation` wasn't raised before.
+
+
+    .. # noqa: DAR402 OverDueDeprecation
+    .. # noqa: DAR401 GlotaranDeprectedApiError
+    """
+    check_overdue(deprecated_qual_name_usage, to_be_removed_in_version)
+    message = (
+        f"Usage of {deprecated_qual_name_usage!r} was deprecated, "
+        f"use {new_qual_name_usage!r} instead.\n"
+        "It wasn't possible to restore the original behavior of this usage "
+        "(mostlikely due to an object hierarchy change)."
+        "This usage change message won't be show as of version: "
+        f"{to_be_removed_in_version!r}."
+    )
+    raise GlotaranDeprectedApiError(message)
 
 
 def warn_deprecated(
@@ -188,7 +274,7 @@ def warn_deprecated(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -214,16 +300,10 @@ def warn_deprecated(
             )
             return load_model(model_path)
 
+
+    .. # noqa: DAR402
     """
-    if (
-        parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
-        and "dev" not in glotaran_version()
-    ):
-        raise OverDueDeprecation(
-            f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
-            f"supposed to be dropped in version: {to_be_removed_in_version!r}\n"
-            f"Current version is: {glotaran_version()!r}"
-        )
+    check_overdue(deprecated_qual_name_usage, to_be_removed_in_version)
     qual_names = (deprecated_qual_name_usage, new_qual_name_usage)
     selected_qual_names = [
         qual_name for qual_name, check in zip(qual_names, check_qual_names) if check
@@ -287,7 +367,7 @@ def deprecate(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -395,7 +475,7 @@ def deprecate_dict_entry(
     ValueError
         If both ``swap_keys`` and ``replace_rules`` are None (default) or not None.
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -534,7 +614,7 @@ def deprecate_module_attribute(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------
@@ -614,7 +694,7 @@ def deprecate_submodule(
     Raises
     ------
     OverDueDeprecation
-        If the current version is greater or equal to ``end_of_life_version``.
+        If the current version is greater or equal to ``to_be_removed_in_version``.
 
     See Also
     --------

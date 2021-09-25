@@ -8,12 +8,15 @@ import pytest
 
 import glotaran
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
+from glotaran.deprecation.deprecation_utils import GlotaranDeprectedApiError
 from glotaran.deprecation.deprecation_utils import OverDueDeprecation
+from glotaran.deprecation.deprecation_utils import check_overdue
 from glotaran.deprecation.deprecation_utils import deprecate
 from glotaran.deprecation.deprecation_utils import deprecate_dict_entry
 from glotaran.deprecation.deprecation_utils import glotaran_version
 from glotaran.deprecation.deprecation_utils import module_attribute
 from glotaran.deprecation.deprecation_utils import parse_version
+from glotaran.deprecation.deprecation_utils import raise_deprecation_error
 from glotaran.deprecation.deprecation_utils import warn_deprecated
 
 if TYPE_CHECKING:
@@ -36,6 +39,18 @@ DEPRECATION_WARN_MESSAGE = (
     "'glotaran.deprecation.deprecation_utils.check_qualnames_in_tests(qualnames)' "
     "instead.\nThis usage will be an error in version: '0.6.0'."
 )
+DEPRECATION_ERROR_MESSAGE = (
+    "Usage of 'glotaran.deprecation.deprecation_utils.parse_version(version_str)' was deprecated, "
+    "use 'glotaran.deprecation.deprecation_utils.check_qualnames_in_tests(qualnames)' instead.\n"
+    "It wasn't possible to restore the original behavior of this usage "
+    "(mostlikely due to an object hierarchy change)."
+    "This usage change message won't be show as of version: '0.6.0'."
+)
+OVERDUE_ERROR_MESSAGE = (
+    "Support for 'glotaran.deprecation.deprecation_utils.parse_version' "
+    "was supposed to be dropped in version: '0.6.0'.\n"
+    "Current version is: '1.0.0'"
+)
 
 
 class DummyClass:
@@ -49,6 +64,15 @@ def glotaran_0_3_0(monkeypatch: MonkeyPatch):
     """Mock glotaran version to always be 0.3.0 for the test."""
     monkeypatch.setattr(
         glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "0.3.0"
+    )
+    yield
+
+
+@pytest.fixture
+def glotaran_1_0_0(monkeypatch: MonkeyPatch):
+    """Mock glotaran version to always be 1.0.0 for the test."""
+    monkeypatch.setattr(
+        glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "1.0.0"
     )
     yield
 
@@ -83,6 +107,51 @@ def test_parse_version_errors(version_str: str):
 
 
 @pytest.mark.usefixtures("glotaran_0_3_0")
+def test_check_overdue_no_raise(monkeypatch: MonkeyPatch):
+    """Current version smaller then drop_version."""
+    check_overdue(
+        deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+        to_be_removed_in_version="0.6.0",
+    )
+
+
+@pytest.mark.usefixtures("glotaran_1_0_0")
+def test_check_overdue_raises(monkeypatch: MonkeyPatch):
+    """Current version is equal or bigger than drop_version."""
+    with pytest.raises(OverDueDeprecation) as excinfo:
+        check_overdue(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+
+    assert str(excinfo.value) == OVERDUE_ERROR_MESSAGE
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_raise_deprecation_error(monkeypatch: MonkeyPatch):
+    """Current version smaller then drop_version."""
+    with pytest.raises(GlotaranDeprectedApiError) as excinfo:
+        raise_deprecation_error(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            new_qual_name_usage=NEW_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+    assert str(excinfo.value) == DEPRECATION_ERROR_MESSAGE
+
+
+@pytest.mark.usefixtures("glotaran_1_0_0")
+def test_raise_deprecation_error_overdue(monkeypatch: MonkeyPatch):
+    """Current version is equal or bigger than drop_version."""
+    with pytest.raises(OverDueDeprecation) as excinfo:
+        raise_deprecation_error(
+            deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
+            new_qual_name_usage=NEW_QUAL_NAME,
+            to_be_removed_in_version="0.6.0",
+        )
+    assert str(excinfo.value) == OVERDUE_ERROR_MESSAGE
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
 def test_warn_deprecated():
     """Warning gets shown when all is in order."""
     with pytest.warns(GlotaranApiDeprecationWarning) as record:
@@ -97,28 +166,17 @@ def test_warn_deprecated():
         assert Path(record[0].filename) == Path(__file__)
 
 
+@pytest.mark.usefixtures("glotaran_1_0_0")
 def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
     """Current version is equal or bigger than drop_version."""
-    monkeypatch.setattr(
-        glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "1.0.0"
-    )
 
-    with pytest.raises(OverDueDeprecation) as record:
+    with pytest.raises(OverDueDeprecation) as excinfo:
         warn_deprecated(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             new_qual_name_usage=NEW_QUAL_NAME,
             to_be_removed_in_version="0.6.0",
         )
-
-        assert len(record) == 1  # type: ignore [arg-type]
-        expected = (
-            "Support for 'glotaran.read_model_from_yaml' was supposed "
-            "to be dropped in version: '0.6.0'.\n"
-            "Current version is: '1.0.0'"
-        )
-
-        assert record[0].message.args[0] == expected  # type: ignore [index]
-        assert Path(record[0].filename) == Path(__file__)  # type: ignore [index]
+    assert str(excinfo.value) == OVERDUE_ERROR_MESSAGE
 
 
 @pytest.mark.filterwarnings("ignore:Usage")
@@ -477,19 +535,16 @@ def test_deprecate_submodule_from_import(recwarn: WarningsRecorder):
 def test_deprecate_submodule_import_error(recwarn: WarningsRecorder):
     """Raise warning when Attribute of fake module is imported"""
 
-    with pytest.raises(ImportError) as record:
+    with pytest.raises(ImportError) as excinfo:
 
         from glotaran.deprecation.test.dummy_package.deprecated_module import (  # noqa: F401
             does_not_exists,
         )
 
-        assert len(record) == 1  # type:ignore[arg-type]
-        assert record[0].message.args[0] == (  # type:ignore[index]
-            "ImportError: cannot import name 'does_not_exists' from "
-            "'glotaran.deprecation.test.deprecated_module' (unknown location)"
-        )
-        assert len(recwarn) == 0
-        assert Path(record[0].filename) == Path(__file__)  # type:ignore[index]
+    assert str(excinfo.value) == (
+        "cannot import name 'does_not_exists' from "
+        "'glotaran.deprecation.test.dummy_package.deprecated_module' (unknown location)"
+    )
 
 
 @pytest.mark.usefixtures("glotaran_0_3_0")
