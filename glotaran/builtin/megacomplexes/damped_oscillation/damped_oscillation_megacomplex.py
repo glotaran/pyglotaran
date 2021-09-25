@@ -58,6 +58,8 @@ class DampedOscillationMegacomplex(Megacomplex):
         model_axis = dataset_model.get_model_axis()
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
+        # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
+        # 0.03 speed of light 3.10^10 cm/s and time-unit ps (10^-12)
         frequency_max = 1 / (2 * 0.03 * delta_min)
         frequencies = np.array(self.frequencies) * 0.03 * 2 * np.pi
         frequencies[frequencies >= frequency_max] = np.mod(
