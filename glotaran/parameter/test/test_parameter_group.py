@@ -69,7 +69,7 @@ def test_param_group_markdown_is_order_independent():
 
 
 def test_param_group_repr():
-    """Repr creates code to recreate the object."""
+    """Repr creates code to recreate the object with from_dict."""
     result = ParameterGroup.from_dict({"foo": {"bar": [["1", 1.0], ["2", 2.0], ["3", 3.0]]}})
     result_short = ParameterGroup.from_dict({"foo": {"bar": [1, 2, 3]}})
     expected = "ParameterGroup.from_dict({'foo': {'bar': [['1', 1.0], ['2', 2.0], ['3', 3.0]]}})"
@@ -77,6 +77,19 @@ def test_param_group_repr():
     assert result == result_short
     assert result_short.__repr__() == expected
     assert result.__repr__() == expected
+    assert result == eval(result.__repr__())
+
+
+def test_param_group_repr_from_list():
+    """Repr creates code to recreate the object with from_list."""
+    result = ParameterGroup.from_list([["1", 2.3], ["2", 3.0]])
+    result_short = ParameterGroup.from_list([2.3, 3.0])
+    expected = "ParameterGroup.from_list([['1', 2.3], ['2', 3.0]])"
+
+    assert result == result_short
+    assert result.__repr__() == expected
+    assert result_short.__repr__() == expected
+    assert result == eval(result.__repr__())
 
 
 def test_param_group_ipython_rendering():
