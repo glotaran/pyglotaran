@@ -61,15 +61,15 @@ def test_dataset(model):
 
 
 def test_constraints(model):
-    print(model.constraints)
-    assert len(model.constraints) == 2
+    print(model.clp_constraints)
+    assert len(model.clp_constraints) == 2
 
-    zero = model.constraints[0]
+    zero = model.clp_constraints[0]
     assert isinstance(zero, ZeroConstraint)
     assert zero.target == "s1"
     assert zero.interval == [[1, 100], [2, 200]]
 
-    only = model.constraints[1]
+    only = model.clp_constraints[1]
     assert isinstance(only, OnlyConstraint)
     assert only.target == "s1"
     assert only.interval == [[1, 100], [2, 200]]

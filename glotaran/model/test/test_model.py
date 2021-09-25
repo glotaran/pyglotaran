@@ -227,10 +227,10 @@ def test_model_init():
     assert "clp_area_penalties" in model._model_items
     assert issubclass(model._model_items["clp_area_penalties"], EqualAreaPenalty)
 
-    assert hasattr(model, "constraints")
-    assert isinstance(model.constraints, list)
-    assert "constraints" in model._model_items
-    assert issubclass(model._model_items["constraints"], Constraint)
+    assert hasattr(model, "clp_constraints")
+    assert isinstance(model.clp_constraints, list)
+    assert "clp_constraints" in model._model_items
+    assert issubclass(model._model_items["clp_constraints"], Constraint)
 
     assert hasattr(model, "clp_relations")
     assert isinstance(model.clp_relations, list)

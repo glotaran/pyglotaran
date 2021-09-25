@@ -71,7 +71,7 @@ megacomplex:
       s1: shape1
       s2: shape2
 
-constraints:
+clp_constraints:
   - type: zero
     target: s1
     interval:
