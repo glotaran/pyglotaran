@@ -25,7 +25,7 @@ from glotaran.utils.ipython import MarkdownStr
 default_model_items = {
     "clp_area_penalties": EqualAreaPenalty,
     "constraints": Constraint,
-    "relations": Relation,
+    "clp_relations": Relation,
     "weights": Weight,
 }
 
@@ -254,8 +254,8 @@ class Model:
         return self.megacomplex
 
     def need_index_dependent(self) -> bool:
-        """Returns true if e.g. relations with intervals are present."""
-        return any(i.interval is not None for i in self.constraints + self.relations)
+        """Returns true if e.g. clp_relations with intervals are present."""
+        return any(i.interval is not None for i in self.constraints + self.clp_relations)
 
     def is_groupable(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
         if any(d.has_global_model() for d in self.dataset.values()):

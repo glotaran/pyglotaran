@@ -92,7 +92,7 @@ clp_area_penalties:
     parameter: 55
     weight: 0.0016
 
-relations:
+clp_relations:
   - source: s1
     target: s2
     parameter: 8

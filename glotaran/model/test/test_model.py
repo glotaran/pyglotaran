@@ -232,10 +232,10 @@ def test_model_init():
     assert "constraints" in model._model_items
     assert issubclass(model._model_items["constraints"], Constraint)
 
-    assert hasattr(model, "relations")
-    assert isinstance(model.relations, list)
-    assert "relations" in model._model_items
-    assert issubclass(model._model_items["relations"], Relation)
+    assert hasattr(model, "clp_relations")
+    assert isinstance(model.clp_relations, list)
+    assert "clp_relations" in model._model_items
+    assert issubclass(model._model_items["clp_relations"], Relation)
 
     assert hasattr(model, "weights")
     assert isinstance(model.weights, list)

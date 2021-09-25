@@ -88,10 +88,10 @@ def test_penalties(model):
 
 
 def test_relations(model):
-    print(model.relations)
-    assert len(model.relations) == 1
+    print(model.clp_relations)
+    assert len(model.clp_relations) == 1
 
-    rel = model.relations[0]
+    rel = model.clp_relations[0]
 
     assert rel.source == "s1"
     assert rel.target == "s2"

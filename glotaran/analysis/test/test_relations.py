@@ -16,7 +16,9 @@ from glotaran.project import Scheme
 def test_relations(index_dependent, grouped):
     model = deepcopy(suite.model)
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.relations.append(Relation.from_dict({"source": "s1", "target": "s2", "parameter": "3"}))
+    model.clp_relations.append(
+        Relation.from_dict({"source": "s1", "target": "s2", "parameter": "3"})
+    )
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
     print("grouped", grouped, "index_dependent", index_dependent)
