@@ -113,12 +113,12 @@ def apply_constraints(
     index: Any | None,
 ) -> CalculatedMatrix:
 
-    if len(model.constraints) == 0:
+    if len(model.clp_constraints) == 0:
         return matrix
 
     clp_labels = matrix.clp_labels
     removed_clp_labels = [
-        c.target for c in model.constraints if c.target in clp_labels and c.applies(index)
+        c.target for c in model.clp_constraints if c.target in clp_labels and c.applies(index)
     ]
     reduced_clp_labels = [c for c in clp_labels if c not in removed_clp_labels]
     mask = [label in reduced_clp_labels for label in clp_labels]
@@ -133,14 +133,14 @@ def apply_relations(
     index: Any | None,
 ) -> CalculatedMatrix:
 
-    if len(model.relations) == 0:
+    if len(model.clp_relations) == 0:
         return matrix
 
     clp_labels = matrix.clp_labels
     relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
     idx_to_delete = []
-    for relation in model.relations:
+    for relation in model.clp_relations:
         if relation.target in clp_labels and relation.applies(index):
 
             if relation.source not in clp_labels:
@@ -166,7 +166,7 @@ def retrieve_clps(
     reduced_clps: xr.DataArray,
     index: Any | None,
 ) -> xr.DataArray:
-    if len(model.relations) == 0 and len(model.constraints) == 0:
+    if len(model.clp_relations) == 0 and len(model.clp_constraints) == 0:
         return reduced_clps
 
     clps = np.zeros(len(clp_labels))
@@ -175,7 +175,7 @@ def retrieve_clps(
         idx = clp_labels.index(label)
         clps[idx] = reduced_clps[i]
 
-    for relation in model.relations:
+    for relation in model.clp_relations:
         relation = relation.fill(model, parameters)
         if (
             relation.target in clp_labels

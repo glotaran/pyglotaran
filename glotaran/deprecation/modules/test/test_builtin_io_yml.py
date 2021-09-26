@@ -29,7 +29,19 @@ if TYPE_CHECKING:
                 """
             ),
             3,
-            "relations",
+            "clp_relations",
+            [{"source": "s1"}, {"source": "s2"}],
+        ),
+        (
+            dedent(
+                """
+                relations:
+                    - compartment: s1
+                    - compartment: s2
+                """
+            ),
+            3,
+            "clp_relations",
             [{"source": "s1"}, {"source": "s2"}],
         ),
         (
@@ -41,7 +53,19 @@ if TYPE_CHECKING:
                 """
             ),
             3,
-            "constraints",
+            "clp_constraints",
+            [{"target": "s1"}, {"target": "s2"}],
+        ),
+        (
+            dedent(
+                """
+                constraints:
+                    - compartment: s1
+                    - compartment: s2
+                """
+            ),
+            3,
+            "clp_constraints",
             [{"target": "s1"}, {"target": "s2"}],
         ),
         (
@@ -86,7 +110,9 @@ if TYPE_CHECKING:
         "type: kinetic-spectrum",
         "type: spectrum",
         "spectral_relations",
+        "relations",
         "spectral_constraints",
+        "constraints",
         "equal_area_penalties",
         "center_dispersion",
         "width_dispersion",

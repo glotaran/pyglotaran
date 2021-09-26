@@ -40,18 +40,27 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
     deprecate_dict_entry(
         dict_to_check=spec,
         deprecated_usage="spectral_relations",
-        new_usage="relations",
+        new_usage="clp_relations",
         to_be_removed_in_version="0.7.0",
-        swap_keys=("spectral_relations", "relations"),
+        swap_keys=("spectral_relations", "clp_relations"),
         stacklevel=load_model_stack_level,
     )
 
-    if "relations" in spec:
-        for relation in spec["relations"]:
+    deprecate_dict_entry(
+        dict_to_check=spec,
+        deprecated_usage="relations",
+        new_usage="clp_relations",
+        to_be_removed_in_version="0.7.0",
+        swap_keys=("relations", "clp_relations"),
+        stacklevel=load_model_stack_level,
+    )
+
+    if "clp_relations" in spec:
+        for relation in spec["clp_relations"]:
             deprecate_dict_entry(
                 dict_to_check=relation,
-                deprecated_usage="compartment",
-                new_usage="source",
+                deprecated_usage="clp_relations:\n - compartment",
+                new_usage="clp_relations:\n - source",
                 to_be_removed_in_version="0.7.0",
                 swap_keys=("compartment", "source"),
                 stacklevel=load_model_stack_level,
@@ -60,18 +69,27 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
     deprecate_dict_entry(
         dict_to_check=spec,
         deprecated_usage="spectral_constraints",
-        new_usage="constraints",
+        new_usage="clp_constraints",
         to_be_removed_in_version="0.7.0",
-        swap_keys=("spectral_constraints", "constraints"),
+        swap_keys=("spectral_constraints", "clp_constraints"),
         stacklevel=load_model_stack_level,
     )
 
-    if "constraints" in spec:
-        for constraint in spec["constraints"]:
+    deprecate_dict_entry(
+        dict_to_check=spec,
+        deprecated_usage="constraints",
+        new_usage="clp_constraints",
+        to_be_removed_in_version="0.7.0",
+        swap_keys=("constraints", "clp_constraints"),
+        stacklevel=load_model_stack_level,
+    )
+
+    if "clp_constraints" in spec:
+        for constraint in spec["clp_constraints"]:
             deprecate_dict_entry(
                 dict_to_check=constraint,
-                deprecated_usage="constraint.compartment",
-                new_usage="constraint.target",
+                deprecated_usage="clp_constraints:\n - compartment",
+                new_usage="clp_constraints:\n - target",
                 to_be_removed_in_version="0.7.0",
                 swap_keys=("compartment", "target"),
                 stacklevel=load_model_stack_level,

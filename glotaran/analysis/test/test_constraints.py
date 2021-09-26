@@ -15,7 +15,7 @@ from glotaran.project import Scheme
 def test_constraint(index_dependent, grouped):
     model = deepcopy(suite.model)
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.constraints.append(ZeroConstraint.from_dict({"target": "s2"}))
+    model.clp_constraints.append(ZeroConstraint.from_dict({"target": "s2"}))
 
     print("grouped", grouped, "index_dependent", index_dependent)
     dataset = simulate(
