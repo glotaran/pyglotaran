@@ -190,16 +190,42 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     show_debug_plot: bool = False,  # TODO: remove
 ):
     shifted_axis = model_axis - center - shift
+    # For calculations using the negative rates we use the time axis
+    # from the beginning up to 5 σ from the irf center
+    left_shifted_axis_indices = np.where(shifted_axis < 5 * width)[0]
+    left_shifted_axis = shifted_axis[left_shifted_axis_indices]
+    neg_idx = np.where(rates < 0)[0]
+    # For calculations using the positive rates axis we use the time axis
+    # from the beginning up to 5 σ from the irf center
+    right_shifted_axis_indices = np.where(shifted_axis > -5 * width)[0]
+    right_shifted_axis = shifted_axis[right_shifted_axis_indices]
+    pos_idx = np.where(rates >= 0)[0]
+
     d = width ** 2
     k = rates + 1j * frequencies
     dk = k * d
-    sqwidth = np.ones(rates.shape) * np.sqrt(2) * width
-    sqwidth[rates < 0] *= -1
-    a = (-1 * shifted_axis[:, None] + 0.5 * dk) * k
-    a = np.minimum(a, 709)
-    a = np.exp(a)
-    b = 1 + erf((shifted_axis[:, None] - dk) / sqwidth)
+    sqwidth = np.sqrt(2) * width
+
+    a = np.zeros((len(model_axis), len(rates)), dtype=np.complex128)
+    a[np.ix_(right_shifted_axis_indices, pos_idx)] = np.exp(
+        (-1 * right_shifted_axis[:, None] + 0.5 * dk[pos_idx]) * k[pos_idx]
+    )
+
+    a[np.ix_(left_shifted_axis_indices, neg_idx)] = np.exp(
+        (-1 * left_shifted_axis[:, None] + 0.5 * dk[neg_idx]) * k[neg_idx]
+    )
+
+    b = np.zeros((len(model_axis), len(rates)), dtype=np.complex128)
+    b[np.ix_(right_shifted_axis_indices, pos_idx)] = 1 + erf(
+        (right_shifted_axis[:, None] - dk[pos_idx]) / sqwidth
+    )
+    # For negative rates we flip the sign of the IRF by using -sqwidth in lieu of +sqwidth
+    b[np.ix_(left_shifted_axis_indices, neg_idx)] = 1 + erf(
+        (left_shifted_axis[:, None] - dk[neg_idx]) / -sqwidth
+    )
+
     osc = a * b * scale
+
     # Temporary debug plotting code
     if show_debug_plot:
         _debug_plot_osc_a_b_decomposition(shifted_axis, a, b, osc)
