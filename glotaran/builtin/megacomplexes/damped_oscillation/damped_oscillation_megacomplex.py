@@ -193,7 +193,8 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     d = width ** 2
     k = rates + 1j * frequencies
     dk = k * d
-    sqwidth = np.sqrt(2) * width
+    sqwidth = np.ones(rates.shape) * np.sqrt(2) * width
+    sqwidth[rates < 0] *= -1
     a = (-1 * shifted_axis[:, None] + 0.5 * dk) * k
     a = np.minimum(a, 709)
     a = np.exp(a)
