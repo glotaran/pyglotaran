@@ -187,6 +187,7 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     width: float,
     shift: float,
     scale: float,
+    show_debug_plot: bool = False,  # TODO: remove
 ):
     shifted_axis = model_axis - center - shift
     d = width ** 2
@@ -198,4 +199,91 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     a = np.exp(a)
     b = 1 + erf((shifted_axis[:, None] - dk) / sqwidth)
     osc = a * b * scale
+    # Temporary debug plotting code
+    if show_debug_plot:
+        _debug_plot_osc_a_b_decomposition(shifted_axis, a, b, osc)
+        _debug_plot_osc_real_imag(shifted_axis, osc)
+        show_debug_plot = False
+
     return np.concatenate((osc.real, osc.imag), axis=1)
+
+
+def _debug_plot_osc_real_imag(shifted_axis, osc, time_slice=slice(24, 124)):
+    # TODO: remove debugging code
+    # For debugging only
+    import matplotlib.pyplot as plt
+    from pyglotaran_extras.plotting.style import PlotStyle
+
+    plot_style = PlotStyle()
+    plt.rc("axes", prop_cycle=plot_style.cycler)
+
+    _, axes = plt.subplots(5, 2, figsize=(25, 25))
+
+    time_axis = shifted_axis[time_slice]
+    axes[0, 0].plot(time_axis, osc.real[time_slice, 14:])
+    axes[0, 1].plot(time_axis, osc.imag[time_slice, 14:])
+    axes[1, 0].plot(time_axis, osc.real[time_slice, 9:14])
+    axes[1, 1].plot(time_axis, osc.imag[time_slice, 9:14])
+    axes[2, 0].plot(time_axis, osc.real[time_slice, 6:9])
+    axes[2, 1].plot(time_axis, osc.imag[time_slice, 6:9])
+    axes[3, 0].plot(time_axis, osc.real[time_slice, 3:6])
+    axes[3, 1].plot(time_axis, osc.imag[time_slice, 3:6])
+    axes[4, 0].plot(time_axis, osc.real[time_slice, 0:3])
+    axes[4, 1].plot(time_axis, osc.imag[time_slice, 0:3])
+    # plt.rc("axes", prop_cycle=plot_style.cycler)
+    plt.show()
+
+
+def _debug_plot_osc_a_b_decomposition(shifted_axis, a, b, osc, time_slice=slice(24, 124)):
+    # TODO: remove debugging code
+    # For debugging only
+    import matplotlib.pyplot as plt
+    from pyglotaran_extras.plotting.style import PlotStyle
+
+    plot_style = PlotStyle()
+    _, axes = plt.subplots(4, 3, figsize=(25, 25))
+    axes[0, 0].plot()
+    plt.rc("axes", prop_cycle=plot_style.cycler)
+    time_axis = shifted_axis[time_slice]
+    axes[0, 0].plot(time_axis, a[time_slice, :14])
+    axes[1, 0].plot(time_axis, b[time_slice, :14])
+    axes[2, 0].plot(time_axis, osc.real[time_slice, :14])
+    axes[3, 0].plot(time_axis, osc.imag[time_slice, :14])
+    axes[0, 1].plot(time_axis, a[time_slice, 14:])
+    axes[1, 1].plot(time_axis, b[time_slice, 14:])
+    axes[2, 1].plot(time_axis, osc.real[time_slice, 14:])
+    axes[3, 1].plot(time_axis, osc.imag[time_slice, 14:])
+    axes[0, 2].plot(time_axis, a[time_slice, :])
+    axes[1, 2].plot(time_axis, b[time_slice, :])
+    axes[2, 2].plot(time_axis, osc.real[time_slice, :])
+    axes[3, 2].plot(time_axis, osc.imag[time_slice, :])
+    plt.rc("axes", prop_cycle=plot_style.cycler)
+    cols = [f"{col} rates" for col in ["positive", "negative", "all"]]
+    rows = [f"{row}" for row in ["a", "b", "osc.\nreal", "osc.\nimag"]]
+    pad = 5  # in points
+    for ax, col in zip(axes[0], cols):
+        ax.annotate(
+            col,
+            xy=(0.5, 1),
+            xytext=(0, 4 * pad),
+            xycoords="axes fraction",
+            textcoords="offset points",
+            size="large",
+            ha="center",
+            va="baseline",
+            bbox={"facecolor": "none", "edgecolor": "black", "boxstyle": "round,pad=1"},
+        )
+
+    for ax, row in zip(axes[:, 0], rows):
+        ax.annotate(
+            row,
+            xy=(0, 0.5),
+            xytext=(-ax.yaxis.labelpad - pad, 0),
+            xycoords=ax.yaxis.label,
+            textcoords="offset points",
+            size="large",
+            ha="right",
+            va="center",
+            bbox={"facecolor": "none", "edgecolor": "black", "boxstyle": "round,pad=1"},
+        )
+    plt.show()
