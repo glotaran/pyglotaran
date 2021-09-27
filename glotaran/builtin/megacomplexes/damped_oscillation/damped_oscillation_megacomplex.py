@@ -31,7 +31,7 @@ from glotaran.parameter import Parameter
 )
 class DampedOscillationMegacomplex(Megacomplex):
     @model_item_validator(False)
-    def ensure_oscillation_paramater(self, model: Model) -> list[str]:
+    def ensure_oscillation_parameter(self, model: Model) -> list[str]:
 
         problems = []
 
