@@ -190,6 +190,33 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     shift: float,
     scale: float,
 ):
+    """Calculate the damped oscillation matrix taking into account a gaussian irf
+
+    Parameters
+    ----------
+    frequencies : np.ndarray
+        an array of frequencies in THz, one per oscillation
+    rates : np.ndarray
+        an array of rates, one per oscillation
+    model_axis : np.ndarray
+        the model axis (time)
+    center : float
+        the center of the gaussian IRF
+    width : float
+        the width (σ) parameter of the the IRF
+    shift : float
+        a shift parameter per item on the global axis
+    scale : float
+        the scale parameter to scale the matrix by
+
+    Returns
+    -------
+    np.ndarray
+        An array of the real and imaginary part of the oscillation matrix,
+        the shape being (len(model_axis), 2*len(frequencies)), with the first
+        half of the second dimension representing the real part,
+        and the other the imagine part of the oscillation
+    """
     shifted_axis = model_axis - center - shift
     # For calculations using the negative rates we use the time axis
     # from the beginning up to 5 σ from the irf center
