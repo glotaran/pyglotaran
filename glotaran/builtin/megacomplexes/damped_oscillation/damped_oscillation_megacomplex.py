@@ -59,7 +59,7 @@ class DampedOscillationMegacomplex(Megacomplex):
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
         # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
-        # 0.03 speed of light 3.10^10 cm/s and time-unit ps (10^-12)
+        # where 0.03 is the product of speed of light 3*10**10 cm/s and time-unit ps (10^-12)
         frequency_max = 1 / (2 * 0.03 * delta_min)
         frequencies = np.array(self.frequencies) * 0.03 * 2 * np.pi
         frequencies[frequencies >= frequency_max] = np.mod(
@@ -224,7 +224,7 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     left_shifted_axis = shifted_axis[left_shifted_axis_indices]
     neg_idx = np.where(rates < 0)[0]
     # For calculations using the positive rates axis we use the time axis
-    # from the beginning up to 5 σ from the irf center
+    # from 5 σ before the irf center until the end
     right_shifted_axis_indices = np.where(shifted_axis > -5 * width)[0]
     right_shifted_axis = shifted_axis[right_shifted_axis_indices]
     pos_idx = np.where(rates >= 0)[0]
@@ -247,7 +247,7 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     b[np.ix_(right_shifted_axis_indices, pos_idx)] = 1 + erf(
         (right_shifted_axis[:, None] - dk[pos_idx]) / sqwidth
     )
-    # For negative rates we flip the sign of the IRF by using -sqwidth in lieu of +sqwidth
+    # For negative rates we flip the sign of the `erf` by using `-sqwidth` in lieu of `sqwidth`
     b[np.ix_(left_shifted_axis_indices, neg_idx)] = 1 + erf(
         (left_shifted_axis[:, None] - dk[neg_idx]) / -sqwidth
     )
