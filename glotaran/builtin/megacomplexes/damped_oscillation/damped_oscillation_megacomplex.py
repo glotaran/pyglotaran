@@ -139,35 +139,34 @@ class DampedOscillationMegacomplex(Megacomplex):
             phase,
         )
 
-        if not is_full_model:
-            if self.index_dependent(dataset_model):
-                dataset[f"{prefix}_sin"] = (
-                    (
-                        dataset_model.get_global_dimension(),
-                        dataset_model.get_model_dimension(),
-                        prefix,
-                    ),
-                    dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
-                )
+        if self.index_dependent(dataset_model):
+            dataset[f"{prefix}_sin"] = (
+                (
+                    dataset_model.get_global_dimension(),
+                    dataset_model.get_model_dimension(),
+                    prefix,
+                ),
+                dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
+            )
 
-                dataset[f"{prefix}_cos"] = (
-                    (
-                        dataset_model.get_global_dimension(),
-                        dataset_model.get_model_dimension(),
-                        prefix,
-                    ),
-                    dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
-                )
-            else:
-                dataset[f"{prefix}_sin"] = (
-                    (dataset_model.get_model_dimension(), prefix),
-                    dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
-                )
+            dataset[f"{prefix}_cos"] = (
+                (
+                    dataset_model.get_global_dimension(),
+                    dataset_model.get_model_dimension(),
+                    prefix,
+                ),
+                dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
+            )
+        else:
+            dataset[f"{prefix}_sin"] = (
+                (dataset_model.get_model_dimension(), prefix),
+                dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
+            )
 
-                dataset[f"{prefix}_cos"] = (
-                    (dataset_model.get_model_dimension(), prefix),
-                    dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
-                )
+            dataset[f"{prefix}_cos"] = (
+                (dataset_model.get_model_dimension(), prefix),
+                dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
+            )
 
 
 @nb.jit(nopython=True, parallel=True)
