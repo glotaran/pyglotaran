@@ -5,6 +5,7 @@ from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Scheme
 
 sim_model = Model.from_dict(
     {
@@ -148,3 +149,4 @@ model = Model.from_dict(
     },
     megacomplex_types={"decay": DecayMegacomplex},
 )
+scheme = Scheme(model=model, parameters=parameter, data={"dataset1": dataset})
