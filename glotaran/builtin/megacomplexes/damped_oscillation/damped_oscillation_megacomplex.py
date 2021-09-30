@@ -31,7 +31,7 @@ from glotaran.parameter import Parameter
 )
 class DampedOscillationMegacomplex(Megacomplex):
     @model_item_validator(False)
-    def ensure_oscillation_paramater(self, model: Model) -> list[str]:
+    def ensure_oscillation_parameter(self, model: Model) -> list[str]:
 
         problems = []
 
@@ -58,6 +58,8 @@ class DampedOscillationMegacomplex(Megacomplex):
         model_axis = dataset_model.get_model_axis()
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
+        # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
+        # where 0.03 is the product of speed of light 3*10**10 cm/s and time-unit ps (10^-12)
         frequency_max = 1 / (2 * 0.03 * delta_min)
         frequencies = np.array(self.frequencies) * 0.03 * 2 * np.pi
         frequencies[frequencies >= frequency_max] = np.mod(
@@ -137,35 +139,34 @@ class DampedOscillationMegacomplex(Megacomplex):
             phase,
         )
 
-        if not is_full_model:
-            if self.index_dependent(dataset_model):
-                dataset[f"{prefix}_sin"] = (
-                    (
-                        dataset_model.get_global_dimension(),
-                        dataset_model.get_model_dimension(),
-                        prefix,
-                    ),
-                    dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
-                )
+        if self.index_dependent(dataset_model):
+            dataset[f"{prefix}_sin"] = (
+                (
+                    dataset_model.get_global_dimension(),
+                    dataset_model.get_model_dimension(),
+                    prefix,
+                ),
+                dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
+            )
 
-                dataset[f"{prefix}_cos"] = (
-                    (
-                        dataset_model.get_global_dimension(),
-                        dataset_model.get_model_dimension(),
-                        prefix,
-                    ),
-                    dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
-                )
-            else:
-                dataset[f"{prefix}_sin"] = (
-                    (dataset_model.get_model_dimension(), prefix),
-                    dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
-                )
+            dataset[f"{prefix}_cos"] = (
+                (
+                    dataset_model.get_global_dimension(),
+                    dataset_model.get_model_dimension(),
+                    prefix,
+                ),
+                dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
+            )
+        else:
+            dataset[f"{prefix}_sin"] = (
+                (dataset_model.get_model_dimension(), prefix),
+                dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
+            )
 
-                dataset[f"{prefix}_cos"] = (
-                    (dataset_model.get_model_dimension(), prefix),
-                    dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
-                )
+            dataset[f"{prefix}_cos"] = (
+                (dataset_model.get_model_dimension(), prefix),
+                dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
+            )
 
 
 @nb.jit(nopython=True, parallel=True)
@@ -188,14 +189,68 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     shift: float,
     scale: float,
 ):
+    """Calculate the damped oscillation matrix taking into account a gaussian irf
+
+    Parameters
+    ----------
+    frequencies : np.ndarray
+        an array of frequencies in THz, one per oscillation
+    rates : np.ndarray
+        an array of rates, one per oscillation
+    model_axis : np.ndarray
+        the model axis (time)
+    center : float
+        the center of the gaussian IRF
+    width : float
+        the width (σ) parameter of the the IRF
+    shift : float
+        a shift parameter per item on the global axis
+    scale : float
+        the scale parameter to scale the matrix by
+
+    Returns
+    -------
+    np.ndarray
+        An array of the real and imaginary part of the oscillation matrix,
+        the shape being (len(model_axis), 2*len(frequencies)), with the first
+        half of the second dimension representing the real part,
+        and the other the imagine part of the oscillation
+    """
     shifted_axis = model_axis - center - shift
+    # For calculations using the negative rates we use the time axis
+    # from the beginning up to 5 σ from the irf center
+    left_shifted_axis_indices = np.where(shifted_axis < 5 * width)[0]
+    left_shifted_axis = shifted_axis[left_shifted_axis_indices]
+    neg_idx = np.where(rates < 0)[0]
+    # For calculations using the positive rates axis we use the time axis
+    # from 5 σ before the irf center until the end
+    right_shifted_axis_indices = np.where(shifted_axis > -5 * width)[0]
+    right_shifted_axis = shifted_axis[right_shifted_axis_indices]
+    pos_idx = np.where(rates >= 0)[0]
+
     d = width ** 2
     k = rates + 1j * frequencies
     dk = k * d
     sqwidth = np.sqrt(2) * width
-    a = (-1 * shifted_axis[:, None] + 0.5 * dk) * k
-    a = np.minimum(a, 709)
-    a = np.exp(a)
-    b = 1 + erf((shifted_axis[:, None] - dk) / sqwidth)
+
+    a = np.zeros((len(model_axis), len(rates)), dtype=np.complex128)
+    a[np.ix_(right_shifted_axis_indices, pos_idx)] = np.exp(
+        (-1 * right_shifted_axis[:, None] + 0.5 * dk[pos_idx]) * k[pos_idx]
+    )
+
+    a[np.ix_(left_shifted_axis_indices, neg_idx)] = np.exp(
+        (-1 * left_shifted_axis[:, None] + 0.5 * dk[neg_idx]) * k[neg_idx]
+    )
+
+    b = np.zeros((len(model_axis), len(rates)), dtype=np.complex128)
+    b[np.ix_(right_shifted_axis_indices, pos_idx)] = 1 + erf(
+        (right_shifted_axis[:, None] - dk[pos_idx]) / sqwidth
+    )
+    # For negative rates we flip the sign of the `erf` by using `-sqwidth` in lieu of `sqwidth`
+    b[np.ix_(left_shifted_axis_indices, neg_idx)] = 1 + erf(
+        (left_shifted_axis[:, None] - dk[neg_idx]) / -sqwidth
+    )
+
     osc = a * b * scale
+
     return np.concatenate((osc.real, osc.imag), axis=1)
