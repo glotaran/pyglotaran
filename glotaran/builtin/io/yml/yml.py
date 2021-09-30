@@ -1,26 +1,19 @@
 from __future__ import annotations
 
-import dataclasses
-import os
 import pathlib
-from typing import TYPE_CHECKING
 
 import yaml
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
-from glotaran.io import save_dataset
-from glotaran.io import save_parameters
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.project import Result
 from glotaran.project import Scheme
 from glotaran.project.dataclasses import asdict
 from glotaran.project.dataclasses import fromdict
 from glotaran.utils.sanitize import sanitize_yaml
-
-if TYPE_CHECKING:
-    from glotaran.project import Result
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
@@ -83,12 +76,18 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(file_name, model_dict)
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
+        """Create a ParameterGroup instance from the specs defined in a file.
+        Parameters
+        ----------
+        file_name : str
+            File containing the parameter specs.
+        Returns
+        -------
+        ParameterGroup
+            ParameterGroup instance created from the file.
+        """
 
-        if self.format == "yml_str":
-            spec = yaml.safe_load(file_name)
-        else:
-            with open(file_name) as f:
-                spec = yaml.safe_load(f)
+        spec = self._load_yml(file_name)
 
         if isinstance(spec, list):
             return ParameterGroup.from_list(spec)
@@ -105,52 +104,31 @@ class YmlProjectIo(ProjectIoInterface):
         scheme_dict = asdict(scheme)
         _write_dict(file_name, scheme_dict)
 
-    def save_result(self, result: Result, result_path: str):
-        options = result.scheme.saving
+    def load_result_file(self, file_name: str) -> Result:
+        """Create a :class:`Result` instance from the specs defined in a file.
+        Parameters
+        ----------
+        file_name : str | PathLike[str]
+            Path containing the result data.
+        Returns
+        -------
+        Result
+            :class:`Result` instance created from the saved format.
+        """
+        spec = self._load_yml(file_name)
+        return fromdict(Result, spec)
 
-        if os.path.exists(result_path):
-            raise FileExistsError(f"The path '{result_path}' is already existing.")
-
-        os.makedirs(result_path)
-
-        if options.report:
-            md_path = os.path.join(result_path, "result.md")
-            with open(md_path, "w") as f:
-                f.write(str(result.markdown()))
-
-        scheme_path = os.path.join(result_path, "scheme.yml")
-        result_scheme = dataclasses.replace(result.scheme)
-        result_scheme.model = result_scheme.model.markdown()
-        result = dataclasses.replace(result)
-        result.scheme = scheme_path
-
-        parameters_format = options.parameter_format
-
-        initial_parameters_path = os.path.join(
-            result_path, f"initial_parameters.{parameters_format}"
-        )
-        save_parameters(result.initial_parameters, initial_parameters_path, parameters_format)
-        result.initial_parameters = initial_parameters_path
-        result_scheme.parameters = initial_parameters_path
-
-        optimized_parameters_path = os.path.join(
-            result_path, f"optimized_parameters.{parameters_format}"
-        )
-        save_parameters(result.optimized_parameters, optimized_parameters_path, parameters_format)
-        result.optimized_parameters = optimized_parameters_path
-
-        dataset_format = options.data_format
-        for label, dataset in result.data.items():
-            dataset_path = os.path.join(result_path, f"{label}.{dataset_format}")
-            save_dataset(dataset, dataset_path, dataset_format, saving_options=options)
-            result.data[label] = dataset_path
-            result_scheme.data[label] = dataset_path
-
-        result_file_path = os.path.join(result_path, "result.yml")
-        _write_dict(result_file_path, dataclasses.asdict(result))
-        result_scheme.result_path = result_file_path
-
-        self.save_scheme(scheme=result_scheme, file_name=scheme_path)
+    def save_result_file(self, result: Result, file_name: str):
+        """Write a :class:`Result` instance to a spec file.
+        Parameters
+        ----------
+        result : Result
+            :class:`Result` instance to write.
+        file_name : str | PathLike[str]
+            Path to write the result data to.
+        """
+        result_dict = asdict(result)
+        _write_dict(file_name, result_dict)
 
     def _load_yml(self, file_name: str) -> dict:
         if self.format == "yml_str":

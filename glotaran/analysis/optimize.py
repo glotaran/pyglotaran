@@ -95,13 +95,13 @@ def _create_result(
         ls_result.nfev if ls_result is not None else len(problem.parameter_history)
     )
     number_of_jacobian_evaluation = ls_result.njev if success else None
-    optimality = ls_result.optimality if success else None
+    optimality = float(ls_result.optimality) if success else None
     number_of_data_points = ls_result.fun.size if success else None
     number_of_variables = ls_result.x.size if success else None
     degrees_of_freedom = number_of_data_points - number_of_variables if success else None
-    chi_square = np.sum(ls_result.fun ** 2) if success else None
+    chi_square = float(np.sum(ls_result.fun ** 2)) if success else None
     reduced_chi_square = chi_square / degrees_of_freedom if success else None
-    root_mean_square_error = np.sqrt(reduced_chi_square) if success else None
+    root_mean_square_error = float(np.sqrt(reduced_chi_square)) if success else None
     jacobian = ls_result.jac if success else None
 
     if success:
