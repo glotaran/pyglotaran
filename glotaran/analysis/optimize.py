@@ -6,6 +6,7 @@ import numpy as np
 from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
+from glotaran import __version__ as glotaran_version
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem_grouped import GroupedProblem
 from glotaran.analysis.problem_ungrouped import UngroupedProblem
@@ -125,6 +126,7 @@ def _create_result(
         additional_penalty=problem.additional_penalty,
         cost=problem.cost,
         data=data,
+        glotaran_version=glotaran_version,
         free_parameter_labels=free_parameter_labels,
         number_of_function_evaluations=number_of_function_evaluation,
         initial_parameters=problem.scheme.parameters,
