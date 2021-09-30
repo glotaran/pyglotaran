@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
     import xarray as xr
 
+    from glotaran.io import SavingOptions
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
@@ -218,28 +219,34 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result: Result, result_path: str):
-        """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
+    def save_result(
+        self, result: Result, folder: str, saving_options: SavingOptions, allow_overwrite: bool
+    ):
+        """Save a Result instance to a folder (**NOT IMPLEMENTED**).
 
         Parameters
         ----------
         result : Result
             Result instance to save to specs file.
-        result_path : str
-            Path to write the result data to.
-
-
-        .. # noqa: DAR101
-        .. # noqa: DAR401
+        folder : str
+            Folder to write the result specs to.
+        saving_options : SavingOptions
+            Options for saving the the result.
+        allow_overwrite : bool
+            Whether or not to allow overwriting existing files, by default False
+            .. # noqa: DAR101
+            .. # noqa: DAR401
         """
         raise NotImplementedError(f"Cannot save result with format {self.format!r}")
 
     def load_result_file(self, file_name: str) -> Result:
         """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
+
         Parameters
         ----------
         file_name : str
             File containing the result specs.
+
         Returns
         -------
         Result
