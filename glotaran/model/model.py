@@ -32,7 +32,7 @@ default_model_items = {
 default_dataset_properties = {
     "megacomplex": List[str],
     "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
-    "global_megacomplex": {"type": List[str], "default": []},
+    "global_megacomplex": {"type": List[str], "allow_none": True},
     "global_megacomplex_scale": {"type": List[Parameter], "default": None, "allow_none": True},
     "scale": {"type": Parameter, "default": None, "allow_none": True},
 }
@@ -84,7 +84,10 @@ class Model:
                 for m in model_dict["megacomplex"].values()
                 if "type" in m
             }
-        if default_megacomplex_type is not None:
+        if (
+            default_megacomplex_type is not None
+            and default_megacomplex_type not in megacomplex_types
+        ):
             megacomplex_types[default_megacomplex_type] = get_megacomplex(default_megacomplex_type)
             model_dict.pop("default-megacomplex", None)
 
@@ -97,7 +100,7 @@ class Model:
         # iterate over items
         for name, items in list(model_dict_local.items()):
 
-            if name not in model._model_items:
+            if name not in model.model_items:
                 warn(f"Unknown model item type '{name}'.")
                 continue
 
@@ -110,28 +113,10 @@ class Model:
 
         return model
 
-    @property
-    def model_dimension(self):
-        """Deprecated use ``Scheme.model_dimensions['<dataset_name>']`` instead"""
-        raise_deprecation_error(
-            deprecated_qual_name_usage="Model.model_dimension",
-            new_qual_name_usage=("Scheme.model_dimensions['<dataset_name>']"),
-            to_be_removed_in_version="0.7.0",
-        )
-
-    @property
-    def global_dimension(self):
-        """Deprecated use ``Scheme.global_dimensions['<dataset_name>']`` instead"""
-        raise_deprecation_error(
-            deprecated_qual_name_usage="Model.global_dimension",
-            new_qual_name_usage=("Scheme.global_dimensions['<dataset_name>']"),
-            to_be_removed_in_version="0.7.0",
-        )
-
     def _add_dict_items(self, name: str, items: dict):
 
         for label, item in items.items():
-            item_cls = self._model_items[name]
+            item_cls = self.model_items[name]
             is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
             if is_typed:
                 if "type" not in item and item_cls.get_default_type() is None:
@@ -149,7 +134,7 @@ class Model:
     def _add_list_items(self, name: str, items: list):
 
         for item in items:
-            item_cls = self._model_items[name]
+            item_cls = self.model_items[name]
             is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
             if is_typed:
                 if "type" not in item:
@@ -189,7 +174,7 @@ class Model:
 
     def _add_model_item(self, name: str, item: type):
         if name in self._model_items:
-            if self._model_items[name] != item:
+            if self.model_items[name] != item:
                 raise ModelError(
                     f"Cannot add item of type {name}. Model item '{name}' was already defined"
                     "as a different type."
@@ -234,6 +219,24 @@ class Model:
         self._add_model_item("dataset", dataset_model_type)
 
     @property
+    def model_dimension(self):
+        """Deprecated use ``Scheme.model_dimensions['<dataset_name>']`` instead"""
+        raise_deprecation_error(
+            deprecated_qual_name_usage="Model.model_dimension",
+            new_qual_name_usage=("Scheme.model_dimensions['<dataset_name>']"),
+            to_be_removed_in_version="0.7.0",
+        )
+
+    @property
+    def global_dimension(self):
+        """Deprecated use ``Scheme.global_dimensions['<dataset_name>']`` instead"""
+        raise_deprecation_error(
+            deprecated_qual_name_usage="Model.global_dimension",
+            new_qual_name_usage=("Scheme.global_dimensions['<dataset_name>']"),
+            to_be_removed_in_version="0.7.0",
+        )
+
+    @property
     def default_megacomplex(self) -> str:
         """The default megacomplex used by this model."""
         return self._default_megacomplex_type
@@ -252,6 +255,30 @@ class Model:
     def global_megacomplex(self) -> dict[str, Megacomplex]:
         """Alias for `glotaran.model.megacomplex`. Needed internally."""
         return self.megacomplex
+
+    def as_dict(self) -> dict:
+        model_dict = {}
+        model_dict["default-megacomplex"] = self.default_megacomplex
+
+        for name in self._model_items:
+            items = getattr(self, name)
+            if len(items) == 0:
+                continue
+            if isinstance(items, list):
+                model_dict[name] = [item.as_dict() for item in items]
+            else:
+                model_dict[name] = {label: item.as_dict() for label, item in items.items()}
+
+        return model_dict
+
+    def get_parameters(self) -> list[str]:
+        parameters = []
+        for item_name in self.model_items:
+            items = getattr(self, item_name)
+            item_iterator = items if isinstance(items, list) else items.values()
+            for item in item_iterator:
+                parameters += item.get_parameters()
+        return parameters
 
     def need_index_dependent(self) -> bool:
         """Returns true if e.g. clp_relations with intervals are present."""
@@ -282,7 +309,7 @@ class Model:
         """
         problems = []
 
-        for name in self._model_items:
+        for name in self.model_items:
             items = getattr(self, name)
             if isinstance(items, list):
                 for item in items:
@@ -357,7 +384,7 @@ class Model:
         string += ", ".join(self._megacomplex_types)
         string += "\n\n"
 
-        for name in self._model_items:
+        for name in self.model_items:
             items = getattr(self, name)
             if not items:
                 continue
