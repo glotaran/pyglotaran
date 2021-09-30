@@ -29,13 +29,14 @@ class Keys:
     VARY = "vary"
 
 
+PARAMETER_EXPRESION_REGEX = re.compile(r"\$(?P<parameter_expression>[\w\d\.]+)((?![\w\d\.]+)|$)")
+"""A regexpression to find and replace parameter names in expressions."""
+VALID_LABEL_REGEX = re.compile(r"\W", flags=re.ASCII)
+"""A regexpression to validate labels."""
+
+
 class Parameter(_SupportsArray):
     """A parameter for optimization."""
-
-    _find_parameter = re.compile(r"(\$[\w\d\.]+)")
-    """A regexpression to find and replace parameter names in expressions."""
-    _label_validator_regexp = re.compile(r"\W", flags=re.ASCII)
-    """A regexpression to validate labels."""
 
     def __init__(
         self,
@@ -85,10 +86,10 @@ class Parameter(_SupportsArray):
 
         self._transformed_expression: str | None = None
 
-    @classmethod
-    def valid_label(cls, label: str) -> bool:
+    @staticmethod
+    def valid_label(label: str) -> bool:
         """Returns true if the `label` is valid string."""
-        return cls._label_validator_regexp.search(label) is None and label not in RESERVED_LABELS
+        return VALID_LABEL_REGEX.search(label) is None and label not in RESERVED_LABELS
 
     @classmethod
     def from_list_or_value(
@@ -264,11 +265,9 @@ class Parameter(_SupportsArray):
     def transformed_expression(self) -> str | None:
         """The expression of the parameter transformed for evaluation within a `ParameterGroup`."""
         if self.expression is not None and self._transformed_expression is None:
-            self._transformed_expression = self.expression
-            for match in Parameter._find_parameter.findall(self._transformed_expression):
-                self._transformed_expression = self._transformed_expression.replace(
-                    match, f"group.get('{match[1:]}').value"
-                )
+            self._transformed_expression = PARAMETER_EXPRESION_REGEX.sub(
+                r"group.get('\g<parameter_expression>').value", self.expression
+            )
         return self._transformed_expression
 
     @property

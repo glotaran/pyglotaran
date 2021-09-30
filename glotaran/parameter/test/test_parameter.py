@@ -336,6 +336,11 @@ def test_update_parameter_group_from_array():
         ("$1", "group.get('1').value"),
         ("$1-$2", "group.get('1').value-group.get('2').value"),
         ("$1-$5", "group.get('1').value-group.get('5').value"),
+        (
+            "100 - $inputs1.s1 - $inputs1.s3 - $inputs1.s8 - $inputs1.s12",
+            "100 - group.get('inputs1.s1').value - group.get('inputs1.s3').value "
+            "- group.get('inputs1.s8').value - group.get('inputs1.s12').value",
+        ),
     ],
 )
 def test_transform_expression(case):
