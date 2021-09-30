@@ -374,7 +374,7 @@ class ParameterGroup(dict):
                 value = self._evaluator(parameter.transformed_expression)
                 if not isinstance(value, (int, float)):
                     raise ValueError(
-                        f"Expression '{parameter.expression}' of parameter '{label}' evaluates to"
+                        f"Expression '{parameter.expression}' of parameter '{label}' evaluates to "
                         f"non numeric value '{value}'."
                     )
                 parameter.value = value
