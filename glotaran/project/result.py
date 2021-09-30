@@ -161,7 +161,6 @@ class Result:
         MarkdownStr : str
             The scheme as markdown string.
         """
-
         general_table_rows = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
             ["Number of variables", self.number_of_variables],
