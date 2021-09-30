@@ -32,19 +32,12 @@ def mock_scheme(tmp_path: Path) -> Scheme:
     ).to_netcdf(dataset_path)
 
     scheme_yml_str = f"""
-    model: {model_path}
-    parameters: {parameter_path}
-    non-negative-least-squares: True
-    maximum-number-function-evaluations: 42
-    data:
+    model_file: {model_path}
+    parameters_file: {parameter_path}
+    non_negative_least_squares: True
+    maximum_number_function_evaluations: 42
+    data_files:
         dataset1: {dataset_path}
-
-    saving:
-        level: minimal
-        data_filter: [a, b, c]
-        data_format: csv
-        parameter_format: yaml
-        report: false
     """
     scheme_path = tmp_path / "scheme.yml"
     scheme_path.write_text(scheme_yml_str)
@@ -53,6 +46,7 @@ def mock_scheme(tmp_path: Path) -> Scheme:
 
 
 def test_scheme(mock_scheme: Scheme):
+    """Test scheme attributes."""
     assert mock_scheme.model is not None
 
     assert mock_scheme.model_dimensions["dataset1"] == "time"
@@ -66,12 +60,6 @@ def test_scheme(mock_scheme: Scheme):
 
     assert "dataset1" in mock_scheme.data
     assert mock_scheme.data["dataset1"].data.shape == (1, 3)
-
-    assert mock_scheme.saving.level == "minimal"
-    assert mock_scheme.saving.data_filter == ["a", "b", "c"]
-    assert mock_scheme.saving.data_format == "csv"
-    assert mock_scheme.saving.parameter_format == "yaml"
-    assert not mock_scheme.saving.report
 
 
 def test_scheme_ipython_rendering(mock_scheme: Scheme):
