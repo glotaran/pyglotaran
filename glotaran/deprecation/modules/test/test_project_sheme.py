@@ -38,11 +38,11 @@ def test_Scheme_from_yaml_file_method(tmp_path: Path):
 
     scheme_path.write_text(
         f"""
-        model: {model_path}
-        parameters: {parameter_path}
-        non-negative-least-squares: True
-        maximum-number-function-evaluations: 42
-        data:
+        model_file: {model_path}
+        parameters_file: {parameter_path}
+        non_negative_least_squares: True
+        maximum_number_function_evaluations: 42
+        data_files:
             dataset1: {dataset_path}"""
     )
 

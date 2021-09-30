@@ -1,3 +1,4 @@
+"""The package for :class:``Scheme``."""
 from __future__ import annotations
 
 import warnings
@@ -5,7 +6,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
+from glotaran.io import load_dataset
+from glotaran.io import load_model
+from glotaran.io import load_parameters
 from glotaran.io import load_scheme
+from glotaran.project.dataclasses import exclude_from_dict_field
+from glotaran.project.dataclasses import file_representation_field
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -22,6 +28,8 @@ default_data_filters = {"minimal": ["fitted_data", "residual"], "full": None}
 
 @dataclass
 class SavingOptions:
+    """A class for options to save a result."""
+
     level: Literal["minimal", "full"] = "full"
     data_filter: list[str] | None = None
     data_format: str = "nc"
@@ -31,9 +39,17 @@ class SavingOptions:
 
 @dataclass
 class Scheme:
-    model: Model | str
-    parameters: ParameterGroup | str
-    data: dict[str, xr.DataArray | xr.Dataset | str]
+    """A scheme is a collection of a model, parameters and a dataset.
+
+    A scheme also holds options for optimization.
+    """
+
+    model: Model = exclude_from_dict_field()
+    parameters: ParameterGroup = exclude_from_dict_field()
+    data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()
+    model_file: str = file_representation_field("model", load_model, default=None)
+    parameters_file: str = file_representation_field("parameters", load_parameters, None)
+    data_files: dict[str, str] = file_representation_field("data", load_dataset, None)
     group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
@@ -51,33 +67,64 @@ class Scheme:
     result_path: str | None = None
 
     def problem_list(self) -> list[str]:
-        """Returns a list with all problems in the model and missing parameters."""
-        return self.model.problem_list(self.parameters)
+        """Return a list with all problems in the model and missing parameters.
+
+        Returns
+        -------
+        list[str]
+            A list of all problems found in the scheme's model.
+        """
+        model: Model = self.model
+        return model.problem_list(self.parameters)
 
     def validate(self) -> str:
-        """Returns a string listing all problems in the model and missing parameters."""
+        """Return a string listing all problems in the model and missing parameters.
+
+        Returns
+        -------
+        str
+            A user-friendly string containing all the problems of a model if any.
+            Defaults to 'Your model is valid.' if no problems are found.
+        """
         return self.model.validate(self.parameters)
 
-    def valid(self, parameters: ParameterGroup = None) -> bool:
-        """Returns `True` if there are no problems with the model or the parameters,
-        else `False`."""
-        return self.model.valid(parameters)
+    def valid(self) -> bool:
+        """Check if there are no problems with the model or the parameters.
+
+        Returns
+        -------
+        bool
+            Whether the scheme is valid.
+        """
+        return self.model.valid(self.parameters)
 
     def markdown(self):
-        """Formats the :class:`Scheme` as markdown string."""
-        markdown_str = self.model.markdown(parameters=self.parameters)
+        """Format the :class:`Scheme` as markdown string.
 
-        markdown_str += "\n\n"
+        Returns
+        -------
+        MarkdownStr
+            The scheme as markdown string.
+        """
+        model_markdown_str = self.model.markdown(parameters=self.parameters)
+
+        markdown_str = "\n\n"
         markdown_str += "__Scheme__\n\n"
 
         markdown_str += f"* *nnls*: {self.non_negative_least_squares}\n"
         markdown_str += f"* *nfev*: {self.maximum_number_function_evaluations}\n"
         markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
 
-        return MarkdownStr(markdown_str)
+        return model_markdown_str + MarkdownStr(markdown_str)
 
     def is_grouped(self) -> bool:
-        """Returns whether the scheme should be grouped."""
+        """Return whether the scheme should be grouped.
+
+        Returns
+        -------
+        bool
+            Weather the scheme should be grouped.
+        """
         if self.group is not None and not self.group:
             return False
         is_groupable = self.model.is_groupable(self.parameters, self.data)
@@ -86,7 +133,15 @@ class Scheme:
         return is_groupable
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown."""
+        """Return a markdown representation str.
+
+        Special method used by ``ipython`` to render markdown.
+
+        Returns
+        -------
+        str
+            The scheme as markdown string.
+        """
         return str(self.markdown())
 
     def __str__(self):
@@ -95,7 +150,14 @@ class Scheme:
 
     @property
     def model_dimensions(self) -> dict[str, str]:
-        """Returns the dataset model's model dimension."""
+        """Return the dataset model's model dimension.
+
+        Returns
+        -------
+        dict[str, str]
+            A dictionary with the dataset labels as key and the model dimension of
+            the dataset as value.
+        """
         return {
             dataset_name: self.model.dataset[dataset_name]
             .fill(self.model, self.parameters)
@@ -106,7 +168,14 @@ class Scheme:
 
     @property
     def global_dimensions(self) -> dict[str, str]:
-        """Returns the dataset model's global dimension."""
+        """Return the dataset model's global dimension.
+
+        Returns
+        -------
+        dict[str, str]
+            A dictionary with the dataset labels as key and the global dimension of
+            the dataset as value.
+        """
         return {
             dataset_name: self.model.dataset[dataset_name]
             .fill(self.model, self.parameters)

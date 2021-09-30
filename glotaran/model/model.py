@@ -75,6 +75,7 @@ class Model:
         default_megacomplex_type: str | None
             Overwrite 'default-megacomplex' in ``model_dict`` for testing.
         """
+        model_dict = copy.deepcopy(model_dict)
         if default_megacomplex_type is None:
             default_megacomplex_type = model_dict.get("default-megacomplex")
 
@@ -89,6 +90,7 @@ class Model:
             and default_megacomplex_type not in megacomplex_types
         ):
             megacomplex_types[default_megacomplex_type] = get_megacomplex(default_megacomplex_type)
+        if "default-megacomplex" in model_dict:
             model_dict.pop("default-megacomplex", None)
 
         model = cls(
