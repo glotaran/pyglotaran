@@ -16,13 +16,19 @@ from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import DatasetModel
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.parameter import ParameterHistory
 from glotaran.project import Scheme
 
 if TYPE_CHECKING:
     from typing import Hashable
 
 
-class ParameterError(ValueError):
+class InitialParameterError(ValueError):
+    def __init__(self):
+        super().__init__("Initial parameters can not be evaluated.")
+
+
+class ParameterNotInitializedError(ValueError):
     def __init__(self):
         super().__init__("Parameter not initialized")
 
@@ -83,7 +89,7 @@ class Problem:
 
         self._overwrite_index_dependent = self.model.need_index_dependent()
         self._parameters = scheme.parameters.copy()
-        self._parameter_history = []
+        self._parameter_history = ParameterHistory()
 
         self._model.validate(raise_exception=True)
 
@@ -140,7 +146,7 @@ class Problem:
         self.reset()
 
     @property
-    def parameter_history(self) -> list[ParameterGroup]:
+    def parameter_history(self) -> ParameterHistory:
         return self._parameter_history
 
     @property
@@ -318,13 +324,15 @@ class Problem:
                     )
                 dataset.weight[idx] *= weight.value
 
-    def create_result_data(
-        self, copy: bool = True, history_index: int | None = None
-    ) -> dict[str, xr.Dataset]:
+    def create_result_data(self, copy: bool = True, success: bool = True) -> dict[str, xr.Dataset]:
 
-        if history_index is not None and history_index != -1:
-            self.parameters = self.parameter_history[history_index]
+        if not success:
+            if self.parameter_history.number_records > 1:
+                self.parameters.set_from_history(self.parameter_history, -2)
+            else:
+                raise InitialParameterError()
 
+        self.reset()
         self.prepare_result_creation()
         result_data = {}
         for label, dataset_model in self.dataset_models.items():

@@ -106,9 +106,7 @@ def _create_result(
 
     if success:
         problem.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
-    problem.reset()
-    history_index = None if success else -2
-    data = problem.create_result_data(history_index=history_index)
+    data = problem.create_result_data(success)
     # the optimized parameters are those of the last run if the optimization has crashed
     parameters = problem.parameters
     covariance_matrix = None
@@ -131,6 +129,7 @@ def _create_result(
         number_of_function_evaluations=number_of_function_evaluation,
         initial_parameters=problem.scheme.parameters,
         optimized_parameters=parameters,
+        parameter_history=problem.parameter_history,
         scheme=problem.scheme,
         success=success,
         termination_reason=termination_reason,

@@ -1,9 +1,10 @@
-"""The parameter group class"""
+"""The parameter group class."""
 
 from __future__ import annotations
 
 from copy import copy
 from textwrap import indent
+from typing import TYPE_CHECKING
 from typing import Generator
 
 import asteval
@@ -14,6 +15,9 @@ from tabulate import tabulate
 from glotaran.parameter.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
 
+if TYPE_CHECKING:
+    from glotaran.parameter.parameter_history import ParameterHistory
+
 
 class ParameterNotFoundException(Exception):
     """Raised when a Parameter is not found in the Group."""
@@ -23,15 +27,24 @@ class ParameterNotFoundException(Exception):
 
 
 class ParameterGroup(dict):
-    def __init__(self, label: str = None, root_group: ParameterGroup = None):
-        """Represents are group of parameters. Can contain other groups, creating a
-        tree-like hierarchy.
+    """Represents are group of parameters.
 
-        Parameters
-        ----------
-        label :
-            The label of the group.
-        """
+    Can contain other groups, creating a tree-like hierarchy.
+
+    Parameters
+    ----------
+    label : str
+        The label of the group.
+    root_group : ParameterGroup
+        The root group
+
+    Raises
+    ------
+    ValueError
+        Raised if the an invalid label is given.
+    """
+
+    def __init__(self, label: str = None, root_group: ParameterGroup = None):
         if label is not None and not Parameter.valid_label(label):
             raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
@@ -51,16 +64,21 @@ class ParameterGroup(dict):
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
-        """Creates a :class:`ParameterGroup` from a dictionary.
+        """Create a :class:`ParameterGroup` from a dictionary.
 
         Parameters
         ----------
-        parameter_dict :
+        parameter_dict : dict[str, dict | list]
             A parameter dictionary containing parameters.
-        label :
-            The label of root group.
-        root_group:
+        label : str
+            The label of the group.
+        root_group : ParameterGroup
             The root group
+
+        Returns
+        -------
+        ParameterGroup
+            The created :class:`ParameterGroup`
         """
         root = cls(label=label, root_group=root_group)
         for label, item in parameter_dict.items():
@@ -80,16 +98,21 @@ class ParameterGroup(dict):
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
-        """Creates a :class:`ParameterGroup` from a list.
+        """Create a :class:`ParameterGroup` from a list.
 
         Parameters
         ----------
-        parameter_list :
+        parameter_list : list[float | list]
             A parameter list containing parameters
-        label :
-            The label of the root group.
-        root_group:
+        label : str
+            The label of the group.
+        root_group : ParameterGroup
             The root group
+
+        Returns
+        -------
+        ParameterGroup
+            The created :class:`ParameterGroup`
         """
         root = cls(label=label, root_group=root_group)
 
@@ -116,8 +139,27 @@ class ParameterGroup(dict):
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame, source: str = "DataFrame") -> ParameterGroup:
-        """Creates a :class:`ParameterGroup` from a :class:`pandas.DataFrame`"""
+        """Create a :class:`ParameterGroup` from a :class:`pandas.DataFrame`.
 
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The source data frame.
+        source : str
+            Optional name of the source file, used for error messages.
+
+        Returns
+        -------
+        ParameterGroup
+            The created parameter group.
+
+        Raises
+        ------
+        ValueError
+            Raised if the columns 'label' or 'value' doesn't exist. Also raised if the columns
+            'minimum', 'maximum' or 'values' contain non numeric values or if the columns
+            'non-negative' or 'vary' are no boolean.
+        """
         for column_name in ["label", "value"]:
             if column_name not in df:
                 raise ValueError(f"Missing column '{column_name}' in '{source}'")
@@ -168,15 +210,34 @@ class ParameterGroup(dict):
 
     @property
     def label(self) -> str:
-        """Label of the group."""
+        """Label of the group.
+
+        Returns
+        -------
+        str
+            The label of the group.
+        """
         return self._label
 
     @property
     def root_group(self) -> ParameterGroup:
-        """Root of the group."""
+        """Root of the group.
+
+        Returns
+        -------
+        ParameterGroup
+            The root group.
+        """
         return self._root_group
 
     def to_dataframe(self) -> pd.DataFrame:
+        """Create a pandas data frame from the group.
+
+        Returns
+        -------
+        pd.DataFrame
+            The created data frame.
+        """
         parameter_dict = {
             "label": [],
             "value": [],
@@ -196,25 +257,18 @@ class ParameterGroup(dict):
             parameter_dict["expression"].append(parameter.expression)
         return pd.DataFrame(parameter_dict)
 
-    def to_csv(self, filename: str, delimiter: str = ","):
-        """Writes a :class:`ParameterGroup` to a CSV file.
-
-        Parameters
-        ----------
-        filepath :
-            The path to the CSV file.
-        delimiter : str
-            The delimiter of the CSV file.
-        """
-        self.to_dataframe().to_csv(filename, sep=delimiter, na_rep="None", index=False)
-
     def add_parameter(self, parameter: Parameter | list[Parameter]):
-        """Adds a :class:`Parameter` to the group.
+        """Add a :class:`Parameter` to the group.
 
         Parameters
         ----------
-        parameter :
+        parameter : Parameter | list[Parameter]
             The parameter to add.
+
+        Raises
+        ------
+        TypeError
+            Raised if the group is not an instance of :class:`Parameter`.
         """
         if not isinstance(parameter, list):
             parameter = [parameter]
@@ -228,19 +282,30 @@ class ParameterGroup(dict):
             self._parameters[p.label] = p
 
     def add_group(self, group: ParameterGroup):
-        """Adds a :class:`ParameterGroup` to the group.
+        """Add a :class:`ParameterGroup` to the group.
 
         Parameters
         ----------
-        group :
+        group : ParameterGroup
             The group to add.
+
+        Raises
+        ------
+        TypeError
+            Raised if the group is not an instance of :class:`ParameterGroup`.
         """
         if not isinstance(group, ParameterGroup):
             raise TypeError("Group must be glotaran.parameter.ParameterGroup")
         self[group.label] = group
 
     def get_nr_roots(self) -> int:
-        """Returns the number of roots of the group."""
+        """Return the number of roots of the group.
+
+        Returns
+        -------
+        int
+            The number of roots.
+        """
         n = 0
         root = self.root_group
         while root is not None:
@@ -249,19 +314,29 @@ class ParameterGroup(dict):
         return n
 
     def groups(self) -> Generator[ParameterGroup, None, None]:
-        """Returns a generator over all groups and their subgroups."""
+        """Return a generator over all groups and their subgroups.
+
+        Yields
+        ------
+        ParameterGroup
+            A subgroup of :class:`ParameterGroup`.
+        """
         for group in self:
             yield from group.groups()
 
     def has(self, label: str) -> bool:
-        """Checks if a parameter with the given label is in the group or in a subgroup.
+        """Check if a parameter with the given label is in the group or in a subgroup.
 
         Parameters
         ----------
-        label :
-            The label of the parameter, with its path in a parameter group prepended.
-        """
+        label : str
+            The label of the parameter, with its path in a :class:`ParameterGroup` prepended.
 
+        Returns
+        -------
+        bool
+            Whether a parameter with the given label exists in the group.
+        """
         try:
             self.get(label)
             return True
@@ -269,14 +344,23 @@ class ParameterGroup(dict):
             return False
 
     def get(self, label: str) -> Parameter:
-        """Gets a :class:`Parameter` by its label.
+        """Get a :class:`Parameter` by its label.
 
         Parameters
         ----------
-        label :
-            The label of the parameter, with its path in a parameter group prepended.
-        """
+        label : str
+            The label of the parameter, with its path in a :class:`ParameterGroup` prepended.
 
+        Returns
+        -------
+        Parameter
+            The parameter.
+
+        Raises
+        ------
+        ParameterNotFoundException
+            Raised if no parameter with the given label exists.
+        """
         # sometimes the spec parser delivers the labels as int
         label = str(label)
 
@@ -296,6 +380,14 @@ class ParameterGroup(dict):
             raise ParameterNotFoundException(path, label)
 
     def copy(self) -> ParameterGroup:
+        """Create a copy of the :class:`ParameterGroup`.
+
+        Returns
+        -------
+        ParameterGroup :
+            A copy of the :class:`ParameterGroup`.
+
+        """
         root = ParameterGroup(label=self.label, root_group=self.root_group)
 
         for label, parameter in self._parameters.items():
@@ -307,19 +399,22 @@ class ParameterGroup(dict):
         return root
 
     def all(
-        self, root: str = None, separator: str = "."
+        self, root: str | None = None, separator: str = "."
     ) -> Generator[tuple[str, Parameter], None, None]:
-        """Returns a generator over all parameter in the group and it's subgroups together with
-        their labels.
+        """Iterate over all parameter in the group and it's subgroups together with their labels.
 
         Parameters
         ----------
-        root :
+        root : str
             The label of the root group
-        separator:
+        separator : str
             The separator for the parameter labels.
-        """
 
+        Yields
+        ------
+        tuple[str, Parameter]
+            A tuple containing the full label of the parameter and the parameter itself.
+        """
         root = f"{root}{self.label}{separator}" if root is not None else ""
         for label, p in self._parameters.items():
             yield (f"{root}{label}", p)
@@ -329,13 +424,18 @@ class ParameterGroup(dict):
     def get_label_value_and_bounds_arrays(
         self, exclude_non_vary: bool = False
     ) -> tuple[list[str], np.ndarray, np.ndarray, np.ndarray]:
-        """Returns a arrays of all parameter labels, values and bounds.
+        """Return a arrays of all parameter labels, values and bounds.
 
         Parameters
         ----------
-
-        exclude_non_vary: bool = False
+        exclude_non_vary: bool
             If true, parameters with `vary=False` are excluded.
+
+        Returns
+        -------
+        tuple[list[str], np.ndarray, np.ndarray, np.ndarray]
+            A tuple containing a list of parameter labels and
+            an array of the values, lower and upper bounds.
         """
         self.update_parameter_expression()
 
@@ -355,8 +455,20 @@ class ParameterGroup(dict):
         return labels, np.asarray(values), np.asarray(lower_bounds), np.asarray(upper_bounds)
 
     def set_from_label_and_value_arrays(self, labels: list[str], values: np.ndarray):
-        """Updates the parameter values from a list of labels and values."""
+        """Update the parameter values from a list of labels and values.
 
+        Parameters
+        ----------
+        labels : list[str]
+            A list of parameter labels.
+        values : np.ndarray
+            An array of parameter values.
+
+        Raises
+        ------
+        ValueError
+            Raised if the size of the labels does not match the stize of values.
+        """
         if len(labels) != len(values):
             raise ValueError(
                 f"Length of labels({len(labels)}) not equal to length of values({len(values)})."
@@ -367,8 +479,28 @@ class ParameterGroup(dict):
 
         self.update_parameter_expression()
 
+    def set_from_history(self, history: ParameterHistory, index: int):
+        """Update the :class:`ParameterGroup` with values from a parameter history.
+
+        Parameters
+        ----------
+        history : ParameterHistory
+            The parameter history.
+        index : int
+            The history index.
+        """
+        self.set_from_label_and_value_arrays(
+            history.parameter_labels, history.get_parameters(index)
+        )
+
     def update_parameter_expression(self):
-        """Updates all parameters which have an expression."""
+        """Update all parameters which have an expression.
+
+        Raises
+        ------
+        ValueError
+            Raised if an expression evaluates to a non-numeric value.
+        """
         for label, parameter in self.all():
             if parameter.expression is not None:
                 value = self._evaluator(parameter.transformed_expression)
@@ -380,9 +512,14 @@ class ParameterGroup(dict):
                 parameter.value = value
 
     def markdown(self) -> MarkdownStr:
-        """Formats the :class:`ParameterGroup` as markdown string.
+        """Format the :class:`ParameterGroup` as markdown string.
 
         This is done by recursing the nested :class:`ParameterGroup` tree.
+
+        Returns
+        -------
+        str :
+            The markdown representation as string.
         """
         node_indentation = "  " * self.get_nr_roots()
         return_string = ""
@@ -424,12 +561,25 @@ class ParameterGroup(dict):
         return MarkdownStr(return_string)
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown."""
+        """Create a markdown respresentation.
+
+        Special method used by ``ipython`` to render markdown.
+
+        Returns
+        -------
+        str :
+            The markdown representation as string.
+        """
         return str(self.markdown())
 
-    def __repr__(self):
-        """Representation used by repl and tracebacks."""
+    def __repr__(self) -> str:
+        """Representation used by repl and tracebacks.
 
+        Returns
+        -------
+        str :
+            A string representation of the :class:`ParameterGroup`.
+        """
         parameter_short_notations = [
             [str(parameter.label), parameter.value] for parameter in self._parameters.values()
         ]
@@ -443,6 +593,6 @@ class ParameterGroup(dict):
         else:
             return super().__repr__()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Representation used by print and str."""
         return str(self.markdown())

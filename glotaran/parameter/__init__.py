@@ -1,5 +1,4 @@
-from glotaran.parameter import parameter
-from glotaran.parameter import parameter_group
-
-Parameter = parameter.Parameter
-ParameterGroup = parameter_group.ParameterGroup
+"""The glotaran parameter package."""
+from glotaran.parameter.parameter import Parameter
+from glotaran.parameter.parameter_group import ParameterGroup
+from glotaran.parameter.parameter_history import ParameterHistory

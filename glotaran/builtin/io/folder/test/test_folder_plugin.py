@@ -41,6 +41,7 @@ def test_save_result_folder(
         "model.yml",
         "initial_parameters.csv",
         "optimized_parameters.csv",
+        "parameter_history.csv",
         "dataset1.nc",
     ]
     for wanted in wanted_files:
