@@ -115,6 +115,9 @@ class FolderProjectIo(ProjectIoInterface):
         result.scheme_file = "scheme.yml"
         save_scheme(result.scheme, result_folder / result.scheme_file)
 
+        result.parameter_history_file = "parameter_history.csv"
+        result.parameter_history.to_csv(result_folder / result.parameter_history_file)
+
         result.data_files = {
             label: f"{label}.{saving_options.data_format}" for label in result.data
         }

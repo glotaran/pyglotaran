@@ -16,6 +16,7 @@ from glotaran.io import load_scheme
 from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.parameter import ParameterHistory
 from glotaran.project.dataclasses import exclude_from_dict_field
 from glotaran.project.dataclasses import file_representation_field
 from glotaran.project.scheme import Scheme
@@ -53,6 +54,12 @@ class Result:
     """The optimized parameters, organized in a :class:`ParameterGroup`"""
     optimized_parameters_file: str | None = file_representation_field(
         "optimized_parameters", load_parameters, None
+    )
+
+    parameter_history: ParameterHistory = exclude_from_dict_field(None)
+    """The parameter history."""
+    parameter_history_file: str | None = file_representation_field(
+        "parameter_history", ParameterHistory.from_csv, None
     )
 
     data: dict[str, xr.Dataset] = exclude_from_dict_field(None)

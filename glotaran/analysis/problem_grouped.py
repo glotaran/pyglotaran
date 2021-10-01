@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.analysis.problem import GroupedProblemDescriptor
-from glotaran.analysis.problem import ParameterError
+from glotaran.analysis.problem import ParameterNotInitializedError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import ProblemGroup
 from glotaran.analysis.util import CalculatedMatrix
@@ -192,7 +192,7 @@ class GroupedProblem(Problem):
 
     def calculate_matrices(self):
         if self._parameters is None:
-            raise ParameterError
+            raise ParameterNotInitializedError
         if self._index_dependent:
             self.calculate_index_dependent_matrices()
         else:
