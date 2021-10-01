@@ -97,64 +97,63 @@ class Model:
             megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex_type
         )
 
-        model_dict_local = copy.deepcopy(model_dict)  # TODO: maybe redundant?
-
         # iterate over items
-        for name, items in list(model_dict_local.items()):
+        for item_name, items in list(model_dict.items()):
 
-            if name not in model.model_items:
-                warn(f"Unknown model item type '{name}'.")
+            if item_name not in model.model_items:
+                warn(f"Unknown model item type '{item_name}'.")
                 continue
 
-            is_list = isinstance(getattr(model, name), list)
+            is_list = isinstance(getattr(model, item_name), list)
 
             if is_list:
-                model._add_list_items(name, items)
+                model._add_list_items(item_name, items)
             else:
-                model._add_dict_items(name, items)
+                model._add_dict_items(item_name, items)
 
         return model
 
-    def _add_dict_items(self, name: str, items: dict):
+    def _add_dict_items(self, item_name: str, items: dict):
 
         for label, item in items.items():
-            item_cls = self.model_items[name]
+            item_cls = self.model_items[item_name]
             is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
             if is_typed:
                 if "type" not in item and item_cls.get_default_type() is None:
-                    raise ValueError(f"Missing type for attribute '{name}'")
+                    raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item.get("type", item_cls.get_default_type())
 
                 types = item_cls._glotaran_model_item_types
                 if item_type not in types:
-                    raise ValueError(f"Unknown type '{item_type}' for attribute '{name}'")
+                    raise ValueError(f"Unknown type '{item_type}' for attribute '{item_name}'")
                 item_cls = types[item_type]
             item["label"] = label
             item = item_cls.from_dict(item)
-            getattr(self, name)[label] = item
+            getattr(self, item_name)[label] = item
 
-    def _add_list_items(self, name: str, items: list):
+    def _add_list_items(self, item_name: str, items: list):
 
         for item in items:
-            item_cls = self.model_items[name]
+            item_cls = self.model_items[item_name]
             is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
             if is_typed:
                 if "type" not in item:
-                    raise ValueError(f"Missing type for attribute '{name}'")
+                    raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item["type"]
 
                 if item_type not in item_cls._glotaran_model_item_types:
-                    raise ValueError(f"Unknown type '{item_type}' for attribute '{name}'")
+                    raise ValueError(f"Unknown type '{item_type}' for attribute '{item_name}'")
                 item_cls = item_cls._glotaran_model_item_types[item_type]
             item = item_cls.from_dict(item)
-            getattr(self, name).append(item)
+            getattr(self, item_name).append(item)
 
     def _add_megacomplexe_types(self):
 
-        for name, megacomplex_type in self._megacomplex_types.items():
+        for megacomplex_name, megacomplex_type in self._megacomplex_types.items():
             if not issubclass(megacomplex_type, Megacomplex):
                 raise TypeError(
-                    f"Megacomplex type {name}({megacomplex_type}) is not a subclass of Megacomplex"
+                    f"Megacomplex type {megacomplex_name}({megacomplex_type}) "
+                    "is not a subclass of Megacomplex"
                 )
             self._add_megacomplex_type(megacomplex_type)
 
@@ -165,36 +164,36 @@ class Model:
 
     def _add_megacomplex_type(self, megacomplex_type: type[Megacomplex]):
 
-        for name, item in megacomplex_type.glotaran_model_items().items():
-            self._add_model_item(name, item)
+        for item_name, item in megacomplex_type.glotaran_model_items().items():
+            self._add_model_item(item_name, item)
 
-        for name, item in megacomplex_type.glotaran_dataset_model_items().items():
-            self._add_model_item(name, item)
+        for item_name, item in megacomplex_type.glotaran_dataset_model_items().items():
+            self._add_model_item(item_name, item)
 
-        for name, prop in megacomplex_type.glotaran_dataset_properties().items():
-            self._add_dataset_property(name, prop)
+        for property_name, prop in megacomplex_type.glotaran_dataset_properties().items():
+            self._add_dataset_property(property_name, prop)
 
-    def _add_model_item(self, name: str, item: type):
-        if name in self._model_items:
-            if self.model_items[name] != item:
+    def _add_model_item(self, item_name: str, item: type):
+        if item_name in self._model_items:
+            if self.model_items[item_name] != item:
                 raise ModelError(
-                    f"Cannot add item of type {name}. Model item '{name}' was already defined"
-                    "as a different type."
+                    f"Cannot add item of type {item_name}. Model item '{item_name}' "
+                    "was already defined as a different type."
                 )
             return
-        self._model_items[name] = item
+        self._model_items[item_name] = item
 
         if getattr(item, "_glotaran_has_label"):
-            setattr(self, f"{name}", {})
+            setattr(self, f"{item_name}", {})
         else:
-            setattr(self, f"{name}", [])
+            setattr(self, f"{item_name}", [])
 
-    def _add_dataset_property(self, name: str, dataset_property: dict[str, any]):
-        if name in self._dataset_properties:
+    def _add_dataset_property(self, property_name: str, dataset_property: dict[str, any]):
+        if property_name in self._dataset_properties:
             known_type = (
-                self._dataset_properties[name]
+                self._dataset_properties[property_name]
                 if not isinstance(self._dataset_properties, dict)
-                else self._dataset_properties[name]["type"]
+                else self._dataset_properties[property_name]["type"]
             )
             new_type = (
                 dataset_property
@@ -203,18 +202,18 @@ class Model:
             )
             if known_type != new_type:
                 raise ModelError(
-                    f"Cannot add dataset property of type {name} as it was already defined"
-                    "as a different type."
+                    f"Cannot add dataset property of type {property_name} as it was "
+                    "already defined as a different type."
                 )
             return
-        self._dataset_properties[name] = dataset_property
+        self._dataset_properties[property_name] = dataset_property
 
     def _add_default_items_and_properties(self):
-        for name, item in default_model_items.items():
-            self._add_model_item(name, item)
+        for item_name, item in default_model_items.items():
+            self._add_model_item(item_name, item)
 
-        for name, prop in default_dataset_properties.items():
-            self._add_dataset_property(name, prop)
+        for property_name, prop in default_dataset_properties.items():
+            self._add_dataset_property(property_name, prop)
 
     def _add_dataset_type(self):
         dataset_model_type = create_dataset_model_type(self._dataset_properties)
@@ -262,14 +261,14 @@ class Model:
         model_dict = {}
         model_dict["default-megacomplex"] = self.default_megacomplex
 
-        for name in self._model_items:
-            items = getattr(self, name)
+        for item_name in self._model_items:
+            items = getattr(self, item_name)
             if len(items) == 0:
                 continue
             if isinstance(items, list):
-                model_dict[name] = [item.as_dict() for item in items]
+                model_dict[item_name] = [item.as_dict() for item in items]
             else:
-                model_dict[name] = {label: item.as_dict() for label, item in items.items()}
+                model_dict[item_name] = {label: item.as_dict() for label, item in items.items()}
 
         return model_dict
 
