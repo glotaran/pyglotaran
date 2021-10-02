@@ -65,7 +65,7 @@ class YmlProjectIo(ProjectIoInterface):
         """
         model_dict = model.as_dict()
         # We replace tuples with strings
-        for name, items in model_dict.items():
+        for items in model_dict.values():
             if not isinstance(items, (list, dict)):
                 continue
             item_iterator = items if isinstance(items, list) else items.values()
