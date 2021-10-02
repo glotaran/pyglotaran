@@ -12,7 +12,7 @@ class ParameterHistory:
 
     def __init__(self):
 
-        self._parameter_labels: list[str] | None = None
+        self._parameter_labels: list[str] = []
         self._parameters: list[np.ndarray] = []
 
     @classmethod
@@ -36,7 +36,7 @@ class ParameterHistory:
         for parameter_values in history_df.values:
             history._parameters.append(parameter_values)
 
-        return cls
+        return history
 
     @classmethod
     def from_csv(cls, path: str) -> ParameterHistory:
@@ -129,8 +129,7 @@ class ParameterHistory:
             _,
             _,
         ) = parameter_group.get_label_value_and_bounds_arrays()
-
-        if self._parameter_labels is None:
+        if len(self._parameter_labels) == 0:
             self._parameter_labels = parameter_labels
         if parameter_labels != self.parameter_labels:
             raise ValueError(

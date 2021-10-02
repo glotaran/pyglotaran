@@ -48,7 +48,7 @@ class ParameterGroup(dict):
         if label is not None and not Parameter.valid_label(label):
             raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label
-        self._parameters = {}
+        self._parameters: dict[str, Parameter] = {}
         self._root_group = root_group
         self._evaluator = (
             asteval.Interpreter(symtable=asteval.make_symbol_table(group=self))
@@ -209,7 +209,7 @@ class ParameterGroup(dict):
         return root
 
     @property
-    def label(self) -> str:
+    def label(self) -> str | None:
         """Label of the group.
 
         Returns
@@ -220,7 +220,7 @@ class ParameterGroup(dict):
         return self._label
 
     @property
-    def root_group(self) -> ParameterGroup:
+    def root_group(self) -> ParameterGroup | None:
         """Root of the group.
 
         Returns
@@ -238,7 +238,7 @@ class ParameterGroup(dict):
         pd.DataFrame
             The created data frame.
         """
-        parameter_dict = {
+        parameter_dict: dict[str, list[str | float | bool | None]] = {
             "label": [],
             "value": [],
             "minimum": [],
@@ -343,7 +343,7 @@ class ParameterGroup(dict):
         except Exception:
             return False
 
-    def get(self, label: str) -> Parameter:
+    def get(self, label: str) -> Parameter:  # type:ignore[override]
         """Get a :class:`Parameter` by its label.
 
         Parameters
