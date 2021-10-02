@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Union
@@ -67,7 +68,7 @@ class ModelProperty(property):
             return {k: v.full_label for k, v in value.items()}
         return value
 
-    def validate(self, value: any, model: Model, parameters: ParameterGroup = None) -> list[str]:
+    def validate(self, value: Any, model: Model, parameters: ParameterGroup = None) -> list[str]:
 
         if value is None and self.allow_none:
             return []
@@ -107,7 +108,7 @@ class ModelProperty(property):
 
         return missing_model + missing_parameters
 
-    def fill(self, value: any, model: Model, parameter: ParameterGroup) -> any:
+    def fill(self, value: Any, model: Model, parameter: ParameterGroup) -> Any:
 
         if value is None:
             return None
@@ -138,7 +139,7 @@ class ModelProperty(property):
 
         return value
 
-    def get_parameters(self, value: any) -> list[str]:
+    def get_parameters(self, value: Any) -> list[str]:
         if value is None:
             return []
         elif self._is_parameter_value:

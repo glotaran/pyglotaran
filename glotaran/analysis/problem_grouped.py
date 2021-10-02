@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import itertools
+from typing import Any
 from typing import Deque
 
 import numpy as np
@@ -308,7 +309,7 @@ class GroupedProblem(Problem):
         problem: ProblemGroup,
         matrix: CalculatedMatrix,
         clp_labels: str,
-        index: any,
+        index: Any,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         reduced_clp_labels = matrix.clp_labels
@@ -338,7 +339,7 @@ class GroupedProblem(Problem):
         )
         return clp_labels, clps, weighted_residual, residual
 
-    def _index_independent_residual(self, problem: ProblemGroup, index: any):
+    def _index_independent_residual(self, problem: ProblemGroup, index: Any):
         matrix = self.reduced_matrices[problem.group]
         reduced_clp_labels = matrix.clp_labels
         matrix = matrix.matrix.copy()
