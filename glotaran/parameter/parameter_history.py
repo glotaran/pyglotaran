@@ -132,7 +132,7 @@ class ParameterHistory:
 
         if self._parameter_labels is None:
             self._parameter_labels = parameter_labels
-        if not parameter_labels == self.parameter_labels:
+        if parameter_labels != self.parameter_labels:
             raise ValueError(
                 "Cannot append parameter group. Parameter labels do not match existing."
             )
