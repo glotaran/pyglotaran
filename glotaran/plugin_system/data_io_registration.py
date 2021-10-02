@@ -200,8 +200,8 @@ def save_dataset(
     dataset: xr.Dataset | xr.DataArray,
     file_name: str | PathLike[str],
     format_name: str = None,
-    data_filters: list[str] | None = None,
     *,
+    data_filters: list[str] | None = None,
     allow_overwrite: bool = False,
     **kwargs: Any,
 ) -> None:

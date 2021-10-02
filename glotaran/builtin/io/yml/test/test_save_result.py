@@ -7,19 +7,18 @@ from glotaran.io import save_result
 from glotaran.project.test.test_result import dummy_result  # noqa: F401
 
 if TYPE_CHECKING:
-    from py.path import local as TmpDir
 
     from glotaran.project.result import Result
 
 
 def test_save_result_yml(
-    tmpdir: TmpDir,
+    tmp_path: Path,
     dummy_result: Result,  # noqa: F811
 ):
     """Check all files exist."""
 
-    result_dir = Path(tmpdir / "testresult")
-    save_result(result_path=result_dir, format_name="yml", result=dummy_result)
+    result_dir = tmp_path / "testresult"
+    save_result(result_path=result_dir / "result.yml", result=dummy_result)
 
     assert (result_dir / "result.md").exists()
     assert (result_dir / "scheme.yml").exists()

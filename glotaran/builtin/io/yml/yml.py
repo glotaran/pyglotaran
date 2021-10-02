@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import pathlib
+from pathlib import Path
 
 import yaml
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
+from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Result
@@ -96,39 +97,42 @@ class YmlProjectIo(ProjectIoInterface):
 
     def load_scheme(self, file_name: str) -> Scheme:
         spec = self._load_yml(file_name)
-        file_path = pathlib.Path(file_name)
+        file_path = Path(file_name)
         return fromdict(Scheme, spec, folder=file_path.parent)
 
     def save_scheme(self, scheme: Scheme, file_name: str):
-        file_name = pathlib.Path(file_name)
         scheme_dict = asdict(scheme)
         _write_dict(file_name, scheme_dict)
 
-    def load_result_file(self, file_name: str) -> Result:
+    def load_result(self, result_path: str) -> Result:
         """Create a :class:`Result` instance from the specs defined in a file.
+
         Parameters
         ----------
-        file_name : str | PathLike[str]
+        result_path : str | PathLike[str]
             Path containing the result data.
+
         Returns
         -------
         Result
             :class:`Result` instance created from the saved format.
         """
-        spec = self._load_yml(file_name)
+        spec = self._load_yml(result_path)
         return fromdict(Result, spec)
 
-    def save_result_file(self, result: Result, file_name: str):
+    def save_result(self, result: Result, result_path: str):
         """Write a :class:`Result` instance to a spec file.
+
         Parameters
         ----------
         result : Result
             :class:`Result` instance to write.
-        file_name : str | PathLike[str]
+        result_path : str | PathLike[str]
             Path to write the result data to.
         """
+        save_result(result, Path(result_path).parent.as_posix(), format_name="folder")
         result_dict = asdict(result)
-        _write_dict(file_name, result_dict)
+        _write_dict(result_path, result_dict)
 
     def _load_yml(self, file_name: str) -> dict:
         if self.format == "yml_str":
