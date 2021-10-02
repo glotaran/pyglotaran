@@ -57,9 +57,7 @@ class FolderProjectIo(ProjectIoInterface):
             result_folder if result_folder.is_file() else result_folder / "glotaran_result.yml"
         )
 
-        result = load_result_file(result_file)
-
-        return result
+        return load_result_file(result_file)
 
     def save_result(
         self, result: Result, folder: str, saving_options: SavingOptions, allow_overwrite: bool
