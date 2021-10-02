@@ -53,27 +53,26 @@ class Parameter(_SupportsArray):
 
         Parameters
         ----------
-        label : str, optional
+        label : str
             The label of the parameter., by default None
-        full_label : str, optional
+        full_label : str
             The label of the parameter with its path in a parameter group prepended.
             , by default None
-        expression : str, optional
+        expression : str
             Expression to calculate the parameters value from,
             e.g. if used in relation to another parameter. , by default None
-        maximum : int, optional
+        maximum : int
             Upper boundary for the parameter to be varied to., by default np.inf
-        minimum : int, optional
+        minimum : int
             Lower boundary for the parameter to be varied to., by default -np.inf
-        non_negative : bool, optional
+        non_negative : bool
             Whether the parameter should always be bigger than zero., by default False
-        value : float, optional
+        value : float
             Value of the parameter, by default np.nan
-        vary : bool, optional
+        vary : bool
             Whether the parameter should be changed during optimization or not.
             , by default True
         """
-
         self.label = label
         self.full_label = full_label or ""
         self.expression = expression
@@ -88,7 +87,19 @@ class Parameter(_SupportsArray):
 
     @staticmethod
     def valid_label(label: str) -> bool:
-        """Returns true if the `label` is valid string."""
+        """Check if a label is a valid label for :class:`Parameter`.
+
+        Parameters
+        ----------
+        label : str
+            The label to validate.
+
+        Returns
+        -------
+        bool
+            Whether the label is valid.
+
+        """
         return VALID_LABEL_REGEX.search(label) is None and label not in RESERVED_LABELS
 
     @classmethod
@@ -98,16 +109,21 @@ class Parameter(_SupportsArray):
         default_options: dict = None,
         label: str = None,
     ) -> Parameter:
-        """Creates a parameter from a list or numeric value.
+        """Create a parameter from a list or numeric value.
 
         Parameters
         ----------
-        value :
+        value : int | float | list
             The list or numeric value.
-        default_options :
+        default_options : dict
             A dictionary of default options.
-        label :
+        label : str
             The label of the parameter.
+
+        Returns
+        -------
+        Parameter
+            The created :class:`Parameter`.
         """
         param = cls(label=label)
         options = None
@@ -117,9 +133,9 @@ class Parameter(_SupportsArray):
 
         else:
             values = sanitize_parameter_list(value)
-            param.label = _retrieve_from_list_by_type(values, str, label)
-            param.value = float(_retrieve_from_list_by_type(values, (int, float), 0))
-            options = _retrieve_from_list_by_type(values, dict, None)
+            param.label = _retrieve_item_from_list_by_type(values, str, label)
+            param.value = float(_retrieve_item_from_list_by_type(values, (int, float), 0))
+            options = _retrieve_item_from_list_by_type(values, dict, None)
 
         if default_options:
             param._set_options_from_dict(default_options)
@@ -129,19 +145,17 @@ class Parameter(_SupportsArray):
         return param
 
     def set_from_group(self, group: ParameterGroup):
-        """Sets all values of the parameter to the values of the corresponding parameter in the group.
+        """Set all values of the parameter to the values of the corresponding parameter in the group.
 
         Notes
         -----
-
         For internal use.
 
         Parameters
         ----------
-        group :
+        group : ParameterGroup
             The :class:`glotaran.parameter.ParameterGroup`.
         """
-
         p = group.get(self.full_label)
         self.expression = p.expression
         self.maximum = p.maximum
@@ -152,6 +166,13 @@ class Parameter(_SupportsArray):
         self.vary = p.vary
 
     def _set_options_from_dict(self, options: dict):
+        """Set the parameter's options from a dictionary.
+
+        Parameters
+        ----------
+        options : dict
+            A dictionary containing parameter options.
+        """
         if Keys.EXPR in options:
             self.expression = options[Keys.EXPR]
         if Keys.NON_NEG in options:
@@ -165,7 +186,13 @@ class Parameter(_SupportsArray):
 
     @property
     def label(self) -> str | None:
-        """Label of the parameter"""
+        """Label of the parameter.
+
+        Returns
+        -------
+        str
+            The label.
+        """
         return self._label
 
     @label.setter
@@ -178,7 +205,13 @@ class Parameter(_SupportsArray):
 
     @property
     def full_label(self) -> str:
-        """The label of the parameter with its path in a parameter group prepended."""
+        """Label of the parameter with its path in a parameter group prepended.
+
+        Returns
+        -------
+        str
+            The full label.
+        """
         return self._full_label
 
     @full_label.setter
@@ -187,13 +220,20 @@ class Parameter(_SupportsArray):
 
     @property
     def non_negative(self) -> bool:
-        r"""Indicates if the parameter is non-negativ.
+        r"""Indicate if the parameter is non-negativ.
 
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
 
+        Notes
+        -----
         Always `False` if `expression` is not `None`.
-        """  # w605
+
+        Returns
+        -------
+        bool
+            Whether the parameter is non-negativ.
+        """
         return self._non_negative if self.expression is None else False
 
     @non_negative.setter
@@ -202,9 +242,16 @@ class Parameter(_SupportsArray):
 
     @property
     def vary(self) -> bool:
-        """Indicates if the parameter should be optimized.
+        """Indicate if the parameter should be optimized.
 
+        Notes
+        -----
         Always `False` if `expression` is not `None`.
+
+        Returns
+        -------
+        bool
+            Whether the parameter should be optimized.
         """
         return self._vary if self.expression is None else False
 
@@ -214,7 +261,13 @@ class Parameter(_SupportsArray):
 
     @property
     def maximum(self) -> float:
-        """The upper bound of the parameter."""
+        """Upper bound of the parameter.
+
+        Returns
+        -------
+        float
+            The upper bound of the parameter.
+        """
         return self._maximum
 
     @maximum.setter
@@ -232,7 +285,14 @@ class Parameter(_SupportsArray):
 
     @property
     def minimum(self) -> float:
-        """The lower bound of the parameter."""
+        """Lower bound of the parameter.
+
+        Returns
+        -------
+        float
+
+            The lower bound of the parameter.
+        """
         return self._minimum
 
     @minimum.setter
@@ -253,6 +313,11 @@ class Parameter(_SupportsArray):
         """Expression to calculate the parameters value from.
 
         This can used to set a relation to another parameter.
+
+        Returns
+        -------
+        str | None
+            The expression.
         """
         return self._expression
 
@@ -263,7 +328,14 @@ class Parameter(_SupportsArray):
 
     @property
     def transformed_expression(self) -> str | None:
-        """The expression of the parameter transformed for evaluation within a `ParameterGroup`."""
+        """Expression of the parameter transformed for evaluation within a `ParameterGroup`.
+
+        Returns
+        -------
+        str | None
+            The transformed expression.
+
+        """
         if self.expression is not None and self._transformed_expression is None:
             self._transformed_expression = PARAMETER_EXPRESION_REGEX.sub(
                 r"group.get('\g<parameter_expression>').value", self.expression
@@ -271,8 +343,15 @@ class Parameter(_SupportsArray):
         return self._transformed_expression
 
     @property
-    def standard_error(self) -> float:
-        """The standard error of the optimized parameter."""
+    def standard_error(self) -> float:  # noqa D401
+        """Standard error of the optimized parameter.
+
+        Returns
+        -------
+        float
+            The standard error of the parameter.
+        """
+
         return self._stderr
 
     @standard_error.setter
@@ -281,8 +360,14 @@ class Parameter(_SupportsArray):
 
     @property
     def value(self) -> float:
-        """The value of the parameter"""
-        return self._getval()
+        """Value of the parameter.
+
+        Returns
+        -------
+        float
+            The value of the parameter.
+        """
+        return self._value
 
     @value.setter
     def value(self, value: int | float):
@@ -298,8 +383,13 @@ class Parameter(_SupportsArray):
         self._value = value
 
     def get_value_and_bounds_for_optimization(self) -> tuple[float, float, float]:
-        """Gets the parameter value and bounds with expression and non-negative constraints
-        applied."""
+        """Get the parameter value and bounds with expression and non-negative constraints applied.
+
+        Returns
+        -------
+        tuple[float, float, float]
+            A tuple containing the value, the lower and the upper bound.
+        """
         value = self.value
         minimum = self.minimum
         maximum = self.maximum
@@ -312,11 +402,20 @@ class Parameter(_SupportsArray):
         return value, minimum, maximum
 
     def set_value_from_optimization(self, value: float):
-        """Sets the value from an optimization result and reverses non-negative transformation."""
+        """Set the value from an optimization result and reverses non-negative transformation.
+
+        Parameters
+        ----------
+        value : float
+            Value from optimization.
+        """
         self.value = np.exp(value) if self.non_negative else value
 
-    def __getstate__(self):
-        """Get state for pickle."""
+    def __getstate__(self):  # noqa D400
+        """Get state for pickle.
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
         return (
             self.label,
             self.full_label,
@@ -329,8 +428,11 @@ class Parameter(_SupportsArray):
             self.vary,
         )
 
-    def __setstate__(self, state):
-        """Set state from pickle."""
+    def __setstate__(self, state):  # noqa D400
+        """Set state from pickle.
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
         (
             self.label,
             self.full_label,
@@ -343,142 +445,246 @@ class Parameter(_SupportsArray):
             self.vary,
         ) = state
 
-    def _getval(self) -> float:
-        return self._value
-
-    def __repr__(self):
-        """Representation used by repl and tracebacks."""
+    def __repr__(self):  # noqa D400
+        """Representation used by repl and tracebacks.
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
         return (
             f"{type(self).__name__}(label={self.label!r}, value={self.value!r},"
             f" expression={self.expression!r}, vary={self.vary!r})"
         )
 
-    def __array__(self):
-        """array"""
-        return np.array(float(self._getval()), dtype=float)
+    def __array__(self):  # noqa D400
+        """array
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return np.array(float(self._value), dtype=float)
 
-    def __str__(self):
-        """Representation used by print and str."""
+    def __str__(self):  # noqa D400
+        """Representation used by print and str.
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
         return (
             f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
             f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
             f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
         )
 
-    def __abs__(self):
-        """abs"""
-        return abs(self._getval())
+    def __abs__(self):  # noqa D400
+        """abs
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return abs(self._value)
 
-    def __neg__(self):
-        """neg"""
-        return -self._getval()
+    def __neg__(self):  # noqa D400
+        """neg
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return -self._value
 
-    def __pos__(self):
-        """positive"""
-        return +self._getval()
+    def __pos__(self):  # noqa D400
+        """positive
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return +self._value
 
-    def __int__(self):
-        """int"""
-        return int(self._getval())
+    def __int__(self):  # noqa D400
+        """int
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return int(self._value)
 
-    def __float__(self):
-        """float"""
-        return float(self._getval())
+    def __float__(self):  # noqa D400
+        """float
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return float(self._value)
 
-    def __trunc__(self):
-        """trunc"""
-        return self._getval().__trunc__()
+    def __trunc__(self):  # noqa D400
+        """trunc
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value.__trunc__()
 
-    def __add__(self, other):
-        """+"""
-        return self._getval() + other
+    def __add__(self, other):  # noqa D400
+        """+
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value + other
 
-    def __sub__(self, other):
-        """-"""
-        return self._getval() - other
+    def __sub__(self, other):  # noqa D400
+        """-
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value - other
 
-    def __truediv__(self, other):
-        """/"""
-        return self._getval() / other
+    def __truediv__(self, other):  # noqa D400
+        """/
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value / other
 
-    def __floordiv__(self, other):
-        """//"""
-        return self._getval() // other
+    def __floordiv__(self, other):  # noqa D400
+        """//
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value // other
 
-    def __divmod__(self, other):
-        """divmod"""
-        return divmod(self._getval(), other)
+    def __divmod__(self, other):  # noqa D400
+        """divmod
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return divmod(self._value, other)
 
-    def __mod__(self, other):
-        """%"""
-        return self._getval() % other
+    def __mod__(self, other):  # noqa D400
+        """%
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value % other
 
-    def __mul__(self, other):
-        """*"""
-        return self._getval() * other
+    def __mul__(self, other):  # noqa D400
+        """*
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value * other
 
-    def __pow__(self, other):
-        """**"""
-        return self._getval() ** other
+    def __pow__(self, other):  # noqa D400
+        """**
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value ** other
 
-    def __gt__(self, other):
-        """>"""
-        return self._getval() > other
+    def __gt__(self, other):  # noqa D400
+        """>
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value > other
 
-    def __ge__(self, other):
-        """>="""
-        return self._getval() >= other
+    def __ge__(self, other):  # noqa D400
+        """>=
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value >= other
 
-    def __le__(self, other):
-        """<="""
-        return self._getval() <= other
+    def __le__(self, other):  # noqa D400
+        """<=
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value <= other
 
-    def __lt__(self, other):
-        """<"""
-        return self._getval() < other
+    def __lt__(self, other):  # noqa D400
+        """<
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value < other
 
-    def __eq__(self, other):
-        """=="""
-        return self._getval() == other
+    def __eq__(self, other):  # noqa D400
+        """==
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value == other
 
-    def __ne__(self, other):
-        """!="""
-        return self._getval() != other
+    def __ne__(self, other):  # noqa D400
+        """!=
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return self._value != other
 
-    def __radd__(self, other):
-        """+ (right)"""
-        return other + self._getval()
+    def __radd__(self, other):  # noqa D400
+        """+ (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other + self._value
 
-    def __rtruediv__(self, other):
-        """/ (right)"""
-        return other / self._getval()
+    def __rtruediv__(self, other):  # noqa D400
+        """/ (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other / self._value
 
-    def __rdivmod__(self, other):
-        """divmod (right)"""
-        return divmod(other, self._getval())
+    def __rdivmod__(self, other):  # noqa D400
+        """divmod (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return divmod(other, self._value)
 
-    def __rfloordiv__(self, other):
-        """// (right)"""
-        return other // self._getval()
+    def __rfloordiv__(self, other):  # noqa D400
+        """// (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other // self._value
 
-    def __rmod__(self, other):
-        """% (right)"""
-        return other % self._getval()
+    def __rmod__(self, other):  # noqa D400
+        """% (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other % self._value
 
-    def __rmul__(self, other):
-        """* (right)"""
-        return other * self._getval()
+    def __rmul__(self, other):  # noqa D400
+        """* (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other * self._value
 
-    def __rpow__(self, other):
-        """** (right)"""
-        return other ** self._getval()
+    def __rpow__(self, other):  # noqa D400
+        """** (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other ** self._value
 
-    def __rsub__(self, other):
-        """- (right)"""
-        return other - self._getval()
+    def __rsub__(self, other):  # noqa D400
+        """- (right)
+        .. # noqa: DAR101
+        .. # noqa: DAR201
+        """
+        return other - self._value
 
 
-def _log_value(value: float):
+def _log_value(value: float) -> float:
+    """Get the logarithm of a value.
+
+    Performs a check for edge cases and migitates numerical issues.
+
+    Parameters
+    ----------
+    value : float
+        The initial value.
+
+    Returns
+    -------
+    float
+        The logarithm of the value.
+    """
     if not np.isfinite(value):
         return value
     if value == 1:
@@ -486,9 +692,27 @@ def _log_value(value: float):
     return np.log(value)
 
 
-def _retrieve_from_list_by_type(li: list, t: type | tuple[type, ...], default: Any):
-    tmp = list(filter(lambda x: isinstance(x, t), li))
+def _retrieve_item_from_list_by_type(
+    item_list: list, item_type: type | tuple[type, ...], default: Any
+) -> Any:
+    """Retrieve an item from list which matches a given type.
+
+    Parameters
+    ----------
+    item_list : list
+        The list to retrieve from.
+    item_type : type | tuple[type, ...]
+        The item type or tuple of types to match.
+    default : Any
+        Returned if no item matches.
+
+    Returns
+    -------
+    Any
+
+    """
+    tmp = list(filter(lambda x: isinstance(x, item_type), item_list))
     if not tmp:
         return default
-    li.remove(tmp[0])
+    item_list.remove(tmp[0])
     return tmp[0]
