@@ -51,8 +51,6 @@ if TYPE_CHECKING:
         Literal["save_scheme"],
         Literal["load_result"],
         Literal["save_result"],
-        Literal["load_result_file"],
-        Literal["save_result_file"],
     )
 
 
@@ -78,8 +76,6 @@ PROJECT_IO_METHODS = (
     "save_scheme",
     "load_result",
     "save_result",
-    "load_result_file",
-    "save_result_file",
 )
 
 
@@ -178,8 +174,6 @@ def set_project_plugin(
     - :func:`save_scheme`
     - :func:`load_result`
     - :func:`save_result`
-    - :func:`load_result_file`
-    - :func:`save_result_file`
 
     Parameters
     ----------
@@ -440,58 +434,6 @@ def save_result(
         folder=str(folder),
         saving_options=saving_options,
         allow_overwrite=allow_overwrite,
-    )
-
-
-@not_implemented_to_value_error
-def load_result_file(file_name: str | PathLike[str], format_name: str = None) -> Result:
-    """Create a :class:`Result` instance from the specs defined in a file.
-
-    Parameters
-    ----------
-    file_name : str | PathLike[str]
-        Path containing the result data.
-    format_name : str
-        Format the result is in, if not provided and it is a file
-
-    Returns
-    -------
-    Result
-        :class:`Result` instance created from the saved format.
-    """
-    io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_result_file(str(file_name))  # type: ignore[call-arg]
-
-
-@not_implemented_to_value_error
-def save_result_file(
-    result: Result,
-    file_name: str | PathLike[str],
-    format_name: str = None,
-    *,
-    allow_overwrite: bool = False,
-) -> None:
-    """Write a :class:`Result` instance to a spec file.
-
-    Parameters
-    ----------
-    result : Result
-        :class:`Result` instance to write.
-    file_name : str | PathLike[str]
-        Path to write the result data to.
-    format_name : str
-        Format the result should be saved in, if not provided and it is a file
-        it will be inferred from the file extension.
-    allow_overwrite : bool
-        Whether or not to allow overwriting existing files, by default False
-    """
-    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(
-        format_name or inferr_file_format(file_name, needs_to_exist=False, allow_folder=True)
-    )
-    io.save_result_file(  # type: ignore[call-arg]
-        file_name=str(file_name),
-        result=result,
     )
 
 

@@ -238,32 +238,3 @@ class ProjectIoInterface:
             .. # noqa: DAR401
         """
         raise NotImplementedError(f"Cannot save result with format {self.format!r}")
-
-    def load_result_file(self, file_name: str) -> Result:
-        """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
-
-        Parameters
-        ----------
-        file_name : str
-            File containing the result specs.
-
-        Returns
-        -------
-        Result
-            Result instance created from the file.
-        .. # noqa: DAR202
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError(f"Cannot read result with format {self.format!r}")
-
-    def save_result_file(self, result: Result, file_name: str):
-        """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
-        Parameters
-        ----------
-        result : Result
-            Result instance to save to specs file.
-        file_name : str
-            File to write the result specs to.
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError(f"Cannot save result with format {self.format!r}")
