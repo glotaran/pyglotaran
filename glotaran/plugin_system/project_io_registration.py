@@ -406,11 +406,11 @@ def load_result(
 @not_implemented_to_value_error
 def save_result(
     result: Result,
-    folder: str | PathLike[str],
+    result_path: str | PathLike[str],
+    format_name: str = None,
     *,
-    format_name: str = "folder",
-    saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     allow_overwrite: bool = False,
+    **kwargs: Any,
 ) -> None:
     """Write a :class:`Result` instance to a spec file.
 
@@ -418,22 +418,25 @@ def save_result(
     ----------
     result : Result
         :class:`Result` instance to write.
-    folder : str | PathLike[str]
+    result_path : str | PathLike[str]
         Path to write the result data to.
     format_name : str
-        Format the result should be saved in.
-    saving_options :SavingOptions
-        Options for saving the the result.
+        Format the result should be saved in, if not provided and it is a file
+        it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
+    **kwargs : Any
+        Additional keyword arguments passes to the ``save_result`` implementation
+        of the project io plugin.
     """
-    protect_from_overwrite(folder, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name)
+    protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
+    io = get_project_io(
+        format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
+    )
     io.save_result(  # type: ignore[call-arg]
+        result_path=str(result_path),
         result=result,
-        folder=str(folder),
-        saving_options=saving_options,
-        allow_overwrite=allow_overwrite,
+        **kwargs,
     )
 
 

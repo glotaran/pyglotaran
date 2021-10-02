@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 import xarray as xr
 
 from glotaran.io import DataIoInterface
@@ -18,12 +16,9 @@ class NetCDFDataIo(DataIoInterface):
         self,
         dataset: xr.Dataset,
         file_name: str,
-        data_filters: list[str] | None = None,
         *,
-        allow_overwrite: bool = False,
+        data_filters: list[str] | None = None,
     ):
-        if not allow_overwrite and os.path.exists(file_name):
-            raise FileExistsError
 
         data_to_save = dataset if data_filters is None else dataset[data_filters]
         data_to_save.to_netcdf(file_name, mode="w")
