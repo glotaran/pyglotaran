@@ -11,7 +11,8 @@ from glotaran.project import default_data_filters
 @register_data_io("nc")
 class NetCDFDataIo(DataIoInterface):
     def load_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
-        return xr.open_dataset(file_name)
+        with xr.open_dataset(file_name) as ds:
+            return ds.load()
 
     def save_dataset(
         self,
