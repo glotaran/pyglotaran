@@ -77,6 +77,10 @@ class ParameterHistory:
         """
         return self._parameters
 
+    def __len__(self) -> int:
+        """Return the number of records in the history."""
+        return self.number_records
+
     @property
     def number_records(self) -> int:
         """Return the number of records in the history.
