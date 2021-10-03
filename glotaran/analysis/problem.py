@@ -327,7 +327,7 @@ class Problem:
     def create_result_data(self, copy: bool = True, success: bool = True) -> dict[str, xr.Dataset]:
 
         if not success:
-            if self.parameter_history.number_records > 1:
+            if self.parameter_history.number_of_records > 1:
                 self.parameters.set_from_history(self.parameter_history, -2)
             else:
                 raise InitialParameterError()

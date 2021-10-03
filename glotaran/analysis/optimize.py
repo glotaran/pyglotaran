@@ -92,7 +92,7 @@ def _create_result(
     success = ls_result is not None
 
     number_of_function_evaluation = (
-        ls_result.nfev if ls_result is not None else len(problem.parameter_history)
+        ls_result.nfev if ls_result is not None else problem.parameter_history.number_of_records
     )
     number_of_jacobian_evaluation = ls_result.njev if success else None
     optimality = float(ls_result.optimality) if success else None

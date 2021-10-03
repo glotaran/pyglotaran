@@ -15,17 +15,17 @@ def test_parameter_history():
 
     assert history.parameter_labels == ["1", "2"]
 
-    assert history.number_records == 1
+    assert history.number_of_records == 1
     assert all(history.get_parameters(0) == [1, 4])
 
     history.append(group1)
 
-    assert history.number_records == 2
+    assert history.number_of_records == 2
     assert all(history.get_parameters(1) == [2, 5])
 
     history.append(group2)
 
-    assert history.number_records == 3
+    assert history.number_of_records == 3
     assert all(history.get_parameters(2) == [3, 6])
 
     df = history.to_dataframe()
