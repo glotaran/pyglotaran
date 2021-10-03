@@ -3,6 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import replace
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import cast
 
 import numpy as np
 import xarray as xr
@@ -21,6 +25,15 @@ from glotaran.project.dataclasses import exclude_from_dict_field
 from glotaran.project.dataclasses import file_representation_field
 from glotaran.project.scheme import Scheme
 from glotaran.utils.ipython import MarkdownStr
+
+
+class IncompleteResultError(Exception):
+    """Exception raised im mandator argument to create a result are missing.
+
+    Since some mandatory fields of result can be either created from file or by
+    passing a class instance the file and instance initialization aren't allowed
+    to both be None at the same time, but each is allowed to be ``None`` by its own.
+    """
 
 
 @dataclass
@@ -42,27 +55,27 @@ class Result:
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
 
-    scheme: Scheme = exclude_from_dict_field(None)
+    scheme: Scheme = cast(Scheme, exclude_from_dict_field(None))
     scheme_file: str | None = file_representation_field("scheme", load_scheme, None)
 
-    initial_parameters: ParameterGroup = exclude_from_dict_field(None)
+    initial_parameters: ParameterGroup = cast(ParameterGroup, exclude_from_dict_field(None))
     initial_parameters_file: str | None = file_representation_field(
         "initial_parameters", load_parameters, None
     )
 
-    optimized_parameters: ParameterGroup = exclude_from_dict_field(None)
+    optimized_parameters: ParameterGroup = cast(ParameterGroup, exclude_from_dict_field(None))
     """The optimized parameters, organized in a :class:`ParameterGroup`"""
     optimized_parameters_file: str | None = file_representation_field(
         "optimized_parameters", load_parameters, None
     )
 
-    parameter_history: ParameterHistory = exclude_from_dict_field(None)
+    parameter_history: ParameterHistory = cast(ParameterHistory, exclude_from_dict_field(None))
     """The parameter history."""
     parameter_history_file: str | None = file_representation_field(
         "parameter_history", ParameterHistory.from_csv, None
     )
 
-    data: dict[str, xr.Dataset] = exclude_from_dict_field(None)
+    data: dict[str, xr.Dataset] = cast(Dict[str, xr.Dataset], exclude_from_dict_field(None))
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
     Notes
@@ -118,10 +131,43 @@ class Result:
     """
 
     def __post_init__(self):
-        """Overwrite of ``__post_init__``."""
+        """Validate fields and cast attributes to correct type."""
+        self._check_mantatory_fields()
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
             self.covariance_matrix = np.array(self.covariance_matrix)
+
+    def _check_mantatory_fields(self):
+        """Check that required fields which can be set from file are not ``None``.
+
+        Raises
+        ------
+        IncompleteResultError
+            If any mandatory field and its file representation is ``None``.
+        """
+        mandatory_fields = [
+            ("scheme", ""),
+            ("initial_parameters", ""),
+            ("optimized_parameters", ""),
+            ("parameter_history", ""),
+            ("data", "s"),
+        ]
+        missing_fields = [
+            (mandatory_field, file_post_fix)
+            for mandatory_field, file_post_fix in mandatory_fields
+            if (
+                getattr(self, mandatory_field) is None
+                and getattr(self, f"{mandatory_field}_file{file_post_fix}") is None
+            )
+        ]
+        if len(missing_fields) != 0:
+            error_message = "Result is missing mandatory fields:\n"
+            for missing_field, file_post_fix in missing_fields:
+                error_message += (
+                    f" - Required filed {missing_field!r} is missing!\n"
+                    f"   Set either {missing_field!r} or '{missing_field}_file{file_post_fix}'."
+                )
+            raise IncompleteResultError(error_message)
 
     @property
     def model(self) -> Model:
@@ -167,7 +213,7 @@ class Result:
         MarkdownStr : str
             The scheme as markdown string.
         """
-        general_table_rows = [
+        general_table_rows: list[list[Any]] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
             ["Number of variables", self.number_of_variables],
             ["Number of datapoints", self.number_of_data_points],
@@ -238,11 +284,19 @@ class Result:
         ----------
         path : str
             The path to the folder in which to save the result.
+
+        Returns
+        -------
+        list[str]
+            Paths to all the saved files.
         """
-        save_result(result_path=path, result=self, format_name="folder", allow_overwrite=True)
+        return cast(
+            List[str],
+            save_result(result_path=path, result=self, format_name="folder", allow_overwrite=True),
+        )
 
     def recreate(self) -> Result:
-        """Recrate a resulf from the initial parameters.
+        """Recrate a result from the initial parameters.
 
         Returns
         -------

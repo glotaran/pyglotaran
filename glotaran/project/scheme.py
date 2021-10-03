@@ -34,9 +34,9 @@ class Scheme:
     model: Model = exclude_from_dict_field()
     parameters: ParameterGroup = exclude_from_dict_field()
     data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()
-    model_file: str = file_representation_field("model", load_model, default=None)
-    parameters_file: str = file_representation_field("parameters", load_parameters, None)
-    data_files: dict[str, str] = file_representation_field("data", load_dataset, None)
+    model_file: str | None = file_representation_field("model", load_model, default=None)
+    parameters_file: str | None = file_representation_field("parameters", load_parameters, None)
+    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
     group: bool | None = None
     group_tolerance: float = 0.0
     non_negative_least_squares: bool = False
@@ -145,7 +145,7 @@ class Scheme:
             the dataset as value.
         """
         return {
-            dataset_name: self.model.dataset[dataset_name]
+            dataset_name: self.model.dataset[dataset_name]  # type:ignore[attr-defined]
             .fill(self.model, self.parameters)
             .set_data(self.data[dataset_name])
             .get_model_dimension()
@@ -163,7 +163,7 @@ class Scheme:
             the dataset as value.
         """
         return {
-            dataset_name: self.model.dataset[dataset_name]
+            dataset_name: self.model.dataset[dataset_name]  # type:ignore[attr-defined]
             .fill(self.model, self.parameters)
             .set_data(self.data[dataset_name])
             .get_global_dimension()

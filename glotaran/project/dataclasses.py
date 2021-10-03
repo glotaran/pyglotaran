@@ -3,50 +3,60 @@ from __future__ import annotations
 
 import dataclasses
 from pathlib import Path
-from typing import Any
-from typing import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+    from typing import TypeVar
+
+    DefaultType = TypeVar("DefaultType")
 
 
-def exclude_from_dict_field(default: Any = dataclasses.MISSING) -> dataclasses.Field:
+def exclude_from_dict_field(
+    default: DefaultType = dataclasses.MISSING,  # type:ignore[assignment]
+) -> DefaultType:
     """Create a dataclass field with which will be excluded from ``asdict``.
 
     Parameters
     ----------
-    default : Any
+    default : DefaultType
         The default value of the field.
 
     Returns
     -------
-    dataclasses.Field
+    DefaultType
         The created field.
     """
     return dataclasses.field(default=default, metadata={"exclude_from_dict": True})
 
 
 def file_representation_field(
-    target: str, loader: Callable[[str], Any], default: Any = dataclasses.MISSING
-) -> dataclasses.Field:
+    target: str,
+    loader: Callable[[str], Any],
+    default: DefaultType = dataclasses.MISSING,  # type:ignore[assignment]
+) -> DefaultType:
     """Create a dataclass field with target and loader as metadata.
 
     Parameters
     ----------
     target : str
         The name of the represented field.
-    loader : Callable[[str]
-        A function to load the target field froma file.
-    default : Any
+    loader : Callable[[str], Any]
+        A function to load the target field from a file.
+    default : DefaultType
         The default value of the field.
 
     Returns
     -------
-    dataclasses.Field
+    DefaultType
         The created field.
     """
     return dataclasses.field(default=default, metadata={"target": target, "loader": loader})
 
 
 def asdict(dataclass: object) -> dict[str, Any]:
-    """Create a dictinory containing all dfields of the dataclass.
+    """Create a dictionary containing all fields of the dataclass.
 
     Parameters
     ----------
@@ -71,14 +81,14 @@ def asdict(dataclass: object) -> dict[str, Any]:
     return dataclass_dict
 
 
-def fromdict(dataclass_type: type, dataclass_dict: dict, folder: Path = None) -> object:
+def fromdict(dataclass_type: type, dataclass_dict: dict[str, Any], folder: Path = None) -> object:
     """Create a dataclass instance from a dict and loads all file represented fields.
 
     Parameters
     ----------
     dataclass_type : type
         A dataclass type.
-    dataclass_dict : dict
+    dataclass_dict : dict[str, Any]
         A dict for instancing the the dataclass.
     folder : Path
         The root folder for file paths. If ``None`` file paths are consider absolute.

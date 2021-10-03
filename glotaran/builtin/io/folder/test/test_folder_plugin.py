@@ -23,7 +23,9 @@ def test_save_result_folder(
     """Check all files exist."""
 
     result_dir = tmp_path / "testresult"
-    save_result(result_path=str(result_dir), format_name=format_name, result=dummy_result)
+    save_paths = save_result(
+        result_path=str(result_dir), format_name=format_name, result=dummy_result
+    )
 
     wanted_files = [
         "result.md",
@@ -38,6 +40,7 @@ def test_save_result_folder(
     ]
     for wanted in wanted_files:
         assert (result_dir / wanted).exists()
+        assert (result_dir / wanted).as_posix() in save_paths
 
 
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))

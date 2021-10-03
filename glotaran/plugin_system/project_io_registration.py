@@ -411,7 +411,7 @@ def save_result(
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
-) -> None:
+) -> list[str] | None:
     """Write a :class:`Result` instance to a spec file.
 
     Parameters
@@ -428,12 +428,17 @@ def save_result(
     **kwargs : Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
+
+    Returns
+    -------
+    list[str] | None
+        List of file paths which were saved.
     """
     protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
     io = get_project_io(
         format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    io.save_result(  # type: ignore[call-arg]
+    return io.save_result(  # type: ignore[call-arg]
         result_path=str(result_path),
         result=result,
         **kwargs,
