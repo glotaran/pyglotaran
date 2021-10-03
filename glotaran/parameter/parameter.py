@@ -412,10 +412,7 @@ class Parameter(_SupportsArray):
         self.value = np.exp(value) if self.non_negative else value
 
     def __getstate__(self):  # noqa D400
-        """Get state for pickle.
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """Get state for pickle."""
         return (
             self.label,
             self.full_label,
@@ -429,10 +426,7 @@ class Parameter(_SupportsArray):
         )
 
     def __setstate__(self, state):  # noqa D400
-        """Set state from pickle.
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """Set state from pickle."""
         (
             self.label,
             self.full_label,
@@ -446,27 +440,18 @@ class Parameter(_SupportsArray):
         ) = state
 
     def __repr__(self):  # noqa D400
-        """Representation used by repl and tracebacks.
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """Representation used by repl and tracebacks."""
         return (
             f"{type(self).__name__}(label={self.label!r}, value={self.value!r},"
             f" expression={self.expression!r}, vary={self.vary!r})"
         )
 
     def __array__(self):  # noqa D400
-        """array
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """array"""
         return np.array(float(self._value), dtype=float)
 
     def __str__(self):  # noqa D400
-        """Representation used by print and str.
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """Representation used by print and str."""
         return (
             f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
             f" {self.minimum}, _Max_: {self.maximum}, _Vary_: {self.vary},"
@@ -474,199 +459,115 @@ class Parameter(_SupportsArray):
         )
 
     def __abs__(self):  # noqa D400
-        """abs
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """abs"""
         return abs(self._value)
 
     def __neg__(self):  # noqa D400
-        """neg
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """neg"""
         return -self._value
 
     def __pos__(self):  # noqa D400
-        """positive
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """positive"""
         return +self._value
 
     def __int__(self):  # noqa D400
-        """int
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """int"""
         return int(self._value)
 
     def __float__(self):  # noqa D400
-        """float
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """float"""
         return float(self._value)
 
     def __trunc__(self):  # noqa D400
-        """trunc
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """trunc"""
         return self._value.__trunc__()
 
     def __add__(self, other):  # noqa D400
-        """+
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """+"""
         return self._value + other
 
     def __sub__(self, other):  # noqa D400
-        """-
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """-"""
         return self._value - other
 
     def __truediv__(self, other):  # noqa D400
-        """/
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """/"""
         return self._value / other
 
     def __floordiv__(self, other):  # noqa D400
-        """//
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """//"""
         return self._value // other
 
     def __divmod__(self, other):  # noqa D400
-        """divmod
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """divmod"""
         return divmod(self._value, other)
 
     def __mod__(self, other):  # noqa D400
-        """%
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """%"""
         return self._value % other
 
     def __mul__(self, other):  # noqa D400
-        """*
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """*"""
         return self._value * other
 
     def __pow__(self, other):  # noqa D400
-        """**
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """**"""
         return self._value ** other
 
     def __gt__(self, other):  # noqa D400
-        """>
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """>"""
         return self._value > other
 
     def __ge__(self, other):  # noqa D400
-        """>=
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """>="""
         return self._value >= other
 
     def __le__(self, other):  # noqa D400
-        """<=
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """<="""
         return self._value <= other
 
     def __lt__(self, other):  # noqa D400
-        """<
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """<"""
         return self._value < other
 
     def __eq__(self, other):  # noqa D400
-        """==
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """=="""
         return self._value == other
 
     def __ne__(self, other):  # noqa D400
-        """!=
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """!="""
         return self._value != other
 
     def __radd__(self, other):  # noqa D400
-        """+ (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """+ (right)"""
         return other + self._value
 
     def __rtruediv__(self, other):  # noqa D400
-        """/ (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """/ (right)"""
         return other / self._value
 
     def __rdivmod__(self, other):  # noqa D400
-        """divmod (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """divmod (right)"""
         return divmod(other, self._value)
 
     def __rfloordiv__(self, other):  # noqa D400
-        """// (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """// (right)"""
         return other // self._value
 
     def __rmod__(self, other):  # noqa D400
-        """% (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """% (right)"""
         return other % self._value
 
     def __rmul__(self, other):  # noqa D400
-        """* (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """* (right)"""
         return other * self._value
 
     def __rpow__(self, other):  # noqa D400
-        """** (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """** (right)"""
         return other ** self._value
 
     def __rsub__(self, other):  # noqa D400
-        """- (right)
-        .. # noqa: DAR101
-        .. # noqa: DAR201
-        """
+        """- (right)"""
         return other - self._value
 
 
