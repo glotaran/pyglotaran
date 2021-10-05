@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from glotaran.project.dataclasses import asdict
-from glotaran.project.dataclasses import exclude_from_dict_field
-from glotaran.project.dataclasses import file_representation_field
-from glotaran.project.dataclasses import fromdict
+from glotaran.project.dataclass_helpers import asdict
+from glotaran.project.dataclass_helpers import exclude_from_dict_field
+from glotaran.project.dataclass_helpers import file_representation_field
+from glotaran.project.dataclass_helpers import fromdict
 
 
 def dummy_loader(file: str) -> int:

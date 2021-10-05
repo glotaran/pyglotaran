@@ -21,8 +21,8 @@ from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
-from glotaran.project.dataclasses import exclude_from_dict_field
-from glotaran.project.dataclasses import file_representation_field
+from glotaran.project.dataclass_helpers import exclude_from_dict_field
+from glotaran.project.dataclass_helpers import file_representation_field
 from glotaran.project.scheme import Scheme
 from glotaran.utils.ipython import MarkdownStr
 

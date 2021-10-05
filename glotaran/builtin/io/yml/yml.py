@@ -12,8 +12,8 @@ from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Result
 from glotaran.project import Scheme
-from glotaran.project.dataclasses import asdict
-from glotaran.project.dataclasses import fromdict
+from glotaran.project.dataclass_helpers import asdict
+from glotaran.project.dataclass_helpers import fromdict
 from glotaran.utils.sanitize import sanitize_yaml
 
 

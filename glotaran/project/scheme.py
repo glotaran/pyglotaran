@@ -10,8 +10,8 @@ from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.io import load_scheme
-from glotaran.project.dataclasses import exclude_from_dict_field
-from glotaran.project.dataclasses import file_representation_field
+from glotaran.project.dataclass_helpers import exclude_from_dict_field
+from glotaran.project.dataclass_helpers import file_representation_field
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
