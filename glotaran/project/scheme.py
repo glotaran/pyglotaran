@@ -130,7 +130,7 @@ class Scheme:
         """
         return str(self.markdown())
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Representation used by print and str."""
         return str(self.markdown())
 

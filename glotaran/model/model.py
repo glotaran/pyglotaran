@@ -406,5 +406,5 @@ class Model:
         """Special method used by ``ipython`` to render markdown."""
         return str(self.markdown(base_heading_level=3))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.markdown())

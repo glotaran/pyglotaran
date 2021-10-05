@@ -450,7 +450,7 @@ class Parameter(_SupportsArray):
         """array"""
         return np.array(float(self._value), dtype=float)
 
-    def __str__(self):  # noqa D400
+    def __str__(self) -> str:  # noqa D400
         """Representation used by print and str."""
         return (
             f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"

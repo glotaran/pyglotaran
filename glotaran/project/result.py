@@ -273,7 +273,7 @@ class Result:
         """
         return str(self.markdown(base_heading_level=3))
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Overwrite of ``__str__``."""
         return str(self.markdown(with_model=False))
 
