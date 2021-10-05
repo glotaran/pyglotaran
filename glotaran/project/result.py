@@ -28,10 +28,10 @@ from glotaran.utils.ipython import MarkdownStr
 
 
 class IncompleteResultError(Exception):
-    """Exception raised im mandator argument to create a result are missing.
+    """Exception raised if mandatory arguments to create a result are missing.
 
     Since some mandatory fields of result can be either created from file or by
-    passing a class instance the file and instance initialization aren't allowed
+    passing a class instance, the file and instance initialization aren't allowed
     to both be None at the same time, but each is allowed to be ``None`` by its own.
     """
 
@@ -132,12 +132,12 @@ class Result:
 
     def __post_init__(self):
         """Validate fields and cast attributes to correct type."""
-        self._check_mantatory_fields()
+        self._check_mandatory_fields()
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
             self.covariance_matrix = np.array(self.covariance_matrix)
 
-    def _check_mantatory_fields(self):
+    def _check_mandatory_fields(self):
         """Check that required fields which can be set from file are not ``None``.
 
         Raises
