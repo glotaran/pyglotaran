@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.problem_grouped import GroupedProblem
-from glotaran.analysis.problem_ungrouped import UngroupedProblem
+from glotaran.analysis.optimization_group import OptimizationGroup
 from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import megacomplex
@@ -55,9 +54,10 @@ class BenchmarkMegacomplex(Megacomplex):
 
 
 @monkeypatch_plugin_registry(test_megacomplex={"benchmark": BenchmarkMegacomplex})
-def setup_model(index_dependent):
+def setup_model(index_dependent, link_clp):
     model_dict = {
         "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
+        "dataset_groups": {"default": {"link_clp": link_clp}},
         "dataset": {
             "dataset1": {"megacomplex": ["m1"]},
             "dataset2": {"megacomplex": ["m1"]},
@@ -83,90 +83,93 @@ def setup_scheme(model):
     )
 
 
-def setup_problem(scheme, grouped):
-    return GroupedProblem(scheme) if grouped else UngroupedProblem(scheme)
+def setup_optimization_group(scheme):
+    return OptimizationGroup(scheme, scheme.model.get_dataset_groups()["default"])
 
 
 def test_benchmark_bag_creation(benchmark):
 
-    model = setup_model(False)
+    model = setup_model(False, True)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    problem = setup_problem(scheme, True)
+    optimization_group = setup_optimization_group(scheme)
 
-    benchmark(problem.init_bag)
+    benchmark(optimization_group._calculator.init_bag)
 
 
-@pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
-def test_benchmark_calculate_matrix(benchmark, grouped, index_dependent):
+def test_benchmark_calculate_matrix(benchmark, link_clp, index_dependent):
 
-    model = setup_model(index_dependent)
+    model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    problem = setup_problem(scheme, grouped)
+    optimization_group = setup_optimization_group(scheme)
 
-    if grouped:
-        problem.init_bag()
+    if link_clp:
+        optimization_group._calculator.init_bag()
 
-    benchmark(problem.calculate_matrices)
+    benchmark(optimization_group._calculator.calculate_matrices)
 
 
-@pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
-def test_benchmark_calculate_residual(benchmark, grouped, index_dependent):
+def test_benchmark_calculate_residual(benchmark, link_clp, index_dependent):
 
-    model = setup_model(index_dependent)
+    model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    problem = setup_problem(scheme, grouped)
+    optimization_group = setup_optimization_group(scheme)
 
-    if grouped:
-        problem.init_bag()
-    problem.calculate_matrices()
+    if link_clp:
+        optimization_group._calculator.init_bag()
 
-    benchmark(problem.calculate_residual)
+    optimization_group._calculator.calculate_matrices()
+
+    benchmark(optimization_group._calculator.calculate_residual)
 
 
-@pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
-def test_benchmark_calculate_result_data(benchmark, grouped, index_dependent):
+def test_benchmark_calculate_result_data(benchmark, link_clp, index_dependent):
 
-    model = setup_model(index_dependent)
+    model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    problem = setup_problem(scheme, grouped)
+    optimization_group = setup_optimization_group(scheme)
 
-    if grouped:
-        problem.init_bag()
-    problem.calculate_matrices()
-    problem.calculate_residual()
+    if link_clp:
+        optimization_group._calculator.init_bag()
 
-    benchmark(problem.create_result_data)
+    optimization_group._calculator.calculate_matrices()
+
+    optimization_group._calculator.calculate_residual()
+
+    benchmark(optimization_group.create_result_data)
 
 
 #  @pytest.mark.skip(reason="To time consuming atm.")
-@pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
-def test_benchmark_optimize_20_runs(benchmark, grouped, index_dependent):
+def test_benchmark_optimize_20_runs(benchmark, link_clp, index_dependent):
 
-    model = setup_model(index_dependent)
+    model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    problem = setup_problem(scheme, grouped)
+    optimization_group = setup_optimization_group(scheme)
 
     @benchmark
     def run():
-        if grouped:
-            problem.init_bag()
+        if link_clp:
+            optimization_group._calculator.init_bag()
 
         for _ in range(20):
-            problem.reset()
-            problem.full_penalty
+            optimization_group.reset()
+            optimization_group.full_penalty
 
-        problem.create_result_data()
+        optimization_group.create_result_data()

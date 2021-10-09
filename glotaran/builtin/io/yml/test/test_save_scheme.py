@@ -19,11 +19,10 @@ if TYPE_CHECKING:
 
 
 want = """add_svd: true
+clp_link_tolerance: 0.0
 data_files:
   dataset_1: d.nc
 ftol: 1.0e-08
-group: null
-group_tolerance: 0.0
 gtol: 1.0e-08
 maximum_number_function_evaluations: null
 model_file: m.yml

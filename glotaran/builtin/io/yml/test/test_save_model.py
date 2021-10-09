@@ -12,10 +12,15 @@ if TYPE_CHECKING:
 
 want = """dataset:
   dataset1:
+    group: default
     initial_concentration: j1
     irf: irf1
     megacomplex:
     - m1
+dataset_groups:
+  default:
+    link_clp: null
+    residual_function: variable_projection
 default-megacomplex: decay
 initial_concentration:
   j1:

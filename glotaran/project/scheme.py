@@ -1,7 +1,6 @@
 """The module for :class:``Scheme``."""
 from __future__ import annotations
 
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -37,8 +36,7 @@ class Scheme:
     model_file: str | None = file_representation_field("model", load_model, default=None)
     parameters_file: str | None = file_representation_field("parameters", load_parameters, None)
     data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
-    group: bool | None = None
-    group_tolerance: float = 0.0
+    clp_link_tolerance: float = 0.0
     non_negative_least_squares: bool = False
     maximum_number_function_evaluations: int | None = None
     add_svd: bool = True
@@ -101,21 +99,6 @@ class Scheme:
         markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
 
         return model_markdown_str + MarkdownStr(markdown_str)
-
-    def is_grouped(self) -> bool:
-        """Return whether the scheme should be grouped.
-
-        Returns
-        -------
-        bool
-            Weather the scheme should be grouped.
-        """
-        if self.group is not None and not self.group:
-            return False
-        is_groupable = self.model.is_groupable(self.parameters, self.data)
-        if not is_groupable and self.group is not None:
-            warnings.warn("Cannot group scheme. Continuing ungrouped.")
-        return is_groupable
 
     def _repr_markdown_(self) -> str:
         """Return a markdown representation str.
