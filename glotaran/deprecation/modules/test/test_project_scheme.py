@@ -40,7 +40,6 @@ def test_Scheme_from_yaml_file_method(tmp_path: Path):
         f"""
         model_file: {model_path}
         parameters_file: {parameter_path}
-        non_negative_least_squares: True
         maximum_number_function_evaluations: 42
         data_files:
             dataset1: {dataset_path}"""

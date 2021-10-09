@@ -245,23 +245,29 @@ def test_equal_area_penalties(debug=False):
 
     # %% Optimizing model without penalty (np)
 
+    model_np.dataset_group_models["default"].method = (
+        "non_negative_least_squares" if optim_spec.nnls else "variable_projection"
+    )
+
     dataset = {"dataset1": data}
     scheme_np = Scheme(
         model=model_np,
         parameters=param_np,
         data=dataset,
-        non_negative_least_squares=optim_spec.nnls,
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_np = optimize(scheme_np)
     print(result_np)
+
+    model_wp.dataset_group_models["default"].method = (
+        "non_negative_least_squares" if optim_spec.nnls else "variable_projection"
+    )
 
     # %% Optimizing model with penalty fixed inputs (wp_ifix)
     scheme_wp = Scheme(
         model=model_wp,
         parameters=param_wp,
         data=dataset,
-        non_negative_least_squares=optim_spec.nnls,
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_wp = optimize(scheme_wp)

@@ -26,7 +26,6 @@ ftol: 1.0e-08
 gtol: 1.0e-08
 maximum_number_function_evaluations: null
 model_file: m.yml
-non_negative_least_squares: false
 optimization_method: TrustRegionReflection
 parameters_file: p.csv
 result_path: null

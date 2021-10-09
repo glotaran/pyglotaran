@@ -34,7 +34,6 @@ def mock_scheme(tmp_path: Path) -> Scheme:
     scheme_yml_str = f"""
     model_file: {model_path}
     parameters_file: {parameter_path}
-    non_negative_least_squares: True
     maximum_number_function_evaluations: 42
     data_files:
         dataset1: {dataset_path}
@@ -55,7 +54,6 @@ def test_scheme(mock_scheme: Scheme):
     assert mock_scheme.parameters.get("1") == 1.0
     assert mock_scheme.parameters.get("2") == 67.0
 
-    assert mock_scheme.non_negative_least_squares
     assert mock_scheme.maximum_number_function_evaluations == 42
 
     assert "dataset1" in mock_scheme.data
