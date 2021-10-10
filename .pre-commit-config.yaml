@@ -1,3 +1,6 @@
+ci:
+  skip: [interrogate]
+
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
