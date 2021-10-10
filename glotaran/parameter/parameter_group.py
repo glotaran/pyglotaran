@@ -518,7 +518,7 @@ class ParameterGroup(dict):
 
         Returns
         -------
-        str :
+        MarkdownStr :
             The markdown representation as string.
         """
         node_indentation = "  " * self.get_nr_roots()
