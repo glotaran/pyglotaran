@@ -7,7 +7,7 @@ from glotaran.io import load_model
 from glotaran.io import save_model
 
 if TYPE_CHECKING:
-    from py.path import local as TmpDir
+    from pathlib import Path
 
 
 want = """dataset:
@@ -51,15 +51,13 @@ megacomplex:
 
 
 def test_save_model(
-    tmpdir: TmpDir,
+    tmp_path: Path,
 ):
     """Check all files exist."""
 
-    model_path = tmpdir / "testmodel.yml"
+    model_path = tmp_path / "testmodel.yml"
     save_model(file_name=model_path, format_name="yml", model=model)
 
-    assert model_path.exists()
-    with open(model_path) as f:
-        got = f.read()
-        assert got == want
+    assert model_path.is_file()
+    assert model_path.read_text() == want
     assert load_model(model_path).valid()
