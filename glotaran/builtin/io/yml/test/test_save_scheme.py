@@ -15,7 +15,7 @@ from glotaran.io import save_scheme
 from glotaran.project import Scheme
 
 if TYPE_CHECKING:
-    from py.path import local as TmpDir
+    from pathlib import Path
 
 
 want = """add_svd: true
@@ -35,7 +35,7 @@ xtol: 1.0e-08
 """
 
 
-def test_save_scheme(tmpdir: TmpDir):
+def test_save_scheme(tmp_path: Path):
     scheme = Scheme(
         model,
         parameter,
@@ -44,16 +44,14 @@ def test_save_scheme(tmpdir: TmpDir):
         parameters_file="p.csv",
         data_files={"dataset_1": "d.nc"},
     )
-    save_model(model, tmpdir / "m.yml")
-    save_parameters(parameter, tmpdir / "p.csv")
-    save_dataset(dataset, tmpdir / "d.nc")
-    scheme_path = tmpdir / "testscheme.yml"
+    save_model(model, tmp_path / "m.yml")
+    save_parameters(parameter, tmp_path / "p.csv")
+    save_dataset(dataset, tmp_path / "d.nc")
+    scheme_path = tmp_path / "testscheme.yml"
     save_scheme(file_name=scheme_path, format_name="yml", scheme=scheme)
 
-    assert scheme_path.exists()
-    with open(scheme_path) as f:
-        got = f.read()
-        assert got == want
+    assert scheme_path.is_file()
+    assert scheme_path.read_text() == want
     loaded = load_scheme(scheme_path)
     print(loaded.model.validate(loaded.parameters))
     assert loaded.model.valid(loaded.parameters)

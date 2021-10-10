@@ -351,6 +351,8 @@ class Result:
         -------
         xr.Dataset :
             The dataset.
+
+
         .. # noqa: DAR401
         """
         try:

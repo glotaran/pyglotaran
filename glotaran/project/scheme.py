@@ -1,4 +1,4 @@
-"""The package for :class:``Scheme``."""
+"""The module for :class:``Scheme``."""
 from __future__ import annotations
 
 import warnings
@@ -60,8 +60,7 @@ class Scheme:
         list[str]
             A list of all problems found in the scheme's model.
         """
-        model: Model = self.model
-        return model.problem_list(self.parameters)
+        return self.model.problem_list(self.parameters)
 
     def validate(self) -> str:
         """Return a string listing all problems in the model and missing parameters.
