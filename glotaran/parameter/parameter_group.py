@@ -268,7 +268,7 @@ class ParameterGroup(dict):
         Raises
         ------
         TypeError
-            Raised if the group is not an instance of :class:`Parameter`.
+            If ``parameter`` or any item of it is not an instance of :class:`Parameter`.
         """
         if not isinstance(parameter, list):
             parameter = [parameter]
