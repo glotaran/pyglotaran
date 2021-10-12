@@ -6,6 +6,7 @@ import numpy as np
 from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
+from glotaran import __version__ as glotaran_version
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem_grouped import GroupedProblem
 from glotaran.analysis.problem_ungrouped import UngroupedProblem
@@ -91,23 +92,21 @@ def _create_result(
     success = ls_result is not None
 
     number_of_function_evaluation = (
-        ls_result.nfev if ls_result is not None else len(problem.parameter_history)
+        ls_result.nfev if success else problem.parameter_history.number_of_records
     )
     number_of_jacobian_evaluation = ls_result.njev if success else None
-    optimality = ls_result.optimality if success else None
+    optimality = float(ls_result.optimality) if success else None
     number_of_data_points = ls_result.fun.size if success else None
     number_of_variables = ls_result.x.size if success else None
     degrees_of_freedom = number_of_data_points - number_of_variables if success else None
-    chi_square = np.sum(ls_result.fun ** 2) if success else None
+    chi_square = float(np.sum(ls_result.fun ** 2)) if success else None
     reduced_chi_square = chi_square / degrees_of_freedom if success else None
-    root_mean_square_error = np.sqrt(reduced_chi_square) if success else None
+    root_mean_square_error = float(np.sqrt(reduced_chi_square)) if success else None
     jacobian = ls_result.jac if success else None
 
     if success:
         problem.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
-    problem.reset()
-    history_index = None if success else -2
-    data = problem.create_result_data(history_index=history_index)
+    data = problem.create_result_data(success)
     # the optimized parameters are those of the last run if the optimization has crashed
     parameters = problem.parameters
     covariance_matrix = None
@@ -125,10 +124,12 @@ def _create_result(
         additional_penalty=problem.additional_penalty,
         cost=problem.cost,
         data=data,
+        glotaran_version=glotaran_version,
         free_parameter_labels=free_parameter_labels,
         number_of_function_evaluations=number_of_function_evaluation,
         initial_parameters=problem.scheme.parameters,
         optimized_parameters=parameters,
+        parameter_history=problem.parameter_history,
         scheme=problem.scheme,
         success=success,
         termination_reason=termination_reason,

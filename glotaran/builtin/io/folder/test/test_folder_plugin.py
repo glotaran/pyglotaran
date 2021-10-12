@@ -11,38 +11,47 @@ from glotaran.project.test.test_result import dummy_result  # noqa: F401
 if TYPE_CHECKING:
     from typing import Literal
 
-    from py.path import local as TmpDir
-
     from glotaran.project.result import Result
 
 
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder(
-    tmpdir: TmpDir,
+    tmp_path: Path,
     dummy_result: Result,  # noqa: F811
     format_name: Literal["folder", "legacy"],
 ):
     """Check all files exist."""
 
-    result_dir = Path(tmpdir / "testresult")
-    save_result(result_path=str(result_dir), format_name=format_name, result=dummy_result)
+    result_dir = tmp_path / "testresult"
+    save_paths = save_result(
+        result_path=str(result_dir), format_name=format_name, result=dummy_result
+    )
 
-    assert (result_dir / "result.md").exists()
-    assert (result_dir / "optimized_parameters.csv").exists()
-    assert (result_dir / "dataset1.nc").exists()
-    assert (result_dir / "dataset2.nc").exists()
-    assert (result_dir / "dataset3.nc").exists()
+    wanted_files = [
+        "result.md",
+        "scheme.yml",
+        "model.yml",
+        "initial_parameters.csv",
+        "optimized_parameters.csv",
+        "parameter_history.csv",
+        "dataset1.nc",
+        "dataset2.nc",
+        "dataset3.nc",
+    ]
+    for wanted in wanted_files:
+        assert (result_dir / wanted).exists()
+        assert (result_dir / wanted).as_posix() in save_paths
 
 
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder_error_path_is_file(
-    tmpdir: TmpDir,
+    tmp_path: Path,
     dummy_result: Result,  # noqa: F811
     format_name: Literal["folder", "legacy"],
 ):
     """Raise error if result_path is a file without extension and overwrite is true."""
 
-    result_dir = Path(tmpdir / "testresult")
+    result_dir = tmp_path / "testresult"
     result_dir.touch()
 
     with pytest.raises(ValueError, match="The path '.+?' is not a directory."):

@@ -37,6 +37,18 @@ class MockItem:
     pass
 
 
+@model_item(
+    properties={
+        "param": Parameter,
+        "param_list": List[Parameter],
+        "param_dict": {"type": Dict[Tuple[str, str], Parameter]},
+        "number": int,
+    },
+)
+class MockItemSimple:
+    pass
+
+
 @model_item(has_label=False)
 class MockItemNoLabel:
     pass
@@ -79,8 +91,13 @@ class MockMegacomplex6(Megacomplex):
     pass
 
 
+@megacomplex(dimension="model", model_items={"test_item_simple": MockItemSimple})
+class MockMegacomplex7(Megacomplex):
+    pass
+
+
 @pytest.fixture
-def test_model():
+def test_model_dict():
     model_dict = {
         "megacomplex": {
             "m1": {"test_item1": "t2"},
@@ -128,8 +145,13 @@ def test_model():
         },
     }
     model_dict["test_item_dataset"] = model_dict["test_item1"]
+    return model_dict
+
+
+@pytest.fixture
+def test_model(test_model_dict):
     return Model.from_dict(
-        model_dict,
+        test_model_dict,
         megacomplex_types={
             "type1": MockMegacomplex1,
             "type5": MockMegacomplex5,
@@ -352,6 +374,37 @@ def test_fill(test_model: Model, parameter: ParameterGroup):
     assert t.param_list == [3]
     assert t.default_item == 7
     assert t.complex == {}
+
+
+def test_model_as_dict():
+    model_dict = {
+        "default-megacomplex": "type7",
+        "megacomplex": {
+            "m1": {"test_item_simple": "t2", "dimension": "model"},
+        },
+        "test_item_simple": {
+            "t1": {
+                "param": "foo",
+                "param_list": ["bar", "baz"],
+                "param_dict": {("s1", "s2"): "baz"},
+                "number": 21,
+            },
+        },
+        "dataset": {
+            "dataset1": {
+                "megacomplex": ["m1"],
+                "scale": "scale_1",
+            },
+        },
+    }
+    model = Model.from_dict(
+        model_dict,
+        megacomplex_types={
+            "type7": MockMegacomplex7,
+        },
+    )
+    as_model_dict = model.as_dict()
+    assert as_model_dict == model_dict
 
 
 def test_model_markdown_base_heading_level(test_model: Model):

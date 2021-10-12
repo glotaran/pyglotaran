@@ -201,6 +201,7 @@ def save_dataset(
     file_name: str | PathLike[str],
     format_name: str = None,
     *,
+    data_filters: list[str] | None = None,
     allow_overwrite: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -214,6 +215,8 @@ def save_dataset(
         File to write the data to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
+    data_filters : list[str] | None
+        Optional list of items in the dataset to be saved.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
     **kwargs : Any

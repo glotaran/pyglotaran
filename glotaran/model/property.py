@@ -1,9 +1,18 @@
 """The model property class."""
+from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Union
 
 from glotaran.model.util import wrap_func_as_method
 from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
+
+if TYPE_CHECKING:
+    from glotaran.model.model import Model
 
 
 class ModelProperty(property):
@@ -13,7 +22,7 @@ class ModelProperty(property):
         self._allow_none = allow_none
         self._determine_if_parameter(prop_type)
 
-        self._type = prop_type if not self._is_parameter else typing.Union[str, prop_type]
+        self._type = prop_type if not self._is_parameter else Union[str, prop_type]
 
         @wrap_func_as_method(cls, name=name)
         def setter(that_self, value: self._type):
@@ -45,10 +54,21 @@ class ModelProperty(property):
         return self._allow_none
 
     @property
-    def property_type(self) -> typing.Type:
+    def property_type(self) -> type:
         return self._type
 
-    def validate(self, value, model, parameters=None) -> typing.List[str]:
+    def as_dict_value(self, value):
+        if value is None:
+            return None
+        elif self._is_parameter_value:
+            return value.full_label
+        elif self._is_parameter_list:
+            return [v.full_label for v in value]
+        elif self._is_parameter_dict:
+            return {k: v.full_label for k, v in value.items()}
+        return value
+
+    def validate(self, value: Any, model: Model, parameters: ParameterGroup = None) -> list[str]:
 
         if value is None and self.allow_none:
             return []
@@ -88,7 +108,7 @@ class ModelProperty(property):
 
         return missing_model + missing_parameters
 
-    def fill(self, value, model, parameter):
+    def fill(self, value: Any, model: Model, parameter: ParameterGroup) -> Any:
 
         if value is None:
             return None
@@ -119,16 +139,27 @@ class ModelProperty(property):
 
         return value
 
+    def get_parameters(self, value: Any) -> list[str]:
+        if value is None:
+            return []
+        elif self._is_parameter_value:
+            return [value.full_label]
+        elif self._is_parameter_list:
+            return [v.full_label for v in value]
+        elif self._is_parameter_dict:
+            return [v.full_label for v in value.values()]
+        return []
+
     def _determine_if_parameter(self, type):
         self._is_parameter_value = type is Parameter
         self._is_parameter_list = (
             hasattr(type, "__origin__")
-            and issubclass(type.__origin__, typing.List)
+            and issubclass(type.__origin__, List)
             and type.__args__[0] is Parameter
         )
         self._is_parameter_dict = (
             hasattr(type, "__origin__")
-            and issubclass(type.__origin__, typing.Dict)
+            and issubclass(type.__origin__, Dict)
             and type.__args__[1] is Parameter
         )
         self._is_parameter = (

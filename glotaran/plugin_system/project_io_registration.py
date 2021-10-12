@@ -8,6 +8,7 @@ and causing an [override] type error in the plugins implementation.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
@@ -52,6 +53,19 @@ if TYPE_CHECKING:
         Literal["save_result"],
     )
 
+
+@dataclass
+class SavingOptions:
+    """A collection of options for result saving."""
+
+    data_filter: list[str] | None = None
+    data_format: Literal["nc"] = "nc"
+    parameter_format: Literal["csv"] = "csv"
+    report: bool = True
+
+
+SAVING_OPTIONS_DEFAULT = SavingOptions()
+SAVING_OPTIONS_MINIMAL = SavingOptions(data_filter=["fitted_data", "residual"], report=False)
 
 PROJECT_IO_METHODS = (
     "load_model",
@@ -397,7 +411,7 @@ def save_result(
     *,
     allow_overwrite: bool = False,
     **kwargs: Any,
-) -> None:
+) -> list[str] | None:
     """Write a :class:`Result` instance to a spec file.
 
     Parameters
@@ -414,12 +428,17 @@ def save_result(
     **kwargs : Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
+
+    Returns
+    -------
+    list[str] | None
+        List of file paths which were saved.
     """
     protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
     io = get_project_io(
         format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    io.save_result(  # type: ignore[call-arg]
+    return io.save_result(  # type: ignore[call-arg]
         result_path=str(result_path),
         result=result,
         **kwargs,

@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import collections
 import itertools
+from typing import Any
 from typing import Deque
 
 import numpy as np
 import xarray as xr
 
 from glotaran.analysis.problem import GroupedProblemDescriptor
-from glotaran.analysis.problem import ParameterError
+from glotaran.analysis.problem import ParameterNotInitializedError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.problem import ProblemGroup
 from glotaran.analysis.util import CalculatedMatrix
@@ -192,7 +193,7 @@ class GroupedProblem(Problem):
 
     def calculate_matrices(self):
         if self._parameters is None:
-            raise ParameterError
+            raise ParameterNotInitializedError
         if self._index_dependent:
             self.calculate_index_dependent_matrices()
         else:
@@ -308,7 +309,7 @@ class GroupedProblem(Problem):
         problem: ProblemGroup,
         matrix: CalculatedMatrix,
         clp_labels: str,
-        index: any,
+        index: Any,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         reduced_clp_labels = matrix.clp_labels
@@ -338,7 +339,7 @@ class GroupedProblem(Problem):
         )
         return clp_labels, clps, weighted_residual, residual
 
-    def _index_independent_residual(self, problem: ProblemGroup, index: any):
+    def _index_independent_residual(self, problem: ProblemGroup, index: Any):
         matrix = self.reduced_matrices[problem.group]
         reduced_clp_labels = matrix.clp_labels
         matrix = matrix.matrix.copy()

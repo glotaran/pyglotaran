@@ -4,8 +4,6 @@ import xarray as xr
 
 from glotaran.io import DataIoInterface
 from glotaran.io import register_data_io
-from glotaran.project import SavingOptions
-from glotaran.project import default_data_filters
 
 
 @register_data_io("nc")
@@ -19,21 +17,8 @@ class NetCDFDataIo(DataIoInterface):
         dataset: xr.Dataset,
         file_name: str,
         *,
-        saving_options: SavingOptions = SavingOptions(),
+        data_filters: list[str] | None = None,
     ):
 
-        data_to_save = dataset
-
-        data_filter = (
-            saving_options.data_filter
-            if saving_options.data_filter is not None
-            else default_data_filters[saving_options.level]
-        )
-
-        if data_filter is not None:
-
-            data_to_save = xr.Dataset()
-            for item in data_filter:
-                data_to_save[item] = dataset[item]
-
-        data_to_save.to_netcdf(file_name)
+        data_to_save = dataset if data_filters is None else dataset[data_filters]
+        data_to_save.to_netcdf(file_name, mode="w")

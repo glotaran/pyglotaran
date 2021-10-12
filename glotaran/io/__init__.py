@@ -17,6 +17,9 @@ from glotaran.plugin_system.data_io_registration import register_data_io
 from glotaran.plugin_system.data_io_registration import save_dataset
 from glotaran.plugin_system.data_io_registration import set_data_plugin
 from glotaran.plugin_system.data_io_registration import show_data_io_method_help
+from glotaran.plugin_system.project_io_registration import SAVING_OPTIONS_DEFAULT
+from glotaran.plugin_system.project_io_registration import SAVING_OPTIONS_MINIMAL
+from glotaran.plugin_system.project_io_registration import SavingOptions
 from glotaran.plugin_system.project_io_registration import get_project_io_method
 from glotaran.plugin_system.project_io_registration import load_model
 from glotaran.plugin_system.project_io_registration import load_parameters

@@ -218,7 +218,7 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result: Result, result_path: str):
+    def save_result(self, result: Result, result_path: str) -> list[str] | None:
         """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters

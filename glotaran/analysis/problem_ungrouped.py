@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.problem import ParameterError
+from glotaran.analysis.problem import ParameterNotInitializedError
 from glotaran.analysis.problem import Problem
 from glotaran.analysis.util import CalculatedMatrix
 from glotaran.analysis.util import apply_weight
@@ -51,7 +51,7 @@ class UngroupedProblem(Problem):
     ]:
         """Calculates the model matrices."""
         if self._parameters is None:
-            raise ParameterError
+            raise ParameterNotInitializedError
 
         self._matrices = {}
         self._global_matrices = {}
