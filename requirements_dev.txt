@@ -4,7 +4,7 @@ wheel>=0.30.0
 
 # glotaran setup dependencies
 asteval==0.9.25
-numpy==1.21.1
+numpy==1.21.2
 scipy==1.7.0
 click==8.0.1
 rich==10.9.0
