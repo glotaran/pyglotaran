@@ -60,8 +60,6 @@ def test_scheme(mock_scheme: Scheme):
     assert mock_scheme.data["dataset1"].data.shape == (1, 3)
 
 
-# TODO: don't know how to fix
-@pytest.mark.skip("TEMPORARY")
 def test_scheme_ipython_rendering(mock_scheme: Scheme):
     """Autorendering in ipython"""
 

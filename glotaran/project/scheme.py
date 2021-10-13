@@ -93,9 +93,7 @@ class Scheme:
         markdown_str = "\n\n"
         markdown_str += "__Scheme__\n\n"
 
-        markdown_str += f"* *nnls*: {self.non_negative_least_squares}\n"
         markdown_str += f"* *nfev*: {self.maximum_number_function_evaluations}\n"
-        markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
 
         return model_markdown_str + MarkdownStr(markdown_str)
 
