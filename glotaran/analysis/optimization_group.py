@@ -79,7 +79,8 @@ class OptimizationGroup:
 
         self._model.validate(raise_exception=True)
 
-        self._prepare_data(scheme)
+        self._prepare_data(scheme, list(dataset_group.dataset_models.keys()))
+        self._dataset_labels = list(self.data.keys())
 
         link_clp = dataset_group.model.link_clp
         if link_clp is None:
@@ -204,7 +205,8 @@ class OptimizationGroup:
         """Resets all results and `DatasetModels`. Use after updating parameters."""
         self._dataset_models = {
             label: dataset_model.fill(self._model, self._parameters).set_data(self.data[label])
-            for label, dataset_model in self._model.dataset.items()
+            for label, dataset_model in self.model.dataset.items()
+            if label in self._dataset_labels
         }
         if self._overwrite_index_dependent:
             for d in self._dataset_models.values():
@@ -221,10 +223,12 @@ class OptimizationGroup:
         self._additional_penalty = None
         self._full_penalty = None
 
-    def _prepare_data(self, scheme: Scheme):
+    def _prepare_data(self, scheme: Scheme, labels: list[str]):
         self._data = {}
         self._dataset_models = {}
         for label, dataset in scheme.data.items():
+            if label not in labels:
+                continue
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 

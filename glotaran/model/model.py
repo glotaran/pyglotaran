@@ -322,15 +322,16 @@ class Model:
         return any(i.interval is not None for i in self.clp_constraints + self.clp_relations)
 
     def is_groupable(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
-        if any(d.has_global_model() for d in self.dataset.values()):
+        dataset_models = {label: self.dataset[label] for label in data}
+        if any(d.has_global_model() for d in dataset_models.values()):
             return False
         global_dimensions = {
             d.fill(self, parameters).set_data(data[k]).get_global_dimension()
-            for k, d in self.dataset.items()
+            for k, d in dataset_models.items()
         }
         model_dimensions = {
             d.fill(self, parameters).set_data(data[k]).get_model_dimension()
-            for k, d in self.dataset.items()
+            for k, d in dataset_models.items()
         }
         return len(global_dimensions) == 1 and len(model_dimensions) == 1
 
