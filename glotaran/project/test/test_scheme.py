@@ -5,7 +5,9 @@ import xarray as xr
 from IPython.core.formatters import format_display_data
 
 from glotaran.io import load_scheme
+from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.project import Scheme
+from glotaran.testing.model_generators import SimpleModelGenerator
 
 
 @pytest.fixture
@@ -72,3 +74,31 @@ def test_scheme_ipython_rendering(mock_scheme: Scheme):
 
     assert "text/markdown" in rendered_markdown_return
     assert rendered_markdown_return["text/markdown"].startswith("# Model")
+
+
+def test_scheme_non_negative_least_squares_warning():
+    """Warn user about overwriting default residual function if multiple groups are used."""
+    generator = SimpleModelGenerator(
+        rates=[501e-3, 202e-4, 105e-5, {"non-negative": True}],
+        irf={"center": 1.3, "width": 7.8},
+        k_matrix="sequential",
+    )
+    model, parameters = generator.model_and_parameters
+    dataset = xr.DataArray([[1, 2, 3]], coords=[("e", [1]), ("c", [1, 2, 3])]).to_dataset(
+        name="data"
+    )
+    model._dataset_group_models = {"default": DatasetGroupModel(), "foo": DatasetGroupModel()}
+
+    expected_waring = (
+        "Using 'non_negative_least_squares' in 'Scheme' is only meant "
+        "for convenience of comparisons. This will override settings in "
+        "'model.dataset_groups.default.residual_function', rather use the "
+        "model definition instead."
+    )
+
+    with pytest.warns(UserWarning) as record:
+        Scheme(model, parameters, {"dataset": dataset}, non_negative_least_squares=True)
+
+        assert len(record) == 1
+        assert Path(record[0].filename) == Path(__file__)
+        assert record[0].message.args[0] == expected_waring
