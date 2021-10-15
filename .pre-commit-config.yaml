@@ -88,24 +88,23 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
+        name: "flake8 lint code"
         types: [file]
         types_or: [python, pyi]
         additional_dependencies:
           [flake8-pyi, flake8-comprehensions, flake8-print]
 
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.1.1
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
     hooks:
-      - id: pydocstyle
+      - id: flake8
+        alias: flake8-docs
+        args:
+          - "--select=D,DAR"
+        name: "flake8 lint docstrings"
         files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project)"
         exclude: "docs|tests?/"
-
-  - repo: https://github.com/terrencepreilly/darglint
-    rev: v1.8.0
-    hooks:
-      - id: darglint
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project)"
-        exclude: "docs|tests?/"
+        additional_dependencies: [flake8-docstrings, darglint]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910-1
