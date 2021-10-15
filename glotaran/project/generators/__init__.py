@@ -1,0 +1,1 @@
+"""The glotaran generator package."""
