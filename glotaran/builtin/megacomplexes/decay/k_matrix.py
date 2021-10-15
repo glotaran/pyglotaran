@@ -121,9 +121,9 @@ class KMatrix:
             The initial concentration.
         """
         return self._array_as_markdown(
-            self.a_matrix(initial_concentration).T,
+            self.a_matrix(compartments, initial_concentration).T,
             compartments,
-            self.rates(initial_concentration),
+            self.rates(compartments, initial_concentration),
         )
 
     @staticmethod
