@@ -75,6 +75,14 @@ repos:
         args: [--nbqa-mutate]
 
   # Linters
+  - repo: https://github.com/asottile/yesqa
+    rev: v1.2.3
+    hooks:
+      - id: yesqa
+        types: [file]
+        types_or: [python, pyi]
+        additional_dependencies: [flake8-docstrings, flake8-print]
+        exclude: "parameter.py"
 
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.1.1
@@ -107,15 +115,6 @@ repos:
       - id: interrogate
         args: [-vv, --config=pyproject.toml, glotaran]
         pass_filenames: false
-
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.2.3
-    hooks:
-      - id: yesqa
-        types: [file]
-        types_or: [python, pyi]
-        additional_dependencies: [flake8-docstrings, flake8-print]
-        exclude: "parameter.py"
 
   - repo: https://github.com/PyCQA/flake8
     rev: 3.9.2
