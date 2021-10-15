@@ -82,7 +82,6 @@ repos:
         types: [file]
         types_or: [python, pyi]
         additional_dependencies: [flake8-docstrings, flake8-print]
-        exclude: "parameter.py"
 
   - repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
@@ -132,7 +131,7 @@ repos:
     hooks:
       - id: rst-backticks
       - id: python-check-blanket-noqa
-        exclude: "parameter.py|docs|tests?"
+        exclude: "docs|tests?"
       - id: python-check-blanket-type-ignore
         exclude: "docs|tests?"
       - id: python-use-type-annotations
