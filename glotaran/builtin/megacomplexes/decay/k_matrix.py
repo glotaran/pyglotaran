@@ -9,7 +9,6 @@ import numpy as np
 from scipy.linalg import eig
 from scipy.linalg import solve
 
-from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
 from glotaran.model import model_item
 from glotaran.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
@@ -95,12 +94,7 @@ class KMatrix:
             If true, the entries will be filled with the actual parameter values
             instead of labels.
         """
-
-        compartments = (
-            [c for c in compartments if c in self.involved_compartments()]
-            if compartments
-            else self.involved_compartments()
-        )
+        compartments = compartments or self.involved_compartments()
         size = len(compartments)
         array = np.zeros((size, size), dtype=object)
         # Matrix is a dict
@@ -116,7 +110,9 @@ class KMatrix:
         """Special method used by ``ipython`` to render markdown."""
         return str(self.matrix_as_markdown())
 
-    def a_matrix_as_markdown(self, initial_concentration: InitialConcentration) -> MarkdownStr:
+    def a_matrix_as_markdown(
+        self, compartments: list[str], initial_concentration: np.ndarray
+    ) -> MarkdownStr:
         """Returns the A Matrix as markdown formatted table.
 
         Parameters
@@ -124,9 +120,6 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        compartments = [
-            c for c in initial_concentration.compartments if c in self.involved_compartments()
-        ]
         return self._array_as_markdown(
             self.a_matrix(initial_concentration).T,
             compartments,
@@ -163,7 +156,6 @@ class KMatrix:
             The compartment order.
         """
 
-        compartments = [c for c in compartments if c in self.involved_compartments()]
         size = len(compartments)
         array = np.zeros((size, size), dtype=np.float64)
         # Matrix is a dict
@@ -181,7 +173,6 @@ class KMatrix:
         compartments :
             The compartment order.
         """
-        compartments = [c for c in compartments if c in self.involved_compartments()]
         size = len(compartments)
         mat = np.zeros((size, size), np.float64)
         for (to_comp, from_comp), param in self.matrix.items():
@@ -210,7 +201,7 @@ class KMatrix:
         eigenvalues, eigenvectors = eig(matrix, left=True, right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def rates(self, initial_concentration: InitialConcentration) -> np.ndarray:
+    def rates(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The resulting rates of the matrix.
 
         Parameters
@@ -218,28 +209,15 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        if self.is_unibranched(initial_concentration):
-            return np.diag(self.full(initial_concentration.compartments)).copy()
-        rates, _ = self.eigen(initial_concentration.compartments)
+        if self.is_unibranched(compartments, initial_concentration):
+            return np.diag(self.full(compartments)).copy()
+        rates, _ = self.eigen(compartments)
         return rates
 
-    def _gamma(
-        self,
-        eigenvectors: np.ndarray,
-        initial_concentration: InitialConcentration,
-    ) -> np.ndarray:
-        compartments = [
-            c for c in initial_concentration.compartments if c in self.involved_compartments()
-        ]
-        initial_concentration = [
-            initial_concentration.parameters[initial_concentration.compartments.index(c)]
-            for c in compartments
-        ]
+    def gamma(self, eigenvectors: np.ndarray, initial_concentration: np.ndarray) -> np.ndarray:
+        return np.diag(solve(eigenvectors, initial_concentration))
 
-        gamma = solve(eigenvectors, initial_concentration)
-        return np.diag(gamma)
-
-    def a_matrix(self, initial_concentration: InitialConcentration) -> np.ndarray:
+    def a_matrix(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The resulting A matrix of the KMatrix.
 
         Parameters
@@ -248,12 +226,14 @@ class KMatrix:
             The initial concentration.
         """
         return (
-            self.a_matrix_unibranch(initial_concentration)
-            if self.is_unibranched(initial_concentration)
-            else self.a_matrix_non_unibranch(initial_concentration)
+            self.a_matrix_unibranch(compartments)
+            if self.is_unibranched(compartments, initial_concentration)
+            else self.a_matrix_non_unibranch(compartments, initial_concentration)
         )
 
-    def a_matrix_non_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
+    def a_matrix_non_unibranch(
+        self, compartments: list[str], initial_concentration: np.ndarray
+    ) -> np.ndarray:
         """The resulting A matrix of the KMatrix for a non-unibranched model.
 
         Parameters
@@ -261,14 +241,15 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        eigenvalues, eigenvectors = self.eigen(initial_concentration.compartments)
-        gamma = self._gamma(eigenvectors, initial_concentration)
+        eigenvalues, eigenvectors = self.eigen(compartments)
+
+        gamma = self.gamma(eigenvectors, initial_concentration)
 
         a_matrix = eigenvectors @ gamma
 
         return a_matrix.T
 
-    def a_matrix_unibranch(self, initial_concentration: InitialConcentration) -> np.ndarray:
+    def a_matrix_unibranch(self, compartments: list[str]) -> np.ndarray:
         """The resulting A matrix of the KMatrix for an unibranched model.
 
         Parameters
@@ -276,9 +257,6 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        compartments = [
-            c for c in initial_concentration.compartments if c in self.involved_compartments()
-        ]
         matrix = self.full(compartments).T
         rates = np.diag(matrix)
 
@@ -293,7 +271,7 @@ class KMatrix:
 
         return a_matrix
 
-    def is_unibranched(self, initial_concentration: InitialConcentration) -> bool:
+    def is_unibranched(self, compartments: list[str], initial_concentration: np.ndarray) -> bool:
         """Returns true in the KMatrix represents an unibranched model.
 
         Parameters
@@ -301,17 +279,9 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        if (
-            np.sum(
-                [
-                    initial_concentration.parameters[initial_concentration.compartments.index(c)]
-                    for c in self.involved_compartments()
-                ]
-            )
-            != 1
-        ):
+        if np.sum(initial_concentration) != 1:
             return False
-        matrix = self.reduced(initial_concentration.compartments)
+        matrix = self.reduced(compartments)
         return not any(
             np.nonzero(matrix[:, i])[0].size != 1 or i != 0 and matrix[i, i - 1] == 0
             for i in range(matrix.shape[1])

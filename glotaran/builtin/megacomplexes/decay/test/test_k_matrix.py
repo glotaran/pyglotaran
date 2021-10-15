@@ -2,19 +2,18 @@ import numpy as np
 import pytest
 from IPython.core.formatters import format_display_data
 
-from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.parameter import ParameterGroup
 
 
 class SequentialModel:
-    params = [0.55, 0.0404, 1, 0]
+    params = [0.55, 0.0404]
     compartments = ["s1", "s2"]
     matrix = {
         ("s2", "s1"): "1",
         ("s2", "s2"): "2",
     }
-    jvec = ["3", "4"]
+    jvec = [1, 0]
 
     wanted_array = np.asarray(
         [
@@ -50,14 +49,14 @@ class SequentialModel:
 
 
 class SequentialModelWithBacktransfer:
-    params = [0.55, 0.0404, 0.11, 1, 0]
+    params = [0.55, 0.0404, 0.11]
     compartments = ["s1", "s2"]
     matrix = {
         ("s2", "s1"): "1",
         ("s1", "s2"): "3",
         ("s2", "s2"): "2",
     }
-    jvec = ["4", "5"]
+    jvec = [1, 0]
 
     wanted_array = np.asarray(
         [
@@ -93,13 +92,13 @@ class SequentialModelWithBacktransfer:
 
 
 class ParallelModel:
-    params = [0.55, 0.0404, 1]
+    params = [0.55, 0.0404]
     compartments = ["s1", "s2"]
     matrix = {
         ("s1", "s1"): "1",
         ("s2", "s2"): "2",
     }
-    jvec = ["3", "3"]
+    jvec = [1, 1]
 
     wanted_array = np.asarray(
         [
@@ -135,7 +134,7 @@ class ParallelModel:
 
 
 class ParallelModelWithEquilibria:
-    params = [0.55, 0.0404, 0.11, 0.02, 1]
+    params = [0.55, 0.0404, 0.11, 0.02]
     compartments = ["s1", "s2"]
     matrix = {
         ("s1", "s1"): "4",
@@ -143,7 +142,7 @@ class ParallelModelWithEquilibria:
         ("s2", "s2"): "2",
         ("s1", "s2"): "3",
     }
-    jvec = ["5", "5"]
+    jvec = [1, 1]
 
     wanted_array = np.asarray(
         [
@@ -191,11 +190,7 @@ def test_matrix_non_unibranch(matrix):
     mat.matrix = matrix.matrix
     mat = mat.fill(None, params)
 
-    con = InitialConcentration()
-    con.label = ""
-    con.compartments = matrix.compartments
-    con.parameters = matrix.jvec
-    con = con.fill(None, params)
+    initial_concentration = matrix.jvec
 
     for comp in matrix.compartments:
         assert comp in mat.involved_compartments()
@@ -212,11 +207,14 @@ def test_matrix_non_unibranch(matrix):
     assert np.allclose(vals, matrix.wanted_eigen_vals)
     assert np.allclose(vec, matrix.wanted_eigen_vec)
 
-    print(mat._gamma(vec, con))
-    assert np.allclose(mat._gamma(vec, con), matrix.wanted_gamma)
+    print(mat.gamma(vec, initial_concentration))
+    assert np.allclose(mat.gamma(vec, initial_concentration), matrix.wanted_gamma)
 
-    print(mat.a_matrix_non_unibranch(con))
-    assert np.allclose(mat.a_matrix_non_unibranch(con), matrix.wanted_a_matrix)
+    print(mat.a_matrix_non_unibranch(matrix.compartments, initial_concentration))
+    assert np.allclose(
+        mat.a_matrix_non_unibranch(matrix.compartments, initial_concentration),
+        matrix.wanted_a_matrix,
+    )
 
 
 def test_unibranched():
@@ -229,20 +227,15 @@ def test_unibranched():
         ("s3", "s3"): "3",
     }
 
-    params = ParameterGroup.from_list([3, 4, 5, 1, 0])
+    params = ParameterGroup.from_list([3, 4, 5])
     mat = KMatrix()
     mat.label = ""
     mat.matrix = matrix
     mat = mat.fill(None, params)
 
-    jvec = ["4", "5", "5"]
-    con = InitialConcentration()
-    con.label = ""
-    con.compartments = compartments
-    con.parameters = jvec
-    con = con.fill(None, params)
+    initial_concentration = [1, 0, 0]
 
-    assert not mat.is_unibranched(con)
+    assert not mat.is_unibranched(compartments, initial_concentration)
 
     matrix = {
         ("s2", "s1"): "1",
@@ -250,21 +243,16 @@ def test_unibranched():
     }
 
     compartments = ["s1", "s2"]
-    params = ParameterGroup.from_list([0.55, 0.0404, 1, 0])
+    params = ParameterGroup.from_list([0.55, 0.0404])
     mat = KMatrix()
     mat.label = ""
     mat.matrix = matrix
     mat = mat.fill(None, params)
 
-    jvec = ["3", "4"]
-    con = InitialConcentration()
-    con.label = ""
-    con.compartments = compartments
-    con.parameters = jvec
-    con = con.fill(None, params)
+    initial_concentration = [1, 0]
 
     print(mat.reduced(compartments))
-    assert mat.is_unibranched(con)
+    assert mat.is_unibranched(compartments, initial_concentration)
 
     wanted_a_matrix = np.asarray(
         [
@@ -273,8 +261,8 @@ def test_unibranched():
         ]
     )
 
-    print(mat.a_matrix_unibranch(con))
-    assert np.allclose(mat.a_matrix_unibranch(con), wanted_a_matrix)
+    print(mat.a_matrix_unibranch(compartments))
+    assert np.allclose(mat.a_matrix_unibranch(compartments), wanted_a_matrix)
 
 
 def test_combine_matrices():

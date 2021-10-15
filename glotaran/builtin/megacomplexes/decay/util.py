@@ -11,7 +11,7 @@ from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.model import DatasetModel
 
 if TYPE_CHECKING:
-    from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
+    from glotaran.builtin.megacomplexes.decay.decay_megacomplex_base import DecayMegacomplexBase
 
 
 def decay_matrix_implementation(
@@ -153,22 +153,21 @@ def retrieve_species_associated_data(
 
 
 def retrieve_decay_associated_data(
-    megacomplex: DecayMegacomplex,
+    megacomplex: DecayMegacomplexBase,
     dataset_model: DatasetModel,
     dataset: xr.Dataset,
     global_dimension: str,
     name: str,
     multiple_complexes: bool,
 ):
-    k_matrix = megacomplex.full_k_matrix()
-
-    species = dataset_model.initial_concentration.compartments
-    species = [c for c in species if c in k_matrix.involved_compartments()]
+    species = megacomplex.get_compartments(dataset_model)
+    initial_concentration = megacomplex.get_initial_concentration(dataset_model)
+    k_matrix = megacomplex.get_k_matrix()
 
     matrix = k_matrix.full(species)
     matrix_reduced = k_matrix.reduced(species)
-    a_matrix = k_matrix.a_matrix(dataset_model.initial_concentration)
-    rates = k_matrix.rates(dataset_model.initial_concentration)
+    a_matrix = k_matrix.a_matrix(species, initial_concentration)
+    rates = k_matrix.rates(species, initial_concentration)
     lifetimes = 1 / rates
 
     das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
