@@ -80,13 +80,22 @@ class DecayMegacomplexBase(Megacomplex):
     ):
         global_dimension = dataset_model.get_global_dimension()
         name = "images" if global_dimension == "pixel" else "spectra"
+        decay_megacomplexes = [
+            m for m in dataset_model.megacomplex if isinstance(m, DecayMegacomplexBase)
+        ]
 
         species_dimension = "decay_species" if as_global else "species"
         if species_dimension not in dataset.coords:
             # We are the first Decay complex called and add SAD for all decay megacomplexes
+            all_species = []
+            for megacomplex in decay_megacomplexes:
+                for species in megacomplex.get_compartments(dataset_model):
+                    if species not in all_species:
+                        all_species.append(species)
             retrieve_species_associated_data(
                 dataset_model,
                 dataset,
+                all_species,
                 species_dimension,
                 global_dimension,
                 name,
@@ -97,10 +106,7 @@ class DecayMegacomplexBase(Megacomplex):
             retrieve_irf(dataset_model, dataset, global_dimension)
 
         if not is_full_model:
-            multiple_complexes = (
-                len([m for m in dataset_model.megacomplex if isinstance(m, DecayMegacomplexBase)])
-                > 1
-            )
+            multiple_complexes = len(decay_megacomplexes) > 1
             retrieve_decay_associated_data(
                 self,
                 dataset_model,

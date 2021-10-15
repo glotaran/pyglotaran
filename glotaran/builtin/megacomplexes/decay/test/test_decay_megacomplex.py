@@ -147,20 +147,16 @@ class ThreeComponentParallel:
 class ThreeComponentSequential:
     model = DecayModel.from_dict(
         {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
-            },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s2", "s1"): "kinetic.1",
-                        ("s3", "s2"): "kinetic.2",
-                        ("s3", "s3"): "kinetic.3",
-                    }
-                }
+                "mc1": {
+                    "type": "decay-sequential",
+                    "compartments": ["s1", "s2", "s3"],
+                    "rates": [
+                        "kinetic.1",
+                        "kinetic.2",
+                        "kinetic.3",
+                    ],
+                },
             },
             "irf": {
                 "irf1": {
@@ -171,7 +167,6 @@ class ThreeComponentSequential:
             },
             "dataset": {
                 "dataset1": {
-                    "initial_concentration": "j1",
                     "irf": "irf1",
                     "megacomplex": ["mc1"],
                 },
@@ -188,10 +183,6 @@ class ThreeComponentSequential:
                 {"non-negative": True},
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [
-                ["1", 1, {"vary": False, "non-negative": False}],
-                ["0", 0, {"vary": False, "non-negative": False}],
-            ],
         }
     )
     wanted_parameters = ParameterGroup.from_dict(
@@ -202,10 +193,6 @@ class ThreeComponentSequential:
                 ["3", 105e-5],
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [
-                ["1", 1, {"vary": False, "non-negative": False}],
-                ["0", 0, {"vary": False, "non-negative": False}],
-            ],
         }
     )
 

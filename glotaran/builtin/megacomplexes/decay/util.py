@@ -108,13 +108,13 @@ erfcx = functype(erfcx_addr)
 def retrieve_species_associated_data(
     dataset_model: DatasetModel,
     dataset: xr.Dataset,
+    species: list[str],
     species_dimension: str,
     global_dimension: str,
     name: str,
     is_full_model: bool,
     as_global: bool,
 ):
-    species = dataset_model.initial_concentration.compartments
     model_dimension = dataset_model.get_model_dimension()
     if as_global:
         model_dimension, global_dimension = global_dimension, model_dimension
