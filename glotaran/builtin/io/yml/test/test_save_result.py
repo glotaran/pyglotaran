@@ -3,28 +3,30 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
+
+from glotaran.analysis.optimize import optimize
+from glotaran.examples.sequential_spectral_decay import SCHEME
 from glotaran.io import save_result
-from glotaran.project.test.test_result import dummy_result  # noqa: F401
 
 if TYPE_CHECKING:
 
     from glotaran.project.result import Result
 
 
+@pytest.fixture(scope="session")
+def dummy_result():
+    """Dummy result for testing."""
+    print(SCHEME.data["dataset_1"])
+    yield optimize(SCHEME, raise_exception=True)
+
+
 def test_save_result_yml(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
 ):
     """Check all files exist."""
 
-    result_dir = tmp_path / "testresult"
-    save_result(result_path=result_dir / "result.yml", result=dummy_result)
+    save_result(result_path=tmp_path / "result.yml", result=dummy_result)
 
-    assert (result_dir / "result.md").exists()
-    assert (result_dir / "scheme.yml").exists()
-    assert (result_dir / "result.yml").exists()
-    assert (result_dir / "initial_parameters.csv").exists()
-    assert (result_dir / "optimized_parameters.csv").exists()
-    assert (result_dir / "dataset1.nc").exists()
-    assert (result_dir / "dataset2.nc").exists()
-    assert (result_dir / "dataset3.nc").exists()
+    assert (tmp_path / "result.yml").exists()

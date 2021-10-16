@@ -279,6 +279,7 @@ class AsciiDataIo(DataIoInterface):
         dataset: xr.DataArray,
         file_name: str,
         *,
+        data_filter: list[str] = None,
         comment: str = "",
         file_format: DataFileType = DataFileType.time_explicit,
         number_format: str = "%.10e",

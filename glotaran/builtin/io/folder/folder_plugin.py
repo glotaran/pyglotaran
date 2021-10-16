@@ -9,15 +9,18 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import save_dataset
 from glotaran.io import save_model
 from glotaran.io import save_parameters
+from glotaran.io import save_result
 from glotaran.io import save_scheme
 from glotaran.io.interface import ProjectIoInterface
-from glotaran.plugin_system.project_io_registration import SAVING_OPTIONS_DEFAULT
 from glotaran.plugin_system.project_io_registration import register_project_io
 
 if TYPE_CHECKING:
+    from os import PathLike
+
     from glotaran.plugin_system.project_io_registration import SavingOptions
     from glotaran.project import Result
 
@@ -33,8 +36,10 @@ class FolderProjectIo(ProjectIoInterface):
     def save_result(
         self,
         result: Result,
-        result_path: str,
+        result_path: str | PathLike[str],
+        format_name: str = None,
         *,
+        allow_overwrite: bool = False,
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     ) -> list[str]:
         """Save the result to a given folder.
@@ -57,11 +62,16 @@ class FolderProjectIo(ProjectIoInterface):
         Parameters
         ----------
         result : Result
-            Result instance to be saved.
-        result_path : str
-            The path to the folder in which to save the result.
+            :class:`Result` instance to write.
+        result_path : str | PathLike[str]
+            Path to write the result data to.
+        format_name : str
+            Format the result should be saved in, if not provided and it is a file
+            it will be inferred from the file extension.
+        allow_overwrite : bool
+            Whether or not to allow overwriting existing files, by default False
         saving_options : SavingOptions
-            Options for saving the the result.
+            Options for the saved result.
 
 
         Returns
@@ -131,7 +141,11 @@ class FolderProjectIo(ProjectIoInterface):
                 result_folder / data_file,
                 format_name=saving_options.data_format,
                 allow_overwrite=True,
+                data_filters=saving_options.data_filter,
             )
             paths.append((result_folder / data_file).as_posix())
+
+        save_result(result, result_folder / "glotaran_result.yml")
+        paths.append(result_folder / "glotaran_result.yml")
 
         return paths

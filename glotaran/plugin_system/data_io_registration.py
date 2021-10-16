@@ -229,6 +229,7 @@ def save_dataset(
     io.save_dataset(  # type: ignore[call-arg]
         file_name=str(file_name),
         dataset=dataset,
+        data_filters=data_filters,
         **kwargs,
     )
 

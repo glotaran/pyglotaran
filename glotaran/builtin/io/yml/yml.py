@@ -7,7 +7,6 @@ import yaml
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
-from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Result
@@ -117,10 +116,11 @@ class YmlProjectIo(ProjectIoInterface):
         Result
             :class:`Result` instance created from the saved format.
         """
+
         spec = self._load_yml(result_path)
         return fromdict(Result, spec)
 
-    def save_result(self, result: Result, result_path: str):
+    def save_result(self, result: Result, result_path: str, **kwargs):
         """Write a :class:`Result` instance to a spec file.
 
         Parameters
@@ -130,7 +130,6 @@ class YmlProjectIo(ProjectIoInterface):
         result_path : str | PathLike[str]
             Path to write the result data to.
         """
-        save_result(result, Path(result_path).parent.as_posix(), format_name="folder")
         result_dict = asdict(result)
         _write_dict(result_path, result_dict)
 
