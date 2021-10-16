@@ -5,8 +5,8 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimization_group import OptimizationGroup
-from glotaran.analysis.optimization_group_calculator_grouped import (
-    OptimizationGroupCalculatorGrouped,
+from glotaran.analysis.optimization_group_calculator_linked import (
+    OptimizationGroupCalculatorLinked,
 )
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import FullModel
@@ -39,7 +39,7 @@ def optimization_group(request) -> OptimizationGroup:
 
 def test_problem_bag(optimization_group: OptimizationGroup):
 
-    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorGrouped):
+    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
         bag = optimization_group._calculator.bag
         assert isinstance(bag, collections.deque)
         assert len(bag) == suite.global_axis.size
@@ -49,7 +49,7 @@ def test_problem_bag(optimization_group: OptimizationGroup):
 def test_problem_matrices(optimization_group: OptimizationGroup):
     optimization_group._calculator.calculate_matrices()
 
-    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorGrouped):
+    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
         if optimization_group.model.is_index_dependent:
             assert all(
                 isinstance(m, CalculatedMatrix) for m in optimization_group.reduced_matrices
@@ -75,7 +75,7 @@ def test_problem_matrices(optimization_group: OptimizationGroup):
 
 def test_problem_residuals(optimization_group: OptimizationGroup):
     optimization_group._calculator.calculate_residual()
-    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorGrouped):
+    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
         assert isinstance(optimization_group.residuals, list)
         assert all(isinstance(r, np.ndarray) for r in optimization_group.residuals)
         assert len(optimization_group.residuals) == suite.global_axis.size

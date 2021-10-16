@@ -51,7 +51,7 @@ Bag = Deque[DatasetGroupIndexModel]
 """A deque of dataset group index models."""
 
 
-class OptimizationGroupCalculatorGrouped(OptimizationGroupCalculator):
+class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
     """A class to calculate a set of datasets with linked CLP."""
 
     def __init__(self, group: OptimizationGroup):

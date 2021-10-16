@@ -9,11 +9,11 @@ import xarray as xr
 
 from glotaran.analysis.nnls import residual_nnls
 from glotaran.analysis.optimization_group_calculator import OptimizationGroupCalculator
-from glotaran.analysis.optimization_group_calculator_grouped import (
-    OptimizationGroupCalculatorGrouped,
+from glotaran.analysis.optimization_group_calculator_linked import (
+    OptimizationGroupCalculatorLinked,
 )
-from glotaran.analysis.optimization_group_calculator_ungrouped import (
-    OptimizationGroupCalculatorUngrouped,
+from glotaran.analysis.optimization_group_calculator_unlinked import (
+    OptimizationGroupCalculatorUnlinked,
 )
 from glotaran.analysis.util import get_min_max_from_interval
 from glotaran.analysis.variable_projection import residual_variable_projection
@@ -87,9 +87,9 @@ class OptimizationGroup:
             link_clp = self.model.is_groupable(self.parameters, self.data)
 
         self._calculator: OptimizationGroupCalculator = (
-            OptimizationGroupCalculatorGrouped(self)
+            OptimizationGroupCalculatorLinked(self)
             if link_clp
-            else OptimizationGroupCalculatorUngrouped(self)
+            else OptimizationGroupCalculatorUnlinked(self)
         )
 
         # all of the above are always not None

@@ -18,8 +18,8 @@ if TYPE_CHECKING:
     from glotaran.analysis.optimization_group import OptimizationGroup
 
 
-class OptimizationGroupCalculatorUngrouped(OptimizationGroupCalculator):
-    """Represents a problem where the data is not grouped."""
+class OptimizationGroupCalculatorUnlinked(OptimizationGroupCalculator):
+    """Represents a problem where the clps are not linked."""
 
     def __init__(self, group: OptimizationGroup):
         super().__init__(group)
