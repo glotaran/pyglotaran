@@ -60,6 +60,12 @@ class Scheme:
             # TODO: add original model spec (parsed yml) to model and
             # check if 'dataset_groups' is present
             if len(self.model.dataset_group_models) > 1:
+                warn_deprecated(
+                    deprecated_qual_name_usage="glotaran.project.Scheme(..., group=...)",
+                    new_qual_name_usage="glotaran.model",
+                    to_be_removed_in_version="0.7.0",
+                    stacklevel=4,
+                )
                 warn(
                     UserWarning(
                         "Using 'non_negative_least_squares' in 'Scheme' is only meant "

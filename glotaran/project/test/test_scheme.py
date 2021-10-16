@@ -99,6 +99,6 @@ def test_scheme_non_negative_least_squares_warning():
     with pytest.warns(UserWarning) as record:
         Scheme(model, parameters, {"dataset": dataset}, non_negative_least_squares=True)
 
-        assert len(record) == 1
+        assert len(record) == 2
         assert Path(record[0].filename) == Path(__file__)
-        assert record[0].message.args[0] == expected_waring
+        assert record[1].message.args[0] == expected_waring
