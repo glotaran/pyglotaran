@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from glotaran.project import Result
 
 
-@register_project_io(["folder", "legacy"])
+@register_project_io(["folder"])
 class FolderProjectIo(ProjectIoInterface):
     """Project Io plugin to save result data to a folder.
 
