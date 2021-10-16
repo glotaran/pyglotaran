@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from glotaran.examples.sequential import model
+from glotaran.examples.sequential_spectral_decay import MODEL
 from glotaran.io import load_model
 from glotaran.io import save_model
 
@@ -10,49 +10,36 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-want = """\
-default_megacomplex: decay
+want = """default_megacomplex: decay-sequential
 dataset_groups:
   default:
     residual_function: variable_projection
     link_clp: null
-k_matrix:
-  k1:
-    matrix:
-      (s2, s1): kinetic.1
-      (s3, s2): kinetic.2
-      (s3, s3): kinetic.3
-initial_concentration:
-  j1:
-    compartments:
-      - s1
-      - s2
-      - s3
-    parameters:
-      - j.1
-      - j.0
-      - j.0
-    exclude_from_normalize: []
 irf:
-  irf1:
+  gaussian_irf:
     type: gaussian
     center: irf.center
     width: irf.width
     normalize: true
     backsweep: false
 megacomplex:
-  m1:
-    type: decay
+  megacomplex_sequential_decay:
+    type: decay-sequential
+    compartments:
+      - species_1
+      - species_2
+      - species_3
+    rates:
+      - rates.species_1
+      - rates.species_2
+      - rates.species_3
     dimension: time
-    k_matrix:
-      - k1
 dataset:
-  dataset1:
+  dataset_1:
     group: default
     megacomplex:
-      - m1
-    initial_concentration: j1
-    irf: irf1
+      - megacomplex_sequential_decay
+    irf: gaussian_irf
 """
 
 
@@ -62,7 +49,7 @@ def test_save_model(
     """Check all files exist."""
 
     model_path = tmp_path / "testmodel.yml"
-    save_model(file_name=model_path, format_name="yml", model=model)
+    save_model(file_name=model_path, format_name="yml", model=MODEL)
 
     assert model_path.is_file()
     assert model_path.read_text() == want
