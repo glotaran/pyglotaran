@@ -1,26 +1,30 @@
 """Test deprecated functionality in 'glotaran.project.result'."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 
 import pytest
 
+from glotaran.analysis.optimize import optimize
 from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
-from glotaran.project.test.test_result import dummy_result  # noqa: F401
+from glotaran.examples.sequential_spectral_decay import SCHEME
+from glotaran.project.result import Result
 
-if TYPE_CHECKING:
 
-    from glotaran.project.result import Result
+@pytest.fixture(scope="session")
+def dummy_result():
+    """Dummy result for testing."""
+    print(SCHEME.data["dataset_1"])
+    yield optimize(SCHEME, raise_exception=True)
 
 
 def test_Result_get_dataset_method(dummy_result: Result):  # noqa: F811
     """Result.get_dataset(dataset_label) gives correct dataset."""
 
     _, result = deprecation_warning_on_call_test_helper(
-        dummy_result.get_dataset, args=["dataset1"], raise_exception=True
+        dummy_result.get_dataset, args=["dataset_1"], raise_exception=True
     )
 
-    assert result == dummy_result.data["dataset1"]
+    assert result == dummy_result.data["dataset_1"]
 
 
 def test_Result_get_dataset_method_error(dummy_result: Result):  # noqa: F811

@@ -64,4 +64,4 @@ DATASET = simulate(
     noise_std_dev=1e-2,
 )
 
-SCHEME = Scheme(model=MODEL, parameters=PARAMETER, data={"dataset1": DATASET})
+SCHEME = Scheme(model=MODEL, parameters=PARAMETER, data={"dataset_1": DATASET})
