@@ -18,7 +18,7 @@ def dummy_result():
     yield optimize(SCHEME, raise_exception=True)
 
 
-@pytest.mark.parametrize("format_name", ("folder", "legacy"))
+@pytest.mark.parametrize("format_name", ["folder", "legacy"])
 def test_save_result_folder(
     tmp_path: Path,
     dummy_result: Result,
@@ -27,6 +27,7 @@ def test_save_result_folder(
     """Check all files exist."""
 
     result_dir = tmp_path / "testresult"
+    assert not result_dir.exists()
     save_paths = save_result(
         result_path=str(result_dir), format_name=format_name, result=dummy_result
     )
@@ -45,7 +46,7 @@ def test_save_result_folder(
         assert (result_dir / wanted).as_posix() in save_paths
 
 
-@pytest.mark.parametrize("format_name", ("folder", "legacy"))
+@pytest.mark.parametrize("format_name", ["folder", "legacy"])
 def test_save_result_folder_error_path_is_file(
     tmp_path: Path,
     dummy_result: Result,
@@ -53,7 +54,7 @@ def test_save_result_folder_error_path_is_file(
 ):
     """Raise error if result_path is a file without extension and overwrite is true."""
 
-    result_dir = tmp_path / "testresult"
+    result_dir = tmp_path / "testresulterror"
     result_dir.touch()
 
     with pytest.raises(ValueError, match="The path '.+?' is not a directory."):

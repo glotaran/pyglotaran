@@ -48,6 +48,7 @@ class MockDataIO(DataIoInterface):
         self,
         file_name: StrOrPath,
         dataset: xr.Dataset | xr.DataArray,
+        data_filters: list[str] = None,
         *,
         result_container: dict[str, Any],
         **kwargs: Any,

@@ -8,14 +8,15 @@ and causing an [override] type error in the plugins implementation.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
 from tabulate import tabulate
 
+from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
 from glotaran.io.interface import ProjectIoInterface
+from glotaran.io.interface import SavingOptions
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.base_registry import add_instantiated_plugin_to_registry
 from glotaran.plugin_system.base_registry import get_method_from_plugin
@@ -53,20 +54,6 @@ if TYPE_CHECKING:
         Literal["load_result"],
         Literal["save_result"],
     )
-
-
-@dataclass
-class SavingOptions:
-    """A collection of options for result saving."""
-
-    data_filter: list[str] | None = None
-    data_format: Literal["nc"] = "nc"
-    parameter_format: Literal["csv"] = "csv"
-    report: bool = True
-
-
-SAVING_OPTIONS_DEFAULT = SavingOptions()
-SAVING_OPTIONS_MINIMAL = SavingOptions(data_filter=["fitted_data", "residual"], report=False)
 
 PROJECT_IO_METHODS = (
     "load_model",
@@ -447,6 +434,7 @@ def save_result(
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
+    saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     **kwargs: Any,
 ) -> list[str] | None:
     """Write a :class:`Result` instance to a spec file.
@@ -465,6 +453,8 @@ def save_result(
     update_source_path: bool
         Whether or not to update the ``source_path`` attribute to ``result_path`` when saving.
         by default True
+    saving_options : SavingOptions
+        Options for the saved result.
     **kwargs : Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
@@ -481,6 +471,7 @@ def save_result(
     paths = io.save_result(  # type: ignore[call-arg]
         result_path=Path(result_path).as_posix(),
         result=result,
+        saving_options=saving_options,
         **kwargs,
     )
     if update_source_path is True:

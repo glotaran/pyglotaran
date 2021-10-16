@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
 
+from glotaran.builtin.io.folder.folder_plugin import save_result_to_folder
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
+from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
-from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Result
@@ -20,11 +21,14 @@ from glotaran.project.dataclass_helpers import fromdict
 from glotaran.utils.sanitize import sanitize_yaml
 
 if TYPE_CHECKING:
+    from os import PathLike
     from typing import Any
     from typing import Mapping
 
     from ruamel.yaml.nodes import ScalarNode
     from ruamel.yaml.representer import BaseRepresenter
+
+    from glotaran.plugin_system.project_io_registration import SavingOptions
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
@@ -127,11 +131,35 @@ class YmlProjectIo(ProjectIoInterface):
         Result
             :class:`Result` instance created from the saved format.
         """
+
         spec = self._load_yml(result_path)
         return fromdict(Result, spec, folder=Path(result_path).parent)
 
-    def save_result(self, result: Result, result_path: str):
-        """Write a :class:`Result` instance to a spec file.
+    def save_result(
+        self,
+        result: Result,
+        result_path: str | PathLike[str],
+        format_name: str = None,
+        *,
+        allow_overwrite: bool = False,
+        saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+    ) -> list[str]:
+        """Save the result to a given folder.
+
+        Returns a list with paths of all saved items.
+        The following files are saved if not configured otherwise:
+        * `result.md`: The result with the model formatted as markdown text.
+        * `model.yml`: Model spec file.
+        * `scheme.yml`: Scheme spec file.
+        * `initial_parameters.csv`: Initially used parameters.
+        * `optimized_parameters.csv`: The optimized parameter as csv file.
+        * `parameter_history.csv`: Parameter changes over the optimization
+        * `{dataset_label}.nc`: The result data for each dataset as NetCDF file.
+
+        Note
+        ----
+        As a side effect it populates the file path properties of ``result`` which can be
+        used in other plugins (e.g. the ``yml`` save_result).
 
         Parameters
         ----------
@@ -139,10 +167,30 @@ class YmlProjectIo(ProjectIoInterface):
             :class:`Result` instance to write.
         result_path : str | PathLike[str]
             Path to write the result data to.
+        format_name : str
+            Format the result should be saved in, if not provided and it is a file
+            it will be inferred from the file extension.
+        allow_overwrite : bool
+            Whether or not to allow overwriting existing files, by default False
+        saving_options : SavingOptions
+            Options for the saved result.
+
+
+        Returns
+        -------
+        list[str]
+            List of file paths which were created.
+
+        Raises
+        ------
+        ValueError
+            If ``result_path`` is a file.
         """
-        save_result(result, Path(result_path).parent.as_posix(), format_name="folder")
+        paths = save_result_to_folder(result, Path(result_path).parent.as_posix(), saving_options)
         result_dict = asdict(result, folder=Path(result_path).parent)
         write_dict(result_dict, file_name=result_path)
+        paths.append(result_path)
+        return paths
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
         yaml = YAML()

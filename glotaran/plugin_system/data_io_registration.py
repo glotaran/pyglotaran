@@ -242,6 +242,7 @@ def save_dataset(
     io.save_dataset(  # type: ignore[call-arg]
         file_name=Path(file_name).as_posix(),
         dataset=dataset,
+        data_filters=data_filters,
         **kwargs,
     )
     dataset.attrs["loader"] = load_dataset
