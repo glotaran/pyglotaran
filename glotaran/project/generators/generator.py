@@ -30,7 +30,7 @@ def _generate_decay_model(
         The generated model dictionary.
     """
     compartments = [f"species_{i+1}" for i in range(nr_compartments)]
-    rates = [f"decay.species_{i+1}" for i in range(nr_compartments)]
+    rates = [f"rates.species_{i+1}" for i in range(nr_compartments)]
     model = {
         "megacomplex": {
             f"megacomplex_{decay_type}_decay": {

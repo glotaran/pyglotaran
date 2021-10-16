@@ -25,7 +25,7 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
     assert megacomplex.type == f"decay-{megacomplex_type}"
     assert megacomplex.compartments == expected_compartments
     assert [r.full_label for r in megacomplex.rates] == [
-        f"decay.species_{i+1}" for i in range(nr_compartments)
+        f"rates.species_{i+1}" for i in range(nr_compartments)
     ]
 
     assert "dataset_1" in model.dataset  # type:ignore[attr-defined]
