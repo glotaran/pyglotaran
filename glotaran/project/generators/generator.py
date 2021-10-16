@@ -8,7 +8,9 @@ from yaml import dump
 from glotaran.model import Model
 
 
-def _generate_decay_model(nr_compartments: int, irf: bool, decay_type: str) -> dict:
+def _generate_decay_model(
+    nr_compartments: int, irf: bool, spectral: bool, decay_type: str
+) -> dict:
     """Generate a decay model dictionary.
 
     Parameters
@@ -17,6 +19,8 @@ def _generate_decay_model(nr_compartments: int, irf: bool, decay_type: str) -> d
         The number of compartments.
     irf : bool
         Whether to add a gaussian irf.
+    spectral : bool
+        Whether to add a spectral model.
     decay_type : str
         The dype of the decay
 
@@ -37,6 +41,25 @@ def _generate_decay_model(nr_compartments: int, irf: bool, decay_type: str) -> d
         },
         "dataset": {"dataset_1": {"megacomplex": [f"megacomplex_{decay_type}_decay"]}},
     }
+    if spectral:
+        model["megacomplex"]["megacomplex_spectral"] = {  # type:ignore[index]
+            "type": "spectral",
+            "shape": {
+                compartment: f"shape_species_{i+1}" for i, compartment in enumerate(compartments)
+            },
+        }
+        model["shape"] = {
+            f"shape_species_{i+1}": {
+                "type": "gaussian",
+                "amplitude": f"shapes.species_{i+1}.amplitude",
+                "location": f"shapes.species_{i+1}.location",
+                "width": f"shapes.species_{i+1}.width",
+            }
+            for i in range(nr_compartments)
+        }
+        model["dataset"]["dataset_1"]["global_megacomplex"] = [  # type:ignore[index]
+            "megacomplex_spectral"
+        ]
     if irf:
         model["dataset"]["dataset_1"]["irf"] = "gaussian_irf"  # type:ignore[index]
         model["irf"] = {
@@ -45,7 +68,7 @@ def _generate_decay_model(nr_compartments: int, irf: bool, decay_type: str) -> d
     return model
 
 
-def generate_parallel_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_parallel_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
     """Generate a parallel decay model dictionary.
 
     Parameters
@@ -60,10 +83,28 @@ def generate_parallel_model(nr_compartments: int = 1, irf: bool = False) -> dict
     dict :
         The generated model dictionary.
     """
-    return _generate_decay_model(nr_compartments, irf, "parallel")
+    return _generate_decay_model(nr_compartments, irf, False, "parallel")
 
 
-def generate_sequential_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_parallel_spectral_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+    """Generate a parallel spectral decay model dictionary.
+
+    Parameters
+    ----------
+    nr_compartments : int
+        The number of compartments.
+    irf : bool
+        Whether to add a gaussian irf.
+
+    Returns
+    -------
+    dict :
+        The generated model dictionary.
+    """
+    return _generate_decay_model(nr_compartments, irf, True, "parallel")
+
+
+def generate_sequential_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
     """Generate a sequential decay model dictionary.
 
     Parameters
@@ -78,12 +119,32 @@ def generate_sequential_model(nr_compartments: int = 1, irf: bool = False) -> di
     dict :
         The generated model dictionary.
     """
-    return _generate_decay_model(nr_compartments, irf, "sequential")
+    return _generate_decay_model(nr_compartments, irf, False, "sequential")
+
+
+def generate_sequential_spectral_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+    """Generate a sequential spectral decay model dictionary.
+
+    Parameters
+    ----------
+    nr_compartments : int
+        The number of compartments.
+    irf : bool
+        Whether to add a gaussian irf.
+
+    Returns
+    -------
+    dict :
+        The generated model dictionary.
+    """
+    return _generate_decay_model(nr_compartments, irf, True, "sequential")
 
 
 generators: dict[str, Callable] = {
-    "decay-parallel": generate_parallel_model,
-    "decay-sequential": generate_sequential_model,
+    "decay-parallel": generate_parallel_decay_model,
+    "spectral-decay-parallel": generate_parallel_spectral_decay_model,
+    "decay-sequential": generate_sequential_decay_model,
+    "spectral-decay-sequential": generate_sequential_spectral_decay_model,
 }
 
 available_generators: list[str] = list(generators.keys())
