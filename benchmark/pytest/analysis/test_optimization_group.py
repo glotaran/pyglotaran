@@ -170,6 +170,6 @@ def test_benchmark_optimize_20_runs(benchmark, link_clp, index_dependent):
 
         for _ in range(20):
             optimization_group.reset()
-            optimization_group.full_penalty
+            optimization_group._calculator.calculate_full_penalty()
 
         optimization_group.create_result_data()

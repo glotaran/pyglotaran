@@ -280,7 +280,7 @@ class Model:
 
     def get_dataset_groups(self) -> dict[str, DatasetGroup]:
         groups = {}
-        for label, dataset_model in self.dataset.items():
+        for dataset_model in self.dataset.values():
             group = dataset_model.group
             if group not in groups:
                 try:
