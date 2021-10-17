@@ -131,6 +131,9 @@ def model_item(
         markdown = _markdown_factory(cls)
         setattr(cls, "markdown", markdown)
 
+        get_parameter_labels = _get_parameter_labels_factory(cls)
+        setattr(cls, "get_parameter_labels", get_parameter_labels)
+
         return cls
 
     return decorator
@@ -372,3 +375,19 @@ def _markdown_factory(cls):
         return MarkdownStr(md)
 
     return mprint_item
+
+
+def _get_parameter_labels_factory(cls):
+    @wrap_func_as_method(cls, name="get_parameter_labels")
+    def get_parameter_labels(self) -> list[str]:
+
+        parameter_labels = []
+
+        for name in self._glotaran_properties:
+            prop = getattr(self.__class__, name)
+            value = getattr(self, name)
+            parameter_labels += prop.glotaran_get_parameter_labels(value)
+
+        return parameter_labels
+
+    return get_parameter_labels
