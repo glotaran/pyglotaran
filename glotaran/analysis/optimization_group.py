@@ -53,7 +53,7 @@ class OptimizationGroup:
         scheme: Scheme,
         dataset_group: DatasetGroup,
     ):
-        """Initializes the Problem class from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
+        """Create OptimizationGroup instance  from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
 
         Args:
             scheme (Scheme): An instance of :class:`glotaran.analysis.scheme.Scheme`
@@ -71,7 +71,8 @@ class OptimizationGroup:
             self._residual_function = residual_functions[dataset_group.model.residual_function]
         except KeyError:
             raise ValueError(
-                f"Unknown residual function '{dataset_group.model.residual_function}'"
+                f"Unknown residual function '{dataset_group.model.residual_function}', "
+                f"allowed functions are: {list(residual_functions.keys())}."
             )
         self._dataset_models = dataset_group.dataset_models
 

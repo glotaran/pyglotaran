@@ -33,7 +33,7 @@ def test_penalties(index_dependent, link_clp):
 
     global_axis = np.arange(50)
 
-    print("link_clp", link_clp, "index_dependent", index_dependent)
+    print(f"{link_clp=}\n{index_dependent=}")
     dataset = simulate(
         suite.sim_model,
         "dataset1",
