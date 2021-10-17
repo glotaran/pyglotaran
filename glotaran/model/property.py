@@ -346,6 +346,27 @@ class ModelProperty(property):
             else str(value)
         )
 
+    def glotaran_get_parameter_labels(self, value: Any) -> list[str]:
+        """Get a list of all parameter labels if the property is parameter.
+
+        Parameters
+        ----------
+        value : Any
+            The value of the property.
+
+        Returns
+        -------
+        list[str]
+            The list of full parameter labels.
+        """
+        if value is None or not self.glotaran_is_parameter_property:
+            return []
+        elif self.glotaran_is_sequence_property:
+            return [v.full_label for v in value]
+        elif self.glotaran_is_mapping_property:
+            return [v.full_label for v in value.values()]
+        return [value.full_label]
+
 
 def _model_property_getter_factory(cls: type, model_property: ModelProperty) -> Callable:
     """Create a getter function for model property.

@@ -312,14 +312,14 @@ class Model:
 
         return model_dict
 
-    def get_parameters(self) -> list[str]:
-        parameters = []
+    def get_parameter_labels(self) -> list[str]:
+        parameter_labels = []
         for item_name in self.model_items:
             items = getattr(self, item_name)
             item_iterator = items if isinstance(items, list) else items.values()
             for item in item_iterator:
-                parameters += item.get_parameters()
-        return parameters
+                parameter_labels += item.get_parameter_labels()
+        return parameter_labels
 
     def need_index_dependent(self) -> bool:
         """Returns true if e.g. clp_relations with intervals are present."""
