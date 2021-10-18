@@ -13,7 +13,7 @@ from glotaran.project import Scheme
 
 
 @pytest.mark.parametrize("is_index_dependent", [True, False])
-@pytest.mark.parametrize("grouped", [True, False])
+@pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
     "method",
@@ -27,12 +27,12 @@ from glotaran.project import Scheme
     "suite",
     [OneCompartmentDecay, TwoCompartmentDecay, ThreeDatasetDecay, MultichannelMulticomponentDecay],
 )
-def test_optimization(suite, is_index_dependent, grouped, weight, method):
+def test_optimization(suite, is_index_dependent, link_clp, weight, method):
     model = suite.model
 
     model.megacomplex["m1"].is_index_dependent = is_index_dependent
 
-    print("Grouped:", grouped)
+    print("Link CLP:", link_clp)
     print("Index dependent:", is_index_dependent)
 
     sim_model = suite.sim_model
@@ -91,10 +91,11 @@ def test_optimization(suite, is_index_dependent, grouped, weight, method):
         parameters=initial_parameters,
         data=data,
         maximum_number_function_evaluations=10,
-        group=grouped,
-        group_tolerance=0.1,
+        clp_link_tolerance=0.1,
         optimization_method=method,
     )
+
+    model.dataset_group_models["default"].link_clp = link_clp
 
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)
@@ -149,7 +150,6 @@ def test_optimization_full_model(index_dependent):
         parameters=parameters,
         data={"dataset1": dataset},
         maximum_number_function_evaluations=10,
-        group=False,
     )
 
     result = optimize(scheme, raise_exception=True)

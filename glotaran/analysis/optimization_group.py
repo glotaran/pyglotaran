@@ -2,17 +2,23 @@ from __future__ import annotations
 
 import warnings
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import NamedTuple
 from typing import TypeVar
 
 import numpy as np
 import xarray as xr
 
 from glotaran.analysis.nnls import residual_nnls
+from glotaran.analysis.optimization_group_calculator import OptimizationGroupCalculator
+from glotaran.analysis.optimization_group_calculator_linked import (
+    OptimizationGroupCalculatorLinked,
+)
+from glotaran.analysis.optimization_group_calculator_unlinked import (
+    OptimizationGroupCalculatorUnlinked,
+)
 from glotaran.analysis.util import get_min_max_from_interval
 from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.io.prepare_dataset import add_svd_to_dataset
+from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
@@ -33,67 +39,59 @@ class ParameterNotInitializedError(ValueError):
         super().__init__("Parameter not initialized")
 
 
-class UngroupedProblemDescriptor(NamedTuple):
-    dataset: DatasetModel
-    data: xr.DataArray
-    model_axis: np.ndarray
-    global_axis: np.ndarray
-    weight: xr.DataArray
-
-
-class GroupedProblemDescriptor(NamedTuple):
-    label: str
-    indices: dict[str, int]
-    axis: dict[str, np.ndarray]
-
-
-class ProblemGroup(NamedTuple):
-    data: np.ndarray
-    weight: np.ndarray
-    has_scaling: bool
-    """Indicates if at least one dataset in the group needs scaling."""
-    group: str
-    """The concatenated labels of the involved datasets."""
-    data_sizes: list[int]
-    """Holds the sizes of the concatenated datasets."""
-    descriptor: list[GroupedProblemDescriptor]
-
-
-UngroupedBag = Dict[str, UngroupedProblemDescriptor]
-
 XrDataContainer = TypeVar("XrDataContainer", xr.DataArray, xr.Dataset)
 
+residual_functions = {
+    "variable_projection": residual_variable_projection,
+    "non_negative_least_squares": residual_nnls,
+}
 
-class Problem:
-    """A Problem class"""
 
-    def __init__(self, scheme: Scheme):
-        """Initializes the Problem class from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
+class OptimizationGroup:
+    def __init__(
+        self,
+        scheme: Scheme,
+        dataset_group: DatasetGroup,
+    ):
+        """Create OptimizationGroup instance  from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
 
         Args:
             scheme (Scheme): An instance of :class:`glotaran.analysis.scheme.Scheme`
                 which defines your model, parameters, and data
         """
 
-        self._scheme = scheme
-
         self._model = scheme.model
+        if scheme.parameters is None:
+            raise ParameterNotInitializedError
+        self._parameters = scheme.parameters.copy()
+        self._dataset_group_model = dataset_group.model
+        self._clp_link_tolerance = scheme.clp_link_tolerance
 
-        self._bag = None
-
-        self._residual_function = (
-            residual_nnls if scheme.non_negative_least_squares else residual_variable_projection
-        )
-        self._parameters = None
-        self._dataset_models = None
+        try:
+            self._residual_function = residual_functions[dataset_group.model.residual_function]
+        except KeyError:
+            raise ValueError(
+                f"Unknown residual function '{dataset_group.model.residual_function}', "
+                f"allowed functions are: {list(residual_functions.keys())}."
+            )
+        self._dataset_models = dataset_group.dataset_models
 
         self._overwrite_index_dependent = self.model.need_index_dependent()
-        self._parameters = scheme.parameters.copy()
-        self._parameter_history = ParameterHistory()
 
         self._model.validate(raise_exception=True)
 
-        self._prepare_data(scheme.data)
+        self._prepare_data(scheme, list(dataset_group.dataset_models.keys()))
+        self._dataset_labels = list(self.data.keys())
+
+        link_clp = dataset_group.model.link_clp
+        if link_clp is None:
+            link_clp = self.model.is_groupable(self.parameters, self.data)
+
+        self._calculator: OptimizationGroupCalculator = (
+            OptimizationGroupCalculatorLinked(self)
+            if link_clp
+            else OptimizationGroupCalculatorUnlinked(self)
+        )
 
         # all of the above are always not None
 
@@ -104,18 +102,7 @@ class Problem:
         self._weighted_residuals = None
         self._residuals = None
         self._additional_penalty = None
-        self._full_axis = None
         self._full_penalty = None
-
-    @property
-    def scheme(self) -> Scheme:
-        """Property providing access to the used scheme
-
-        Returns:
-            Scheme: An instance of :class:`glotaran.analysis.scheme.Scheme`
-                Provides access to data, model, parameters and optimization arguments.
-        """
-        return self._scheme
 
     @property
     def model(self) -> Model:
@@ -146,10 +133,6 @@ class Problem:
         self.reset()
 
     @property
-    def parameter_history(self) -> ParameterHistory:
-        return self._parameter_history
-
-    @property
     def dataset_models(self) -> dict[str, DatasetModel]:
         return self._dataset_models
 
@@ -158,7 +141,7 @@ class Problem:
         self,
     ) -> dict[str, np.ndarray | list[np.ndarray]]:
         if self._matrices is None:
-            self.calculate_matrices()
+            self._calculator.calculate_matrices()
         return self._matrices
 
     @property
@@ -166,7 +149,7 @@ class Problem:
         self,
     ) -> dict[str, np.ndarray] | dict[str, list[np.ndarray]] | list[np.ndarray]:
         if self._reduced_matrices is None:
-            self.calculate_matrices()
+            self._calculator.calculate_matrices()
         return self._reduced_matrices
 
     @property
@@ -174,7 +157,7 @@ class Problem:
         self,
     ) -> dict[str, list[np.ndarray]]:
         if self._reduced_clps is None:
-            self.calculate_residual()
+            self._calculator.calculate_residual()
         return self._reduced_clps
 
     @property
@@ -182,7 +165,7 @@ class Problem:
         self,
     ) -> dict[str, list[np.ndarray]]:
         if self._clps is None:
-            self.calculate_residual()
+            self._calculator.calculate_residual()
         return self._clps
 
     @property
@@ -190,7 +173,7 @@ class Problem:
         self,
     ) -> dict[str, list[np.ndarray]]:
         if self._weighted_residuals is None:
-            self.calculate_residual()
+            self._calculator.calculate_residual()
         return self._weighted_residuals
 
     @property
@@ -198,7 +181,7 @@ class Problem:
         self,
     ) -> dict[str, list[np.ndarray]]:
         if self._residuals is None:
-            self.calculate_residual()
+            self._calculator.calculate_residual()
         return self._residuals
 
     @property
@@ -206,25 +189,25 @@ class Problem:
         self,
     ) -> dict[str, list[float]]:
         if self._additional_penalty is None:
-            self.calculate_residual()
+            self._calculator.calculate_residual()
         return self._additional_penalty
 
     @property
     def full_penalty(self) -> np.ndarray:
-        raise NotImplementedError
+        if self._full_penalty is None:
+            self._calculator.calculate_full_penalty()
+        return self._full_penalty
 
     @property
     def cost(self) -> float:
         return 0.5 * np.dot(self.full_penalty, self.full_penalty)
 
-    def save_parameters_for_history(self):
-        self._parameter_history.append(self._parameters)
-
     def reset(self):
         """Resets all results and `DatasetModels`. Use after updating parameters."""
         self._dataset_models = {
             label: dataset_model.fill(self._model, self._parameters).set_data(self.data[label])
-            for label, dataset_model in self._model.dataset.items()
+            for label, dataset_model in self.model.dataset.items()
+            if label in self._dataset_labels
         }
         if self._overwrite_index_dependent:
             for d in self._dataset_models.values():
@@ -241,10 +224,12 @@ class Problem:
         self._additional_penalty = None
         self._full_penalty = None
 
-    def _prepare_data(self, data: dict[str, xr.DataArray | xr.Dataset]):
+    def _prepare_data(self, scheme: Scheme, labels: list[str]):
         self._data = {}
         self._dataset_models = {}
-        for label, dataset in data.items():
+        for label, dataset in scheme.data.items():
+            if label not in labels:
+                continue
             if isinstance(dataset, xr.DataArray):
                 dataset = dataset.to_dataset(name="data")
 
@@ -261,7 +246,7 @@ class Problem:
                 dataset, ordered_dims=[model_dimension, global_dimension]
             )
 
-            if self.scheme.add_svd:
+            if scheme.add_svd:
                 add_svd_to_dataset(dataset, lsv_dim=model_dimension, rsv_dim=global_dimension)
 
             self._add_weight(label, dataset)
@@ -324,16 +309,22 @@ class Problem:
                     )
                 dataset.weight[idx] *= weight.value
 
-    def create_result_data(self, copy: bool = True, success: bool = True) -> dict[str, xr.Dataset]:
+    def create_result_data(
+        self,
+        parameter_history: ParameterHistory = None,
+        copy: bool = True,
+        success: bool = True,
+        add_svd: bool = True,
+    ) -> dict[str, xr.Dataset]:
 
         if not success:
-            if self.parameter_history.number_of_records > 1:
-                self.parameters.set_from_history(self.parameter_history, -2)
+            if parameter_history is not None and parameter_history.number_of_records > 1:
+                self.parameters.set_from_history(parameter_history, -2)
             else:
                 raise InitialParameterError()
 
         self.reset()
-        self.prepare_result_creation()
+        self._calculator.prepare_result_creation()
         result_data = {}
         for label, dataset_model in self.dataset_models.items():
             result_data[label] = self.create_result_dataset(label, copy=copy)
@@ -341,7 +332,9 @@ class Problem:
 
         return result_data
 
-    def create_result_dataset(self, label: str, copy: bool = True) -> xr.Dataset:
+    def create_result_dataset(
+        self, label: str, copy: bool = True, add_svd: bool = True
+    ) -> xr.Dataset:
         dataset = self.data[label]
         dataset_model = self.dataset_models[label]
         global_dimension = dataset_model.get_global_dimension()
@@ -349,12 +342,12 @@ class Problem:
         if copy:
             dataset = dataset.copy()
         if dataset_model.is_index_dependent():
-            dataset = self.create_index_dependent_result_dataset(label, dataset)
+            dataset = self._calculator.create_index_dependent_result_dataset(label, dataset)
         else:
-            dataset = self.create_index_independent_result_dataset(label, dataset)
+            dataset = self._calculator.create_index_independent_result_dataset(label, dataset)
 
         # TODO: adapt tests to handle add_svd=False
-        if self.scheme.add_svd:
+        if add_svd:
             self._create_svd("weighted_residual", dataset, model_dimension, global_dimension)
             self._create_svd("residual", dataset, model_dimension, global_dimension)
 
@@ -390,22 +383,3 @@ class Problem:
         add_svd_to_dataset(
             dataset, name=name, lsv_dim=lsv_dim, rsv_dim=rsv_dim, data_array=data_array
         )
-
-    def create_index_dependent_result_dataset(self, label: str, dataset: xr.Dataset) -> xr.Dataset:
-        """Creates a result datasets for index dependent matrices."""
-        raise NotImplementedError
-
-    def create_index_independent_result_dataset(
-        self, label: str, dataset: xr.Dataset
-    ) -> xr.Dataset:
-        """Creates a result datasets for index independent matrices."""
-        raise NotImplementedError
-
-    def calculate_matrices(self):
-        raise NotImplementedError
-
-    def calculate_residual(self):
-        raise NotImplementedError
-
-    def prepare_result_creation(self):
-        pass

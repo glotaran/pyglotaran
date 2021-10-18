@@ -8,6 +8,8 @@ from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.constraint import OnlyConstraint
 from glotaran.model.constraint import ZeroConstraint
+from glotaran.model.dataset_group import DatasetGroup
+from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.model.dataset_model import DatasetModel
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_typed

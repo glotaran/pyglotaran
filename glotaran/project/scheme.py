@@ -1,11 +1,12 @@
 """The module for :class:``Scheme``."""
 from __future__ import annotations
 
-import warnings
 from dataclasses import dataclass
+from dataclasses import fields
 from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
+from glotaran.deprecation import warn_deprecated
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters
@@ -37,10 +38,11 @@ class Scheme:
     model_file: str | None = file_representation_field("model", load_model, default=None)
     parameters_file: str | None = file_representation_field("parameters", load_parameters, None)
     data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
-    group: bool | None = None
-    group_tolerance: float = 0.0
-    non_negative_least_squares: bool = False
+    clp_link_tolerance: float = 0.0
     maximum_number_function_evaluations: int | None = None
+    non_negative_least_squares: bool | None = exclude_from_dict_field(None)
+    group_tolerance: float | None = exclude_from_dict_field(None)
+    group: bool | None = exclude_from_dict_field(None)
     add_svd: bool = True
     ftol: float = 1e-8
     gtol: float = 1e-8
@@ -51,6 +53,50 @@ class Scheme:
         "Levenberg-Marquardt",
     ] = "TrustRegionReflection"
     result_path: str | None = None
+
+    def __post_init__(self):
+        """Override attributes after initialization."""
+        if self.non_negative_least_squares is not None:
+            warn_deprecated(
+                deprecated_qual_name_usage=(
+                    "glotaran.project.Scheme(..., non_negative_least_squares=...)"
+                ),
+                new_qual_name_usage="<model_file>dataset_groups.default.residual_function",
+                to_be_removed_in_version="0.7.0",
+                check_qual_names=(True, False),
+                stacklevel=4,
+            )
+
+            default_group = self.model.dataset_group_models["default"]
+            if self.non_negative_least_squares is True:
+                default_group.residual_function = "non_negative_least_squares"
+            else:
+                default_group.residual_function = "variable_projection"
+            for field in fields(self):
+                if field.name == "non_negative_least_squares":
+                    field.metadata = {}
+
+        if self.group is not None:
+            warn_deprecated(
+                deprecated_qual_name_usage="glotaran.project.Scheme(..., group=...)",
+                new_qual_name_usage="<model_file>dataset_groups.default.link_clp",
+                to_be_removed_in_version="0.7.0",
+                check_qual_names=(True, False),
+                stacklevel=4,
+            )
+            self.model.dataset_group_models["default"].link_clp = self.group
+            for field in fields(self):
+                if field.name == "group":
+                    field.metadata = {}
+
+        if self.group_tolerance is not None:
+            warn_deprecated(
+                deprecated_qual_name_usage="glotaran.project.Scheme(..., group_tolerance=...)",
+                new_qual_name_usage="glotaran.project.Scheme(..., clp_link_tolerance=...)",
+                to_be_removed_in_version="0.7.0",
+                stacklevel=4,
+            )
+            self.clp_link_tolerance = self.group_tolerance
 
     def problem_list(self) -> list[str]:
         """Return a list with all problems in the model and missing parameters.
@@ -96,26 +142,15 @@ class Scheme:
         markdown_str = "\n\n"
         markdown_str += "__Scheme__\n\n"
 
-        markdown_str += f"* *nnls*: {self.non_negative_least_squares}\n"
-        markdown_str += f"* *nfev*: {self.maximum_number_function_evaluations}\n"
-        markdown_str += f"* *group_tolerance*: {self.group_tolerance}\n"
+        if self.non_negative_least_squares is not None:
+            markdown_str += f"* *non_negative_least_squares*: {self.non_negative_least_squares}\n"
+        markdown_str += (
+            "* *maximum_number_function_evaluations*: "
+            f"{self.maximum_number_function_evaluations}\n"
+        )
+        markdown_str += f"* *clp_link_tolerance*: {self.clp_link_tolerance}\n"
 
         return model_markdown_str + MarkdownStr(markdown_str)
-
-    def is_grouped(self) -> bool:
-        """Return whether the scheme should be grouped.
-
-        Returns
-        -------
-        bool
-            Weather the scheme should be grouped.
-        """
-        if self.group is not None and not self.group:
-            return False
-        is_groupable = self.model.is_groupable(self.parameters, self.data)
-        if not is_groupable and self.group is not None:
-            warnings.warn("Cannot group scheme. Continuing ungrouped.")
-        return is_groupable
 
     def _repr_markdown_(self) -> str:
         """Return a markdown representation str.

@@ -216,8 +216,7 @@ def test_equal_area_penalties(debug=False):
     # for both we perturb kinetic parameters a bit to give the optimizer some work
     pspec_wp = dict(deepcopy(pspec.base), **pspec.equal_area)
     pspec_wp["kinetic"] = [v * 1.01 for v in pspec_wp["kinetic"]]
-    pspec_wp.update({"i": [[1, {"vary": False}], 1]})
-
+    pspec_wp["i"] = [[1, {"vary": False}], 1]
     pspec_np = dict(deepcopy(pspec.base))
 
     param_wp = ParameterGroup.from_dict(pspec_wp)
@@ -245,23 +244,29 @@ def test_equal_area_penalties(debug=False):
 
     # %% Optimizing model without penalty (np)
 
+    model_np.dataset_group_models["default"].method = (
+        "non_negative_least_squares" if optim_spec.nnls else "variable_projection"
+    )
+
     dataset = {"dataset1": data}
     scheme_np = Scheme(
         model=model_np,
         parameters=param_np,
         data=dataset,
-        non_negative_least_squares=optim_spec.nnls,
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_np = optimize(scheme_np)
     print(result_np)
+
+    model_wp.dataset_group_models["default"].method = (
+        "non_negative_least_squares" if optim_spec.nnls else "variable_projection"
+    )
 
     # %% Optimizing model with penalty fixed inputs (wp_ifix)
     scheme_wp = Scheme(
         model=model_wp,
         parameters=param_wp,
         data=dataset,
-        non_negative_least_squares=optim_spec.nnls,
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
     result_wp = optimize(scheme_wp)

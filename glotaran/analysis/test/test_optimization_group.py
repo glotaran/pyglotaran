@@ -4,9 +4,10 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.problem import Problem
-from glotaran.analysis.problem_grouped import GroupedProblem
-from glotaran.analysis.problem_ungrouped import UngroupedProblem
+from glotaran.analysis.optimization_group import OptimizationGroup
+from glotaran.analysis.optimization_group_calculator_linked import (
+    OptimizationGroupCalculatorLinked,
+)
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import FullModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
@@ -19,10 +20,11 @@ from glotaran.project import Scheme
 @pytest.fixture(
     scope="module", params=[[True, True], [True, False], [False, True], [False, False]]
 )
-def problem(request) -> Problem:
+def optimization_group(request) -> OptimizationGroup:
     model = suite.model
     model.megacomplex["m1"].is_index_dependent = request.param[1]
     model.is_index_dependent = request.param[1]
+    model.dataset_group_models["default"].link_clp = request.param[0]
 
     dataset = simulate(
         suite.sim_model,
@@ -31,66 +33,68 @@ def problem(request) -> Problem:
         {"global": suite.global_axis, "model": suite.model_axis},
     )
     scheme = Scheme(model=model, parameters=suite.initial_parameters, data={"dataset1": dataset})
-    problem = GroupedProblem(scheme) if request.param[0] else UngroupedProblem(scheme)
-    problem.grouped = request.param[0]
-    return problem
+
+    return OptimizationGroup(scheme, model.get_dataset_groups()["default"])
 
 
-def test_problem_bag(problem: Problem):
+def test_optimization_group_bag(optimization_group: OptimizationGroup):
 
-    if problem.grouped:
-        bag = problem.bag
+    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
+        bag = optimization_group._calculator.bag
         assert isinstance(bag, collections.deque)
         assert len(bag) == suite.global_axis.size
-        assert problem.groups == {"dataset1": ["dataset1"]}
+        assert optimization_group._calculator.groups == {"dataset1": ["dataset1"]}
 
 
-def test_problem_matrices(problem: Problem):
-    problem.calculate_matrices()
+def test_optimization_group_matrices(optimization_group: OptimizationGroup):
+    optimization_group._calculator.calculate_matrices()
 
-    if problem.grouped:
-        if problem.model.is_index_dependent:
-            assert all(isinstance(m, CalculatedMatrix) for m in problem.reduced_matrices)
-            assert len(problem.reduced_matrices) == suite.global_axis.size
-        else:
-            assert "dataset1" in problem.reduced_matrices
-            assert isinstance(problem.reduced_matrices["dataset1"], CalculatedMatrix)
-    else:
-        if problem.model.is_index_dependent:
-            assert isinstance(problem.reduced_matrices, dict)
-            assert isinstance(problem.reduced_matrices["dataset1"], list)
+    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
+        if optimization_group.model.is_index_dependent:
             assert all(
-                isinstance(m, CalculatedMatrix) for m in problem.reduced_matrices["dataset1"]
+                isinstance(m, CalculatedMatrix) for m in optimization_group.reduced_matrices
+            )
+            assert len(optimization_group.reduced_matrices) == suite.global_axis.size
+        else:
+            assert "dataset1" in optimization_group.reduced_matrices
+            assert isinstance(optimization_group.reduced_matrices["dataset1"], CalculatedMatrix)
+    else:
+        if optimization_group.model.is_index_dependent:
+            assert isinstance(optimization_group.reduced_matrices, dict)
+            assert isinstance(optimization_group.reduced_matrices["dataset1"], list)
+            assert all(
+                isinstance(m, CalculatedMatrix)
+                for m in optimization_group.reduced_matrices["dataset1"]
             )
         else:
-            assert isinstance(problem.reduced_matrices["dataset1"], CalculatedMatrix)
+            assert isinstance(optimization_group.reduced_matrices["dataset1"], CalculatedMatrix)
 
-        assert isinstance(problem.matrices, dict)
-        assert "dataset1" in problem.reduced_matrices
+        assert isinstance(optimization_group.matrices, dict)
+        assert "dataset1" in optimization_group.reduced_matrices
 
 
-def test_problem_residuals(problem: Problem):
-    problem.calculate_residual()
-    if problem.grouped:
-        assert isinstance(problem.residuals, list)
-        assert all(isinstance(r, np.ndarray) for r in problem.residuals)
-        assert len(problem.residuals) == suite.global_axis.size
+def test_optimization_group_residuals(optimization_group: OptimizationGroup):
+    optimization_group._calculator.calculate_residual()
+    if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
+        assert isinstance(optimization_group.residuals, list)
+        assert all(isinstance(r, np.ndarray) for r in optimization_group.residuals)
+        assert len(optimization_group.residuals) == suite.global_axis.size
     else:
-        assert isinstance(problem.residuals, dict)
-        assert "dataset1" in problem.residuals
-        assert all(isinstance(r, np.ndarray) for r in problem.residuals["dataset1"])
-        assert len(problem.residuals["dataset1"]) == suite.global_axis.size
+        assert isinstance(optimization_group.residuals, dict)
+        assert "dataset1" in optimization_group.residuals
+        assert all(isinstance(r, np.ndarray) for r in optimization_group.residuals["dataset1"])
+        assert len(optimization_group.residuals["dataset1"]) == suite.global_axis.size
 
 
-def test_problem_result_data(problem: Problem):
+def test_optimization_group_result_data(optimization_group: OptimizationGroup):
 
-    data = problem.create_result_data()
+    data = optimization_group.create_result_data()
     label = "dataset1"
 
     assert label in data
 
     dataset = data[label]
-    dataset_model = problem.dataset_models[label]
+    dataset_model = optimization_group.dataset_models[label]
 
     assert "clp_label" in dataset.coords
     assert np.array_equal(dataset.clp_label, ["s1", "s2", "s3", "s4"])
@@ -103,7 +107,7 @@ def test_problem_result_data(problem: Problem):
 
     assert "matrix" in dataset
     matrix = dataset.matrix
-    if problem.model.is_index_dependent:
+    if optimization_group.model.is_index_dependent:
         assert len(matrix.shape) == 3
         assert matrix.shape[0] == suite.global_axis.size
         assert matrix.shape[1] == suite.model_axis.size
@@ -162,9 +166,9 @@ def test_prepare_data():
     )
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
-    problem = Problem(scheme)
+    optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
 
-    data = problem.data["dataset1"]
+    data = optimization_group.data["dataset1"]
     print(data)
     assert "data" in data
     assert "weight" in data
@@ -185,8 +189,9 @@ def test_prepare_data():
     assert model.valid()
 
     scheme = Scheme(model, parameters, {"dataset1": dataset})
-    problem = Problem(scheme)
-    data = problem.data["dataset1"]
+    optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
+
+    data = optimization_group.data["dataset1"]
     assert np.all(
         data.weight.sel({"global": slice(0, 200), "model": slice(4, 8)}).values == 0.5 * 0.2
     )
@@ -197,7 +202,9 @@ def test_prepare_data():
         match="Ignoring model weight for dataset 'dataset1'"
         " because weight is already supplied by dataset.",
     ):
-        Problem(Scheme(model, parameters, {"dataset1": data}))
+        OptimizationGroup(
+            Scheme(model, parameters, {"dataset1": data}), model.get_dataset_groups()["default"]
+        )
 
 
 def test_full_model_problem():
@@ -205,9 +212,9 @@ def test_full_model_problem():
     scheme = Scheme(
         model=FullModel.model, parameters=FullModel.parameters, data={"dataset1": dataset}
     )
-    problem = UngroupedProblem(scheme)
+    optimization_group = OptimizationGroup(scheme, FullModel.model.get_dataset_groups()["default"])
 
-    result = problem.create_result_data()["dataset1"]
+    result = optimization_group.create_result_data()["dataset1"]
     assert "global_matrix" in result
     assert "global_clp_label" in result
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import asdict
 from typing import Any
 from typing import List
 from warnings import warn
@@ -11,6 +12,8 @@ import xarray as xr
 from glotaran.deprecation import raise_deprecation_error
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
+from glotaran.model.dataset_group import DatasetGroup
+from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.model.dataset_model import create_dataset_model_type
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.megacomplex import create_model_megacomplex_type
@@ -30,6 +33,7 @@ default_model_items = {
 }
 
 default_dataset_properties = {
+    "group": {"type": str, "default": "default"},
     "megacomplex": List[str],
     "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
     "global_megacomplex": {"type": List[str], "allow_none": True},
@@ -46,9 +50,14 @@ class Model:
         *,
         megacomplex_types: dict[str, type[Megacomplex]],
         default_megacomplex_type: str | None = None,
+        dataset_group_models: dict[str, DatasetGroupModel] = None,
     ):
         self._megacomplex_types = megacomplex_types
         self._default_megacomplex_type = default_megacomplex_type or next(iter(megacomplex_types))
+
+        self._dataset_group_models = dataset_group_models or {"default": DatasetGroupModel()}
+        if "default" not in self._dataset_group_models:
+            self._dataset_group_models["default"] = DatasetGroupModel()
 
         self._model_items = {}
         self._dataset_properties = {}
@@ -93,8 +102,16 @@ class Model:
         if "default-megacomplex" in model_dict:
             model_dict.pop("default-megacomplex", None)
 
+        dataset_group_models = model_dict.pop("dataset_groups", None)
+        if dataset_group_models is not None:
+            dataset_group_models = {
+                label: DatasetGroupModel(**group) for label, group in dataset_group_models.items()
+            }
+
         model = cls(
-            megacomplex_types=megacomplex_types, default_megacomplex_type=default_megacomplex_type
+            megacomplex_types=megacomplex_types,
+            default_megacomplex_type=default_megacomplex_type,
+            dataset_group_models=dataset_group_models,
         )
 
         # iterate over items
@@ -248,6 +265,10 @@ class Model:
         return self._megacomplex_types
 
     @property
+    def dataset_group_models(self) -> dict[str, DatasetGroupModel]:
+        return self._dataset_group_models
+
+    @property
     def model_items(self) -> dict[str, type[object]]:
         """The model_items types used by this model."""
         return self._model_items
@@ -257,8 +278,25 @@ class Model:
         """Alias for `glotaran.model.megacomplex`. Needed internally."""
         return self.megacomplex
 
+    def get_dataset_groups(self) -> dict[str, DatasetGroup]:
+        groups = {}
+        for dataset_model in self.dataset.values():
+            group = dataset_model.group
+            if group not in groups:
+                try:
+                    groups[group] = DatasetGroup(model=self.dataset_group_models[group])
+                except KeyError:
+                    raise ValueError(f"Unknown dataset group '{group}'")
+            groups[group].dataset_models[dataset_model.label] = dataset_model
+        return groups
+
     def as_dict(self) -> dict:
-        model_dict = {"default-megacomplex": self.default_megacomplex}
+        model_dict = {
+            "default-megacomplex": self.default_megacomplex,
+            "dataset_groups": {
+                label: asdict(group) for label, group in self.dataset_group_models.items()
+            },
+        }
         for item_name in self._model_items:
             items = getattr(self, item_name)
             if len(items) == 0:
@@ -284,15 +322,16 @@ class Model:
         return any(i.interval is not None for i in self.clp_constraints + self.clp_relations)
 
     def is_groupable(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
-        if any(d.has_global_model() for d in self.dataset.values()):
+        dataset_models = {label: self.dataset[label] for label in data}
+        if any(d.has_global_model() for d in dataset_models.values()):
             return False
         global_dimensions = {
             d.fill(self, parameters).set_data(data[k]).get_global_dimension()
-            for k, d in self.dataset.items()
+            for k, d in dataset_models.items()
         }
         model_dimensions = {
             d.fill(self, parameters).set_data(data[k]).get_model_dimension()
-            for k, d in self.dataset.items()
+            for k, d in dataset_models.items()
         }
         return len(global_dimensions) == 1 and len(model_dimensions) == 1
 

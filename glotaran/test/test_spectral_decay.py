@@ -240,11 +240,15 @@ class ThreeComponentSequential:
     ],
 )
 @pytest.mark.parametrize("nnls", [True, False])
-def test_kinetic_model(suite, nnls):
+def test_decay_model(suite, nnls):
 
     model = suite.model
     print(model.validate())
     assert model.valid()
+    model.dataset_group_models["default"].link_clp = False
+    model.dataset_group_models["default"].method = (
+        "non_negative_least_squares" if nnls else "variable_projection"
+    )
 
     wanted_parameters = suite.wanted_parameters
     print(model.validate(wanted_parameters))
@@ -268,8 +272,6 @@ def test_kinetic_model(suite, nnls):
         parameters=initial_parameters,
         data=data,
         maximum_number_function_evaluations=20,
-        non_negative_least_squares=nnls,
-        group=False,
     )
     result = optimize(scheme)
     print(result.optimized_parameters)

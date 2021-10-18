@@ -103,6 +103,9 @@ def test_model_dict():
             "m1": {"test_item1": "t2"},
             "m2": {"type": "type5", "dimension": "model2"},
         },
+        "dataset_groups": {
+            "testgroup": {"residual_function": "non_negative_least_squares", "link_clp": True}
+        },
         "weights": [
             {
                 "datasets": ["d1", "d2"],
@@ -141,6 +144,7 @@ def test_model_dict():
                 "test_item_dataset": "t2",
                 "test_property_dataset1": 1,
                 "test_property_dataset2": "bar",
+                "group": "testgroup",
             },
         },
     }
@@ -283,6 +287,28 @@ def test_model_misc(test_model: Model):
     assert test_model.megacomplex["m2"].dimension == "model2"
 
 
+def test_dataset_group_models(test_model: Model):
+    groups = test_model.dataset_group_models
+    assert "default" in groups
+    assert groups["default"].residual_function == "variable_projection"
+    assert groups["default"].link_clp is None
+    assert "testgroup" in groups
+    assert groups["testgroup"].residual_function == "non_negative_least_squares"
+    assert groups["testgroup"].link_clp
+
+
+def test_dataset_groups(test_model: Model):
+    groups = test_model.get_dataset_groups()
+    assert "default" in groups
+    assert groups["default"].model.residual_function == "variable_projection"
+    assert groups["default"].model.link_clp is None
+    assert "dataset1" in groups["default"].dataset_models
+    assert "testgroup" in groups
+    assert groups["testgroup"].model.residual_function == "non_negative_least_squares"
+    assert groups["testgroup"].model.link_clp
+    assert "dataset2" in groups["testgroup"].dataset_models
+
+
 def test_model_validity(test_model: Model, model_error: Model, parameter: ParameterGroup):
     print(test_model.test_item1["t1"])
     print(test_model.problem_list())
@@ -390,10 +416,14 @@ def test_model_as_dict():
                 "number": 21,
             },
         },
+        "dataset_groups": {
+            "default": {"link_clp": None, "residual_function": "variable_projection"}
+        },
         "dataset": {
             "dataset1": {
                 "megacomplex": ["m1"],
                 "scale": "scale_1",
+                "group": "default",
             },
         },
     }
