@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import fields
 from typing import TYPE_CHECKING
-from warnings import warn
 
 from glotaran.deprecation import deprecate
 from glotaran.deprecation import warn_deprecated
@@ -43,6 +42,7 @@ class Scheme:
     maximum_number_function_evaluations: int | None = None
     non_negative_least_squares: bool | None = exclude_from_dict_field(None)
     group_tolerance: float | None = exclude_from_dict_field(None)
+    group: bool | None = exclude_from_dict_field(None)
     add_svd: bool = True
     ftol: float = 1e-8
     gtol: float = 1e-8
@@ -57,24 +57,15 @@ class Scheme:
     def __post_init__(self):
         """Override attributes after initialization."""
         if self.non_negative_least_squares is not None:
-            # TODO: add original model spec (parsed yml) to model and
-            # check if 'dataset_groups' is present
-            if len(self.model.dataset_group_models) > 1:
-                warn_deprecated(
-                    deprecated_qual_name_usage="glotaran.project.Scheme(..., group=...)",
-                    new_qual_name_usage="glotaran.model",
-                    to_be_removed_in_version="0.7.0",
-                    stacklevel=4,
-                )
-                warn(
-                    UserWarning(
-                        "Using 'non_negative_least_squares' in 'Scheme' is only meant "
-                        "for convenience of comparisons. This will override settings in "
-                        "'model.dataset_groups.default.residual_function', rather use the "
-                        "model definition instead."
-                    ),
-                    stacklevel=3,
-                )
+            warn_deprecated(
+                deprecated_qual_name_usage=(
+                    "glotaran.project.Scheme(..., non_negative_least_squares=...)"
+                ),
+                new_qual_name_usage="<model_file>dataset_groups.default.residual_function",
+                to_be_removed_in_version="0.7.0",
+                check_qual_names=(True, False),
+                stacklevel=4,
+            )
 
             default_group = self.model.dataset_group_models["default"]
             if self.non_negative_least_squares is True:
@@ -83,6 +74,19 @@ class Scheme:
                 default_group.residual_function = "variable_projection"
             for field in fields(self):
                 if field.name == "non_negative_least_squares":
+                    field.metadata = {}
+
+        if self.group is not None:
+            warn_deprecated(
+                deprecated_qual_name_usage="glotaran.project.Scheme(..., group=...)",
+                new_qual_name_usage="<model_file>dataset_groups.default.link_clp",
+                to_be_removed_in_version="0.7.0",
+                check_qual_names=(True, False),
+                stacklevel=4,
+            )
+            self.model.dataset_group_models["default"].link_clp = self.group
+            for field in fields(self):
+                if field.name == "group":
                     field.metadata = {}
 
         if self.group_tolerance is not None:
