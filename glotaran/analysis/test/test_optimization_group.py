@@ -37,7 +37,7 @@ def optimization_group(request) -> OptimizationGroup:
     return OptimizationGroup(scheme, model.get_dataset_groups()["default"])
 
 
-def test_problem_bag(optimization_group: OptimizationGroup):
+def test_optimization_group_bag(optimization_group: OptimizationGroup):
 
     if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
         bag = optimization_group._calculator.bag
@@ -46,7 +46,7 @@ def test_problem_bag(optimization_group: OptimizationGroup):
         assert optimization_group._calculator.groups == {"dataset1": ["dataset1"]}
 
 
-def test_problem_matrices(optimization_group: OptimizationGroup):
+def test_optimization_group_matrices(optimization_group: OptimizationGroup):
     optimization_group._calculator.calculate_matrices()
 
     if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
@@ -73,7 +73,7 @@ def test_problem_matrices(optimization_group: OptimizationGroup):
         assert "dataset1" in optimization_group.reduced_matrices
 
 
-def test_problem_residuals(optimization_group: OptimizationGroup):
+def test_optimization_group_residuals(optimization_group: OptimizationGroup):
     optimization_group._calculator.calculate_residual()
     if isinstance(optimization_group._calculator, OptimizationGroupCalculatorLinked):
         assert isinstance(optimization_group.residuals, list)
@@ -86,7 +86,7 @@ def test_problem_residuals(optimization_group: OptimizationGroup):
         assert len(optimization_group.residuals["dataset1"]) == suite.global_axis.size
 
 
-def test_problem_result_data(optimization_group: OptimizationGroup):
+def test_optimization_group_result_data(optimization_group: OptimizationGroup):
 
     data = optimization_group.create_result_data()
     label = "dataset1"
