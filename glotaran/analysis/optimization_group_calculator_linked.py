@@ -33,7 +33,7 @@ class DatasetIndexModel(NamedTuple):
     axis: dict[str, np.ndarray]
 
 
-class DatasetGroupIndexModel(NamedTuple):
+class DatasetIndexModelGroup(NamedTuple):
     """A model which contains information about a group of dataset with linked clp."""
 
     data: np.ndarray
@@ -47,7 +47,7 @@ class DatasetGroupIndexModel(NamedTuple):
     dataset_models: list[DatasetIndexModel]
 
 
-Bag = Deque[DatasetGroupIndexModel]
+Bag = Deque[DatasetIndexModelGroup]
 """A deque of dataset group index models."""
 
 
@@ -100,7 +100,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
 
             if self._bag is None:
                 self._bag = collections.deque(
-                    DatasetGroupIndexModel(
+                    DatasetIndexModelGroup(
                         data=data[:, i],
                         weight=weight[:, i] if weight is not None else None,
                         has_scaling=has_scaling,
@@ -145,7 +145,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
         for i, j in enumerate(i1):
             datasets[j].append(label)
             data_stripe = data[:, i2[i]]
-            self._bag[j] = DatasetGroupIndexModel(
+            self._bag[j] = DatasetIndexModelGroup(
                 data=np.concatenate(
                     [
                         self._bag[j].data,
@@ -178,7 +178,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
         end_overlap = i2[-1] + 1 if len(i2) != 0 else 0
         for i in itertools.chain(range(begin_overlap), range(end_overlap, len(global_axis))):
             data_stripe = data[:, i]
-            problem = DatasetGroupIndexModel(
+            problem = DatasetIndexModelGroup(
                 data=data_stripe,
                 weight=weight[:, i] if weight is not None else None,
                 has_scaling=has_scaling,
@@ -224,7 +224,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
         """Calculates the index dependent model matrices."""
 
         def calculate_group(
-            group_model: DatasetGroupIndexModel, dataset_models: dict[str, DatasetModel]
+            group_model: DatasetIndexModelGroup, dataset_models: dict[str, DatasetModel]
         ) -> tuple[list[CalculatedMatrix], list[str], CalculatedMatrix]:
             matrices = [
                 calculate_matrix(
@@ -335,7 +335,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
 
     def _index_dependent_residual(
         self,
-        group_model: DatasetGroupIndexModel,
+        group_model: DatasetIndexModelGroup,
         matrix: CalculatedMatrix,
         clp_labels: str,
         index: Any,
@@ -365,7 +365,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
         )
         return clp_labels, clps, weighted_residual, residual
 
-    def _index_independent_residual(self, group_model: DatasetGroupIndexModel, index: Any):
+    def _index_independent_residual(self, group_model: DatasetIndexModelGroup, index: Any):
         matrix = self._group.reduced_matrices[group_model.group]
         reduced_clp_labels = matrix.clp_labels
         matrix = matrix.matrix.copy()
@@ -392,7 +392,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
         )
         return clp_labels, clps, weighted_residual, residual
 
-    def _apply_scale(self, group_model: DatasetGroupIndexModel, matrix: np.ndarray):
+    def _apply_scale(self, group_model: DatasetIndexModelGroup, matrix: np.ndarray):
         if group_model.has_scaling:
             for i, index_model in enumerate(group_model.dataset_models):
                 label = index_model.label
@@ -489,7 +489,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
     def _add_grouped_residual_to_dataset(
         self,
         dataset: xr.Dataset,
-        grouped_problem: DatasetGroupIndexModel,
+        grouped_problem: DatasetIndexModelGroup,
         index: int,
         group_index: int,
         global_index: int,
