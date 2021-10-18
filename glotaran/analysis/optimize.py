@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from warnings import warn
 
 import numpy as np
@@ -132,16 +131,13 @@ def _create_result(
         for group in optimization_groups:
             group.parameters.set_from_label_and_value_arrays(free_parameter_labels, ls_result.x)
             group.reset()
-    data = dict(
-        ChainMap(
-            *(
-                group.create_result_data(
-                    parameter_history, success=success, add_svd=scheme.add_svd
-                )
-                for group in optimization_groups
-            )
+
+    data = {}
+    for group in optimization_groups:
+        data.update(
+            group.create_result_data(parameter_history, success=success, add_svd=scheme.add_svd)
         )
-    )
+
     # the optimized parameters are those of the last run if the optimization has crashed
     parameters = optimization_groups[0].parameters
     covariance_matrix = None
