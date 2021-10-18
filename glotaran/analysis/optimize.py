@@ -99,8 +99,7 @@ def _calculate_penalty(
 
     penalties = [group.full_penalty for group in optimization_groups]
 
-    penalty = np.concatenate(penalties) if len(penalties) != 1 else penalties[0]
-    return penalty
+    return np.concatenate(penalties) if len(penalties) != 1 else penalties[0]
 
 
 def _create_result(

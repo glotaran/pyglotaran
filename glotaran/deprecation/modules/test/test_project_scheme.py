@@ -88,7 +88,7 @@ def test_scheme_group_tolerance():
 
 @pytest.mark.parametrize(
     "group",
-    ((True, False)),
+    (True, False),
 )
 def test_scheme_group(group: bool):
     """Argument ``group`` raises deprecation and maps to ``dataset_groups.default.link_clp``."""
