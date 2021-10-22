@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.5.0 (2021-10-24)
+
+### ✨ Features
+- ✨ Feature: Megacomplex Models (#736)
+- ✨ Feature: Full Models (#747)
+- ✨ Damped Oscillation Megacomplex (a.k.a. DOAS) (#764)
+- ✨ Add Dataset Groups (#851)
+
+
+### 👌 Minor Improvements:
+- 👌 Add dimensions to megacomplex and dataset_descriptor (#702)
+- 👌 Improve ordering in k_matrix involved_compartments function (#788)
+- 👌 Improvements to application of clp_penalties (equal area) (#801)
+- ♻️ Refactor model.from_dict to parse megacomplex_type from dict and add simple_generator for testing (#807)
+- ♻️ Refactor model spec (#836)
+- ♻️ Refactor Result Saving (#841)
+
+### 🩹 Bug fixes
+- 🩹 Fix/cli0.5 (#765)
+- 🩹 Fix Performance Regressions (#740)
+- 🩹 Fix compartment ordering randomization due to use of set (#799)
+- 🩹 Fix check_deprecations not showing deprecation warnings (#775)
+- 🩹 Fix and re-enable IRF Dispersion Test (#786)
+- 🩹 Fix coherent artifact crash for index dependent models #808
+- 🩹 False positive model validation fail when combining multiple default megacomplexes (#797)
+- 🩹 Fix ParameterGroup repr when created with 'from_list' (#827)
+- 🩹 Fix for DOAS with reversed oscillations (negative rates) (#839)
+- 🩹 Fix parameter expression parsing (#843)
+- 🩹 Use a context manager when opening a nc dataset (#848)
+
+
+### 📚 Documentation
+
+- 📚 Moved API documentation from User to Developer Docs (#776)
+- 📚 Add docs for the CLI (#784)
+- 📚 Fix deprecation in model used in quickstart notebook (#834)
+
+### 🗑️ Deprecations (due in 0.7.0)
+
+- `glotaran.model.Model.model_dimension` -> `glotaran.project.Scheme.model_dimension`
+- `glotaran.model.Model.global_dimension` -> `glotaran.project.Scheme.global_dimension`
+- `<model_file>.type.kinetic-spectrum` -> `<model_file>.default-megacomplex.decay`
+- `<model_file>.spectral_relations` -> `<model_file>.clp_relations`
+- `<model_file>.spectral_relations.compartment` -> `<model_file>.clp_relations.source`
+- `<model_file>.spectral_constraints` -> `<model_file>.clp_constraints`
+- `<model_file>.spectral_constraints.compartment` -> `<model_file>.clp_constraints.target`
+- `<model_file>.equal_area_penalties` -> `<model_file>.clp_area_penalties`
+- `<model_file>.irf.center_dispersion` -> `<model_file>.irf.center_dispersion_coefficients`
+- `<model_file>.irf.width_dispersion` -> `<model_file>.irf.width_dispersion_coefficients`
+- `glotaran.project.Scheme(..., non_negative_least_squares=...)` -> `<model_file>dataset_groups.default.residual_function`
+- `glotaran.project.Scheme(..., group=...)` -> `<model_file>dataset_groups.default.link_clp`
+- `glotaran.project.Scheme(..., group_tolerance=...)` -> `glotaran.project.Scheme(..., clp_link_tolerance=...)`
+
+### 🚧 Maintenance
+- 🧪🚇 Add integration test result validation (#754)
+- 🔧 Add more QA tools for parts of glotaran (#739)
+- 🔧 Fix interrogate usage (#781)
+- 🚇 Speedup PR benchmark (#785)
+
+
 ## 0.4.0 (2021-06-25)
 
 ### ✨ Features
