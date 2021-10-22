@@ -213,7 +213,7 @@ class SimpleModelGenerator:
         rates, _ = self._rates
         nr = len(rates)
         indices = list(range(1, 1 + nr))
-        items = {"default-megacomplex": self.default_megacomplex}
+        items = {"default_megacomplex": self.default_megacomplex}
         if self.irf:
             items.update(
                 {
@@ -268,7 +268,7 @@ class SimpleModelGenerator:
             A dict that can be passed to the `Model` `from_dict` method.
         """
         items = self._model_dict_items()
-        result = {"default-megacomplex": items["default-megacomplex"]}
+        result = {"default_megacomplex": items["default_megacomplex"]}
         result.update(
             {
                 "initial_concentration": {

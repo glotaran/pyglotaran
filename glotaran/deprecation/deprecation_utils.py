@@ -522,12 +522,12 @@ def deprecate_dict_entry(
     >>> deprecate_dict_entry(
             dict_to_check=dict_to_check,
             deprecated_usage="type: kinectic-spectrum",
-            new_usage="default-megacomplex: decay",
+            new_usage="default_megacomplex: decay",
             to_be_removed_in_version="0.6.0",
-            replace_rules=({"type": "kinetic-spectrum"}, {"default-megacomplex": "decay"})
+            replace_rules=({"type": "kinetic-spectrum"}, {"default_megacomplex": "decay"})
         )
     >>> dict_to_check
-    {"default-megacomplex": "decay"}
+    {"default_megacomplex": "decay"}
 
 
     .. # noqa: DAR402

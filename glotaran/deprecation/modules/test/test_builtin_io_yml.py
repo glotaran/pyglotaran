@@ -18,8 +18,10 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize(
     "model_yml_str, expected_nr_of_warnings, expected_key, expected_value",
     (
-        ("type: kinetic-spectrum", 1, "default-megacomplex", "decay"),
-        ("type: spectral-model", 1, "default-megacomplex", "spectral"),
+        ("type: kinetic-spectrum", 1, "default_megacomplex", "decay"),
+        ("type: spectral-model", 1, "default_megacomplex", "spectral"),
+        ("default-megacomplex: decay", 1, "default_megacomplex", "decay"),
+        ("default-megacomplex: spectral", 1, "default_megacomplex", "spectral"),
         (
             dedent(
                 """
@@ -108,7 +110,9 @@ if TYPE_CHECKING:
     ),
     ids=(
         "type: kinetic-spectrum",
-        "type: spectrum",
+        "type: spectral-model",
+        "default-megacomplex: decay",
+        "default-megacomplex: spectral",
         "spectral_relations",
         "relations",
         "spectral_constraints",

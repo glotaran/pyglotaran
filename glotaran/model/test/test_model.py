@@ -404,7 +404,7 @@ def test_fill(test_model: Model, parameter: ParameterGroup):
 
 def test_model_as_dict():
     model_dict = {
-        "default-megacomplex": "type7",
+        "default_megacomplex": "type7",
         "megacomplex": {
             "m1": {"test_item_simple": "t2", "dimension": "model"},
         },

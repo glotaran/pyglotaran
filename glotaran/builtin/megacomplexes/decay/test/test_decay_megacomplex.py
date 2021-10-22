@@ -28,7 +28,7 @@ class DecayModel(Model):
         cls,
         model_dict,
     ):
-        model_dict = {**model_dict, "default-megacomplex": "decay"}
+        model_dict = {**model_dict, "default_megacomplex": "decay"}
         return super().from_dict(model_dict)
 
 

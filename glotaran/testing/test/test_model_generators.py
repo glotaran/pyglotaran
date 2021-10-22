@@ -29,7 +29,7 @@ REF_PARAMETER_DICT = {
 }
 
 REF_MODEL_DICT = {
-    "default-megacomplex": "decay",
+    "default_megacomplex": "decay",
     "initial_concentration": {
         "j1": {
             "compartments": ["s1", "s2", "s3"],
