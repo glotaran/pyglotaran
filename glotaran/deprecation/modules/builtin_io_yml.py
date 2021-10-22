@@ -133,3 +133,32 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
                 swap_keys=("width_dispersion", "width_dispersion_coefficients"),
                 stacklevel=load_model_stack_level,
             )
+
+
+def scheme_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
+    """Check deprecations in the scheme specification ``spec`` dict.
+
+    Parameters
+    ----------
+    spec : MutableMapping[Any, Any]
+        Scheme specification dictionary
+    """
+    load_scheme_stack_level = 7
+
+    deprecate_dict_entry(
+        dict_to_check=spec,
+        deprecated_usage="maximum-number-function-evaluations: <number>",
+        new_usage="maximum_number_function_evaluations: <number>",
+        to_be_removed_in_version="0.7.0",
+        swap_keys=("maximum-number-function-evaluations", "maximum_number_function_evaluations"),
+        stacklevel=load_scheme_stack_level,
+    )
+
+    deprecate_dict_entry(
+        dict_to_check=spec,
+        deprecated_usage="non-negative-least-squares",
+        new_usage=("<model_file>dataset_groups.default.residual_function"),
+        to_be_removed_in_version="0.7.0",
+        swap_keys=("non-negative-least-squares", "non_negative_least_squares"),
+        stacklevel=load_scheme_stack_level,
+    )
