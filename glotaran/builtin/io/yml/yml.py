@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
+from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
 from glotaran.io import save_result
@@ -97,6 +98,7 @@ class YmlProjectIo(ProjectIoInterface):
 
     def load_scheme(self, file_name: str) -> Scheme:
         spec = self._load_yml(file_name)
+        scheme_spec_deprecations(spec)
         file_path = Path(file_name)
         return fromdict(Scheme, spec, folder=file_path.parent)
 
