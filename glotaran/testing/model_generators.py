@@ -183,15 +183,15 @@ class SimpleModelGenerator:
             items["inputs"] = self.initial_concentration
         elif self.k_matrix == "parallel":
             items["inputs"] = [
-                        ["1", 1],
-                        {"vary": False},
-                    ]
+                ["1", 1],
+                {"vary": False},
+            ]
         elif self.k_matrix == "sequential":
             items["inputs"] = [
-                        ["1", 1],
-                        ["0", 0],
-                        {"vary": False},
-                    ]
+                ["1", 1],
+                ["0", 0],
+                {"vary": False},
+            ]
         return items
 
     def _model_dict_items(self) -> dict:
@@ -208,15 +208,15 @@ class SimpleModelGenerator:
         items = {"default_megacomplex": self.default_megacomplex}
         if self.irf:
             items["irf"] = {
-                        "type": "multi-gaussian",
-                        "center": ["irf.center"],
-                        "width": ["irf.width"],
-                    }
+                "type": "multi-gaussian",
+                "center": ["irf.center"],
+                "width": ["irf.width"],
+            }
         if isinstance(self.k_matrix, dict):
             items["k_matrix"] = self.k_matrix
             items["input_parameters"] = [f"inputs.{i}" for i in indices]
             items["compartments"] = [f"s{i}" for i in indices]
-                # TODO: get unique compartments from user defined k_matrix
+            # TODO: get unique compartments from user defined k_matrix
         if self.k_matrix == "parallel":
             items["input_parameters"] = ["inputs.1"] * nr
             items["k_matrix"] = {(f"s{i}", f"s{i}"): f"rates.{i}" for i in indices}
@@ -281,8 +281,8 @@ class SimpleModelGenerator:
         if "irf" in items:
             result["dataset"]["dataset1"].update({"irf": "irf1"})
             result["irf"] = {
-                        "irf1": items["irf"],
-                    }
+                "irf1": items["irf"],
+            }
         return result
 
     def markdown(self) -> MarkdownStr:
