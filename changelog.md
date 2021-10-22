@@ -51,6 +51,10 @@
 - `glotaran.project.Scheme(..., non_negative_least_squares=...)` -> `<model_file>dataset_groups.default.residual_function`
 - `glotaran.project.Scheme(..., group=...)` -> `<model_file>dataset_groups.default.link_clp`
 - `glotaran.project.Scheme(..., group_tolerance=...)` -> `glotaran.project.Scheme(..., clp_link_tolerance=...)`
+- `<scheme_file>.maximum-number-function-evaluations` -> `<scheme_file>.maximum_number_function_evaluations`
+- `<model_file>.non-negative-least-squares: true` -> `<model_file>dataset_groups.default.residual_function: non_negative_least_squares`
+- `<model_file>.non-negative-least-squares: false` -> `<model_file>dataset_groups.default.residual_function: variable_projection`
+- `glotaran.parameter.ParameterGroup.to_csv(file_name=parameters.csv)` -> `glotaran.io.save_parameters(parameters, 'file_name=parameters.csv)`
 
 ### 🚧 Maintenance
 - 🧪🚇 Add integration test result validation (#754)
