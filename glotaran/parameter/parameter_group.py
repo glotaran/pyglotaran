@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate
 
+from glotaran.deprecation import deprecate
+from glotaran.io import save_parameters
 from glotaran.parameter.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
 
@@ -258,6 +260,35 @@ class ParameterGroup(dict):
             parameter_dict["non-negative"].append(parameter.non_negative)
             parameter_dict["expression"].append(parameter.expression)
         return pd.DataFrame(parameter_dict)
+
+    @deprecate(
+        deprecated_qual_name_usage=(
+            "glotaran.parameter.ParameterGroup.to_csv(file_name=<parameters.csv>)"
+        ),
+        new_qual_name_usage=(
+            "glotaran.io.save_parameters(parameters, "
+            'file_name=<parameters.csv>, format_name="csv")'
+        ),
+        to_be_removed_in_version="0.7.0",
+        importable_indices=(2, 1),
+    )
+    def to_csv(self, filename: str, delimiter: str = ",") -> None:
+        """Save a :class:`ParameterGroup` to a CSV file.
+
+        Warning
+        -------
+        Deprecated use
+        ``glotaran.io.save_parameters(parameters, file_name=<parameters.csv>, format_name="csv")``
+        instead.
+
+        Parameters
+        ----------
+        filename : str
+            File to write the parameter specs to.
+        delimiter : str
+            Character to separate columns., by default ","
+        """
+        save_parameters(self, file_name=filename, allow_overwrite=True, sep=delimiter)
 
     def add_parameter(self, parameter: Parameter | list[Parameter]):
         """Add a :class:`Parameter` to the group.
