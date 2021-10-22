@@ -8,7 +8,6 @@
 - ✨ Damped Oscillation Megacomplex (a.k.a. DOAS) (#764)
 - ✨ Add Dataset Groups (#851)
 
-
 ### 👌 Minor Improvements:
 - 👌 Add dimensions to megacomplex and dataset_descriptor (#702)
 - 👌 Improve ordering in k_matrix involved_compartments function (#788)
@@ -30,7 +29,6 @@
 - 🩹 Fix parameter expression parsing (#843)
 - 🩹 Use a context manager when opening a nc dataset (#848)
 
-
 ### 📚 Documentation
 
 - 📚 Moved API documentation from User to Developer Docs (#776)
@@ -41,7 +39,8 @@
 
 - `glotaran.model.Model.model_dimension` -> `glotaran.project.Scheme.model_dimension`
 - `glotaran.model.Model.global_dimension` -> `glotaran.project.Scheme.global_dimension`
-- `<model_file>.type.kinetic-spectrum` -> `<model_file>.default-megacomplex.decay`
+- `<model_file>.type.kinetic-spectrum` -> `<model_file>.default_megacomplex.decay`
+- `<model_file>.type.spectral-model` -> `<model_file>.default_megacomplex.spectral`
 - `<model_file>.spectral_relations` -> `<model_file>.clp_relations`
 - `<model_file>.spectral_relations.compartment` -> `<model_file>.clp_relations.source`
 - `<model_file>.spectral_constraints` -> `<model_file>.clp_constraints`
