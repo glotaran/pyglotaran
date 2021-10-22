@@ -360,6 +360,10 @@ class OptimizationGroup:
         dataset.attrs["weighted_root_mean_square_error"] = np.sqrt(
             (dataset.weighted_residual ** 2).sum() / size
         ).values
+        if dataset_model.scale is not None:
+            dataset.attrs["dataset_scale"] = dataset_model.scale.value
+        else:
+            dataset.attrs["dataset_scale"] = 1
 
         # reconstruct fitted data
         dataset["fitted_data"] = dataset.data - dataset.residual
