@@ -22,18 +22,27 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
     deprecate_dict_entry(
         dict_to_check=spec,
         deprecated_usage="type: kinetic-spectrum",
-        new_usage="default-megacomplex: decay",
+        new_usage="default_megacomplex: decay",
         to_be_removed_in_version="0.7.0",
-        replace_rules=({"type": "kinetic-spectrum"}, {"default-megacomplex": "decay"}),
+        replace_rules=({"type": "kinetic-spectrum"}, {"default_megacomplex": "decay"}),
         stacklevel=load_model_stack_level,
     )
 
     deprecate_dict_entry(
         dict_to_check=spec,
         deprecated_usage="type: spectral-model",
-        new_usage="default-megacomplex: spectral",
+        new_usage="default_megacomplex: spectral",
         to_be_removed_in_version="0.7.0",
-        replace_rules=({"type": "spectral-model"}, {"default-megacomplex": "spectral"}),
+        replace_rules=({"type": "spectral-model"}, {"default_megacomplex": "spectral"}),
+        stacklevel=load_model_stack_level,
+    )
+
+    deprecate_dict_entry(
+        dict_to_check=spec,
+        deprecated_usage="default-megacomplex",
+        new_usage="default_megacomplex",
+        to_be_removed_in_version="0.7.0",
+        swap_keys=("default-megacomplex", "default_megacomplex"),
         stacklevel=load_model_stack_level,
     )
 

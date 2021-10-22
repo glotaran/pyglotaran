@@ -12,7 +12,7 @@ from glotaran.io import load_parameters
 from glotaran.project import Scheme
 
 MODEL_BASE = """\
-default-megacomplex: decay
+default_megacomplex: decay
 dataset:
     dataset1:
         megacomplex: [mc1]

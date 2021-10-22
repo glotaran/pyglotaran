@@ -21,7 +21,7 @@ dataset_groups:
   default:
     link_clp: null
     residual_function: variable_projection
-default-megacomplex: decay
+default_megacomplex: decay
 initial_concentration:
   j1:
     compartments:

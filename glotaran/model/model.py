@@ -82,11 +82,11 @@ class Model:
         megacomplex_types: dict[str, type[Megacomplex]] | None
             Overwrite 'megacomplex_types' in ``model_dict`` for testing.
         default_megacomplex_type: str | None
-            Overwrite 'default-megacomplex' in ``model_dict`` for testing.
+            Overwrite 'default_megacomplex' in ``model_dict`` for testing.
         """
         model_dict = copy.deepcopy(model_dict)
         if default_megacomplex_type is None:
-            default_megacomplex_type = model_dict.get("default-megacomplex")
+            default_megacomplex_type = model_dict.get("default_megacomplex")
 
         if megacomplex_types is None:
             megacomplex_types = {
@@ -99,8 +99,8 @@ class Model:
             and default_megacomplex_type not in megacomplex_types
         ):
             megacomplex_types[default_megacomplex_type] = get_megacomplex(default_megacomplex_type)
-        if "default-megacomplex" in model_dict:
-            model_dict.pop("default-megacomplex", None)
+        if "default_megacomplex" in model_dict:
+            model_dict.pop("default_megacomplex", None)
 
         dataset_group_models = model_dict.pop("dataset_groups", None)
         if dataset_group_models is not None:
@@ -292,7 +292,7 @@ class Model:
 
     def as_dict(self) -> dict:
         model_dict = {
-            "default-megacomplex": self.default_megacomplex,
+            "default_megacomplex": self.default_megacomplex,
             "dataset_groups": {
                 label: asdict(group) for label, group in self.dataset_group_models.items()
             },

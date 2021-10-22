@@ -1,4 +1,4 @@
-default-megacomplex: decay
+default_megacomplex: decay
 
 dataset:
   dataset1:

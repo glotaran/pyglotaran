@@ -39,7 +39,7 @@ class YmlProjectIo(ProjectIoInterface):
 
         spec = sanitize_yaml(spec)
 
-        default_megacomplex = spec.get("default-megacomplex")
+        default_megacomplex = spec.get("default_megacomplex")
 
         if default_megacomplex is None and any(
             "type" not in m for m in spec["megacomplex"].values()
