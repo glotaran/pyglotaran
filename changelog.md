@@ -7,6 +7,7 @@
 - ✨ Feature: Full Models (#747)
 - ✨ Damped Oscillation Megacomplex (a.k.a. DOAS) (#764)
 - ✨ Add Dataset Groups (#851)
+- ✨ Performance improvements (in some cases up to 5x) (#740)
 
 ### 👌 Minor Improvements:
 - 👌 Add dimensions to megacomplex and dataset_descriptor (#702)
@@ -18,7 +19,6 @@
 
 ### 🩹 Bug fixes
 - 🩹 Fix/cli0.5 (#765)
-- 🩹 Fix Performance Regressions (#740)
 - 🩹 Fix compartment ordering randomization due to use of set (#799)
 - 🩹 Fix check_deprecations not showing deprecation warnings (#775)
 - 🩹 Fix and re-enable IRF Dispersion Test (#786)
@@ -57,6 +57,7 @@
 - `glotaran.parameter.ParameterGroup.to_csv(file_name=parameters.csv)` -> `glotaran.io.save_parameters(parameters, 'file_name=parameters.csv)`
 
 ### 🚧 Maintenance
+- 🩹 Fix Performance Regressions (between version) (#740)
 - 🧪🚇 Add integration test result validation (#754)
 - 🔧 Add more QA tools for parts of glotaran (#739)
 - 🔧 Fix interrogate usage (#781)
