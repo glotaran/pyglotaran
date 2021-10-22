@@ -103,7 +103,7 @@ repos:
         name: "flake8 lint docstrings"
         files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project)"
         exclude: "docs|tests?/"
-        additional_dependencies: [flake8-docstrings, darglint]
+        additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.910-1
