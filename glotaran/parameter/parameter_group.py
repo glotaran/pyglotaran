@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class ParameterNotFoundException(Exception):
     """Raised when a Parameter is not found in the Group."""
 
-    def __init__(self, path, label):
+    def __init__(self, path, label):  # noqa: D107
         super().__init__(f"Cannot find parameter {'.'.join(path+[label])!r}")
 
 
@@ -30,21 +30,23 @@ class ParameterGroup(dict):
     """Represents are group of parameters.
 
     Can contain other groups, creating a tree-like hierarchy.
-
-    Parameters
-    ----------
-    label : str
-        The label of the group.
-    root_group : ParameterGroup
-        The root group
-
-    Raises
-    ------
-    ValueError
-        Raised if the an invalid label is given.
     """
 
     def __init__(self, label: str = None, root_group: ParameterGroup = None):
+        """Initialize a :class:`ParameterGroup` instance with ``label``.
+
+        Parameters
+        ----------
+        label : str
+            The label of the group.
+        root_group : ParameterGroup
+            The root group
+
+        Raises
+        ------
+        ValueError
+            Raised if the an invalid label is given.
+        """
         if label is not None and not Parameter.valid_label(label):
             raise ValueError(f"'{label}' is not a valid group label.")
         self._label = label

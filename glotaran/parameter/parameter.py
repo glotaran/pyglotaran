@@ -334,7 +334,6 @@ class Parameter(_SupportsArray):
         -------
         str | None
             The transformed expression.
-
         """
         if self.expression is not None and self._transformed_expression is None:
             self._transformed_expression = PARAMETER_EXPRESION_REGEX.sub(
@@ -343,15 +342,14 @@ class Parameter(_SupportsArray):
         return self._transformed_expression
 
     @property
-    def standard_error(self) -> float:  # noqa D401
+    def standard_error(self) -> float:
         """Standard error of the optimized parameter.
 
         Returns
         -------
         float
             The standard error of the parameter.
-        """
-
+        """  # noqa: D401
         return self._stderr
 
     @standard_error.setter
@@ -411,7 +409,7 @@ class Parameter(_SupportsArray):
         """
         self.value = np.exp(value) if self.non_negative else value
 
-    def __getstate__(self):  # noqa D400
+    def __getstate__(self):
         """Get state for pickle."""
         return (
             self.label,
@@ -425,7 +423,7 @@ class Parameter(_SupportsArray):
             self.vary,
         )
 
-    def __setstate__(self, state):  # noqa D400
+    def __setstate__(self, state):
         """Set state from pickle."""
         (
             self.label,
@@ -439,18 +437,18 @@ class Parameter(_SupportsArray):
             self.vary,
         ) = state
 
-    def __repr__(self):  # noqa D400
+    def __repr__(self):
         """Representation used by repl and tracebacks."""
         return (
             f"{type(self).__name__}(label={self.label!r}, value={self.value!r},"
             f" expression={self.expression!r}, vary={self.vary!r})"
         )
 
-    def __array__(self):  # noqa D400
-        """array"""
+    def __array__(self):
+        """array"""  # noqa: D400, D403
         return np.array(float(self._value), dtype=float)
 
-    def __str__(self) -> str:  # noqa D400
+    def __str__(self) -> str:
         """Representation used by print and str."""
         return (
             f"__{self.label}__: _Value_: {self.value}, _StdErr_: {self.standard_error}, _Min_:"
@@ -458,116 +456,116 @@ class Parameter(_SupportsArray):
             f" _Non-Negative_: {self.non_negative}, _Expr_: {self.expression}"
         )
 
-    def __abs__(self):  # noqa D400
-        """abs"""
+    def __abs__(self):
+        """abs"""  # noqa: D400, D403
         return abs(self._value)
 
-    def __neg__(self):  # noqa D400
-        """neg"""
+    def __neg__(self):
+        """neg"""  # noqa: D400, D403
         return -self._value
 
-    def __pos__(self):  # noqa D400
-        """positive"""
+    def __pos__(self):
+        """positive"""  # noqa: D400, D403
         return +self._value
 
-    def __int__(self):  # noqa D400
-        """int"""
+    def __int__(self):
+        """int"""  # noqa: D400, D403
         return int(self._value)
 
-    def __float__(self):  # noqa D400
-        """float"""
+    def __float__(self):
+        """float"""  # noqa: D400, D403
         return float(self._value)
 
-    def __trunc__(self):  # noqa D400
-        """trunc"""
+    def __trunc__(self):
+        """trunc"""  # noqa: D400, D403
         return self._value.__trunc__()
 
-    def __add__(self, other):  # noqa D400
-        """+"""
+    def __add__(self, other):
+        """+"""  # noqa: D400
         return self._value + other
 
-    def __sub__(self, other):  # noqa D400
-        """-"""
+    def __sub__(self, other):
+        """-"""  # noqa: D400
         return self._value - other
 
-    def __truediv__(self, other):  # noqa D400
-        """/"""
+    def __truediv__(self, other):
+        """/"""  # noqa: D400
         return self._value / other
 
-    def __floordiv__(self, other):  # noqa D400
-        """//"""
+    def __floordiv__(self, other):
+        """//"""  # noqa: D400
         return self._value // other
 
-    def __divmod__(self, other):  # noqa D400
-        """divmod"""
+    def __divmod__(self, other):
+        """divmod"""  # noqa: D400, D403
         return divmod(self._value, other)
 
-    def __mod__(self, other):  # noqa D400
-        """%"""
+    def __mod__(self, other):
+        """%"""  # noqa: D400
         return self._value % other
 
-    def __mul__(self, other):  # noqa D400
-        """*"""
+    def __mul__(self, other):
+        """*"""  # noqa: D400
         return self._value * other
 
-    def __pow__(self, other):  # noqa D400
-        """**"""
+    def __pow__(self, other):
+        """**"""  # noqa: D400
         return self._value ** other
 
-    def __gt__(self, other):  # noqa D400
-        """>"""
+    def __gt__(self, other):
+        """>"""  # noqa: D400
         return self._value > other
 
-    def __ge__(self, other):  # noqa D400
-        """>="""
+    def __ge__(self, other):
+        """>="""  # noqa: D400
         return self._value >= other
 
-    def __le__(self, other):  # noqa D400
-        """<="""
+    def __le__(self, other):
+        """<="""  # noqa: D400
         return self._value <= other
 
-    def __lt__(self, other):  # noqa D400
-        """<"""
+    def __lt__(self, other):
+        """<"""  # noqa: D400
         return self._value < other
 
-    def __eq__(self, other):  # noqa D400
-        """=="""
+    def __eq__(self, other):
+        """=="""  # noqa: D400
         return self._value == other
 
-    def __ne__(self, other):  # noqa D400
-        """!="""
+    def __ne__(self, other):
+        """!="""  # noqa: D400
         return self._value != other
 
-    def __radd__(self, other):  # noqa D400
-        """+ (right)"""
+    def __radd__(self, other):
+        """+ (right)"""  # noqa: D400
         return other + self._value
 
-    def __rtruediv__(self, other):  # noqa D400
-        """/ (right)"""
+    def __rtruediv__(self, other):
+        """/ (right)"""  # noqa: D400
         return other / self._value
 
-    def __rdivmod__(self, other):  # noqa D400
-        """divmod (right)"""
+    def __rdivmod__(self, other):
+        """divmod (right)"""  # noqa: D400, D403
         return divmod(other, self._value)
 
-    def __rfloordiv__(self, other):  # noqa D400
-        """// (right)"""
+    def __rfloordiv__(self, other):
+        """// (right)"""  # noqa: D400
         return other // self._value
 
-    def __rmod__(self, other):  # noqa D400
-        """% (right)"""
+    def __rmod__(self, other):
+        """% (right)"""  # noqa: D400
         return other % self._value
 
-    def __rmul__(self, other):  # noqa D400
-        """* (right)"""
+    def __rmul__(self, other):
+        """* (right)"""  # noqa: D400
         return other * self._value
 
-    def __rpow__(self, other):  # noqa D400
-        """** (right)"""
+    def __rpow__(self, other):
+        """** (right)"""  # noqa: D400
         return other ** self._value
 
-    def __rsub__(self, other):  # noqa D400
-        """- (right)"""
+    def __rsub__(self, other):
+        """- (right)"""  # noqa: D400
         return other - self._value
 
 

@@ -10,7 +10,7 @@ from glotaran.parameter.parameter_group import ParameterGroup
 class ParameterHistory:
     """A class representing a history of parameters."""
 
-    def __init__(self):
+    def __init__(self):  # noqa: D107
 
         self._parameter_labels: list[str] = []
         self._parameters: list[np.ndarray] = []
