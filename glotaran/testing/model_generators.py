@@ -177,29 +177,21 @@ class SimpleModelGenerator:
         rates, rates_defaults = self._rates
         items = {"rates": rates}
         if rates_defaults:
-            items.update({"rates_defaults": rates_defaults[0]})
-        items.update({"irf": [[key, value] for key, value in self.irf.items()]})
+            items["rates_defaults"] = rates_defaults[0]
+        items["irf"] = [[key, value] for key, value in self.irf.items()]
         if self.initial_concentration:
-            items.update({"inputs": self.initial_concentration})
+            items["inputs"] = self.initial_concentration
         elif self.k_matrix == "parallel":
-            items.update(
-                {
-                    "inputs": [
-                        ["1", 1],
-                        {"vary": False},
-                    ]
-                }
-            )
+            items["inputs"] = [
+                ["1", 1],
+                {"vary": False},
+            ]
         elif self.k_matrix == "sequential":
-            items.update(
-                {
-                    "inputs": [
-                        ["1", 1],
-                        ["0", 0],
-                        {"vary": False},
-                    ]
-                }
-            )
+            items["inputs"] = [
+                ["1", 1],
+                ["0", 0],
+                {"vary": False},
+            ]
         return items
 
     def _model_dict_items(self) -> dict:
@@ -215,30 +207,27 @@ class SimpleModelGenerator:
         indices = list(range(1, 1 + nr))
         items = {"default_megacomplex": self.default_megacomplex}
         if self.irf:
-            items.update(
-                {
-                    "irf": {
-                        "type": "multi-gaussian",
-                        "center": ["irf.center"],
-                        "width": ["irf.width"],
-                    }
-                }
-            )
+            items["irf"] = {
+                "type": "multi-gaussian",
+                "center": ["irf.center"],
+                "width": ["irf.width"],
+            }
         if isinstance(self.k_matrix, dict):
-            items.update({"k_matrix": self.k_matrix})
-            items.update({"input_parameters": [f"inputs.{i}" for i in indices]})
-            items.update({"compartments": [f"s{i}" for i in indices]})
+            items["k_matrix"] = self.k_matrix
+            items["input_parameters"] = [f"inputs.{i}" for i in indices]
+            items["compartments"] = [f"s{i}" for i in indices]
             # TODO: get unique compartments from user defined k_matrix
         if self.k_matrix == "parallel":
-            items.update({"input_parameters": ["inputs.1"] * nr})
-            items.update({"k_matrix": {(f"s{i}", f"s{i}"): f"rates.{i}" for i in indices}})
+            items["input_parameters"] = ["inputs.1"] * nr
+            items["k_matrix"] = {(f"s{i}", f"s{i}"): f"rates.{i}" for i in indices}
         elif self.k_matrix == "sequential":
-            items.update({"input_parameters": ["inputs.1"] + ["inputs.0"] * (nr - 1)})
-            items.update(
-                {"k_matrix": {(f"s{i if i==nr else i+1}", f"s{i}"): f"rates.{i}" for i in indices}}
-            )
+            items["input_parameters"] = ["inputs.1"] + ["inputs.0"] * (nr - 1)
+            items["k_matrix"] = {
+                (f"s{i if i==nr else i+1}", f"s{i}"): f"rates.{i}" for i in indices
+            }
+
         if self.k_matrix in ("parallel", "sequential"):
-            items.update({"compartments": [f"s{i}" for i in indices]})
+            items["compartments"] = [f"s{i}" for i in indices]
         return items
 
     def _parameters_dict(self) -> dict:
@@ -255,8 +244,8 @@ class SimpleModelGenerator:
             rates += [items["rates_defaults"]]
         result = {"rates": rates}
         if items["irf"]:
-            result.update({"irf": items["irf"]})
-        result.update({"inputs": items["inputs"]})
+            result["irf"] = items["irf"]
+        result["inputs"] = items["inputs"]
         return result
 
     def _model_dict(self) -> dict:
@@ -291,13 +280,9 @@ class SimpleModelGenerator:
         )
         if "irf" in items:
             result["dataset"]["dataset1"].update({"irf": "irf1"})
-            result.update(
-                {
-                    "irf": {
-                        "irf1": items["irf"],
-                    }
-                }
-            )
+            result["irf"] = {
+                "irf1": items["irf"],
+            }
         return result
 
     def markdown(self) -> MarkdownStr:
