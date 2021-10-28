@@ -9,6 +9,7 @@ pyglotaran is a Python library for Global and Target Analysis
 [![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/glotaran/pyglotaran.git/main?urlpath=lab%2Ftree%2Fdocs%2Fsource%2Fnotebooks)
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/glotaran/pyglotaran.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/glotaran/pyglotaran/alerts/)
+[![Discord](https://img.shields.io/discord/883443835135475753.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/DwsdCQgF)
 
 **Warning**: This is an _early access_ release, please refer to the [usage notice](#usage-notice) down below prior to committing to use pyglotaran to avoid surprises down the line.
 
