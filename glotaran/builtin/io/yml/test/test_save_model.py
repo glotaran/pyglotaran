@@ -10,48 +10,49 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-want = """dataset:
-  dataset1:
-    group: default
-    initial_concentration: j1
-    irf: irf1
-    megacomplex:
-    - m1
+want = """\
+default_megacomplex: decay
 dataset_groups:
   default:
-    link_clp: null
     residual_function: variable_projection
-default_megacomplex: decay
-initial_concentration:
-  j1:
-    compartments:
-    - s1
-    - s2
-    - s3
-    exclude_from_normalize: []
-    parameters:
-    - j.1
-    - j.0
-    - j.0
-irf:
-  irf1:
-    backsweep: false
-    center: irf.center
-    normalize: true
-    type: gaussian
-    width: irf.width
+    link_clp:
 k_matrix:
   k1:
     matrix:
       (s2, s1): kinetic.1
       (s3, s2): kinetic.2
       (s3, s3): kinetic.3
+initial_concentration:
+  j1:
+    compartments:
+    - s1
+    - s2
+    - s3
+    parameters:
+    - j.1
+    - j.0
+    - j.0
+    exclude_from_normalize: []
+irf:
+  irf1:
+    type: gaussian
+    center: irf.center
+    width: irf.width
+    normalize: true
+    backsweep: false
 megacomplex:
   m1:
+    type: decay
     dimension: time
     k_matrix:
     - k1
-    type: decay
+dataset:
+  dataset1:
+    group: default
+    megacomplex:
+    - m1
+    initial_concentration: j1
+    irf: irf1
 """
 
 

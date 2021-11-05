@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
+from ruamel.yaml import YAML
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
@@ -137,14 +137,16 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(result_path, result_dict)
 
     def _load_yml(self, file_name: str) -> dict:
+        yaml = YAML()
         if self.format == "yml_str":
-            spec = yaml.safe_load(file_name)
+            spec = yaml.load(file_name)
         else:
             with open(file_name) as f:
-                spec = yaml.safe_load(f)
+                spec = yaml.load(f)
         return spec
 
 
 def _write_dict(file_name: str, d: dict):
+    yaml = YAML()
     with open(file_name, "w") as f:
-        f.write(yaml.dump(d))
+        yaml.dump(d, f)
