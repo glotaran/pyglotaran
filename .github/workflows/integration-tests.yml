@@ -34,12 +34,17 @@ jobs:
       - name: Install pyglotaran
         run: |
           pip install wheel
+          pip install -r requirements_dev.txt
           pip install .
       - name: ${{ matrix.example_name }}
         id: example-run
         uses: glotaran/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
+      - name: Installed packages
+        if: always()
+        run: |
+          pip freeze
       - name: Upload Example Plots Artifact
         uses: actions/upload-artifact@v2
         with:
