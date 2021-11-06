@@ -157,6 +157,7 @@ class YmlProjectIo(ProjectIoInterface):
 def _write_dict(file_name: str, data: Mapping[str, Any]):
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
+    yaml.indent(mapping=2, sequence=2, offset=2)
     with open(file_name, "w") as f:
         yaml.dump(data, f)
 

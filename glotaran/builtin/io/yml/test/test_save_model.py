@@ -25,13 +25,13 @@ k_matrix:
 initial_concentration:
   j1:
     compartments:
-    - s1
-    - s2
-    - s3
+      - s1
+      - s2
+      - s3
     parameters:
-    - j.1
-    - j.0
-    - j.0
+      - j.1
+      - j.0
+      - j.0
     exclude_from_normalize: []
 irf:
   irf1:
@@ -45,12 +45,12 @@ megacomplex:
     type: decay
     dimension: time
     k_matrix:
-    - k1
+      - k1
 dataset:
   dataset1:
     group: default
     megacomplex:
-    - m1
+      - m1
     initial_concentration: j1
     irf: irf1
 """
