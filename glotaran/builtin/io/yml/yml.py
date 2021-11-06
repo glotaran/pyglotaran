@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from ruamel.yaml import YAML
 
@@ -16,6 +17,13 @@ from glotaran.project import Scheme
 from glotaran.project.dataclass_helpers import asdict
 from glotaran.project.dataclass_helpers import fromdict
 from glotaran.utils.sanitize import sanitize_yaml
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Mapping
+
+    from ruamel.yaml.nodes import ScalarNode
+    from ruamel.yaml.representer import BaseRepresenter
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
@@ -146,7 +154,30 @@ class YmlProjectIo(ProjectIoInterface):
         return spec
 
 
-def _write_dict(file_name: str, d: dict):
+def _write_dict(file_name: str, data: Mapping[str, Any]):
     yaml = YAML()
+    yaml.representer.add_representer(type(None), _yaml_none_representer)
     with open(file_name, "w") as f:
-        yaml.dump(d, f)
+        yaml.dump(data, f)
+
+
+def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:
+    """Yaml repr for ``None`` python values.
+
+    Parameters
+    ----------
+    representer : BaseRepresenter
+        Representer of the :class:`YAML` instance.
+    data : Mapping[str, Any]
+        Data to write to yaml.
+
+    Returns
+    -------
+    ScalarNode
+        Node representing the value.
+
+    References
+    ----------
+    https://stackoverflow.com/a/44314840
+    """
+    return representer.represent_scalar("tag:yaml.org,2002:null", "null")

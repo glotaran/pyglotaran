@@ -15,7 +15,7 @@ default_megacomplex: decay
 dataset_groups:
   default:
     residual_function: variable_projection
-    link_clp:
+    link_clp: null
 k_matrix:
   k1:
     matrix:

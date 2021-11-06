@@ -24,13 +24,13 @@ parameters_file: p.csv
 data_files:
   dataset_1: d.nc
 clp_link_tolerance: 0.0
-maximum_number_function_evaluations:
+maximum_number_function_evaluations: null
 add_svd: true
 ftol: 1e-08
 gtol: 1e-08
 xtol: 1e-08
 optimization_method: TrustRegionReflection
-result_path:
+result_path: null
 """
 
 
