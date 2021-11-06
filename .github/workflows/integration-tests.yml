@@ -41,6 +41,10 @@ jobs:
         uses: glotaran/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
+      - name: Installed packages
+        if: always()
+        run: |
+          pip freeze
       - name: Upload Example Plots Artifact
         uses: actions/upload-artifact@v2
         with:
