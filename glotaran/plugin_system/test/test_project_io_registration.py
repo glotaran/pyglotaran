@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from glotaran.builtin.io.csv.csv import CsvProjectIo
+from glotaran.builtin.io.pandas.csv import CsvProjectIo
 from glotaran.builtin.io.yml.yml import YmlProjectIo
 from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
@@ -194,7 +194,7 @@ def test_known_project_format_actual_register():
     assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yml")
     assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yaml")
     assert is_known_project_format("glotaran.builtin.io.yml.yml.YmlProjectIo_yml_str")
-    assert is_known_project_format("glotaran.builtin.io.csv.csv.CsvProjectIo_csv")
+    assert is_known_project_format("glotaran.builtin.io.pandas.csv.CsvProjectIo_csv")
 
 
 @pytest.mark.parametrize(
