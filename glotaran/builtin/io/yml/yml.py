@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import yaml
+from ruamel.yaml import YAML
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
@@ -16,6 +17,13 @@ from glotaran.project import Scheme
 from glotaran.project.dataclass_helpers import asdict
 from glotaran.project.dataclass_helpers import fromdict
 from glotaran.utils.sanitize import sanitize_yaml
+
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import Mapping
+
+    from ruamel.yaml.nodes import ScalarNode
+    from ruamel.yaml.representer import BaseRepresenter
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
@@ -137,14 +145,40 @@ class YmlProjectIo(ProjectIoInterface):
         _write_dict(result_path, result_dict)
 
     def _load_yml(self, file_name: str) -> dict:
+        yaml = YAML()
         if self.format == "yml_str":
-            spec = yaml.safe_load(file_name)
+            spec = yaml.load(file_name)
         else:
             with open(file_name) as f:
-                spec = yaml.safe_load(f)
+                spec = yaml.load(f)
         return spec
 
 
-def _write_dict(file_name: str, d: dict):
+def _write_dict(file_name: str, data: Mapping[str, Any]):
+    yaml = YAML()
+    yaml.representer.add_representer(type(None), _yaml_none_representer)
+    yaml.indent(mapping=2, sequence=2, offset=2)
     with open(file_name, "w") as f:
-        f.write(yaml.dump(d))
+        yaml.dump(data, f)
+
+
+def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:
+    """Yaml repr for ``None`` python values.
+
+    Parameters
+    ----------
+    representer : BaseRepresenter
+        Representer of the :class:`YAML` instance.
+    data : Mapping[str, Any]
+        Data to write to yaml.
+
+    Returns
+    -------
+    ScalarNode
+        Node representing the value.
+
+    References
+    ----------
+    https://stackoverflow.com/a/44314840
+    """
+    return representer.represent_scalar("tag:yaml.org,2002:null", "null")

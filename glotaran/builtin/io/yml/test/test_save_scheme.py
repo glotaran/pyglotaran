@@ -18,18 +18,19 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-want = """add_svd: true
-clp_link_tolerance: 0.0
+want = """\
+model_file: m.yml
+parameters_file: p.csv
 data_files:
   dataset_1: d.nc
-ftol: 1.0e-08
-gtol: 1.0e-08
+clp_link_tolerance: 0.0
 maximum_number_function_evaluations: null
-model_file: m.yml
+add_svd: true
+ftol: 1e-08
+gtol: 1e-08
+xtol: 1e-08
 optimization_method: TrustRegionReflection
-parameters_file: p.csv
 result_path: null
-xtol: 1.0e-08
 """
 
 
