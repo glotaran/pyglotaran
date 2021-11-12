@@ -16,7 +16,7 @@ sdtfile==2021.3.21
 setuptools==41.2
 tabulate==0.8.9
 typing_inspect==0.7.1
-xarray==0.19.0
+xarray==0.20.1
 
 # documentation dependencies
 -r docs/requirements.txt
