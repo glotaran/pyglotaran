@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import replace
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import List
@@ -15,16 +17,22 @@ from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
 from glotaran.io import load_dataset
-from glotaran.io import load_parameters
-from glotaran.io import load_scheme
+from glotaran.io import load_result
 from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
+from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import file_representation_field
+from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.project.scheme import Scheme
 from glotaran.utils.ipython import MarkdownStr
+
+if TYPE_CHECKING:
+
+    from os import PathLike
+    from typing import Callable
 
 
 class IncompleteResultError(Exception):
@@ -55,25 +63,14 @@ class Result:
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
 
-    scheme: Scheme = cast(Scheme, exclude_from_dict_field(None))
-    scheme_file: str | None = file_representation_field("scheme", load_scheme, None)
+    scheme: Scheme = file_loadable_field(Scheme)
 
-    initial_parameters: ParameterGroup = cast(ParameterGroup, exclude_from_dict_field(None))
-    initial_parameters_file: str | None = file_representation_field(
-        "initial_parameters", load_parameters, None
-    )
+    initial_parameters: ParameterGroup = file_loadable_field(ParameterGroup)
 
-    optimized_parameters: ParameterGroup = cast(ParameterGroup, exclude_from_dict_field(None))
-    """The optimized parameters, organized in a :class:`ParameterGroup`"""
-    optimized_parameters_file: str | None = file_representation_field(
-        "optimized_parameters", load_parameters, None
-    )
+    optimized_parameters: ParameterGroup = file_loadable_field(ParameterGroup)
 
-    parameter_history: ParameterHistory = cast(ParameterHistory, exclude_from_dict_field(None))
+    parameter_history: ParameterHistory = file_loadable_field(ParameterHistory)
     """The parameter history."""
-    parameter_history_file: str | None = file_representation_field(
-        "parameter_history", ParameterHistory.from_csv, None
-    )
 
     data: dict[str, xr.Dataset] = cast(Dict[str, xr.Dataset], exclude_from_dict_field(None))
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
@@ -129,9 +126,16 @@ class Result:
 
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
+    source_path: str | PathLike[str] = field(
+        default="result.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
+    )
+    loader: Callable[[str | PathLike[str]], Result] = field(
+        default=load_result, init=False, repr=False, metadata={"exclude_from_dict": True}
+    )
 
     def __post_init__(self):
         """Validate fields and cast attributes to correct type."""
+        init_file_loadable_fields(self)
         self._check_mandatory_fields()
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
@@ -146,10 +150,6 @@ class Result:
             If any mandatory field and its file representation is ``None``.
         """
         mandatory_fields = [
-            ("scheme", ""),
-            ("initial_parameters", ""),
-            ("optimized_parameters", ""),
-            ("parameter_history", ""),
             ("data", "s"),
         ]
         missing_fields = [

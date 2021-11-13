@@ -32,8 +32,8 @@ def mock_scheme(tmp_path: Path) -> Scheme:
     ).to_netcdf(dataset_path)
 
     scheme_yml_str = f"""
-    model_file: {model_path}
-    parameters_file: {parameter_path}
+    model: {model_path}
+    parameters: {parameter_path}
     maximum_number_function_evaluations: 42
     data_files:
         dataset1: {dataset_path}

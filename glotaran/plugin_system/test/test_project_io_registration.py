@@ -42,21 +42,26 @@ if TYPE_CHECKING:
     from glotaran.project import Scheme
 
 
+class MockFileLoadable:
+    source_path = "bar"
+    func_args: dict[str, Any] = {}
+
+
 class MockProjectIo(ProjectIoInterface):
     # TODO: Investigate why write methods raises an [override] type error and load functions don't
     def load_model(self, file_name: str | PathLike[str], **kwargs: Any) -> Model:
         """This docstring is just for help testing of 'load_model'."""
-        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
+        mock_obj = MockFileLoadable()
+        mock_obj.func_args = {"file_name": file_name, **kwargs}
+        return mock_obj  # type:ignore[return-value]
 
     def save_model(  # type:ignore[override]
         self,
         model: Model,
         file_name: str | PathLike[str],
-        *,
-        result_container: dict[str, Any],
         **kwargs: Any,
     ):
-        result_container.update(
+        model.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": file_name,
                 "data_object": model,
@@ -65,17 +70,17 @@ class MockProjectIo(ProjectIoInterface):
         )
 
     def load_parameters(self, file_name: str | PathLike[str], **kwargs: Any) -> ParameterGroup:
-        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
+        mock_obj = MockFileLoadable()
+        mock_obj.func_args = {"file_name": file_name, **kwargs}
+        return mock_obj  # type:ignore[return-value]
 
     def save_parameters(  # type:ignore[override]
         self,
         parameters: ParameterGroup,
         file_name: str | PathLike[str],
-        *,
-        result_container: dict[str, Any],
         **kwargs: Any,
     ):
-        result_container.update(
+        parameters.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": file_name,
                 "data_object": parameters,
@@ -84,17 +89,17 @@ class MockProjectIo(ProjectIoInterface):
         )
 
     def load_scheme(self, file_name: str | PathLike[str], **kwargs: Any) -> Scheme:
-        return {"file_name": file_name, **kwargs}  # type:ignore[return-value]
+        mock_obj = MockFileLoadable()
+        mock_obj.func_args = {"file_name": file_name, **kwargs}
+        return mock_obj  # type:ignore[return-value]
 
     def save_scheme(  # type:ignore[override]
         self,
         scheme: Scheme,
         file_name: str | PathLike[str],
-        *,
-        result_container: dict[str, Any],
         **kwargs: Any,
     ):
-        result_container.update(
+        scheme.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": file_name,
                 "data_object": scheme,
@@ -103,17 +108,17 @@ class MockProjectIo(ProjectIoInterface):
         )
 
     def load_result(self, result_path: str | PathLike[str], **kwargs: Any) -> Result:
-        return {"file_name": result_path, **kwargs}  # type:ignore[return-value]
+        mock_obj = MockFileLoadable()
+        mock_obj.func_args = {"file_name": result_path, **kwargs}
+        return mock_obj  # type:ignore[return-value]
 
     def save_result(  # type:ignore[override]
         self,
         result: Result,
         result_path: str | PathLike[str],
-        *,
-        result_container: dict[str, Any],
         **kwargs: Any,
     ):
-        result_container.update(
+        result.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": result_path,
                 "data_object": result,
@@ -243,7 +248,8 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
 
     result = load_function(file_path, dummy_arg="baz")
 
-    assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
+    assert result.func_args == {"file_name": str(file_path), "dummy_arg": "baz"}
+    assert result.source_path == Path(file_path).as_posix()
 
 
 @pytest.mark.parametrize(
@@ -255,25 +261,32 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
         save_result,
     ),
 )
+@pytest.mark.parametrize("update_source_path", (True, False))
 @pytest.mark.usefixtures("mocked_registry")
-def test_write_functions(tmp_path: Path, save_function: Callable[..., Any]):
+def test_write_functions(
+    tmp_path: Path, save_function: Callable[..., Any], update_source_path: bool
+):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "model.mock"
-    result: dict[str, Any] = {}
+    mock_obj = MockFileLoadable()
 
     save_function(
-        "data_object",  # type:ignore
+        mock_obj,  # type:ignore
         file_path,
         "mock",
-        result_container=result,
+        update_source_path=update_source_path,
         dummy_arg="baz",
     )
 
-    assert result == {
+    assert mock_obj.func_args == {
         "file_name": str(file_path),
-        "data_object": "data_object",
+        "data_object": mock_obj,
         "dummy_arg": "baz",
     }
+    if update_source_path is True:
+        assert mock_obj.source_path == file_path.as_posix()
+    else:
+        assert mock_obj.source_path == "bar"
 
 
 @pytest.mark.parametrize(
@@ -311,9 +324,10 @@ def test_save_functions_value_error(
 ):
     """Raise ValueError if save method isn't implemented."""
     file_path = tmp_path / "dummy.foo"
+    mock_obj = MockFileLoadable()
 
     with pytest.raises(ValueError, match=f"Cannot {error_regex} with format 'foo'"):
-        save_function("bar", file_path)
+        save_function(mock_obj, file_path)
 
 
 @pytest.mark.parametrize(

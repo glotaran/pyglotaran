@@ -10,6 +10,7 @@ from warnings import warn
 import xarray as xr
 
 from glotaran.deprecation import raise_deprecation_error
+from glotaran.io import load_model
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.constraint import Constraint
 from glotaran.model.dataset_group import DatasetGroup
@@ -23,6 +24,7 @@ from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 from glotaran.plugin_system.megacomplex_registration import get_megacomplex
+from glotaran.typing.protocols import FileLoadableProtocol
 from glotaran.utils.ipython import MarkdownStr
 
 default_model_items = {
@@ -42,8 +44,10 @@ default_dataset_properties = {
 }
 
 
-class Model:
+class Model(FileLoadableProtocol):
     """A base class for global analysis models."""
+
+    loader = load_model
 
     def __init__(
         self,
@@ -64,6 +68,7 @@ class Model:
         self._add_default_items_and_properties()
         self._add_megacomplexe_types()
         self._add_dataset_type()
+        self.source_path = "model.yml"
 
     @classmethod
     def from_dict(

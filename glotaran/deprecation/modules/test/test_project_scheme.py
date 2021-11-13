@@ -56,8 +56,8 @@ def test_scheme_from_yaml_file_method(tmp_path: Path):
 
     scheme_path.write_text(
         f"""
-        model_file: {model_path}
-        parameters_file: {parameter_path}
+        model: {model_path}
+        parameters: {parameter_path}
         maximum_number_function_evaluations: 42
         data_files:
             dataset1: {dataset_path}"""

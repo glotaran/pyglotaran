@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import pandas as pd
 import pytest
 from IPython.core.formatters import format_display_data
 
 from glotaran.analysis.optimize import optimize
 from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import ThreeDatasetDecay as suite
+from glotaran.parameter import ParameterHistory
 from glotaran.project import Scheme
 from glotaran.project.result import IncompleteResultError
 from glotaran.project.result import Result
@@ -54,14 +56,26 @@ def test_result_ipython_rendering(dummy_result: Result):
 def test_result_incomplete_exception(dummy_result: Result):
     """Raise error if required fields are missing."""
 
+    scheme = Scheme(model=suite.model, parameters=suite.initial_parameters, data={})
+
     with pytest.raises(IncompleteResultError) as excinfo:
-        Result(1, True, "foo", "gta", ["1"])
+        Result(
+            1,
+            True,
+            "foo",
+            "gta",
+            ["1"],
+            scheme,
+            suite.initial_parameters,
+            suite.initial_parameters,
+            ParameterHistory.from_dataframe(pd.DataFrame()),
+        )
 
     for mandatory_field, file_post_fix in [
-        ("scheme", ""),
-        ("initial_parameters", ""),
-        ("optimized_parameters", ""),
-        ("parameter_history", ""),
+        # ("scheme", ""),
+        # ("initial_parameters", ""),
+        # ("optimized_parameters", ""),
+        # ("parameter_history", ""),
         ("data", "s"),
     ]:
         assert (
