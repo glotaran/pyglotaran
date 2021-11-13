@@ -107,11 +107,10 @@ class YmlProjectIo(ProjectIoInterface):
     def load_scheme(self, file_name: str) -> Scheme:
         spec = self._load_yml(file_name)
         scheme_spec_deprecations(spec)
-        file_path = Path(file_name)
-        return fromdict(Scheme, spec, folder=file_path.parent)
+        return fromdict(Scheme, spec, folder=Path(file_name).parent)
 
     def save_scheme(self, scheme: Scheme, file_name: str):
-        scheme_dict = asdict(scheme)
+        scheme_dict = asdict(scheme, folder=Path(file_name).parent)
         _write_dict(file_name, scheme_dict)
 
     def load_result(self, result_path: str) -> Result:
@@ -128,7 +127,7 @@ class YmlProjectIo(ProjectIoInterface):
             :class:`Result` instance created from the saved format.
         """
         spec = self._load_yml(result_path)
-        return fromdict(Result, spec)
+        return fromdict(Result, spec, folder=Path(result_path).parent)
 
     def save_result(self, result: Result, result_path: str):
         """Write a :class:`Result` instance to a spec file.
@@ -141,10 +140,10 @@ class YmlProjectIo(ProjectIoInterface):
             Path to write the result data to.
         """
         save_result(result, Path(result_path).parent.as_posix(), format_name="folder")
-        result_dict = asdict(result)
+        result_dict = asdict(result, folder=Path(result_path).parent)
         _write_dict(result_path, result_dict)
 
-    def _load_yml(self, file_name: str) -> dict:
+    def _load_yml(self, file_name: str) -> dict[str, Any]:
         yaml = YAML()
         if self.format == "yml_str":
             spec = yaml.load(file_name)

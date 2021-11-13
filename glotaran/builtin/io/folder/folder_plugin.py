@@ -81,45 +81,39 @@ class FolderProjectIo(ProjectIoInterface):
 
         paths = []
         if saving_options.report:
-            report_file = result_folder / "result.md"
-            report_file.write_text(str(result.markdown()))
-            paths.append(report_file.as_posix())
+            report_path = result_folder / "result.md"
+            report_path.write_text(str(result.markdown()))
+            paths.append(report_path.as_posix())
 
-        result.scheme.model_file = "model.yml"
-        save_model(
-            result.scheme.model, result_folder / result.scheme.model_file, allow_overwrite=True
-        )
-        paths.append((result_folder / result.scheme.model_file).as_posix())
+        model_path = result_folder / "model.yml"
+        save_model(result.scheme.model, model_path, allow_overwrite=True)
+        paths.append(model_path.as_posix())
 
-        result.initial_parameters_file = (
-            result.scheme.parameters_file
-        ) = f"initial_parameters.{saving_options.parameter_format}"
+        initial_parameters_path = f"initial_parameters.{saving_options.parameter_format}"
         save_parameters(
             result.scheme.parameters,
-            result_folder / result.scheme.parameters_file,
+            result_folder / initial_parameters_path,
             format_name=saving_options.parameter_format,
             allow_overwrite=True,
         )
-        paths.append((result_folder / result.scheme.parameters_file).as_posix())
+        paths.append((result_folder / initial_parameters_path).as_posix())
 
-        result.optimized_parameters_file = (
-            f"optimized_parameters.{saving_options.parameter_format}"
-        )
+        optimized_parameters_path = f"optimized_parameters.{saving_options.parameter_format}"
         save_parameters(
             result.optimized_parameters,
-            result_folder / result.optimized_parameters_file,
+            result_folder / optimized_parameters_path,
             format_name=saving_options.parameter_format,
             allow_overwrite=True,
         )
-        paths.append((result_folder / result.optimized_parameters_file).as_posix())
+        paths.append((result_folder / optimized_parameters_path).as_posix())
 
-        result.scheme_file = "scheme.yml"
-        save_scheme(result.scheme, result_folder / result.scheme_file, allow_overwrite=True)
-        paths.append((result_folder / result.scheme_file).as_posix())
+        scheme_path = result_folder / "scheme.yml"
+        save_scheme(result.scheme, scheme_path, allow_overwrite=True)
+        paths.append(scheme_path.as_posix())
 
-        result.parameter_history_file = "parameter_history.csv"
-        result.parameter_history.to_csv(result_folder / result.parameter_history_file)
-        paths.append((result_folder / result.parameter_history_file).as_posix())
+        parameter_history_path = result_folder / "parameter_history.csv"
+        result.parameter_history.to_csv(parameter_history_path)
+        paths.append(parameter_history_path.as_posix())
 
         result.data_files = {
             label: f"{label}.{saving_options.data_format}" for label in result.data

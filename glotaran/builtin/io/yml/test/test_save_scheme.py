@@ -19,8 +19,8 @@ if TYPE_CHECKING:
 
 
 want = """\
-model_file: m.yml
-parameters_file: p.csv
+model: m.yml
+parameters: p.csv
 data_files:
   dataset_1: d.nc
 clp_link_tolerance: 0.0
@@ -39,8 +39,6 @@ def test_save_scheme(tmp_path: Path):
         model,
         parameter,
         {"dataset_1": dataset},
-        model_file="m.yml",
-        parameters_file="p.csv",
         data_files={"dataset_1": "d.nc"},
     )
     save_model(model, tmp_path / "m.yml")

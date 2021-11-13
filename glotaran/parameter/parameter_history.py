@@ -1,19 +1,27 @@
 """The glotaran parameter history package."""
 from __future__ import annotations
 
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 
 from glotaran.parameter.parameter_group import ParameterGroup
+from glotaran.typing.protocols import FileLoadableProtocol
+
+if TYPE_CHECKING:
+    from os import PathLike
 
 
-class ParameterHistory:
+class ParameterHistory(FileLoadableProtocol):
     """A class representing a history of parameters."""
 
     def __init__(self):  # noqa: D107
 
         self._parameter_labels: list[str] = []
         self._parameters: list[np.ndarray] = []
+        self.source_path = "parameter_history.csv"
 
     @classmethod
     def from_dataframe(cls, history_df: pd.DataFrame) -> ParameterHistory:
@@ -54,6 +62,8 @@ class ParameterHistory:
         """
         df = pd.read_csv(path)
         return cls.from_dataframe(df)
+
+    loader = from_csv  # type:ignore[assignment]
 
     @property
     def parameter_labels(self) -> list[str]:
@@ -102,7 +112,7 @@ class ParameterHistory:
         """
         return pd.DataFrame(self._parameters, columns=self.parameter_labels)
 
-    def to_csv(self, file_name: str, delimiter: str = ","):
+    def to_csv(self, file_name: str | PathLike[str], delimiter: str = ","):
         """Write a :class:`ParameterGroup` to a CSV file.
 
         Parameters
@@ -112,6 +122,7 @@ class ParameterHistory:
         delimiter : str
             The delimiter of the CSV file.
         """
+        self.source_path = Path(file_name).as_posix()
         self.to_dataframe().to_csv(file_name, sep=delimiter)
 
     def append(self, parameter_group: ParameterGroup):
