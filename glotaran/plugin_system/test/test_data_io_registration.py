@@ -4,6 +4,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pytest
 import xarray as xr
 
@@ -34,11 +35,12 @@ if TYPE_CHECKING:
 
 
 class MockDataIO(DataIoInterface):
-    def load_dataset(
-        self, file_name: str | PathLike[str], **kwargs: Any
+    def load_dataset(  # type:ignore[override]
+        self, file_name: str | PathLike[str], *, result_container: dict[str, Any], **kwargs: Any
     ) -> xr.Dataset | xr.DataArray:
         """This docstring is just for help testing of 'load_dataset'."""
-        return {"file_name": file_name, **kwargs}  # type:ignore
+        result_container.update({"file_name": file_name, **kwargs})  # type:ignore
+        return xr.DataArray([1, 2])
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
     def save_dataset(  # type:ignore[override]
@@ -194,10 +196,13 @@ def test_load_dataset(tmp_path: Path):
     """All args and kwargs are passes correctly."""
     file_path = tmp_path / "dummy.mock"
     file_path.write_text("mock")
+    result: dict[str, Any] = {}
 
-    result = load_dataset(file_path, dummy_arg="baz")
+    dataset = load_dataset(file_path, result_container=result, dummy_arg="baz")
 
     assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
+    assert np.all(dataset.data == xr.DataArray([1, 2]).to_dataset(name="data").data)
+    assert dataset.source_path == file_path.as_posix()
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -208,7 +213,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        save_dataset("", str(file_path))  # type:ignore
+        save_dataset(xr.DataArray([1, 2]), str(file_path))  # type:ignore
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -218,17 +223,16 @@ def test_write_dataset(tmp_path: Path):
 
     result: dict[str, Any] = {}
     save_dataset(
-        "no_dataset",  # type:ignore
+        xr.DataArray([1, 2]),
         file_path,
         result_container=result,
         dummy_arg="baz",
     )
 
-    assert result == {
-        "file_name": str(file_path),
-        "dataset": "no_dataset",
-        "dummy_arg": "baz",
-    }
+    assert len(result) == 3
+    assert result["file_name"] == str(file_path)
+    assert result["dummy_arg"] == "baz"
+    assert np.all(result["dataset"] == xr.DataArray([1, 2]))
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -237,7 +241,7 @@ def test_write_dataset_error(tmp_path: Path):
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match="Cannot save data with format: 'foo'"):
-        save_dataset(str(file_path), "", "foo")  # type:ignore
+        save_dataset(xr.DataArray([1, 2]), str(file_path), "foo")  # type:ignore
 
     file_path.touch()
 
