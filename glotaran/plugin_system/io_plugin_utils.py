@@ -5,24 +5,29 @@ from __future__ import annotations
 import os
 from functools import partial
 from functools import wraps
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Iterable
-from typing import Iterator
 from typing import TypeVar
 from typing import cast
 
 DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
+if TYPE_CHECKING:
+    from typing import Iterable
+    from typing import Iterator
+
+    from glotaran.typing import StrOrPath
+
 
 def inferr_file_format(
-    file_path: str | os.PathLike[str], *, needs_to_exist: bool = True, allow_folder=False
+    file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder=False
 ) -> str:
     """Inferr format of a file if it exists.
 
     Parameters
     ----------
-    file_path : str
+    file_path : StrOrPath
         Path/str to the file.
     needs_to_exist : bool
         Whether or not a file need to exists for an successful format inferring.
@@ -47,16 +52,15 @@ def inferr_file_format(
         raise ValueError(f"There is no file {file_path!r}.")
 
     _, file_format = os.path.splitext(file_path)
-    if file_format == "":
-        if allow_folder:
-            return "folder"
-        else:
-            raise ValueError(
-                f"Cannot determine format of file {file_path!r}, "
-                "please provide an explicit format."
-            )
-    else:
+    if file_format != "":
         return file_format.lstrip(".")
+
+    if allow_folder:
+        return "folder"
+    else:
+        raise ValueError(
+            f"Cannot determine format of file {file_path!r}, " "please provide an explicit format."
+        )
 
 
 def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:

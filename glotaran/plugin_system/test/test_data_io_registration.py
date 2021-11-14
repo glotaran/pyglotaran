@@ -27,16 +27,17 @@ from glotaran.plugin_system.data_io_registration import set_data_plugin
 from glotaran.plugin_system.data_io_registration import show_data_io_method_help
 
 if TYPE_CHECKING:
-    from os import PathLike
     from typing import Any
 
     from _pytest.capture import CaptureFixture
     from _pytest.monkeypatch import MonkeyPatch
 
+    from glotaran.typing import StrOrPath
+
 
 class MockDataIO(DataIoInterface):
     def load_dataset(  # type:ignore[override]
-        self, file_name: str | PathLike[str], *, result_container: dict[str, Any], **kwargs: Any
+        self, file_name: StrOrPath, *, result_container: dict[str, Any], **kwargs: Any
     ) -> xr.Dataset | xr.DataArray:
         """This docstring is just for help testing of 'load_dataset'."""
         result_container.update({"file_name": file_name, **kwargs})  # type:ignore
@@ -45,7 +46,7 @@ class MockDataIO(DataIoInterface):
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
     def save_dataset(  # type:ignore[override]
         self,
-        file_name: str | PathLike[str],
+        file_name: StrOrPath,
         dataset: xr.Dataset | xr.DataArray,
         *,
         result_container: dict[str, Any],
@@ -200,7 +201,7 @@ def test_load_dataset(tmp_path: Path):
 
     dataset = load_dataset(file_path, result_container=result, dummy_arg="baz")
 
-    assert result == {"file_name": str(file_path), "dummy_arg": "baz"}
+    assert result == {"file_name": file_path.as_posix(), "dummy_arg": "baz"}
     assert np.all(dataset.data == xr.DataArray([1, 2]).to_dataset(name="data").data)
     assert dataset.source_path == file_path.as_posix()
 
@@ -230,7 +231,7 @@ def test_write_dataset(tmp_path: Path):
     )
 
     assert len(result) == 3
-    assert result["file_name"] == str(file_path)
+    assert result["file_name"] == file_path.as_posix()
     assert result["dummy_arg"] == "baz"
     assert np.all(result["dataset"] == xr.DataArray([1, 2]))
 

@@ -30,7 +30,6 @@ from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 
 if TYPE_CHECKING:
-    from os import PathLike
     from typing import Any
     from typing import Callable
 
@@ -40,6 +39,7 @@ if TYPE_CHECKING:
     from glotaran.model import Model
     from glotaran.project import Result
     from glotaran.project import Scheme
+    from glotaran.typing import StrOrPath
 
 
 class MockFileLoadable:
@@ -49,7 +49,7 @@ class MockFileLoadable:
 
 class MockProjectIo(ProjectIoInterface):
     # TODO: Investigate why write methods raises an [override] type error and load functions don't
-    def load_model(self, file_name: str | PathLike[str], **kwargs: Any) -> Model:
+    def load_model(self, file_name: StrOrPath, **kwargs: Any) -> Model:
         """This docstring is just for help testing of 'load_model'."""
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
@@ -58,7 +58,7 @@ class MockProjectIo(ProjectIoInterface):
     def save_model(  # type:ignore[override]
         self,
         model: Model,
-        file_name: str | PathLike[str],
+        file_name: StrOrPath,
         **kwargs: Any,
     ):
         model.func_args.update(  # type:ignore[attr-defined]
@@ -69,7 +69,7 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_parameters(self, file_name: str | PathLike[str], **kwargs: Any) -> ParameterGroup:
+    def load_parameters(self, file_name: StrOrPath, **kwargs: Any) -> ParameterGroup:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
         return mock_obj  # type:ignore[return-value]
@@ -77,7 +77,7 @@ class MockProjectIo(ProjectIoInterface):
     def save_parameters(  # type:ignore[override]
         self,
         parameters: ParameterGroup,
-        file_name: str | PathLike[str],
+        file_name: StrOrPath,
         **kwargs: Any,
     ):
         parameters.func_args.update(  # type:ignore[attr-defined]
@@ -88,7 +88,7 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_scheme(self, file_name: str | PathLike[str], **kwargs: Any) -> Scheme:
+    def load_scheme(self, file_name: StrOrPath, **kwargs: Any) -> Scheme:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
         return mock_obj  # type:ignore[return-value]
@@ -96,7 +96,7 @@ class MockProjectIo(ProjectIoInterface):
     def save_scheme(  # type:ignore[override]
         self,
         scheme: Scheme,
-        file_name: str | PathLike[str],
+        file_name: StrOrPath,
         **kwargs: Any,
     ):
         scheme.func_args.update(  # type:ignore[attr-defined]
@@ -107,7 +107,7 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_result(self, result_path: str | PathLike[str], **kwargs: Any) -> Result:
+    def load_result(self, result_path: StrOrPath, **kwargs: Any) -> Result:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": result_path, **kwargs}
         return mock_obj  # type:ignore[return-value]
@@ -115,7 +115,7 @@ class MockProjectIo(ProjectIoInterface):
     def save_result(  # type:ignore[override]
         self,
         result: Result,
-        result_path: str | PathLike[str],
+        result_path: StrOrPath,
         **kwargs: Any,
     ):
         result.func_args.update(  # type:ignore[attr-defined]
@@ -248,7 +248,7 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
 
     result = load_function(file_path, dummy_arg="baz")
 
-    assert result.func_args == {"file_name": str(file_path), "dummy_arg": "baz"}
+    assert result.func_args == {"file_name": file_path.as_posix(), "dummy_arg": "baz"}
     assert result.source_path == Path(file_path).as_posix()
 
 
@@ -279,7 +279,7 @@ def test_write_functions(
     )
 
     assert mock_obj.func_args == {
-        "file_name": str(file_path),
+        "file_name": file_path.as_posix(),
         "data_object": mock_obj,
         "dummy_arg": "baz",
     }

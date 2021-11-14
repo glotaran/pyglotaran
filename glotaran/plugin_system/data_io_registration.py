@@ -31,13 +31,13 @@ from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
-    from os import PathLike
     from typing import Any
     from typing import Callable
     from typing import Literal
 
     from glotaran.io.interface import DataLoader
     from glotaran.io.interface import DataSaver
+    from glotaran.typing import StrOrPath
 
 DATA_IO_METHODS = ("load_dataset", "save_dataset")
 """Methods used by DataIoInterface plugins."""
@@ -170,14 +170,12 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 
 @not_implemented_to_value_error
-def load_dataset(
-    file_name: str | PathLike[str], format_name: str = None, **kwargs: Any
-) -> xr.Dataset:
+def load_dataset(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> xr.Dataset:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
     Parameters
     ----------
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File containing the data.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -192,7 +190,7 @@ def load_dataset(
         Data loaded from the file.
     """
     io = get_data_io(format_name or inferr_file_format(file_name))
-    dataset = io.load_dataset(str(file_name), **kwargs)  # type: ignore[call-arg]
+    dataset = io.load_dataset(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
 
     if isinstance(dataset, xr.DataArray):
         dataset = dataset.to_dataset(name="data")
@@ -204,7 +202,7 @@ def load_dataset(
 @not_implemented_to_value_error
 def save_dataset(
     dataset: xr.Dataset | xr.DataArray,
-    file_name: str | PathLike[str],
+    file_name: StrOrPath,
     format_name: str = None,
     *,
     data_filters: list[str] | None = None,
@@ -218,7 +216,7 @@ def save_dataset(
     ----------
     dataset : xr.Dataset | xr.DataArray
         Data to be written to file.
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File to write the data to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
@@ -242,12 +240,12 @@ def save_dataset(
         orig_source_path: str = dataset.attrs["source_path"]
         del dataset.attrs["source_path"]
     io.save_dataset(  # type: ignore[call-arg]
-        file_name=str(file_name),
+        file_name=Path(file_name).as_posix(),
         dataset=dataset,
         **kwargs,
     )
     dataset.attrs["loader"] = load_dataset
-    if update_source_path is True:
+    if update_source_path is True or "orig_source_path" not in locals():
         dataset.attrs["source_path"] = Path(file_name).as_posix()
     else:
         dataset.attrs["source_path"] = Path(orig_source_path).as_posix()
