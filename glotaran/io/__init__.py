@@ -33,6 +33,7 @@ from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.plugin_system.project_io_registration import save_scheme
 from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
+from glotaran.utils.io import load_datasets
 
 
 def __getattr__(attribute_name: str):
