@@ -31,8 +31,9 @@ from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
-    from os import PathLike
     from typing import Callable
+
+    from glotaran.typing import StrOrPath
 
 
 class IncompleteResultError(Exception):
@@ -126,10 +127,10 @@ class Result:
 
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
-    source_path: str | PathLike[str] = field(
+    source_path: StrOrPath = field(
         default="result.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
     )
-    loader: Callable[[str | PathLike[str]], Result] = field(
+    loader: Callable[[StrOrPath], Result] = field(
         default=load_result, init=False, repr=False, metadata={"exclude_from_dict": True}
     )
 

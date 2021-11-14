@@ -21,11 +21,12 @@ from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
-    from os import PathLike
     from typing import Callable
     from typing import Literal
 
     import xarray as xr
+
+    from glotaran.typing import StrOrPath
 
 
 @dataclass
@@ -56,10 +57,10 @@ class Scheme(FileLoadableProtocol):
         "Levenberg-Marquardt",
     ] = "TrustRegionReflection"
     result_path: str | None = None
-    source_path: str | PathLike[str] = field(
+    source_path: StrOrPath = field(
         default="scheme.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
     )
-    loader: Callable[[str | PathLike[str]], Scheme] = field(
+    loader: Callable[[StrOrPath], Scheme] = field(
         default=load_scheme, init=False, repr=False, metadata={"exclude_from_dict": True}
     )
 

@@ -5,13 +5,14 @@ from typing import Protocol
 from typing import TypeVar
 
 if TYPE_CHECKING:
-    from os import PathLike
     from typing import Callable
+
+    from glotaran.typing import StrOrPath
 
 
 class FileLoadableProtocol(Protocol):
-    loader: Callable[[str | PathLike[str]], FileLoadableProtocol]
-    source_path: str | PathLike[str]
+    loader: Callable[[StrOrPath], FileLoadableProtocol]
+    source_path: StrOrPath
 
 
 FileLoadable = TypeVar("FileLoadable", bound=FileLoadableProtocol)
