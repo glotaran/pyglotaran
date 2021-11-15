@@ -35,7 +35,7 @@ def mock_scheme(tmp_path: Path) -> Scheme:
     model: {model_path}
     parameters: {parameter_path}
     maximum_number_function_evaluations: 42
-    data_files:
+    data:
         dataset1: {dataset_path}
     """
     scheme_path = tmp_path / "scheme.yml"

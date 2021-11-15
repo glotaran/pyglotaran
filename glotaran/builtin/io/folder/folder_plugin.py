@@ -115,17 +115,14 @@ class FolderProjectIo(ProjectIoInterface):
         result.parameter_history.to_csv(parameter_history_path)
         paths.append(parameter_history_path.as_posix())
 
-        result.data_files = {
-            label: f"{label}.{saving_options.data_format}" for label in result.data
-        }
-
-        for label, data_file in result.data_files.items():
+        for label, dataset in result.data.items():
+            data_path = result_folder / f"{label}.{saving_options.data_format}"
             save_dataset(
-                result.data[label],
-                result_folder / data_file,
+                dataset,
+                data_path,
                 format_name=saving_options.data_format,
                 allow_overwrite=True,
             )
-            paths.append((result_folder / data_file).as_posix())
+            paths.append(data_path.as_posix())
 
         return paths

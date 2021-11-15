@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 want = """\
 model: m.yml
 parameters: p.csv
-data_files:
+data:
   dataset_1: d.nc
 clp_link_tolerance: 0.0
 maximum_number_function_evaluations: null
@@ -35,15 +35,14 @@ result_path: null
 
 
 def test_save_scheme(tmp_path: Path):
+    save_model(model, tmp_path / "m.yml")
+    save_parameters(parameter, tmp_path / "p.csv")
+    save_dataset(dataset, tmp_path / "d.nc")
     scheme = Scheme(
         model,
         parameter,
         {"dataset_1": dataset},
-        data_files={"dataset_1": "d.nc"},
     )
-    save_model(model, tmp_path / "m.yml")
-    save_parameters(parameter, tmp_path / "p.csv")
-    save_dataset(dataset, tmp_path / "d.nc")
     scheme_path = tmp_path / "testscheme.yml"
     save_scheme(file_name=scheme_path, format_name="yml", scheme=scheme)
 

@@ -6,7 +6,6 @@ from dataclasses import field
 from dataclasses import replace
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
 from typing import List
 from typing import cast
 
@@ -16,7 +15,6 @@ from numpy.typing import ArrayLike
 from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
-from glotaran.io import load_dataset
 from glotaran.io import load_result
 from glotaran.io import save_result
 from glotaran.model import Model
@@ -24,25 +22,17 @@ from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
-from glotaran.project.dataclass_helpers import file_representation_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.project.scheme import Scheme
+from glotaran.utils.io import DatasetMapping
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
     from typing import Callable
+    from typing import Mapping
 
     from glotaran.typing import StrOrPath
-
-
-class IncompleteResultError(Exception):
-    """Exception raised if mandatory arguments to create a result are missing.
-
-    Since some mandatory fields of result can be either created from file or by
-    passing a class instance, the file and instance initialization aren't allowed
-    to both be None at the same time, but each is allowed to be ``None`` by its own.
-    """
 
 
 @dataclass
@@ -73,7 +63,7 @@ class Result:
     parameter_history: ParameterHistory = file_loadable_field(ParameterHistory)
     """The parameter history."""
 
-    data: dict[str, xr.Dataset] = cast(Dict[str, xr.Dataset], exclude_from_dict_field(None))
+    data: Mapping[str, xr.Dataset] = file_loadable_field(DatasetMapping, is_wrapper_class=True)
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
     Notes
@@ -81,7 +71,6 @@ class Result:
     The actual content of the data depends on the actual model and can be found in the
     documentation for the model.
     """
-    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
 
     additional_penalty: np.ndarray | None = exclude_from_dict_field(None)
     """A vector with the value for each additional penalty, or None"""
@@ -137,38 +126,9 @@ class Result:
     def __post_init__(self):
         """Validate fields and cast attributes to correct type."""
         init_file_loadable_fields(self)
-        self._check_mandatory_fields()
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
             self.covariance_matrix = np.array(self.covariance_matrix)
-
-    def _check_mandatory_fields(self):
-        """Check that required fields which can be set from file are not ``None``.
-
-        Raises
-        ------
-        IncompleteResultError
-            If any mandatory field and its file representation is ``None``.
-        """
-        mandatory_fields = [
-            ("data", "s"),
-        ]
-        missing_fields = [
-            (mandatory_field, file_post_fix)
-            for mandatory_field, file_post_fix in mandatory_fields
-            if (
-                getattr(self, mandatory_field) is None
-                and getattr(self, f"{mandatory_field}_file{file_post_fix}") is None
-            )
-        ]
-        if len(missing_fields) != 0:
-            error_message = "Result is missing mandatory fields:\n"
-            for missing_field, file_post_fix in missing_fields:
-                error_message += (
-                    f" - Required filed {missing_field!r} is missing!\n"
-                    f"   Set either {missing_field!r} or '{missing_field}_file{file_post_fix}'."
-                )
-            raise IncompleteResultError(error_message)
 
     @property
     def model(self) -> Model:

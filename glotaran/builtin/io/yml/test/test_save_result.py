@@ -31,7 +31,7 @@ def test_save_result_yml(
         initial_parameters: initial_parameters.csv
         optimized_parameters: optimized_parameters.csv
         parameter_history: parameter_history.csv
-        data_files:
+        data:
           dataset1: dataset1.nc
           dataset2: dataset2.nc
           dataset3: dataset3.nc

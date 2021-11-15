@@ -15,7 +15,8 @@ if TYPE_CHECKING:
 
 class FileLoadableProtocol(Protocol):
     loader: Callable[
-        [StrOrPath | Sequence[StrOrPath] | Mapping[str, StrOrPath]], FileLoadableProtocol
+        [StrOrPath | Sequence[StrOrPath] | Mapping[str, StrOrPath]],
+        FileLoadableProtocol,
     ]
     source_path: StrOrPath | Sequence[StrOrPath] | Mapping[str, StrOrPath]
 

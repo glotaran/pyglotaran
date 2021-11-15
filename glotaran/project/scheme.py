@@ -8,21 +8,21 @@ from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
 from glotaran.deprecation import warn_deprecated
-from glotaran.io import load_dataset
 from glotaran.io import load_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
-from glotaran.project.dataclass_helpers import file_representation_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.typing.protocols import FileLoadableProtocol
+from glotaran.utils.io import DatasetMapping
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
     from typing import Callable
     from typing import Literal
+    from typing import Mapping
 
     import xarray as xr
 
@@ -38,10 +38,7 @@ class Scheme(FileLoadableProtocol):
 
     model: Model = file_loadable_field(Model)
     parameters: ParameterGroup = file_loadable_field(ParameterGroup)
-    data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()
-    # model_file: str | None = file_representation_field("model", load_model, default=None)
-    # parameters_file: str | None = file_representation_field("parameters", load_parameters, None)
-    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
+    data: Mapping[str, xr.Dataset] = file_loadable_field(DatasetMapping, is_wrapper_class=True)
     clp_link_tolerance: float = 0.0
     maximum_number_function_evaluations: int | None = None
     non_negative_least_squares: bool | None = exclude_from_dict_field(None)
