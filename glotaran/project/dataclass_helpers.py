@@ -1,6 +1,8 @@
 """Contains helper methods for dataclasses."""
 from __future__ import annotations
 
+from collections.abc import Mapping
+from collections.abc import Sequence
 from dataclasses import MISSING
 from dataclasses import field
 from dataclasses import fields
@@ -36,32 +38,8 @@ def exclude_from_dict_field(
     return field(default=default, metadata={"exclude_from_dict": True})
 
 
-def file_representation_field(
-    target: str,
-    loader: Callable[[str], Any],
-    default: DefaultType = MISSING,  # type:ignore[assignment]
-) -> DefaultType:
-    """Create a dataclass field with target and loader as metadata.
-
-    Parameters
-    ----------
-    target : str
-        The name of the represented field.
-    loader : Callable[[str], Any]
-        A function to load the target field from a file.
-    default : DefaultType
-        The default value of the field.
-
-    Returns
-    -------
-    DefaultType
-        The created field.
-    """
-    return field(default=default, metadata={"target": target, "loader": loader})
-
-
 def file_loader_factory(
-    targetClass: type[FileLoadable],
+    targetClass: type[FileLoadable], *, is_wrapper_class: bool = False
 ) -> Callable[[FileLoadable | str | Path], FileLoadable]:
     """Create ``file_loader`` functions to load ``targetClass`` from file.
 
@@ -69,6 +47,10 @@ def file_loader_factory(
     ----------
     targetClass: type[FileLoadable]
         Class the loader function should return an instance of.
+    is_wrapper_class: bool
+        Whether or not ``targetClass`` is a wrapper class, so the isinstance check will be ignored
+        and instead the responsibility for supported types lies at the implementation of
+        the loader.
 
     Returns
     -------
@@ -98,6 +80,8 @@ def file_loader_factory(
         ValueError
             If not an instance of ``targetClass`` or a source path to load from.
         """
+        if isinstance(source_path, targetClass):
+            return source_path
         if isinstance(source_path, (str, Path)):
             if folder is not None:
                 target_obj = targetClass.loader(Path(folder) / source_path)
@@ -105,35 +89,59 @@ def file_loader_factory(
                 target_obj = targetClass.loader(source_path)
             target_obj.source_path = str(source_path)
             return target_obj  # type:ignore[return-value]
-        if isinstance(source_path, targetClass):
-            return source_path
+        if is_wrapper_class is True:
+            if isinstance(source_path, Sequence) and folder is not None:
+                source_path = [Path(folder) / val for val in source_path]
+            if isinstance(source_path, Mapping) and folder is not None:
+                source_path = {key: Path(folder) / val for key, val in source_path.items()}
+            return targetClass.loader(source_path)  # type:ignore[return-value, arg-type]
         raise ValueError(
-            f"The value of 'target' needs to be of class {targetClass.__name__} or a file path."
+            f"The value of 'source_path' needs to be of class {targetClass.__name__} "
+            "or a file path. If the class is a wrapper class, you can use the argument:\n"
+            "'is_wrapper_class=True'"
         )
 
     return file_loader
 
 
-def file_loadable_field(targetClass: type[FileLoadable]) -> FileLoadable:
+def file_loadable_field(
+    targetClass: type[FileLoadable], *, is_wrapper_class=False
+) -> FileLoadable:
     """Create a dataclass field which can be and object of type ``targetClass`` or file path.
 
     Parameters
     ----------
     targetClass : type[FileLoadable]
         Class the resulting value should be an instance of.
+    is_wrapper_class: bool
+        Whether or not ``targetClass`` is a wrapper class, so the isinstance check will be ignored
+        and instead the responsibility for supported types lies at the implementation of
+        the loader.
+
+    Notes
+    -----
+    This also requires to add ``init_file_loadable_fields`` in the ``__post_init__`` method.
 
     Returns
     -------
     FileLoadable
         Instance of ``targetClass``.
+
+    See Also
+    --------
+    init_file_loadable_fields
     """
-    return field(metadata={"file_loader": file_loader_factory(targetClass)})
+    return field(
+        metadata={
+            "file_loader": file_loader_factory(targetClass, is_wrapper_class=is_wrapper_class)
+        }
+    )
 
 
 def init_file_loadable_fields(dataclass_instance: object):
     """Load objects into class when dataclass is initialized with paths.
 
-    If the class has file_loadable fields, this should be called in the
+    If the class has file_loadable fields, this needs be called in the
     ``__post_init__`` method of that class.
 
     Parameters
@@ -141,6 +149,10 @@ def init_file_loadable_fields(dataclass_instance: object):
     dataclass_instance : object
         Instance of the dataclass being initialized.
         When used inside of ``__post_init__`` for the class itself use ``self``.
+
+    See Also
+    --------
+    file_loadable_field
     """
     for field_item in fields(dataclass_instance):
         if "file_loader" in field_item.metadata:
@@ -172,10 +184,18 @@ def asdict(dataclass: object, folder: Path = None) -> dict[str, Any]:
         if "file_loader" in field_item.metadata:
             value = getattr(dataclass, field_item.name)
             if value.source_path is not None:
-                source_path = Path(value.source_path)
-                if folder is not None and source_path.is_absolute():
-                    source_path = source_path.relative_to(folder)
-                dataclass_dict[field_item.name] = source_path.as_posix()
+                if isinstance(value.source_path, str):
+                    source_path = Path(value.source_path)
+                    if folder is not None and source_path.is_absolute():
+                        source_path = source_path.relative_to(folder)
+                    dataclass_dict[field_item.name] = source_path.as_posix()
+                elif isinstance(value.source_path, Mapping):
+                    dataclass_dict[field_item.name] = {}
+                    for key, val in value.source_path.items():
+                        source_path = Path(val)
+                        if folder is not None and source_path.is_absolute():
+                            source_path = source_path.relative_to(folder)
+                        dataclass_dict[field_item.name][key] = source_path.as_posix()
 
     return dataclass_dict
 
@@ -198,24 +218,6 @@ def fromdict(dataclass_type: type, dataclass_dict: dict[str, Any], folder: Path 
         Created instance of dataclass_type.
     """
     for field_item in fields(dataclass_type):
-        if "target" in field_item.metadata and "loader" in field_item.metadata:
-            file_path = dataclass_dict.get(field_item.name)
-            if file_path is None:
-                continue
-            elif isinstance(file_path, list):
-                dataclass_dict[field_item.metadata["target"]] = [
-                    field_item.metadata["loader"](f if folder is None else folder / f)
-                    for f in file_path
-                ]
-            elif isinstance(file_path, dict):
-                dataclass_dict[field_item.metadata["target"]] = {
-                    k: field_item.metadata["loader"](f if folder is None else folder / f)
-                    for k, f in file_path.items()
-                }
-            else:
-                dataclass_dict[field_item.metadata["target"]] = field_item.metadata["loader"](
-                    file_path if folder is None else folder / file_path
-                )
         if "file_loader" in field_item.metadata:
             file_path = dataclass_dict.get(field_item.name)
             dataclass_dict[field_item.name] = field_item.metadata["file_loader"](file_path, folder)

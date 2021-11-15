@@ -59,7 +59,7 @@ def test_scheme_from_yaml_file_method(tmp_path: Path):
         model: {model_path}
         parameters: {parameter_path}
         maximum_number_function_evaluations: 42
-        data_files:
+        data:
             dataset1: {dataset_path}"""
     )
 
