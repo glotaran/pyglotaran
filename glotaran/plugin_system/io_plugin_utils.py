@@ -152,12 +152,10 @@ def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> An
     bar  /  *
     ---  -  -
     """
-    # since bool is a subclass of int we can't use isinstance
-    if type(value) == bool:
-        if value:
-            return true_repr
-        else:
-            return false_repr
+    if value is True:
+        return true_repr
+    elif value is False:
+        return false_repr
     else:
         return value
 
