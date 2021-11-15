@@ -16,6 +16,8 @@ from glotaran.typing.types import DatasetMappable
 if TYPE_CHECKING:
     from typing import Iterator
 
+    from glotaran.typing.types import StrOrPath
+
 
 def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[str, xr.Dataset]:
     """Implement functionality for ``load_datasets`` and  internal use.
@@ -157,3 +159,24 @@ def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:
         the ``source_path`` attr.
     """
     return DatasetMapping.loader(dataset_mappable)
+
+
+def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = None) -> str:
+    """Ensure that ``source_path`` is a posix path, relative to ``base_path`` if defined.
+
+    Parameters
+    ----------
+    source_path : StrOrPath
+        Path which should be converted to a relative posix path.
+    base_path : StrOrPath, optional
+        Base path the resulting path string should be relative to., by default None
+
+    Returns
+    -------
+    str
+        ``source_path`` as posix path relative to ``base_path`` if defined.
+    """
+    source_path = Path(source_path)
+    if base_path is not None and source_path.is_absolute():
+        source_path = source_path.relative_to(base_path)
+    return source_path.as_posix()

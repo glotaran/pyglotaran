@@ -10,6 +10,8 @@ from dataclasses import is_dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from glotaran.utils.io import relative_posix_path
+
 if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
@@ -184,18 +186,19 @@ def asdict(dataclass: object, folder: Path = None) -> dict[str, Any]:
         if "file_loader" in field_item.metadata:
             value = getattr(dataclass, field_item.name)
             if value.source_path is not None:
-                if isinstance(value.source_path, str):
-                    source_path = Path(value.source_path)
-                    if folder is not None and source_path.is_absolute():
-                        source_path = source_path.relative_to(folder)
-                    dataclass_dict[field_item.name] = source_path.as_posix()
+                if isinstance(value.source_path, (str, Path)):
+                    dataclass_dict[field_item.name] = relative_posix_path(
+                        value.source_path, folder
+                    )
+                elif isinstance(value.source_path, Sequence):
+                    dataclass_dict[field_item.name] = [
+                        relative_posix_path(val, folder) for val in value.source_path
+                    ]
                 elif isinstance(value.source_path, Mapping):
-                    dataclass_dict[field_item.name] = {}
-                    for key, val in value.source_path.items():
-                        source_path = Path(val)
-                        if folder is not None and source_path.is_absolute():
-                            source_path = source_path.relative_to(folder)
-                        dataclass_dict[field_item.name][key] = source_path.as_posix()
+                    dataclass_dict[field_item.name] = {
+                        key: relative_posix_path(val, folder)
+                        for key, val in value.source_path.items()
+                    }
 
     return dataclass_dict
 

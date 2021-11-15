@@ -10,6 +10,7 @@ import xarray as xr
 from glotaran.io import save_dataset
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets
+from glotaran.utils.io import relative_posix_path
 
 
 @pytest.fixture
@@ -128,3 +129,25 @@ def test_load_datasets_wrong_type():
         ),
     ):
         load_datasets(1)
+
+
+@pytest.mark.parametrize("rel_file_path", ("file.txt", "folder/file.txt"))
+def test_relative_posix_path(tmp_path: Path, rel_file_path: str):
+    """All possible permutation for the input values."""
+    full_path = tmp_path / rel_file_path
+
+    result_str = relative_posix_path(str(full_path))
+
+    assert result_str == full_path.as_posix()
+
+    result_path = relative_posix_path(full_path)
+
+    assert result_path == full_path.as_posix()
+
+    rel_result_str = relative_posix_path(str(full_path), tmp_path)
+
+    assert rel_result_str == rel_file_path
+
+    rel_result_path = relative_posix_path(full_path, str(tmp_path))
+
+    assert rel_result_path == rel_file_path
