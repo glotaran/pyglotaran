@@ -78,7 +78,6 @@ class DatasetMapping(MutableMapping, FileLoadableProtocol):
             Mapping to initially populate the instance., by default None
         """
         super().__init__()
-        self.source_path: dict[str, str] = {}
         self.__data_dict: dict[str, xr.Dataset] = {}
         if init_map is not None:
             for key, dataset in init_map.items():
@@ -100,6 +99,23 @@ class DatasetMapping(MutableMapping, FileLoadableProtocol):
         """
         return cls(_load_datasets(dataset_mappable))
 
+    @property
+    def source_path(self):
+        """Map the ``source_path`` attribute of each dataset to a standalone mapping.
+
+        Note
+        ----
+        When the ``source_path`` attribute of the dataset gets updated
+        (e.g. by calling ``save_dataset`` with the default ``update_source_path=True``)
+        this value will be updated as well.
+
+        Returns
+        -------
+        Mapping[str, str]
+            Mapping of the dataset source paths.
+        """
+        return {key: val.source_path for key, val in self.__data_dict.items()}
+
     def __getitem__(self, key: str) -> xr.Dataset:
         """Implement retrieving an element by its key."""
         return self.__data_dict[key]
@@ -108,7 +124,6 @@ class DatasetMapping(MutableMapping, FileLoadableProtocol):
         """Implement setting an elements value."""
         if "source_path" not in value.attrs:
             value.attrs["source_path"] = f"{key}.nc"
-        self.source_path[key] = value.source_path
         self.__data_dict[key] = value
 
     def __iter__(self) -> Iterator[str]:
@@ -117,7 +132,6 @@ class DatasetMapping(MutableMapping, FileLoadableProtocol):
 
     def __delitem__(self, key: str) -> None:
         """Implement deleting an item."""
-        del self.source_path[key]
         del self.__data_dict[key]
 
     def __len__(self) -> int:
