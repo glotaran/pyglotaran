@@ -151,3 +151,9 @@ def test_relative_posix_path(tmp_path: Path, rel_file_path: str):
     rel_result_path = relative_posix_path(full_path, str(tmp_path))
 
     assert rel_result_path == rel_file_path
+
+    rel_result_no_coomon = relative_posix_path(
+        (tmp_path / f"../{rel_file_path}").resolve().as_posix(), str(tmp_path)
+    )
+
+    assert rel_result_no_coomon == f"../{rel_file_path}"
