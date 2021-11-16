@@ -422,6 +422,15 @@ class Model:
         string += ", ".join(self._megacomplex_types)
         string += "\n\n"
 
+        string += f"{base_heading}# Dataset Groups\n\n"
+        for group_name, group in self.dataset_group_models.items():
+            string += f"* **{group_name}**:\n"
+            string += f"  * *Label*: {group_name}\n"
+            for item_name, item_value in asdict(group).items():
+                string += f"  * *{item_name}*: {item_value}\n"
+
+        string += "\n"
+
         for name in self.model_items:
             items = getattr(self, name)
             if not items:
