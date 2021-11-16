@@ -1,5 +1,6 @@
 from math import inf
 from math import nan
+from textwrap import dedent
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -22,6 +23,7 @@ from glotaran.model.relation import Relation
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
+from glotaran.testing.model_generators import SimpleModelGenerator
 
 
 @model_item(
@@ -485,3 +487,76 @@ def test_only_constraint():
     assert not oc2.applies(650)
     assert oc2.applies(701)
     assert oc2.target == "spectra2"
+
+
+def test_model_markdown():
+    """Full markdown string is as expected."""
+    model = SimpleModelGenerator(
+        rates=[501e-3, 202e-4, 105e-5, {"non-negative": True}],
+        irf={"center": 1.3, "width": 7.8},
+        k_matrix="sequential",
+    )
+    expected = dedent(
+        """\
+        # Model
+
+        _Megacomplex Types_: decay
+
+        ## Dataset Groups
+
+        * **default**:
+          * *Label*: default
+          * *residual_function*: variable_projection
+          * *link_clp*: None
+
+        ## K Matrix
+
+        * **k1**:
+          * *Label*: k1
+          * *Matrix*:
+            * *('s2', 's1')*: rates.1: **5.01000e-01** *(StdErr: 0e+00)*
+            * *('s3', 's2')*: rates.2: **2.02000e-02** *(StdErr: 0e+00)*
+            * *('s3', 's3')*: rates.3: **1.05000e-03** *(StdErr: 0e+00)*
+
+
+        ## Initial Concentration
+
+        * **j1**:
+          * *Label*: j1
+          * *Compartments*: ['s1', 's2', 's3']
+          * *Parameters*: [inputs.1: **1.00000e+00** *(fixed)*, inputs.0: **0.00000e+00** *(fixed)*, inputs.0: **0.00000e+00** *(fixed)*]
+          * *Exclude From Normalize*: []
+
+        ## Irf
+
+        * **irf1** (multi-gaussian):
+          * *Label*: irf1
+          * *Type*: multi-gaussian
+          * *Center*: [irf.center: **1.30000e+00** *(StdErr: 0e+00)*]
+          * *Width*: [irf.width: **7.80000e+00** *(StdErr: 0e+00)*]
+          * *Normalize*: True
+          * *Backsweep*: False
+
+        ## Megacomplex
+
+        * **mc1** (None):
+          * *Label*: mc1
+          * *Dimension*: time
+          * *K Matrix*: ['k1']
+
+        ## Dataset
+
+        * **dataset1**:
+          * *Label*: dataset1
+          * *Group*: default
+          * *Megacomplex*: ['mc1']
+          * *Initial Concentration*: j1
+          * *Irf*: irf1
+
+        """  # noqa: E501
+    )
+
+    # Preprocessing to remove trailing whitespace after '* *Matrix*:'
+    result = "\n".join([line.rstrip(" ") for line in str(model.markdown()).split("\n")])
+
+    assert result == expected
