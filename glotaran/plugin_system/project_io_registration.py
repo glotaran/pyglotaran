@@ -9,6 +9,7 @@ and causing an [override] type error in the plugins implementation.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
@@ -31,7 +32,6 @@ from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
-    from os import PathLike
     from typing import Any
     from typing import Callable
     from typing import Literal
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from glotaran.parameter import ParameterGroup
     from glotaran.project import Result
     from glotaran.project import Scheme
+    from glotaran.typing import StrOrPath
 
     ProjectIoMethods = TypeVar(
         "ProjectIoMethods",
@@ -213,12 +214,12 @@ def get_project_io(format_name: str) -> ProjectIoInterface:
 
 
 @not_implemented_to_value_error
-def load_model(file_name: str | PathLike[str], format_name: str = None, **kwargs: Any) -> Model:
+def load_model(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> Model:
     """Create a Model instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File containing the model specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -232,16 +233,19 @@ def load_model(file_name: str | PathLike[str], format_name: str = None, **kwargs
         Model instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_model(str(file_name), **kwargs)  # type: ignore[call-arg]
+    model = io.load_model(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
+    model.source_path = Path(file_name).as_posix()
+    return model
 
 
 @not_implemented_to_value_error
 def save_model(
     model: Model,
-    file_name: str | PathLike[str],
+    file_name: StrOrPath,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
+    update_source_path: bool = True,
     **kwargs: Any,
 ) -> None:
     """Save a :class:`Model` instance to a spec file.
@@ -250,30 +254,37 @@ def save_model(
     ----------
     model: Model
         :class:`Model` instance to save to specs file.
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File to write the model specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
+    update_source_path: bool
+        Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
+        by default True
     **kwargs : Any
         Additional keyword arguments passes to the ``save_model`` implementation
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_model(file_name=str(file_name), model=model, **kwargs)  # type: ignore[call-arg]
+    io.save_model(  # type: ignore[call-arg]
+        file_name=Path(file_name).as_posix(),
+        model=model,
+        **kwargs,
+    )
+    if update_source_path is True:
+        model.source_path = Path(file_name).as_posix()
 
 
 @not_implemented_to_value_error
-def load_parameters(
-    file_name: str | PathLike[str], format_name: str = None, **kwargs
-) -> ParameterGroup:
+def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> ParameterGroup:
     """Create a :class:`ParameterGroup` instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File containing the parameter specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -287,16 +298,22 @@ def load_parameters(
         :class:`ParameterGroup` instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_parameters(str(file_name), **kwargs)  # type: ignore[call-arg]
+    parameters = io.load_parameters(  # type: ignore[call-arg]
+        Path(file_name).as_posix(),
+        **kwargs,
+    )
+    parameters.source_path = Path(file_name).as_posix()
+    return parameters
 
 
 @not_implemented_to_value_error
 def save_parameters(
     parameters: ParameterGroup,
-    file_name: str | PathLike[str],
+    file_name: StrOrPath,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
+    update_source_path: bool = True,
     **kwargs: Any,
 ) -> None:
     """Save a :class:`ParameterGroup` instance to a spec file.
@@ -305,12 +322,15 @@ def save_parameters(
     ----------
     parameters : ParameterGroup
         :class:`ParameterGroup` instance to save to specs file.
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File to write the parameter specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
+    update_source_path: bool
+        Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
+        by default True
     **kwargs : Any
         Additional keyword arguments passes to the ``save_parameters`` implementation
         of the project io plugin.
@@ -318,19 +338,21 @@ def save_parameters(
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     io.save_parameters(  # type: ignore[call-arg]
-        file_name=str(file_name),
+        file_name=Path(file_name).as_posix(),
         parameters=parameters,
         **kwargs,
     )
+    if update_source_path is True:
+        parameters.source_path = Path(file_name).as_posix()
 
 
 @not_implemented_to_value_error
-def load_scheme(file_name: str | PathLike[str], format_name: str = None, **kwargs: Any) -> Scheme:
+def load_scheme(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> Scheme:
     """Create a :class:`Scheme` instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File containing the parameter specs.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -344,16 +366,20 @@ def load_scheme(file_name: str | PathLike[str], format_name: str = None, **kwarg
         :class:`Scheme` instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    return io.load_scheme(str(file_name), **kwargs)  # type: ignore[call-arg]
+
+    scheme = io.load_scheme(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
+    scheme.source_path = Path(file_name).as_posix()
+    return scheme
 
 
 @not_implemented_to_value_error
 def save_scheme(
     scheme: Scheme,
-    file_name: str | PathLike[str],
+    file_name: StrOrPath,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
+    update_source_path: bool = True,
     **kwargs: Any,
 ) -> None:
     """Save a :class:`Scheme` instance to a spec file.
@@ -362,30 +388,37 @@ def save_scheme(
     ----------
     scheme : Scheme
         :class:`Scheme` instance to save to specs file.
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File to write the scheme specs to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
+    update_source_path: bool
+        Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
+        by default True
     **kwargs : Any
         Additional keyword arguments passes to the ``save_scheme`` implementation
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_scheme(file_name=str(file_name), scheme=scheme, **kwargs)  # type: ignore[call-arg]
+    io.save_scheme(  # type: ignore[call-arg]
+        file_name=Path(file_name).as_posix(),
+        scheme=scheme,
+        **kwargs,
+    )
+    if update_source_path is True:
+        scheme.source_path = Path(file_name).as_posix()
 
 
 @not_implemented_to_value_error
-def load_result(
-    result_path: str | PathLike[str], format_name: str = None, **kwargs: Any
-) -> Result:
+def load_result(result_path: StrOrPath, format_name: str = None, **kwargs: Any) -> Result:
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
     ----------
-    result_path : str | PathLike[str]
+    result_path : StrOrPath
         Path containing the result data.
     format_name : str
         Format the result is in, if not provided and it is a file
@@ -400,16 +433,20 @@ def load_result(
         :class:`Result` instance created from the saved format.
     """
     io = get_project_io(format_name or inferr_file_format(result_path))
-    return io.load_result(str(result_path), **kwargs)  # type: ignore[call-arg]
+
+    result = io.load_result(Path(result_path).as_posix(), **kwargs)  # type: ignore[call-arg]
+    result.source_path = Path(result_path).as_posix()
+    return result
 
 
 @not_implemented_to_value_error
 def save_result(
     result: Result,
-    result_path: str | PathLike[str],
+    result_path: StrOrPath,
     format_name: str = None,
     *,
     allow_overwrite: bool = False,
+    update_source_path: bool = True,
     **kwargs: Any,
 ) -> list[str] | None:
     """Write a :class:`Result` instance to a spec file.
@@ -418,13 +455,16 @@ def save_result(
     ----------
     result : Result
         :class:`Result` instance to write.
-    result_path : str | PathLike[str]
+    result_path : StrOrPath
         Path to write the result data to.
     format_name : str
         Format the result should be saved in, if not provided and it is a file
         it will be inferred from the file extension.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
+    update_source_path: bool
+        Whether or not to update the ``source_path`` attribute to ``result_path`` when saving.
+        by default True
     **kwargs : Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
@@ -438,11 +478,14 @@ def save_result(
     io = get_project_io(
         format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    return io.save_result(  # type: ignore[call-arg]
-        result_path=str(result_path),
+    paths = io.save_result(  # type: ignore[call-arg]
+        result_path=Path(result_path).as_posix(),
         result=result,
         **kwargs,
     )
+    if update_source_path is True:
+        result.source_path = Path(result_path).as_posix()
+    return paths
 
 
 def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Callable[..., Any]:

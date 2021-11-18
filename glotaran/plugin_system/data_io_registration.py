@@ -8,8 +8,10 @@ and causing an [override] type error in the plugins implementation.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+import xarray as xr
 from tabulate import tabulate
 
 from glotaran.io.interface import DataIoInterface
@@ -29,15 +31,13 @@ from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
-    from os import PathLike
     from typing import Any
     from typing import Callable
     from typing import Literal
 
-    import xarray as xr
-
     from glotaran.io.interface import DataLoader
     from glotaran.io.interface import DataSaver
+    from glotaran.typing import StrOrPath
 
 DATA_IO_METHODS = ("load_dataset", "save_dataset")
 """Methods used by DataIoInterface plugins."""
@@ -170,14 +170,12 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 
 @not_implemented_to_value_error
-def load_dataset(
-    file_name: str | PathLike[str], format_name: str = None, **kwargs: Any
-) -> xr.Dataset | xr.DataArray:
+def load_dataset(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> xr.Dataset:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
     Parameters
     ----------
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File containing the data.
     format_name : str
         Format the file is in, if not provided it will be inferred from the file extension.
@@ -188,21 +186,28 @@ def load_dataset(
 
     Returns
     -------
-    xr.Dataset|xr.DataArray
+    xr.Dataset
         Data loaded from the file.
     """
     io = get_data_io(format_name or inferr_file_format(file_name))
-    return io.load_dataset(str(file_name), **kwargs)  # type: ignore[call-arg]
+    dataset = io.load_dataset(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
+
+    if isinstance(dataset, xr.DataArray):
+        dataset = dataset.to_dataset(name="data")
+    dataset.attrs["loader"] = load_dataset
+    dataset.attrs["source_path"] = Path(file_name).as_posix()
+    return dataset
 
 
 @not_implemented_to_value_error
 def save_dataset(
     dataset: xr.Dataset | xr.DataArray,
-    file_name: str | PathLike[str],
+    file_name: StrOrPath,
     format_name: str = None,
     *,
     data_filters: list[str] | None = None,
     allow_overwrite: bool = False,
+    update_source_path: bool = True,
     **kwargs: Any,
 ) -> None:
     """Save data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
@@ -211,7 +216,7 @@ def save_dataset(
     ----------
     dataset : xr.Dataset | xr.DataArray
         Data to be written to file.
-    file_name : str | PathLike[str]
+    file_name : StrOrPath
         File to write the data to.
     format_name : str
         Format the file should be in, if not provided it will be inferred from the file extension.
@@ -219,6 +224,9 @@ def save_dataset(
         Optional list of items in the dataset to be saved.
     allow_overwrite : bool
         Whether or not to allow overwriting existing files, by default False
+    update_source_path: bool
+        Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
+        by default True
     **kwargs : Any
         Additional keyword arguments passes to the ``write_dataset`` implementation
         of the data io plugin. If you aren't sure about those use ``get_datawriter``
@@ -226,11 +234,21 @@ def save_dataset(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
+    if "loader" in dataset.attrs:
+        del dataset.attrs["loader"]
+    if "source_path" in dataset.attrs:
+        orig_source_path: str = dataset.attrs["source_path"]
+        del dataset.attrs["source_path"]
     io.save_dataset(  # type: ignore[call-arg]
-        file_name=str(file_name),
+        file_name=Path(file_name).as_posix(),
         dataset=dataset,
         **kwargs,
     )
+    dataset.attrs["loader"] = load_dataset
+    if update_source_path is True or "orig_source_path" not in locals():
+        dataset.attrs["source_path"] = Path(file_name).as_posix()
+    else:
+        dataset.attrs["source_path"] = Path(orig_source_path).as_posix()
 
 
 def get_dataloader(format_name: str) -> DataLoader:

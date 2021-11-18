@@ -13,8 +13,10 @@ import pandas as pd
 from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
+from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.parameter.parameter import Parameter
+from glotaran.typing.protocols import FileLoadableProtocol
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -28,11 +30,13 @@ class ParameterNotFoundException(Exception):
         super().__init__(f"Cannot find parameter {'.'.join(path+[label])!r}")
 
 
-class ParameterGroup(dict):
+class ParameterGroup(dict, FileLoadableProtocol):
     """Represents are group of parameters.
 
     Can contain other groups, creating a tree-like hierarchy.
     """
+
+    loader = load_parameters
 
     def __init__(self, label: str = None, root_group: ParameterGroup = None):
         """Initialize a :class:`ParameterGroup` instance with ``label``.
@@ -59,6 +63,7 @@ class ParameterGroup(dict):
             if root_group is None
             else None
         )
+        self.source_path = "parameters.csv"
         super().__init__()
 
     @classmethod

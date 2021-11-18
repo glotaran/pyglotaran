@@ -2,42 +2,43 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import fields
 from typing import TYPE_CHECKING
 
 from glotaran.deprecation import deprecate
 from glotaran.deprecation import warn_deprecated
-from glotaran.io import load_dataset
-from glotaran.io import load_model
-from glotaran.io import load_parameters
 from glotaran.io import load_scheme
+from glotaran.model import Model
+from glotaran.parameter import ParameterGroup
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
-from glotaran.project.dataclass_helpers import file_representation_field
+from glotaran.project.dataclass_helpers import file_loadable_field
+from glotaran.project.dataclass_helpers import init_file_loadable_fields
+from glotaran.typing.protocols import FileLoadableProtocol
+from glotaran.utils.io import DatasetMapping
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
+    from typing import Callable
     from typing import Literal
+    from typing import Mapping
 
     import xarray as xr
 
-    from glotaran.model import Model
-    from glotaran.parameter import ParameterGroup
+    from glotaran.typing import StrOrPath
 
 
 @dataclass
-class Scheme:
+class Scheme(FileLoadableProtocol):
     """A scheme is a collection of a model, parameters and a dataset.
 
     A scheme also holds options for optimization.
     """
 
-    model: Model = exclude_from_dict_field()
-    parameters: ParameterGroup = exclude_from_dict_field()
-    data: dict[str, xr.DataArray | xr.Dataset] = exclude_from_dict_field()
-    model_file: str | None = file_representation_field("model", load_model, default=None)
-    parameters_file: str | None = file_representation_field("parameters", load_parameters, None)
-    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
+    model: Model = file_loadable_field(Model)
+    parameters: ParameterGroup = file_loadable_field(ParameterGroup)
+    data: Mapping[str, xr.Dataset] = file_loadable_field(DatasetMapping, is_wrapper_class=True)
     clp_link_tolerance: float = 0.0
     maximum_number_function_evaluations: int | None = None
     non_negative_least_squares: bool | None = exclude_from_dict_field(None)
@@ -53,9 +54,18 @@ class Scheme:
         "Levenberg-Marquardt",
     ] = "TrustRegionReflection"
     result_path: str | None = None
+    source_path: StrOrPath = field(
+        default="scheme.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
+    )
+    loader: Callable[[StrOrPath], Scheme] = field(
+        default=load_scheme, init=False, repr=False, metadata={"exclude_from_dict": True}
+    )
 
     def __post_init__(self):
         """Override attributes after initialization."""
+        init_file_loadable_fields(self)
+
+        # Deprecations
         if self.non_negative_least_squares is not None:
             warn_deprecated(
                 deprecated_qual_name_usage=(
@@ -72,9 +82,9 @@ class Scheme:
                 default_group.residual_function = "non_negative_least_squares"
             else:
                 default_group.residual_function = "variable_projection"
-            for field in fields(self):
-                if field.name == "non_negative_least_squares":
-                    field.metadata = {}
+            for field_item in fields(self):
+                if field_item.name == "non_negative_least_squares":
+                    field_item.metadata = {}
 
         if self.group is not None:
             warn_deprecated(
@@ -85,9 +95,9 @@ class Scheme:
                 stacklevel=4,
             )
             self.model.dataset_group_models["default"].link_clp = self.group
-            for field in fields(self):
-                if field.name == "group":
-                    field.metadata = {}
+            for field_item in fields(self):
+                if field_item.name == "group":
+                    field_item.metadata = {}
 
         if self.group_tolerance is not None:
             warn_deprecated(

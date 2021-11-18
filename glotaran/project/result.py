@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import replace
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
 from typing import List
 from typing import cast
 
@@ -14,26 +15,24 @@ from numpy.typing import ArrayLike
 from tabulate import tabulate
 
 from glotaran.deprecation import deprecate
-from glotaran.io import load_dataset
-from glotaran.io import load_parameters
-from glotaran.io import load_scheme
+from glotaran.io import load_result
 from glotaran.io import save_result
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
-from glotaran.project.dataclass_helpers import file_representation_field
+from glotaran.project.dataclass_helpers import file_loadable_field
+from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.project.scheme import Scheme
+from glotaran.utils.io import DatasetMapping
 from glotaran.utils.ipython import MarkdownStr
 
+if TYPE_CHECKING:
 
-class IncompleteResultError(Exception):
-    """Exception raised if mandatory arguments to create a result are missing.
+    from typing import Callable
+    from typing import Mapping
 
-    Since some mandatory fields of result can be either created from file or by
-    passing a class instance, the file and instance initialization aren't allowed
-    to both be None at the same time, but each is allowed to be ``None`` by its own.
-    """
+    from glotaran.typing import StrOrPath
 
 
 @dataclass
@@ -55,27 +54,16 @@ class Result:
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
 
-    scheme: Scheme = cast(Scheme, exclude_from_dict_field(None))
-    scheme_file: str | None = file_representation_field("scheme", load_scheme, None)
+    scheme: Scheme = file_loadable_field(Scheme)
 
-    initial_parameters: ParameterGroup = cast(ParameterGroup, exclude_from_dict_field(None))
-    initial_parameters_file: str | None = file_representation_field(
-        "initial_parameters", load_parameters, None
-    )
+    initial_parameters: ParameterGroup = file_loadable_field(ParameterGroup)
 
-    optimized_parameters: ParameterGroup = cast(ParameterGroup, exclude_from_dict_field(None))
-    """The optimized parameters, organized in a :class:`ParameterGroup`"""
-    optimized_parameters_file: str | None = file_representation_field(
-        "optimized_parameters", load_parameters, None
-    )
+    optimized_parameters: ParameterGroup = file_loadable_field(ParameterGroup)
 
-    parameter_history: ParameterHistory = cast(ParameterHistory, exclude_from_dict_field(None))
+    parameter_history: ParameterHistory = file_loadable_field(ParameterHistory)
     """The parameter history."""
-    parameter_history_file: str | None = file_representation_field(
-        "parameter_history", ParameterHistory.from_csv, None
-    )
 
-    data: dict[str, xr.Dataset] = cast(Dict[str, xr.Dataset], exclude_from_dict_field(None))
+    data: Mapping[str, xr.Dataset] = file_loadable_field(DatasetMapping, is_wrapper_class=True)
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
     Notes
@@ -83,7 +71,6 @@ class Result:
     The actual content of the data depends on the actual model and can be found in the
     documentation for the model.
     """
-    data_files: dict[str, str] | None = file_representation_field("data", load_dataset, None)
 
     additional_penalty: np.ndarray | None = exclude_from_dict_field(None)
     """A vector with the value for each additional penalty, or None"""
@@ -129,45 +116,19 @@ class Result:
 
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
+    source_path: StrOrPath = field(
+        default="result.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
+    )
+    loader: Callable[[StrOrPath], Result] = field(
+        default=load_result, init=False, repr=False, metadata={"exclude_from_dict": True}
+    )
 
     def __post_init__(self):
         """Validate fields and cast attributes to correct type."""
-        self._check_mandatory_fields()
+        init_file_loadable_fields(self)
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
             self.covariance_matrix = np.array(self.covariance_matrix)
-
-    def _check_mandatory_fields(self):
-        """Check that required fields which can be set from file are not ``None``.
-
-        Raises
-        ------
-        IncompleteResultError
-            If any mandatory field and its file representation is ``None``.
-        """
-        mandatory_fields = [
-            ("scheme", ""),
-            ("initial_parameters", ""),
-            ("optimized_parameters", ""),
-            ("parameter_history", ""),
-            ("data", "s"),
-        ]
-        missing_fields = [
-            (mandatory_field, file_post_fix)
-            for mandatory_field, file_post_fix in mandatory_fields
-            if (
-                getattr(self, mandatory_field) is None
-                and getattr(self, f"{mandatory_field}_file{file_post_fix}") is None
-            )
-        ]
-        if len(missing_fields) != 0:
-            error_message = "Result is missing mandatory fields:\n"
-            for missing_field, file_post_fix in missing_fields:
-                error_message += (
-                    f" - Required filed {missing_field!r} is missing!\n"
-                    f"   Set either {missing_field!r} or '{missing_field}_file{file_post_fix}'."
-                )
-            raise IncompleteResultError(error_message)
 
     @property
     def model(self) -> Model:
