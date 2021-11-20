@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 from glotaran.io import load_parameters
-from glotaran.io import save_parameters
 from glotaran.parameter import Parameter
 
 
@@ -27,7 +26,7 @@ def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
         Parameter(label=label)  # type:ignore[arg-type]
 
 
-def test_param_repr():
+def test_parameter_repr():
     """Repr creates code to recreate the object."""
     result = Parameter(label="foo", value=1.0, expression="$foo.bar", vary=False)
     result_short = Parameter(label="foo", value=1, expression="$foo.bar")
@@ -39,24 +38,7 @@ def test_param_repr():
     assert result_short.__repr__() == expected
 
 
-def test_param_array():
-    params = """
-    - 5
-    - 4
-    - 3
-    - 2
-    - 1
-    """
-
-    params = load_parameters(params, format_name="yml_str")
-
-    assert len(list(params.all())) == 5
-
-    assert [p.label for _, p in params.all()] == [f"{i}" for i in range(1, 6)]
-    assert [p.value for _, p in params.all()] == list(range(1, 6))[::-1]
-
-
-def test_param_scientific():
+def test_parameter_scientific_values():
     values = [5e3, -4.2e-4, 3e-2, -2e6]
     params = """
     - ["1", 5e3]
@@ -70,7 +52,7 @@ def test_param_scientific():
     assert [p.value for _, p in params.all()] == values
 
 
-def test_param_label():
+def test_parameter_from_list():
     params = """
     - ["5", 1]
     - ["4", 2]
@@ -84,30 +66,7 @@ def test_param_label():
     assert [p.value for _, p in params.all()] == list(range(1, 4))
 
 
-def test_param_group_copy():
-    params = """
-    kinetic:
-        - ["5", 1, {non-negative: true, min: -1, max: 1, vary: false}]
-        - 4
-        - 5
-    j:
-        - 7
-        - 8
-    """
-    params = load_parameters(params, format_name="yml_str")
-    copy = params.copy()
-
-    for label, parameter in params.all():
-        assert copy.has(label)
-        copied_parameter = copy.get(label)
-        assert parameter.value == copied_parameter.value
-        assert parameter.non_negative == copied_parameter.non_negative
-        assert parameter.minimum == copied_parameter.minimum
-        assert parameter.maximum == copied_parameter.maximum
-        assert parameter.vary == copied_parameter.vary
-
-
-def test_param_options():
+def test_parameter_options():
     params = """
     - ["5", 1, {non-negative: false, min: -1, max: 1, vary: false}]
     - ["6", 4e2, {non-negative: true, min: -7e2, max: 8e2, vary: true}]
@@ -135,7 +94,7 @@ def test_param_options():
     assert params.get("7").vary
 
 
-def test_param_block_options():
+def test_parameter_block_options():
     params = """
     block:
         - 1.0
@@ -146,49 +105,6 @@ def test_param_block_options():
     params = load_parameters(params, format_name="yml_str")
     assert not params.get("block.1").vary
     assert params.get("block.2").vary
-
-
-def test_nested_param_list():
-    params = """
-    kinetic:
-        - 3
-        - 4
-        - 5
-    j:
-        - 7
-        - 8
-    """
-
-    params = load_parameters(params, format_name="yml_str")
-
-    assert len(list(params.all())) == 5
-    group = params["kinetic"]
-    assert len(list(group.all())) == 3
-    assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
-    assert [p.value for _, p in group.all()] == list(range(3, 6))
-    group = params["j"]
-    assert len(list(group.all())) == 2
-    assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 3)]
-    assert [p.value for _, p in group.all()] == list(range(7, 9))
-
-
-def test_nested_param_group():
-    params = """
-    kinetic:
-        j:
-            - 7
-            - 8
-            - 9
-    """
-
-    params = load_parameters(params, format_name="yml_str")
-    assert len(list(params.all())) == 3
-    group = params["kinetic"]
-    assert len(list(group.all())) == 3
-    group = group["j"]
-    assert len(list(group.all())) == 3
-    assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
-    assert [p.value for _, p in group.all()] == list(range(7, 10))
 
 
 def test_parameter_set_from_group():
@@ -252,64 +168,6 @@ def test_parameter_non_negative():
     assert not np.allclose(5, value5)
     assert not np.allclose(3, minimum)
     assert not np.allclose(6, maximum)
-
-
-def test_parameter_group_to_array():
-    params = """
-    - ["1", 1, {non-negative: false, min: -1, max: 1, vary: false}]
-    - ["2", 4e2, {non-negative: true, min: 10, max: 8e2, vary: true}]
-    - ["3", 2e4]
-    """
-
-    params = load_parameters(params, format_name="yml_str")
-
-    labels, values, lower_bounds, upper_bounds = params.get_label_value_and_bounds_arrays(
-        exclude_non_vary=False
-    )
-
-    assert len(labels) == 3
-    assert len(values) == 3
-    assert len(lower_bounds) == 3
-    assert len(upper_bounds) == 3
-
-    assert labels == ["1", "2", "3"]
-    assert np.allclose(values, [1, np.log(4e2), 2e4])
-    assert np.allclose(lower_bounds, [-1, np.log(10), -np.inf])
-    assert np.allclose(upper_bounds, [1, np.log(8e2), np.inf])
-
-    (
-        labels_only_vary,
-        values_only_vary,
-        lower_bounds_only_vary,
-        upper_bounds_only_vary,
-    ) = params.get_label_value_and_bounds_arrays(exclude_non_vary=True)
-
-    assert len(labels_only_vary) == 2
-    assert len(values_only_vary) == 2
-    assert len(lower_bounds_only_vary) == 2
-    assert len(upper_bounds_only_vary) == 2
-
-    assert labels_only_vary == ["2", "3"]
-
-
-def test_update_parameter_group_from_array():
-    params = """
-    - ["1", 1, {non-negative: false, min: -1, max: 1, vary: false}]
-    - ["2", 4e2, {non-negative: true, min: 10, max: 8e2, vary: true}]
-    - ["3", 2e4]
-    """
-
-    params = load_parameters(params, format_name="yml_str")
-
-    labels = ["1", "2", "3"]
-    values = [0, np.log(6e2), 42]
-
-    params.set_from_label_and_value_arrays(labels, values)
-
-    values[1] = np.exp(values[1])
-
-    for i in range(3):
-        assert params.get(f"{i+1}").value == values[i]
 
 
 @pytest.mark.parametrize(
@@ -486,102 +344,6 @@ def test_parameter_numpy_operations():
     assert parm3 >= parm2
     assert parm1 < parm2
     assert parm1 <= parm2
-
-
-TEST_CSV = """
-label, value, minimum, maximum, vary, non-negative, expression
-rates.k1,0.050,0,5,True,True,None
-rates.k2,None,-inf,inf,True,True,$rates.k1 * 2
-rates.k3,2.311,-inf,inf,True,True,None
-pen.eq.1,1.000,-inf,inf,False,False,None
-"""
-
-
-def test_param_group_from_csv(tmpdir):
-
-    csv_path = tmpdir.join("parameters.csv")
-    with open(csv_path, "w") as f:
-        f.write(TEST_CSV)
-
-    params = load_parameters(csv_path)
-
-    assert "rates" in params
-
-    assert params.has("rates.k1")
-    p = params.get("rates.k1")
-    assert p.label == "k1"
-    assert p.value == 0.05
-    assert p.minimum == 0
-    assert p.maximum == 5
-    assert p.vary
-    assert p.non_negative
-    assert p.expression is None
-
-    assert params.has("rates.k2")
-    p = params.get("rates.k2")
-    assert p.label == "k2"
-    assert p.value == params.get("rates.k1") * 2
-    assert p.minimum == -np.inf
-    assert p.maximum == np.inf
-    assert not p.vary
-    assert not p.non_negative
-    assert p.expression == "$rates.k1 * 2"
-
-    assert params.has("rates.k3")
-    p = params.get("rates.k3")
-    assert p.label == "k3"
-    assert p.value == 2.311
-    assert p.minimum == -np.inf
-    assert p.maximum == np.inf
-    assert p.vary
-    assert p.non_negative
-    assert p.expression is None
-
-    assert "pen" in params
-    assert "eq" in params["pen"]
-
-    assert params.has("pen.eq.1")
-    p = params.get("pen.eq.1")
-    assert p.label == "1"
-    assert p.value == 1.0
-    assert p.minimum == -np.inf
-    assert p.maximum == np.inf
-    assert not p.vary
-    assert not p.non_negative
-    assert p.expression is None
-
-
-def test_parameter_to_csv(tmpdir):
-    csv_path = tmpdir.join("parameters.csv")
-    params = load_parameters(
-        """
-    b:
-        - ["1", 0.25, {vary: false, min: 0, max: 8}]
-        - ["2", 0.75, {expr: '1 - $b.1', non-negative: true}]
-    rates:
-        - ["total", 2]
-        - ["branch1", {expr: '$rates.total * $b.1'}]
-        - ["branch2", {expr: '$rates.total * $b.2'}]
-    """,
-        format_name="yml_str",
-    )
-
-    save_parameters(params, csv_path, "csv")
-
-    with open(csv_path) as f:
-        print(f.read())
-    params_from_csv = load_parameters(csv_path)
-
-    for label, p in params.all():
-        assert params_from_csv.has(label)
-        p_from_csv = params_from_csv.get(label)
-        assert p.label == p_from_csv.label
-        assert p.value == p_from_csv.value
-        assert p.minimum == p_from_csv.minimum
-        assert p.maximum == p_from_csv.maximum
-        assert p.vary == p_from_csv.vary
-        assert p.non_negative == p_from_csv.non_negative
-        assert p.expression == p_from_csv.expression
 
 
 def test_parameter_to_from_dict():
