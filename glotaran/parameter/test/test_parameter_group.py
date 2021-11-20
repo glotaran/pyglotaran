@@ -4,6 +4,7 @@ import numpy as np
 
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
+from glotaran.parameter import ParameterGroup
 
 
 def test_parameter_group_copy():
@@ -240,3 +241,81 @@ def test_parameter_group_to_csv(tmpdir):
         assert p.vary == p_from_csv.vary
         assert p.non_negative == p_from_csv.non_negative
         assert p.expression == p_from_csv.expression
+
+
+def test_parameter_group_to_from_parameter_dict_list():
+    parameter_group = load_parameters(
+        """
+    b:
+        - ["1", 0.25, {vary: false, min: 0, max: 8}]
+        - ["2", 0.75, {expr: '1 - $b.1', non-negative: true}]
+    rates:
+        - ["total", 2]
+        - ["branch1", {expr: '$rates.total * $b.1'}]
+        - ["branch2", {expr: '$rates.total * $b.2'}]
+    """,
+        format_name="yml_str",
+    )
+
+    parameter_dict_list = parameter_group.to_parameter_dict_list()
+    parameter_group_from_dict_list = ParameterGroup.from_parameter_dict_list(parameter_dict_list)
+
+    for label, wanted in parameter_group.all():
+        got = parameter_group_from_dict_list.get(label)
+
+        assert got.label == wanted.label
+        assert got.full_label == wanted.full_label
+        assert got.expression == wanted.expression
+        assert got.maximum == wanted.maximum
+        assert got.minimum == wanted.minimum
+        assert got.non_negative == wanted.non_negative
+        assert got.value == wanted.value
+        assert got.vary == wanted.vary
+
+
+def test_parameter_group_to_from_df():
+    parameter_group = load_parameters(
+        """
+    b:
+        - ["1", 0.25, {vary: false, min: 0, max: 8}]
+        - ["2", 0.75, {expr: '1 - $b.1', non-negative: true}]
+    rates:
+        - ["total", 2]
+        - ["branch1", {expr: '$rates.total * $b.1'}]
+        - ["branch2", {expr: '$rates.total * $b.2'}]
+    """,
+        format_name="yml_str",
+    )
+
+    for _, p in parameter_group.all():
+        p.standard_error = 42
+
+    parameter_df = parameter_group.to_dataframe()
+
+    for column in [
+        "label",
+        "value",
+        "standard-error",
+        "expression",
+        "minimum",
+        "maximum",
+        "non-negative",
+        "vary",
+    ]:
+        assert column in parameter_df
+
+    assert all(parameter_df["standard-error"] == 42)
+
+    parameter_group_from_df = ParameterGroup.from_dataframe(parameter_df)
+
+    for label, wanted in parameter_group.all():
+        got = parameter_group_from_df.get(label)
+
+        assert got.label == wanted.label
+        assert got.full_label == wanted.full_label
+        assert got.expression == wanted.expression
+        assert got.maximum == wanted.maximum
+        assert got.minimum == wanted.minimum
+        assert got.non_negative == wanted.non_negative
+        assert got.value == wanted.value
+        assert got.vary == wanted.vary

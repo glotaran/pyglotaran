@@ -121,7 +121,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
         Returns
         -------
         ParameterGroup
-            The created :class:`ParameterGroup`
+            The created :class:`ParameterGroup`.
         """
         root = cls(label=label, root_group=root_group)
 
@@ -145,6 +145,29 @@ class ParameterGroup(dict, FileLoadableProtocol):
         if root_group is None:
             root.update_parameter_expression()
         return root
+
+    @classmethod
+    def from_parameter_dict_list(cls, parameter_dict_list: list[dict]) -> ParameterGroup:
+        """Create a :class:`ParameterGroup` from a list of parameter dictionaries.
+
+        Parameters
+        ----------
+        parameter_dict_list : list[dict]
+            A list of parameter dictionaries.
+
+        Returns
+        -------
+        ParameterGroup
+            The created :class:`ParameterGroup`.
+        """
+        parameter_group = cls()
+        for parameter_dict in parameter_dict_list:
+            group = parameter_group.get_group_for_paramter_by_label(
+                parameter_dict["label"], create_if_not_exist=True
+            )
+            group.add_parameter(Parameter.from_dict(parameter_dict))
+        parameter_group.update_parameter_expression()
+        return parameter_group
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame, source: str = "DataFrame") -> ParameterGroup:
@@ -181,41 +204,11 @@ class ParameterGroup(dict, FileLoadableProtocol):
             if column_name in df and any(not isinstance(v, bool) for v in df[column_name]):
                 raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values")
 
-        root = cls()
-
-        for i, full_label in enumerate(df["label"]):
-            path = full_label.split(".")
-            group = root
-            while len(path) > 1:
-                group_label = path.pop(0)
-                if group_label not in group:
-                    group.add_group(ParameterGroup(label=group_label, root_group=group))
-                group = group[group_label]
-            label = path.pop()
-            value = df["value"][i]
-            minimum = df["minimum"][i] if "minimum" in df else -np.inf
-            maximum = df["maximum"][i] if "maximum" in df else np.inf
-            non_negative = df["non-negative"][i] if "non-negative" in df else False
-            vary = df["vary"][i] if "vary" in df else True
-            expression = (
-                df["expression"][i]
-                if "expression" in df and isinstance(df["expression"][i], str)
-                else None
-            )
-
-            parameter = Parameter(
-                label=label,
-                full_label=full_label,
-                value=value,
-                expression=expression,
-                maximum=maximum,
-                minimum=minimum,
-                non_negative=non_negative,
-                vary=vary,
-            )
-            group.add_parameter(parameter)
-        root.update_parameter_expression()
-        return root
+        # clean NaN if expressions
+        if "expression" in df:
+            expressions = df["expression"].to_list()
+            df["expression"] = [expr if isinstance(expr, str) else None for expr in expressions]
+        return cls.from_parameter_dict_list(df.to_dict(orient="records"))
 
     @property
     def label(self) -> str | None:
@@ -239,6 +232,16 @@ class ParameterGroup(dict, FileLoadableProtocol):
         """
         return self._root_group
 
+    def to_parameter_dict_list(self) -> list[dict]:
+        """Create list of parameter dictionaries from the group.
+
+        Returns
+        -------
+        list[dict]
+            Alist of parameter dictionaries.
+        """
+        return [p[1].as_dict() for p in self.all()]
+
     def to_dataframe(self) -> pd.DataFrame:
         """Create a pandas data frame from the group.
 
@@ -247,24 +250,41 @@ class ParameterGroup(dict, FileLoadableProtocol):
         pd.DataFrame
             The created data frame.
         """
-        parameter_dict: dict[str, list[str | float | bool | None]] = {
-            "label": [],
-            "value": [],
-            "minimum": [],
-            "maximum": [],
-            "vary": [],
-            "non-negative": [],
-            "expression": [],
-        }
-        for label, parameter in self.all():
-            parameter_dict["label"].append(label)
-            parameter_dict["value"].append(parameter.value)
-            parameter_dict["minimum"].append(parameter.minimum)
-            parameter_dict["maximum"].append(parameter.maximum)
-            parameter_dict["vary"].append(parameter.vary)
-            parameter_dict["non-negative"].append(parameter.non_negative)
-            parameter_dict["expression"].append(parameter.expression)
-        return pd.DataFrame(parameter_dict)
+        return pd.DataFrame(self.to_parameter_dict_list())
+
+    def get_group_for_paramter_by_label(
+        self, parameter_label: str, create_if_not_exist: bool = False
+    ) -> ParameterGroup:
+        """Get the group for a parameter by it's label.
+
+        Parameters
+        ----------
+        parameter_label : str
+            The parameter label.
+        create_if_not_exist : bool
+            Create the parameter group if not existent.
+
+        Returns
+        -------
+        ParameterGroup
+            The group of the parameter.
+
+        Raises
+        ------
+        KeyError
+            Raised if the group does not exist and `create_if_not_exist` is `False`.
+        """
+        path = parameter_label.split(".")
+        group = self
+        while len(path) > 1:
+            group_label = path.pop(0)
+            if group_label not in group:
+                if create_if_not_exist:
+                    group.add_group(ParameterGroup(label=group_label, root_group=group))
+                else:
+                    raise KeyError(f"Subgroup '{group_label}' does not exist.")
+            group = group[group_label]
+        return group
 
     @deprecate(
         deprecated_qual_name_usage=(

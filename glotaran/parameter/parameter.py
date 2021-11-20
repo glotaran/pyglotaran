@@ -165,7 +165,7 @@ class Parameter(_SupportsArray):
         parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
         if "non-negative" in parameter_dict:
             parameter_dict["non_negative"] = parameter_dict.pop("non-negative")
-        parameter_dict.pop("standart-error", None)
+        parameter_dict.pop("standard-error", None)
 
         return cls(**parameter_dict)
 
@@ -182,7 +182,7 @@ class Parameter(_SupportsArray):
         return {
             "label": self.full_label,
             "value": self.value,
-            "standart-error": self.standard_error,
+            "standard-error": self.standard_error,
             "expression": self.expression,
             "minimum": self.minimum,
             "maximum": self.maximum,
