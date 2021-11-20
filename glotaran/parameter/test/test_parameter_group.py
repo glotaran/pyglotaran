@@ -224,11 +224,22 @@ def test_parameter_group_to_csv(tmpdir):
     """,
         format_name="yml_str",
     )
+    for _, p in params.all():
+        p.standard_error = 42
 
     save_parameters(params, csv_path, "csv")
+    wanted = """label,value,standard-error,expression,minimum,maximum,non-negative,vary
+b.1,0.25,42,None,0.0,8.0,False,False
+b.2,0.75,42,1 - $b.1,-inf,inf,False,False
+rates.total,2.0,42,None,-inf,inf,False,True
+rates.branch1,0.5,42,$rates.total * $b.1,-inf,inf,False,False
+rates.branch2,1.5,42,$rates.total * $b.2,-inf,inf,False,False
+"""
 
     with open(csv_path) as f:
-        print(f.read())
+        got = f.read()
+        print(got)
+        assert got == wanted
     params_from_csv = load_parameters(csv_path)
 
     for label, p in params.all():
