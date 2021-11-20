@@ -144,6 +144,52 @@ class Parameter(_SupportsArray):
             param._set_options_from_dict(options)
         return param
 
+    @classmethod
+    def from_dict(cls, parameter_dict: dict) -> Parameter:
+        """Create a :class:`Parameter` from a dictionary.
+
+        Expects a dictionary created by :method:`Parameter.as_dict`.
+
+        Parameters
+        ----------
+        parameter_dict : dict
+            The source dictionary.
+
+        Returns
+        -------
+        Parameter
+            The created :class:`Parameter`
+        """
+        parameter_dict = parameter_dict.copy()
+        parameter_dict["full_label"] = parameter_dict["label"]
+        parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
+        if "non-negative" in parameter_dict:
+            parameter_dict["non_negative"] = parameter_dict.pop("non-negative")
+        parameter_dict.pop("standart-error", None)
+
+        return cls(**parameter_dict)
+
+    def as_dict(self) -> dict:
+        """Create a dictionary containing the parameter properties.
+
+        Intended for internal use.
+
+        Returns
+        -------
+        dict
+            The created dictionary.
+        """
+        return {
+            "label": self.full_label,
+            "value": self.value,
+            "standart-error": self.standard_error,
+            "expression": self.expression,
+            "minimum": self.minimum,
+            "maximum": self.maximum,
+            "non-negative": self.non_negative,
+            "vary": self.vary,
+        }
+
     def set_from_group(self, group: ParameterGroup):
         """Set all values of the parameter to the values of the corresponding parameter in the group.
 

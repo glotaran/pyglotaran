@@ -582,3 +582,28 @@ def test_parameter_to_csv(tmpdir):
         assert p.vary == p_from_csv.vary
         assert p.non_negative == p_from_csv.non_negative
         assert p.expression == p_from_csv.expression
+
+
+def test_parameter_to_from_dict():
+    param = Parameter(
+        label="foo",
+        full_label="bar.foo",
+        expression="1",
+        maximum=2,
+        minimum=1,
+        non_negative=True,
+        value=42,
+        vary=False,
+    )
+
+    param_dict = param.as_dict()
+    param_from_dict = Parameter.from_dict(param_dict)
+
+    assert param.label == param_from_dict.label
+    assert param.full_label == param_from_dict.full_label
+    assert param.expression == param_from_dict.expression
+    assert param.maximum == param_from_dict.maximum
+    assert param.minimum == param_from_dict.minimum
+    assert param.non_negative == param_from_dict.non_negative
+    assert param.value == param_from_dict.value
+    assert param.vary == param_from_dict.vary
