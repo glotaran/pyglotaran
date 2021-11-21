@@ -491,19 +491,18 @@ class Parameter(_SupportsArray):
                 initial_value = initial_parameter.get(self.full_label).value
                 value += f", initial: {initial_value:.2e}"
             md += f"({value})"
+        elif self.expression is not None:
+            expression = self.expression
+            if all_parameter is not None:
+                for match in PARAMETER_EXPRESION_REGEX.findall(expression):
+                    label = match[0]
+                    parameter = all_parameter.get(label)
+                    expression = expression.replace(
+                        "$" + label, f"_{parameter.markdown(all_parameter=all_parameter)}_"
+                    )
+            md += f"({value}={expression})"
         else:
-            if self.expression is not None:
-                expression = self.expression
-                if all_parameter is not None:
-                    for match in PARAMETER_EXPRESION_REGEX.findall(expression):
-                        label = match[0]
-                        parameter = all_parameter.get(label)
-                        expression = expression.replace(
-                            "$" + label, f"_{parameter.markdown(all_parameter=all_parameter)}_"
-                        )
-                md += f"({value}={expression})"
-            else:
-                md += f"({value}, fixed)"
+            md += f"({value}, fixed)"
 
         return MarkdownStr(md)
 
