@@ -273,7 +273,7 @@ class Parameter(_SupportsArray):
 
     @property
     def non_negative(self) -> bool:
-        r"""Indicate if the parameter is non-negativ.
+        r"""Indicate if the parameter is non-negative.
 
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
@@ -285,7 +285,7 @@ class Parameter(_SupportsArray):
         Returns
         -------
         bool
-            Whether the parameter is non-negativ.
+            Whether the parameter is non-negative.
         """
         return self._non_negative if self.expression is None else False
 
