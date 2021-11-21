@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import copy
 from textwrap import indent
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Generator
 
 import asteval
@@ -69,7 +70,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
     @classmethod
     def from_dict(
         cls,
-        parameter_dict: dict[str, dict | list],
+        parameter_dict: dict[str, dict[str, Any] | list[float | list[Any]]],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -103,7 +104,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
     @classmethod
     def from_list(
         cls,
-        parameter_list: list[float | list],
+        parameter_list: list[float | list[Any]],
         label: str = None,
         root_group: ParameterGroup = None,
     ) -> ParameterGroup:
@@ -111,7 +112,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
 
         Parameters
         ----------
-        parameter_list : list[float | list]
+        parameter_list : list[float | list[Any]]
             A parameter list containing parameters
         label : str
             The label of the group.
@@ -147,12 +148,12 @@ class ParameterGroup(dict, FileLoadableProtocol):
         return root
 
     @classmethod
-    def from_parameter_dict_list(cls, parameter_dict_list: list[dict]) -> ParameterGroup:
+    def from_parameter_dict_list(cls, parameter_dict_list: list[dict[str, Any]]) -> ParameterGroup:
         """Create a :class:`ParameterGroup` from a list of parameter dictionaries.
 
         Parameters
         ----------
-        parameter_dict_list : list[dict]
+        parameter_dict_list : list[dict[str, Any]]
             A list of parameter dictionaries.
 
         Returns
@@ -232,7 +233,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
         """
         return self._root_group
 
-    def to_parameter_dict_list(self, as_optimized: bool = True) -> list[dict]:
+    def to_parameter_dict_list(self, as_optimized: bool = True) -> list[dict[str, Any]]:
         """Create list of parameter dictionaries from the group.
 
         Parameters
@@ -242,7 +243,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
 
         Returns
         -------
-        list[dict]
+        list[dict[str, Any]]
             Alist of parameter dictionaries.
         """
         return [p[1].as_dict(as_optimized=as_optimized) for p in self.all()]

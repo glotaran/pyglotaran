@@ -149,7 +149,7 @@ class Parameter(_SupportsArray):
         return param
 
     @classmethod
-    def from_dict(cls, parameter_dict: dict) -> Parameter:
+    def from_dict(cls, parameter_dict: dict[str, Parameter]) -> Parameter:
         """Create a :class:`Parameter` from a dictionary.
 
         Expects a dictionary created by :method:`Parameter.as_dict`.
