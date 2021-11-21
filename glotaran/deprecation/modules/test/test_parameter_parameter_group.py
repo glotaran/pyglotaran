@@ -14,14 +14,14 @@ def test_parameter_group_to_csv(tmp_path: Path):
     )
     expected = dedent(
         """\
-        label,value,minimum,maximum,vary,non-negative,expression
-        j.1,1.0,-inf,inf,False,False,None
-        j.0,0.0,-inf,inf,False,False,None
-        kinetic.1,0.5,-inf,inf,True,False,None
-        kinetic.2,0.3,-inf,inf,True,False,None
-        kinetic.3,0.1,-inf,inf,True,False,None
-        irf.center,0.3,-inf,inf,True,False,None
-        irf.width,0.1,-inf,inf,True,False,None
+        label,value,expression,minimum,maximum,non-negative,vary,standard-error
+        j.1,1.0,None,-inf,inf,False,False,0.0
+        j.0,0.0,None,-inf,inf,False,False,0.0
+        kinetic.1,0.5,None,-inf,inf,False,True,0.0
+        kinetic.2,0.3,None,-inf,inf,False,True,0.0
+        kinetic.3,0.1,None,-inf,inf,False,True,0.0
+        irf.center,0.3,None,-inf,inf,False,True,0.0
+        irf.width,0.1,None,-inf,inf,False,True,0.0
         """
     )
 
