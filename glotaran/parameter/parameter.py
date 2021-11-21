@@ -47,7 +47,7 @@ class Parameter(_SupportsArray):
         maximum: float = np.inf,
         minimum: float = -np.inf,
         non_negative: bool = False,
-        standard_error: float | None = None,
+        standard_error: float = np.nan,
         value: float = np.nan,
         vary: bool = True,
     ):
@@ -69,8 +69,8 @@ class Parameter(_SupportsArray):
             Lower boundary for the parameter to be varied to., by default -np.inf
         non_negative : bool
             Whether the parameter should always be bigger than zero., by default False
-        standard_error: float | None
-            The standard error of the parameter.
+        standard_error: float
+            The standard error of the parameter. , by default ``np.nan``
         value : float
             Value of the parameter, by default np.nan
         vary : bool
@@ -395,7 +395,7 @@ class Parameter(_SupportsArray):
         return self._transformed_expression
 
     @property
-    def standard_error(self) -> float | None:
+    def standard_error(self) -> float:
         """Standard error of the optimized parameter.
 
         Returns
@@ -406,7 +406,7 @@ class Parameter(_SupportsArray):
         return self._stderr
 
     @standard_error.setter
-    def standard_error(self, standard_error: float | None):
+    def standard_error(self, standard_error: float):
         self._stderr = standard_error
 
     @property
@@ -485,7 +485,7 @@ class Parameter(_SupportsArray):
 
         value = f"{self.value:.2e}"
         if self.vary:
-            if self.standard_error is not None:
+            if self.standard_error is not np.nan:
                 value += f"±{self.standard_error}"
             if initial_parameter is not None:
                 initial_value = initial_parameter.get(self.full_label).value
