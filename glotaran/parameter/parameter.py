@@ -9,6 +9,7 @@ import asteval
 import numpy as np
 from numpy.typing._array_like import _SupportsArray
 
+from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
@@ -42,11 +43,11 @@ class Parameter(_SupportsArray):
         self,
         label: str = None,
         full_label: str = None,
-        expression: str = None,
+        expression: str | None = None,
         maximum: int | float = np.inf,
         minimum: int | float = -np.inf,
         non_negative: bool = False,
-        standard_error: float = 0.0,
+        standard_error: float | None = None,
         value: float | int = np.nan,
         vary: bool = True,
     ):
@@ -59,7 +60,7 @@ class Parameter(_SupportsArray):
         full_label : str
             The label of the parameter with its path in a parameter group prepended.
             , by default None
-        expression : str
+        expression : str | None
             Expression to calculate the parameters value from,
             e.g. if used in relation to another parameter. , by default None
         maximum : int
@@ -68,6 +69,8 @@ class Parameter(_SupportsArray):
             Lower boundary for the parameter to be varied to., by default -np.inf
         non_negative : bool
             Whether the parameter should always be bigger than zero., by default False
+        standard_error: float | None
+            The standard error of the parameter.
         value : float
             Value of the parameter, by default np.nan
         vary : bool
@@ -392,7 +395,7 @@ class Parameter(_SupportsArray):
         return self._transformed_expression
 
     @property
-    def standard_error(self) -> float:
+    def standard_error(self) -> float | None:
         """Standard error of the optimized parameter.
 
         Returns
@@ -403,7 +406,7 @@ class Parameter(_SupportsArray):
         return self._stderr
 
     @standard_error.setter
-    def standard_error(self, standard_error: float):
+    def standard_error(self, standard_error: float | None):
         self._stderr = standard_error
 
     @property
@@ -458,6 +461,51 @@ class Parameter(_SupportsArray):
             Value from optimization.
         """
         self.value = np.exp(value) if self.non_negative else value
+
+    def markdown(
+        self,
+        all_parameter: ParameterGroup | None = None,
+        initial_parameter: ParameterGroup | None = None,
+    ) -> MarkdownStr:
+        """Get a markdown representation of the parameter.
+
+        Parameters
+        ----------
+        all_parameter : ParameterGroup | None
+            A parameter group containing the whole parameter set (used for expression lookup).
+        initial_parameter : ParameterGroup | None
+            The initial parameter.
+
+        Returns
+        -------
+        MarkdownStr
+            The parameter as markdown string.
+        """
+        md = f"{self.full_label}"
+
+        value = f"{self.value:.2e}"
+        if self.vary:
+            if self.standard_error is not None:
+                value += f"±{self.standard_error}"
+            if initial_parameter is not None:
+                initial_value = initial_parameter.get(self.full_label).value
+                value += f", initial: {initial_value:.2e}"
+            md += f"({value})"
+        else:
+            if self.expression is not None:
+                expression = self.expression
+                if all_parameter is not None:
+                    for match in PARAMETER_EXPRESION_REGEX.findall(expression):
+                        label = match[0]
+                        parameter = all_parameter.get(label)
+                        expression = expression.replace(
+                            "$" + label, f"_{parameter.markdown(all_parameter=all_parameter)}_"
+                        )
+                md += f"({value}={expression})"
+            else:
+                md += f"({value}, fixed)"
+
+        return MarkdownStr(md)
 
     def __getstate__(self):
         """Get state for pickle."""
