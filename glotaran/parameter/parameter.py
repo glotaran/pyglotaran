@@ -46,6 +46,7 @@ class Parameter(_SupportsArray):
         maximum: int | float = np.inf,
         minimum: int | float = -np.inf,
         non_negative: bool = False,
+        standard_error: float = 0.0,
         value: float | int = np.nan,
         vary: bool = True,
     ):
@@ -79,7 +80,7 @@ class Parameter(_SupportsArray):
         self.maximum = maximum
         self.minimum = minimum
         self.non_negative = non_negative
-        self.standard_error = 0.0
+        self.standard_error = standard_error
         self.value = value
         self.vary = vary
 
@@ -160,35 +161,38 @@ class Parameter(_SupportsArray):
         Parameter
             The created :class:`Parameter`
         """
-        parameter_dict = parameter_dict.copy()
+        parameter_dict = {k.replace("-", "_"): v for k, v in parameter_dict.items()}
         parameter_dict["full_label"] = parameter_dict["label"]
         parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
-        if "non-negative" in parameter_dict:
-            parameter_dict["non_negative"] = parameter_dict.pop("non-negative")
-        parameter_dict.pop("standard-error", None)
-
         return cls(**parameter_dict)
 
-    def as_dict(self) -> dict:
+    def as_dict(self, as_optimized: bool = True) -> dict:
         """Create a dictionary containing the parameter properties.
 
         Intended for internal use.
+
+        Parameters
+        ----------
+        as_optimized : bool
+            Whether to include properties which are the result of optimization.
 
         Returns
         -------
         dict
             The created dictionary.
         """
-        return {
+        parameter_dict = {
             "label": self.full_label,
             "value": self.value,
-            "standard-error": self.standard_error,
             "expression": self.expression,
             "minimum": self.minimum,
             "maximum": self.maximum,
             "non-negative": self.non_negative,
             "vary": self.vary,
         }
+        if as_optimized:
+            parameter_dict["standard-error"] = self.standard_error
+        return parameter_dict
 
     def set_from_group(self, group: ParameterGroup):
         """Set all values of the parameter to the values of the corresponding parameter in the group.

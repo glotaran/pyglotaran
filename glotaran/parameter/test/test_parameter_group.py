@@ -228,12 +228,12 @@ def test_parameter_group_to_csv(tmpdir):
         p.standard_error = 42
 
     save_parameters(params, csv_path, "csv")
-    wanted = """label,value,standard-error,expression,minimum,maximum,non-negative,vary
-b.1,0.25,42,None,0.0,8.0,False,False
-b.2,0.75,42,1 - $b.1,-inf,inf,False,False
-rates.total,2.0,42,None,-inf,inf,False,True
-rates.branch1,0.5,42,$rates.total * $b.1,-inf,inf,False,False
-rates.branch2,1.5,42,$rates.total * $b.2,-inf,inf,False,False
+    wanted = """label,value,expression,minimum,maximum,non-negative,vary,standard-error
+b.1,0.25,None,0.0,8.0,False,False,42
+b.2,0.75,1 - $b.1,-inf,inf,False,False,42
+rates.total,2.0,None,-inf,inf,False,True,42
+rates.branch1,0.5,$rates.total * $b.1,-inf,inf,False,False,42
+rates.branch2,1.5,$rates.total * $b.2,-inf,inf,False,False,42
 """
 
     with open(csv_path) as f:

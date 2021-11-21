@@ -232,25 +232,35 @@ class ParameterGroup(dict, FileLoadableProtocol):
         """
         return self._root_group
 
-    def to_parameter_dict_list(self) -> list[dict]:
+    def to_parameter_dict_list(self, as_optimized: bool = True) -> list[dict]:
         """Create list of parameter dictionaries from the group.
+
+        Parameters
+        ----------
+        as_optimized : bool
+            Whether to include properties which are the result of optimization.
 
         Returns
         -------
         list[dict]
             Alist of parameter dictionaries.
         """
-        return [p[1].as_dict() for p in self.all()]
+        return [p[1].as_dict(as_optimized=as_optimized) for p in self.all()]
 
-    def to_dataframe(self) -> pd.DataFrame:
+    def to_dataframe(self, as_optimized: bool = True) -> pd.DataFrame:
         """Create a pandas data frame from the group.
+
+        Parameters
+        ----------
+        as_optimized : bool
+            Whether to include properties which are the result of optimization.
 
         Returns
         -------
         pd.DataFrame
             The created data frame.
         """
-        return pd.DataFrame(self.to_parameter_dict_list())
+        return pd.DataFrame(self.to_parameter_dict_list(as_optimized=as_optimized))
 
     def get_group_for_paramter_by_label(
         self, parameter_label: str, create_if_not_exist: bool = False
