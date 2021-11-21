@@ -149,14 +149,14 @@ class Parameter(_SupportsArray):
         return param
 
     @classmethod
-    def from_dict(cls, parameter_dict: dict[str, Parameter]) -> Parameter:
+    def from_dict(cls, parameter_dict: dict[str, Any]) -> Parameter:
         """Create a :class:`Parameter` from a dictionary.
 
         Expects a dictionary created by :method:`Parameter.as_dict`.
 
         Parameters
         ----------
-        parameter_dict : dict
+        parameter_dict : dict[str, Any]
             The source dictionary.
 
         Returns
@@ -169,7 +169,7 @@ class Parameter(_SupportsArray):
         parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
         return cls(**parameter_dict)
 
-    def as_dict(self, as_optimized: bool = True) -> dict:
+    def as_dict(self, as_optimized: bool = True) -> dict[str, Any]:
         """Create a dictionary containing the parameter properties.
 
         Intended for internal use.
@@ -181,7 +181,7 @@ class Parameter(_SupportsArray):
 
         Returns
         -------
-        dict
+        dict[str, Any]
             The created dictionary.
         """
         parameter_dict = {
@@ -218,12 +218,12 @@ class Parameter(_SupportsArray):
         self.value = p.value
         self.vary = p.vary
 
-    def _set_options_from_dict(self, options: dict):
+    def _set_options_from_dict(self, options: dict[str, Any]):
         """Set the parameter's options from a dictionary.
 
         Parameters
         ----------
-        options : dict
+        options : dict[str, Any]
             A dictionary containing parameter options.
         """
         if Keys.EXPR in options:
