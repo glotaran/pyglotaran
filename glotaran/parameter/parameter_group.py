@@ -262,7 +262,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
         """
         return pd.DataFrame(self.to_parameter_dict_list(as_optimized=as_optimized))
 
-    def get_group_for_paramter_by_label(
+    def get_group_for_parameter_by_label(
         self, parameter_label: str, create_if_not_exist: bool = False
     ) -> ParameterGroup:
         """Get the group for a parameter by it's label.
