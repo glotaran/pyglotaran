@@ -44,11 +44,11 @@ class Parameter(_SupportsArray):
         label: str = None,
         full_label: str = None,
         expression: str | None = None,
-        maximum: int | float = np.inf,
-        minimum: int | float = -np.inf,
+        maximum: float = np.inf,
+        minimum: float = -np.inf,
         non_negative: bool = False,
         standard_error: float | None = None,
-        value: float | int = np.nan,
+        value: float = np.nan,
         vary: bool = True,
     ):
         """Optimization Parameter supporting numpy array operations.
@@ -63,9 +63,9 @@ class Parameter(_SupportsArray):
         expression : str | None
             Expression to calculate the parameters value from,
             e.g. if used in relation to another parameter. , by default None
-        maximum : int
+        maximum : float
             Upper boundary for the parameter to be varied to., by default np.inf
-        minimum : int
+        minimum : float
             Lower boundary for the parameter to be varied to., by default -np.inf
         non_negative : bool
             Whether the parameter should always be bigger than zero., by default False
