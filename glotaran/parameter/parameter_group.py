@@ -162,7 +162,7 @@ class ParameterGroup(dict, FileLoadableProtocol):
         """
         parameter_group = cls()
         for parameter_dict in parameter_dict_list:
-            group = parameter_group.get_group_for_paramter_by_label(
+            group = parameter_group.get_group_for_parameter_by_label(
                 parameter_dict["label"], create_if_not_exist=True
             )
             group.add_parameter(Parameter.from_dict(parameter_dict))
