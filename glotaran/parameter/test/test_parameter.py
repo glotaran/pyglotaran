@@ -346,7 +346,7 @@ def test_parameter_numpy_operations():
     assert parm1 <= parm2
 
 
-def test_parameter_to_from_dict():
+def test_parameter_dict_roundtrip():
     param = Parameter(
         label="foo",
         full_label="bar.foo",

@@ -172,6 +172,8 @@ class Parameter(_SupportsArray):
     def as_dict(self, as_optimized: bool = True) -> dict[str, Any]:
         """Create a dictionary containing the parameter properties.
 
+        Note:
+        -----
         Intended for internal use.
 
         Parameters
