@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from textwrap import dedent
+
 import numpy as np
 
 from glotaran.io import load_parameters
@@ -150,13 +152,15 @@ def test_parameter_group_set_from_label_and_value_arrays():
 
 def test_parameter_group_from_csv(tmpdir):
 
-    TEST_CSV = """
-label, value, minimum, maximum, vary, non-negative, expression
-rates.k1,0.050,0,5,True,True,None
-rates.k2,None,-inf,inf,True,True,$rates.k1 * 2
-rates.k3,2.311,-inf,inf,True,True,None
-pen.eq.1,1.000,-inf,inf,False,False,None
-"""
+    TEST_CSV = dedent(
+        """\
+        label, value, minimum, maximum, vary, non-negative, expression
+        rates.k1,0.050,0,5,True,True,None
+        rates.k2,None,-inf,inf,True,True,$rates.k1 * 2
+        rates.k3,2.311,-inf,inf,True,True,None
+        pen.eq.1,1.000,-inf,inf,False,False,None
+        """
+    )
 
     csv_path = tmpdir.join("parameters.csv")
     with open(csv_path, "w") as f:
@@ -228,13 +232,16 @@ def test_parameter_group_to_csv(tmpdir):
         p.standard_error = 42
 
     save_parameters(params, csv_path, "csv")
-    wanted = """label,value,expression,minimum,maximum,non-negative,vary,standard-error
-b.1,0.25,None,0.0,8.0,False,False,42
-b.2,0.75,1 - $b.1,-inf,inf,False,False,42
-rates.total,2.0,None,-inf,inf,False,True,42
-rates.branch1,0.5,$rates.total * $b.1,-inf,inf,False,False,42
-rates.branch2,1.5,$rates.total * $b.2,-inf,inf,False,False,42
-"""
+    wanted = dedent(
+        """\
+        label,value,expression,minimum,maximum,non-negative,vary,standard-error
+        b.1,0.25,None,0.0,8.0,False,False,42
+        b.2,0.75,1 - $b.1,-inf,inf,False,False,42
+        rates.total,2.0,None,-inf,inf,False,True,42
+        rates.branch1,0.5,$rates.total * $b.1,-inf,inf,False,False,42
+        rates.branch2,1.5,$rates.total * $b.2,-inf,inf,False,False,42
+        """
+    )
 
     with open(csv_path) as f:
         got = f.read()

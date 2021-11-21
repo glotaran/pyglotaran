@@ -23,22 +23,22 @@ RENDERED_MARKDOWN = """\
 
     | _Label_   |   _Value_ |   _StdErr_ |   _Min_ |   _Max_ | _Vary_   | _Non-Negative_   | _Expr_   |
     |-----------|-----------|------------|---------|---------|----------|------------------|----------|
-    | center    |       1.3 |          0 |    -inf |     inf | True     | False            | None     |
-    | width     |       7.8 |          0 |    -inf |     inf | True     | False            | None     |
+    | center    |       1.3 |        nan |    -inf |     inf | True     | False            | None     |
+    | width     |       7.8 |        nan |    -inf |     inf | True     | False            | None     |
 
   * __j__:
 
     |   _Label_ |   _Value_ |   _StdErr_ |   _Min_ |   _Max_ | _Vary_   | _Non-Negative_   | _Expr_   |
     |-----------|-----------|------------|---------|---------|----------|------------------|----------|
-    |         1 |         1 |          0 |    -inf |     inf | False    | False            | None     |
+    |         1 |         1 |        nan |    -inf |     inf | False    | False            | None     |
 
   * __kinetic__:
 
     |   _Label_ |   _Value_ |   _StdErr_ |   _Min_ |   _Max_ | _Vary_   | _Non-Negative_   | _Expr_   |
     |-----------|-----------|------------|---------|---------|----------|------------------|----------|
-    |         1 |     0.3   |          0 |    -inf |     inf | True     | False            | None     |
-    |         2 |     0.05  |          0 |    -inf |     inf | True     | False            | None     |
-    |         3 |     0.007 |          0 |    -inf |     inf | True     | False            | None     |
+    |         1 |     0.3   |        nan |    -inf |     inf | True     | False            | None     |
+    |         2 |     0.05  |        nan |    -inf |     inf | True     | False            | None     |
+    |         3 |     0.007 |        nan |    -inf |     inf | True     | False            | None     |
 
 """  # noqa: E501
 
@@ -63,9 +63,9 @@ def test_param_group_markdown_is_order_independent():
     initial_parameters1 = load_parameters(PARAMETERS_3C_INITIAL1, format_name="yml_str")
     initial_parameters2 = load_parameters(PARAMETERS_3C_INITIAL2, format_name="yml_str")
 
-    assert initial_parameters1.markdown() == RENDERED_MARKDOWN
-    assert initial_parameters2.markdown() == RENDERED_MARKDOWN
-    assert initial_parameters_ref.markdown() == RENDERED_MARKDOWN
+    assert str(initial_parameters1.markdown()) == RENDERED_MARKDOWN
+    assert str(initial_parameters2.markdown()) == RENDERED_MARKDOWN
+    assert str(initial_parameters_ref.markdown()) == RENDERED_MARKDOWN
 
 
 def test_param_group_repr():
