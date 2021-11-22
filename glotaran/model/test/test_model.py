@@ -514,9 +514,9 @@ def test_model_markdown():
         * **k1**:
           * *Label*: k1
           * *Matrix*:
-            * *('s2', 's1')*: rates.1: **5.01000e-01** *(StdErr: 0e+00)*
-            * *('s3', 's2')*: rates.2: **2.02000e-02** *(StdErr: 0e+00)*
-            * *('s3', 's3')*: rates.3: **1.05000e-03** *(StdErr: 0e+00)*
+            * *('s2', 's1')*: rates.1: **5.01000e-01** *(StdErr: nan)*
+            * *('s3', 's2')*: rates.2: **2.02000e-02** *(StdErr: nan)*
+            * *('s3', 's3')*: rates.3: **1.05000e-03** *(StdErr: nan)*
 
 
         ## Initial Concentration
@@ -532,8 +532,8 @@ def test_model_markdown():
         * **irf1** (multi-gaussian):
           * *Label*: irf1
           * *Type*: multi-gaussian
-          * *Center*: [irf.center: **1.30000e+00** *(StdErr: 0e+00)*]
-          * *Width*: [irf.width: **7.80000e+00** *(StdErr: 0e+00)*]
+          * *Center*: [irf.center: **1.30000e+00** *(StdErr: nan)*]
+          * *Width*: [irf.width: **7.80000e+00** *(StdErr: nan)*]
           * *Normalize*: True
           * *Backsweep*: False
 

@@ -9,6 +9,7 @@ import asteval
 import numpy as np
 from numpy.typing._array_like import _SupportsArray
 
+from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
@@ -42,11 +43,12 @@ class Parameter(_SupportsArray):
         self,
         label: str = None,
         full_label: str = None,
-        expression: str = None,
-        maximum: int | float = np.inf,
-        minimum: int | float = -np.inf,
+        expression: str | None = None,
+        maximum: float = np.inf,
+        minimum: float = -np.inf,
         non_negative: bool = False,
-        value: float | int = np.nan,
+        standard_error: float = np.nan,
+        value: float = np.nan,
         vary: bool = True,
     ):
         """Optimization Parameter supporting numpy array operations.
@@ -58,15 +60,17 @@ class Parameter(_SupportsArray):
         full_label : str
             The label of the parameter with its path in a parameter group prepended.
             , by default None
-        expression : str
+        expression : str | None
             Expression to calculate the parameters value from,
             e.g. if used in relation to another parameter. , by default None
-        maximum : int
+        maximum : float
             Upper boundary for the parameter to be varied to., by default np.inf
-        minimum : int
+        minimum : float
             Lower boundary for the parameter to be varied to., by default -np.inf
         non_negative : bool
             Whether the parameter should always be bigger than zero., by default False
+        standard_error: float
+            The standard error of the parameter. , by default ``np.nan``
         value : float
             Value of the parameter, by default np.nan
         vary : bool
@@ -79,7 +83,7 @@ class Parameter(_SupportsArray):
         self.maximum = maximum
         self.minimum = minimum
         self.non_negative = non_negative
-        self.standard_error = 0.0
+        self.standard_error = standard_error
         self.value = value
         self.vary = vary
 
@@ -144,6 +148,57 @@ class Parameter(_SupportsArray):
             param._set_options_from_dict(options)
         return param
 
+    @classmethod
+    def from_dict(cls, parameter_dict: dict[str, Any]) -> Parameter:
+        """Create a :class:`Parameter` from a dictionary.
+
+        Expects a dictionary created by :method:`Parameter.as_dict`.
+
+        Parameters
+        ----------
+        parameter_dict : dict[str, Any]
+            The source dictionary.
+
+        Returns
+        -------
+        Parameter
+            The created :class:`Parameter`
+        """
+        parameter_dict = {k.replace("-", "_"): v for k, v in parameter_dict.items()}
+        parameter_dict["full_label"] = parameter_dict["label"]
+        parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
+        return cls(**parameter_dict)
+
+    def as_dict(self, as_optimized: bool = True) -> dict[str, Any]:
+        """Create a dictionary containing the parameter properties.
+
+        Note:
+        -----
+        Intended for internal use.
+
+        Parameters
+        ----------
+        as_optimized : bool
+            Whether to include properties which are the result of optimization.
+
+        Returns
+        -------
+        dict[str, Any]
+            The created dictionary.
+        """
+        parameter_dict = {
+            "label": self.full_label,
+            "value": self.value,
+            "expression": self.expression,
+            "minimum": self.minimum,
+            "maximum": self.maximum,
+            "non-negative": self.non_negative,
+            "vary": self.vary,
+        }
+        if as_optimized:
+            parameter_dict["standard-error"] = self.standard_error
+        return parameter_dict
+
     def set_from_group(self, group: ParameterGroup):
         """Set all values of the parameter to the values of the corresponding parameter in the group.
 
@@ -165,12 +220,12 @@ class Parameter(_SupportsArray):
         self.value = p.value
         self.vary = p.vary
 
-    def _set_options_from_dict(self, options: dict):
+    def _set_options_from_dict(self, options: dict[str, Any]):
         """Set the parameter's options from a dictionary.
 
         Parameters
         ----------
-        options : dict
+        options : dict[str, Any]
             A dictionary containing parameter options.
         """
         if Keys.EXPR in options:
@@ -220,7 +275,7 @@ class Parameter(_SupportsArray):
 
     @property
     def non_negative(self) -> bool:
-        r"""Indicate if the parameter is non-negativ.
+        r"""Indicate if the parameter is non-negative.
 
         If true, the parameter will be transformed with :math:`p' = \log{p}` and
         :math:`p = \exp{p'}`.
@@ -232,7 +287,7 @@ class Parameter(_SupportsArray):
         Returns
         -------
         bool
-            Whether the parameter is non-negativ.
+            Whether the parameter is non-negative.
         """
         return self._non_negative if self.expression is None else False
 
@@ -408,6 +463,50 @@ class Parameter(_SupportsArray):
             Value from optimization.
         """
         self.value = np.exp(value) if self.non_negative else value
+
+    def markdown(
+        self,
+        all_parameter: ParameterGroup | None = None,
+        initial_parameter: ParameterGroup | None = None,
+    ) -> MarkdownStr:
+        """Get a markdown representation of the parameter.
+
+        Parameters
+        ----------
+        all_parameter : ParameterGroup | None
+            A parameter group containing the whole parameter set (used for expression lookup).
+        initial_parameter : ParameterGroup | None
+            The initial parameter.
+
+        Returns
+        -------
+        MarkdownStr
+            The parameter as markdown string.
+        """
+        md = f"{self.full_label}"
+
+        value = f"{self.value:.2e}"
+        if self.vary:
+            if self.standard_error is not np.nan:
+                value += f"±{self.standard_error}"
+            if initial_parameter is not None:
+                initial_value = initial_parameter.get(self.full_label).value
+                value += f", initial: {initial_value:.2e}"
+            md += f"({value})"
+        elif self.expression is not None:
+            expression = self.expression
+            if all_parameter is not None:
+                for match in PARAMETER_EXPRESION_REGEX.findall(expression):
+                    label = match[0]
+                    parameter = all_parameter.get(label)
+                    expression = expression.replace(
+                        "$" + label, f"_{parameter.markdown(all_parameter=all_parameter)}_"
+                    )
+            md += f"({value}={expression})"
+        else:
+            md += f"({value}, fixed)"
+
+        return MarkdownStr(md)
 
     def __getstate__(self):
         """Get state for pickle."""
