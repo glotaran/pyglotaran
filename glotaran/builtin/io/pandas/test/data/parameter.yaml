@@ -1,29 +1,8 @@
-osc:
-  freq: [
-1524.57239, 1192.94092,   1158.09082,   1003.44940,   982.669128,      803.801514,      721.924377,       499.621704,      397.539307,      294.353363,
-251.637604, 97.3489761,   34.5177422,   630.095703,
-1441.55090,  2454.68579,  1443.96948,   1448.87329,   1399.99622,
-  {vary: False}]
-  rates: [
-  1.54321623,       2.81070209,      1.07494009,      1.65555012,  5.95444632, 0.200000003,  0.204981476,  0.886999667,  0.801029027,     1.83298051,
-  1.09177792,       0.317949504,     2.02649665,      19.9859161,
-  -7.97763205,      -8.30035210,      -6.16778708,       -7.08424282,      -8.00020790,
-  {vary: False}]
+pure_list: [1.0, 2.0]
 
-j:
-  - ['1', 1.0, {non-negative: False, vary: False}]
-  - ['0', 0.0, {non-negative: False, vary: False}]
+list_with_options: [3.0, 4.0, {vary: False}]
 
-kinetic: [
-  5.96975613,   2.64231563,      0.110913947, {non-negative: False, vary: False}
-]
-
-irf:
-  - ['center', 1.27411373E-02, {non-negative: False, vary: True}]
-  - ['width', 6.E-3, {non-negative: True, vary: False}]
-  - ['dispcenter', 600.0, {non-negative: False, vary: False}]
-  - ['disp1', -2.11437792E-02, {non-negative: False, vary: True}]
-  - ['disp2', 1.06876018E-02, {non-negative: False, vary: True}]
-
-artifact:
-  - ['CAwidth', 1.87562369E-02, {non-negative: True, vary: True}]
+verbose_list:
+  - ["all_defaults", 5.0]
+  - ["no_defaults", 6.0, {non-negative: True, vary: False, minimum: -1, maximum: 1}]
+  - ["expression_only", {expr: $verbose_list.all_defaults + $verbose_list.no_defaults}]
