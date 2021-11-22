@@ -13,6 +13,6 @@ class TsvProjectIo(ProjectIoInterface):
         df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"], sep="\t")
         return ParameterGroup.from_dataframe(df, source=file_name)
 
-    def save_parameters(self, parameters: ParameterGroup, file_name: str, *, sep="\t"):
+    def save_parameters(self, parameters: ParameterGroup, file_name: str):
         """Save a :class:`ParameterGroup` to a TSV file."""
-        parameters.to_dataframe().to_csv(file_name, na_rep="None", index=False, sep=sep)
+        parameters.to_dataframe().to_csv(file_name, na_rep="None", index=False, sep="\t")
