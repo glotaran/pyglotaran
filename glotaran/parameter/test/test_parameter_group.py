@@ -156,9 +156,9 @@ def test_parameter_group_from_csv(tmpdir):
         """\
         label, value, minimum, maximum, vary, non-negative, expression
         rates.k1,0.050,0,5,True,True,None
-        rates.k2,None,-inf,inf,True,True,$rates.k1 * 2
-        rates.k3,2.311,-inf,inf,True,True,None
-        pen.eq.1,1.000,-inf,inf,False,False,None
+        rates.k2,None,,,True,True,$rates.k1 * 2
+        rates.k3,2.311,,,True,True,None
+        pen.eq.1,1.000,,,False,False,None
         """
     )
 
@@ -236,10 +236,10 @@ def test_parameter_group_to_csv(tmpdir):
         """\
         label,value,expression,minimum,maximum,non-negative,vary,standard-error
         b.1,0.25,None,0.0,8.0,False,False,42
-        b.2,0.75,1 - $b.1,-inf,inf,False,False,42
-        rates.total,2.0,None,-inf,inf,False,True,42
-        rates.branch1,0.5,$rates.total * $b.1,-inf,inf,False,False,42
-        rates.branch2,1.5,$rates.total * $b.2,-inf,inf,False,False,42
+        b.2,0.75,1 - $b.1,,,False,False,42
+        rates.total,2.0,None,,,False,True,42
+        rates.branch1,0.5,$rates.total * $b.1,,,False,False,42
+        rates.branch2,1.5,$rates.total * $b.2,,,False,False,42
         """
     )
 
