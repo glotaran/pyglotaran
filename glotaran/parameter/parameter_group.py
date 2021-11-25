@@ -17,7 +17,6 @@ from glotaran.deprecation import deprecate
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.parameter.parameter import Parameter
-from glotaran.typing.protocols import FileLoadableProtocol
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -31,7 +30,7 @@ class ParameterNotFoundException(Exception):
         super().__init__(f"Cannot find parameter {'.'.join(path+[label])!r}")
 
 
-class ParameterGroup(dict, FileLoadableProtocol):
+class ParameterGroup(dict):
     """Represents are group of parameters.
 
     Can contain other groups, creating a tree-like hierarchy.

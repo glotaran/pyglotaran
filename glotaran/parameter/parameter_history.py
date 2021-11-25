@@ -8,13 +8,12 @@ import numpy as np
 import pandas as pd
 
 from glotaran.parameter.parameter_group import ParameterGroup
-from glotaran.typing.protocols import FileLoadableProtocol
 
 if TYPE_CHECKING:
     from os import PathLike
 
 
-class ParameterHistory(FileLoadableProtocol):
+class ParameterHistory:
     """A class representing a history of parameters."""
 
     def __init__(self):  # noqa: D107

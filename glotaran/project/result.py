@@ -54,16 +54,24 @@ class Result:
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
 
-    scheme: Scheme = file_loadable_field(Scheme)
+    scheme: Scheme = file_loadable_field(Scheme)  # type:ignore[type-var]
 
-    initial_parameters: ParameterGroup = file_loadable_field(ParameterGroup)
+    initial_parameters: ParameterGroup = file_loadable_field(  # type:ignore[type-var]
+        ParameterGroup
+    )
 
-    optimized_parameters: ParameterGroup = file_loadable_field(ParameterGroup)
+    optimized_parameters: ParameterGroup = file_loadable_field(  # type:ignore[type-var]
+        ParameterGroup
+    )
 
-    parameter_history: ParameterHistory = file_loadable_field(ParameterHistory)
+    parameter_history: ParameterHistory = file_loadable_field(  # type:ignore[type-var]
+        ParameterHistory
+    )
     """The parameter history."""
 
-    data: Mapping[str, xr.Dataset] = file_loadable_field(DatasetMapping, is_wrapper_class=True)
+    data: Mapping[str, xr.Dataset] = file_loadable_field(  # type:ignore[type-var]
+        DatasetMapping, is_wrapper_class=True
+    )
     """The resulting data as a dictionary of :xarraydoc:`Dataset`.
 
     Notes

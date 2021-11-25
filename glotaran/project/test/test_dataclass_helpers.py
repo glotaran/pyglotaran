@@ -7,11 +7,10 @@ from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import fromdict
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
-from glotaran.typing.protocols import FileLoadableProtocol
 
 
 @dataclass
-class DummyFileLoadable(FileLoadableProtocol):
+class DummyFileLoadable:
     def __init__(self, val: str) -> None:
         self.source_path = "dummy_file"
         self.data = {"foo": val}

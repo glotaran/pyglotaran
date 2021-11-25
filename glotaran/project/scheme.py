@@ -14,7 +14,6 @@ from glotaran.parameter import ParameterGroup
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
-from glotaran.typing.protocols import FileLoadableProtocol
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.ipython import MarkdownStr
 
@@ -30,15 +29,17 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Scheme(FileLoadableProtocol):
+class Scheme:
     """A scheme is a collection of a model, parameters and a dataset.
 
     A scheme also holds options for optimization.
     """
 
-    model: Model = file_loadable_field(Model)
-    parameters: ParameterGroup = file_loadable_field(ParameterGroup)
-    data: Mapping[str, xr.Dataset] = file_loadable_field(DatasetMapping, is_wrapper_class=True)
+    model: Model = file_loadable_field(Model)  # type:ignore[type-var]
+    parameters: ParameterGroup = file_loadable_field(ParameterGroup)  # type:ignore[type-var]
+    data: Mapping[str, xr.Dataset] = file_loadable_field(
+        DatasetMapping, is_wrapper_class=True
+    )  # type:ignore[type-var]
     clp_link_tolerance: float = 0.0
     maximum_number_function_evaluations: int | None = None
     non_negative_least_squares: bool | None = exclude_from_dict_field(None)
