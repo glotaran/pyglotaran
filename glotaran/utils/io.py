@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 import xarray as xr
 
 from glotaran.plugin_system.data_io_registration import load_dataset
-from glotaran.typing.protocols import FileLoadableProtocol
 from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
@@ -69,7 +68,7 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
     return dataset_mapping
 
 
-class DatasetMapping(MutableMapping, FileLoadableProtocol):
+class DatasetMapping(MutableMapping):
     """Wrapper class for a mapping of datasets which can be used for a ``file_loadable_field``."""
 
     def __init__(self, init_map: Mapping[str, xr.Dataset] = None) -> None:

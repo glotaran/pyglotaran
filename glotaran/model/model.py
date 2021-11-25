@@ -24,7 +24,6 @@ from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 from glotaran.plugin_system.megacomplex_registration import get_megacomplex
-from glotaran.typing.protocols import FileLoadableProtocol
 from glotaran.utils.ipython import MarkdownStr
 
 default_model_items = {
@@ -44,7 +43,7 @@ default_dataset_properties = {
 }
 
 
-class Model(FileLoadableProtocol):
+class Model:
     """A base class for global analysis models."""
 
     loader = load_model
