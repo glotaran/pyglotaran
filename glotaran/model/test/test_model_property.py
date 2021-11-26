@@ -1,4 +1,4 @@
-"""Tests for glotaran.model.dataset_model.DatasetModel"""
+"""Tests for glotaran.model.property.ModelProperty"""
 from __future__ import annotations
 
 from typing import Dict
