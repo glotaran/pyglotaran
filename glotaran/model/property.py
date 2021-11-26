@@ -136,7 +136,7 @@ class ModelProperty(property):
     def glotaran_is_parameter_property(self) -> bool:
         return self.glotaran_property_subtype is ParameterOrLabel
 
-    def glotaran_replace_parameter_with_labels(self, value: Any) -> dict[str, Any]:
+    def glotaran_replace_parameter_with_labels(self, value: Any) -> Any:
         if not self.glotaran_is_parameter_property or value is None:
             return value
         elif self.glotaran_is_scalar_property:
