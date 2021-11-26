@@ -445,8 +445,8 @@ class Model:
             if isinstance(items, dict):
                 items = items.values()
             for item in items:
-                item_str = item.mprint(
-                    parameters=parameters, initial_parameters=initial_parameters
+                item_str = item.markdown(
+                    all_parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
                 string += f"* {item_str[0]}\n"
                 for s in item_str[1:]:

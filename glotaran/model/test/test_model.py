@@ -512,51 +512,66 @@ def test_model_markdown():
         ## K Matrix
 
         * **k1**:
-          * *Label*: k1
-          * *Matrix*:
-            * *('s2', 's1')*: rates.1: **5.01000e-01** *(StdErr: nan)*
-            * *('s3', 's2')*: rates.2: **2.02000e-02** *(StdErr: nan)*
-            * *('s3', 's3')*: rates.3: **1.05000e-03** *(StdErr: nan)*
+            * *Label*: k1
+            * *Matrix*:
+              * ('s2', 's1'): rates.1(5.01e-01)
+              * ('s3', 's2'): rates.2(2.02e-02)
+              * ('s3', 's3'): rates.3(1.05e-03)
 
 
         ## Initial Concentration
 
         * **j1**:
-          * *Label*: j1
-          * *Compartments*: ['s1', 's2', 's3']
-          * *Parameters*: [inputs.1: **1.00000e+00** *(fixed)*, inputs.0: **0.00000e+00** *(fixed)*, inputs.0: **0.00000e+00** *(fixed)*]
-          * *Exclude From Normalize*: []
+            * *Label*: j1
+            * *Compartments*:
+              * s1
+              * s2
+              * s3
+            * *Parameters*:
+              * inputs.1(1.00e+00, fixed)
+              * inputs.0(0.00e+00, fixed)
+              * inputs.0(0.00e+00, fixed)
+            * *Exclude From Normalize*:
+
 
         ## Irf
 
         * **irf1** (multi-gaussian):
-          * *Label*: irf1
-          * *Type*: multi-gaussian
-          * *Center*: [irf.center: **1.30000e+00** *(StdErr: nan)*]
-          * *Width*: [irf.width: **7.80000e+00** *(StdErr: nan)*]
-          * *Normalize*: True
-          * *Backsweep*: False
+            * *Label*: irf1
+            * *Type*: multi-gaussian
+            * *Center*:
+              * irf.center(1.30e+00)
+            * *Width*:
+              * irf.width(7.80e+00)
+            * *Normalize*: True
+            * *Backsweep*: False
+
 
         ## Megacomplex
 
         * **mc1** (None):
-          * *Label*: mc1
-          * *Dimension*: time
-          * *K Matrix*: ['k1']
+            * *Label*: mc1
+            * *Dimension*: time
+            * *K Matrix*:
+              * k1
+
 
         ## Dataset
 
         * **dataset1**:
-          * *Label*: dataset1
-          * *Group*: default
-          * *Megacomplex*: ['mc1']
-          * *Initial Concentration*: j1
-          * *Irf*: irf1
+            * *Label*: dataset1
+            * *Group*: default
+            * *Megacomplex*:
+              * mc1
+            * *Initial Concentration*: j1
+            * *Irf*: irf1
 
-        """  # noqa: E501
+
+        """
     )
 
     # Preprocessing to remove trailing whitespace after '* *Matrix*:'
     result = "\n".join([line.rstrip(" ") for line in str(model.markdown()).split("\n")])
+    print(result)
 
     assert result == expected

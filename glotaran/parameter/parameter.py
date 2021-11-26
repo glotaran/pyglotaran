@@ -466,16 +466,16 @@ class Parameter(_SupportsArray):
 
     def markdown(
         self,
-        all_parameter: ParameterGroup | None = None,
-        initial_parameter: ParameterGroup | None = None,
+        all_parameters: ParameterGroup | None = None,
+        initial_parameters: ParameterGroup | None = None,
     ) -> MarkdownStr:
         """Get a markdown representation of the parameter.
 
         Parameters
         ----------
-        all_parameter : ParameterGroup | None
+        all_parameters : ParameterGroup | None
             A parameter group containing the whole parameter set (used for expression lookup).
-        initial_parameter : ParameterGroup | None
+        initial_parameters : ParameterGroup | None
             The initial parameter.
 
         Returns
@@ -485,22 +485,23 @@ class Parameter(_SupportsArray):
         """
         md = f"{self.full_label}"
 
-        value = f"{self.value:.2e}"
-        if self.vary:
-            if self.standard_error is not np.nan:
-                value += f"±{self.standard_error}"
-            if initial_parameter is not None:
-                initial_value = initial_parameter.get(self.full_label).value
+        parameter = self if all_parameters is None else all_parameters.get(self.full_label)
+        value = f"{parameter.value:.2e}"
+        if parameter.vary:
+            if parameter.standard_error is not np.nan:
+                value += f"±{parameter.standard_error}"
+            if initial_parameters is not None:
+                initial_value = initial_parameters.get(parameter.full_label).value
                 value += f", initial: {initial_value:.2e}"
             md += f"({value})"
-        elif self.expression is not None:
-            expression = self.expression
-            if all_parameter is not None:
+        elif parameter.expression is not None:
+            expression = parameter.expression
+            if all_parameters is not None:
                 for match in PARAMETER_EXPRESION_REGEX.findall(expression):
                     label = match[0]
-                    parameter = all_parameter.get(label)
+                    parameter = all_parameters.get(label)
                     expression = expression.replace(
-                        "$" + label, f"_{parameter.markdown(all_parameter=all_parameter)}_"
+                        "$" + label, f"_{parameter.markdown(all_parameters=all_parameters)}_"
                     )
             md += f"({value}={expression})"
         else:

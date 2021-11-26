@@ -16,11 +16,11 @@ dataset:
 
 irf:
   irf1:
-    type: gaussian
+    type: multi-gaussian
     center: [1]
     width: [2]
   irf2:
-    type: spectral-gaussian
+    type: spectral-multi-gaussian
     center: [1, 2]
     width: [3, 4]
     scale: [9]

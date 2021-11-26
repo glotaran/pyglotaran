@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from textwrap import indent
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import List
@@ -9,7 +10,7 @@ from typing import Type
 
 from glotaran.model.property import ModelProperty
 from glotaran.model.util import wrap_func_as_method
-from glotaran.parameter import Parameter
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     from typing import Any
@@ -126,12 +127,12 @@ def model_item(
 
         fill = _create_fill_func(cls)
         setattr(cls, "fill", fill)
-
-        get_parameters = _create_get_parameters(cls)
-        setattr(cls, "get_parameters", get_parameters)
+        #
+        #  get_parameters = _create_get_parameters(cls)
+        #  setattr(cls, "get_parameters", get_parameters)
 
         mprint = _create_mprint_func(cls)
-        setattr(cls, "mprint", mprint)
+        setattr(cls, "markdown", mprint)
 
         return cls
 
@@ -241,13 +242,13 @@ def _create_from_dict_func(cls):
             if name in values:
                 value = values[name]
                 prop = getattr(item.__class__, name)
-                if prop.property_type == float:
+                if prop.glotaran_property_type == float:
                     value = float(value)
-                elif prop.property_type == int:
+                elif prop.glotaran_property_type == int:
                     value = int(value)
                 setattr(item, name, value)
 
-            elif not getattr(ncls, name).allow_none and getattr(item, name) is None:
+            elif not getattr(ncls, name).glotaran_allow_none and getattr(item, name) is None:
                 raise ValueError(f"Missing Property '{name}' For Item '{ncls.__name__}'")
         return item
 
@@ -273,7 +274,7 @@ def _create_validation_func(cls):
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            problems += prop.validate(value, model, parameters)
+            problems += prop.glotaran_validate(value, model, parameters)
         for validator, need_parameter in self._glotaran_validators.items():
             if need_parameter:
                 if parameters is not None:
@@ -290,7 +291,9 @@ def _create_as_dict_func(cls):
     @wrap_func_as_method(cls)
     def as_dict(self) -> dict:
         return {
-            name: getattr(self.__class__, name).as_dict_value(getattr(self, name))
+            name: getattr(self.__class__, name).glotaran_replace_parameter_with_labels(
+                getattr(self, name)
+            )
             for name in self._glotaran_properties
             if name != "label" and getattr(self, name) is not None
         }
@@ -315,7 +318,7 @@ def _create_fill_func(cls):
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            value = prop.fill(value, model, parameters)
+            value = prop.glotaran_fill(value, model, parameters)
             setattr(item, name, value)
         return item
 
@@ -354,62 +357,35 @@ def _create_set_state_func(cls):
 
 
 def _create_mprint_func(cls):
-    @wrap_func_as_method(cls, name="mprint")
+    @wrap_func_as_method(cls, name="markdown")
     def mprint_item(
-        self, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
-    ) -> str:
+        self, all_parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
+    ) -> MarkdownStr:
         f"""Returns a string with the {cls.__name__} formatted in markdown."""
 
-        s = "\n"
+        md = "\n"
         if self._glotaran_has_label:
-            s = f"**{self.label}**"
-
+            md = f"**{self.label}**"
             if hasattr(self, "type"):
-                s += f" ({self.type})"
-            s += ":\n"
-        elif hasattr(self, "type"):
-            s = f"**{self.type}**:\n"
+                md += f" ({self.type})"
+            md += ":\n"
 
-        attrs = []
+        elif hasattr(self, "type"):
+            md = f"**{self.type}**:\n"
+
         for name in self._glotaran_properties:
+            prop = getattr(self.__class__, name)
             value = getattr(self, name)
             if value is None:
                 continue
-            a = f"* *{name.replace('_', ' ').title()}*: "
+            property_md = indent(
+                f"* *{name.replace('_', ' ').title()}*: "
+                f"{prop.glotaran_value_as_markdown(value,all_parameters, initial_parameters)}\n",
+                "  ",
+            )
 
-            def format_parameter(param):
-                s = f"{param.full_label}"
-                if parameters is not None:
-                    p = parameters.get(param.full_label)
-                    s += f": **{p.value:.5e}**"
-                    if p.vary:
-                        err = p.standard_error or 0
-                        s += f" *(StdErr: {err:.0e}"
-                        if initial_parameters is not None:
-                            i = initial_parameters.get(param.full_label)
-                            s += f" ,initial: {i.value:.5e}"
-                        s += ")*"
-                    else:
-                        s += " *(fixed)*"
-                return s
+            md += property_md
 
-            if isinstance(value, Parameter):
-                a += format_parameter(value)
-            elif isinstance(value, list) and all([isinstance(v, Parameter) for v in value]):
-                a += f"[{', '.join([format_parameter(v) for v in value])}]"
-            elif isinstance(value, dict):
-                a += "\n"
-                for k, v in value.items():
-                    a += f"  * *{k}*: "
-                    if isinstance(v, Parameter):
-                        a += format_parameter(v)
-                    else:
-                        a += f"{v}"
-                    a += "\n"
-            else:
-                a += f"{value}"
-            attrs.append(a)
-        s += "\n".join(attrs)
-        return s
+        return MarkdownStr(md)
 
     return mprint_item
