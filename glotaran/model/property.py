@@ -59,7 +59,7 @@ def _model_property_setter_factory(cls: type, model_property: ModelProperty):
     @wrap_func_as_method(cls, name=model_property._name)
     def setter(self, value: model_property.glotaran_property_type):
         if value is None and not model_property._allow_none:
-            raise Exception(
+            raise ValueError(
                 f"Property '{model_property._name}' of '{cls.__name__}' "
                 "is not allowed to set to None."
             )
