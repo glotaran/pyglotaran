@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Mapping
 from typing import Sequence
-from typing import Union
+from typing import TypeVar
 
 from glotaran.model.util import get_subtype
 from glotaran.model.util import is_mapping_type
@@ -20,42 +20,7 @@ if TYPE_CHECKING:
     from glotaran.model.model import Model
 
 
-ParameterOrLabel = Union[str, Parameter]
-
-
-def _model_property_getter_factory(cls: type, model_property: ModelProperty):
-    @wrap_func_as_method(cls, name=model_property._name)
-    def getter(self) -> model_property.glotaran_property_type:
-        value = getattr(self, f"_{model_property._name}")
-        if value is None:
-            value = model_property._default
-        return value
-
-    return getter
-
-
-def _model_property_setter_factory(cls: type, model_property: ModelProperty):
-    @wrap_func_as_method(cls, name=model_property._name)
-    def setter(self, value: model_property.glotaran_property_type):
-        if value is None and not model_property._allow_none:
-            raise ValueError(
-                f"Property '{model_property._name}' of '{cls.__name__}' "
-                "is not allowed to set to None."
-            )
-        if value is not None and model_property.glotaran_is_parameter_property:
-            if model_property.glotaran_is_scalar_property and not isinstance(value, Parameter):
-                value = Parameter(full_label=str(value))
-            elif model_property.glotaran_is_sequence_property and all(
-                map(lambda v: not isinstance(v, Parameter), value)
-            ):
-                value = [Parameter(full_label=str(v)) for v in value]
-            elif model_property.glotaran_is_mapping_property and all(
-                map(lambda v: not isinstance(v, Parameter), value.values())
-            ):
-                value = {k: Parameter(full_label=str(v)) for k, v in value.items()}
-        setattr(self, f"_{model_property._name}", value)
-
-    return setter
+ParameterOrLabel = TypeVar("ParameterOrLabel", str, Parameter)
 
 
 class ModelProperty(property):
@@ -69,11 +34,13 @@ class ModelProperty(property):
 
         if get_subtype(property_type) is Parameter:
             if is_scalar_type(property_type):
-                property_type = ParameterOrLabel
+                property_type = ParameterOrLabel  # type: ignore[assignment]
             elif is_sequence_type(property_type):
                 property_type = Sequence[ParameterOrLabel]
             elif is_mapping_type(property_type):
-                property_type = Mapping[property_type.__args__[0], ParameterOrLabel]
+                property_type = Mapping[
+                    property_type.__args__[0], ParameterOrLabel  # type: ignore[name-defined]
+                ]
 
         self._type = property_type
 
@@ -131,7 +98,7 @@ class ModelProperty(property):
             else:
                 return [f"Property '{self._name}' is none but not allowed to be none."]
 
-        missing_model = []
+        missing_model: list[tuple[str, str]] = []
         if self._name in model.model_items:
             items = getattr(model, self._name)
 
@@ -145,7 +112,7 @@ class ModelProperty(property):
                         missing_model.append((self._name, item))
             elif value not in items:
                 missing_model.append((self._name, value))
-        missing_model = [
+        missing_model_messages = [
             f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model
         ]
 
@@ -159,9 +126,9 @@ class ModelProperty(property):
             for parameter in wanted:
                 if not parameters.has(parameter.full_label):
                     missing_parameters.append(parameter.full_label)
-        missing_parameters = [f"Missing Parameter: '{p}'" for p in missing_parameters]
+        missing_parameters_messages = [f"Missing Parameter: '{p}'" for p in missing_parameters]
 
-        return missing_model + missing_parameters
+        return missing_model_messages + missing_parameters_messages
 
     def glotaran_fill(self, value: Any, model: Model, parameter: ParameterGroup) -> Any:
 
@@ -224,3 +191,38 @@ class ModelProperty(property):
             if self.glotaran_is_parameter_property
             else str(value)
         )
+
+
+def _model_property_getter_factory(cls: type, model_property: ModelProperty):
+    @wrap_func_as_method(cls, name=model_property._name)
+    def getter(self) -> model_property.glotaran_property_type:  # type: ignore[name-defined]
+        value = getattr(self, f"_{model_property._name}")
+        if value is None:
+            value = model_property._default
+        return value
+
+    return getter
+
+
+def _model_property_setter_factory(cls: type, model_property: ModelProperty):
+    @wrap_func_as_method(cls, name=model_property._name)
+    def setter(self, value: model_property.glotaran_property_type):  # type: ignore[name-defined]
+        if value is None and not model_property._allow_none:
+            raise ValueError(
+                f"Property '{model_property._name}' of '{cls.__name__}' "
+                "is not allowed to set to None."
+            )
+        if value is not None and model_property.glotaran_is_parameter_property:
+            if model_property.glotaran_is_scalar_property and not isinstance(value, Parameter):
+                value = Parameter(full_label=str(value))
+            elif model_property.glotaran_is_sequence_property and all(
+                map(lambda v: not isinstance(v, Parameter), value)
+            ):
+                value = [Parameter(full_label=str(v)) for v in value]
+            elif model_property.glotaran_is_mapping_property and all(
+                map(lambda v: not isinstance(v, Parameter), value.values())
+            ):
+                value = {k: Parameter(full_label=str(v)) for k, v in value.items()}
+        setattr(self, f"_{model_property._name}", value)
+
+    return setter
