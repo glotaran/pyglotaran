@@ -44,10 +44,6 @@ def _subtype(t: type) -> type:
     return t
 
 
-def glotaran_is_parameter_property(self) -> bool:
-    return self.glotaran_property_subtype is ParameterOrLabel
-
-
 def _model_property_getter_factory(cls: type, model_property: ModelProperty):
     @wrap_func_as_method(cls, name=model_property._name)
     def getter(self) -> model_property.glotaran_property_type:
