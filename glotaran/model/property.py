@@ -1,8 +1,9 @@
-"""The model property class."""
+"""This module holds the model property class."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 from typing import Mapping
 from typing import Sequence
 from typing import TypeVar
@@ -24,10 +25,31 @@ ParameterOrLabel = TypeVar("ParameterOrLabel", str, Parameter)
 
 
 class ModelProperty(property):
+    """ModelProperty is an extension of the property decorator.
+
+    It adds convenience functions for meta programming model items.
+    """
+
     def __init__(
         self, cls: type, name: str, property_type: type, doc: str, default: Any, allow_none: bool
     ):
+        """Create a new model property.
 
+        Parameters
+        ----------
+        cls : type
+            The class the property is being attached to.
+        name : str
+            The name of the property.
+        property_type : type
+            The type of the property.
+        doc : str
+            A documentation string of for the property.
+        default : Any
+            The default value of the property.
+        allow_none : bool
+            Whether the property is allowed to be None.
+        """
         self._name = name
         self._allow_none = allow_none
         self._default = default
@@ -52,33 +74,101 @@ class ModelProperty(property):
 
     @property
     def glotaran_allow_none(self) -> bool:
+        """Check if the property is allowed to be None.
+
+        Returns
+        -------
+        bool
+            Whether the property is allowed to be None.
+        """
         return self._allow_none
 
     @property
     def glotaran_property_type(self) -> type:
+        """Get the type of the property.
+
+        Returns
+        -------
+        type
+            The type of the property.
+        """
         return self._type
 
     @property
     def glotaran_is_scalar_property(self) -> bool:
+        """Check if the type is scalar.
+
+        Scalar means the type is neither a sequence nor a mapping.
+
+        Returns
+        -------
+        bool
+            Whether the type is scalar.
+        """
         return is_scalar_type(self._type)
 
     @property
     def glotaran_is_sequence_property(self) -> bool:
+        """Check if the type is a sequence.
+
+        Returns
+        -------
+        bool
+            Whether the type is a sequence.
+        """
         return is_sequence_type(self._type)
 
     @property
     def glotaran_is_mapping_property(self) -> bool:
+        """Check if the type is mapping.
+
+        Returns
+        -------
+        bool
+            Whether the type is a mapping.
+        """
         return is_mapping_type(self._type)
 
     @property
     def glotaran_property_subtype(self) -> type:
+        """Get the subscribed type.
+
+        If the type is scalar, the type itself will be returned. If the type is a mapping,
+        the value type will be returned.
+
+        Returns
+        -------
+        type
+            The subscribed type.
+        """
         return get_subtype(self._type)
 
     @property
     def glotaran_is_parameter_property(self) -> bool:
+        """Check if the subtype is parameter.
+
+        Returns
+        -------
+        bool
+            Whether the subtype is parameter.
+        """
         return self.glotaran_property_subtype is ParameterOrLabel
 
     def glotaran_replace_parameter_with_labels(self, value: Any) -> Any:
+        """Replace parameter values with their full label.
+
+        A convenience function for serialization.
+
+        Parameters
+        ----------
+        value : Any
+            The value to replace.
+
+        Returns
+        -------
+        Any
+            The value with parameters replaced by their labels.
+        """
         if not self.glotaran_is_parameter_property or value is None:
             return value
         elif self.glotaran_is_scalar_property:
@@ -91,7 +181,22 @@ class ModelProperty(property):
     def glotaran_validate(
         self, value: Any, model: Model, parameters: ParameterGroup = None
     ) -> list[str]:
+        """Validate a value against a model and optionally against parameters.
 
+        Parameters
+        ----------
+        value : Any
+            The value to validate.
+        model : Model
+            The model to validate against.
+        parameters : ParameterGroup
+            The parameters to validate against.
+
+        Returns
+        -------
+        list[str]
+            A list of human readable list of messages of problems.
+        """
         if value is None:
             if self.glotaran_allow_none:
                 return []
@@ -131,7 +236,24 @@ class ModelProperty(property):
         return missing_model_messages + missing_parameters_messages
 
     def glotaran_fill(self, value: Any, model: Model, parameter: ParameterGroup) -> Any:
+        """Fill a property with items from a model and parameters.
 
+        This replaces model item labels with the actual items and sets the parameter values.
+
+        Parameters
+        ----------
+        value : Any
+            The property value.
+        model : Model
+            The model to fill in.
+        parameter : ParameterGroup
+            The parameters to fill in.
+
+        Returns
+        -------
+        Any
+            The filled value.
+        """
         if value is None:
             return None
 
@@ -166,6 +288,22 @@ class ModelProperty(property):
         all_parameters: ParameterGroup | None = None,
         initial_parameters: ParameterGroup | None = None,
     ) -> MarkdownStr:
+        """Get a markdown representation of the property.
+
+        Parameters
+        ----------
+        value : Any
+            The property value.
+        all_parameters : ParameterGroup | None
+            A parameter group containing the whole parameter set (used for expression lookup).
+        initial_parameters : ParameterGroup | None
+            The initial parameter.
+
+        Returns
+        -------
+        MarkdownStr
+            The property as markdown string.
+        """
         md = ""
         if self.glotaran_is_scalar_property:
             md = self.glotaran_format_value(value, all_parameters, initial_parameters)
@@ -186,6 +324,22 @@ class ModelProperty(property):
         all_parameters: ParameterGroup | None = None,
         initial_parameters: ParameterGroup | None = None,
     ) -> str:
+        """Format a value to string.
+
+        Parameters
+        ----------
+        value : Any
+            The value to format.
+        all_parameters : ParameterGroup | None
+            A parameter group containing the whole parameter set (used for expression lookup).
+        initial_parameters : ParameterGroup | None
+            The initial parameter.
+
+        Returns
+        -------
+        str
+            The formatted value.
+        """
         return (
             value.markdown(all_parameters, initial_parameters)
             if self.glotaran_is_parameter_property
@@ -193,7 +347,22 @@ class ModelProperty(property):
         )
 
 
-def _model_property_getter_factory(cls: type, model_property: ModelProperty):
+def _model_property_getter_factory(cls: type, model_property: ModelProperty) -> Callable:
+    """Create a getter function for model property.
+
+    Parameters
+    ----------
+    cls: type
+        The class to create the getter for.
+    model_property : ModelProperty
+        The property to create the getter for.
+
+    Returns
+    -------
+    Callable
+        The created getter.
+    """
+
     @wrap_func_as_method(cls, name=model_property._name)
     def getter(self) -> model_property.glotaran_property_type:  # type: ignore[name-defined]
         value = getattr(self, f"_{model_property._name}")
@@ -205,6 +374,21 @@ def _model_property_getter_factory(cls: type, model_property: ModelProperty):
 
 
 def _model_property_setter_factory(cls: type, model_property: ModelProperty):
+    """Create a setter function for model property.
+
+    Parameters
+    ----------
+    cls: type
+        The class to create the setter for.
+    model_property : ModelProperty
+        The property to create the setter for.
+
+    Returns
+    -------
+    Callable
+        The created setter.
+    """
+
     @wrap_func_as_method(cls, name=model_property._name)
     def setter(self, value: model_property.glotaran_property_type):  # type: ignore[name-defined]
         if value is None and not model_property._allow_none:

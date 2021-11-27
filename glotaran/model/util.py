@@ -112,7 +112,7 @@ def is_mapping_type(t: type) -> bool:
 
 
 def get_subtype(t: type) -> type:
-    """Gets the subscribed type of generic type.
+    """Gets the subscribed type of a generic type.
 
     If the type is scalar, the type itself will be returned. If the type is a mapping,
     the value type will be returned.
