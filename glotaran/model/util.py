@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Mapping
+from typing import Sequence
+from typing import Union
 
 if TYPE_CHECKING:
     from typing import Any
@@ -53,3 +56,79 @@ def wrap_func_as_method(
         return func
 
     return wrapper
+
+
+def is_scalar_type(t: type) -> bool:
+    """Check if the type is scalar.
+
+    Scalar means the type is neither a sequence nor a mapping.
+
+    Parameters
+    ----------
+    t : type
+        The type to check.
+
+    Returns
+    -------
+    bool
+        Whether the type is scalar.
+    """
+    if hasattr(t, "__origin__"):
+        # Union can for some reason not be used in issubclass
+        return t.__origin__ is Union or not issubclass(t.__origin__, (Sequence, Mapping))
+    return True
+
+
+def is_sequence_type(t: type) -> bool:
+    """Check if the type is a sequence.
+
+    Parameters
+    ----------
+    t : type
+        The type to check.
+
+    Returns
+    -------
+    bool
+        Whether the type is a sequence.
+    """
+    return not is_scalar_type(t) and issubclass(t.__origin__, Sequence)
+
+
+def is_mapping_type(t: type) -> bool:
+    """Check if the type is mapping.
+
+    Parameters
+    ----------
+    t : type
+        The type to check.
+
+    Returns
+    -------
+    bool
+        Whether the type is a mapping.
+    """
+    return not is_scalar_type(t) and issubclass(t.__origin__, Mapping)
+
+
+def get_subtype(t: type) -> type:
+    """Gets the subscribed type of generic type.
+
+    If the type is scalar, the type itself will be returned. If the type is a mapping,
+    the value type will be returned.
+
+    Parameters
+    ----------
+    t : type
+        The origin type.
+
+    Returns
+    -------
+    type
+        The subscribed type.
+    """
+    if is_sequence_type(t):
+        return t.__args__[0]
+    elif is_mapping_type(t):
+        return t.__args__[1]
+    return t

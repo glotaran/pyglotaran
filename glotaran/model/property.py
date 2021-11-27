@@ -7,6 +7,10 @@ from typing import Mapping
 from typing import Sequence
 from typing import Union
 
+from glotaran.model.util import get_subtype
+from glotaran.model.util import is_mapping_type
+from glotaran.model.util import is_scalar_type
+from glotaran.model.util import is_sequence_type
 from glotaran.model.util import wrap_func_as_method
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
@@ -17,29 +21,6 @@ if TYPE_CHECKING:
 
 
 ParameterOrLabel = Union[str, Parameter]
-
-
-def _is_scalar_type(t: type) -> bool:
-    if hasattr(t, "__origin__"):
-        # Union can for some reason not be used in issubclass
-        return t.__origin__ is Union or not issubclass(t.__origin__, (Sequence, Mapping))
-    return True
-
-
-def _is_sequence_type(t: type) -> bool:
-    return not _is_scalar_type(t) and issubclass(t.__origin__, Sequence)
-
-
-def _is_mapping_type(t: type) -> bool:
-    return not _is_scalar_type(t) and issubclass(t.__origin__, Mapping)
-
-
-def _subtype(t: type) -> type:
-    if _is_sequence_type(t):
-        return t.__args__[0]
-    elif _is_mapping_type(t):
-        return t.__args__[1]
-    return t
 
 
 def _model_property_getter_factory(cls: type, model_property: ModelProperty):
@@ -86,12 +67,12 @@ class ModelProperty(property):
         self._allow_none = allow_none
         self._default = default
 
-        if _subtype(property_type) is Parameter:
-            if _is_scalar_type(property_type):
+        if get_subtype(property_type) is Parameter:
+            if is_scalar_type(property_type):
                 property_type = ParameterOrLabel
-            elif _is_sequence_type(property_type):
+            elif is_sequence_type(property_type):
                 property_type = Sequence[ParameterOrLabel]
-            elif _is_mapping_type(property_type):
+            elif is_mapping_type(property_type):
                 property_type = Mapping[property_type.__args__[0], ParameterOrLabel]
 
         self._type = property_type
@@ -112,19 +93,19 @@ class ModelProperty(property):
 
     @property
     def glotaran_is_scalar_property(self) -> bool:
-        return _is_scalar_type(self._type)
+        return is_scalar_type(self._type)
 
     @property
     def glotaran_is_sequence_property(self) -> bool:
-        return _is_sequence_type(self._type)
+        return is_sequence_type(self._type)
 
     @property
     def glotaran_is_mapping_property(self) -> bool:
-        return _is_mapping_type(self._type)
+        return is_mapping_type(self._type)
 
     @property
     def glotaran_property_subtype(self) -> type:
-        return _subtype(self._type)
+        return get_subtype(self._type)
 
     @property
     def glotaran_is_parameter_property(self) -> bool:
