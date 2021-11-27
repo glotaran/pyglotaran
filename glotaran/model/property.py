@@ -21,10 +21,8 @@ ParameterOrLabel = Union[str, Parameter]
 
 def _is_scalar_type(t: type) -> bool:
     if hasattr(t, "__origin__"):
-        try:
-            return not issubclass(t.__origin__, (Sequence, Mapping))
-        except Exception:
-            pass
+        # Union can for some reason not be used in issubclass
+        return t.__origin__ is Union or not issubclass(t.__origin__, (Sequence, Mapping))
     return True
 
 
