@@ -107,29 +107,29 @@ def model_item(
         validators = _get_validators(cls)
         setattr(cls, "_glotaran_validators", validators)
 
-        init = _create_init_func(cls)
+        init = _init_factory(cls)
         setattr(cls, "__init__", init)
 
-        from_dict = _create_from_dict_func(cls)
+        from_dict = _from_dict_factory(cls)
         setattr(cls, "from_dict", from_dict)
 
-        validate = _create_validation_func(cls)
+        validate = _validation_factory(cls)
         setattr(cls, "validate", validate)
 
-        as_dict = _create_as_dict_func(cls)
+        as_dict = _as_dict_factory(cls)
         setattr(cls, "as_dict", as_dict)
 
-        get_state = _create_get_state_func(cls)
+        get_state = _get_state_factory(cls)
         setattr(cls, "__getstate__", get_state)
 
-        set_state = _create_set_state_func(cls)
+        set_state = _set_state_factory(cls)
         setattr(cls, "__setstate__", set_state)
 
-        fill = _create_fill_func(cls)
+        fill = _fill_factory(cls)
         setattr(cls, "fill", fill)
 
-        mprint = _create_mprint_func(cls)
-        setattr(cls, "markdown", mprint)
+        markdown = _markdown_factory(cls)
+        setattr(cls, "markdown", markdown)
 
         return cls
 
@@ -161,10 +161,10 @@ def model_item_typed(
         setattr(cls, "_glotaran_model_item_types", types)
         setattr(cls, "_glotaran_model_item_default_type", default_type)
 
-        get_default_type = _create_get_default_type_func(cls)
+        get_default_type = _get_default_type_factory(cls)
         setattr(cls, "get_default_type", get_default_type)
 
-        add_type = _create_add_type_func(cls)
+        add_type = _add_type_factory(cls)
         setattr(cls, "add_type", add_type)
 
         setattr(cls, "_glotaran_has_label", has_label)
@@ -192,7 +192,7 @@ def _get_validators(cls):
     }
 
 
-def _create_get_default_type_func(cls):
+def _get_default_type_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def get_default_type(cls) -> str:
@@ -201,7 +201,7 @@ def _create_get_default_type_func(cls):
     return get_default_type
 
 
-def _create_add_type_func(cls):
+def _add_type_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def add_type(cls, type_name: str, attribute_type: type):
@@ -210,7 +210,7 @@ def _create_add_type_func(cls):
     return add_type
 
 
-def _create_init_func(cls):
+def _init_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def __init__(self):
@@ -220,7 +220,7 @@ def _create_init_func(cls):
     return __init__
 
 
-def _create_from_dict_func(cls):
+def _from_dict_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def from_dict(ncls, values: dict) -> cls:
@@ -252,7 +252,7 @@ def _create_from_dict_func(cls):
     return from_dict
 
 
-def _create_validation_func(cls):
+def _validation_factory(cls):
     @wrap_func_as_method(cls)
     def validate(self, model: Model, parameters: ParameterGroup | None = None) -> list[str]:
         f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
@@ -284,7 +284,7 @@ def _create_validation_func(cls):
     return validate
 
 
-def _create_as_dict_func(cls):
+def _as_dict_factory(cls):
     @wrap_func_as_method(cls)
     def as_dict(self) -> dict:
         return {
@@ -298,7 +298,7 @@ def _create_as_dict_func(cls):
     return as_dict
 
 
-def _create_fill_func(cls):
+def _fill_factory(cls):
     @wrap_func_as_method(cls)
     def fill(self, model: Model, parameters: ParameterGroup) -> cls:
         """Returns a copy of the {cls._name} instance with all members which are Parameters are
@@ -322,7 +322,7 @@ def _create_fill_func(cls):
     return fill
 
 
-def _create_get_state_func(cls):
+def _get_state_factory(cls):
     @wrap_func_as_method(cls)
     def get_state(self) -> cls:
         return tuple(getattr(self, name) for name in self._glotaran_properties)
@@ -330,7 +330,7 @@ def _create_get_state_func(cls):
     return get_state
 
 
-def _create_set_state_func(cls):
+def _set_state_factory(cls):
     @wrap_func_as_method(cls)
     def set_state(self, state) -> cls:
         for i, name in enumerate(self._glotaran_properties):
@@ -339,7 +339,7 @@ def _create_set_state_func(cls):
     return set_state
 
 
-def _create_mprint_func(cls):
+def _markdown_factory(cls):
     @wrap_func_as_method(cls, name="markdown")
     def mprint_item(
         self, all_parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
