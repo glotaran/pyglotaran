@@ -28,12 +28,7 @@ def test_model_property_non_parameter():
     assert p_sequence.glotaran_property_subtype is int
     assert not p_sequence.glotaran_is_parameter_property
     print(p_sequence.glotaran_value_as_markdown([1, 2]))
-    assert (
-        p_sequence.glotaran_value_as_markdown([1, 2])
-        == """
-  * 1
-  * 2"""
-    )
+    assert p_sequence.glotaran_value_as_markdown([1, 2]) == "\n  * 1\n  * 2"
 
     p_mapping = ModelProperty(MockClass, "mapping", Dict[str, int], "", None, True)
     assert not p_mapping.glotaran_is_scalar_property
@@ -42,12 +37,7 @@ def test_model_property_non_parameter():
     assert p_mapping.glotaran_property_subtype is int
     assert not p_mapping.glotaran_is_parameter_property
     print(p_mapping.glotaran_value_as_markdown({"a": 1, "b": 2}))
-    assert (
-        p_mapping.glotaran_value_as_markdown({"a": 1, "b": 2})
-        == """
-  * a: 1
-  * b: 2"""
-    )
+    assert p_mapping.glotaran_value_as_markdown({"a": 1, "b": 2}) == "\n  * a: 1\n  * b: 2"
 
 
 def test_model_property_parameter():
