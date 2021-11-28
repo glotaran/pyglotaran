@@ -301,7 +301,7 @@ def _as_dict_factory(cls):
 def _fill_factory(cls):
     @wrap_func_as_method(cls)
     def fill(self, model: Model, parameters: ParameterGroup) -> cls:
-        """Returns a copy of the {cls._name} instance with all members which are Parameters are
+        f"""Returns a copy of the {cls.__name__} instance with all members which are Parameters are
         replaced by the value of the corresponding parameter in the parameter group.
 
         Parameters
