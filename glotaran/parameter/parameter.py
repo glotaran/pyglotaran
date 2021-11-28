@@ -489,7 +489,7 @@ class Parameter(_SupportsArray):
         value = f"{parameter.value:.2e}"
         if parameter.vary:
             if parameter.standard_error is not np.nan:
-                value += f"±{parameter.standard_error}"
+                value += f"±{parameter.standard_error:.2e}"
             if initial_parameters is not None:
                 initial_value = initial_parameters.get(parameter.full_label).value
                 value += f", initial: {initial_value:.2e}"
