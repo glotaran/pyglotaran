@@ -46,7 +46,7 @@ def test_dataset(model):
     assert dataset.megacomplex == ["cmplx1"]
     assert dataset.initial_concentration == "inputD1"
     assert dataset.irf == "irf1"
-    assert dataset.scale == 1
+    assert dataset.scale.full_label == "1"
 
     assert "dataset2" in model.dataset
     dataset = model.dataset["dataset2"]
@@ -55,7 +55,7 @@ def test_dataset(model):
     assert dataset.megacomplex == ["cmplx2"]
     assert dataset.initial_concentration == "inputD2"
     assert dataset.irf == "irf2"
-    assert dataset.scale == 2
+    assert dataset.scale.full_label == "2"
     assert dataset.spectral_axis_scale == 1e7
     assert dataset.spectral_axis_inverted
 
@@ -83,7 +83,7 @@ def test_penalties(model):
     assert eac.source_intervals == [[670, 810]]
     assert eac.target == "s2"
     assert eac.target_intervals == [[670, 810]]
-    assert eac.parameter == 55
+    assert eac.parameter.full_label == "55"
     assert eac.weight == 0.0016
 
 
@@ -108,7 +108,7 @@ def test_initial_concentration(model):
         assert initial_concentration.compartments == ["s1", "s2", "s3"]
         assert isinstance(initial_concentration, InitialConcentration)
         assert initial_concentration.label == label
-        assert initial_concentration.parameters == [1, 2, 3]
+        assert [p.full_label for p in initial_concentration.parameters] == ["1", "2", "3"]
 
 
 def test_irf(model):
@@ -120,17 +120,18 @@ def test_irf(model):
         irf = model.irf[label]
         assert isinstance(irf, IrfMultiGaussian)
         assert irf.label == label
-        want = [1] if i == 1 else [1, 2]
-        assert irf.center == want
-        want = [2] if i == 1 else [3, 4]
-        assert irf.width == want
-        want = [3] if i == 1 else [5, 6]
+        want = ["1"] if i == 1 else ["1", "2"]
+        assert [p.full_label for p in irf.center] == want
+        want = ["2"] if i == 1 else ["3", "4"]
+        assert [p.full_label for p in irf.width] == want
+
         if i == 2:
-            assert irf.center_dispersion_coefficients == want
-            want = [7, 8]
-            assert irf.width_dispersion_coefficients == want
-            want = [9]
-            assert irf.scale == want
+            want = ["3"] if i == 1 else ["5", "6"]
+            assert [p.full_label for p in irf.center_dispersion_coefficients] == want
+            want = ["7", "8"]
+            assert [p.full_label for p in irf.width_dispersion_coefficients] == want
+            want = ["9"]
+            assert [p.full_label for p in irf.scale] == want
         assert irf.normalize == (i == 1)
 
         if i == 2:
@@ -144,10 +145,13 @@ def test_irf(model):
 def test_k_matrices(model):
     assert "km1" in model.k_matrix
     parameter = ParameterGroup.from_list([1, 2, 3, 4, 5, 6, 7])
+    print(model.k_matrix["km1"].fill(model, parameter).matrix)
     reduced = model.k_matrix["km1"].fill(model, parameter).reduced(["s1", "s2", "s3", "s4"])
-    assert np.array_equal(
-        reduced, np.asarray([[1, 3, 5, 7], [2, 0, 0, 0], [4, 0, 0, 0], [6, 0, 0, 0]])
-    )
+    print(parameter)
+    print(reduced)
+    wanted = np.asarray([[1, 3, 5, 7], [2, 0, 0, 0], [4, 0, 0, 0], [6, 0, 0, 0]])
+    print(wanted)
+    assert np.array_equal(reduced, wanted)
 
 
 def test_weight(model):

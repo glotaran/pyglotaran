@@ -5,11 +5,12 @@ from typing import Dict
 from typing import List
 
 import xarray as xr
-from typing_inspect import get_args
-from typing_inspect import is_generic_type
 
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_typed
+from glotaran.model.util import get_subtype
+from glotaran.model.util import is_mapping_type
+from glotaran.model.util import is_sequence_type
 from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 
 if TYPE_CHECKING:
@@ -83,13 +84,12 @@ def _add_model_items_to_properties(model_items: dict, properties: dict) -> tuple
         item_type = item["type"] if isinstance(item, dict) else item
         property_type = str
 
-        if is_generic_type(item_type):
-            if item_type._name == "List":
-                property_type = List[str]
-                item_type = get_args(item_type)[0]
-            elif item_type._name == "Dict":
-                property_type = Dict[str, str]
-                item_type = get_args(item_type)[1]
+        if is_sequence_type(item_type):
+            property_type = List[str]
+            item_type = get_subtype(item_type)
+        elif is_mapping_type(item_type):
+            property_type = Dict[str, str]
+            item_type = get_subtype(item_type)
 
         property_dict = item.copy() if isinstance(item, dict) else {}
         property_dict["type"] = property_type

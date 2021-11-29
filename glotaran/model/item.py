@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from textwrap import indent
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import List
@@ -9,7 +10,7 @@ from typing import Type
 
 from glotaran.model.property import ModelProperty
 from glotaran.model.util import wrap_func_as_method
-from glotaran.parameter import Parameter
+from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     from typing import Any
@@ -106,32 +107,29 @@ def model_item(
         validators = _get_validators(cls)
         setattr(cls, "_glotaran_validators", validators)
 
-        init = _create_init_func(cls)
+        init = _init_factory(cls)
         setattr(cls, "__init__", init)
 
-        from_dict = _create_from_dict_func(cls)
+        from_dict = _from_dict_factory(cls)
         setattr(cls, "from_dict", from_dict)
 
-        validate = _create_validation_func(cls)
+        validate = _validation_factory(cls)
         setattr(cls, "validate", validate)
 
-        as_dict = _create_as_dict_func(cls)
+        as_dict = _as_dict_factory(cls)
         setattr(cls, "as_dict", as_dict)
 
-        get_state = _create_get_state_func(cls)
+        get_state = _get_state_factory(cls)
         setattr(cls, "__getstate__", get_state)
 
-        set_state = _create_set_state_func(cls)
+        set_state = _set_state_factory(cls)
         setattr(cls, "__setstate__", set_state)
 
-        fill = _create_fill_func(cls)
+        fill = _fill_factory(cls)
         setattr(cls, "fill", fill)
 
-        get_parameters = _create_get_parameters(cls)
-        setattr(cls, "get_parameters", get_parameters)
-
-        mprint = _create_mprint_func(cls)
-        setattr(cls, "mprint", mprint)
+        markdown = _markdown_factory(cls)
+        setattr(cls, "markdown", markdown)
 
         return cls
 
@@ -163,10 +161,10 @@ def model_item_typed(
         setattr(cls, "_glotaran_model_item_types", types)
         setattr(cls, "_glotaran_model_item_default_type", default_type)
 
-        get_default_type = _create_get_default_type_func(cls)
+        get_default_type = _get_default_type_factory(cls)
         setattr(cls, "get_default_type", get_default_type)
 
-        add_type = _create_add_type_func(cls)
+        add_type = _add_type_factory(cls)
         setattr(cls, "add_type", add_type)
 
         setattr(cls, "_glotaran_has_label", has_label)
@@ -194,7 +192,7 @@ def _get_validators(cls):
     }
 
 
-def _create_get_default_type_func(cls):
+def _get_default_type_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def get_default_type(cls) -> str:
@@ -203,7 +201,7 @@ def _create_get_default_type_func(cls):
     return get_default_type
 
 
-def _create_add_type_func(cls):
+def _add_type_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def add_type(cls, type_name: str, attribute_type: type):
@@ -212,7 +210,7 @@ def _create_add_type_func(cls):
     return add_type
 
 
-def _create_init_func(cls):
+def _init_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def __init__(self):
@@ -222,7 +220,7 @@ def _create_init_func(cls):
     return __init__
 
 
-def _create_from_dict_func(cls):
+def _from_dict_factory(cls):
     @classmethod
     @wrap_func_as_method(cls)
     def from_dict(ncls, values: dict) -> cls:
@@ -241,20 +239,20 @@ def _create_from_dict_func(cls):
             if name in values:
                 value = values[name]
                 prop = getattr(item.__class__, name)
-                if prop.property_type == float:
+                if prop.glotaran_property_type == float:
                     value = float(value)
-                elif prop.property_type == int:
+                elif prop.glotaran_property_type == int:
                     value = int(value)
                 setattr(item, name, value)
 
-            elif not getattr(ncls, name).allow_none and getattr(item, name) is None:
+            elif not getattr(ncls, name).glotaran_allow_none and getattr(item, name) is None:
                 raise ValueError(f"Missing Property '{name}' For Item '{ncls.__name__}'")
         return item
 
     return from_dict
 
 
-def _create_validation_func(cls):
+def _validation_factory(cls):
     @wrap_func_as_method(cls)
     def validate(self, model: Model, parameters: ParameterGroup | None = None) -> list[str]:
         f"""Creates a list of parameters needed by this instance of {cls.__name__} not present in a
@@ -273,7 +271,7 @@ def _create_validation_func(cls):
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            problems += prop.validate(value, model, parameters)
+            problems += prop.glotaran_validate(value, model, parameters)
         for validator, need_parameter in self._glotaran_validators.items():
             if need_parameter:
                 if parameters is not None:
@@ -286,11 +284,13 @@ def _create_validation_func(cls):
     return validate
 
 
-def _create_as_dict_func(cls):
+def _as_dict_factory(cls):
     @wrap_func_as_method(cls)
     def as_dict(self) -> dict:
         return {
-            name: getattr(self.__class__, name).as_dict_value(getattr(self, name))
+            name: getattr(self.__class__, name).glotaran_replace_parameter_with_labels(
+                getattr(self, name)
+            )
             for name in self._glotaran_properties
             if name != "label" and getattr(self, name) is not None
         }
@@ -298,10 +298,10 @@ def _create_as_dict_func(cls):
     return as_dict
 
 
-def _create_fill_func(cls):
+def _fill_factory(cls):
     @wrap_func_as_method(cls)
     def fill(self, model: Model, parameters: ParameterGroup) -> cls:
-        """Returns a copy of the {cls._name} instance with all members which are Parameters are
+        f"""Returns a copy of the {cls.__name__} instance with all members which are Parameters are
         replaced by the value of the corresponding parameter in the parameter group.
 
         Parameters
@@ -315,28 +315,14 @@ def _create_fill_func(cls):
         for name in self._glotaran_properties:
             prop = getattr(self.__class__, name)
             value = getattr(self, name)
-            value = prop.fill(value, model, parameters)
+            value = prop.glotaran_fill(value, model, parameters)
             setattr(item, name, value)
         return item
 
     return fill
 
 
-def _create_get_parameters(cls):
-    @wrap_func_as_method(cls)
-    def get_parameters(self) -> list[str]:
-        """Returns all parameter full labels of the item."""
-        parameters = []
-        for name in self._glotaran_properties:
-            value = getattr(self, name)
-            prop = getattr(self.__class__, name)
-            parameters += prop.get_parameters(value)
-        return parameters
-
-    return get_parameters
-
-
-def _create_get_state_func(cls):
+def _get_state_factory(cls):
     @wrap_func_as_method(cls)
     def get_state(self) -> cls:
         return tuple(getattr(self, name) for name in self._glotaran_properties)
@@ -344,7 +330,7 @@ def _create_get_state_func(cls):
     return get_state
 
 
-def _create_set_state_func(cls):
+def _set_state_factory(cls):
     @wrap_func_as_method(cls)
     def set_state(self, state) -> cls:
         for i, name in enumerate(self._glotaran_properties):
@@ -353,63 +339,36 @@ def _create_set_state_func(cls):
     return set_state
 
 
-def _create_mprint_func(cls):
-    @wrap_func_as_method(cls, name="mprint")
+def _markdown_factory(cls):
+    @wrap_func_as_method(cls, name="markdown")
     def mprint_item(
-        self, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
-    ) -> str:
+        self, all_parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
+    ) -> MarkdownStr:
         f"""Returns a string with the {cls.__name__} formatted in markdown."""
 
-        s = "\n"
+        md = "\n"
         if self._glotaran_has_label:
-            s = f"**{self.label}**"
-
+            md = f"**{self.label}**"
             if hasattr(self, "type"):
-                s += f" ({self.type})"
-            s += ":\n"
-        elif hasattr(self, "type"):
-            s = f"**{self.type}**:\n"
+                md += f" ({self.type})"
+            md += ":\n"
 
-        attrs = []
+        elif hasattr(self, "type"):
+            md = f"**{self.type}**:\n"
+
         for name in self._glotaran_properties:
+            prop = getattr(self.__class__, name)
             value = getattr(self, name)
             if value is None:
                 continue
-            a = f"* *{name.replace('_', ' ').title()}*: "
+            property_md = indent(
+                f"* *{name.replace('_', ' ').title()}*: "
+                f"{prop.glotaran_value_as_markdown(value,all_parameters, initial_parameters)}\n",
+                "  ",
+            )
 
-            def format_parameter(param):
-                s = f"{param.full_label}"
-                if parameters is not None:
-                    p = parameters.get(param.full_label)
-                    s += f": **{p.value:.5e}**"
-                    if p.vary:
-                        err = p.standard_error or 0
-                        s += f" *(StdErr: {err:.0e}"
-                        if initial_parameters is not None:
-                            i = initial_parameters.get(param.full_label)
-                            s += f" ,initial: {i.value:.5e}"
-                        s += ")*"
-                    else:
-                        s += " *(fixed)*"
-                return s
+            md += property_md
 
-            if isinstance(value, Parameter):
-                a += format_parameter(value)
-            elif isinstance(value, list) and all([isinstance(v, Parameter) for v in value]):
-                a += f"[{', '.join([format_parameter(v) for v in value])}]"
-            elif isinstance(value, dict):
-                a += "\n"
-                for k, v in value.items():
-                    a += f"  * *{k}*: "
-                    if isinstance(v, Parameter):
-                        a += format_parameter(v)
-                    else:
-                        a += f"{v}"
-                    a += "\n"
-            else:
-                a += f"{value}"
-            attrs.append(a)
-        s += "\n".join(attrs)
-        return s
+        return MarkdownStr(md)
 
     return mprint_item
