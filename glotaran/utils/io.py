@@ -208,3 +208,41 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
         except ValueError:
             pass
     return Path(source_path).as_posix()
+
+
+def safe_parameters_fillna(df, column_name, fill_value):
+    """Ensure that columns exist in order to replace empty strings with +/-np.inf values.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame from which specific column values will be replaced
+    column_name : str
+        Name of column from DataFrame
+    fill_value : str
+        Values to be replaced in column
+    """
+    if column_name in df.columns:
+        df[column_name].fillna(fill_value, inplace=True)
+
+
+def safe_parameters_replace(df, column_name, to_be_replaced_values, replace_value):
+    """Ensure that columns exist in order to replace  +/-np.inf values with empty strings.
+
+    If value is not list or tuple format, convert into list with same value as element.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame from which specific column values will be replaced
+    column_name : str
+        Name of column from DataFrame
+    to_be_replaced_values : float
+        Values to be replaced
+    replace_value : str
+        Replace values
+    """
+    if not isinstance(to_be_replaced_values, (list, tuple)):
+        to_be_replaced_values = [to_be_replaced_values]
+    if column_name in df.columns:
+        df[column_name].replace(to_be_replaced_values, replace_value, inplace=True)
