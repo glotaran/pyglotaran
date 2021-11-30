@@ -14,31 +14,31 @@ j:
 PARAMETERS_3C_KINETIC = """\
 kinetic:
     - ["1", 300e-3]
-    - ["2", 500e-4]
-    - ["3", 700e-5]
+    - ["2", 500e-4, {standard-error: 0.000012345678}]
+    - ["3", {expr: $kinetic.1 + $kinetic.2}]
 """
 
 RENDERED_MARKDOWN = """\
   * __irf__:
 
-    | _Label_   |   _Value_ |   _StdErr_ |   _Min_ |   _Max_ | _Vary_   | _Non-Negative_   | _Expr_   |
-    |-----------|-----------|------------|---------|---------|----------|------------------|----------|
-    | center    |       1.3 |        nan |    -inf |     inf | True     | False            | None     |
-    | width     |       7.8 |        nan |    -inf |     inf | True     | False            | None     |
+    | _Label_   |   _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
+    |-----------|-----------|--------------------|-------------|-------------|----------|------------------|----------------|
+    | center    | 1.300e+00 |                nan |        -inf |         inf | True     | False            | `None`         |
+    | width     | 7.800e+00 |                nan |        -inf |         inf | True     | False            | `None`         |
 
   * __j__:
 
-    |   _Label_ |   _Value_ |   _StdErr_ |   _Min_ |   _Max_ | _Vary_   | _Non-Negative_   | _Expr_   |
-    |-----------|-----------|------------|---------|---------|----------|------------------|----------|
-    |         1 |         1 |        nan |    -inf |     inf | False    | False            | None     |
+    |   _Label_ |   _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
+    |-----------|-----------|--------------------|-------------|-------------|----------|------------------|----------------|
+    |         1 | 1.000e+00 |                nan |        -inf |         inf | False    | False            | `None`         |
 
   * __kinetic__:
 
-    |   _Label_ |   _Value_ |   _StdErr_ |   _Min_ |   _Max_ | _Vary_   | _Non-Negative_   | _Expr_   |
-    |-----------|-----------|------------|---------|---------|----------|------------------|----------|
-    |         1 |     0.3   |        nan |    -inf |     inf | True     | False            | None     |
-    |         2 |     0.05  |        nan |    -inf |     inf | True     | False            | None     |
-    |         3 |     0.007 |        nan |    -inf |     inf | True     | False            | None     |
+    |   _Label_ |   _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_              |
+    |-----------|-----------|--------------------|-------------|-------------|----------|------------------|---------------------------|
+    |         1 | 3.000e-01 |        nan         |        -inf |         inf | True     | False            | `None`                    |
+    |         2 | 5.000e-02 |          1.235e-05 |        -inf |         inf | True     | False            | `None`                    |
+    |         3 | 3.500e-01 |        nan         |        -inf |         inf | False    | False            | `$kinetic.1 + $kinetic.2` |
 
 """  # noqa: E501
 
@@ -52,9 +52,9 @@ def test_param_group_markdown_is_order_independent():
         {
             "j": [["1", 1, {"vary": False, "non-negative": False}]],
             "kinetic": [
-                ["1", 300e-3],
-                ["2", 500e-4],
-                ["3", 700e-5],
+                ["1", 0.3],
+                ["2", 500e-4, {"standard-error": 0.000012345678}],
+                ["3", 700e-5, {"expr": "$kinetic.1 + $kinetic.2"}],
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
         }
