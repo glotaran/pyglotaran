@@ -42,6 +42,15 @@ RENDERED_MARKDOWN = """\
 
 """  # noqa: E501
 
+RENDERED_MARKDOWN_E5_PRECISION = """\
+  * __irf__:
+
+    | _Label_   |     _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
+    |-----------|-------------|--------------------|-------------|-------------|----------|------------------|----------------|
+    | center    | 1.30000e+00 |        1.23457e-05 |        -inf |         inf | True     | False            | `None`         |
+
+"""  # noqa: E501
+
 
 def test_param_group_markdown_is_order_independent():
     """Markdown output of ParameterGroup.markdown() is independent of initial order"""
@@ -66,6 +75,12 @@ def test_param_group_markdown_is_order_independent():
     assert str(initial_parameters1.markdown()) == RENDERED_MARKDOWN
     assert str(initial_parameters2.markdown()) == RENDERED_MARKDOWN
     assert str(initial_parameters_ref.markdown()) == RENDERED_MARKDOWN
+
+    minimal_params = ParameterGroup.from_dict(
+        {"irf": [["center", 1.3, {"standard-error": 0.000012345678}]]}
+    )
+
+    assert str(minimal_params.markdown(float_format=".5e")) == RENDERED_MARKDOWN_E5_PRECISION
 
 
 def test_param_group_repr():
