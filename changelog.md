@@ -21,6 +21,8 @@
 - ✨ Use ruaml.yaml parser for roundtrip support (#893)
 - ♻️ Refactor Result and Scheme loading/initializing from files (#903)
 - ♻️ Several refactoring in `glotaran.Parameter` (#910)
+- 👌 Improved Reporting of Parameters (#910, #914, #918)
+- 👌 Scheme now excepts paths to model, parameter and data file without initializing them first (#912)
 
 ### 🩹 Bug fixes
 
