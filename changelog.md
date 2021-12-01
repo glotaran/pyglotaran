@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.5.0 (2021-10-24)
+## 0.5.0 (2021-12-01)
 
 ### ✨ Features
+
 - ✨ Feature: Megacomplex Models (#736)
 - ✨ Feature: Full Models (#747)
 - ✨ Damped Oscillation Megacomplex (a.k.a. DOAS) (#764)
@@ -10,14 +11,21 @@
 - ✨ Performance improvements (in some cases up to 5x) (#740)
 
 ### 👌 Minor Improvements:
+
 - 👌 Add dimensions to megacomplex and dataset_descriptor (#702)
 - 👌 Improve ordering in k_matrix involved_compartments function (#788)
 - 👌 Improvements to application of clp_penalties (equal area) (#801)
 - ♻️ Refactor model.from_dict to parse megacomplex_type from dict and add simple_generator for testing (#807)
 - ♻️ Refactor model spec (#836)
 - ♻️ Refactor Result Saving (#841)
+- ✨ Use ruaml.yaml parser for roundtrip support (#893)
+- ♻️ Refactor Result and Scheme loading/initializing from files (#903)
+- ♻️ Several refactoring in `glotaran.Parameter` (#910)
+- 👌 Improved Reporting of Parameters (#910, #914, #918)
+- 👌 Scheme now excepts paths to model, parameter and data file without initializing them first (#912)
 
 ### 🩹 Bug fixes
+
 - 🩹 Fix/cli0.5 (#765)
 - 🩹 Fix compartment ordering randomization due to use of set (#799)
 - 🩹 Fix check_deprecations not showing deprecation warnings (#775)
@@ -28,6 +36,8 @@
 - 🩹 Fix for DOAS with reversed oscillations (negative rates) (#839)
 - 🩹 Fix parameter expression parsing (#843)
 - 🩹 Use a context manager when opening a nc dataset (#848)
+- 🚧 Disallow xarray versions breaking plotting in integration tests (#900)
+- 🩹 Fix 'dataset_groups' not shown in model markdown (#906)
 
 ### 📚 Documentation
 
@@ -57,12 +67,15 @@
 - `glotaran.parameter.ParameterGroup.to_csv(file_name=parameters.csv)` -> `glotaran.io.save_parameters(parameters, 'file_name=parameters.csv)`
 
 ### 🚧 Maintenance
+
 - 🩹 Fix Performance Regressions (between version) (#740)
 - 🧪🚇 Add integration test result validation (#754)
 - 🔧 Add more QA tools for parts of glotaran (#739)
 - 🔧 Fix interrogate usage (#781)
 - 🚇 Speedup PR benchmark (#785)
-
+- 🚇🩹 Use pinned versions of dependencies to run integration CI tests (#892)
+- 🧹 Move megacomplex integration tests from root level to megacomplexes (#894)
+- 🩹 Fix artifact download in pr_benchmark_reaction workflow (#907)
 
 ## 0.4.0 (2021-06-25)
 
