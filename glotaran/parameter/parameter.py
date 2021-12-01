@@ -27,6 +27,7 @@ class Keys:
     MAX = "max"
     MIN = "min"
     NON_NEG = "non-negative"
+    STD_ERR = "standard-error"
     VARY = "vary"
 
 
@@ -238,6 +239,8 @@ class Parameter(_SupportsArray):
             self.minimum = options[Keys.MIN]
         if Keys.VARY in options:
             self.vary = options[Keys.VARY]
+        if Keys.STD_ERR in options:
+            self.standard_error = options[Keys.STD_ERR]
 
     @property
     def label(self) -> str | None:

@@ -579,10 +579,15 @@ class ParameterGroup(dict):
                     )
                 parameter.value = value
 
-    def markdown(self) -> MarkdownStr:
+    def markdown(self, float_format: str = ".3e") -> MarkdownStr:
         """Format the :class:`ParameterGroup` as markdown string.
 
         This is done by recursing the nested :class:`ParameterGroup` tree.
+
+        Parameters
+        ----------
+        float_format: str
+            Format string for floating point numbers, by default ".3e"
 
         Returns
         -------
@@ -594,12 +599,12 @@ class ParameterGroup(dict):
         table_header = [
             "_Label_",
             "_Value_",
-            "_StdErr_",
-            "_Min_",
-            "_Max_",
+            "_Standard Error_",
+            "_Minimum_",
+            "_Maximum_",
             "_Vary_",
             "_Non-Negative_",
-            "_Expr_",
+            "_Expression_",
         ]
         if self.label is not None:
             return_string += f"{node_indentation}* __{self.label}__:\n"
@@ -613,19 +618,23 @@ class ParameterGroup(dict):
                     parameter.maximum,
                     parameter.vary,
                     parameter.non_negative,
-                    parameter.expression,
+                    f"`{parameter.expression}`",
                 ]
                 for _, parameter in self._parameters.items()
             ]
             parameter_table = indent(
                 tabulate(
-                    parameter_rows, headers=table_header, tablefmt="github", missingval="None"
+                    parameter_rows,
+                    headers=table_header,
+                    tablefmt="github",
+                    missingval="None",
+                    floatfmt=float_format,
                 ),
                 f"  {node_indentation}",
             )
             return_string += f"\n{parameter_table}\n\n"
         for _, child_group in sorted(self.items()):
-            return_string += f"{child_group.__str__()}"
+            return_string += f"{child_group.markdown(float_format=float_format)}"
         return MarkdownStr(return_string)
 
     def _repr_markdown_(self) -> str:
