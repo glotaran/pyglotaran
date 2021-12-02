@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from textwrap import dedent
+
 import pytest
-from dataclasses import replace
 
 from glotaran import __version__
-from glotaran.io import save_result
 from glotaran.analysis.optimize import optimize
 from glotaran.examples.sequential_spectral_decay import SCHEME
+from glotaran.io import save_result
 from glotaran.project.result import Result
 
 
@@ -22,7 +23,7 @@ def dummy_result():
 
 def test_save_result_yml(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
 ):
     """Check all files exist."""
     expected = dedent(

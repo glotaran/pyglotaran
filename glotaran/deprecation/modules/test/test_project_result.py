@@ -1,7 +1,6 @@
 """Test deprecated functionality in 'glotaran.project.result'."""
 from __future__ import annotations
 
-
 import pytest
 
 from glotaran.analysis.optimize import optimize
@@ -17,7 +16,7 @@ def dummy_result():
     yield optimize(SCHEME, raise_exception=True)
 
 
-def test_Result_get_dataset_method(dummy_result: Result):  # noqa: F811
+def test_Result_get_dataset_method(dummy_result: Result):
     """Result.get_dataset(dataset_label) gives correct dataset."""
 
     _, result = deprecation_warning_on_call_test_helper(
@@ -27,7 +26,7 @@ def test_Result_get_dataset_method(dummy_result: Result):  # noqa: F811
     assert result == dummy_result.data["dataset_1"]
 
 
-def test_Result_get_dataset_method_error(dummy_result: Result):  # noqa: F811
+def test_Result_get_dataset_method_error(dummy_result: Result):
     """Result.get_dataset(dataset_label) error on wrong key."""
 
     with pytest.raises(ValueError, match="Unknown dataset 'foo'"):

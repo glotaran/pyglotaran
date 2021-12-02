@@ -5,9 +5,9 @@ from typing import Literal
 
 import pytest
 
-from glotaran.io import save_result
 from glotaran.analysis.optimize import optimize
 from glotaran.examples.sequential_spectral_decay import SCHEME
+from glotaran.io import save_result
 from glotaran.project.result import Result
 
 
@@ -21,7 +21,7 @@ def dummy_result():
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
     format_name: Literal["folder", "legacy"],
 ):
     """Check all files exist."""
@@ -48,7 +48,7 @@ def test_save_result_folder(
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder_error_path_is_file(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
     format_name: Literal["folder", "legacy"],
 ):
     """Raise error if result_path is a file without extension and overwrite is true."""
