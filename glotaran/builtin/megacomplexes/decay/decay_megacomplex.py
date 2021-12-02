@@ -41,10 +41,6 @@ class DecayMegacomplex(DecayMegacomplexBase):
         ]
 
     def get_initial_concentration(self, dataset_model: DatasetModel) -> np.ndarray:
-        if dataset_model.initial_concentration is None:
-            raise ModelError(
-                f'No initial concentration specified in dataset "{dataset_model.label}"'
-            )
         compartments = self.get_compartments(dataset_model)
         idx = [
             compartment in compartments
