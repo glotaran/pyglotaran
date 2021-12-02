@@ -4,12 +4,16 @@ from __future__ import annotations
 from typing import List
 
 import numpy as np
+import xarray as xr
 
-from glotaran.builtin.megacomplexes.decay.decay_megacomplex_base import DecayMegacomplexBase
 from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
 from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
+from glotaran.builtin.megacomplexes.decay.util import calculate_matrix
+from glotaran.builtin.megacomplexes.decay.util import finalize_data
+from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
+from glotaran.model import Megacomplex
 from glotaran.model import ModelError
 from glotaran.model import megacomplex
 
@@ -26,7 +30,7 @@ from glotaran.model import megacomplex
     },
     register_as="decay",
 )
-class DecayMegacomplex(DecayMegacomplexBase):
+class DecayMegacomplex(Megacomplex):
     """A Megacomplex with one or more K-Matrices."""
 
     def get_compartments(self, dataset_model: DatasetModel) -> list[str]:
@@ -57,3 +61,37 @@ class DecayMegacomplex(DecayMegacomplexBase):
             else:
                 full_k_matrix = full_k_matrix.combine(k_matrix)
         return full_k_matrix
+
+    def index_dependent(self, dataset_model: DatasetModel) -> bool:
+        return index_dependent(dataset_model)
+
+    def calculate_matrix(
+        self,
+        dataset_model: DatasetModel,
+        indices: dict[str, int],
+        **kwargs,
+    ):
+        return calculate_matrix(self, dataset_model, indices, **kwargs)
+
+    def finalize_data(
+        self,
+        dataset_model: DatasetModel,
+        dataset: xr.Dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
+        from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import (
+            DecayParallelMegacomplex,
+        )
+        from glotaran.builtin.megacomplexes.decay.decay_sequential_megacomplex import (
+            DecaySequentialMegacomplex,
+        )
+
+        decay_megacomplexes = [
+            m
+            for m in dataset_model.megacomplex
+            if isinstance(
+                m, (DecayMegacomplex, DecayParallelMegacomplex, DecaySequentialMegacomplex)
+            )
+        ]
+        finalize_data(decay_megacomplexes, dataset_model, dataset, is_full_model, as_global)
