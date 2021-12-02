@@ -16,6 +16,7 @@ Explain the **details** for making this change. What existing problem does the p
 ### Checklist
 
 - [ ] ✔️ Passing the tests (mandatory!)
+- [ ] 🚧 Added changes to changelog (mandatory!)
 - [ ] 👌 Closes issue (mandatory!)
 - [ ] 🧪 Adds new tests for the feature (mandatory!)
 - [ ] 📚 Adds documentation of the feature
