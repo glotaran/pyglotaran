@@ -105,6 +105,10 @@ Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 
 8.  Submit a pull request through the GitHub website.
 
+9.  Add the change referring the pull request (``(#<PR_nr>)``) to ``changelog.md``.
+    If you are in doubt in which section your pull request belongs, just ask a
+    maintainer what they think where it belongs.
+
 .. note::
     By default pull requests will use the template located at ``.github/PULL_REQUEST_TEMPLATE.md``.
     But we also provide custom tailored templates located inside of ``.github/PULL_REQUEST_TEMPLATE``.
@@ -358,10 +362,10 @@ Deploying
 ---------
 
 A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst),
+Make sure all your changes are committed (including an entry in ``changelog.md``),
 the version number only needs to be changed in ``glotaran/__init__.py``.
 
 Then make a `new release on GitHub <https://github.com/glotaran/pyglotaran/releases/new>`_ and
-give the tag a proper name, e.g. ``0.3.0`` since might be included in a citation.
+give the tag a proper name, e.g. ``v0.3.0`` since it might be included in a citation.
 
 Github Actions will then deploy to PyPI if the tests pass.
