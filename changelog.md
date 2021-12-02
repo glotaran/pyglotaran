@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.6.0 (Unreleased)
+
+### ✨ Features
+
+### 👌 Minor Improvements:
+
+### 🩹 Bug fixes
+
+### 📚 Documentation
+
+### 🗑️ Deprecations (due in 0.8.0)
+
+### 🚧 Maintenance
+
 ## 0.5.1 (2021-12-31)
 
 ### 🩹 Bug fixes
@@ -76,7 +90,7 @@
 - `<scheme_file>.maximum-number-function-evaluations` -> `<scheme_file>.maximum_number_function_evaluations`
 - `<model_file>.non-negative-least-squares: true` -> `<model_file>dataset_groups.default.residual_function: non_negative_least_squares`
 - `<model_file>.non-negative-least-squares: false` -> `<model_file>dataset_groups.default.residual_function: variable_projection`
-- `glotaran.parameter.ParameterGroup.to_csv(file_name=parameters.csv)` -> `glotaran.io.save_parameters(parameters, 'file_name=parameters.csv)`
+- `glotaran.parameter.ParameterGroup.to_csv(file_name=parameters.csv)` -> `glotaran.io.save_parameters(parameters, file_name=parameters.csv)`
 
 ### 🚧 Maintenance
 
