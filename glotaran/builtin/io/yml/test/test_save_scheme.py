@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING
 
 import xarray as xr
 
-from glotaran.examples.sequential_spectral_decay import DATASET
-from glotaran.examples.sequential_spectral_decay import MODEL
-from glotaran.examples.sequential_spectral_decay import PARAMETER
 from glotaran.io import load_scheme
 from glotaran.io import save_dataset
 from glotaran.io import save_model
 from glotaran.io import save_parameters
 from glotaran.io import save_scheme
 from glotaran.project import Scheme
+from glotaran.testing.sequential_spectral_decay import DATASET
+from glotaran.testing.sequential_spectral_decay import MODEL
+from glotaran.testing.sequential_spectral_decay import PARAMETER
 
 if TYPE_CHECKING:
     from pathlib import Path

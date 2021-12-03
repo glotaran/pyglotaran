@@ -1,28 +1,13 @@
 """Tests for deprecated methods in ``glotaran.model.model``."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 
 from glotaran.deprecation.deprecation_utils import GlotaranDeprectedApiError
-from glotaran.testing.model_generators import SimpleModelGenerator
-
-if TYPE_CHECKING:
-    from glotaran.model import Model
+from glotaran.testing.parallel_spectral_decay import MODEL as dummy_model
 
 
-@pytest.fixture(scope="module")
-def dummy_model() -> Model:
-    """Minimal model instance for testing."""
-    generator = SimpleModelGenerator(
-        rates=[300e-3],
-        k_matrix="parallel",
-    )
-    return generator.model
-
-
-def test_model_model_dimension(dummy_model: Model):
+def test_model_model_dimension():
     """Raise ``GlotaranApiDeprecationWarning``."""
     expected = (
         "Usage of 'Model.model_dimension' was deprecated, "
@@ -38,7 +23,7 @@ def test_model_model_dimension(dummy_model: Model):
     assert str(excinfo.value) == expected
 
 
-def test_model_global_dimension(dummy_model: Model):
+def test_model_global_dimension():
     """Raise ``GlotaranApiDeprecationWarning``."""
     expected = (
         "Usage of 'Model.global_dimension' was deprecated, "

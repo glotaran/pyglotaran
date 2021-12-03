@@ -1,3 +1,4 @@
+"""A simple parallel decay for testing purposes."""
 import numpy as np
 
 from glotaran.analysis.simulation import simulate
@@ -7,11 +8,11 @@ from glotaran.project import Scheme
 from glotaran.project.generators import generate_model_yml
 
 SIMULATION_MODEL_YML = generate_model_yml(
-    "spectral-decay-sequential", **{"nr_compartments": 3, "irf": True}
+    "spectral-decay-parallel", **{"nr_compartments": 3, "irf": True}
 )
 SIMULATION_MODEL = load_model(SIMULATION_MODEL_YML, format_name="yml_str")
 
-MODEL_YML = generate_model_yml("decay-sequential", **{"nr_compartments": 3, "irf": True})
+MODEL_YML = generate_model_yml("decay-parallel", **{"nr_compartments": 3, "irf": True})
 MODEL = load_model(MODEL_YML, format_name="yml_str")
 
 WANTED_PARAMETER_YML = """

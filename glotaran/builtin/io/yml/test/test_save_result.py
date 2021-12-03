@@ -8,9 +8,9 @@ import pytest
 
 from glotaran import __version__
 from glotaran.analysis.optimize import optimize
-from glotaran.examples.sequential_spectral_decay import SCHEME
 from glotaran.io import save_result
 from glotaran.project.result import Result
+from glotaran.testing.sequential_spectral_decay import SCHEME
 
 
 @pytest.fixture(scope="session")
@@ -27,11 +27,11 @@ def test_save_result_yml(
 ):
     """Check all files exist."""
     expected = dedent(
-        """\
+        f"""\
         number_of_function_evaluations: 1
         success: true
         termination_reason: The maximum number of function evaluations is exceeded.
-        glotaran_version: 0.5.0
+        glotaran_version: {__version__}
         free_parameter_labels:
           - rates.species_1
           - rates.species_2

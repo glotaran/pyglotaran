@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from glotaran.examples.sequential_spectral_decay import MODEL
 from glotaran.io import load_model
 from glotaran.io import save_model
+from glotaran.testing.sequential_spectral_decay import MODEL
 
 if TYPE_CHECKING:
     from pathlib import Path

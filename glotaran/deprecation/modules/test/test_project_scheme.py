@@ -1,7 +1,6 @@
 """Test deprecated functionality in 'glotaran.project.schmeme'."""
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import pytest
@@ -9,25 +8,12 @@ import xarray as xr
 
 from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
 from glotaran.project.scheme import Scheme
-from glotaran.testing.model_generators import SimpleModelGenerator
+from glotaran.testing.parallel_spectral_decay import DATASET
+from glotaran.testing.parallel_spectral_decay import MODEL
+from glotaran.testing.parallel_spectral_decay import PARAMETER
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-
-@lru_cache(maxsize=1)
-def create_test_args():
-    """Objects to initialize a ``Scheme`` for testing."""
-    generator = SimpleModelGenerator(
-        rates=[501e-3, 202e-4, 105e-5],
-        irf={"center": 1.3, "width": 7.8},
-        k_matrix="sequential",
-    )
-    model, parameters = generator.model_and_parameters
-    dataset = xr.DataArray([[1, 2, 3]], coords=[("e", [1]), ("c", [1, 2, 3])]).to_dataset(
-        name="data"
-    )
-    return model, parameters, dataset
 
 
 def test_scheme_from_yaml_file_method(tmp_path: Path):
@@ -72,7 +58,7 @@ def test_scheme_from_yaml_file_method(tmp_path: Path):
 
 def test_scheme_group_tolerance():
     """Argument ``group_tolerance`` raises deprecation and maps to ``clp_link_tolerance``."""
-    model, parameters, dataset = create_test_args()
+    model, parameters, dataset = MODEL, PARAMETER, DATASET
 
     warnings, result = deprecation_warning_on_call_test_helper(
         Scheme,
@@ -92,7 +78,7 @@ def test_scheme_group_tolerance():
 )
 def test_scheme_group(group: bool):
     """Argument ``group`` raises deprecation and maps to ``dataset_groups.default.link_clp``."""
-    model, parameters, dataset = create_test_args()
+    model, parameters, dataset = MODEL, PARAMETER, DATASET
 
     warnings, result = deprecation_warning_on_call_test_helper(
         Scheme,
@@ -114,7 +100,7 @@ def test_scheme_non_negative_least_squares(non_negative_least_squares: bool, exp
     """Argument ``non_negative_least_squares`` raises deprecation and maps to
     ``dataset_groups.default.residual_function``.
     """
-    model, parameters, dataset = create_test_args()
+    model, parameters, dataset = MODEL, PARAMETER, DATASET
 
     warnings, result = deprecation_warning_on_call_test_helper(
         Scheme,

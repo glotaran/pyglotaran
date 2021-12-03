@@ -1,3 +1,4 @@
+from copy import copy
 from math import inf
 from math import nan
 from textwrap import dedent
@@ -23,7 +24,7 @@ from glotaran.model.relation import Relation
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
-from glotaran.testing.model_generators import SimpleModelGenerator
+from glotaran.testing.parallel_spectral_decay import MODEL
 
 
 @model_item(
@@ -491,16 +492,11 @@ def test_only_constraint():
 
 def test_model_markdown():
     """Full markdown string is as expected."""
-    model = SimpleModelGenerator(
-        rates=[501e-3, 202e-4, 105e-5, {"non-negative": True}],
-        irf={"center": 1.3, "width": 7.8},
-        k_matrix="sequential",
-    )
     expected = dedent(
         """\
         # Model
 
-        _Megacomplex Types_: decay
+        _Megacomplex Types_: decay-parallel
 
         ## Dataset Groups
 
@@ -509,69 +505,50 @@ def test_model_markdown():
           * *residual_function*: variable_projection
           * *link_clp*: None
 
-        ## K Matrix
-
-        * **k1**:
-            * *Label*: k1
-            * *Matrix*:
-              * ('s2', 's1'): rates.1(5.01e-01)
-              * ('s3', 's2'): rates.2(2.02e-02)
-              * ('s3', 's3'): rates.3(1.05e-03)
-
-
-        ## Initial Concentration
-
-        * **j1**:
-            * *Label*: j1
-            * *Compartments*:
-              * s1
-              * s2
-              * s3
-            * *Parameters*:
-              * inputs.1(1.00e+00, fixed)
-              * inputs.0(0.00e+00, fixed)
-              * inputs.0(0.00e+00, fixed)
-            * *Exclude From Normalize*:
-
-
         ## Irf
 
-        * **irf1** (multi-gaussian):
-            * *Label*: irf1
-            * *Type*: multi-gaussian
-            * *Center*:
-              * irf.center(1.30e+00)
-            * *Width*:
-              * irf.width(7.80e+00)
+        * **gaussian_irf** (gaussian):
+            * *Label*: gaussian_irf
+            * *Type*: gaussian
+            * *Center*: irf.center(nan)
+            * *Width*: irf.width(nan)
             * *Normalize*: True
             * *Backsweep*: False
 
 
         ## Megacomplex
 
-        * **mc1** (None):
-            * *Label*: mc1
+        * **megacomplex_parallel_decay** (decay-parallel):
+            * *Label*: megacomplex_parallel_decay
+            * *Type*: decay-parallel
+            * *Compartments*:
+              * species_1
+              * species_2
+              * species_3
+            * *Rates*:
+              * rates.species_1(nan)
+              * rates.species_2(nan)
+              * rates.species_3(nan)
             * *Dimension*: time
-            * *K Matrix*:
-              * k1
 
 
         ## Dataset
 
-        * **dataset1**:
-            * *Label*: dataset1
+        * **dataset_1**:
+            * *Label*: dataset_1
             * *Group*: default
             * *Megacomplex*:
-              * mc1
-            * *Initial Concentration*: j1
-            * *Irf*: irf1
+              * megacomplex_parallel_decay
+            * *Irf*: gaussian_irf
 
 
         """
     )
+    model = copy(MODEL)
+    model.dataset_group_models["default"].link_clp = None
 
     # Preprocessing to remove trailing whitespace after '* *Matrix*:'
-    result = "\n".join([line.rstrip(" ") for line in str(model.markdown()).split("\n")])
+    result = "\n".join([line.rstrip(" ") for line in str(MODEL.markdown()).split("\n")])
     print(result)
 
     assert result == expected
