@@ -18,6 +18,7 @@ from glotaran.project.project_parameter_registry import ProjectParameterRegistry
 from glotaran.project.project_result_registry import ProjectResultRegistry
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
+from glotaran.utils.ipython import MarkdownStr
 
 TEMPLATE = """version: {gta_version}
 name: {name}
@@ -30,7 +31,7 @@ PROJECT_FILE_NAME = "project.gta"
 class Project:
     """A project represents a projectfolder on disk which contains a project file.
 
-    A projectfile is a file in `yml` format with name `project.gta`
+    A project file is a file in `yml` format with name `project.gta`
     """
 
     file: Path
@@ -75,6 +76,8 @@ class Project:
         if folder is None:
             folder = getcwd()
         project_folder = Path(folder)
+        if not project_folder.exists():
+            project_folder.mkdir()
         name = name if name else project_folder.name
         project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
@@ -128,7 +131,7 @@ class Project:
         dict[str, str]
             The models of the datasets.
         """
-        return self._data_registry.items()
+        return self._data_registry.items
 
     def load_data(self, name: str) -> xr.Dataset | xr.DataArray:
         """Load a dataset.
@@ -185,7 +188,7 @@ class Project:
         dict[str, str]
             The models of the project.
         """
-        return self._model_registry.items()
+        return self._model_registry.items
 
     def load_model(self, name: str) -> Model:
         """Load a model.
@@ -249,7 +252,7 @@ class Project:
         dict[str, str]
             The parameters of the project.
         """
-        return self._parameter_registry.items()
+        return self._parameter_registry.items
 
     def load_parameters(self, name: str) -> ParameterGroup:
         """Load parameters.
@@ -315,7 +318,7 @@ class Project:
         dict[str, str]
             The results of the project.
         """
-        return self._result_registry.items()
+        return self._result_registry.items
 
     def load_result(self, name: str) -> Result:
         """Load a result.
@@ -410,3 +413,35 @@ class Project:
 
         name = name or self._result_registry.create_result_name_for_model(model)
         self._result_registry.save(name, result)
+
+    def markdown(self) -> MarkdownStr:
+        """Format the project as a markdown text.
+
+        Returns
+        -------
+        MarkdownStr : str
+            The markdown string.
+        """
+        md = f"""\
+# Project _{self.name}_
+
+pyglotaran version: {self.version}
+
+## Data
+
+{self._data_registry.markdown()}
+
+## Model
+
+{self._model_registry.markdown()}
+
+## Parameters
+
+{self._parameter_registry.markdown()}
+
+## Results
+
+{self._result_registry.markdown()}
+        """
+
+        return MarkdownStr(md)
