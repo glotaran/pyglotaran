@@ -48,6 +48,13 @@ class YmlProjectIo(ProjectIoInterface):
 
         spec = sanitize_yaml(spec)
 
+        if "include" in spec:
+            includes = spec.pop("include")
+            if not isinstance(includes, list):
+                includes = [includes]
+            for include in includes:
+                spec.update(self._load_yml(include))
+
         default_megacomplex = spec.get("default_megacomplex")
 
         if default_megacomplex is None and any(
