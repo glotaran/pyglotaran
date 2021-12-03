@@ -57,6 +57,7 @@ class ProjectResultRegistry(ProjectRegistry):
             result_name = f"{model_name}_run_{i}"
             if not (self.directory / result_name).exists():
                 return result_name
+            i += 1
 
     def save(self, name: str, result: Result):
         """Save a result.

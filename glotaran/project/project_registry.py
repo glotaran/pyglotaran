@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 
+from glotaran.utils.ipython import MarkdownStr
+
 
 class ProjectRegistry:
     """A registry base class."""
@@ -104,6 +106,23 @@ class ProjectRegistry:
         except StopIteration:
             raise ValueError(f"No Item with name '{name}' exists.")
         return self._loader(path)
+
+    def markdown(self) -> MarkdownStr:
+        """Format the registry items as a markdown text.
+
+        Returns
+        -------
+        MarkdownStr : str
+            The markdown string.
+        """
+        if self.empty:
+            return MarkdownStr("_None_")
+
+        md = ""
+        for name in self.items:
+            md += f"* {name}\n"
+
+        return MarkdownStr(md)
 
     def _create_directory_if_not_exist(self):
         """Create the registry directory if it does not exist."""
