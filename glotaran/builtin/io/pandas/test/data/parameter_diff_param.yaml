@@ -1,8 +1,0 @@
-pure_list: [1.0, 2.0, 3.0]
-
-list_with_options: [3.0, 9.0, {vary: True}]
-
-verbose_list:
-  - ["all_defaults", 6.0]
-  - ["no_defaults", 6.0, {non-negative: True, vary: False, minimum: -1, maximum: 1}]
-  - ["expression_only", {expr: $verbose_list.all_defaults + $verbose_list.no_defaults}]
