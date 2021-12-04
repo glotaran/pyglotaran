@@ -160,9 +160,9 @@ def test_relative_posix_path(tmp_path: Path, rel_file_path: str):
     assert rel_result_no_coomon == f"../{rel_file_path}"
 
 
-@pytest.mark.skipif(not sys.platform.startswith("win32"), reason="Only needed for wondows")
+@pytest.mark.skipif(not sys.platform.startswith("win32"), reason="Only needed for Windows")
 def test_relative_posix_path_windows_diff_drives():
-    """os.path.relpath doesn't cause crash when files are of different drives."""
+    """os.path.relpath doesn't cause crash when files are on different drives."""
 
     source_path = "D:\\data\\data_file.txt"
     result = relative_posix_path(source_path, "C:\\result_path")

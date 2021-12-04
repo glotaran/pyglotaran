@@ -164,7 +164,7 @@ def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:
 def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = None) -> str:
     """Ensure that ``source_path`` is a posix path, relative to ``base_path`` if defined.
 
-    On windows if ``source_path`` and ``base_path`` are on different drives, it will return
+    On Windows if ``source_path`` and ``base_path`` are on different drives, it will return
     the absolute posix path to the file.
 
     Parameters
