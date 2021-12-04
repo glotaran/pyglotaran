@@ -184,5 +184,5 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
         try:
             source_path = os.path.relpath(source_path, Path(base_path).as_posix())
         except ValueError:
-            source_path = Path(source_path).as_posix()
+            pass
     return Path(source_path).as_posix()
