@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 (2021-12-12)
+
+### 🩹 Bug fixes
+
+- 🩹🚧 Backport of bugfix #927 discovered in PR #860 related to initial_concentration normalization when saving results (#935).
+
 ## 0.4.1 (2021-09-07)
 
 ### ✨ Features
