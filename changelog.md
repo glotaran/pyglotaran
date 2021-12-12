@@ -77,6 +77,28 @@
 - 🧹 Move megacomplex integration tests from root level to megacomplexes (#894)
 - 🩹 Fix artifact download in pr_benchmark_reaction workflow (#907)
 
+## 0.4.2 (2021-12-12)
+
+### 🩹 Bug fixes
+
+- 🩹🚧 Backport of bugfix #927 discovered in PR #860 related to initial_concentration normalization when saving results (#935).
+
+### 🚧 Maintenance
+
+- 🚇🚧 Updated 'gold standard' result comparison reference ([old](https://github.com/glotaran/pyglotaran-examples/commit/9b8591c668ad7383a908b853339966d5a5f7fe43) -> [new](https://github.com/glotaran/pyglotaran-examples/commit/fc5a5ca0c7fd8b224c85027b510a15717c696c7b))
+- 🚇 Refine test_result_consistency (#936).
+
+## 0.4.1 (2021-09-07)
+
+### ✨ Features
+
+- Integration test result validation (#760)
+
+### 🩹 Bug fixes
+
+- Fix unintended saving of sub-optimal parameters (0ece818, backport from #747)
+- Improve ordering in k_matrix involved_compartments function (#791)
+
 ## 0.4.0 (2021-06-25)
 
 ### ✨ Features
