@@ -211,6 +211,11 @@ def data_var_test(
             np.abs(eps * expected_values_scaled),
             np.ones(expected_var_value.data.shape) * eps,
         )
+    elif "spectra" in expected_var_name:
+        float_resolution = np.maximum(
+            np.ones(expected_var_value.data.shape) * eps * np.max(np.abs(expected_var_value.data)),
+            np.ones(expected_var_value.data.shape) * eps,
+        )
     else:
         float_resolution = np.maximum(
             np.abs(eps * expected_var_value.data),
