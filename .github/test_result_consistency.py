@@ -180,7 +180,7 @@ def data_var_test(
     eps = np.finfo(np.float32).eps
     rtol = 1e-5  # default value of allclose
     if expected_var_name.endswith("residual"):  # type:ignore[operator]
-        eps = expected_result["data"].values.max() * 1e-8
+        eps = max(eps, expected_result["data"].values.max() * eps)
 
     if "singular_vectors" in expected_var_name:  # type:ignore[operator]
         # Sometimes the coords in the (right) singular vectors are swapped
@@ -235,6 +235,7 @@ def data_var_test(
         f"{float(np.sum(abs_diff))} and shape: {expected_var_value.shape}\n"
         "Mean difference: "
         f"{float(np.sum(abs_diff))/np.prod(expected_var_value.shape)}\n"
+        f"Using: \n - {rtol=} \n - {eps=} \n - {float_resolution=}"
     )
 
     coord_test(
