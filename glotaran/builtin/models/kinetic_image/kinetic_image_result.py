@@ -78,7 +78,7 @@ def retrieve_decay_associated_data(model, dataset, dataset_descriptor, name):
 
             matrix = k_matrix.full(compartments)
             matrix_reduced = k_matrix.reduced(compartments)
-            a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration)
+            a_matrix = k_matrix.a_matrix(dataset_descriptor.initial_concentration.normalized())
             rates = k_matrix.rates(dataset_descriptor.initial_concentration)
             lifetimes = 1 / rates
 
