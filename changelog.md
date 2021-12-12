@@ -6,6 +6,10 @@
 
 - 🩹🚧 Backport of bugfix #927 discovered in PR #860 related to initial_concentration normalization when saving results (#935).
 
+### 🚧 Maintenance
+
+- 🚇🚧 Updated 'gold standard' result comparison reference ([old](https://github.com/glotaran/pyglotaran-examples/commit/9b8591c668ad7383a908b853339966d5a5f7fe43) -> [new](https://github.com/glotaran/pyglotaran-examples/commit/fc5a5ca0c7fd8b224c85027b510a15717c696c7b))
+
 ## 0.4.1 (2021-09-07)
 
 ### ✨ Features
