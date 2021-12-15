@@ -10,7 +10,7 @@ from glotaran.io import register_project_io
 from glotaran.parameter import ParameterGroup
 
 
-@register_project_io(["xlsx"])
+@register_project_io(["xlsx", "ods"])
 class ExcelProjectIo(ProjectIoInterface):
     """Plugin for XLSX data io."""
 

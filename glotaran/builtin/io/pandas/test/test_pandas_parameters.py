@@ -7,6 +7,7 @@ from glotaran.io import save_parameters
 
 PANDAS_TEST_DATA = Path(__file__).parent / "data"
 PATH_XLSX = PANDAS_TEST_DATA / "parameter.xlsx"
+PATH_ODS = PANDAS_TEST_DATA / "parameter.ods"
 PATH_CSV = PANDAS_TEST_DATA / "parameter.csv"
 PATH_TSV = PANDAS_TEST_DATA / "parameter.tsv"
 PATH_YAML = PANDAS_TEST_DATA / "parameter.yaml"
@@ -31,6 +32,27 @@ def test_save_parameters_xlsx(
     parameters_xlsx = load_parameters(PATH_XLSX)
     assert parameters_yaml == parameters_saved_and_reloaded
     assert parameters_xlsx == parameters_saved_and_reloaded
+
+
+def test_load_parameters_ods():
+    """load parameters file as yaml and ods and compare them"""
+    parameters_ods = load_parameters(PATH_ODS)
+    parameters_yaml = load_parameters(PATH_YAML)
+    assert parameters_yaml == parameters_ods
+
+
+def test_save_parameters_ods(
+    tmp_path: Path,
+):
+    """load parameters file from yaml and save as ods
+    and compare with yaml and reloaded ods parameter files"""
+    parameters_yaml = load_parameters(PATH_YAML)
+    parameter_path = tmp_path / "testparameters.ods"
+    save_parameters(file_name=parameter_path, format_name="ods", parameters=parameters_yaml)
+    parameters_saved_and_reloaded = load_parameters(parameter_path)
+    parameters_ods = load_parameters(PATH_ODS)
+    assert parameters_yaml == parameters_saved_and_reloaded
+    assert parameters_ods == parameters_saved_and_reloaded
 
 
 def test_load_parameters_csv():
