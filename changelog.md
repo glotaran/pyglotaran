@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.1 (2021-12-31)
+
+### 🩹 Bug fixes
+
+- 🩹 Bugfix Use normalized initial_concentrations in result creation for decay megacomplex (#927)
+- 🩹 Fix save_result crashes on Windows if input data are on a different drive than result (#931)
+
+### 🚧 Maintenance
+
+- 🚧 Forward port Improve result comparison workflow and v0.4 changelog (#938)
+- 🚧 Forward port of #936 test_result_consistency
+
 ## 0.5.0 (2021-12-01)
 
 ### ✨ Features
@@ -77,7 +89,7 @@
 - 🧹 Move megacomplex integration tests from root level to megacomplexes (#894)
 - 🩹 Fix artifact download in pr_benchmark_reaction workflow (#907)
 
-## 0.4.2 (2021-12-12)
+## 0.4.2 (2021-12-31)
 
 ### 🩹 Bug fixes
 
