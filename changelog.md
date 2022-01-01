@@ -14,6 +14,8 @@
 
 ### 🚧 Maintenance
 
+- 🔧 Improve packaging tooling (#923)
+
 ## 0.5.1 (2021-12-31)
 
 ### 🩹 Bug fixes
