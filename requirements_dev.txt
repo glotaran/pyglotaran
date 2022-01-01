@@ -15,7 +15,7 @@ scipy==1.7.3
 sdtfile==2021.11.18
 setuptools==41.2
 tabulate==0.8.9
-xarray==0.19.0
+xarray==0.20.2
 
 # documentation dependencies
 -r docs/requirements.txt
