@@ -1,12 +1,14 @@
-**IMPORTANT: Please do not create a Pull Request without creating an issue first.**
+**IMPORTANT: This type of PR needs (prior) approval from maintainers.**
 
 _Any change needs to be discussed before proceeding. Failure to do so may result in the rejection of the pull request._
 
 Please provide enough information so that others can review your pull request:
 
-Explain the **details** for making this change. What existing problem does the pull request solve?.
+There should be a benefit to the refactor. How does the refactor benefit the maintainers or users?
 
-<!-- Example: When "Adding a function to do X", explain why it is necessary to have a way to do X. -->
+- Better maintainability
+- Improved usability
+- etc
 
 ### Change summary
 
@@ -16,9 +18,9 @@ Explain the **details** for making this change. What existing problem does the p
 ### Checklist
 
 - [ ] ✔️ Passing the tests (mandatory!)
-- [ ] 🚧 Added changes to changelog (mandatory!)
-- [ ] 👌 Closes issue (mandatory!)
-- [ ] 🧪 Adds new tests for the bug
+- [ ] 🚧 Added changes to changelog (recommended)
+- [ ] 👌 Closes issue (recommended)
+- [ ] 🧪 Adds new tests (recommended)
 
 ### Closes issues
 

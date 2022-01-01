@@ -10,6 +10,7 @@ Links to the changed sections
 ### Checklist
 
 - [ ] ✔️ Passing the tests (mandatory!)
+- [ ] 🚧 Added changes to changelog (mandatory!)
 
 ### Closes issues
 
