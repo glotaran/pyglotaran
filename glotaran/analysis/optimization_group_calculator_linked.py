@@ -461,14 +461,24 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
     ) -> xr.Dataset:
         """Creates a result datasets for index independent matrices."""
 
-        dataset["matrix"] = (
-            (
-                (self._global_dimension),
-                (self._model_dimension),
-                ("clp_label"),
-            ),
-            np.asarray([m.matrix for m in self._group.matrices[label]]),
-        )
+        dummy = self._group.matrices[label]
+        if isinstance(dummy, CalculatedMatrix):
+            dataset["matrix"] = (
+                (
+                    (self._model_dimension),
+                    ("clp_label"),
+                ),
+                self._group.matrices[label].matrix,
+            )
+        else:
+            dataset["matrix"] = (
+                (
+                    (self._global_dimension),
+                    (self._model_dimension),
+                    ("clp_label"),
+                ),
+                np.asarray([m.matrix for m in self._group.matrices[label]]),
+            )
         dataset["clp"] = self._group.clps[label]
 
         for index, grouped_problem in enumerate(self.bag):
