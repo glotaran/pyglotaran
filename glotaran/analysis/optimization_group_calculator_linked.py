@@ -463,10 +463,11 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
 
         dataset["matrix"] = (
             (
+                (self._global_dimension),
                 (self._model_dimension),
                 ("clp_label"),
             ),
-            self._group.matrices[label].matrix,
+            np.asarray([m.matrix for m in self._group.matrices[label]]),
         )
         dataset["clp"] = self._group.clps[label]
 
