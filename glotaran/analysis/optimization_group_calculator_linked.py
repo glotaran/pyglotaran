@@ -397,7 +397,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
             for i, index_model in enumerate(group_model.dataset_models):
                 label = index_model.label
                 if self._group.dataset_models[label] is not None:
-                    start = sum(group_model.data_sizes[0:i])
+                    start = sum(group_model.data_sizes[:i])
                     end = start + group_model.data_sizes[i]
                     matrix[start:end, :] *= self._group.dataset_models[label].scale
 
