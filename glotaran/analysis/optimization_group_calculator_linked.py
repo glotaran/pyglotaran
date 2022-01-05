@@ -397,7 +397,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
             for i, index_model in enumerate(group_model.dataset_models):
                 label = index_model.label
                 if self._group.dataset_models[label] is not None:
-                    start = sum(group_model.data_sizes[0:i])
+                    start = sum(group_model.data_sizes[:i])
                     end = start + group_model.data_sizes[i]
                     matrix[start:end, :] *= self._group.dataset_models[label].scale
 
@@ -461,13 +461,24 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
     ) -> xr.Dataset:
         """Creates a result datasets for index independent matrices."""
 
-        dataset["matrix"] = (
-            (
-                (self._model_dimension),
-                ("clp_label"),
-            ),
-            self._group.matrices[label].matrix,
-        )
+        dummy = self._group.matrices[label]
+        if isinstance(dummy, CalculatedMatrix):
+            dataset["matrix"] = (
+                (
+                    (self._model_dimension),
+                    ("clp_label"),
+                ),
+                self._group.matrices[label].matrix,
+            )
+        else:
+            dataset["matrix"] = (
+                (
+                    (self._global_dimension),
+                    (self._model_dimension),
+                    ("clp_label"),
+                ),
+                np.asarray([m.matrix for m in self._group.matrices[label]]),
+            )
         dataset["clp"] = self._group.clps[label]
 
         for index, grouped_problem in enumerate(self.bag):
