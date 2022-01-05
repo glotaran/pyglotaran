@@ -8,6 +8,8 @@
 
 ### 🩹 Bug fixes
 
+- 🩹 Fix Crash in optimization_group_calculator_linked when using guidance spectra (#950)
+
 ### 📚 Documentation
 
 ### 🗑️ Deprecations (due in 0.8.0)
