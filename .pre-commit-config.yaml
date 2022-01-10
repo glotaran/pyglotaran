@@ -4,7 +4,7 @@ ci:
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -16,7 +16,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.0
+    rev: v2.31.0
     hooks:
       - id: pyupgrade
         types: [file]
@@ -32,7 +32,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 21.9b0
+    rev: 21.12b0
     hooks:
       - id: black
         types: [file]
@@ -40,7 +40,7 @@ repos:
         language_version: python3
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
+    rev: 5.10.1
     hooks:
       - id: isort
         types: [file]
@@ -48,7 +48,7 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v1.18.0
+    rev: v1.20.0
     hooks:
       - id: setup-cfg-fmt
 
@@ -60,7 +60,7 @@ repos:
         args: [--strip-empty-cells]
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.1.1
+    rev: 1.2.2
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==21.6b0]
@@ -76,7 +76,7 @@ repos:
 
   # Linters
   - repo: https://github.com/asottile/yesqa
-    rev: v1.2.3
+    rev: v1.3.0
     hooks:
       - id: yesqa
         types: [file]
@@ -106,7 +106,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.910-1
+    rev: v0.931
     hooks:
       - id: mypy
         files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|model/property.py)"
