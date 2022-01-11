@@ -11,7 +11,7 @@ from glotaran.parameter import ParameterGroup
 
 @register_project_io(["tsv"])
 class TsvProjectIo(ProjectIoInterface):
-    """Plugin for CTSV data io."""
+    """Plugin for TSV data io."""
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
         """Load parameters from TSV file.
