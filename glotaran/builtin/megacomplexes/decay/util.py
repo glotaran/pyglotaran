@@ -50,7 +50,7 @@ def calculate_matrix(
         )
 
     # apply A matrix
-    matrix = matrix @ k_matrix.a_matrix(compartments, initial_concentration)
+    matrix = matrix @ megacomplex.get_a_matrix(dataset_model)
 
     # done
     return compartments, matrix
@@ -251,7 +251,7 @@ def retrieve_decay_associated_data(
 
     matrix = k_matrix.full(species)
     matrix_reduced = k_matrix.reduced(species)
-    a_matrix = k_matrix.a_matrix(species, initial_concentration)
+    a_matrix = megacomplex.get_a_matrix(dataset_model)
     rates = k_matrix.rates(species, initial_concentration)
     lifetimes = 1 / rates
 

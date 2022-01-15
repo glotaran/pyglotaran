@@ -49,6 +49,9 @@ class DecaySequentialMegacomplex(Megacomplex):
         k_matrix.matrix[self.compartments[-1], self.compartments[-1]] = self.rates[-1]
         return k_matrix
 
+    def get_a_matrix(self, dataset_model: DatasetModel) -> np.ndarray:
+        return self.get_k_matrix().a_matrix_sequential(self.get_compartments(dataset_model))
+
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return index_dependent(dataset_model)
 

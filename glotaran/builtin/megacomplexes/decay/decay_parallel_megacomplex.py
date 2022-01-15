@@ -43,6 +43,11 @@ class DecayParallelMegacomplex(Megacomplex):
         }
         return k_matrix
 
+    def get_a_matrix(self, dataset_model: DatasetModel) -> np.ndarray:
+        return self.get_k_matrix().a_matrix_general(
+            self.get_compartments(dataset_model), self.get_initial_concentration(dataset_model)
+        )
+
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return index_dependent(dataset_model)
 

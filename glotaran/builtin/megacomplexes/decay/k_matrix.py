@@ -209,7 +209,7 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        if self.is_unibranched(compartments, initial_concentration):
+        if self.is_sequential(compartments, initial_concentration):
             return np.diag(self.full(compartments)).copy()
         rates, _ = self.eigen(compartments)
         return rates
@@ -218,7 +218,7 @@ class KMatrix:
         return np.diag(solve(eigenvectors, initial_concentration))
 
     def a_matrix(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
-        """The resulting A matrix of the KMatrix.
+        """The A matrix of the KMatrix.
 
         Parameters
         ----------
@@ -226,15 +226,15 @@ class KMatrix:
             The initial concentration.
         """
         return (
-            self.a_matrix_unibranch(compartments)
-            if self.is_unibranched(compartments, initial_concentration)
-            else self.a_matrix_non_unibranch(compartments, initial_concentration)
+            self.a_matrix_sequential(compartments)
+            if self.is_sequential(compartments, initial_concentration)
+            else self.a_matrix_general(compartments, initial_concentration)
         )
 
-    def a_matrix_non_unibranch(
+    def a_matrix_general(
         self, compartments: list[str], initial_concentration: np.ndarray
     ) -> np.ndarray:
-        """The resulting A matrix of the KMatrix for a non-unibranched model.
+        """The A matrix of the KMatrix for a general model.
 
         Parameters
         ----------
@@ -249,8 +249,8 @@ class KMatrix:
 
         return a_matrix.T
 
-    def a_matrix_unibranch(self, compartments: list[str]) -> np.ndarray:
-        """The resulting A matrix of the KMatrix for an unibranched model.
+    def a_matrix_sequential(self, compartments: list[str]) -> np.ndarray:
+        """The A matrix of the KMatrix for a sequential model.
 
         Parameters
         ----------
@@ -271,7 +271,7 @@ class KMatrix:
 
         return a_matrix
 
-    def is_unibranched(self, compartments: list[str], initial_concentration: np.ndarray) -> bool:
+    def is_sequential(self, compartments: list[str], initial_concentration: np.ndarray) -> bool:
         """Returns true in the KMatrix represents an unibranched model.
 
         Parameters

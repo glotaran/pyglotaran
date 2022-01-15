@@ -181,7 +181,7 @@ class ParallelModelWithEquilibria:
     "matrix",
     [SequentialModel, SequentialModelWithBacktransfer, ParallelModel, ParallelModelWithEquilibria],
 )
-def test_matrix_non_unibranch(matrix):
+def test_a_matrix_general(matrix):
 
     params = ParameterGroup.from_list(matrix.params)
 
@@ -210,14 +210,14 @@ def test_matrix_non_unibranch(matrix):
     print(mat.gamma(vec, initial_concentration))
     assert np.allclose(mat.gamma(vec, initial_concentration), matrix.wanted_gamma)
 
-    print(mat.a_matrix_non_unibranch(matrix.compartments, initial_concentration))
+    print(mat.a_matrix_general(matrix.compartments, initial_concentration))
     assert np.allclose(
-        mat.a_matrix_non_unibranch(matrix.compartments, initial_concentration),
+        mat.a_matrix_general(matrix.compartments, initial_concentration),
         matrix.wanted_a_matrix,
     )
 
 
-def test_unibranched():
+def test_a_matrix_sequential():
 
     compartments = ["s1", "s2", "s3"]
     matrix = {
@@ -235,7 +235,7 @@ def test_unibranched():
 
     initial_concentration = [1, 0, 0]
 
-    assert not mat.is_unibranched(compartments, initial_concentration)
+    assert not mat.is_sequential(compartments, initial_concentration)
 
     matrix = {
         ("s2", "s1"): "1",
@@ -252,7 +252,7 @@ def test_unibranched():
     initial_concentration = [1, 0]
 
     print(mat.reduced(compartments))
-    assert mat.is_unibranched(compartments, initial_concentration)
+    assert mat.is_sequential(compartments, initial_concentration)
 
     wanted_a_matrix = np.asarray(
         [
@@ -261,8 +261,8 @@ def test_unibranched():
         ]
     )
 
-    print(mat.a_matrix_unibranch(compartments))
-    assert np.allclose(mat.a_matrix_unibranch(compartments), wanted_a_matrix)
+    print(mat.a_matrix_sequential(compartments))
+    assert np.allclose(mat.a_matrix_sequential(compartments), wanted_a_matrix)
 
 
 def test_combine_matrices():
