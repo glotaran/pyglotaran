@@ -14,6 +14,10 @@ from glotaran.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
 
 
+def calculate_gamma(eigenvectors: np.ndarray, initial_concentration: np.ndarray) -> np.ndarray:
+    return np.diag(solve(eigenvectors, initial_concentration))
+
+
 @model_item(
     properties={
         "matrix": {"type": typing.Dict[typing.Tuple[str, str], Parameter]},
@@ -214,9 +218,6 @@ class KMatrix:
         rates, _ = self.eigen(compartments)
         return rates
 
-    def gamma(self, eigenvectors: np.ndarray, initial_concentration: np.ndarray) -> np.ndarray:
-        return np.diag(solve(eigenvectors, initial_concentration))
-
     def a_matrix(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The A matrix of the KMatrix.
 
@@ -241,9 +242,9 @@ class KMatrix:
         initial_concentration :
             The initial concentration.
         """
-        eigenvalues, eigenvectors = self.eigen(compartments)
+        _, eigenvectors = self.eigen(compartments)
 
-        gamma = self.gamma(eigenvectors, initial_concentration)
+        gamma = calculate_gamma(eigenvectors, initial_concentration)
 
         a_matrix = eigenvectors @ gamma
 

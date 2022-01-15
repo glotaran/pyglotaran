@@ -3,6 +3,7 @@ import pytest
 from IPython.core.formatters import format_display_data
 
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
+from glotaran.builtin.megacomplexes.decay.k_matrix import calculate_gamma
 from glotaran.parameter import ParameterGroup
 
 
@@ -207,8 +208,8 @@ def test_a_matrix_general(matrix):
     assert np.allclose(vals, matrix.wanted_eigen_vals)
     assert np.allclose(vec, matrix.wanted_eigen_vec)
 
-    print(mat.gamma(vec, initial_concentration))
-    assert np.allclose(mat.gamma(vec, initial_concentration), matrix.wanted_gamma)
+    print(calculate_gamma(vec, initial_concentration))
+    assert np.allclose(calculate_gamma(vec, initial_concentration), matrix.wanted_gamma)
 
     print(mat.a_matrix_general(matrix.compartments, initial_concentration))
     assert np.allclose(
