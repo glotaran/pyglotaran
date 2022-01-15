@@ -70,16 +70,4 @@ class DecaySequentialMegacomplex(Megacomplex):
         is_full_model: bool = False,
         as_global: bool = False,
     ):
-        from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
-        from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import (
-            DecayParallelMegacomplex,
-        )
-
-        decay_megacomplexes = [
-            m
-            for m in dataset_model.megacomplex
-            if isinstance(
-                m, (DecayMegacomplex, DecayParallelMegacomplex, DecaySequentialMegacomplex)
-            )
-        ]
-        finalize_data(decay_megacomplexes, dataset_model, dataset, is_full_model, as_global)
+        finalize_data(dataset_model, dataset, is_full_model, as_global)
