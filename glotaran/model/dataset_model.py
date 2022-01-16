@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from glotaran.model.clp_guidance_megacomplex import ClpGuidanceMegacomplex
 from glotaran.model.item import model_item
 from glotaran.model.item import model_item_validator
 
@@ -41,9 +42,13 @@ class DatasetModel:
         self,
     ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
         """Iterates of der dataset model's megacomplexes."""
-        for i, megacomplex in enumerate(self.megacomplex):
-            scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
-            yield scale, megacomplex
+        if self.clp_guidance is not None:
+            scale = self.megacomplex_scale or None
+            yield scale, ClpGuidanceMegacomplex()
+        else:
+            for i, megacomplex in enumerate(self.megacomplex):
+                scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
+                yield scale, megacomplex
 
     def iterate_global_megacomplexes(
         self,
@@ -57,15 +62,24 @@ class DatasetModel:
             )
             yield scale, megacomplex
 
+    def has_megacomplexes(self) -> bool:
+        return len(list(self.iterate_megacomplexes())) != 0
+
+    def has_global_megacomplexes(self) -> bool:
+        return len(list(self.iterate_global_megacomplexes())) != 0
+
     def get_model_dimension(self) -> str:
         """Returns the dataset model's model dimension."""
+        if self.overwrite_model_dimension is not None:
+            return self.overwrite_model_dimension
         if not hasattr(self, "_model_dimension"):
-            if len(self.megacomplex) == 0:
+            if not self.has_megacomplexes():
                 raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
-            if isinstance(self.megacomplex[0], str):
+            first_megacomplex = next(self.iterate_megacomplexes())[1]
+            if isinstance(first_megacomplex, str):
                 raise ValueError(f"Dataset model '{self.label}' was not filled")
-            self._model_dimension = self.megacomplex[0].dimension
-            if any(self._model_dimension != m.dimension for m in self.megacomplex):
+            self._model_dimension = first_megacomplex.dimension
+            if any(self._model_dimension != m.dimension for _, m in self.iterate_megacomplexes()):
                 raise ValueError(
                     f"Megacomplex dimensions do not match for dataset model '{self.label}'."
                 )
@@ -73,10 +87,10 @@ class DatasetModel:
 
     def finalize_data(self, dataset: xr.Dataset) -> None:
         is_full_model = self.has_global_model()
-        for megacomplex in self.megacomplex:
+        for _, megacomplex in self.iterate_megacomplexes():
             megacomplex.finalize_data(self, dataset, is_full_model=is_full_model)
         if is_full_model:
-            for megacomplex in self.global_megacomplex:
+            for _, megacomplex in self.iterate_global_megacomplexes():
                 megacomplex.finalize_data(
                     self, dataset, is_full_model=is_full_model, as_global=True
                 )
@@ -92,12 +106,17 @@ class DatasetModel:
     # e.g. in FLIM, x, y dimension may get 'flattened' to a MultiIndex 'pixel'
     def get_global_dimension(self) -> str:
         """Returns the dataset model's global dimension."""
+        if self.overwrite_global_dimension is not None:
+            return self.overwrite_global_dimension
         if not hasattr(self, "_global_dimension"):
             if self.has_global_model():
                 if isinstance(self.global_megacomplex[0], str):
                     raise ValueError(f"Dataset model '{self.label}' was not filled")
                 self._global_dimension = self.global_megacomplex[0].dimension
-                if any(self._global_dimension != m.dimension for m in self.global_megacomplex):
+                if any(
+                    self._global_dimension != m.dimension
+                    for _, m in self.iterate_global_megacomplexes()
+                ):
                     raise ValueError(
                         "Global megacomplex dimensions do not "
                         f"match for dataset model '{self.label}'."
@@ -144,7 +163,7 @@ class DatasetModel:
         """Indicates if the dataset model is index dependent."""
         if hasattr(self, "_index_dependent"):
             return self._index_dependent
-        return any(m.index_dependent(self) for m in self.megacomplex)
+        return any(m.index_dependent(self) for _, m in self.iterate_megacomplexes())
 
     def overwrite_index_dependent(self, index_dependent: bool):
         """Overrides the index dependency of the dataset"""
@@ -186,7 +205,7 @@ class DatasetModel:
         """
         glotaran_unique_megacomplex_types = []
 
-        for megacomplex_name in self.megacomplex:
+        for megacomplex_name in self.iterate_megacomplexes():
             try:
                 megacomplex_instance = model.megacomplex[megacomplex_name]
                 if type(megacomplex_instance).glotaran_unique() is True:

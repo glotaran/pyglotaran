@@ -34,12 +34,15 @@ default_model_items = {
 }
 
 default_dataset_properties = {
+    "clp_guidance": {"type": str, "allow_none": True},
+    "overwrite_model_dimension": {"type": str, "allow_none": True},
+    "overwrite_global_dimension": {"type": str, "allow_none": True},
     "group": {"type": str, "default": "default"},
-    "megacomplex": List[str],
+    "megacomplex": {"type": List[str], "allow_none": True},
     "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
     "global_megacomplex": {"type": List[str], "allow_none": True},
-    "global_megacomplex_scale": {"type": List[Parameter], "default": None, "allow_none": True},
-    "scale": {"type": Parameter, "default": None, "allow_none": True},
+    "global_megacomplex_scale": {"type": List[Parameter], "allow_none": True},
+    "scale": {"type": Parameter, "allow_none": True},
 }
 
 
