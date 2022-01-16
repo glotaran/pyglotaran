@@ -140,6 +140,11 @@ class DatasetMapping(MutableMapping):
         """Implement calling ``len`` on an instance."""
         return len(self.__data_dict)
 
+    def __repr__(self) -> str:
+        """Implement calling ``repr`` on an instance."""
+        items = [f"{dataset_name!r}: <xarray.Dataset>" for dataset_name in self]
+        return f"{{{', '.join(items)}}}"
+
 
 def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:
     """Load multiple datasets into a mapping (convenience function).

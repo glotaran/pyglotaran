@@ -34,6 +34,8 @@ def test_dataset_mapping():
     assert "ds2" in ds_mapping
     assert len(ds_mapping) == 2
 
+    assert repr(ds_mapping) == "{'ds1': <xarray.Dataset>, 'ds2': <xarray.Dataset>}"
+
     for ds_name, expected_ds_name in zip(ds_mapping, ["ds1", "ds2"]):
         assert ds_name == expected_ds_name
 
@@ -42,6 +44,8 @@ def test_dataset_mapping():
     assert "ds1" not in ds_mapping
     assert "ds2" in ds_mapping
     assert len(ds_mapping) == 1
+
+    assert repr(ds_mapping) == "{'ds2': <xarray.Dataset>}"
 
 
 def test_load_datasets_single_dataset(dummy_datasets: tuple[Path, xr.Dataset, xr.Dataset]):
