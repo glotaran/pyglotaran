@@ -51,7 +51,7 @@ def sanitize_dict_keys(d: dict) -> dict:
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
         if isinstance(d, dict) and isinstance(k, str) and rp.tuple_word.match(k):
             k_new = tuple(map(str, rp.word.findall(k)))
-            d_new.update({k_new: v})
+            d_new[k_new] = v
         elif isinstance(d, (dict, list)):
             new_v = sanitize_dict_keys(v)
             if new_v:
@@ -193,10 +193,7 @@ def convert_scientific_to_float(value: str) -> float | str:
     float | string
         return float if value was scientific notation string, else turn original value
     """
-    if rp.number_scientific.match(value):
-        return float(value)
-    else:
-        return value
+    return float(value) if rp.number_scientific.match(value) else value
 
 
 def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | float]:
