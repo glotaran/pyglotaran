@@ -1,12 +1,14 @@
 """Tests for glotaran/utils/io.py"""
 from __future__ import annotations
 
+import html
 import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 import xarray as xr
+from IPython.core.formatters import format_display_data
 
 from glotaran.io import save_dataset
 from glotaran.utils.io import DatasetMapping
@@ -53,6 +55,19 @@ def test_dataset_mapping(ds_mapping: DatasetMapping):
     assert len(ds_mapping) == 1
 
     assert repr(ds_mapping) == "{'ds2': <xarray.Dataset>}"
+
+
+def test_dataset_mapping_ipython_render(ds_mapping: DatasetMapping):
+    """Renders as html in an ipython context."""
+
+    rendered_result = format_display_data(ds_mapping)[0]
+
+    assert "text/html" in rendered_result
+    assert html.unescape(rendered_result["text/html"]).startswith(
+        "<pre>{'ds1': <xarray.Dataset>, 'ds2': <xarray.Dataset>}</pre>"
+        "\n<details><summary>ds1</summary>"
+    )
+    assert rendered_result["text/plain"] == repr(ds_mapping)
 
 
 def test_load_datasets_single_dataset(dummy_datasets: tuple[Path, xr.Dataset, xr.Dataset]):
