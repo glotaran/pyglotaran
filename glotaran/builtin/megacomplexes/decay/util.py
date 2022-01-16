@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numba as nb
 import numpy as np
 import xarray as xr
@@ -9,9 +7,115 @@ import xarray as xr
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.model import DatasetModel
+from glotaran.model import Megacomplex
 
-if TYPE_CHECKING:
+
+def index_dependent(dataset_model: DatasetModel) -> bool:
+    return (
+        isinstance(dataset_model.irf, IrfMultiGaussian) and dataset_model.irf.is_index_dependent()
+    )
+
+
+def calculate_matrix(
+    megacomplex: Megacomplex,
+    dataset_model: DatasetModel,
+    indices: dict[str, int],
+    **kwargs,
+):
+
+    compartments = megacomplex.get_compartments(dataset_model)
+    initial_concentration = megacomplex.get_initial_concentration(dataset_model)
+    k_matrix = megacomplex.get_k_matrix()
+
+    # the rates are the eigenvalues of the k matrix
+    rates = k_matrix.rates(compartments, initial_concentration)
+
+    global_dimension = dataset_model.get_global_dimension()
+    global_index = indices.get(global_dimension)
+    global_axis = dataset_model.get_global_axis()
+    model_axis = dataset_model.get_model_axis()
+
+    # init the matrix
+    size = (model_axis.size, rates.size)
+    matrix = np.zeros(size, dtype=np.float64)
+
+    decay_matrix_implementation(
+        matrix, rates, global_index, global_axis, model_axis, dataset_model
+    )
+
+    if not np.all(np.isfinite(matrix)):
+        raise ValueError(
+            f"Non-finite concentrations for K-Matrix '{k_matrix.label}':\n"
+            f"{k_matrix.matrix_as_markdown(fill_parameters=True)}"
+        )
+
+    # apply A matrix
+    matrix = matrix @ megacomplex.get_a_matrix(dataset_model)
+
+    # done
+    return compartments, matrix
+
+
+def collect_megacomplexes(dataset_model: DatasetModel) -> list[Megacomplex]:
     from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
+    from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import (
+        DecayParallelMegacomplex,
+    )
+    from glotaran.builtin.megacomplexes.decay.decay_sequential_megacomplex import (
+        DecaySequentialMegacomplex,
+    )
+
+    return list(
+        filter(
+            lambda m: isinstance(
+                m, (DecayMegacomplex, DecayParallelMegacomplex, DecaySequentialMegacomplex)
+            ),
+            dataset_model.megacomplex,
+        )
+    )
+
+
+def finalize_data(
+    dataset_model: DatasetModel,
+    dataset: xr.Dataset,
+    is_full_model: bool = False,
+    as_global: bool = False,
+):
+    decay_megacomplexes = collect_megacomplexes(dataset_model)
+    global_dimension = dataset_model.get_global_dimension()
+    name = "images" if global_dimension == "pixel" else "spectra"
+
+    species_dimension = "decay_species" if as_global else "species"
+    if species_dimension not in dataset.coords:
+        # We are the first Decay complex called and add SAD for all decay megacomplexes
+        all_species = []
+        for megacomplex in decay_megacomplexes:
+            for species in megacomplex.get_compartments(dataset_model):
+                if species not in all_species:
+                    all_species.append(species)
+        retrieve_species_associated_data(
+            dataset_model,
+            dataset,
+            all_species,
+            species_dimension,
+            global_dimension,
+            name,
+            is_full_model,
+            as_global,
+        )
+    if isinstance(dataset_model.irf, IrfMultiGaussian) and "irf" not in dataset:
+        retrieve_irf(dataset_model, dataset, global_dimension)
+
+    if not is_full_model:
+        multiple_complexes = len(decay_megacomplexes) > 1
+        retrieve_decay_associated_data(
+            megacomplex,
+            dataset_model,
+            dataset,
+            global_dimension,
+            name,
+            multiple_complexes,
+        )
 
 
 def decay_matrix_implementation(
@@ -108,13 +212,13 @@ erfcx = functype(erfcx_addr)
 def retrieve_species_associated_data(
     dataset_model: DatasetModel,
     dataset: xr.Dataset,
+    species: list[str],
     species_dimension: str,
     global_dimension: str,
     name: str,
     is_full_model: bool,
     as_global: bool,
 ):
-    species = dataset_model.initial_concentration.compartments
     model_dimension = dataset_model.get_model_dimension()
     if as_global:
         model_dimension, global_dimension = global_dimension, model_dimension
@@ -153,22 +257,21 @@ def retrieve_species_associated_data(
 
 
 def retrieve_decay_associated_data(
-    megacomplex: DecayMegacomplex,
+    megacomplex: Megacomplex,
     dataset_model: DatasetModel,
     dataset: xr.Dataset,
     global_dimension: str,
     name: str,
     multiple_complexes: bool,
 ):
-    k_matrix = megacomplex.full_k_matrix()
-
-    species = dataset_model.initial_concentration.compartments
-    species = [c for c in species if c in k_matrix.involved_compartments()]
+    species = megacomplex.get_compartments(dataset_model)
+    initial_concentration = megacomplex.get_initial_concentration(dataset_model)
+    k_matrix = megacomplex.get_k_matrix()
 
     matrix = k_matrix.full(species)
     matrix_reduced = k_matrix.reduced(species)
-    a_matrix = k_matrix.a_matrix(dataset_model.initial_concentration.normalized())
-    rates = k_matrix.rates(dataset_model.initial_concentration)
+    a_matrix = megacomplex.get_a_matrix(dataset_model)
+    rates = k_matrix.rates(species, initial_concentration)
     lifetimes = 1 / rates
 
     das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T

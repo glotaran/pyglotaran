@@ -6,7 +6,6 @@ from typing import List
 import numpy as np
 import xarray as xr
 
-from glotaran.builtin.megacomplexes.decay.initial_concentration import InitialConcentration
 from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.builtin.megacomplexes.decay.util import calculate_matrix
@@ -14,58 +13,44 @@ from glotaran.builtin.megacomplexes.decay.util import finalize_data
 from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
-from glotaran.model import ModelError
 from glotaran.model import megacomplex
+from glotaran.parameter import Parameter
 
 
 @megacomplex(
     dimension="time",
-    model_items={
-        "k_matrix": List[KMatrix],
+    properties={
+        "compartments": List[str],
+        "rates": List[Parameter],
     },
-    properties={},
     dataset_model_items={
-        "initial_concentration": {"type": InitialConcentration, "allow_none": True},
         "irf": {"type": Irf, "allow_none": True},
     },
-    register_as="decay",
+    register_as="decay-sequential",
 )
-class DecayMegacomplex(Megacomplex):
+class DecaySequentialMegacomplex(Megacomplex):
     """A Megacomplex with one or more K-Matrices."""
 
     def get_compartments(self, dataset_model: DatasetModel) -> list[str]:
-        if dataset_model.initial_concentration is None:
-            raise ModelError(
-                f'No initial concentration specified in dataset "{dataset_model.label}"'
-            )
-        return [
-            compartment
-            for compartment in dataset_model.initial_concentration.compartments
-            if compartment in self.get_k_matrix().involved_compartments()
-        ]
+        return self.compartments
 
     def get_initial_concentration(self, dataset_model: DatasetModel) -> np.ndarray:
-        compartments = self.get_compartments(dataset_model)
-        idx = [
-            compartment in compartments
-            for compartment in dataset_model.initial_concentration.compartments
-        ]
-        return dataset_model.initial_concentration.normalized()[idx]
+        initial_concentration = np.zeros((len(self.compartments)), dtype=np.float64)
+        initial_concentration[0] = 1
+        return initial_concentration
 
     def get_k_matrix(self) -> KMatrix:
-        full_k_matrix = None
-        for k_matrix in self.k_matrix:
-            if full_k_matrix is None:
-                full_k_matrix = k_matrix
-            # If multiple k matrices are present, we combine them
-            else:
-                full_k_matrix = full_k_matrix.combine(k_matrix)
-        return full_k_matrix
+        size = len(self.compartments)
+        k_matrix = KMatrix()
+        k_matrix.matrix = {
+            (self.compartments[i + 1], self.compartments[i]): self.rates[i]
+            for i in range(size - 1)
+        }
+        k_matrix.matrix[self.compartments[-1], self.compartments[-1]] = self.rates[-1]
+        return k_matrix
 
     def get_a_matrix(self, dataset_model: DatasetModel) -> np.ndarray:
-        return self.get_k_matrix().a_matrix(
-            self.get_compartments(dataset_model), self.get_initial_concentration(dataset_model)
-        )
+        return self.get_k_matrix().a_matrix_sequential(self.get_compartments(dataset_model))
 
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
         return index_dependent(dataset_model)

@@ -9,7 +9,6 @@ from glotaran.analysis.simulation import simulate
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
-from glotaran.testing.model_generators import SimpleModelGenerator
 
 
 def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
@@ -124,43 +123,18 @@ class OneComponentOneChannelGaussianIrf:
 
 
 class ThreeComponentParallel:
-    generator = SimpleModelGenerator(
-        rates=[300e-3, 500e-4, 700e-5],
-        irf={"center": 1.3, "width": 7.8},
-        k_matrix="parallel",
-    )
-    model, initial_parameters = generator.model_and_parameters
-
-    generator.rates = [301e-3, 502e-4, 705e-5]
-    wanted_parameters = generator.parameters
-
-    time = np.arange(-10, 100, 1.5)
-    pixel = np.arange(600, 750, 10)
-
-    axis = {"time": time, "pixel": pixel}
-
-    clp = _create_gaussian_clp(
-        ["s1", "s2", "s3"], [7, 3, 30], [620, 670, 720], [10, 30, 50], pixel
-    )
-
-
-class ThreeComponentSequential:
     model = DecayModel.from_dict(
         {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["j.1", "j.0", "j.0"]},
-            },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s2", "s1"): "kinetic.1",
-                        ("s3", "s2"): "kinetic.2",
-                        ("s3", "s3"): "kinetic.3",
-                    }
-                }
+                "mc1": {
+                    "type": "decay-parallel",
+                    "compartments": ["s1", "s2", "s3"],
+                    "rates": [
+                        "kinetic.1",
+                        "kinetic.2",
+                        "kinetic.3",
+                    ],
+                },
             },
             "irf": {
                 "irf1": {
@@ -171,7 +145,6 @@ class ThreeComponentSequential:
             },
             "dataset": {
                 "dataset1": {
-                    "initial_concentration": "j1",
                     "irf": "irf1",
                     "megacomplex": ["mc1"],
                 },
@@ -188,10 +161,6 @@ class ThreeComponentSequential:
                 {"non-negative": True},
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [
-                ["1", 1, {"vary": False, "non-negative": False}],
-                ["0", 0, {"vary": False, "non-negative": False}],
-            ],
         }
     )
     wanted_parameters = ParameterGroup.from_dict(
@@ -202,10 +171,68 @@ class ThreeComponentSequential:
                 ["3", 105e-5],
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
-            "j": [
-                ["1", 1, {"vary": False, "non-negative": False}],
-                ["0", 0, {"vary": False, "non-negative": False}],
+        }
+    )
+
+    time = np.arange(-10, 100, 1.5)
+    pixel = np.arange(600, 750, 10)
+
+    axis = {"time": time, "pixel": pixel}
+
+    clp = _create_gaussian_clp(
+        ["s1", "s2", "s3"], [7, 3, 30], [620, 670, 720], [10, 30, 50], pixel
+    )
+
+
+class ThreeComponentSequential:
+    model = DecayModel.from_dict(
+        {
+            "megacomplex": {
+                "mc1": {
+                    "type": "decay-sequential",
+                    "compartments": ["s1", "s2", "s3"],
+                    "rates": [
+                        "kinetic.1",
+                        "kinetic.2",
+                        "kinetic.3",
+                    ],
+                },
+            },
+            "irf": {
+                "irf1": {
+                    "type": "multi-gaussian",
+                    "center": ["irf.center"],
+                    "width": ["irf.width"],
+                },
+            },
+            "dataset": {
+                "dataset1": {
+                    "irf": "irf1",
+                    "megacomplex": ["mc1"],
+                },
+            },
+        }
+    )
+
+    initial_parameters = ParameterGroup.from_dict(
+        {
+            "kinetic": [
+                ["1", 501e-3],
+                ["2", 202e-4],
+                ["3", 105e-5],
+                {"non-negative": True},
             ],
+            "irf": [["center", 1.3], ["width", 7.8]],
+        }
+    )
+    wanted_parameters = ParameterGroup.from_dict(
+        {
+            "kinetic": [
+                ["1", 501e-3],
+                ["2", 202e-4],
+                ["3", 105e-5],
+            ],
+            "irf": [["center", 1.3], ["width", 7.8]],
         }
     )
 
