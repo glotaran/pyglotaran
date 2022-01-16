@@ -15,7 +15,18 @@ from glotaran.utils.io import relative_posix_path
 
 
 @pytest.fixture
+def ds_mapping() -> DatasetMapping:
+    """Dummy mapping for testing."""
+    ds_mapping = DatasetMapping()
+
+    ds_mapping["ds1"] = xr.DataArray([1, 2]).to_dataset(name="data")
+    ds_mapping["ds2"] = xr.DataArray([3, 4]).to_dataset(name="data")
+    return ds_mapping
+
+
+@pytest.fixture
 def dummy_datasets(tmp_path: Path) -> tuple[Path, xr.Dataset, xr.Dataset]:
+    """Dummy files for testing."""
     ds1 = xr.DataArray([1, 2]).to_dataset(name="data")
     ds2 = xr.DataArray([3, 4]).to_dataset(name="data")
     save_dataset(ds1, tmp_path / "ds1_file.nc")
@@ -23,12 +34,8 @@ def dummy_datasets(tmp_path: Path) -> tuple[Path, xr.Dataset, xr.Dataset]:
     return tmp_path, ds1, ds2
 
 
-def test_dataset_mapping():
+def test_dataset_mapping(ds_mapping: DatasetMapping):
     """Basic mapping functionality of ``DatasetMapping``."""
-    ds_mapping = DatasetMapping()
-
-    ds_mapping["ds1"] = xr.DataArray([1, 2]).to_dataset(name="data")
-    ds_mapping["ds2"] = xr.DataArray([3, 4]).to_dataset(name="data")
 
     assert "ds1" in ds_mapping
     assert "ds2" in ds_mapping
