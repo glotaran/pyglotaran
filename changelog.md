@@ -4,6 +4,8 @@
 
 ### ✨ Features
 
+- ✨ Add simple decay megacomplexes (#860)
+
 ### 👌 Minor Improvements:
 
 ### 🩹 Bug fixes
