@@ -13,7 +13,7 @@ jobs:
       matrix:
         example_name:
           [
-            quick-start,
+            # quick-start, # disable until we can use git SHA
             fluorescence,
             transient-absorption,
             transient-absorption-two-datasets,
