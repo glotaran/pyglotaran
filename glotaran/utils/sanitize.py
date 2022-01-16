@@ -51,7 +51,7 @@ def sanitize_dict_keys(d: dict) -> dict:
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
         if isinstance(d, dict) and isinstance(k, str) and rp.tuple_word.match(k):
             k_new = tuple(map(str, rp.word.findall(k)))
-            d_new.update({k_new: v})
+            d_new[k_new] = v
         elif isinstance(d, (dict, list)):
             new_v = sanitize_dict_keys(v)
             if new_v:
@@ -73,7 +73,7 @@ def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
         if isinstance(v, (list, dict)):
             sanity_scientific_notation_conversion(v)
         if isinstance(v, str):
-            d[k] = convert_scientific_to_float(v)
+            d[k] = convert_scientific_to_float(v)  # type: ignore[index,call-overload]
 
 
 def sanitize_dict_values(d: dict[str, Any] | list[Any]):
@@ -95,13 +95,15 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
             leaf = all(isinstance(el, (str, tuple, float)) for el in v)
             if leaf:
                 if "(" in str(v):
-                    d[k] = list_string_to_tuple(sanitize_list_with_broken_tuples(v))
+                    d[k] = list_string_to_tuple(  # type: ignore[index,call-overload]
+                        sanitize_list_with_broken_tuples(v)
+                    )
             else:
                 sanitize_dict_values(v)
         if isinstance(v, dict):
             sanitize_dict_values(v)
         if isinstance(v, str):
-            d[k] = string_to_tuple(v)
+            d[k] = string_to_tuple(v)  # type: ignore[index,call-overload]
 
 
 def string_to_tuple(
@@ -191,10 +193,7 @@ def convert_scientific_to_float(value: str) -> float | str:
     float | string
         return float if value was scientific notation string, else turn original value
     """
-    if rp.number_scientific.match(value):
-        return float(value)
-    else:
-        return value
+    return float(value) if rp.number_scientific.match(value) else value
 
 
 def sanitize_parameter_list(parameter_list: list[str | float]) -> list[str | float]:
