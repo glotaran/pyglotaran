@@ -193,6 +193,13 @@ def generate_model_yml(generator_name: str, **generator_arguments: dict) -> str:
     str
         The generated model yml string.
 
+See Also
+--------
+generate_parallel_decay_model
+generate_parallel_spectral_decay_model
+generate_sequential_decay_model
+generate_sequential_spectral_decay_model
+
     Raises
     ------
     ValueError
