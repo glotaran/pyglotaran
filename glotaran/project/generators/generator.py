@@ -8,7 +8,7 @@ from glotaran.model import Model
 
 
 def _generate_decay_model(
-    nr_compartments: int, irf: bool, spectral: bool, decay_type: str
+    *, nr_compartments: int, irf: bool, spectral: bool, decay_type: str
 ) -> dict:
     """Generate a decay model dictionary.
 
@@ -67,7 +67,7 @@ def _generate_decay_model(
     return model
 
 
-def generate_parallel_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_parallel_decay_model(*, nr_compartments: int = 1, irf: bool = False) -> dict:
     """Generate a parallel decay model dictionary.
 
     Parameters
@@ -85,7 +85,7 @@ def generate_parallel_decay_model(nr_compartments: int = 1, irf: bool = False) -
     return _generate_decay_model(nr_compartments, irf, False, "parallel")
 
 
-def generate_parallel_spectral_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_parallel_spectral_decay_model(*, nr_compartments: int = 1, irf: bool = False) -> dict:
     """Generate a parallel spectral decay model dictionary.
 
     Parameters
@@ -103,7 +103,7 @@ def generate_parallel_spectral_decay_model(nr_compartments: int = 1, irf: bool =
     return _generate_decay_model(nr_compartments, irf, True, "parallel")
 
 
-def generate_sequential_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_sequential_decay_model(*, nr_compartments: int = 1, irf: bool = False) -> dict:
     """Generate a sequential decay model dictionary.
 
     Parameters
@@ -121,7 +121,7 @@ def generate_sequential_decay_model(nr_compartments: int = 1, irf: bool = False)
     return _generate_decay_model(nr_compartments, irf, False, "sequential")
 
 
-def generate_sequential_spectral_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_sequential_spectral_decay_model(*, nr_compartments: int = 1, irf: bool = False) -> dict:
     """Generate a sequential spectral decay model dictionary.
 
     Parameters
