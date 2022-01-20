@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from yaml import dump
-
+from glotaran.builtin.io.yml.yml import write_dict
 from glotaran.model import Model
 
 
@@ -205,4 +204,5 @@ def generate_model_yml(generator: str, **generator_arguments: dict) -> str:
             f"Known generators are: {list(generators.keys())}"
         )
     model = generators[generator](**generator_arguments)
-    return dump(model)
+    yml: str = write_dict(model)  # type:ignore[assignment]
+    return yml
