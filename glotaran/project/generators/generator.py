@@ -121,7 +121,9 @@ def generate_sequential_decay_model(*, nr_compartments: int = 1, irf: bool = Fal
     return _generate_decay_model(nr_compartments, irf, False, "sequential")
 
 
-def generate_sequential_spectral_decay_model(*, nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_sequential_spectral_decay_model(
+    *, nr_compartments: int = 1, irf: bool = False
+) -> dict:
     """Generate a sequential spectral decay model dictionary.
 
     Parameters
