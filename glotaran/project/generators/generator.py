@@ -140,10 +140,10 @@ def generate_sequential_spectral_decay_model(nr_compartments: int = 1, irf: bool
 
 
 generators: dict[str, Callable] = {
-    "decay-parallel": generate_parallel_decay_model,
-    "spectral-decay-parallel": generate_parallel_spectral_decay_model,
-    "decay-sequential": generate_sequential_decay_model,
-    "spectral-decay-sequential": generate_sequential_spectral_decay_model,
+    "decay_parallel": generate_parallel_decay_model,
+    "spectral_decay_parallel": generate_parallel_spectral_decay_model,
+    "decay_sequential": generate_sequential_decay_model,
+    "spectral_decay_sequential": generate_sequential_spectral_decay_model,
 }
 
 available_generators: list[str] = list(generators.keys())

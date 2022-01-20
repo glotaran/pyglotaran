@@ -9,7 +9,7 @@ from glotaran.project.generators.generator import generate_model
 def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: bool):
     nr_compartments = 5
     expected_compartments = [f"species_{i+1}" for i in range(nr_compartments)]
-    model_type = f"spectral-decay-{megacomplex_type}" if spectral else f"decay-{megacomplex_type}"
+    model_type = f"spectral_decay_{megacomplex_type}" if spectral else f"decay_{megacomplex_type}"
     model = generate_model(
         model_type,
         **{"nr_compartments": nr_compartments, "irf": irf},  # type:ignore[arg-type]
