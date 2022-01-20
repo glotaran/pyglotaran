@@ -3,7 +3,7 @@ from pathlib import Path
 from textwrap import dedent
 
 from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
-from glotaran.testing.sequential_spectral_decay import PARAMETER
+from glotaran.testing.simulated_data.sequential_spectral_decay import PARAMETER
 
 
 def test_parameter_group_to_csv_no_stderr(tmp_path: Path):

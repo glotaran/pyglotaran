@@ -10,9 +10,9 @@ from glotaran.io import save_model
 from glotaran.io import save_parameters
 from glotaran.io import save_scheme
 from glotaran.project import Scheme
-from glotaran.testing.sequential_spectral_decay import DATASET
-from glotaran.testing.sequential_spectral_decay import MODEL
-from glotaran.testing.sequential_spectral_decay import PARAMETER
+from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
+from glotaran.testing.simulated_data.sequential_spectral_decay import MODEL
+from glotaran.testing.simulated_data.sequential_spectral_decay import PARAMETER
 
 if TYPE_CHECKING:
     from pathlib import Path

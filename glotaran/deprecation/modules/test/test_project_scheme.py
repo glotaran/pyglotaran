@@ -8,9 +8,9 @@ import xarray as xr
 
 from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
 from glotaran.project.scheme import Scheme
-from glotaran.testing.parallel_spectral_decay import DATASET
-from glotaran.testing.parallel_spectral_decay import MODEL
-from glotaran.testing.parallel_spectral_decay import PARAMETER
+from glotaran.testing.simulated_data.parallel_spectral_decay import DATASET
+from glotaran.testing.simulated_data.parallel_spectral_decay import MODEL
+from glotaran.testing.simulated_data.parallel_spectral_decay import PARAMETER
 
 if TYPE_CHECKING:
     from pathlib import Path

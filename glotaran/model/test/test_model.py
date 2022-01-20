@@ -24,7 +24,7 @@ from glotaran.model.relation import Relation
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
-from glotaran.testing.parallel_spectral_decay import MODEL
+from glotaran.testing.simulated_data.parallel_spectral_decay import MODEL
 
 
 @model_item(

@@ -10,7 +10,7 @@ from glotaran import __version__
 from glotaran.analysis.optimize import optimize
 from glotaran.io import save_result
 from glotaran.project.result import Result
-from glotaran.testing.sequential_spectral_decay import SCHEME
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 
 
 @pytest.fixture(scope="session")

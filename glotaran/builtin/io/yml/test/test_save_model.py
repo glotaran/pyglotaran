@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.io import load_model
 from glotaran.io import save_model
-from glotaran.testing.sequential_spectral_decay import MODEL
+from glotaran.testing.simulated_data.sequential_spectral_decay import MODEL
 
 if TYPE_CHECKING:
     from pathlib import Path

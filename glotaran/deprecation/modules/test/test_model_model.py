@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from glotaran.deprecation.deprecation_utils import GlotaranDeprectedApiError
-from glotaran.testing.parallel_spectral_decay import MODEL as dummy_model
+from glotaran.testing.simulated_data.parallel_spectral_decay import MODEL as dummy_model
 
 
 def test_model_model_dimension():

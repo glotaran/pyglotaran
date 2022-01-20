@@ -5,7 +5,7 @@ from IPython.core.formatters import format_display_data
 
 from glotaran.analysis.optimize import optimize
 from glotaran.project.result import Result
-from glotaran.testing.sequential_spectral_decay import SCHEME
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 
 
 @pytest.fixture(scope="session")
