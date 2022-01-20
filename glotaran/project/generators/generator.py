@@ -149,12 +149,12 @@ generators: dict[str, Callable] = {
 available_generators: list[str] = list(generators.keys())
 
 
-def generate_model(generator: str, **generator_arguments: dict) -> Model:
+def generate_model(generator_name: str, **generator_arguments: dict) -> Model:
     """Generate a model.
 
     Parameters
     ----------
-    generator : str
+    generator_name : str
         The generator to use.
     generator_arguments : dict
         Arguments for the generator.
@@ -169,21 +169,21 @@ def generate_model(generator: str, **generator_arguments: dict) -> Model:
     ValueError
         Raised when an unknown generator is specified.
     """
-    if generator not in generators:
+    if generator_name not in generators:
         raise ValueError(
-            f"Unknown model generator '{generator}'. "
+            f"Unknown model generator '{generator_name}'. "
             f"Known generators are: {list(generators.keys())}"
         )
-    model = generators[generator](**generator_arguments)
+    model = generators[generator_name](**generator_arguments)
     return Model.from_dict(model)
 
 
-def generate_model_yml(generator: str, **generator_arguments: dict) -> str:
+def generate_model_yml(generator_name: str, **generator_arguments: dict) -> str:
     """Generate a model as yml string.
 
     Parameters
     ----------
-    generator : str
+    generator_name : str
         The generator to use.
     generator_arguments : dict
         Arguments for the generator.
@@ -198,11 +198,11 @@ def generate_model_yml(generator: str, **generator_arguments: dict) -> str:
     ValueError
         Raised when an unknown generator is specified.
     """
-    if generator not in generators:
+    if generator_name not in generators:
         raise ValueError(
-            f"Unknown model generator '{generator}'. "
+            f"Unknown model generator '{generator_name}'. "
             f"Known generators are: {list(generators.keys())}"
         )
-    model = generators[generator](**generator_arguments)
+    model = generators[generator_name](**generator_arguments)
     yml: str = write_dict(model)  # type:ignore[assignment]
     return yml
