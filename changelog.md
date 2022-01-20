@@ -5,6 +5,7 @@
 ### ✨ Features
 
 - ✨ Add simple decay megacomplexes (#860)
+- ✨ Feature: Generators (#866)
 
 ### 👌 Minor Improvements:
 
