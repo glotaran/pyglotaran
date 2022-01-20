@@ -10,12 +10,14 @@ from glotaran.testing.simulated_data.shared_decay import SIMULATION_PARAMETER
 from glotaran.testing.simulated_data.shared_decay import *  # noqa F403
 
 SIMULATION_MODEL_YML = generate_model_yml(
-    "spectral_decay_parallel", **{"nr_compartments": 3, "irf": True}  # type:ignore[arg-type]
+    generator_name="spectral_decay_parallel",
+    generator_arguments={"nr_compartments": 3, "irf": True},
 )
 SIMULATION_MODEL = load_model(SIMULATION_MODEL_YML, format_name="yml_str")
 
 MODEL_YML = generate_model_yml(
-    "decay_parallel", **{"nr_compartments": 3, "irf": True}  # type:ignore[arg-type]
+    generator_name="decay_parallel",
+    generator_arguments={"nr_compartments": 3, "irf": True},
 )
 MODEL = load_model(MODEL_YML, format_name="yml_str")
 

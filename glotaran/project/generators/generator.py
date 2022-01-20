@@ -1,15 +1,18 @@
 """The glotaran generator module."""
 from __future__ import annotations
 
+from typing import Any
 from typing import Callable
+from typing import TypedDict
+from typing import cast
 
 from glotaran.builtin.io.yml.yml import write_dict
 from glotaran.model import Model
 
 
 def _generate_decay_model(
-    nr_compartments: int, irf: bool, spectral: bool, decay_type: str
-) -> dict:
+    *, nr_compartments: int, irf: bool, spectral: bool, decay_type: str
+) -> dict[str, Any]:
     """Generate a decay model dictionary.
 
     Parameters
@@ -25,7 +28,7 @@ def _generate_decay_model(
 
     Returns
     -------
-    dict :
+    dict[str, Any] :
         The generated model dictionary.
     """
     compartments = [f"species_{i+1}" for i in range(nr_compartments)]
@@ -67,7 +70,9 @@ def _generate_decay_model(
     return model
 
 
-def generate_parallel_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_parallel_decay_model(
+    *, nr_compartments: int = 1, irf: bool = False
+) -> dict[str, Any]:
     """Generate a parallel decay model dictionary.
 
     Parameters
@@ -79,13 +84,17 @@ def generate_parallel_decay_model(nr_compartments: int = 1, irf: bool = False) -
 
     Returns
     -------
-    dict :
+    dict[str, Any] :
         The generated model dictionary.
     """
-    return _generate_decay_model(nr_compartments, irf, False, "parallel")
+    return _generate_decay_model(
+        nr_compartments=nr_compartments, irf=irf, spectral=False, decay_type="parallel"
+    )
 
 
-def generate_parallel_spectral_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_parallel_spectral_decay_model(
+    *, nr_compartments: int = 1, irf: bool = False
+) -> dict[str, Any]:
     """Generate a parallel spectral decay model dictionary.
 
     Parameters
@@ -97,13 +106,15 @@ def generate_parallel_spectral_decay_model(nr_compartments: int = 1, irf: bool =
 
     Returns
     -------
-    dict :
+    dict[str, Any] :
         The generated model dictionary.
     """
-    return _generate_decay_model(nr_compartments, irf, True, "parallel")
+    return _generate_decay_model(
+        nr_compartments=nr_compartments, irf=irf, spectral=True, decay_type="parallel"
+    )
 
 
-def generate_sequential_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_sequential_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict[str, Any]:
     """Generate a sequential decay model dictionary.
 
     Parameters
@@ -115,13 +126,17 @@ def generate_sequential_decay_model(nr_compartments: int = 1, irf: bool = False)
 
     Returns
     -------
-    dict :
+    dict[str, Any] :
         The generated model dictionary.
     """
-    return _generate_decay_model(nr_compartments, irf, False, "sequential")
+    return _generate_decay_model(
+        nr_compartments=nr_compartments, irf=irf, spectral=False, decay_type="sequential"
+    )
 
 
-def generate_sequential_spectral_decay_model(nr_compartments: int = 1, irf: bool = False) -> dict:
+def generate_sequential_spectral_decay_model(
+    *, nr_compartments: int = 1, irf: bool = False
+) -> dict[str, Any]:
     """Generate a sequential spectral decay model dictionary.
 
     Parameters
@@ -133,10 +148,12 @@ def generate_sequential_spectral_decay_model(nr_compartments: int = 1, irf: bool
 
     Returns
     -------
-    dict :
+    dict[str, Any] :
         The generated model dictionary.
     """
-    return _generate_decay_model(nr_compartments, irf, True, "sequential")
+    return _generate_decay_model(
+        nr_compartments=nr_compartments, irf=irf, spectral=True, decay_type="sequential"
+    )
 
 
 generators: dict[str, Callable] = {
@@ -149,14 +166,34 @@ generators: dict[str, Callable] = {
 available_generators: list[str] = list(generators.keys())
 
 
-def generate_model(generator_name: str, **generator_arguments: dict) -> Model:
+class GeneratorArguments(TypedDict, total=False):
+    """Arguments used by ``generate_model`` and ``generate_model``.
+
+    Parameters
+    ----------
+    nr_compartments : int
+        The number of compartments.
+    irf : bool
+        Whether to add a gaussian irf.
+
+    See Also
+    --------
+    generate_model
+    generate_model_yml
+    """
+
+    nr_compartments: int
+    irf: bool
+
+
+def generate_model(*, generator_name: str, generator_arguments: GeneratorArguments) -> Model:
     """Generate a model.
 
     Parameters
     ----------
     generator_name : str
         The generator to use.
-    generator_arguments : dict
+    generator_arguments : GeneratorArguments
         Arguments for the generator.
 
     Returns
@@ -185,14 +222,14 @@ def generate_model(generator_name: str, **generator_arguments: dict) -> Model:
     return Model.from_dict(model)
 
 
-def generate_model_yml(generator_name: str, **generator_arguments: dict) -> str:
+def generate_model_yml(*, generator_name: str, generator_arguments: GeneratorArguments) -> str:
     """Generate a model as yml string.
 
     Parameters
     ----------
     generator_name : str
         The generator to use.
-    generator_arguments : dict
+    generator_arguments : GeneratorArguments
         Arguments for the generator.
 
     Returns
@@ -218,5 +255,4 @@ def generate_model_yml(generator_name: str, **generator_arguments: dict) -> str:
             f"Known generators are: {list(generators.keys())}"
         )
     model = generators[generator_name](**generator_arguments)
-    yml: str = write_dict(model)  # type:ignore[assignment]
-    return yml
+    return cast(str, write_dict(model))
