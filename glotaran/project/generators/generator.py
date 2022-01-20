@@ -188,29 +188,29 @@ generate_sequential_spectral_decay_model
 def generate_model_yml(generator_name: str, **generator_arguments: dict) -> str:
     """Generate a model as yml string.
 
-    Parameters
-    ----------
-    generator_name : str
-        The generator to use.
-    generator_arguments : dict
-        Arguments for the generator.
+        Parameters
+        ----------
+        generator_name : str
+            The generator to use.
+        generator_arguments : dict
+            Arguments for the generator.
 
-    Returns
-    -------
-    str
-        The generated model yml string.
+        Returns
+        -------
+        str
+            The generated model yml string.
 
-See Also
---------
-generate_parallel_decay_model
-generate_parallel_spectral_decay_model
-generate_sequential_decay_model
-generate_sequential_spectral_decay_model
+    See Also
+    --------
+    generate_parallel_decay_model
+    generate_parallel_spectral_decay_model
+    generate_sequential_decay_model
+    generate_sequential_spectral_decay_model
 
-    Raises
-    ------
-    ValueError
-        Raised when an unknown generator is specified.
+        Raises
+        ------
+        ValueError
+            Raised when an unknown generator is specified.
     """
     if generator_name not in generators:
         raise ValueError(
