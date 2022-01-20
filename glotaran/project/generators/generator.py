@@ -164,6 +164,13 @@ def generate_model(generator_name: str, **generator_arguments: dict) -> Model:
     Model
         The generated model
 
+See Also
+--------
+generate_parallel_decay_model
+generate_parallel_spectral_decay_model
+generate_sequential_decay_model
+generate_sequential_spectral_decay_model
+
     Raises
     ------
     ValueError
