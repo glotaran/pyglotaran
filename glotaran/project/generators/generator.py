@@ -152,29 +152,29 @@ available_generators: list[str] = list(generators.keys())
 def generate_model(generator_name: str, **generator_arguments: dict) -> Model:
     """Generate a model.
 
-    Parameters
-    ----------
-    generator_name : str
-        The generator to use.
-    generator_arguments : dict
-        Arguments for the generator.
+        Parameters
+        ----------
+        generator_name : str
+            The generator to use.
+        generator_arguments : dict
+            Arguments for the generator.
 
-    Returns
-    -------
-    Model
-        The generated model
+        Returns
+        -------
+        Model
+            The generated model
 
-See Also
---------
-generate_parallel_decay_model
-generate_parallel_spectral_decay_model
-generate_sequential_decay_model
-generate_sequential_spectral_decay_model
+    See Also
+    --------
+    generate_parallel_decay_model
+    generate_parallel_spectral_decay_model
+    generate_sequential_decay_model
+    generate_sequential_spectral_decay_model
 
-    Raises
-    ------
-    ValueError
-        Raised when an unknown generator is specified.
+        Raises
+        ------
+        ValueError
+            Raised when an unknown generator is specified.
     """
     if generator_name not in generators:
         raise ValueError(
