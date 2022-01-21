@@ -10,7 +10,7 @@ from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_h
 from glotaran.project.scheme import Scheme
 from glotaran.testing.simulated_data.parallel_spectral_decay import DATASET
 from glotaran.testing.simulated_data.parallel_spectral_decay import MODEL
-from glotaran.testing.simulated_data.parallel_spectral_decay import PARAMETER
+from glotaran.testing.simulated_data.parallel_spectral_decay import PARAMETERS
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -58,7 +58,7 @@ def test_scheme_from_yaml_file_method(tmp_path: Path):
 
 def test_scheme_group_tolerance():
     """Argument ``group_tolerance`` raises deprecation and maps to ``clp_link_tolerance``."""
-    model, parameters, dataset = MODEL, PARAMETER, DATASET
+    model, parameters, dataset = MODEL, PARAMETERS, DATASET
 
     warnings, result = deprecation_warning_on_call_test_helper(
         Scheme,
@@ -78,7 +78,7 @@ def test_scheme_group_tolerance():
 )
 def test_scheme_group(group: bool):
     """Argument ``group`` raises deprecation and maps to ``dataset_groups.default.link_clp``."""
-    model, parameters, dataset = MODEL, PARAMETER, DATASET
+    model, parameters, dataset = MODEL, PARAMETERS, DATASET
 
     warnings, result = deprecation_warning_on_call_test_helper(
         Scheme,
@@ -100,7 +100,7 @@ def test_scheme_non_negative_least_squares(non_negative_least_squares: bool, exp
     """Argument ``non_negative_least_squares`` raises deprecation and maps to
     ``dataset_groups.default.residual_function``.
     """
-    model, parameters, dataset = MODEL, PARAMETER, DATASET
+    model, parameters, dataset = MODEL, PARAMETERS, DATASET
 
     warnings, result = deprecation_warning_on_call_test_helper(
         Scheme,

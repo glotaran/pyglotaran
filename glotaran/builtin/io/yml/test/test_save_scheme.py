@@ -12,7 +12,7 @@ from glotaran.io import save_scheme
 from glotaran.project import Scheme
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import MODEL
-from glotaran.testing.simulated_data.sequential_spectral_decay import PARAMETER
+from glotaran.testing.simulated_data.sequential_spectral_decay import PARAMETERS
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,11 +36,11 @@ result_path: null
 
 def test_save_scheme(tmp_path: Path):
     save_model(MODEL, tmp_path / "m.yml")
-    save_parameters(PARAMETER, tmp_path / "p.csv")
+    save_parameters(PARAMETERS, tmp_path / "p.csv")
     save_dataset(DATASET, tmp_path / "d.nc")
     scheme = Scheme(
         MODEL,
-        PARAMETER,
+        PARAMETERS,
         {"dataset_1": DATASET},
     )
     scheme_path = tmp_path / "testscheme.yml"

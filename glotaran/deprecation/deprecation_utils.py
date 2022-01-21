@@ -611,9 +611,8 @@ def deprecate_module_attribute(
         Version the support for this usage will be removed.
     module_load_overwrite : str
         Overwrite the location the functionality will be set from.
-        This allows preserving functionality without polluting new
-        module with code just for the sake of it.
-        , by default ''
+        This allows preserving functionality without polluting a new
+        module with code just for the sake of it. By default ''
 
     Returns
     -------
@@ -703,9 +702,8 @@ def deprecate_submodule(
         Version the support for this usage will be removed.
     module_load_overwrite : str
         Overwrite the location for the new module the deprecated functionality is loaded from.
-        This allows preserving functionality without polluting new
-        module with code just for the sake of it.
-        , by default ''
+        This allows preserving functionality without polluting a new
+        module with code just for the sake of it. By default ''
 
     Returns
     -------

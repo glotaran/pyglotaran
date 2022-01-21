@@ -4,10 +4,9 @@ from glotaran.analysis.simulation import simulate
 from glotaran.io import load_model
 from glotaran.project import Scheme
 from glotaran.project.generators import generate_model_yml
-from glotaran.testing.simulated_data.shared_decay import PARAMETER
+from glotaran.testing.simulated_data.shared_decay import PARAMETERS
 from glotaran.testing.simulated_data.shared_decay import SIMULATION_COORDINATES
-from glotaran.testing.simulated_data.shared_decay import SIMULATION_PARAMETER
-from glotaran.testing.simulated_data.shared_decay import *  # noqa F403
+from glotaran.testing.simulated_data.shared_decay import SIMULATION_PARAMETERS
 
 SIMULATION_MODEL_YML = generate_model_yml(
     generator_name="spectral_decay_sequential",
@@ -25,10 +24,10 @@ MODEL = load_model(MODEL_YML, format_name="yml_str")
 DATASET = simulate(
     SIMULATION_MODEL,
     "dataset_1",
-    SIMULATION_PARAMETER,
+    SIMULATION_PARAMETERS,
     SIMULATION_COORDINATES,
     noise=True,
     noise_std_dev=1e-2,
 )
 
-SCHEME = Scheme(model=MODEL, parameters=PARAMETER, data={"dataset_1": DATASET})
+SCHEME = Scheme(model=MODEL, parameters=PARAMETERS, data={"dataset_1": DATASET})

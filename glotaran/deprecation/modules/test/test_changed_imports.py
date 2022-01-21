@@ -136,7 +136,7 @@ def test_io_read_data_file(recwarn: WarningsRecorder):
     "attribute_name", ("sim_model", "dataset", "model", "scheme", "wanted_parameter", "parameter")
 )
 def test_examples_sequential(recwarn: WarningsRecorder, attribute_name: str):
-    """glotaran.examples.sequential exported addributes"""
+    """glotaran.examples.sequential exported attributes"""
     from glotaran.examples import sequential  # noqa: F401
 
     recwarn.clear()
