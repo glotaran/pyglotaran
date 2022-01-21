@@ -656,7 +656,7 @@ def deprecate_module_attribute(
 
     .. # noqa: DAR402
     """
-    if module_load_overwrite == "":
+    if not module_load_overwrite:
         module_name = ".".join(new_qual_name.split(".")[:-1])
         attribute_name = new_qual_name.split(".")[-1]
         check_qual_names = (False, True)
