@@ -1,23 +1,27 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Literal
 
 import pytest
 
+from glotaran.analysis.optimize import optimize
 from glotaran.io import save_result
-from glotaran.project.test.test_result import dummy_result  # noqa: F401
+from glotaran.project.result import Result
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 
-if TYPE_CHECKING:
-    from typing import Literal
 
-    from glotaran.project.result import Result
+@pytest.fixture(scope="session")
+def dummy_result():
+    """Dummy result for testing."""
+    print(SCHEME.data["dataset_1"])
+    yield optimize(SCHEME, raise_exception=True)
 
 
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
     format_name: Literal["folder", "legacy"],
 ):
     """Check all files exist."""
@@ -34,9 +38,7 @@ def test_save_result_folder(
         "initial_parameters.csv",
         "optimized_parameters.csv",
         "parameter_history.csv",
-        "dataset1.nc",
-        "dataset2.nc",
-        "dataset3.nc",
+        "dataset_1.nc",
     ]
     for wanted in wanted_files:
         assert (result_dir / wanted).exists()
@@ -46,7 +48,7 @@ def test_save_result_folder(
 @pytest.mark.parametrize("format_name", ("folder", "legacy"))
 def test_save_result_folder_error_path_is_file(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
     format_name: Literal["folder", "legacy"],
 ):
     """Raise error if result_path is a file without extension and overwrite is true."""

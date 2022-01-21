@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ruamel.yaml import YAML
+from ruamel.yaml.compat import StringIO
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
@@ -83,7 +84,7 @@ class YmlProjectIo(ProjectIoInterface):
                     if isinstance(prop, dict) and any(isinstance(k, tuple) for k in prop):
                         keys = [f"({k[0]}, {k[1]})" for k in prop]
                         item[prop_name] = {f"{k}": v for k, v in zip(keys, prop.values())}
-        _write_dict(file_name, model_dict)
+        write_dict(model_dict, file_name=file_name)
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
         """Create a ParameterGroup instance from the specs defined in a file.
@@ -111,7 +112,7 @@ class YmlProjectIo(ProjectIoInterface):
 
     def save_scheme(self, scheme: Scheme, file_name: str):
         scheme_dict = asdict(scheme, folder=Path(file_name).parent)
-        _write_dict(file_name, scheme_dict)
+        write_dict(scheme_dict, file_name=file_name)
 
     def load_result(self, result_path: str) -> Result:
         """Create a :class:`Result` instance from the specs defined in a file.
@@ -141,7 +142,7 @@ class YmlProjectIo(ProjectIoInterface):
         """
         save_result(result, Path(result_path).parent.as_posix(), format_name="folder")
         result_dict = asdict(result, folder=Path(result_path).parent)
-        _write_dict(result_path, result_dict)
+        write_dict(result_dict, file_name=result_path)
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
         yaml = YAML()
@@ -153,12 +154,17 @@ class YmlProjectIo(ProjectIoInterface):
         return spec
 
 
-def _write_dict(file_name: str, data: Mapping[str, Any]):
+def write_dict(data: Mapping[str, Any], file_name: str | None = None) -> str | None:
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
     yaml.indent(mapping=2, sequence=2, offset=2)
-    with open(file_name, "w") as f:
-        yaml.dump(data, f)
+    if file_name is not None:
+        with open(file_name, "w") as f:
+            yaml.dump(data, f)
+    else:
+        stream = StringIO()
+        yaml.dump(data, stream)
+        return stream.getvalue()
 
 
 def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:

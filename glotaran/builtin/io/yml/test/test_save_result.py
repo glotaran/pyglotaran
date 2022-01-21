@@ -1,21 +1,29 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING
+
+import pytest
 
 from glotaran import __version__
+from glotaran.analysis.optimize import optimize
 from glotaran.io import save_result
-from glotaran.project.test.test_result import dummy_result  # noqa: F401
+from glotaran.project.result import Result
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 
-if TYPE_CHECKING:
 
-    from glotaran.project.result import Result
+@pytest.fixture(scope="session")
+def dummy_result():
+    """Dummy result for testing."""
+    scheme = replace(SCHEME, maximum_number_function_evaluations=1)
+    print(scheme.data["dataset_1"])
+    yield optimize(scheme, raise_exception=True)
 
 
 def test_save_result_yml(
     tmp_path: Path,
-    dummy_result: Result,  # noqa: F811
+    dummy_result: Result,
 ):
     """Check all files exist."""
     expected = dedent(
@@ -25,16 +33,17 @@ def test_save_result_yml(
         termination_reason: The maximum number of function evaluations is exceeded.
         glotaran_version: {__version__}
         free_parameter_labels:
-          - '1'
-          - '2'
+          - rates.species_1
+          - rates.species_2
+          - rates.species_3
+          - irf.center
+          - irf.width
         scheme: scheme.yml
         initial_parameters: initial_parameters.csv
         optimized_parameters: optimized_parameters.csv
         parameter_history: parameter_history.csv
         data:
-          dataset1: dataset1.nc
-          dataset2: dataset2.nc
-          dataset3: dataset3.nc
+          dataset_1: dataset_1.nc
         """
     )
 
@@ -46,8 +55,7 @@ def test_save_result_yml(
     assert (result_dir / "result.yml").exists()
     assert (result_dir / "initial_parameters.csv").exists()
     assert (result_dir / "optimized_parameters.csv").exists()
-    assert (result_dir / "dataset1.nc").exists()
-    assert (result_dir / "dataset2.nc").exists()
-    assert (result_dir / "dataset3.nc").exists()
+    assert (result_dir / "dataset_1.nc").exists()
+
     # We can't check equality due to numerical fluctuations
     assert expected in (result_dir / "result.yml").read_text()

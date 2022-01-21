@@ -504,6 +504,19 @@ def test_deprecate_module_attribute():
 
 
 @pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_module_attribute_overwrite():
+    """Qualname was only used for the warning"""
+
+    with pytest.warns(GlotaranApiDeprecationWarning) as record:
+
+        from glotaran.deprecation.test.dummy_package.deprecated_module_attribute import foo_bar
+
+        assert foo_bar.__code__ == parse_version.__code__
+        assert Path(record[0].filename) == Path(__file__)
+        assert "glotaran.does_not._need_to_exists" in str(record[0].message)
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
 def test_deprecate_submodule(recwarn: WarningsRecorder):
     """Raise warning when Attribute of fake module is used"""
 
@@ -529,6 +542,20 @@ def test_deprecate_submodule_from_import(recwarn: WarningsRecorder):
     assert len(recwarn) == 1
     assert recwarn[0].category == GlotaranApiDeprecationWarning
     assert Path(recwarn[0].filename) == Path(__file__)
+
+
+@pytest.mark.usefixtures("glotaran_0_3_0")
+def test_deprecate_submodule_from_import_overwrite(recwarn: WarningsRecorder):
+    """Qualname was only used for the warning"""
+
+    from glotaran.deprecation.test.dummy_package.overwritten_module import (  # noqa: F401
+        parse_version,
+    )
+
+    assert len(recwarn) == 1
+    assert recwarn[0].category == GlotaranApiDeprecationWarning
+    assert Path(recwarn[0].filename) == Path(__file__)
+    assert "glotaran.does_not._need_to_exists" in str(recwarn[0].message)
 
 
 @pytest.mark.usefixtures("glotaran_0_3_0")

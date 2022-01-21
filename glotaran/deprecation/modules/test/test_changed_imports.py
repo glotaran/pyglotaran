@@ -130,3 +130,17 @@ def test_io_read_data_file(recwarn: WarningsRecorder):
     result = changed_import_test_warn(recwarn, "glotaran.io", attribute_name="read_data_file")
 
     assert result.__code__ == load_dataset.__code__
+
+
+@pytest.mark.parametrize(
+    "attribute_name", ("sim_model", "dataset", "model", "scheme", "wanted_parameter", "parameter")
+)
+def test_examples_sequential(recwarn: WarningsRecorder, attribute_name: str):
+    """glotaran.examples.sequential exported addributes"""
+    from glotaran.examples import sequential  # noqa: F401
+
+    recwarn.clear()
+
+    changed_import_test_warn(
+        recwarn, "glotaran.examples.sequential", attribute_name=attribute_name
+    )

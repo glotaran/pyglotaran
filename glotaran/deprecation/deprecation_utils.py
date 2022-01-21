@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from functools import wraps
 from importlib import import_module
@@ -590,6 +591,7 @@ def deprecate_module_attribute(
     deprecated_qual_name: str,
     new_qual_name: str,
     to_be_removed_in_version: str,
+    module_load_overwrite: str = "",
 ) -> Any:
     """Import and return and anttribute from the new location.
 
@@ -607,6 +609,11 @@ def deprecate_module_attribute(
         ``glotaran.parameter.ParameterGroup``
     to_be_removed_in_version : str
         Version the support for this usage will be removed.
+    module_load_overwrite : str
+        Overwrite the location the functionality will be set from.
+        This allows preserving functionality without polluting new
+        module with code just for the sake of it.
+        , by default ''
 
     Returns
     -------
@@ -649,14 +656,20 @@ def deprecate_module_attribute(
 
     .. # noqa: DAR402
     """
-    module_name = ".".join(new_qual_name.split(".")[:-1])
-    attribute_name = new_qual_name.split(".")[-1]
+    if not module_load_overwrite:
+        module_name = ".".join(new_qual_name.split(".")[:-1])
+        attribute_name = new_qual_name.split(".")[-1]
+        check_qual_names = (False, True)
+    else:
+        module_name = ".".join(module_load_overwrite.split(".")[:-1])
+        attribute_name = module_load_overwrite.split(".")[-1]
+        check_qual_names = (False, False)
 
     warn_deprecated(
-        deprecated_qual_name_usage=deprecated_qual_name,
-        new_qual_name_usage=new_qual_name,
+        deprecated_qual_name_usage=re.sub(r"\.__path__$", "", deprecated_qual_name),
+        new_qual_name_usage=re.sub(r"\.__path__$", "", new_qual_name),
         to_be_removed_in_version=to_be_removed_in_version,
-        check_qual_names=(False, True),
+        check_qual_names=check_qual_names,
         stacklevel=4,
         importable_indices=(1, 1),
     )
@@ -668,6 +681,7 @@ def deprecate_submodule(
     deprecated_module_name: str,
     new_module_name: str,
     to_be_removed_in_version: str,
+    module_load_overwrite: str = "",
 ) -> ModuleType:
     r"""Create a module at runtime which retrieves attributes from new module.
 
@@ -687,6 +701,11 @@ def deprecate_submodule(
         ``'glotaran.project.result'``
     to_be_removed_in_version : str
         Version the support for this usage will be removed.
+    module_load_overwrite : str
+        Overwrite the location for the new module the deprecated functionality is loaded from.
+        This allows preserving functionality without polluting new
+        module with code just for the sake of it.
+        , by default ''
 
     Returns
     -------
@@ -723,7 +742,11 @@ def deprecate_submodule(
 
     .. # noqa: DAR402
     """
-    new_module = import_module(new_module_name)
+    if module_load_overwrite == "":
+        new_module = import_module(new_module_name)
+    else:
+        new_module = import_module(module_load_overwrite)
+
     deprecated_module = ModuleType(
         deprecated_module_name,
         f"Deprecated use {new_module_name!r} instead.\n\n{new_module.__doc__}",
@@ -739,6 +762,8 @@ def deprecate_submodule(
                 deprecated_qual_name=f"{deprecated_module_name}.{attribute_name}",
                 new_qual_name=f"{new_module_name}.{attribute_name}",
                 to_be_removed_in_version=to_be_removed_in_version,
+                module_load_overwrite=module_load_overwrite
+                and f"{module_load_overwrite}.{attribute_name}",
             )
 
         raise AttributeError(f"module {deprecated_module_name} has no attribute {attribute_name}")

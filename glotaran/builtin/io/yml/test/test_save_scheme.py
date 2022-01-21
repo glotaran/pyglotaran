@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING
 
 import xarray as xr
 
-from glotaran.examples.sequential import dataset
-from glotaran.examples.sequential import model
-from glotaran.examples.sequential import parameter
 from glotaran.io import load_scheme
 from glotaran.io import save_dataset
 from glotaran.io import save_model
 from glotaran.io import save_parameters
 from glotaran.io import save_scheme
 from glotaran.project import Scheme
+from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
+from glotaran.testing.simulated_data.sequential_spectral_decay import MODEL
+from glotaran.testing.simulated_data.sequential_spectral_decay import PARAMETER
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -35,13 +35,13 @@ result_path: null
 
 
 def test_save_scheme(tmp_path: Path):
-    save_model(model, tmp_path / "m.yml")
-    save_parameters(parameter, tmp_path / "p.csv")
-    save_dataset(dataset, tmp_path / "d.nc")
+    save_model(MODEL, tmp_path / "m.yml")
+    save_parameters(PARAMETER, tmp_path / "p.csv")
+    save_dataset(DATASET, tmp_path / "d.nc")
     scheme = Scheme(
-        model,
-        parameter,
-        {"dataset_1": dataset},
+        MODEL,
+        PARAMETER,
+        {"dataset_1": DATASET},
     )
     scheme_path = tmp_path / "testscheme.yml"
     save_scheme(file_name=scheme_path, format_name="yml", scheme=scheme)

@@ -41,8 +41,8 @@ LICENSE                             @glotaran/pyglotaran_creators
 # cli
 /glotaran/cli/                      @jsnel @glotaran/admins
 
-# examples
-/glotaran/examples/                 @jsnel @glotaran/maintainers
+# examples # Removed in PR #866
+# /glotaran/examples/                 @jsnel @glotaran/maintainers
 
 # io
 /glotaran/io/                       @jsnel @glotaran/maintainers
