@@ -31,10 +31,10 @@ class Keys:
     VARY = "vary"
 
 
-PARAMETER_EXPRESION_REGEX = re.compile(r"\$(?P<parameter_expression>[\w\d\.]+)((?![\w\d\.]+)|$)")
-"""A regexpression to find and replace parameter names in expressions."""
+PARAMETER_EXPRESSION_REGEX = re.compile(r"\$(?P<parameter_expression>[\w\d\.]+)((?![\w\d\.]+)|$)")
+"""A regular expression to find and replace parameter names in expressions."""
 VALID_LABEL_REGEX = re.compile(r"\W", flags=re.ASCII)
-"""A regexpression to validate labels."""
+"""A regular expression to validate labels."""
 
 
 class Parameter(_SupportsArray):
@@ -394,7 +394,7 @@ class Parameter(_SupportsArray):
             The transformed expression.
         """
         if self.expression is not None and self._transformed_expression is None:
-            self._transformed_expression = PARAMETER_EXPRESION_REGEX.sub(
+            self._transformed_expression = PARAMETER_EXPRESSION_REGEX.sub(
                 r"group.get('\g<parameter_expression>').value", self.expression
             )
         return self._transformed_expression
@@ -500,7 +500,7 @@ class Parameter(_SupportsArray):
         elif parameter.expression is not None:
             expression = parameter.expression
             if all_parameters is not None:
-                for match in PARAMETER_EXPRESION_REGEX.findall(expression):
+                for match in PARAMETER_EXPRESSION_REGEX.findall(expression):
                     label = match[0]
                     parameter = all_parameters.get(label)
                     expression = expression.replace(

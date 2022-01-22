@@ -3,7 +3,7 @@ import numpy as np
 
 from glotaran.io import load_parameters
 
-SIMULATION_PARAMETER_YML = """
+SIMULATION_PARAMETERS_YML = """
 rates:
   - [species_1, 0.5]
   - [species_2, 0.3]
@@ -27,9 +27,9 @@ shapes:
     - [location, 650]
     - [width, 60]
 """
-SIMULATION_PARAMETER = load_parameters(SIMULATION_PARAMETER_YML, format_name="yml_str")
+SIMULATION_PARAMETERS = load_parameters(SIMULATION_PARAMETERS_YML, format_name="yml_str")
 
-PARAMETER_YML = """
+PARAMETERS_YML = """
 rates:
   - [species_1, 0.5]
   - [species_2, 0.3]
@@ -39,7 +39,7 @@ irf:
   - [center, 0.3]
   - [width, 0.1]
 """
-PARAMETER = load_parameters(PARAMETER_YML, format_name="yml_str")
+PARAMETERS = load_parameters(PARAMETERS_YML, format_name="yml_str")
 
 TIME_AXIS = np.arange(-1, 20, 0.01)
 SPECTRAL_AXIS = np.arange(600, 700, 1.4)

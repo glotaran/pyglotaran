@@ -32,7 +32,7 @@ TEST_DATA = xr.DataArray(
     np.ones((TEST_AXIS_GLOBAL_SIZE, TEST_AXIS_MODEL_SIZE)),
     coords=(("global", TEST_AXIS_GLOBAL.data), ("test", TEST_AXIS_MODEL.data)),
 )
-TEST_PARAMETER = ParameterGroup.from_list([])
+TEST_PARAMETERS = ParameterGroup.from_list([])
 
 
 @megacomplex(dimension="test", properties={"is_index_dependent": bool})
@@ -74,7 +74,7 @@ def setup_model(index_dependent, link_clp):
 def setup_scheme(model):
     return Scheme(
         model=model,
-        parameters=TEST_PARAMETER,
+        parameters=TEST_PARAMETERS,
         data={
             "dataset1": TEST_DATA,
             "dataset2": TEST_DATA,

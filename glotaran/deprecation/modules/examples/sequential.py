@@ -7,8 +7,8 @@ sequential_deprecation_mapping = {
     "scheme": "SCHEME",
 }
 shared_deprecation_mapping = {
-    "wanted_parameter": "SIMULATION_PARAMETER",
-    "parameter": "PARAMETER",
+    "wanted_parameter": "SIMULATION_PARAMETERS",
+    "parameter": "PARAMETERS",
     "_time": "TIME_AXIS",
     "_spectral": "SPECTRAL_AXIS",
 }
