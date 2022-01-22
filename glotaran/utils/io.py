@@ -1,6 +1,7 @@
 """Glotaran IO utility module."""
 from __future__ import annotations
 
+import html
 import os
 from collections.abc import Mapping
 from collections.abc import MutableMapping
@@ -139,6 +140,27 @@ class DatasetMapping(MutableMapping):
     def __len__(self) -> int:
         """Implement calling ``len`` on an instance."""
         return len(self.__data_dict)
+
+    def __repr__(self) -> str:
+        """Implement calling ``repr`` on an instance."""
+        items = [f"{dataset_name!r}: <xarray.Dataset>" for dataset_name in self]
+        return f"{{{', '.join(items)}}}"
+
+    def _repr_html_(self) -> str:
+        """Return a html representation str.
+
+        Special method used by ``ipython`` to render html.
+
+        Returns
+        -------
+        str
+            DatasetMapping as html string.
+        """
+        items = [
+            f"<details><summary>{dataset_name}</summary>{dataset._repr_html_()}</details>\n"
+            for dataset_name, dataset in self.items()
+        ]
+        return f"<pre>{html.escape(repr(self))}</pre>\n{''.join(items)}"
 
 
 def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:

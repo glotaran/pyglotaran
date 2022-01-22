@@ -9,6 +9,8 @@
 
 ### 👌 Minor Improvements:
 
+- 👌🎨 Add proper repr for DatasetMapping (#957)
+
 ### 🩹 Bug fixes
 
 - 🩹 Fix Crash in optimization_group_calculator_linked when using guidance spectra (#950)

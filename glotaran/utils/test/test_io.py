@@ -1,12 +1,14 @@
 """Tests for glotaran/utils/io.py"""
 from __future__ import annotations
 
+import html
 import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 import xarray as xr
+from IPython.core.formatters import format_display_data
 
 from glotaran.io import save_dataset
 from glotaran.utils.io import DatasetMapping
@@ -15,7 +17,18 @@ from glotaran.utils.io import relative_posix_path
 
 
 @pytest.fixture
+def ds_mapping() -> DatasetMapping:
+    """Dummy mapping for testing."""
+    ds_mapping = DatasetMapping()
+
+    ds_mapping["ds1"] = xr.DataArray([1, 2]).to_dataset(name="data")
+    ds_mapping["ds2"] = xr.DataArray([3, 4]).to_dataset(name="data")
+    return ds_mapping
+
+
+@pytest.fixture
 def dummy_datasets(tmp_path: Path) -> tuple[Path, xr.Dataset, xr.Dataset]:
+    """Dummy files for testing."""
     ds1 = xr.DataArray([1, 2]).to_dataset(name="data")
     ds2 = xr.DataArray([3, 4]).to_dataset(name="data")
     save_dataset(ds1, tmp_path / "ds1_file.nc")
@@ -23,16 +36,14 @@ def dummy_datasets(tmp_path: Path) -> tuple[Path, xr.Dataset, xr.Dataset]:
     return tmp_path, ds1, ds2
 
 
-def test_dataset_mapping():
+def test_dataset_mapping(ds_mapping: DatasetMapping):
     """Basic mapping functionality of ``DatasetMapping``."""
-    ds_mapping = DatasetMapping()
-
-    ds_mapping["ds1"] = xr.DataArray([1, 2]).to_dataset(name="data")
-    ds_mapping["ds2"] = xr.DataArray([3, 4]).to_dataset(name="data")
 
     assert "ds1" in ds_mapping
     assert "ds2" in ds_mapping
     assert len(ds_mapping) == 2
+
+    assert repr(ds_mapping) == "{'ds1': <xarray.Dataset>, 'ds2': <xarray.Dataset>}"
 
     for ds_name, expected_ds_name in zip(ds_mapping, ["ds1", "ds2"]):
         assert ds_name == expected_ds_name
@@ -42,6 +53,21 @@ def test_dataset_mapping():
     assert "ds1" not in ds_mapping
     assert "ds2" in ds_mapping
     assert len(ds_mapping) == 1
+
+    assert repr(ds_mapping) == "{'ds2': <xarray.Dataset>}"
+
+
+def test_dataset_mapping_ipython_render(ds_mapping: DatasetMapping):
+    """Renders as html in an ipython context."""
+
+    rendered_result = format_display_data(ds_mapping)[0]
+
+    assert "text/html" in rendered_result
+    assert html.unescape(rendered_result["text/html"]).startswith(
+        "<pre>{'ds1': <xarray.Dataset>, 'ds2': <xarray.Dataset>}</pre>"
+        "\n<details><summary>ds1</summary>"
+    )
+    assert rendered_result["text/plain"] == repr(ds_mapping)
 
 
 def test_load_datasets_single_dataset(dummy_datasets: tuple[Path, xr.Dataset, xr.Dataset]):
