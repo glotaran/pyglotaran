@@ -8,7 +8,9 @@ from ruamel.yaml.compat import StringIO
 
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
+from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import ProjectIoInterface
+from glotaran.io import SavingOptions
 from glotaran.io import register_project_io
 from glotaran.io import save_result
 from glotaran.model import Model
@@ -130,7 +132,12 @@ class YmlProjectIo(ProjectIoInterface):
         spec = self._load_yml(result_path)
         return fromdict(Result, spec, folder=Path(result_path).parent)
 
-    def save_result(self, result: Result, result_path: str):
+    def save_result(
+        self,
+        result: Result,
+        result_path: str,
+        saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+    ):
         """Write a :class:`Result` instance to a spec file.
 
         Parameters
@@ -139,8 +146,15 @@ class YmlProjectIo(ProjectIoInterface):
             :class:`Result` instance to write.
         result_path : str | PathLike[str]
             Path to write the result data to.
+        saving_options : SavingOptions
+            Options for saving the the result.
         """
-        save_result(result, Path(result_path).parent.as_posix(), format_name="folder")
+        save_result(
+            result,
+            Path(result_path).parent.as_posix(),
+            format_name="folder",
+            saving_options=saving_options,
+        )
         result_dict = asdict(result, folder=Path(result_path).parent)
         write_dict(result_dict, file_name=result_path)
 

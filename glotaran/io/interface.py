@@ -12,10 +12,12 @@ See: https://www.python.org/dev/peps/pep-3102/
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Callable
+    from typing import Literal
     from typing import Union
 
     import xarray as xr
@@ -27,6 +29,20 @@ if TYPE_CHECKING:
 
     DataLoader = Callable[[str], Union[xr.Dataset, xr.DataArray]]
     DataSaver = Callable[[str, Union[xr.Dataset, xr.DataArray]], None]
+
+
+@dataclass
+class SavingOptions:
+    """A collection of options for result saving."""
+
+    data_filter: list[str] | None = None
+    data_format: Literal["nc"] = "nc"
+    parameter_format: Literal["csv"] = "csv"
+    report: bool = True
+
+
+SAVING_OPTIONS_DEFAULT = SavingOptions()
+SAVING_OPTIONS_MINIMAL = SavingOptions(data_filter=["fitted_data", "residual"], report=False)
 
 
 class DataIoInterface:
@@ -218,7 +234,12 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read result with format {self.format!r}")
 
-    def save_result(self, result: Result, result_path: str) -> list[str] | None:
+    def save_result(
+        self,
+        result: Result,
+        result_path: str,
+        saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+    ) -> list[str] | None:
         """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
 
         Parameters
@@ -227,6 +248,8 @@ class ProjectIoInterface:
             Result instance to save to specs file.
         result_path : str
             Path to write the result data to.
+        saving_options : SavingOptions
+            Options for the saved result.
 
 
         .. # noqa: DAR101
