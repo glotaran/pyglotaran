@@ -20,6 +20,8 @@
 
 ### 🗑️ Deprecations (due in 0.8.0)
 
+- `glotaran.io.save_result(result, result_path, format_name='legacy')` -> `glotaran.io.save_result(result, Path(result_path) / 'result.yml')`
+
 ### 🚧 Maintenance
 
 - 🔧 Improve packaging tooling (#923)
