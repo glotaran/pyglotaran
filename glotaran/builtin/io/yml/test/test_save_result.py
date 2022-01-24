@@ -61,4 +61,3 @@ def test_save_result_yml(
     got = (result_dir / "result.yml").read_text()
     print(got)
     assert expected in got
-    save_result(result_path=tmp_path / "result.yml", result=dummy_result)
