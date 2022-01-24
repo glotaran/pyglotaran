@@ -141,8 +141,8 @@ class FolderProjectIo(ProjectIoInterface):
             warn(
                 UserWarning(
                     "The folder plugin is only intended for internal use by other plugins "
-                    "as quick way to save most of the files. The saved result will be incomplete "
-                    ", thus it is not recommended to be used directly."
+                    "as quick way to save most of the files. The saved result will be incomplete, "
+                    "thus it is not recommended to be used directly."
                 )
             )
 
