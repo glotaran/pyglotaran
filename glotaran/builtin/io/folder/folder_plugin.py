@@ -117,6 +117,8 @@ class FolderProjectIo(ProjectIoInterface):
 
         for label, dataset in result.data.items():
             data_path = result_folder / f"{label}.{saving_options.data_format}"
+            if saving_options.data_filter is not None:
+                dataset = dataset[saving_options.data_filter]
             save_dataset(
                 dataset,
                 data_path,

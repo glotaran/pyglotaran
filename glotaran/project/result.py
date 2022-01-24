@@ -248,12 +248,14 @@ class Result:
         """Overwrite of ``__str__``."""
         return str(self.markdown(with_model=False))
 
-    def save(self, path: str, saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT) -> list[str]:
+    def save(
+        self, path: StrOrPath, saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT
+    ) -> list[str]:
         """Save the result to given folder.
 
         Parameters
         ----------
-        path : str
+        path : StrOrPath
             The path to the folder in which to save the result.
         saving_options : SavingOptions
             Options for the saved result.
@@ -268,7 +270,7 @@ class Result:
             save_result(
                 result_path=path,
                 result=self,
-                format_name="folder",
+                format_name="yaml",
                 allow_overwrite=True,
                 saving_options=saving_options,
             ),

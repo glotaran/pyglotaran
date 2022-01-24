@@ -48,7 +48,7 @@ def test_get_scheme(dummy_result: Result):
 @pytest.mark.parametrize("saving_options", [SAVING_OPTIONS_MINIMAL, SAVING_OPTIONS_DEFAULT])
 def test_save_result(tmp_path: Path, saving_options: SavingOptions, dummy_result: Result):
     result_path = tmp_path / "test_result"
-    dummy_result.save(str(result_path), saving_options=saving_options)
+    dummy_result.save(result_path / "glotaran_result.yml", saving_options=saving_options)
     files_must_exist = [
         "glotaran_result.yml",
         "scheme.yml",
