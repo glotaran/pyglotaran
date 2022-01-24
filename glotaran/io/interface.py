@@ -238,6 +238,7 @@ class ProjectIoInterface:
         self,
         result: Result,
         result_path: str,
+        *,
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     ) -> list[str]:
         """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
