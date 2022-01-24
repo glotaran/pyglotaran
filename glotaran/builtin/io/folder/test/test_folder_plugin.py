@@ -36,9 +36,9 @@ def test_save_result_folder(
 
     assert len(record) == 1
     if format_name == "legacy":
-        record[0].category == GlotaranApiDeprecationWarning
+        assert record[0].category == GlotaranApiDeprecationWarning
     else:
-        record[0].category == UserWarning
+        assert record[0].category == UserWarning
 
     wanted_files = [
         "result.md",
