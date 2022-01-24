@@ -70,8 +70,8 @@ class DatasetModel:
 
     def get_model_dimension(self) -> str:
         """Returns the dataset model's model dimension."""
-        if self.overwrite_model_dimension is not None:
-            return self.overwrite_model_dimension
+        if self.force_model_dimension is not None:
+            return self.force_model_dimension
         if not hasattr(self, "_model_dimension"):
             if not self.has_megacomplexes():
                 raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
@@ -106,8 +106,8 @@ class DatasetModel:
     # e.g. in FLIM, x, y dimension may get 'flattened' to a MultiIndex 'pixel'
     def get_global_dimension(self) -> str:
         """Returns the dataset model's global dimension."""
-        if self.overwrite_global_dimension is not None:
-            return self.overwrite_global_dimension
+        if self.force_global_dimension is not None:
+            return self.force_global_dimension
         if not hasattr(self, "_global_dimension"):
             if self.has_global_model():
                 if isinstance(self.global_megacomplex[0], str):
