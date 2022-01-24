@@ -12,7 +12,9 @@ from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import ProjectIoInterface
 from glotaran.io import SavingOptions
 from glotaran.io import register_project_io
+from glotaran.io import save_model
 from glotaran.io import save_result
+from glotaran.io import save_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Result
@@ -138,7 +140,18 @@ class YmlProjectIo(ProjectIoInterface):
         result_path: str,
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     ) -> list[str]:
-        """Write a :class:`Result` instance to a spec file.
+        """Write a :class:`Result` instance to a spec file and data files.
+
+        Returns a list with paths of all saved items.
+        The following files are saved if not configured otherwise:
+        * ``result.md``: The result with the model formatted as markdown text.
+        * ``result.yml``: Yaml spec file of the result
+        * ``model.yml``: Model spec file.
+        * ``scheme.yml``: Scheme spec file.
+        * ``initial_parameters.csv``: Initially used parameters.
+        * ``optimized_parameters.csv``: The optimized parameter as csv file.
+        * ``parameter_history.csv``: Parameter changes over the optimization
+        * ``{dataset_label}.nc``: The result data for each dataset as NetCDF file.
 
         Parameters
         ----------
@@ -148,15 +161,35 @@ class YmlProjectIo(ProjectIoInterface):
             Path to write the result data to.
         saving_options : SavingOptions
             Options for saving the the result.
+
+        Returns
+        -------
+        list[str]
+            List of file paths which were created.
         """
-        save_result(
+        result_folder = Path(result_path).parent
+        paths = save_result(
             result,
-            Path(result_path).parent.as_posix(),
+            result_folder,
             format_name="folder",
             saving_options=saving_options,
+            allow_overwrite=True,
+            used_inside_of_plugin=True,
         )
-        result_dict = asdict(result, folder=Path(result_path).parent)
+
+        model_path = result_folder / "model.yml"
+        save_model(result.scheme.model, model_path, allow_overwrite=True)
+        paths.append(model_path.as_posix())
+
+        scheme_path = result_folder / "scheme.yml"
+        save_scheme(result.scheme, scheme_path, allow_overwrite=True)
+        paths.append(scheme_path.as_posix())
+
+        result_dict = asdict(result, folder=result_folder)
         write_dict(result_dict, file_name=result_path)
+        paths.append(result_path)
+
+        return paths
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
         yaml = YAML()
