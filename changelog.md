@@ -10,6 +10,7 @@
 ### 👌 Minor Improvements:
 
 - 👌🎨 Add proper repr for DatasetMapping (#957)
+- 👌 Add SavingOptions to save_result API (#966)
 
 ### 🩹 Bug fixes
 
