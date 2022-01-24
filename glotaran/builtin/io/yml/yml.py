@@ -137,7 +137,7 @@ class YmlProjectIo(ProjectIoInterface):
         result: Result,
         result_path: str,
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
-    ):
+    ) -> list[str]:
         """Write a :class:`Result` instance to a spec file.
 
         Parameters

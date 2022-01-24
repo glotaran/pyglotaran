@@ -436,7 +436,7 @@ def save_result(
     update_source_path: bool = True,
     saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     **kwargs: Any,
-) -> list[str] | None:
+) -> list[str]:
     """Write a :class:`Result` instance to a spec file.
 
     Parameters
