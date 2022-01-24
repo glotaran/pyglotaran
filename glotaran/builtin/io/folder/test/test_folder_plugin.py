@@ -6,6 +6,7 @@ from typing import Literal
 import pytest
 
 from glotaran.analysis.optimize import optimize
+from glotaran.deprecation import GlotaranApiDeprecationWarning
 from glotaran.io import save_result
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
@@ -27,19 +28,27 @@ def test_save_result_folder(
     """Check all files exist."""
 
     result_dir = tmp_path / "testresult"
-    save_paths = save_result(
-        result_path=str(result_dir), format_name=format_name, result=dummy_result
-    )
+    assert not result_dir.exists()
+    with pytest.warns(UserWarning) as record:
+        save_paths = save_result(
+            result_path=str(result_dir), format_name=format_name, result=dummy_result
+        )
+
+    assert len(record) == 1
+    if format_name == "legacy":
+        assert record[0].category == GlotaranApiDeprecationWarning
+    else:
+        assert record[0].category == UserWarning
 
     wanted_files = [
         "result.md",
-        "scheme.yml",
-        "model.yml",
         "initial_parameters.csv",
         "optimized_parameters.csv",
         "parameter_history.csv",
         "dataset_1.nc",
     ]
+    if format_name == "legacy":
+        wanted_files += ["scheme.yml", "model.yml", "result.yml"]
     for wanted in wanted_files:
         assert (result_dir / wanted).exists()
         assert (result_dir / wanted).as_posix() in save_paths
@@ -53,13 +62,14 @@ def test_save_result_folder_error_path_is_file(
 ):
     """Raise error if result_path is a file without extension and overwrite is true."""
 
-    result_dir = tmp_path / "testresult"
+    result_dir = tmp_path / "testresulterror"
     result_dir.touch()
 
-    with pytest.raises(ValueError, match="The path '.+?' is not a directory."):
-        save_result(
-            result_path=str(result_dir),
-            format_name=format_name,
-            result=dummy_result,
-            allow_overwrite=True,
-        )
+    with pytest.warns(UserWarning):
+        with pytest.raises(ValueError, match="The path '.+?' is not a directory."):
+            save_result(
+                result_path=str(result_dir),
+                format_name=format_name,
+                result=dummy_result,
+                allow_overwrite=True,
+            )

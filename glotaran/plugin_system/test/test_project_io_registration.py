@@ -12,6 +12,8 @@ from glotaran.io import ProjectIoInterface
 from glotaran.parameter import ParameterGroup
 from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
+from glotaran.plugin_system.project_io_registration import SAVING_OPTIONS_DEFAULT
+from glotaran.plugin_system.project_io_registration import SavingOptions
 from glotaran.plugin_system.project_io_registration import get_project_io
 from glotaran.plugin_system.project_io_registration import get_project_io_method
 from glotaran.plugin_system.project_io_registration import is_known_project_format
@@ -116,6 +118,8 @@ class MockProjectIo(ProjectIoInterface):
         self,
         result: Result,
         result_path: StrOrPath,
+        *,
+        saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
         **kwargs: Any,
     ):
         result.func_args.update(  # type:ignore[attr-defined]

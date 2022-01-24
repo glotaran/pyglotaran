@@ -16,8 +16,8 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 @pytest.fixture(scope="session")
 def dummy_result():
     """Dummy result for testing."""
+    print(SCHEME.data["dataset_1"])
     scheme = replace(SCHEME, maximum_number_function_evaluations=1)
-    print(scheme.data["dataset_1"])
     yield optimize(scheme, raise_exception=True)
 
 
@@ -58,4 +58,6 @@ def test_save_result_yml(
     assert (result_dir / "dataset_1.nc").exists()
 
     # We can't check equality due to numerical fluctuations
-    assert expected in (result_dir / "result.yml").read_text()
+    got = (result_dir / "result.yml").read_text()
+    print(got)
+    assert expected in got

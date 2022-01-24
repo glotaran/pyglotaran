@@ -54,12 +54,12 @@ def test_inferr_file_format_no_extension(tmp_path: Path):
 
 @pytest.mark.parametrize("is_file", (True, False))
 def test_inferr_file_format_allow_folder(tmp_path: Path, is_file: bool):
-    """If there is no extension, return folder."""
+    """If there is no extension, return legacy."""
     file_path = tmp_path / "dummy"
     if is_file:
         file_path.touch()
 
-    assert inferr_file_format(file_path, allow_folder=True) == "folder"
+    assert inferr_file_format(file_path, allow_folder=True) == "legacy"
 
 
 def test_inferr_file_format_none_existing_file():
