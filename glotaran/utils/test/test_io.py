@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
@@ -14,6 +15,8 @@ from glotaran.io import save_dataset
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets
 from glotaran.utils.io import relative_posix_path
+from glotaran.utils.io import safe_parameters_fillna
+from glotaran.utils.io import safe_parameters_replace
 
 
 @pytest.fixture
@@ -194,3 +197,44 @@ def test_relative_posix_path_windows_diff_drives():
     result = relative_posix_path(source_path, "C:\\result_path")
 
     assert result == Path(source_path).as_posix()
+
+
+def test_safe_parameters_fillna():
+    """compare dataframes. df with values replaced by function and
+    df2 with expected values."""
+
+    # create df with integers and NaN
+    df = pd.DataFrame
+    data = [[1, np.nan, np.nan], [431, -4, 45], [2, np.nan, np.nan]]
+    df = pd.DataFrame(data, columns=["test1", "minimum", "maximum"])
+
+    # run test_safe_parameters_fillna function to replace values
+    safe_parameters_fillna(df, "minimum", -np.inf)
+    safe_parameters_fillna(df, "maximum", np.inf)
+
+    # create df2 with expected values after function ran over df
+    data2 = [[1, -np.inf, np.inf], [431, -4, 45], [2, -np.inf, np.inf]]
+    df2 = pd.DataFrame(data2, columns=["test1", "minimum", "maximum"])
+
+    # df and df2 should be equal
+    assert np.all(df == df2)
+
+
+def test_safe_parameters_replace():
+    """compare dataframes. df with values replaced by function and
+    df2 with expected values."""
+
+    # create df with integers and np.inf
+    data = [[1, -np.inf, np.inf], [431, -4, 45], [2, -np.inf, np.inf]]
+    df = pd.DataFrame(data, columns=["test1", "minimum", "maximum"])
+
+    # run safe_parameters_replace function to replace values
+    safe_parameters_replace(df, "minimum", -np.inf, "")
+    safe_parameters_replace(df, "maximum", np.inf, "")
+
+    # create df2 with expected values after function ran over df
+    data2 = [[1, "", ""], [431, -4, 45], [2, "", ""]]
+    df2 = pd.DataFrame(data2, columns=["test1", "minimum", "maximum"])
+
+    # df and df2 should be equal
+    assert np.all(df == df2)
