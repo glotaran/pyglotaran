@@ -125,7 +125,7 @@ class Model:
                 warn(f"Unknown model item type '{item_name}'.")
                 continue
 
-            if is_list := isinstance(getattr(model, item_name), list):
+            if isinstance(getattr(model, item_name), list):
                 model._add_list_items(item_name, items)
             else:
                 model._add_dict_items(item_name, items)
@@ -136,7 +136,7 @@ class Model:
 
         for label, item in items.items():
             item_cls = self.model_items[item_name]
-            if is_typed := hasattr(item_cls, "_glotaran_model_item_typed"):
+            if hasattr(item_cls, "_glotaran_model_item_typed"):
                 if "type" not in item and item_cls.get_default_type() is None:
                     raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item.get("type", item_cls.get_default_type())
@@ -153,7 +153,7 @@ class Model:
 
         for item in items:
             item_cls = self.model_items[item_name]
-            if is_typed := hasattr(item_cls, "_glotaran_model_item_typed"):
+            if hasattr(item_cls, "_glotaran_model_item_typed"):
                 if "type" not in item:
                     raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item["type"]
