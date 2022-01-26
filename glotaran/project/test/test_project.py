@@ -7,9 +7,13 @@ from glotaran import __version__ as gta_version
 from glotaran.io import save_parameters
 from glotaran.project.project import TEMPLATE
 from glotaran.project.project import Project
-from glotaran.testing.sequential_spectral_decay import DATASET as example_dataset
-from glotaran.testing.sequential_spectral_decay import MODEL_YML as example_model_yml
-from glotaran.testing.sequential_spectral_decay import PARAMETER as example_parameter
+from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET as example_dataset
+from glotaran.testing.simulated_data.sequential_spectral_decay import (
+    MODEL_YML as example_model_yml,
+)
+from glotaran.testing.simulated_data.sequential_spectral_decay import (
+    PARAMETERS as example_parameter,
+)
 
 
 @pytest.fixture(scope="module")
