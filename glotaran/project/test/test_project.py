@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pytest
@@ -99,7 +98,7 @@ def test_generate_parameters(project_folder, project_file, name, fmt):
 
     for parameter in model.get_parameter_labels():
         assert parameters.has(parameter)
-    os.remove(parameter_file)
+    parameter_file.unlink()
 
 
 @pytest.mark.parametrize("name", ["test_data", None])
@@ -140,8 +139,7 @@ def test_run_optimization(project_folder, project_file, name):
     project = Project.open(project_file)
 
     model_file = project_folder / "models" / "sequential.yml"
-    with open(model_file, "w") as f:
-        f.write(example_model_yml)
+    model_file.write_text(example_model_yml)
 
     parameters_file = project_folder / "parameters" / "sequential.csv"
     save_parameters(example_parameter, parameters_file)
@@ -149,7 +147,7 @@ def test_run_optimization(project_folder, project_file, name):
     data_folder = project_folder / "data"
     assert data_folder.exists()
     data_file = data_folder / "dataset_1.nc"
-    os.remove(data_file)
+    data_file.unlink()
     save_dataset(example_dataset, data_file)
 
     assert project.has_models
@@ -165,5 +163,5 @@ def test_run_optimization(project_folder, project_file, name):
     assert project.has_results
     name = name or "sequential_run_0"
     assert (project_folder / "results" / name).exists()
-    os.remove(model_file)
-    os.remove(parameters_file)
+    model_file.unlink()
+    parameters_file.unlink()
