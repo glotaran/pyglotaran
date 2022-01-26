@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from glotaran.io import load_model
+from glotaran.project.generators.generator import GeneratorArguments
 from glotaran.project.generators.generator import generate_model_yml
 from glotaran.project.project_registry import ProjectRegistry
 
@@ -26,7 +26,7 @@ class ProjectModelRegistry(ProjectRegistry):
         self,
         name: str,
         generator: str,
-        generator_arguments: dict[str, Any],
+        generator_arguments: GeneratorArguments,
     ):
         """Generate a model.
 
@@ -36,9 +36,10 @@ class ProjectModelRegistry(ProjectRegistry):
             The name of the model.
         generator : str
             The generator for the model.
-        generator_arguments : dict[str, Any]
+        generator_arguments : GeneratorArguments
             Arguments for the generator.
         """
-        model_yml = generate_model_yml(generator, **generator_arguments)
-        with open(self._directory / f"{name}.yml", "w") as f:
-            f.write(model_yml)
+        model_yml = generate_model_yml(
+            generator_name=generator, generator_arguments=generator_arguments
+        )
+        (self._directory / f"{name}.yml").write_text(model_yml)
