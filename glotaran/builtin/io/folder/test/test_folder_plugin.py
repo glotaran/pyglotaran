@@ -35,6 +35,7 @@ def test_save_result_folder(
         )
 
     assert len(record) == 1
+    assert Path(record[0].filename) == Path(__file__)
     if format_name == "legacy":
         assert record[0].category == GlotaranApiDeprecationWarning
     else:
