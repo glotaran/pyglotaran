@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ruamel.yaml import YAML
-from ruamel.yaml.compat import StringIO
 
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
 from glotaran.io import SAVING_OPTIONS_DEFAULT
@@ -17,18 +17,14 @@ from glotaran.io import save_result
 from glotaran.io import save_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
-from glotaran.project import Result
-from glotaran.project import Scheme
 from glotaran.project.dataclass_helpers import asdict
 from glotaran.project.dataclass_helpers import fromdict
+from glotaran.project.project import Result
+from glotaran.project.scheme import Scheme
 from glotaran.utils.sanitize import sanitize_yaml
 
 if TYPE_CHECKING:
     from typing import Any
-    from typing import Mapping
-
-    from ruamel.yaml.nodes import ScalarNode
-    from ruamel.yaml.representer import BaseRepresenter
 
 
 @register_project_io(["yml", "yaml", "yml_str"])
@@ -199,38 +195,3 @@ class YmlProjectIo(ProjectIoInterface):
             with open(file_name) as f:
                 spec = yaml.load(f)
         return spec
-
-
-def write_dict(data: Mapping[str, Any], file_name: str | None = None) -> str | None:
-    yaml = YAML()
-    yaml.representer.add_representer(type(None), _yaml_none_representer)
-    yaml.indent(mapping=2, sequence=2, offset=2)
-    if file_name is not None:
-        with open(file_name, "w") as f:
-            yaml.dump(data, f)
-    else:
-        stream = StringIO()
-        yaml.dump(data, stream)
-        return stream.getvalue()
-
-
-def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:
-    """Yaml repr for ``None`` python values.
-
-    Parameters
-    ----------
-    representer : BaseRepresenter
-        Representer of the :class:`YAML` instance.
-    data : Mapping[str, Any]
-        Data to write to yaml.
-
-    Returns
-    -------
-    ScalarNode
-        Node representing the value.
-
-    References
-    ----------
-    https://stackoverflow.com/a/44314840
-    """
-    return representer.represent_scalar("tag:yaml.org,2002:null", "null")

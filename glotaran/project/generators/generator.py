@@ -6,7 +6,7 @@ from typing import Callable
 from typing import TypedDict
 from typing import cast
 
-from glotaran.builtin.io.yml.yml import write_dict
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.model import Model
 
 
