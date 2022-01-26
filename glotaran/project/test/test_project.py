@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from glotaran import __version__ as gta_version
+from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.project.project import TEMPLATE
 from glotaran.project.project import Project
@@ -29,7 +30,7 @@ def project_file(project_folder):
 @pytest.fixture(scope="module")
 def test_data(tmpdir_factory):
     path = Path(tmpdir_factory.mktemp("test_project")) / "dataset_1.nc"
-    example_dataset.to_netcdf(path)
+    save_dataset(example_dataset, path)
     return path
 
 
@@ -61,7 +62,7 @@ def test_open(project_folder, project_file):
 def test_generate_model(project_folder, project_file):
     project = Project.open(project_file)
 
-    project.generate_model("test_model", "decay-parallel", {"nr_compartments": 5})
+    project.generate_model("test_model", "decay_parallel", {"nr_compartments": 5})
 
     model_folder = Path(project_folder) / "models"
     assert model_folder.exists()
@@ -149,7 +150,7 @@ def test_run_optimization(project_folder, project_file, name):
     assert data_folder.exists()
     data_file = data_folder / "dataset_1.nc"
     os.remove(data_file)
-    example_dataset.to_netcdf(data_file)
+    save_dataset(example_dataset, data_file)
 
     assert project.has_models
     assert project.has_parameters
