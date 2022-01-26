@@ -118,10 +118,7 @@ class ProjectRegistry:
         if self.empty:
             return MarkdownStr("_None_")
 
-        md = ""
-        for name in self.items:
-            md += f"* {name}\n"
-
+        md = "".join(f"* {name}\n" for name in self.items)
         return MarkdownStr(md)
 
     def _create_directory_if_not_exist(self):
