@@ -6,11 +6,11 @@ from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 
 PANDAS_TEST_DATA = Path(__file__).parent / "data"
-PATH_XLSX = PANDAS_TEST_DATA / "parameter.xlsx"
-PATH_ODS = PANDAS_TEST_DATA / "parameter.ods"
-PATH_CSV = PANDAS_TEST_DATA / "parameter.csv"
-PATH_TSV = PANDAS_TEST_DATA / "parameter.tsv"
-PATH_YAML = PANDAS_TEST_DATA / "parameter.yaml"
+PATH_XLSX = PANDAS_TEST_DATA / "reference_parameters.xlsx"
+PATH_ODS = PANDAS_TEST_DATA / "reference_parameters.ods"
+PATH_CSV = PANDAS_TEST_DATA / "reference_parameters.csv"
+PATH_TSV = PANDAS_TEST_DATA / "reference_parameters.tsv"
+PATH_YAML = PANDAS_TEST_DATA / "reference_parameters.yaml"
 
 
 def test_load_parameters_xlsx():
@@ -26,8 +26,8 @@ def test_save_parameters_xlsx(
     """load parameters file from yaml and save as xlsx
     and compare with yaml and reloaded xlsx parameter files"""
     parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "testparameters.xlsx"
-    save_parameters(file_name=parameter_path, format_name="xlsx", parameters=parameters_yaml)
+    parameter_path = tmp_path / "test_parameters.xlsx"
+    save_parameters(file_name=parameter_path, format_name="ods", parameters=parameters_yaml)
     parameters_saved_and_reloaded = load_parameters(parameter_path)
     parameters_xlsx = load_parameters(PATH_XLSX)
     assert parameters_yaml == parameters_saved_and_reloaded
@@ -47,7 +47,7 @@ def test_save_parameters_ods(
     """load parameters file from yaml and save as ods
     and compare with yaml and reloaded ods parameter files"""
     parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "testparameters.ods"
+    parameter_path = tmp_path / "test_parameters.ods"
     save_parameters(file_name=parameter_path, format_name="ods", parameters=parameters_yaml)
     parameters_saved_and_reloaded = load_parameters(parameter_path)
     parameters_ods = load_parameters(PATH_ODS)
@@ -68,7 +68,7 @@ def test_save_parameters_csv(
     """load parameters file from yaml and save as csv
     and compare with yaml and reloaded csv parameter files"""
     parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "testparameters.csv"
+    parameter_path = tmp_path / "test_parameters.csv"
     save_parameters(file_name=parameter_path, format_name="csv", parameters=parameters_yaml)
     parameters_saved_and_reloaded = load_parameters(parameter_path)
     parameters_csv = load_parameters(PATH_CSV)
@@ -89,7 +89,7 @@ def test_save_parameters_tsv(
     """load parameters file from yaml and save as tsv
     and compare with yaml and reloaded tsv parameter files"""
     parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "testparameters.tsv"
+    parameter_path = tmp_path / "test_parameters.tsv"
     save_parameters(file_name=parameter_path, format_name="tsv", parameters=parameters_yaml)
     parameters_saved_and_reloaded = load_parameters(parameter_path)
     parameters_tsv = load_parameters(PATH_TSV)
