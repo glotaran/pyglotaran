@@ -290,7 +290,7 @@ class Project:
         model_name : str
             The model.
         name : str | None
-             The name of the parameters.
+            The name of the parameters.
         fmt : Literal["yml", "yaml", "csv"]
             The parameter format.
         """
