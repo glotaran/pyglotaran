@@ -78,7 +78,7 @@ class Project:
         project_folder = Path(folder)
         if not project_folder.exists():
             project_folder.mkdir()
-        name = name if name else project_folder.name
+        name = name or project_folder.name
         project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
             f.write(TEMPLATE.format(gta_version=gta_version, name=name))
@@ -369,10 +369,7 @@ class Project:
             The created scheme.
         """
         loaded_model = self.load_model(model)
-        data = {}
-        for dataset in loaded_model.dataset:  # type:ignore[attr-defined]
-            data[dataset] = self.load_data(dataset)
-
+        data = {dataset: self.load_data(dataset) for dataset in loaded_model.dataset}
         return Scheme(
             model=loaded_model,
             parameters=self.load_parameters(parameters),

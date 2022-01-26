@@ -55,12 +55,13 @@ class ProjectParameterRegistry(ProjectRegistry):
             groups = parameter.split(".")
             label = groups.pop()
             if len(groups) == 0:
-                if isinstance(parameters, dict) and len(parameters) != 0:
-                    raise ModelError(
-                        "The root parameter group cannot contain both groups and parameters."
-                    )
-                elif isinstance(parameters, dict):
-                    parameters = []
+                if isinstance(parameters, dict):
+                    if len(parameters) != 0:
+                        raise ModelError(
+                            "The root parameter group cannot contain both groups and parameters."
+                        )
+                    else:
+                        parameters = []
                 parameters.append(
                     [
                         label,
