@@ -8,9 +8,7 @@ from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.model import Model
-from glotaran.model import ModelError
 from glotaran.parameter import ParameterGroup
-from glotaran.parameter.parameter import Keys
 from glotaran.project.project_registry import ProjectRegistry
 
 
@@ -43,64 +41,8 @@ class ProjectParameterRegistry(ProjectRegistry):
              The name of the parameters.
         fmt : Literal["yml", "yaml", "csv"]
             The parameter format.
-
-        Raises
-        ------
-        ModelError
-            Raised if parameter labels are incompatible.
         """
-        parameters: dict | list = {}
-        for parameter in model.get_parameter_labels():
-            groups = parameter.split(".")
-            label = groups.pop()
-            if len(groups) == 0:
-                if isinstance(parameters, dict):
-                    if len(parameters) != 0:
-                        raise ModelError(
-                            "The root parameter group cannot contain both groups and parameters."
-                        )
-                    else:
-                        parameters = []
-                parameters.append(
-                    [
-                        label,
-                        0.0,
-                        {
-                            Keys.EXPR: "None",
-                            Keys.MAX: "None",
-                            Keys.MIN: "None",
-                            Keys.NON_NEG: "false",
-                            Keys.VARY: "true",
-                        },
-                    ]
-                )
-            else:
-                if isinstance(parameters, list):
-                    raise ModelError(
-                        "The root parameter group cannot contain both groups and parameters."
-                    )
-                this_group = groups.pop()
-                group = parameters
-                for name in groups:
-                    if name not in group:
-                        group[name] = {}
-                    group = group[name]
-                if this_group not in group:
-                    group[this_group] = []
-                group[this_group].append(
-                    [
-                        label,
-                        0.0,
-                        {
-                            Keys.EXPR: None,
-                            Keys.MAX: "inf",
-                            Keys.MIN: "-inf",
-                            Keys.NON_NEG: "false",
-                            Keys.VARY: "true",
-                        },
-                    ]
-                )
-
+        parameters = model.generate_parameters()
         parameter_file = self.directory / f"{name}.{fmt}"
         if fmt in ["yml", "yaml"]:
             write_dict(parameters, file_name=parameter_file, offset=0)
