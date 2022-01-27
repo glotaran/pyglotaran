@@ -42,6 +42,10 @@ default_dataset_properties = {
     "scale": {"type": Parameter, "default": None, "allow_none": True},
 }
 
+root_parameter_error = ModelError(
+    "The root parameter group cannot contain both groups and parameters."
+)
+
 
 class Model:
     """A base class for global analysis models."""
@@ -316,6 +320,32 @@ class Model:
             for item in item_iterator:
                 parameter_labels += item.get_parameter_labels()
         return parameter_labels
+
+    def generate_parameters(self) -> dict | list:
+        parameters: dict | list = {}
+        for parameter in self.get_parameter_labels():
+            groups = parameter.split(".")
+            label = groups.pop()
+            if len(groups) == 0:
+                if isinstance(parameters, dict):
+                    if len(parameters) != 0:
+                        raise root_parameter_error
+                    else:
+                        parameters = []
+                parameters.append(Parameter.create_default_list(label))
+            else:
+                if isinstance(parameters, list):
+                    raise root_parameter_error
+                this_group = groups.pop()
+                group = parameters
+                for name in groups:
+                    if name not in group:
+                        group[name] = {}
+                    group = group[name]
+                if this_group not in group:
+                    group[this_group] = []
+                group[this_group].append(Parameter.create_default_list(label))
+        return parameters
 
     def need_index_dependent(self) -> bool:
         """Returns true if e.g. clp_relations with intervals are present."""
