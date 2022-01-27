@@ -92,6 +92,39 @@ class Parameter(_SupportsArray):
         self._transformed_expression: str | None = None
 
     @staticmethod
+    def create_default_list(label: str) -> list:
+        """Create a default list for use with :method:`Parameter.from_list_or_value`.
+
+        Intended for parameter generation.
+
+        Parameters
+        ----------
+        label : str
+            The label of the parameter.
+
+        Returns
+        -------
+        list
+            The list with default values.
+
+        See Also
+        --------
+        :method:`Model.generate_parameters`
+
+        """
+        return [
+            label,
+            0.0,
+            {
+                Keys.EXPR: None,
+                Keys.MAX: np.inf,
+                Keys.MIN: -np.inf,
+                Keys.NON_NEG: False,
+                Keys.VARY: True,
+            },
+        ]
+
+    @staticmethod
     def valid_label(label: str) -> bool:
         """Check if a label is a valid label for :class:`Parameter`.
 
