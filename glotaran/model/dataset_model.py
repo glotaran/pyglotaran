@@ -205,7 +205,7 @@ class DatasetModel:
         """
         glotaran_unique_megacomplex_types = []
 
-        for megacomplex_name in self.iterate_megacomplexes():
+        for _, megacomplex_name in self.iterate_megacomplexes():
             try:
                 megacomplex_instance = model.megacomplex[megacomplex_name]
                 if type(megacomplex_instance).glotaran_unique() is True:
