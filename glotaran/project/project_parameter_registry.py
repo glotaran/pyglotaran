@@ -4,8 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from yaml import dump
-
+from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.model import Model
@@ -104,9 +103,7 @@ class ProjectParameterRegistry(ProjectRegistry):
 
         parameter_file = self.directory / f"{name}.{fmt}"
         if fmt in ["yml", "yaml"]:
-            parameter_yml = dump(parameters)
-            with open(parameter_file, "w") as f:
-                f.write(parameter_yml)
+            write_dict(parameters, file_name=parameter_file, offset=0)
         elif fmt == "csv":
             parameter_group = (
                 ParameterGroup.from_dict(parameters)

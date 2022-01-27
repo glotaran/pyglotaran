@@ -3,8 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ruamel.yaml import YAML
-
+from glotaran.builtin.io.yml.utils import load_dict
 from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
 from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
@@ -188,10 +187,4 @@ class YmlProjectIo(ProjectIoInterface):
         return paths
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
-        yaml = YAML()
-        if self.format == "yml_str":
-            spec = yaml.load(file_name)
-        else:
-            with open(file_name) as f:
-                spec = yaml.load(f)
-        return spec
+        return load_dict(file_name, self.format != "yml_str")
