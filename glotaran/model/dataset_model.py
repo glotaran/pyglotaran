@@ -70,8 +70,8 @@ class DatasetModel:
 
     def get_model_dimension(self) -> str:
         """Returns the dataset model's model dimension."""
-        if self.force_model_dimension is not None:
-            return self.force_model_dimension
+        if self.overwrite_model_dimension is not None:
+            return self.overwrite_model_dimension
         if not hasattr(self, "_model_dimension"):
             if not self.has_megacomplexes():
                 raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
@@ -95,7 +95,7 @@ class DatasetModel:
                     self, dataset, is_full_model=is_full_model, as_global=True
                 )
 
-    def overwrite_model_dimension(self, model_dimension: str) -> None:
+    def replace_model_dimension(self, model_dimension: str) -> None:
         """Overwrites the dataset model's model dimension."""
         self._model_dimension = model_dimension
 
@@ -106,8 +106,8 @@ class DatasetModel:
     # e.g. in FLIM, x, y dimension may get 'flattened' to a MultiIndex 'pixel'
     def get_global_dimension(self) -> str:
         """Returns the dataset model's global dimension."""
-        if self.force_global_dimension is not None:
-            return self.force_global_dimension
+        if self.overwrite_global_dimension is not None:
+            return self.overwrite_global_dimension
         if not hasattr(self, "_global_dimension"):
             if self.has_global_model():
                 if isinstance(self.global_megacomplex[0], str):
@@ -131,7 +131,7 @@ class DatasetModel:
                 )
         return self._global_dimension
 
-    def overwrite_global_dimension(self, global_dimension: str) -> None:
+    def replace_global_dimension(self, global_dimension: str) -> None:
         """Overwrites the dataset model's global dimension."""
         self._global_dimension = global_dimension
 
@@ -139,8 +139,8 @@ class DatasetModel:
         """Swaps the dataset model's global and model dimension."""
         global_dimension = self.get_model_dimension()
         model_dimension = self.get_global_dimension()
-        self.overwrite_global_dimension(global_dimension)
-        self.overwrite_model_dimension(model_dimension)
+        self.replace_global_dimension(global_dimension)
+        self.replace_model_dimension(model_dimension)
 
     def set_data(self, dataset: xr.Dataset) -> DatasetModel:
         """Sets the dataset model's data."""

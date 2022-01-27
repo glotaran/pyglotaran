@@ -46,7 +46,7 @@ def test_baseline():
     pixel = np.asarray([0])
     coords = {"time": time, "pixel": pixel}
     dataset_model = model.dataset["dataset1"].fill(model, parameter)
-    dataset_model.overwrite_global_dimension("pixel")
+    dataset_model.replace_global_dimension("pixel")
     dataset_model.set_coordinates(coords)
     matrix = calculate_matrix(dataset_model, {})
     compartments = matrix.clp_labels

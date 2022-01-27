@@ -89,7 +89,7 @@ def test_coherent_artifact(spectral_dependence: str):
     coords = {"time": time, "spectral": spectral}
 
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
-    dataset_model.overwrite_global_dimension("spectral")
+    dataset_model.replace_global_dimension("spectral")
     dataset_model.set_coordinates(coords)
     matrix = calculate_matrix(dataset_model, {"spectral": 1})
     compartments = matrix.clp_labels
