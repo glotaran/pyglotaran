@@ -8,8 +8,8 @@ from typing import Any
 from typing import Literal
 
 import xarray as xr
-from yaml import safe_load
 
+from glotaran.builtin.io.yml.utils import load_dict
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project.project_data_registry import ProjectDataRegistry
@@ -105,8 +105,7 @@ class Project:
         else:
             folder, file = folder.parent, folder
 
-        with open(file) as f:
-            project_dict = safe_load(f)
+        project_dict = load_dict(file, True)
         project_dict["file"] = file
         project_dict["folder"] = folder
         return cls(**project_dict)
