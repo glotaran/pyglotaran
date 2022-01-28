@@ -21,7 +21,9 @@ class ProjectResultRegistry(ProjectRegistry):
             The registry directory.
         """
         super().__init__(
-            directory / "results", [], lambda path: load_result(path, format_name="yml")
+            directory / "results",
+            [],
+            lambda path: load_result(path / "result.yml", format_name="yml"),
         )
 
     def is_item(self, path: Path) -> bool:
@@ -70,4 +72,4 @@ class ProjectResultRegistry(ProjectRegistry):
             The result to save.
         """
         result_path = self.directory / name / "result.yml"
-        save_result(result, result_path, format_name="yml")
+        save_result(result, result_path, format_name="yml", allow_overwrite=True)

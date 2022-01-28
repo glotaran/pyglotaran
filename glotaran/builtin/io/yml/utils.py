@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def write_dict(
-    data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 2
+    data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 0
 ) -> str | None:
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
