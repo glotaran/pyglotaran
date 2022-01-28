@@ -238,7 +238,7 @@ def get_script_dir(*, nesting: int = 0) -> Path:
         return file_path.parent
 
 
-def make_absolute_path_is_relative(path: Path) -> Path:
+def make_path_absolute_if_relative(path: Path) -> Path:
     """Get a path as absolute if relative.
 
     Parameters
@@ -251,5 +251,5 @@ def make_absolute_path_is_relative(path: Path) -> Path:
         Either the original path or the path as absolute relative to the script directory.
     """
     if not path.is_absolute():
-        path = get_script_dir(nesting=1) / path
+        path = get_script_dir(nesting=2) / path
     return path
