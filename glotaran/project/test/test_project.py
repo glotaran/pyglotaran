@@ -5,7 +5,6 @@ import pytest
 from glotaran import __version__ as gta_version
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
-from glotaran.project.project import TEMPLATE
 from glotaran.project.project import Project
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET as example_dataset
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
@@ -33,14 +32,6 @@ def test_data(tmpdir_factory):
     return path
 
 
-def test_create(project_folder, project_file):
-    Project.create("testproject", project_folder)
-    assert project_file.exists()
-    assert project_file.read_text(encoding="utf-8") == TEMPLATE.format(
-        gta_version=gta_version, name="testproject"
-    )
-
-
 def test_open(project_folder, project_file):
     project_from_folder = Project.open(project_folder)
 
@@ -50,7 +41,6 @@ def test_open(project_folder, project_file):
 
     project = project_from_file
 
-    assert project.name == "testproject"
     assert project.version == gta_version
     assert not project.has_models
     assert not project.has_data
