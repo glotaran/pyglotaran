@@ -232,10 +232,7 @@ def get_script_dir(*, nesting: int = 0) -> Path:
     calling_frame = inspect.stack()[nesting + 1].frame
     file_var = calling_frame.f_globals.get("__file__", ".")
     file_path = Path(file_var).resolve()
-    if file_var == ".":  # pragma: no cover
-        return file_path
-    else:
-        return file_path.parent
+    return file_path if file_var == "." else file_path.parent
 
 
 def make_path_absolute_if_relative(path: Path) -> Path:
