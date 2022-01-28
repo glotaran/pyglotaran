@@ -319,6 +319,30 @@ class Project:
         """
         return self._result_registry.items
 
+    def get_result_path(self, name: str) -> Path:
+        """Get the path to a result.
+
+        Parameters
+        ----------
+        name : str
+            The name of the result.
+
+        Returns
+        -------
+        Path
+            The path to the result.
+
+        Raises
+        ------
+        ValueError
+            Raised if result does not exist.
+        """
+        path = self._result_registry.directory / name
+        if self._result_registry.is_item(path):
+            return path
+        else:
+            raise ValueError(f"Result '{name}' does not exist.")
+
     def load_result(self, name: str) -> Result:
         """Load a result.
 
