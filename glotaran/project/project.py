@@ -1,8 +1,8 @@
 """The glotaran project module."""
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass
-from os import getcwd
 from pathlib import Path
 from typing import Any
 from typing import Literal
@@ -21,7 +21,6 @@ from glotaran.project.scheme import Scheme
 from glotaran.utils.ipython import MarkdownStr
 
 TEMPLATE = """version: {gta_version}
-name: {name}
 """
 
 PROJECT_FILE_NAME = "project.gta"
@@ -34,10 +33,9 @@ class Project:
     A project file is a file in `yml` format with name `project.gta`
     """
 
-    file: Path
-    name: str
     version: str
 
+    file: Path
     folder: Path
 
     def __post_init__(self):
@@ -54,56 +52,58 @@ class Project:
         self._parameter_registry = ProjectParameterRegistry(self.folder)
         self._result_registry = ProjectResultRegistry(self.folder)
 
-    @classmethod
-    def create(cls, name: str | None = None, folder: str | Path | None = None) -> Project:
-        """Create a new project.
+    @staticmethod
+    def create(folder: str | Path):
+        """Create a new project folder and file.
 
         Parameters
         ----------
-        name : str | None
-            The name of the project. If ``None``, the name of the project folder will be used.
         folder : str | Path | None
             The folder where the project will be created. If ``None``, the current work
             directory will be used.
-
-        Returns
-        -------
-        Project
-            The created project.
         """
         from glotaran import __version__ as gta_version
 
-        if folder is None:
-            folder = getcwd()
         project_folder = Path(folder)
         if not project_folder.exists():
             project_folder.mkdir()
-        name = name or project_folder.name
         project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
-            f.write(TEMPLATE.format(gta_version=gta_version, name=name))
-
-        return cls.open(project_file)
+            f.write(TEMPLATE.format(gta_version=gta_version))
 
     @classmethod
-    def open(cls, project_folder_or_file: str | Path):
+    def open(cls, project_folder_or_file: str | Path, create_if_not_exist: bool = True):
         """Open a new project.
 
         Parameters
         ----------
         project_folder_or_file : str | Path
             The path to a project folder or file.
+        create_if_not_exist : bool
+            Create the project if not existent.
 
         Returns
         -------
         Project
             The created project.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the project file does not not exist and `create_if_not_exist` is `False`.
         """
         folder = Path(project_folder_or_file)
-        if folder.is_dir():
-            file = folder / PROJECT_FILE_NAME
-        else:
+        if not folder.is_absolute():
+            folder = get_script_dir(nesting=1) / folder
+        if folder.name == PROJECT_FILE_NAME:
             folder, file = folder.parent, folder
+        else:
+            file = folder / PROJECT_FILE_NAME
+
+        if not file.exists():
+            if not create_if_not_exist:
+                raise FileNotFoundError(f"Project file {file} does not exists.")
+            Project.create(folder)
 
         project_dict = load_dict(file, True)
         project_dict["file"] = file
@@ -422,7 +422,7 @@ class Project:
             The markdown string.
         """
         md = f"""\
-# Project _{self.name}_
+# Project _{self.folder}_
 
 pyglotaran version: {self.version}
 
@@ -444,3 +444,33 @@ pyglotaran version: {self.version}
         """
 
         return MarkdownStr(md)
+
+
+def get_script_dir(*, nesting: int = 0) -> Path:
+    """Get the parent folder a script is executed in.
+
+    This is a helper function for cross compatibility with jupyter notebooks.
+    In notebooks the global ``__file__`` variable isn't set, thus we need different
+    means to get the folder a script is defined in, which doesn't change with the
+    current working director the ``python interpreter`` was called from.
+    Parameters
+    ----------
+    nesting : int
+        Number to go up in the call stack to get to the initially calling function.
+        This is only needed for library code and not for user code.
+        , by default 0 (direct call)
+    Returns
+    -------
+    Path
+        Path to the folder the script was resides in.
+    See Also
+    --------
+    setup_case_study
+    """
+    calling_frame = inspect.stack()[nesting + 1].frame
+    file_var = calling_frame.f_globals.get("__file__", ".")
+    file_path = Path(file_var).resolve()
+    if file_var == ".":  # pragma: no cover
+        return file_path
+    else:
+        return file_path.parent
