@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import html
+import inspect
 import os
 from collections.abc import Mapping
 from collections.abc import MutableMapping
@@ -252,3 +253,47 @@ def safe_dataframe_replace(
         to_be_replaced_values = [to_be_replaced_values]
     if column_name in df.columns:
         df[column_name].replace(to_be_replaced_values, replace_value, inplace=True)
+
+
+def get_script_dir(*, nesting: int = 0) -> Path:
+    """Get the parent folder a script is executed in.
+
+    This is a helper function for cross compatibility with jupyter notebooks.
+    In notebooks the global ``__file__`` variable isn't set, thus we need different
+    means to get the folder a script is defined in, which doesn't change with the
+    current working director the ``python interpreter`` was called from.
+    Parameters
+    ----------
+    nesting : int
+        Number to go up in the call stack to get to the initially calling function.
+        This is only needed for library code and not for user code.
+        , by default 0 (direct call)
+    Returns
+    -------
+    Path
+        Path to the folder the script was resides in.
+    """
+    calling_frame = inspect.stack()[nesting + 1].frame
+    file_var = calling_frame.f_globals.get("__file__", ".")
+    file_path = Path(file_var).resolve()
+    if file_var == ".":  # pragma: no cover
+        return file_path
+    else:
+        return file_path.parent
+
+
+def make_absolute_path_is_relative(path: Path) -> Path:
+    """Get a path as absolute if relative.
+
+    Parameters
+    ----------
+    path : Path
+        The path to make absolute.
+    Returns
+    -------
+    Path
+        Either the original path or the path as absolute relative to the script directory.
+    """
+    if not path.is_absolute():
+        path = get_script_dir(nesting=1) / path
+    return path

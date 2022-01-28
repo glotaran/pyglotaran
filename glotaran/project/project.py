@@ -1,7 +1,6 @@
 """The glotaran project module."""
 from __future__ import annotations
 
-import inspect
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -18,6 +17,7 @@ from glotaran.project.project_parameter_registry import ProjectParameterRegistry
 from glotaran.project.project_result_registry import ProjectResultRegistry
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
+from glotaran.utils.io import make_absolute_path_is_relative
 from glotaran.utils.ipython import MarkdownStr
 
 TEMPLATE = """version: {gta_version}
@@ -64,7 +64,7 @@ class Project:
         """
         from glotaran import __version__ as gta_version
 
-        project_folder = Path(folder)
+        project_folder = make_absolute_path_is_relative(Path(folder))
         if not project_folder.exists():
             project_folder.mkdir()
         project_file = project_folder / PROJECT_FILE_NAME
@@ -92,9 +92,7 @@ class Project:
         FileNotFoundError
             Raised when the project file does not not exist and `create_if_not_exist` is `False`.
         """
-        folder = Path(project_folder_or_file)
-        if not folder.is_absolute():
-            folder = get_script_dir(nesting=1) / folder
+        folder = make_absolute_path_is_relative(Path(project_folder_or_file))
         if folder.name == PROJECT_FILE_NAME:
             folder, file = folder.parent, folder
         else:
@@ -468,33 +466,3 @@ pyglotaran version: {self.version}
         """
 
         return MarkdownStr(md)
-
-
-def get_script_dir(*, nesting: int = 0) -> Path:
-    """Get the parent folder a script is executed in.
-
-    This is a helper function for cross compatibility with jupyter notebooks.
-    In notebooks the global ``__file__`` variable isn't set, thus we need different
-    means to get the folder a script is defined in, which doesn't change with the
-    current working director the ``python interpreter`` was called from.
-    Parameters
-    ----------
-    nesting : int
-        Number to go up in the call stack to get to the initially calling function.
-        This is only needed for library code and not for user code.
-        , by default 0 (direct call)
-    Returns
-    -------
-    Path
-        Path to the folder the script was resides in.
-    See Also
-    --------
-    setup_case_study
-    """
-    calling_frame = inspect.stack()[nesting + 1].frame
-    file_var = calling_frame.f_globals.get("__file__", ".")
-    file_path = Path(file_var).resolve()
-    if file_var == ".":  # pragma: no cover
-        return file_path
-    else:
-        return file_path.parent
