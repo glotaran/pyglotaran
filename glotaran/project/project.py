@@ -17,7 +17,7 @@ from glotaran.project.project_parameter_registry import ProjectParameterRegistry
 from glotaran.project.project_result_registry import ProjectResultRegistry
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
-from glotaran.utils.io import make_absolute_path_is_relative
+from glotaran.utils.io import make_path_absolute_if_relative
 from glotaran.utils.ipython import MarkdownStr
 
 TEMPLATE = """version: {gta_version}
@@ -64,7 +64,7 @@ class Project:
         """
         from glotaran import __version__ as gta_version
 
-        project_folder = make_absolute_path_is_relative(Path(folder))
+        project_folder = make_path_absolute_if_relative(Path(folder))
         if not project_folder.exists():
             project_folder.mkdir()
         project_file = project_folder / PROJECT_FILE_NAME
@@ -92,7 +92,7 @@ class Project:
         FileNotFoundError
             Raised when the project file does not not exist and `create_if_not_exist` is `False`.
         """
-        folder = make_absolute_path_is_relative(Path(project_folder_or_file))
+        folder = make_path_absolute_if_relative(Path(project_folder_or_file))
         if folder.name == PROJECT_FILE_NAME:
             folder, file = folder.parent, folder
         else:
