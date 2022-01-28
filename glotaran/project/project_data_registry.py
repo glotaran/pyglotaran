@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from glotaran.io import load_dataset
+from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.project.project_registry import ProjectRegistry
 
 
@@ -18,7 +19,9 @@ class ProjectDataRegistry(ProjectRegistry):
         directory : Path
             The registry directory.
         """
-        super().__init__(directory / "data", ".nc", load_dataset)
+        super().__init__(
+            directory / "data", [f".{fmt}" for fmt in known_data_formats()], load_dataset
+        )
 
     def import_data(self, path: str | Path, name: str | None = None):
         """Import a dataset.
