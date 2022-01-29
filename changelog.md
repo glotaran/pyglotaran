@@ -27,6 +27,7 @@
 - 🔧 Improve packaging tooling (#923)
 - 🔧🚇 Exclude test files from duplication checks on sonarcloud (#959)
 - 🔧🚇 Only run check-maifest on the CI #967
+- 🚇👌 Exclude dependabot push CI runs #978
 
 ## 0.5.1 (2021-12-31)
 
