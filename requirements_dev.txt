@@ -13,7 +13,6 @@ rich==11.1.0
 ruamel.yaml==0.17.20
 scipy==1.7.3
 sdtfile==2021.11.18
-setuptools==41.2
 tabulate==0.8.9
 xarray==0.20.2
 

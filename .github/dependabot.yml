@@ -1,27 +1,23 @@
 version: 2
 updates:
-- package-ecosystem: pip
-  directory: "/"
-  schedule:
-    interval: weekly
-    day: friday
-    time: "18:00"
-    timezone: Europe/Amsterdam
-  open-pull-requests-limit: 20
-  reviewers:
-  - jsnel
-  assignees:
-  - jsnel
-  ignore:
-  - dependency-name: setuptools
-    versions:
-    - "> 41.2"
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: friday
+      time: "18:00"
+      timezone: Europe/Amsterdam
+    open-pull-requests-limit: 20
+    reviewers:
+      - jsnel
+    assignees:
+      - jsnel
 
-# Maintain dependencies for GitHub Actions
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-    interval: "weekly"
-    day: friday
-    time: "18:00"
-    timezone: Europe/Amsterdam
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: friday
+      time: "18:00"
+      timezone: Europe/Amsterdam
