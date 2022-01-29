@@ -4,6 +4,7 @@
 
 ### ✨ Features
 
+- ✨ Python 3.10 support (#977)
 - ✨ Add simple decay megacomplexes (#860)
 - ✨ Feature: Generators (#866)
 
