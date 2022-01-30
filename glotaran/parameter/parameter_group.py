@@ -323,7 +323,13 @@ class ParameterGroup(dict):
         delimiter : str
             Character to separate columns., by default ","
         """
-        save_parameters(self, file_name=filename, allow_overwrite=True, sep=delimiter)
+        save_parameters(
+            self,
+            file_name=filename,
+            allow_overwrite=True,
+            sep=delimiter,
+            replace_infinfinity=False,
+        )
 
     def add_parameter(self, parameter: Parameter | list[Parameter]):
         """Add a :class:`Parameter` to the group.

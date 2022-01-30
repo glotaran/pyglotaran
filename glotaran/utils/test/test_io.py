@@ -6,14 +6,18 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
+from pandas.testing import assert_frame_equal
 
 from glotaran.io import save_dataset
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets
 from glotaran.utils.io import relative_posix_path
+from glotaran.utils.io import safe_dataframe_fillna
+from glotaran.utils.io import safe_dataframe_replace
 
 
 @pytest.fixture
@@ -194,3 +198,60 @@ def test_relative_posix_path_windows_diff_drives():
     result = relative_posix_path(source_path, "C:\\result_path")
 
     assert result == Path(source_path).as_posix()
+
+
+def test_safe_dataframe_fillna():
+    """Only values in selected columns are filled"""
+    df = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": [np.nan, -4, 2],
+            "maximum": [np.nan, -4, 2],
+        }
+    )
+
+    df2 = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": [-np.inf, -4, 2],
+            "maximum": [np.inf, -4, 2],
+        }
+    )
+
+    safe_dataframe_fillna(df, "minimum", -np.inf)
+    safe_dataframe_fillna(df, "maximum", np.inf)
+    safe_dataframe_fillna(df, "not_a_column", np.inf)
+
+    assert_frame_equal(df, df2)
+
+
+def test_safe_dataframe_replace():
+    """Only values in selected columns are replaced"""
+
+    df = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": [-np.inf, -4, 2],
+            "maximum": [np.inf, -4, 2],
+            "list_test": [np.inf, -4, 2],
+            "tuple_test": [np.inf, -4, 2],
+        }
+    )
+
+    df2 = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": ["", -4, 2],
+            "maximum": ["", -4, 2],
+            "list_test": [1.0, 1, 2],
+            "tuple_test": [3.0, 3, 2],
+        }
+    )
+
+    safe_dataframe_replace(df, "minimum", -np.inf, "")
+    safe_dataframe_replace(df, "maximum", (np.inf, np.nan), "")
+    safe_dataframe_replace(df, "list_test", (np.inf, -4), 1)
+    safe_dataframe_replace(df, "tuple_test", (np.inf, -4), 3)
+    safe_dataframe_replace(df, "not_a_column", np.inf, 2)
+
+    assert_frame_equal(df, df2)

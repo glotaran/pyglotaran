@@ -12,6 +12,7 @@
 
 - 👌🎨 Add proper repr for DatasetMapping (#957)
 - 👌 Add SavingOptions to save_result API (#966)
+- ✨ Add parameter IO support for more formats supported by pandas (#896)
 
 ### 🩹 Bug fixes
 
