@@ -1,18 +1,62 @@
 name: "Doxygen"
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      pr_nr:
+        description: "pyglotaran branch/tag to run the examples against"
+        required: false
+        default: ""
+      repo:
+        description: "pyglotaran branch/tag to run the examples against"
+        required: true
+        default: "glotaran/pyglotaran"
 
 jobs:
   run-doxygen:
     name: Doxygen callgraph
-    environment: Debug
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: Install dependencies
+        run: pip install requests
+      - name: Get ref to check out
+        id: ref_to_checkout
+        shell: python
+        run: |
+          import requests
+          import os
+
+          def pr_by_nr(pr_nr:int):
+              token = os.getenv("GITHUB_TOKEN")
+              repo = "${{ github.event.inputs.repo }}"
+              headers = {"Accept": "application/vnd.github.v3+json"}
+              if token is not None:
+                  headers['Authorization'] = f"token {token}"
+              resp = requests.get(f"https://api.github.com/repos/{repo}/pulls", headers=headers)
+              if resp.status_code != 200:
+                  resp.raise_for_status()
+              for pr in resp.json():
+                  if pr["number"] == pr_nr:
+                      return pr
+              raise ValueError(f"PR with number {pr_nr} could not be found for repo {repo}.")
+
+          def merge_sha_by_pr_nr(pr_nr:int):
+              return pr_by_nr(pr_nr)["merge_commit_sha"]
+
+          pr_nr = "${{ github.event.inputs.pr_nr }}"
+          if pr_nr != "":
+              ref = merge_sha_by_pr_nr(int(pr_nr))
+          else:
+              ref = os.getenv("GITHUB_REF_NAME")
+          print(f"::set-output name=ref::{ref}")
+      - uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ steps.ref_to_checkout.outputs.ref }}
       - name: Create Doxygen Docs
         uses: mattnotmitt/doxygen-action@v1
         with:
