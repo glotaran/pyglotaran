@@ -15,11 +15,11 @@ def test_parameter_group_to_csv_no_stderr(tmp_path: Path):
     expected = dedent(
         """\
         label,value,expression,minimum,maximum,non-negative,vary,standard-error
-        rates.species_1,0.5,None,,,False,True,None
-        rates.species_2,0.3,None,,,False,True,None
-        rates.species_3,0.1,None,,,False,True,None
-        irf.center,0.3,None,,,False,True,None
-        irf.width,0.1,None,,,False,True,None
+        rates.species_1,0.5,None,-inf,inf,False,True,None
+        rates.species_2,0.3,None,-inf,inf,False,True,None
+        rates.species_3,0.1,None,-inf,inf,False,True,None
+        irf.center,0.3,None,-inf,inf,False,True,None
+        irf.width,0.1,None,-inf,inf,False,True,None
         """
     )
 
