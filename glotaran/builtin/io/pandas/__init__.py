@@ -1,1 +1,1 @@
-"""Pandas parameter package."""
+"""Pandas io package."""

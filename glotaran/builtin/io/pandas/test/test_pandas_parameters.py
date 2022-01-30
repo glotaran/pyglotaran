@@ -2,96 +2,44 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
+from glotaran.parameter import ParameterGroup
 
 PANDAS_TEST_DATA = Path(__file__).parent / "data"
 PATH_XLSX = PANDAS_TEST_DATA / "reference_parameters.xlsx"
 PATH_ODS = PANDAS_TEST_DATA / "reference_parameters.ods"
 PATH_CSV = PANDAS_TEST_DATA / "reference_parameters.csv"
 PATH_TSV = PANDAS_TEST_DATA / "reference_parameters.tsv"
-PATH_YAML = PANDAS_TEST_DATA / "reference_parameters.yaml"
 
 
-def test_load_parameters_xlsx():
-    """load parameters file as yaml and excel and compare them"""
-    parameters_xlsx = load_parameters(PATH_XLSX)
-    parameters_yaml = load_parameters(PATH_YAML)
-    assert parameters_yaml == parameters_xlsx
+@pytest.fixture(scope="module")
+def yaml_reference() -> ParameterGroup:
+    """Fixture for yaml reference data."""
+    return load_parameters(PANDAS_TEST_DATA / "reference_parameters.yaml")
 
 
-def test_save_parameters_xlsx(
-    tmp_path: Path,
-):
-    """load parameters file from yaml and save as xlsx
-    and compare with yaml and reloaded xlsx parameter files"""
-    parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "test_parameters.xlsx"
-    save_parameters(file_name=parameter_path, format_name="ods", parameters=parameters_yaml)
-    parameters_saved_and_reloaded = load_parameters(parameter_path)
-    parameters_xlsx = load_parameters(PATH_XLSX)
-    assert parameters_yaml == parameters_saved_and_reloaded
-    assert parameters_xlsx == parameters_saved_and_reloaded
+@pytest.mark.parametrize("reference_path", (PATH_XLSX, PATH_ODS, PATH_CSV, PATH_TSV))
+def test_references(yaml_reference: ParameterGroup, reference_path: Path):
+    """References are the same"""
+    result = load_parameters(reference_path)
+    assert result == yaml_reference
 
 
-def test_load_parameters_ods():
-    """load parameters file as yaml and ods and compare them"""
-    parameters_ods = load_parameters(PATH_ODS)
-    parameters_yaml = load_parameters(PATH_YAML)
-    assert parameters_yaml == parameters_ods
+@pytest.mark.parametrize(
+    "format_name,reference_path",
+    (("xlsx", PATH_XLSX), ("ods", PATH_ODS), ("csv", PATH_CSV), ("tsv", PATH_TSV)),
+)
+def test_roundtrips(
+    yaml_reference: ParameterGroup, tmp_path: Path, format_name: str, reference_path: Path
+) -> None:
+    """Roundtrip via save and load have the same data."""
+    format_reference = load_parameters(reference_path)
+    parameter_path = tmp_path / f"test_parameters.{format_name}"
+    save_parameters(file_name=parameter_path, format_name=format_name, parameters=yaml_reference)
+    parameters_roundtrip = load_parameters(parameter_path)
 
-
-def test_save_parameters_ods(
-    tmp_path: Path,
-):
-    """load parameters file from yaml and save as ods
-    and compare with yaml and reloaded ods parameter files"""
-    parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "test_parameters.ods"
-    save_parameters(file_name=parameter_path, format_name="ods", parameters=parameters_yaml)
-    parameters_saved_and_reloaded = load_parameters(parameter_path)
-    parameters_ods = load_parameters(PATH_ODS)
-    assert parameters_yaml == parameters_saved_and_reloaded
-    assert parameters_ods == parameters_saved_and_reloaded
-
-
-def test_load_parameters_csv():
-    """load parameters file as yaml and csv and compare them"""
-    parameters_csv = load_parameters(PATH_CSV)
-    parameters_yaml = load_parameters(PATH_YAML)
-    assert parameters_yaml == parameters_csv
-
-
-def test_save_parameters_csv(
-    tmp_path: Path,
-):
-    """load parameters file from yaml and save as csv
-    and compare with yaml and reloaded csv parameter files"""
-    parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "test_parameters.csv"
-    save_parameters(file_name=parameter_path, format_name="csv", parameters=parameters_yaml)
-    parameters_saved_and_reloaded = load_parameters(parameter_path)
-    parameters_csv = load_parameters(PATH_CSV)
-    assert parameters_yaml == parameters_saved_and_reloaded
-    assert parameters_csv == parameters_saved_and_reloaded
-
-
-def test_load_parameters_tsv():
-    """load parameters file as yaml and tsv and compare them"""
-    parameters_tsv = load_parameters(PATH_TSV)
-    parameters_yaml = load_parameters(PATH_YAML)
-    assert parameters_yaml == parameters_tsv
-
-
-def test_save_parameters_tsv(
-    tmp_path: Path,
-):
-    """load parameters file from yaml and save as tsv
-    and compare with yaml and reloaded tsv parameter files"""
-    parameters_yaml = load_parameters(PATH_YAML)
-    parameter_path = tmp_path / "test_parameters.tsv"
-    save_parameters(file_name=parameter_path, format_name="tsv", parameters=parameters_yaml)
-    parameters_saved_and_reloaded = load_parameters(parameter_path)
-    parameters_tsv = load_parameters(PATH_TSV)
-    assert parameters_yaml == parameters_saved_and_reloaded
-    assert parameters_tsv == parameters_saved_and_reloaded
+    assert parameters_roundtrip == yaml_reference
+    assert parameters_roundtrip == format_reference
