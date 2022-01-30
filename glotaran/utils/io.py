@@ -8,6 +8,7 @@ from collections.abc import MutableMapping
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 
 import xarray as xr
 
@@ -16,6 +17,8 @@ from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
     from typing import Iterator
+
+    import pandas as pd
 
     from glotaran.typing.types import StrOrPath
 
@@ -210,37 +213,40 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
     return Path(source_path).as_posix()
 
 
-def safe_parameters_fillna(df, column_name, fill_value):
-    """Ensure that columns exist in order to replace empty strings with +/-np.inf values.
+def safe_dataframe_fillna(df: pd.DataFrame, column_name: str, fill_value: Any) -> None:
+    """Fill NaN values with ``fill_value``  if the column exists or do nothing.
 
     Parameters
     ----------
     df : pd.DataFrame
         DataFrame from which specific column values will be replaced
     column_name : str
-        Name of column from DataFrame
-    fill_value : str
-        Values to be replaced in column
+        Name of column of ``df`` to fill NaNs
+    fill_value : Any
+        Value to fill NaNs with
     """
     if column_name in df.columns:
         df[column_name].fillna(fill_value, inplace=True)
 
 
-def safe_parameters_replace(df, column_name, to_be_replaced_values, replace_value):
-    """Ensure that columns exist in order to replace  +/-np.inf values with empty strings.
+def safe_dataframe_replace(
+    df: pd.DataFrame, column_name: str, to_be_replaced_values: Any, replace_value: Any
+) -> None:
+    """Replace column values with ``replace_value`` if the column exists or do nothing.
 
-    If value is not list or tuple format, convert into list with same value as element.
+    If ``to_be_replaced_values`` is not list or tuple format,
+    convert into list with same ``to_be_replaced_values`` as element.
 
     Parameters
     ----------
     df : pd.DataFrame
         DataFrame from which specific column values will be replaced
     column_name : str
-        Name of column from DataFrame
-    to_be_replaced_values : float
+        Name of column of ``df`` to replace values for
+    to_be_replaced_values : Any
         Values to be replaced
-    replace_value : str
-        Replace values
+    replace_value : Any
+        Value to replace ``to_be_replaced_values`` with
     """
     if not isinstance(to_be_replaced_values, (list, tuple)):
         to_be_replaced_values = [to_be_replaced_values]

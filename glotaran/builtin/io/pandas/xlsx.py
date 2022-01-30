@@ -8,8 +8,8 @@ import pandas as pd
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
 from glotaran.parameter import ParameterGroup
-from glotaran.utils.io import safe_parameters_fillna
-from glotaran.utils.io import safe_parameters_replace
+from glotaran.utils.io import safe_dataframe_fillna
+from glotaran.utils.io import safe_dataframe_replace
 
 
 @register_project_io(["xlsx", "ods"])
@@ -29,8 +29,8 @@ class ExcelProjectIo(ProjectIoInterface):
             :class:`ParameterGroup
         """
         df = pd.read_excel(file_name, na_values=["None", "none"])
-        safe_parameters_fillna(df, "minimum", -np.inf)
-        safe_parameters_fillna(df, "maximum", np.inf)
+        safe_dataframe_fillna(df, "minimum", -np.inf)
+        safe_dataframe_fillna(df, "maximum", np.inf)
         return ParameterGroup.from_dataframe(df, source=file_name)
 
     def save_parameters(self, parameters: ParameterGroup, file_name: str):
@@ -44,6 +44,6 @@ class ExcelProjectIo(ProjectIoInterface):
             File to write the parameters to.
         """
         df = parameters.to_dataframe()
-        safe_parameters_replace(df, "minimum", -np.inf, "")
-        safe_parameters_replace(df, "maximum", np.inf, "")
+        safe_dataframe_replace(df, "minimum", -np.inf, "")
+        safe_dataframe_replace(df, "maximum", np.inf, "")
         df.to_excel(file_name, na_rep="None", index=False)

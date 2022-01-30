@@ -10,13 +10,14 @@ import pandas as pd
 import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
+from pandas.testing import assert_frame_equal
 
 from glotaran.io import save_dataset
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import load_datasets
 from glotaran.utils.io import relative_posix_path
-from glotaran.utils.io import safe_parameters_fillna
-from glotaran.utils.io import safe_parameters_replace
+from glotaran.utils.io import safe_dataframe_fillna
+from glotaran.utils.io import safe_dataframe_replace
 
 
 @pytest.fixture
@@ -199,42 +200,58 @@ def test_relative_posix_path_windows_diff_drives():
     assert result == Path(source_path).as_posix()
 
 
-def test_safe_parameters_fillna():
-    """compare dataframes. df with values replaced by function and
-    df2 with expected values."""
+def test_safe_dataframe_fillna():
+    """Only values in selected columns are filled"""
+    df = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": [np.nan, -4, 2],
+            "maximum": [np.nan, -4, 2],
+        }
+    )
 
-    # create df with integers and NaN
-    df = pd.DataFrame
-    data = [[1, np.nan, np.nan], [431, -4, 45], [2, np.nan, np.nan]]
-    df = pd.DataFrame(data, columns=["test1", "minimum", "maximum"])
+    df2 = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": [-np.inf, -4, 2],
+            "maximum": [np.inf, -4, 2],
+        }
+    )
 
-    # run test_safe_parameters_fillna function to replace values
-    safe_parameters_fillna(df, "minimum", -np.inf)
-    safe_parameters_fillna(df, "maximum", np.inf)
+    safe_dataframe_fillna(df, "minimum", -np.inf)
+    safe_dataframe_fillna(df, "maximum", np.inf)
+    safe_dataframe_fillna(df, "not_a_column", np.inf)
 
-    # create df2 with expected values after function ran over df
-    data2 = [[1, -np.inf, np.inf], [431, -4, 45], [2, -np.inf, np.inf]]
-    df2 = pd.DataFrame(data2, columns=["test1", "minimum", "maximum"])
-
-    # df and df2 should be equal
-    assert np.all(df == df2)
+    assert_frame_equal(df, df2)
 
 
-def test_safe_parameters_replace():
-    """compare dataframes. df with values replaced by function and
-    df2 with expected values."""
+def test_safe_dataframe_replace():
+    """Only values in selected columns are replaced"""
 
-    # create df with integers and np.inf
-    data = [[1, -np.inf, np.inf], [431, -4, 45], [2, -np.inf, np.inf]]
-    df = pd.DataFrame(data, columns=["test1", "minimum", "maximum"])
+    df = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": [-np.inf, -4, 2],
+            "maximum": [np.inf, -4, 2],
+            "list_test": [np.inf, -4, 2],
+            "tuple_test": [np.inf, -4, 2],
+        }
+    )
 
-    # run safe_parameters_replace function to replace values
-    safe_parameters_replace(df, "minimum", -np.inf, "")
-    safe_parameters_replace(df, "maximum", np.inf, "")
+    df2 = pd.DataFrame(
+        {
+            "stays_same": [np.nan, -4, 2],
+            "minimum": ["", -4, 2],
+            "maximum": ["", -4, 2],
+            "list_test": [1.0, 1, 2],
+            "tuple_test": [3.0, 3, 2],
+        }
+    )
 
-    # create df2 with expected values after function ran over df
-    data2 = [[1, "", ""], [431, -4, 45], [2, "", ""]]
-    df2 = pd.DataFrame(data2, columns=["test1", "minimum", "maximum"])
+    safe_dataframe_replace(df, "minimum", -np.inf, "")
+    safe_dataframe_replace(df, "maximum", (np.inf, np.nan), "")
+    safe_dataframe_replace(df, "list_test", (np.inf, -4), 1)
+    safe_dataframe_replace(df, "tuple_test", (np.inf, -4), 3)
+    safe_dataframe_replace(df, "not_a_column", np.inf, 2)
 
-    # df and df2 should be equal
-    assert np.all(df == df2)
+    assert_frame_equal(df, df2)
