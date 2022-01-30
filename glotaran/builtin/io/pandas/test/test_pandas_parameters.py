@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
 
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
@@ -34,7 +36,7 @@ def test_references(yaml_reference: ParameterGroup, reference_path: Path):
 )
 def test_roundtrips(
     yaml_reference: ParameterGroup, tmp_path: Path, format_name: str, reference_path: Path
-) -> None:
+):
     """Roundtrip via save and load have the same data."""
     format_reference = load_parameters(reference_path)
     parameter_path = tmp_path / f"test_parameters.{format_name}"
@@ -43,3 +45,11 @@ def test_roundtrips(
 
     assert parameters_roundtrip == yaml_reference
     assert parameters_roundtrip == format_reference
+
+    if format_name in {"csv", "tsv"}:
+        assert parameter_path.read_text() == reference_path.read_text()
+    else:
+        assert_frame_equal(
+            pd.read_excel(parameter_path, na_values=["None", "none"]),
+            pd.read_excel(reference_path, na_values=["None", "none"]),
+        )
