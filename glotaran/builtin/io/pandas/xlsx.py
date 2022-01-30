@@ -34,7 +34,7 @@ class ExcelProjectIo(ProjectIoInterface):
         return ParameterGroup.from_dataframe(df, source=file_name)
 
     def save_parameters(
-        self, parameters: ParameterGroup, file_name: str, as_optimized: bool = True
+        self, parameters: ParameterGroup, file_name: str, *, as_optimized: bool = True
     ):
         """Save a :class:`ParameterGroup` to a Excel file.
 
