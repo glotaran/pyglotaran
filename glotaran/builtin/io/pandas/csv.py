@@ -1,4 +1,4 @@
-"""Register CSV parameters."""
+"""Module containing CSV io support."""
 
 from __future__ import annotations
 

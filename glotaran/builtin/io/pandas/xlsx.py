@@ -1,4 +1,4 @@
-"""Register XLSX parameters."""
+"""Module containing Excel like io support."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from glotaran.utils.io import safe_dataframe_replace
 
 @register_project_io(["xlsx", "ods"])
 class ExcelProjectIo(ProjectIoInterface):
-    """Plugin for XLSX data io."""
+    """Plugin for Excel like data io."""
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
         """Load parameters from XLSX file.

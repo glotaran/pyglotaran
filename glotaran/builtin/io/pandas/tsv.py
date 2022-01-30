@@ -1,4 +1,4 @@
-"""Register TSV parameters."""
+"""Module containing TSV io support."""
 
 from __future__ import annotations
 
