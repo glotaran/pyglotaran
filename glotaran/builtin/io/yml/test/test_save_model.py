@@ -26,19 +26,19 @@ megacomplex:
   megacomplex_sequential_decay:
     type: decay-sequential
     compartments:
-      - species_1
-      - species_2
-      - species_3
+    - species_1
+    - species_2
+    - species_3
     rates:
-      - rates.species_1
-      - rates.species_2
-      - rates.species_3
+    - rates.species_1
+    - rates.species_2
+    - rates.species_3
     dimension: time
 dataset:
   dataset_1:
     group: default
     megacomplex:
-      - megacomplex_sequential_decay
+    - megacomplex_sequential_decay
     irf: gaussian_irf
 """
 

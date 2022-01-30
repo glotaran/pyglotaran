@@ -33,11 +33,11 @@ def test_save_result_yml(
         termination_reason: The maximum number of function evaluations is exceeded.
         glotaran_version: {__version__}
         free_parameter_labels:
-          - rates.species_1
-          - rates.species_2
-          - rates.species_3
-          - irf.center
-          - irf.width
+        - rates.species_1
+        - rates.species_2
+        - rates.species_3
+        - irf.center
+        - irf.width
         scheme: scheme.yml
         initial_parameters: initial_parameters.csv
         optimized_parameters: optimized_parameters.csv
