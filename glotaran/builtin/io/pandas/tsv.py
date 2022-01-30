@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-import pandas as pd
+from typing import TYPE_CHECKING
 
 from glotaran.io import ProjectIoInterface
+from glotaran.io import load_parameters
 from glotaran.io import register_project_io
-from glotaran.parameter import ParameterGroup
+from glotaran.io import save_parameters
+
+if TYPE_CHECKING:
+    from glotaran.parameter import ParameterGroup
 
 
 @register_project_io(["tsv"])
@@ -25,12 +29,16 @@ class TsvProjectIo(ProjectIoInterface):
         -------
             :class:`ParameterGroup
         """
-        df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"], sep="\t")
-        return ParameterGroup.from_dataframe(df, source=file_name)
+        return load_parameters(file_name, format_name="csv", sep="\t")
 
     def save_parameters(
-        self, parameters: ParameterGroup, file_name: str, *, as_optimized: bool = True
-    ):
+        self,
+        parameters: ParameterGroup,
+        file_name: str,
+        *,
+        as_optimized: bool = True,
+        replace_infinfinity: bool = True,
+    ) -> None:
         """Save a :class:`ParameterGroup` to a TSV file.
 
         Parameters
@@ -41,7 +49,14 @@ class TsvProjectIo(ProjectIoInterface):
             File to write the parameters to.
         as_optimized : bool
             Whether to include properties which are the result of optimization.
+        replace_infinfinity : bool
+            Weather to replace infinity values with empty strings.
         """
-        parameters.to_dataframe(as_optimized=as_optimized).to_csv(
-            file_name, na_rep="None", index=False, sep="\t"
+        save_parameters(
+            parameters,
+            file_name,
+            format_name="csv",
+            sep="\t",
+            as_optimized=as_optimized,
+            replace_infinfinity=replace_infinfinity,
         )
