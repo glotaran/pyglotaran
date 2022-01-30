@@ -53,3 +53,23 @@ def test_roundtrips(
             pd.read_excel(parameter_path, na_values=["None", "none"]),
             pd.read_excel(reference_path, na_values=["None", "none"]),
         )
+
+
+@pytest.mark.parametrize("format_name", ("xlsx", "ods", "csv", "tsv"))
+def test_as_optimized_false(yaml_reference: ParameterGroup, tmp_path: Path, format_name: str):
+    """Column 'standard-error' is missing if as_optimized==False"""
+    parameter_path = tmp_path / f"test_parameters.{format_name}"
+    save_parameters(
+        file_name=parameter_path,
+        format_name=format_name,
+        parameters=yaml_reference,
+        as_optimized=False,
+    )
+
+    if format_name in {"csv", "tsv"}:
+        assert "standard-error" not in parameter_path.read_text().splitlines()[0]
+    else:
+        assert (
+            "standard-error"
+            not in pd.read_excel(parameter_path, na_values=["None", "none"]).columns
+        )

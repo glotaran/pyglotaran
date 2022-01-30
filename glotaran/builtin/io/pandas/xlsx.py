@@ -33,7 +33,9 @@ class ExcelProjectIo(ProjectIoInterface):
         safe_dataframe_fillna(df, "maximum", np.inf)
         return ParameterGroup.from_dataframe(df, source=file_name)
 
-    def save_parameters(self, parameters: ParameterGroup, file_name: str):
+    def save_parameters(
+        self, parameters: ParameterGroup, file_name: str, as_optimized: bool = True
+    ):
         """Save a :class:`ParameterGroup` to a Excel file.
 
         Parameters
@@ -42,8 +44,10 @@ class ExcelProjectIo(ProjectIoInterface):
             Parameters to be saved to file.
         file_name : str
             File to write the parameters to.
+        as_optimized : bool
+            Whether to include properties which are the result of optimization.
         """
-        df = parameters.to_dataframe()
+        df = parameters.to_dataframe(as_optimized=as_optimized)
         safe_dataframe_replace(df, "minimum", -np.inf, "")
         safe_dataframe_replace(df, "maximum", np.inf, "")
         df.to_excel(file_name, na_rep="None", index=False)

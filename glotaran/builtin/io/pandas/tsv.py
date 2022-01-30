@@ -28,7 +28,9 @@ class TsvProjectIo(ProjectIoInterface):
         df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"], sep="\t")
         return ParameterGroup.from_dataframe(df, source=file_name)
 
-    def save_parameters(self, parameters: ParameterGroup, file_name: str):
+    def save_parameters(
+        self, parameters: ParameterGroup, file_name: str, as_optimized: bool = True
+    ):
         """Save a :class:`ParameterGroup` to a TSV file.
 
         Parameters
@@ -37,5 +39,9 @@ class TsvProjectIo(ProjectIoInterface):
             Parameters to be saved to file.
         file_name : str
             File to write the parameters to.
+        as_optimized : bool
+            Whether to include properties which are the result of optimization.
         """
-        parameters.to_dataframe().to_csv(file_name, na_rep="None", index=False, sep="\t")
+        parameters.to_dataframe(as_optimized=as_optimized).to_csv(
+            file_name, na_rep="None", index=False, sep="\t"
+        )
