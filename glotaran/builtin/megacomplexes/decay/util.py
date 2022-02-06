@@ -103,8 +103,7 @@ def finalize_data(
             is_full_model,
             as_global,
         )
-    if isinstance(dataset_model.irf, IrfMultiGaussian) and "irf" not in dataset:
-        retrieve_irf(dataset_model, dataset, global_dimension)
+    retrieve_irf(dataset_model, dataset, global_dimension)
 
     if not is_full_model:
         multiple_complexes = len(decay_megacomplexes) > 1
@@ -314,6 +313,8 @@ def retrieve_decay_associated_data(
 
 
 def retrieve_irf(dataset_model: DatasetModel, dataset: xr.Dataset, global_dimension: str):
+    if not isinstance(dataset_model.irf, IrfMultiGaussian) or "irf" in dataset:
+        return
 
     irf = dataset_model.irf
     model_dimension = dataset_model.get_model_dimension()
@@ -326,10 +327,15 @@ def retrieve_irf(dataset_model: DatasetModel, dataset: xr.Dataset, global_dimens
             model_axis=dataset.coords[model_dimension].values,
         ).data,
     )
+
     center = irf.center if isinstance(irf.center, list) else [irf.center]
     width = irf.width if isinstance(irf.width, list) else [irf.width]
     dataset["irf_center"] = ("irf_nr", center) if len(center) > 1 else center[0]
     dataset["irf_width"] = ("irf_nr", width) if len(width) > 1 else width[0]
+
+    if irf.shift is not None:
+        dataset["irf_shift"] = (global_dimension, [center[0] - p.value for p in irf.shift])
+
     if isinstance(irf, IrfSpectralMultiGaussian) and irf.dispersion_center:
         dataset["irf_center_location"] = (
             ("irf_nr", global_dimension),

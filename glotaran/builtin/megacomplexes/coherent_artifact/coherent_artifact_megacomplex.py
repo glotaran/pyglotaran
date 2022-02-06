@@ -7,6 +7,7 @@ import xarray as xr
 
 from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
+from glotaran.builtin.megacomplexes.decay.util import retrieve_irf
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
@@ -84,6 +85,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
                 (global_dimension, "coherent_artifact_order"),
                 dataset.clp.sel(clp_label=self.compartments()).values,
             )
+        retrieve_irf(dataset_model, dataset, dataset_model.get_global_dimension())
 
 
 @nb.jit(nopython=True, parallel=True)
