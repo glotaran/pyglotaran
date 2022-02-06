@@ -13,10 +13,10 @@ from glotaran.project import Scheme
 
 
 @pytest.mark.parametrize(
-    "is_index_dependent",
-    (True, False),
+    "spectral_dependence",
+    ("none", "dispersed", "shifted"),
 )
-def test_coherent_artifact(is_index_dependent: bool):
+def test_coherent_artifact(spectral_dependence: str):
     model_dict = {
         "initial_concentration": {
             "j1": {"compartments": ["s1"], "parameters": ["irf_center"]},
@@ -54,8 +54,9 @@ def test_coherent_artifact(is_index_dependent: bool):
         ["irf_width", 20, {"vary": False, "non-negative": False}],
     ]
 
-    if is_index_dependent is True:
-        irf_spec = model_dict["irf"]["irf1"]
+    irf_spec = model_dict["irf"]["irf1"]
+
+    if spectral_dependence == "dispersed":
         irf_spec["dispersion_center"] = "irf_dispc"
         irf_spec["center_dispersion"] = ["irf_disp1", "irf_disp2"]
 
@@ -63,6 +64,14 @@ def test_coherent_artifact(is_index_dependent: bool):
             ["irf_dispc", 300, {"vary": False, "non-negative": False}],
             ["irf_disp1", 0.01, {"vary": False, "non-negative": False}],
             ["irf_disp2", 0.001, {"vary": False, "non-negative": False}],
+        ]
+    elif spectral_dependence == "shifted":
+
+        irf_spec["shift"] = ["irf_shift1", "irf_shift2", "irf_shift3"]
+        parameter_list += [
+            ["irf_shift1", -2],
+            ["irf_shift2", 0],
+            ["irf_shift3", 2],
         ]
 
     model = Model.from_dict(
@@ -82,7 +91,7 @@ def test_coherent_artifact(is_index_dependent: bool):
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
     dataset_model.overwrite_global_dimension("spectral")
     dataset_model.set_coordinates(coords)
-    matrix = calculate_matrix(dataset_model, {"spectral": [0, 1, 2]})
+    matrix = calculate_matrix(dataset_model, {"spectral": 1})
     compartments = matrix.clp_labels
 
     print(compartments)
@@ -128,10 +137,10 @@ def test_coherent_artifact(is_index_dependent: bool):
     assert np.allclose(data.data, resultdata.fitted_data)
 
     assert "coherent_artifact_response" in resultdata
-    if is_index_dependent:
-        assert resultdata["coherent_artifact_response"].shape == (spectral.size, time.size, 3)
-    else:
+    if spectral_dependence == "none":
         assert resultdata["coherent_artifact_response"].shape == (time.size, 3)
+    else:
+        assert resultdata["coherent_artifact_response"].shape == (spectral.size, time.size, 3)
 
     assert "coherent_artifact_associated_spectra" in resultdata
     assert resultdata["coherent_artifact_associated_spectra"].shape == (3, 3)

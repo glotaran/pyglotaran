@@ -7,6 +7,7 @@ import xarray as xr
 
 from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
+from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.builtin.megacomplexes.decay.util import retrieve_irf
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
@@ -50,8 +51,8 @@ class CoherentArtifactMegacomplex(Megacomplex):
 
         irf = dataset_model.irf
 
-        center, width, _, _, _, _ = irf.parameter(global_index, global_axis)
-        center = center[0]
+        center, width, _, shift, _, _ = irf.parameter(global_index, global_axis)
+        center = center[0] - shift
         width = self.width.value if self.width is not None else width[0]
 
         matrix = _calculate_coherent_artifact_matrix(center, width, model_axis, self.order)
@@ -61,7 +62,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
         return [f"coherent_artifact_{i}" for i in range(1, self.order + 1)]
 
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        return False
+        return index_dependent(dataset_model)
 
     def finalize_data(
         self,
