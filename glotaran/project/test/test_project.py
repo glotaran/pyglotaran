@@ -6,6 +6,7 @@ from glotaran import __version__ as gta_version
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.project.project import Project
+from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET as example_dataset
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
     MODEL_YML as example_model_yml,
@@ -155,3 +156,13 @@ def test_run_optimization(project_folder, project_file, name):
     assert (project_folder / "results" / name).exists()
     model_file.unlink()
     parameters_file.unlink()
+
+
+def test_load_result(project_folder, project_file):
+    project_folder = Path(project_folder)
+    project = Project.open(project_file)
+
+    assert project_folder / "results" / "test_run" == project.get_result_path("test_run")
+
+    result = project.load_result("test_run")
+    assert isinstance(result, Result)
