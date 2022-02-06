@@ -302,5 +302,11 @@ def test_kinetic_model(suite, nnls):
     assert "species_associated_images" in resultdata
     assert "decay_associated_images" in resultdata
 
+    if suite is OneComponentOneChannelGaussianIrf:
+        assert "irf_shift" in resultdata
+        expected_center = wanted_parameters.get("2").value
+        expected_shift = wanted_parameters.get("4").value
+        assert np.allclose(resultdata["irf_shift"].values, expected_center - expected_shift)
+
     if len(model.irf) != 0:
         assert "irf" in resultdata
