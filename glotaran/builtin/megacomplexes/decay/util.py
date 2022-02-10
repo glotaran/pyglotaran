@@ -107,14 +107,15 @@ def finalize_data(
 
     if not is_full_model:
         multiple_complexes = len(decay_megacomplexes) > 1
-        retrieve_decay_associated_data(
-            megacomplex,
-            dataset_model,
-            dataset,
-            global_dimension,
-            name,
-            multiple_complexes,
-        )
+        for megacomplex in decay_megacomplexes:
+            retrieve_decay_associated_data(
+                megacomplex,
+                dataset_model,
+                dataset,
+                global_dimension,
+                name,
+                multiple_complexes,
+            )
 
 
 def decay_matrix_implementation(
