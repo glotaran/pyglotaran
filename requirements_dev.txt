@@ -12,7 +12,7 @@ openpyxl==3.0.9
 pandas==1.4.0
 rich==11.1.0
 ruamel.yaml==0.17.20
-scipy==1.7.3
+scipy==1.8.0
 sdtfile==2022.2.2
 tabulate==0.8.9
 xarray==0.21.1
