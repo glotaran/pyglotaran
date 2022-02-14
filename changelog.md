@@ -13,6 +13,8 @@
 - 👌🎨 Add proper repr for DatasetMapping (#957)
 - 👌 Add SavingOptions to save_result API (#966)
 - ✨ Add parameter IO support for more formats supported by pandas (#896)
+- 👌 Apply IRF shift in coherent artifact megacomplex (#992)
+- 👌 Added IRF shift to result dataset (#994)
 
 ### 🩹 Bug fixes
 
@@ -28,7 +30,7 @@
 
 - 🔧 Improve packaging tooling (#923)
 - 🔧🚇 Exclude test files from duplication checks on sonarcloud (#959)
-- 🔧🚇 Only run check-maifest on the CI #967
+- 🔧🚇 Only run check-manifest on the CI #967
 - 🚇👌 Exclude dependabot push CI runs #978
 
 ## 0.5.1 (2021-12-31)
