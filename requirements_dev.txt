@@ -11,7 +11,7 @@ numpy==1.21.5
 openpyxl==3.0.9
 pandas==1.4.0
 rich==11.1.0
-ruamel.yaml==0.17.20
+ruamel.yaml==0.17.21
 scipy==1.7.3
 sdtfile==2022.2.2
 tabulate==0.8.9
