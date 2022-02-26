@@ -4,15 +4,15 @@ wheel>=0.30.0
 
 # glotaran setup dependencies
 asteval==0.9.26
-click==8.0.3
+click==8.0.4
 netCDF4==1.5.8
 numba==0.55.1
 numpy==1.21.5
 openpyxl==3.0.9
-pandas==1.4.0
-rich==11.1.0
-ruamel.yaml==0.17.20
-scipy==1.7.3
+pandas==1.4.1
+rich==11.2.0
+ruamel.yaml==0.17.21
+scipy==1.8.0
 sdtfile==2022.2.2
 tabulate==0.8.9
 xarray==0.21.1
