@@ -28,7 +28,7 @@ jobs:
             sim-6d-disp,
           ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python 3.8
         uses: actions/setup-python@v3
         with:
@@ -65,10 +65,10 @@ jobs:
     needs: [run-examples]
     steps:
       - name: Checkout glotaran
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Checkout compare results
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: "glotaran/pyglotaran-examples"
           ref: comparison-results
