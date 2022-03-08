@@ -8,7 +8,7 @@ jobs:
     name: "Run AVS"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
@@ -57,7 +57,7 @@ jobs:
           echo ::set-output name=last_tag::$last_tag
 
       - name: Checkout benchmark result repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: "glotaran/pyglotaran-benchmarks"
           ref: main
