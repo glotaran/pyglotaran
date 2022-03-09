@@ -173,7 +173,7 @@ def _create_result(
         jacobian=jacobian,
         number_of_data_points=number_of_data_points,
         number_of_jacobian_evaluations=number_of_jacobian_evaluation,
-        number_of_variables=number_of_variables,
+        number_of_parameters=number_of_variables,
         optimality=optimality,
         reduced_chi_square=reduced_chi_square,
         root_mean_square_error=root_mean_square_error,
