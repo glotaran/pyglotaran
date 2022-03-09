@@ -112,7 +112,7 @@ class Parameter(_SupportsArray):
     def from_list_or_value(
         cls,
         value: int | float | list,
-        default_options: dict = None,
+        default_options: dict[str, Any] | None = None,
         label: str = None,
     ) -> Parameter:
         """Create a parameter from a list or numeric value.
@@ -121,7 +121,7 @@ class Parameter(_SupportsArray):
         ----------
         value : int | float | list
             The list or numeric value.
-        default_options : dict
+        default_options : dict[str, Any]|None
             A dictionary of default options.
         label : str
             The label of the parameter.
@@ -509,6 +509,7 @@ class Parameter(_SupportsArray):
                     expression = expression.replace(
                         f"${label}", f"_{parameter.markdown(all_parameters=all_parameters)}_"
                     )
+
             md += f"({value}={expression})"
         else:
             md += f"({value}, fixed)"

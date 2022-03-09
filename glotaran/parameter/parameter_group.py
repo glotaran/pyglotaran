@@ -126,12 +126,9 @@ class ParameterGroup(dict):
         """
         root = cls(label=label, root_group=root_group)
 
-        # get defaults
-        defaults = None
-        for item in parameter_list:
-            if isinstance(item, dict):
-                defaults = item
-                break
+        defaults: dict[str, Any] | None = next(
+            (item for item in parameter_list if isinstance(item, dict)), None  # type:ignore[misc]
+        )
 
         for i, item in enumerate(parameter_list):
             if isinstance(item, (str, int, float)):
