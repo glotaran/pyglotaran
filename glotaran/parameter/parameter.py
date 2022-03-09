@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing._array_like import _SupportsArray
 
 from glotaran.utils.ipython import MarkdownStr
+from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
@@ -492,7 +493,9 @@ class Parameter(_SupportsArray):
         value = f"{parameter.value:.2e}"
         if parameter.vary:
             if parameter.standard_error is not np.nan:
-                value += f"±{parameter.standard_error:.2e}"
+                t_value = pretty_format_numerical(parameter.value / parameter.standard_error)
+                value += f"±{parameter.standard_error:.2e}, t-value: {t_value}"
+
             if initial_parameters is not None:
                 initial_value = initial_parameters.get(parameter.full_label).value
                 value += f", initial: {initial_value:.2e}"

@@ -6,6 +6,33 @@ from typing import Any
 from glotaran.utils.regex import RegexPattern as rp
 
 
+def pretty_format_numerical(value: float, decimal_places: int = 1) -> str:
+    """Format value with with at most ``decimal_places`` decimal places.
+
+    Used to format values like the t-value.
+
+    Parameters
+    ----------
+    value: float
+        Numerical value to format.
+    decimal_places: int
+        Decimal places to display. Defaults to 1
+
+    Returns
+    -------
+    str
+        Pretty formatted version of the value.
+    """
+    format_template = "{value:{format_instruction}}"
+    if value < 10 ** (-decimal_places):
+        format_instruction = f".{decimal_places}e"
+    elif value < 10 ** (decimal_places):
+        format_instruction = f".{decimal_places}f"
+    else:
+        format_instruction = ".0f"
+    return format_template.format(value=value, format_instruction=format_instruction)
+
+
 def sanitize_list_with_broken_tuples(mangled_list: list[str | float]) -> list[str]:
     """Sanitize a list with 'broken' tuples.
 

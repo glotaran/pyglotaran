@@ -5,6 +5,7 @@ from typing import NamedTuple
 
 import pytest
 
+from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_list_with_broken_tuples
 
 
@@ -52,6 +53,26 @@ def test_mangled_list_sanitization(test_data: MangledListTestData):
 def test_fix_tuple_string_list(test_data: MangledListTestData):
     actual = sanitize_list_with_broken_tuples(test_data.input)
     assert all(a in b for a, b in zip(actual, test_data.output))
+
+
+@pytest.mark.parametrize(
+    "value, decimal_places, expected",
+    (
+        (0.00000001, 1, "1.0e-08"),
+        (0.1, 1, "0.1"),
+        (1.7, 1, "1.7"),
+        (10, 1, "10"),
+        (0.00000001, 8, "0.00000001"),
+        (0.009, 2, "9.00e-03"),
+        (0.01, 2, "0.01"),
+        (12.3, 2, "12.30"),
+    ),
+)
+def test_pretty_format_numerical(value: float, decimal_places: int, expected: str):
+    """Pretty format values depending on decimal_places to show."""
+    result = pretty_format_numerical(value, decimal_places)
+
+    assert result == expected
 
 
 if __name__ == "__main__":
