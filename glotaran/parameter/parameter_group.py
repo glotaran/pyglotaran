@@ -437,7 +437,7 @@ class ParameterGroup(dict):
             Raised if no parameter with the given label exists.
         """
         # sometimes the spec parser delivers the labels as int
-        label = str(label)
+        label = str(label)  # sourcery skip
 
         path = label.split(".")
         label = path.pop()
