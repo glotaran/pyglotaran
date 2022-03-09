@@ -18,6 +18,7 @@ from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.parameter.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
+from glotaran.utils.sanitize import pretty_format_numerical
 
 if TYPE_CHECKING:
     from glotaran.parameter.parameter_history import ParameterHistory
@@ -606,6 +607,7 @@ class ParameterGroup(dict):
             "_Label_",
             "_Value_",
             "_Standard Error_",
+            "_t-value_",
             "_Minimum_",
             "_Maximum_",
             "_Vary_",
@@ -620,6 +622,7 @@ class ParameterGroup(dict):
                     parameter.label,
                     parameter.value,
                     parameter.standard_error,
+                    repr(pretty_format_numerical(parameter.value / parameter.standard_error)),
                     parameter.minimum,
                     parameter.maximum,
                     parameter.vary,
@@ -641,7 +644,7 @@ class ParameterGroup(dict):
             return_string += f"\n{parameter_table}\n\n"
         for _, child_group in sorted(self.items()):
             return_string += f"{child_group.markdown(float_format=float_format)}"
-        return MarkdownStr(return_string)
+        return MarkdownStr(return_string.replace("'", " "))
 
     def _repr_markdown_(self) -> str:
         """Create a markdown respresentation.

@@ -21,33 +21,33 @@ kinetic:
 RENDERED_MARKDOWN = """\
   * __irf__:
 
-    | _Label_   |   _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
-    |-----------|-----------|--------------------|-------------|-------------|----------|------------------|----------------|
-    | center    | 1.300e+00 |                nan |        -inf |         inf | True     | False            | `None`         |
-    | width     | 7.800e+00 |                nan |        -inf |         inf | True     | False            | `None`         |
+    | _Label_   |   _Value_ |   _Standard Error_ | _t-value_   |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
+    |-----------|-----------|--------------------|-------------|-------------|-------------|----------|------------------|----------------|
+    | center    | 1.300e+00 |                nan |  nan        |        -inf |         inf | True     | False            | `None`         |
+    | width     | 7.800e+00 |                nan |  nan        |        -inf |         inf | True     | False            | `None`         |
 
   * __j__:
 
-    |   _Label_ |   _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
-    |-----------|-----------|--------------------|-------------|-------------|----------|------------------|----------------|
-    |         1 | 1.000e+00 |                nan |        -inf |         inf | False    | False            | `None`         |
+    |   _Label_ |   _Value_ |   _Standard Error_ | _t-value_   |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
+    |-----------|-----------|--------------------|-------------|-------------|-------------|----------|------------------|----------------|
+    |         1 | 1.000e+00 |                nan |  nan        |        -inf |         inf | False    | False            | `None`         |
 
   * __kinetic__:
 
-    |   _Label_ |   _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_              |
-    |-----------|-----------|--------------------|-------------|-------------|----------|------------------|---------------------------|
-    |         1 | 3.000e-01 |        nan         |        -inf |         inf | True     | False            | `None`                    |
-    |         2 | 5.000e-02 |          1.235e-05 |        -inf |         inf | True     | False            | `None`                    |
-    |         3 | 3.500e-01 |        nan         |        -inf |         inf | False    | False            | `$kinetic.1 + $kinetic.2` |
+    |   _Label_ |   _Value_ |   _Standard Error_ | _t-value_   |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_              |
+    |-----------|-----------|--------------------|-------------|-------------|-------------|----------|------------------|---------------------------|
+    |         1 | 3.000e-01 |        nan         |  nan        |        -inf |         inf | True     | False            | `None`                    |
+    |         2 | 5.000e-02 |          1.235e-05 |  4050       |        -inf |         inf | True     | False            | `None`                    |
+    |         3 | 3.500e-01 |        nan         |  nan        |        -inf |         inf | False    | False            | `$kinetic.1 + $kinetic.2` |
 
 """  # noqa: E501
 
 RENDERED_MARKDOWN_E5_PRECISION = """\
   * __irf__:
 
-    | _Label_   |     _Value_ |   _Standard Error_ |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
-    |-----------|-------------|--------------------|-------------|-------------|----------|------------------|----------------|
-    | center    | 1.30000e+00 |        1.23457e-05 |        -inf |         inf | True     | False            | `None`         |
+    | _Label_   |     _Value_ |   _Standard Error_ | _t-value_   |   _Minimum_ |   _Maximum_ | _Vary_   | _Non-Negative_   | _Expression_   |
+    |-----------|-------------|--------------------|-------------|-------------|-------------|----------|------------------|----------------|
+    | center    | 1.30000e+00 |        1.23457e-05 |  105300     |        -inf |         inf | True     | False            | `None`         |
 
 """  # noqa: E501
 
