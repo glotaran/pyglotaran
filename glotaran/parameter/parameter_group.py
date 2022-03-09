@@ -126,12 +126,9 @@ class ParameterGroup(dict):
         """
         root = cls(label=label, root_group=root_group)
 
-        # get defaults
-        defaults = None
-        for item in parameter_list:
-            if isinstance(item, dict):
-                defaults = item
-                break
+        defaults = next(
+            (item for item in parameter_list if isinstance(item, dict)), None
+        )
 
         for i, item in enumerate(parameter_list):
             if isinstance(item, (str, int, float)):
@@ -418,7 +415,7 @@ class ParameterGroup(dict):
         except Exception:
             return False
 
-    def get(self, label: str) -> Parameter:  # type:ignore[override]
+    def get(self, label: str) -> Parameter:    # type:ignore[override]
         """Get a :class:`Parameter` by its label.
 
         Parameters
@@ -437,7 +434,7 @@ class ParameterGroup(dict):
             Raised if no parameter with the given label exists.
         """
         # sometimes the spec parser delivers the labels as int
-        label = str(label)
+        label = label
 
         path = label.split(".")
         label = path.pop()

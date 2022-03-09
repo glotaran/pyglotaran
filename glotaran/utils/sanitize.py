@@ -80,8 +80,7 @@ def sanitize_dict_keys(d: dict) -> dict:
             k_new = tuple(map(str, rp.word.findall(k)))
             d_new[k_new] = v
         elif isinstance(d, (dict, list)):
-            new_v = sanitize_dict_keys(v)
-            if new_v:
+            if new_v := sanitize_dict_keys(v):
                 d[k] = new_v
     return d_new
 
