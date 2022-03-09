@@ -82,7 +82,7 @@ class Result:
     documentation for the model.
     """
 
-    additional_penalty: np.ndarray | None = exclude_from_dict_field(None)
+    additional_penalty: list[np.ndarray] | None = exclude_from_dict_field(None)
     """A vector with the value for each additional penalty, or None"""
 
     cost: ArrayLike | None = exclude_from_dict_field(None)
@@ -193,7 +193,9 @@ class Result:
             ["Reduced Chi Square", f"{self.reduced_chi_square or np.nan:.2e}"],
             ["Root Mean Square Error (RMSE)", f"{self.root_mean_square_error or np.nan:.2e}"],
         ]
-        if self.additional_penalty is not None:
+        if self.additional_penalty is not None and any(
+            len(penalty) != 0 for penalty in self.additional_penalty
+        ):
             general_table_rows.append(["RMSE additional penalty", self.additional_penalty])
 
         result_table = tabulate(
