@@ -82,7 +82,7 @@ class Result:
     documentation for the model.
     """
 
-    additional_penalty: np.ndarray | None = exclude_from_dict_field(None)
+    additional_penalty: list[np.ndarray] | None = exclude_from_dict_field(None)
     """A vector with the value for each additional penalty, or None"""
 
     cost: ArrayLike | None = exclude_from_dict_field(None)
@@ -112,8 +112,8 @@ class Result:
     """Number of data points :math:`N`."""
     number_of_jacobian_evaluations: int | None = None
     """The number of jacobian evaluations."""
-    number_of_variables: int | None = None
-    """Number of variables in optimization :math:`N_{vars}`"""
+    number_of_parameters: int | None = None
+    """Number of parameters in optimization :math:`N_{vars}`"""
     optimality: float | None = None
     reduced_chi_square: float | None = None
     r"""The reduced chi-square of the optimization.
@@ -186,14 +186,16 @@ class Result:
         """
         general_table_rows: list[list[Any]] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
-            ["Number of variables", self.number_of_variables],
+            ["Number of parameters", self.number_of_parameters],
             ["Number of datapoints", self.number_of_data_points],
             ["Degrees of freedom", self.degrees_of_freedom],
             ["Chi Square", f"{self.chi_square or np.nan:.2e}"],
             ["Reduced Chi Square", f"{self.reduced_chi_square or np.nan:.2e}"],
             ["Root Mean Square Error (RMSE)", f"{self.root_mean_square_error or np.nan:.2e}"],
         ]
-        if self.additional_penalty is not None:
+        if self.additional_penalty is not None and any(
+            len(penalty) != 0 for penalty in self.additional_penalty
+        ):
             general_table_rows.append(["RMSE additional penalty", self.additional_penalty])
 
         result_table = tabulate(

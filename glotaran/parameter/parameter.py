@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing._array_like import _SupportsArray
 
 from glotaran.utils.ipython import MarkdownStr
+from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
@@ -111,7 +112,7 @@ class Parameter(_SupportsArray):
     def from_list_or_value(
         cls,
         value: int | float | list,
-        default_options: dict = None,
+        default_options: dict[str, Any] | None = None,
         label: str = None,
     ) -> Parameter:
         """Create a parameter from a list or numeric value.
@@ -120,7 +121,7 @@ class Parameter(_SupportsArray):
         ----------
         value : int | float | list
             The list or numeric value.
-        default_options : dict
+        default_options : dict[str, Any]|None
             A dictionary of default options.
         label : str
             The label of the parameter.
@@ -274,7 +275,7 @@ class Parameter(_SupportsArray):
 
     @full_label.setter
     def full_label(self, full_label: str):
-        self._full_label = str(full_label)
+        self._full_label = str(full_label)  # sourcery skip
 
     @property
     def non_negative(self) -> bool:
@@ -492,7 +493,9 @@ class Parameter(_SupportsArray):
         value = f"{parameter.value:.2e}"
         if parameter.vary:
             if parameter.standard_error is not np.nan:
-                value += f"±{parameter.standard_error:.2e}"
+                t_value = pretty_format_numerical(parameter.value / parameter.standard_error)
+                value += f"±{parameter.standard_error:.2e}, t-value: {t_value}"
+
             if initial_parameters is not None:
                 initial_value = initial_parameters.get(parameter.full_label).value
                 value += f", initial: {initial_value:.2e}"
@@ -504,8 +507,9 @@ class Parameter(_SupportsArray):
                     label = match[0]
                     parameter = all_parameters.get(label)
                     expression = expression.replace(
-                        "$" + label, f"_{parameter.markdown(all_parameters=all_parameters)}_"
+                        f"${label}", f"_{parameter.markdown(all_parameters=all_parameters)}_"
                     )
+
             md += f"({value}={expression})"
         else:
             md += f"({value}, fixed)"
