@@ -78,7 +78,13 @@ class ExplicitFile:
             raise FileExistsError(f"File already exist:\n{self._file}")
         comment = self._comment + " " + comment
 
-        comments = "# Filename: " + str(self._file) + "\n" + " ".join(comment.splitlines()) + "\n"
+        comments = (
+            f"# Filename: {str(self._file)}"
+            + "\n"
+            + " ".join(comment.splitlines())
+            + "\n"
+        )
+
 
         if file_format == DataFileType.wavelength_explicit:
             wav = "\t".join(repr(num) for num in self._spectral_indices)
