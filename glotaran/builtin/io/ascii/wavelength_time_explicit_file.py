@@ -27,7 +27,7 @@ class ExplicitFile:
     """
 
     # TODO: implement time_intervals
-    def __init__(self, filepath: str = None, dataset: xr.DataArray = None):
+    def __init__(self, filepath: str | None = None, dataset: xr.DataArray | None = None):
         self._file_data_format = None
         self._observations = []  # TODO: choose name: data_points, observations, data
         self._times = []
@@ -76,22 +76,19 @@ class ExplicitFile:
 
         if os.path.isfile(self._file) and not overwrite:
             raise FileExistsError(f"File already exist:\n{self._file}")
-        comment = self._comment + " " + comment
+        comment = f"{self._comment} {comment}"
 
-        comments = "# Filename: " + str(self._file) + "\n" + " ".join(comment.splitlines()) + "\n"
+        comments = f"# Filename: {str(self._file)}\n{' '.join(comment.splitlines())}\n"
 
         if file_format == DataFileType.wavelength_explicit:
             wav = "\t".join(repr(num) for num in self._spectral_indices)
             header = (
-                comments + "Wavelength explicit\nIntervalnr {}"
-                "".format(len(self._spectral_indices)) + "\n" + wav
+                f"{comments}Wavelength explicit\nIntervalnr {len(self._spectral_indices)}\n{wav}"
             )
             raw_data = np.vstack((self._times.T, self._observations)).T
         elif file_format == DataFileType.time_explicit:
             tim = "\t".join(repr(num) for num in self._times)
-            header = (
-                comments + "Time explicit\nIntervalnr {}" "".format(len(self._times)) + "\n" + tim
-            )
+            header = f"{comments}Time explicit\nIntervalnr {len(self._times)}\n{tim}"
             raw_data = np.vstack((self._spectral_indices.T, self._observations.T)).T
         else:
             raise NotImplementedError
