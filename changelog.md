@@ -34,6 +34,7 @@
 - 🔧🚇 Only run check-manifest on the CI (#967)
 - 🚇👌 Exclude dependabot push CI runs (#978)
 - 🚇👌 Exclude sourcery AI push CI runs (#1014)
+- 👌📚🚇 Auto remove notebook written data when building docs (#1019)
 
 ## 0.5.1 (2021-12-31)
 
