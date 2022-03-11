@@ -16,6 +16,7 @@
 - 👌 Apply IRF shift in coherent artifact megacomplex (#992)
 - 👌 Added IRF shift to result dataset (#994)
 - 👌 Improve Result, Parameter and ParameterGroup markdown (#1012)
+- ✨ Add extract sas helper function (#1015)
 
 ### 🩹 Bug fixes
 
