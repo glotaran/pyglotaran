@@ -256,7 +256,7 @@ def safe_dataframe_replace(
 
 
 def extract_sas(
-    result: Result | xr.Dataset, dataset: str | None = None, species: str | None = None
+    result: Result | xr.Dataset, species: str | None = None, dataset: str | None = None
 ) -> xr.DataArray:
     """Extract SAS data from a result.
 
@@ -266,10 +266,10 @@ def extract_sas(
     ----------
     result: Result | xr.Dataset
         Optimization ``Result`` instance or result dataset.
-    dataset: str | None
-        Name of the dataset to look up in a Result instance. Defaults to None
     species: str | None
         Name op the species to extract the SAS for. Defaults to None
+    dataset: str | None
+        Name of the dataset to look up in a Result instance. Defaults to None
 
     Returns
     -------
@@ -294,8 +294,10 @@ def extract_sas(
     .. code-block:: python
 
         from glotaran.utils.io import extract_sas
+        from glotaran.io import save_dataset
 
-        sas = extract_sas(result, "dataset_1", "species_1")
+        sas = extract_sas(result, "species_1","dataset_1")
+        save_dataset("sas__result_dataset_1__species_1.ascii")
 
 
     Extracting the SAS from a result dataset loaded from file.
@@ -303,10 +305,12 @@ def extract_sas(
     .. code-block:: python
 
         from glotaran.io import load_result
+        from glotaran.io import save_dataset
         from glotaran.utils.io import extract_sas
 
         result_dataset = load_result("result_dataset_1.nc")
         sas = extract_sas(result_dataset, "species_1")
+        save_dataset("sas__result_dataset_1__species_1.ascii")
 
     """
     # workaround to prevent circular imports

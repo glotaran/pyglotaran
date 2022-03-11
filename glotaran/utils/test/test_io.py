@@ -269,7 +269,7 @@ def test_extract_sas(scheme: Scheme):
     result = optimize(scheme)
     result_dataset = result.data["dataset_1"]
 
-    sas = extract_sas(result, "dataset_1", "species_1")
+    sas = extract_sas(result, "species_1", "dataset_1")
 
     assert sas.coords["time"] == [0]
     assert np.all(sas.coords["spectral"] == result_dataset.coords["spectral"])
@@ -290,7 +290,7 @@ def test_extract_sas_ascii_round_trip(tmp_path: Path):
     result = optimize(seq_scheme)
     tmp_file = tmp_path / "sas.ascii"
 
-    sas = extract_sas(result, "dataset_1", "species_1")
+    sas = extract_sas(result, "species_1", "dataset_1")
     save_dataset(sas, tmp_file)
     loaded_sas = load_dataset(tmp_file, prepare=False)
     del sas.attrs["loader"]
@@ -306,7 +306,7 @@ def test_extract_sas_exceptions():
     result = optimize(seq_scheme)
 
     with pytest.raises(ValueError) as exec_info:
-        extract_sas(result, "not_a_dataset")
+        extract_sas(result, dataset="not_a_dataset")
 
     assert str(exec_info.value) == (
         "The result doesn't contain a dataset with name 'not_a_dataset'.\n"
@@ -321,7 +321,7 @@ def test_extract_sas_exceptions():
     )
 
     with pytest.raises(ValueError) as exec_info:
-        extract_sas(result, "dataset_1")
+        extract_sas(result, dataset="dataset_1")
 
     assert str(exec_info.value) == (
         "The result doesn't contain a species with name None.\n"
@@ -329,7 +329,7 @@ def test_extract_sas_exceptions():
     )
 
     with pytest.raises(ValueError) as exec_info:
-        extract_sas(result, "dataset_1", "s1")
+        extract_sas(result, dataset="dataset_1", species="s1")
 
     assert str(exec_info.value) == (
         "The result doesn't contain a species with name 's1'.\n"
