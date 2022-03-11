@@ -12,8 +12,14 @@ import xarray as xr
 from IPython.core.formatters import format_display_data
 from pandas.testing import assert_frame_equal
 
-from glotaran.io import save_dataset
+from glotaran.analysis.optimize import optimize
+from glotaran.plugin_system.data_io_registration import load_dataset
+from glotaran.plugin_system.data_io_registration import save_dataset
+from glotaran.project.scheme import Scheme
+from glotaran.testing.simulated_data.parallel_spectral_decay import SCHEME as par_scheme
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME as seq_scheme
 from glotaran.utils.io import DatasetMapping
+from glotaran.utils.io import extract_sas
 from glotaran.utils.io import load_datasets
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.io import safe_dataframe_fillna
@@ -255,3 +261,90 @@ def test_safe_dataframe_replace():
     safe_dataframe_replace(df, "not_a_column", np.inf, 2)
 
     assert_frame_equal(df, df2)
+
+
+@pytest.mark.parametrize("scheme", (seq_scheme, par_scheme))
+def test_extract_sas(scheme: Scheme):
+    """Same spectral dimension and data values as direct selected data."""
+    result = optimize(scheme)
+    result_dataset = result.data["dataset_1"]
+
+    sas = extract_sas(result, "dataset_1", "species_1")
+
+    assert sas.coords["time"] == [0]
+    assert np.all(sas.coords["spectral"] == result_dataset.coords["spectral"])
+    assert np.all(
+        sas.values[0] == result_dataset.species_associated_spectra.sel(species="species_1").values
+    )
+
+    sas_from_dataset = extract_sas(result_dataset, species="species_1")
+
+    assert np.all(
+        sas_from_dataset.values[0]
+        == result_dataset.species_associated_spectra.sel(species="species_1").values
+    )
+
+
+def test_extract_sas_ascii_round_trip(tmp_path: Path):
+    """Save and load from ascii give same result."""
+    result = optimize(seq_scheme)
+    tmp_file = tmp_path / "sas.ascii"
+
+    sas = extract_sas(result, "dataset_1", "species_1")
+    save_dataset(sas, tmp_file)
+    loaded_sas = load_dataset(tmp_file, prepare=False)
+    del sas.attrs["loader"]
+    del sas.attrs["source_path"]
+
+    for dim in sas.dims:
+        assert all(sas.coords[dim] == loaded_sas.coords[dim]), f"Coordinate {dim} mismatch"
+    assert np.allclose(sas.values, loaded_sas.data.values)
+
+
+def test_extract_sas_exceptions():
+    """Raise error with usage help on wrong dataset name or species."""
+    result = optimize(seq_scheme)
+
+    with pytest.raises(ValueError) as exec_info:
+        extract_sas(result, "not_a_dataset")
+
+    assert str(exec_info.value) == (
+        "The result doesn't contain a dataset with name 'not_a_dataset'.\n"
+        "Valid values are: ['dataset_1']"
+    )
+
+    with pytest.raises(ValueError) as exec_info:
+        extract_sas("result")
+
+    assert str(exec_info.value) == (
+        "Unsupported result type: 'str'\nSupported types are: ['Result', 'xr.Dataset']"
+    )
+
+    with pytest.raises(ValueError) as exec_info:
+        extract_sas(result, "dataset_1")
+
+    assert str(exec_info.value) == (
+        "The result doesn't contain a species with name None.\n"
+        "Valid values are: ['species_1', 'species_2', 'species_3']"
+    )
+
+    with pytest.raises(ValueError) as exec_info:
+        extract_sas(result, "dataset_1", "s1")
+
+    assert str(exec_info.value) == (
+        "The result doesn't contain a species with name 's1'.\n"
+        "Valid values are: ['species_1', 'species_2', 'species_3']"
+    )
+
+    bad_result = xr.Dataset(
+        {"foo": (("species", "spectral"), [[1, 2], [3, 4]])},
+        coords={"species": ["species_1", "species_2"], "spectral": [1, 2]},
+    )
+
+    with pytest.raises(ValueError) as exec_info:
+        extract_sas(bad_result, species="species_1")
+
+    assert str(exec_info.value) == (
+        "The result does not have a 'species_associated_spectra' data variable.\n"
+        "Contained data variables are: ['foo']"
+    )

@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
 
+    from glotaran.project.result import Result
     from glotaran.typing.types import StrOrPath
 
 
@@ -252,3 +253,91 @@ def safe_dataframe_replace(
         to_be_replaced_values = [to_be_replaced_values]
     if column_name in df.columns:
         df[column_name].replace(to_be_replaced_values, replace_value, inplace=True)
+
+
+def extract_sas(
+    result: Result | xr.Dataset, dataset: str | None = None, species: str | None = None
+) -> xr.DataArray:
+    """Extract SAS data from a result.
+
+    This is a helper function to easily extract clp guidance spectra.
+
+    Parameters
+    ----------
+    result: Result | xr.Dataset
+        Optimization ``Result`` instance or result dataset.
+    dataset: str | None
+        Name of the dataset to look up in a Result instance. Defaults to None
+    species: str | None
+        Name op the species to extract the SAS for. Defaults to None
+
+    Returns
+    -------
+    xr.DataArray
+        SAS data with dummy time dimension.
+
+    Raises
+    ------
+    ValueError
+        If result is of type ``Result`` and ``dataset`` is None or not in the result data.
+    ValueError
+        If result is not of type ``Result`` or ``xr.Dataset``.
+    ValueError
+        If ``species`` is None or not in the species coordinates.
+    ValueError
+        If the result dataset does not contain a ``species_associated_spectra`` data variable.
+
+    Examples
+    --------
+    Extracting the SAS from an optimization result object.
+
+    .. code-block:: python
+
+        from glotaran.utils.io import extract_sas
+
+        sas = extract_sas(result, "dataset_1", "species_1")
+
+
+    Extracting the SAS from a result dataset loaded from file.
+
+    .. code-block:: python
+
+        from glotaran.io import load_result
+        from glotaran.utils.io import extract_sas
+
+        result_dataset = load_result("result_dataset_1.nc")
+        sas = extract_sas(result_dataset, "species_1")
+
+    """
+    # workaround to prevent circular imports
+    from glotaran.project.result import Result
+
+    if isinstance(result, xr.Dataset):
+        result_dataset = result
+    elif isinstance(result, Result):
+        if dataset is None or dataset not in result.data:
+            raise ValueError(
+                f"The result doesn't contain a dataset with name {dataset!r}.\n"
+                f"Valid values are: {list(result.data.keys())}"
+            )
+        result_dataset = result.data[dataset]
+    else:
+        raise ValueError(
+            f"Unsupported result type: {type(result).__name__!r}\n"
+            "Supported types are: ['Result', 'xr.Dataset']"
+        )
+    if species is None or species not in result_dataset.species:
+        raise ValueError(
+            f"The result doesn't contain a species with name {species!r}.\n"
+            f"Valid values are: {list(result_dataset.species.values)}"
+        )
+    if "species_associated_spectra" not in result_dataset:
+        raise ValueError(
+            "The result does not have a 'species_associated_spectra' data variable.\n"
+            f"Contained data variables are: {list(result_dataset.data_vars.keys())}"
+        )
+    sas_values = result_dataset.species_associated_spectra.sel(species=species)
+    # For backwards compatibility we need to insert a fake time dimension
+    return xr.DataArray(
+        [sas_values.values], coords={"time": [0.0], "spectral": sas_values.coords["spectral"]}
+    )
