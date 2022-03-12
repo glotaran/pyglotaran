@@ -41,7 +41,7 @@ class DatasetModel:
     def iterate_megacomplexes(
         self,
     ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
-        """Iterates of der dataset model's megacomplexes."""
+        """Iterate over the dataset_models's megacomplexes."""
         if self.clp_guidance is not None:
             scale = self.megacomplex_scale or None
             yield scale, ClpGuidanceMegacomplex()
@@ -53,7 +53,7 @@ class DatasetModel:
     def iterate_global_megacomplexes(
         self,
     ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
-        """Iterates of der dataset model's global megacomplexes."""
+        """Iterate over the dataset_models's global megacomplexes."""
         for i, megacomplex in enumerate(self.global_megacomplex):
             scale = (
                 self.global_megacomplex_scale[i]
