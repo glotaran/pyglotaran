@@ -10,7 +10,13 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
+import subprocess
+import sys
+from pathlib import Path
+
 import glotaran
+
+DOC_FOLDER = Path(__file__).parent.parent
 
 # -- Project information -----------------------------------------------------
 
@@ -303,3 +309,7 @@ extlinks = {
     "scipydoc": ("https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html", "scipy."),
     "xarraydoc": ("https://xarray.pydata.org/en/stable/generated/xarray.%s.html", "xarray."),
 }
+
+# cleanup notebook data
+
+subprocess.run([sys.executable, DOC_FOLDER / "remove_notebook_written_data.py"], check=True)
