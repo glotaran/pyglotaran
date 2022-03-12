@@ -267,7 +267,7 @@ def extract_sas(
     result: Result | xr.Dataset
         Optimization ``Result`` instance or result dataset.
     species: str | None
-        Name op the species to extract the SAS for. Defaults to None
+        Name of the species to extract the SAS for. Defaults to None
     dataset: str | None
         Name of the dataset to look up in a Result instance. Defaults to None
 
@@ -297,7 +297,7 @@ def extract_sas(
         from glotaran.io import save_dataset
 
         sas = extract_sas(result, "species_1","dataset_1")
-        save_dataset("sas__result_dataset_1__species_1.ascii")
+        save_dataset(sas, "sas__result_dataset_1__species_1.ascii")
 
 
     Extracting the SAS from a result dataset loaded from file.
@@ -310,7 +310,7 @@ def extract_sas(
 
         result_dataset = load_result("result_dataset_1.nc")
         sas = extract_sas(result_dataset, "species_1")
-        save_dataset("sas__result_dataset_1__species_1.ascii")
+        save_dataset(sas, "sas__result_dataset_1__species_1.ascii")
 
     """
     # workaround to prevent circular imports
