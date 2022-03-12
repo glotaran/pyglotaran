@@ -95,7 +95,7 @@ class DatasetModel:
                     self, dataset, is_full_model=is_full_model, as_global=True
                 )
 
-    def replace_model_dimension(self, model_dimension: str) -> None:
+    def set_model_dimension(self, model_dimension: str) -> None:
         """Overwrites the dataset model's model dimension."""
         self._model_dimension = model_dimension
 
@@ -131,7 +131,7 @@ class DatasetModel:
                 )
         return self._global_dimension
 
-    def replace_global_dimension(self, global_dimension: str) -> None:
+    def set_global_dimension(self, global_dimension: str) -> None:
         """Overwrites the dataset model's global dimension."""
         self._global_dimension = global_dimension
 
@@ -139,8 +139,8 @@ class DatasetModel:
         """Swaps the dataset model's global and model dimension."""
         global_dimension = self.get_model_dimension()
         model_dimension = self.get_global_dimension()
-        self.replace_global_dimension(global_dimension)
-        self.replace_model_dimension(model_dimension)
+        self.set_global_dimension(global_dimension)
+        self.set_model_dimension(model_dimension)
 
     def set_data(self, dataset: xr.Dataset) -> DatasetModel:
         """Sets the dataset model's data."""
