@@ -17,8 +17,8 @@ class DatasetModel:
 
     label: str
     clp_guidance: str | None
-    overwrite_model_dimension: str | None
-    overwrite_global_dimension: str | None
+    override_model_dimension: str | None
+    override_global_dimension: str | None
     group: str
     megacomplex: list[str]
     megacomplex_scale: list[Parameter] | None

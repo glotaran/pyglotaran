@@ -70,8 +70,8 @@ class DatasetModel:
 
     def get_model_dimension(self) -> str:
         """Returns the dataset model's model dimension."""
-        if self.overwrite_model_dimension is not None:
-            return self.overwrite_model_dimension
+        if self.override_model_dimension is not None:
+            return self.override_model_dimension
         if not hasattr(self, "_model_dimension"):
             if not self.has_megacomplexes():
                 raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
@@ -102,12 +102,12 @@ class DatasetModel:
     # TODO: make explicit we only support 2 dimensions at present
     # TODO: the global dimension should become a flexible index (MultiIndex)
     # the user can then specify the name of the MultiIndex global dimension
-    # using the function overwrite_global_dimension
+    # using the function override_global_dimension
     # e.g. in FLIM, x, y dimension may get 'flattened' to a MultiIndex 'pixel'
     def get_global_dimension(self) -> str:
         """Returns the dataset model's global dimension."""
-        if self.overwrite_global_dimension is not None:
-            return self.overwrite_global_dimension
+        if self.override_global_dimension is not None:
+            return self.override_global_dimension
         if not hasattr(self, "_global_dimension"):
             if self.has_global_model():
                 if isinstance(self.global_megacomplex[0], str):
@@ -165,7 +165,7 @@ class DatasetModel:
             return self._index_dependent
         return any(m.index_dependent(self) for _, m in self.iterate_megacomplexes())
 
-    def overwrite_index_dependent(self, index_dependent: bool):
+    def override_index_dependent(self, index_dependent: bool):
         """Overrides the index dependency of the dataset"""
         self._index_dependent = index_dependent
 
