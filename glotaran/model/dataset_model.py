@@ -165,7 +165,7 @@ class DatasetModel:
             return self._index_dependent
         return any(m.index_dependent(self) for _, m in self.iterate_megacomplexes())
 
-    def override_index_dependent(self, index_dependent: bool):
+    def overwrite_index_dependent(self, index_dependent: bool):
         """Overrides the index dependency of the dataset"""
         self._index_dependent = index_dependent
 
