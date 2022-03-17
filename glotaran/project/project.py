@@ -53,7 +53,7 @@ class Project:
         self._result_registry = ProjectResultRegistry(self.folder)
 
     @staticmethod
-    def create(folder: str | Path, overwrite: bool = False):
+    def create(folder: str | Path, overwrite: bool = False) -> Project:
         """Create a new project folder and file.
 
         Parameters
@@ -63,6 +63,11 @@ class Project:
             directory will be used.
         overwrite: bool
             Whether to overwrite an existing project file.
+
+        Returns
+        -------
+        Project
+            The created project.
 
         Raises
         ------
@@ -79,9 +84,10 @@ class Project:
                 f"Project file '{project_file}' already exist. Set `overwrite=True` to overwrite."
             )
         project_file.write_text(TEMPLATE.format(gta_version=gta_version))
+        return Project.open(project_file)
 
     @classmethod
-    def open(cls, project_folder_or_file: str | Path, create_if_not_exist: bool = True):
+    def open(cls, project_folder_or_file: str | Path, create_if_not_exist: bool = True) -> Project:
         """Open a new project.
 
         Parameters
@@ -94,7 +100,7 @@ class Project:
         Returns
         -------
         Project
-            The created project.
+            The project instance.
 
         Raises
         ------
