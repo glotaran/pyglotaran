@@ -221,7 +221,7 @@ class Project:
 
     def generate_model(
         self,
-        name: str,
+        generator_name: str,
         generator: str,
         generator_arguments: dict[str, Any],
     ):
@@ -229,14 +229,14 @@ class Project:
 
         Parameters
         ----------
-        name : str
+        generator_name : str
             The name of the model.
         generator : str
             The generator for the model.
         generator_arguments : dict[str, Any]
             Arguments for the generator.
         """
-        self._model_registry.generate_model(name, generator, generator_arguments)
+        self._model_registry.generate_model(generator_name, generator, generator_arguments)
 
     @property
     def has_parameters(self) -> bool:
