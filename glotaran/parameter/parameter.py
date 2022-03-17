@@ -308,7 +308,7 @@ class Parameter(_SupportsArray):
 
     @full_label.setter
     def full_label(self, full_label: str):
-        self._full_label = str(full_label)  # sourcery skip
+        self._full_label = full_label
 
     @property
     def non_negative(self) -> bool:

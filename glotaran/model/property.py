@@ -208,29 +208,29 @@ class ModelProperty(property):
             items = getattr(model, self._name)
 
             if self.glotaran_is_sequence_property:
-                for item in value:
-                    if item not in items:
-                        missing_model.append((self._name, item))
+                missing_model.extend((self._name, item) for item in value if item not in items)
             elif self.glotaran_is_mapping_property:
-                for item in value.values():
-                    if item not in items:
-                        missing_model.append((self._name, item))
+                missing_model.extend(
+                    (self._name, item) for item in value.values() if item not in items
+                )
             elif value not in items:
                 missing_model.append((self._name, value))
         missing_model_messages = [
             f"Missing Model Item: '{name}'['{label}']" for name, label in missing_model
         ]
 
-        missing_parameters = []
+        missing_parameters: list[str] = []
         if parameters is not None and self.glotaran_is_parameter_property:
             wanted = value
             if self.glotaran_is_scalar_property:
                 wanted = [wanted]
             elif self.glotaran_is_mapping_property:
                 wanted = wanted.values()
-            for parameter in wanted:
-                if not parameters.has(parameter.full_label):
-                    missing_parameters.append(parameter.full_label)
+            missing_parameters.extend(
+                parameter.full_label
+                for parameter in wanted
+                if not parameters.has(parameter.full_label)
+            )
         missing_parameters_messages = [f"Missing Parameter: '{p}'" for p in missing_parameters]
 
         return missing_model_messages + missing_parameters_messages

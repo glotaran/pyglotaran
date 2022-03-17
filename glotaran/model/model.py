@@ -212,14 +212,14 @@ class Model:
     def _add_dataset_property(self, property_name: str, dataset_property: dict[str, any]):
         if property_name in self._dataset_properties:
             known_type = (
-                self._dataset_properties[property_name]
-                if not isinstance(self._dataset_properties, dict)
-                else self._dataset_properties[property_name]["type"]
+                self._dataset_properties[property_name]["type"]
+                if isinstance(self._dataset_properties, dict)
+                else self._dataset_properties[property_name]
             )
             new_type = (
-                dataset_property
-                if not isinstance(dataset_property, dict)
-                else dataset_property["type"]
+                dataset_property["type"]
+                if isinstance(dataset_property, dict)
+                else dataset_property
             )
             if known_type != new_type:
                 raise ModelError(

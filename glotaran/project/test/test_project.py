@@ -132,7 +132,6 @@ def test_create_scheme(project_folder, project_file):
 
 @pytest.mark.parametrize("name", ["test_run", None])
 def test_run_optimization(project_folder, project_file, name):
-    project_folder = project_folder
     project = Project.open(project_file)
 
     model_file = project_folder / "models" / "sequential.yml"
@@ -165,7 +164,6 @@ def test_run_optimization(project_folder, project_file, name):
 
 
 def test_load_result(project_folder, project_file):
-    project_folder = project_folder
     project = Project.open(project_file)
 
     assert project_folder / "results" / "test_run" == project.get_result_path("test_run")

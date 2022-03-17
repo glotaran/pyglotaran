@@ -55,7 +55,7 @@ class ProjectResultRegistry(ProjectRegistry):
             A result name.
         """
         previous_results = list(self.directory.glob(f"{model_name}_run_*"))
-        if len(previous_results) == 0:
+        if not previous_results:
             return f"{model_name}_run_0"
         previous_results.sort()
         latest_result = previous_results[-1].with_suffix("").name
