@@ -552,3 +552,27 @@ def test_model_markdown():
     print(result)
 
     assert result == expected
+
+
+def test_get_parameter_labels(test_model: Model):
+    wanted = [
+        "foo",
+        "bar",
+        "baz",
+        "baz",
+        "baz",
+        "foo",
+        "foo",
+        "bar",
+        "baz",
+        "baz",
+        "baz",
+        "foo",
+        "scale_1",
+        "bar",
+        "scale_2",
+        "bar",
+    ]
+    got = test_model.get_parameter_labels()
+
+    assert wanted == got
