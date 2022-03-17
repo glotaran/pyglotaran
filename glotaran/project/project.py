@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from textwrap import dedent
 from typing import Any
 from typing import Literal
 
@@ -472,26 +473,28 @@ class Project:
         MarkdownStr : str
             The markdown string.
         """
-        md = f"""\
-# Project _{self.folder}_
+        md = dedent(
+            f"""\
+            # Project _{self.folder}_
 
-pyglotaran version: {self.version}
+            pyglotaran version: {self.version}
 
-## Data
+            ## Data
 
-{self._data_registry.markdown()}
+            {self._data_registry.markdown()}
 
-## Model
+            ## Model
 
-{self._model_registry.markdown()}
+            {self._model_registry.markdown()}
 
-## Parameters
+            ## Parameters
 
-{self._parameter_registry.markdown()}
+            {self._parameter_registry.markdown()}
 
-## Results
+            ## Results
 
-{self._result_registry.markdown()}
-        """
+            {self._result_registry.markdown()}
+            """
+        )
 
         return MarkdownStr(md)
