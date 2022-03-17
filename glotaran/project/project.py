@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
@@ -34,10 +35,10 @@ class Project:
     A project file is a file in `yml` format with name `project.gta`
     """
 
-    version: str
+    version: str = field(init=False)
 
     file: Path
-    folder: Path
+    folder: Path | None = field(default=None)
 
     def __post_init__(self):
         """Overwrite of post init."""
