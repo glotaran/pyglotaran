@@ -33,6 +33,12 @@ def test_data(tmpdir_factory):
     return path
 
 
+def test_create(project_folder):
+    Project.create(project_folder)
+    with pytest.raises(FileExistsError):
+        assert Project.create(project_folder)
+
+
 def test_open(project_folder, project_file):
     project_from_folder = Project.open(project_folder)
 
