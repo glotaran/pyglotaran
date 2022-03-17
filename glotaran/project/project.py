@@ -65,8 +65,7 @@ class Project:
         from glotaran import __version__ as gta_version
 
         project_folder = make_path_absolute_if_relative(Path(folder))
-        if not project_folder.exists():
-            project_folder.mkdir()
+        project_folder.mkdir(parents=True, exist_ok=True)
         project_file = project_folder / PROJECT_FILE_NAME
         with open(project_file, "w") as f:
             f.write(TEMPLATE.format(gta_version=gta_version))

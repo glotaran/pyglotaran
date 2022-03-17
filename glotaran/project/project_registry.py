@@ -123,5 +123,4 @@ class ProjectRegistry:
 
     def _create_directory_if_not_exist(self):
         """Create the registry directory if it does not exist."""
-        if not self._directory.exists():
-            self._directory.mkdir()
+        self._directory.mkdir(parents=True, exist_ok=True)
