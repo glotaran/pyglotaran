@@ -18,7 +18,7 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import (
 
 @pytest.fixture(scope="module")
 def project_folder(tmpdir_factory):
-    return str(tmpdir_factory.mktemp("test_project"))
+    return Path(tmpdir_factory.mktemp("test_project"))
 
 
 @pytest.fixture(scope="module")
@@ -60,7 +60,7 @@ def test_generate_model(project_folder, project_file):
 
     project.generate_model("test_model", "decay_parallel", {"nr_compartments": 5})
 
-    model_folder = Path(project_folder) / "models"
+    model_folder = project_folder / "models"
     assert model_folder.exists()
 
     model_file = model_folder / "test_model.yml"
@@ -81,7 +81,7 @@ def test_generate_parameters(project_folder, project_file, name, fmt):
 
     project.generate_parameters("test_model", name=name, fmt=fmt)
 
-    parameter_folder = Path(project_folder) / "parameters"
+    parameter_folder = project_folder / "parameters"
     assert parameter_folder.exists()
 
     parameter_file_name = f"{'test_model_parameters' if name is None else name}.{fmt}"
@@ -104,7 +104,7 @@ def test_import_data(project_folder, project_file, test_data, name):
 
     project.import_data(test_data, name=name)
 
-    data_folder = Path(project_folder) / "data"
+    data_folder = project_folder / "data"
     assert data_folder.exists()
 
     data_file_name = f"{'dataset_1' if name is None else name}.nc"
@@ -132,7 +132,7 @@ def test_create_scheme(project_folder, project_file):
 
 @pytest.mark.parametrize("name", ["test_run", None])
 def test_run_optimization(project_folder, project_file, name):
-    project_folder = Path(project_folder)
+    project_folder = project_folder
     project = Project.open(project_file)
 
     model_file = project_folder / "models" / "sequential.yml"
@@ -165,7 +165,7 @@ def test_run_optimization(project_folder, project_file, name):
 
 
 def test_load_result(project_folder, project_file):
-    project_folder = Path(project_folder)
+    project_folder = project_folder
     project = Project.open(project_file)
 
     assert project_folder / "results" / "test_run" == project.get_result_path("test_run")
