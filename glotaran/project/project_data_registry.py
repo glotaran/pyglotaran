@@ -33,8 +33,7 @@ class ProjectDataRegistry(ProjectRegistry):
         name : str | None
             The name of the dataset.
         """
-        if not isinstance(path, Path):
-            path = Path(path)
+        path = Path(path)
 
         name = name or path.with_suffix("").name
         data_path = self.directory / f"{name}.nc"
