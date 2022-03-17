@@ -115,7 +115,10 @@ class Project:
         project_dict = load_dict(file, True)
         project_dict["file"] = file
         project_dict["folder"] = folder
-        return cls(**project_dict)
+        version = project_dict.pop("version")
+        project = cls(**project_dict)
+        project.version = version
+        return project
 
     @property
     def has_data(self) -> bool:
