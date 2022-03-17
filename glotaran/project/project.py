@@ -42,12 +42,10 @@ class Project:
 
     def __post_init__(self):
         """Overwrite of post init."""
-        if isinstance(self.file, str):
-            self.file = Path(self.file)
+        self.file = Path(self.file)
         if self.folder is None:
             self.folder = self.file.parent
-        if isinstance(self.folder, str):
-            self.folder = Path(self.folder)
+        self.folder = Path(self.folder)
 
         self._data_registry = ProjectDataRegistry(self.folder)
         self._model_registry = ProjectModelRegistry(self.folder)
