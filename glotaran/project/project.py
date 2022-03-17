@@ -238,6 +238,16 @@ class Project:
         """
         self._model_registry.generate_model(generator_name, generator, generator_arguments)
 
+    def get_models_directory(self) -> Path:
+        """Get the path to the model directory of the project.
+
+        Returns
+        -------
+        Path
+            The path to the project's model directory.
+        """
+        return self._model_registry.directory
+
     @property
     def has_parameters(self) -> bool:
         """Check if the project has parameters.
@@ -303,6 +313,16 @@ class Project:
         model = self.load_model(model_name)
         name = name if name is not None else model_name + "_parameters"
         self._parameter_registry.generate_parameters(model, name, fmt=fmt)
+
+    def get_parameters_directory(self) -> Path:
+        """Get the path to the parameter directory of the project.
+
+        Returns
+        -------
+        Path
+            The path to the project's parameter directory.
+        """
+        return self._parameter_registry.directory
 
     @property
     def has_results(self) -> bool:
