@@ -25,7 +25,7 @@ class ProjectModelRegistry(ProjectRegistry):
     def generate_model(
         self,
         name: str,
-        generator: str,
+        generator_name: str,
         generator_arguments: GeneratorArguments,
     ):
         """Generate a model.
@@ -34,12 +34,12 @@ class ProjectModelRegistry(ProjectRegistry):
         ----------
         name : str
             The name of the model.
-        generator : str
+        generator_name : str
             The generator for the model.
         generator_arguments : GeneratorArguments
             Arguments for the generator.
         """
         model_yml = generate_model_yml(
-            generator_name=generator, generator_arguments=generator_arguments
+            generator_name=generator_name, generator_arguments=generator_arguments
         )
         (self._directory / f"{name}.yml").write_text(model_yml)
