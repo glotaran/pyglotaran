@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from glotaran.io import load_dataset
+from glotaran.io import save_dataset
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.project.project_registry import ProjectRegistry
 
@@ -39,5 +40,4 @@ class ProjectDataRegistry(ProjectRegistry):
         data_path = self.directory / f"{name}.nc"
 
         dataset = load_dataset(path)
-        dataset.attrs.pop("loader")
-        dataset.to_netcdf(data_path)
+        save_dataset(dataset, data_path)
