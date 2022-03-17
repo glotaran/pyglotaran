@@ -54,12 +54,13 @@ class ProjectResultRegistry(ProjectRegistry):
         str :
             A result name.
         """
-        i = 0
-        while True:
-            result_name = f"{model_name}_run_{i}"
-            if not (self.directory / result_name).exists():
-                return result_name
-            i += 1
+        previous_results = list(self.directory.glob(f"{model_name}_run_*"))
+        if len(previous_results) == 0:
+            return f"{model_name}_run_0"
+        previous_results.sort()
+        latest_result = previous_results[-1].with_suffix("").name
+        latest_result_run_nr = int(latest_result.replace(f"{model_name}_run_", ""))
+        return f"{model_name}_run_{latest_result_run_nr+1}"
 
     def save(self, name: str, result: Result):
         """Save a result.
