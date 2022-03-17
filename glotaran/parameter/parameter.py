@@ -307,7 +307,7 @@ class Parameter(_SupportsArray):
 
     @full_label.setter
     def full_label(self, full_label: str):
-        self._full_label = str(full_label)
+        self._full_label = full_label
 
     @property
     def non_negative(self) -> bool:
@@ -537,8 +537,10 @@ class Parameter(_SupportsArray):
                     label = match[0]
                     parameter = all_parameters.get(label)
                     expression = expression.replace(
-                        "$" + label, f"_{parameter.markdown(all_parameters=all_parameters)}_"
+                        f"${label}",
+                        f"_{parameter.markdown(all_parameters=all_parameters)}_",
                     )
+
             md += f"({value}={expression})"
         else:
             md += f"({value}, fixed)"

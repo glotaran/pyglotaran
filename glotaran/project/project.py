@@ -320,7 +320,7 @@ class Project:
             The parameter format.
         """
         model = self.load_model(model_name)
-        name = name if name is not None else model_name + "_parameters"
+        name = name if name is not None else f'{model_name}_parameters'
         self._parameter_registry.generate_parameters(model, name, fmt=fmt)
 
     def get_parameters_directory(self) -> Path:
