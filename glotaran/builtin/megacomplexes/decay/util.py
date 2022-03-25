@@ -302,6 +302,8 @@ def retrieve_decay_associated_data(
     if multiple_complexes:
         das_name = f"decay_associated_{name}_{megacomplex.label}"
         das = das.rename(component=f"component_{megacomplex.label}")
+        das = das.rename(rate=f"rate_{megacomplex.label}")
+        das = das.rename(lifetime=f"lifetime_{megacomplex.label}")
         a_matrix_name = f"a_matrix_{megacomplex.label}"
         a_matrix = a_matrix.rename(component=f"component_{megacomplex.label}")
         k_matrix_name = f"k_matrix_{megacomplex.label}"
