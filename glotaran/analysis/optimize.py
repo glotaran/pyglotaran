@@ -21,6 +21,10 @@ SUPPORTED_METHODS = {
 
 def optimize(scheme: Scheme, verbose: bool = True, raise_exception: bool = False) -> Result:
 
+    missing_datasets = [label for label in scheme.model.dataset if label not in scheme.data]
+    if missing_datasets:
+        raise ValueError(f"Missing data for datasets: {missing_datasets}")
+
     optimization_groups = [
         OptimizationGroup(scheme, group) for group in scheme.model.get_dataset_groups().values()
     ]
