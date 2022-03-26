@@ -11,7 +11,7 @@ from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 
 
-def _create_gaussian_clp(labels, amplitudes, centers, widths, axis):
+def create_gaussian_clp(labels, amplitudes, centers, widths, axis):
     return xr.DataArray(
         [
             amplitudes[i] * np.exp(-np.log(2) * np.square(2 * (axis - centers[i]) / widths[i]))
@@ -179,9 +179,7 @@ class ThreeComponentParallel:
 
     axis = {"time": time, "pixel": pixel}
 
-    clp = _create_gaussian_clp(
-        ["s1", "s2", "s3"], [7, 3, 30], [620, 670, 720], [10, 30, 50], pixel
-    )
+    clp = create_gaussian_clp(["s1", "s2", "s3"], [7, 3, 30], [620, 670, 720], [10, 30, 50], pixel)
 
 
 class ThreeComponentSequential:
@@ -240,9 +238,7 @@ class ThreeComponentSequential:
     pixel = np.arange(600, 750, 10)
     axis = {"time": time, "pixel": pixel}
 
-    clp = _create_gaussian_clp(
-        ["s1", "s2", "s3"], [7, 3, 30], [620, 670, 720], [10, 30, 50], pixel
-    )
+    clp = create_gaussian_clp(["s1", "s2", "s3"], [7, 3, 30], [620, 670, 720], [10, 30, 50], pixel)
 
 
 @pytest.mark.parametrize(
