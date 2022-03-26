@@ -39,7 +39,7 @@ class DatasetModel:
 
     def iterate_megacomplexes(
         self,
-    ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
+    ) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
         """Iterates the dataset model's megacomplexes."""
         for i, megacomplex in enumerate(self.megacomplex):
             scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
@@ -47,7 +47,7 @@ class DatasetModel:
 
     def iterate_global_megacomplexes(
         self,
-    ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
+    ) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
         """Iterates the dataset model's global megacomplexes."""
         for i, megacomplex in enumerate(self.global_megacomplex):
             scale = (
