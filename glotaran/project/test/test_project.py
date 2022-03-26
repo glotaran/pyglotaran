@@ -103,6 +103,11 @@ def test_import_data(project_folder, project_file, test_data, name):
     project = Project.open(project_file)
 
     project.import_data(test_data, name=name)
+    with pytest.raises(FileExistsError):
+        project.import_data(test_data, name=name)
+
+    project.import_data(test_data, name=name, allow_overwrite=True)
+    project.import_data(test_data, name=name, ignore_existing=True)
 
     data_folder = project_folder / "data"
     assert data_folder.exists()

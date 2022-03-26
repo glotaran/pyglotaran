@@ -171,7 +171,13 @@ class Project:
         except ValueError:
             raise ValueError(f"Dataset '{name}' does not exist.")
 
-    def import_data(self, path: str | Path, name: str | None = None):
+    def import_data(
+        self,
+        path: str | Path,
+        name: str | None = None,
+        allow_overwrite: bool = False,
+        ignore_existing: bool = False,
+    ):
         """Import a dataset.
 
         Parameters
@@ -180,8 +186,14 @@ class Project:
             The path to the dataset.
         name : str | None
             The name of the dataset.
+        allow_overwrite: bool
+            Whether to overwrite an existing dataset.
+        ignore_existing: bool
+            Whether to ignore import if the dataset already exists.
         """
-        self._data_registry.import_data(path, name=name)
+        self._data_registry.import_data(
+            path, name=name, allow_overwrite=allow_overwrite, ignore_existing=ignore_existing
+        )
 
     @property
     def has_models(self) -> bool:
