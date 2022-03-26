@@ -94,8 +94,13 @@ class MockMegacomplex6(Megacomplex):
     pass
 
 
-@megacomplex(dimension="model", model_items={"test_item_simple": MockItemSimple})
+@megacomplex(dimension="model", exclusive=True)
 class MockMegacomplex7(Megacomplex):
+    pass
+
+
+@megacomplex(dimension="model", model_items={"test_item_simple": MockItemSimple})
+class MockMegacomplex8(Megacomplex):
     pass
 
 
@@ -169,7 +174,12 @@ def test_model(test_model_dict):
 @pytest.fixture
 def model_error():
     model_dict = {
-        "megacomplex": {"m1": {}, "m2": {"type": "type2"}, "m3": {"type": "type2"}},
+        "megacomplex": {
+            "m1": {},
+            "m2": {"type": "type2"},
+            "m3": {"type": "type2"},
+            "m4": {"type": "type3"},
+        },
         "test_item1": {
             "t1": {
                 "param": "fool",
@@ -184,7 +194,7 @@ def model_error():
                 "scale": "scale_1",
             },
             "dataset2": {
-                "megacomplex": ["mrX"],
+                "megacomplex": ["mrX", "m4"],
                 "scale": "scale_3",
             },
             "dataset3": {
@@ -197,6 +207,7 @@ def model_error():
         megacomplex_types={
             "type1": MockMegacomplex1,
             "type2": MockMegacomplex6,
+            "type3": MockMegacomplex7,
         },
     )
 
@@ -321,9 +332,9 @@ def test_model_validity(test_model: Model, model_error: Model, parameter: Parame
     print(model_error.problem_list())
     print(model_error.problem_list(parameter))
     assert not model_error.valid()
-    assert len(model_error.problem_list()) == 5
+    assert len(model_error.problem_list()) == 6
     assert not model_error.valid(parameter)
-    assert len(model_error.problem_list(parameter)) == 9
+    assert len(model_error.problem_list(parameter)) == 10
 
 
 def test_items(test_model: Model):
@@ -407,7 +418,7 @@ def test_fill(test_model: Model, parameter: ParameterGroup):
 
 def test_model_as_dict():
     model_dict = {
-        "default_megacomplex": "type7",
+        "default_megacomplex": "type8",
         "megacomplex": {
             "m1": {"test_item_simple": "t2", "dimension": "model"},
         },
@@ -433,7 +444,7 @@ def test_model_as_dict():
     model = Model.from_dict(
         model_dict,
         megacomplex_types={
-            "type7": MockMegacomplex7,
+            "type8": MockMegacomplex8,
         },
     )
     as_model_dict = model.as_dict()

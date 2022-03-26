@@ -40,7 +40,7 @@ class DatasetModel:
     def iterate_megacomplexes(
         self,
     ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
-        """Iterates of der dataset model's megacomplexes."""
+        """Iterates the dataset model's megacomplexes."""
         for i, megacomplex in enumerate(self.megacomplex):
             scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
             yield scale, megacomplex
@@ -48,7 +48,7 @@ class DatasetModel:
     def iterate_global_megacomplexes(
         self,
     ) -> Generator[tuple[Parameter | int | None, Megacomplex | str], None, None]:
-        """Iterates of der dataset model's global megacomplexes."""
+        """Iterates the dataset model's global megacomplexes."""
         for i, megacomplex in enumerate(self.global_megacomplex):
             scale = (
                 self.global_megacomplex_scale[i]
@@ -172,7 +172,7 @@ class DatasetModel:
 
     @model_item_validator(False)
     def ensure_unique_megacomplexes(self, model: Model) -> list[str]:
-        """Ensure that unique megacomplexes Are only used once per dataset.
+        """Ensure that unique megacomplexes are only used once per dataset.
 
         Parameters
         ----------
@@ -201,3 +201,35 @@ class DatasetModel:
             for type_name, count in Counter(glotaran_unique_megacomplex_types).most_common()
             if count > 1
         ]
+
+    @model_item_validator(False)
+    def ensure_exclusive_megacomplexes(self, model: Model) -> list[str]:
+        """Ensure that exclusive megacomplexes are the only megacomplex in the dataset model.
+
+        Parameters
+        ----------
+        model : Model
+            Model object using this dataset model.
+
+        Returns
+        -------
+        list[str]
+            Error messages to be shown when the model gets validated.
+        """
+
+        errors = []
+        try:
+            exclusive_megacomplex = next(
+                model.megacomplex[label]
+                for label in self.megacomplex
+                if label in model.megacomplex
+                and type(model.megacomplex[label]).glotaran_exclusive()
+            )
+            if len(self.megacomplex) != 1:
+                errors.append(
+                    f"Megacomplex '{type(exclusive_megacomplex)}' is exclusive and cannot be "
+                    f"combined with other megacomplex in dataset model '{self.label}'."
+                )
+        except StopIteration:
+            pass
+        return errors

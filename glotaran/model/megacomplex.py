@@ -37,6 +37,7 @@ def megacomplex(
     dataset_model_items: dict[str, dict[str, Any]] = None,
     dataset_properties: Any | dict[str, dict[str, Any]] = None,
     unique: bool = False,
+    exclusive: bool = False,
     register_as: str | None = None,
 ):
     """The `@megacomplex` decorator is intended to be used on subclasses of
@@ -67,6 +68,7 @@ def megacomplex(
         setattr(cls, "_glotaran_megacomplex_dataset_model_items", dataset_model_items)
         setattr(cls, "_glotaran_megacomplex_dataset_properties", dataset_properties)
         setattr(cls, "_glotaran_megacomplex_unique", unique)
+        setattr(cls, "_glotaran_megacomplex_exclusive", exclusive)
 
         megacomplex_type = model_item(properties=properties, has_type=True)(cls)
 
@@ -140,3 +142,7 @@ class Megacomplex:
     @classmethod
     def glotaran_unique(cls) -> bool:
         return cls._glotaran_megacomplex_unique
+
+    @classmethod
+    def glotaran_exclusive(cls) -> bool:
+        return cls._glotaran_megacomplex_exclusive
