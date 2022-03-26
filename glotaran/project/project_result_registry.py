@@ -41,26 +41,26 @@ class ProjectResultRegistry(ProjectRegistry):
         """
         return path.is_dir()
 
-    def create_result_name_for_model(self, model_name: str) -> str:
+    def create_result_run_name(self, base_name: str) -> str:
         """Create a result name for a model.
 
         Parameters
         ----------
-        model_name : str
-            The model name.
+        base_name: str
+            The base name for the result.
 
         Returns
         -------
         str :
             A result name.
         """
-        previous_results = list(self.directory.glob(f"{model_name}_run_*"))
+        previous_results = list(self.directory.glob(f"{base_name}_run_*"))
         if not previous_results:
-            return f"{model_name}_run_0"
+            return f"{base_name}_run_0"
         previous_results.sort()
         latest_result = previous_results[-1].with_suffix("").name
-        latest_result_run_nr = int(latest_result.replace(f"{model_name}_run_", ""))
-        return f"{model_name}_run_{latest_result_run_nr+1}"
+        latest_result_run_nr = int(latest_result.replace(f"{base_name}_run_", ""))
+        return f"{base_name}_run_{latest_result_run_nr+1}"
 
     def save(self, name: str, result: Result):
         """Save a result.
@@ -72,5 +72,6 @@ class ProjectResultRegistry(ProjectRegistry):
         result : Result
             The result to save.
         """
-        result_path = self.directory / name / "result.yml"
-        save_result(result, result_path, format_name="yml", allow_overwrite=True)
+        run_name = self.create_result_run_name(name)
+        result_path = self.directory / run_name / "result.yml"
+        save_result(result, result_path, format_name="yml")

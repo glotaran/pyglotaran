@@ -471,7 +471,7 @@ class Project:
         )
         result = optimize(scheme)
 
-        name = name or self._result_registry.create_result_name_for_model(model)
+        name = name or model
         self._result_registry.save(name, result)
 
     def markdown(self) -> MarkdownStr:

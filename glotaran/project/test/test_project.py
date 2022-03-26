@@ -130,7 +130,7 @@ def test_create_scheme(project_folder, project_file):
     assert scheme.maximum_number_function_evaluations == 1
 
 
-@pytest.mark.parametrize("name", ["test_run", None])
+@pytest.mark.parametrize("name", ["test", None])
 def test_run_optimization(project_folder, project_file, name):
     project = Project.open(project_file)
 
@@ -138,7 +138,7 @@ def test_run_optimization(project_folder, project_file, name):
     model_file.write_text(example_model_yml)
 
     parameters_file = project_folder / "parameters" / "sequential.csv"
-    save_parameters(example_parameter, parameters_file)
+    save_parameters(example_parameter, parameters_file, allow_overwrite=True)
 
     data_folder = project_folder / "data"
     assert data_folder.exists()
@@ -150,15 +150,18 @@ def test_run_optimization(project_folder, project_file, name):
     assert project.has_parameters
     assert project.has_data
 
-    project.optimize(
-        model="sequential",
-        parameters="sequential",
-        maximum_number_function_evaluations=1,
-        name=name,
-    )
-    assert project.has_results
-    name = name or "sequential_run_0"
-    assert (project_folder / "results" / name).exists()
+    name = name or "sequential"
+
+    for i in range(2):
+        project.optimize(
+            model="sequential",
+            parameters="sequential",
+            maximum_number_function_evaluations=1,
+            name=name,
+        )
+        assert project.has_results
+        result_name = f"{name}_run_{i}"
+        assert (project_folder / "results" / result_name).exists()
     model_file.unlink()
     parameters_file.unlink()
 
@@ -166,7 +169,7 @@ def test_run_optimization(project_folder, project_file, name):
 def test_load_result(project_folder, project_file):
     project = Project.open(project_file)
 
-    assert project_folder / "results" / "test_run" == project.get_result_path("test_run")
+    assert project_folder / "results" / "test_run_0" == project.get_result_path("test_run_0")
 
     result = project.load_result("test_run")
     assert isinstance(result, Result)
