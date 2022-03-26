@@ -339,6 +339,8 @@ class OptimizationGroup:
         dataset_model = self.dataset_models[label]
         global_dimension = dataset_model.get_global_dimension()
         model_dimension = dataset_model.get_model_dimension()
+        dataset.attrs["global_dimension"] = global_dimension
+        dataset.attrs["model_dimension"] = model_dimension
         if copy:
             dataset = dataset.copy()
         if dataset_model.is_index_dependent():
