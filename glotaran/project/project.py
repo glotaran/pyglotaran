@@ -22,8 +22,7 @@ from glotaran.project.scheme import Scheme
 from glotaran.utils.io import make_path_absolute_if_relative
 from glotaran.utils.ipython import MarkdownStr
 
-TEMPLATE = """version: {gta_version}
-"""
+TEMPLATE = "version: {gta_version}"
 
 PROJECT_FILE_NAME = "project.gta"
 
