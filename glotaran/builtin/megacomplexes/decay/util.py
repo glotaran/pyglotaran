@@ -271,7 +271,7 @@ def retrieve_decay_associated_data(
     matrix = k_matrix.full(species)
     matrix_reduced = k_matrix.reduced(species)
     a_matrix = megacomplex.get_a_matrix(dataset_model)
-    rates = k_matrix.rates(species, initial_concentration)
+    rates = -1 * k_matrix.rates(species, initial_concentration)
     lifetimes = 1 / rates
 
     das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
