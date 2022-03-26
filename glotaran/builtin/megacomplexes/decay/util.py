@@ -106,7 +106,6 @@ def finalize_data(
     retrieve_irf(dataset_model, dataset, global_dimension)
 
     if not is_full_model:
-        multiple_complexes = len(decay_megacomplexes) > 1
         for megacomplex in decay_megacomplexes:
             retrieve_decay_associated_data(
                 megacomplex,
@@ -114,7 +113,6 @@ def finalize_data(
                 dataset,
                 global_dimension,
                 name,
-                multiple_complexes,
             )
 
 
@@ -262,7 +260,6 @@ def retrieve_decay_associated_data(
     dataset: xr.Dataset,
     global_dimension: str,
     name: str,
-    multiple_complexes: bool,
 ):
     species = megacomplex.get_compartments(dataset_model)
     initial_concentration = megacomplex.get_initial_concentration(dataset_model)
@@ -276,38 +273,34 @@ def retrieve_decay_associated_data(
 
     das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
 
+    component_name = f"component_{megacomplex.label}"
     component_coords = {
-        "component": np.arange(rates.size),
-        "rate": ("component", rates),
-        "lifetime": ("component", lifetimes),
+        component_name: np.arange(1, rates.size + 1),
+        f"rate_{megacomplex.label}": (component_name, rates),
+        f"lifetime_{megacomplex.label}": (component_name, lifetimes),
     }
     das_coords = component_coords.copy()
     das_coords[global_dimension] = dataset.coords[global_dimension]
-    das_name = f"decay_associated_{name}"
-    das = xr.DataArray(das, dims=(global_dimension, "component"), coords=das_coords)
+    das_name = f"decay_associated_{name}_{megacomplex.label}"
+    das = xr.DataArray(das, dims=(global_dimension, component_name), coords=das_coords)
 
+    species_name = f"species_{megacomplex.label}"
     a_matrix_coords = component_coords.copy()
-    a_matrix_coords["species"] = species
-    a_matrix_name = "a_matrix"
-    a_matrix = xr.DataArray(a_matrix, coords=a_matrix_coords, dims=("component", "species"))
+    a_matrix_coords[species_name] = species
+    a_matrix_name = f"a_matrix_{megacomplex.label}"
+    a_matrix = xr.DataArray(a_matrix, coords=a_matrix_coords, dims=(component_name, species_name))
 
-    k_matrix_name = "k_matrix"
-    k_matrix = xr.DataArray(matrix, coords=[("to_species", species), ("from_species", species)])
-
-    k_matrix_reduced_name = "k_matrix_reduced"
-    k_matrix_reduced = xr.DataArray(
-        matrix_reduced, coords=[("to_species", species), ("from_species", species)]
+    to_species_name = f"to_species_{megacomplex.label}"
+    from_species_name = f"from_species_{megacomplex.label}"
+    k_matrix_name = f"k_matrix_{megacomplex.label}"
+    k_matrix = xr.DataArray(
+        matrix, coords=[(to_species_name, species), (from_species_name, species)]
     )
 
-    if multiple_complexes:
-        das_name = f"decay_associated_{name}_{megacomplex.label}"
-        das = das.rename(component=f"component_{megacomplex.label}")
-        das = das.rename(rate=f"rate_{megacomplex.label}")
-        das = das.rename(lifetime=f"lifetime_{megacomplex.label}")
-        a_matrix_name = f"a_matrix_{megacomplex.label}"
-        a_matrix = a_matrix.rename(component=f"component_{megacomplex.label}")
-        k_matrix_name = f"k_matrix_{megacomplex.label}"
-        k_matrix_reduced_name = f"k_matrix_reduced_{megacomplex.label}"
+    k_matrix_reduced_name = f"k_matrix_reduced_{megacomplex.label}"
+    k_matrix_reduced = xr.DataArray(
+        matrix_reduced, coords=[(to_species_name, species), (from_species_name, species)]
+    )
 
     dataset[das_name] = das
     dataset[a_matrix_name] = a_matrix
