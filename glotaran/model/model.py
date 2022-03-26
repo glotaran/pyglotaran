@@ -383,7 +383,7 @@ class Model:
                 for item in items:
                     problems += item.validate(self, parameters=parameters)
             else:
-                for _, item in items.items():
+                for item in items.values():
                     problems += item.validate(self, parameters=parameters)
 
         return problems
