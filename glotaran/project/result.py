@@ -310,6 +310,39 @@ class Result:
 
         return True
 
+    def create_clp_guide_dataset(self, dataset: str, clp_label: str) -> xr.Dataset:
+        """Create dataset for clp guidance.
+
+        Parameters
+        ----------
+        dataset : str
+            The dataset to extract the guide from.
+        clp_label : str
+            The label of the clp to guide.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing the clp guide.
+
+        Raises
+        ------
+        ValueError
+            Raised if either the dataset or clp label does not exist.
+        """
+        if dataset not in self.data:
+            raise ValueError(f"Unknown dataset '{dataset}'.")
+        result = self.data[dataset]
+        if clp_label not in result.clp_label:
+            raise ValueError(f"Unknown clp_label '{clp_label}'.")
+
+        return (
+            result.clp.sel(clp_label=[clp_label])
+            .transpose()
+            .rename(clp_label=result.model_dimension)
+            .to_dataset(name="data")
+        )
+
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
         new_qual_name_usage=("glotaran.project.result.Result.data[dataset_label]"),

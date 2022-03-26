@@ -45,6 +45,11 @@ def test_get_scheme(dummy_result: Result):
     )
 
 
+def test_create_clp_guide_dataset(dummy_result: Result):
+    clp_guide = dummy_result.create_clp_guide_dataset("dataset_1", "species_1")
+    assert clp_guide.data.shape == (1, dummy_result.data["dataset_1"].spectral.size)
+
+
 @pytest.mark.parametrize("saving_options", [SAVING_OPTIONS_MINIMAL, SAVING_OPTIONS_DEFAULT])
 def test_save_result(tmp_path: Path, saving_options: SavingOptions, dummy_result: Result):
     result_path = tmp_path / "test_result"
