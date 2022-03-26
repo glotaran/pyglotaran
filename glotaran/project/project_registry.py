@@ -62,11 +62,7 @@ class ProjectRegistry:
         dict[str, str]
             The items of the registry.
         """
-        return {
-            path.with_suffix("").name: path
-            for path in self._directory.iterdir()
-            if self.is_item(path)
-        }
+        return {path.stem: path for path in self._directory.iterdir() if self.is_item(path)}
 
     def is_item(self, path: Path) -> bool:
         """Check if the path contains an registry item.

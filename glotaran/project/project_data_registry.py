@@ -40,7 +40,7 @@ class ProjectDataRegistry(ProjectRegistry):
         """
         path = Path(path)
 
-        name = name or path.with_suffix("").name
+        name = name or path.stem
         data_path = self.directory / f"{name}.nc"
 
         dataset = load_dataset(path)
