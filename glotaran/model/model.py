@@ -141,8 +141,7 @@ class Model:
 
         for label, item in items.items():
             item_cls = self.model_items[item_name]
-            is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-            if is_typed:
+            if is_typed := hasattr(item_cls, "_glotaran_model_item_typed"):
                 if "type" not in item and item_cls.get_default_type() is None:
                     raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item.get("type", item_cls.get_default_type())
@@ -159,8 +158,7 @@ class Model:
 
         for item in items:
             item_cls = self.model_items[item_name]
-            is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-            if is_typed:
+            if is_typed := hasattr(item_cls, "_glotaran_model_item_typed"):
                 if "type" not in item:
                     raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item["type"]
