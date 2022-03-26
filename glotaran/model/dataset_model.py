@@ -197,13 +197,13 @@ class DatasetModel:
                 except KeyError:
                     # The megacomplex does not exist, the model validator will report this
                     pass
-                this_errors = []
-                for type_name, count in Counter(unique_types).most_common():
-                    if count > 1:
-                        this_errors.append(
-                            f"Multiple instances of unique{' global ' if is_global else ' '}"
-                            f"megacomplex type {type_name!r} in dataset {self.label!r}"
-                        )
+                this_errors = [
+                    f"Multiple instances of unique{' global ' if is_global else ' '}"
+                    f"megacomplex type {type_name!r} in dataset {self.label!r}"
+                    for type_name, count in Counter(unique_types).most_common()
+                    if count > 1
+                ]
+
             return this_errors
 
         if self.megacomplex:
