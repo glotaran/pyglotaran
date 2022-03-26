@@ -56,7 +56,7 @@ def calculate_matrix(
     return compartments, matrix
 
 
-def collect_megacomplexes(dataset_model: DatasetModel) -> list[Megacomplex]:
+def collect_megacomplexes(dataset_model: DatasetModel, as_global: bool) -> list[Megacomplex]:
     from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
     from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import (
         DecayParallelMegacomplex,
@@ -70,7 +70,7 @@ def collect_megacomplexes(dataset_model: DatasetModel) -> list[Megacomplex]:
             lambda m: isinstance(
                 m, (DecayMegacomplex, DecayParallelMegacomplex, DecaySequentialMegacomplex)
             ),
-            dataset_model.megacomplex,
+            dataset_model.global_megacomplex if as_global else dataset_model.megacomplex,
         )
     )
 
@@ -87,7 +87,7 @@ def finalize_data(
         # decay megacomplexes.
         return
 
-    decay_megacomplexes = collect_megacomplexes(dataset_model)
+    decay_megacomplexes = collect_megacomplexes(dataset_model, as_global)
     global_dimension = dataset_model.get_global_dimension()
     name = "images" if global_dimension == "pixel" else "spectra"
 
