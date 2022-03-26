@@ -364,6 +364,7 @@ def test_finalize_data():
 
     result_dataset = result.data["dataset1"]
 
+    assert "initial_concentration" in result_dataset
     assert "species_concentration" in result_dataset
     assert "species_associated_images" in result_dataset
 
@@ -377,6 +378,10 @@ def test_finalize_data():
     assert "a_matrix_mc1" in result_dataset
     assert "a_matrix_mc2" in result_dataset
 
+    assert "species_mc1" in result_dataset.coords
+    assert "species_mc2" in result_dataset.coords
+    assert "initial_concentration_mc1" in result_dataset.coords
+    assert "initial_concentration_mc2" in result_dataset.coords
     assert "component_mc1" in result_dataset.coords
     assert "component_mc2" in result_dataset.coords
     assert "rate_mc1" in result_dataset.coords

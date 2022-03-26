@@ -81,28 +81,36 @@ def finalize_data(
     is_full_model: bool = False,
     as_global: bool = False,
 ):
+    species_dimension = "decay_species" if as_global else "species"
+    if species_dimension in dataset.coords:
+        # The first decay megacomplescomplex called will finalize the data for all
+        # decay megacomplexes.
+        return
+
     decay_megacomplexes = collect_megacomplexes(dataset_model)
     global_dimension = dataset_model.get_global_dimension()
     name = "images" if global_dimension == "pixel" else "spectra"
 
-    species_dimension = "decay_species" if as_global else "species"
-    if species_dimension not in dataset.coords:
-        # We are the first Decay complex called and add SAD for all decay megacomplexes
-        all_species = []
-        for megacomplex in decay_megacomplexes:
-            for species in megacomplex.get_compartments(dataset_model):
-                if species not in all_species:
-                    all_species.append(species)
-        retrieve_species_associated_data(
-            dataset_model,
-            dataset,
-            all_species,
-            species_dimension,
-            global_dimension,
-            name,
-            is_full_model,
-            as_global,
-        )
+    all_species = []
+    for megacomplex in decay_megacomplexes:
+        for species in megacomplex.get_compartments(dataset_model):
+            if species not in all_species:
+                all_species.append(species)
+    retrieve_species_associated_data(
+        dataset_model,
+        dataset,
+        all_species,
+        species_dimension,
+        global_dimension,
+        name,
+        is_full_model,
+        as_global,
+    )
+    retrieve_initial_concentration(
+        dataset_model,
+        dataset,
+        species_dimension,
+    )
     retrieve_irf(dataset_model, dataset, global_dimension)
 
     if not is_full_model:
@@ -221,6 +229,7 @@ def retrieve_species_associated_data(
     if as_global:
         model_dimension, global_dimension = global_dimension, model_dimension
     dataset.coords[species_dimension] = species
+
     matrix = dataset.global_matrix if as_global else dataset.matrix
     clp_dim = "global_clp_label" if as_global else "clp_label"
 
@@ -254,6 +263,26 @@ def retrieve_species_associated_data(
         )
 
 
+def retrieve_initial_concentration(
+    dataset_model: DatasetModel,
+    dataset: xr.Dataset,
+    species_dimension: str,
+):
+
+    if (
+        not hasattr(dataset_model, "initial_concentration")
+        or dataset_model.initial_concentration is None
+    ):
+        # For parallel and sequential decay we don't have dataset wide initial concentration
+        # unless mixed with general decays
+        return
+
+    dataset["initial_concentration"] = (
+        (species_dimension,),
+        dataset_model.initial_concentration.parameters,
+    )
+
+
 def retrieve_decay_associated_data(
     megacomplex: Megacomplex,
     dataset_model: DatasetModel,
@@ -284,9 +313,14 @@ def retrieve_decay_associated_data(
     das_name = f"decay_associated_{name}_{megacomplex.label}"
     das = xr.DataArray(das, dims=(global_dimension, component_name), coords=das_coords)
 
+    initial_concentration = megacomplex.get_initial_concentration(dataset_model, normalized=False)
     species_name = f"species_{megacomplex.label}"
     a_matrix_coords = component_coords.copy()
     a_matrix_coords[species_name] = species
+    a_matrix_coords[f"initial_concentration_{megacomplex.label}"] = (
+        species_name,
+        initial_concentration,
+    )
     a_matrix_name = f"a_matrix_{megacomplex.label}"
     a_matrix = xr.DataArray(a_matrix, coords=a_matrix_coords, dims=(component_name, species_name))
 

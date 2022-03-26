@@ -44,13 +44,20 @@ class DecayMegacomplex(Megacomplex):
             if compartment in self.get_k_matrix().involved_compartments()
         ]
 
-    def get_initial_concentration(self, dataset_model: DatasetModel) -> np.ndarray:
+    def get_initial_concentration(
+        self, dataset_model: DatasetModel, normalized: bool = True
+    ) -> np.ndarray:
         compartments = self.get_compartments(dataset_model)
         idx = [
             compartment in compartments
             for compartment in dataset_model.initial_concentration.compartments
         ]
-        return dataset_model.initial_concentration.normalized()[idx]
+        initial_concentration = (
+            dataset_model.initial_concentration.normalized()
+            if normalized
+            else np.asarray(dataset_model.initial_concentration.parameters)
+        )
+        return initial_concentration[idx]
 
     def get_k_matrix(self) -> KMatrix:
         full_k_matrix = None

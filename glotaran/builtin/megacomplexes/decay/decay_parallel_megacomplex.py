@@ -32,8 +32,13 @@ class DecayParallelMegacomplex(Megacomplex):
     def get_compartments(self, dataset_model: DatasetModel) -> list[str]:
         return self.compartments
 
-    def get_initial_concentration(self, dataset_model: DatasetModel) -> np.ndarray:
-        return np.ones((len(self.compartments)), dtype=np.float64)
+    def get_initial_concentration(
+        self, dataset_model: DatasetModel, normalized: bool = True
+    ) -> np.ndarray:
+        initial_concentration = np.ones((len(self.compartments)), dtype=np.float64)
+        if normalized:
+            initial_concentration /= initial_concentration.size
+        return initial_concentration
 
     def get_k_matrix(self) -> KMatrix:
         size = len(self.compartments)
