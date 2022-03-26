@@ -53,7 +53,7 @@ class Project:
         self._result_registry = ProjectResultRegistry(self.folder)
 
     @staticmethod
-    def create(folder: str | Path, overwrite: bool = False) -> Project:
+    def create(folder: str | Path, allow_overwrite: bool = False) -> Project:
         """Create a new project folder and file.
 
         Parameters
@@ -61,7 +61,7 @@ class Project:
         folder : str | Path | None
             The folder where the project will be created. If ``None``, the current work
             directory will be used.
-        overwrite: bool
+        allow_overwrite: bool
             Whether to overwrite an existing project file.
 
         Returns
@@ -72,16 +72,17 @@ class Project:
         Raises
         ------
         FileExistsError
-            Raised if the project file already exists and `overwrite=False`.
+            Raised if the project file already exists and `allow_overwrite=False`.
         """
         from glotaran import __version__ as gta_version
 
         project_folder = make_path_absolute_if_relative(Path(folder))
         project_folder.mkdir(parents=True, exist_ok=True)
         project_file = project_folder / PROJECT_FILE_NAME
-        if project_file.exists() and not overwrite:
+        if project_file.exists() and not allow_overwrite:
             raise FileExistsError(
-                f"Project file '{project_file}' already exist. Set `overwrite=True` to overwrite."
+                f"Project file '{project_file}' already exist. "
+                "Set `allow_overwrite=True` to overwrite."
             )
         project_file.write_text(TEMPLATE.format(gta_version=gta_version))
         return Project.open(project_file)

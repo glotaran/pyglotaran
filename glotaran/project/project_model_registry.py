@@ -27,7 +27,7 @@ class ProjectModelRegistry(ProjectRegistry):
         name: str,
         generator_name: str,
         generator_arguments: GeneratorArguments,
-        overwrite: bool = False,
+        allow_overwrite: bool = False,
     ):
         """Generate a model.
 
@@ -39,18 +39,18 @@ class ProjectModelRegistry(ProjectRegistry):
             The generator for the model.
         generator_arguments : GeneratorArguments
             Arguments for the generator.
-        overwrite: bool
+        allow_overwrite: bool
             Whether to overwrite an existing model.
 
         Raises
         ------
         FileExistsError
-            Raised if model is already existing and `overwrite=False`.
+            Raised if model is already existing and `allow_overwrite=False`.
         """
         model_yml = generate_model_yml(
             generator_name=generator_name, generator_arguments=generator_arguments
         )
         model_file = self._directory / f"{name}.yml"
-        if model_file.exists() and not overwrite:
-            raise FileExistsError(f"Model '{name}' already exists and `overwrite=False`.")
+        if model_file.exists() and not allow_overwrite:
+            raise FileExistsError(f"Model '{name}' already exists and `allow_overwrite=False`.")
         model_file.write_text(model_yml)

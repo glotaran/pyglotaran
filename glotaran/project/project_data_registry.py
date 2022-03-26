@@ -24,7 +24,9 @@ class ProjectDataRegistry(ProjectRegistry):
             directory / "data", [f".{fmt}" for fmt in known_data_formats()], load_dataset
         )
 
-    def import_data(self, path: str | Path, name: str | None = None):
+    def import_data(
+        self, path: str | Path, name: str | None = None, allow_overwrite: bool = False
+    ):
         """Import a dataset.
 
         Parameters
@@ -33,6 +35,8 @@ class ProjectDataRegistry(ProjectRegistry):
             The path to the dataset.
         name : str | None
             The name of the dataset.
+        allow_overwrite: bool
+            Whether to overwrite an existing dataset.
         """
         path = Path(path)
 
@@ -40,4 +44,4 @@ class ProjectDataRegistry(ProjectRegistry):
         data_path = self.directory / f"{name}.nc"
 
         dataset = load_dataset(path)
-        save_dataset(dataset, data_path)
+        save_dataset(dataset, data_path, allow_overwrite=allow_overwrite)
