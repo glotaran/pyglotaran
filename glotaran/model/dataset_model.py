@@ -184,23 +184,34 @@ class DatasetModel:
         list[str]
             Error messages to be shown when the model gets validated.
         """
-        glotaran_unique_megacomplex_types = []
+        errors = []
 
-        for megacomplex_name in self.megacomplex:
-            try:
-                megacomplex_instance = model.megacomplex[megacomplex_name]
-                if type(megacomplex_instance).glotaran_unique() is True:
-                    type_name = megacomplex_instance.type or megacomplex_instance.name
-                    glotaran_unique_megacomplex_types.append(type_name)
-            except KeyError:
-                pass
+        def get_unique_errors(megacomplexes: list[str], is_global: bool) -> list[str]:
+            unique_types = []
+            for megacomplex_name in megacomplexes:
+                try:
+                    megacomplex_instance = model.megacomplex[megacomplex_name]
+                    if type(megacomplex_instance).glotaran_unique():
+                        type_name = megacomplex_instance.type or megacomplex_instance.name
+                        unique_types.append(type_name)
+                except KeyError:
+                    # The megacomplex does not exist, the model validator will report this
+                    pass
+                this_errors = []
+                for type_name, count in Counter(unique_types).most_common():
+                    if count > 1:
+                        this_errors.append(
+                            f"Multiple instances of unique{' global ' if is_global else ' '}"
+                            f"megacomplex type {type_name!r} in dataset {self.label!r}"
+                        )
+            return this_errors
 
-        return [
-            f"Multiple instances of unique megacomplex type {type_name!r} "
-            f"in dataset {self.label!r}"
-            for type_name, count in Counter(glotaran_unique_megacomplex_types).most_common()
-            if count > 1
-        ]
+        if self.megacomplex:
+            errors += get_unique_errors(self.megacomplex, False)
+        if self.global_megacomplex:
+            errors += get_unique_errors(self.global_megacomplex, True)
+
+        return errors
 
     @model_item_validator(False)
     def ensure_exclusive_megacomplexes(self, model: Model) -> list[str]:
@@ -218,18 +229,27 @@ class DatasetModel:
         """
 
         errors = []
-        try:
-            exclusive_megacomplex = next(
-                model.megacomplex[label]
-                for label in self.megacomplex
-                if label in model.megacomplex
-                and type(model.megacomplex[label]).glotaran_exclusive()
-            )
-            if len(self.megacomplex) != 1:
-                errors.append(
-                    f"Megacomplex '{type(exclusive_megacomplex)}' is exclusive and cannot be "
-                    f"combined with other megacomplex in dataset model '{self.label}'."
+
+        def get_exclusive_errors(megacomplexes: list[str], is_global: bool) -> str:
+            try:
+                exclusive_megacomplex = next(
+                    model.megacomplex[label]
+                    for label in megacomplexes
+                    if label in model.megacomplex
+                    and type(model.megacomplex[label]).glotaran_exclusive()
                 )
-        except StopIteration:
-            pass
+                if len(self.megacomplex) != 1:
+                    return [
+                        f"Megacomplex '{type(exclusive_megacomplex)}' is exclusive and cannot be "
+                        f"combined with other megacomplex in dataset model '{self.label}'."
+                    ]
+            except StopIteration:
+                pass
+            return []
+
+        if self.megacomplex:
+            errors += get_exclusive_errors(self.megacomplex, False)
+        if self.global_megacomplex:
+            errors += get_exclusive_errors(self.global_megacomplex, True)
+
         return errors
