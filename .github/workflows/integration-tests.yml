@@ -9,25 +9,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  create-example-list:
+    name: Create Example List
+    runs-on: ubuntu-latest
+    outputs:
+      example-list: ${{ steps.create-example-list.outputs.example-list }}
+    steps:
+      - name: Set example list output
+        id: create-example-list
+        uses: glotaran/pyglotaran-examples@main
+        with:
+          example_name: set example list
+          set_example_list: true
+
   run-examples:
     name: "Run Example: "
     runs-on: ubuntu-latest
+    needs: [create-example-list]
     strategy:
       matrix:
-        example_name:
-          [
-            quick-start,
-            fluorescence,
-            transient-absorption,
-            transient-absorption-two-datasets,
-            spectral-constraints,
-            spectral-guidance,
-            two-datasets,
-            sim-3d-disp,
-            sim-3d-nodisp,
-            sim-3d-weight,
-            sim-6d-disp,
-          ]
+        example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.8

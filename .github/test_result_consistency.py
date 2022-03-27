@@ -280,6 +280,8 @@ def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]
         compare_results_path = get_compare_results_path()
     current_result_path = get_current_result_path()
     for expected_result_file in compare_results_path.rglob(file_glob_pattern):
+        if expected_result_file.name == "parameter_history.csv":
+            continue
         key = (
             expected_result_file.relative_to(compare_results_path)
             .parent.as_posix()
