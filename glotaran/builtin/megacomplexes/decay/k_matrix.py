@@ -106,9 +106,7 @@ class KMatrix:
             i = compartments.index(index[0])
             j = compartments.index(index[1])
             array[i, j] = (
-                self.matrix[index].value
-                if fill_parameters
-                else self.matrix[index].full_label
+                self.matrix[index].value if fill_parameters else self.matrix[index].full_label
             )
 
         return self._array_as_markdown(array, compartments, compartments)
