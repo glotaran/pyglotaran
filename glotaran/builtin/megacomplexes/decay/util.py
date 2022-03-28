@@ -24,11 +24,10 @@ def calculate_matrix(
 ):
 
     compartments = megacomplex.get_compartments(dataset_model)
-    initial_concentration = megacomplex.get_initial_concentration(dataset_model)
     k_matrix = megacomplex.get_k_matrix()
 
     # the rates are the eigenvalues of the k matrix
-    rates = -k_matrix.rates(compartments, initial_concentration)
+    rates, _ = k_matrix.eigen(compartments)
 
     global_dimension = dataset_model.get_global_dimension()
     global_index = indices.get(global_dimension)
