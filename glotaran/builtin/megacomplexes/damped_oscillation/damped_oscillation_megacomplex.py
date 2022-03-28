@@ -228,7 +228,7 @@ def calculate_damped_oscillation_matrix_gaussian_irf(
     right_shifted_axis = shifted_axis[right_shifted_axis_indices]
     pos_idx = np.where(rates >= 0)[0]
 
-    d = width ** 2
+    d = width**2
     k = rates + 1j * frequencies
     dk = k * d
     sqwidth = np.sqrt(2) * width
