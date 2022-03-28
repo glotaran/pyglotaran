@@ -162,10 +162,6 @@ def coord_test(
             print(f"- allow missing coordinate: {expected_coord_name} in variable {data_var_name}")
             continue
 
-        multiplier = 1
-        if expected_coord_name in ["rate", "lifetime"]:
-            multiplier = -1
-
         expected_coord_name = rename_with_suffix(
             expected_coord_name,
             [
@@ -180,25 +176,34 @@ def coord_test(
             current_coords.keys(),
         )
 
+        current_coord_value = current_coords[expected_coord_name]
+
+        # ############ START REMOVE HOTFIX
+        # This should be removed after a new gold standard was established
+
+        if any(
+            expected_coord_name.startswith(negated_coord) for negated_coord in ["rate", "lifetime"]
+        ):
+            current_coord_value = -1 * current_coord_value
+
+        if expected_coord_name.startswith("component"):
+            # component now starts at 1 and not at 0
+            current_coord_value = current_coord_value - 1
+
+        # ############ END REMOVE HOTFIX
+
         assert expected_coord_name in current_coords.keys(), (
             f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
             f"data_var {data_var_name!r}"
         )
 
         if exact_match or expected_coord_value.data.dtype == object:
-            assert np.array_equal(
-                expected_coord_value, multiplier * current_coords[expected_coord_name]
-            ), (
+            assert np.array_equal(expected_coord_value, current_coord_value), (
                 f"Coordinate value mismatch in {file_name!r}, "
                 f"data_var {data_var_name!r} and {expected_coord_name=}"
             )
         else:
-            assert allclose(
-                expected_coord_value,
-                multiplier * current_coords[expected_coord_name],
-                rtol=1e-5,
-                print_fail=20,
-            ), (
+            assert allclose(expected_coord_value, current_coord_value, rtol=1e-5, print_fail=20), (
                 f"Coordinate value mismatch in {file_name!r}, "
                 f"data_var {data_var_name!r} and {expected_coord_name=}"
             )
