@@ -617,7 +617,7 @@ class Parameter(_SupportsArray):
 
     def __pow__(self, other):
         """**"""  # noqa: D400
-        return self._value ** other
+        return self._value**other
 
     def __gt__(self, other):
         """>"""  # noqa: D400
@@ -669,7 +669,7 @@ class Parameter(_SupportsArray):
 
     def __rpow__(self, other):
         """** (right)"""  # noqa: D400
-        return other ** self._value
+        return other**self._value
 
     def __rsub__(self, other):
         """- (right)"""  # noqa: D400

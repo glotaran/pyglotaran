@@ -93,12 +93,12 @@ class CoherentArtifactMegacomplex(Megacomplex):
 def _calculate_coherent_artifact_matrix(center, width, axis, order):
     matrix = np.zeros((axis.size, order), dtype=np.float64)
 
-    matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width ** 2))
+    matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
     if order > 1:
-        matrix[:, 1] = matrix[:, 0] * (center - axis) / width ** 2
+        matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2
 
     if order > 2:
         matrix[:, 2] = (
-            matrix[:, 0] * (center ** 2 - width ** 2 - 2 * center * axis + axis ** 2) / width ** 4
+            matrix[:, 0] * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
         )
     return matrix

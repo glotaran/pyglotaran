@@ -354,11 +354,11 @@ class OptimizationGroup:
         # Calculate RMS
         size = dataset.residual.shape[0] * dataset.residual.shape[1]
         dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (dataset.residual ** 2).sum() / size
+            (dataset.residual**2).sum() / size
         ).values
         size = dataset.weighted_residual.shape[0] * dataset.weighted_residual.shape[1]
         dataset.attrs["weighted_root_mean_square_error"] = np.sqrt(
-            (dataset.weighted_residual ** 2).sum() / size
+            (dataset.weighted_residual**2).sum() / size
         ).values
         if dataset_model.scale is not None:
             dataset.attrs["dataset_scale"] = dataset_model.scale.value

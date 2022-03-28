@@ -102,7 +102,7 @@ class IrfMultiGaussian:
     def calculate(self, index: int, global_axis: np.ndarray, model_axis: np.ndarray) -> np.ndarray:
         centers, widths, scales, _, _, _ = self.parameter(index, global_axis)
         return sum(
-            scale * np.exp(-1 * (model_axis - center) ** 2 / (2 * width ** 2))
+            scale * np.exp(-1 * (model_axis - center) ** 2 / (2 * width**2))
             for center, width, scale in zip(centers, widths, scales)
         )
 
