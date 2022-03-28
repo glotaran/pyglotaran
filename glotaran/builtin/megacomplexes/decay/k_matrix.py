@@ -221,8 +221,8 @@ class KMatrix:
         """
         if self.is_sequential(compartments, initial_concentration):
             return -np.diag(self.full(compartments)).copy()
-        rates, _ = self.eigen(compartments)
-        return -rates
+        eigenvalues, _ = self.eigen(compartments)
+        return -eigenvalues
 
     def a_matrix(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The A matrix of the KMatrix.
