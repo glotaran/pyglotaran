@@ -16,7 +16,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.31.0
+    rev: v2.31.1
     hooks:
       - id: pyupgrade
         types: [file]
@@ -32,7 +32,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 21.12b0
+    rev: 22.3.0
     hooks:
       - id: black
         types: [file]
@@ -60,7 +60,7 @@ repos:
         args: [--strip-empty-cells]
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.2.3
+    rev: 1.3.1
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==21.6b0]
@@ -106,7 +106,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.931
+    rev: v0.942
     hooks:
       - id: mypy
         files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|model/property.py|builtin/io/pandas)"
