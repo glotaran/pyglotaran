@@ -121,7 +121,7 @@ def _create_result(
     number_of_data_points = ls_result.fun.size if success else None
     number_of_parameters = ls_result.x.size if success else None
     degrees_of_freedom = number_of_data_points - number_of_parameters if success else None
-    chi_square = float(np.sum(ls_result.fun ** 2)) if success else None
+    chi_square = float(np.sum(ls_result.fun**2)) if success else None
     reduced_chi_square = chi_square / degrees_of_freedom if success else None
     root_mean_square_error = float(np.sqrt(reduced_chi_square)) if success else None
     jacobian = ls_result.jac if success else None
@@ -143,7 +143,7 @@ def _create_result(
     if success:
         # See PR #706: More robust covariance matrix calculation
         _, jacobian_SV, jacobian_RSV = np.linalg.svd(jacobian, full_matrices=False)
-        jacobian_SV_square = jacobian_SV ** 2
+        jacobian_SV_square = jacobian_SV**2
         mask = jacobian_SV_square > np.finfo(float).eps
         covariance_matrix = (jacobian_RSV[mask].T / jacobian_SV_square[mask]) @ jacobian_RSV[mask]
         standard_errors = root_mean_square_error * np.sqrt(np.diag(covariance_matrix))

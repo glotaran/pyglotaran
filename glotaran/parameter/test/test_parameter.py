@@ -339,7 +339,7 @@ def test_parameter_numpy_operations():
     assert 2 % parm2 == 0
     assert divmod(parm3, 2) == (1, 1)
     assert divmod(3, parm2) == (1, 1)
-    assert np.allclose(parm3 ** parm2, 9)
+    assert np.allclose(parm3**parm2, 9)
     assert parm3 > parm2
     assert parm3 >= parm2
     assert parm1 < parm2
