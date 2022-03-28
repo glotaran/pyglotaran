@@ -208,15 +208,21 @@ class KMatrix:
     def rates(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The resulting rates of the matrix.
 
+        By definition, the eigenvalues of the compartmental model are negative and
+        the rates are the negatives of the eigenvalues, thus the eigenvalues need to be
+        multiplied with ``-1`` to get rates with the correct sign.
+
         Parameters
         ----------
-        initial_concentration :
+        compartments: list[str]
+            Names of compartment used to order the matrix.
+        initial_concentration: np.ndarray
             The initial concentration.
         """
         if self.is_sequential(compartments, initial_concentration):
-            return np.diag(self.full(compartments)).copy()
+            return -np.diag(self.full(compartments)).copy()
         rates, _ = self.eigen(compartments)
-        return rates
+        return -rates
 
     def a_matrix(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The A matrix of the KMatrix.

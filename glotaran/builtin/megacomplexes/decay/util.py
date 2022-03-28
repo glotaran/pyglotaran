@@ -28,7 +28,7 @@ def calculate_matrix(
     k_matrix = megacomplex.get_k_matrix()
 
     # the rates are the eigenvalues of the k matrix
-    rates = k_matrix.rates(compartments, initial_concentration)
+    rates = -k_matrix.rates(compartments, initial_concentration)
 
     global_dimension = dataset_model.get_global_dimension()
     global_index = indices.get(global_dimension)
@@ -297,7 +297,7 @@ def retrieve_decay_associated_data(
     matrix = k_matrix.full(species)
     matrix_reduced = k_matrix.reduced(species)
     a_matrix = megacomplex.get_a_matrix(dataset_model)
-    rates = -1 * k_matrix.rates(species, initial_concentration)
+    rates = k_matrix.rates(species, initial_concentration)
     lifetimes = 1 / rates
 
     das = dataset[f"species_associated_{name}"].sel(species=species).values @ a_matrix.T
