@@ -27,7 +27,7 @@ def calculate_matrix(
     initial_concentration = megacomplex.get_initial_concentration(dataset_model)
     k_matrix = megacomplex.get_k_matrix()
 
-    # the rates are the eigenvalues of the k matrix
+    # the rates are the eigenvalues of the k matrix or the diagonal elements of the b matrix
     rates = -k_matrix.rates(compartments, initial_concentration)
 
     global_dimension = dataset_model.get_global_dimension()
