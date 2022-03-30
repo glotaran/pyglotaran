@@ -245,6 +245,9 @@ class Project:
         generator_name: str,
         generator: str,
         generator_arguments: dict[str, Any],
+        *,
+        allow_overwrite: bool = False,
+        ignore_existing: bool = False,
     ):
         """Generate a model.
 
@@ -256,8 +259,18 @@ class Project:
             The generator for the model.
         generator_arguments : dict[str, Any]
             Arguments for the generator.
+        allow_overwrite: bool
+            Whether to overwrite an existing model.
+        ignore_existing: bool
+            Whether to ignore generation of a model file if it already exists.
         """
-        self._model_registry.generate_model(generator_name, generator, generator_arguments)
+        self._model_registry.generate_model(
+            generator_name,
+            generator,
+            generator_arguments,
+            allow_overwrite=allow_overwrite,
+            ignore_existing=ignore_existing,
+        )
 
     def get_models_directory(self) -> Path:
         """Get the path to the model directory of the project.
@@ -318,7 +331,10 @@ class Project:
         self,
         model_name: str,
         name: str | None = None,
+        *,
         fmt: Literal["yml", "yaml", "csv"] = "csv",
+        allow_overwrite: bool = False,
+        ignore_existing: bool = False,
     ):
         """Generate parameters for a model.
 
@@ -330,10 +346,16 @@ class Project:
             The name of the parameters.
         fmt : Literal["yml", "yaml", "csv"]
             The parameter format.
+        allow_overwrite: bool
+            Whether to overwrite existing parameters.
+        ignore_existing: bool
+            Whether to ignore generation of a parameter file if it already exists.
         """
         model = self.load_model(model_name)
         name = name if name is not None else f"{model_name}_parameters"
-        self._parameter_registry.generate_parameters(model, name, fmt=fmt)
+        self._parameter_registry.generate_parameters(
+            model, name, fmt=fmt, allow_overwrite=allow_overwrite, ignore_existing=ignore_existing
+        )
 
     def get_parameters_directory(self) -> Path:
         """Get the path to the parameter directory of the project.

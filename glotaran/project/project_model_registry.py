@@ -27,7 +27,9 @@ class ProjectModelRegistry(ProjectRegistry):
         name: str,
         generator_name: str,
         generator_arguments: GeneratorArguments,
+        *,
         allow_overwrite: bool = False,
+        ignore_existing: bool = False,
     ):
         """Generate a model.
 
@@ -41,6 +43,8 @@ class ProjectModelRegistry(ProjectRegistry):
             Arguments for the generator.
         allow_overwrite: bool
             Whether to overwrite an existing model.
+        ignore_existing: bool
+            Whether to ignore generation of a model file if it already exists.
 
         Raises
         ------
@@ -51,6 +55,10 @@ class ProjectModelRegistry(ProjectRegistry):
             generator_name=generator_name, generator_arguments=generator_arguments
         )
         model_file = self._directory / f"{name}.yml"
+        if model_file.exists() and ignore_existing:
+            return
+
         if model_file.exists() and not allow_overwrite:
             raise FileExistsError(f"Model '{name}' already exists and `allow_overwrite=False`.")
+
         model_file.write_text(model_yml)

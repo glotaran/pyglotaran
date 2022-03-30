@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 
 from glotaran import __version__ as gta_version
+from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.io import load_parameters
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.project.project import Project
@@ -63,6 +65,10 @@ def test_generate_model(project_folder, project_file):
     model_folder = project_folder / "models"
     assert model_folder.exists()
 
+    project.generate_model(
+        "test_model", "decay_parallel", {"nr_compartments": 5}, ignore_existing=True
+    )
+
     model_file = model_folder / "test_model.yml"
     assert model_file.exists()
 
@@ -70,6 +76,12 @@ def test_generate_model(project_folder, project_file):
 
     model = project.load_model("test_model")
     assert "megacomplex_parallel_decay" in model.megacomplex
+
+    comapartments = load_dict(model_file, is_file=True)["megacomplex"][
+        "megacomplex_parallel_decay"
+    ]["compartments"]
+
+    assert len(comapartments) == 5
 
 
 @pytest.mark.parametrize("name", ["test_parameter", None])
@@ -84,6 +96,8 @@ def test_generate_parameters(project_folder, project_file, name, fmt):
     parameter_folder = project_folder / "parameters"
     assert parameter_folder.exists()
 
+    project.generate_parameters("test_model", name=name, fmt=fmt, ignore_existing=True)
+
     parameter_file_name = f"{'test_model_parameters' if name is None else name}.{fmt}"
     parameter_file = parameter_folder / parameter_file_name
     assert parameter_file.exists()
@@ -95,6 +109,8 @@ def test_generate_parameters(project_folder, project_file, name, fmt):
 
     for parameter in model.get_parameter_labels():
         assert parameters.has(parameter)
+
+    assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 5
     parameter_file.unlink()
 
 
@@ -178,3 +194,38 @@ def test_load_result(project_folder, project_file):
 
     result = project.load_result("test_run")
     assert isinstance(result, Result)
+
+
+def test_generators_allow_overwrite(project_folder, project_file):
+    """Overwrite doesn't throw an exception.
+
+    This is the last test not to interfer with other tests.
+    """
+    project = Project.open(project_file)
+
+    model_file = project_folder / "models/test_model.yml"
+    assert model_file.is_file()
+
+    parameter_file = project_folder / "parameters/test_parameters.csv"
+    assert parameter_file.is_file()
+
+    parameters = load_parameters(parameter_file)
+
+    assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 5
+
+    project.generate_model(
+        "test_model", "decay_parallel", {"nr_compartments": 3}, allow_overwrite=True
+    )
+    new_model = project.load_model("test")
+    assert "megacomplex_parallel_decay" in new_model.megacomplex
+
+    comapartments = load_dict(model_file, is_file=True)["megacomplex"][
+        "megacomplex_parallel_decay"
+    ]["compartments"]
+
+    assert len(comapartments) == 3
+
+    project.generate_parameters("test", allow_overwrite=True)
+    parameters = load_parameters(parameter_file)
+
+    assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 3
