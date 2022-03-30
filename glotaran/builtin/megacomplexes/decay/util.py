@@ -27,8 +27,7 @@ def calculate_matrix(
     initial_concentration = megacomplex.get_initial_concentration(dataset_model)
     k_matrix = megacomplex.get_k_matrix()
 
-    # the rates are the eigenvalues of the k matrix or the diagonal elements of the b matrix
-    rates = -k_matrix.rates(compartments, initial_concentration)
+    rates = k_matrix.rates(compartments, initial_concentration)
 
     global_dimension = dataset_model.get_global_dimension()
     global_index = indices.get(global_dimension)
@@ -167,7 +166,7 @@ def calculate_decay_matrix_no_irf(matrix, rates, times):
         r_n = rates[n_r]
         for n_t in range(times.size):
             t_n = times[n_t]
-            matrix[n_t, n_r] += np.exp(r_n * t_n)
+            matrix[n_t, n_r] += np.exp(-r_n * t_n)
 
 
 sqrt2 = np.sqrt(2)
@@ -179,7 +178,7 @@ def calculate_decay_matrix_gaussian_irf(
 ):
     """Calculates a decay matrix with a gaussian irf."""
     for n_r in nb.prange(rates.size):
-        r_n = -rates[n_r]
+        r_n = rates[n_r]
         backsweep_valid = abs(r_n) * backsweep_period > 0.001
         alpha = (r_n * width) / sqrt2
         for n_t in nb.prange(times.size):
