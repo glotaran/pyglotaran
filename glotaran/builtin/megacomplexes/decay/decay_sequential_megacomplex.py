@@ -34,7 +34,9 @@ class DecaySequentialMegacomplex(Megacomplex):
     def get_compartments(self, dataset_model: DatasetModel) -> list[str]:
         return self.compartments
 
-    def get_initial_concentration(self, dataset_model: DatasetModel) -> np.ndarray:
+    def get_initial_concentration(
+        self, dataset_model: DatasetModel, normalized: bool = True
+    ) -> np.ndarray:
         initial_concentration = np.zeros((len(self.compartments)), dtype=np.float64)
         initial_concentration[0] = 1
         return initial_concentration

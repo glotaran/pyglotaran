@@ -106,8 +106,9 @@ class KMatrix:
             i = compartments.index(index[0])
             j = compartments.index(index[1])
             array[i, j] = (
-                self.matrix[index].full_label if not fill_parameters else self.matrix[index].value
+                self.matrix[index].value if fill_parameters else self.matrix[index].full_label
             )
+
         return self._array_as_markdown(array, compartments, compartments)
 
     def _repr_markdown_(self) -> str:
@@ -132,8 +133,9 @@ class KMatrix:
 
     @staticmethod
     def _array_as_markdown(array, row_header, column_header) -> MarkdownStr:
-        markdown = "| compartment | "
-        markdown += " | ".join(f"{e:.4e}" if not isinstance(e, str) else e for e in column_header)
+        markdown = "| compartment | " + " | ".join(
+            e if isinstance(e, str) else f"{e:.4e}" for e in column_header
+        )
 
         markdown += "\n|"
         markdown += "|".join("---" for _ in range(len(column_header) + 1))
@@ -145,7 +147,7 @@ class KMatrix:
                 if isinstance(row_header[i], str)
                 else f"| {row_header[i]:.4e} | "
             )
-            markdown += " | ".join(f"{e:.4e}" if not isinstance(e, str) else e for e in row)
+            markdown += " | ".join(e if isinstance(e, str) else f"{e:.4e}" for e in row)
 
             markdown += "|\n"
 
@@ -208,15 +210,21 @@ class KMatrix:
     def rates(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The resulting rates of the matrix.
 
+        By definition, the eigenvalues of the compartmental model are negative and
+        the rates are the negatives of the eigenvalues, thus the eigenvalues need to be
+        multiplied with ``-1`` to get rates with the correct sign.
+
         Parameters
         ----------
-        initial_concentration :
+        compartments: list[str]
+            Names of compartment used to order the matrix.
+        initial_concentration: np.ndarray
             The initial concentration.
         """
         if self.is_sequential(compartments, initial_concentration):
-            return np.diag(self.full(compartments)).copy()
-        rates, _ = self.eigen(compartments)
-        return rates
+            return -np.diag(self.full(compartments)).copy()
+        eigenvalues, _ = self.eigen(compartments)
+        return -eigenvalues
 
     def a_matrix(self, compartments: list[str], initial_concentration: np.ndarray) -> np.ndarray:
         """The A matrix of the KMatrix.

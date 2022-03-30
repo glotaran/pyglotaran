@@ -9,6 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
+from typing import Iterable
 from typing import Protocol
 from warnings import warn
 
@@ -120,6 +121,30 @@ def get_current_result_path() -> Path:
         raise ValueError(f"No current results present, {RUN_EXAMPLES_MSG}")
 
 
+def rename_with_suffix(
+    expected_name: str, suffixed_names: Iterable[str], current_keys: Iterable[str]
+) -> str:
+    """Prepace ``expected_name`` with the suffixed version in the dataset keys.
+
+    Parameters
+    ----------
+    expected_name: str
+        Expected name of a variable (data_var, coord)
+    suffixed_names: list[str]
+        Names that are allowed/expected to have suffixes.
+    current_keys: Iterable[str]
+        Keys of the current dataset.
+
+    Returns
+    -------
+    str
+        Updated expected var name.
+    """
+    if expected_name in suffixed_names:
+        return next((key for key in current_keys if key.startswith(expected_name)), expected_name)
+    return expected_name
+
+
 def coord_test(
     expected_coords: DataArrayCoordinates,
     current_coords: DataArrayCoordinates,
@@ -136,23 +161,52 @@ def coord_test(
         ):
             print(f"- allow missing coordinate: {expected_coord_name} in variable {data_var_name}")
             continue
+
+        expected_coord_name = rename_with_suffix(
+            expected_coord_name,
+            [
+                "species",
+                "initial_concentration",
+                "component",
+                "rate",
+                "lifetime",
+                "to_species",
+                "from_species",
+            ],
+            current_coords.keys(),
+        )
+
+        current_coord_value = current_coords[expected_coord_name]
+
+        # ############ START REMOVE HOTFIX
+        # This should be removed after a new gold standard was established
+
+        if any(
+            expected_coord_name.startswith(negated_coord) for negated_coord in ["rate", "lifetime"]
+        ):
+            current_coord_value = -1 * current_coord_value
+
+        if expected_coord_name.startswith("component"):
+            # component now starts at 1 and not at 0
+            current_coord_value = current_coord_value - 1
+
+        # ############ END REMOVE HOTFIX
+
         assert expected_coord_name in current_coords.keys(), (
             f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
             f"data_var {data_var_name!r}"
         )
 
-        # assert (
-        #     expected_coord_value.dims == current_coords.dims
-        # ), f"Dimensions mismatch in {data_var_name!r}"
-
         if exact_match or expected_coord_value.data.dtype == object:
-            assert np.array_equal(
-                expected_coord_value, current_coords[expected_coord_name]
-            ), f"Coordinate value mismatch in {file_name!r}, data_var {data_var_name!r}"
+            assert np.array_equal(expected_coord_value, current_coord_value), (
+                f"Coordinate value mismatch in {file_name!r}, "
+                f"data_var {data_var_name!r} and {expected_coord_name=}"
+            )
         else:
-            assert allclose(
-                expected_coord_value, current_coords[expected_coord_name], rtol=1e-5, print_fail=20
-            ), f"Coordinate value mismatch in {file_name!r}, data_var {data_var_name!r}"
+            assert allclose(expected_coord_value, current_coord_value, rtol=1e-5, print_fail=20), (
+                f"Coordinate value mismatch in {file_name!r}, "
+                f"data_var {data_var_name!r} and {expected_coord_name=}"
+            )
 
 
 def data_var_test(
@@ -169,6 +223,18 @@ def data_var_test(
     # when weights are applied
     if expected_var_name == "weighted_data" and expected_var_name not in current_result.data_vars:
         return
+
+    expected_var_name = rename_with_suffix(
+        expected_var_name,
+        [
+            "decay_associated_spectra",
+            "decay_associated_images",
+            "a_matrix",
+            "k_matrix",
+            "k_matrix_reduced",
+        ],
+        current_result.data_vars.keys(),
+    )
 
     assert (
         expected_var_name in current_result.data_vars

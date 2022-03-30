@@ -263,6 +263,4 @@ def test_spectral_irf(suite):
                 """
             )
 
-    assert "species_associated_spectra" in resultdata
-    assert "decay_associated_spectra" in resultdata
     assert "irf_center" in resultdata

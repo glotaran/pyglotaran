@@ -299,8 +299,6 @@ def test_kinetic_model(suite, nnls):
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
-    assert "species_associated_images" in resultdata
-    assert "decay_associated_images" in resultdata
 
     if suite is OneComponentOneChannelGaussianIrf:
         assert "irf_shift" in resultdata
@@ -310,3 +308,83 @@ def test_kinetic_model(suite, nnls):
 
     if len(model.irf) != 0:
         assert "irf" in resultdata
+
+
+def test_finalize_data():
+    model = DecayModel.from_dict(
+        {
+            "initial_concentration": {
+                "j1": {"compartments": ["s1", "s2"], "parameters": ["3", "3"]},
+            },
+            "megacomplex": {
+                "mc1": {"k_matrix": ["k1"]},
+                "mc2": {"k_matrix": ["k2"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s1", "s1"): "1",
+                    }
+                },
+                "k2": {
+                    "matrix": {
+                        ("s2", "s2"): "2",
+                    }
+                },
+            },
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "megacomplex": ["mc1", "mc2"],
+                },
+            },
+        }
+    )
+
+    parameters = ParameterGroup.from_list(
+        [101e-4, 101e-3, [1, {"vary": False, "non-negative": False}]]
+    )
+
+    time = np.arange(0, 50, 1.5)
+    pixel = np.asarray([0, 2])
+    axis = {"time": time, "pixel": pixel}
+
+    clp = xr.DataArray(
+        [[1, 0], [0, 1]], coords=[("pixel", pixel.data), ("clp_label", ["s1", "s2"])]
+    )
+    dataset = simulate(model, "dataset1", parameters, axis, clp)
+
+    scheme = Scheme(
+        model=model,
+        parameters=parameters,
+        data={"dataset1": dataset},
+        maximum_number_function_evaluations=1,
+    )
+    result = optimize(scheme)
+
+    result_dataset = result.data["dataset1"]
+
+    assert "initial_concentration" in result_dataset
+    assert "species_concentration" in result_dataset
+    assert "species_associated_images" in result_dataset
+
+    assert "decay_associated_images_mc1" in result_dataset
+    assert "decay_associated_images_mc2" in result_dataset
+
+    assert "k_matrix_mc1" in result_dataset
+    assert "k_matrix_mc2" in result_dataset
+    assert "k_matrix_reduced_mc1" in result_dataset
+    assert "k_matrix_reduced_mc2" in result_dataset
+    assert "a_matrix_mc1" in result_dataset
+    assert "a_matrix_mc2" in result_dataset
+
+    assert "species_mc1" in result_dataset.coords
+    assert "species_mc2" in result_dataset.coords
+    assert "initial_concentration_mc1" in result_dataset.coords
+    assert "initial_concentration_mc2" in result_dataset.coords
+    assert "component_mc1" in result_dataset.coords
+    assert "component_mc2" in result_dataset.coords
+    assert "rate_mc1" in result_dataset.coords
+    assert "rate_mc2" in result_dataset.coords
+    assert "lifetime_mc1" in result_dataset.coords
+    assert "lifetime_mc2" in result_dataset.coords
