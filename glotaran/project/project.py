@@ -168,8 +168,8 @@ class Project:
         """
         try:
             return self._data_registry.load_item(name)
-        except ValueError:
-            raise ValueError(f"Dataset '{name}' does not exist.")
+        except ValueError as e:
+            raise ValueError(f"Dataset '{name}' does not exist.") from e
 
     def import_data(
         self,
@@ -237,8 +237,8 @@ class Project:
         """
         try:
             return self._model_registry.load_item(name)
-        except ValueError:
-            raise ValueError(f"Model '{name}' does not exist.")
+        except ValueError as e:
+            raise ValueError(f"Model '{name}' does not exist.") from e
 
     def generate_model(
         self,
@@ -311,8 +311,8 @@ class Project:
         """
         try:
             return self._parameter_registry.load_item(name)
-        except ValueError:
-            raise ValueError(f"Parameters '{name}' does not exist.")
+        except ValueError as e:
+            raise ValueError(f"Parameters '{name}' does not exist.") from e
 
     def generate_parameters(
         self,
@@ -411,8 +411,8 @@ class Project:
         """
         try:
             return self._result_registry.load_item(name)
-        except ValueError:
-            raise ValueError(f"Result '{name}' does not exist.")
+        except ValueError as e:
+            raise ValueError(f"Result '{name}' does not exist.") from e
 
     def create_scheme(
         self,
