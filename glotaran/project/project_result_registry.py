@@ -1,7 +1,9 @@
 """The glotaran result registry module."""
 from __future__ import annotations
 
+import re
 from pathlib import Path
+from warnings import warn
 
 from glotaran.io import load_result
 from glotaran.io import save_result
@@ -11,6 +13,8 @@ from glotaran.project.result import Result
 
 class ProjectResultRegistry(ProjectRegistry):
     """A registry for results."""
+
+    result_pattern = re.compile(r".+_run_\d{2}$")
 
     def __init__(self, directory: Path):
         """Initialize a result registry.
@@ -41,25 +45,70 @@ class ProjectResultRegistry(ProjectRegistry):
         """
         return path.is_dir()
 
+    def previous_result_paths(self, base_name: str) -> list[Path]:
+        """List previous result paths with base_name.
+
+        Parameters
+        ----------
+        base_name: str
+            The base name for the result provided by user or derived from model name.
+
+        Returns
+        -------
+        list[Path]
+            Paths to previous results with name ``base_name``.
+        """
+        return sorted(self.directory.glob(f"{base_name}_run_*"))
+
+    def _latest_result_name_fallback(self, name: str, *, latest: bool = False) -> str:
+        """Fallback when a user forgets to specify the run to get a result.
+
+        If ``name`` contains the run number this will just return ``name``,
+        else we try to get the name of the latest run.
+
+        Parameters
+        ----------
+        name: str
+            Name of the result, which should contain the run specifyer.
+        latest: bool
+            Flag to deactivate warning about using latest result. Defaults to False
+
+        Returns
+        -------
+        str
+            Name used to retrieve a result.
+        """
+        if re.match(self.result_pattern, name) is None:
+            if latest is False:
+                warn(
+                    UserWarning(
+                        f"Result name {name!r} is missing the run specifier, "
+                        "falling back to try getting latest result. "
+                        "Use latest=True to mute this warning."
+                    ),
+                    stacklevel=3,
+                )
+            previous_result_paths = self.previous_result_paths(name) or [Path(name)]
+            return previous_result_paths[-1].stem
+        return name
+
     def create_result_run_name(self, base_name: str) -> str:
         """Create a result name for a model.
 
         Parameters
         ----------
         base_name: str
-            The base name for the result.
+            The base name for the result provided by user or derived from model name.
 
         Returns
         -------
         str :
-            A result name.
+            Folder name for the new result to be saved in.
         """
-        previous_results = list(self.directory.glob(f"{base_name}_run_*"))
+        previous_results = self.previous_result_paths(base_name)
         if not previous_results:
             return f"{base_name}_run_00"
-        previous_results.sort()
-        latest_result = previous_results[-1].stem
-        latest_result_run_nr = int(latest_result.replace(f"{base_name}_run_", ""))
+        latest_result_run_nr = int(previous_results[-1].stem.replace(f"{base_name}_run_", ""))
         return f"{base_name}_run_{latest_result_run_nr+1:02}"
 
     def save(self, name: str, result: Result):

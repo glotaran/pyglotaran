@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from pathlib import Path
+from typing import Literal
 
 import pytest
+from _pytest.recwarn import WarningsRecorder
 
 from glotaran import __version__ as gta_version
 from glotaran.builtin.io.yml.utils import load_dict
@@ -24,7 +28,7 @@ def project_folder(tmpdir_factory):
 
 
 @pytest.fixture(scope="module")
-def project_file(project_folder):
+def project_file(project_folder: Path):
     return Path(project_folder) / "project.gta"
 
 
@@ -35,13 +39,13 @@ def test_data(tmpdir_factory):
     return path
 
 
-def test_create(project_folder):
+def test_create(project_folder: Path):
     Project.create(project_folder)
     with pytest.raises(FileExistsError):
         assert Project.create(project_folder)
 
 
-def test_open(project_folder, project_file):
+def test_open(project_folder: Path, project_file: Path):
     project_from_folder = Project.open(project_folder)
 
     project_from_file = Project.open(project_file)
@@ -57,7 +61,7 @@ def test_open(project_folder, project_file):
     assert not project.has_results
 
 
-def test_generate_model(project_folder, project_file):
+def test_generate_model(project_folder: Path, project_file: Path):
     project = Project.open(project_file)
 
     project.generate_model("test_model", "decay_parallel", {"nr_compartments": 5})
@@ -75,7 +79,7 @@ def test_generate_model(project_folder, project_file):
     assert project.has_models
 
     model = project.load_model("test_model")
-    assert "megacomplex_parallel_decay" in model.megacomplex
+    assert "megacomplex_parallel_decay" in model.megacomplex  # type:ignore[attr-defined]
 
     comapartments = load_dict(model_file, is_file=True)["megacomplex"][
         "megacomplex_parallel_decay"
@@ -86,7 +90,9 @@ def test_generate_model(project_folder, project_file):
 
 @pytest.mark.parametrize("name", ["test_parameter", None])
 @pytest.mark.parametrize("fmt", ["yml", "yaml", "csv"])
-def test_generate_parameters(project_folder, project_file, name, fmt):
+def test_generate_parameters(
+    project_folder: Path, project_file: Path, name: str | None, fmt: Literal["yml", "yaml", "csv"]
+):
     project = Project.open(project_file)
 
     assert project.has_models
@@ -115,7 +121,7 @@ def test_generate_parameters(project_folder, project_file, name, fmt):
 
 
 @pytest.mark.parametrize("name", ["test_data", None])
-def test_import_data(project_folder, project_file, test_data, name):
+def test_import_data(project_folder: Path, project_file: Path, test_data: Path, name: str | None):
     project = Project.open(project_file)
 
     project.import_data(test_data, name=name)
@@ -138,7 +144,7 @@ def test_import_data(project_folder, project_file, test_data, name):
     assert data == example_dataset
 
 
-def test_create_scheme(project_folder, project_file):
+def test_create_scheme(project_file: Path):
     project = Project.open(project_file)
 
     project.generate_parameters("test_model", name="test_parameters")
@@ -147,12 +153,12 @@ def test_create_scheme(project_folder, project_file):
     )
 
     assert "dataset_1" in scheme.data
-    assert "dataset_1" in scheme.model.dataset
+    assert "dataset_1" in scheme.model.dataset  # type:ignore[attr-defined]
     assert scheme.maximum_number_function_evaluations == 1
 
 
 @pytest.mark.parametrize("name", ["test", None])
-def test_run_optimization(project_folder, project_file, name):
+def test_run_optimization(project_folder: Path, project_file: Path, name: str | None):
     project = Project.open(project_file)
 
     model_file = project_folder / "models" / "sequential.yml"
@@ -187,16 +193,55 @@ def test_run_optimization(project_folder, project_file, name):
     parameters_file.unlink()
 
 
-def test_load_result(project_folder, project_file):
+def test_load_result(project_folder: Path, project_file: Path, recwarn: WarningsRecorder):
+    """No warnings if name contains run specifier or latest is true."""
     project = Project.open(project_file)
 
     assert project_folder / "results" / "test_run_00" == project.get_result_path("test_run_00")
 
-    result = project.load_result("test_run")
+    result = project.load_result("test_run_00")
     assert isinstance(result, Result)
 
+    assert project_folder / "results" / "test_run_01" == project.get_result_path(
+        "test", latest=True
+    )
 
-def test_generators_allow_overwrite(project_folder, project_file):
+    assert isinstance(project.load_result("test", latest=True), Result)
+
+    assert project_folder / "results" / "test_run_01" == project.get_latest_result_path("test")
+
+    assert isinstance(project.load_latest_result("test"), Result)
+
+    assert len(recwarn) == 0
+
+
+def test_load_result_warnings(project_folder: Path, project_file: Path):
+    """Warn when using fallback to latest result."""
+    project = Project.open(project_file)
+
+    with pytest.warns(UserWarning) as recwarn:
+        assert project_folder / "results" / "test_run_01" == project.get_result_path("test")
+
+        assert len(recwarn) == 1
+        assert Path(recwarn[0].filename).samefile(__file__)
+        assert recwarn[0].message.args[0] == (
+            "Result name 'test' is missing the run specifier, "
+            "falling back to try getting latest result. "
+            "Use latest=True to mute this warning."
+        )
+    with pytest.warns(UserWarning) as recwarn:
+        assert isinstance(project.load_result("test"), Result)
+
+        assert len(recwarn) == 1
+        assert Path(recwarn[0].filename).samefile(__file__)
+        assert recwarn[0].message.args[0] == (
+            "Result name 'test' is missing the run specifier, "
+            "falling back to try getting latest result. "
+            "Use latest=True to mute this warning."
+        )
+
+
+def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     """Overwrite doesn't throw an exception.
 
     This is the last test not to interfer with other tests.
@@ -217,7 +262,7 @@ def test_generators_allow_overwrite(project_folder, project_file):
         "test_model", "decay_parallel", {"nr_compartments": 3}, allow_overwrite=True
     )
     new_model = project.load_model("test")
-    assert "megacomplex_parallel_decay" in new_model.megacomplex
+    assert "megacomplex_parallel_decay" in new_model.megacomplex  # type:ignore[attr-defined]
 
     comapartments = load_dict(model_file, is_file=True)["megacomplex"][
         "megacomplex_parallel_decay"

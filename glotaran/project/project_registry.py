@@ -99,8 +99,8 @@ class ProjectRegistry:
         """
         try:
             path = next(p for p in self._directory.iterdir() if name in p.name)
-        except StopIteration:
-            raise ValueError(f"No Item with name '{name}' exists.")
+        except StopIteration as e:
+            raise ValueError(f"No Item with name '{name}' exists.") from e
         return self._loader(path)
 
     def markdown(self) -> MarkdownStr:

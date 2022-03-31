@@ -1,6 +1,7 @@
 """The glotaran project module."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
@@ -389,8 +390,36 @@ class Project:
         """
         return self._result_registry.items
 
-    def get_result_path(self, name: str) -> Path:
-        """Get the path to a result.
+    def get_result_path(self, name: str, *, latest: bool = False) -> Path:
+        """Get the path to a result with name ``name``.
+
+        Parameters
+        ----------
+        name : str
+            The name of the result.
+        latest: bool
+            Flag to deactivate warning about using latest result. Defaults to False
+
+        Returns
+        -------
+        Path
+            The path to the result.
+
+        Raises
+        ------
+        ValueError
+            Raised if result does not exist.
+        """
+        name = self._result_registry._latest_result_name_fallback(name, latest=latest)
+
+        path = self._result_registry.directory / name
+        if self._result_registry.is_item(path):
+            return path
+
+        raise ValueError(f"Result '{name}' does not exist.")
+
+    def get_latest_result_path(self, name: str) -> Path:
+        """Get the path to a result with name ``name``.
 
         Parameters
         ----------
@@ -406,14 +435,40 @@ class Project:
         ------
         ValueError
             Raised if result does not exist.
-        """
-        path = self._result_registry.directory / name
-        if self._result_registry.is_item(path):
-            return path
-        else:
-            raise ValueError(f"Result '{name}' does not exist.")
 
-    def load_result(self, name: str) -> Result:
+
+        .. # noqa: DAR402
+        """
+        name = re.sub(self._result_registry.result_pattern, "", name)
+        return self.get_result_path(name, latest=True)
+
+    def load_result(self, name: str, *, latest: bool = False) -> Result:
+        """Load a result.
+
+        Parameters
+        ----------
+        name : str
+            The name of the result.
+        latest: bool
+            Flag to deactivate warning about using latest result. Defaults to False
+
+        Returns
+        -------
+        Result
+            The loaded result.
+
+        Raises
+        ------
+        ValueError
+            Raised if result does not exist.
+        """
+        name = self._result_registry._latest_result_name_fallback(name, latest=latest)
+        try:
+            return self._result_registry.load_item(name)
+        except ValueError as e:
+            raise ValueError(f"Result '{name}' does not exist.") from e
+
+    def load_latest_result(self, name: str) -> Result:
         """Load a result.
 
         Parameters
@@ -430,11 +485,12 @@ class Project:
         ------
         ValueError
             Raised if result does not exist.
+
+
+        .. # noqa: DAR402
         """
-        try:
-            return self._result_registry.load_item(name)
-        except ValueError as e:
-            raise ValueError(f"Result '{name}' does not exist.") from e
+        name = re.sub(self._result_registry.result_pattern, "", name)
+        return self.load_result(name, latest=True)
 
     def create_scheme(
         self,
