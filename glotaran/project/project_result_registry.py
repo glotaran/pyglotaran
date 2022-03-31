@@ -14,7 +14,7 @@ from glotaran.project.result import Result
 class ProjectResultRegistry(ProjectRegistry):
     """A registry for results."""
 
-    result_pattern = re.compile(r".+_run_\d{2}$")
+    result_pattern = re.compile(r".+_run_\d{4}$")
 
     def __init__(self, directory: Path):
         """Initialize a result registry.
@@ -107,9 +107,9 @@ class ProjectResultRegistry(ProjectRegistry):
         """
         previous_results = self.previous_result_paths(base_name)
         if not previous_results:
-            return f"{base_name}_run_00"
+            return f"{base_name}_run_0000"
         latest_result_run_nr = int(previous_results[-1].stem.replace(f"{base_name}_run_", ""))
-        return f"{base_name}_run_{latest_result_run_nr+1:02}"
+        return f"{base_name}_run_{latest_result_run_nr+1:04}"
 
     def save(self, name: str, result: Result):
         """Save a result.

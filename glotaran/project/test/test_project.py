@@ -230,7 +230,7 @@ def test_run_optimization(project_folder: Path, project_file: Path, name: str | 
             result_name=name,
         )
         assert project.has_results
-        result_name = f"{name}_run_0{i}"
+        result_name = f"{name}_run_000{i}"
         assert (project_folder / "results" / result_name).exists()
     model_file.unlink()
     parameters_file.unlink()
@@ -240,18 +240,18 @@ def test_load_result(project_folder: Path, project_file: Path, recwarn: Warnings
     """No warnings if name contains run specifier or latest is true."""
     project = Project.open(project_file)
 
-    assert project_folder / "results" / "test_run_00" == project.get_result_path("test_run_00")
+    assert project_folder / "results" / "test_run_0000" == project.get_result_path("test_run_0000")
 
-    result = project.load_result("test_run_00")
+    result = project.load_result("test_run_0000")
     assert isinstance(result, Result)
 
-    assert project_folder / "results" / "test_run_01" == project.get_result_path(
+    assert project_folder / "results" / "test_run_0001" == project.get_result_path(
         "test", latest=True
     )
 
     assert isinstance(project.load_result("test", latest=True), Result)
 
-    assert project_folder / "results" / "test_run_01" == project.get_latest_result_path("test")
+    assert project_folder / "results" / "test_run_0001" == project.get_latest_result_path("test")
 
     assert isinstance(project.load_latest_result("test"), Result)
 
@@ -263,7 +263,7 @@ def test_load_result_warnings(project_folder: Path, project_file: Path):
     project = Project.open(project_file)
 
     with pytest.warns(UserWarning) as recwarn:
-        assert project_folder / "results" / "test_run_01" == project.get_result_path("test")
+        assert project_folder / "results" / "test_run_0001" == project.get_result_path("test")
 
         assert len(recwarn) == 1
         assert Path(recwarn[0].filename).samefile(__file__)
@@ -297,10 +297,10 @@ def test_getting_items(project_file: Path):
     assert "test_parameters" in project.parameters
     assert project.parameters["test_parameters"].is_file()
 
-    assert "test_run_00" in project.results
-    assert project.results["test_run_00"].is_dir()
-    assert "test_run_01" in project.results
-    assert project.results["test_run_00"].is_dir()
+    assert "test_run_0000" in project.results
+    assert project.results["test_run_0000"].is_dir()
+    assert "test_run_0001" in project.results
+    assert project.results["test_run_0001"].is_dir()
 
 
 def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
@@ -366,9 +366,9 @@ def test_missing_file_errors(tmp_path: Path):
     assert str(exc_info.value) == "Parameters 'not-existing' does not exist."
 
     with pytest.raises(ValueError) as exc_info:
-        project.load_result("not-existing_run_00")
+        project.load_result("not-existing_run_0000")
 
-    assert str(exc_info.value) == "Result 'not-existing_run_00' does not exist."
+    assert str(exc_info.value) == "Result 'not-existing_run_0000' does not exist."
 
     with pytest.raises(ValueError) as exc_info:
         project.load_latest_result("not-existing")
@@ -376,9 +376,9 @@ def test_missing_file_errors(tmp_path: Path):
     assert str(exc_info.value) == "Result 'not-existing' does not exist."
 
     with pytest.raises(ValueError) as exc_info:
-        project.get_result_path("not-existing_run_00")
+        project.get_result_path("not-existing_run_0000")
 
-    assert str(exc_info.value) == "Result 'not-existing_run_00' does not exist."
+    assert str(exc_info.value) == "Result 'not-existing_run_0000' does not exist."
 
     with pytest.raises(ValueError) as exc_info:
         project.get_latest_result_path("not-existing")
@@ -413,10 +413,10 @@ def test_markdown_repr(project_folder: Path, project_file: Path):
 
         ## Results
 
-        * sequential_run_00
-        * sequential_run_01
-        * test_run_00
-        * test_run_01
+        * sequential_run_0000
+        * sequential_run_0001
+        * test_run_0000
+        * test_run_0001
 
         """
 
