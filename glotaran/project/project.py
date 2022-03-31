@@ -243,8 +243,8 @@ class Project:
 
     def generate_model(
         self,
+        model_name: str,
         generator_name: str,
-        generator: str,
         generator_arguments: dict[str, Any],
         *,
         allow_overwrite: bool = False,
@@ -254,9 +254,9 @@ class Project:
 
         Parameters
         ----------
-        generator_name : str
+        model_name : str
             The name of the model.
-        generator : str
+        generator_name : str
             The generator for the model.
         generator_arguments : dict[str, Any]
             Arguments for the generator.
@@ -266,8 +266,8 @@ class Project:
             Whether to ignore generation of a model file if it already exists.
         """
         self._model_registry.generate_model(
+            model_name,
             generator_name,
-            generator,
             generator_arguments,
             allow_overwrite=allow_overwrite,
             ignore_existing=ignore_existing,
