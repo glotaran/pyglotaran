@@ -50,6 +50,24 @@ def test_create_clp_guide_dataset(dummy_result: Result):
     assert clp_guide.data.shape == (1, dummy_result.data["dataset_1"].spectral.size)
 
 
+def test_create_clp_guide_dataset_errors(dummy_result: Result):
+    """Errors thrown when dataset or clp_label are not in result."""
+    with pytest.raises(ValueError) as exc_info:
+        dummy_result.create_clp_guide_dataset("not-a-dataset", "species_1")
+
+    assert (
+        str(exc_info.value)
+        == "Unknown dataset 'not-a-dataset'. Known datasets are:\n ['dataset_1']"
+    )
+    with pytest.raises(ValueError) as exc_info:
+        dummy_result.create_clp_guide_dataset("dataset_1", "not-a-species")
+
+    assert (
+        str(exc_info.value) == "Unknown clp_label 'not-a-species'. Known clp_labels are:\n "
+        "['species_1', 'species_2', 'species_3']"
+    )
+
+
 @pytest.mark.parametrize("saving_options", [SAVING_OPTIONS_MINIMAL, SAVING_OPTIONS_DEFAULT])
 def test_save_result(tmp_path: Path, saving_options: SavingOptions, dummy_result: Result):
     result_path = tmp_path / "test_result"

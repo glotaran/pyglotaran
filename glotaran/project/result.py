@@ -310,13 +310,13 @@ class Result:
 
         return True
 
-    def create_clp_guide_dataset(self, dataset: str, clp_label: str) -> xr.Dataset:
+    def create_clp_guide_dataset(self, dataset_name: str, clp_label: str) -> xr.Dataset:
         """Create dataset for clp guidance.
 
         Parameters
         ----------
-        dataset : str
-            The dataset to extract the guide from.
+        dataset_name : str
+            The name of dataset to extract the guide from.
         clp_label : str
             The label of the clp to guide.
 
@@ -328,18 +328,26 @@ class Result:
         Raises
         ------
         ValueError
-            Raised if either the dataset or clp label does not exist.
+            If ``dataset_name`` is not in result.
+        ValueError
+            If ``clp_labels`` is not in result.
         """
-        if dataset not in self.data:
-            raise ValueError(f"Unknown dataset '{dataset}'.")
-        result = self.data[dataset]
-        if clp_label not in result.clp_label:
-            raise ValueError(f"Unknown clp_label '{clp_label}'.")
+        if dataset_name not in self.data:
+            raise ValueError(
+                f"Unknown dataset {dataset_name!r}. "
+                f"Known datasets are:\n {list(self.data.keys())}"
+            )
+        dataset = self.data[dataset_name]
+        if clp_label not in dataset.clp_label:
+            raise ValueError(
+                f"Unknown clp_label {clp_label!r}. "
+                f"Known clp_labels are:\n {list(dataset.clp_label.values)}"
+            )
 
         return (
-            result.clp.sel(clp_label=[clp_label])
+            dataset.clp.sel(clp_label=[clp_label])
             .transpose()
-            .rename(clp_label=result.model_dimension)
+            .rename(clp_label=dataset.model_dimension)
             .to_dataset(name="data")
         )
 
@@ -373,5 +381,5 @@ class Result:
         """
         try:
             return self.data[dataset_label]
-        except KeyError:
-            raise ValueError(f"Unknown dataset '{dataset_label}'")
+        except KeyError as e:
+            raise ValueError(f"Unknown dataset '{dataset_label}'") from e
