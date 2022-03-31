@@ -125,12 +125,14 @@ def test_generate_parameters(
 
     assert project.has_models
 
-    project.generate_parameters("test_model", name=name, fmt=fmt)
+    project.generate_parameters("test_model", parameters_name=name, format_name=fmt)
 
     parameter_folder = project_folder / "parameters"
     assert parameter_folder.is_dir()
 
-    project.generate_parameters("test_model", name=name, fmt=fmt, ignore_existing=True)
+    project.generate_parameters(
+        "test_model", parameters_name=name, format_name=fmt, ignore_existing=True
+    )
 
     parameter_file_name = f"{'test_model_parameters' if name is None else name}.{fmt}"
     parameter_file = parameter_folder / parameter_file_name
@@ -149,7 +151,7 @@ def test_generate_parameters(
     assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 5
 
     with pytest.raises(FileExistsError) as exc_info:
-        project.generate_parameters("test_model", name=name, fmt=fmt)
+        project.generate_parameters("test_model", parameters_name=name, format_name=fmt)
 
     assert (
         str(exc_info.value)
@@ -186,9 +188,11 @@ def test_import_data(project_folder: Path, project_file: Path, test_data: Path, 
 def test_create_scheme(project_file: Path):
     project = Project.open(project_file)
 
-    project.generate_parameters("test_model", name="test_parameters")
+    project.generate_parameters("test_model", parameters_name="test_parameters")
     scheme = project.create_scheme(
-        model="test_model", parameters="test_parameters", maximum_number_function_evaluations=1
+        model_name="test_model",
+        parameters_name="test_parameters",
+        maximum_number_function_evaluations=1,
     )
 
     assert "dataset_1" in scheme.data
@@ -220,10 +224,10 @@ def test_run_optimization(project_folder: Path, project_file: Path, name: str | 
 
     for i in range(2):
         project.optimize(
-            model="sequential",
-            parameters="sequential",
+            model_name="sequential",
+            parameters_name="sequential",
             maximum_number_function_evaluations=1,
-            name=name,
+            result_name=name,
         )
         assert project.has_results
         result_name = f"{name}_run_0{i}"

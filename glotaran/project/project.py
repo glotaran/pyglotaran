@@ -149,12 +149,12 @@ class Project:
         """
         return self._data_registry.items
 
-    def load_data(self, name: str) -> xr.Dataset | xr.DataArray:
+    def load_data(self, dataset_name: str) -> xr.Dataset | xr.DataArray:
         """Load a dataset.
 
         Parameters
         ----------
-        name : str
+        dataset_name : str
             The name of the dataset.
 
         Returns
@@ -168,9 +168,9 @@ class Project:
             Raised if the dataset does not exist.
         """
         try:
-            return self._data_registry.load_item(name)
+            return self._data_registry.load_item(dataset_name)
         except ValueError as e:
-            raise ValueError(f"Dataset {name!r} does not exist.") from e
+            raise ValueError(f"Dataset {dataset_name!r} does not exist.") from e
 
     def import_data(
         self,
@@ -305,12 +305,12 @@ class Project:
         """
         return self._parameter_registry.items
 
-    def load_parameters(self, name: str) -> ParameterGroup:
+    def load_parameters(self, parameters_name: str) -> ParameterGroup:
         """Load parameters.
 
         Parameters
         ----------
-        name : str
+        parameters_name : str
             The name of the parameters.
 
         Returns
@@ -324,16 +324,16 @@ class Project:
             Raised if parameters do not exist.
         """
         try:
-            return self._parameter_registry.load_item(name)
+            return self._parameter_registry.load_item(parameters_name)
         except ValueError as e:
-            raise ValueError(f"Parameters '{name}' does not exist.") from e
+            raise ValueError(f"Parameters '{parameters_name}' does not exist.") from e
 
     def generate_parameters(
         self,
         model_name: str,
-        name: str | None = None,
+        parameters_name: str | None = None,
         *,
-        fmt: Literal["yml", "yaml", "csv"] = "csv",
+        format_name: Literal["yml", "yaml", "csv"] = "csv",
         allow_overwrite: bool = False,
         ignore_existing: bool = False,
     ):
@@ -343,9 +343,9 @@ class Project:
         ----------
         model_name : str
             The model.
-        name : str | None
-            The name of the parameters.
-        fmt : Literal["yml", "yaml", "csv"]
+        parameters_name : str | None
+            The name of the parameters. If ``None`` it will be <model_name>_parameters.
+        format_name : Literal["yml", "yaml", "csv"]
             The parameter format.
         allow_overwrite: bool
             Whether to overwrite existing parameters.
@@ -353,9 +353,15 @@ class Project:
             Whether to ignore generation of a parameter file if it already exists.
         """
         model = self.load_model(model_name)
-        name = name if name is not None else f"{model_name}_parameters"
+        parameters_name = (
+            parameters_name if parameters_name is not None else f"{model_name}_parameters"
+        )
         self._parameter_registry.generate_parameters(
-            model, name, fmt=fmt, allow_overwrite=allow_overwrite, ignore_existing=ignore_existing
+            model,
+            parameters_name,
+            format_name=format_name,
+            allow_overwrite=allow_overwrite,
+            ignore_existing=ignore_existing,
         )
 
     def get_parameters_directory(self) -> Path:
@@ -390,12 +396,12 @@ class Project:
         """
         return self._result_registry.items
 
-    def get_result_path(self, name: str, *, latest: bool = False) -> Path:
+    def get_result_path(self, result_name: str, *, latest: bool = False) -> Path:
         """Get the path to a result with name ``name``.
 
         Parameters
         ----------
-        name : str
+        result_name : str
             The name of the result.
         latest: bool
             Flag to deactivate warning about using latest result. Defaults to False
@@ -410,20 +416,22 @@ class Project:
         ValueError
             Raised if result does not exist.
         """
-        name = self._result_registry._latest_result_name_fallback(name, latest=latest)
+        result_name = self._result_registry._latest_result_name_fallback(
+            result_name, latest=latest
+        )
 
-        path = self._result_registry.directory / name
+        path = self._result_registry.directory / result_name
         if self._result_registry.is_item(path):
             return path
 
-        raise ValueError(f"Result {name!r} does not exist.")
+        raise ValueError(f"Result {result_name!r} does not exist.")
 
-    def get_latest_result_path(self, name: str) -> Path:
+    def get_latest_result_path(self, result_name: str) -> Path:
         """Get the path to a result with name ``name``.
 
         Parameters
         ----------
-        name : str
+        result_name : str
             The name of the result.
 
         Returns
@@ -439,15 +447,15 @@ class Project:
 
         .. # noqa: DAR402
         """
-        name = re.sub(self._result_registry.result_pattern, "", name)
-        return self.get_result_path(name, latest=True)
+        result_name = re.sub(self._result_registry.result_pattern, "", result_name)
+        return self.get_result_path(result_name, latest=True)
 
-    def load_result(self, name: str, *, latest: bool = False) -> Result:
+    def load_result(self, result_name: str, *, latest: bool = False) -> Result:
         """Load a result.
 
         Parameters
         ----------
-        name : str
+        result_name : str
             The name of the result.
         latest: bool
             Flag to deactivate warning about using latest result. Defaults to False
@@ -462,18 +470,20 @@ class Project:
         ValueError
             Raised if result does not exist.
         """
-        name = self._result_registry._latest_result_name_fallback(name, latest=latest)
+        result_name = self._result_registry._latest_result_name_fallback(
+            result_name, latest=latest
+        )
         try:
-            return self._result_registry.load_item(name)
+            return self._result_registry.load_item(result_name)
         except ValueError as e:
-            raise ValueError(f"Result {name!r} does not exist.") from e
+            raise ValueError(f"Result {result_name!r} does not exist.") from e
 
-    def load_latest_result(self, name: str) -> Result:
+    def load_latest_result(self, result_name: str) -> Result:
         """Load a result.
 
         Parameters
         ----------
-        name : str
+        result_name : str
             The name of the result.
 
         Returns
@@ -489,13 +499,13 @@ class Project:
 
         .. # noqa: DAR402
         """
-        name = re.sub(self._result_registry.result_pattern, "", name)
-        return self.load_result(name, latest=True)
+        result_name = re.sub(self._result_registry.result_pattern, "", result_name)
+        return self.load_result(result_name, latest=True)
 
     def create_scheme(
         self,
-        model: str,
-        parameters: str,
+        model_name: str,
+        parameters_name: str,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
     ) -> Scheme:
@@ -503,9 +513,9 @@ class Project:
 
         Parameters
         ----------
-        model : str
+        model_name : str
             The model to optimize.
-        parameters : str
+        parameters_name : str
             The initial parameters.
         maximum_number_function_evaluations : int | None
             The maximum number of function evaluations.
@@ -517,14 +527,14 @@ class Project:
         Scheme
             The created scheme.
         """
-        loaded_model = self.load_model(model)
+        loaded_model = self.load_model(model_name)
         data = {
             dataset: self.load_data(dataset)
             for dataset in loaded_model.dataset  # type:ignore[attr-defined]
         }
         return Scheme(
             model=loaded_model,
-            parameters=self.load_parameters(parameters),
+            parameters=self.load_parameters(parameters_name),
             data=data,
             maximum_number_function_evaluations=maximum_number_function_evaluations,
             clp_link_tolerance=clp_link_tolerance,
@@ -532,9 +542,9 @@ class Project:
 
     def optimize(
         self,
-        model: str,
-        parameters: str,
-        name: str | None = None,
+        model_name: str,
+        parameters_name: str,
+        result_name: str | None = None,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
     ):
@@ -542,11 +552,11 @@ class Project:
 
         Parameters
         ----------
-        model : str
+        model_name : str
             The model to optimize.
-        parameters : str
+        parameters_name : str
             The initial parameters.
-        name : str | None
+        result_name : str | None
             The name of the result.
         maximum_number_function_evaluations : int | None
             The maximum number of function evaluations.
@@ -556,12 +566,12 @@ class Project:
         from glotaran.analysis.optimize import optimize
 
         scheme = self.create_scheme(
-            model, parameters, maximum_number_function_evaluations, clp_link_tolerance
+            model_name, parameters_name, maximum_number_function_evaluations, clp_link_tolerance
         )
         result = optimize(scheme)
 
-        name = name or model
-        self._result_registry.save(name, result)
+        result_name = result_name or model_name
+        self._result_registry.save(result_name, result)
 
     def markdown(self) -> MarkdownStr:
         """Format the project as a markdown text.

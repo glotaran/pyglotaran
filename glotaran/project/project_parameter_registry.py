@@ -30,7 +30,7 @@ class ProjectParameterRegistry(ProjectRegistry):
         model: Model,
         name: str | None,
         *,
-        fmt: Literal["yml", "yaml", "csv"] = "csv",
+        format_name: Literal["yml", "yaml", "csv"] = "csv",
         allow_overwrite: bool = False,
         ignore_existing: bool = False,
     ):
@@ -42,7 +42,7 @@ class ProjectParameterRegistry(ProjectRegistry):
             The model.
         name : str | None
             The name of the parameters.
-        fmt : Literal["yml", "yaml", "csv"]
+        format_name : Literal["yml", "yaml", "csv"]
             The parameter format.
         allow_overwrite: bool
             Whether to overwrite existing parameters.
@@ -55,7 +55,7 @@ class ProjectParameterRegistry(ProjectRegistry):
             Raised if parameters is already existing and `allow_overwrite=False`.
         """
         parameters = model.generate_parameters()
-        parameter_file = self.directory / f"{name}.{fmt}"
+        parameter_file = self.directory / f"{name}.{format_name}"
 
         if parameter_file.exists() and ignore_existing:
             return
@@ -64,9 +64,9 @@ class ProjectParameterRegistry(ProjectRegistry):
             raise FileExistsError(
                 f"Parameters {name!r} already exists and `allow_overwrite=False`."
             )
-        if fmt in ["yml", "yaml"]:
+        if format_name in ["yml", "yaml"]:
             write_dict(parameters, file_name=parameter_file, offset=0)
-        elif fmt == "csv":
+        elif format_name == "csv":
             parameter_group = (
                 ParameterGroup.from_dict(parameters)
                 if isinstance(parameters, dict)
