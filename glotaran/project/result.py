@@ -272,7 +272,7 @@ class Result:
             save_result(
                 result_path=path,
                 result=self,
-                format_name="yaml",
+                format_name="yml",
                 allow_overwrite=True,
                 saving_options=saving_options,
             ),

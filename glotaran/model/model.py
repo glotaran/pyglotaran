@@ -42,6 +42,10 @@ default_dataset_properties = {
     "scale": {"type": Parameter, "default": None, "allow_none": True},
 }
 
+root_parameter_error = ModelError(
+    "The root parameter group cannot contain both groups and parameters."
+)
+
 
 class Model:
     """A base class for global analysis models."""
@@ -125,9 +129,7 @@ class Model:
                 warn(f"Unknown model item type '{item_name}'.")
                 continue
 
-            is_list = isinstance(getattr(model, item_name), list)
-
-            if is_list:
+            if isinstance(getattr(model, item_name), list):
                 model._add_list_items(item_name, items)
             else:
                 model._add_dict_items(item_name, items)
@@ -138,8 +140,7 @@ class Model:
 
         for label, item in items.items():
             item_cls = self.model_items[item_name]
-            is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-            if is_typed:
+            if hasattr(item_cls, "_glotaran_model_item_typed"):
                 if "type" not in item and item_cls.get_default_type() is None:
                     raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item.get("type", item_cls.get_default_type())
@@ -156,8 +157,7 @@ class Model:
 
         for item in items:
             item_cls = self.model_items[item_name]
-            is_typed = hasattr(item_cls, "_glotaran_model_item_typed")
-            if is_typed:
+            if hasattr(item_cls, "_glotaran_model_item_typed"):
                 if "type" not in item:
                     raise ValueError(f"Missing type for attribute '{item_name}'")
                 item_type = item["type"]
@@ -212,14 +212,14 @@ class Model:
     def _add_dataset_property(self, property_name: str, dataset_property: dict[str, any]):
         if property_name in self._dataset_properties:
             known_type = (
-                self._dataset_properties[property_name]
-                if not isinstance(self._dataset_properties, dict)
-                else self._dataset_properties[property_name]["type"]
+                self._dataset_properties[property_name]["type"]
+                if isinstance(self._dataset_properties, dict)
+                else self._dataset_properties[property_name]
             )
             new_type = (
-                dataset_property
-                if not isinstance(dataset_property, dict)
-                else dataset_property["type"]
+                dataset_property["type"]
+                if isinstance(dataset_property, dict)
+                else dataset_property
             )
             if known_type != new_type:
                 raise ModelError(
@@ -312,13 +312,39 @@ class Model:
 
         return model_dict
 
-    def get_parameters(self) -> list[str]:
-        parameters = []
+    def get_parameter_labels(self) -> list[str]:
+        parameter_labels = []
         for item_name in self.model_items:
             items = getattr(self, item_name)
             item_iterator = items if isinstance(items, list) else items.values()
             for item in item_iterator:
-                parameters += item.get_parameters()
+                parameter_labels += item.get_parameter_labels()
+        return parameter_labels
+
+    def generate_parameters(self) -> dict | list:
+        parameters: dict | list = {}
+        for parameter in self.get_parameter_labels():
+            groups = parameter.split(".")
+            label = groups.pop()
+            if len(groups) == 0:
+                if isinstance(parameters, dict):
+                    if len(parameters) != 0:
+                        raise root_parameter_error
+                    else:
+                        parameters = []
+                parameters.append(Parameter.create_default_list(label))
+            else:
+                if isinstance(parameters, list):
+                    raise root_parameter_error
+                this_group = groups.pop()
+                group = parameters
+                for name in groups:
+                    if name not in group:
+                        group[name] = {}
+                    group = group[name]
+                if this_group not in group:
+                    group[this_group] = []
+                group[this_group].append(Parameter.create_default_list(label))
         return parameters
 
     def need_index_dependent(self) -> bool:
@@ -374,8 +400,7 @@ class Model:
         """
         result = ""
 
-        problems = self.problem_list(parameters)
-        if problems:
+        if problems := self.problem_list(parameters):
             result = f"Your model has {len(problems)} problems:\n"
             for p in problems:
                 result += f"\n * {p}"

@@ -74,6 +74,7 @@ class LegacyProjectIo(ProjectIoInterface):
                 "glotaran.io.save_result(result, Path(result_path) / 'result.yml')"
             ),
             to_be_removed_in_version="0.8.0",
+            stacklevel=5,
         )
 
         return save_result(
@@ -143,7 +144,8 @@ class FolderProjectIo(ProjectIoInterface):
                     "The folder plugin is only intended for internal use by other plugins "
                     "as quick way to save most of the files. The saved result will be incomplete, "
                     "thus it is not recommended to be used directly."
-                )
+                ),
+                stacklevel=4,
             )
 
         result_folder = Path(result_path)
