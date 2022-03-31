@@ -571,28 +571,39 @@ class Project:
         MarkdownStr : str
             The markdown string.
         """
-        md = dedent(
-            f"""\
-            # Project _{self.folder}_
+        folder_as_posix = self.folder.as_posix()  # type:ignore[union-attr]
+        md = f"""\
+            # Project _{folder_as_posix}_
 
             pyglotaran version: {self.version}
 
             ## Data
 
-            {self._data_registry.markdown()}
+            {self._data_registry.markdown(join_indentation=12)}
 
             ## Model
 
-            {self._model_registry.markdown()}
+            {self._model_registry.markdown(join_indentation=12)}
 
             ## Parameters
 
-            {self._parameter_registry.markdown()}
+            {self._parameter_registry.markdown(join_indentation=12)}
 
             ## Results
 
-            {self._result_registry.markdown()}
+            {self._result_registry.markdown(join_indentation=12)}
             """
-        )
 
-        return MarkdownStr(md)
+        return MarkdownStr(dedent(md))
+
+    def _repr_markdown_(self) -> str:
+        """Create a markdown respresentation.
+
+        Special method used by ``ipython`` to render markdown.
+
+        Returns
+        -------
+        str :
+            The markdown representation as string.
+        """
+        return str(self.markdown())

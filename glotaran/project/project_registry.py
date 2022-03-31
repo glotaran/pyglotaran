@@ -59,7 +59,7 @@ class ProjectRegistry:
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Path]
             The items of the registry.
         """
         return {path.stem: path for path in self._directory.iterdir() if self.is_item(path)}
@@ -103,8 +103,15 @@ class ProjectRegistry:
             raise ValueError(f"No Item with name '{name}' exists.") from e
         return self._loader(path)
 
-    def markdown(self) -> MarkdownStr:
+    def markdown(self, join_indentation: int = 0) -> MarkdownStr:
         """Format the registry items as a markdown text.
+
+        Parameters
+        ----------
+        join_indentation: int
+            Number of whitespaces to indent when joining the parts.
+            This is intended to be used with dedent when used in an indented f-string.
+            Defaults to 0.
 
         Returns
         -------
@@ -114,7 +121,8 @@ class ProjectRegistry:
         if self.empty:
             return MarkdownStr("_None_")
 
-        md = "".join(f"* {name}\n" for name in self.items)
+        join_str = " " * join_indentation
+        md = join_str.join(f"* {name}\n" for name in self.items)
         return MarkdownStr(md)
 
     def _create_directory_if_not_exist(self):

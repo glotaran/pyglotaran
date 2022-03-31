@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from importlib.metadata import distribution
 from pathlib import Path
+from textwrap import dedent
 from typing import Literal
 
 import pytest
 from _pytest.recwarn import WarningsRecorder
+from IPython.core.formatters import format_display_data
 
 from glotaran import __version__ as gta_version
 from glotaran.builtin.io.yml.utils import load_dict
@@ -277,7 +280,7 @@ def test_load_result_warnings(project_folder: Path, project_file: Path):
         )
 
 
-def test_getting_items(project_folder: Path, project_file: Path):
+def test_getting_items(project_file: Path):
     """Warn when using fallback to latest result."""
     project = Project.open(project_file)
 
@@ -377,3 +380,45 @@ def test_missing_file_errors(tmp_path: Path):
         project.get_latest_result_path("not-existing")
 
     assert str(exc_info.value) == "Result 'not-existing' does not exist."
+
+
+def test_markdown_repr(project_folder: Path, project_file: Path):
+    """calling markdown directly and via ipython."""
+    project = Project.open(project_file)
+
+    expected = f"""\
+        # Project _{project_folder.as_posix()}_
+
+        pyglotaran version: {distribution('pyglotaran').version}
+
+        ## Data
+
+        * dataset_1
+        * test_data
+
+
+        ## Model
+
+        * test_model
+
+
+        ## Parameters
+
+        * test_parameters
+
+
+        ## Results
+
+        * sequential_run_00
+        * sequential_run_01
+        * test_run_00
+        * test_run_01
+
+        """
+
+    assert str(project.markdown()) == dedent(expected)
+
+    rendered_result = format_display_data(project)[0]
+
+    assert "text/markdown" in rendered_result
+    assert rendered_result["text/markdown"] == dedent(expected)
