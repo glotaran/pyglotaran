@@ -181,7 +181,7 @@ def test_run_optimization(project_folder, project_file, name):
             name=name,
         )
         assert project.has_results
-        result_name = f"{name}_run_{i}"
+        result_name = f"{name}_run_0{i}"
         assert (project_folder / "results" / result_name).exists()
     model_file.unlink()
     parameters_file.unlink()
@@ -190,7 +190,7 @@ def test_run_optimization(project_folder, project_file, name):
 def test_load_result(project_folder, project_file):
     project = Project.open(project_file)
 
-    assert project_folder / "results" / "test_run_0" == project.get_result_path("test_run_0")
+    assert project_folder / "results" / "test_run_00" == project.get_result_path("test_run_00")
 
     result = project.load_result("test_run")
     assert isinstance(result, Result)

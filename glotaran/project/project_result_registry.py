@@ -56,11 +56,11 @@ class ProjectResultRegistry(ProjectRegistry):
         """
         previous_results = list(self.directory.glob(f"{base_name}_run_*"))
         if not previous_results:
-            return f"{base_name}_run_0"
+            return f"{base_name}_run_00"
         previous_results.sort()
         latest_result = previous_results[-1].stem
         latest_result_run_nr = int(latest_result.replace(f"{base_name}_run_", ""))
-        return f"{base_name}_run_{latest_result_run_nr+1}"
+        return f"{base_name}_run_{latest_result_run_nr+1:02}"
 
     def save(self, name: str, result: Result):
         """Save a result.
