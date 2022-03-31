@@ -62,7 +62,7 @@ class ProjectParameterRegistry(ProjectRegistry):
 
         if parameter_file.exists() and not allow_overwrite:
             raise FileExistsError(
-                f"Parameters '{name}' already exists and `allow_overwrite=False`."
+                f"Parameters {name!r} already exists and `allow_overwrite=False`."
             )
         if fmt in ["yml", "yaml"]:
             write_dict(parameters, file_name=parameter_file, offset=0)

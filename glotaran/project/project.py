@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from dataclasses import field
+from importlib.metadata import distribution
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
@@ -46,6 +47,7 @@ class Project:
         if self.folder is None:
             self.folder = self.file.parent
         self.folder = Path(self.folder)
+        self.version = distribution("pyglotaran").version
 
         self._data_registry = ProjectDataRegistry(self.folder)
         self._model_registry = ProjectModelRegistry(self.folder)
@@ -74,8 +76,6 @@ class Project:
         FileExistsError
             Raised if the project file already exists and `allow_overwrite=False`.
         """
-        from glotaran import __version__ as gta_version
-
         project_folder = make_path_absolute_if_relative(Path(folder))
         project_folder.mkdir(parents=True, exist_ok=True)
         project_file = project_folder / PROJECT_FILE_NAME
@@ -84,8 +84,8 @@ class Project:
                 f"Project file '{project_file}' already exist. "
                 "Set `allow_overwrite=True` to overwrite."
             )
-        project_file.write_text(TEMPLATE.format(gta_version=gta_version))
-        return Project.open(project_file)
+        project_file.write_text(TEMPLATE.format(gta_version=distribution("pyglotaran").version))
+        return Project.open(project_file, create_if_not_exist=True)
 
     @classmethod
     def open(cls, project_folder_or_file: str | Path, create_if_not_exist: bool = True) -> Project:
@@ -114,9 +114,9 @@ class Project:
         else:
             file = folder / PROJECT_FILE_NAME
 
-        if not file.exists():
-            if not create_if_not_exist:
-                raise FileNotFoundError(f"Project file {file} does not exists.")
+        if file.is_file() is False:
+            if create_if_not_exist is False:
+                raise FileNotFoundError(f"Project file {file.as_posix()} does not exists.")
             Project.create(folder)
 
         project_dict = load_dict(file, True)
@@ -139,12 +139,12 @@ class Project:
         return not self._data_registry.empty
 
     @property
-    def data(self) -> dict[str, str]:
+    def data(self) -> dict[str, Path]:
         """Get all project datasets.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Path]
             The models of the datasets.
         """
         return self._data_registry.items
@@ -170,7 +170,7 @@ class Project:
         try:
             return self._data_registry.load_item(name)
         except ValueError as e:
-            raise ValueError(f"Dataset '{name}' does not exist.") from e
+            raise ValueError(f"Dataset {name!r} does not exist.") from e
 
     def import_data(
         self,
@@ -208,12 +208,12 @@ class Project:
         return not self._model_registry.empty
 
     @property
-    def models(self) -> dict[str, str]:
+    def models(self) -> dict[str, Path]:
         """Get all project models.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Path]
             The models of the project.
         """
         return self._model_registry.items
@@ -239,7 +239,7 @@ class Project:
         try:
             return self._model_registry.load_item(name)
         except ValueError as e:
-            raise ValueError(f"Model '{name}' does not exist.") from e
+            raise ValueError(f"Model {name!r} does not exist.") from e
 
     def generate_model(
         self,
@@ -295,12 +295,12 @@ class Project:
         return not self._parameter_registry.empty
 
     @property
-    def parameters(self) -> dict[str, str]:
+    def parameters(self) -> dict[str, Path]:
         """Get all project parameters.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Path]
             The parameters of the project.
         """
         return self._parameter_registry.items
@@ -380,12 +380,12 @@ class Project:
         return not self._result_registry.empty
 
     @property
-    def results(self) -> dict[str, str]:
+    def results(self) -> dict[str, Path]:
         """Get all project results.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Path]
             The results of the project.
         """
         return self._result_registry.items
@@ -416,7 +416,7 @@ class Project:
         if self._result_registry.is_item(path):
             return path
 
-        raise ValueError(f"Result '{name}' does not exist.")
+        raise ValueError(f"Result {name!r} does not exist.")
 
     def get_latest_result_path(self, name: str) -> Path:
         """Get the path to a result with name ``name``.
@@ -466,7 +466,7 @@ class Project:
         try:
             return self._result_registry.load_item(name)
         except ValueError as e:
-            raise ValueError(f"Result '{name}' does not exist.") from e
+            raise ValueError(f"Result {name!r} does not exist.") from e
 
     def load_latest_result(self, name: str) -> Result:
         """Load a result.

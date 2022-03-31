@@ -39,6 +39,14 @@ def test_data(tmpdir_factory):
     return path
 
 
+def test_init(project_folder: Path, project_file: Path):
+    """Init project directly."""
+    file_only_init = Project(project_file)
+    file_and_folder_init = Project(project_file)
+
+    assert file_only_init == file_and_folder_init
+
+
 def test_create(project_folder: Path):
     Project.create(project_folder)
     with pytest.raises(FileExistsError):
@@ -61,20 +69,32 @@ def test_open(project_folder: Path, project_file: Path):
     assert not project.has_results
 
 
+def test_open_diff_version(tmp_path: Path):
+    """Loading from file overwrites current version."""
+    project_file = tmp_path / "project.gta"
+    project_file.write_text("version: 0.1.0")
+
+    project = Project.open(project_file)
+
+    assert project.version == "0.1.0"
+
+
 def test_generate_model(project_folder: Path, project_file: Path):
     project = Project.open(project_file)
 
     project.generate_model("test_model", "decay_parallel", {"nr_compartments": 5})
 
     model_folder = project_folder / "models"
-    assert model_folder.exists()
+    assert model_folder.is_dir()
 
     project.generate_model(
         "test_model", "decay_parallel", {"nr_compartments": 5}, ignore_existing=True
     )
 
+    assert project.get_models_directory() == model_folder
+
     model_file = model_folder / "test_model.yml"
-    assert model_file.exists()
+    assert model_file.is_file()
 
     assert project.has_models
 
@@ -86,6 +106,11 @@ def test_generate_model(project_folder: Path, project_file: Path):
     ]["compartments"]
 
     assert len(comapartments) == 5
+
+    with pytest.raises(FileExistsError) as exc_info:
+        project.generate_model("test_model", "decay_parallel", {"nr_compartments": 5})
+
+    assert str(exc_info.value) == "Model 'test_model' already exists and `allow_overwrite=False`."
 
 
 @pytest.mark.parametrize("name", ["test_parameter", None])
@@ -100,23 +125,34 @@ def test_generate_parameters(
     project.generate_parameters("test_model", name=name, fmt=fmt)
 
     parameter_folder = project_folder / "parameters"
-    assert parameter_folder.exists()
+    assert parameter_folder.is_dir()
 
     project.generate_parameters("test_model", name=name, fmt=fmt, ignore_existing=True)
 
     parameter_file_name = f"{'test_model_parameters' if name is None else name}.{fmt}"
     parameter_file = parameter_folder / parameter_file_name
-    assert parameter_file.exists()
+    assert parameter_file.is_file()
+    assert project.get_parameters_directory() == parameter_folder
 
     assert project.has_parameters
 
+    parameters_key = "test_model_parameters" if name is None else name
     model = project.load_model("test_model")
-    parameters = project.load_parameters("test_model_parameters" if name is None else name)
+    parameters = project.load_parameters(parameters_key)
 
     for parameter in model.get_parameter_labels():
         assert parameters.has(parameter)
 
     assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 5
+
+    with pytest.raises(FileExistsError) as exc_info:
+        project.generate_parameters("test_model", name=name, fmt=fmt)
+
+    assert (
+        str(exc_info.value)
+        == f"Parameters '{parameters_key}' already exists and `allow_overwrite=False`."
+    )
+
     parameter_file.unlink()
 
 
@@ -241,6 +277,25 @@ def test_load_result_warnings(project_folder: Path, project_file: Path):
         )
 
 
+def test_getting_items(project_folder: Path, project_file: Path):
+    """Warn when using fallback to latest result."""
+    project = Project.open(project_file)
+
+    assert "dataset_1" in project.data
+    assert project.data["dataset_1"].is_file()
+
+    assert "test_model" in project.models
+    assert project.models["test_model"].is_file()
+
+    assert "test_parameters" in project.parameters
+    assert project.parameters["test_parameters"].is_file()
+
+    assert "test_run_00" in project.results
+    assert project.results["test_run_00"].is_dir()
+    assert "test_run_01" in project.results
+    assert project.results["test_run_00"].is_dir()
+
+
 def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     """Overwrite doesn't throw an exception.
 
@@ -274,3 +329,51 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     parameters = load_parameters(parameter_file)
 
     assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 3
+
+
+def test_missing_file_errors(tmp_path: Path):
+    """Error when accessing non existing files."""
+    with pytest.raises(FileNotFoundError) as exc_info:
+        Project.open(tmp_path, create_if_not_exist=False)
+
+    assert (
+        str(exc_info.value)
+        == f"Project file {(tmp_path/'project.gta').as_posix()} does not exists."
+    )
+
+    project = Project.open(tmp_path)
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_data("not-existing")
+
+    assert str(exc_info.value) == "Dataset 'not-existing' does not exist."
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_model("not-existing")
+
+    assert str(exc_info.value) == "Model 'not-existing' does not exist."
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_parameters("not-existing")
+
+    assert str(exc_info.value) == "Parameters 'not-existing' does not exist."
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_result("not-existing_run_00")
+
+    assert str(exc_info.value) == "Result 'not-existing_run_00' does not exist."
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_latest_result("not-existing")
+
+    assert str(exc_info.value) == "Result 'not-existing' does not exist."
+
+    with pytest.raises(ValueError) as exc_info:
+        project.get_result_path("not-existing_run_00")
+
+    assert str(exc_info.value) == "Result 'not-existing_run_00' does not exist."
+
+    with pytest.raises(ValueError) as exc_info:
+        project.get_latest_result_path("not-existing")
+
+    assert str(exc_info.value) == "Result 'not-existing' does not exist."

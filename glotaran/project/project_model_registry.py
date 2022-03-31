@@ -59,6 +59,6 @@ class ProjectModelRegistry(ProjectRegistry):
             return
 
         if model_file.exists() and not allow_overwrite:
-            raise FileExistsError(f"Model '{name}' already exists and `allow_overwrite=False`.")
+            raise FileExistsError(f"Model {name!r} already exists and `allow_overwrite=False`.")
 
         model_file.write_text(model_yml)
