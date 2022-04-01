@@ -7,6 +7,7 @@
 - ✨ Python 3.10 support (#977)
 - ✨ Add simple decay megacomplexes (#860)
 - ✨ Feature: Generators (#866)
+- ✨ Add clp guidance megacomplex (#1029)
 
 ### 👌 Minor Improvements:
 
