@@ -1,6 +1,8 @@
 """The DatasetModel class."""
+
 from __future__ import annotations
 
+import contextlib
 from collections import Counter
 from typing import TYPE_CHECKING
 
@@ -189,14 +191,11 @@ class DatasetModel:
         def get_unique_errors(megacomplexes: list[str], is_global: bool) -> list[str]:
             unique_types = []
             for megacomplex_name in megacomplexes:
-                try:
+                with contextlib.suppress(KeyError):
                     megacomplex_instance = model.megacomplex[megacomplex_name]
                     if type(megacomplex_instance).glotaran_unique():
                         type_name = megacomplex_instance.type or megacomplex_instance.name
                         unique_types.append(type_name)
-                except KeyError:
-                    # The megacomplex does not exist, the model validator will report this
-                    pass
                 this_errors = [
                     f"Multiple instances of unique{' global ' if is_global else ' '}"
                     f"megacomplex type {type_name!r} in dataset {self.label!r}"
@@ -230,8 +229,8 @@ class DatasetModel:
 
         errors = []
 
-        def get_exclusive_errors(megacomplexes: list[str], is_global: bool) -> str:
-            try:
+        def get_exclusive_errors(megacomplexes: list[str]) -> list[str]:
+            with contextlib.suppress(StopIteration):
                 exclusive_megacomplex = next(
                     model.megacomplex[label]
                     for label in megacomplexes
@@ -243,13 +242,11 @@ class DatasetModel:
                         f"Megacomplex '{type(exclusive_megacomplex)}' is exclusive and cannot be "
                         f"combined with other megacomplex in dataset model '{self.label}'."
                     ]
-            except StopIteration:
-                pass
             return []
 
         if self.megacomplex:
-            errors += get_exclusive_errors(self.megacomplex, False)
+            errors += get_exclusive_errors(self.megacomplex)
         if self.global_megacomplex:
-            errors += get_exclusive_errors(self.global_megacomplex, True)
+            errors += get_exclusive_errors(self.global_megacomplex)
 
         return errors
