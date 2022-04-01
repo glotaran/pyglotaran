@@ -325,6 +325,31 @@ def create_clp_guide_dataset(
         If ``clp_labels`` is not in result.
     ValueError
         The the result dataset was created with pyglotaran<0.6.0.
+
+    Examples
+    --------
+    Extracting the clp guide from an optimization result object.
+
+    .. code-block:: python
+
+        from glotaran.io import save_dataset
+        from glotaran.utils.io import create_clp_guide_dataset
+
+        clp_guide = create_clp_guide_dataset(result, "species_1", "dataset_1")
+        save_dataset(clp_guide, "clp_guide__result_dataset_1__species_1.nc")
+
+    Extracting the clp guide from a result dataset loaded from file.
+
+    .. code-block:: python
+
+        from glotaran.io import load_dataset
+        from glotaran.io import save_dataset
+        from glotaran.utils.io import create_clp_guide_dataset
+
+        result_dataset = load_dataset("result_dataset_1.nc")
+        clp_guide = create_clp_guide_dataset(result_dataset, "species_1")
+        save_dataset(clp_guide, "clp_guide__result_dataset_1__species_1.nc")
+
     """
     if isinstance(result, xr.Dataset):
         dataset = result

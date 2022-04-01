@@ -335,6 +335,18 @@ class Result:
             If ``clp_labels`` is not in result.
 
 
+        Examples
+        --------
+        Extracting the clp guide from an optimization result object.
+
+        .. code-block:: python
+
+            from glotaran.io import save_dataset
+
+            clp_guide = result.create_clp_guide_dataset("species_1", "dataset_1")
+            save_dataset(clp_guide, "clp_guide__result_dataset_1__species_1.nc")
+
+
         .. # noqa: DAR402
         """
         return create_clp_guide_dataset(self, clp_label=clp_label, dataset_name=dataset_name)
