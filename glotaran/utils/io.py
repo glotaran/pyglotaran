@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
 
+    from glotaran.project.result import Result
     from glotaran.typing.types import StrOrPath
 
 
@@ -294,3 +295,65 @@ def make_path_absolute_if_relative(path: Path) -> Path:
     if not path.is_absolute():
         path = get_script_dir(nesting=2) / path
     return path
+
+
+def create_clp_guide_dataset(
+    result: Result | xr.Dataset, clp_label: str, dataset_name: str | None = None
+) -> xr.Dataset:
+    """Create dataset for clp guidance.
+
+    Parameters
+    ----------
+    result: Result | xr.Dataset
+        Optimization result object or dataset, created with pyglotaran>=0.6.0.
+    clp_label : str
+        Label of the clp to guide.
+    dataset_name : str | None
+        Name of dataset to extract the guide from. Defaults to None.
+
+    Returns
+    -------
+    xr.Dataset
+        DataArray containing the clp guide, with ``clp_label`` dimension replaced by the
+        model dimensions first value.
+
+    Raises
+    ------
+    ValueError
+        If result is an instance of ``Result`` and ``dataset_name`` is ``None`` or not in result.
+    ValueError
+        If ``clp_labels`` is not in result.
+    ValueError
+        The the result dataset was created with pyglotaran<0.6.0.
+    """
+    if isinstance(result, xr.Dataset):
+        dataset = result
+    elif dataset_name is None or dataset_name not in result.data:
+        raise ValueError(
+            f"Unknown dataset {dataset_name!r}. "
+            f"Known datasets are:\n {list(result.data.keys())}"
+        )
+    else:
+        dataset = result.data[dataset_name]
+    if clp_label not in dataset.clp_label:
+        raise ValueError(
+            f"Unknown clp_label {clp_label!r}. "
+            f"Known clp_labels are:\n {list(dataset.clp_label.values)}"
+        )
+    if "model_dimension" not in dataset.attrs:
+        raise ValueError(
+            "Result dataset is missing attribute 'model_dimension', "
+            "which means that it was created with pyglotaran<0.6.0"
+            "Please recreate the result with the current pyglotaran version."
+        )
+
+    clp_values = dataset.clp.sel(clp_label=[clp_label])
+    value_dimension = next(filter(lambda x: x != dataset.model_dimension, clp_values.dims))
+
+    return xr.DataArray(
+        clp_values.values.T,
+        coords={
+            dataset.model_dimension: [dataset.coords[dataset.model_dimension][0].item()],
+            value_dimension: clp_values.coords[value_dimension].values,
+        },
+    ).to_dataset(name="data")

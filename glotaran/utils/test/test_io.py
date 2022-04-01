@@ -12,8 +12,14 @@ import xarray as xr
 from IPython.core.formatters import format_display_data
 from pandas.testing import assert_frame_equal
 
+from glotaran.analysis.optimize import optimize
+from glotaran.io import load_dataset
 from glotaran.io import save_dataset
+from glotaran.project.result import Result
+from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
+from glotaran.testing.simulated_data.shared_decay import SPECTRAL_AXIS
 from glotaran.utils.io import DatasetMapping
+from glotaran.utils.io import create_clp_guide_dataset
 from glotaran.utils.io import load_datasets
 from glotaran.utils.io import relative_posix_path
 from glotaran.utils.io import safe_dataframe_fillna
@@ -38,6 +44,13 @@ def dummy_datasets(tmp_path: Path) -> tuple[Path, xr.Dataset, xr.Dataset]:
     save_dataset(ds1, tmp_path / "ds1_file.nc")
     save_dataset(ds2, tmp_path / "ds2_file.nc")
     return tmp_path, ds1, ds2
+
+
+@pytest.fixture(scope="session")
+def dummy_result():
+    """Dummy result for testing."""
+    print(SCHEME.data["dataset_1"])
+    yield optimize(SCHEME, raise_exception=True)
 
 
 def test_dataset_mapping(ds_mapping: DatasetMapping):
@@ -255,3 +268,72 @@ def test_safe_dataframe_replace():
     safe_dataframe_replace(df, "not_a_column", np.inf, 2)
 
     assert_frame_equal(df, df2)
+
+
+def test_create_clp_guide_dataset(dummy_result: Result):
+    """Check that clp guide has correct dimensions and dimension values."""
+    clp_guide = create_clp_guide_dataset(dummy_result, "species_1", "dataset_1")
+
+    assert clp_guide.data.shape == (1, dummy_result.data["dataset_1"].spectral.size)
+    assert np.allclose(clp_guide.coords["time"].item(), -1)
+    assert np.allclose(clp_guide.coords["spectral"].values, SPECTRAL_AXIS)
+
+    clp_guide = create_clp_guide_dataset(dummy_result.data["dataset_1"], "species_1")
+
+    assert clp_guide.data.shape == (1, dummy_result.data["dataset_1"].spectral.size)
+    assert np.allclose(clp_guide.coords["time"].item(), -1)
+    assert np.allclose(clp_guide.coords["spectral"].values, SPECTRAL_AXIS)
+
+
+def test_create_clp_guide_dataset_errors(dummy_result: Result):
+    """Errors thrown when dataset or clp_label are not in result."""
+    with pytest.raises(ValueError) as exc_info:
+        create_clp_guide_dataset(dummy_result, "species_1", "not-a-dataset")
+
+    assert (
+        str(exc_info.value)
+        == "Unknown dataset 'not-a-dataset'. Known datasets are:\n ['dataset_1']"
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        create_clp_guide_dataset(dummy_result, "not-a-species", "dataset_1")
+
+    assert (
+        str(exc_info.value) == "Unknown clp_label 'not-a-species'. Known clp_labels are:\n "
+        "['species_1', 'species_2', 'species_3']"
+    )
+
+    dummy_dataset = dummy_result.data["dataset_1"].copy()
+    del dummy_dataset.attrs["model_dimension"]
+
+    with pytest.raises(ValueError) as exc_info:
+        create_clp_guide_dataset(dummy_dataset, "species_1")
+
+    assert (
+        str(exc_info.value) == "Result dataset is missing attribute 'model_dimension', "
+        "which means that it was created with pyglotaran<0.6.0"
+        "Please recreate the result with the current pyglotaran version."
+    )
+
+
+def test_extract_sas_ascii_round_trip(dummy_result: Result, tmp_path: Path):
+    """Save and load from ascii give same result."""
+    tmp_file = tmp_path / "sas.ascii"
+
+    sas = create_clp_guide_dataset(dummy_result, "species_1", "dataset_1")
+    with pytest.warns(UserWarning) as rec_warn:
+        save_dataset(sas, tmp_file)
+
+        assert len(rec_warn) == 1
+        assert Path(rec_warn[0].filename).samefile(__file__)
+        assert rec_warn[0].message.args[0] == (
+            "Saving the 'data' attribute of 'dataset' as a fallback."
+            "Result saving for ascii format only supports xarray.DataArray format, "
+            "please pass a xarray.DataArray instead of a xarray.Dataset (e.g. dataset.data)."
+        )
+
+    loaded_sas = load_dataset(tmp_file, prepare=False)
+
+    for dim in sas.dims:
+        assert all(sas.coords[dim] == loaded_sas.coords[dim]), f"Coordinate {dim} mismatch"
+    assert np.allclose(sas.data.values, loaded_sas.data.values)

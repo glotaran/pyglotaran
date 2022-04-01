@@ -27,6 +27,7 @@ from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.project.scheme import Scheme
 from glotaran.utils.io import DatasetMapping
+from glotaran.utils.io import create_clp_guide_dataset
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -310,15 +311,15 @@ class Result:
 
         return True
 
-    def create_clp_guide_dataset(self, dataset_name: str, clp_label: str) -> xr.Dataset:
+    def create_clp_guide_dataset(self, clp_label: str, dataset_name: str) -> xr.Dataset:
         """Create dataset for clp guidance.
 
         Parameters
         ----------
-        dataset_name : str
-            Name of dataset to extract the guide from.
         clp_label : str
             Label of the clp to guide.
+        dataset_name : str
+            Name of dataset to extract the guide from.
 
         Returns
         -------
@@ -332,29 +333,11 @@ class Result:
             If ``dataset_name`` is not in result.
         ValueError
             If ``clp_labels`` is not in result.
+
+
+        .. # noqa: DAR402
         """
-        if dataset_name not in self.data:
-            raise ValueError(
-                f"Unknown dataset {dataset_name!r}. "
-                f"Known datasets are:\n {list(self.data.keys())}"
-            )
-        dataset = self.data[dataset_name]
-        if clp_label not in dataset.clp_label:
-            raise ValueError(
-                f"Unknown clp_label {clp_label!r}. "
-                f"Known clp_labels are:\n {list(dataset.clp_label.values)}"
-            )
-
-        clp_values = dataset.clp.sel(clp_label=[clp_label])
-        value_dimension = next(filter(lambda x: x != dataset.model_dimension, clp_values.dims))
-
-        return xr.DataArray(
-            clp_values.values.T,
-            coords={
-                dataset.model_dimension: [dataset.coords[dataset.model_dimension][0].item()],
-                value_dimension: clp_values.coords[value_dimension].values,
-            },
-        ).to_dataset(name="data")
+        return create_clp_guide_dataset(self, clp_label=clp_label, dataset_name=dataset_name)
 
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
