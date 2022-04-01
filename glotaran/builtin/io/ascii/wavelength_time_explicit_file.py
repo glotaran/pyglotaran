@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os.path
 import re
-import warnings
 from enum import Enum
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -12,8 +12,6 @@ import xarray as xr
 from glotaran.io import DataIoInterface
 from glotaran.io import register_data_io
 from glotaran.io.prepare_dataset import prepare_time_trace_dataset
-
-#  from glotaran.io.reader import file_reader
 
 
 class DataFileType(Enum):
@@ -106,7 +104,7 @@ class ExplicitFile:
 
     def read(self, prepare: bool = True):
         if not os.path.isfile(self._file):
-            raise Exception("File does not exist.")
+            raise FileNotFoundError("File does not exist.")
         with open(self._file) as f:
             f.readline()  # The first two lines are comments
             f.readline()
@@ -218,7 +216,7 @@ def get_interval_number(line):
     try:
         interval_number = int(interval_number)
     except ValueError:
-        warnings.warn(f"No interval number found in line:\n{line}")
+        warn(f"No interval number found in line:\n{line}")
         interval_number = None
     return interval_number
 
@@ -273,13 +271,24 @@ class AsciiDataIo(DataIoInterface):
 
     def save_dataset(
         self,
-        dataset: xr.DataArray,
+        dataset: xr.DataArray | xr.Dataset,
         file_name: str,
         *,
         comment: str = "",
         file_format: DataFileType = DataFileType.time_explicit,
         number_format: str = "%.10e",
     ):
+        if isinstance(dataset, xr.Dataset) and "data" in dataset:
+            dataset = dataset.data
+            warn(
+                UserWarning(
+                    "Saving the 'data' attribute of 'dataset' as a fallback."
+                    "Result saving for ascii format only supports xarray.DataArray format, "
+                    "please pass a xarray.DataArray instead of a xarray.Dataset "
+                    "(e.g. dataset.data)."
+                ),
+                stacklevel=4,
+            )
         data_file = (
             TimeExplicitFile(filepath=file_name, dataset=dataset)
             if file_format is DataFileType.time_explicit

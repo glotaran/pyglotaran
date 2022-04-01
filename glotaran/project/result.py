@@ -316,14 +316,15 @@ class Result:
         Parameters
         ----------
         dataset_name : str
-            The name of dataset to extract the guide from.
+            Name of dataset to extract the guide from.
         clp_label : str
-            The label of the clp to guide.
+            Label of the clp to guide.
 
         Returns
         -------
         xr.Dataset
-            The dataset containing the clp guide.
+            DataArray containing the clp guide, with ``clp_label`` dimension replaced by the
+            model dimensions first value.
 
         Raises
         ------
@@ -344,12 +345,16 @@ class Result:
                 f"Known clp_labels are:\n {list(dataset.clp_label.values)}"
             )
 
-        return (
-            dataset.clp.sel(clp_label=[clp_label])
-            .transpose()
-            .rename(clp_label=dataset.model_dimension)
-            .to_dataset(name="data")
-        )
+        clp_values = dataset.clp.sel(clp_label=[clp_label])
+        value_dimension = next(filter(lambda x: x != dataset.model_dimension, clp_values.dims))
+
+        return xr.DataArray(
+            clp_values.values.T,
+            coords={
+                dataset.model_dimension: [dataset.coords[dataset.model_dimension][0].item()],
+                value_dimension: clp_values.coords[value_dimension].values,
+            },
+        ).to_dataset(name="data")
 
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",

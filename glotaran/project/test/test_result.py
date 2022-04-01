@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
@@ -10,8 +11,11 @@ from glotaran.analysis.optimize import optimize
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import SavingOptions
+from glotaran.io import load_dataset
+from glotaran.io import save_dataset
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
+from glotaran.testing.simulated_data.shared_decay import SPECTRAL_AXIS
 
 
 @pytest.fixture(scope="session")
@@ -46,8 +50,11 @@ def test_get_scheme(dummy_result: Result):
 
 
 def test_create_clp_guide_dataset(dummy_result: Result):
+    """Check that clp guide has correct dimensions and dimension values."""
     clp_guide = dummy_result.create_clp_guide_dataset("dataset_1", "species_1")
     assert clp_guide.data.shape == (1, dummy_result.data["dataset_1"].spectral.size)
+    assert np.allclose(clp_guide.coords["time"].item(), -1)
+    assert np.allclose(clp_guide.coords["spectral"].values, SPECTRAL_AXIS)
 
 
 def test_create_clp_guide_dataset_errors(dummy_result: Result):
@@ -66,6 +73,29 @@ def test_create_clp_guide_dataset_errors(dummy_result: Result):
         str(exc_info.value) == "Unknown clp_label 'not-a-species'. Known clp_labels are:\n "
         "['species_1', 'species_2', 'species_3']"
     )
+
+
+def test_extract_sas_ascii_round_trip(dummy_result: Result, tmp_path: Path):
+    """Save and load from ascii give same result."""
+    tmp_file = tmp_path / "sas.ascii"
+
+    sas = dummy_result.create_clp_guide_dataset("dataset_1", "species_1")
+    with pytest.warns(UserWarning) as rec_warn:
+        save_dataset(sas, tmp_file)
+
+        assert len(rec_warn) == 1
+        assert Path(rec_warn[0].filename).samefile(__file__)
+        assert rec_warn[0].message.args[0] == (
+            "Saving the 'data' attribute of 'dataset' as a fallback."
+            "Result saving for ascii format only supports xarray.DataArray format, "
+            "please pass a xarray.DataArray instead of a xarray.Dataset (e.g. dataset.data)."
+        )
+
+    loaded_sas = load_dataset(tmp_file, prepare=False)
+
+    for dim in sas.dims:
+        assert all(sas.coords[dim] == loaded_sas.coords[dim]), f"Coordinate {dim} mismatch"
+    assert np.allclose(sas.data.values, loaded_sas.data.values)
 
 
 @pytest.mark.parametrize("saving_options", [SAVING_OPTIONS_MINIMAL, SAVING_OPTIONS_DEFAULT])
