@@ -11,6 +11,18 @@ from glotaran.model import Megacomplex
 
 
 def index_dependent(dataset_model: DatasetModel) -> bool:
+    """Determine if a dataset_model is index dependent.
+
+    Parameters
+    ----------
+    dataset_model : DatasetModel
+        A dataset model instance.
+
+    Returns
+    -------
+    bool
+        Returns True if the dataset_model has an IRF that is index dependent (e.g. has dispersion).
+    """
     return (
         isinstance(dataset_model.irf, IrfMultiGaussian) and dataset_model.irf.is_index_dependent()
     )

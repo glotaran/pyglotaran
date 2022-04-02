@@ -311,13 +311,13 @@ def test_create_clp_guide_dataset_errors(dummy_result: Result):
 
     assert (
         str(exc_info.value) == "Result dataset is missing attribute 'model_dimension', "
-        "which means that it was created with pyglotaran<0.6.0"
-        "Please recreate the result with the current pyglotaran version."
+        "which means that it was created with pyglotaran<0.6.0."
+        "Please recreate the result with the latest version of pyglotaran."
     )
 
 
 def test_extract_sas_ascii_round_trip(dummy_result: Result, tmp_path: Path):
-    """Save and load from ascii give same result."""
+    """Save to and then load from ascii results in the same data (spectrum)."""
     tmp_file = tmp_path / "sas.ascii"
 
     sas = create_clp_guide_dataset(dummy_result, "species_1", "dataset_1")

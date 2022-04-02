@@ -324,7 +324,7 @@ def create_clp_guide_dataset(
     ValueError
         If ``clp_labels`` is not in result.
     ValueError
-        The the result dataset was created with pyglotaran<0.6.0.
+        The result dataset was created with pyglotaran<0.6.0.
 
     Examples
     --------
@@ -368,8 +368,8 @@ def create_clp_guide_dataset(
     if "model_dimension" not in dataset.attrs:
         raise ValueError(
             "Result dataset is missing attribute 'model_dimension', "
-            "which means that it was created with pyglotaran<0.6.0"
-            "Please recreate the result with the current pyglotaran version."
+            "which means that it was created with pyglotaran<0.6.0."
+            "Please recreate the result with the latest version of pyglotaran."
         )
 
     clp_values = dataset.clp.sel(clp_label=[clp_label])
