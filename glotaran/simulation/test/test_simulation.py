@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
+from glotaran.simulation import simulate
 
 
 @pytest.mark.parametrize("index_dependent", [True, False])

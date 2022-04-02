@@ -5,7 +5,6 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
 from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import DecayModel
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
@@ -13,6 +12,7 @@ from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 
 class SpectralModel(Model):

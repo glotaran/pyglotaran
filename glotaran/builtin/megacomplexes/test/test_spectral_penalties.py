@@ -7,7 +7,6 @@ from copy import deepcopy
 import numpy as np
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.io import prepare_time_trace_dataset
@@ -15,6 +14,7 @@ from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 ParameterSpec = namedtuple("ParameterSpec", "base equal_area shapes")
 NoiseSpec = namedtuple("NoiseSpec", "active seed std_dev")

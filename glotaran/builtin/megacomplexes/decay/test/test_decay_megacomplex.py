@@ -5,10 +5,10 @@ import pytest
 import xarray as xr
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 
 def create_gaussian_clp(labels, amplitudes, centers, widths, axis):

@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.damped_oscillation import DampedOscillationMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
@@ -12,6 +11,7 @@ from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 
 class DampedOscillationsModel(Model):

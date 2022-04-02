@@ -2,10 +2,10 @@ import numpy as np
 import pytest
 
 from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
 from glotaran.io import load_model
 from glotaran.io import load_parameters
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 MODEL_3C_NO_IRF = """\
 dataset:
