@@ -3,10 +3,10 @@ from copy import deepcopy
 import pytest
 
 from glotaran.analysis.optimization_group import OptimizationGroup
-from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import TwoCompartmentDecay as suite
 from glotaran.model import ZeroConstraint
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 
 @pytest.mark.parametrize("index_dependent", [True, False])

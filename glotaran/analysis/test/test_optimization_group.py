@@ -8,13 +8,13 @@ from glotaran.analysis.optimization_group import OptimizationGroup
 from glotaran.analysis.optimization_group_calculator_linked import (
     OptimizationGroupCalculatorLinked,
 )
-from glotaran.analysis.simulation import simulate
 from glotaran.analysis.test.models import FullModel
 from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
 from glotaran.analysis.test.models import SimpleTestModel
 from glotaran.analysis.util import CalculatedMatrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.simulation import simulate
 
 
 @pytest.fixture(

@@ -1,9 +1,9 @@
 """A simple sequential decay for testing purposes."""
 
-from glotaran.analysis.simulation import simulate
 from glotaran.io import load_model
 from glotaran.project import Scheme
 from glotaran.project.generators import generate_model_yml
+from glotaran.simulation import simulate
 from glotaran.testing.simulated_data.shared_decay import PARAMETERS
 from glotaran.testing.simulated_data.shared_decay import SIMULATION_COORDINATES
 from glotaran.testing.simulated_data.shared_decay import SIMULATION_PARAMETERS
