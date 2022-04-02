@@ -109,7 +109,7 @@ repos:
     rev: v0.942
     hooks:
       - id: mypy
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|model/property.py|builtin/io/pandas)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|simulation|model/property.py|builtin/io/pandas)"
         exclude: "docs"
         additional_dependencies: [types-all]
 

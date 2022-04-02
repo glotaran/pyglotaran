@@ -59,7 +59,7 @@ def simulate(
     ValueError
         Raised if dataset model has no global megacomplex and no clp are provided.
     """
-    dataset_model = model.dataset[dataset].fill(model, parameters)
+    dataset_model = model.dataset[dataset].fill(model, parameters)  # type:ignore[attr-defined]
     dataset_model.set_coordinates(coordinates)
 
     if dataset_model.has_global_model():
@@ -158,7 +158,10 @@ def simulate_full_model(dataset_model: DatasetModel) -> xr.Dataset:
     ValueError
         Raised if at least one of the dataset model's global megacomplexes is index dependent.
     """
-    if any(m.index_dependent(dataset_model) for m in dataset_model.global_megacomplex):
+    if any(
+        m.index_dependent(dataset_model)  # type:ignore[attr-defined]
+        for m in dataset_model.global_megacomplex
+    ):
         raise ValueError("Index dependent models for global dimension are not supported.")
 
     global_matrix = calculate_matrix(dataset_model, {}, as_global_model=True)
