@@ -29,12 +29,11 @@ remove_redundant_aliases = true
 exclude = [
   "setup.py",
   "docs",
+  "*test/*",
+  "benchmark/*"
 ]
-ignore-regex = ["test_.*", "mock_.*", "mocked_.*", ".*Mock.*", ".*Dummy.*", "OneCompartment.*","ThreeComponent.*"]
 ignore-init-module = true
-# ignore-setters = true
-ignore-semiprivate = true  # TODO: would be better set to false (default)
-fail-under = 59
+fail-under = 63
 
 [tool.nbqa.addopts]
 flake8 = [
