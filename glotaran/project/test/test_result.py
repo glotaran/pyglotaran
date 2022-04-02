@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
@@ -12,6 +13,7 @@ from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import SavingOptions
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
+from glotaran.testing.simulated_data.shared_decay import SPECTRAL_AXIS
 
 
 @pytest.fixture(scope="session")
@@ -43,6 +45,14 @@ def test_get_scheme(dummy_result: Result):
     assert all(
         scheme.parameters.to_dataframe() == dummy_result.optimized_parameters.to_dataframe()
     )
+
+
+def test_result_create_clp_guide_dataset(dummy_result: Result):
+    """Check that clp guide has correct dimensions and dimension values."""
+    clp_guide = dummy_result.create_clp_guide_dataset("species_1", "dataset_1")
+    assert clp_guide.data.shape == (1, dummy_result.data["dataset_1"].spectral.size)
+    assert np.allclose(clp_guide.coords["time"].item(), -1)
+    assert np.allclose(clp_guide.coords["spectral"].values, SPECTRAL_AXIS)
 
 
 @pytest.mark.parametrize("saving_options", [SAVING_OPTIONS_MINIMAL, SAVING_OPTIONS_DEFAULT])

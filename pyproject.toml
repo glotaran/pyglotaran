@@ -33,7 +33,7 @@ exclude = [
   "benchmark/*"
 ]
 ignore-init-module = true
-fail-under = 59
+fail-under = 63
 
 [tool.nbqa.addopts]
 flake8 = [

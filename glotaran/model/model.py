@@ -216,11 +216,13 @@ class Model:
                 if isinstance(self._dataset_properties, dict)
                 else self._dataset_properties[property_name]
             )
+
             new_type = (
                 dataset_property["type"]
                 if isinstance(dataset_property, dict)
                 else dataset_property
             )
+
             if known_type != new_type:
                 raise ModelError(
                     f"Cannot add dataset property of type {property_name} as it was "
@@ -383,7 +385,7 @@ class Model:
                 for item in items:
                     problems += item.validate(self, parameters=parameters)
             else:
-                for _, item in items.items():
+                for item in items.values():
                     problems += item.validate(self, parameters=parameters)
 
         return problems

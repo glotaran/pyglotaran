@@ -27,6 +27,7 @@ from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.project.scheme import Scheme
 from glotaran.utils.io import DatasetMapping
+from glotaran.utils.io import create_clp_guide_dataset
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
@@ -310,6 +311,46 @@ class Result:
 
         return True
 
+    def create_clp_guide_dataset(self, clp_label: str, dataset_name: str) -> xr.Dataset:
+        """Create dataset for clp guidance.
+
+        Parameters
+        ----------
+        clp_label : str
+            Label of the clp to guide.
+        dataset_name : str
+            Name of dataset to extract the guide from.
+
+        Returns
+        -------
+        xr.Dataset
+            DataArray containing the clp guide, with ``clp_label`` dimension replaced by the
+            model dimensions first value.
+
+        Raises
+        ------
+        ValueError
+            If ``dataset_name`` is not in result.
+        ValueError
+            If ``clp_labels`` is not in result.
+
+
+        Examples
+        --------
+        Extracting the clp guide from an optimization result object.
+
+        .. code-block:: python
+
+            from glotaran.io import save_dataset
+
+            clp_guide = result.create_clp_guide_dataset("species_1", "dataset_1")
+            save_dataset(clp_guide, "clp_guide__result_dataset_1__species_1.nc")
+
+
+        .. # noqa: DAR402
+        """
+        return create_clp_guide_dataset(self, clp_label=clp_label, dataset_name=dataset_name)
+
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
         new_qual_name_usage=("glotaran.project.result.Result.data[dataset_label]"),
@@ -340,5 +381,5 @@ class Result:
         """
         try:
             return self.data[dataset_label]
-        except KeyError:
-            raise ValueError(f"Unknown dataset '{dataset_label}'")
+        except KeyError as e:
+            raise ValueError(f"Unknown dataset '{dataset_label}'") from e
