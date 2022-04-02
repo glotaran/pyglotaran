@@ -22,6 +22,7 @@
 ### 🩹 Bug fixes
 
 - 🩹 Fix Crash in optimization_group_calculator_linked when using guidance spectra (#950)
+- 🩹 ParameterGroup.get degrades full_label of nested Parameters with nesting over 2 (#1043)
 
 ### 📚 Documentation
 

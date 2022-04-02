@@ -91,6 +91,8 @@ def test_parameter_group_from_dict_nested():
     assert [p.label for _, p in group.all()] == [f"{i}" for i in range(1, 4)]
     assert [p.value for _, p in group.all()] == list(range(7, 10))
 
+    assert params.get("kinetic.j.1").full_label == "kinetic.j.1"
+
 
 def test_parameter_group_to_array():
     params = """
