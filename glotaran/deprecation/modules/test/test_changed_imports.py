@@ -104,6 +104,22 @@ def test_analysis_result_from_import(recwarn: WarningsRecorder):
     assert analysis_result == Result
 
 
+def test_analysis_simulation(recwarn: WarningsRecorder):
+    """Usage of glotaran.analysis.simulation"""
+    warnings.simplefilter("always")
+
+    from glotaran.analysis import simulation as analysis_simulation  # noqa F401
+
+    #  assert len(recwarn) == 0
+
+    check_recwarn(recwarn)
+
+
+def test_analysis_simulation_from_import(recwarn: WarningsRecorder):
+    """Same as 'from glotaran.analysis.simulation import simulate as analysis_scheme'"""
+    changed_import_test_warn(recwarn, "glotaran.analysis.simulation", attribute_name="simulate")
+
+
 def test_analysis_scheme(recwarn: WarningsRecorder):
     """Usage of glotaran.analysis.scheme"""
     warnings.simplefilter("always")
