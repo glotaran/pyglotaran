@@ -12,7 +12,11 @@ from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import SavingOptions
 from glotaran.project.result import Result
+from glotaran.project.scheme import Scheme
+from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
+from glotaran.testing.simulated_data.sequential_spectral_decay import SIMULATION_MODEL
+from glotaran.testing.simulated_data.shared_decay import SIMULATION_PARAMETERS
 from glotaran.testing.simulated_data.shared_decay import SPECTRAL_AXIS
 
 
@@ -35,6 +39,19 @@ def test_result_ipython_rendering(dummy_result: Result):
 
     assert "text/markdown" in rendered_markdown_return
     assert rendered_markdown_return["text/markdown"].startswith("| Optimization Result")
+
+
+def test_result_markdown_nested_parameters():
+    """Test not crash of Result.markdown() for nested parameters
+
+    See https://github.com/glotaran/pyglotaran/issues/933
+    """
+    scheme = Scheme(
+        model=SIMULATION_MODEL, parameters=SIMULATION_PARAMETERS, data={"dataset_1": DATASET}
+    )
+    result = optimize(scheme, raise_exception=True)
+
+    assert "shapes.species_1.amplitude" in result.markdown()
 
 
 def test_get_scheme(dummy_result: Result):
