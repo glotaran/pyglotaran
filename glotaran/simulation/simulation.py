@@ -1,4 +1,4 @@
-"""Functions for simulating a global analysis model."""
+"""Functions for simulating a dataset using a global analysis model."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -26,20 +26,20 @@ def simulate(
     noise_std_dev: float = 1.0,
     noise_seed: int | None = None,
 ) -> xr.Dataset:
-    """Simulate a dataset model.
+    """Simulate a dataset using a model.
 
     Parameters
     ----------
     model : Model
-        The model containing the dataset model.
+        A global analysis model which derives from `Model` (e.g. DecayModel, SpectralModel, ...).
     dataset : str
         Label of the dataset to simulate
     parameters : ParameterGroup
-        The parameters for the simulation.
+        The parameters for the simulation, organized in a `ParameterGroup`.
     coordinates : dict[str, ArrayLike]
-        A dictionary with coordinates for simulation.
+        A dictionary with the coordinates used for simulation (e.g. time, wavelengths, ...).
     clp : xr.DataArray | None
-        A matrix with conditionally linear parameters.
+        A matrix with conditionally linear parameters (e.g. spectra, pixel intensity, ...).
         Will be used instead of the dataset's global megacomplexes if not None.
     noise : bool
         Add noise to the simulation.
