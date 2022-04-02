@@ -434,9 +434,9 @@ class ParameterGroup(dict):
             Raised if no parameter with the given label exists.
         """
         # sometimes the spec parser delivers the labels as int
-        label = str(label)  # sourcery skip
+        full_label = str(label)  # sourcery skip
 
-        path = label.split(".")
+        path = full_label.split(".")
         label = path.pop()
 
         # TODO: audit this code
@@ -447,7 +447,9 @@ class ParameterGroup(dict):
             except KeyError:
                 raise ParameterNotFoundException(path, label)
         try:
-            return group._parameters[label]
+            parameter = group._parameters[label]
+            parameter.full_label = full_label
+            return parameter
         except KeyError:
             raise ParameterNotFoundException(path, label)
 
