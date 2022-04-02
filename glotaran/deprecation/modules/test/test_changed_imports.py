@@ -14,6 +14,7 @@ from glotaran.project import Result
 from glotaran.project import Scheme
 from glotaran.project import result as project_result
 from glotaran.project import scheme as project_scheme
+from glotaran.simulation import simulation as simulation_module
 
 if TYPE_CHECKING:
     from _pytest.recwarn import WarningsRecorder
@@ -108,9 +109,10 @@ def test_analysis_simulation(recwarn: WarningsRecorder):
     """Usage of glotaran.analysis.simulation"""
     warnings.simplefilter("always")
 
-    from glotaran.analysis import simulation as analysis_simulation  # noqa F401
+    from glotaran.analysis import simulation as analysis_simulation
 
-    #  assert len(recwarn) == 0
+    assert len(recwarn) == 0
+    assert analysis_simulation.simulate == simulation_module.simulate  # type: ignore[attr-defined]
 
     check_recwarn(recwarn)
 
