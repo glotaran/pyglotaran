@@ -18,6 +18,7 @@
 - 👌 Added IRF shift to result dataset (#994)
 - 👌 Improve Result, Parameter and ParameterGroup markdown (#1012)
 - 👌🧹 Add suffix to rate and lifetime and guard for missing datasets (#1022)
+- ♻️ Move simulation to own module (#1041)
 
 ### 🩹 Bug fixes
 
@@ -29,6 +30,7 @@
 ### 🗑️ Deprecations (due in 0.8.0)
 
 - `glotaran.io.save_result(result, result_path, format_name='legacy')` -> `glotaran.io.save_result(result, Path(result_path) / 'result.yml')`
+- `glotaran.analysis.simulation` -> `glotaran.simulation.simulation`
 
 ### 🚧 Maintenance
 
