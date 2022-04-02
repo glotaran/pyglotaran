@@ -101,7 +101,7 @@ repos:
         args:
           - "--select=D,DAR"
         name: "flake8 lint docstrings"
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|model/property.py|builtin/io/pandas)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|simulation|model/property.py|builtin/io/pandas)"
         exclude: "docs|tests?/"
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 

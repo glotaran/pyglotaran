@@ -10,6 +10,8 @@ from glotaran.analysis.util import calculate_matrix
 from glotaran.model import DatasetModel
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
     from glotaran.model import Model
     from glotaran.parameter import ParameterGroup
 
@@ -18,51 +20,58 @@ def simulate(
     model: Model,
     dataset: str,
     parameters: ParameterGroup,
-    coordinates: dict[str, np.ndarray],
+    coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,
     noise: bool = False,
     noise_std_dev: float = 1.0,
     noise_seed: int | None = None,
-):
-    """Simulates a model.
+) -> xr.Dataset:
+    """Simulate a dataset model.
 
     Parameters
     ----------
-    model :
-        The model to simulate.
-    parameter :
-        The parameters for the simulation.
-    dataset :
+    model : Model
+        The model containing the dataset model.
+    dataset : str
         Label of the dataset to simulate
-    axes :
-        A dictionary with axes for simulation.
-    clp :
-        conditionally linear parameters. Will be used instead of `model.global_matrix` if given.
-    noise :
+    parameters : ParameterGroup
+        The parameters for the simulation.
+    coordinates : dict[str, ArrayLike]
+        A dictionary with coordinates for simulation.
+    clp : xr.DataArray | None
+        A matrix with conditionally linear parameters.
+        Will be used instead of the dataset's global megacomplexes if not None.
+    noise : bool
         Add noise to the simulation.
-    noise_std_dev :
+    noise_std_dev : float
         The standard deviation for noise simulation.
-    noise_seed :
+    noise_seed : int | None
         The seed for the noise simulation.
-    """
 
+    Returns
+    -------
+    xr.Dataset
+        The simulated dataset.
+
+
+    Raises
+    ------
+    ValueError
+        Raised if dataset model has no global megacomplex and no clp are provided.
+    """
     dataset_model = model.dataset[dataset].fill(model, parameters)
     dataset_model.set_coordinates(coordinates)
 
     if dataset_model.has_global_model():
-        result = simulate_global_model(
-            dataset_model,
-            parameters,
-            clp,
-        )
+        result = simulate_full_model(dataset_model)
     elif clp is None:
         raise ValueError(
-            f"Cannot simulate dataset {dataset} without global megacomplex " "and no clp provided."
+            f"Cannot simulate dataset '{dataset}'. "
+            "No global megacomplex is defined and no clp provided."
         )
     else:
-        result = simulate_clp(
+        result = simulate_from_clp(
             dataset_model,
-            parameters,
             clp,
         )
 
@@ -74,12 +83,26 @@ def simulate(
     return result
 
 
-def simulate_clp(
-    dataset_model: DatasetModel,
-    parameters: ParameterGroup,
-    clp: xr.DataArray,
-):
+def simulate_from_clp(dataset_model: DatasetModel, clp: xr.DataArray) -> xr.Dataset:
+    """Simulate a dataset model from pre-defined conditionally linear parameters.
 
+    Parameters
+    ----------
+    dataset_model : DatasetModel
+        The dataset model to simulate.
+    clp : xr.DataArray
+        A matrix with conditionally linear parameters.
+
+    Returns
+    -------
+    xr.Dataset
+        The simulated dataset.
+
+    Raises
+    ------
+    ValueError
+        Raised if the clp are missing the dimension 'clp_label'.
+    """
     if "clp_label" not in clp.coords:
         raise ValueError("Missing coordinate 'clp_label' in clp.")
     global_dimension = next(dim for dim in clp.coords if dim != "clp_label")
@@ -117,17 +140,24 @@ def simulate_clp(
     return result
 
 
-def simulate_global_model(
-    dataset_model: DatasetModel,
-    parameters: ParameterGroup,
-    clp: xr.DataArray = None,
-):
-    """Simulates a global model."""
+def simulate_full_model(dataset_model: DatasetModel) -> xr.Dataset:
+    """Simulate a dataset model with global megacomplexes.
 
-    # TODO: implement full model clp
-    if clp is not None:
-        raise NotImplementedError("Simulation of full models with clp is not supported yet.")
+    Parameters
+    ----------
+    dataset_model : DatasetModel
+        The dataset model to simulate.
 
+    Returns
+    -------
+    xr.Dataset
+        The simulated dataset.
+
+    Raises
+    ------
+    ValueError
+        Raised if at least one of the dataset model's global megacomplexes is index dependent.
+    """
     if any(m.index_dependent(dataset_model) for m in dataset_model.global_megacomplex):
         raise ValueError("Index dependent models for global dimension are not supported.")
 
@@ -141,8 +171,4 @@ def simulate_global_model(
         ],
     )
 
-    return simulate_clp(
-        dataset_model,
-        parameters,
-        global_matrix,
-    )
+    return simulate_from_clp(dataset_model, global_matrix)
