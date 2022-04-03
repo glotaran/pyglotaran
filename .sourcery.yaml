@@ -10,9 +10,3 @@ clone_detection:
   min_lines: 3
   min_duplicates: 2
   identical_clones_only: false
-
-github:
-  labels: []
-  ignore_labels: [sourcery-ignore]
-  request_review: author
-  sourcery_branch: sourcery/{base_branch}
