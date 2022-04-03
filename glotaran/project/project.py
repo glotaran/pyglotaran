@@ -563,7 +563,7 @@ class Project:
         clp_link_tolerance : float
             The CLP link tolerance.
         """
-        from glotaran.analysis.optimize import optimize
+        from glotaran.optimization.optimize import optimize
 
         scheme = self.create_scheme(
             model_name, parameters_name, maximum_number_function_evaluations, clp_link_tolerance

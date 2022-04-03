@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from glotaran.analysis.test.models import SimpleTestModel
+from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
 from glotaran.simulation import simulate
 

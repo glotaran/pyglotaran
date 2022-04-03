@@ -12,9 +12,9 @@ import xarray as xr
 from IPython.core.formatters import format_display_data
 from pandas.testing import assert_frame_equal
 
-from glotaran.analysis.optimize import optimize
 from glotaran.io import load_dataset
 from glotaran.io import save_dataset
+from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 from glotaran.testing.simulated_data.shared_decay import SPECTRAL_AXIS

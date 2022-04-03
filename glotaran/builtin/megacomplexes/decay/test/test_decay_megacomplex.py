@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.optimize import optimize
 from glotaran.model import Model
+from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate

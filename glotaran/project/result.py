@@ -287,7 +287,7 @@ class Result:
         Result :
             The recreated result.
         """
-        from glotaran.analysis.optimize import optimize
+        from glotaran.optimization.optimize import optimize
 
         return optimize(self.scheme)
 

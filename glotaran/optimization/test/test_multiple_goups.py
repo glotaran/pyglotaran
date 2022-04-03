@@ -1,7 +1,7 @@
 import numpy as np
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.test.models import DecayModel
+from glotaran.optimization.optimize import optimize
+from glotaran.optimization.test.models import DecayModel
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate

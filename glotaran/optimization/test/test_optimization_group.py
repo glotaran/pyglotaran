@@ -4,14 +4,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.optimization_group import OptimizationGroup
-from glotaran.analysis.optimization_group_calculator_linked import (
+from glotaran.optimization.optimization_group import OptimizationGroup
+from glotaran.optimization.optimization_group_calculator_linked import (
     OptimizationGroupCalculatorLinked,
 )
-from glotaran.analysis.test.models import FullModel
-from glotaran.analysis.test.models import MultichannelMulticomponentDecay as suite
-from glotaran.analysis.test.models import SimpleTestModel
-from glotaran.analysis.util import CalculatedMatrix
+from glotaran.optimization.test.models import FullModel
+from glotaran.optimization.test.models import MultichannelMulticomponentDecay as suite
+from glotaran.optimization.test.models import SimpleTestModel
+from glotaran.optimization.util import CalculatedMatrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate

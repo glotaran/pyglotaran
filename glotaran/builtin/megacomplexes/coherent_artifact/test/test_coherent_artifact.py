@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.megacomplexes.coherent_artifact import CoherentArtifactMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.model import Model
+from glotaran.optimization.optimize import optimize
+from glotaran.optimization.util import calculate_matrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate

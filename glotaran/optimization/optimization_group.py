@@ -7,20 +7,20 @@ from typing import TypeVar
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.nnls import residual_nnls
-from glotaran.analysis.optimization_group_calculator import OptimizationGroupCalculator
-from glotaran.analysis.optimization_group_calculator_linked import (
-    OptimizationGroupCalculatorLinked,
-)
-from glotaran.analysis.optimization_group_calculator_unlinked import (
-    OptimizationGroupCalculatorUnlinked,
-)
-from glotaran.analysis.util import get_min_max_from_interval
-from glotaran.analysis.variable_projection import residual_variable_projection
 from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
 from glotaran.model import Model
+from glotaran.optimization.nnls import residual_nnls
+from glotaran.optimization.optimization_group_calculator import OptimizationGroupCalculator
+from glotaran.optimization.optimization_group_calculator_linked import (
+    OptimizationGroupCalculatorLinked,
+)
+from glotaran.optimization.optimization_group_calculator_unlinked import (
+    OptimizationGroupCalculatorUnlinked,
+)
+from glotaran.optimization.util import get_min_max_from_interval
+from glotaran.optimization.variable_projection import residual_variable_projection
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project import Scheme

@@ -18,3 +18,9 @@ simulation = deprecate_submodule(
     new_module_name="glotaran.simulation.simulation",
     to_be_removed_in_version="0.8.0",
 )
+
+optimize = deprecate_submodule(
+    deprecated_module_name="glotaran.analysis.optimize",
+    new_module_name="glotaran.optimization.optimize",
+    to_be_removed_in_version="0.8.0",
+)

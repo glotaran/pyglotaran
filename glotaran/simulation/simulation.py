@@ -1,4 +1,4 @@
-"""Functions for simulating a dataset using a global analysis model."""
+"""Functions for simulating a dataset using a global optimization model."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.util import calculate_matrix
 from glotaran.model import DatasetModel
+from glotaran.optimization.util import calculate_matrix
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -31,7 +31,7 @@ def simulate(
     Parameters
     ----------
     model : Model
-        A global analysis model which derives from `Model` (e.g. DecayModel, SpectralModel, ...).
+        The model containing the dataset model.
     dataset : str
         Label of the dataset to simulate
     parameters : ParameterGroup
