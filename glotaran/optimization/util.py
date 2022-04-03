@@ -39,16 +39,10 @@ def find_closest_index(index: float, axis: np.ndarray):
 
 
 def get_min_max_from_interval(interval, axis):
-    minimum = (
-        0
-        if np.isinf(interval[0])
-        else np.abs(axis.values - interval[0]).argmin()
-    )
+    minimum = 0 if np.isinf(interval[0]) else np.abs(axis.values - interval[0]).argmin()
 
     maximum = (
-        axis.size
-        if np.isinf(interval[1])
-        else np.abs(axis.values - interval[1]).argmin() + 1
+        axis.size if np.isinf(interval[1]) else np.abs(axis.values - interval[1]).argmin() + 1
     )
 
     return slice(minimum, maximum)
@@ -288,10 +282,6 @@ def get_idx_from_interval(interval: tuple[float, float], axis: np.ndarray) -> tu
     start, end : tuple of int
     """
     start = 0 if np.isinf(interval[0]) else np.abs(axis - interval[0]).argmin()
-    end = (
-        axis.size - 1
-        if np.isinf(interval[1])
-        else np.abs(axis - interval[1]).argmin()
-    )
+    end = axis.size - 1 if np.isinf(interval[1]) else np.abs(axis - interval[1]).argmin()
 
     return start, end

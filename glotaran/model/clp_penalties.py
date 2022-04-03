@@ -151,16 +151,10 @@ def _get_idx_from_interval(
 
     """
     axis_array = np.array(axis)
-    start = (
-        0
-        if np.isinf(interval[0])
-        else np.abs(axis_array - interval[0]).argmin()
-    )
+    start = 0 if np.isinf(interval[0]) else np.abs(axis_array - interval[0]).argmin()
 
     end = (
-        axis_array.size - 1
-        if np.isinf(interval[1])
-        else np.abs(axis_array - interval[1]).argmin()
+        axis_array.size - 1 if np.isinf(interval[1]) else np.abs(axis_array - interval[1]).argmin()
     )
 
     return start, end
