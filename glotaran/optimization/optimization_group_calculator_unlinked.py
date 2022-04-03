@@ -114,9 +114,10 @@ class OptimizationGroupCalculatorUnlinked(OptimizationGroupCalculator):
 
         self._group._additional_penalty = (
             np.concatenate(self._group._additional_penalty)
-            if len(self._group._additional_penalty) != 0
+            if self._group._additional_penalty
             else []
         )
+
         return (
             self._group._reduced_clps,
             self._group._clps,

@@ -150,9 +150,7 @@ class Scheme:
         """
         model_markdown_str = self.model.markdown(parameters=self.parameters)
 
-        markdown_str = "\n\n"
-        markdown_str += "__Scheme__\n\n"
-
+        markdown_str = "\n\n" + "__Scheme__\n\n"
         if self.non_negative_least_squares is not None:
             markdown_str += f"* *non_negative_least_squares*: {self.non_negative_least_squares}\n"
         markdown_str += (

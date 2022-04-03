@@ -144,13 +144,14 @@ def megacomplex_plugin_table(
     header_values = ["Megacomplex name"]
     if plugin_names:
         header_values.append("Plugin name")
-        for megacomplex_name in megacomplex_names:
-            table_data.append(
-                [
-                    f"`{megacomplex_name}`",
-                    f"`{full_plugin_name(get_megacomplex(megacomplex_name))}`",
-                ]
-            )
+        table_data.extend(
+            [
+                f"`{megacomplex_name}`",
+                f"`{full_plugin_name(get_megacomplex(megacomplex_name))}`",
+            ]
+            for megacomplex_name in megacomplex_names
+        )
+
     else:
         table_data = [[f"`{megacomplex_name}`"] for megacomplex_name in megacomplex_names]
     headers = tuple(map(lambda x: f"__{x}__", header_values))

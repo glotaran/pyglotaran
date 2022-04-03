@@ -121,7 +121,7 @@ class OptimizationGroupCalculatorLinked(OptimizationGroupCalculator):
                     )
                     for i, value in enumerate(global_axis)
                 )
-                datasets = collections.deque([label] for _, _ in enumerate(global_axis))
+                datasets = collections.deque([label] for _ in global_axis)
                 self._full_axis = collections.deque(global_axis)
             else:
                 self._append_to_grouped_bag(

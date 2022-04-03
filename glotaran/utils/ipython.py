@@ -27,7 +27,7 @@ class MarkdownStr(UserString):
         .. # noqa: DAR101
         """
         # This needs to be called data since ipython is looking for this attr
-        self.data = str(wrapped_str)
+        self.data = wrapped_str
         self.syntax = syntax
 
     def _repr_markdown_(self) -> str:
