@@ -53,10 +53,10 @@ class OptimizationGroup:
         scheme: Scheme,
         dataset_group: DatasetGroup,
     ):
-        """Create OptimizationGroup instance  from a scheme (:class:`glotaran.analysis.scheme.Scheme`)
+        """Create OptimizationGroup instance  from a scheme (:class:`.Scheme`)
 
         Args:
-            scheme (Scheme): An instance of :class:`glotaran.analysis.scheme.Scheme`
+            scheme (Scheme): An instance of :class:`.Scheme`
                 which defines your model, parameters, and data
         """
 
@@ -69,11 +69,11 @@ class OptimizationGroup:
 
         try:
             self._residual_function = residual_functions[dataset_group.model.residual_function]
-        except KeyError:
+        except KeyError as e:
             raise ValueError(
                 f"Unknown residual function '{dataset_group.model.residual_function}', "
                 f"allowed functions are: {list(residual_functions.keys())}."
-            )
+            ) from e
         self._dataset_models = dataset_group.dataset_models
 
         self._overwrite_index_dependent = self.model.need_index_dependent()
