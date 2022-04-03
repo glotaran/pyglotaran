@@ -9,6 +9,7 @@ import pytest
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import module_attribute
 from glotaran.io import load_dataset
+from glotaran.optimization import optimize as optimize_module
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Result
 from glotaran.project import Scheme
@@ -103,6 +104,23 @@ def test_analysis_result_from_import(recwarn: WarningsRecorder):
     )
 
     assert analysis_result == Result
+
+
+def test_analysis_optimization(recwarn: WarningsRecorder):
+    """Usage of glotaran.analysis.optimization"""
+    warnings.simplefilter("always")
+
+    from glotaran.analysis import optimize as analysis_optimize
+
+    assert len(recwarn) == 0
+    assert analysis_optimize.optimize == optimize_module.optimize  # type: ignore[attr-defined]
+
+    check_recwarn(recwarn)
+
+
+def test_analysis_optimization_from_import(recwarn: WarningsRecorder):
+    """Same as 'from glotaran.analysis.optimize import optimizations analysis_scheme'"""
+    changed_import_test_warn(recwarn, "glotaran.analysis.optimize", attribute_name="optimize")
 
 
 def test_analysis_simulation(recwarn: WarningsRecorder):

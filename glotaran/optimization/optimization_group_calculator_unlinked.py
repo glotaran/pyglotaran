@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.optimization_group_calculator import OptimizationGroupCalculator
-from glotaran.analysis.util import CalculatedMatrix
-from glotaran.analysis.util import apply_weight
-from glotaran.analysis.util import calculate_clp_penalties
-from glotaran.analysis.util import calculate_matrix
-from glotaran.analysis.util import reduce_matrix
-from glotaran.analysis.util import retrieve_clps
 from glotaran.model import DatasetModel
+from glotaran.optimization.optimization_group_calculator import OptimizationGroupCalculator
+from glotaran.optimization.util import CalculatedMatrix
+from glotaran.optimization.util import apply_weight
+from glotaran.optimization.util import calculate_clp_penalties
+from glotaran.optimization.util import calculate_matrix
+from glotaran.optimization.util import reduce_matrix
+from glotaran.optimization.util import retrieve_clps
 
 if TYPE_CHECKING:
-    from glotaran.analysis.optimization_group import OptimizationGroup
+    from glotaran.optimization.optimization_group import OptimizationGroup
 
 
 class OptimizationGroupCalculatorUnlinked(OptimizationGroupCalculator):

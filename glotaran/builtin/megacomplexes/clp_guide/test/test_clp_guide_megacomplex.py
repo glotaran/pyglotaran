@@ -1,13 +1,13 @@
 import numpy as np
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
 from glotaran.builtin.megacomplexes.clp_guide import ClpGuideMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import create_gaussian_clp
 from glotaran.model import Model
+from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
+from glotaran.simulation.simulation import simulate
 
 
 def test_clp_guide():

@@ -6,10 +6,10 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.optimization_group import OptimizationGroup
 from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import megacomplex
+from glotaran.optimization.optimization_group import OptimizationGroup
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry

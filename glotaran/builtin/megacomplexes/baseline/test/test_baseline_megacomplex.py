@@ -1,9 +1,9 @@
 import numpy as np
 
-from glotaran.analysis.util import calculate_matrix
 from glotaran.builtin.megacomplexes.baseline import BaselineMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.model import Model
+from glotaran.optimization.util import calculate_matrix
 from glotaran.parameter import ParameterGroup
 
 

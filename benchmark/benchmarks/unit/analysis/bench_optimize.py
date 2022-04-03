@@ -1,19 +1,20 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.simulation import simulate
-from glotaran.analysis.test.models import MultichannelMulticomponentDecay
+try:
+    from glotaran.analysis.optimize import optimize
+    from glotaran.analysis.simulation import simulate
+    from glotaran.analysis.test.models import MultichannelMulticomponentDecay
+except ImportError:
+    from glotaran.optimization.optimize import optimize
+    from glotaran.simulation import simulate
+    from glotaran.optimization.test.models import MultichannelMulticomponentDecay
+
 from glotaran.project import Scheme
 
 
 class BenchmarkOptimize:
-    """
-    Integration test for a two dataset analysis.
-
-    Ref:
-    https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/ex_two_datasets
-    """
+    """Optimization benchmark based on unitests."""
 
     timeout = 300
     params = (

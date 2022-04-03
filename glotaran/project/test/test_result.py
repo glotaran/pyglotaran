@@ -7,10 +7,10 @@ import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
 
-from glotaran.analysis.optimize import optimize
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SAVING_OPTIONS_MINIMAL
 from glotaran.io import SavingOptions
+from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET

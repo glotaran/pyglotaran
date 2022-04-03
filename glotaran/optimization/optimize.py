@@ -7,7 +7,7 @@ from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
 from glotaran import __version__ as glotaran_version
-from glotaran.analysis.optimization_group import OptimizationGroup
+from glotaran.optimization.optimization_group import OptimizationGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project import Result
 from glotaran.project import Scheme

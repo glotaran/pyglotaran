@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from glotaran.analysis.optimize import optimize
+try:
+    from glotaran.analysis.optimize import optimize
+except ImportError:
+    from glotaran.optimization.optimize import optimize
+
 from glotaran.io import load_dataset
 from glotaran.io import load_model
 from glotaran.io import load_parameters

@@ -6,7 +6,7 @@ import numpy as np
 import xarray as xr
 
 if TYPE_CHECKING:
-    from glotaran.analysis.optimization_group import OptimizationGroup
+    from glotaran.optimization.optimization_group import OptimizationGroup
 
 
 class OptimizationGroupCalculator:

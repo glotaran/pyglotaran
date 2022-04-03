@@ -3,8 +3,8 @@ import typing
 
 import click
 
-from glotaran.analysis.optimize import optimize
 from glotaran.cli.commands import util
+from glotaran.optimization.optimize import optimize
 from glotaran.plugin_system.data_io_registration import known_data_formats
 from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.project.scheme import Scheme

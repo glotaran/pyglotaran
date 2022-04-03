@@ -5,9 +5,9 @@ from typing import Literal
 
 import pytest
 
-from glotaran.analysis.optimize import optimize
 from glotaran.deprecation import GlotaranApiDeprecationWarning
 from glotaran.io import save_result
+from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 

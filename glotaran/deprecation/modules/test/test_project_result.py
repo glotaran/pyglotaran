@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from glotaran.analysis.optimize import optimize
 from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
+from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 

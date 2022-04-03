@@ -2,9 +2,9 @@ from copy import deepcopy
 
 import pytest
 
-from glotaran.analysis.optimization_group import OptimizationGroup
-from glotaran.analysis.test.models import TwoCompartmentDecay as suite
 from glotaran.model import ZeroConstraint
+from glotaran.optimization.optimization_group import OptimizationGroup
+from glotaran.optimization.test.models import TwoCompartmentDecay as suite
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 

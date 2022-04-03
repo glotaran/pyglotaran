@@ -2,12 +2,12 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.analysis.optimize import optimize
-from glotaran.analysis.test.models import FullModel
-from glotaran.analysis.test.models import MultichannelMulticomponentDecay
-from glotaran.analysis.test.models import OneCompartmentDecay
-from glotaran.analysis.test.models import ThreeDatasetDecay
-from glotaran.analysis.test.models import TwoCompartmentDecay
+from glotaran.optimization.optimize import optimize
+from glotaran.optimization.test.models import FullModel
+from glotaran.optimization.test.models import MultichannelMulticomponentDecay
+from glotaran.optimization.test.models import OneCompartmentDecay
+from glotaran.optimization.test.models import ThreeDatasetDecay
+from glotaran.optimization.test.models import TwoCompartmentDecay
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 

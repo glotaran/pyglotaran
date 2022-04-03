@@ -7,8 +7,8 @@ from textwrap import dedent
 import pytest
 
 from glotaran import __version__
-from glotaran.analysis.optimize import optimize
 from glotaran.io import save_result
+from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 

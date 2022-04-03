@@ -6,12 +6,12 @@ from copy import deepcopy
 
 import numpy as np
 
-from glotaran.analysis.optimize import optimize
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.io import prepare_time_trace_dataset
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
