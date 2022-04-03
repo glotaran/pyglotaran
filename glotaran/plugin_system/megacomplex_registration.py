@@ -139,7 +139,7 @@ def megacomplex_plugin_table(
     MarkdownStr
         Markdown table of megacomplexnames.
     """
-    table_data = []
+    table_data: list[list[str]] = []
     megacomplex_names = known_megacomplex_names(full_names=full_names)
     header_values = ["Megacomplex name"]
     if plugin_names:

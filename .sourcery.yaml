@@ -1,7 +1,10 @@
 ignore: []
 
 refactor:
-  skip: [simplify-boolean-comparison]
+  skip:
+    - simplify-boolean-comparison
+    - simplify-len-comparison
+    - remove-unnecessary-cast
 
 metrics:
   quality_threshold: 25.0
