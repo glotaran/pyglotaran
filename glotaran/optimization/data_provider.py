@@ -1,5 +1,6 @@
 import warnings
 from numbers import Number
+from typing import Literal
 
 import numpy as np
 import xarray as xr
@@ -110,3 +111,161 @@ class DataProvider:
 
     def get_global_axis(self, dataset_label: str) -> np.typing.ArrayLike:
         return self._global_axes[dataset_label]
+
+
+class DataProviderLinked(DataProvider):
+    def __init__(
+        self,
+        scheme: Scheme,
+        dataset_group: DatasetGroup,
+    ):
+        super().__init__(scheme, dataset_group)
+        aligned_global_axes = self.create_aligned_global_axes(scheme)
+        self.align_data(aligned_global_axes)
+        self.align_global_indices(aligned_global_axes)
+        self.align_groups(aligned_global_axes)
+        self.align_weights(aligned_global_axes)
+
+    @staticmethod
+    def align_index(
+        index: Number,
+        target_axis: np.typing.ArrayLike,
+        tolerance: Number,
+        method: Literal["nearest", "backward", "forward"],
+    ) -> Number:
+        diff = target_axis - index
+
+        if method == "forward":
+            diff = diff[diff >= 0]
+        elif method == "backward":
+            diff = diff[diff <= 0]
+
+        diff = np.abs(diff)
+
+        if len(diff) > 0 and diff.min() <= tolerance:
+            index = target_axis[diff.argmin()]
+        return index
+
+    @property
+    def aligned_global_axis(self) -> np.typing.ArrayLike:
+        return self._aligned_global_axis
+
+    @property
+    def group_definitions(self) -> dict[str, list[str]]:
+        return self._group_definitions
+
+    def get_aligned_group_labels(self, index: int) -> str:
+        return self._aligned_group_labels[index]
+
+    def get_aligned_dataset_indices(self, index: int) -> list[Number]:
+        return self._aligned_dataset_indices[index]
+
+    def get_aligned_data(self, index: int) -> np.typing.ArrayLike:
+        return self._aligned_data[index]
+
+    def get_aligned_weight(self, index: int) -> np.typing.ArrayLike | None:
+        return self._aligned_weights[index]
+
+    def create_aligned_global_axes(self, scheme: Scheme) -> dict[str, np.typing.ArrayLike]:
+        aligned_axis_values = None
+        aligned_global_axes = {}
+        for label, global_axis in self._global_axes.items():
+
+            aligned_global_axis = global_axis
+            if aligned_axis_values is None:
+                aligned_axis_values = aligned_global_axis
+            else:
+                aligned_global_axis = [
+                    self.align_index(
+                        index,
+                        aligned_axis_values,
+                        scheme.clp_link_tolerance,
+                        scheme.clp_link_method,
+                    )
+                    for index in aligned_global_axis
+                ]
+                if len(np.unique(aligned_global_axis)) != len(aligned_global_axis):
+                    raise ValueError(
+                        "Cannot link datasets, aligning is ambiguous. \n\n"
+                        "Try to lower link tolerance or change the alignment method."
+                    )
+                aligned_axis_values = np.unique(
+                    np.concatenate([aligned_axis_values, aligned_global_axis])
+                )
+            aligned_global_axes[label] = aligned_global_axis
+        return aligned_global_axes
+
+    def align_data(self, aligned_global_axes: dict[str, np.typing.ArrayLike]):
+
+        aligned_data = xr.concat(
+            [
+                xr.DataArray(
+                    self.get_data(label), dims=["model", "global"], coords={"global": axis}
+                )
+                for label, axis in aligned_global_axes.items()
+            ],
+            dim="model",
+        )
+        self._aligned_global_axis = aligned_data.coords["global"].data
+        self._aligned_data = [
+            aligned_data.isel({"global": i}).dropna(dim="model").data
+            for i in range(self._aligned_global_axis.size)
+        ]
+
+    def align_global_indices(self, aligned_global_axes: dict[str, np.typing.ArrayLike]):
+        aligned_indices = xr.concat(
+            [
+                xr.DataArray(self.get_global_axis(label), dims=["global"], coords={"global": axis})
+                for label, axis in aligned_global_axes.items()
+            ],
+            dim="dataset",
+        )
+        self._aligned_dataset_indices = [
+            aligned_indices.isel({"global": i}).dropna(dim="dataset").data
+            for i in range(self._aligned_global_axis.size)
+        ]
+
+    def align_groups(self, aligned_global_axes: dict[str, np.typing.ArrayLike]):
+        aligned_group_labels = xr.concat(
+            [
+                xr.DataArray(np.full(len(axis), label), dims=["global"], coords={"global": axis})
+                for label, axis in aligned_global_axes.items()
+            ],
+            dim="dataset",
+            fill_value="",
+        )
+        self._aligned_group_labels = aligned_group_labels.str.join(dim="dataset").data
+        self._group_definitions = {}
+        for i, group_label in enumerate(self._aligned_group_labels):
+            if group_label not in self._group_definitions:
+                self._group_definitions[group_label] = list(
+                    filter(lambda l: l != "", aligned_group_labels.isel({"global": i}).data)
+                )
+
+    def align_weights(self, aligned_global_axes: dict[str, np.typing.ArrayLike]):
+        aligned_weights = {
+            label: xr.DataArray(
+                weight, dims=["model", "global"], coords={"global": aligned_global_axes[label]}
+            )
+            for label, weight in self._weight.items()
+            if weight is not None
+        }
+        if not aligned_weights:
+            return
+
+        self._aligned_weights = [None] * self._aligned_global_axis.size
+        for i, group_label in enumerate(self._aligned_group_labels):
+            group_dataset_labels = self._group_definitions[group_label]
+            if any(label in aligned_weights for label in group_dataset_labels):
+                index_weights = []
+                for label in group_dataset_labels:
+                    if label in aligned_weights:
+                        index_weights.append(
+                            aligned_weights[label]
+                            .sel({"global": self._aligned_global_axis[i]})
+                            .data
+                        )
+                    else:
+                        size = self.get_model_axis(label).size
+                        index_weights.append(np.ones(size))
+                self._aligned_weights[i] = np.concatenate(index_weights)

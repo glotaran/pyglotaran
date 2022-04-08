@@ -2,7 +2,9 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.model import DatasetGroup
 from glotaran.optimization.data_provider import DataProvider
+from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -10,7 +12,7 @@ from glotaran.project import Scheme
 
 @pytest.fixture()
 def dataset_one() -> xr.Dataset:
-    global_axis = [1, 2, 5]
+    global_axis = [1, 5, 6]
     model_axis = [5, 7, 9, 12]
 
     data = xr.DataArray(
@@ -31,7 +33,8 @@ def dataset_two() -> xr.Dataset:
     ).to_dataset(name="data")
 
 
-def test_data_provider(dataset_one: xr.Dataset, dataset_two: xr.Dataset):
+@pytest.fixture()
+def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
     model = SimpleTestModel.from_dict(
         {
             "megacomplex": {"m1": {"is_index_dependent": False}},
@@ -53,9 +56,19 @@ def test_data_provider(dataset_one: xr.Dataset, dataset_two: xr.Dataset):
     assert model.valid(parameters)
 
     data = {"dataset1": dataset_one, "dataset2": dataset_two}
-    scheme = Scheme(model, parameters, data)
-    dataset_group = model.get_dataset_groups()["default"]
+    return Scheme(model, parameters, data, clp_link_tolerance=1)
+
+
+@pytest.fixture()
+def dataset_group(scheme: Scheme) -> DatasetGroup:
+    dataset_group = scheme.model.get_dataset_groups()["default"]
     dataset_group.fill(scheme.model, scheme.parameters)
+    return dataset_group
+
+
+def test_data_provider(
+    dataset_one: xr.Dataset, dataset_two: xr.Dataset, scheme: Scheme, dataset_group: DatasetGroup
+):
     data_provider = DataProvider(scheme, dataset_group)
 
     print(dataset_one.data)
@@ -71,123 +84,62 @@ def test_data_provider(dataset_one: xr.Dataset, dataset_two: xr.Dataset):
     assert np.array_equal(dataset_two.coords["global"], data_provider.get_global_axis("dataset2"))
 
 
-#  def test_multi_dataset_no_overlap():
-#      model = SimpleTestModel.from_dict(
-#          {
-#              "megacomplex": {"m1": {"is_index_dependent": False}},
-#              "dataset_groups": {"default": {"link_clp": True}},
-#              "dataset": {
-#                  "dataset1": {
-#                      "megacomplex": ["m1"],
-#                  },
-#                  "dataset2": {
-#                      "megacomplex": ["m1"],
-#                  },
-#              },
-#          }
-#      )
-#
-#      model.grouped = lambda: True
-#      print(model.validate())
-#      assert model.valid()
-#      assert model.grouped()
-#
-#      parameters = ParameterGroup.from_list([1, 10])
-#      print(model.validate(parameters))
-#      assert model.valid(parameters)
-#
-#      global_axis_1 = [1, 2, 3]
-#      model_axis_1 = [5, 7]
-#      global_axis_2 = [4, 5, 6]
-#      model_axis_2 = [5, 7, 9]
-#      data = {
-#          "dataset1": xr.DataArray(
-#              np.ones((3, 2)), coords=[("global", global_axis_1), ("model", model_axis_1)]
-#          ).to_dataset(name="data"),
-#          "dataset2": xr.DataArray(
-#              np.ones((3, 3)), coords=[("global", global_axis_2), ("model", model_axis_2)]
-#          ).to_dataset(name="data"),
-#      }
-#
-#      scheme = Scheme(model, parameters, data)
-#      optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
-#      bag = list(optimization_group._calculator.bag)
-#      assert len(optimization_group._calculator.groups) == 2
-#      assert len(bag) == 6
-#      assert all(p.data.size == 2 for p in bag[:3])
-#      assert all(p.dataset_models[0].label == "dataset1" for p in bag[:3])
-#      assert all(all(p.dataset_models[0].axis["model"] == model_axis_1) for p in bag[:3])
-#      assert all(all(p.dataset_models[0].axis["global"] == global_axis_1) for p in bag[:3])
-#      assert [p.dataset_models[0].indices["global"] for p in bag[:3]] == [0, 1, 2]
-#
-#      assert all(p.data.size == 3 for p in bag[3:])
-#      assert all(p.dataset_models[0].label == "dataset2" for p in bag[3:])
-#      assert all(all(p.dataset_models[0].axis["model"] == model_axis_2) for p in bag[3:])
-#      assert all(all(p.dataset_models[0].axis["global"] == global_axis_2) for p in bag[3:])
-#      assert [p.dataset_models[0].indices["global"] for p in bag[3:]] == [0, 1, 2]
-#
-#
-#  def test_multi_dataset_overlap():
-#      model = SimpleTestModel.from_dict(
-#          {
-#              "megacomplex": {"m1": {"is_index_dependent": False}},
-#              "dataset_groups": {"default": {"link_clp": True}},
-#              "dataset": {
-#                  "dataset1": {
-#                      "megacomplex": ["m1"],
-#                  },
-#                  "dataset2": {
-#                      "megacomplex": ["m1"],
-#                  },
-#              },
-#          }
-#      )
-#
-#      model.grouped = lambda: True
-#      print(model.validate())
-#      assert model.valid()
-#      assert model.grouped()
-#
-#      parameters = ParameterGroup.from_list([1, 10])
-#      print(model.validate(parameters))
-#      assert model.valid(parameters)
-#
-#      global_axis_1 = [1, 2, 3, 5]
-#      model_axis_1 = [5, 7]
-#      global_axis_2 = [0, 1.4, 2.4, 3.4, 9]
-#      model_axis_2 = [5, 7, 9, 12]
-#      data = {
-#          "dataset1": xr.DataArray(
-#              np.ones((4, 2)), coords=[("global", global_axis_1), ("model", model_axis_1)]
-#          ).to_dataset(name="data"),
-#          "dataset2": xr.DataArray(
-#              np.ones((5, 4)), coords=[("global", global_axis_2), ("model", model_axis_2)]
-#          ).to_dataset(name="data"),
-#      }
-#
-#      scheme = Scheme(model, parameters, data, clp_link_tolerance=5e-1)
-#      optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
-#      bag = list(optimization_group._calculator.bag)
-#      assert len(optimization_group._calculator.groups) == 3
-#      assert "dataset1dataset2" in optimization_group._calculator.groups
-#      assert optimization_group._calculator.groups["dataset1dataset2"] == ["dataset1", "dataset2"]
-#      assert len(bag) == 6
-#
-#      assert all(p.data.size == 4 for p in bag[:1])
-#      assert all(p.dataset_models[0].label == "dataset1" for p in bag[1:5])
-#      assert all(all(p.dataset_models[0].axis["model"] == model_axis_1) for p in bag[1:5])
-#      assert all(all(p.dataset_models[0].axis["global"] == global_axis_1) for p in bag[1:5])
-#      assert [p.dataset_models[0].indices["global"] for p in bag[1:5]] == [0, 1, 2, 3]
-#
-#      assert all(p.data.size == 6 for p in bag[1:4])
-#      assert all(p.dataset_models[1].label == "dataset2" for p in bag[1:4])
-#      assert all(all(p.dataset_models[1].axis["model"] == model_axis_2) for p in bag[1:4])
-#      assert all(all(p.dataset_models[1].axis["global"] == global_axis_2) for p in bag[1:4])
-#      assert [p.dataset_models[1].indices["global"] for p in bag[1:4]] == [1, 2, 3]
-#
-#      assert all(p.data.size == 4 for p in bag[5:])
-#      assert bag[4].dataset_models[0].label == "dataset1"
-#      assert bag[5].dataset_models[0].label == "dataset2"
-#      assert np.array_equal(bag[4].dataset_models[0].axis["model"], model_axis_1)
-#      assert np.array_equal(bag[5].dataset_models[0].axis["model"], model_axis_2)
-#      assert [p.dataset_models[0].indices["global"] for p in bag[1:4]] == [0, 1, 2]
+def test_data_provider_linked(
+    dataset_one: xr.Dataset, dataset_two: xr.Dataset, scheme: Scheme, dataset_group: DatasetGroup
+):
+    data_provider = DataProviderLinked(scheme, dataset_group)
+
+    assert "dataset1" in data_provider.group_definitions
+    assert data_provider.group_definitions["dataset1"] == ["dataset1"]
+    assert "dataset2" in data_provider.group_definitions
+    assert data_provider.group_definitions["dataset2"] == ["dataset2"]
+    assert "dataset1dataset2" in data_provider.group_definitions
+    assert data_provider.group_definitions["dataset1dataset2"] == ["dataset1", "dataset2"]
+
+    #  global_axis1 = [1, 5, 6]
+    #  global_axis2 = [0, 3, 7, 10]
+
+    assert np.array_equal(data_provider.aligned_global_axis, [1, 3, 5, 6, 10])
+
+    assert data_provider.get_aligned_group_labels(0) == "dataset1dataset2"
+    assert data_provider.get_aligned_group_labels(1) == "dataset2"
+    assert data_provider.get_aligned_group_labels(2) == "dataset1"
+    assert data_provider.get_aligned_group_labels(3) == "dataset1dataset2"
+    assert data_provider.get_aligned_group_labels(4) == "dataset2"
+
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(0), [1, 0])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(1), [3])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(2), [5])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(3), [6, 7])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(4), [10])
+
+    dataset1_size = dataset_one.coords["model"].size
+    dataset2_size = dataset_two.coords["model"].size
+
+    assert data_provider.get_aligned_data(0).size == dataset1_size + dataset2_size
+    assert data_provider.get_aligned_data(1).size == dataset2_size
+    assert data_provider.get_aligned_data(2).size == dataset1_size
+    assert data_provider.get_aligned_data(3).size == dataset1_size + dataset2_size
+    assert data_provider.get_aligned_data(4).size == dataset2_size
+
+    assert data_provider.get_aligned_weight(0).size == dataset1_size + dataset2_size
+    assert data_provider.get_aligned_weight(1) is None
+    assert data_provider.get_aligned_weight(2).size == dataset1_size
+    assert data_provider.get_aligned_weight(3).size == dataset1_size + dataset2_size
+    assert data_provider.get_aligned_weight(4) is None
+
+
+@pytest.mark.parametrize("method", ["nearest", "backward", "forward"])
+def test_data_provider_linking_methods(method: str, scheme: Scheme, dataset_group: DatasetGroup):
+    scheme.clp_link_method = method
+    data_provider = DataProviderLinked(scheme, dataset_group)
+
+    #  global_axis1 = [1, 5, 6]
+    #  global_axis2 = [0, 3, 7, 10]
+
+    wanted_global_axis = [1, 3, 5, 6, 10]
+    if method == "backward":
+        wanted_global_axis = [0, 1, 3, 5, 6, 10]
+    if method == "forward":
+        wanted_global_axis = [1, 3, 5, 6, 7, 10]
+    assert np.array_equal(data_provider.aligned_global_axis, wanted_global_axis)
