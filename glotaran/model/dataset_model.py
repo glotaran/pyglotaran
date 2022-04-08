@@ -61,17 +61,16 @@ class DatasetModel:
 
     def get_model_dimension(self) -> str:
         """Returns the dataset model's model dimension."""
-        if not hasattr(self, "_model_dimension"):
-            if len(self.megacomplex) == 0:
-                raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
-            if isinstance(self.megacomplex[0], str):
-                raise ValueError(f"Dataset model '{self.label}' was not filled")
-            self._model_dimension = self.megacomplex[0].dimension
-            if any(self._model_dimension != m.dimension for m in self.megacomplex):
-                raise ValueError(
-                    f"Megacomplex dimensions do not match for dataset model '{self.label}'."
-                )
-        return self._model_dimension
+        if len(self.megacomplex) == 0:
+            raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
+        if isinstance(self.megacomplex[0], str):
+            raise ValueError(f"Dataset model '{self.label}' was not filled")
+        model_dimension = self.megacomplex[0].dimension
+        if any(model_dimension != m.dimension for m in self.megacomplex):
+            raise ValueError(
+                f"Megacomplex dimensions do not match for dataset model '{self.label}'."
+            )
+        return model_dimension
 
     def finalize_data(self, dataset: xr.Dataset) -> None:
         is_full_model = self.has_global_model()
