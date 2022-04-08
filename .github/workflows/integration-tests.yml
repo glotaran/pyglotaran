@@ -77,7 +77,7 @@ jobs:
           path: comparison-results
 
       - name: Download result artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: example-results
           path: comparison-results-current
