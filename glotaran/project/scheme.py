@@ -39,7 +39,10 @@ class Scheme:
     data: Mapping[str, xr.Dataset] = file_loadable_field(
         DatasetMapping, is_wrapper_class=True
     )  # type:ignore[type-var]
+
     clp_link_tolerance: float = 0.0
+    clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
+
     maximum_number_function_evaluations: int | None = None
     non_negative_least_squares: bool | None = exclude_from_dict_field(None)
     group_tolerance: float | None = exclude_from_dict_field(None)
