@@ -167,14 +167,21 @@ class MatrixProviderUnlinked(MatrixProvider):
         self._matrices = {}
         self._global_matrices = {}
         self._reduced_matrices = {}
+        self._global_reduced_matrices = {}
 
     def get_reduced_matrix(self, dataset_label: str, index: int) -> MatrixContainer:
         return self._reduced_matrices[dataset_label][index]
 
     def calculate(self):
+        self.create_dataset_matrices()
+
+        self.create_reduced_matrices()
+
+    def create_dataset_matrices(self):
         for label, dataset_model in self.group.dataset_models.items():
             model_axis = self._data_provider.get_model_axis(label)
             global_axis = self._data_provider.get_global_axis(label)
+
             if dataset_model.is_index_dependent():
                 self._matrices[label] = [
                     self.calculate_dataset_matrix(
@@ -187,12 +194,10 @@ class MatrixProviderUnlinked(MatrixProvider):
                     dataset_model, None, global_axis, model_axis
                 )
 
-        if dataset_model.has_global_model():
-            self._global_matrices[label] = self.calculate_dataset_matrix(
-                dataset_model, None, global_axis, model_axis, as_global_model=True
-            )
-        else:
-            self.create_reduced_matrices()
+            if dataset_model.has_global_model():
+                self._global_matrices[label] = self.calculate_dataset_matrix(
+                    dataset_model, None, global_axis, model_axis, as_global_model=True
+                )
 
     def create_reduced_matrices(self):
         for label, dataset_model in self.group.dataset_models.items():
@@ -318,3 +323,55 @@ class MatrixProviderLinkedIndexIndependent(MatrixProviderLinked):
             },
             {label: matrix_container.matrix for label, matrix_container in self._matrices.items()},
         )
+
+
+class MatrixProviderLinkedIndexDependent(MatrixProviderLinked):
+    def __init__(self, group: DatasetGroup, data_provider: DataProviderLinked):
+        super().__init__(group, data_provider)
+
+        self._matrices = {}
+
+    def calculate(self):
+
+        self.create_dataset_matrices()
+
+        self.create_aligned_matrices()
+
+    def create_dataset_matrices(self):
+        for label, dataset_model in self.group.dataset_models.items():
+            model_axis = self._data_provider.get_model_axis(label)
+            global_axis = self._data_provider.get_global_axis(label)
+
+            self._matrices[label] = [
+                self.calculate_dataset_matrix(dataset_model, global_index, global_axis, model_axis)
+                for global_index in range(self._data_provider.get_global_axis(label).size)
+            ]
+
+    def create_aligned_matrices(self):
+
+        for i, global_index in enumerate(self.data_provider.aligned_global_axis):
+            group_label = self.data_provider.get_aligned_group_label(i)
+            group_matrix = self.align_matrices(
+                [
+                    self._matrices[label][index]
+                    for label, index in zip(
+                        self.data_provider.group_definitions[group_label],
+                        self.data_provider.get_aligned_dataset_indices(i),
+                    )
+                ]
+            )
+
+            group_matrix = self.reduce_matrix(group_matrix, global_index)
+            weight = self.data_provider.get_aligned_weight(i)
+            if weight is not None:
+                group_matrix = group_matrix.create_weighted_matrix(weight)
+
+            self._aligned_matrices[i] = group_matrix
+
+    def get_result(self) -> tuple[dict[str, list[str]], dict[str, np.typing.ArrayLike]]:
+        clp_labels, matrices = {}, {}
+        for label, matrix_container in self._matrices.items():
+            clp_labels[label] = [m.clp_labels for m in matrix_container]
+            matrices[label] = [m.matrix for m in matrix_container]
+
+        return clp_labels, matrices
