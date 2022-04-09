@@ -23,17 +23,19 @@ class DataProvider:
             dataset = scheme.data[label]
             model_dimension = dataset_model.get_model_dimension()
             global_dimension = self.infer_global_dimension(model_dimension, dataset.data.dims)
+            self._model_axes[label] = dataset.coords[model_dimension].data
+            self._global_axes[label] = dataset.coords[global_dimension].data
+
+            self._weight[label] = self.get_from_dataset(
+                dataset, "weight", model_dimension, global_dimension
+            )
+            self.add_model_weight(scheme.model, label, model_dimension, global_dimension)
 
             self._data[label] = self.get_from_dataset(
                 dataset, "data", model_dimension, global_dimension
             )
-            self._weight[label] = self.get_from_dataset(
-                dataset, "weight", model_dimension, global_dimension
-            )
-            self._model_axes[label] = dataset.coords[model_dimension].data
-            self._global_axes[label] = dataset.coords[global_dimension].data
-
-            self.add_model_weight(scheme.model, label, model_dimension, global_dimension)
+            if self._weight[label] is not None:
+                self._data[label] *= self._weight[label]
 
     @staticmethod
     def infer_global_dimension(model_dimension: str, dimensions: tuple[str]) -> str:
@@ -65,8 +67,8 @@ class DataProvider:
     def add_model_weight(
         self, model: Model, label: str, model_dimension: str, global_dimension: str
     ):
-        model_weights = [weight for weight in model.weights if label in weight.dataset]
 
+        model_weights = [weight for weight in model.weights if label in weight.dataset]
         if not model_weights:
             return
 
