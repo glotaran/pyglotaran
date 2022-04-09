@@ -10,6 +10,7 @@ import numpy as np
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
 from glotaran.optimization.data_provider import DataProvider
+from glotaran.optimization.data_provider import DataProviderLinked
 
 
 @dataclass
@@ -19,10 +20,13 @@ class MatrixContainer:
 
     @staticmethod
     @nb.jit(nopython=True, parallel=True)
-    def _create_weighted_matrix(matrix: np.typing.ArrayLike, weight: np.typing.ArrayLike):
+    def _create_weighted_matrix(
+        matrix: np.typing.ArrayLike, weight: np.typing.ArrayLike
+    ) -> np.typing.ArrayLike:
         matrix = matrix.copy()
         for i in nb.prange(matrix.shape[1]):
             matrix[:, i] *= weight
+        return matrix
 
     def create_weighted_matrix(self, weight: np.typing.ArrayLike) -> MatrixContainer:
         return replace(self, matrix=self._create_weighted_matrix(self.matrix, weight))
@@ -219,3 +223,98 @@ class MatrixProviderUnlinked(MatrixProvider):
                 matrices[label] = matrix_container.matrix
 
         return clp_labels, matrices
+
+
+class MatrixProviderLinked(MatrixProvider):
+    def __init__(self, group: DatasetGroup, data_provider: DataProviderLinked):
+        super().__init__(group)
+        self._data_provider = data_provider
+        self._aligned_matrices = [None] * self.data_provider.aligned_global_axis.size
+
+    @property
+    def data_provider(self) -> DataProviderLinked:
+        return self._data_provider
+
+    @staticmethod
+    def align_matrices(matrices: list[MatrixContainer]) -> MatrixContainer:
+        if len(matrices) == 1:
+            return matrices[0]
+        masks = []
+        full_clp_labels = None
+        sizes = []
+        dim1 = 0
+        for matrix in matrices:
+            clp_labels = matrix.clp_labels
+            model_axis_size = matrix.matrix.shape[0]
+            sizes.append(model_axis_size)
+            dim1 += model_axis_size
+            if full_clp_labels is None:
+                full_clp_labels = clp_labels.copy()
+                masks.append([i for i, _ in enumerate(clp_labels)])
+            else:
+                mask = []
+                for c in clp_labels:
+                    if c not in full_clp_labels:
+                        full_clp_labels.append(c)
+                    mask.append(full_clp_labels.index(c))
+                masks.append(mask)
+        dim2 = len(full_clp_labels)
+        full_matrix = np.zeros((dim1, dim2), dtype=np.float64)
+        start = 0
+        for i, m in enumerate(matrices):
+            end = start + sizes[i]
+            full_matrix[start:end, masks[i]] = m.matrix
+            start = end
+
+        return MatrixContainer(full_clp_labels, full_matrix)
+
+    def get_aligned_matrix(self, index: int) -> MatrixContainer:
+        return self._aligned_matrices[index]
+
+
+class MatrixProviderLinkedIndexIndependent(MatrixProviderLinked):
+    def __init__(self, group: DatasetGroup, data_provider: DataProviderLinked):
+        super().__init__(group, data_provider)
+
+        self._matrices = {}
+        self._group_matrices = {}
+
+    def create_dataset_matrices(self):
+        for label, dataset_model in self._group.dataset_models.items():
+            model_axis = self._data_provider.get_model_axis(label)
+            global_axis = self._data_provider.get_global_axis(label)
+            self._matrices[label] = self.calculate_dataset_matrix(
+                dataset_model, None, global_axis, model_axis
+            )
+
+    def create_aligned_matrices(self):
+        grouped_matrices = {}
+        for group_label, dataset_labels in self.data_provider.group_definitions.items():
+
+            grouped_matrices[group_label] = self.align_matrices(
+                [self._matrices[label] for label in dataset_labels]
+            )
+
+        for i, global_index in enumerate(self.data_provider.aligned_global_axis):
+            group_matrix = grouped_matrices[self.data_provider.get_aligned_group_label(i)]
+            group_matrix = self.reduce_matrix(group_matrix, global_index)
+            weight = self.data_provider.get_aligned_weight(i)
+            if weight is not None:
+                group_matrix = group_matrix.create_weighted_matrix(weight)
+
+            self._aligned_matrices[i] = group_matrix
+
+    def calculate(self):
+
+        self.create_dataset_matrices()
+
+        self.create_aligned_matrices()
+
+    def get_result(self) -> tuple[dict[str, list[str]], dict[str, np.typing.ArrayLike]]:
+        return (
+            {
+                label: matrix_container.clp_labels
+                for label, matrix_container in self._matrices.items()
+            },
+            {label: matrix_container.matrix for label, matrix_container in self._matrices.items()},
+        )
