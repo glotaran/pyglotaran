@@ -101,17 +101,17 @@ def test_data_provider_linked(
 
     assert np.array_equal(data_provider.aligned_global_axis, [1, 3, 5, 6, 10])
 
-    assert data_provider.get_aligned_group_labels(0) == "dataset1dataset2"
-    assert data_provider.get_aligned_group_labels(1) == "dataset2"
-    assert data_provider.get_aligned_group_labels(2) == "dataset1"
-    assert data_provider.get_aligned_group_labels(3) == "dataset1dataset2"
-    assert data_provider.get_aligned_group_labels(4) == "dataset2"
+    assert data_provider.get_aligned_group_label(0) == "dataset1dataset2"
+    assert data_provider.get_aligned_group_label(1) == "dataset2"
+    assert data_provider.get_aligned_group_label(2) == "dataset1"
+    assert data_provider.get_aligned_group_label(3) == "dataset1dataset2"
+    assert data_provider.get_aligned_group_label(4) == "dataset2"
 
-    assert np.array_equal(data_provider.get_aligned_dataset_indices(0), [1, 0])
-    assert np.array_equal(data_provider.get_aligned_dataset_indices(1), [3])
-    assert np.array_equal(data_provider.get_aligned_dataset_indices(2), [5])
-    assert np.array_equal(data_provider.get_aligned_dataset_indices(3), [6, 7])
-    assert np.array_equal(data_provider.get_aligned_dataset_indices(4), [10])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(0), [0, 0])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(1), [1])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(2), [1])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(3), [2, 2])
+    assert np.array_equal(data_provider.get_aligned_dataset_indices(4), [3])
 
     dataset1_size = dataset_one.coords["model"].size
     dataset2_size = dataset_two.coords["model"].size
