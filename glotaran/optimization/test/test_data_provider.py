@@ -62,7 +62,7 @@ def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
 @pytest.fixture()
 def dataset_group(scheme: Scheme) -> DatasetGroup:
     dataset_group = scheme.model.get_dataset_groups()["default"]
-    dataset_group.fill(scheme.model, scheme.parameters)
+    dataset_group.fill(scheme.parameters)
     return dataset_group
 
 

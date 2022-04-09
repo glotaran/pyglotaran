@@ -290,9 +290,14 @@ class Model:
             group = dataset_model.group
             if group not in groups:
                 try:
-                    groups[group] = DatasetGroup(model=self.dataset_group_models[group])
-                except KeyError as e:
-                    raise ValueError(f"Unknown dataset group '{group}'") from e
+                    group_model = self.dataset_group_models[group]
+                except KeyError:
+                    raise ValueError(f"Unknown dataset group '{group}'")
+                groups[group] = DatasetGroup(
+                    residual_function=group_model.residual_function,
+                    link_clp=group_model.link_clp,
+                    model=self,
+                )
             groups[group].dataset_models[dataset_model.label] = dataset_model
         return groups
 
