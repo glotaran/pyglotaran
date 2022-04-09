@@ -156,7 +156,7 @@ class DataProviderLinked(DataProvider):
     def group_definitions(self) -> dict[str, list[str]]:
         return self._group_definitions
 
-    def get_aligned_group_labels(self, index: int) -> str:
+    def get_aligned_group_label(self, index: int) -> str:
         return self._aligned_group_labels[index]
 
     def get_aligned_dataset_indices(self, index: int) -> list[Number]:
