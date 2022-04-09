@@ -27,9 +27,18 @@ class DatasetGroupModel:
 
 @dataclass
 class DatasetGroup:
-    model: DatasetGroupModel
+    """A dataset group for optimization."""
+
+    residual_function: Literal["variable_projection", "non_negative_least_squares"]
+    """The residual function to use."""
+
+    link_clp: bool
+    """Whether to link the clp parameter."""
+
+    model: Model
+
     dataset_models: dict[str, DatasetModel] = field(default_factory=dict)
 
-    def fill(self, model: Model, parameters: ParameterGroup):
+    def fill(self, parameters: ParameterGroup):
         for label, dataset_model in self.dataset_models.items():
-            self.dataset_models[label] = dataset_model.fill(model, parameters)
+            self.dataset_models[label] = dataset_model.fill(self.model, parameters)
