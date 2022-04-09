@@ -36,9 +36,11 @@ class DatasetGroup:
     """Whether to link the clp parameter."""
 
     model: Model
+    parameters: ParameterGroup | None = None
 
     dataset_models: dict[str, DatasetModel] = field(default_factory=dict)
 
-    def fill(self, parameters: ParameterGroup):
+    def set_parameters(self, parameters: ParameterGroup):
+        self.parameters = parameters
         for label, dataset_model in self.dataset_models.items():
             self.dataset_models[label] = dataset_model.fill(self.model, parameters)

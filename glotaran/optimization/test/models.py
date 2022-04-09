@@ -4,50 +4,56 @@ from typing import List
 
 import numpy as np
 
+from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import megacomplex
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
-
-@megacomplex(dimension="global", properties={})
-class SimpleTestMegacomplexGlobal(Megacomplex):
-    def calculate_matrix(self, dataset_model, indices, **kwargs):
-        axis = dataset_model.get_coordinates()
-        assert "model" in axis
-        assert "global" in axis
-        axis = axis["global"]
-        compartments = ["s1", "s2"]
-        r_compartments = []
-        array = np.zeros((axis.shape[0], len(compartments)))
-
-        for i in range(len(compartments)):
-            r_compartments.append(compartments[i])
-            for j in range(axis.shape[0]):
-                array[j, i] = (i + j) * axis[j]
-        return r_compartments, array
-
-    def index_dependent(self, dataset_model):
-        return False
+#  @megacomplex(dimension="global", properties={})
+#  class SimpleTestMegacomplexGlobal(Megacomplex):
+#      def calculate_matrix(
+#          self,
+#          dataset_model: DatasetModel,
+#          global_index: int | None,
+#          global_axis: np.typing.ArrayLike,
+#          model_axis: np.typing.ArrayLike,
+#          **kwargs,
+#      ):
+#          compartments = ["s1", "s2"]
+#          r_compartments = []
+#          array = np.zeros((model_axis.size, len(compartments)))
+#
+#          for i in range(len(compartments)):
+#              r_compartments.append(compartments[i])
+#              for j in range(model_axis.size):
+#                  array[j, i] = (i + j) * model_axis[j]
+#          return r_compartments, array
+#
+#      def index_dependent(self, dataset_model):
+#          return False
 
 
 @megacomplex(dimension="model", properties={"is_index_dependent": bool})
 class SimpleTestMegacomplex(Megacomplex):
-    def calculate_matrix(self, dataset_model, indices, **kwargs):
-        axis = dataset_model.get_coordinates()
-        assert "model" in axis
-        assert "global" in axis
+    def calculate_matrix(
+        self,
+        dataset_model: DatasetModel,
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
+        **kwargs,
+    ):
 
-        axis = axis["model"]
         compartments = ["s1", "s2"]
         r_compartments = []
-        array = np.zeros((axis.shape[0], len(compartments)))
+        array = np.zeros((model_axis.size, len(compartments)))
 
         for i in range(len(compartments)):
             r_compartments.append(compartments[i])
-            for j in range(axis.shape[0]):
-                array[j, i] = (i + j) * axis[j]
+            for j in range(model_axis.size):
+                array[j, i] = (i + j) * model_axis[j]
         return r_compartments, array
 
     def index_dependent(self, dataset_model):
@@ -65,7 +71,7 @@ class SimpleTestModel(Model):
     ):
         defaults: dict[str, type[Megacomplex]] = {
             "model_complex": SimpleTestMegacomplex,
-            "global_complex": SimpleTestMegacomplexGlobal,
+            #  "global_complex": SimpleTestMegacomplexGlobal,
         }
         if megacomplex_types is not None:
             defaults.update(megacomplex_types)
