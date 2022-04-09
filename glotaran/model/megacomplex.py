@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 
+import numpy as np
 import xarray as xr
 
 from glotaran.model.item import model_item
@@ -110,7 +111,9 @@ class Megacomplex:
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ) -> xr.DataArray:
         raise NotImplementedError
