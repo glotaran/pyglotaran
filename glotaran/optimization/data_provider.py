@@ -217,13 +217,17 @@ class DataProviderLinked(DataProvider):
     def align_global_indices(self, aligned_global_axes: dict[str, np.typing.ArrayLike]):
         aligned_indices = xr.concat(
             [
-                xr.DataArray(self.get_global_axis(label), dims=["global"], coords={"global": axis})
-                for label, axis in aligned_global_axes.items()
+                xr.DataArray(
+                    np.arange(len(axis), dtype=int),
+                    dims=["global"],
+                    coords={"global": axis},
+                )
+                for axis in aligned_global_axes.values()
             ],
             dim="dataset",
         )
         self._aligned_dataset_indices = [
-            aligned_indices.isel({"global": i}).dropna(dim="dataset").data
+            aligned_indices.isel({"global": i}).dropna(dim="dataset").data.astype(int)
             for i in range(self._aligned_global_axis.size)
         ]
 

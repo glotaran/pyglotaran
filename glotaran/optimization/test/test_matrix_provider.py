@@ -4,6 +4,7 @@ import xarray as xr
 
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
+from glotaran.optimization.matrix_provider import MatrixProviderLinkedIndexDependent
 from glotaran.optimization.matrix_provider import MatrixProviderLinkedIndexIndependent
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.test.models import SimpleTestModel
@@ -138,3 +139,50 @@ def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
         matrices["dataset2"][i].shape == (scheme.data["dataset2"].model.size, 2)
         for i in range(scheme.data["dataset2"].coords["global"].size)
     )
+
+
+def test_matrix_provider_linked_index_dependent(scheme: Scheme):
+    scheme.model.megacomplex["m1"].is_index_dependent = True
+    dataset_group = scheme.model.get_dataset_groups()["default"]
+    dataset_group.set_parameters(scheme.parameters)
+    data_provider = DataProviderLinked(scheme, dataset_group)
+    matrix_provider = MatrixProviderLinkedIndexDependent(dataset_group, data_provider)
+    matrix_provider.calculate()
+    clp_labels, matrices = matrix_provider.get_result()
+
+    dataset1_size = scheme.data["dataset1"].coords["model"].size
+    dataset2_size = scheme.data["dataset2"].coords["model"].size
+
+    assert "dataset1" in clp_labels
+    print(clp_labels["dataset1"])
+    assert all(
+        clp_labels["dataset1"][i] == ["s1", "s2"]
+        for i in range(scheme.data["dataset1"].coords["global"].size)
+    )
+    assert "dataset1" in matrices
+    assert all(
+        matrices["dataset1"][i].shape == (scheme.data["dataset1"].model.size, 2)
+        for i in range(scheme.data["dataset1"].coords["global"].size)
+    )
+
+    assert "dataset2" in clp_labels
+    assert all(
+        clp_labels["dataset2"][i] == ["s1", "s2"]
+        for i in range(scheme.data["dataset2"].coords["global"].size)
+    )
+    assert "dataset2" in matrices
+    assert all(
+        matrices["dataset2"][i].shape == (scheme.data["dataset2"].model.size, 2)
+        for i in range(scheme.data["dataset2"].coords["global"].size)
+    )
+    assert matrix_provider.get_aligned_matrix(0).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix(1).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix(2).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix(3).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix(4).clp_labels == ["s1", "s2"]
+
+    assert matrix_provider.get_aligned_matrix(0).matrix.shape == (dataset1_size + dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix(1).matrix.shape == (dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix(2).matrix.shape == (dataset1_size, 2)
+    assert matrix_provider.get_aligned_matrix(3).matrix.shape == (dataset1_size + dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix(4).matrix.shape == (dataset2_size, 2)
