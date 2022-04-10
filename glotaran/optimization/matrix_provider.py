@@ -219,6 +219,8 @@ class MatrixProviderUnlinked(MatrixProvider):
                 self._prepared_matrix_container[label] = [
                     self.reduce_matrix(self.get_matrix_container(label, 0), None)
                 ] * self._data_provider.get_global_axis(label).size
+            if dataset_model.scale is not None:
+                self._prepared_matrix_container[label] *= dataset_model.scale
             if weight is not None:
                 self._prepared_matrix_container[label] = [
                     matrix.create_weighted_matrix(weight[:, i])
@@ -251,7 +253,11 @@ class MatrixProviderLinked(MatrixProvider):
                         self._data_provider.group_definitions[group_label],
                         self._data_provider.get_aligned_dataset_indices(i),
                     )
-                ]
+                ],
+                [
+                    self.group.dataset_models[label].scale | 1
+                    for label in self._data_provider.group_definitions[group_label]
+                ],
             )
 
             self._aligned_full_clp_labels[i] = group_matrix.clp_labels
@@ -269,7 +275,7 @@ class MatrixProviderLinked(MatrixProvider):
         self.create_aligned_matrices()
 
     @staticmethod
-    def align_matrices(matrices: list[MatrixContainer]) -> MatrixContainer:
+    def align_matrices(matrices: list[MatrixContainer], scales: list[Number]) -> MatrixContainer:
         if len(matrices) == 1:
             return matrices[0]
         masks = []
@@ -296,7 +302,7 @@ class MatrixProviderLinked(MatrixProvider):
         start = 0
         for i, m in enumerate(matrices):
             end = start + sizes[i]
-            full_matrix[start:end, masks[i]] = m.matrix
+            full_matrix[start:end, masks[i]] = m.matrix * scales[i]
             start = end
 
         return MatrixContainer(full_clp_labels, full_matrix)

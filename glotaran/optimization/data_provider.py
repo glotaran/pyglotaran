@@ -16,15 +16,19 @@ class DataProvider:
         self._data = {}
         self._weight = {}
         self._model_axes = {}
+        self._model_dimensions = {}
         self._global_axes = {}
+        self._global_dimensions = {}
 
         for label, dataset_model in dataset_group.dataset_models.items():
 
             dataset = scheme.data[label]
             model_dimension = dataset_model.get_model_dimension()
-            global_dimension = self.infer_global_dimension(model_dimension, dataset.data.dims)
             self._model_axes[label] = dataset.coords[model_dimension].data
+            self._model_dimensions[label] = model_dimension
+            global_dimension = self.infer_global_dimension(model_dimension, dataset.data.dims)
             self._global_axes[label] = dataset.coords[global_dimension].data
+            self._global_dimensions[label] = global_dimension
 
             self._weight[label] = self.get_from_dataset(
                 dataset, "weight", model_dimension, global_dimension
@@ -111,8 +115,14 @@ class DataProvider:
     def get_model_axis(self, dataset_label: str) -> np.typing.ArrayLike:
         return self._model_axes[dataset_label]
 
+    def get_model_dimension(self, dataset_label: str) -> str:
+        return self._model_dimensions[dataset_label]
+
     def get_global_axis(self, dataset_label: str) -> np.typing.ArrayLike:
         return self._global_axes[dataset_label]
+
+    def get_global_dimension(self, dataset_label: str) -> str:
+        return self._global_dimensions[dataset_label]
 
 
 class DataProviderLinked(DataProvider):
