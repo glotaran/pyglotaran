@@ -150,11 +150,15 @@ class EstimationProviderUnlinked(EstimationProvider):
             clp_labels = []
 
             for index, global_index in enumerate(global_axis):
-                matrix_container = self._matrix_provider.get_reduced_matrix(label, index)
+                matrix_container = self._matrix_provider.get_prepared_matrix_container(
+                    label, index
+                )
                 reduced_clps, residual = self.calculate_residual(
                     matrix_container.matrix, data[:, index]
                 )
-                clp_labels.append(self._matrix_provider.get_matrix(label, index).clp_labels)
+                clp_labels.append(
+                    self._matrix_provider.get_matrix_container(label, index).clp_labels
+                )
                 clp = self.retrieve_clps(
                     clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index
                 )
@@ -192,7 +196,7 @@ class EstimationProviderLinked(EstimationProvider):
 
     def estimate(self):
         for index, global_index in enumerate(self._data_provider.aligned_global_axis):
-            matrix_container = self._matrix_provider.get_aligned_matrix(index)
+            matrix_container = self._matrix_provider.get_aligned_matrix_container(index)
             data = self._data_provider.get_aligned_data(index)
             reduced_clps, residual = self.calculate_residual(matrix_container.matrix, data)
             self._clps[index] = self.retrieve_clps(
@@ -223,7 +227,9 @@ class EstimationProviderLinked(EstimationProvider):
                 if dataset_label not in group_label:
                     continue
 
-                clp_labels = self._matrix_provider.get_matrix(dataset_label, index).clp_labels
+                clp_labels = self._matrix_provider.get_matrix_container(
+                    dataset_label, index
+                ).clp_labels
 
                 clps[dataset_label].append(
                     [

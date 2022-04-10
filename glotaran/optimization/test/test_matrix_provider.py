@@ -4,8 +4,7 @@ import xarray as xr
 
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
-from glotaran.optimization.matrix_provider import MatrixProviderLinkedIndexDependent
-from glotaran.optimization.matrix_provider import MatrixProviderLinkedIndexIndependent
+from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
@@ -79,7 +78,7 @@ def test_matrix_provider_linked_index_independent(scheme: Scheme):
     dataset_group = scheme.model.get_dataset_groups()["default"]
     dataset_group.set_parameters(scheme.parameters)
     data_provider = DataProviderLinked(scheme, dataset_group)
-    matrix_provider = MatrixProviderLinkedIndexIndependent(dataset_group, data_provider)
+    matrix_provider = MatrixProviderLinked(dataset_group, data_provider)
     matrix_provider.calculate()
     clp_labels, matrices = matrix_provider.get_result()
 
@@ -96,17 +95,23 @@ def test_matrix_provider_linked_index_independent(scheme: Scheme):
     assert "dataset2" in matrices
     assert matrices["dataset2"].shape == (dataset2_size, 2)
 
-    assert matrix_provider.get_aligned_matrix(0).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(1).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(2).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(3).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(4).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(0).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(1).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(2).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(3).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(4).clp_labels == ["s1", "s2"]
 
-    assert matrix_provider.get_aligned_matrix(0).matrix.shape == (dataset1_size + dataset2_size, 2)
-    assert matrix_provider.get_aligned_matrix(1).matrix.shape == (dataset2_size, 2)
-    assert matrix_provider.get_aligned_matrix(2).matrix.shape == (dataset1_size, 2)
-    assert matrix_provider.get_aligned_matrix(3).matrix.shape == (dataset1_size + dataset2_size, 2)
-    assert matrix_provider.get_aligned_matrix(4).matrix.shape == (dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix_container(0).matrix.shape == (
+        dataset1_size + dataset2_size,
+        2,
+    )
+    assert matrix_provider.get_aligned_matrix_container(1).matrix.shape == (dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix_container(2).matrix.shape == (dataset1_size, 2)
+    assert matrix_provider.get_aligned_matrix_container(3).matrix.shape == (
+        dataset1_size + dataset2_size,
+        2,
+    )
+    assert matrix_provider.get_aligned_matrix_container(4).matrix.shape == (dataset2_size, 2)
 
 
 def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
@@ -146,7 +151,7 @@ def test_matrix_provider_linked_index_dependent(scheme: Scheme):
     dataset_group = scheme.model.get_dataset_groups()["default"]
     dataset_group.set_parameters(scheme.parameters)
     data_provider = DataProviderLinked(scheme, dataset_group)
-    matrix_provider = MatrixProviderLinkedIndexDependent(dataset_group, data_provider)
+    matrix_provider = MatrixProviderLinked(dataset_group, data_provider)
     matrix_provider.calculate()
     clp_labels, matrices = matrix_provider.get_result()
 
@@ -175,14 +180,20 @@ def test_matrix_provider_linked_index_dependent(scheme: Scheme):
         matrices["dataset2"][i].shape == (scheme.data["dataset2"].model.size, 2)
         for i in range(scheme.data["dataset2"].coords["global"].size)
     )
-    assert matrix_provider.get_aligned_matrix(0).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(1).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(2).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(3).clp_labels == ["s1", "s2"]
-    assert matrix_provider.get_aligned_matrix(4).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(0).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(1).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(2).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(3).clp_labels == ["s1", "s2"]
+    assert matrix_provider.get_aligned_matrix_container(4).clp_labels == ["s1", "s2"]
 
-    assert matrix_provider.get_aligned_matrix(0).matrix.shape == (dataset1_size + dataset2_size, 2)
-    assert matrix_provider.get_aligned_matrix(1).matrix.shape == (dataset2_size, 2)
-    assert matrix_provider.get_aligned_matrix(2).matrix.shape == (dataset1_size, 2)
-    assert matrix_provider.get_aligned_matrix(3).matrix.shape == (dataset1_size + dataset2_size, 2)
-    assert matrix_provider.get_aligned_matrix(4).matrix.shape == (dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix_container(0).matrix.shape == (
+        dataset1_size + dataset2_size,
+        2,
+    )
+    assert matrix_provider.get_aligned_matrix_container(1).matrix.shape == (dataset2_size, 2)
+    assert matrix_provider.get_aligned_matrix_container(2).matrix.shape == (dataset1_size, 2)
+    assert matrix_provider.get_aligned_matrix_container(3).matrix.shape == (
+        dataset1_size + dataset2_size,
+        2,
+    )
+    assert matrix_provider.get_aligned_matrix_container(4).matrix.shape == (dataset2_size, 2)
