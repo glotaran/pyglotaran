@@ -169,6 +169,12 @@ class MatrixProviderUnlinked(MatrixProvider):
         self._reduced_matrices = {}
         self._global_reduced_matrices = {}
 
+    def get_matrix(self, dataset_label: str, index: int) -> MatrixContainer:
+        matrix_container = self._matrices[dataset_label]
+        if self.group.dataset_models[dataset_label].is_index_dependent():
+            matrix_container = matrix_container[index]
+        return matrix_container
+
     def get_reduced_matrix(self, dataset_label: str, index: int) -> MatrixContainer:
         return self._reduced_matrices[dataset_label][index]
 
