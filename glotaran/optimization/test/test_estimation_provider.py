@@ -3,7 +3,10 @@ import pytest
 import xarray as xr
 
 from glotaran.optimization.data_provider import DataProvider
+from glotaran.optimization.data_provider import DataProviderLinked
+from glotaran.optimization.estimation_provider import EstimationProviderLinked
 from glotaran.optimization.estimation_provider import EstimationProviderUnlinked
+from glotaran.optimization.matrix_provider import MatrixProviderLinkedIndexIndependent
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
@@ -60,6 +63,45 @@ def test_estimation_provider_unlinked(scheme: Scheme):
     data_provider = DataProvider(scheme, dataset_group)
     matrix_provider = MatrixProviderUnlinked(dataset_group, data_provider)
     estimation_provider = EstimationProviderUnlinked(dataset_group, data_provider, matrix_provider)
+    matrix_provider.calculate()
+    estimation_provider.estimate()
+
+    full_penalty = estimation_provider.get_full_penalty()
+    clp, residual = estimation_provider.get_result()
+
+    dataset1_global_size = scheme.data["dataset1"].coords["global"].size
+    dataset1_model_size = scheme.data["dataset1"].coords["model"].size
+    dataset2_global_size = scheme.data["dataset2"].coords["global"].size
+    dataset2_model_size = scheme.data["dataset2"].coords["model"].size
+
+    assert (
+        full_penalty.size
+        == dataset1_global_size * dataset1_model_size + dataset2_global_size * dataset2_model_size
+    )
+
+    assert "dataset1" in clp
+    assert len(clp["dataset1"]) == dataset1_global_size
+    assert all(len(c) == 2 for c in clp["dataset1"])
+
+    assert "dataset1" in residual
+    assert len(residual["dataset1"]) == dataset1_global_size
+    assert all(len(r) == dataset1_model_size for r in residual["dataset1"])
+
+    assert "dataset2" in clp
+    assert len(clp["dataset2"]) == dataset2_global_size
+    assert all(len(c) == 2 for c in clp["dataset2"])
+
+    assert "dataset2" in residual
+    assert len(residual["dataset2"]) == dataset2_global_size
+    assert all(len(r) == dataset2_model_size for r in residual["dataset2"])
+
+
+def test_estimation_provider_linked(scheme: Scheme):
+    dataset_group = scheme.model.get_dataset_groups()["default"]
+    dataset_group.set_parameters(scheme.parameters)
+    data_provider = DataProviderLinked(scheme, dataset_group)
+    matrix_provider = MatrixProviderLinkedIndexIndependent(dataset_group, data_provider)
+    estimation_provider = EstimationProviderLinked(dataset_group, data_provider, matrix_provider)
     matrix_provider.calculate()
     estimation_provider.estimate()
 
