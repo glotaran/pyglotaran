@@ -10,6 +10,11 @@ from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
 
+residual_functions = {
+    "variable_projection": residual_variable_projection,
+    "non_negative_least_squares": residual_nnls,
+}
+
 
 class EstimationProvider:
     def __init__(self, group: DatasetGroup):
@@ -19,6 +24,13 @@ class EstimationProvider:
             if group.residual_function == "variable_projection"
             else residual_nnls
         )
+        try:
+            self._residual_function = residual_functions[group.residual_function]
+        except KeyError as e:
+            raise ValueError(
+                f"Unknown residual function '{group.residual_function}', "
+                f"allowed functions are: {list(residual_functions.keys())}."
+            ) from e
 
     @property
     def group(self) -> DatasetGroup:
