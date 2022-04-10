@@ -4,6 +4,8 @@ import numpy as np
 
 from glotaran.model import DatasetGroup
 from glotaran.optimization.data_provider import DataProvider
+from glotaran.optimization.data_provider import DataProviderLinked
+from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
@@ -165,8 +167,6 @@ class EstimationProviderUnlinked(EstimationProvider):
             )
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
-        print(self._residuals["dataset1"])
-        print(np.concatenate(list(np.concatenate(r) for r in self._residuals.values())))
         full_residual = np.concatenate(list(np.concatenate(r) for r in self._residuals.values()))
         return np.concatenate([full_residual, self._clp_penalty])
 
@@ -174,6 +174,75 @@ class EstimationProviderUnlinked(EstimationProvider):
         self,
     ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
         return self._clps, self._residuals
+
+
+class EstimationProviderLinked(EstimationProvider):
+    def __init__(
+        self,
+        group: DatasetGroup,
+        data_provider: DataProviderLinked,
+        matrix_provider: MatrixProviderLinked,
+    ):
+        super().__init__(group)
+        self._data_provider = data_provider
+        self._matrix_provider = matrix_provider
+        self._clps = [None] * self._data_provider.aligned_global_axis.size
+        self._residuals = [None] * self._data_provider.aligned_global_axis.size
+        self._clp_penalty = []
+
+    def estimate(self):
+        for index, global_index in enumerate(self._data_provider.aligned_global_axis):
+            matrix_container = self._matrix_provider.get_aligned_matrix(index)
+            data = self._data_provider.get_aligned_data(index)
+            reduced_clps, residual = self.calculate_residual(matrix_container.matrix, data)
+            self._clps[index] = self.retrieve_clps(
+                self._matrix_provider.aligned_full_clp_labels[index],
+                matrix_container.clp_labels,
+                reduced_clps,
+                global_index,
+            )
+            self._residuals[index] = residual
+
+        self._clp_penalty = self.calculate_clp_penalties(
+            self._matrix_provider.aligned_full_clp_labels,
+            self._clps,
+            self._data_provider.aligned_global_axis,
+        )
+
+    def get_full_penalty(self) -> np.typing.ArrayLike:
+        return np.concatenate((np.concatenate(self._residuals), self._clp_penalty))
+
+    def get_result(
+        self,
+    ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
+        clps = {label: [] for label in self.group.dataset_models}
+        residuals = {label: [] for label in self.group.dataset_models}
+        for dataset_label in self.group.dataset_models:
+            for index in range(self._data_provider.aligned_global_axis.size):
+                group_label = self._data_provider.get_aligned_group_label(index)
+                if dataset_label not in group_label:
+                    continue
+
+                clp_labels = self._matrix_provider.get_matrix(dataset_label, index).clp_labels
+
+                clps[dataset_label].append(
+                    [
+                        self._clps[index][
+                            self._matrix_provider.aligned_full_clp_labels[index].index(label)
+                        ]
+                        for label in clp_labels
+                    ]
+                )
+
+                group_datasets = self._data_provider.group_definitions[group_label]
+                dataset_index = group_datasets.index(dataset_label)
+                start = sum(
+                    self._data_provider.get_model_axis(label).size
+                    for label in group_datasets[:dataset_index]
+                )
+                end = start + self._data_provider.get_model_axis(dataset_label).size
+                residuals[dataset_label].append(self._residuals[index][start:end])
+        return clps, residuals
 
 
 def _get_area(
