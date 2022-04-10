@@ -6,7 +6,7 @@ from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.estimation_provider import EstimationProviderLinked
 from glotaran.optimization.estimation_provider import EstimationProviderUnlinked
-from glotaran.optimization.matrix_provider import MatrixProviderLinkedIndexIndependent
+from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.parameter import ParameterGroup
@@ -100,7 +100,7 @@ def test_estimation_provider_linked(scheme: Scheme):
     dataset_group = scheme.model.get_dataset_groups()["default"]
     dataset_group.set_parameters(scheme.parameters)
     data_provider = DataProviderLinked(scheme, dataset_group)
-    matrix_provider = MatrixProviderLinkedIndexIndependent(dataset_group, data_provider)
+    matrix_provider = MatrixProviderLinked(dataset_group, data_provider)
     estimation_provider = EstimationProviderLinked(dataset_group, data_provider, matrix_provider)
     matrix_provider.calculate()
     estimation_provider.estimate()
