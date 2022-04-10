@@ -240,7 +240,14 @@ class MatrixProviderLinked(MatrixProvider):
     def __init__(self, group: DatasetGroup, data_provider: DataProviderLinked):
         super().__init__(group)
         self._data_provider = data_provider
+        self._aligned_full_clp_labels = [None] * self.data_provider.aligned_global_axis.size
         self._aligned_matrices = [None] * self.data_provider.aligned_global_axis.size
+
+    def get_matrix(self, dataset_label: str, index: int) -> MatrixContainer:
+        matrix_container = self._matrices[dataset_label]
+        if self.group.dataset_models[dataset_label].is_index_dependent():
+            matrix_container = matrix_container[index]
+        return matrix_container
 
     @property
     def data_provider(self) -> DataProviderLinked:
@@ -279,6 +286,10 @@ class MatrixProviderLinked(MatrixProvider):
 
         return MatrixContainer(full_clp_labels, full_matrix)
 
+    @property
+    def aligned_full_clp_labels(self) -> list[list[str]]:
+        return self._aligned_full_clp_labels
+
     def get_aligned_matrix(self, index: int) -> MatrixContainer:
         return self._aligned_matrices[index]
 
@@ -308,6 +319,7 @@ class MatrixProviderLinkedIndexIndependent(MatrixProviderLinked):
 
         for i, global_index in enumerate(self.data_provider.aligned_global_axis):
             group_matrix = grouped_matrices[self.data_provider.get_aligned_group_label(i)]
+            self._aligned_full_clp_labels[i] = group_matrix.clp_labels
             group_matrix = self.reduce_matrix(group_matrix, global_index)
             weight = self.data_provider.get_aligned_weight(i)
             if weight is not None:
@@ -367,6 +379,7 @@ class MatrixProviderLinkedIndexDependent(MatrixProviderLinked):
                 ]
             )
 
+            self._aligned_full_clp_labels[i] = group_matrix.clp_labels
             group_matrix = self.reduce_matrix(group_matrix, global_index)
             weight = self.data_provider.get_aligned_weight(i)
             if weight is not None:
