@@ -67,7 +67,7 @@ class MatrixProvider:
     @staticmethod
     def calculate_dataset_matrix(
         dataset_model: DatasetModel,
-        global_index: int,
+        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         as_global_model: bool = False,
