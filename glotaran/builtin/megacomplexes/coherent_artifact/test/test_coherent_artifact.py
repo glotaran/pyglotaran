@@ -5,8 +5,8 @@ import xarray as xr
 from glotaran.builtin.megacomplexes.coherent_artifact import CoherentArtifactMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.model import Model
+from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.optimize import optimize
-from glotaran.optimization.util import calculate_matrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
@@ -86,12 +86,9 @@ def test_coherent_artifact(spectral_dependence: str):
 
     time = np.arange(0, 50, 1.5)
     spectral = np.asarray([200, 300, 400])
-    coords = {"time": time, "spectral": spectral}
 
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
-    dataset_model.overwrite_global_dimension("spectral")
-    dataset_model.set_coordinates(coords)
-    matrix = calculate_matrix(dataset_model, {"spectral": 1})
+    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, None, spectral, time)
     compartments = matrix.clp_labels
 
     print(compartments)

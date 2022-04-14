@@ -13,7 +13,9 @@ class ClpGuideMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
         clp_label = [self.target]
