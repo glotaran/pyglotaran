@@ -80,10 +80,14 @@ class DecayMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
-        return calculate_matrix(self, dataset_model, indices, **kwargs)
+        return calculate_matrix(
+            self, dataset_model, global_index, global_axis, model_axis, **kwargs
+        )
 
     def finalize_data(
         self,

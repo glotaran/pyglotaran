@@ -32,7 +32,9 @@ class CoherentArtifactMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
         if not 1 <= self.order <= 3:
@@ -43,11 +45,6 @@ class CoherentArtifactMegacomplex(Megacomplex):
 
         if not isinstance(dataset_model.irf, IrfMultiGaussian):
             raise ModelError(f'Irf in dataset "{dataset_model.label} is not a gaussian irf."')
-
-        global_dimension = dataset_model.get_global_dimension()
-        global_index = indices.get(global_dimension)
-        global_axis = dataset_model.get_global_axis()
-        model_axis = dataset_model.get_model_axis()
 
         irf = dataset_model.irf
 
