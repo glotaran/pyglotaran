@@ -13,7 +13,7 @@ def test_simulate_dataset(index_dependent, noise):
         {
             "megacomplex": {
                 "m1": {"is_index_dependent": index_dependent},
-                "m2": {"type": "global_complex"},
+                "m2": {"is_index_dependent": False},
             },
             "dataset": {
                 "dataset1": {
