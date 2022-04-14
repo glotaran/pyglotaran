@@ -27,7 +27,9 @@ class SpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
 
@@ -37,7 +39,6 @@ class SpectralMegacomplex(Megacomplex):
                 raise ModelError(f"More then one shape defined for compartment '{compartment}'")
             compartments.append(compartment)
 
-        model_axis = dataset_model.get_model_axis()
         if dataset_model.spectral_axis_inverted:
             model_axis = dataset_model.spectral_axis_scale / model_axis
         elif dataset_model.spectral_axis_scale != 1:

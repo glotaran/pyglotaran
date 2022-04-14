@@ -47,7 +47,9 @@ class DampedOscillationMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
 
@@ -55,7 +57,6 @@ class DampedOscillationMegacomplex(Megacomplex):
             f"{label}_sin" for label in self.labels
         ]
 
-        model_axis = dataset_model.get_model_axis()
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
         # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
@@ -72,9 +73,6 @@ class DampedOscillationMegacomplex(Megacomplex):
         if dataset_model.irf is None:
             calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, model_axis)
         elif isinstance(dataset_model.irf, IrfMultiGaussian):
-            global_dimension = dataset_model.get_global_dimension()
-            global_axis = dataset_model.get_global_axis()
-            global_index = indices.get(global_dimension)
             centers, widths, scales, shift, _, _ = dataset_model.irf.parameter(
                 global_index, global_axis
             )

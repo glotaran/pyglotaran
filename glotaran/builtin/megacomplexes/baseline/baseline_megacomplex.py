@@ -13,10 +13,11 @@ class BaselineMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
-        model_axis = dataset_model.get_model_axis()
         clp_label = [f"{dataset_model.label}_baseline"]
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return clp_label, matrix
