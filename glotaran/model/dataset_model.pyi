@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Generator
+from collections.abc import Hashable
 from typing import Any
-from typing import Generator
-from typing import Hashable
 
 import numpy as np
 import xarray as xr
