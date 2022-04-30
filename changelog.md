@@ -21,6 +21,7 @@
 - 👌🧹 Add suffix to rate and lifetime and guard for missing datasets (#1022)
 - ♻️ Move simulation to own module (#1041)
 - ♻️ Move optimization to new module glotaran.optimization (#1047)
+- 🩹 Fix missing installation of clp-guide megacomplex as plugin (#1066)
 
 ### 🩹 Bug fixes
 
