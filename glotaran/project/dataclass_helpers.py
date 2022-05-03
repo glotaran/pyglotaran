@@ -225,7 +225,7 @@ def fromdict(dataclass_type: type, dataclass_dict: dict[str, Any], folder: Path 
             file_path = dataclass_dict.get(field_item.name)
             dataclass_dict[field_item.name] = field_item.metadata["file_loader"](file_path, folder)
         elif is_dataclass(field_item.default) and field_item.name in dataclass_dict:
-            dataclass_dict[field_item.name] = type(field_item.default)(
+            dataclass_dict[field_item.name] = type(field_item.default)(  # type:ignore[misc]
                 **dataclass_dict[field_item.name]
             )
 
