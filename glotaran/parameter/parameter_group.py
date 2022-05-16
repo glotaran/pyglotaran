@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from copy import copy
 from textwrap import indent
 from typing import TYPE_CHECKING
@@ -132,10 +133,8 @@ class ParameterGroup(dict):
 
         for i, item in enumerate(parameter_list):
             if isinstance(item, (str, int, float)):
-                try:
+                with contextlib.suppress(ValueError):
                     item = float(item)
-                except Exception:
-                    pass
             if isinstance(item, (float, int, list)):
                 root.add_parameter(
                     Parameter.from_list_or_value(item, label=str(i + 1), default_options=defaults)
@@ -444,14 +443,14 @@ class ParameterGroup(dict):
         for element in path:
             try:
                 group = group[element]
-            except KeyError:
-                raise ParameterNotFoundException(path, label)
+            except KeyError as e:
+                raise ParameterNotFoundException(path, label) from e
         try:
             parameter = group._parameters[label]
             parameter.full_label = full_label
             return parameter
-        except KeyError:
-            raise ParameterNotFoundException(path, label)
+        except KeyError as e:
+            raise ParameterNotFoundException(path, label) from e
 
     def copy(self) -> ParameterGroup:
         """Create a copy of the :class:`ParameterGroup`.

@@ -291,8 +291,8 @@ class Model:
             if group not in groups:
                 try:
                     groups[group] = DatasetGroup(model=self.dataset_group_models[group])
-                except KeyError:
-                    raise ValueError(f"Unknown dataset group '{group}'")
+                except KeyError as e:
+                    raise ValueError(f"Unknown dataset group '{group}'") from e
             groups[group].dataset_models[dataset_model.label] = dataset_model
         return groups
 
@@ -367,7 +367,7 @@ class Model:
         }
         return len(global_dimensions) == 1 and len(model_dimensions) == 1
 
-    def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
+    def problem_list(self, parameters: ParameterGroup | None = None) -> list[str]:
         """
         Returns a list with all problems in the model and missing parameters if specified.
 
