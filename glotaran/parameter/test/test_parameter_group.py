@@ -342,3 +342,27 @@ def test_parameter_group_to_from_df():
         assert got.non_negative == wanted.non_negative
         assert got.value == wanted.value
         assert got.vary == wanted.vary
+
+
+def test_missing_parameter_value_labels():
+    """Full labels of all parameters with missing values (NaN) get listed."""
+    parameter_group = load_parameters(
+        dedent(
+            """\
+            b:
+                - ["missing_value_1",]
+                - ["missing_value_2"]
+                - ["2", 0.75]
+            kinetic:
+                j:
+                    - ["missing_value_3"]
+            """
+        ),
+        format_name="yml_str",
+    )
+
+    assert parameter_group.missing_parameter_value_labels == [
+        "b.missing_value_1",
+        "b.missing_value_2",
+        "kinetic.j.missing_value_3",
+    ]

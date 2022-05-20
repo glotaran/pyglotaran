@@ -585,6 +585,21 @@ class ParameterGroup(dict):
                     )
                 parameter.value = value
 
+    @property
+    def missing_parameter_value_labels(self) -> list[str]:
+        """List of full labels where the value is a NaN.
+
+        This property is used to validate that all parameters have starting values.
+
+        Returns
+        -------
+        str
+            List full labels with missing value.
+        """
+        parameter_df = self.to_dataframe(as_optimized=False)
+        parameter_nan_value_mask = parameter_df["value"].isna()
+        return parameter_df[parameter_nan_value_mask]["label"].to_list()
+
     def markdown(self, float_format: str = ".3e") -> MarkdownStr:
         """Format the :class:`ParameterGroup` as markdown string.
 
