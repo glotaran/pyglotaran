@@ -10,6 +10,7 @@ import pytest
 import xarray as xr
 from IPython.core.formatters import format_display_data
 
+from glotaran.io import load_parameters
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
@@ -335,6 +336,58 @@ def test_model_validity(test_model: Model, model_error: Model, parameter: Parame
     assert len(model_error.problem_list()) == 6
     assert not model_error.valid(parameter)
     assert len(model_error.problem_list(parameter)) == 10
+
+
+def test_model_validate_missing_parameters():
+    """Show list of missing parameters as a problem."""
+
+    model_dict = {
+        "default_megacomplex": "decay-sequential",
+        "megacomplex": {
+            "megacomplex_sequential_decay": {
+                "type": "decay-sequential",
+                "compartments": ["species_1", "species_2", "species_3", "species_4"],
+                "rates": [
+                    "b.missing_value_1",
+                    "b.missing_value_2",
+                    "b.2",
+                    "kinetic.j.missing_value_3",
+                ],
+                "dimension": "time",
+            }
+        },
+        "dataset": {
+            "dataset_1": {
+                "group": "default",
+                "megacomplex": ["megacomplex_sequential_decay"],
+            }
+        },
+    }
+    model = Model.from_dict(model_dict)
+    parameters = load_parameters(
+        dedent(
+            """\
+            b:
+                - ["missing_value_1",]
+                - ["missing_value_2"]
+                - ["2", 0.75]
+            kinetic:
+                j:
+                    - ["missing_value_3"]
+            """
+        ),
+        format_name="yml_str",
+    )
+    expected = dedent(
+        """\
+            Your model has 1 problems:
+
+             * Parameter definition is missing values for the labels:
+                - b.missing_value_1
+                - b.missing_value_2
+                - kinetic.j.missing_value_3"""
+    )
+    assert model.validate(parameters) == expected
 
 
 def test_items(test_model: Model):
