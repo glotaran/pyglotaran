@@ -380,14 +380,14 @@ def test_model_validate_missing_parameters():
     )
     expected = dedent(
         """\
-            Your model has 1 problems:
+            Your model has 1 problem:
 
              * Parameter definition is missing values for the labels:
                 - b.missing_value_1
                 - b.missing_value_2
                 - kinetic.j.missing_value_3"""
     )
-    assert model.validate(parameters) == expected
+    assert str(model.validate(parameters)) == expected
 
 
 def test_items(test_model: Model):

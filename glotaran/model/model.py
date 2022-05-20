@@ -397,7 +397,9 @@ class Model:
 
         return problems
 
-    def validate(self, parameters: ParameterGroup = None, raise_exception: bool = False) -> str:
+    def validate(
+        self, parameters: ParameterGroup = None, raise_exception: bool = False
+    ) -> MarkdownStr:
         """
         Returns a string listing all problems in the model and missing parameters if specified.
 
@@ -410,14 +412,14 @@ class Model:
         result = ""
 
         if problems := self.problem_list(parameters):
-            result = f"Your model has {len(problems)} problems:\n"
+            result = f"Your model has {len(problems)} problem{'s' if len(problems) > 1 else ''}:\n"
             for p in problems:
                 result += f"\n * {p}"
             if raise_exception:
                 raise ModelError(result)
         else:
             result = "Your model is valid."
-        return result
+        return MarkdownStr(result)
 
     def valid(self, parameters: ParameterGroup = None) -> bool:
         """Returns `True` if the number problems in the model is 0, else `False`

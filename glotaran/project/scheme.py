@@ -119,12 +119,12 @@ class Scheme:
         """
         return self.model.problem_list(self.parameters)
 
-    def validate(self) -> str:
+    def validate(self) -> MarkdownStr:
         """Return a string listing all problems in the model and missing parameters.
 
         Returns
         -------
-        str
+        MarkdownStr
             A user-friendly string containing all the problems of a model if any.
             Defaults to 'Your model is valid.' if no problems are found.
         """
