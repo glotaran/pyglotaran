@@ -173,7 +173,7 @@ class Parameter(_SupportsArray):
         else:
             values = sanitize_parameter_list(value)
             param.label = _retrieve_item_from_list_by_type(values, str, label)
-            param.value = float(_retrieve_item_from_list_by_type(values, (int, float), 0))
+            param.value = float(_retrieve_item_from_list_by_type(values, (int, float), np.nan))
             options = _retrieve_item_from_list_by_type(values, dict, None)
 
         if default_options:

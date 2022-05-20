@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from copy import copy
 from textwrap import indent
 from typing import TYPE_CHECKING
@@ -132,10 +133,8 @@ class ParameterGroup(dict):
 
         for i, item in enumerate(parameter_list):
             if isinstance(item, (str, int, float)):
-                try:
+                with contextlib.suppress(ValueError):
                     item = float(item)
-                except Exception:
-                    pass
             if isinstance(item, (float, int, list)):
                 root.add_parameter(
                     Parameter.from_list_or_value(item, label=str(i + 1), default_options=defaults)
@@ -444,14 +443,14 @@ class ParameterGroup(dict):
         for element in path:
             try:
                 group = group[element]
-            except KeyError:
-                raise ParameterNotFoundException(path, label)
+            except KeyError as e:
+                raise ParameterNotFoundException(path, label) from e
         try:
             parameter = group._parameters[label]
             parameter.full_label = full_label
             return parameter
-        except KeyError:
-            raise ParameterNotFoundException(path, label)
+        except KeyError as e:
+            raise ParameterNotFoundException(path, label) from e
 
     def copy(self) -> ParameterGroup:
         """Create a copy of the :class:`ParameterGroup`.
@@ -491,6 +490,7 @@ class ParameterGroup(dict):
         """
         root = f"{root}{self.label}{separator}" if root is not None else ""
         for label, p in self._parameters.items():
+            p.full_label = f"{root}{label}"
             yield (f"{root}{label}", p)
         for _, l in self.items():
             yield from l.all(root=root, separator=separator)
@@ -584,6 +584,21 @@ class ParameterGroup(dict):
                         f"non numeric value '{value}'."
                     )
                 parameter.value = value
+
+    @property
+    def missing_parameter_value_labels(self) -> list[str]:
+        """List of full labels where the value is a NaN.
+
+        This property is used to validate that all parameters have starting values.
+
+        Returns
+        -------
+        str
+            List full labels with missing value.
+        """
+        parameter_df = self.to_dataframe(as_optimized=False)
+        parameter_nan_value_mask = parameter_df["value"].isna()
+        return parameter_df[parameter_nan_value_mask]["label"].to_list()
 
     def markdown(self, float_format: str = ".3e") -> MarkdownStr:
         """Format the :class:`ParameterGroup` as markdown string.

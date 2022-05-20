@@ -291,8 +291,8 @@ class Model:
             if group not in groups:
                 try:
                     groups[group] = DatasetGroup(model=self.dataset_group_models[group])
-                except KeyError:
-                    raise ValueError(f"Unknown dataset group '{group}'")
+                except KeyError as e:
+                    raise ValueError(f"Unknown dataset group '{group}'") from e
             groups[group].dataset_models[dataset_model.label] = dataset_model
         return groups
 
@@ -367,7 +367,7 @@ class Model:
         }
         return len(global_dimensions) == 1 and len(model_dimensions) == 1
 
-    def problem_list(self, parameters: ParameterGroup = None) -> list[str]:
+    def problem_list(self, parameters: ParameterGroup | None = None) -> list[str]:
         """
         Returns a list with all problems in the model and missing parameters if specified.
 
@@ -388,9 +388,18 @@ class Model:
                 for item in items.values():
                     problems += item.validate(self, parameters=parameters)
 
+        if parameters is not None and len(parameters.missing_parameter_value_labels) != 0:
+            label_prefix = "\n    - "
+            problems.append(
+                f"Parameter definition is missing values for the labels:"
+                f"{label_prefix}{label_prefix.join(parameters.missing_parameter_value_labels)}"
+            )
+
         return problems
 
-    def validate(self, parameters: ParameterGroup = None, raise_exception: bool = False) -> str:
+    def validate(
+        self, parameters: ParameterGroup = None, raise_exception: bool = False
+    ) -> MarkdownStr:
         """
         Returns a string listing all problems in the model and missing parameters if specified.
 
@@ -403,14 +412,14 @@ class Model:
         result = ""
 
         if problems := self.problem_list(parameters):
-            result = f"Your model has {len(problems)} problems:\n"
+            result = f"Your model has {len(problems)} problem{'s' if len(problems) > 1 else ''}:\n"
             for p in problems:
                 result += f"\n * {p}"
             if raise_exception:
                 raise ModelError(result)
         else:
             result = "Your model is valid."
-        return result
+        return MarkdownStr(result)
 
     def valid(self, parameters: ParameterGroup = None) -> bool:
         """Returns `True` if the number problems in the model is 0, else `False`
