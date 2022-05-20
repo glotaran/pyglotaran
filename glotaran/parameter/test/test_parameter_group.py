@@ -93,6 +93,9 @@ def test_parameter_group_from_dict_nested():
 
     assert params.get("kinetic.j.1").full_label == "kinetic.j.1"
 
+    roundtrip_df = ParameterGroup.from_dataframe(params.to_dataframe()).to_dataframe()
+    assert all(roundtrip_df.label == params.to_dataframe().label)
+
 
 def test_parameter_group_to_array():
     params = """

@@ -490,6 +490,7 @@ class ParameterGroup(dict):
         """
         root = f"{root}{self.label}{separator}" if root is not None else ""
         for label, p in self._parameters.items():
+            p.full_label = f"{root}{label}"
             yield (f"{root}{label}", p)
         for _, l in self.items():
             yield from l.all(root=root, separator=separator)
