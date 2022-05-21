@@ -4,7 +4,7 @@ import pytest
 
 from glotaran.model import Relation
 from glotaran.optimization.optimization_group import OptimizationGroup
-from glotaran.optimization.test.models import TwoCompartmentDecay as suite
+from glotaran.optimization.test.suites import TwoCompartmentDecay as suite
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
@@ -21,7 +21,7 @@ def test_relations(index_dependent, link_clp):
     )
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
-    print("link_clp", link_clp, "index_dependent", index_dependent)
+    print("link_clp", link_clp, "index_dependent", index_dependent)  # noqa T201
     dataset = simulate(
         suite.sim_model,
         "dataset1",
@@ -46,7 +46,7 @@ def test_relations(index_dependent, link_clp):
     )
 
     result_data = optimization_group.create_result_data()
-    print(result_data)
+    print(result_data)  # noqa T201
     clps = result_data["dataset1"].clp
 
     assert "s2" not in reduced_matrix.clp_labels

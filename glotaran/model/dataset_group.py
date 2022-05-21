@@ -42,5 +42,5 @@ class DatasetGroup:
 
     def set_parameters(self, parameters: ParameterGroup):
         self.parameters = parameters
-        for label, dataset_model in self.dataset_models.items():
-            self.dataset_models[label] = dataset_model.fill(self.model, parameters)
+        for label in self.dataset_models:
+            self.dataset_models[label] = self.model.dataset[label].fill(self.model, parameters)

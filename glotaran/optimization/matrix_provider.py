@@ -31,6 +31,9 @@ class MatrixContainer:
     def create_weighted_matrix(self, weight: np.typing.ArrayLike) -> MatrixContainer:
         return replace(self, matrix=self._create_weighted_matrix(self.matrix, weight))
 
+    def create_scaled_matrix(self, scale: float) -> MatrixContainer:
+        return replace(self, matrix=self.matrix * scale)
+
 
 class MatrixProvider:
     def __init__(self, group: DatasetGroup):
@@ -209,18 +212,22 @@ class MatrixProviderUnlinked(MatrixProvider):
 
     def create_prepared_matrices(self):
         for label, dataset_model in self.group.dataset_models.items():
+            scale = dataset_model.scale or 1
             weight = self._data_provider.get_weight(label)
             if dataset_model.is_index_dependent():
                 self._prepared_matrix_container[label] = [
-                    self.reduce_matrix(self.get_matrix_container(label, i), global_index)
+                    self.reduce_matrix(
+                        self.get_matrix_container(label, i).create_scaled_matrix(scale),
+                        global_index,
+                    )
                     for i, global_index in enumerate(self._data_provider.get_global_axis(label))
                 ]
             else:
                 self._prepared_matrix_container[label] = [
-                    self.reduce_matrix(self.get_matrix_container(label, 0), None)
+                    self.reduce_matrix(
+                        self.get_matrix_container(label, 0).create_scaled_matrix(scale), None
+                    )
                 ] * self._data_provider.get_global_axis(label).size
-            if dataset_model.scale is not None:
-                self._prepared_matrix_container[label] *= dataset_model.scale
             if weight is not None:
                 self._prepared_matrix_container[label] = [
                     matrix.create_weighted_matrix(weight[:, i])
@@ -255,7 +262,9 @@ class MatrixProviderLinked(MatrixProvider):
                     )
                 ],
                 [
-                    self.group.dataset_models[label].scale | 1
+                    self.group.dataset_models[label].scale
+                    if self.group.dataset_models[label].scale is not None
+                    else 1
                     for label in self._data_provider.group_definitions[group_label]
                 ],
             )
