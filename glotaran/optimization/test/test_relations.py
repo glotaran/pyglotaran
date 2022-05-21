@@ -30,22 +30,16 @@ def test_relations(index_dependent, link_clp):
     )
     scheme = Scheme(model=model, parameters=parameters, data={"dataset1": dataset})
     optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
+    optimization_group.calculate(parameters)
 
-    if index_dependent:
-        reduced_matrix = (
-            optimization_group.reduced_matrices[0]
-            if link_clp
-            else optimization_group.reduced_matrices["dataset1"][0]
-        )
-    else:
-        reduced_matrix = optimization_group.reduced_matrices["dataset1"]
-    matrix = (
-        optimization_group.matrices["dataset1"][0]
-        if index_dependent
-        else optimization_group.matrices["dataset1"]
+    reduced_matrix = (
+        optimization_group._matrix_provider.get_aligned_matrix_container(0)
+        if link_clp
+        else optimization_group._matrix_provider.get_prepared_matrix_container("dataset1", 0)
     )
+    matrix = optimization_group._matrix_provider.get_matrix_container("dataset1", 0)
 
-    result_data = optimization_group.create_result_data()
+    result_data = optimization_group.create_result_data(parameters)
     print(result_data)  # noqa T201
     clps = result_data["dataset1"].clp
 
