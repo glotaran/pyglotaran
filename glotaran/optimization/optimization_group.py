@@ -34,7 +34,7 @@ class OptimizationGroup:
         self._add_svd = scheme.add_svd
         link_clp = dataset_group.link_clp
         if link_clp is None:
-            link_clp = scheme.model.is_groupable(scheme.parameters, scheme.data)
+            link_clp = dataset_group.is_linkable(scheme.parameters, scheme.data)
 
         if link_clp:
             self._data_provider = DataProviderLinked(scheme, dataset_group)

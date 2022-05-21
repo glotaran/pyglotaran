@@ -5,6 +5,8 @@ from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Literal
 
+import xarray as xr
+
 from glotaran.model.dataset_model import DatasetModel
 
 if TYPE_CHECKING:
@@ -44,3 +46,19 @@ class DatasetGroup:
         self.parameters = parameters
         for label in self.dataset_models:
             self.dataset_models[label] = self.model.dataset[label].fill(self.model, parameters)
+
+    def is_linkable(self, parameters: ParameterGroup, data: dict[str, xr.Dataset]) -> bool:
+        if any(d.has_global_model() for d in self.dataset_models.values()):
+            return False
+        dataset_models = [
+            self.model.dataset[label].fill(self.model, parameters) for label in self.dataset_models
+        ]
+        model_dimensions = {d.get_model_dimension() for d in dataset_models}
+        if len(model_dimensions) != 1:
+            return False
+        global_dimensions = []
+        for dataset in data.values():
+            global_dimensions += [
+                dim for dim in dataset.data.coords if dim not in model_dimensions
+            ]
+        return len(set(model_dimensions)) == 1
