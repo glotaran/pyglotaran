@@ -63,60 +63,26 @@ class OptimizationGroup:
 
         result_datasets = {label: data.copy() for label, data in self._data.items()}
 
-        clp_labels, matrices = self._matrix_provider.get_result()
+        matrices = self._matrix_provider.get_result()
         clps, residuals = self._estimation_provider.get_result()
 
         for label, dataset_model in self._dataset_group.dataset_models.items():
             result_dataset = result_datasets[label]
 
             model_dimension = self._data_provider.get_model_dimension(label)
-            model_axis = self._data_provider.get_model_axis(label)
             result_dataset.attrs["model_dimension"] = model_dimension
             global_dimension = self._data_provider.get_global_dimension(label)
-            global_axis = self._data_provider.get_global_axis(label)
             result_dataset.attrs["global_dimension"] = global_dimension
 
-            residual = xr.DataArray(
-                np.array(residuals[label]).T,
-                coords={global_dimension: global_axis, model_dimension: model_axis},
-                dims=[model_dimension, global_dimension],
-            )
-
+            residual = residuals[label]
             weight = self._data_provider.get_weight(label)
             if weight is not None:
                 result_dataset["weighted_residual"] = residual
                 residual = residual / weight
             result_dataset["residual"] = residual
 
-            if dataset_model.is_index_dependent():
-                matrix = xr.concat(
-                    [
-                        xr.DataArray(
-                            m, coords=((model_dimension, model_axis), ("clp_label", labels))
-                        )
-                        for labels, m in zip(clp_labels[label], matrices[label])
-                    ],
-                    dim=global_dimension,
-                )
-                #  matrix.coords[global_dimension] = global_axis
-                result_dataset["matrix"] = matrix
-                clp = xr.concat(
-                    [
-                        xr.DataArray(c, coords={"clp_label": labels})
-                        for labels, c in zip(clp_labels[label], clps[label])
-                    ],
-                    dim=global_dimension,
-                )
-                result_dataset["clp"] = clp
-            else:
-                result_dataset["matrix"] = xr.DataArray(
-                    matrices[label],
-                    coords=((model_dimension, model_axis), ("clp_label", clp_labels[label])),
-                )
-                result_dataset["clp"] = xr.DataArray(
-                    clps[label],
-                    coords=((global_dimension, global_axis), ("clp_label", clp_labels[label])),
-                )
+            result_dataset["matrix"] = matrices[label]
+            result_dataset["clp"] = clps[label]
 
             if self._add_svd:
                 self._create_svd("residual", result_dataset, model_dimension, global_dimension)
