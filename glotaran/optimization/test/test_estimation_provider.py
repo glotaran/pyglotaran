@@ -80,20 +80,16 @@ def test_estimation_provider_unlinked(scheme: Scheme):
     )
 
     assert "dataset1" in clp
-    assert len(clp["dataset1"]) == dataset1_global_size
-    assert all(len(c) == 2 for c in clp["dataset1"])
+    assert clp["dataset1"].shape == (dataset1_global_size, 2)
 
     assert "dataset1" in residual
-    assert len(residual["dataset1"]) == dataset1_global_size
-    assert all(len(r) == dataset1_model_size for r in residual["dataset1"])
+    assert residual["dataset1"].shape == scheme.data["dataset1"].data.shape
 
     assert "dataset2" in clp
-    assert len(clp["dataset2"]) == dataset2_global_size
-    assert all(len(c) == 2 for c in clp["dataset2"])
+    assert clp["dataset2"].shape == (dataset2_global_size, 2)
 
     assert "dataset2" in residual
-    assert len(residual["dataset2"]) == dataset2_global_size
-    assert all(len(r) == dataset2_model_size for r in residual["dataset2"])
+    assert residual["dataset2"].shape == scheme.data["dataset2"].data.T.shape
 
 
 def test_estimation_provider_linked(scheme: Scheme):
@@ -119,17 +115,13 @@ def test_estimation_provider_linked(scheme: Scheme):
     )
 
     assert "dataset1" in clp
-    assert len(clp["dataset1"]) == dataset1_global_size
-    assert all(len(c) == 2 for c in clp["dataset1"])
+    assert clp["dataset1"].shape == (dataset1_global_size, 2)
 
     assert "dataset1" in residual
-    assert len(residual["dataset1"]) == dataset1_global_size
-    assert all(len(r) == dataset1_model_size for r in residual["dataset1"])
+    assert residual["dataset1"].shape == scheme.data["dataset1"].data.shape
 
     assert "dataset2" in clp
-    assert len(clp["dataset2"]) == dataset2_global_size
-    assert all(len(c) == 2 for c in clp["dataset2"])
+    assert clp["dataset2"].shape == (dataset2_global_size, 2)
 
     assert "dataset2" in residual
-    assert len(residual["dataset2"]) == dataset2_global_size
-    assert all(len(r) == dataset2_model_size for r in residual["dataset2"])
+    assert residual["dataset2"].shape == scheme.data["dataset2"].data.T.shape
