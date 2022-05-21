@@ -44,7 +44,7 @@ class DataProvider:
                 self._data[label] *= self._weight[label]
 
             if dataset_model.has_global_model():
-                self._flattened_data[label] = self._data.T.flatten()
+                self._flattened_data[label] = self._data[label].T.flatten()
                 self._flattened_weight[label] = (
                     self._weight[label].T.flatten() if self._weight[label] is not None else None
                 )

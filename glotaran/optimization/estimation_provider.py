@@ -163,8 +163,17 @@ class EstimationProviderUnlinked(EstimationProvider):
                 self.calculate_estimation(label, dataset_model)
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
-        full_residual = np.concatenate([np.concatenate(r) for r in self._residuals.values()])
-        return np.concatenate([full_residual, np.concatenate(self._clp_penalty)])
+        full_penalty = np.concatenate(
+            [
+                self._residuals[label]
+                if dataset_model.has_global_model()
+                else np.concatenate(self._residuals[label])
+                for label, dataset_model in self.group.dataset_models.items()
+            ]
+        )
+        if len(self._clp_penalty) != 0:
+            full_penalty = np.concatenate([full_penalty, np.concatenate(self._clp_penalty)])
+        return full_penalty
 
     def get_result(
         self,
@@ -175,45 +184,64 @@ class EstimationProviderUnlinked(EstimationProvider):
             model_axis = self._data_provider.get_model_axis(label)
             global_dimension = self._data_provider.get_global_dimension(label)
             global_axis = self._data_provider.get_global_axis(label)
-            residuals[label] = xr.DataArray(
-                np.array(self._residuals[label]).T,
-                coords={global_dimension: global_axis, model_dimension: model_axis},
-                dims=[model_dimension, global_dimension],
-            )
-            if dataset_model.is_index_dependent():
-                clps[label] = xr.concat(
-                    [
-                        xr.DataArray(
-                            self._clps[label][i],
-                            coords={
-                                "clp_label": self._matrix_provider.get_matrix_container(
-                                    label, i
-                                ).clp_labels
-                            },
-                        )
-                        for i in range(len(self._clps[label]))
-                    ],
-                    dim=global_dimension,
+
+            if dataset_model.has_global_model():
+                residuals[label] = xr.DataArray(
+                    np.array(self._residuals[label]).T.reshape(model_axis.size, global_axis.size),
+                    coords={global_dimension: global_axis, model_dimension: model_axis},
+                    dims=[model_dimension, global_dimension],
                 )
-                clps[label].coords[global_dimension] = global_axis
+                clp_labels = self._matrix_provider.get_matrix_container(label, 0).clp_labels
+                global_clp_labels = self._matrix_provider.get_global_matrix_container(
+                    label
+                ).clp_labels
+                clps[label] = xr.DataArray(
+                    self._clps[label].reshape((len(global_clp_labels), len(clp_labels))),
+                    coords={"global_clp_label": global_clp_labels, "clp_label": clp_labels},
+                    dims=["global_clp_label", "clp_label"],
+                )
 
             else:
-                clps[label] = xr.DataArray(
-                    self._clps[label],
-                    coords=(
-                        (global_dimension, global_axis),
-                        (
-                            "clp_label",
-                            self._matrix_provider.get_matrix_container(label, 0).clp_labels,
-                        ),
-                    ),
+                residuals[label] = xr.DataArray(
+                    np.array(self._residuals[label]).T,
+                    coords={global_dimension: global_axis, model_dimension: model_axis},
+                    dims=[model_dimension, global_dimension],
                 )
+                if dataset_model.is_index_dependent():
+                    clps[label] = xr.concat(
+                        [
+                            xr.DataArray(
+                                self._clps[label][i],
+                                coords={
+                                    "clp_label": self._matrix_provider.get_matrix_container(
+                                        label, i
+                                    ).clp_labels
+                                },
+                            )
+                            for i in range(len(self._clps[label]))
+                        ],
+                        dim=global_dimension,
+                    )
+                    clps[label].coords[global_dimension] = global_axis
+
+                else:
+                    clps[label] = xr.DataArray(
+                        self._clps[label],
+                        coords=(
+                            (global_dimension, global_axis),
+                            (
+                                "clp_label",
+                                self._matrix_provider.get_matrix_container(label, 0).clp_labels,
+                            ),
+                        ),
+                    )
         return clps, residuals
 
     def calculate_full_model_estimation(self, label: str, dataset_model: DatasetModel):
         full_matrix = self._matrix_provider.get_full_matrix(label)
         data = self._data_provider.get_flattened_data(label)
         self._clps[label], self._residuals[label] = self.calculate_residual(full_matrix, data)
+        self._clp_penalty += []
 
     def calculate_estimation(self, label: str, dataset_model: DatasetModel):
         self._clps[label].clear()

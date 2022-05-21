@@ -279,7 +279,7 @@ class MatrixProviderUnlinked(MatrixProvider):
     def create_full_matrices(self):
         for label, dataset_model in self.group.dataset_models.items():
             if dataset_model.has_global_model():
-                global_matrix_container = self._matrix_provider.get_global_matrix_container(label)
+                global_matrix_container = self.get_global_matrix_container(label)
 
                 if dataset_model.is_index_dependent():
                     global_axis = self._data_provider.get_global_axis(label)
@@ -287,7 +287,7 @@ class MatrixProviderUnlinked(MatrixProvider):
                         [
                             np.kron(
                                 global_matrix_container.matrix[i, :],
-                                self._matrix_provider.get_matrix_container(i).matrix,
+                                self.get_matrix_container(label, i).matrix,
                             )
                             for i in range(global_axis.size)
                         ]
@@ -295,7 +295,7 @@ class MatrixProviderUnlinked(MatrixProvider):
                 else:
                     full_matrix = np.kron(
                         global_matrix_container.matrix,
-                        self._matrix_provider.get_matrix_container(0).matrix,
+                        self.get_matrix_container(label, 0).matrix,
                     )
 
                 weight = self._data_provider.get_flattened_weight(label)
