@@ -21,7 +21,7 @@ def test_relations(index_dependent, link_clp):
     )
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
-    print("link_clp", link_clp, "index_dependent", index_dependent)  # noqa T201
+    print("link_clp", link_clp, "index_dependent", index_dependent)  # T201
     dataset = simulate(
         suite.sim_model,
         "dataset1",
@@ -40,7 +40,7 @@ def test_relations(index_dependent, link_clp):
     matrix = optimization_group._matrix_provider.get_matrix_container("dataset1", 0)
 
     result_data = optimization_group.create_result_data(parameters)
-    print(result_data)  # noqa T201
+    print(result_data)  # T201
     clps = result_data["dataset1"].clp
 
     assert "s2" not in reduced_matrix.clp_labels
