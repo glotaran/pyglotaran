@@ -6,6 +6,7 @@ from numbers import Number
 
 import numba as nb
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
@@ -183,17 +184,38 @@ class MatrixProvider:
     def calculate(self):
         raise NotImplementedError
 
-    def get_result(self) -> tuple[dict[str, list[str]], dict[str, np.typing.ArrayLike]]:
-        clp_labels, matrices = {}, {}
+    def get_result(self) -> dict[str, xr.DataArray]:
+        matrices = {}
         for label, matrix_container in self._matrix_containers.items():
+            model_dimension = self._data_provider.get_model_dimension(label)
+            model_axis = self._data_provider.get_model_axis(label)
             if self.group.dataset_models[label].is_index_dependent():
-                clp_labels[label] = [m.clp_labels for m in matrix_container]
-                matrices[label] = [m.matrix for m in matrix_container]
+                global_dimension = self._data_provider.get_global_dimension(label)
+                global_axis = self._data_provider.get_global_axis(label)
+                matrices[label] = xr.concat(
+                    [
+                        xr.DataArray(
+                            container.matrix,
+                            coords=(
+                                (model_dimension, model_axis),
+                                ("clp_label", container.clp_labels),
+                            ),
+                        )
+                        for container in matrix_container
+                    ],
+                    dim=global_dimension,
+                )
+                matrices[label].coords[global_dimension] = global_axis
             else:
-                clp_labels[label] = matrix_container.clp_labels
-                matrices[label] = matrix_container.matrix
+                matrices[label] = xr.DataArray(
+                    matrix_container.matrix,
+                    coords=(
+                        (model_dimension, model_axis),
+                        ("clp_label", matrix_container.clp_labels),
+                    ),
+                )
 
-        return clp_labels, matrices
+        return matrices
 
 
 class MatrixProviderUnlinked(MatrixProvider):
