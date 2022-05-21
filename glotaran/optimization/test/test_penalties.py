@@ -5,7 +5,7 @@ import pytest
 
 from glotaran.model import EqualAreaPenalty
 from glotaran.optimization.optimization_group import OptimizationGroup
-from glotaran.optimization.test.models import TwoCompartmentDecay as suite
+from glotaran.optimization.test.suites import TwoCompartmentDecay as suite
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
@@ -33,7 +33,7 @@ def test_penalties(index_dependent, link_clp):
 
     global_axis = np.arange(50)
 
-    print(f"{link_clp=}\n{index_dependent=}")
+    print(f"{link_clp=}\n{index_dependent=}")  # noqa T201
     dataset = simulate(
         suite.sim_model,
         "dataset1",

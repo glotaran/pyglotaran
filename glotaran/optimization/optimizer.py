@@ -67,7 +67,7 @@ class Optimizer:
         try:
             verbose = 2 if self._verbose else 0
             self._optimization_result = least_squares(
-                self.calculate_penalty,
+                self.objective_function,
                 initial_parameter,
                 bounds=(lower_bounds, upper_bounds),
                 method=self._method,
@@ -84,8 +84,11 @@ class Optimizer:
             warn(f"Optimization failed:\n\n{e}")
             self._termination_reason = str(e)
 
-    def calculate_penalty(self, parameters: np.ndarray) -> np.typing.ArrayLike:
+    def objective_function(self, parameters: np.ndarray) -> np.typing.ArrayLike:
         self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)
+        return self.calculate_penalty()
+
+    def calculate_penalty(self) -> np.typing.ArrayLike:
         for group in self._optimization_groups:
             group.calculate(self._parameters)
         self._parameter_history.append(self._parameters)
@@ -122,6 +125,7 @@ class Optimizer:
                 raise InitialParameterError()
             self._parameters.set_from_history(self._parameter_history, -2)
 
+        full_penalty = self.calculate_penalty()
         data = {}
         for group in self._optimization_groups:
             data.update(group.create_result_data(self._parameters))
@@ -139,10 +143,7 @@ class Optimizer:
             for label, error in zip(self._free_parameter_labels, standard_errors):
                 self._parameters.get(label).standard_error = error
 
-        cost = [
-            0.5 * np.dot(group.get_full_penalty(), self.get_full_penalty())
-            for group in self._optimization_groups
-        ]
+        cost = 0.5 * np.dot(full_penalty, full_penalty)
 
         return Result(
             cost=cost,
