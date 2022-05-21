@@ -1,6 +1,7 @@
 from numbers import Number
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
@@ -156,7 +157,7 @@ class EstimationProviderUnlinked(EstimationProvider):
         self._clp_penalty.clear()
 
         for label, dataset_model in self.group.dataset_models.items():
-            if dataset_model.has_full_model():
+            if dataset_model.has_global_model():
                 self.calculate_full_model_estimation(label, dataset_model)
             else:
                 self.calculate_estimation(label, dataset_model)
@@ -167,8 +168,47 @@ class EstimationProviderUnlinked(EstimationProvider):
 
     def get_result(
         self,
-    ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
-        return self._clps, self._residuals
+    ) -> tuple[dict[str, list[xr.DataArray]], dict[str, list[xr.DataArray]],]:
+        clps, residuals = {}, {}
+        for label, dataset_model in self.group.dataset_models.items():
+            model_dimension = self._data_provider.get_model_dimension(label)
+            model_axis = self._data_provider.get_model_axis(label)
+            global_dimension = self._data_provider.get_global_dimension(label)
+            global_axis = self._data_provider.get_global_axis(label)
+            residuals[label] = xr.DataArray(
+                np.array(self._residuals[label]).T,
+                coords={global_dimension: global_axis, model_dimension: model_axis},
+                dims=[model_dimension, global_dimension],
+            )
+            if dataset_model.is_index_dependent():
+                clps[label] = xr.concat(
+                    [
+                        xr.DataArray(
+                            self._clps[label][i],
+                            coords={
+                                "clp_label": self._matrix_provider.get_matrix_container(
+                                    label, i
+                                ).clp_labels
+                            },
+                        )
+                        for i in range(len(self._clps[label]))
+                    ],
+                    dim=global_dimension,
+                )
+                clps[label].coords[global_dimension] = global_axis
+
+            else:
+                clps[label] = xr.DataArray(
+                    self._clps[label],
+                    coords=(
+                        (global_dimension, global_axis),
+                        (
+                            "clp_label",
+                            self._matrix_provider.get_matrix_container(label, 0).clp_labels,
+                        ),
+                    ),
+                )
+        return clps, residuals
 
     def calculate_full_model_estimation(self, label: str, dataset_model: DatasetModel):
         full_matrix = self._matrix_provider.get_full_matrix(label)
@@ -243,6 +283,7 @@ class EstimationProviderLinked(EstimationProvider):
         clps = {label: [] for label in self.group.dataset_models}
         residuals = {label: [] for label in self.group.dataset_models}
         for dataset_label in self.group.dataset_models:
+            dataset_clps, dataset_residual = [], []
             for index in range(self._data_provider.aligned_global_axis.size):
                 group_label = self._data_provider.get_aligned_group_label(index)
                 if dataset_label not in group_label:
@@ -258,13 +299,16 @@ class EstimationProviderLinked(EstimationProvider):
                     dataset_label, global_index
                 ).clp_labels
 
-                clps[dataset_label].append(
-                    [
-                        self._clps[index][
-                            self._matrix_provider.aligned_full_clp_labels[index].index(label)
-                        ]
-                        for label in clp_labels
-                    ]
+                dataset_clps.append(
+                    xr.DataArray(
+                        [
+                            self._clps[index][
+                                self._matrix_provider.aligned_full_clp_labels[index].index(label)
+                            ]
+                            for label in clp_labels
+                        ],
+                        coords={"clp_label": clp_labels},
+                    )
                 )
 
                 start = sum(
@@ -272,7 +316,22 @@ class EstimationProviderLinked(EstimationProvider):
                     for label in group_datasets[:dataset_index]
                 )
                 end = start + self._data_provider.get_model_axis(dataset_label).size
-                residuals[dataset_label].append(self._residuals[index][start:end])
+                dataset_residual.append(self._residuals[index][start:end])
+
+            model_dimension = self._data_provider.get_model_dimension(dataset_label)
+            model_axis = self._data_provider.get_model_axis(dataset_label)
+            global_dimension = self._data_provider.get_global_dimension(dataset_label)
+            global_axis = self._data_provider.get_global_axis(dataset_label)
+            clps[dataset_label] = xr.concat(
+                dataset_clps,
+                dim=global_dimension,
+            )
+            clps[dataset_label].coords[global_dimension] = global_axis
+            residuals[dataset_label] = xr.DataArray(
+                np.array(dataset_residual).T,
+                coords={global_dimension: global_axis, model_dimension: model_axis},
+                dims=[model_dimension, global_dimension],
+            )
         return clps, residuals
 
 
