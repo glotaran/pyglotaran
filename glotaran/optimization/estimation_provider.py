@@ -3,6 +3,7 @@ from numbers import Number
 import numpy as np
 
 from glotaran.model import DatasetGroup
+from glotaran.model import DatasetModel
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderLinked
@@ -153,34 +154,12 @@ class EstimationProviderUnlinked(EstimationProvider):
 
     def estimate(self):
         self._clp_penalty.clear()
+
         for label, dataset_model in self.group.dataset_models.items():
-            self._clps[label].clear()
-            self._residuals[label].clear()
-
-            global_axis = self._data_provider.get_global_axis(label)
-            data = self._data_provider.get_data(label)
-            clp_labels = []
-
-            for index, global_index in enumerate(global_axis):
-                matrix_container = self._matrix_provider.get_prepared_matrix_container(
-                    label, index
-                )
-                reduced_clps, residual = self.calculate_residual(
-                    matrix_container.matrix, data[:, index]
-                )
-                clp_labels.append(
-                    self._matrix_provider.get_matrix_container(label, index).clp_labels
-                )
-                clp = self.retrieve_clps(
-                    clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index
-                )
-
-                self._clps[label].append(clp)
-                self._residuals[label].append(residual)
-
-            self._clp_penalty += self.calculate_clp_penalties(
-                clp_labels, self._clps[label], global_axis
-            )
+            if dataset_model.has_full_model():
+                self.calculate_full_model_estimation(label, dataset_model)
+            else:
+                self.calculate_estimation(label, dataset_model)
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
         full_residual = np.concatenate([np.concatenate(r) for r in self._residuals.values()])
@@ -190,6 +169,36 @@ class EstimationProviderUnlinked(EstimationProvider):
         self,
     ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
         return self._clps, self._residuals
+
+    def calculate_full_model_estimation(self, label: str, dataset_model: DatasetModel):
+        full_matrix = self._matrix_provider.get_full_matrix(label)
+        data = self._data_provider.get_flattened_data(label)
+        self._clps[label], self._residuals[label] = self.calculate_residual(full_matrix, data)
+
+    def calculate_estimation(self, label: str, dataset_model: DatasetModel):
+        self._clps[label].clear()
+        self._residuals[label].clear()
+
+        global_axis = self._data_provider.get_global_axis(label)
+        data = self._data_provider.get_data(label)
+        clp_labels = []
+
+        for index, global_index in enumerate(global_axis):
+            matrix_container = self._matrix_provider.get_prepared_matrix_container(label, index)
+            reduced_clps, residual = self.calculate_residual(
+                matrix_container.matrix, data[:, index]
+            )
+            clp_labels.append(self._matrix_provider.get_matrix_container(label, index).clp_labels)
+            clp = self.retrieve_clps(
+                clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index
+            )
+
+            self._clps[label].append(clp)
+            self._residuals[label].append(residual)
+
+        self._clp_penalty += self.calculate_clp_penalties(
+            clp_labels, self._clps[label], global_axis
+        )
 
 
 class EstimationProviderLinked(EstimationProvider):

@@ -15,6 +15,8 @@ class DataProvider:
 
         self._data = {}
         self._weight = {}
+        self._flattened_data = {}
+        self._flattened_weight = {}
         self._model_axes = {}
         self._model_dimensions = {}
         self._global_axes = {}
@@ -40,6 +42,12 @@ class DataProvider:
             )
             if self._weight[label] is not None:
                 self._data[label] *= self._weight[label]
+
+            if dataset_model.has_global_model():
+                self._flattened_data[label] = self._data.T.flatten()
+                self._flattened_weight[label] = (
+                    self._weight[label].T.flatten() if self._weight[label] is not None else None
+                )
 
     @staticmethod
     def infer_global_dimension(model_dimension: str, dimensions: tuple[str]) -> str:
@@ -111,6 +119,12 @@ class DataProvider:
 
     def get_weight(self, dataset_label: str) -> np.typing.ArrayLike | None:
         return self._weight[dataset_label]
+
+    def get_flattened_data(self, dataset_label: str) -> np.typing.ArrayLike:
+        return self._flattened_data[dataset_label]
+
+    def get_flattened_weight(self, dataset_label: str) -> np.typing.ArrayLike | None:
+        return self._flattened_weight[dataset_label]
 
     def get_model_axis(self, dataset_label: str) -> np.typing.ArrayLike:
         return self._model_axes[dataset_label]
