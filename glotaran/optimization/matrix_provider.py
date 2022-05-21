@@ -20,7 +20,7 @@ class MatrixContainer:
 
     @staticmethod
     @nb.jit(nopython=True, parallel=True)
-    def _create_weighted_matrix(
+    def apply_weight(
         matrix: np.typing.ArrayLike, weight: np.typing.ArrayLike
     ) -> np.typing.ArrayLike:
         matrix = matrix.copy()
@@ -29,7 +29,7 @@ class MatrixContainer:
         return matrix
 
     def create_weighted_matrix(self, weight: np.typing.ArrayLike) -> MatrixContainer:
-        return replace(self, matrix=self._create_weighted_matrix(self.matrix, weight))
+        return replace(self, matrix=self.apply_weight(self.matrix, weight))
 
     def create_scaled_matrix(self, scale: float) -> MatrixContainer:
         return replace(self, matrix=self.matrix * scale)
@@ -200,18 +200,38 @@ class MatrixProviderUnlinked(MatrixProvider):
     def __init__(self, group: DatasetGroup, data_provider: DataProvider):
         super().__init__(group)
         self._data_provider = data_provider
+        self._global_matrix_container: dict[str, MatrixContainer] = {}
         self._prepared_matrix_container: dict[str, list[MatrixContainer]] = {}
+        self._full_matrices: dict[str, np.ArrayLike] = {}
+
+    def get_global_matrix_container(self, dataset_label: str) -> MatrixContainer:
+        return self._global_matrix_container[dataset_label]
 
     def get_prepared_matrix_container(self, dataset_label: str, index: int) -> MatrixContainer:
         return self._prepared_matrix_container[dataset_label][index]
 
+    def get_full_matrix(self, dataset_label: str) -> np.ArrayLike:
+        return self._full_matrices[dataset_label]
+
     def calculate(self):
         self.create_dataset_matrices()
-
+        self.create_global_matrices()
         self.create_prepared_matrices()
+        self.create_full_matrices()
+
+    def create_global_matrices(self):
+        for label, dataset_model in self.group.dataset_models.items():
+            if dataset_model.has_global_model():
+                model_axis = self._data_provider.get_model_axis(label)
+                global_axis = self._data_provider.get_global_axis(label)
+                self._global_matrix_container[label] = self.calculate_dataset_matrix(
+                    dataset_model, None, global_axis, model_axis, as_global_model=True
+                )
 
     def create_prepared_matrices(self):
         for label, dataset_model in self.group.dataset_models.items():
+            if dataset_model.has_global_model():
+                continue
             scale = dataset_model.scale or 1
             weight = self._data_provider.get_weight(label)
             if dataset_model.is_index_dependent():
@@ -233,6 +253,34 @@ class MatrixProviderUnlinked(MatrixProvider):
                     matrix.create_weighted_matrix(weight[:, i])
                     for i, matrix in enumerate(self._prepared_matrix_container[label])
                 ]
+
+    def create_full_matrices(self):
+        for label, dataset_model in self.group.dataset_models.items():
+            if dataset_model.has_global_model():
+                global_matrix_container = self._matrix_provider.get_global_matrix_container(label)
+
+                if dataset_model.is_index_dependent():
+                    global_axis = self._data_provider.get_global_axis(label)
+                    full_matrix = np.concatenate(
+                        [
+                            np.kron(
+                                global_matrix_container.matrix[i, :],
+                                self._matrix_provider.get_matrix_container(i).matrix,
+                            )
+                            for i in range(global_axis.size)
+                        ]
+                    )
+                else:
+                    full_matrix = np.kron(
+                        global_matrix_container.matrix,
+                        self._matrix_provider.get_matrix_container(0).matrix,
+                    )
+
+                weight = self._data_provider.get_flattened_weight(label)
+                if weight is not None:
+                    full_matrix = MatrixContainer.apply_weight(full_matrix, weight)
+
+                self._full_matrices[label] = full_matrix
 
 
 class MatrixProviderLinked(MatrixProvider):
