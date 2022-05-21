@@ -123,7 +123,7 @@ class EstimationProvider:
 
             penalties.append(area_penalty * penalty.weight)
 
-        return np.asarray(penalties)
+        return [np.asarray(penalties)]
 
     def estimate(self):
         raise NotImplementedError
@@ -183,8 +183,8 @@ class EstimationProviderUnlinked(EstimationProvider):
             )
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
-        full_residual = np.concatenate(list(np.concatenate(r) for r in self._residuals.values()))
-        return np.concatenate([full_residual, self._clp_penalty])
+        full_residual = np.concatenate([np.concatenate(r) for r in self._residuals.values()])
+        return np.concatenate([full_residual, np.concatenate(self._clp_penalty)])
 
     def get_result(
         self,
@@ -226,7 +226,7 @@ class EstimationProviderLinked(EstimationProvider):
         )
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
-        return np.concatenate((np.concatenate(self._residuals), self._clp_penalty))
+        return np.concatenate((np.concatenate(self._residuals), np.concatenate(self._clp_penalty)))
 
     def get_result(
         self,
@@ -239,8 +239,14 @@ class EstimationProviderLinked(EstimationProvider):
                 if dataset_label not in group_label:
                     continue
 
+                group_datasets = self._data_provider.group_definitions[group_label]
+                dataset_index = group_datasets.index(dataset_label)
+                global_index = self._data_provider.get_aligned_dataset_indices(index)[
+                    dataset_index
+                ]
+
                 clp_labels = self._matrix_provider.get_matrix_container(
-                    dataset_label, index
+                    dataset_label, global_index
                 ).clp_labels
 
                 clps[dataset_label].append(
@@ -252,8 +258,6 @@ class EstimationProviderLinked(EstimationProvider):
                     ]
                 )
 
-                group_datasets = self._data_provider.group_definitions[group_label]
-                dataset_index = group_datasets.index(dataset_label)
                 start = sum(
                     self._data_provider.get_model_axis(label).size
                     for label in group_datasets[:dataset_index]

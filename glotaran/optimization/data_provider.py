@@ -259,6 +259,7 @@ class DataProviderLinked(DataProvider):
                 )
 
     def align_weights(self, aligned_global_axes: dict[str, np.typing.ArrayLike]):
+        self._aligned_weights = [None] * self._aligned_global_axis.size
         aligned_weights = {
             label: xr.DataArray(
                 weight, dims=["model", "global"], coords={"global": aligned_global_axes[label]}
@@ -269,7 +270,6 @@ class DataProviderLinked(DataProvider):
         if not aligned_weights:
             return
 
-        self._aligned_weights = [None] * self._aligned_global_axis.size
         for i, group_label in enumerate(self._aligned_group_labels):
             group_dataset_labels = self._group_definitions[group_label]
             if any(label in aligned_weights for label in group_dataset_labels):
