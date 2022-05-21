@@ -7,8 +7,6 @@ from typing import Any
 from typing import List
 from warnings import warn
 
-import xarray as xr
-
 from glotaran.deprecation import raise_deprecation_error
 from glotaran.io import load_model
 from glotaran.model.clp_penalties import EqualAreaPenalty
@@ -357,20 +355,6 @@ class Model:
     def need_index_dependent(self) -> bool:
         """Returns true if e.g. clp_relations with intervals are present."""
         return any(i.interval is not None for i in self.clp_constraints + self.clp_relations)
-
-    def is_groupable(self, parameters: ParameterGroup, data: dict[str, xr.DataArray]) -> bool:
-        dataset_models = {label: self.dataset[label] for label in data}
-        if any(d.has_global_model() for d in dataset_models.values()):
-            return False
-        global_dimensions = {
-            d.fill(self, parameters).set_data(data[k]).get_global_dimension()
-            for k, d in dataset_models.items()
-        }
-        model_dimensions = {
-            d.fill(self, parameters).set_data(data[k]).get_model_dimension()
-            for k, d in dataset_models.items()
-        }
-        return len(global_dimensions) == 1 and len(model_dimensions) == 1
 
     def problem_list(self, parameters: ParameterGroup | None = None) -> list[str]:
         """
