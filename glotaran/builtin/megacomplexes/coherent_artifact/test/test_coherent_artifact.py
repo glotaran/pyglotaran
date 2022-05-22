@@ -88,7 +88,7 @@ def test_coherent_artifact(spectral_dependence: str):
     spectral = np.asarray([200, 300, 400])
 
     dataset_model = model.dataset["dataset1"].fill(model, parameters)
-    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, None, spectral, time)
+    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, 0, spectral, time)
     compartments = matrix.clp_labels
 
     print(compartments)

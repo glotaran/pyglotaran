@@ -137,10 +137,10 @@ def simulate_from_clp(
     )
 
     result = xr.DataArray(
-        data=0.0,
+        np.zeros((model_axis.size, global_axis.size)),
         coords=[
-            (model_dimension, model_axis),
-            (global_dimension, global_axis),
+            (model_dimension, model_axis.data),
+            (global_dimension, global_axis.data),
         ],
     )
     result = result.to_dataset(name="data")
