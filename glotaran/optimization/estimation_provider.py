@@ -21,11 +21,7 @@ residual_functions = {
 class EstimationProvider:
     def __init__(self, group: DatasetGroup):
         self._group = group
-        self._residual_function = (
-            residual_variable_projection
-            if group.residual_function == "variable_projection"
-            else residual_nnls
-        )
+        self._clp_penalty = []
         try:
             self._residual_function = residual_functions[group.residual_function]
         except KeyError as e:
@@ -73,12 +69,15 @@ class EstimationProvider:
                 clps[target_idx] = relation.parameter * clps[source_idx]
         return clps
 
+    def get_additional_penalties(self) -> list[Number]:
+        return self._clp_penalty
+
     def calculate_clp_penalties(
         self,
         clp_labels: list[list[str]],
         clps: list[np.ndarray],
         global_axis: np.ndarray,
-    ) -> np.ndarray:
+    ) -> list[Number]:
 
         # TODO: make a decision on how to handle clp_penalties per dataset
         # 1. sum up contributions per dataset on each dataset_axis (v0.4.1)
@@ -91,41 +90,37 @@ class EstimationProvider:
             penalty = penalty.fill(model, parameters)
             source_area = np.array([])
             target_area = np.array([])
-            for dataset_model in self.group.dataset_models.values():
-                dataset_axis = dataset_model.get_global_axis()
 
-                source_area = np.concatenate(
-                    [
-                        source_area,
-                        _get_area(
-                            penalty.source,
-                            clp_labels,
-                            clps,
-                            penalty.source_intervals,
-                            global_axis,
-                            dataset_axis,
-                        ),
-                    ]
-                )
+            source_area = np.concatenate(
+                [
+                    source_area,
+                    _get_area(
+                        penalty.source,
+                        clp_labels,
+                        clps,
+                        penalty.source_intervals,
+                        global_axis,
+                    ),
+                ]
+            )
 
-                target_area = np.concatenate(
-                    [
-                        target_area,
-                        _get_area(
-                            penalty.target,
-                            clp_labels,
-                            clps,
-                            penalty.target_intervals,
-                            global_axis,
-                            dataset_axis,
-                        ),
-                    ]
-                )
+            target_area = np.concatenate(
+                [
+                    target_area,
+                    _get_area(
+                        penalty.target,
+                        clp_labels,
+                        clps,
+                        penalty.target_intervals,
+                        global_axis,
+                    ),
+                ]
+            )
             area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
 
             penalties.append(area_penalty * penalty.weight)
 
-        return [np.asarray(penalties)]
+        return penalties
 
     def estimate(self):
         raise NotImplementedError
@@ -151,7 +146,6 @@ class EstimationProviderUnlinked(EstimationProvider):
         self._matrix_provider = matrix_provider
         self._clps = {label: [] for label in self.group.dataset_models}
         self._residuals = {label: [] for label in self.group.dataset_models}
-        self._clp_penalty = []
 
     def estimate(self):
         self._clp_penalty.clear()
@@ -172,7 +166,7 @@ class EstimationProviderUnlinked(EstimationProvider):
             ]
         )
         if len(self._clp_penalty) != 0:
-            full_penalty = np.concatenate([full_penalty, np.concatenate(self._clp_penalty)])
+            full_penalty = np.concatenate([full_penalty, self._clp_penalty])
         return full_penalty
 
     def get_result(
@@ -241,7 +235,6 @@ class EstimationProviderUnlinked(EstimationProvider):
         full_matrix = self._matrix_provider.get_full_matrix(label)
         data = self._data_provider.get_flattened_data(label)
         self._clps[label], self._residuals[label] = self.calculate_residual(full_matrix, data)
-        self._clp_penalty += []
 
     def calculate_estimation(self, label: str, dataset_model: DatasetModel):
         self._clps[label].clear()
@@ -281,7 +274,6 @@ class EstimationProviderLinked(EstimationProvider):
         self._matrix_provider = matrix_provider
         self._clps = [None] * self._data_provider.aligned_global_axis.size
         self._residuals = [None] * self._data_provider.aligned_global_axis.size
-        self._clp_penalty = []
 
     def estimate(self):
         for index, global_index in enumerate(self._data_provider.aligned_global_axis):
@@ -303,7 +295,7 @@ class EstimationProviderLinked(EstimationProvider):
         )
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
-        return np.concatenate((np.concatenate(self._residuals), np.concatenate(self._clp_penalty)))
+        return np.concatenate((np.concatenate(self._residuals), self._clp_penalty))
 
     def get_result(
         self,
@@ -368,17 +360,16 @@ def _get_area(
     clp_labels: list[list[str]],
     clps: list[np.ndarray],
     intervals: list[tuple[float, float]],
-    global_axis: np.ndarray,
-    dataset_axis: np.ndarray,
-) -> np.ndarray:
+    global_axis: np.typing.ArrayLike,
+) -> np.typing.ArrayLike:
     area = []
 
     for interval in intervals:
         if interval[0] > global_axis[-1]:
             continue
         bounded_interval = (
-            max(interval[0], np.min(dataset_axis)),
-            min(interval[1], np.max(dataset_axis)),
+            max(interval[0], np.min(global_axis)),
+            min(interval[1], np.max(global_axis)),
         )
         start_idx = (
             np.abs(global_axis - bounded_interval[0]).argmin()
