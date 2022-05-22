@@ -64,7 +64,7 @@ class OptimizationGroup:
     def get_full_penalty(self) -> np.typing.ArrayLike:
         return self._estimation_provider.get_full_penalty()
 
-    def create_result_data(self, parameters: ParameterGroup) -> dict[str, xr.Dataset]:
+    def create_result_data(self) -> dict[str, xr.Dataset]:
 
         result_datasets = {label: data.copy() for label, data in self._data.items()}
 

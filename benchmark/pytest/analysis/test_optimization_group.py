@@ -37,7 +37,14 @@ TEST_PARAMETERS = ParameterGroup.from_list([])
 
 @megacomplex(dimension="test", properties={"is_index_dependent": bool})
 class BenchmarkMegacomplex(Megacomplex):
-    def calculate_matrix(self, dataset_model, indices, **kwargs):
+    def calculate_matrix(
+        self,
+        dataset_model,
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
+        **kwargs,
+    ):
         return TEST_CLP_LABELS, TEST_MATRIX
 
     def index_dependent(self, dataset_model):
@@ -87,15 +94,14 @@ def setup_optimization_group(scheme):
     return OptimizationGroup(scheme, scheme.model.get_dataset_groups()["default"])
 
 
-def test_benchmark_bag_creation(benchmark):
+def test_benchmark_align_data(benchmark):
 
     model = setup_model(False, True)
     assert model.valid()
 
     scheme = setup_scheme(model)
-    optimization_group = setup_optimization_group(scheme)
 
-    benchmark(optimization_group._calculator.init_bag)
+    benchmark(setup_optimization_group, scheme)
 
 
 @pytest.mark.parametrize("link_clp", [True, False])
@@ -108,10 +114,7 @@ def test_benchmark_calculate_matrix(benchmark, link_clp, index_dependent):
     scheme = setup_scheme(model)
     optimization_group = setup_optimization_group(scheme)
 
-    if link_clp:
-        optimization_group._calculator.init_bag()
-
-    benchmark(optimization_group._calculator.calculate_matrices)
+    benchmark(optimization_group._matrix_provider.calculate)
 
 
 @pytest.mark.parametrize("link_clp", [True, False])
@@ -124,12 +127,9 @@ def test_benchmark_calculate_residual(benchmark, link_clp, index_dependent):
     scheme = setup_scheme(model)
     optimization_group = setup_optimization_group(scheme)
 
-    if link_clp:
-        optimization_group._calculator.init_bag()
+    optimization_group._matrix_provider.calculate()
 
-    optimization_group._calculator.calculate_matrices()
-
-    benchmark(optimization_group._calculator.calculate_residual)
+    benchmark(optimization_group._estimation_provider.estimate)
 
 
 @pytest.mark.parametrize("link_clp", [True, False])
@@ -142,12 +142,7 @@ def test_benchmark_calculate_result_data(benchmark, link_clp, index_dependent):
     scheme = setup_scheme(model)
     optimization_group = setup_optimization_group(scheme)
 
-    if link_clp:
-        optimization_group._calculator.init_bag()
-
-    optimization_group._calculator.calculate_matrices()
-
-    optimization_group._calculator.calculate_residual()
+    optimization_group.calculate(scheme.parameters)
 
     benchmark(optimization_group.create_result_data)
 
@@ -165,11 +160,8 @@ def test_benchmark_optimize_20_runs(benchmark, link_clp, index_dependent):
 
     @benchmark
     def run():
-        if link_clp:
-            optimization_group._calculator.init_bag()
 
         for _ in range(20):
-            optimization_group.reset()
-            optimization_group._calculator.calculate_full_penalty()
+            optimization_group.calculate(scheme.parameters)
 
         optimization_group.create_result_data()
