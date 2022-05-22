@@ -96,7 +96,7 @@ def finalize_data(
         return
 
     decay_megacomplexes = collect_megacomplexes(dataset_model, as_global)
-    global_dimension = dataset_model.get_global_dimension()
+    global_dimension = dataset.attrs["global_dimension"]
     name = "images" if global_dimension == "pixel" else "spectra"
 
     all_species = []
