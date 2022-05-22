@@ -61,7 +61,7 @@ def test_matrix_provider_unlinked_index_independent(scheme: Scheme):
     data_provider = DataProvider(scheme, dataset_group)
     matrix_provider = MatrixProviderUnlinked(dataset_group, data_provider)
     matrix_provider.calculate()
-    matrices = matrix_provider.get_result()
+    _, matrices = matrix_provider.get_result()
 
     assert "dataset1" in matrices
     assert matrices["dataset1"].shape == (scheme.data["dataset1"].model.size, 2)
@@ -78,7 +78,7 @@ def test_matrix_provider_linked_index_independent(scheme: Scheme):
     data_provider = DataProviderLinked(scheme, dataset_group)
     matrix_provider = MatrixProviderLinked(dataset_group, data_provider)
     matrix_provider.calculate()
-    matrices = matrix_provider.get_result()
+    _, matrices = matrix_provider.get_result()
 
     dataset1_size = scheme.data["dataset1"].coords["model"].size
     dataset2_size = scheme.data["dataset2"].coords["model"].size
@@ -117,7 +117,7 @@ def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
     data_provider = DataProvider(scheme, dataset_group)
     matrix_provider = MatrixProviderUnlinked(dataset_group, data_provider)
     matrix_provider.calculate()
-    matrices = matrix_provider.get_result()
+    _, matrices = matrix_provider.get_result()
 
     dataset1_model_size = scheme.data["dataset1"].coords["model"].size
     dataset1_global_size = scheme.data["dataset1"].coords["global"].size
@@ -140,7 +140,7 @@ def test_matrix_provider_linked_index_dependent(scheme: Scheme):
     data_provider = DataProviderLinked(scheme, dataset_group)
     matrix_provider = MatrixProviderLinked(dataset_group, data_provider)
     matrix_provider.calculate()
-    matrices = matrix_provider.get_result()
+    _, matrices = matrix_provider.get_result()
 
     dataset1_model_size = scheme.data["dataset1"].coords["model"].size
     dataset1_global_size = scheme.data["dataset1"].coords["global"].size
