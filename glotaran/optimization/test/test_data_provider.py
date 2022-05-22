@@ -52,8 +52,6 @@ def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
     assert model.valid()
 
     parameters = ParameterGroup.from_list([])
-    print(model.validate(parameters))
-    assert model.valid(parameters)
 
     data = {"dataset1": dataset_one, "dataset2": dataset_two}
     return Scheme(model, parameters, data, clp_link_tolerance=1)
