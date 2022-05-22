@@ -24,6 +24,7 @@ parameters: p.csv
 data:
   dataset_1: d.nc
 clp_link_tolerance: 0.0
+clp_link_method: nearest
 maximum_number_function_evaluations: null
 add_svd: true
 ftol: 1e-08
