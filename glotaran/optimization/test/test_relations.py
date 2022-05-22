@@ -39,7 +39,7 @@ def test_relations(index_dependent, link_clp):
     )
     matrix = optimization_group._matrix_provider.get_matrix_container("dataset1", 0)
 
-    result_data = optimization_group.create_result_data(parameters)
+    result_data = optimization_group.create_result_data()
     print(result_data)  # T201
     clps = result_data["dataset1"].clp
 
