@@ -40,6 +40,7 @@ class MatrixProvider:
     def __init__(self, group: DatasetGroup):
         self._group = group
         self._matrix_containers: dict[str, MatrixContainer | list[MatrixContainer]] = {}
+        self._global_matrix_containers: dict[str, MatrixContainer] = {}
 
     @property
     def group(self) -> DatasetGroup:
@@ -184,8 +185,9 @@ class MatrixProvider:
     def calculate(self):
         raise NotImplementedError
 
-    def get_result(self) -> dict[str, xr.DataArray]:
+    def get_result(self) -> tuple(dict[str, xr.DataArray], dict[str, xr.DataArray]):
         matrices = {}
+        global_matrices = {}
         for label, matrix_container in self._matrix_containers.items():
             model_dimension = self._data_provider.get_model_dimension(label)
             model_axis = self._data_provider.get_model_axis(label)
@@ -214,20 +216,29 @@ class MatrixProvider:
                         ("clp_label", matrix_container.clp_labels),
                     ),
                 )
+        for label, matrix_container in self._global_matrix_containers.items():
+            global_dimension = self._data_provider.get_global_dimension(label)
+            global_axis = self._data_provider.get_global_axis(label)
+            global_matrices[label] = xr.DataArray(
+                matrix_container.matrix,
+                coords=(
+                    (global_dimension, global_axis),
+                    ("global_clp_label", matrix_container.clp_labels),
+                ),
+            )
 
-        return matrices
+        return global_matrices, matrices
 
 
 class MatrixProviderUnlinked(MatrixProvider):
     def __init__(self, group: DatasetGroup, data_provider: DataProvider):
         super().__init__(group)
         self._data_provider = data_provider
-        self._global_matrix_container: dict[str, MatrixContainer] = {}
         self._prepared_matrix_container: dict[str, list[MatrixContainer]] = {}
         self._full_matrices: dict[str, np.ArrayLike] = {}
 
     def get_global_matrix_container(self, dataset_label: str) -> MatrixContainer:
-        return self._global_matrix_container[dataset_label]
+        return self._global_matrix_containers[dataset_label]
 
     def get_prepared_matrix_container(self, dataset_label: str, index: int) -> MatrixContainer:
         return self._prepared_matrix_container[dataset_label][index]
@@ -246,7 +257,7 @@ class MatrixProviderUnlinked(MatrixProvider):
             if dataset_model.has_global_model():
                 model_axis = self._data_provider.get_model_axis(label)
                 global_axis = self._data_provider.get_global_axis(label)
-                self._global_matrix_container[label] = self.calculate_dataset_matrix(
+                self._global_matrix_containers[label] = self.calculate_dataset_matrix(
                     dataset_model, None, global_axis, model_axis, as_global_model=True
                 )
 
