@@ -7,7 +7,6 @@ from typing import List
 from typing import Tuple
 
 import pytest
-import xarray as xr
 from IPython.core.formatters import format_display_data
 
 from glotaran.io import load_parameters
@@ -315,12 +314,12 @@ def test_dataset_group_models(test_model: Model):
 def test_dataset_groups(test_model: Model):
     groups = test_model.get_dataset_groups()
     assert "default" in groups
-    assert groups["default"].model.residual_function == "variable_projection"
-    assert groups["default"].model.link_clp is None
+    assert groups["default"].residual_function == "variable_projection"
+    assert groups["default"].link_clp is None
     assert "dataset1" in groups["default"].dataset_models
     assert "testgroup" in groups
-    assert groups["testgroup"].model.residual_function == "non_negative_least_squares"
-    assert groups["testgroup"].model.link_clp
+    assert groups["testgroup"].residual_function == "non_negative_least_squares"
+    assert groups["testgroup"].link_clp
     assert "dataset2" in groups["testgroup"].dataset_models
 
 
@@ -429,28 +428,15 @@ def test_items(test_model: Model):
 
 
 def test_fill(test_model: Model, parameter: ParameterGroup):
-    data = xr.DataArray([[1]], coords=(("global", [0]), ("model", [0]))).to_dataset(name="data")
     dataset = test_model.dataset.get("dataset1").fill(test_model, parameter)
-    dataset.set_data(data)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1"]
     assert dataset.scale == 2
-
-    assert dataset.get_model_dimension() == "model"
-    assert dataset.get_global_dimension() == "global"
-    dataset.swap_dimensions()
-    assert dataset.get_model_dimension() == "global"
-    assert dataset.get_global_dimension() == "model"
-    dataset.swap_dimensions()
-    assert dataset.get_model_dimension() == "model"
-    assert dataset.get_global_dimension() == "global"
 
     assert not dataset.has_global_model()
 
     dataset = test_model.dataset.get("dataset2").fill(test_model, parameter)
     assert [cmplx.label for cmplx in dataset.megacomplex] == ["m2"]
     assert dataset.scale == 8
-    assert dataset.get_model_dimension() == "model2"
-    assert dataset.get_global_dimension() == "model"
 
     assert dataset.has_global_model()
     assert [cmplx.label for cmplx in dataset.global_megacomplex] == ["m1"]
