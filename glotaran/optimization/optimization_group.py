@@ -68,7 +68,7 @@ class OptimizationGroup:
 
         result_datasets = {label: data.copy() for label, data in self._data.items()}
 
-        matrices = self._matrix_provider.get_result()
+        global_matrices, matrices = self._matrix_provider.get_result()
         clps, residuals = self._estimation_provider.get_result()
 
         for label, dataset_model in self._dataset_group.dataset_models.items():
@@ -87,6 +87,8 @@ class OptimizationGroup:
             result_dataset["residual"] = residual
 
             result_dataset["matrix"] = matrices[label]
+            if label in global_matrices:
+                result_dataset["global_matrix"] = global_matrices[label]
             result_dataset["clp"] = clps[label]
 
             if self._add_svd:
