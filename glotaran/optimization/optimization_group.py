@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from numbers import Number
+
 import numpy as np
 import xarray as xr
 
@@ -55,6 +57,9 @@ class OptimizationGroup:
         self._dataset_group.set_parameters(parameters)
         self._matrix_provider.calculate()
         self._estimation_provider.estimate()
+
+    def get_additional_penalties(self) -> list[Number]:
+        return self._estimation_provider.get_additional_penalties()
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
         return self._estimation_provider.get_full_penalty()
