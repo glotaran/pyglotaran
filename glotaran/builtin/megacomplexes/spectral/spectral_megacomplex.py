@@ -80,9 +80,9 @@ class SpectralMegacomplex(Megacomplex):
         clp_dim = "global_clp_label" if as_global else "clp_label"
         dataset["species_spectra"] = (
             (
-                dataset_model.get_model_dimension()
+                dataset.attrs["model_dimension"]
                 if not as_global
-                else dataset_model.get_global_dimension(),
+                else dataset.attrs["global_dimension"],
                 species_dimension,
             ),
             matrix.sel({clp_dim: species}).values,
@@ -90,7 +90,7 @@ class SpectralMegacomplex(Megacomplex):
         if not is_full_model:
             dataset["species_associated_concentrations"] = (
                 (
-                    dataset_model.get_global_dimension(),
+                    dataset.attrs["global_dimension"],
                     species_dimension,
                 ),
                 dataset.clp.sel(clp_label=species).data,
