@@ -128,7 +128,8 @@ class Optimizer:
         full_penalty = self.calculate_penalty()
         data = {}
         for group in self._optimization_groups:
-            data.update(group.create_result_data(self._parameters))
+            group.calculate(self._parameters)
+            data.update(group.create_result_data())
 
         covariance_matrix = None
         if success:
