@@ -34,7 +34,7 @@ class Optimizer:
             raise ValueError(f"Missing data for datasets: {missing_datasets}")
         if scheme.parameters is None:
             raise ParameterNotInitializedError
-        self._parameters = scheme.parameters
+        self._parameters = scheme.parameters.copy()
         if scheme.optimization_method not in SUPPORTED_METHODS:
             raise ValueError(
                 f"Unsupported optimization method {scheme.optimization_method}. "
