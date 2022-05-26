@@ -1,13 +1,12 @@
 """Functions for calculating conditionally linear parameters and residual with the non-negative
 least-squares method."""
-
-import typing
+from __future__ import annotations
 
 import numpy as np
 from scipy.optimize import nnls
 
 
-def residual_nnls(matrix: np.ndarray, data: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray]:
+def residual_nnls(matrix: np.ndarray, data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Calculate the conditionally linear parameters and residual with the nnls method.
 
     nnls stands for 'non-negative least-squares'.
