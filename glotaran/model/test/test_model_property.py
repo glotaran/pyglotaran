@@ -91,14 +91,14 @@ def test_model_property_parameter_setter():
     p_sequence.fset(MockClass, names)
     value = p_sequence.fget(MockClass)
     assert isinstance(value, list)
-    assert all(map(lambda v: isinstance(v, Parameter), value))
+    assert all(isinstance(v, Parameter) for v in value)
     assert [p.full_label for p in value] == names
 
     p_mapping = ModelProperty(MockClass, "mapping", Dict[str, Parameter], "", None, True)
     p_mapping.fset(MockClass, {f"{i}": n for i, n in enumerate(names)})
     value = p_mapping.fget(MockClass)
     assert isinstance(value, dict)
-    assert all(map(lambda v: isinstance(v, Parameter), value.values()))
+    assert all(isinstance(v, Parameter) for v in value.values())
     assert [p.full_label for p in value.values()] == names
 
 

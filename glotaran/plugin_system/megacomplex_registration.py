@@ -154,5 +154,5 @@ def megacomplex_plugin_table(
 
     else:
         table_data = [[f"`{megacomplex_name}`"] for megacomplex_name in megacomplex_names]
-    headers = tuple(map(lambda x: f"__{x}__", header_values))
+    headers = tuple(f"__{x}__" for x in header_values)
     return MarkdownStr(tabulate(table_data, tablefmt="github", headers=headers, stralign="center"))

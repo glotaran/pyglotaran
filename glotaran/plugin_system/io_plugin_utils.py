@@ -196,4 +196,4 @@ def bool_table_repr(
     ---  -  -
     """
     bool_repr = partial(bool_str_repr, true_repr=true_repr, false_repr=false_repr)
-    return map(lambda value: map(bool_repr, value), table_data)
+    return ((bool_repr(value) for value in values) for values in table_data)
