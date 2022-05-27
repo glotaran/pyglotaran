@@ -7,10 +7,10 @@
     <style>
       .cls-11,
       .cls-2 {
-        fill: #7f8688;
+        fill: #dcdbdb;
       }
       .cls-2 {
-        stroke: #fff;
+        stroke: #dcdbdb;
         stroke-width: 1.29px;
       }
       .cls-4 {
@@ -49,7 +49,7 @@
       "
     />
   </foreignObject>
-  <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="black" />
+  <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="#272727" />
 
   <!-- Text -->
 

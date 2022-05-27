@@ -7,10 +7,10 @@
     <style>
       .cls-11,
       .cls-2 {
-        fill: #383b3c;
+        fill: #272727;
       }
       .cls-2 {
-        stroke: #000;
+        stroke: #272727;
         stroke-width: 1.29px;
       }
       .cls-4 {
