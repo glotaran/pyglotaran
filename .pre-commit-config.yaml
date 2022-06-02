@@ -122,7 +122,7 @@ repos:
         additional_dependencies: [click<8]
 
   - repo: https://github.com/myint/rstcheck
-    rev: "v6.0.0rc3"
+    rev: "v5.0.0"
     hooks:
       - id: rstcheck
         additional_dependencies: [sphinx]
