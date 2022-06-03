@@ -46,6 +46,7 @@
 - 🚇👌 Exclude sourcery AI push CI runs (#1014)
 - 👌📚🚇 Auto remove notebook written data when building docs (#1019)
 - 👌🚇 Change integration tests to use self managed examples action (#1034)
+- 🚇🧹 Exclude pre-commit bot branch from CI runs on push (#1085)
 
 ## 0.5.1 (2021-12-31)
 
