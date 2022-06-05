@@ -22,7 +22,7 @@ A common use case for the library is the analysis of time-resolved spectroscopy 
 
 Prerequisites:
 
-- Python 3.8 or 3.9
+- Python 3.8, 3.9 or 3.10
 - On Windows only 64bit is supported
 
 Note for Windows Users: The easiest way to get python for Windows is via [Anaconda](https://www.anaconda.com/)
