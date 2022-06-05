@@ -7,7 +7,7 @@
     <style>
       .cls-3,
       .cls-4 {
-        stroke: #dcdbdb;
+        stroke: #f6f8fa;
         stroke-miterlimit: 10;
       }
       .cls-3 {
@@ -15,7 +15,7 @@
         stroke-width: 7.04px;
       }
       .cls-4 {
-        fill: #dcdbdb;
+        fill: #f6f8fa;
         stroke-width: 1.71px;
       }
     </style>
@@ -23,6 +23,19 @@
   <title>pyGlotaran-Favicon-transparent</title>
 
   <!-- color border -->
+
+  <foreignObject x="0" y="0" width="156" height="156" mask="url(#mask)">
+    <div
+      class="gradient"
+      xmlns="http://www.w3.org/1999/xhtml"
+      style="
+        width: 156px;
+        height: 156px;
+        border-radius: 15%;
+        background-color: #272727;
+      "
+    />
+  </foreignObject>
 
   <foreignObject x="0" y="0" width="156" height="156">
     <div
@@ -32,6 +45,7 @@
         width: 156px;
         height: 156px;
         border-radius: 15%;
+        opacity:0.5;
         background-image: conic-gradient(
           from 140deg,
           #ee3435 5%,
@@ -46,7 +60,7 @@
       "
     />
   </foreignObject>
-    <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="#272727" />
+    <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="#0d1117" />
   <path
     class="cls-3"
     d="M84.74,53l35.05,62.9a.85.85,0,0,1-1.25,1.11L84.39,88.71a8.82,8.82,0,0,0-11.29,0L38.94,117c-.72.61-1.68-.29-1.25-1.11L72.74,53A6.83,6.83,0,0,1,84.74,53Z"

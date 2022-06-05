@@ -184,7 +184,7 @@ html_theme_options = {
     "navigation_depth": -1,
 }
 html_favicon = "images/pyglotaran_favicon_transparent.svg"
-html_logo = "images/pyglotaran_logo_white_fill.svg"
+html_logo = "images/pyglotaran_logo_light_theme.svg"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

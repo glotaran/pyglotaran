@@ -7,7 +7,7 @@
     <style>
       .cls-3,
       .cls-4 {
-        stroke: #272727;
+        stroke: #0d1117;
         stroke-miterlimit: 10;
       }
       .cls-3 {
@@ -15,7 +15,7 @@
         stroke-width: 7.04px;
       }
       .cls-4 {
-        fill: #272727;
+        fill: #0d1117;
         stroke-width: 1.71px;
       }
     </style>
@@ -46,7 +46,7 @@
       "
     />
   </foreignObject>
-    <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="#dcdbdb" />
+    <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="#f6f8fa" />
   <path
     class="cls-3"
     d="M84.74,53l35.05,62.9a.85.85,0,0,1-1.25,1.11L84.39,88.71a8.82,8.82,0,0,0-11.29,0L38.94,117c-.72.61-1.68-.29-1.25-1.11L72.74,53A6.83,6.83,0,0,1,84.74,53Z"
