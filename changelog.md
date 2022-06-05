@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 (Unreleased)
+## 0.6.0 (2022-06-06)
 
 ### ✨ Features
 
