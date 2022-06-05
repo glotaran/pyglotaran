@@ -8,13 +8,7 @@ import pytest
 
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import module_attribute
-from glotaran.io import load_dataset
 from glotaran.optimization import optimize as optimize_module
-from glotaran.parameter import ParameterGroup
-from glotaran.project import Result
-from glotaran.project import Scheme
-from glotaran.project import result as project_result
-from glotaran.project import scheme as project_scheme
 from glotaran.simulation import simulation as simulation_module
 
 if TYPE_CHECKING:
@@ -78,34 +72,6 @@ def test_changed_import_test_warn_module_no_warn(
     changed_import_test_warn(recwarn, "glotaran.parameter")
 
 
-def test_root_ParameterGroup(recwarn: WarningsRecorder):
-    """glotaran.ParameterGroup"""
-    result = changed_import_test_warn(recwarn, "glotaran", attribute_name="ParameterGroup")
-
-    assert result == ParameterGroup
-
-
-def test_analysis_result(recwarn: WarningsRecorder):
-    """Usage of glotaran.analysis.result"""
-    warnings.simplefilter("always")
-
-    from glotaran.analysis import result
-
-    assert len(recwarn) == 0
-    assert result.Result == project_result.Result  # type: ignore [attr-defined]
-
-    check_recwarn(recwarn)
-
-
-def test_analysis_result_from_import(recwarn: WarningsRecorder):
-    """Same as 'from glotaran.analysis.result import Result' as analysis_result"""
-    analysis_result = changed_import_test_warn(
-        recwarn, "glotaran.analysis.result", attribute_name="Result"
-    )
-
-    assert analysis_result == Result
-
-
 def test_analysis_optimization(recwarn: WarningsRecorder):
     """Usage of glotaran.analysis.optimization"""
     warnings.simplefilter("always")
@@ -138,34 +104,6 @@ def test_analysis_simulation(recwarn: WarningsRecorder):
 def test_analysis_simulation_from_import(recwarn: WarningsRecorder):
     """Same as 'from glotaran.analysis.simulation import simulate as analysis_scheme'"""
     changed_import_test_warn(recwarn, "glotaran.analysis.simulation", attribute_name="simulate")
-
-
-def test_analysis_scheme(recwarn: WarningsRecorder):
-    """Usage of glotaran.analysis.scheme"""
-    warnings.simplefilter("always")
-
-    from glotaran.analysis import scheme as analysis_scheme
-
-    assert len(recwarn) == 0
-    assert analysis_scheme.Scheme == project_scheme.Scheme  # type: ignore [attr-defined]
-
-    check_recwarn(recwarn)
-
-
-def test_analysis_scheme_from_import(recwarn: WarningsRecorder):
-    """Same as 'from glotaran.analysis.scheme import Scheme as analysis_scheme'"""
-    analysis_scheme = changed_import_test_warn(
-        recwarn, "glotaran.analysis.scheme", attribute_name="Scheme"
-    )
-
-    assert analysis_scheme == Scheme
-
-
-def test_io_read_data_file(recwarn: WarningsRecorder):
-    """glotaran.io.read_data_file"""
-    result = changed_import_test_warn(recwarn, "glotaran.io", attribute_name="read_data_file")
-
-    assert result.__code__ == load_dataset.__code__
 
 
 @pytest.mark.parametrize(

@@ -39,6 +39,19 @@
 - `glotaran.analysis.simulation` -> `glotaran.simulation.simulation`
 - `glotaran.analysis.optimize` -> `glotaran.optimization.optimize`
 
+### 🗑️❌ Deprecated functionality removed in this release
+
+- `glotaran.ParameterGroup` -> `glotaran.parameter.ParameterGroup`
+- `glotaran.read_model_from_yaml` -> `glotaran.io.load_model(..., format_name="yaml_str")`
+- `glotaran.read_model_from_yaml_file` -> `glotaran.io.load_model(..., format_name="yaml")`
+- `glotaran.read_parameters_from_csv_file` -> `glotaran.io.load_parameters(..., format_name="csv")`
+- `glotaran.read_parameters_from_yaml` -> `glotaran.io.load_parameters(..., format_name="yaml_str")`
+- `glotaran.read_parameters_from_yaml_file` -> `glotaran.io.load_parameters(..., format_name="yaml")`
+- `glotaran.io.read_data_file` -> `glotaran.io.load_dataset`
+- `result.get_dataset("<dataset_name>")` -> `result.data["<dataset_name>"]`
+- `glotaran.analysis.result` -> `glotaran.project.result`
+- `glotaran.analysis.scheme` -> `glotaran.project.scheme`
+
 ### 🚧 Maintenance
 
 - 🔧 Improve packaging tooling (#923)

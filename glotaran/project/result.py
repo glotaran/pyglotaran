@@ -14,7 +14,6 @@ import xarray as xr
 from numpy.typing import ArrayLike
 from tabulate import tabulate
 
-from glotaran.deprecation import deprecate
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SavingOptions
 from glotaran.io import load_result
@@ -350,36 +349,3 @@ class Result:
         .. # noqa: DAR402
         """
         return create_clp_guide_dataset(self, clp_label=clp_label, dataset_name=dataset_name)
-
-    @deprecate(
-        deprecated_qual_name_usage="glotaran.project.result.Result.get_dataset(dataset_label)",
-        new_qual_name_usage=("glotaran.project.result.Result.data[dataset_label]"),
-        to_be_removed_in_version="0.6.0",
-        importable_indices=(2, 2),
-    )
-    def get_dataset(self, dataset_label: str) -> xr.Dataset:
-        """Return the result dataset for the given dataset label.
-
-        Warning
-        -------
-        Deprecated use ``glotaran.project.result.Result.data[dataset_label]``
-        instead.
-
-
-        Parameters
-        ----------
-        dataset_label : str
-            The label of the dataset.
-
-        Returns
-        -------
-        xr.Dataset :
-            The dataset.
-
-
-        .. # noqa: DAR401
-        """
-        try:
-            return self.data[dataset_label]
-        except KeyError as e:
-            raise ValueError(f"Unknown dataset '{dataset_label}'") from e
