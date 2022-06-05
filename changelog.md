@@ -31,7 +31,7 @@
 
 ### 📚 Documentation
 
-- 🎨 Add new logo (#1083)
+- 🎨 Add new logo (#1083, #1087)
 
 ### 🗑️ Deprecations (due in 0.8.0)
 
