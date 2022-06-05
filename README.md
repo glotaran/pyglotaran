@@ -1,8 +1,6 @@
 # pyglotaran
 
-<p align="center">
-  <img width="400" src="https://raw.githubusercontent.com/glotaran/pyglotaran/main/docs/source/images/pyglotaran_logo_transparent.svg">
-</p>
+<img align="right" width="100" height="100" src="https://raw.githubusercontent.com/glotaran/pyglotaran/main/docs/source/images/pyglotaran_logo_transparent.svg">
 
 pyglotaran is a Python library for Global and Target Analysis
 
@@ -11,6 +9,7 @@ pyglotaran is a Python library for Global and Target Analysis
 ![Tests](https://github.com/glotaran/pyglotaran/workflows/Tests/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pyglotaran/badge/?version=latest)](https://pyglotaran.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://static.mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/glotaran/pyglotaran.git/main?urlpath=lab%2Ftree%2Fdocs%2Fsource%2Fnotebooks)
+
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/glotaran/pyglotaran.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/glotaran/pyglotaran/alerts/)
 [![Discord](https://img.shields.io/discord/883443835135475753.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/KfnEYRSTJx)
