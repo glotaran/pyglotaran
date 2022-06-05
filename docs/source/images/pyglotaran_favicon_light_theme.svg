@@ -1,0 +1,55 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  viewBox="0 0 156 156"
+>
+  <defs>
+    <style>
+      .cls-3,
+      .cls-4 {
+        stroke: #0d1117;
+        stroke-miterlimit: 10;
+      }
+      .cls-3 {
+        fill: none;
+        stroke-width: 7.04px;
+      }
+      .cls-4 {
+        fill: #0d1117;
+        stroke-width: 1.71px;
+      }
+    </style>
+  </defs>
+  <title>pyGlotaran-Favicon-transparent</title>
+
+  <!-- color border -->
+
+  <foreignObject x="0" y="0" width="156" height="156">
+    <div
+      class="gradient"
+      xmlns="http://www.w3.org/1999/xhtml"
+      style="
+        width: 156px;
+        height: 156px;
+        border-radius: 15%;
+        background-image: conic-gradient(
+          from 140deg,
+          #ee3435 5%,
+          #f0c033 15%,
+          #97c351 30%,
+          #00a651 40%,
+          #14ace3 60%,
+          #0a80c4 70%,
+          #623c97 85% 90%,
+          #ee3435 100%
+        );
+      "
+    />
+  </foreignObject>
+    <rect x="27" y="27" rx="5" ry="5" width="102" height="102" fill="#f6f8fa" />
+  <path
+    class="cls-3"
+    d="M84.74,53l35.05,62.9a.85.85,0,0,1-1.25,1.11L84.39,88.71a8.82,8.82,0,0,0-11.29,0L38.94,117c-.72.61-1.68-.29-1.25-1.11L72.74,53A6.83,6.83,0,0,1,84.74,53Z"
+  />
+  <circle class="cls-4" cx="43.05" cy="56.11" r="10.46" />
+</svg>
