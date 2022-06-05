@@ -27,7 +27,7 @@ def render_svg(glob_pattern: str, size: int) -> None:
 
     for logo in image_folder.glob(glob_pattern):
         input_file = logo.resolve().as_posix()
-        output_file = (output_folder / f"{logo.stem}{size}x{size}.png").resolve().as_posix()
+        output_file = (output_folder / f"{logo.stem}_{size}x{size}.png").resolve().as_posix()
         subprocess.run(f"svgexport {input_file} {output_file} {size}:", shell=True)
 
 
