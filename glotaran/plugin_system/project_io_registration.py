@@ -554,7 +554,7 @@ def project_io_plugin_table(
     header_values = ["Format name", *PROJECT_IO_METHODS]
     if plugin_names:
         header_values.append("Plugin name")
-    headers = tuple(map(lambda x: f"__{x}__", header_values))
+    headers = tuple(f"__{x}__" for x in header_values)
     return MarkdownStr(
         tabulate(
             bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"

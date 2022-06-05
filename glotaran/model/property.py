@@ -421,11 +421,11 @@ def _model_property_setter_factory(cls: type, model_property: ModelProperty):
             if model_property.glotaran_is_scalar_property and not isinstance(value, Parameter):
                 value = Parameter(full_label=str(value))
             elif model_property.glotaran_is_sequence_property and all(
-                map(lambda v: not isinstance(v, Parameter), value)
+                not isinstance(v, Parameter) for v in value
             ):
                 value = [Parameter(full_label=str(v)) for v in value]
             elif model_property.glotaran_is_mapping_property and all(
-                map(lambda v: not isinstance(v, Parameter), value.values())
+                not isinstance(v, Parameter) for v in value.values()
             ):
                 value = {k: Parameter(full_label=str(v)) for k, v in value.items()}
         setattr(self, f"_{model_property._name}", value)

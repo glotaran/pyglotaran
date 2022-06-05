@@ -106,7 +106,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.950
+    rev: v0.960
     hooks:
       - id: mypy
         files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|simulation|model/property.py|builtin/io/pandas)"
@@ -117,7 +117,7 @@ repos:
     rev: 1.5.0
     hooks:
       - id: interrogate
-        args: [-vv, --config=pyproject.toml, glotaran]
+        args: [--config=pyproject.toml, glotaran]
         pass_filenames: false
         additional_dependencies: [click<8]
 
