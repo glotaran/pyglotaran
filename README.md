@@ -65,6 +65,8 @@ As of yet, the pyglotaran package has not yet been used in any peer-reviewed sci
 
 The examples used in this validation process can be obtained from the [pyglotaran-examples repository](https://github.com/glotaran/pyglotaran-examples).
 
+An early access version of the v0.6.0 release was used in scientific teaching by a number of students in the 2022 Photosynthesis and Energy course under supervision by [dr. Ivo van Stokkum](https://www.nat.vu.nl/~ivo/) ([profile](https://research.vu.nl/en/persons/ihm-van-stokkum), github: [ism200](https://github.com/ism200/)). Course material can be found here: [ism200\PE2022](https://github.com/ism200/PE2022/)
+
 ## Glotaran legacy
 
 The pyglotaran package derives its name from the Glotaran software package (now called [glotaran-legacy](https://github.com/glotaran/glotaran-legacy)), first released in 2011 and described in a highly-cited publication in the Journal of Statistical Software, under the title [Glotaran: A Java-Based Graphical User Interface for the R Package TIMP](https://www.jstatsoft.org/article/view/v049i03) ([DOI: 10.18637/jss.v049.i03](https://dx.doi.org/10.18637/jss.v049.i03)).
