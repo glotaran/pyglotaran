@@ -14,7 +14,7 @@ A common use case for the library is the analysis of time-resolved spectroscopy 
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/glotaran/pyglotaran.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/glotaran/pyglotaran/alerts/)
 [![Discord](https://img.shields.io/discord/883443835135475753.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/KfnEYRSTJx)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5596073.svg)](https://doi.org/10.5281/zenodo.5596073)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4534043.svg)](https://doi.org/10.5281/zenodo.4534043)
 
 **Warning**: This is an _early access_ release, please refer to the [usage notice](#usage-notice) down below prior to committing to use pyglotaran to avoid surprises down the line.
 
