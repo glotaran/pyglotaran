@@ -1,5 +1,9 @@
 # pyglotaran
 
+<p align="center">
+  <img width="400" src="https://raw.githubusercontent.com/glotaran/pyglotaran/main/docs/source/images/pyglotaran_logo_transparent.svg">
+</p>
+
 pyglotaran is a Python library for Global and Target Analysis
 
 [![PyPI version](https://badge.fury.io/py/pyglotaran.svg)](https://badge.fury.io/py/pyglotaran)
@@ -76,6 +80,7 @@ Until then, enjoy your glimpse into the future.
 ## Community Support
 
 For questions / suggestion please reach out to us via:
+
 1. [GitHub issues](https://github.com/glotaran/pyglotaran/issues)
 2. [Discord](https://discord.gg/KfnEYRSTJx)
 3. [Google-Groups mailing list](https://groups.google.com/forum/#!forum/glotaran)
