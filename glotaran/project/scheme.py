@@ -6,7 +6,6 @@ from dataclasses import field
 from dataclasses import fields
 from typing import TYPE_CHECKING
 
-from glotaran.deprecation import deprecate
 from glotaran.deprecation import warn_deprecated
 from glotaran.io import load_scheme
 from glotaran.model import Model
@@ -212,29 +211,3 @@ class Scheme:
             .get_global_dimension()
             for dataset_name in self.data
         }
-
-    @staticmethod
-    @deprecate(
-        deprecated_qual_name_usage="glotaran.project.scheme.Scheme.from_yaml_file(filename)",
-        new_qual_name_usage="glotaran.io.load_scheme(filename)",
-        to_be_removed_in_version="0.6.0",
-        importable_indices=(2, 1),
-    )
-    def from_yaml_file(filename: str) -> Scheme:
-        """Create :class:`Scheme` from specs in yaml file.
-
-        Warning
-        -------
-        Deprecated use ``glotaran.io.load_scheme(filename)`` instead.
-
-        Parameters
-        ----------
-        filename : str
-            Path to the spec file.
-
-        Returns
-        -------
-        Scheme
-            Analysis schmeme
-        """
-        return load_scheme(filename)

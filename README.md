@@ -14,7 +14,7 @@ A common use case for the library is the analysis of time-resolved spectroscopy 
 [![Coverage Status](https://codecov.io/gh/glotaran/pyglotaran/branch/master/graph/badge.svg)](https://codecov.io/gh/glotaran/pyglotaran)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/glotaran/pyglotaran.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/glotaran/pyglotaran/alerts/)
 [![Discord](https://img.shields.io/discord/883443835135475753.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/KfnEYRSTJx)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5596073.svg)](https://doi.org/10.5281/zenodo.5596073)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4534043.svg)](https://doi.org/10.5281/zenodo.4534043)
 
 **Warning**: This is an _early access_ release, please refer to the [usage notice](#usage-notice) down below prior to committing to use pyglotaran to avoid surprises down the line.
 
@@ -22,7 +22,7 @@ A common use case for the library is the analysis of time-resolved spectroscopy 
 
 Prerequisites:
 
-- Python 3.8 or 3.9
+- Python 3.8, 3.9 or 3.10
 - On Windows only 64bit is supported
 
 Note for Windows Users: The easiest way to get python for Windows is via [Anaconda](https://www.anaconda.com/)
@@ -64,6 +64,8 @@ Anyone using this package for serious work - scientists and academic users in pa
 As of yet, the pyglotaran package has not yet been used in any peer-reviewed scientific publications (contribution welcome), but it has been partially cross-validated against comparable software, such as the [R-package TIMP](https://dx.doi.org/10.18637/jss.v018.i03), and the TIM software described in [this publication](https://doi.org/10.1016/j.bbabio.2004.04.011) ([DOI: 10.1016/j.bbabio.2004.04.011](https://doi.org/10.1016/j.bbabio.2004.04.011)).
 
 The examples used in this validation process can be obtained from the [pyglotaran-examples repository](https://github.com/glotaran/pyglotaran-examples).
+
+An early access version of the v0.6.0 release was used in scientific teaching by a number of students in the 2022 Photosynthesis and Energy course under supervision by [dr. Ivo van Stokkum](https://www.nat.vu.nl/~ivo/) ([profile](https://research.vu.nl/en/persons/ihm-van-stokkum), github: [ism200](https://github.com/ism200/)). Course material can be found here: [ism200\PE2022](https://github.com/ism200/PE2022/)
 
 ## Glotaran legacy
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 (Unreleased)
+## 0.6.0 (2022-06-06)
 
 ### ✨ Features
 
@@ -38,6 +38,19 @@
 - `glotaran.io.save_result(result, result_path, format_name='legacy')` -> `glotaran.io.save_result(result, Path(result_path) / 'result.yml')`
 - `glotaran.analysis.simulation` -> `glotaran.simulation.simulation`
 - `glotaran.analysis.optimize` -> `glotaran.optimization.optimize`
+
+### 🗑️❌ Deprecated functionality removed in this release
+
+- `glotaran.ParameterGroup` -> `glotaran.parameter.ParameterGroup`
+- `glotaran.read_model_from_yaml` -> `glotaran.io.load_model(..., format_name="yaml_str")`
+- `glotaran.read_model_from_yaml_file` -> `glotaran.io.load_model(..., format_name="yaml")`
+- `glotaran.read_parameters_from_csv_file` -> `glotaran.io.load_parameters(..., format_name="csv")`
+- `glotaran.read_parameters_from_yaml` -> `glotaran.io.load_parameters(..., format_name="yaml_str")`
+- `glotaran.read_parameters_from_yaml_file` -> `glotaran.io.load_parameters(..., format_name="yaml")`
+- `glotaran.io.read_data_file` -> `glotaran.io.load_dataset`
+- `result.get_dataset("<dataset_name>")` -> `result.data["<dataset_name>"]`
+- `glotaran.analysis.result` -> `glotaran.project.result`
+- `glotaran.analysis.scheme` -> `glotaran.project.scheme`
 
 ### 🚧 Maintenance
 
