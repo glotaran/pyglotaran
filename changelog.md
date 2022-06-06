@@ -22,6 +22,7 @@
 - ♻️ Move simulation to own module (#1041)
 - ♻️ Move optimization to new module glotaran.optimization (#1047)
 - 🩹 Fix missing installation of clp-guide megacomplex as plugin (#1066)
+- 🚧🔧 Add 'extras' and 'full' extras_require installation options (#1089)
 
 ### 🩹 Bug fixes
 
