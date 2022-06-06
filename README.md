@@ -41,6 +41,12 @@ If you want to install it via conda, you can run the following command:
 conda install -c conda-forge pyglotaran
 ```
 
+To install pyglotaran together with [pyglotaran-extras](https://github.com/glotaran/pyglotaran-extras) which provides common plotting functionality you can run:
+
+```console
+pip install pyglotaran[extras]
+```
+
 ### From Source
 
 To install from source, e.g. for testing or development purposes, run these commands in your shell/terminal:
