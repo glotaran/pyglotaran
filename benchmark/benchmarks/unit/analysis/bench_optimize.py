@@ -4,7 +4,7 @@ import xarray as xr
 try:
     from glotaran.analysis.optimize import optimize
     from glotaran.analysis.simulation import simulate
-    from glotaran.analysis.test.models import MultichannelMulticomponentDecay
+    from glotaran.analysis.test.suites import MultichannelMulticomponentDecay
 except ImportError:
     from glotaran.optimization.optimize import optimize
     from glotaran.simulation import simulate
