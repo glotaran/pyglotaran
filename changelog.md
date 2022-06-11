@@ -18,6 +18,8 @@
 
 ### 🚧 Maintenance
 
+🚇🩹 Fix wrong comparison in pr_benchmark workflow (#1097)
+
 (changes-0_6_0)=
 
 ## 🚀 0.6.0 (2022-06-06)
