@@ -114,13 +114,13 @@ repos:
         exclude: "docs"
         additional_dependencies: [types-all]
 
-  - repo: https://github.com/econchick/interrogate
-    rev: 1.5.0
-    hooks:
-      - id: interrogate
-        args: [--config=pyproject.toml, glotaran]
-        pass_filenames: false
-        additional_dependencies: [click<8]
+  # - repo: https://github.com/econchick/interrogate
+  #   rev: 1.5.0
+  #   hooks:
+  #     - id: interrogate
+  #       args: [--config=pyproject.toml, glotaran]
+  #       pass_filenames: false
+  #       additional_dependencies: [click<8]
 
   - repo: https://github.com/myint/rstcheck
     rev: "v6.1.0"
