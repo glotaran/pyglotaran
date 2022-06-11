@@ -1,5 +1,23 @@
 # Changelog
 
+(changes-0_7_0)=
+
+## 🚀 0.7.0 (Unreleased)
+
+### ✨ Features
+
+### 👌 Minor Improvements:
+
+### 🩹 Bug fixes
+
+### 📚 Documentation
+
+### 🗑️ Deprecations (due in 0.9.0)
+
+### 🗑️❌ Deprecated functionality removed in this release
+
+### 🚧 Maintenance
+
 (changes-0_6_0)=
 
 ## 🚀 0.6.0 (2022-06-06)
