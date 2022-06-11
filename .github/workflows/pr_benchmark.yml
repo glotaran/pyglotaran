@@ -78,7 +78,7 @@ jobs:
 
           pr_nr = os.environ.get("PR_NR")
           diff_release_main = subprocess.run(
-              ["asv", "--config=benchmark/asv.conf.json", "compare", "${{steps.benchmark_run.outputs.last_tag}}", "HEAD"],
+              ["asv", "--config=benchmark/asv.conf.json", "compare", "${{steps.benchmark_run.outputs.last_tag}}", "upstream/main"],
               capture_output=True,
           )
           diff_main_PR = subprocess.run(
