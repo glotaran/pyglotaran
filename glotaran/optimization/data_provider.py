@@ -70,11 +70,9 @@ class DataProvider:
     def get_axis_slice_from_interval(
         interval: tuple[Number, Number], axis: np.typing.ArrayLike
     ) -> slice:
-        minimum = np.abs(axis.values - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+        minimum = np.abs(axis - interval[0]).argmin() if not np.isinf(interval[0]) else 0
         maximum = (
-            np.abs(axis.values - interval[1]).argmin() + 1
-            if not np.isinf(interval[1])
-            else axis.size
+            np.abs(axis - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
         )
         return slice(minimum, maximum)
 
@@ -82,11 +80,11 @@ class DataProvider:
         self, model: Model, label: str, model_dimension: str, global_dimension: str
     ):
 
-        model_weights = [weight for weight in model.weights if label in weight.dataset]
+        model_weights = [weight for weight in model.weights if label in weight.datasets]
         if not model_weights:
             return
 
-        if self._weights[label]:
+        if self._weight[label]:
             warnings.warn(
                 f"Ignoring model weight for dataset '{label}'"
                 " because weight is already supplied by dataset."
@@ -114,7 +112,7 @@ class DataProvider:
                 )
             weight[idx] *= model_weight.value
 
-        self._weights[label] = weight.data
+        self._weight[label] = weight.data
 
     def get_data(self, dataset_label: str) -> np.typing.ArrayLike:
         return self._data[dataset_label]
