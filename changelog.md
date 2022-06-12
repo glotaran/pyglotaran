@@ -18,7 +18,8 @@
 
 ### 🚧 Maintenance
 
-🚇🩹 Fix wrong comparison in pr_benchmark workflow (#1097)
+- 🚇🩹 Fix wrong comparison in pr_benchmark workflow (#1097)
+- 🔧 Set sourcery-ai target python version to 3.8 (#1095)
 
 (changes-0_6_0)=
 
