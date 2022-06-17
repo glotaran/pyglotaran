@@ -126,6 +126,7 @@ repos:
     hooks:
       - id: rstcheck
         additional_dependencies: [sphinx]
+        exclude: "^docs/source/_templates"
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.9.0
