@@ -8,6 +8,8 @@
 
 ### 👌 Minor Improvements:
 
+- 👌🎨 Wrap model section in result markdown in details tag for notebooks (#1098)
+
 ### 🩹 Bug fixes
 
 ### 📚 Documentation

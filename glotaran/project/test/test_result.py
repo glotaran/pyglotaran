@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -29,16 +30,19 @@ def dummy_result():
 
 def test_result_ipython_rendering(dummy_result: Result):
     """Autorendering in ipython"""
+    details_pattern = re.compile(r".+<br><details>\n\n### Model.+<\/details>", re.DOTALL)
 
     rendered_obj = format_display_data(dummy_result)[0]
 
     assert "text/markdown" in rendered_obj
     assert rendered_obj["text/markdown"].startswith("| Optimization Result")
+    assert details_pattern.match(rendered_obj["text/markdown"]) is not None
 
     rendered_markdown_return = format_display_data(dummy_result.markdown())[0]
 
     assert "text/markdown" in rendered_markdown_return
     assert rendered_markdown_return["text/markdown"].startswith("| Optimization Result")
+    assert details_pattern.match(rendered_markdown_return["text/markdown"]) is None
 
 
 def test_result_markdown_nested_parameters():
