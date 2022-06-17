@@ -174,7 +174,7 @@ class Result:
         with_model: bool = True,
         *,
         base_heading_level: int = 1,
-        model_is_detail: bool = False,
+        wrap_model_in_details: bool = False,
     ) -> MarkdownStr:
         """Format the model as a markdown text.
 
@@ -184,7 +184,7 @@ class Result:
             If `True`, the model will be printed with initial and optimized parameters filled in.
         base_heading_level : int
             The level of the base heading.
-        model_is_detail: bool
+        wrap_model_in_details: bool
             Wraps model into details tag. Defaults to ``False``
 
         Returns
@@ -238,7 +238,7 @@ class Result:
                 initial_parameters=self.initial_parameters,
                 base_heading_level=base_heading_level,
             )
-            if model_is_detail is False:
+            if wrap_model_in_details is False:
                 result_table = f"{result_table}\n\n{model_md}"
             else:
                 result_table = f"{result_table}\n\n<br><details>\n\n{model_md}\n</details>"
@@ -255,7 +255,7 @@ class Result:
         str
             The scheme as markdown string.
         """
-        return str(self.markdown(base_heading_level=3, model_is_detail=True))
+        return str(self.markdown(base_heading_level=3, wrap_model_in_details=True))
 
     def __str__(self) -> str:
         """Overwrite of ``__str__``."""
