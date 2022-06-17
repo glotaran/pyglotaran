@@ -169,7 +169,13 @@ class Result:
 
         return replace(self.scheme, parameters=self.optimized_parameters)
 
-    def markdown(self, with_model: bool = True, base_heading_level: int = 1) -> MarkdownStr:
+    def markdown(
+        self,
+        with_model: bool = True,
+        *,
+        base_heading_level: int = 1,
+        model_is_detail: bool = False,
+    ) -> MarkdownStr:
         """Format the model as a markdown text.
 
         Parameters
@@ -178,6 +184,8 @@ class Result:
             If `True`, the model will be printed with initial and optimized parameters filled in.
         base_heading_level : int
             The level of the base heading.
+        model_is_detail: bool
+            Wraps model into details tag. Defaults to ``False``
 
         Returns
         -------
@@ -230,7 +238,10 @@ class Result:
                 initial_parameters=self.initial_parameters,
                 base_heading_level=base_heading_level,
             )
-            result_table = f"{result_table}\n\n{model_md}"
+            if model_is_detail is False:
+                result_table = f"{result_table}\n\n{model_md}"
+            else:
+                result_table = f"{result_table}\n\n<br><details>\n\n{model_md}\n</details>"
 
         return MarkdownStr(result_table)
 
@@ -244,7 +255,7 @@ class Result:
         str
             The scheme as markdown string.
         """
-        return str(self.markdown(base_heading_level=3))
+        return str(self.markdown(base_heading_level=3, model_is_detail=True))
 
     def __str__(self) -> str:
         """Overwrite of ``__str__``."""
