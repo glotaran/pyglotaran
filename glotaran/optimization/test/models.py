@@ -35,6 +35,15 @@ class SimpleTestMegacomplex(Megacomplex):
     def index_dependent(self, dataset_model):
         return self.is_index_dependent
 
+    def finalize_data(
+        self,
+        dataset_model,
+        dataset,
+        is_full_model: bool = False,
+        as_global: bool = False,
+    ):
+        pass
+
 
 class SimpleTestModel(Model):
     @classmethod
