@@ -3,6 +3,7 @@ from __future__ import annotations
 from warnings import warn
 
 import numpy as np
+from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
 from glotaran import __version__ as glotaran_version
@@ -48,7 +49,7 @@ class Optimizer:
         self._verbose = verbose
         self._raise = raise_exception
 
-        self._optimization_result = None
+        self._optimization_result: OptimizeResult = None
         self._termination_reason = ""
 
         self._optimization_groups = [
@@ -102,6 +103,7 @@ class Optimizer:
     def create_result(self) -> Result:
 
         success = self._optimization_result is not None
+        #  result: OptimizeResult = self._optimization_result
 
         number_of_function_evaluation = (
             self._optimization_result.nfev

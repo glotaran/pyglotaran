@@ -23,7 +23,7 @@ residual_functions = {
 class EstimationProvider:
     def __init__(self, group: DatasetGroup):
         self._group = group
-        self._clp_penalty = []
+        self._clp_penalty: list[Number] = []
         try:
             self._residual_function = residual_functions[group.residual_function]
         except KeyError as e:
@@ -60,15 +60,17 @@ class EstimationProvider:
             clps[idx] = reduced_clps[i]
 
         for relation in model.clp_relations:
-            relation = relation.fill(model, parameters)
+            relation = relation.fill(model, parameters)  # type:ignore[attr-defined]
             if (
-                relation.target in clp_labels
-                and relation.applies(index)
-                and relation.source in clp_labels
+                relation.target in clp_labels  # type:ignore[attr-defined]
+                and relation.applies(index)  # type:ignore[attr-defined]
+                and relation.source in clp_labels  # type:ignore[attr-defined]
             ):
-                source_idx = clp_labels.index(relation.source)
-                target_idx = clp_labels.index(relation.target)
-                clps[target_idx] = relation.parameter * clps[source_idx]
+                source_idx = clp_labels.index(relation.source)  # type:ignore[attr-defined]
+                target_idx = clp_labels.index(relation.target)  # type:ignore[attr-defined]
+                clps[target_idx] = (
+                    relation.parameter * clps[source_idx]  # type:ignore[attr-defined]
+                )
         return clps
 
     def get_additional_penalties(self) -> list[Number]:
@@ -89,7 +91,7 @@ class EstimationProvider:
         parameters = self.group.parameters
         penalties = []
         for penalty in model.clp_area_penalties:
-            penalty = penalty.fill(model, parameters)
+            penalty = penalty.fill(model, parameters)  # type:ignore[attr-defined]
             source_area = np.array([])
             target_area = np.array([])
 
@@ -97,10 +99,10 @@ class EstimationProvider:
                 [
                     source_area,
                     _get_area(
-                        penalty.source,
+                        penalty.source,  # type:ignore[attr-defined]
                         clp_labels,
                         clps,
-                        penalty.source_intervals,
+                        penalty.source_intervals,  # type:ignore[attr-defined]
                         global_axis,
                     ),
                 ]
@@ -110,17 +112,20 @@ class EstimationProvider:
                 [
                     target_area,
                     _get_area(
-                        penalty.target,
+                        penalty.target,  # type:ignore[attr-defined]
                         clp_labels,
                         clps,
-                        penalty.target_intervals,
+                        penalty.target_intervals,  # type:ignore[attr-defined]
                         global_axis,
                     ),
                 ]
             )
-            area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
+            area_penalty = np.abs(
+                np.sum(source_area)
+                - penalty.parameter * np.sum(target_area)  # type:ignore[attr-defined]
+            )
 
-            penalties.append(area_penalty * penalty.weight)
+            penalties.append(area_penalty * penalty.weight)  # type:ignore[attr-defined]
 
         return penalties
 
@@ -146,8 +151,12 @@ class EstimationProviderUnlinked(EstimationProvider):
         super().__init__(group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
-        self._clps = {label: [] for label in self.group.dataset_models}
-        self._residuals = {label: [] for label in self.group.dataset_models}
+        self._clps: dict[str, list[np.typing.ArrayLike] | np.typing.ArrayLike] = {
+            label: [] for label in self.group.dataset_models
+        }
+        self._residuals: dict[str, list[np.typing.ArrayLike] | np.typing.ArrayLike] = {
+            label: [] for label in self.group.dataset_models
+        }
 
     def estimate(self):
         self._clp_penalty.clear()
@@ -192,7 +201,7 @@ class EstimationProviderUnlinked(EstimationProvider):
                     label
                 ).clp_labels
                 clps[label] = xr.DataArray(
-                    self._clps[label].reshape((len(global_clp_labels), len(clp_labels))),
+                    np.array(self._clps[label]).reshape((len(global_clp_labels), len(clp_labels))),
                     coords={"global_clp_label": global_clp_labels, "clp_label": clp_labels},
                     dims=["global_clp_label", "clp_label"],
                 )
@@ -274,8 +283,12 @@ class EstimationProviderLinked(EstimationProvider):
         super().__init__(group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
-        self._clps = [None] * self._data_provider.aligned_global_axis.size
-        self._residuals = [None] * self._data_provider.aligned_global_axis.size
+        self._clps: list[np.typing.ArrayLike] = [
+            None
+        ] * self._data_provider.aligned_global_axis.size
+        self._residuals: list[np.typing.ArrayLike] = [
+            None
+        ] * self._data_provider.aligned_global_axis.size
 
     def estimate(self):
         for index, global_index in enumerate(self._data_provider.aligned_global_axis):
@@ -302,8 +315,8 @@ class EstimationProviderLinked(EstimationProvider):
     def get_result(
         self,
     ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
-        clps = {label: [] for label in self.group.dataset_models}
-        residuals = {label: [] for label in self.group.dataset_models}
+        clps: dict[str, xr.DataArray] = {}
+        residuals: dict[str, xr.DataArray] = {}
         for dataset_label in self.group.dataset_models:
             dataset_clps, dataset_residual = [], []
             for index in range(self._data_provider.aligned_global_axis.size):
