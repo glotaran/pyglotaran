@@ -53,6 +53,15 @@ class OptimizationGroup:
                 dataset_group, self._data_provider, self._matrix_provider
             )
 
+        if self._add_svd:
+            for label, dataset in self._data.items():
+                self._create_svd(
+                    "data",
+                    dataset,
+                    self._data_provider.get_model_dimension(label),
+                    self._data_provider.get_global_dimension(label),
+                )
+
     def calculate(self, parameters: ParameterGroup):
         self._dataset_group.set_parameters(parameters)
         self._matrix_provider.calculate()
