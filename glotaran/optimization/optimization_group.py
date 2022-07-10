@@ -9,8 +9,10 @@ from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import DatasetGroup
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
+from glotaran.optimization.estimation_provider import EstimationProvider
 from glotaran.optimization.estimation_provider import EstimationProviderLinked
 from glotaran.optimization.estimation_provider import EstimationProviderUnlinked
+from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.parameter import ParameterGroup
@@ -39,27 +41,31 @@ class OptimizationGroup:
             link_clp = dataset_group.is_linkable(scheme.parameters, scheme.data)
 
         if link_clp:
-            self._data_provider = DataProviderLinked(scheme, dataset_group)
-            self._matrix_provider = MatrixProviderLinked(dataset_group, self._data_provider)
-            self._estimation_provider = EstimationProviderLinked(
-                dataset_group, self._data_provider, self._matrix_provider
+            data_provider = DataProviderLinked(scheme, dataset_group)
+            matrix_provider = MatrixProviderLinked(dataset_group, data_provider)
+            estimation_provider = EstimationProviderLinked(
+                dataset_group, data_provider, matrix_provider
             )
         else:
-            self._data_provider = DataProvider(scheme, dataset_group)
-            self._matrix_provider = MatrixProviderUnlinked(
-                self._dataset_group, self._data_provider
+            data_provider = DataProvider(scheme, dataset_group)  # type:ignore[assignment]
+            matrix_provider = MatrixProviderUnlinked(  # type:ignore[assignment]
+                self._dataset_group, data_provider
             )
-            self._estimation_provider = EstimationProviderUnlinked(
-                dataset_group, self._data_provider, self._matrix_provider
+            estimation_provider = EstimationProviderUnlinked(  # type:ignore[assignment]
+                dataset_group, data_provider, matrix_provider  # type:ignore[arg-type]
             )
+
+        self._data_provider: DataProvider = data_provider
+        self._matrix_provider: MatrixProvider = matrix_provider
+        self._estimation_provider: EstimationProvider = estimation_provider
 
         if self._add_svd:
             for label, dataset in self._data.items():
                 self._create_svd(
                     "data",
                     dataset,
-                    self._data_provider.get_model_dimension(label),
-                    self._data_provider.get_global_dimension(label),
+                    dataset.data.dims[0],
+                    dataset.data.dims[1],
                 )
 
     def calculate(self, parameters: ParameterGroup):
