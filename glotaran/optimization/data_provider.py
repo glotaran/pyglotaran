@@ -15,14 +15,14 @@ from glotaran.project import Scheme
 class DataProvider:
     def __init__(self, scheme: Scheme, dataset_group: DatasetGroup):
 
-        self._data = {}
-        self._weight = {}
-        self._flattened_data = {}
-        self._flattened_weight = {}
-        self._model_axes = {}
-        self._model_dimensions = {}
-        self._global_axes = {}
-        self._global_dimensions = {}
+        self._data: dict[str, np.typing.ArrayLike] = {}
+        self._weight: dict[str, np.typing.ArrayLike] = {}
+        self._flattened_data: dict[str, np.typing.ArrayLike] = {}
+        self._flattened_weight: dict[str, np.typing.ArrayLike] = {}
+        self._model_axes: dict[str, np.typing.ArrayLike] = {}
+        self._model_dimensions: dict[str, str] = {}
+        self._global_axes: dict[str, np.typing.ArrayLike] = {}
+        self._global_dimensions: dict[str, str] = {}
 
         for label, dataset_model in dataset_group.dataset_models.items():
 
@@ -80,7 +80,11 @@ class DataProvider:
         self, model: Model, label: str, model_dimension: str, global_dimension: str
     ):
 
-        model_weights = [weight for weight in model.weights if label in weight.datasets]
+        model_weights = [
+            weight
+            for weight in model.weights  # type:ignore[attr-defined]
+            if label in weight.datasets  # type:ignore[attr-defined]
+        ]
         if not model_weights:
             return
 
@@ -102,15 +106,15 @@ class DataProvider:
         for model_weight in model_weights:
 
             idx = {}
-            if model_weight.global_interval is not None:
+            if model_weight.global_interval is not None:  # type:ignore[attr-defined]
                 idx[global_dimension] = self.get_axis_slice_from_interval(
-                    model_weight.global_interval, global_axis
+                    model_weight.global_interval, global_axis  # type:ignore[attr-defined]
                 )
-            if model_weight.model_interval is not None:
+            if model_weight.model_interval is not None:  # type:ignore[attr-defined]
                 idx[model_dimension] = self.get_axis_slice_from_interval(
-                    model_weight.model_interval, model_axis
+                    model_weight.model_interval, model_axis  # type:ignore[attr-defined]
                 )
-            weight[idx] *= model_weight.value
+            weight[idx] *= model_weight.value  # type:ignore[attr-defined]
 
         self._weight[label] = weight.data
 
@@ -183,7 +187,7 @@ class DataProviderLinked(DataProvider):
     def get_aligned_group_label(self, index: int) -> str:
         return self._aligned_group_labels[index]
 
-    def get_aligned_dataset_indices(self, index: int) -> list[Number]:
+    def get_aligned_dataset_indices(self, index: int) -> list[int]:
         return self._aligned_dataset_indices[index]
 
     def get_aligned_data(self, index: int) -> np.typing.ArrayLike:
@@ -265,7 +269,7 @@ class DataProviderLinked(DataProvider):
             fill_value="",
         )
         self._aligned_group_labels = aligned_group_labels.str.join(dim="dataset").data
-        self._group_definitions = {}
+        self._group_definitions: dict[str, list[str]] = {}
         for i, group_label in enumerate(self._aligned_group_labels):
             if group_label not in self._group_definitions:
                 self._group_definitions[group_label] = list(

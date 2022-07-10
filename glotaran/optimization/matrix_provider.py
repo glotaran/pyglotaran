@@ -41,6 +41,7 @@ class MatrixProvider:
         self._group = group
         self._matrix_containers: dict[str, MatrixContainer | list[MatrixContainer]] = {}
         self._global_matrix_containers: dict[str, MatrixContainer] = {}
+        self._data_provider: DataProvider
 
     @property
     def group(self) -> DatasetGroup:
@@ -49,8 +50,8 @@ class MatrixProvider:
     def get_matrix_container(self, dataset_label: str, index: int) -> MatrixContainer:
         matrix_container = self._matrix_containers[dataset_label]
         if self.group.dataset_models[dataset_label].is_index_dependent():
-            matrix_container = matrix_container[index]
-        return matrix_container
+            matrix_container = matrix_container[index]  # type:ignore[index]
+        return matrix_container  # type:ignore[return-value]
 
     def create_dataset_matrices(self):
         for label, dataset_model in self.group.dataset_models.items():
@@ -78,7 +79,7 @@ class MatrixProvider:
         as_global_model: bool = False,
     ) -> MatrixContainer:
 
-        clp_labels = None
+        clp_labels: list[str] = []
         matrix = None
 
         megacomplex_iterator = dataset_model.iterate_megacomplexes
@@ -88,7 +89,7 @@ class MatrixProvider:
             model_axis, global_axis = global_axis, model_axis
 
         for scale, megacomplex in megacomplex_iterator():
-            this_clp_labels, this_matrix = megacomplex.calculate_matrix(
+            this_clp_labels, this_matrix = megacomplex.calculate_matrix(  # type:ignore[union-attr]
                 dataset_model, global_index, global_axis, model_axis
             )
 
@@ -136,12 +137,14 @@ class MatrixProvider:
     ) -> MatrixContainer:
 
         model = self.group.model
-        if len(model.clp_constraints) == 0:
+        if len(model.clp_constraints) == 0:  # type:ignore[attr-defined]
             return matrix
 
         clp_labels = matrix.clp_labels
         removed_clp_labels = [
-            c.target for c in model.clp_constraints if c.target in clp_labels and c.applies(index)
+            c.target  # type:ignore[attr-defined]
+            for c in model.clp_constraints  # type:ignore[attr-defined]
+            if c.target in clp_labels and c.applies(index)  # type:ignore[attr-defined]
         ]
         reduced_clp_labels = [c for c in clp_labels if c not in removed_clp_labels]
         mask = [label in reduced_clp_labels for label in clp_labels]
@@ -163,16 +166,20 @@ class MatrixProvider:
         relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
         idx_to_delete = []
-        for relation in model.clp_relations:
-            if relation.target in clp_labels and relation.applies(index):
+        for relation in model.clp_relations:  # type:ignore[attr-defined]
+            if relation.target in clp_labels and relation.applies(  # type:ignore[attr-defined]
+                index
+            ):
 
-                if relation.source not in clp_labels:
+                if relation.source not in clp_labels:  # type:ignore[attr-defined]
                     continue
 
-                relation = relation.fill(model, parameters)
-                source_idx = clp_labels.index(relation.source)
-                target_idx = clp_labels.index(relation.target)
-                relation_matrix[target_idx, source_idx] = relation.parameter
+                relation = relation.fill(model, parameters)  # type:ignore[attr-defined]
+                source_idx = clp_labels.index(relation.source)  # type:ignore[attr-defined]
+                target_idx = clp_labels.index(relation.target)  # type:ignore[attr-defined]
+                relation_matrix[
+                    target_idx, source_idx
+                ] = relation.parameter  # type:ignore[attr-defined]
                 idx_to_delete.append(target_idx)
 
         reduced_clp_labels = [
@@ -185,7 +192,7 @@ class MatrixProvider:
     def calculate(self):
         raise NotImplementedError
 
-    def get_result(self) -> tuple(dict[str, xr.DataArray], dict[str, xr.DataArray]):
+    def get_result(self) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]:
         matrices = {}
         global_matrices = {}
         for label, matrix_container in self._matrix_containers.items():
@@ -203,17 +210,17 @@ class MatrixProvider:
                                 ("clp_label", container.clp_labels),
                             ),
                         )
-                        for container in matrix_container
+                        for container in matrix_container  # type:ignore[union-attr]
                     ],
                     dim=global_dimension,
                 )
                 matrices[label].coords[global_dimension] = global_axis
             else:
                 matrices[label] = xr.DataArray(
-                    matrix_container.matrix,
+                    matrix_container.matrix,  # type:ignore[union-attr]
                     coords=(
                         (model_dimension, model_axis),
-                        ("clp_label", matrix_container.clp_labels),
+                        ("clp_label", matrix_container.clp_labels),  # type:ignore[union-attr]
                     ),
                 )
         for label, matrix_container in self._global_matrix_containers.items():
@@ -320,8 +327,12 @@ class MatrixProviderLinked(MatrixProvider):
     def __init__(self, group: DatasetGroup, data_provider: DataProviderLinked):
         super().__init__(group)
         self._data_provider = data_provider
-        self._aligned_full_clp_labels = [None] * self._data_provider.aligned_global_axis.size
-        self._aligned_matrices = [None] * self._data_provider.aligned_global_axis.size
+        self._aligned_full_clp_labels: list[list[str]] = [
+            None  # type:ignore[list-item]
+        ] * self._data_provider.aligned_global_axis.size
+        self._aligned_matrices: list[MatrixContainer] = [
+            None  # type:ignore[list-item]
+        ] * self._data_provider.aligned_global_axis.size
 
     @property
     def aligned_full_clp_labels(self) -> list[list[str]]:
@@ -369,7 +380,7 @@ class MatrixProviderLinked(MatrixProvider):
         if len(matrices) == 1:
             return matrices[0]
         masks = []
-        full_clp_labels = None
+        full_clp_labels: list[str] = []
         sizes = []
         dim1 = 0
         for matrix in matrices:
@@ -377,7 +388,7 @@ class MatrixProviderLinked(MatrixProvider):
             model_axis_size = matrix.matrix.shape[0]
             sizes.append(model_axis_size)
             dim1 += model_axis_size
-            if full_clp_labels is None:
+            if len(full_clp_labels) == 0:
                 full_clp_labels = clp_labels.copy()
                 masks.append([i for i, _ in enumerate(clp_labels)])
             else:
