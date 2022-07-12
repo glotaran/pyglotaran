@@ -224,6 +224,10 @@ def data_var_test(
     if expected_var_name == "weighted_data" and expected_var_name not in current_result.data_vars:
         return
 
+    # weight related data vars are only saved if the data has weights applied
+    if "weight" in expected_var_name and "weight" not in expected_result.data_vars:
+        return
+
     expected_var_name = rename_with_suffix(
         expected_var_name,
         [
