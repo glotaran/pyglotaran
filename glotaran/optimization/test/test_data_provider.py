@@ -142,6 +142,6 @@ def test_data_provider_linking_methods(method: str, scheme: Scheme, dataset_grou
     wanted_global_axis = [1, 3, 5, 6, 10]
     if method == "backward":
         wanted_global_axis = [0, 1, 3, 5, 6, 10]
-    if method == "forward":
+    elif method == "forward":
         wanted_global_axis = [1, 3, 5, 6, 7, 10]
     assert np.array_equal(data_provider.aligned_global_axis, wanted_global_axis)

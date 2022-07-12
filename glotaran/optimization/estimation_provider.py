@@ -387,15 +387,17 @@ def _get_area(
             min(interval[1], np.max(global_axis)),
         )
         start_idx = (
-            np.abs(global_axis - bounded_interval[0]).argmin()
-            if not np.isinf(bounded_interval[0])
-            else 0
+            0
+            if np.isinf(bounded_interval[0])
+            else np.abs(global_axis - bounded_interval[0]).argmin()
         )
+
         end_idx = (
-            np.abs(global_axis - bounded_interval[1]).argmin()
-            if not np.isinf(bounded_interval[1])
-            else global_axis.size - 1
+            global_axis.size - 1
+            if np.isinf(bounded_interval[1])
+            else np.abs(global_axis - bounded_interval[1]).argmin()
         )
+
         for i in range(start_idx, end_idx + 1):
             index_clp_labels = clp_labels[i] if isinstance(clp_labels[0], list) else clp_labels
             if clp_label in index_clp_labels:
