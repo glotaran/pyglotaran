@@ -124,9 +124,9 @@ class Optimizer:
             self._parameters.set_from_label_and_value_arrays(
                 self._free_parameter_labels, self._optimization_result.x
             )
+        elif self._parameter_history.number_of_records == 1:
+            raise InitialParameterError()
         else:
-            if self._parameter_history.number_of_records == 1:
-                raise InitialParameterError()
             self._parameters.set_from_history(self._parameter_history, -2)
 
         full_penalty = self.calculate_penalty()
