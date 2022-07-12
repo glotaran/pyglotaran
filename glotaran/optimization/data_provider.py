@@ -70,10 +70,13 @@ class DataProvider:
     def get_axis_slice_from_interval(
         interval: tuple[Number, Number], axis: np.typing.ArrayLike
     ) -> slice:
-        minimum = np.abs(axis - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+        minimum = 0 if np.isinf(interval[0]) else np.abs(axis - interval[0]).argmin()
         maximum = (
-            np.abs(axis - interval[1]).argmin() + 1 if not np.isinf(interval[1]) else axis.size
+            axis.size
+            if np.isinf(interval[1])
+            else np.abs(axis - interval[1]).argmin() + 1
         )
+
         return slice(minimum, maximum)
 
     def add_model_weight(
