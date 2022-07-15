@@ -61,7 +61,7 @@ class DataProvider:
     ) -> np.typing.ArrayLike | None:
         data = None
         if name in dataset:
-            data = dataset[name].data
+            data = dataset[name].data.copy()
             if dataset[name].dims != (model_dimension, global_dimension):
                 data = data.T
         return data
