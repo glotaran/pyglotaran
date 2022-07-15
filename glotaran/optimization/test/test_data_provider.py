@@ -73,7 +73,9 @@ def test_data_provider(
     print(data_provider.get_data("dataset1"))
     assert data_provider.get_model_dimension("dataset1") == "model"
     assert data_provider.get_global_dimension("dataset1") == "global"
-    assert np.array_equal(dataset_one.data, data_provider.get_data("dataset1"))
+    assert np.array_equal(
+        dataset_one.data * dataset_one.weight, data_provider.get_data("dataset1")
+    )
     assert np.array_equal(dataset_one.weight, data_provider.get_weight("dataset1"))
     assert np.array_equal(dataset_one.coords["model"], data_provider.get_model_axis("dataset1"))
     assert np.array_equal(dataset_one.coords["global"], data_provider.get_global_axis("dataset1"))
