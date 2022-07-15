@@ -77,4 +77,4 @@ def add_svd_to_dataset(
         l, s, r = np.linalg.svd(data_array, full_matrices=False)
         dataset[f"{name}_left_singular_vectors"] = ((lsv_dim, "left_singular_value_index"), l)
         dataset[f"{name}_singular_values"] = (("singular_value_index"), s)
-        dataset[f"{name}_right_singular_vectors"] = (("right_singular_value_index", rsv_dim), r)
+        dataset[f"{name}_right_singular_vectors"] = ((rsv_dim, "right_singular_value_index"), r.T)
