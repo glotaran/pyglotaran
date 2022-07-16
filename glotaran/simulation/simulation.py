@@ -192,7 +192,7 @@ def simulate_full_model(
         raise ValueError("Index dependent models for global dimension are not supported.")
 
     global_matrix = MatrixProvider.calculate_dataset_matrix(
-        dataset_model, None, global_axis, model_axis, as_global_model=True
+        dataset_model, None, global_axis, model_axis, global_matrix=True
     )
     global_clp_labels = global_matrix.clp_labels
     global_matrix = xr.DataArray(

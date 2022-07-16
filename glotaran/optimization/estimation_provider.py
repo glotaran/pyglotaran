@@ -1,3 +1,4 @@
+"""Module containing the estimation provider classes."""
 from __future__ import annotations
 
 from numbers import Number
@@ -14,31 +15,79 @@ from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
 
-residual_functions = {
+SUPPORTED_RESIUDAL_FUNCTIONS = {
     "variable_projection": residual_variable_projection,
     "non_negative_least_squares": residual_nnls,
 }
 
 
+class UnsupportedResidualFunctionError(ValueError):
+    """Inidcates that the residual function is unsupported."""
+
+    def __init__(self, residual_function: str):
+        """Initialize an UnsupportedMethodError.
+
+        Parameters
+        ----------
+        residual_function : str
+            The unsupported residual_function.
+        """
+        super().__init__(
+            f"Unknown residual function '{residual_function}', "
+            f"supported functions are: {list(SUPPORTED_RESIUDAL_FUNCTIONS.keys())}."
+        )
+
+
 class EstimationProvider:
-    def __init__(self, group: DatasetGroup):
-        self._group = group
+    """A class to provide estimation for optimization."""
+
+    def __init__(self, dataset_group: DatasetGroup):
+        """Initialize an estimation provider for a dataset group.
+
+        Parameters
+        ----------
+        dataset_group : DatasetGroup
+            The dataset group.
+        Raises
+        ------
+        UnsupportedResidualFunctionError
+            Raised when residual function of the group dataset group is unsupported.
+        """
+        self._group = dataset_group
         self._clp_penalty: list[Number] = []
         try:
-            self._residual_function = residual_functions[group.residual_function]
+            self._residual_function = SUPPORTED_RESIUDAL_FUNCTIONS[dataset_group.residual_function]
         except KeyError as e:
-            raise ValueError(
-                f"Unknown residual function '{group.residual_function}', "
-                f"allowed functions are: {list(residual_functions.keys())}."
-            ) from e
+            raise UnsupportedResidualFunctionError(dataset_group.residual_function) from e
 
     @property
     def group(self) -> DatasetGroup:
+        """Get the dataset group.
+
+        Returns
+        -------
+        DatasetGroup
+            The dataset group.
+        """
         return self._group
 
     def calculate_residual(
         self, matrix: np.typing.ArrayLike, data: np.typing.ArrayLike
     ) -> tuple[np.typing.ArrayLike, np.typing.ArrayLike]:
+        """Calculate the clps and the residual for a matrix and data.
+
+        Parameters
+        ----------
+        matrix : np.typing.ArrayLike
+            The matrix.
+        data : np.typing.ArrayLike
+            The data.
+
+        Returns
+        -------
+        tuple[np.typing.ArrayLike, np.typing.ArrayLike]
+            The estimated clp and residual.
+        """
         return self._residual_function(matrix, data)
 
     def retrieve_clps(
@@ -48,6 +97,24 @@ class EstimationProvider:
         reduced_clps: np.typing.ArrayLike,
         index: Number,
     ) -> np.typing.ArrayLike:
+        """Retrieve clp from reduced clp.
+
+        Parameters
+        ----------
+        clp_labels : list[str]
+            The original clp labels.
+        reduced_clp_labels : list[str]
+            The reduced clp labels.
+        reduced_clps : np.typing.ArrayLike
+            The reduced clps.
+        index : Number
+            The index on the global axis.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The retrieved clps.
+        """
         model = self.group.model
         parameters = self.group.parameters
         if len(model.clp_relations) == 0 and len(model.clp_constraints) == 0:
@@ -74,6 +141,13 @@ class EstimationProvider:
         return clps
 
     def get_additional_penalties(self) -> list[Number]:
+        """Get the additional penalty.
+
+        Returns
+        -------
+        list[Number]
+            The additional penalty.
+        """
         return self._clp_penalty
 
     def calculate_clp_penalties(
@@ -82,11 +156,22 @@ class EstimationProvider:
         clps: list[np.ndarray],
         global_axis: np.ndarray,
     ) -> list[Number]:
+        """Calculate the clp penalty.
 
-        # TODO: make a decision on how to handle clp_penalties per dataset
-        # 1. sum up contributions per dataset on each dataset_axis (v0.4.1)
-        # 2. sum up contributions on the global_axis (future?)
+        Parameters
+        ----------
+        clp_labels : list[list[str]]
+            The clp labels.
+        clps : list[np.typing.ArrayLike]
+            The clps.
+        global_axis : np.typing.ArrayLike
+            The global axis.
 
+        Returns
+        -------
+        list[Number]
+            The clp penalty.
+        """
         model = self.group.model
         parameters = self.group.parameters
         penalties = []
@@ -130,25 +215,62 @@ class EstimationProvider:
         return penalties
 
     def estimate(self):
+        """Calculate the estimation.
+
+        .. # noqa: DAR401
+        """
         raise NotImplementedError
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
+        """Get the full penalty.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The clp penalty.
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
         raise NotImplementedError
 
     def get_result(
         self,
-    ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
+    ) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray],]:
+        """Get the results of the estimation.
+
+        Returns
+        -------
+        tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]
+            A tuple of the estimated clps and residuals.
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
         raise NotImplementedError
 
 
 class EstimationProviderUnlinked(EstimationProvider):
+    """A class to provide estimation for optimization of an unlinked dataset group."""
+
     def __init__(
         self,
-        group: DatasetGroup,
+        dataset_group: DatasetGroup,
         data_provider: DataProvider,
         matrix_provider: MatrixProviderUnlinked,
     ):
-        super().__init__(group)
+        """Initialize an estimation provider for an unlinked dataset group.
+
+        Parameters
+        ----------
+        dataset_group : DatasetGroup
+            The dataset group.
+        data_provider : DataProvider
+            The data provider.
+        matrix_provider : MatrixProviderUnlinked
+            The matrix provider.
+        """
+        super().__init__(dataset_group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
         self._clps: dict[str, list[np.typing.ArrayLike] | np.typing.ArrayLike] = {
@@ -159,15 +281,23 @@ class EstimationProviderUnlinked(EstimationProvider):
         }
 
     def estimate(self):
+        """Calculate the estimation."""
         self._clp_penalty.clear()
 
         for label, dataset_model in self.group.dataset_models.items():
             if dataset_model.has_global_model():
-                self.calculate_full_model_estimation(label, dataset_model)
+                self.calculate_full_model_estimation(dataset_model)
             else:
-                self.calculate_estimation(label, dataset_model)
+                self.calculate_estimation(dataset_model)
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
+        """Get the full penalty.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The clp penalty.
+        """
         full_penalty = np.concatenate(
             [
                 self._residuals[label]
@@ -183,6 +313,13 @@ class EstimationProviderUnlinked(EstimationProvider):
     def get_result(
         self,
     ) -> tuple[dict[str, list[xr.DataArray]], dict[str, list[xr.DataArray]],]:
+        """Get the results of the estimation.
+
+        Returns
+        -------
+        tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]
+            A tuple of the estimated clps and residuals.
+        """
         clps, residuals = {}, {}
         for label, dataset_model in self.group.dataset_models.items():
             model_dimension = self._data_provider.get_model_dimension(label)
@@ -242,12 +379,28 @@ class EstimationProviderUnlinked(EstimationProvider):
                     )
         return clps, residuals
 
-    def calculate_full_model_estimation(self, label: str, dataset_model: DatasetModel):
+    def calculate_full_model_estimation(self, dataset_model: DatasetModel):
+        """Calculate the estimation for a dataset with a full model.
+
+        Parameters
+        ----------
+        dataset_model : DatasetModel
+            The dataset model.
+        """
+        label = dataset_model.label
         full_matrix = self._matrix_provider.get_full_matrix(label)
         data = self._data_provider.get_flattened_data(label)
         self._clps[label], self._residuals[label] = self.calculate_residual(full_matrix, data)
 
-    def calculate_estimation(self, label: str, dataset_model: DatasetModel):
+    def calculate_estimation(self, dataset_model: DatasetModel):
+        """Calculate the estimation for a dataset.
+
+        Parameters
+        ----------
+        dataset_model : DatasetModel
+            The dataset model.
+        """
+        label = dataset_model.label
         self._clps[label].clear()
         self._residuals[label].clear()
 
@@ -274,13 +427,26 @@ class EstimationProviderUnlinked(EstimationProvider):
 
 
 class EstimationProviderLinked(EstimationProvider):
+    """A class to provide estimation for optimization of a linked dataset group."""
+
     def __init__(
         self,
-        group: DatasetGroup,
+        dataset_group: DatasetGroup,
         data_provider: DataProviderLinked,
         matrix_provider: MatrixProviderLinked,
     ):
-        super().__init__(group)
+        """Initialize an estimation provider for a linked dataset group.
+
+        Parameters
+        ----------
+        dataset_group : DatasetGroup
+            The dataset group.
+        data_provider : DataProviderLinked
+            The data provider.
+        matrix_provider : MatrixProviderLinked
+            The matrix provider.
+        """
+        super().__init__(dataset_group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
         self._clps: list[np.typing.ArrayLike] = [
@@ -291,6 +457,7 @@ class EstimationProviderLinked(EstimationProvider):
         ] * self._data_provider.aligned_global_axis.size
 
     def estimate(self):
+        """Calculate the estimation."""
         for index, global_index in enumerate(self._data_provider.aligned_global_axis):
             matrix_container = self._matrix_provider.get_aligned_matrix_container(index)
             data = self._data_provider.get_aligned_data(index)
@@ -310,11 +477,25 @@ class EstimationProviderLinked(EstimationProvider):
         )
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
+        """Get the full penalty.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The clp penalty.
+        """
         return np.concatenate((np.concatenate(self._residuals), self._clp_penalty))
 
     def get_result(
         self,
-    ) -> tuple[dict[str, list[np.typing.ArrayLike]], dict[str, list[np.typing.ArrayLike]],]:
+    ) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray],]:
+        """Get the results of the estimation.
+
+        Returns
+        -------
+        tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]
+            A tuple of the estimated clps and residuals.
+        """
         clps: dict[str, xr.DataArray] = {}
         residuals: dict[str, xr.DataArray] = {}
         for dataset_label in self.group.dataset_models:
@@ -373,10 +554,30 @@ class EstimationProviderLinked(EstimationProvider):
 def _get_area(
     clp_label: str,
     clp_labels: list[list[str]],
-    clps: list[np.ndarray],
-    intervals: list[tuple[float, float]],
+    clps: list[np.typing.ArrayLike],
+    intervals: list[tuple[Number, Number]],
     global_axis: np.typing.ArrayLike,
 ) -> np.typing.ArrayLike:
+    """Get get slice of a clp on intervals on the global axis.
+
+    Parameters
+    ----------
+    clp_label : str
+        The label of the clp.
+    clp_labels : list[list[str]]
+        The clp labels.
+    clps : list[np.typing.ArrayLike]
+        The clps.
+    intervals: list[tuple[Number, Number]]
+        The intervals on the global axis.
+    global_axis : np.typing.ArrayLike
+        The global axis.
+
+    Returns
+    -------
+    np.typing.ArrayLike:
+        The concatenated slices.
+    """
     area = []
 
     for interval in intervals:

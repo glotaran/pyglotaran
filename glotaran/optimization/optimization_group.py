@@ -1,3 +1,4 @@
+"""Module containing the optimization group class."""
 from __future__ import annotations
 
 from numbers import Number
@@ -20,18 +21,22 @@ from glotaran.project import Scheme
 
 
 class OptimizationGroup:
+    """A class to optimize a dataset group."""
+
     def __init__(
         self,
         scheme: Scheme,
         dataset_group: DatasetGroup,
     ):
-        """Create OptimizationGroup instance  from a scheme (:class:`.Scheme`)
+        """Initialize an optimization group for a dataset group.
 
-        Args:
-            scheme (Scheme): An instance of :class:`.Scheme`
-                which defines your model, parameters, and data
+        Parameters
+        ----------
+        scheme : Scheme
+            The optimization scheme.
+        dataset_group : DatasetGroup
+            The dataset group.
         """
-
         self._dataset_group = dataset_group
         self._dataset_group.set_parameters(scheme.parameters)
         self._data = scheme.data
@@ -61,7 +66,7 @@ class OptimizationGroup:
 
         if self._add_svd:
             for label, dataset in self._data.items():
-                self._create_svd(
+                self.add_svd_data(
                     "data",
                     dataset,
                     dataset.data.dims[0],
@@ -69,18 +74,45 @@ class OptimizationGroup:
                 )
 
     def calculate(self, parameters: ParameterGroup):
+        """Calculate the optimization group data.
+
+        Parameters
+        ----------
+        parameters : ParameterGroup
+            The parameters.
+        """
         self._dataset_group.set_parameters(parameters)
         self._matrix_provider.calculate()
         self._estimation_provider.estimate()
 
     def get_additional_penalties(self) -> list[Number]:
+        """Get additional penalties.
+
+        Returns
+        -------
+        list[Number]
+            The additional penalties.
+        """
         return self._estimation_provider.get_additional_penalties()
 
     def get_full_penalty(self) -> np.typing.ArrayLike:
+        """Get the full penalty.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The full penalty.
+        """
         return self._estimation_provider.get_full_penalty()
 
     def create_result_data(self) -> dict[str, xr.Dataset]:
+        """Create resulting datasets.
 
+        Returns
+        -------
+        dict[str, xr.Dataset]
+            The datasets with the results.
+        """
         result_datasets = {label: data.copy() for label, data in self._data.items()}
 
         global_matrices, matrices = self._matrix_provider.get_result()
@@ -107,9 +139,9 @@ class OptimizationGroup:
             result_dataset["clp"] = clps[label]
 
             if self._add_svd:
-                self._create_svd("residual", result_dataset, model_dimension, global_dimension)
+                self.add_svd_data("residual", result_dataset, model_dimension, global_dimension)
                 if "weighted_residual" in result_dataset:
-                    self._create_svd(
+                    self.add_svd_data(
                         "weighted_residual", result_dataset, model_dimension, global_dimension
                     )
 
@@ -135,8 +167,8 @@ class OptimizationGroup:
 
         return result_datasets
 
-    def _create_svd(self, name: str, dataset: xr.Dataset, lsv_dim: str, rsv_dim: str):
-        """Calculate the SVD of a data matrix in the dataset and add it to the dataset.
+    def add_svd_data(self, name: str, dataset: xr.Dataset, lsv_dim: str, rsv_dim: str):
+        """Add the SVD of a data matrix to a dataset.
 
         Parameters
         ----------
@@ -144,6 +176,10 @@ class OptimizationGroup:
             Name of the data matrix.
         dataset : xr.Dataset
             Dataset containing the data, which will be updated with the SVD values.
+        lsv_dim : str
+            The dimension name of the left singular vectors.
+        rsv_dim : str
+            The dimension name of the right singular vectors.
         """
         add_svd_to_dataset(
             dataset, name=name, lsv_dim=lsv_dim, rsv_dim=rsv_dim, data_array=dataset[name]

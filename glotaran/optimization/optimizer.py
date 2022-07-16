@@ -1,3 +1,4 @@
+"""Module containing the optimizer class."""
 from __future__ import annotations
 
 from warnings import warn
@@ -20,29 +21,85 @@ SUPPORTED_METHODS = {
 
 
 class InitialParameterError(ValueError):
+    """Inidcates that initial parameters can not be evaluated."""
+
     def __init__(self):
+        """Initialize a InitialParameterError."""
         super().__init__("Initial parameters can not be evaluated.")
 
 
 class ParameterNotInitializedError(ValueError):
+    """Inidcates that scheme parameters are not initialized."""
+
     def __init__(self):
+        """Initialize a ParameterNotInitializedError."""
         super().__init__("Parameter not initialized")
 
 
+class MissingDatasetsError(ValueError):
+    """Inidcates that datasets are missing in the scheme."""
+
+    def __init__(self, missing_datasets: list[str]):
+        """Initialize a MissingDatasetsError.
+
+        Parameters
+        ----------
+        missing_datasets : list[str]
+            The missing datasets.
+        """
+        super().__init__(f"Missing data for datasets: {missing_datasets}")
+
+
+class UnsupportedMethodError(ValueError):
+    """Inidcates that the optimization method is unsupported."""
+
+    def __init__(self, method: str):
+        """Initialize an UnsupportedMethodError.
+
+        Parameters
+        ----------
+        method : str
+            The unsupported method.
+        """
+        super().__init__(
+            f"Unsupported optimization method {method}. "
+            f"Supported methods are '{list(SUPPORTED_METHODS.keys())}'"
+        )
+
+
 class Optimizer:
+    """A class to optimize a scheme."""
+
     def __init__(self, scheme: Scheme, verbose: bool = True, raise_exception: bool = False):
+        """Initialize an optimization group for a dataset group.
+
+        Parameters
+        ----------
+        scheme : Scheme
+            The optimization scheme.
+        verbose : bool
+            Deactivate printing of logs if `False`.
+        raise_exception : bool
+            Raise exceptions during optimizations instead of gracefully exiting if `True`.
+
+        Raises
+        ------
+        MissingDatasetsError
+            Raised if datasets are missing.
+        ParameterNotInitializedError
+            Raised if the scheme parameters are `None`.
+        UnsupportedMethodError
+            Raised if the optimization method is unsupported.
+        """
         if missing_datasets := [
             label for label in scheme.model.dataset if label not in scheme.data
         ]:
-            raise ValueError(f"Missing data for datasets: {missing_datasets}")
+            raise MissingDatasetsError(missing_datasets)
         if scheme.parameters is None:
-            raise ParameterNotInitializedError
+            raise ParameterNotInitializedError()
         self._parameters = scheme.parameters.copy()
         if scheme.optimization_method not in SUPPORTED_METHODS:
-            raise ValueError(
-                f"Unsupported optimization method {scheme.optimization_method}. "
-                f"Supported methods are '{list(SUPPORTED_METHODS.keys())}'"
-            )
+            raise UnsupportedMethodError(scheme.optimization_method)
         self._method = SUPPORTED_METHODS[scheme.optimization_method]
 
         self._scheme = scheme
@@ -61,6 +118,13 @@ class Optimizer:
         self._parameter_history.append(scheme.parameters)
 
     def optimize(self):
+        """Perform the optimization.
+
+        Raises
+        ------
+        Exception
+            Raised if an exception occurs during optimization and raise_exception is `True`.
+        """
         (
             self._free_parameter_labels,
             initial_parameter,
@@ -87,11 +151,30 @@ class Optimizer:
             warn(f"Optimization failed:\n\n{e}")
             self._termination_reason = str(e)
 
-    def objective_function(self, parameters: np.ndarray) -> np.typing.ArrayLike:
+    def objective_function(self, parameters: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        """Calculate the objective for the optimization.
+
+        Parameters
+        ----------
+        parameters : np.typing.ArrayLike
+            the parameters provided by the optimizer.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The objective for the optimizer.
+        """
         self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)
         return self.calculate_penalty()
 
     def calculate_penalty(self) -> np.typing.ArrayLike:
+        """Calculate the penalty of the scheme.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The penalty.
+        """
         for group in self._optimization_groups:
             group.calculate(self._parameters)
         self._parameter_history.append(self._parameters)
@@ -101,7 +184,18 @@ class Optimizer:
         return np.concatenate(penalties) if len(penalties) != 1 else penalties[0]
 
     def create_result(self) -> Result:
+        """Create the result of the optimization.
 
+        Returns
+        -------
+        Result
+            The result of the optimization.
+
+        Raises
+        ------
+        InitialParameterError
+            Raised if the initial parameters could not be evaluated.
+        """
         success = self._optimization_result is not None
         #  result: OptimizeResult = self._optimization_result
 
