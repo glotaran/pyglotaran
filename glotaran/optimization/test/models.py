@@ -42,6 +42,7 @@ class SimpleTestMegacomplex(Megacomplex):
         is_full_model: bool = False,
         as_global: bool = False,
     ):
+        # not needed in the tests
         pass
 
 
@@ -54,10 +55,7 @@ class SimpleTestModel(Model):
         megacomplex_types: dict[str, type[Megacomplex]] | None = None,
         default_megacomplex_type: str | None = None,
     ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "model_complex": SimpleTestMegacomplex,
-            #  "global_complex": SimpleTestMegacomplexGlobal,
-        }
+        defaults: dict[str, type[Megacomplex]] = {"model_complex": SimpleTestMegacomplex}
         if megacomplex_types is not None:
             defaults.update(megacomplex_types)
         return super().from_dict(

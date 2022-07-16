@@ -197,73 +197,88 @@ class Optimizer:
             Raised if the initial parameters could not be evaluated.
         """
         success = self._optimization_result is not None
-        #  result: OptimizeResult = self._optimization_result
 
-        number_of_function_evaluation = (
+        if self._parameter_history.number_of_records == 1:
+            raise InitialParameterError()
+        elif not success:
+            self._parameters.set_from_history(self._parameter_history, -2)
+
+        result_args = {
+            "success": success,
+            "scheme": self._scheme,
+            "glotaran_version": glotaran_version,
+            "free_parameter_labels": self._free_parameter_labels,
+            "initial_parameters": self._scheme.parameters,
+            "parameter_history": self._parameter_history,
+            "termination_reason": self._termination_reason,
+        }
+        result_args["number_of_function_evaluations"] = (
             self._optimization_result.nfev
             if success
             else self._parameter_history.number_of_records
         )
-        number_of_jacobian_evaluation = self._optimization_result.njev if success else None
-        optimality = float(self._optimization_result.optimality) if success else None
-        number_of_data_points = self._optimization_result.fun.size if success else None
-        number_of_parameters = self._optimization_result.x.size if success else None
-        degrees_of_freedom = number_of_data_points - number_of_parameters if success else None
-        chi_square = float(np.sum(self._optimization_result.fun**2)) if success else None
-        reduced_chi_square = chi_square / degrees_of_freedom if success else None
-        root_mean_square_error = float(np.sqrt(reduced_chi_square)) if success else None
-        jacobian = self._optimization_result.jac if success else None
 
         if success:
+            result_args["number_of_jacobian_evaluations"] = self._optimization_result.njev
+            result_args["optimality"] = float(self._optimization_result.optimality)
+            result_args["number_of_data_points"] = self._optimization_result.fun.size
+            result_args["number_of_parameters"] = self._optimization_result.x.size
+            result_args["degrees_of_freedom"] = (
+                result_args["number_of_data_points"] - result_args["number_of_parameters"]
+            )
+            result_args["chi_square"] = float(np.sum(self._optimization_result.fun**2))
+            result_args["reduced_chi_square"] = (
+                result_args["chi_square"] / result_args["degrees_of_freedom"]
+            )
+            result_args["root_mean_square_error"] = float(
+                np.sqrt(result_args["reduced_chi_square"])
+            )
+            result_args["jacobian"] = self._optimization_result.jac
+
             self._parameters.set_from_label_and_value_arrays(
                 self._free_parameter_labels, self._optimization_result.x
             )
-        elif self._parameter_history.number_of_records == 1:
-            raise InitialParameterError()
-        else:
-            self._parameters.set_from_history(self._parameter_history, -2)
+            result_args[
+                "covariance_matrix"
+            ] = self.calculate_covariance_matrix_and_standard_errors(
+                result_args["jacobian"], result_args["root_mean_square_error"]
+            )
 
         full_penalty = self.calculate_penalty()
-        data = {}
+        result_args["cost"] = 0.5 * np.dot(full_penalty, full_penalty)
+
+        result_args["optimized_parameters"] = self._parameters
+
+        result_args["data"] = {}
         for group in self._optimization_groups:
             group.calculate(self._parameters)
-            data.update(group.create_result_data())
+            result_args["data"].update(group.create_result_data())
 
-        covariance_matrix = None
-        if success:
-            # See PR #706: More robust covariance matrix calculation
-            _, jacobian_SV, jacobian_RSV = np.linalg.svd(jacobian, full_matrices=False)
-            jacobian_SV_square = jacobian_SV**2
-            mask = jacobian_SV_square > np.finfo(float).eps
-            covariance_matrix = (jacobian_RSV[mask].T / jacobian_SV_square[mask]) @ jacobian_RSV[
-                mask
-            ]
-            standard_errors = root_mean_square_error * np.sqrt(np.diag(covariance_matrix))
-            for label, error in zip(self._free_parameter_labels, standard_errors):
-                self._parameters.get(label).standard_error = error
+        return Result(**result_args)
 
-        cost = 0.5 * np.dot(full_penalty, full_penalty)
+    def calculate_covariance_matrix_and_standard_errors(
+        self, jacobian: np.typing.ArrayLike, root_mean_square_error: float
+    ) -> np.typing.ArrayLike:
+        """Calculate the covariance matrix and standard errors of the optimization.
 
-        return Result(
-            cost=cost,
-            data=data,
-            glotaran_version=glotaran_version,
-            free_parameter_labels=self._free_parameter_labels,
-            number_of_function_evaluations=number_of_function_evaluation,
-            initial_parameters=self._scheme.parameters,
-            optimized_parameters=self._parameters,
-            parameter_history=self._parameter_history,
-            scheme=self._scheme,
-            success=success,
-            termination_reason=self._termination_reason,
-            chi_square=chi_square,
-            covariance_matrix=covariance_matrix,
-            degrees_of_freedom=degrees_of_freedom,
-            jacobian=jacobian,
-            number_of_data_points=number_of_data_points,
-            number_of_jacobian_evaluations=number_of_jacobian_evaluation,
-            number_of_parameters=number_of_parameters,
-            optimality=optimality,
-            reduced_chi_square=reduced_chi_square,
-            root_mean_square_error=root_mean_square_error,
-        )
+        Parameters
+        ----------
+        jacobian : np.typing.ArrayLike
+            The jacobian matrix.
+        root_mean_square_error : float
+            The root mean square error.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The covariance matrix.
+        """
+        # See PR #706: More robust covariance matrix calculation
+        _, jacobian_sv, jacobian_rsv = np.linalg.svd(jacobian, full_matrices=False)
+        jacobian_SV_square = jacobian_sv**2
+        mask = jacobian_SV_square > np.finfo(float).eps
+        covariance_matrix = (jacobian_rsv[mask].T / jacobian_SV_square[mask]) @ jacobian_rsv[mask]
+        standard_errors = root_mean_square_error * np.sqrt(np.diag(covariance_matrix))
+        for label, error in zip(self._free_parameter_labels, standard_errors):
+            self._parameters.get(label).standard_error = error
+        return covariance_matrix

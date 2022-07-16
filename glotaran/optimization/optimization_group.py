@@ -65,7 +65,7 @@ class OptimizationGroup:
         self._estimation_provider: EstimationProvider = estimation_provider
 
         if self._add_svd:
-            for label, dataset in self._data.items():
+            for dataset in self._data.values():
                 self.add_svd_data(
                     "data",
                     dataset,
@@ -167,7 +167,8 @@ class OptimizationGroup:
 
         return result_datasets
 
-    def add_svd_data(self, name: str, dataset: xr.Dataset, lsv_dim: str, rsv_dim: str):
+    @staticmethod
+    def add_svd_data(name: str, dataset: xr.Dataset, lsv_dim: str, rsv_dim: str):
         """Add the SVD of a data matrix to a dataset.
 
         Parameters
