@@ -275,9 +275,9 @@ class Optimizer:
         """
         # See PR #706: More robust covariance matrix calculation
         _, jacobian_sv, jacobian_rsv = np.linalg.svd(jacobian, full_matrices=False)
-        jacobian_SV_square = jacobian_sv**2
-        mask = jacobian_SV_square > np.finfo(float).eps
-        covariance_matrix = (jacobian_rsv[mask].T / jacobian_SV_square[mask]) @ jacobian_rsv[mask]
+        jacobian_sv_square = jacobian_sv**2
+        mask = jacobian_sv_square > np.finfo(float).eps
+        covariance_matrix = (jacobian_rsv[mask].T / jacobian_sv_square[mask]) @ jacobian_rsv[mask]
         standard_errors = root_mean_square_error * np.sqrt(np.diag(covariance_matrix))
         for label, error in zip(self._free_parameter_labels, standard_errors):
             self._parameters.get(label).standard_error = error
