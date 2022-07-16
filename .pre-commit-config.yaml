@@ -102,7 +102,7 @@ repos:
         args:
           - "--select=D,DAR"
         name: "flake8 lint docstrings"
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|parameter|project|simulation|model/property.py|builtin/io/pandas)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model/property.py|builtin/io/pandas)"
         exclude: "docs|tests?/"
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
@@ -114,13 +114,13 @@ repos:
         exclude: "docs"
         additional_dependencies: [types-all]
 
-  # - repo: https://github.com/econchick/interrogate
-  #   rev: 1.5.0
-  #   hooks:
-  #     - id: interrogate
-  #       args: [--config=pyproject.toml, glotaran]
-  #       pass_filenames: false
-  #       additional_dependencies: [click<8]
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        args: [--config=pyproject.toml, glotaran]
+        pass_filenames: false
+        additional_dependencies: [click<8]
 
   - repo: https://github.com/myint/rstcheck
     rev: "v6.1.0"

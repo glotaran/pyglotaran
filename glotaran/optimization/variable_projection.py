@@ -1,5 +1,4 @@
-"""Functions for calculating conditionally linear parameters and residual with the variable
-projection method."""
+"""Module for residual calculation with  the variable projection method."""
 from __future__ import annotations
 
 import numpy as np
@@ -7,17 +6,21 @@ from scipy.linalg import lapack
 
 
 def residual_variable_projection(
-    matrix: np.ndarray, data: np.ndarray
-) -> tuple[np.ndarray, np.ndarray]:
-    """Calculates the conditionally linear parameters and residual with the variable projection
-    method.
+    matrix: np.typing.ArrayLike, data: np.typing.ArrayLike
+) -> tuple[np.typing.ArrayLike, np.typing.ArrayLike]:
+    """Calculate the conditionally linear parameters and residual with the variable projection method.
 
     Parameters
     ----------
-    matrix :
+    matrix : np.typing.ArrayLike
         The model matrix.
-    data : np.ndarray
+    data : np.typing.ArrayLike
         The data to analyze.
+
+    Returns
+    -------
+    tuple[np.typing.ArrayLike, np.typing.ArrayLike]
+        The clps and the residual.
     """
     # TODO: Reference Kaufman paper
 
