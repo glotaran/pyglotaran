@@ -1,3 +1,4 @@
+"""Module containing the matrix provider classes."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -16,44 +17,117 @@ from glotaran.optimization.data_provider import DataProviderLinked
 
 @dataclass
 class MatrixContainer:
+    """A container of matrix and the corresponding clp labels."""
+
     clp_labels: list[str]
+    """The clp labels."""
     matrix: np.ndarray
+    """The matrix."""
 
     @staticmethod
     @nb.jit(nopython=True, parallel=True)
     def apply_weight(
         matrix: np.typing.ArrayLike, weight: np.typing.ArrayLike
     ) -> np.typing.ArrayLike:
+        """Apply weight on a matrix.
+
+        Parameters
+        ----------
+        matrix : np.typing.ArrayLike
+            The matrix.
+        weight : np.typing.ArrayLike
+            The weight.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The weighted matrix.
+        """
         matrix = matrix.copy()
         for i in nb.prange(matrix.shape[1]):
             matrix[:, i] *= weight
         return matrix
 
     def create_weighted_matrix(self, weight: np.typing.ArrayLike) -> MatrixContainer:
+        """Create a matrix container with a weighted matrix.
+
+        Parameters
+        ----------
+        weight : np.typing.ArrayLike
+            The weight.
+
+        Returns
+        -------
+        MatrixContainer
+            The weighted matrix.
+        """
         return replace(self, matrix=self.apply_weight(self.matrix, weight))
 
-    def create_scaled_matrix(self, scale: float) -> MatrixContainer:
+    def create_scaled_matrix(self, scale: Number) -> MatrixContainer:
+        """Create a matrix container with a scaled matrix.
+
+        Parameters
+        ----------
+        scale : Number
+            The scale.
+
+        Returns
+        -------
+        MatrixContainer
+            The scaled matrix.
+        """
         return replace(self, matrix=self.matrix * scale)
 
 
 class MatrixProvider:
-    def __init__(self, group: DatasetGroup):
-        self._group = group
+    """A class to provide matrix calculations for optimization."""
+
+    def __init__(self, dataset_group: DatasetGroup):
+        """Initialize a matrix provider for a dataset group.
+
+        Parameters
+        ----------
+        dataset_group : DatasetGroup
+            The dataset group.
+        """
+        self._group = dataset_group
         self._matrix_containers: dict[str, MatrixContainer | list[MatrixContainer]] = {}
         self._global_matrix_containers: dict[str, MatrixContainer] = {}
         self._data_provider: DataProvider
 
     @property
     def group(self) -> DatasetGroup:
+        """Get the dataset group.
+
+        Returns
+        -------
+        DatasetGroup
+            The dataset group.
+        """
         return self._group
 
-    def get_matrix_container(self, dataset_label: str, index: int) -> MatrixContainer:
+    def get_matrix_container(self, dataset_label: str, global_index: int) -> MatrixContainer:
+        """Get the matrix container for a dataset on an index on the global axis.
+
+        Parameters
+        ----------
+        dataset_label : str
+            The label of the dataset.
+        global_index : int
+            The index on the global axis.
+
+        Returns
+        -------
+        MatrixContainer
+            The matrix container.
+        """
         matrix_container = self._matrix_containers[dataset_label]
         if self.group.dataset_models[dataset_label].is_index_dependent():
-            matrix_container = matrix_container[index]  # type:ignore[index]
+            matrix_container = matrix_container[global_index]  # type:ignore[index]
         return matrix_container  # type:ignore[return-value]
 
-    def create_dataset_matrices(self):
+    def calculate_dataset_matrices(self):
+        """Calculate the matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
             model_axis = self._data_provider.get_model_axis(label)
             global_axis = self._data_provider.get_global_axis(label)
@@ -76,15 +150,34 @@ class MatrixProvider:
         global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
-        as_global_model: bool = False,
+        global_matrix: bool = False,
     ) -> MatrixContainer:
+        """Calculate the matrix for a dataset on an index on the global axis.
 
+        Parameters
+        ----------
+        dataset_model : DatasetModel
+            The dataset model.
+        global_index : int | None
+            The index on the global axis.
+        global_axis: np.typing.ArrayLike
+            The global axis.
+        model_axis: np.typing.ArrayLike
+            The model axis.
+        global_matrix: bool
+            Calculate the global megacomplexes if `True`.
+
+        Returns
+        -------
+        MatrixContainer
+            The resulting matrix container.
+        """
         clp_labels: list[str] = []
         matrix = None
 
         megacomplex_iterator = dataset_model.iterate_megacomplexes
 
-        if as_global_model:
+        if global_matrix:
             megacomplex_iterator = dataset_model.iterate_global_megacomplexes
             model_axis, global_axis = global_axis, model_axis
 
@@ -106,19 +199,40 @@ class MatrixProvider:
         return MatrixContainer(clp_labels, matrix)
 
     @staticmethod
+    @nb.jit(nopython=True, parallel=True)
     def combine_megacomplex_matrices(
-        matrix: np.typing.ArrayLike,
-        this_matrix: np.typing.ArrayLike,
-        clp_labels: list[str],
-        this_clp_labels: list[str],
-    ):
-        tmp_clp_labels = clp_labels + [c for c in this_clp_labels if c not in clp_labels]
-        tmp_matrix = np.zeros((matrix.shape[0], len(tmp_clp_labels)), dtype=np.float64)
+        matrix_left: np.typing.ArrayLike,
+        matrix_right: np.typing.ArrayLike,
+        clp_labels_left: list[str],
+        clp_labels_right: list[str],
+    ) -> tuple[list[str], np.typing.ArrayLike]:
+        """Calculate the matrix for a dataset on an index on the global axis.
+
+        Parameters
+        ----------
+        matrix_left: np.typing.ArrayLike
+            The left matrix.
+        matrix_right: np.typing.ArrayLike
+            The right matrix.
+        clp_labels_left: list[str]
+            The left clp labels.
+        clp_labels_right: list[str]
+            The right clp labels.
+
+        Returns
+        -------
+        tuple[list[str], np.typing.ArrayLike]:
+            The combined clp labels and matrix.
+        """
+        tmp_clp_labels = clp_labels_left + [
+            c for c in clp_labels_right if c not in clp_labels_left
+        ]
+        tmp_matrix = np.zeros((matrix_left.shape[0], len(tmp_clp_labels)), dtype=np.float64)
         for idx, label in enumerate(tmp_clp_labels):
-            if label in clp_labels:
-                tmp_matrix[:, idx] += matrix[:, clp_labels.index(label)]
-            if label in this_clp_labels:
-                tmp_matrix[:, idx] += this_matrix[:, this_clp_labels.index(label)]
+            if label in clp_labels_left:
+                tmp_matrix[:, idx] += matrix_left[:, clp_labels_left.index(label)]
+            if label in clp_labels_right:
+                tmp_matrix[:, idx] += matrix_right[:, clp_labels_right.index(label)]
         return tmp_clp_labels, tmp_matrix
 
     def reduce_matrix(
@@ -126,6 +240,22 @@ class MatrixProvider:
         matrix: MatrixContainer,
         index: Number | None,
     ) -> MatrixContainer:
+        """Reduce a matrix.
+
+        Applies constraints and relations.
+
+        Parameters
+        ----------
+        matrix : MatrixContainer
+            The matrix.
+        index : Number | None
+            The index on the global axis.
+
+        Returns
+        -------
+        MatrixContainer
+            The resulting matrix container.
+        """
         matrix = self.apply_relations(matrix, index)
         matrix = self.apply_constraints(matrix, index)
         return matrix
@@ -135,7 +265,20 @@ class MatrixProvider:
         matrix: MatrixContainer,
         index: Number | None,
     ) -> MatrixContainer:
+        """Apply constraints on a matrix.
 
+        Parameters
+        ----------
+        matrix : MatrixContainer
+            The matrix.
+        index : Number | None
+            The index on the global axis.
+
+        Returns
+        -------
+        MatrixContainer
+            The resulting matrix container.
+        """
         model = self.group.model
         if len(model.clp_constraints) == 0:  # type:ignore[attr-defined]
             return matrix
@@ -156,6 +299,20 @@ class MatrixProvider:
         matrix: MatrixContainer,
         index: Number | None,
     ) -> MatrixContainer:
+        """Apply relations on a matrix.
+
+        Parameters
+        ----------
+        matrix : MatrixContainer
+            The matrix.
+        index : Number | None
+            The index on the global axis.
+
+        Returns
+        -------
+        MatrixContainer
+            The resulting matrix container.
+        """
         model = self.group.model
         parameters = self.group.parameters
 
@@ -189,10 +346,17 @@ class MatrixProvider:
         reduced_matrix = matrix.matrix @ relation_matrix
         return MatrixContainer(reduced_clp_labels, reduced_matrix)
 
-    def calculate(self):
-        raise NotImplementedError
-
     def get_result(self) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]:
+        """Get the results of the matrix calculations.
+
+        Returns
+        -------
+        tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]
+            A tuple of the matrices and global matrices.
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
         matrices = {}
         global_matrices = {}
         for label, matrix_container in self._matrix_containers.items():
@@ -236,39 +400,100 @@ class MatrixProvider:
 
         return global_matrices, matrices
 
+    def calculate(self):
+        """Calculate the matrices for optimization.
+
+        .. # noqa: DAR401
+        """
+        raise NotImplementedError
+
 
 class MatrixProviderUnlinked(MatrixProvider):
+    """A class to provide matrix calculations for optimization of unlinked dataset groups."""
+
     def __init__(self, group: DatasetGroup, data_provider: DataProvider):
+        """Initialize a matrix provider for an unlinked dataset group.
+
+        Parameters
+        ----------
+        dataset_group : DatasetGroup
+            The dataset group.
+        data_provider : DataProvider
+            The data provider.
+        """
         super().__init__(group)
         self._data_provider = data_provider
         self._prepared_matrix_container: dict[str, list[MatrixContainer]] = {}
         self._full_matrices: dict[str, np.ArrayLike] = {}
 
     def get_global_matrix_container(self, dataset_label: str) -> MatrixContainer:
+        """Get the global matrix container for a dataset.
+
+        Parameters
+        ----------
+        dataset_label : str
+            The label of the dataset.
+
+        Returns
+        -------
+        MatrixContainer
+            The matrix container.
+        """
         return self._global_matrix_containers[dataset_label]
 
-    def get_prepared_matrix_container(self, dataset_label: str, index: int) -> MatrixContainer:
-        return self._prepared_matrix_container[dataset_label][index]
+    def get_prepared_matrix_container(
+        self, dataset_label: str, global_index: int
+    ) -> MatrixContainer:
+        """Get the prepared matrix container for a dataset on an index on the global axis.
+
+        Parameters
+        ----------
+        dataset_label : str
+            The label of the dataset.
+        global_index : int
+            The index on the global axis.
+
+        Returns
+        -------
+        MatrixContainer
+            The matrix container.
+        """
+        return self._prepared_matrix_container[dataset_label][global_index]
 
     def get_full_matrix(self, dataset_label: str) -> np.ArrayLike:
+        """Get the full matrix of a dataset.
+
+        Parameters
+        ----------
+        dataset_label : str
+            The label of the dataset.
+
+        Returns
+        -------
+        np.typing.ArrayLike
+            The matrix.
+        """
         return self._full_matrices[dataset_label]
 
     def calculate(self):
-        self.create_dataset_matrices()
-        self.create_global_matrices()
-        self.create_prepared_matrices()
-        self.create_full_matrices()
+        """Calculate the matrices for optimization."""
+        self.calculate_dataset_matrices()
+        self.calculate_global_matrices()
+        self.calculate_prepared_matrices()
+        self.calculate_full_matrices()
 
-    def create_global_matrices(self):
+    def calculate_global_matrices(self):
+        """Calculate the global matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
             if dataset_model.has_global_model():
                 model_axis = self._data_provider.get_model_axis(label)
                 global_axis = self._data_provider.get_global_axis(label)
                 self._global_matrix_containers[label] = self.calculate_dataset_matrix(
-                    dataset_model, None, global_axis, model_axis, as_global_model=True
+                    dataset_model, None, global_axis, model_axis, global_matrix=True
                 )
 
-    def create_prepared_matrices(self):
+    def calculate_prepared_matrices(self):
+        """Calculate the prepared matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
             if dataset_model.has_global_model():
                 continue
@@ -294,7 +519,8 @@ class MatrixProviderUnlinked(MatrixProvider):
                     for i, matrix in enumerate(self._prepared_matrix_container[label])
                 ]
 
-    def create_full_matrices(self):
+    def calculate_full_matrices(self):
+        """Calculate the full matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
             if dataset_model.has_global_model():
                 global_matrix_container = self.get_global_matrix_container(label)
@@ -324,7 +550,18 @@ class MatrixProviderUnlinked(MatrixProvider):
 
 
 class MatrixProviderLinked(MatrixProvider):
+    """A class to provide matrix calculations for optimization of linked dataset groups."""
+
     def __init__(self, group: DatasetGroup, data_provider: DataProviderLinked):
+        """Initialize a matrix provider for a linked dataset group.
+
+        Parameters
+        ----------
+        dataset_group : DatasetGroup
+            The dataset group.
+        data_provider : DataProviderLinked
+            The data provider.
+        """
         super().__init__(group)
         self._data_provider = data_provider
         self._aligned_full_clp_labels: list[list[str]] = [
@@ -336,13 +573,37 @@ class MatrixProviderLinked(MatrixProvider):
 
     @property
     def aligned_full_clp_labels(self) -> list[list[str]]:
+        """Get the aligned full clp labels.
+
+        Returns
+        -------
+        list[list[str]]
+            The full aligned clp labels.
+        """
         return self._aligned_full_clp_labels
 
-    def get_aligned_matrix_container(self, index: int) -> MatrixContainer:
-        return self._aligned_matrices[index]
+    def get_aligned_matrix_container(self, global_index: int) -> MatrixContainer:
+        """Get the aligned matrix container for an index on the aligned global axis.
 
-    def create_aligned_matrices(self):
+        Parameters
+        ----------
+        global_index : int
+            The index on the global axis.
 
+        Returns
+        -------
+        MatrixContainer
+            The matrix container.
+        """
+        return self._aligned_matrices[global_index]
+
+    def calculate(self):
+        """Calculate the matrices for optimization."""
+        self.calculate_dataset_matrices()
+        self.calculate_aligned_matrices()
+
+    def calculate_aligned_matrices(self):
+        """Calculate the aligned matrices of the dataset group."""
         for i, global_index in enumerate(self._data_provider.aligned_global_axis):
             group_label = self._data_provider.get_aligned_group_label(i)
             group_matrix = self.align_matrices(
@@ -369,14 +630,22 @@ class MatrixProviderLinked(MatrixProvider):
 
             self._aligned_matrices[i] = group_matrix
 
-    def calculate(self):
-
-        self.create_dataset_matrices()
-
-        self.create_aligned_matrices()
-
     @staticmethod
     def align_matrices(matrices: list[MatrixContainer], scales: list[Number]) -> MatrixContainer:
+        """Align matrices.
+
+        Parameters
+        ----------
+        matrices : list[MatrixContainer]
+            The matrices to align.
+        scales : list[Number]
+            The scales of the matrices.
+
+        Returns
+        -------
+        MatrixContainer
+            The aligned matrix container.
+        """
         if len(matrices) == 1:
             return matrices[0]
         masks = []
