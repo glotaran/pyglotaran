@@ -284,7 +284,7 @@ class EstimationProviderUnlinked(EstimationProvider):
         """Calculate the estimation."""
         self._clp_penalty.clear()
 
-        for label, dataset_model in self.group.dataset_models.items():
+        for dataset_model in self.group.dataset_models.values():
             if dataset_model.has_global_model():
                 self.calculate_full_model_estimation(dataset_model)
             else:
