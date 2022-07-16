@@ -171,8 +171,9 @@ def test_optimization_full_model(index_dependent):
     assert all(np.isclose(1.0, c) for c in np.diagonal(clp))
 
 
+@pytest.mark.parametrize("model_weight", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
-def test_result_data(index_dependent: bool):
+def test_result_data(model_weight: bool, index_dependent: bool):
     global_axis = [1, 5, 6]
     model_axis = [5, 7, 9, 12]
 
@@ -180,17 +181,21 @@ def test_result_data(index_dependent: bool):
         np.ones((4, 3)), coords=[("model", model_axis), ("global", global_axis)]
     ).to_dataset(name="data")
 
-    data["weight"] = xr.ones_like(data.data) * 0.5
-    model = SimpleTestModel.from_dict(
-        {
-            "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
-            "dataset": {
-                "dataset1": {
-                    "megacomplex": ["m1"],
-                },
+    model_dict = {
+        "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
+        "dataset": {
+            "dataset1": {
+                "megacomplex": ["m1"],
             },
-        }
-    )
+        },
+    }
+
+    if model_weight:
+        model_dict["weights"] = [{"datasets": ["dataset1"], "value": 0.5}]
+    else:
+        data["weight"] = xr.ones_like(data.data) * 0.5
+
+    model = SimpleTestModel.from_dict(model_dict)
     assert model.valid()
     parameters = ParameterGroup.from_list([])
 
@@ -203,6 +208,7 @@ def test_result_data(index_dependent: bool):
         ("data_singular_values", ("singular_value_index",)),
         ("data_right_singular_vectors", ("global", "right_singular_value_index")),
         ("clp", ("global", "clp_label")),
+        ("weight", ("model", "global")),
         ("weighted_residual", ("model", "global")),
         ("residual", ("model", "global")),
         ("weighted_residual_left_singular_vectors", ("model", "left_singular_value_index")),
