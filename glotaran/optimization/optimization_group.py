@@ -105,6 +105,26 @@ class OptimizationGroup:
         """
         return self._estimation_provider.get_full_penalty()
 
+    def add_weight_to_result_data(self, dataset_label: str, result_dataset: xr.Dataset):
+        """Add weight to result dataset if dataset is weighted.
+
+        Parameters
+        ----------
+        dataset_label : str
+            The label of the data.
+        result_dataset : xr.Dataset
+            The label of the data.
+        """
+        weight = self._data_provider.get_weight(dataset_label)
+        if weight is None:
+            return
+        result_dataset["weighted_residual"] = result_dataset["residual"]
+        result_dataset["residual"] = result_dataset["residual"] / weight
+        if "weight" not in result_dataset:
+            if not weight.shape == result_dataset.data.shape:
+                weight = weight.T
+            result_dataset["weight"] = (result_dataset.data.dims, weight)
+
     def create_result_data(self) -> dict[str, xr.Dataset]:
         """Create resulting datasets.
 
@@ -126,12 +146,8 @@ class OptimizationGroup:
             global_dimension = self._data_provider.get_global_dimension(label)
             result_dataset.attrs["global_dimension"] = global_dimension
 
-            residual = residuals[label]
-            weight = self._data_provider.get_weight(label)
-            if weight is not None:
-                result_dataset["weighted_residual"] = residual
-                residual = residual / weight
-            result_dataset["residual"] = residual
+            result_dataset["residual"] = residuals[label]
+            self.add_weight_to_result_data(label, result_dataset)
 
             result_dataset["matrix"] = matrices[label]
             if label in global_matrices:
@@ -147,14 +163,16 @@ class OptimizationGroup:
 
             # Calculate RMS
             size = result_dataset.residual.shape[0] * result_dataset.residual.shape[1]
-            result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-                (result_dataset.residual**2).sum() / size
-            ).values
-            result_dataset.attrs["weighted_root_mean_square_error"] = (
-                np.sqrt((result_dataset.weighted_residual**2).sum() / size).values
+
+            rms_residual = (
+                result_dataset.weighted_residual
                 if "weighted_residual" in result_dataset
-                else result_dataset.attrs["root_mean_square_error"]
+                else result_dataset.residual
             )
+
+            result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+                (rms_residual**2).sum() / size
+            ).data
 
             result_dataset.attrs["dataset_scale"] = (
                 1 if dataset_model.scale is None else dataset_model.scale.value
