@@ -211,13 +211,13 @@ class EstimationProvider:
                 continue
             elif len(target_area) == 0:
                 warnings.warn(
-                    f"Ignoring equal area penalty, target clp "
+                    "Ignoring equal area penalty, target clp "
                     f"{penalty.target} not present."  # type:ignore[attr-defined]
                 )
                 continue
             elif len(source_area) == 0:
                 warnings.warn(
-                    f"Ignoring equal area penalty, target clp "
+                    "Ignoring equal area penalty, target clp "
                     f"{penalty.source} not present."  # type:ignore[attr-defined]
                 )
                 continue
