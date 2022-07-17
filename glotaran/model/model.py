@@ -33,6 +33,7 @@ default_model_items = {
 
 default_dataset_properties = {
     "group": {"type": str, "default": "default"},
+    "force_index_dependent": {"type": bool, "allow_none": True},
     "megacomplex": List[str],
     "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
     "global_megacomplex": {"type": List[str], "allow_none": True},
