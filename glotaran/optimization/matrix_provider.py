@@ -199,7 +199,6 @@ class MatrixProvider:
         return MatrixContainer(clp_labels, matrix)
 
     @staticmethod
-    @nb.jit(nopython=True, parallel=True)
     def combine_megacomplex_matrices(
         matrix_left: np.typing.ArrayLike,
         matrix_right: np.typing.ArrayLike,
