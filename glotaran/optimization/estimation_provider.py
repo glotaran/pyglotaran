@@ -1,6 +1,7 @@
 """Module containing the estimation provider classes."""
 from __future__ import annotations
 
+import warnings
 from numbers import Number
 
 import numpy as np
@@ -205,6 +206,22 @@ class EstimationProvider:
                     ),
                 ]
             )
+
+            if len(target_area) == 0 and len(source_area) == 0:
+                continue
+            elif len(target_area) == 0:
+                warnings.warn(
+                    f"Ignoring equal area penalty, target clp "
+                    f"{penalty.target} not present."  # type:ignore[attr-defined]
+                )
+                continue
+            elif len(source_area) == 0:
+                warnings.warn(
+                    f"Ignoring equal area penalty, target clp "
+                    f"{penalty.source} not present."  # type:ignore[attr-defined]
+                )
+                continue
+
             area_penalty = np.abs(
                 np.sum(source_area)
                 - penalty.parameter * np.sum(target_area)  # type:ignore[attr-defined]

@@ -1,6 +1,7 @@
 """Helper functions."""
 from __future__ import annotations
 
+from numbers import Number
 from typing import List
 from typing import Tuple
 
@@ -19,7 +20,10 @@ class IntervalProperty:
     :math:`source = parameter * target`.
     """
 
-    def applies(self, value: float) -> bool:
+    def has_interval(self) -> bool:
+        return self.interval is not None
+
+    def applies(self, value: Number | None) -> bool:
         """
         Returns true if ``value`` is in one of the intervals.
 
