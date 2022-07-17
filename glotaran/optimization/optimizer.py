@@ -244,6 +244,10 @@ class Optimizer:
                 result_args["jacobian"], result_args["root_mean_square_error"]
             )
 
+        result_args["additional_penalty"] = [
+            group.get_additional_penalties() for group in self._optimization_groups
+        ]
+
         full_penalty = self.calculate_penalty()
         result_args["cost"] = 0.5 * np.dot(full_penalty, full_penalty)
 
