@@ -121,7 +121,7 @@ class OptimizationGroup:
         result_dataset["weighted_residual"] = result_dataset["residual"]
         result_dataset["residual"] = result_dataset["residual"] / weight
         if "weight" not in result_dataset:
-            if not weight.shape == result_dataset.data.shape:
+            if weight.shape != result_dataset.data.shape:
                 weight = weight.T
             result_dataset["weight"] = (result_dataset.data.dims, weight)
 
