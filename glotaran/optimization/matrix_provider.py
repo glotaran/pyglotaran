@@ -1,6 +1,7 @@
 """Module containing the matrix provider classes."""
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from dataclasses import replace
 from numbers import Number
@@ -11,6 +12,7 @@ import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
+from glotaran.model.interval_property import IntervalProperty
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 
@@ -234,6 +236,31 @@ class MatrixProvider:
                 tmp_matrix[:, idx] += matrix_right[:, clp_labels_right.index(label)]
         return tmp_clp_labels, tmp_matrix
 
+    @staticmethod
+    def does_interval_property_apply(prop: IntervalProperty, index: Number | None) -> bool:
+        """Check if an interval property applies on an index.
+
+        Parameters
+        ----------
+        prop : IntervalProperty
+            The interval property.
+        index: Number | None
+            The index to check.
+
+        Returns
+        -------
+        bool
+            Whether the property applies.
+        """
+        if prop.has_interval() and index is None:
+            warnings.warn(
+                f"Interval property '{prop}' applies on a matrix which is "
+                f"not index dependent. This will be an error in 0.9.0. Set "
+                "'index_dependent: true' on the dataset model to fix the issue."
+            )
+            return True
+        return prop.applies(index)
+
     def reduce_matrix(
         self,
         matrix: MatrixContainer,
@@ -286,7 +313,8 @@ class MatrixProvider:
         removed_clp_labels = [
             c.target  # type:ignore[attr-defined]
             for c in model.clp_constraints  # type:ignore[attr-defined]
-            if c.target in clp_labels and c.applies(index)  # type:ignore[attr-defined]
+            if c.target in clp_labels  # type:ignore[attr-defined]
+            and self.does_interval_property_apply(c, index)  # type:ignore[arg-type]
         ]
         reduced_clp_labels = [c for c in clp_labels if c not in removed_clp_labels]
         mask = [label in reduced_clp_labels for label in clp_labels]
@@ -323,8 +351,11 @@ class MatrixProvider:
 
         idx_to_delete = []
         for relation in model.clp_relations:  # type:ignore[attr-defined]
-            if relation.target in clp_labels and relation.applies(  # type:ignore[attr-defined]
-                index
+            if (
+                relation.target in clp_labels  # type:ignore[attr-defined]
+                and self.does_interval_property_apply(
+                    relation, index  # type:ignore[arg-type]
+                )
             ):
 
                 if relation.source not in clp_labels:  # type:ignore[attr-defined]

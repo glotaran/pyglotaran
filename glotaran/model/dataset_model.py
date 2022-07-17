@@ -89,13 +89,9 @@ class DatasetModel:
 
     def is_index_dependent(self) -> bool:
         """Indicates if the dataset model is index dependent."""
-        if hasattr(self, "_index_dependent"):
-            return self._index_dependent
+        if self.force_index_dependent:
+            return True
         return any(m.index_dependent(self) for m in self.megacomplex)
-
-    def overwrite_index_dependent(self, index_dependent: bool):
-        """Overrides the index dependency of the dataset"""
-        self._index_dependent = index_dependent
 
     def has_global_model(self) -> bool:
         """Indicates if the dataset model can model the global dimension."""
