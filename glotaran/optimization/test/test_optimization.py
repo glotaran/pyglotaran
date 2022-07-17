@@ -197,10 +197,10 @@ def test_result_data(model_weight: bool, index_dependent: bool):
 
     model = SimpleTestModel.from_dict(model_dict)
     assert model.valid()
-    parameters = ParameterGroup.from_list([])
+    parameters = ParameterGroup.from_list([1])
 
     scheme = Scheme(model, parameters, {"dataset1": data}, maximum_number_function_evaluations=1)
-    result = optimize(scheme)
+    result = optimize(scheme, raise_exception=True)
     result_data = result.data["dataset1"]
     wanted = [
         ("data", ("model", "global")),
