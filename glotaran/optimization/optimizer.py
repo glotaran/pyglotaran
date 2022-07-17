@@ -211,12 +211,10 @@ class Optimizer:
             "initial_parameters": self._scheme.parameters,
             "parameter_history": self._parameter_history,
             "termination_reason": self._termination_reason,
-        }
-        result_args["number_of_function_evaluations"] = (
-            self._optimization_result.nfev
+            "number_of_function_evaluations": self._optimization_result.nfev
             if success
-            else self._parameter_history.number_of_records
-        )
+            else self._parameter_history.number_of_records,
+        }
 
         if success:
             result_args["number_of_jacobian_evaluations"] = self._optimization_result.njev
