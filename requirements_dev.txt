@@ -15,7 +15,7 @@ ruamel.yaml==0.17.21
 scipy==1.8.1
 sdtfile==2022.2.2
 tabulate==0.8.10
-xarray==2022.3.0
+xarray==2022.6.0
 
 # documentation dependencies
 -r docs/requirements.txt
