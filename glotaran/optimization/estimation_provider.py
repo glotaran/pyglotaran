@@ -177,7 +177,7 @@ class EstimationProvider:
         parameters = self.group.parameters
         penalties = []
         for penalty in model.clp_area_penalties:
-            penalty = penalty.fill(model, parameters)  # type:ignore[attr-defined]
+            penalty = penalty.fill(model, parameters)
             source_area = np.array([])
             target_area = np.array([])
 
@@ -185,10 +185,10 @@ class EstimationProvider:
                 [
                     source_area,
                     _get_area(
-                        penalty.source,  # type:ignore[attr-defined]
+                        penalty.source,
                         clp_labels,
                         clps,
-                        penalty.source_intervals,  # type:ignore[attr-defined]
+                        penalty.source_intervals,
                         global_axis,
                     ),
                 ]
@@ -198,10 +198,10 @@ class EstimationProvider:
                 [
                     target_area,
                     _get_area(
-                        penalty.target,  # type:ignore[attr-defined]
+                        penalty.target,
                         clp_labels,
                         clps,
-                        penalty.target_intervals,  # type:ignore[attr-defined]
+                        penalty.target_intervals,
                         global_axis,
                     ),
                 ]
@@ -211,23 +211,18 @@ class EstimationProvider:
                 continue
             elif len(target_area) == 0:
                 warnings.warn(
-                    "Ignoring equal area penalty, target clp "
-                    f"{penalty.target} not present."  # type:ignore[attr-defined]
+                    "Ignoring equal area penalty, target clp " f"{penalty.target} not present."
                 )
                 continue
             elif len(source_area) == 0:
                 warnings.warn(
-                    "Ignoring equal area penalty, target clp "
-                    f"{penalty.source} not present."  # type:ignore[attr-defined]
+                    "Ignoring equal area penalty, target clp " f"{penalty.source} not present."
                 )
                 continue
 
-            area_penalty = np.abs(
-                np.sum(source_area)
-                - penalty.parameter * np.sum(target_area)  # type:ignore[attr-defined]
-            )
+            area_penalty = np.abs(np.sum(source_area) - penalty.parameter * np.sum(target_area))
 
-            penalties.append(area_penalty * penalty.weight)  # type:ignore[attr-defined]
+            penalties.append(area_penalty * penalty.weight)
 
         return penalties
 
@@ -572,7 +567,7 @@ def _get_area(
     clp_label: str,
     clp_labels: list[list[str]],
     clps: list[np.typing.ArrayLike],
-    intervals: list[tuple[Number, Number]],
+    intervals: list[tuple[float, float]],
     global_axis: np.typing.ArrayLike,
 ) -> np.typing.ArrayLike:
     """Get get slice of a clp on intervals on the global axis.
@@ -585,7 +580,7 @@ def _get_area(
         The clp labels.
     clps : list[np.typing.ArrayLike]
         The clps.
-    intervals: list[tuple[Number, Number]]
+    intervals: list[tuple[float, float]]
         The intervals on the global axis.
     global_axis : np.typing.ArrayLike
         The global axis.
