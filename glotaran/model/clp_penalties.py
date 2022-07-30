@@ -13,8 +13,8 @@ from glotaran.model.item import model_item
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Sequence
 
     from glotaran.model.model import Model
     from glotaran.parameter import ParameterGroup
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     has_label=False,
 )
 class EqualAreaPenalty:
-    """An equal area constraint adds a the differenc of the sum of a
+    """An equal area constraint adds a the difference of the sum of a
     compartments in the e matrix in one ore more intervals to the scaled sum
     of the e matrix of one or more target compartments to residual. The additional
     residual is scaled with the weight."""
