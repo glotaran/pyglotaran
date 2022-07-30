@@ -56,7 +56,7 @@ class EqualAreaPenalty:
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return any([applies(i) for i in self.interval])
+        return any(applies(i) for i in self.interval)
 
 
 def has_spectral_penalties(model: Model) -> bool:
@@ -151,10 +151,16 @@ def _get_idx_from_interval(
 
     """
     axis_array = np.array(axis)
-    start = np.abs(axis_array - interval[0]).argmin() if not np.isinf(interval[0]) else 0
-    end = (
-        np.abs(axis_array - interval[1]).argmin()
-        if not np.isinf(interval[1])
-        else axis_array.size - 1
+    start = (
+        0
+        if np.isinf(interval[0])
+        else np.abs(axis_array - interval[0]).argmin()
     )
+
+    end = (
+        axis_array.size - 1
+        if np.isinf(interval[1])
+        else np.abs(axis_array - interval[1]).argmin()
+    )
+
     return start, end
