@@ -1,8 +1,6 @@
 """Module containing the optimization group class."""
 from __future__ import annotations
 
-from numbers import Number
-
 import numpy as np
 import xarray as xr
 
@@ -85,12 +83,12 @@ class OptimizationGroup:
         self._matrix_provider.calculate()
         self._estimation_provider.estimate()
 
-    def get_additional_penalties(self) -> list[Number]:
+    def get_additional_penalties(self) -> list[float]:
         """Get additional penalties.
 
         Returns
         -------
-        list[Number]
+        list[float]
             The additional penalties.
         """
         return self._estimation_provider.get_additional_penalties()

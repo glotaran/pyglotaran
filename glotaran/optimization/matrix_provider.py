@@ -4,7 +4,6 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass
 from dataclasses import replace
-from numbers import Number
 
 import numba as nb
 import numpy as np
@@ -65,12 +64,12 @@ class MatrixContainer:
         """
         return replace(self, matrix=self.apply_weight(self.matrix, weight))
 
-    def create_scaled_matrix(self, scale: Number) -> MatrixContainer:
+    def create_scaled_matrix(self, scale: float) -> MatrixContainer:
         """Create a matrix container with a scaled matrix.
 
         Parameters
         ----------
-        scale : Number
+        scale : float
             The scale.
 
         Returns
@@ -237,14 +236,14 @@ class MatrixProvider:
         return tmp_clp_labels, tmp_matrix
 
     @staticmethod
-    def does_interval_property_apply(prop: IntervalProperty, index: Number | None) -> bool:
+    def does_interval_property_apply(prop: IntervalProperty, index: int | None) -> bool:
         """Check if an interval property applies on an index.
 
         Parameters
         ----------
         prop : IntervalProperty
             The interval property.
-        index: Number | None
+        index: int | None
             The index to check.
 
         Returns
@@ -264,7 +263,7 @@ class MatrixProvider:
     def reduce_matrix(
         self,
         matrix: MatrixContainer,
-        index: Number | None,
+        index: int | None,
     ) -> MatrixContainer:
         """Reduce a matrix.
 
@@ -274,7 +273,7 @@ class MatrixProvider:
         ----------
         matrix : MatrixContainer
             The matrix.
-        index : Number | None
+        index : int | None
             The index on the global axis.
 
         Returns
@@ -289,7 +288,7 @@ class MatrixProvider:
     def apply_constraints(
         self,
         matrix: MatrixContainer,
-        index: Number | None,
+        index: int | None,
     ) -> MatrixContainer:
         """Apply constraints on a matrix.
 
@@ -297,7 +296,7 @@ class MatrixProvider:
         ----------
         matrix : MatrixContainer
             The matrix.
-        index : Number | None
+        index : int | None
             The index on the global axis.
 
         Returns
@@ -324,7 +323,7 @@ class MatrixProvider:
     def apply_relations(
         self,
         matrix: MatrixContainer,
-        index: Number | None,
+        index: int | None,
     ) -> MatrixContainer:
         """Apply relations on a matrix.
 
@@ -332,7 +331,7 @@ class MatrixProvider:
         ----------
         matrix : MatrixContainer
             The matrix.
-        index : Number | None
+        index : int | None
             The index on the global axis.
 
         Returns
@@ -661,14 +660,14 @@ class MatrixProviderLinked(MatrixProvider):
             self._aligned_matrices[i] = group_matrix
 
     @staticmethod
-    def align_matrices(matrices: list[MatrixContainer], scales: list[Number]) -> MatrixContainer:
+    def align_matrices(matrices: list[MatrixContainer], scales: list[float]) -> MatrixContainer:
         """Align matrices.
 
         Parameters
         ----------
         matrices : list[MatrixContainer]
             The matrices to align.
-        scales : list[Number]
+        scales : list[float]
             The scales of the matrices.
 
         Returns
