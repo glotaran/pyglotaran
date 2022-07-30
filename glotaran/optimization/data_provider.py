@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import warnings
-from numbers import Number
 from typing import Literal
 
 import numpy as np
@@ -122,13 +121,13 @@ class DataProvider:
 
     @staticmethod
     def get_axis_slice_from_interval(
-        interval: tuple[Number, Number], axis: np.typing.ArrayLike
+        interval: tuple[float, float], axis: np.typing.ArrayLike
     ) -> slice:
         """Get a slice of indices from a min max tuple and for an axis.
 
         Parameters
         ----------
-        interval : tuple[Number, Number]
+        interval : tuple[float, float]
             The min max tuple.
         axis : np.typing.ArrayLike
             The axis to slice.
@@ -344,27 +343,27 @@ class DataProviderLinked(DataProvider):
 
     @staticmethod
     def align_index(
-        index: Number,
+        index: int,
         target_axis: np.typing.ArrayLike,
-        tolerance: Number,
+        tolerance: float,
         method: Literal["nearest", "backward", "forward"],
-    ) -> Number:
+    ) -> int:
         """Align an index on a target axis.
 
         Parameters
         ----------
-        index : Number
+        index : int
             The index to align.
         target_axis : np.typing.ArrayLike
             The axis to align the index on.
-        tolerance : Number
+        tolerance : float
             The alignment tolerance.
         method : Literal["nearest", "backward", "forward"]
             The alignment method.
 
         Returns
         -------
-        Number
+        int
             The aligned index.
         """
         diff = target_axis - index

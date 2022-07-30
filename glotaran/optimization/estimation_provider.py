@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import warnings
-from numbers import Number
 
 import numpy as np
 import xarray as xr
@@ -49,13 +48,14 @@ class EstimationProvider:
         ----------
         dataset_group : DatasetGroup
             The dataset group.
+
         Raises
         ------
         UnsupportedResidualFunctionError
             Raised when residual function of the group dataset group is unsupported.
         """
         self._group = dataset_group
-        self._clp_penalty: list[Number] = []
+        self._clp_penalty: list[float] = []
         try:
             self._residual_function = SUPPORTED_RESIUDAL_FUNCTIONS[dataset_group.residual_function]
         except KeyError as e:
@@ -96,7 +96,7 @@ class EstimationProvider:
         clp_labels: list[str],
         reduced_clp_labels: list[str],
         reduced_clps: np.typing.ArrayLike,
-        index: Number,
+        index: int,
     ) -> np.typing.ArrayLike:
         """Retrieve clp from reduced clp.
 
@@ -108,7 +108,7 @@ class EstimationProvider:
             The reduced clp labels.
         reduced_clps : np.typing.ArrayLike
             The reduced clps.
-        index : Number
+        index : int
             The index on the global axis.
 
         Returns
@@ -141,12 +141,12 @@ class EstimationProvider:
                 )
         return clps
 
-    def get_additional_penalties(self) -> list[Number]:
+    def get_additional_penalties(self) -> list[float]:
         """Get the additional penalty.
 
         Returns
         -------
-        list[Number]
+        list[float]
             The additional penalty.
         """
         return self._clp_penalty
@@ -156,7 +156,7 @@ class EstimationProvider:
         clp_labels: list[list[str]],
         clps: list[np.ndarray],
         global_axis: np.ndarray,
-    ) -> list[Number]:
+    ) -> list[float]:
         """Calculate the clp penalty.
 
         Parameters
@@ -170,7 +170,7 @@ class EstimationProvider:
 
         Returns
         -------
-        list[Number]
+        list[float]
             The clp penalty.
         """
         model = self.group.model
