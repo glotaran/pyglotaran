@@ -57,7 +57,7 @@ repos:
     rev: 0.6.0
     hooks:
       - id: nbstripout
-        args: [--strip-empty-cells]
+        args: [--drop-empty-cells]
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.4.0
