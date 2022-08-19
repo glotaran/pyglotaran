@@ -64,10 +64,10 @@ repos:
     rev: 1.4.0
     hooks:
       - id: nbqa-black
-        additional_dependencies: [black==22.3.0]
+        additional_dependencies: [black==22.6.0]
         args: [--nbqa-mutate]
       - id: nbqa-pyupgrade
-        additional_dependencies: [pyupgrade==2.31.1]
+        additional_dependencies: [pyupgrade==2.37.3]
         args: [--nbqa-mutate, --py38-plus]
       - id: nbqa-flake8
       - id: nbqa-check-ast
