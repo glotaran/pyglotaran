@@ -16,7 +16,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.2
+    rev: v2.37.3
     hooks:
       - id: pyupgrade
         types: [file]
@@ -48,9 +48,10 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v1.20.2
+    rev: v2.0.0
     hooks:
       - id: setup-cfg-fmt
+        args: [--include-version-classifiers]
 
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
@@ -63,10 +64,10 @@ repos:
     rev: 1.4.0
     hooks:
       - id: nbqa-black
-        additional_dependencies: [black==22.3.0]
+        additional_dependencies: [black==22.6.0]
         args: [--nbqa-mutate]
       - id: nbqa-pyupgrade
-        additional_dependencies: [pyupgrade==2.31.1]
+        additional_dependencies: [pyupgrade==2.37.3]
         args: [--nbqa-mutate, --py38-plus]
       - id: nbqa-flake8
       - id: nbqa-check-ast
@@ -76,7 +77,7 @@ repos:
 
   # Linters
   - repo: https://github.com/asottile/yesqa
-    rev: v1.3.0
+    rev: v1.4.0
     hooks:
       - id: yesqa
         types: [file]
@@ -84,7 +85,7 @@ repos:
         additional_dependencies: [flake8-docstrings, flake8-print>=5.0.0]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
         name: "flake8 lint code"
@@ -94,7 +95,7 @@ repos:
           [flake8-pyi, flake8-comprehensions, flake8-print>=5.0.0]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
         alias: flake8-docs
@@ -122,7 +123,7 @@ repos:
         additional_dependencies: [click<8]
 
   - repo: https://github.com/myint/rstcheck
-    rev: "v6.0.0.post1"
+    rev: "v6.1.0"
     hooks:
       - id: rstcheck
         additional_dependencies: [sphinx]

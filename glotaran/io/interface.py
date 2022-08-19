@@ -59,7 +59,9 @@ class DataIoInterface:
         self.format = format_name
 
     def load_dataset(self, file_name: str) -> xr.Dataset | xr.DataArray:
-        """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray` (**NOT IMPLEMENTED**).
+        """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -82,7 +84,9 @@ class DataIoInterface:
         dataset: xr.Dataset | xr.DataArray,
         file_name: str,
     ):
-        """Save data from :xarraydoc:`Dataset` to a file (**NOT IMPLEMENTED**).
+        """Save data from :xarraydoc:`Dataset` to a file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -112,7 +116,9 @@ class ProjectIoInterface:
         self.format = format_name
 
     def load_model(self, file_name: str) -> Model:
-        """Create a Model instance from the specs defined in a file (**NOT IMPLEMENTED**).
+        """Create a Model instance from the specs defined in a file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -131,7 +137,9 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot read models with format {self.format!r}")
 
     def save_model(self, model: Model, file_name: str):
-        """Save a Model instance to a spec file (**NOT IMPLEMENTED**).
+        """Save a Model instance to a spec file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -147,7 +155,9 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot save models with format {self.format!r}")
 
     def load_parameters(self, file_name: str) -> ParameterGroup:
-        """Create a ParameterGroup instance from the specs defined in a file (**NOT IMPLEMENTED**).
+        """Create a ParameterGroup instance from the specs defined in a file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -166,7 +176,9 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
 
     def save_parameters(self, parameters: ParameterGroup, file_name: str):
-        """Save a ParameterGroup instance to a spec file (**NOT IMPLEMENTED**).
+        """Save a ParameterGroup instance to a spec file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -182,7 +194,9 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot save parameters with format {self.format!r}")
 
     def load_scheme(self, file_name: str) -> Scheme:
-        """Create a Scheme instance from the specs defined in a file (**NOT IMPLEMENTED**).
+        """Create a Scheme instance from the specs defined in a file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -200,7 +214,9 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot read scheme with format {self.format!r}")
 
     def save_scheme(self, scheme: Scheme, file_name: str):
-        """Save a Scheme instance to a spec file (**NOT IMPLEMENTED**).
+        """Save a Scheme instance to a spec file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -216,7 +232,9 @@ class ProjectIoInterface:
         raise NotImplementedError(f"Cannot save scheme with format {self.format!r}")
 
     def load_result(self, result_path: str) -> Result:
-        """Create a Result instance from the specs defined in a file (**NOT IMPLEMENTED**).
+        """Create a Result instance from the specs defined in a file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------
@@ -241,7 +259,9 @@ class ProjectIoInterface:
         *,
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     ) -> list[str]:
-        """Save a Result instance to a spec file (**NOT IMPLEMENTED**).
+        """Save a Result instance to a spec file.
+
+        **NOT IMPLEMENTED**
 
         Parameters
         ----------

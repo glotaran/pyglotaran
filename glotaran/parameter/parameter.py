@@ -235,7 +235,7 @@ class Parameter(_SupportsArray):
         return parameter_dict
 
     def set_from_group(self, group: ParameterGroup):
-        """Set all values of the parameter to the values of the corresponding parameter in the group.
+        """Set values of the parameter to the values of the corresponding parameter in the group.
 
         Notes
         -----
