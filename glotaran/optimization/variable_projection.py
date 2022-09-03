@@ -8,7 +8,7 @@ from scipy.linalg import lapack
 def residual_variable_projection(
     matrix: np.typing.ArrayLike, data: np.typing.ArrayLike
 ) -> tuple[np.typing.ArrayLike, np.typing.ArrayLike]:
-    """Calculate the conditionally linear parameters and residual with the variable projection method.
+    """Calculate conditionally linear parameters and residual with the variable projection method.
 
     Parameters
     ----------
