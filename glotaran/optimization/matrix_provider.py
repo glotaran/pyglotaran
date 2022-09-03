@@ -5,7 +5,6 @@ import warnings
 from dataclasses import dataclass
 from dataclasses import replace
 
-import numba as nb
 import numpy as np
 import xarray as xr
 
@@ -26,7 +25,6 @@ class MatrixContainer:
     """The matrix."""
 
     @staticmethod
-    @nb.jit(nopython=True, parallel=True)
     def apply_weight(
         matrix: np.typing.ArrayLike, weight: np.typing.ArrayLike
     ) -> np.typing.ArrayLike:
@@ -44,10 +42,7 @@ class MatrixContainer:
         np.typing.ArrayLike
             The weighted matrix.
         """
-        matrix = matrix.copy()
-        for i in nb.prange(matrix.shape[1]):
-            matrix[:, i] *= weight
-        return matrix
+        return (matrix.T * weight).T
 
     def create_weighted_matrix(self, weight: np.typing.ArrayLike) -> MatrixContainer:
         """Create a matrix container with a weighted matrix.
