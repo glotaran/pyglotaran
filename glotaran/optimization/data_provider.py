@@ -146,7 +146,9 @@ class DataProvider:
             interval_min, interval_max = interval_max, interval_min
 
         minimum = 0 if np.isinf(interval_min) else np.abs(axis - interval_min).argmin()
-        maximum = axis.size if np.isinf(interval_max) else np.abs(axis - interval_max).argmin() + 1
+        maximum = (
+            axis.size - 1 if np.isinf(interval_max) else np.abs(axis - interval_max).argmin() + 1
+        )
 
         return slice(minimum, maximum)
 

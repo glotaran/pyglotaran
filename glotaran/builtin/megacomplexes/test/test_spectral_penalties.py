@@ -255,7 +255,7 @@ def test_equal_area_penalties(debug=False):
         data=dataset,
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
-    result_np = optimize(scheme_np)
+    result_np = optimize(scheme_np, raise_exception=True)
     print(result_np)
 
     model_wp.dataset_group_models["default"].method = (
@@ -269,7 +269,7 @@ def test_equal_area_penalties(debug=False):
         data=dataset,
         maximum_number_function_evaluations=optim_spec.max_nfev,
     )
-    result_wp = optimize(scheme_wp)
+    result_wp = optimize(scheme_wp, raise_exception=True)
     print(result_wp)
 
     if debug:

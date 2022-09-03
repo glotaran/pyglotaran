@@ -178,33 +178,20 @@ class EstimationProvider:
         penalties = []
         for penalty in model.clp_area_penalties:
             penalty = penalty.fill(model, parameters)
-            source_area = np.array([])
-            target_area = np.array([])
 
-            source_area = np.concatenate(
-                [
-                    source_area,
-                    _get_area(
-                        penalty.source,
-                        clp_labels,
-                        clps,
-                        penalty.source_intervals,
-                        global_axis,
-                    ),
-                ]
+            source_area = _get_area(
+                penalty.source,
+                clp_labels,
+                clps,
+                penalty.source_intervals,
+                global_axis,
             )
-
-            target_area = np.concatenate(
-                [
-                    target_area,
-                    _get_area(
-                        penalty.target,
-                        clp_labels,
-                        clps,
-                        penalty.target_intervals,
-                        global_axis,
-                    ),
-                ]
+            target_area = _get_area(
+                penalty.target,
+                clp_labels,
+                clps,
+                penalty.target_intervals,
+                global_axis,
             )
 
             if len(target_area) == 0 and len(source_area) == 0:
@@ -216,7 +203,7 @@ class EstimationProvider:
                 continue
             elif len(source_area) == 0:
                 warnings.warn(
-                    "Ignoring equal area penalty, target clp " f"{penalty.source} not present."
+                    "Ignoring equal area penalty, source clp " f"{penalty.source} not present."
                 )
                 continue
 
@@ -599,19 +586,11 @@ def _get_area(
             max(interval[0], np.min(global_axis)),
             min(interval[1], np.max(global_axis)),
         )
-        start_idx = (
-            0
-            if np.isinf(bounded_interval[0])
-            else np.abs(global_axis - bounded_interval[0]).argmin()
-        )
 
-        end_idx = (
-            global_axis.size - 1
-            if np.isinf(bounded_interval[1])
-            else np.abs(global_axis - bounded_interval[1]).argmin()
-        )
+        interval_slice = DataProvider.get_axis_slice_from_interval(bounded_interval, global_axis)
+        start_idx, end_idx = interval_slice.start, interval_slice.stop
 
-        for i in range(start_idx, end_idx + 1):
+        for i in range(start_idx, end_idx):
             index_clp_labels = clp_labels[i] if isinstance(clp_labels[0], list) else clp_labels
             if clp_label in index_clp_labels:
                 area.append(clps[i][index_clp_labels.index(clp_label)])
