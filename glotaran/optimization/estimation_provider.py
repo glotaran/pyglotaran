@@ -420,14 +420,14 @@ class EstimationProviderUnlinked(EstimationProvider):
         data = self._data_provider.get_data(label)
         clp_labels = []
 
-        for index, global_index in enumerate(global_axis):
+        for index, global_index_value in enumerate(global_axis):
             matrix_container = self._matrix_provider.get_prepared_matrix_container(label, index)
             reduced_clps, residual = self.calculate_residual(
                 matrix_container.matrix, data[:, index]
             )
             clp_labels.append(self._matrix_provider.get_matrix_container(label, index).clp_labels)
             clp = self.retrieve_clps(
-                clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index
+                clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index_value
             )
 
             self._clps[label].append(clp)
@@ -470,7 +470,7 @@ class EstimationProviderLinked(EstimationProvider):
 
     def estimate(self):
         """Calculate the estimation."""
-        for index, global_index in enumerate(self._data_provider.aligned_global_axis):
+        for index, global_index_value in enumerate(self._data_provider.aligned_global_axis):
             matrix_container = self._matrix_provider.get_aligned_matrix_container(index)
             data = self._data_provider.get_aligned_data(index)
             reduced_clps, residual = self.calculate_residual(matrix_container.matrix, data)
@@ -478,7 +478,7 @@ class EstimationProviderLinked(EstimationProvider):
                 self._matrix_provider.aligned_full_clp_labels[index],
                 matrix_container.clp_labels,
                 reduced_clps,
-                global_index,
+                global_index_value,
             )
             self._residuals[index] = residual
 

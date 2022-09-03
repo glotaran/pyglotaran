@@ -633,7 +633,7 @@ class MatrixProviderLinked(MatrixProvider):
 
     def calculate_aligned_matrices(self):
         """Calculate the aligned matrices of the dataset group."""
-        for i, global_index in enumerate(self._data_provider.aligned_global_axis):
+        for i, global_index_value in enumerate(self._data_provider.aligned_global_axis):
             group_label = self._data_provider.get_aligned_group_label(i)
             group_matrix = self.align_matrices(
                 [
@@ -652,7 +652,7 @@ class MatrixProviderLinked(MatrixProvider):
             )
 
             self._aligned_full_clp_labels[i] = group_matrix.clp_labels
-            group_matrix = self.reduce_matrix(group_matrix, global_index)
+            group_matrix = self.reduce_matrix(group_matrix, global_index_value)
             weight = self._data_provider.get_aligned_weight(i)
             if weight is not None:
                 group_matrix = group_matrix.create_weighted_matrix(weight)
