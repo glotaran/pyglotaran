@@ -17,7 +17,7 @@ def test_constraint(index_dependent, link_clp):
     model.megacomplex["m1"].is_index_dependent = index_dependent
     model.clp_constraints.append(ZeroConstraint.from_dict({"target": "s2"}))
 
-    print("link_clp", link_clp, "index_dependent", index_dependent)  # T201
+    print("link_clp", link_clp, "index_dependent", index_dependent)
     dataset = simulate(
         suite.sim_model,
         "dataset1",

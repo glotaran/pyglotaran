@@ -80,16 +80,22 @@ def test_estimation_provider_unlinked(scheme: Scheme):
     )
 
     assert "dataset1" in clp
-    assert clp["dataset1"].shape == (dataset1_global_size, 2)
+    assert clp["dataset1"].shape == (dataset1_global_size, 2)  # type:ignore[attr-defined]
 
     assert "dataset1" in residual
-    assert residual["dataset1"].shape == scheme.data["dataset1"].data.shape
+    assert (
+        residual["dataset1"].shape  # type:ignore[attr-defined]
+        == scheme.data["dataset1"].data.shape
+    )
 
     assert "dataset2" in clp
-    assert clp["dataset2"].shape == (dataset2_global_size, 2)
+    assert clp["dataset2"].shape == (dataset2_global_size, 2)  # type:ignore[attr-defined]
 
     assert "dataset2" in residual
-    assert residual["dataset2"].shape == scheme.data["dataset2"].data.T.shape
+    assert (
+        residual["dataset2"].shape  # type:ignore[attr-defined]
+        == scheme.data["dataset2"].data.T.shape
+    )
 
 
 def test_estimation_provider_linked(scheme: Scheme):

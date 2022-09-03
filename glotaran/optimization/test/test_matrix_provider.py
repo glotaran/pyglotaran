@@ -111,7 +111,7 @@ def test_matrix_provider_linked_index_independent(scheme: Scheme):
 
 
 def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
-    scheme.model.megacomplex["m1"].is_index_dependent = True
+    scheme.model.megacomplex["m1"].is_index_dependent = True  # type:ignore[attr-defined]
     dataset_group = scheme.model.get_dataset_groups()["default"]
     dataset_group.set_parameters(scheme.parameters)
     data_provider = DataProvider(scheme, dataset_group)
@@ -134,7 +134,7 @@ def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
 
 
 def test_matrix_provider_linked_index_dependent(scheme: Scheme):
-    scheme.model.megacomplex["m1"].is_index_dependent = True
+    scheme.model.megacomplex["m1"].is_index_dependent = True  # type:ignore[attr-defined]
     dataset_group = scheme.model.get_dataset_groups()["default"]
     dataset_group.set_parameters(scheme.parameters)
     data_provider = DataProviderLinked(scheme, dataset_group)

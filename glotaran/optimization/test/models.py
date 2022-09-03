@@ -143,9 +143,9 @@ class ShapedSpectralMegacomplex(Megacomplex):
         model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
-        location = np.asarray(self.location)
-        amp = np.asarray(self.amplitude)
-        delta = np.asarray(self.delta)
+        location = np.asarray(self.location)  # type:ignore[attr-defined]
+        amp = np.asarray(self.amplitude)  # type:ignore[attr-defined]
+        delta = np.asarray(self.delta)  # type:ignore[attr-defined]
 
         array = np.empty((location.size, model_axis.size), dtype=np.float64)
 

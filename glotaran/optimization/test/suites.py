@@ -37,7 +37,7 @@ class OneCompartmentDecay:
             }
         },
     }
-    model_dict["dataset"]["dataset1"]["scale"] = "2"
+    model_dict["dataset"]["dataset1"]["scale"] = "2"  # type:ignore[index]
     model = DecayModel.from_dict(model_dict)
 
 

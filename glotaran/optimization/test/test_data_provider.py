@@ -126,16 +126,22 @@ def test_data_provider_linked(
     assert data_provider.get_aligned_data(3).size == dataset1_size + dataset2_size
     assert data_provider.get_aligned_data(4).size == dataset2_size
 
-    assert data_provider.get_aligned_weight(0).size == dataset1_size + dataset2_size
+    assert (
+        data_provider.get_aligned_weight(0).size  # type:ignore[union-attr]
+        == dataset1_size + dataset2_size
+    )
     assert data_provider.get_aligned_weight(1) is None
-    assert data_provider.get_aligned_weight(2).size == dataset1_size
-    assert data_provider.get_aligned_weight(3).size == dataset1_size + dataset2_size
+    assert data_provider.get_aligned_weight(2).size == dataset1_size  # type:ignore[union-attr]
+    assert (
+        data_provider.get_aligned_weight(3).size  # type:ignore[union-attr]
+        == dataset1_size + dataset2_size
+    )
     assert data_provider.get_aligned_weight(4) is None
 
 
 @pytest.mark.parametrize("method", ["nearest", "backward", "forward"])
 def test_data_provider_linking_methods(method: str, scheme: Scheme, dataset_group: DatasetGroup):
-    scheme.clp_link_method = method
+    scheme.clp_link_method = method  # type:ignore[assignment]
     data_provider = DataProviderLinked(scheme, dataset_group)
 
     #  global_axis1 = [1, 5, 6]
