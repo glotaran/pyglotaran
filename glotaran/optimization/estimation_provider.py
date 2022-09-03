@@ -552,7 +552,7 @@ class EstimationProviderLinked(EstimationProvider):
 
 def _get_area(
     clp_label: str,
-    clp_labels: list[list[str]],
+    clp_labels: list[str] | list[list[str]],
     clps: list[np.typing.ArrayLike],
     intervals: list[tuple[float, float]],
     global_axis: np.typing.ArrayLike,
@@ -563,7 +563,7 @@ def _get_area(
     ----------
     clp_label : str
         The label of the clp.
-    clp_labels : list[list[str]]
+    clp_labels: list[str] | list[list[str]]
         The clp labels.
     clps : list[np.typing.ArrayLike]
         The clps.
@@ -591,7 +591,11 @@ def _get_area(
         start_idx, end_idx = interval_slice.start, interval_slice.stop
 
         for i in range(start_idx, end_idx):
-            index_clp_labels = clp_labels[i] if isinstance(clp_labels[0], list) else clp_labels
+            index_clp_labels: list[str] = (
+                clp_labels[i]
+                if isinstance(clp_labels[0], list)
+                else clp_labels  # type:ignore[assignment]
+            )
             if clp_label in index_clp_labels:
                 area.append(clps[i][index_clp_labels.index(clp_label)])
 
