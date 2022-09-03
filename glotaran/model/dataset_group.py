@@ -56,9 +56,9 @@ class DatasetGroup:
         model_dimensions = {d.get_model_dimension() for d in dataset_models}
         if len(model_dimensions) != 1:
             return False
-        global_dimensions = []
+        global_dimensions = set()
         for dataset in data.values():
-            global_dimensions += [
+            global_dimensions |= {
                 dim for dim in dataset.data.coords if dim not in model_dimensions
-            ]
-        return len(set(global_dimensions)) == 1
+            }
+        return len(global_dimensions) == 1
