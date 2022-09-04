@@ -443,9 +443,12 @@ def test_result_attr_consistency(
                 expected_attr_name in current.attrs.keys()
             ), f"Missing result attribute: {expected_attr_name!r} in {file_name!r}"
 
-            assert allclose(
-                expected_attr_value, current.attrs[expected_attr_name], print_fail=20
-            ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
+            if isinstance(expected_attr_value, str):
+                assert expected_attr_value == current.attrs[expected_attr_name]
+            else:
+                assert allclose(
+                    expected_attr_value, current.attrs[expected_attr_name], print_fail=20
+                ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
 
 
 @pytest.mark.parametrize("expected_var_name", map_result_data()[1])
