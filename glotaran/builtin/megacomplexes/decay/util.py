@@ -31,7 +31,9 @@ def index_dependent(dataset_model: DatasetModel) -> bool:
 def calculate_matrix(
     megacomplex: Megacomplex,
     dataset_model: DatasetModel,
-    indices: dict[str, int],
+    global_index: int | None,
+    global_axis: np.typing.ArrayLike,
+    model_axis: np.typing.ArrayLike,
     **kwargs,
 ):
 
@@ -40,11 +42,6 @@ def calculate_matrix(
     k_matrix = megacomplex.get_k_matrix()
 
     rates = k_matrix.rates(compartments, initial_concentration)
-
-    global_dimension = dataset_model.get_global_dimension()
-    global_index = indices.get(global_dimension)
-    global_axis = dataset_model.get_global_axis()
-    model_axis = dataset_model.get_model_axis()
 
     # init the matrix
     size = (model_axis.size, rates.size)
@@ -99,7 +96,7 @@ def finalize_data(
         return
 
     decay_megacomplexes = collect_megacomplexes(dataset_model, as_global)
-    global_dimension = dataset_model.get_global_dimension()
+    global_dimension = dataset.attrs["global_dimension"]
     name = "images" if global_dimension == "pixel" else "spectra"
 
     all_species = []

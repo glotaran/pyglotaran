@@ -27,7 +27,9 @@ class SpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
 
@@ -37,7 +39,6 @@ class SpectralMegacomplex(Megacomplex):
                 raise ModelError(f"More then one shape defined for compartment '{compartment}'")
             compartments.append(compartment)
 
-        model_axis = dataset_model.get_model_axis()
         if dataset_model.spectral_axis_inverted:
             model_axis = dataset_model.spectral_axis_scale / model_axis
         elif dataset_model.spectral_axis_scale != 1:
@@ -78,18 +79,14 @@ class SpectralMegacomplex(Megacomplex):
         matrix = dataset.global_matrix if as_global else dataset.matrix
         clp_dim = "global_clp_label" if as_global else "clp_label"
         dataset["species_spectra"] = (
-            (
-                dataset_model.get_model_dimension()
-                if not as_global
-                else dataset_model.get_global_dimension(),
-                species_dimension,
-            ),
-            matrix.sel({clp_dim: species}).values,
-        )
+            dataset.attrs["global_dimension"] if as_global else dataset.attrs["model_dimension"],
+            species_dimension,
+        ), matrix.sel({clp_dim: species}).values
+
         if not is_full_model:
             dataset["species_associated_concentrations"] = (
                 (
-                    dataset_model.get_global_dimension(),
+                    dataset.attrs["global_dimension"],
                     species_dimension,
                 ),
                 dataset.clp.sel(clp_label=species).data,

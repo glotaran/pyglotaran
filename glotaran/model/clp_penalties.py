@@ -13,8 +13,8 @@ from glotaran.model.item import model_item
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Sequence
 
     from glotaran.model.model import Model
     from glotaran.parameter import ParameterGroup
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     has_label=False,
 )
 class EqualAreaPenalty:
-    """An equal area constraint adds a the differenc of the sum of a
+    """An equal area constraint adds a the difference of the sum of a
     compartments in the e matrix in one ore more intervals to the scaled sum
     of the e matrix of one or more target compartments to residual. The additional
     residual is scaled with the weight."""
@@ -56,7 +56,7 @@ class EqualAreaPenalty:
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return any([applies(i) for i in self.interval])
+        return any(applies(i) for i in self.interval)
 
 
 def has_spectral_penalties(model: Model) -> bool:
@@ -151,10 +151,10 @@ def _get_idx_from_interval(
 
     """
     axis_array = np.array(axis)
-    start = np.abs(axis_array - interval[0]).argmin() if not np.isinf(interval[0]) else 0
+    start = 0 if np.isinf(interval[0]) else np.abs(axis_array - interval[0]).argmin()
+
     end = (
-        np.abs(axis_array - interval[1]).argmin()
-        if not np.isinf(interval[1])
-        else axis_array.size - 1
+        axis_array.size - 1 if np.isinf(interval[1]) else np.abs(axis_array - interval[1]).argmin()
     )
+
     return start, end

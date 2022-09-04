@@ -1,8 +1,10 @@
 from pathlib import Path
 
 try:
+    # 0.4.0 -0.5.1
     from glotaran.analysis.optimize import optimize
 except ImportError:
+    # 0.6.0
     from glotaran.optimization.optimize import optimize
 
 from glotaran.io import load_dataset

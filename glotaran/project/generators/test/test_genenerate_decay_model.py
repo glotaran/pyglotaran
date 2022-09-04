@@ -60,7 +60,7 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
             assert dataset.global_megacomplex == ["megacomplex_spectral"]
 
     if irf:
-        assert dataset.irf == "gaussian_irf"
+        assert dataset.irf == "gaussian_irf"  # type:ignore[attr-defined]
         assert "gaussian_irf" in model.irf  # type:ignore[attr-defined]
         assert (
             model.irf["gaussian_irf"].center.full_label  # type:ignore[attr-defined]

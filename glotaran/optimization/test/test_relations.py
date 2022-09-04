@@ -4,7 +4,7 @@ import pytest
 
 from glotaran.model import Relation
 from glotaran.optimization.optimization_group import OptimizationGroup
-from glotaran.optimization.test.models import TwoCompartmentDecay as suite
+from glotaran.optimization.test.suites import TwoCompartmentDecay as suite
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
@@ -21,7 +21,7 @@ def test_relations(index_dependent, link_clp):
     )
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
-    print("link_clp", link_clp, "index_dependent", index_dependent)
+    print("link_clp", link_clp, "index_dependent", index_dependent)  # T201
     dataset = simulate(
         suite.sim_model,
         "dataset1",
@@ -30,23 +30,17 @@ def test_relations(index_dependent, link_clp):
     )
     scheme = Scheme(model=model, parameters=parameters, data={"dataset1": dataset})
     optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
+    optimization_group.calculate(parameters)
 
-    if index_dependent:
-        reduced_matrix = (
-            optimization_group.reduced_matrices[0]
-            if link_clp
-            else optimization_group.reduced_matrices["dataset1"][0]
-        )
-    else:
-        reduced_matrix = optimization_group.reduced_matrices["dataset1"]
-    matrix = (
-        optimization_group.matrices["dataset1"][0]
-        if index_dependent
-        else optimization_group.matrices["dataset1"]
+    reduced_matrix = (
+        optimization_group._matrix_provider.get_aligned_matrix_container(0)
+        if link_clp
+        else optimization_group._matrix_provider.get_prepared_matrix_container("dataset1", 0)
     )
+    matrix = optimization_group._matrix_provider.get_matrix_container("dataset1", 0)
 
     result_data = optimization_group.create_result_data()
-    print(result_data)
+    print(result_data)  # T201
     clps = result_data["dataset1"].clp
 
     assert "s2" not in reduced_matrix.clp_labels

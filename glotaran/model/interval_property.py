@@ -19,7 +19,10 @@ class IntervalProperty:
     :math:`source = parameter * target`.
     """
 
-    def applies(self, value: float) -> bool:
+    def has_interval(self) -> bool:
+        return self.interval is not None
+
+    def applies(self, value: float | None) -> bool:
         """
         Returns true if ``value`` is in one of the intervals.
 
@@ -40,4 +43,4 @@ class IntervalProperty:
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
-        return any([applies(i) for i in self.interval])
+        return any(applies(i) for i in self.interval)

@@ -39,7 +39,10 @@ class Scheme:
     data: Mapping[str, xr.Dataset] = file_loadable_field(
         DatasetMapping, is_wrapper_class=True
     )  # type:ignore[type-var]
+
     clp_link_tolerance: float = 0.0
+    clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
+
     maximum_number_function_evaluations: int | None = None
     non_negative_least_squares: bool | None = exclude_from_dict_field(None)
     group_tolerance: float | None = exclude_from_dict_field(None)
@@ -175,39 +178,3 @@ class Scheme:
     def __str__(self) -> str:
         """Representation used by print and str."""
         return str(self.markdown())
-
-    @property
-    def model_dimensions(self) -> dict[str, str]:
-        """Return the dataset model's model dimension.
-
-        Returns
-        -------
-        dict[str, str]
-            A dictionary with the dataset labels as key and the model dimension of
-            the dataset as value.
-        """
-        return {
-            dataset_name: self.model.dataset[dataset_name]  # type:ignore[attr-defined]
-            .fill(self.model, self.parameters)
-            .set_data(self.data[dataset_name])
-            .get_model_dimension()
-            for dataset_name in self.data
-        }
-
-    @property
-    def global_dimensions(self) -> dict[str, str]:
-        """Return the dataset model's global dimension.
-
-        Returns
-        -------
-        dict[str, str]
-            A dictionary with the dataset labels as key and the global dimension of
-            the dataset as value.
-        """
-        return {
-            dataset_name: self.model.dataset[dataset_name]  # type:ignore[attr-defined]
-            .fill(self.model, self.parameters)
-            .set_data(self.data[dataset_name])
-            .get_global_dimension()
-            for dataset_name in self.data
-        }

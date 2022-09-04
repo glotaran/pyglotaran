@@ -8,8 +8,8 @@ from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import Dec
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.optimize import optimize
-from glotaran.optimization.util import calculate_matrix
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
@@ -95,9 +95,7 @@ class OneCompartmentModelInvertedAxis:
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
-    decay_dataset_model.overwrite_global_dimension("spectral")
-    decay_dataset_model.set_coordinates(axis)
-    matrix = calculate_matrix(decay_dataset_model, {})
+    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
@@ -157,9 +155,7 @@ class OneCompartmentModelNegativeSkew:
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
-    decay_dataset_model.overwrite_global_dimension("spectral")
-    decay_dataset_model.set_coordinates(axis)
-    matrix = calculate_matrix(decay_dataset_model, {})
+    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
@@ -261,9 +257,7 @@ class ThreeCompartmentModel:
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
-    decay_dataset_model.overwrite_global_dimension("spectral")
-    decay_dataset_model.set_coordinates(axis)
-    matrix = calculate_matrix(decay_dataset_model, {})
+    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 

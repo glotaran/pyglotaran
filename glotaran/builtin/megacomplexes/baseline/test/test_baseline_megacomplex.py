@@ -3,7 +3,7 @@ import numpy as np
 from glotaran.builtin.megacomplexes.baseline import BaselineMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.model import Model
-from glotaran.optimization.util import calculate_matrix
+from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.parameter import ParameterGroup
 
 
@@ -44,11 +44,8 @@ def test_baseline():
 
     time = np.asarray(np.arange(0, 50, 1.5))
     pixel = np.asarray([0])
-    coords = {"time": time, "pixel": pixel}
     dataset_model = model.dataset["dataset1"].fill(model, parameter)
-    dataset_model.overwrite_global_dimension("pixel")
-    dataset_model.set_coordinates(coords)
-    matrix = calculate_matrix(dataset_model, {})
+    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, None, pixel, time)
     compartments = matrix.clp_labels
 
     assert len(compartments) == 2

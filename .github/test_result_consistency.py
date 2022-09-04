@@ -178,20 +178,6 @@ def coord_test(
 
         current_coord_value = current_coords[expected_coord_name]
 
-        # ############ START REMOVE HOTFIX
-        # This should be removed after a new gold standard was established
-
-        if any(
-            expected_coord_name.startswith(negated_coord) for negated_coord in ["rate", "lifetime"]
-        ):
-            current_coord_value = -1 * current_coord_value
-
-        if expected_coord_name.startswith("component"):
-            # component now starts at 1 and not at 0
-            current_coord_value = current_coord_value - 1
-
-        # ############ END REMOVE HOTFIX
-
         assert expected_coord_name in current_coords.keys(), (
             f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
             f"data_var {data_var_name!r}"
@@ -217,11 +203,15 @@ def data_var_test(
     expected_var_name: str,
 ) -> None:
     """Run test that a data_var of the current_result is close to the expected_result."""
-    expected_var_value = expected_result.data_vars[expected_var_name]
+    expected_values = expected_result.data_vars[expected_var_name]
 
     # weighted_data were always calculated and now will only be calculated
     # when weights are applied
     if expected_var_name == "weighted_data" and expected_var_name not in current_result.data_vars:
+        return
+
+    # weight related data vars are only saved if the data has weights applied
+    if "weight" in expected_var_name and "weight" not in expected_result.data_vars:
         return
 
     expected_var_name = rename_with_suffix(
@@ -239,9 +229,7 @@ def data_var_test(
     assert (
         expected_var_name in current_result.data_vars
     ), f"Missing data_var: {expected_var_name!r} in {file_name!r}"
-    current_data = current_result.data_vars[expected_var_name]
-    expected_values = expected_var_value
-    current_values = current_data
+    current_values = current_result.data_vars[expected_var_name]
 
     eps = np.finfo(np.float32).eps
     rtol = 1e-5  # default value of allclose
@@ -268,25 +256,26 @@ def data_var_test(
         )
         expected_singular_values = expected_result.data_vars[f"{pre_fix}singular_values"]
 
-        if expected_var_value.shape[0] == expected_singular_values.shape[0]:
-            expected_values_scaled = np.diag(expected_singular_values).dot(expected_var_value.data)
+        if expected_values.shape[0] == expected_singular_values.shape[0]:
+            expected_values_scaled = np.diag(expected_singular_values).dot(expected_values.data)
         else:
-            expected_values_scaled = expected_var_value.data.dot(np.diag(expected_singular_values))
+            expected_values_scaled = expected_values.data.dot(np.diag(expected_singular_values))
 
         float_resolution = np.maximum(
             np.abs(eps * expected_values_scaled),
-            np.ones(expected_var_value.data.shape) * eps,
+            np.ones(expected_values.data.shape) * eps,
         )
     elif "spectra" in expected_var_name:
         float_resolution = np.maximum(
-            np.ones(expected_var_value.data.shape) * eps * np.max(np.abs(expected_var_value.data)),
-            np.ones(expected_var_value.data.shape) * eps,
+            np.ones(expected_values.data.shape) * eps * np.max(np.abs(expected_values.data)),
+            np.ones(expected_values.data.shape) * eps,
         )
     else:
         float_resolution = np.maximum(
-            np.abs(eps * expected_var_value.data),
-            np.ones(expected_var_value.data.shape) * eps,
+            np.abs(eps * expected_values.data),
+            np.ones(expected_values.data.shape) * eps,
         )
+
     abs_diff = np.abs(expected_values - current_values)
 
     assert allclose(
@@ -298,15 +287,15 @@ def data_var_test(
     ), (
         f"Result data_var data mismatch: {expected_var_name!r} in {file_name!r}.\n"
         "With sum of absolute difference: "
-        f"{float(np.sum(abs_diff))} and shape: {expected_var_value.shape}\n"
+        f"{float(np.sum(abs_diff))} and shape: {expected_values.shape}\n"
         "Mean difference: "
-        f"{float(np.sum(abs_diff))/np.prod(expected_var_value.shape)}\n"
+        f"{float(np.sum(abs_diff))/np.prod(expected_values.shape)}\n"
         f"Using: \n - {rtol=} \n - {eps=} \n - {float_resolution=}"
     )
 
     coord_test(
-        expected_var_value.coords,
-        current_data.coords,
+        expected_values.coords,
+        current_values.coords,
         file_name,
         allclose,
         data_var_name=expected_var_name,  # type:ignore[operator]
@@ -338,7 +327,7 @@ def map_result_files(file_glob_pattern: str) -> dict[str, list[tuple[Path, Path]
                 )
         except OSError as exception:
             if str(compare_results_path).startswith(('"', "'")):
-                raise Exception(
+                raise ValueError(
                     "Path in COMPARE_RESULTS_LOCAL should not start with ' or \""
                 ) from exception
             raise exception
@@ -446,7 +435,7 @@ def test_result_attr_consistency(
     allclose: AllCloseFixture,
     result_name: str,
 ):
-    """Resultdataset attributes need to be approximately the same."""
+    """Result dataset attributes need to be approximately the same."""
     for expected, current, file_name in map_result_data()[0][result_name]:
         for expected_attr_name, expected_attr_value in expected.attrs.items():
 
@@ -454,9 +443,12 @@ def test_result_attr_consistency(
                 expected_attr_name in current.attrs.keys()
             ), f"Missing result attribute: {expected_attr_name!r} in {file_name!r}"
 
-            assert allclose(
-                expected_attr_value, current.attrs[expected_attr_name], print_fail=20
-            ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
+            if isinstance(expected_attr_value, str):
+                assert expected_attr_value == current.attrs[expected_attr_name]
+            else:
+                assert allclose(
+                    expected_attr_value, current.attrs[expected_attr_name], print_fail=20
+                ), f"Result attr value mismatch: {expected_attr_name!r} in {file_name!r}"
 
 
 @pytest.mark.parametrize("expected_var_name", map_result_data()[1])
@@ -468,3 +460,7 @@ def test_result_data_var_consistency(
     for expected_result, current_result, file_name in map_result_data()[0][result_name]:
         if expected_var_name in expected_result.data_vars.keys():
             data_var_test(allclose, expected_result, current_result, file_name, expected_var_name)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

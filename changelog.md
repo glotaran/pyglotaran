@@ -23,6 +23,7 @@
 - 🚇🩹 Fix wrong comparison in pr_benchmark workflow (#1097)
 - 🔧 Set sourcery-ai target python version to 3.8 (#1095)
 - 🚇🩹🔧 Fix manifest check (#1099)
+- ♻️ Refactor: optimization (#1060)
 
 (changes-0_6_0)=
 

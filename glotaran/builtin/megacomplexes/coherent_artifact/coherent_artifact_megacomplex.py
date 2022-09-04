@@ -32,7 +32,9 @@ class CoherentArtifactMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
         if not 1 <= self.order <= 3:
@@ -43,11 +45,6 @@ class CoherentArtifactMegacomplex(Megacomplex):
 
         if not isinstance(dataset_model.irf, IrfMultiGaussian):
             raise ModelError(f'Irf in dataset "{dataset_model.label} is not a gaussian irf."')
-
-        global_dimension = dataset_model.get_global_dimension()
-        global_index = indices.get(global_dimension)
-        global_axis = dataset_model.get_global_axis()
-        model_axis = dataset_model.get_model_axis()
 
         irf = dataset_model.irf
 
@@ -71,9 +68,9 @@ class CoherentArtifactMegacomplex(Megacomplex):
         is_full_model: bool = False,
         as_global: bool = False,
     ):
+        global_dimension = dataset.attrs["global_dimension"]
         if not is_full_model:
-            global_dimension = dataset_model.get_global_dimension()
-            model_dimension = dataset_model.get_model_dimension()
+            model_dimension = dataset.attrs["model_dimension"]
             dataset.coords["coherent_artifact_order"] = np.arange(1, self.order + 1)
             response_dimensions = (model_dimension, "coherent_artifact_order")
             if dataset_model.is_index_dependent() is True:
@@ -86,7 +83,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
                 (global_dimension, "coherent_artifact_order"),
                 dataset.clp.sel(clp_label=self.compartments()).values,
             )
-        retrieve_irf(dataset_model, dataset, dataset_model.get_global_dimension())
+        retrieve_irf(dataset_model, dataset, global_dimension)
 
 
 @nb.jit(nopython=True, parallel=True)

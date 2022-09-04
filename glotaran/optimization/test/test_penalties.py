@@ -5,7 +5,7 @@ import pytest
 
 from glotaran.model import EqualAreaPenalty
 from glotaran.optimization.optimization_group import OptimizationGroup
-from glotaran.optimization.test.models import TwoCompartmentDecay as suite
+from glotaran.optimization.test.suites import TwoCompartmentDecay as suite
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
@@ -33,7 +33,7 @@ def test_penalties(index_dependent, link_clp):
 
     global_axis = np.arange(50)
 
-    print(f"{link_clp=}\n{index_dependent=}")
+    print(f"{link_clp=}\n{index_dependent=}")  # T201
     dataset = simulate(
         suite.sim_model,
         "dataset1",
@@ -42,12 +42,14 @@ def test_penalties(index_dependent, link_clp):
     )
     scheme = Scheme(model=model, parameters=parameters, data={"dataset1": dataset})
     optimization_group = OptimizationGroup(scheme, model.get_dataset_groups()["default"])
+    optimization_group.calculate(parameters)
+    additional_penalty = optimization_group.get_additional_penalties()
+    full_penalty = optimization_group.get_full_penalty()
 
-    assert isinstance(optimization_group.additional_penalty, np.ndarray)
-    assert optimization_group.additional_penalty.size == 1
-    assert optimization_group.additional_penalty[0] != 0
-    assert isinstance(optimization_group.full_penalty, np.ndarray)
-    assert (
-        optimization_group.full_penalty.size
-        == (suite.model_axis.size * global_axis.size) + optimization_group.additional_penalty.size
+    assert isinstance(additional_penalty, list)
+    assert len(additional_penalty) == 1
+    assert additional_penalty[0] != 0
+    assert isinstance(full_penalty, np.ndarray)
+    assert full_penalty.size == (suite.model_axis.size * global_axis.size) + len(
+        additional_penalty
     )

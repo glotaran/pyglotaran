@@ -3,11 +3,13 @@ import pytest
 import xarray as xr
 
 from glotaran.optimization.optimize import optimize
-from glotaran.optimization.test.models import FullModel
-from glotaran.optimization.test.models import MultichannelMulticomponentDecay
-from glotaran.optimization.test.models import OneCompartmentDecay
-from glotaran.optimization.test.models import ThreeDatasetDecay
-from glotaran.optimization.test.models import TwoCompartmentDecay
+from glotaran.optimization.test.models import SimpleTestModel
+from glotaran.optimization.test.suites import FullModel
+from glotaran.optimization.test.suites import MultichannelMulticomponentDecay
+from glotaran.optimization.test.suites import OneCompartmentDecay
+from glotaran.optimization.test.suites import ThreeDatasetDecay
+from glotaran.optimization.test.suites import TwoCompartmentDecay
+from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -32,26 +34,26 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
 
     model.megacomplex["m1"].is_index_dependent = is_index_dependent
 
-    print("Link CLP:", link_clp)
-    print("Index dependent:", is_index_dependent)
+    print("Link CLP:", link_clp)  # T201
+    print("Index dependent:", is_index_dependent)  # T201
 
     sim_model = suite.sim_model
     sim_model.megacomplex["m1"].is_index_dependent = is_index_dependent
 
-    print(model.validate())
+    print(model.validate())  # T201
     assert model.valid()
 
-    print(sim_model.validate())
+    print(sim_model.validate())  # T201
     assert sim_model.valid()
 
     wanted_parameters = suite.wanted_parameters
-    print(wanted_parameters)
-    print(sim_model.validate(wanted_parameters))
+    print(wanted_parameters)  # T201
+    print(sim_model.validate(wanted_parameters))  # T201
     assert sim_model.valid(wanted_parameters)
 
     initial_parameters = suite.initial_parameters
-    print(initial_parameters)
-    print(model.validate(initial_parameters))
+    print(initial_parameters)  # T201
+    print(model.validate(initial_parameters))  # T201
     assert model.valid(initial_parameters)
     assert (
         model.dataset["dataset1"].fill(model, initial_parameters).is_index_dependent()
@@ -70,9 +72,9 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
             wanted_parameters,
             {"global": global_axis, "model": model_axis},
         )
-        print(f"Dataset {i+1}")
-        print("=============")
-        print(dataset)
+        print(f"Dataset {i+1}")  # T201
+        print("=============")  # T201
+        print(dataset)  # T201
 
         if hasattr(suite, "scale"):
             dataset["data"] /= suite.scale
@@ -98,7 +100,7 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
     model.dataset_group_models["default"].link_clp = link_clp
 
     result = optimize(scheme, raise_exception=True)
-    print(result.optimized_parameters)
+    print(result.optimized_parameters)  # T201
     assert result.success
     optimized_scheme = result.get_scheme()
     assert result.optimized_parameters == optimized_scheme.parameters
@@ -112,9 +114,9 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
 
     for i, dataset in enumerate(data.values()):
         resultdata = result.data[f"dataset{i+1}"]
-        print(f"Result Data {i+1}")
-        print("=================")
-        print(resultdata)
+        print(f"Result Data {i+1}")  # T201
+        print("=================")  # T201
+        print(resultdata)  # T201
         assert "residual" in resultdata
         assert "residual_left_singular_vectors" in resultdata
         assert "residual_right_singular_vectors" in resultdata
@@ -122,7 +124,7 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
         assert np.array_equal(dataset.coords["model"], resultdata.coords["model"])
         assert np.array_equal(dataset.coords["global"], resultdata.coords["global"])
         assert dataset.data.shape == resultdata.data.shape
-        print(dataset.data[0, 0], resultdata.data[0, 0])
+        print(dataset.data[0, 0], resultdata.data[0, 0])  # T201
         assert np.allclose(dataset.data, resultdata.data)
         if weight:
             assert "weight" in resultdata
@@ -137,7 +139,7 @@ def test_optimization_full_model(index_dependent):
     model = FullModel.model
     model.megacomplex["m1"].is_index_dependent = index_dependent
 
-    print(model.validate())
+    print(model.validate())  # T201
     assert model.valid()
 
     parameters = FullModel.parameters
@@ -164,6 +166,69 @@ def test_optimization_full_model(index_dependent):
             assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
 
     clp = result_data.clp
-    print(clp)
+    print(clp)  # T201
     assert clp.shape == (4, 4)
     assert all(np.isclose(1.0, c) for c in np.diagonal(clp))
+
+
+@pytest.mark.parametrize("model_weight", [True, False])
+@pytest.mark.parametrize("index_dependent", [True, False])
+def test_result_data(model_weight: bool, index_dependent: bool):
+    global_axis = [1, 5, 6]
+    model_axis = [5, 7, 9, 12]
+
+    data = xr.DataArray(
+        np.ones((4, 3)), coords=[("model", model_axis), ("global", global_axis)]
+    ).to_dataset(name="data")
+
+    model_dict = {
+        "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
+        "dataset": {
+            "dataset1": {
+                "megacomplex": ["m1"],
+            },
+        },
+    }
+
+    if model_weight:
+        model_dict["weights"] = [{"datasets": ["dataset1"], "value": 0.5}]
+    else:
+        data["weight"] = xr.ones_like(data.data) * 0.5
+
+    model = SimpleTestModel.from_dict(model_dict)
+    assert model.valid()
+    parameters = ParameterGroup.from_list([1])
+
+    scheme = Scheme(model, parameters, {"dataset1": data}, maximum_number_function_evaluations=1)
+    result = optimize(scheme, raise_exception=True)
+    result_data = result.data["dataset1"]
+    wanted = [
+        ("data", ("model", "global")),
+        ("data_left_singular_vectors", ("model", "left_singular_value_index")),
+        ("data_singular_values", ("singular_value_index",)),
+        ("data_right_singular_vectors", ("global", "right_singular_value_index")),
+        ("clp", ("global", "clp_label")),
+        ("weight", ("model", "global")),
+        ("weighted_residual", ("model", "global")),
+        ("residual", ("model", "global")),
+        ("weighted_residual_left_singular_vectors", ("model", "left_singular_value_index")),
+        ("weighted_residual_singular_values", ("singular_value_index",)),
+        ("weighted_residual_right_singular_vectors", ("global", "right_singular_value_index")),
+        ("residual_left_singular_vectors", ("model", "left_singular_value_index")),
+        ("residual_singular_values", ("singular_value_index",)),
+        ("residual_right_singular_vectors", ("global", "right_singular_value_index")),
+        ("fitted_data", ("model", "global")),
+    ]
+
+    for (label, dims) in wanted:
+        print("Check label", label)
+        assert label in result_data
+        print("Check dims", result_data[label].dims, dims)
+        assert result_data[label].dims == dims
+
+    assert "matrix" in result_data
+
+    if index_dependent:
+        assert result_data.matrix.dims == ("global", "model", "clp_label")
+    else:
+        assert result_data.matrix.dims == ("model", "clp_label")

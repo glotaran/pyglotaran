@@ -48,8 +48,6 @@ def test_scheme(mock_scheme: Scheme):
     """Test scheme attributes."""
     assert mock_scheme.model is not None
 
-    assert mock_scheme.model_dimensions["dataset1"] == "time"
-    assert mock_scheme.global_dimensions["dataset1"] == "spectral"
     assert mock_scheme.parameters is not None
     assert mock_scheme.parameters.get("1") == 1.0
     assert mock_scheme.parameters.get("2") == 67.0

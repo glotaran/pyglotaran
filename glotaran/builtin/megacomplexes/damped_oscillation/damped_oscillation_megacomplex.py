@@ -47,7 +47,9 @@ class DampedOscillationMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        indices: dict[str, int],
+        global_index: int | None,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
 
@@ -55,7 +57,6 @@ class DampedOscillationMegacomplex(Megacomplex):
             f"{label}_sin" for label in self.labels
         ]
 
-        model_axis = dataset_model.get_model_axis()
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
         # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
@@ -72,9 +73,6 @@ class DampedOscillationMegacomplex(Megacomplex):
         if dataset_model.irf is None:
             calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, model_axis)
         elif isinstance(dataset_model.irf, IrfMultiGaussian):
-            global_dimension = dataset_model.get_global_dimension()
-            global_axis = dataset_model.get_global_axis()
-            global_index = indices.get(global_dimension)
             centers, widths, scales, shift, _, _ = dataset_model.irf.parameter(
                 global_index, global_axis
             )
@@ -119,7 +117,9 @@ class DampedOscillationMegacomplex(Megacomplex):
         dataset.coords[f"{prefix}_frequency"] = (prefix, self.frequencies)
         dataset.coords[f"{prefix}_rate"] = (prefix, self.rates)
 
-        dim1 = dataset_model.get_global_axis().size
+        model_dimension = dataset.attrs["model_dimension"]
+        global_dimension = dataset.attrs["global_dimension"]
+        dim1 = dataset.coords[global_dimension].size
         dim2 = len(self.labels)
         doas = np.zeros((dim1, dim2), dtype=np.float64)
         phase = np.zeros((dim1, dim2), dtype=np.float64)
@@ -130,20 +130,20 @@ class DampedOscillationMegacomplex(Megacomplex):
             phase[:, i] = np.unwrap(np.arctan2(sin, cos))
 
         dataset[f"{prefix}_associated_spectra"] = (
-            (dataset_model.get_global_dimension(), prefix),
+            (global_dimension, prefix),
             doas,
         )
 
         dataset[f"{prefix}_phase"] = (
-            (dataset_model.get_global_dimension(), prefix),
+            (global_dimension, prefix),
             phase,
         )
 
         if self.index_dependent(dataset_model):
             dataset[f"{prefix}_sin"] = (
                 (
-                    dataset_model.get_global_dimension(),
-                    dataset_model.get_model_dimension(),
+                    global_dimension,
+                    model_dimension,
                     prefix,
                 ),
                 dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
@@ -151,20 +151,20 @@ class DampedOscillationMegacomplex(Megacomplex):
 
             dataset[f"{prefix}_cos"] = (
                 (
-                    dataset_model.get_global_dimension(),
-                    dataset_model.get_model_dimension(),
+                    global_dimension,
+                    model_dimension,
                     prefix,
                 ),
                 dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
             )
         else:
             dataset[f"{prefix}_sin"] = (
-                (dataset_model.get_model_dimension(), prefix),
+                (model_dimension, prefix),
                 dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
             )
 
             dataset[f"{prefix}_cos"] = (
-                (dataset_model.get_model_dimension(), prefix),
+                (model_dimension, prefix),
                 dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
             )
 
