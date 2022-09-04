@@ -178,20 +178,6 @@ def coord_test(
 
         current_coord_value = current_coords[expected_coord_name]
 
-        # ############ START REMOVE HOTFIX
-        # This should be removed after a new gold standard was established
-
-        if any(
-            expected_coord_name.startswith(negated_coord) for negated_coord in ["rate", "lifetime"]
-        ):
-            current_coord_value = -1 * current_coord_value
-
-        if expected_coord_name.startswith("component"):
-            # component now starts at 1 and not at 0
-            current_coord_value = current_coord_value - 1
-
-        # ############ END REMOVE HOTFIX
-
         assert expected_coord_name in current_coords.keys(), (
             f"Missing coordinate: {expected_coord_name!r} in {file_name!r}, "
             f"data_var {data_var_name!r}"
