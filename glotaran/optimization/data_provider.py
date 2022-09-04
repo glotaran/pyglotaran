@@ -580,8 +580,9 @@ class DataProviderLinked(DataProvider):
             for i in range(self._aligned_global_axis.size)
         ]
 
+    @staticmethod
     def align_groups(
-        self, aligned_global_axes: dict[str, np.typing.ArrayLike]
+        aligned_global_axes: dict[str, np.typing.ArrayLike]
     ) -> tuple[np.typing.ArrayLike, dict[str, list[str]]]:
         """Align the groups in a dataset group.
 
