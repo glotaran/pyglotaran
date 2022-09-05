@@ -7,7 +7,12 @@ from typing import TYPE_CHECKING
 
 import asteval
 import numpy as np
-from numpy.typing._array_like import _SupportsArray
+
+try:
+    from numpy._typing._array_like import _SupportsArray
+except ImportError:
+    # numpy < 1.23
+    from numpy.typing._array_like import _SupportsArray
 
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
