@@ -20,7 +20,7 @@ def render_svg(glob_pattern: str, size: int) -> None:
     Parameters
     ----------
     glob_pattern: str
-        Patter to find svg files.
+        Pattern to find svg files.
     size: int
         Size of the resulting png image.
     """

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 )
 class EqualAreaPenalty:
     """An equal area constraint adds a the difference of the sum of a
-    compartments in the e matrix in one ore more intervals to the scaled sum
+    compartments in the e matrix in one or more intervals to the scaled sum
     of the e matrix of one or more target compartments to residual. The additional
     residual is scaled with the weight."""
 
