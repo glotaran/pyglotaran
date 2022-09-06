@@ -306,7 +306,7 @@ def test_getting_items(project_file: Path):
 def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     """Overwrite doesn't throw an exception.
 
-    This is the last test not to interfer with other tests.
+    This is the last test not to interfere with other tests.
     """
     project = Project.open(project_file)
 

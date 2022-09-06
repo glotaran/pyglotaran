@@ -661,7 +661,7 @@ class ParameterGroup(dict):
         return MarkdownStr(return_string.replace("'", " "))
 
     def _repr_markdown_(self) -> str:
-        """Create a markdown respresentation.
+        """Create a markdown representation.
 
         Special method used by ``ipython`` to render markdown.
 
