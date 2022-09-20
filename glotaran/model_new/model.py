@@ -10,9 +10,10 @@ from attrs import make_class
 
 from glotaran.model_new.dataset_group import DatasetGroupModel
 from glotaran.model_new.dataset_model import DatasetModel
+from glotaran.model_new.item import Item
 from glotaran.model_new.item import ModelItemTyped
-from glotaran.model_new.item import infer_model_item_type_from_attribute
 from glotaran.model_new.item import model_items
+from glotaran.model_new.item import strip_type_and_structure_from_attribute
 from glotaran.model_new.megacomplex import Megacomplex
 from glotaran.model_new.weight import Weight
 
@@ -44,7 +45,7 @@ def _add_default_dataset_group(
 ) -> dict[str, DatasetGroupModel]:
     dataset_groups = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
     if DEFAULT_DATASET_GROUP not in dataset_groups:
-        dataset_groups[DEFAULT_DATASET_GROUP] = DatasetGroupModel()
+        dataset_groups[DEFAULT_DATASET_GROUP] = DatasetGroupModel(label=DEFAULT_DATASET_GROUP)
     return dataset_groups
 
 
@@ -56,8 +57,12 @@ def _model_item_attribute(model_item_type: type):
     )
 
 
-def _infer_default_megacomplex() -> str:
-    return next(Megacomplex.get_item_types())
+def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
+    attributes = {}
+    for model_item in model_items(item):
+        _, model_item_type = strip_type_and_structure_from_attribute(model_item)
+        attributes[model_item.name] = _model_item_attribute(model_item_type)
+    return attributes
 
 
 @define(kw_only=True)
@@ -79,32 +84,33 @@ class Model:
     )
 
     @classmethod
-    def create_class(cls, items: dict[str, Attribute]) -> Model:
+    def create_class(cls, attributes: dict[str, Attribute]) -> Model:
         cls_name = f"GlotaranModel_{str(uuid4()).replace('-','_')}"
-        return make_class(cls_name, items, bases=(cls,))
+        return make_class(cls_name, attributes, bases=(cls,))
 
     @classmethod
     def create_class_from_megacomplexes(cls, megacomplexes: list[Megacomplex]) -> Model:
-        items: dict[str, Attribute] = {}
+        attributes: dict[str, Attribute] = {}
         dataset_types = set()
         for megacomplex in megacomplexes:
             if dataset_model_type := megacomplex.get_dataset_model_type():
                 dataset_types |= {
                     dataset_model_type,
                 }
-            for model_item in model_items(megacomplex):
-                model_item_type = infer_model_item_type_from_attribute(model_item)
-                items[model_item.name] = _model_item_attribute(model_item_type)
+            attributes.update(_create_attributes_for_item(megacomplex))
 
         if len(dataset_types) == 0:
             dataset_types = (DatasetModel,)
-        items["dataset"] = _model_item_attribute(
-            make_class(
-                f"GlotaranModel_{str(uuid4()).replace('-','_')}",
-                [],
-                bases=tuple(dataset_types),
-                collect_by_mro=True,
-            )
+
+        dataset_type = make_class(
+            f"GlotaranDataset_{str(uuid4()).replace('-','_')}",
+            [],
+            bases=tuple(dataset_types),
+            collect_by_mro=True,
         )
 
-        return cls.create_class(items)
+        attributes.update(_create_attributes_for_item(dataset_type))
+
+        attributes["dataset"] = _model_item_attribute(dataset_type)
+
+        return cls.create_class(attributes)

@@ -23,6 +23,6 @@ class DatasetModel(ModelItem):
     force_index_dependent: bool = False
     megacomplex: list[ModelItemType[Megacomplex]]
     megacomplex_scale: list[ParameterType] | None = None
-    global_megacomplex: list[ModelItemType[Megacomplex]] = None
+    global_megacomplex: list[ModelItemType[Megacomplex]] | None = None
     global_megacomplex_scale: list[ParameterType] | None = None
     scale: ParameterType | None = None

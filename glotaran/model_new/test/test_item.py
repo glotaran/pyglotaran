@@ -1,11 +1,11 @@
+from attrs import fields
+
 from glotaran.model_new.item import ModelItem
 from glotaran.model_new.item import ModelItemType
 from glotaran.model_new.item import ParameterType
-from glotaran.model_new.item import has_label
-from glotaran.model_new.item import infer_model_item_type_from_attribute
 from glotaran.model_new.item import item
-from glotaran.model_new.item import model_item
 from glotaran.model_new.item import model_items
+from glotaran.model_new.item import strip_type_and_structure_from_attribute
 
 
 @item
@@ -17,41 +17,38 @@ class MockModelItemDict(ModelItem):
 
 @item
 class MockModelItemList:
-    item1: ModelItemType[MockModelItemDict] = model_item()
-    item2: list[ModelItemType[MockModelItemDict]] = model_item()
-    item3: dict[ModelItemType[MockModelItemDict]] = model_item()
+    item1: ModelItemType[MockModelItemDict]
+    item2: list[ModelItemType[MockModelItemDict]]
+    item3: dict[str, ModelItemType[MockModelItemDict]]
 
 
-def test_item():
-    item_dict = MockModelItemDict(label="item", a_string="X", p_scalar="p_scalar")
-    assert has_label(item_dict)
-    item_list = MockModelItemList(
-        item1="item",
-        item2="item",
-        item3="item",
-    )
-    assert not has_label(item_list)
+def test_strip_type_and_structure_from_attribute():
+    @item
+    class MockItem:
+        pscalar: int = None
+        pscalar_option: int | None = None
+        plist: list[int] = None
+        plist_option: list[int] | None = None
+        pdict: dict[str, int] = None
+        pdict_option: dict[str, int] | None = None
+        iscalar: ModelItemType[int] = None
+        iscalar_option: ModelItemType[int] | None = None
+        ilist: list[ModelItemType[int]] = None
+        ilist_option: list[ModelItemType[int]] | None = None
+        idict: dict[str, ModelItemType[int]] = None
+        idict_option: dict[str, ModelItemType[int]] | None = None
+
+    for attr in fields(MockItem):
+        structure, type = strip_type_and_structure_from_attribute(attr)
+        print(attr.name, attr.type, structure, type)
+        assert structure in (None, dict, list)
+        assert type is int
 
 
-def test_model_items():
+def test_model_get_items():
     items = list(model_items(MockModelItemList))
 
     assert len(items) == 3
     assert items[0].name == "item1"
     assert items[1].name == "item2"
     assert items[2].name == "item3"
-
-
-def test_infer_model_item_type():
-    @item
-    class MockModelItem(ModelItem):
-        scalar: ModelItemType[int] = model_item(None)
-        scalar_option: ModelItemType[int] | None = model_item(None)
-        ilist: list[ModelItemType[int]] = model_item(None)
-        ilist_option: list[ModelItemType[int]] | None = model_item(None)
-        idict: dict[str, ModelItemType[int]] = model_item(None)
-        idict_option: dict[str, ModelItemType[int]] | None = model_item(None)
-
-    attributes = list(model_items(MockModelItem))
-    for i in range(6):
-        assert infer_model_item_type_from_attribute(attributes[i]) is int
