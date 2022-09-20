@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 def megacomplex(
     *,
     dataset_model_type: type | None = None,
-    dimension: str | None = None,
     unique: bool = False,
     exclusive: bool = False,
     register_as: str | None = None,
@@ -52,6 +51,8 @@ class Megacomplex(ModelItemTyped):
     Subclasses must overwrite :method:`glotaran.model.Megacomplex.calculate_matrix`
     and :method:`glotaran.model.Megacomplex.index_dependent`.
     """
+
+    dimension: str | None = None
 
     __dataset_model_type__: ClassVar[type | None] = None
 

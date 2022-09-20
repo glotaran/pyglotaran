@@ -8,6 +8,7 @@ from typing import Literal
 import xarray as xr
 
 from glotaran.model.dataset_model import DatasetModel
+from glotaran.model_new.item import ModelItem
 from glotaran.model_new.item import item
 
 if TYPE_CHECKING:
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 
 @item
-class DatasetGroupModel:
+class DatasetGroupModel(ModelItem):
     """A group of datasets which will evaluated independently."""
 
     residual_function: Literal[
