@@ -1,6 +1,7 @@
 from inspect import getmro
 from types import NoneType
 from types import UnionType
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Generator
 from typing import TypeAlias
@@ -8,6 +9,14 @@ from typing import TypeVar
 from typing import Union
 from typing import get_args
 from typing import get_origin
+
+try:
+    from typing import Self
+except ImportError:
+    Self = TypeVar("GlotaranItemT", bound="Item")
+
+if TYPE_CHECKING:
+    from glotaran.model_new.model import Model
 
 from attrs import NOTHING
 from attrs import Attribute
@@ -23,8 +32,33 @@ ParameterType: TypeAlias = Parameter | str
 ModelItemType: TypeAlias = T | str
 
 
+class ItemIssue:
+    def __init__(self, item_name: str):
+        self._item_name = item_name
+
+    def to_string(self) -> str:
+        raise NotImplementedError
+
+    def __rep__(self) -> str:
+        return self.to_string()
+
+
+class ModelItemIssue(ItemIssue):
+    def __init__(self, item_name: str, label: str):
+        super().__init__(item_name)
+        self._label = label
+
+    def to_string(self) -> str:
+        return f"Missing model item '{self.item_name}' with label '{self.label}'."
+
+
 class Item:
-    pass
+    def validate(self, model: Model) -> list[ItemIssue]:
+        return [
+            ModelItemIssue(item.name, self[item.name].label)
+            for item in model_items(self)
+            if self[item.name].label not in model[item.name]
+        ]
 
 
 def item(cls):
