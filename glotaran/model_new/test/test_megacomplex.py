@@ -2,7 +2,6 @@ from glotaran.model_new.dataset_model import DatasetModel
 from glotaran.model_new.item import ModelItem
 from glotaran.model_new.item import ModelItemType
 from glotaran.model_new.item import item
-from glotaran.model_new.item import model_item
 from glotaran.model_new.megacomplex import Megacomplex
 from glotaran.model_new.megacomplex import megacomplex
 from glotaran.model_new.model import Model
@@ -21,7 +20,7 @@ class MockDatasetModel1(DatasetModel):
 @megacomplex(dataset_model_type=MockDatasetModel1)
 class MockMegacomplex1(Megacomplex):
     type: str = "mock-complex-1"
-    test_item: ModelItemType[MockItem] = model_item()
+    test_item: ModelItemType[MockItem]
 
 
 @item
