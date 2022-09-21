@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from inspect import getmro
 from types import NoneType
 from types import UnionType
@@ -25,6 +27,7 @@ from attrs import fields
 from attrs import resolve_types
 
 from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 T = TypeVar("T")
 
@@ -33,9 +36,6 @@ ModelItemType: TypeAlias = T | str
 
 
 class ItemIssue:
-    def __init__(self, item_name: str):
-        self._item_name = item_name
-
     def to_string(self) -> str:
         raise NotImplementedError
 
@@ -45,30 +45,53 @@ class ItemIssue:
 
 class ModelItemIssue(ItemIssue):
     def __init__(self, item_name: str, label: str):
-        super().__init__(item_name)
+        self._item_name = item_name
         self._label = label
 
     def to_string(self) -> str:
         return f"Missing model item '{self.item_name}' with label '{self.label}'."
 
 
+class ParameterIssue(ItemIssue):
+    def __init__(self, label: str):
+        self._label = label
+
+    def to_string(self) -> str:
+        return f"Missing parameter with label '{self.label}'."
+
+
 class Item:
-    def validate(self, model: Model) -> list[ItemIssue]:
+    def get_issues(
+        self, *, model: Model, parameters: ParameterGroup | None = None
+    ) -> list[ItemIssue]:
+        issues = self.get_model_issues(model)
+        if parameters is not None:
+            issues += self.get_parameter_issues(parameters)
+        return issues
+
+    def get_model_issues(self, model: Model) -> list[ItemIssue]:
         return [
-            ModelItemIssue(item.name, self[item.name].label)
-            for item in model_items(self)
-            if self[item.name].label not in model[item.name]
+            ModelItemIssue(name, label)
+            for name, label in iterate_model_item_names_and_labels(self)
+            if label not in getattr(model, name)
+        ]
+
+    def get_parameter_issues(self, parameters: ParameterGroup) -> list[ItemIssue]:
+        return [
+            ParameterIssue(label)
+            for name, label in iterate_parameter_names_and_labels(self)
+            if not parameters.has(label)
         ]
 
 
 def item(cls):
     parent = getmro(cls)[1]
     cls = define(kw_only=True, slots=False)(cls)
-    resolve_types(cls)
     if parent is ModelItemTyped:
         cls.__model_item_types__ = {}
     elif issubclass(cls, ModelItemTyped):
         cls._register_item_class()
+    resolve_types(cls)
     return cls
 
 
@@ -101,11 +124,46 @@ class ModelItemTyped(ModelItem):
         return cls.__model_item_types__[item_type]
 
 
-def model_items(item: Item) -> Generator[Attribute, None, None]:
+def iterate_attributes_of_type(item: Item, attr_type: type) -> Generator[Attribute, None, None]:
     for attr in fields(item):
         _, item_type = strip_type_and_structure_from_attribute(attr)
-        if issubclass(item_type, ModelItem):
+        if issubclass(item_type, attr_type):
             yield attr
+
+
+def model_attributes(item: Item) -> Generator[Attribute, None, None]:
+    return iterate_attributes_of_type(item, ModelItem)
+
+
+def parameter_attributes(item: Item) -> Generator[Attribute, None, None]:
+    return iterate_attributes_of_type(item, Parameter)
+
+
+def iterate_names_and_labels(
+    item: Item, attributes: Generator[Attribute, None, None]
+) -> Generator[tuple(str, str), None, None]:
+    for attr in attributes:
+        structure, _ = strip_type_and_structure_from_attribute(attr)
+        value = getattr(item, attr.name)
+
+        if structure is dict:
+            for v in value.values():
+                yield attr.name, v
+
+        elif structure is list:
+            for v in value:
+                yield attr.name, v
+
+        else:
+            yield attr.name, value
+
+
+def iterate_model_item_names_and_labels(item: Item) -> Generator[tuple(str, str), None, None]:
+    return iterate_names_and_labels(item, model_attributes(item.__class__))
+
+
+def iterate_parameter_names_and_labels(item: Item) -> Generator[tuple(str, str), None, None]:
+    return iterate_names_and_labels(item, parameter_attributes(item.__class__))
 
 
 def strip_type_and_structure_from_attribute(attr: Attribute) -> tuple[None | list | dict, type]:

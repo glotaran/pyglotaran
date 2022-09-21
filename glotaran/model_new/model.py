@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from typing import Generator
 from uuid import uuid4
 
+from attr import fields
 from attr import ib
 from attrs import Attribute
 from attrs import define
@@ -11,13 +13,17 @@ from attrs import make_class
 from glotaran.model_new.dataset_group import DatasetGroupModel
 from glotaran.model_new.dataset_model import DatasetModel
 from glotaran.model_new.item import Item
+from glotaran.model_new.item import ItemIssue
 from glotaran.model_new.item import ModelItemTyped
-from glotaran.model_new.item import model_items
+from glotaran.model_new.item import model_attributes
 from glotaran.model_new.item import strip_type_and_structure_from_attribute
 from glotaran.model_new.megacomplex import Megacomplex
 from glotaran.model_new.weight import Weight
+from glotaran.parameter import ParameterGroup
 
 DEFAULT_DATASET_GROUP = "default"
+META_ITEMS = "__glotaran_items__"
+META = {META_ITEMS: True}
 
 
 def _load_item_from_dict(cls, value: any, extra: dict[str, any] = {}) -> any:
@@ -54,12 +60,13 @@ def _model_item_attribute(model_item_type: type):
         type=dict[str, model_item_type],
         factory=dict,
         converter=lambda value: _load_model_items_from_dict(model_item_type, value),
+        metadata=META,
     )
 
 
 def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
     attributes = {}
-    for model_item in model_items(item):
+    for model_item in model_attributes(item):
         _, model_item_type = strip_type_and_structure_from_attribute(model_item)
         attributes[model_item.name] = _model_item_attribute(model_item_type)
     return attributes
@@ -77,10 +84,13 @@ class Model:
     megacomplex: dict[str, Megacomplex] = field(
         factory=dict,
         converter=lambda value: _load_model_items_from_dict(Megacomplex, value),
+        metadata=META,
     )
 
     weights: list[Weight] = field(
-        factory=list, converter=lambda value: _load_global_items_from_dict(Weight, value)
+        factory=list,
+        converter=lambda value: _load_global_items_from_dict(Weight, value),
+        metadata=META,
     )
 
     @classmethod
@@ -99,14 +109,15 @@ class Model:
                 }
             attributes.update(_create_attributes_for_item(megacomplex))
 
-        if len(dataset_types) == 0:
-            dataset_types = (DatasetModel,)
-
-        dataset_type = make_class(
-            f"GlotaranDataset_{str(uuid4()).replace('-','_')}",
-            [],
-            bases=tuple(dataset_types),
-            collect_by_mro=True,
+        dataset_type = (
+            DatasetModel
+            if len(dataset_types) == 0
+            else make_class(
+                f"GlotaranDataset_{str(uuid4()).replace('-','_')}",
+                [],
+                bases=tuple(dataset_types),
+                collect_by_mro=True,
+            )
         )
 
         attributes.update(_create_attributes_for_item(dataset_type))
@@ -114,3 +125,17 @@ class Model:
         attributes["dataset"] = _model_item_attribute(dataset_type)
 
         return cls.create_class(attributes)
+
+    def iterate_items(self) -> Generator[Item, None, None]:
+        for attr in fields(self.__class__):
+            if META_ITEMS in attr.metadata:
+                value = getattr(self, attr.name)
+                iter = value.values() if isinstance(value, dict) else value
+
+                yield from iter
+
+    def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
+        issues = []
+        for item in self.iterate_items():
+            issues += item.get_issues(model=self, parameters=parameters)
+        return issues
