@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import pytest
 
 from glotaran.model_new.dataset_model import DatasetModel
@@ -255,3 +257,115 @@ def test_model_as_dict():
     print("got")
     print(as_model_dict)
     assert as_model_dict == model_dict
+
+
+def test_model_markdown(test_model: Model):
+    md = test_model.markdown()
+    expected = dedent(
+        """\
+        # Model
+
+        ## Dataset Groups
+
+        *
+            * *Label*: testgroup
+            * *Residual Function*: non_negative_least_squares
+            * *Link Clp*: True
+
+        *
+            * *Label*: default
+            * *Residual Function*: variable_projection
+
+
+        ## Weights
+
+        *
+            * *Datasets*: ['d1', 'd2']
+            * *Global Interval*: (1, 4)
+            * *Model Interval*: (2, 3)
+            * *Value*: 5.4
+
+
+        ## Test Item
+
+        *
+            * *Label*: t1
+            * *Param*: foo
+            * *Param List*: ['bar', 'baz']
+            * *Param Dict*: {('s1', 's2'): 'baz'}
+            * *Megacomplex*: m1
+            * *Number*: 42
+
+        *
+            * *Label*: t2
+            * *Param*: baz
+            * *Param List*: ['foo']
+            * *Param Dict*: {}
+            * *Megacomplex*: m2
+            * *Number*: 7
+
+
+        ## Megacomplex
+
+        *
+            * *Label*: m1
+            * *Type*: simple
+            * *Dimension*: model
+            * *Test Item*: t2
+
+        *
+            * *Label*: m2
+            * *Type*: dataset
+            * *Dimension*: model2
+
+
+        ## Test Item Dataset
+
+        *
+            * *Label*: t1
+            * *Param*: foo
+            * *Param List*: ['bar', 'baz']
+            * *Param Dict*: {('s1', 's2'): 'baz'}
+            * *Megacomplex*: m1
+            * *Number*: 42
+
+        *
+            * *Label*: t2
+            * *Param*: baz
+            * *Param List*: ['foo']
+            * *Param Dict*: {}
+            * *Megacomplex*: m2
+            * *Number*: 7
+
+
+        ## Dataset
+
+        *
+            * *Label*: dataset1
+            * *Group*: default
+            * *Force Index Dependent*: False
+            * *Megacomplex*: ['m1']
+            * *Scale*: scale_1
+            * *Test Item Dataset*: t1
+            * *Test Property Dataset1*: 1
+            * *Test Property Dataset2*: bar
+
+        *
+            * *Label*: dataset2
+            * *Group*: testgroup
+            * *Force Index Dependent*: False
+            * *Megacomplex*: ['m2']
+            * *Global Megacomplex*: ['m1']
+            * *Scale*: scale_2
+            * *Test Item Dataset*: t2
+            * *Test Property Dataset1*: 1
+            * *Test Property Dataset2*: bar
+
+
+        """
+    )
+    print(md)
+    # Preprocessing to remove trailing whitespace after '* *Matrix*:'
+    expected = "\n".join([line.rstrip(" ") for line in str(expected).split("\n")])
+    result = "\n".join([line.rstrip(" ") for line in str(md).split("\n")])
+    assert result == expected
