@@ -9,21 +9,31 @@ from attrs import Attribute
 from attrs import define
 from attrs import field
 from attrs import make_class
+from attrs import resolve_types
 
 from glotaran.model_new.dataset_group import DatasetGroupModel
 from glotaran.model_new.dataset_model import DatasetModel
 from glotaran.model_new.item import Item
 from glotaran.model_new.item import ItemIssue
 from glotaran.model_new.item import ModelItemTyped
+from glotaran.model_new.item import get_item_issues
 from glotaran.model_new.item import model_attributes
 from glotaran.model_new.item import strip_type_and_structure_from_attribute
 from glotaran.model_new.megacomplex import Megacomplex
 from glotaran.model_new.weight import Weight
 from glotaran.parameter import ParameterGroup
+from glotaran.utils.ipython import MarkdownStr
 
 DEFAULT_DATASET_GROUP = "default"
 META_ITEMS = "__glotaran_items__"
 META = {META_ITEMS: True}
+
+
+class ModelError(Exception):
+    """Raised when a model contains errors."""
+
+    def __init__(self, error: str):
+        super().__init__(f"ModelError: {error}")
 
 
 def _load_item_from_dict(cls, value: any, extra: dict[str, any] = {}) -> any:
@@ -119,6 +129,7 @@ class Model:
                 collect_by_mro=True,
             )
         )
+        resolve_types(dataset_type)
 
         attributes.update(_create_attributes_for_item(dataset_type))
 
@@ -137,5 +148,40 @@ class Model:
     def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
         issues = []
         for item in self.iterate_items():
-            issues += item.get_issues(model=self, parameters=parameters)
+            issues += get_item_issues(item=item, model=self, parameters=parameters)
         return issues
+
+    def validate(
+        self, parameters: ParameterGroup = None, raise_exception: bool = False
+    ) -> MarkdownStr:
+        """
+        Returns a string listing all issues in the model and missing parameters if specified.
+
+        Parameters
+        ----------
+
+        parameter :
+            The parameter to validate.
+        """
+        result = ""
+
+        if issues := self.get_issues(parameters):
+            result = f"Your model has {len(issues)} problem{'s' if len(issues) > 1 else ''}:\n"
+            for p in issues:
+                result += f"\n * {p}"
+            if raise_exception:
+                raise ModelError(issues)
+        else:
+            result = "Your model is valid."
+        return MarkdownStr(result)
+
+    def valid(self, parameters: ParameterGroup = None) -> bool:
+        """Returns `True` if the number problems in the model is 0, else `False`
+
+        Parameters
+        ----------
+
+        parameter :
+            The parameter to validate.
+        """
+        return len(self.get_issues(parameters=parameters)) == 0
