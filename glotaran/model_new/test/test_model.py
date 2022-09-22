@@ -369,3 +369,10 @@ def test_model_markdown(test_model: Model):
     expected = "\n".join([line.rstrip(" ") for line in str(expected).split("\n")])
     result = "\n".join([line.rstrip(" ") for line in str(md).split("\n")])
     assert result == expected
+
+
+def test_get_parameter_labels(test_model: Model):
+    wanted = {"foo", "scale_1", "scale_2", "baz", "bar"}
+    got = test_model.get_parameter_labels()
+    print(got)
+    assert wanted == got
