@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from inspect import getmro
+from textwrap import indent
 from types import NoneType
 from types import UnionType
 from typing import TYPE_CHECKING
@@ -14,14 +15,6 @@ from typing import Union
 from typing import get_args
 from typing import get_origin
 
-try:
-    from typing import Self
-except ImportError:
-    Self = TypeVar("GlotaranItemT", bound="Item")
-
-if TYPE_CHECKING:
-    from glotaran.model_new.model import Model
-
 from attrs import NOTHING
 from attrs import Attribute
 from attrs import define
@@ -31,6 +24,11 @@ from attrs import resolve_types
 
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
+from glotaran.utils.ipython import MarkdownStr
+
+if TYPE_CHECKING:
+    from glotaran.model_new.model import Model
+
 
 META_ALIAS = "__glotaran_alias__"
 
@@ -62,6 +60,35 @@ class ParameterIssue(ItemIssue):
 
 class Item:
     pass
+
+
+def item_to_markdown(
+    item: Item, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
+) -> MarkdownStr:
+    md = "\n"
+    for attr in fields(item.__class__):
+        name = attr.name
+        value = getattr(item, name)
+        if value is None:
+            continue
+
+        structure, item_type = strip_type_and_structure_from_attribute(attr)
+        if item_type is Parameter and parameters is not None:
+            if structure is dict:
+                value = {
+                    k: parameters.get(v).markdown(parameters, initial_parameters)
+                    for k, v in value.items()
+                }
+            elif structure is list:
+                value = [parameters.get(v).markdown(parameters, initial_parameters) for v in value]
+            else:
+                value = parameters.get(value).markdown(parameters, initial_parameters)
+
+        property_md = indent(f"* *{name.replace('_', ' ').title()}*: {value}\n", "  ")
+
+        md += property_md
+
+    return MarkdownStr(md)
 
 
 def iterate_attributes_of_type(item: Item, attr_type: type) -> Generator[Attribute, None, None]:
