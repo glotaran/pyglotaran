@@ -5,6 +5,8 @@ from typing import ClassVar
 
 import numpy as np
 import xarray as xr
+from attrs import NOTHING
+from attrs import fields
 
 from glotaran.model_new.item import ModelItemTyped
 from glotaran.model_new.item import item
@@ -18,9 +20,8 @@ if TYPE_CHECKING:
 def megacomplex(
     *,
     dataset_model_type: type | None = None,
-    unique: bool = False,
     exclusive: bool = False,
-    register_as: str | None = None,
+    unique: bool = False,
 ):
     """The `@megacomplex` decorator is intended to be used on subclasses of
     :class:`glotaran.model.Megacomplex`. It registers the megacomplex model
@@ -28,16 +29,15 @@ def megacomplex(
     """
 
     def decorator(cls):
-        setattr(cls, "_glotaran_megacomplex_unique", unique)
-        setattr(cls, "_glotaran_megacomplex_exclusive", exclusive)
 
         megacomplex_type = item(cls)
-        if dataset_model_type is not None:
-            megacomplex_type.__dataset_model_type__ = dataset_model_type
+        megacomplex_type.__dataset_model_type__ = dataset_model_type
+        megacomplex_type.__is_exclusive__ = exclusive
+        megacomplex_type.__is_unique__ = unique
 
-        if register_as is not None:
-            megacomplex_type.name = register_as
-            register_megacomplex(register_as, megacomplex_type)
+        megacomplex_type_str = fields(cls).type.default
+        if megacomplex_type_str is not NOTHING:
+            register_megacomplex(megacomplex_type_str, megacomplex_type)
 
         return megacomplex_type
 
@@ -55,6 +55,8 @@ class Megacomplex(ModelItemTyped):
     dimension: str | None = None
 
     __dataset_model_type__: ClassVar[type | None] = None
+    __is_exclusive__: ClassVar[bool]
+    __is_unique__: ClassVar[bool]
 
     @classmethod
     def get_dataset_model_type(cls) -> type | None:

@@ -3,12 +3,16 @@ from attrs import fields
 from glotaran.model_new.item import ModelItem
 from glotaran.model_new.item import ModelItemType
 from glotaran.model_new.item import ParameterType
+from glotaran.model_new.item import fill_item
+from glotaran.model_new.item import get_item_model_issues
+from glotaran.model_new.item import get_item_parameter_issues
 from glotaran.model_new.item import item
 from glotaran.model_new.item import model_attributes
 from glotaran.model_new.item import strip_type_and_structure_from_attribute
 from glotaran.model_new.megacomplex import Megacomplex
 from glotaran.model_new.megacomplex import megacomplex
 from glotaran.model_new.model import Model
+from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 
 
@@ -74,13 +78,46 @@ def test_get_issues():
     )
 
     m = model.megacomplex["m1"]
-    issues = m.get_model_issues(model)
+    issues = get_item_model_issues(m, model)
     assert len(issues) == 3
 
     p = ParameterGroup()
     i = model.item1["test"]
-    issues = i.get_parameter_issues(p)
+    issues = get_item_parameter_issues(i, p)
     assert len(issues) == 3
 
     issues = model.get_issues(parameters=p)
     assert len(issues) == 6
+
+
+def test_fill_item():
+    mcls = Model.create_class_from_megacomplexes([MockMegacomplexItems])
+    model = mcls(
+        megacomplex={
+            "m1": {
+                "type": "test_model_items_megacomplex",
+                "item1": "item",
+                "item2": ["item"],
+                "item3": {"foo": "item"},
+            }
+        },
+        item1={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
+        item2={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
+        item3={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
+    )
+
+    parameters = ParameterGroup.from_list([2, 3, 4])
+    assert model.valid(parameters)
+
+    m = fill_item(model.megacomplex["m1"], model, parameters)
+    assert isinstance(m.item1, MockModelItem)
+    assert all(isinstance(v, MockModelItem) for v in m.item2)
+    assert all(isinstance(v, MockModelItem) for v in m.item3.values())
+
+    i = m.item1
+    assert isinstance(i.p_scalar, Parameter)
+    assert all(isinstance(v, Parameter) for v in i.p_list)
+    assert all(isinstance(v, Parameter) for v in i.p_dict.values())
+    assert i.p_scalar.value == 2
+    assert i.p_list[0].value == 3
+    assert i.p_dict["p"].value == 3
