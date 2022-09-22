@@ -9,6 +9,7 @@ from typing import Callable
 from typing import ClassVar
 from typing import Generator
 from typing import Iterator
+from typing import Type
 from typing import TypeAlias
 from typing import TypeVar
 from typing import Union
@@ -94,7 +95,7 @@ def item_to_markdown(
 def iterate_attributes_of_type(item: Item, attr_type: type) -> Generator[Attribute, None, None]:
     for attr in fields(item):
         _, item_type = strip_type_and_structure_from_attribute(attr)
-        if issubclass(item_type, attr_type):
+        if isinstance(item_type, Type) and issubclass(item_type, attr_type):
             yield attr
 
 
@@ -114,6 +115,9 @@ def iterate_names_and_labels(
     for attr in attributes:
         structure, _ = strip_type_and_structure_from_attribute(attr)
         value = getattr(item, attr.name)
+
+        if not value:
+            continue
 
         if structure is dict:
             for v in value.values():

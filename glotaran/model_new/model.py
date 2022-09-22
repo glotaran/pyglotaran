@@ -19,6 +19,7 @@ from glotaran.model_new.item import ItemIssue
 from glotaran.model_new.item import ModelItemTyped
 from glotaran.model_new.item import get_item_issues
 from glotaran.model_new.item import item_to_markdown
+from glotaran.model_new.item import iterate_parameter_names_and_labels
 from glotaran.model_new.item import model_attributes
 from glotaran.model_new.item import strip_type_and_structure_from_attribute
 from glotaran.model_new.megacomplex import Megacomplex
@@ -151,6 +152,13 @@ class Model:
         for _, items in self.iterate_items():
             iter = items.values() if isinstance(items, dict) else items
             yield from iter
+
+    def get_parameter_labels(self) -> set[str]:
+        return {
+            label
+            for item in self.iterate_all_items()
+            for _, label in iterate_parameter_names_and_labels(item)
+        }
 
     def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
         issues = []
