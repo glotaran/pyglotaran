@@ -18,6 +18,7 @@ from glotaran.model_new.item import Item
 from glotaran.model_new.item import ItemIssue
 from glotaran.model_new.item import ModelItemTyped
 from glotaran.model_new.item import get_item_issues
+from glotaran.model_new.item import item_to_markdown
 from glotaran.model_new.item import model_attributes
 from glotaran.model_new.item import strip_type_and_structure_from_attribute
 from glotaran.model_new.megacomplex import Megacomplex
@@ -87,7 +88,7 @@ def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
 class Model:
 
     dataset_groups: dict[str, DatasetGroupModel] = field(
-        factory=dict, converter=_add_default_dataset_group
+        factory=dict, converter=_add_default_dataset_group, metadata=META
     )
 
     dataset: dict[str, DatasetModel]
@@ -141,17 +142,19 @@ class Model:
     def as_dict(self) -> dict:
         return asdict(self, recurse=True, retain_collection_types=True)
 
-    def iterate_items(self) -> Generator[Item, None, None]:
+    def iterate_items(self) -> Generator[tuple[dict[str, Item] | list[Item]], None, None]:
         for attr in fields(self.__class__):
             if META_ITEMS in attr.metadata:
-                value = getattr(self, attr.name)
-                iter = value.values() if isinstance(value, dict) else value
+                yield attr.name, getattr(self, attr.name)
 
-                yield from iter
+    def iterate_all_items(self) -> Generator[Item, None, None]:
+        for _, items in self.iterate_items():
+            iter = items.values() if isinstance(items, dict) else items
+            yield from iter
 
     def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
         issues = []
-        for item in self.iterate_items():
+        for item in self.iterate_all_items():
             issues += get_item_issues(item=item, model=self, parameters=parameters)
         return issues
 
@@ -189,3 +192,52 @@ class Model:
             The parameter to validate.
         """
         return len(self.get_issues(parameters=parameters)) == 0
+
+    def markdown(
+        self,
+        parameters: ParameterGroup = None,
+        initial_parameters: ParameterGroup = None,
+        base_heading_level: int = 1,
+    ) -> MarkdownStr:
+        """Formats the model as Markdown string.
+
+        Parameters will be included if specified.
+
+        Parameters
+        ----------
+        parameter: ParameterGroup
+            Parameter to include.
+        initial_parameters: ParameterGroup
+            Initial values for the parameters.
+        base_heading_level: int
+            Base heading level of the markdown sections.
+
+            E.g.:
+
+            - If it is 1 the string will start with '# Model'.
+            - If it is 3 the string will start with '### Model'.
+        """
+        base_heading = "#" * base_heading_level
+        string = f"{base_heading} Model\n\n"
+
+        for name, items in self.iterate_items():
+            if not items:
+                continue
+
+            string += f"{base_heading}# {name.replace('_', ' ').title()}\n\n"
+
+            if isinstance(items, dict):
+                items = items.values()
+            for item in items:
+                item_str = item_to_markdown(
+                    item, parameters=parameters, initial_parameters=initial_parameters
+                ).split("\n")
+                string += f"* {item_str[0]}\n"
+                for s in item_str[1:]:
+                    string += f"  {s}\n"
+            string += "\n"
+        return MarkdownStr(string)
+
+    def _repr_markdown_(self) -> str:
+        """Special method used by ``ipython`` to render markdown."""
+        return str(self.markdown(base_heading_level=3))
