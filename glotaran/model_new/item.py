@@ -25,11 +25,14 @@ if TYPE_CHECKING:
 from attrs import NOTHING
 from attrs import Attribute
 from attrs import define
+from attrs import field
 from attrs import fields
 from attrs import resolve_types
 
 from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
+
+META_ALIAS = "__glotaran_alias__"
 
 
 class ItemIssue:
@@ -68,8 +71,10 @@ def iterate_attributes_of_type(item: Item, attr_type: type) -> Generator[Attribu
             yield attr
 
 
-def model_attributes(item: Item) -> Generator[Attribute, None, None]:
-    return iterate_attributes_of_type(item, ModelItem)
+def model_attributes(item: Item, with_alias: bool = True) -> Generator[Attribute, None, None]:
+    for attr in iterate_attributes_of_type(item, ModelItem):
+        if with_alias or META_ALIAS not in attr.metadata:
+            yield attr
 
 
 def parameter_attributes(item: Item) -> Generator[Attribute, None, None]:
@@ -110,15 +115,15 @@ def fill_item_attributes(
         value = getattr(item, attr.name)
 
         structure, _ = strip_type_and_structure_from_attribute(attr)
+        name = attr.metadata.get(META_ALIAS, attr.name)
         if structure is dict:
             value = {
-                k: fill_function(attr.name, v) if isinstance(v, str) else v
-                for k, v in value.items()
+                k: fill_function(name, v) if isinstance(v, str) else v for k, v in value.items()
             }
         elif structure is list:
-            value = [fill_function(attr.name, v) if isinstance(v, str) else v for v in value]
+            value = [fill_function(name, v) if isinstance(v, str) else v for v in value]
         else:
-            value = fill_function(attr.name, value) if isinstance(value, str) else value
+            value = fill_function(name, value) if isinstance(value, str) else value
 
         setattr(item, attr.name, value)
 
@@ -177,6 +182,10 @@ def item(cls):
         cls._register_item_class()
     resolve_types(cls)
     return cls
+
+
+def alias(source: str, default: any = NOTHING) -> Attribute:
+    return field(default=default, metadata={META_ALIAS: source})
 
 
 @define(kw_only=True)

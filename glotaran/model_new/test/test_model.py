@@ -209,3 +209,49 @@ def test_model_items(test_model: Model):
     assert test_model.dataset["dataset2"].test_property_dataset1 == 1
     assert test_model.dataset["dataset2"].test_property_dataset2 == "bar"
     assert test_model.dataset["dataset2"].group == "testgroup"
+
+
+def test_model_as_dict():
+    model_dict = {
+        "megacomplex": {
+            "m1": {"type": "simple", "label": "m1", "dimension": "model", "test_item": "t1"},
+        },
+        "dataset_groups": {
+            "default": {
+                "label": "default",
+                "residual_function": "non_negative_least_squares",
+                "link_clp": True,
+            }
+        },
+        "test_item": {
+            "t1": {
+                "label": "t1",
+                "number": 4,
+                "param": "foo",
+                "megacomplex": "m1",
+                "param_list": ["bar", "baz"],
+                "param_dict": {("s1", "s2"): "baz"},
+            },
+        },
+        "dataset": {
+            "dataset1": {
+                "label": "dataset1",
+                "group": "default",
+                "megacomplex": ["m1"],
+                "global_megacomplex": ["m1"],
+                "scale": "scale_1",
+                "megacomplex_scale": "scale_1",
+                "global_megacomplex_scale": "scale_1",
+                "force_index_dependent": False,
+            },
+        },
+        "weights": [],
+    }
+    as_model_dict = Model.create_class_from_megacomplexes([MockMegacomplexSimple])(
+        **model_dict
+    ).as_dict()
+    print("want")
+    print(model_dict)
+    print("got")
+    print(as_model_dict)
+    assert as_model_dict == model_dict
