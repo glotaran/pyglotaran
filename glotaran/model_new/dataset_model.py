@@ -5,6 +5,7 @@ from __future__ import annotations
 from glotaran.model_new.item import ModelItem
 from glotaran.model_new.item import ModelItemType
 from glotaran.model_new.item import ParameterType
+from glotaran.model_new.item import alias
 from glotaran.model_new.item import item
 from glotaran.model_new.megacomplex import Megacomplex
 
@@ -23,6 +24,8 @@ class DatasetModel(ModelItem):
     force_index_dependent: bool = False
     megacomplex: list[ModelItemType[Megacomplex]]
     megacomplex_scale: list[ParameterType] | None = None
-    global_megacomplex: list[ModelItemType[Megacomplex]] | None = None
+    global_megacomplex: list[ModelItemType[Megacomplex]] | None = alias(
+        "megacomplex", default=None
+    )
     global_megacomplex_scale: list[ParameterType] | None = None
     scale: ParameterType | None = None

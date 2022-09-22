@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Generator
 from uuid import uuid4
 
+from attr import asdict
 from attr import fields
 from attr import ib
 from attrs import Attribute
@@ -76,7 +77,7 @@ def _model_item_attribute(model_item_type: type):
 
 def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
     attributes = {}
-    for model_item in model_attributes(item):
+    for model_item in model_attributes(item, with_alias=False):
         _, model_item_type = strip_type_and_structure_from_attribute(model_item)
         attributes[model_item.name] = _model_item_attribute(model_item_type)
     return attributes
@@ -136,6 +137,9 @@ class Model:
         attributes["dataset"] = _model_item_attribute(dataset_type)
 
         return cls.create_class(attributes)
+
+    def as_dict(self) -> dict:
+        return asdict(self, recurse=True, retain_collection_types=True)
 
     def iterate_items(self) -> Generator[Item, None, None]:
         for attr in fields(self.__class__):
