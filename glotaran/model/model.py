@@ -1,397 +1,186 @@
-"""A base class for global analysis models."""
 from __future__ import annotations
 
-import copy
-from dataclasses import asdict
-from typing import Any
-from typing import List
-from warnings import warn
+from typing import Generator
+from uuid import uuid4
 
-from glotaran.deprecation import raise_deprecation_error
-from glotaran.io import load_model
+from attr import asdict
+from attr import fields
+from attr import ib
+from attrs import Attribute
+from attrs import define
+from attrs import field
+from attrs import make_class
+from attrs import resolve_types
+
+from glotaran.model.clp_constraint import Constraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.model.constraint import Constraint
-from glotaran.model.dataset_group import DatasetGroup
+from glotaran.model.clp_relation import Relation
 from glotaran.model.dataset_group import DatasetGroupModel
-from glotaran.model.dataset_model import create_dataset_model_type
+from glotaran.model.dataset_model import DatasetModel
+from glotaran.model.item import Item
+from glotaran.model.item import ItemIssue
+from glotaran.model.item import TypedItem
+from glotaran.model.item import get_item_issues
+from glotaran.model.item import item_to_markdown
+from glotaran.model.item import iterate_parameter_names_and_labels
+from glotaran.model.item import model_attributes
+from glotaran.model.item import strip_type_and_structure_from_attribute
 from glotaran.model.megacomplex import Megacomplex
-from glotaran.model.megacomplex import create_model_megacomplex_type
-from glotaran.model.relation import Relation
-from glotaran.model.util import ModelError
 from glotaran.model.weight import Weight
-from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
-from glotaran.plugin_system.megacomplex_registration import get_megacomplex
 from glotaran.utils.ipython import MarkdownStr
 
-default_model_items = {
-    "clp_area_penalties": EqualAreaPenalty,
-    "clp_constraints": Constraint,
-    "clp_relations": Relation,
-    "weights": Weight,
-}
-
-default_dataset_properties = {
-    "group": {"type": str, "default": "default"},
-    "force_index_dependent": {"type": bool, "allow_none": True},
-    "megacomplex": List[str],
-    "megacomplex_scale": {"type": List[Parameter], "allow_none": True},
-    "global_megacomplex": {"type": List[str], "allow_none": True},
-    "global_megacomplex_scale": {"type": List[Parameter], "default": None, "allow_none": True},
-    "scale": {"type": Parameter, "default": None, "allow_none": True},
-}
-
-root_parameter_error = ModelError(
-    "The root parameter group cannot contain both groups and parameters."
-)
+DEFAULT_DATASET_GROUP = "default"
+META_ITEMS = "__glotaran_items__"
+META = {META_ITEMS: True}
 
 
+class ModelError(Exception):
+    """Raised when a model contains errors."""
+
+    def __init__(self, error: str):
+        super().__init__(f"ModelError: {error}")
+
+
+def _load_item_from_dict(cls, value: any, extra: dict[str, any] = {}) -> any:
+    if isinstance(value, dict):
+        if issubclass(cls, TypedItem):
+            item_type = value["type"]
+            cls = cls.get_item_type_class(item_type)
+        value = cls(**(value | extra))
+    return value
+
+
+def _load_model_items_from_dict(cls, item_dict: dict[str, any]) -> dict[str, any]:
+    return {
+        label: _load_item_from_dict(cls, value, extra={"label": label})
+        for label, value in item_dict.items()
+    }
+
+
+def _load_global_items_from_dict(cls, item_list: list[any]) -> list[any]:
+    return [_load_item_from_dict(cls, value) for value in item_list]
+
+
+def _add_default_dataset_group(
+    dataset_groups: dict[str, DatasetGroupModel]
+) -> dict[str, DatasetGroupModel]:
+    dataset_groups = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
+    if DEFAULT_DATASET_GROUP not in dataset_groups:
+        dataset_groups[DEFAULT_DATASET_GROUP] = DatasetGroupModel(label=DEFAULT_DATASET_GROUP)
+    return dataset_groups
+
+
+def _global_item_attribute(item_type: type):
+    return ib(
+        factory=list,
+        converter=lambda value: _load_global_items_from_dict(item_type, value),
+        metadata=META,
+    )
+
+
+def _model_item_attribute(model_item_type: type):
+    return ib(
+        type=dict[str, model_item_type],
+        factory=dict,
+        converter=lambda value: _load_model_items_from_dict(model_item_type, value),
+        metadata=META,
+    )
+
+
+def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
+    attributes = {}
+    for model_item in model_attributes(item, with_alias=False):
+        _, model_item_type = strip_type_and_structure_from_attribute(model_item)
+        attributes[model_item.name] = _model_item_attribute(model_item_type)
+    return attributes
+
+
+@define(kw_only=True)
 class Model:
-    """A base class for global analysis models."""
+    clp_area_penalties: list[EqualAreaPenalty] = _global_item_attribute(EqualAreaPenalty)
+    clp_constraints: list[Constraint] = _global_item_attribute(Constraint)
+    clp_relations: list[Relation] = _global_item_attribute(Relation)
 
-    loader = load_model
+    dataset_groups: dict[str, DatasetGroupModel] = field(
+        factory=dict, converter=_add_default_dataset_group, metadata=META
+    )
 
-    def __init__(
-        self,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]],
-        default_megacomplex_type: str | None = None,
-        dataset_group_models: dict[str, DatasetGroupModel] = None,
-    ):
-        self._megacomplex_types = megacomplex_types
-        self._default_megacomplex_type = default_megacomplex_type or next(iter(megacomplex_types))
+    dataset: dict[str, DatasetModel]
 
-        self._dataset_group_models = dataset_group_models or {"default": DatasetGroupModel()}
-        if "default" not in self._dataset_group_models:
-            self._dataset_group_models["default"] = DatasetGroupModel()
+    megacomplex: dict[str, Megacomplex] = field(
+        factory=dict,
+        converter=lambda value: _load_model_items_from_dict(Megacomplex, value),
+        metadata=META,
+    )
 
-        self._model_items = {}
-        self._dataset_properties = {}
-        self._add_default_items_and_properties()
-        self._add_megacomplexe_types()
-        self._add_dataset_type()
-        self.source_path = "model.yml"
+    weights: list[Weight] = _global_item_attribute(Weight)
 
     @classmethod
-    def from_dict(
-        cls,
-        model_dict: dict[str, Any],
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
-    ) -> Model:
-        """Creates a model from a dictionary.
+    def create_class(cls, attributes: dict[str, Attribute]) -> Model:
+        cls_name = f"GlotaranModel_{str(uuid4()).replace('-','_')}"
+        return make_class(cls_name, attributes, bases=(cls,))
 
-        Parameters
-        ----------
-        model_dict: dict[str, Any]
-            Dictionary containing the model.
-        megacomplex_types: dict[str, type[Megacomplex]] | None
-            Overwrite 'megacomplex_types' in ``model_dict`` for testing.
-        default_megacomplex_type: str | None
-            Overwrite 'default_megacomplex' in ``model_dict`` for testing.
-        """
-        model_dict = copy.deepcopy(model_dict)
-        if default_megacomplex_type is None:
-            default_megacomplex_type = model_dict.get("default_megacomplex")
+    @classmethod
+    def create_class_from_megacomplexes(cls, megacomplexes: list[Megacomplex]) -> Model:
+        attributes: dict[str, Attribute] = {}
+        dataset_types = set()
+        for megacomplex in megacomplexes:
+            if dataset_model_type := megacomplex.get_dataset_model_type():
+                dataset_types |= {
+                    dataset_model_type,
+                }
+            attributes.update(_create_attributes_for_item(megacomplex))
 
-        if megacomplex_types is None:
-            megacomplex_types = {
-                m["type"]: get_megacomplex(m["type"])
-                for m in model_dict["megacomplex"].values()
-                if "type" in m
-            }
-        if (
-            default_megacomplex_type is not None
-            and default_megacomplex_type not in megacomplex_types
-        ):
-            megacomplex_types[default_megacomplex_type] = get_megacomplex(default_megacomplex_type)
-        if "default_megacomplex" in model_dict:
-            model_dict.pop("default_megacomplex", None)
-
-        dataset_group_models = model_dict.pop("dataset_groups", None)
-        if dataset_group_models is not None:
-            dataset_group_models = {
-                label: DatasetGroupModel(**group) for label, group in dataset_group_models.items()
-            }
-
-        model = cls(
-            megacomplex_types=megacomplex_types,
-            default_megacomplex_type=default_megacomplex_type,
-            dataset_group_models=dataset_group_models,
-        )
-
-        # iterate over items
-        for item_name, items in list(model_dict.items()):
-
-            if item_name not in model.model_items:
-                warn(f"Unknown model item type '{item_name}'.")
-                continue
-
-            if isinstance(getattr(model, item_name), list):
-                model._add_list_items(item_name, items)
-            else:
-                model._add_dict_items(item_name, items)
-
-        return model
-
-    def _add_dict_items(self, item_name: str, items: dict):
-
-        for label, item in items.items():
-            item_cls = self.model_items[item_name]
-            if hasattr(item_cls, "_glotaran_model_item_typed"):
-                if "type" not in item and item_cls.get_default_type() is None:
-                    raise ValueError(f"Missing type for attribute '{item_name}'")
-                item_type = item.get("type", item_cls.get_default_type())
-
-                types = item_cls._glotaran_model_item_types
-                if item_type not in types:
-                    raise ValueError(f"Unknown type '{item_type}' for attribute '{item_name}'")
-                item_cls = types[item_type]
-            item["label"] = label
-            item = item_cls.from_dict(item)
-            getattr(self, item_name)[label] = item
-
-    def _add_list_items(self, item_name: str, items: list):
-
-        for item in items:
-            item_cls = self.model_items[item_name]
-            if hasattr(item_cls, "_glotaran_model_item_typed"):
-                if "type" not in item:
-                    raise ValueError(f"Missing type for attribute '{item_name}'")
-                item_type = item["type"]
-
-                if item_type not in item_cls._glotaran_model_item_types:
-                    raise ValueError(f"Unknown type '{item_type}' for attribute '{item_name}'")
-                item_cls = item_cls._glotaran_model_item_types[item_type]
-            item = item_cls.from_dict(item)
-            getattr(self, item_name).append(item)
-
-    def _add_megacomplexe_types(self):
-
-        for megacomplex_name, megacomplex_type in self._megacomplex_types.items():
-            if not issubclass(megacomplex_type, Megacomplex):
-                raise TypeError(
-                    f"Megacomplex type {megacomplex_name}({megacomplex_type}) "
-                    "is not a subclass of Megacomplex"
-                )
-            self._add_megacomplex_type(megacomplex_type)
-
-        model_megacomplex_type = create_model_megacomplex_type(
-            self._megacomplex_types, self.default_megacomplex
-        )
-        self._add_model_item("megacomplex", model_megacomplex_type)
-
-    def _add_megacomplex_type(self, megacomplex_type: type[Megacomplex]):
-
-        for item_name, item in megacomplex_type.glotaran_model_items().items():
-            self._add_model_item(item_name, item)
-
-        for item_name, item in megacomplex_type.glotaran_dataset_model_items().items():
-            self._add_model_item(item_name, item)
-
-        for property_name, prop in megacomplex_type.glotaran_dataset_properties().items():
-            self._add_dataset_property(property_name, prop)
-
-    def _add_model_item(self, item_name: str, item: type):
-        if item_name in self._model_items:
-            if self.model_items[item_name] != item:
-                raise ModelError(
-                    f"Cannot add item of type {item_name}. Model item '{item_name}' "
-                    "was already defined as a different type."
-                )
-            return
-        self._model_items[item_name] = item
-
-        if getattr(item, "_glotaran_has_label"):
-            setattr(self, f"{item_name}", {})
-        else:
-            setattr(self, f"{item_name}", [])
-
-    def _add_dataset_property(self, property_name: str, dataset_property: dict[str, any]):
-        if property_name in self._dataset_properties:
-            known_type = (
-                self._dataset_properties[property_name]["type"]
-                if isinstance(self._dataset_properties, dict)
-                else self._dataset_properties[property_name]
+        dataset_type = (
+            DatasetModel
+            if len(dataset_types) == 0
+            else make_class(
+                f"GlotaranDataset_{str(uuid4()).replace('-','_')}",
+                [],
+                bases=tuple(dataset_types),
+                collect_by_mro=True,
             )
-
-            new_type = (
-                dataset_property["type"]
-                if isinstance(dataset_property, dict)
-                else dataset_property
-            )
-
-            if known_type != new_type:
-                raise ModelError(
-                    f"Cannot add dataset property of type {property_name} as it was "
-                    "already defined as a different type."
-                )
-            return
-        self._dataset_properties[property_name] = dataset_property
-
-    def _add_default_items_and_properties(self):
-        for item_name, item in default_model_items.items():
-            self._add_model_item(item_name, item)
-
-        for property_name, prop in default_dataset_properties.items():
-            self._add_dataset_property(property_name, prop)
-
-    def _add_dataset_type(self):
-        dataset_model_type = create_dataset_model_type(self._dataset_properties)
-        self._add_model_item("dataset", dataset_model_type)
-
-    @property
-    def model_dimension(self):
-        """Deprecated use ``Scheme.model_dimensions['<dataset_name>']`` instead"""
-        raise_deprecation_error(
-            deprecated_qual_name_usage="Model.model_dimension",
-            new_qual_name_usage=("Scheme.model_dimensions['<dataset_name>']"),
-            to_be_removed_in_version="0.7.0",
         )
+        resolve_types(dataset_type)
 
-    @property
-    def global_dimension(self):
-        """Deprecated use ``Scheme.global_dimensions['<dataset_name>']`` instead"""
-        raise_deprecation_error(
-            deprecated_qual_name_usage="Model.global_dimension",
-            new_qual_name_usage=("Scheme.global_dimensions['<dataset_name>']"),
-            to_be_removed_in_version="0.7.0",
-        )
+        attributes.update(_create_attributes_for_item(dataset_type))
 
-    @property
-    def default_megacomplex(self) -> str:
-        """The default megacomplex used by this model."""
-        return self._default_megacomplex_type
+        attributes["dataset"] = _model_item_attribute(dataset_type)
 
-    @property
-    def megacomplex_types(self) -> dict[str, type[Megacomplex]]:
-        """The megacomplex types used by this model."""
-        return self._megacomplex_types
-
-    @property
-    def dataset_group_models(self) -> dict[str, DatasetGroupModel]:
-        return self._dataset_group_models
-
-    @property
-    def model_items(self) -> dict[str, type[object]]:
-        """The model_items types used by this model."""
-        return self._model_items
-
-    @property
-    def global_megacomplex(self) -> dict[str, Megacomplex]:
-        """Alias for `glotaran.model.megacomplex`. Needed internally."""
-        return self.megacomplex
-
-    def get_dataset_groups(self) -> dict[str, DatasetGroup]:
-        groups = {}
-        for dataset_model in self.dataset.values():
-            group = dataset_model.group
-            if group not in groups:
-                try:
-                    group_model = self.dataset_group_models[group]
-                except KeyError:
-                    raise ValueError(f"Unknown dataset group '{group}'")
-                groups[group] = DatasetGroup(
-                    residual_function=group_model.residual_function,
-                    link_clp=group_model.link_clp,
-                    model=self,
-                )
-            groups[group].dataset_models[dataset_model.label] = dataset_model
-        return groups
+        return cls.create_class(attributes)
 
     def as_dict(self) -> dict:
-        model_dict = {
-            "default_megacomplex": self.default_megacomplex,
-            "dataset_groups": {
-                label: asdict(group) for label, group in self.dataset_group_models.items()
-            },
+        return asdict(self, recurse=True, retain_collection_types=True)
+
+    def iterate_items(self) -> Generator[tuple[dict[str, Item] | list[Item]], None, None]:
+        for attr in fields(self.__class__):
+            if META_ITEMS in attr.metadata:
+                yield attr.name, getattr(self, attr.name)
+
+    def iterate_all_items(self) -> Generator[Item, None, None]:
+        for _, items in self.iterate_items():
+            iter = items.values() if isinstance(items, dict) else items
+            yield from iter
+
+    def get_parameter_labels(self) -> set[str]:
+        return {
+            label
+            for item in self.iterate_all_items()
+            for _, label in iterate_parameter_names_and_labels(item)
         }
-        for item_name in self._model_items:
-            items = getattr(self, item_name)
-            if len(items) == 0:
-                continue
-            if isinstance(items, list):
-                model_dict[item_name] = [item.as_dict() for item in items]
-            else:
-                model_dict[item_name] = {label: item.as_dict() for label, item in items.items()}
 
-        return model_dict
-
-    def get_parameter_labels(self) -> list[str]:
-        parameter_labels = []
-        for item_name in self.model_items:
-            items = getattr(self, item_name)
-            item_iterator = items if isinstance(items, list) else items.values()
-            for item in item_iterator:
-                parameter_labels += item.get_parameter_labels()
-        return parameter_labels
-
-    def generate_parameters(self) -> dict | list:
-        parameters: dict | list = {}
-        for parameter in self.get_parameter_labels():
-            groups = parameter.split(".")
-            label = groups.pop()
-            if len(groups) == 0:
-                if isinstance(parameters, dict):
-                    if len(parameters) != 0:
-                        raise root_parameter_error
-                    else:
-                        parameters = []
-                parameters.append(Parameter.create_default_list(label))
-            else:
-                if isinstance(parameters, list):
-                    raise root_parameter_error
-                this_group = groups.pop()
-                group = parameters
-                for name in groups:
-                    if name not in group:
-                        group[name] = {}
-                    group = group[name]
-                if this_group not in group:
-                    group[this_group] = []
-                group[this_group].append(Parameter.create_default_list(label))
-        return parameters
-
-    def need_index_dependent(self) -> bool:
-        """Returns true if e.g. clp_relations with intervals are present."""
-        return any(i.interval is not None for i in self.clp_constraints + self.clp_relations)
-
-    def problem_list(self, parameters: ParameterGroup | None = None) -> list[str]:
-        """
-        Returns a list with all problems in the model and missing parameters if specified.
-
-        Parameters
-        ----------
-
-        parameter :
-            The parameter to validate.
-        """
-        problems = []
-
-        for name in self.model_items:
-            items = getattr(self, name)
-            if isinstance(items, list):
-                for item in items:
-                    problems += item.validate(self, parameters=parameters)
-            else:
-                for item in items.values():
-                    problems += item.validate(self, parameters=parameters)
-
-        if parameters is not None and len(parameters.missing_parameter_value_labels) != 0:
-            label_prefix = "\n    - "
-            problems.append(
-                f"Parameter definition is missing values for the labels:"
-                f"{label_prefix}{label_prefix.join(parameters.missing_parameter_value_labels)}"
-            )
-
-        return problems
+    def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
+        issues = []
+        for item in self.iterate_all_items():
+            issues += get_item_issues(item=item, model=self, parameters=parameters)
+        return issues
 
     def validate(
         self, parameters: ParameterGroup = None, raise_exception: bool = False
     ) -> MarkdownStr:
         """
-        Returns a string listing all problems in the model and missing parameters if specified.
+        Returns a string listing all issues in the model and missing parameters if specified.
 
         Parameters
         ----------
@@ -401,12 +190,12 @@ class Model:
         """
         result = ""
 
-        if problems := self.problem_list(parameters):
-            result = f"Your model has {len(problems)} problem{'s' if len(problems) > 1 else ''}:\n"
-            for p in problems:
+        if issues := self.get_issues(parameters):
+            result = f"Your model has {len(issues)} problem{'s' if len(issues) > 1 else ''}:\n"
+            for p in issues:
                 result += f"\n * {p}"
             if raise_exception:
-                raise ModelError(result)
+                raise ModelError(issues)
         else:
             result = "Your model is valid."
         return MarkdownStr(result)
@@ -420,7 +209,7 @@ class Model:
         parameter :
             The parameter to validate.
         """
-        return len(self.problem_list(parameters)) == 0
+        return len(self.get_issues(parameters=parameters)) == 0
 
     def markdown(
         self,
@@ -448,21 +237,8 @@ class Model:
         """
         base_heading = "#" * base_heading_level
         string = f"{base_heading} Model\n\n"
-        string += "_Megacomplex Types_: "
-        string += ", ".join(self._megacomplex_types)
-        string += "\n\n"
 
-        string += f"{base_heading}# Dataset Groups\n\n"
-        for group_name, group in self.dataset_group_models.items():
-            string += f"* **{group_name}**:\n"
-            string += f"  * *Label*: {group_name}\n"
-            for item_name, item_value in asdict(group).items():
-                string += f"  * *{item_name}*: {item_value}\n"
-
-        string += "\n"
-
-        for name in self.model_items:
-            items = getattr(self, name)
+        for name, items in self.iterate_items():
             if not items:
                 continue
 
@@ -471,8 +247,8 @@ class Model:
             if isinstance(items, dict):
                 items = items.values()
             for item in items:
-                item_str = item.markdown(
-                    all_parameters=parameters, initial_parameters=initial_parameters
+                item_str = item_to_markdown(
+                    item, parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
                 string += f"* {item_str[0]}\n"
                 for s in item_str[1:]:
@@ -483,6 +259,3 @@ class Model:
     def _repr_markdown_(self) -> str:
         """Special method used by ``ipython`` to render markdown."""
         return str(self.markdown(base_heading_level=3))
-
-    def __str__(self) -> str:
-        return str(self.markdown())

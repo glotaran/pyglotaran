@@ -2,35 +2,86 @@
 
 from __future__ import annotations
 
-import contextlib
-from collections import Counter
 from typing import TYPE_CHECKING
 
-import xarray as xr
-
-from glotaran.model.item import model_item
-from glotaran.model.item import model_item_validator
+from glotaran.model.item import ItemIssue
+from glotaran.model.item import ModelItem
+from glotaran.model.item import ModelItemType
+from glotaran.model.item import ParameterType
+from glotaran.model.item import attribute
+from glotaran.model.item import item
+from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.megacomplex import is_exclusive
+from glotaran.model.megacomplex import is_unique
 
 if TYPE_CHECKING:
-    from typing import Any
-    from typing import Generator
-
-    from glotaran.model.megacomplex import Megacomplex
     from glotaran.model.model import Model
-    from glotaran.parameter import Parameter
+    from glotaran.parameter import ParameterGroup
 
 
-def create_dataset_model_type(properties: dict[str, Any]) -> type[DatasetModel]:
-    """Create dataset model type for a model."""
+class ExclusiveMegacomplexIssue(ItemIssue):
+    def __init__(self, label: str, megacomplex_type: str, is_global: bool):
+        self._label = label
+        self._type = megacomplex_type
+        self._is_global = is_global
 
-    @model_item(properties=properties)
-    class ModelDatasetModel(DatasetModel):
-        pass
+    def to_string(self) -> str:
+        return (
+            f"Exclusive {'global ' if self._is_global else ''}megacomplex '{self._label}' of "
+            f"type '{self._type}' cannot be combined with other megacomplexes."
+        )
 
-    return ModelDatasetModel
+
+class UniqueMegacomplexIssue(ItemIssue):
+    def __init__(self, label: str, megacomplex_type: str, is_global: bool):
+        self._label = label
+        self._type = megacomplex_type
+        self._is_global = is_global
+
+    def to_string(self):
+        return (
+            f"Unique {'global ' if self._is_global else ''}megacomplex '{self._label}' of "
+            f"type '{self._type}' can only be used once per dataset."
+        )
 
 
-class DatasetModel:
+def get_megacomplex_issues(
+    value: list[str] | None, model: Model, is_global: bool
+) -> list[ItemIssue]:
+    issues = []
+
+    if value is not None:
+        megacomplexes = [model.megacomplex[label] for label in value]
+        for megacomplex in megacomplexes:
+            megacomplex_type = megacomplex.__class__
+            if is_exclusive(megacomplex_type) and len(megacomplexes) > 1:
+                issues.append(
+                    ExclusiveMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)
+                )
+            if (
+                is_unique(megacomplex_type)
+                and len([m for m in megacomplexes if m.__class__ is megacomplex_type]) > 0
+            ):
+                issues.append(
+                    UniqueMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)
+                )
+    return issues
+
+
+def validate_megacomplexes(
+    value: list[str], model: Model, parameters: ParameterGroup | None
+) -> list[ItemIssue]:
+    return get_megacomplex_issues(value, model, False)
+
+
+def validate_global_megacomplexes(
+    value: list[str] | None, model: Model, parameters: ParameterGroup | None
+) -> list[ItemIssue]:
+    return get_megacomplex_issues(value, model, False)
+
+
+@item
+class DatasetModel(ModelItem):
     """A `DatasetModel` describes a dataset in terms of a glotaran model.
     It contains references to model items which describe the physical model for
     a given dataset.
@@ -39,139 +90,12 @@ class DatasetModel:
     parameter.
     """
 
-    def iterate_megacomplexes(
-        self,
-    ) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
-        """Iterates the dataset model's megacomplexes."""
-        for i, megacomplex in enumerate(self.megacomplex):
-            scale = self.megacomplex_scale[i] if self.megacomplex_scale is not None else None
-            yield scale, megacomplex
-
-    def iterate_global_megacomplexes(
-        self,
-    ) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
-        """Iterates the dataset model's global megacomplexes."""
-        for i, megacomplex in enumerate(self.global_megacomplex):
-            scale = (
-                self.global_megacomplex_scale[i]
-                if self.global_megacomplex_scale is not None
-                else None
-            )
-            yield scale, megacomplex
-
-    def get_model_dimension(self) -> str:
-        """Returns the dataset model's model dimension."""
-        if len(self.megacomplex) == 0:
-            raise ValueError(f"No megacomplex set for dataset model '{self.label}'")
-        if isinstance(self.megacomplex[0], str):
-            raise ValueError(f"Dataset model '{self.label}' was not filled")
-        model_dimension = self.megacomplex[0].dimension
-        if any(model_dimension != m.dimension for m in self.megacomplex):
-            raise ValueError(
-                f"Megacomplex dimensions do not match for dataset model '{self.label}'."
-            )
-        return model_dimension
-
-    def finalize_data(self, dataset: xr.Dataset):
-        """Finalize a dataset by applying all megacomplex finalize methods."""
-        is_full_model = self.has_global_model()
-        for megacomplex in self.megacomplex:
-            megacomplex.finalize_data(self, dataset, is_full_model=is_full_model)
-        if is_full_model:
-            for megacomplex in self.global_megacomplex:
-                megacomplex.finalize_data(
-                    self, dataset, is_full_model=is_full_model, as_global=True
-                )
-
-    def overwrite_model_dimension(self, model_dimension: str) -> None:
-        """Overwrites the dataset model's model dimension."""
-        self._model_dimension = model_dimension
-
-    def is_index_dependent(self) -> bool:
-        """Indicates if the dataset model is index dependent."""
-        if self.force_index_dependent:
-            return True
-        return any(m.index_dependent(self) for m in self.megacomplex)
-
-    def has_global_model(self) -> bool:
-        """Indicates if the dataset model can model the global dimension."""
-        return self.global_megacomplex is not None and len(self.global_megacomplex) != 0
-
-    @model_item_validator(False)
-    def ensure_unique_megacomplexes(self, model: Model) -> list[str]:
-        """Ensure that unique megacomplexes are only used once per dataset.
-
-        Parameters
-        ----------
-        model : Model
-            Model object using this dataset model.
-
-        Returns
-        -------
-        list[str]
-            Error messages to be shown when the model gets validated.
-        """
-        errors = []
-
-        def get_unique_errors(megacomplexes: list[str], is_global: bool) -> list[str]:
-            unique_types = []
-            for megacomplex_name in megacomplexes:
-                with contextlib.suppress(KeyError):
-                    megacomplex_instance = model.megacomplex[megacomplex_name]
-                    if type(megacomplex_instance).glotaran_unique():
-                        type_name = megacomplex_instance.type or megacomplex_instance.name
-                        unique_types.append(type_name)
-                this_errors = [
-                    f"Multiple instances of unique{' global ' if is_global else ' '}"
-                    f"megacomplex type {type_name!r} in dataset {self.label!r}"
-                    for type_name, count in Counter(unique_types).most_common()
-                    if count > 1
-                ]
-
-            return this_errors
-
-        if self.megacomplex:
-            errors += get_unique_errors(self.megacomplex, False)
-        if self.global_megacomplex:
-            errors += get_unique_errors(self.global_megacomplex, True)
-
-        return errors
-
-    @model_item_validator(False)
-    def ensure_exclusive_megacomplexes(self, model: Model) -> list[str]:
-        """Ensure that exclusive megacomplexes are the only megacomplex in the dataset model.
-
-        Parameters
-        ----------
-        model : Model
-            Model object using this dataset model.
-
-        Returns
-        -------
-        list[str]
-            Error messages to be shown when the model gets validated.
-        """
-
-        errors = []
-
-        def get_exclusive_errors(megacomplexes: list[str]) -> list[str]:
-            with contextlib.suppress(StopIteration):
-                exclusive_megacomplex = next(
-                    model.megacomplex[label]
-                    for label in megacomplexes
-                    if label in model.megacomplex
-                    and type(model.megacomplex[label]).glotaran_exclusive()
-                )
-                if len(self.megacomplex) != 1:
-                    return [
-                        f"Megacomplex '{type(exclusive_megacomplex)}' is exclusive and cannot be "
-                        f"combined with other megacomplex in dataset model '{self.label}'."
-                    ]
-            return []
-
-        if self.megacomplex:
-            errors += get_exclusive_errors(self.megacomplex)
-        if self.global_megacomplex:
-            errors += get_exclusive_errors(self.global_megacomplex)
-
-        return errors
+    group: str = "default"
+    force_index_dependent: bool = False
+    megacomplex: list[ModelItemType[Megacomplex]] = attribute(validator=validate_megacomplexes)
+    megacomplex_scale: list[ParameterType] | None = None
+    global_megacomplex: list[ModelItemType[Megacomplex]] | None = attribute(
+        alias="megacomplex", default=None, validator=validate_global_megacomplexes
+    )
+    global_megacomplex_scale: list[ParameterType] | None = None
+    scale: ParameterType | None = None

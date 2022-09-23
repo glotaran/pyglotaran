@@ -1,10 +1,10 @@
-from glotaran.model_new.dataset_model import DatasetModel
-from glotaran.model_new.item import ModelItem
-from glotaran.model_new.item import ModelItemType
-from glotaran.model_new.item import item
-from glotaran.model_new.megacomplex import Megacomplex
-from glotaran.model_new.megacomplex import megacomplex
-from glotaran.model_new.model import Model
+from glotaran.model.dataset_model import DatasetModel
+from glotaran.model.item import ModelItem
+from glotaran.model.item import ModelItemType
+from glotaran.model.item import item
+from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.megacomplex import megacomplex
+from glotaran.model.model import Model
 
 
 @item
