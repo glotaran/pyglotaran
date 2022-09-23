@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 
 
 META_ALIAS = "__glotaran_alias__"
+META_VALIDATOR = "__glotaran_validator__"
 
 
 class ItemIssue:
@@ -115,20 +116,21 @@ def iterate_names_and_labels(
     for attr in attributes:
         structure, _ = strip_type_and_structure_from_attribute(attr)
         value = getattr(item, attr.name)
+        name = attr.metadata.get(META_ALIAS, attr.name)
 
         if not value:
             continue
 
         if structure is dict:
             for v in value.values():
-                yield attr.name, v
+                yield name, v
 
         elif structure is list:
             for v in value:
-                yield attr.name, v
+                yield name, v
 
         else:
-            yield attr.name, value
+            yield name, value
 
 
 def iterate_model_item_names_and_labels(item: Item) -> Generator[tuple(str, str), None, None]:
@@ -195,28 +197,28 @@ def get_item_parameter_issues(item: item, parameters: ParameterGroup) -> list[It
     ]
 
 
+def get_item_validator_issues(
+    item: item, model: Model, parameters: ParameterGroup | None = None
+) -> list[ItemIssue]:
+    issues = []
+    for name, validator in [
+        (attr.name, attr.metadata[META_VALIDATOR])
+        for attr in fields(item.__class__)
+        if META_VALIDATOR in attr.metadata
+    ]:
+        issues += validator(getattr(item, name), model, parameters)
+
+    return issues
+
+
 def get_item_issues(
     *, item: Item, model: Model, parameters: ParameterGroup | None = None
 ) -> list[ItemIssue]:
     issues = get_item_model_issues(item, model)
+    issues += get_item_validator_issues(item, model, parameters)
     if parameters is not None:
         issues += get_item_parameter_issues(item, parameters)
     return issues
-
-
-def item(cls):
-    parent = getmro(cls)[1]
-    cls = define(kw_only=True, slots=False)(cls)
-    if parent is ModelItemTyped:
-        cls.__model_item_types__ = {}
-    elif issubclass(cls, ModelItemTyped):
-        cls._register_item_class()
-    resolve_types(cls)
-    return cls
-
-
-def alias(source: str, default: any = NOTHING) -> Attribute:
-    return field(default=default, metadata={META_ALIAS: source})
 
 
 @define(kw_only=True)
@@ -278,3 +280,28 @@ def strip_struture_type(definition: type) -> tuple[None | list | dict, type]:
         structure = None
 
     return structure, definition
+
+
+def item(cls):
+    parent = getmro(cls)[1]
+    cls = define(kw_only=True, slots=False)(cls)
+    if parent is ModelItemTyped:
+        cls.__model_item_types__ = {}
+    elif issubclass(cls, ModelItemTyped):
+        cls._register_item_class()
+    resolve_types(cls)
+    return cls
+
+
+def attribute(
+    *,
+    alias: str | None = None,
+    default: any = NOTHING,
+    validator: Callable[[ModelItem, Model, ParameterGroup | None], list[ItemIssue]] | None = None,
+) -> Attribute:
+    metadata = {}
+    if alias is not None:
+        metadata[META_ALIAS] = alias
+    if validator is not None:
+        metadata[META_VALIDATOR] = validator
+    return field(default=default, metadata=metadata)

@@ -84,10 +84,10 @@ class Megacomplex(ModelItemTyped):
     ):
         raise NotImplementedError
 
-    @classmethod
-    def glotaran_unique(cls) -> bool:
-        return cls._glotaran_megacomplex_unique
 
-    @classmethod
-    def glotaran_exclusive(cls) -> bool:
-        return cls._glotaran_megacomplex_exclusive
+def is_exclusive(cls: type[Megacomplex]) -> bool:
+    return cls.__is_exclusive__
+
+
+def is_unique(cls: type[Megacomplex]) -> bool:
+    return cls.__is_unique__
