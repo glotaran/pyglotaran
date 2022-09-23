@@ -9,7 +9,7 @@ netCDF4==1.6.0
 numba==0.56.2
 numpy==1.23.2
 openpyxl==3.0.10
-pandas==1.4.4
+pandas==1.5.0
 rich==12.5.1
 ruamel.yaml==0.17.21
 scipy==1.9.1
