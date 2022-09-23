@@ -48,8 +48,8 @@ class Parameter(_SupportsArray):
 
     def __init__(
         self,
-        label: str = None,
-        full_label: str = None,
+        *,
+        label: str,
         expression: str | None = None,
         maximum: float = np.inf,
         minimum: float = -np.inf,
@@ -63,10 +63,7 @@ class Parameter(_SupportsArray):
         Parameters
         ----------
         label : str
-            The label of the parameter., by default None
-        full_label : str
-            The label of the parameter with its path in a parameter group prepended.
-            , by default None
+            The label of the parameter.
         expression : str | None
             Expression to calculate the parameters value from,
             e.g. if used in relation to another parameter. , by default None
@@ -85,7 +82,6 @@ class Parameter(_SupportsArray):
             , by default True
         """
         self.label = label
-        self.full_label = full_label or ""
         self.expression = expression
         self.maximum = maximum
         self.minimum = minimum
@@ -144,14 +140,18 @@ class Parameter(_SupportsArray):
             Whether the label is valid.
 
         """
-        return VALID_LABEL_REGEX.search(label) is None and label not in RESERVED_LABELS
+        return (
+            VALID_LABEL_REGEX.search(label.replace(".", "_")) is None
+            and label not in RESERVED_LABELS
+        )
 
     @classmethod
     def from_list_or_value(
         cls,
         value: int | float | list,
+        *,
         default_options: dict[str, Any] | None = None,
-        label: str = None,
+        label: str,
     ) -> Parameter:
         """Create a parameter from a list or numeric value.
 
@@ -205,8 +205,6 @@ class Parameter(_SupportsArray):
             The created :class:`Parameter`
         """
         parameter_dict = {k.replace("-", "_"): v for k, v in parameter_dict.items()}
-        parameter_dict["full_label"] = parameter_dict["label"]
-        parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
         return cls(**parameter_dict)
 
     def as_dict(self, as_optimized: bool = True) -> dict[str, Any]:
@@ -227,7 +225,7 @@ class Parameter(_SupportsArray):
             The created dictionary.
         """
         parameter_dict = {
-            "label": self.full_label,
+            "label": self.label,
             "value": self.value,
             "expression": self.expression,
             "minimum": self.minimum,

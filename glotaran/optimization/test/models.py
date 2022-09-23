@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-from typing import List
-
 import numpy as np
 
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import ParameterType
+from glotaran.model import item
 from glotaran.model import megacomplex
-from glotaran.parameter import Parameter
 
 
-@megacomplex(dimension="model", properties={"is_index_dependent": bool})
+@megacomplex()
 class SimpleTestMegacomplex(Megacomplex):
+    type: str = "simple-test-mc"
+    dimension: str = "model"
+    is_index_dependent: bool
+
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
@@ -46,33 +49,20 @@ class SimpleTestMegacomplex(Megacomplex):
         pass
 
 
-class SimpleTestModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
-    ):
-        defaults: dict[str, type[Megacomplex]] = {"model_complex": SimpleTestMegacomplex}
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+SimpleTestModel = Model.create_class_from_megacomplexes([SimpleTestMegacomplex])
 
 
-@megacomplex(
-    dimension="model",
-    properties={"is_index_dependent": bool},
-    dataset_properties={
-        "kinetic": List[Parameter],
-    },
-)
+@item
+class SimpleDatasetModel(DatasetModel):
+    kinetic: list[ParameterType]
+
+
+@megacomplex(dataset_model_type=SimpleDatasetModel)
 class SimpleKineticMegacomplex(Megacomplex):
+    type: str = "simple-kinetic-test-mc"
+    dimension: str = "model"
+    is_index_dependent: bool
+
     def calculate_matrix(
         self,
         dataset_model,
@@ -103,8 +93,11 @@ class SimpleKineticMegacomplex(Megacomplex):
         pass
 
 
-@megacomplex(dimension="global", properties={})
+@megacomplex()
 class SimpleSpectralMegacomplex(Megacomplex):
+    type: str = "simple-spectral-test-mc"
+    dimension: str = "global"
+
     def calculate_matrix(
         self,
         dataset_model,
@@ -126,15 +119,14 @@ class SimpleSpectralMegacomplex(Megacomplex):
         return False
 
 
-@megacomplex(
-    dimension="global",
-    properties={
-        "location": {"type": List[Parameter], "allow_none": True},
-        "amplitude": {"type": List[Parameter], "allow_none": True},
-        "delta": {"type": List[Parameter], "allow_none": True},
-    },
-)
+@megacomplex()
 class ShapedSpectralMegacomplex(Megacomplex):
+    type: str = "shaped-spectral-test-mc"
+    dimension: str = "global"
+    location: list[ParameterType]
+    amplitude: list[ParameterType]
+    delta: list[ParameterType]
+
     def calculate_matrix(
         self,
         dataset_model,
@@ -169,24 +161,6 @@ class ShapedSpectralMegacomplex(Megacomplex):
         pass
 
 
-class DecayModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
-    ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "model_complex": SimpleKineticMegacomplex,
-            "global_complex": SimpleSpectralMegacomplex,
-            "global_complex_shaped": ShapedSpectralMegacomplex,
-        }
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+DecayModel = Model.create_class_from_megacomplexes(
+    [SimpleKineticMegacomplex, SimpleSpectralMegacomplex, ShapedSpectralMegacomplex]
+)

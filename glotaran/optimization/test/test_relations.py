@@ -14,11 +14,9 @@ from glotaran.simulation import simulate
 @pytest.mark.parametrize("link_clp", [True, False])
 def test_relations(index_dependent, link_clp):
     model = deepcopy(suite.model)
-    model.dataset_group_models["default"].link_clp = link_clp
+    model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.clp_relations.append(
-        Relation.from_dict({"source": "s1", "target": "s2", "parameter": "3"})
-    )
+    model.clp_relations.append(Relation(**{"source": "s1", "target": "s2", "parameter": "3"}))
     parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
 
     print("link_clp", link_clp, "index_dependent", index_dependent)  # T201

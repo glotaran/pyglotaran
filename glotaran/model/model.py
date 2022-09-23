@@ -15,6 +15,7 @@ from attrs import resolve_types
 from glotaran.model.clp_constraint import Constraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import Relation
+from glotaran.model.dataset_group import DatasetGroup
 from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.model.dataset_model import DatasetModel
 from glotaran.model.item import Item
@@ -27,6 +28,7 @@ from glotaran.model.item import model_attributes
 from glotaran.model.item import strip_type_and_structure_from_attribute
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.weight import Weight
+from glotaran.parameter import Parameter
 from glotaran.parameter import ParameterGroup
 from glotaran.utils.ipython import MarkdownStr
 
@@ -42,11 +44,19 @@ class ModelError(Exception):
         super().__init__(f"ModelError: {error}")
 
 
+root_parameter_error = ModelError(
+    "The root parameter group cannot contain both groups and parameters."
+)
+
+
 def _load_item_from_dict(cls, value: any, extra: dict[str, any] = {}) -> any:
     if isinstance(value, dict):
         if issubclass(cls, TypedItem):
-            item_type = value["type"]
-            cls = cls.get_item_type_class(item_type)
+            try:
+                item_type = value["type"]
+                cls = cls.get_item_type_class(item_type)
+            except KeyError:
+                raise ModelError(f"Missing 'type' for item {cls}")
         value = cls(**(value | extra))
     return value
 
@@ -98,6 +108,7 @@ def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
 
 @define(kw_only=True)
 class Model:
+    source_path: str | None = None
     clp_area_penalties: list[EqualAreaPenalty] = _global_item_attribute(EqualAreaPenalty)
     clp_constraints: list[Constraint] = _global_item_attribute(Constraint)
     clp_relations: list[Relation] = _global_item_attribute(Relation)
@@ -117,12 +128,14 @@ class Model:
     weights: list[Weight] = _global_item_attribute(Weight)
 
     @classmethod
-    def create_class(cls, attributes: dict[str, Attribute]) -> Model:
+    def create_class(cls, attributes: dict[str, Attribute]) -> type[Model]:
         cls_name = f"GlotaranModel_{str(uuid4()).replace('-','_')}"
         return make_class(cls_name, attributes, bases=(cls,))
 
     @classmethod
-    def create_class_from_megacomplexes(cls, megacomplexes: list[Megacomplex]) -> Model:
+    def create_class_from_megacomplexes(
+        cls, megacomplexes: list[type[Megacomplex]]
+    ) -> type[Model]:
         attributes: dict[str, Attribute] = {}
         dataset_types = set()
         for megacomplex in megacomplexes:
@@ -153,6 +166,23 @@ class Model:
     def as_dict(self) -> dict:
         return asdict(self, recurse=True, retain_collection_types=True)
 
+    def get_dataset_groups(self) -> dict[str, DatasetGroup]:
+        groups = {}
+        for dataset_model in self.dataset.values():
+            group = dataset_model.group
+            if group not in groups:
+                try:
+                    group_model = self.dataset_groups[group]
+                except KeyError:
+                    raise ValueError(f"Unknown dataset group '{group}'")
+                groups[group] = DatasetGroup(
+                    residual_function=group_model.residual_function,
+                    link_clp=group_model.link_clp,
+                    model=self,
+                )
+            groups[group].dataset_models[dataset_model.label] = dataset_model
+        return groups
+
     def iterate_items(self) -> Generator[tuple[dict[str, Item] | list[Item]], None, None]:
         for attr in fields(self.__class__):
             if META_ITEMS in attr.metadata:
@@ -169,6 +199,32 @@ class Model:
             for item in self.iterate_all_items()
             for _, label in iterate_parameter_names_and_labels(item)
         }
+
+    def generate_parameters(self) -> dict | list:
+        parameters: dict | list = {}
+        for parameter in self.get_parameter_labels():
+            groups = parameter.split(".")
+            label = groups.pop()
+            if len(groups) == 0:
+                if isinstance(parameters, dict):
+                    if len(parameters) != 0:
+                        raise root_parameter_error
+                    else:
+                        parameters = []
+                parameters.append(Parameter.create_default_list(label))
+            else:
+                if isinstance(parameters, list):
+                    raise root_parameter_error
+                this_group = groups.pop()
+                group = parameters
+                for name in groups:
+                    if name not in group:
+                        group[name] = {}
+                    group = group[name]
+                if this_group not in group:
+                    group[this_group] = []
+                group[this_group].append(Parameter.create_default_list(label))
+        return parameters
 
     def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
         issues = []
@@ -190,7 +246,7 @@ class Model:
         """
         result = ""
 
-        if issues := self.get_issues(parameters):
+        if issues := self.get_issues(parameters=parameters):
             result = f"Your model has {len(issues)} problem{'s' if len(issues) > 1 else ''}:\n"
             for p in issues:
                 result += f"\n * {p}"

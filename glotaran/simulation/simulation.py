@@ -7,6 +7,10 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model import DatasetModel
+from glotaran.model.dataset_model import get_dataset_model_model_dimension
+from glotaran.model.dataset_model import has_dataset_model_global_model
+from glotaran.model.dataset_model import is_dataset_model_index_dependent
+from glotaran.model.item import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 
 if TYPE_CHECKING:
@@ -59,13 +63,13 @@ def simulate(
     ValueError
         Raised if dataset model has no global megacomplex and no clp are provided.
     """
-    dataset_model = model.dataset[dataset].fill(model, parameters)  # type:ignore[attr-defined]
-    model_dimension = dataset_model.get_model_dimension()
+    dataset_model = fill_item(model.dataset[dataset], model, parameters)
+    model_dimension = get_dataset_model_model_dimension(dataset_model)
     model_axis = coordinates[model_dimension]
     global_dimension = next(dim for dim in coordinates if dim != model_dimension)
     global_axis = coordinates[global_dimension]
 
-    if dataset_model.has_global_model():
+    if has_dataset_model_global_model(dataset_model):
         result = simulate_full_model(
             dataset_model, global_dimension, global_axis, model_dimension, model_axis
         )
@@ -129,7 +133,7 @@ def simulate_from_clp(
             MatrixProvider.calculate_dataset_matrix(dataset_model, index, global_axis, model_axis)
             for index, _ in enumerate(global_axis)
         ]
-        if dataset_model.is_index_dependent()
+        if is_dataset_model_index_dependent(dataset_model)
         else [
             MatrixProvider.calculate_dataset_matrix(dataset_model, None, global_axis, model_axis)
         ]
@@ -186,8 +190,8 @@ def simulate_full_model(
         Raised if at least one of the dataset model's global megacomplexes is index dependent.
     """
     if any(
-        m.index_dependent(dataset_model)  # type:ignore[attr-defined]
-        for m in dataset_model.global_megacomplex
+        m.index_dependent(dataset_model)  # type:ignore[union-attr]
+        for m in dataset_model.global_megacomplex  # type:ignore[union-attr]
     ):
         raise ValueError("Index dependent models for global dimension are not supported.")
 
