@@ -1,9 +1,9 @@
 """This package contains compartment constraint items."""
 from __future__ import annotations
 
-from glotaran.model_new.interval_property import IntervalProperty
-from glotaran.model_new.item import TypedItem
-from glotaran.model_new.item import item
+from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.item import TypedItem
+from glotaran.model.item import item
 
 
 @item
