@@ -12,11 +12,14 @@ from attrs import field
 from attrs import make_class
 from attrs import resolve_types
 
+from glotaran.model_new.clp_constraint import Constraint
+from glotaran.model_new.clp_penalties import EqualAreaPenalty
+from glotaran.model_new.clp_relation import Relation
 from glotaran.model_new.dataset_group import DatasetGroupModel
 from glotaran.model_new.dataset_model import DatasetModel
 from glotaran.model_new.item import Item
 from glotaran.model_new.item import ItemIssue
-from glotaran.model_new.item import ModelItemTyped
+from glotaran.model_new.item import TypedItem
 from glotaran.model_new.item import get_item_issues
 from glotaran.model_new.item import item_to_markdown
 from glotaran.model_new.item import iterate_parameter_names_and_labels
@@ -41,7 +44,7 @@ class ModelError(Exception):
 
 def _load_item_from_dict(cls, value: any, extra: dict[str, any] = {}) -> any:
     if isinstance(value, dict):
-        if issubclass(cls, ModelItemTyped):
+        if issubclass(cls, TypedItem):
             item_type = value["type"]
             cls = cls.get_item_type_class(item_type)
         value = cls(**(value | extra))
@@ -68,6 +71,14 @@ def _add_default_dataset_group(
     return dataset_groups
 
 
+def _global_item_attribute(item_type: type):
+    return ib(
+        factory=list,
+        converter=lambda value: _load_global_items_from_dict(item_type, value),
+        metadata=META,
+    )
+
+
 def _model_item_attribute(model_item_type: type):
     return ib(
         type=dict[str, model_item_type],
@@ -87,6 +98,9 @@ def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
 
 @define(kw_only=True)
 class Model:
+    clp_area_penalties: list[EqualAreaPenalty] = _global_item_attribute(EqualAreaPenalty)
+    clp_constraints: list[Constraint] = _global_item_attribute(Constraint)
+    clp_relations: list[Relation] = _global_item_attribute(Relation)
 
     dataset_groups: dict[str, DatasetGroupModel] = field(
         factory=dict, converter=_add_default_dataset_group, metadata=META
@@ -100,11 +114,7 @@ class Model:
         metadata=META,
     )
 
-    weights: list[Weight] = field(
-        factory=list,
-        converter=lambda value: _load_global_items_from_dict(Weight, value),
-        metadata=META,
-    )
+    weights: list[Weight] = _global_item_attribute(Weight)
 
     @classmethod
     def create_class(cls, attributes: dict[str, Attribute]) -> Model:
