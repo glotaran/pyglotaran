@@ -8,6 +8,9 @@ import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
+from glotaran.model.dataset_model import has_dataset_model_global_model
+from glotaran.model.dataset_model import is_dataset_model_index_dependent
+from glotaran.model.item import fill_item
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderLinked
@@ -128,17 +131,15 @@ class EstimationProvider:
             clps[idx] = reduced_clps[i]
 
         for relation in model.clp_relations:
-            relation = relation.fill(model, parameters)  # type:ignore[attr-defined]
+            relation = fill_item(relation, model, parameters)  # type:ignore[arg-type]
             if (
-                relation.target in clp_labels  # type:ignore[attr-defined]
-                and relation.applies(index)  # type:ignore[attr-defined]
-                and relation.source in clp_labels  # type:ignore[attr-defined]
+                relation.target in clp_labels
+                and relation.applies(index)
+                and relation.source in clp_labels
             ):
-                source_idx = clp_labels.index(relation.source)  # type:ignore[attr-defined]
-                target_idx = clp_labels.index(relation.target)  # type:ignore[attr-defined]
-                clps[target_idx] = (
-                    relation.parameter * clps[source_idx]  # type:ignore[attr-defined]
-                )
+                source_idx = clp_labels.index(relation.source)
+                target_idx = clp_labels.index(relation.target)
+                clps[target_idx] = relation.parameter * clps[source_idx]
         return clps
 
     def get_additional_penalties(self) -> list[float]:
@@ -177,7 +178,7 @@ class EstimationProvider:
         parameters = self.group.parameters
         penalties = []
         for penalty in model.clp_area_penalties:
-            penalty = penalty.fill(model, parameters)
+            penalty = fill_item(penalty, model, parameters)  # type:ignore[arg-type]
 
             source_area = _get_area(
                 penalty.source,
@@ -284,7 +285,7 @@ class EstimationProviderUnlinked(EstimationProvider):
         self._clp_penalty.clear()
 
         for dataset_model in self.group.dataset_models.values():
-            if dataset_model.has_global_model():
+            if has_dataset_model_global_model(dataset_model):
                 self.calculate_full_model_estimation(dataset_model)
             else:
                 self.calculate_estimation(dataset_model)
@@ -300,7 +301,7 @@ class EstimationProviderUnlinked(EstimationProvider):
         full_penalty = np.concatenate(
             [
                 self._residuals[label]
-                if dataset_model.has_global_model()
+                if has_dataset_model_global_model(dataset_model)
                 else np.concatenate(self._residuals[label])
                 for label, dataset_model in self.group.dataset_models.items()
             ]
@@ -326,7 +327,7 @@ class EstimationProviderUnlinked(EstimationProvider):
             global_dimension = self._data_provider.get_global_dimension(label)
             global_axis = self._data_provider.get_global_axis(label)
 
-            if dataset_model.has_global_model():
+            if has_dataset_model_global_model(dataset_model):
                 residuals[label] = xr.DataArray(
                     np.array(self._residuals[label]).T.reshape(model_axis.size, global_axis.size),
                     coords={global_dimension: global_axis, model_dimension: model_axis},
@@ -348,7 +349,7 @@ class EstimationProviderUnlinked(EstimationProvider):
                     coords={global_dimension: global_axis, model_dimension: model_axis},
                     dims=[model_dimension, global_dimension],
                 )
-                if dataset_model.is_index_dependent():
+                if is_dataset_model_index_dependent(dataset_model):
                     clps[label] = xr.concat(
                         [
                             xr.DataArray(

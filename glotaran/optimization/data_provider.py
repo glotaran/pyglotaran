@@ -9,6 +9,8 @@ import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import Model
+from glotaran.model.dataset_model import get_dataset_model_model_dimension
+from glotaran.model.dataset_model import has_dataset_model_global_model
 from glotaran.project import Scheme
 
 
@@ -48,7 +50,7 @@ class DataProvider:
         for label, dataset_model in dataset_group.dataset_models.items():
 
             dataset = scheme.data[label]
-            model_dimension = dataset_model.get_model_dimension()
+            model_dimension = get_dataset_model_model_dimension(dataset_model)
             self._model_axes[label] = dataset.coords[model_dimension].data
             self._model_dimensions[label] = model_dimension
             global_dimension = self.infer_global_dimension(model_dimension, dataset.data.dims)
@@ -66,7 +68,7 @@ class DataProvider:
             if self._weight[label] is not None:
                 self._data[label] *= self._weight[label]
 
-            if dataset_model.has_global_model():
+            if has_dataset_model_global_model(dataset_model):
                 self._flattened_data[label] = self._data[label].T.flatten()
                 self._flattened_weight[label] = (
                     self._weight[label].T.flatten()  # type:ignore[union-attr]
@@ -194,15 +196,15 @@ class DataProvider:
         for model_weight in model_weights:
 
             idx = {}
-            if model_weight.global_interval is not None:  # type:ignore[attr-defined]
+            if model_weight.global_interval is not None:
                 idx[global_dimension] = self.get_axis_slice_from_interval(
-                    model_weight.global_interval, global_axis  # type:ignore[attr-defined]
+                    model_weight.global_interval, global_axis
                 )
-            if model_weight.model_interval is not None:  # type:ignore[attr-defined]
+            if model_weight.model_interval is not None:
                 idx[model_dimension] = self.get_axis_slice_from_interval(
-                    model_weight.model_interval, model_axis  # type:ignore[attr-defined]
+                    model_weight.model_interval, model_axis
                 )
-            weight[idx] *= model_weight.value  # type:ignore[attr-defined]
+            weight[idx] *= model_weight.value
 
         self._weight[dataset_label] = weight.data
 

@@ -111,16 +111,6 @@ class Scheme:
             )
             self.clp_link_tolerance = self.group_tolerance
 
-    def problem_list(self) -> list[str]:
-        """Return a list with all problems in the model and missing parameters.
-
-        Returns
-        -------
-        list[str]
-            A list of all problems found in the scheme's model.
-        """
-        return self.model.problem_list(self.parameters)
-
     def validate(self) -> MarkdownStr:
         """Return a string listing all problems in the model and missing parameters.
 

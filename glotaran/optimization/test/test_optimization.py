@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.model.dataset_model import is_dataset_model_index_dependent
+from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.optimization.test.suites import FullModel
@@ -56,7 +58,9 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
     print(model.validate(initial_parameters))  # T201
     assert model.valid(initial_parameters)
     assert (
-        model.dataset["dataset1"].fill(model, initial_parameters).is_index_dependent()
+        is_dataset_model_index_dependent(
+            fill_item(model.dataset["dataset1"], model, initial_parameters)
+        )
         == is_index_dependent
     )
 
@@ -74,7 +78,7 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
         )
         print(f"Dataset {i+1}")  # T201
         print("=============")  # T201
-        print(dataset)  # T201
+        print(dataset.data)  # T201
 
         if hasattr(suite, "scale"):
             dataset["data"] /= suite.scale
@@ -97,10 +101,11 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
         optimization_method=method,
     )
 
-    model.dataset_group_models["default"].link_clp = link_clp
+    model.dataset_groups["default"].link_clp = link_clp
 
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)  # T201
+    print(result.data["dataset1"].fitted_data)  # T201
     assert result.success
     optimized_scheme = result.get_scheme()
     assert result.optimized_parameters == optimized_scheme.parameters
@@ -182,12 +187,8 @@ def test_result_data(model_weight: bool, index_dependent: bool):
     ).to_dataset(name="data")
 
     model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
-        "dataset": {
-            "dataset1": {
-                "megacomplex": ["m1"],
-            },
-        },
+        "megacomplex": {"m1": {"type": "simple-test-mc", "is_index_dependent": index_dependent}},
+        "dataset": {"dataset1": {"megacomplex": ["m1"]}},
     }
 
     if model_weight:
@@ -195,7 +196,7 @@ def test_result_data(model_weight: bool, index_dependent: bool):
     else:
         data["weight"] = xr.ones_like(data.data) * 0.5
 
-    model = SimpleTestModel.from_dict(model_dict)
+    model = SimpleTestModel(**model_dict)
     assert model.valid()
     parameters = ParameterGroup.from_list([1])
 

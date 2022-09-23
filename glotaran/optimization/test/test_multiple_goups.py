@@ -15,36 +15,36 @@ def test_multiple_groups():
     model_axis = np.arange(0, 150, 1.5)
 
     sim_model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+        "megacomplex": {
+            "m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False},
+            "m2": {"type": "simple-spectral-test-mc"},
+        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "global_megacomplex": ["m2"],
                 "kinetic": ["1"],
             }
         },
     }
-    sim_model = DecayModel.from_dict(sim_model_dict)
+    sim_model = DecayModel(**sim_model_dict)
     model_dict = {
         "dataset_groups": {"g1": {}, "g2": {"residual_function": "non_negative_least_squares"}},
-        "megacomplex": {"m1": {"is_index_dependent": False}},
+        "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
         "dataset": {
             "dataset1": {
                 "group": "g1",
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "kinetic": ["1"],
             },
             "dataset2": {
                 "group": "g2",
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "kinetic": ["1"],
             },
         },
     }
-    model = DecayModel.from_dict(model_dict)
+    model = DecayModel(**model_dict)
     dataset = simulate(
         sim_model,
         "dataset1",

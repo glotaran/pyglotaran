@@ -15,22 +15,23 @@ class OneCompartmentDecay:
     model_axis = np.arange(0, 150, 1.5)
 
     sim_model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+        "megacomplex": {
+            "m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False},
+            "m2": {"type": "simple-spectral-test-mc"},
+        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "global_megacomplex": ["m2"],
                 "kinetic": ["1"],
             }
         },
     }
-    sim_model = DecayModel.from_dict(sim_model_dict)
+    sim_model = DecayModel(**sim_model_dict)
     model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": False}},
+        "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
         "dataset": {
             "dataset1": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "kinetic": ["1"],
                 "scale": "2",
@@ -38,7 +39,7 @@ class OneCompartmentDecay:
         },
     }
     model_dict["dataset"]["dataset1"]["scale"] = "2"  # type:ignore[index]
-    model = DecayModel.from_dict(model_dict)
+    model = DecayModel(**model_dict)
 
 
 class TwoCompartmentDecay:
@@ -48,12 +49,14 @@ class TwoCompartmentDecay:
     global_axis = np.asarray([1.0])
     model_axis = np.arange(0, 150, 1.5)
 
-    sim_model = DecayModel.from_dict(
-        {
-            "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+    sim_model = DecayModel(
+        **{
+            "megacomplex": {
+                "m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False},
+                "m2": {"type": "simple-spectral-test-mc"},
+            },
             "dataset": {
                 "dataset1": {
-                    "initial_concentration": [],
                     "megacomplex": ["m1"],
                     "global_megacomplex": ["m2"],
                     "kinetic": ["1", "2"],
@@ -61,12 +64,11 @@ class TwoCompartmentDecay:
             },
         }
     )
-    model = DecayModel.from_dict(
-        {
-            "megacomplex": {"m1": {"is_index_dependent": False}},
+    model = DecayModel(
+        **{
+            "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
-                    "initial_concentration": [],
                     "megacomplex": ["m1"],
                     "kinetic": ["1", "2"],
                 }
@@ -89,43 +91,42 @@ class ThreeDatasetDecay:
     model_axis3 = np.arange(0, 150, 1.5)
 
     sim_model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": False}, "m2": {"type": "global_complex"}},
+        "megacomplex": {
+            "m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False},
+            "m2": {"type": "simple-spectral-test-mc"},
+        },
         "dataset": {
             "dataset1": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "global_megacomplex": ["m2"],
                 "kinetic": ["1"],
             },
             "dataset2": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "global_megacomplex": ["m2"],
                 "kinetic": ["1", "2"],
             },
             "dataset3": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "global_megacomplex": ["m2"],
                 "kinetic": ["2"],
             },
         },
     }
-    sim_model = DecayModel.from_dict(sim_model_dict)
+    sim_model = DecayModel(**sim_model_dict)
 
     model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": False}},
+        "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
         "dataset": {
-            "dataset1": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["1"]},
+            "dataset1": {"megacomplex": ["m1"], "kinetic": ["1"]},
             "dataset2": {
-                "initial_concentration": [],
                 "megacomplex": ["m1"],
                 "kinetic": ["1", "2"],
             },
-            "dataset3": {"initial_concentration": [], "megacomplex": ["m1"], "kinetic": ["2"]},
+            "dataset3": {"megacomplex": ["m1"], "kinetic": ["2"]},
         },
     }
-    model = DecayModel.from_dict(model_dict)
+    model = DecayModel(**model_dict)
 
 
 class MultichannelMulticomponentDecay:
@@ -157,12 +158,12 @@ class MultichannelMulticomponentDecay:
     global_axis = np.arange(12820, 15120, 50)
     model_axis = np.arange(0, 150, 1.5)
 
-    sim_model = DecayModel.from_dict(
-        {
+    sim_model = DecayModel(
+        **{
             "megacomplex": {
-                "m1": {"is_index_dependent": False},
+                "m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False},
                 "m2": {
-                    "type": "global_complex_shaped",
+                    "type": "shaped-spectral-test-mc",
                     "location": ["loc.1", "loc.2", "loc.3", "loc.4"],
                     "delta": ["del.1", "del.2", "del.3", "del.4"],
                     "amplitude": ["amp.1", "amp.2", "amp.3", "amp.4"],
@@ -177,9 +178,9 @@ class MultichannelMulticomponentDecay:
             },
         }
     )
-    model = DecayModel.from_dict(
-        {
-            "megacomplex": {"m1": {"is_index_dependent": False}},
+    model = DecayModel(
+        **{
+            "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],
@@ -191,12 +192,12 @@ class MultichannelMulticomponentDecay:
 
 
 class FullModel:
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "megacomplex": {
-                "m1": {"is_index_dependent": False},
+                "m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False},
                 "m2": {
-                    "type": "global_complex_shaped",
+                    "type": "shaped-spectral-test-mc",
                     "location": ["loc.1", "loc.2", "loc.3", "loc.4"],
                     "delta": ["del.1", "del.2", "del.3", "del.4"],
                     "amplitude": ["amp.1", "amp.2", "amp.3", "amp.4"],
