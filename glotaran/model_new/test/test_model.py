@@ -156,6 +156,36 @@ def test_global_items():
 
     m = Model.create_class([])(
         **{
+            "clp_area_penalties": [
+                {
+                    "source": "s",
+                    "source_intervals": [(1, 2)],
+                    "target": "t",
+                    "target_intervals": [(1, 2)],
+                    "parameter": "p",
+                    "weight": 1,
+                }
+            ],
+            "clp_constraints": [
+                {
+                    "type": "only",
+                    "target": "t",
+                    "interval": [(1, 2)],
+                },
+                {
+                    "type": "zero",
+                    "target": "t",
+                    "interval": (1, 2),
+                },
+            ],
+            "clp_relations": [
+                {
+                    "source": "s",
+                    "target": "t",
+                    "interval": [(1, 2)],
+                    "parameter": "p",
+                },
+            ],
             "dataset": {},
             "weights": [
                 {"datasets": ["d1", "d2"], "value": 1},
@@ -215,6 +245,9 @@ def test_model_items(test_model: Model):
 
 def test_model_as_dict():
     model_dict = {
+        "clp_area_penalties": [],
+        "clp_constraints": [],
+        "clp_relations": [],
         "megacomplex": {
             "m1": {"type": "simple", "label": "m1", "dimension": "model", "test_item": "t1"},
         },
