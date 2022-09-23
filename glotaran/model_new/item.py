@@ -221,7 +221,7 @@ def get_item_issues(
     return issues
 
 
-@define(kw_only=True)
+@define(kw_only=True, slots=False)
 class ModelItem(Item):
     label: str
 
@@ -232,8 +232,8 @@ ParameterType: TypeAlias = Parameter | str
 ModelItemType: TypeAlias = T | str
 
 
-@define(kw_only=True)
-class ModelItemTyped(ModelItem):
+@define(kw_only=True, slots=False)
+class TypedItem(Item):
     type: str
     __model_item_types__: ClassVar[dict[str, type]]
 
@@ -254,6 +254,11 @@ class ModelItemTyped(ModelItem):
     @classmethod
     def get_item_type_class(cls, item_type: str) -> type:
         return cls.__model_item_types__[item_type]
+
+
+@define(kw_only=True, slots=False)
+class ModelItemTyped(TypedItem, ModelItem):
+    pass
 
 
 def strip_type_and_structure_from_attribute(attr: Attribute) -> tuple[None | list | dict, type]:
@@ -285,9 +290,9 @@ def strip_struture_type(definition: type) -> tuple[None | list | dict, type]:
 def item(cls):
     parent = getmro(cls)[1]
     cls = define(kw_only=True, slots=False)(cls)
-    if parent is ModelItemTyped:
+    if parent in (TypedItem, ModelItemTyped):
         cls.__model_item_types__ = {}
-    elif issubclass(cls, ModelItemTyped):
+    elif issubclass(cls, TypedItem):
         cls._register_item_class()
     resolve_types(cls)
     return cls
