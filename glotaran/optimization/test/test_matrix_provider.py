@@ -36,9 +36,9 @@ def dataset_two() -> xr.Dataset:
 
 @pytest.fixture()
 def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
-    model = SimpleTestModel.from_dict(
-        {
-            "megacomplex": {"m1": {"is_index_dependent": False}},
+    model = SimpleTestModel(
+        **{
+            "megacomplex": {"m1": {"type": "simple-test-mc", "is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],

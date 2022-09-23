@@ -347,10 +347,12 @@ class ParameterGroup(dict):
             raise TypeError("Parameter must be  instance of glotaran.parameter.Parameter")
         for p in parameter:
             p.index = len(self._parameters) + 1
-            if p.label is None:
-                p.label = f"{p.index}"
-            p.full_label = f"{self.label}.{p.label}" if self.label else p.label
-            self._parameters[p.label] = p
+            p_label = p.label
+            if p_label is None:
+                p_label = f"{p.index}"
+            if self.label:
+                p.label = f"{self.label}.{p_label}"
+            self._parameters[p_label] = p
 
     def add_group(self, group: ParameterGroup):
         """Add a :class:`ParameterGroup` to the group.

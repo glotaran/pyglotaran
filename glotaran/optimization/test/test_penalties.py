@@ -15,11 +15,11 @@ from glotaran.simulation import simulate
 @pytest.mark.parametrize("link_clp", [True, False])
 def test_penalties(index_dependent, link_clp):
     model = deepcopy(suite.model)
-    model.dataset_group_models["default"].link_clp = link_clp
+    model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
     model.clp_area_penalties.append(
-        EqualAreaPenalty.from_dict(
-            {
+        EqualAreaPenalty(
+            **{
                 "source": "s1",
                 "source_intervals": [(1, 20)],
                 "target": "s2",

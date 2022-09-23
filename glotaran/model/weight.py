@@ -13,6 +13,6 @@ class Weight(Item):
     """
 
     datasets: list[str]
-    global_interval: list[tuple[float, float]] | None = None
-    model_interval: list[tuple[float, float]] | None = None
+    global_interval: tuple[float, float] | None = None
+    model_interval: tuple[float, float] | None = None
     value: float

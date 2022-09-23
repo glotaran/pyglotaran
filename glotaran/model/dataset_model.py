@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Generator
+
+import xarray as xr
 
 from glotaran.model.item import ItemIssue
 from glotaran.model.item import ModelItem
@@ -16,6 +19,7 @@ from glotaran.model.megacomplex import is_unique
 
 if TYPE_CHECKING:
     from glotaran.model.model import Model
+    from glotaran.parameter import Parameter
     from glotaran.parameter import ParameterGroup
 
 
@@ -51,7 +55,8 @@ def get_megacomplex_issues(
     issues = []
 
     if value is not None:
-        megacomplexes = [model.megacomplex[label] for label in value]
+        labels = [v if isinstance(v, str) else v.label for v in value]
+        megacomplexes = [model.megacomplex[label] for label in labels]
         for megacomplex in megacomplexes:
             megacomplex_type = megacomplex.__class__
             if is_exclusive(megacomplex_type) and len(megacomplexes) > 1:
@@ -99,3 +104,69 @@ class DatasetModel(ModelItem):
     )
     global_megacomplex_scale: list[ParameterType] | None = None
     scale: ParameterType | None = None
+
+
+def is_dataset_model_index_dependent(dataset_model: DatasetModel) -> bool:
+    """Indicates if the dataset model is index dependent."""
+    if dataset_model.force_index_dependent:
+        return True
+    return any(m.index_dependent(dataset_model) for m in dataset_model.megacomplex)
+
+
+def has_dataset_model_global_model(dataset_model: DatasetModel) -> bool:
+    """Indicates if the dataset model can model the global dimension."""
+    return (
+        dataset_model.global_megacomplex is not None and len(dataset_model.global_megacomplex) != 0
+    )
+
+
+def get_dataset_model_model_dimension(dataset_model: DatasetModel) -> str:
+    """Returns the dataset model's model dimension."""
+    if len(dataset_model.megacomplex) == 0:
+        raise ValueError(f"No megacomplex set for dataset model '{dataset_model.label}'")
+    if isinstance(dataset_model.megacomplex[0], str):
+        raise ValueError(f"Dataset model '{dataset_model.label}' was not filled")
+    model_dimension = dataset_model.megacomplex[0].dimension
+    if any(model_dimension != m.dimension for m in dataset_model.megacomplex):
+        raise ValueError(
+            f"Megacomplex dimensions do not match for dataset model '{dataset_model.label}'."
+        )
+    return model_dimension
+
+
+def iterate_dataset_model_megacomplexes(
+    dataset_model: DatasetModel,
+) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
+    """Iterates the dataset model's megacomplexes."""
+    for i, megacomplex in enumerate(dataset_model.megacomplex):
+        scale = (
+            dataset_model.megacomplex_scale[i]
+            if dataset_model.megacomplex_scale is not None
+            else None
+        )
+        yield scale, megacomplex
+
+
+def iterate_dataset_model_global_megacomplexes(
+    dataset_model: DatasetModel,
+) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
+    """Iterates the dataset model's global megacomplexes."""
+    for i, megacomplex in enumerate(dataset_model.global_megacomplex):
+        scale = (
+            dataset_model.global_megacomplex_scale[i]
+            if dataset_model.global_megacomplex_scale is not None
+            else None
+        )
+        yield scale, megacomplex
+
+
+def finalize_dataset_model(dataset_model: DatasetModel, dataset: xr.Dataset):
+    """Finalize a dataset by applying all megacomplex finalize methods."""
+    is_full_model = has_dataset_model_global_model(dataset_model)
+    for megacomplex in dataset_model.megacomplex:
+        megacomplex.finalize_data(dataset_model, dataset, is_full_model=is_full_model)
+    if is_full_model:
+        for megacomplex in dataset_model.global_megacomplex:
+            megacomplex.finalize_data(
+                dataset_model, dataset, is_full_model=is_full_model, as_global=True
+            )

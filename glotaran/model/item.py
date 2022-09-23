@@ -64,6 +64,17 @@ class Item:
     pass
 
 
+@define(kw_only=True, slots=False)
+class ModelItem(Item):
+    label: str
+
+
+T = TypeVar("ModelItemT", bound="ModelItem")
+
+ParameterType: TypeAlias = Parameter | str
+ModelItemType: TypeAlias = T | str
+
+
 def item_to_markdown(
     item: Item, parameters: ParameterGroup = None, initial_parameters: ParameterGroup = None
 ) -> MarkdownStr:
@@ -123,14 +134,14 @@ def iterate_names_and_labels(
 
         if structure is dict:
             for v in value.values():
-                yield name, v
+                yield name, v if isinstance(v, str) else v.label
 
         elif structure is list:
             for v in value:
-                yield name, v
+                yield name, v if isinstance(v, str) else v.label
 
         else:
-            yield name, value
+            yield name, value if isinstance(value, str) else value.label
 
 
 def iterate_model_item_names_and_labels(item: Item) -> Generator[tuple(str, str), None, None]:
@@ -141,27 +152,35 @@ def iterate_parameter_names_and_labels(item: Item) -> Generator[tuple(str, str),
     return iterate_names_and_labels(item, parameter_attributes(item.__class__))
 
 
-def fill_item_attributes(
-    item: item, iterator: Iterator[Attribute], fill_function: Callable
-) -> list[ItemIssue]:
+def fill_item_attributes(item: item, iterator: Iterator[Attribute], fill_function: Callable):
     for attr in iterator:
         value = getattr(item, attr.name)
+        if not value:
+            continue
 
         structure, _ = strip_type_and_structure_from_attribute(attr)
         name = attr.metadata.get(META_ALIAS, attr.name)
         if structure is dict:
             value = {
-                k: fill_function(name, v) if isinstance(v, str) else v for k, v in value.items()
+                k: fill_function(name, v) if isinstance(v, str) else fill_function(name, v.label)
+                for k, v in value.items()
             }
         elif structure is list:
-            value = [fill_function(name, v) if isinstance(v, str) else v for v in value]
+            value = [
+                fill_function(name, v) if isinstance(v, str) else fill_function(name, v.label)
+                for v in value
+            ]
         else:
-            value = fill_function(name, value) if isinstance(value, str) else value
+            value = (
+                fill_function(name, value)
+                if isinstance(value, str)
+                else fill_function(name, value.label)
+            )
 
         setattr(item, attr.name, value)
 
 
-def fill_item(item: item, model: Model, parameters: ParameterGroup) -> Item:
+def fill_item(item: T, model: Model, parameters: ParameterGroup) -> T:
     fill_item_model_attributes(item, model, parameters)
     fill_item_parameter_attributes(item, parameters)
     return item
@@ -219,17 +238,6 @@ def get_item_issues(
     if parameters is not None:
         issues += get_item_parameter_issues(item, parameters)
     return issues
-
-
-@define(kw_only=True, slots=False)
-class ModelItem(Item):
-    label: str
-
-
-T = TypeVar("ModelItemT", bound="ModelItem")
-
-ParameterType: TypeAlias = Parameter | str
-ModelItemType: TypeAlias = T | str
 
 
 @define(kw_only=True, slots=False)

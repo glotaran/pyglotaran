@@ -10,7 +10,12 @@ import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
+from glotaran.model.dataset_model import has_dataset_model_global_model
+from glotaran.model.dataset_model import is_dataset_model_index_dependent
+from glotaran.model.dataset_model import iterate_dataset_model_global_megacomplexes
+from glotaran.model.dataset_model import iterate_dataset_model_megacomplexes
 from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.item import fill_item
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 
@@ -118,7 +123,7 @@ class MatrixProvider:
             The matrix container.
         """
         matrix_container = self._matrix_containers[dataset_label]
-        if self.group.dataset_models[dataset_label].is_index_dependent():
+        if is_dataset_model_index_dependent(self.group.dataset_models[dataset_label]):
             matrix_container = matrix_container[global_index]  # type:ignore[index]
         return matrix_container  # type:ignore[return-value]
 
@@ -128,7 +133,7 @@ class MatrixProvider:
             model_axis = self._data_provider.get_model_axis(label)
             global_axis = self._data_provider.get_global_axis(label)
 
-            if dataset_model.is_index_dependent():
+            if is_dataset_model_index_dependent(dataset_model):
                 self._matrix_containers[label] = [
                     self.calculate_dataset_matrix(
                         dataset_model, global_index, global_axis, model_axis
@@ -171,13 +176,13 @@ class MatrixProvider:
         clp_labels: list[str] = []
         matrix = None
 
-        megacomplex_iterator = dataset_model.iterate_megacomplexes
+        megacomplex_iterator = iterate_dataset_model_megacomplexes(dataset_model)
 
         if global_matrix:
-            megacomplex_iterator = dataset_model.iterate_global_megacomplexes
+            megacomplex_iterator = iterate_dataset_model_global_megacomplexes(dataset_model)
             model_axis, global_axis = global_axis, model_axis
 
-        for scale, megacomplex in megacomplex_iterator():
+        for scale, megacomplex in megacomplex_iterator:
             this_clp_labels, this_matrix = megacomplex.calculate_matrix(  # type:ignore[union-attr]
                 dataset_model, global_index, global_axis, model_axis
             )
@@ -344,23 +349,18 @@ class MatrixProvider:
         relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
         idx_to_delete = []
-        for relation in model.clp_relations:  # type:ignore[attr-defined]
-            if (
-                relation.target in clp_labels  # type:ignore[attr-defined]
-                and self.does_interval_property_apply(
-                    relation, index  # type:ignore[arg-type]
-                )
+        for relation in model.clp_relations:
+            if relation.target in clp_labels and self.does_interval_property_apply(
+                relation, index
             ):
 
-                if relation.source not in clp_labels:  # type:ignore[attr-defined]
+                if relation.source not in clp_labels:
                     continue
 
-                relation = relation.fill(model, parameters)  # type:ignore[attr-defined]
-                source_idx = clp_labels.index(relation.source)  # type:ignore[attr-defined]
-                target_idx = clp_labels.index(relation.target)  # type:ignore[attr-defined]
-                relation_matrix[
-                    target_idx, source_idx
-                ] = relation.parameter  # type:ignore[attr-defined]
+                relation = fill_item(relation, model, parameters)  # type:ignore[arg-type]
+                source_idx = clp_labels.index(relation.source)
+                target_idx = clp_labels.index(relation.target)
+                relation_matrix[target_idx, source_idx] = relation.parameter
                 idx_to_delete.append(target_idx)
 
         reduced_clp_labels = [
@@ -386,7 +386,7 @@ class MatrixProvider:
         for label, matrix_container in self._matrix_containers.items():
             model_dimension = self._data_provider.get_model_dimension(label)
             model_axis = self._data_provider.get_model_axis(label)
-            if self.group.dataset_models[label].is_index_dependent():
+            if is_dataset_model_index_dependent(self.group.dataset_models[label]):
                 global_dimension = self._data_provider.get_global_dimension(label)
                 global_axis = self._data_provider.get_global_axis(label)
                 matrices[label] = xr.concat(
@@ -509,7 +509,7 @@ class MatrixProviderUnlinked(MatrixProvider):
     def calculate_global_matrices(self):
         """Calculate the global matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
-            if dataset_model.has_global_model():
+            if has_dataset_model_global_model(dataset_model):
                 model_axis = self._data_provider.get_model_axis(label)
                 global_axis = self._data_provider.get_global_axis(label)
                 self._global_matrix_containers[label] = self.calculate_dataset_matrix(
@@ -519,11 +519,11 @@ class MatrixProviderUnlinked(MatrixProvider):
     def calculate_prepared_matrices(self):
         """Calculate the prepared matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
-            if dataset_model.has_global_model():
+            if has_dataset_model_global_model(dataset_model):
                 continue
             scale = dataset_model.scale or 1
             weight = self._data_provider.get_weight(label)
-            if dataset_model.is_index_dependent():
+            if is_dataset_model_index_dependent(dataset_model):
                 self._prepared_matrix_container[label] = [
                     self.reduce_matrix(
                         self.get_matrix_container(label, i).create_scaled_matrix(scale),
@@ -546,10 +546,10 @@ class MatrixProviderUnlinked(MatrixProvider):
     def calculate_full_matrices(self):
         """Calculate the full matrices of the datasets in the dataset group."""
         for label, dataset_model in self.group.dataset_models.items():
-            if dataset_model.has_global_model():
+            if has_dataset_model_global_model(dataset_model):
                 global_matrix_container = self.get_global_matrix_container(label)
 
-                if dataset_model.is_index_dependent():
+                if is_dataset_model_index_dependent(dataset_model):
                     global_axis = self._data_provider.get_global_axis(label)
                     full_matrix = np.concatenate(
                         [
