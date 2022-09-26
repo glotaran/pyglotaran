@@ -50,7 +50,7 @@ def wrap_func_as_method(
             setattr(func, "__annotations__", annotations)
         if doc:
             func.__doc__ = doc
-        func.__qualname__ = cls.__qualname__ + "." + func.__name__
+        func.__qualname__ = f"{cls.__qualname__}.{func.__name__}"
         func.__module__ = cls.__module__
 
         return func

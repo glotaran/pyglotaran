@@ -210,7 +210,7 @@ class TimeExplicitFile(ExplicitFile):
 
 def get_interval_number(line):
     match = re.search(r"intervalnr\s(.*)", line.strip().lower())
-    interval_number = match.group(1) if match else None
+    interval_number = match[1] if match else None
     if not interval_number:
         interval_number = re.search(r"\d+", line[::-1]).group()[::-1]
     try:

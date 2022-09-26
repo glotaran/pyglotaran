@@ -740,10 +740,11 @@ def deprecate_submodule(
 
     .. # noqa: DAR402
     """
-    if module_load_overwrite == "":
-        new_module = import_module(new_module_name)
-    else:
-        new_module = import_module(module_load_overwrite)
+    new_module = (
+        import_module(module_load_overwrite)
+        if module_load_overwrite
+        else import_module(new_module_name)
+    )
 
     deprecated_module = ModuleType(
         deprecated_module_name,
