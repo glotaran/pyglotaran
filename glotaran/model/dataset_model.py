@@ -74,13 +74,16 @@ def get_megacomplex_issues(
 
 
 def validate_megacomplexes(
-    value: list[str], model: Model, parameters: ParameterGroup | None
+    value: list[str], dataset_model: DatasetModel, model: Model, parameters: ParameterGroup | None
 ) -> list[ItemIssue]:
     return get_megacomplex_issues(value, model, False)
 
 
 def validate_global_megacomplexes(
-    value: list[str] | None, model: Model, parameters: ParameterGroup | None
+    value: list[str] | None,
+    dataset_model: DatasetModel,
+    model: Model,
+    parameters: ParameterGroup | None,
 ) -> list[ItemIssue]:
     return get_megacomplex_issues(value, model, False)
 

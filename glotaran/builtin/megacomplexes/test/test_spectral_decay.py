@@ -70,7 +70,7 @@ megacomplex:
             s3: sh3
 irf:
     irf1:
-        type: spectral-multi-gaussian
+        type: multi-gaussian
         center: [irf.center]
         width: [irf.width]
 shape:

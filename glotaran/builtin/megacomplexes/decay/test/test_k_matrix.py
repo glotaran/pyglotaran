@@ -4,6 +4,7 @@ from IPython.core.formatters import format_display_data
 
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.builtin.megacomplexes.decay.k_matrix import calculate_gamma
+from glotaran.model.item import fill_item
 from glotaran.parameter import ParameterGroup
 
 
@@ -186,10 +187,8 @@ def test_a_matrix_general(matrix):
 
     params = ParameterGroup.from_list(matrix.params)
 
-    mat = KMatrix()
-    mat.label = ""
-    mat.matrix = matrix.matrix
-    mat = mat.fill(None, params)
+    mat = KMatrix(label="", matrix=matrix.matrix)
+    mat = fill_item(mat, None, params)
 
     initial_concentration = matrix.jvec
 
@@ -229,10 +228,8 @@ def test_a_matrix_sequential():
     }
 
     params = ParameterGroup.from_list([3, 4, 5])
-    mat = KMatrix()
-    mat.label = ""
-    mat.matrix = matrix
-    mat = mat.fill(None, params)
+    mat = KMatrix(label="", matrix=matrix)
+    mat = fill_item(mat, None, params)
 
     initial_concentration = [1, 0, 0]
 
@@ -245,10 +242,8 @@ def test_a_matrix_sequential():
 
     compartments = ["s1", "s2"]
     params = ParameterGroup.from_list([0.55, 0.0404])
-    mat = KMatrix()
-    mat.label = ""
-    mat.matrix = matrix
-    mat = mat.fill(None, params)
+    mat = KMatrix(label="", matrix=matrix)
+    mat = fill_item(mat, None, params)
 
     initial_concentration = [1, 0]
 
@@ -272,24 +267,19 @@ def test_combine_matrices():
         ("s1", "s1"): "1",
         ("s2", "s2"): "2",
     }
-    mat1 = KMatrix()
-    mat1.label = "A"
-    mat1.matrix = matrix1
-
+    mat1 = KMatrix(label="A", matrix=matrix1)
     matrix2 = {
         ("s2", "s2"): "3",
         ("s3", "s3"): "4",
     }
-    mat2 = KMatrix()
-    mat2.label = "B"
-    mat2.matrix = matrix2
+    mat2 = KMatrix(label="B", matrix=matrix2)
 
     combined = mat1.combine(mat2)
 
     assert combined.label == "A+B"
-    assert combined.matrix[("s1", "s1")].full_label == "1"
-    assert combined.matrix[("s2", "s2")].full_label == "3"
-    assert combined.matrix[("s3", "s3")].full_label == "4"
+    assert combined.matrix[("s1", "s1")] == "1"
+    assert combined.matrix[("s2", "s2")] == "3"
+    assert combined.matrix[("s3", "s3")] == "4"
 
 
 def test_kmatrix_ipython_rendering():
@@ -299,9 +289,7 @@ def test_kmatrix_ipython_rendering():
         ("s1", "s1"): "1",
         ("s2", "s2"): "2",
     }
-    kmatrix = KMatrix()
-    kmatrix.label = "A"
-    kmatrix.matrix = matrix
+    kmatrix = KMatrix(label="A", matrix=matrix)
 
     rendered_obj = format_display_data(kmatrix)[0]
 
