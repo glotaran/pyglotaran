@@ -12,8 +12,10 @@ from glotaran.simulation.simulation import simulate
 
 def test_clp_guide():
 
-    model = Model.from_dict(
-        {
+    model = Model.create_class_from_megacomplexes(
+        [DecaySequentialMegacomplex, ClpGuideMegacomplex]
+    )(
+        **{
             "dataset_groups": {"default": {"link_clp": True}},
             "megacomplex": {
                 "mc1": {
@@ -27,10 +29,6 @@ def test_clp_guide():
                 "dataset1": {"megacomplex": ["mc1"]},
                 "dataset2": {"megacomplex": ["mc2"]},
             },
-        },
-        megacomplex_types={
-            "decay-sequential": DecaySequentialMegacomplex,
-            "clp-guide": ClpGuideMegacomplex,
         },
     )
 

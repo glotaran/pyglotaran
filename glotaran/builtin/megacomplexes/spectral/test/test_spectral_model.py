@@ -6,44 +6,25 @@ import xarray as xr
 
 from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import DecayModel
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
-from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
-
-class SpectralModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
-    ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "spectral": SpectralMegacomplex,
-        }
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+SpectralModel = Model.create_class_from_megacomplexes([SpectralMegacomplex])
 
 
 class OneCompartmentModelInvertedAxis:
-    decay_model = DecayModel.from_dict(
-        {
+    decay_model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -65,10 +46,10 @@ class OneCompartmentModelInvertedAxis:
         [101e-4, [1, {"vary": False, "non-negative": False}]]
     )
 
-    spectral_model = SpectralModel.from_dict(
-        {
+    spectral_model = SpectralModel(
+        **{
             "megacomplex": {
-                "mc1": {"shape": {"s1": "sh1"}},
+                "mc1": {"type": "spectral", "shape": {"s1": "sh1"}},
             },
             "shape": {
                 "sh1": {
@@ -94,20 +75,20 @@ class OneCompartmentModelInvertedAxis:
     spectral = np.arange(5000, 15000, 20)
     axis = {"time": time, "spectral": spectral}
 
-    decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
+    decay_dataset_model = fill_item(decay_model.dataset["dataset1"], decay_model, decay_parameters)
     matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
 
 class OneCompartmentModelNegativeSkew:
-    decay_model = DecayModel.from_dict(
-        {
+    decay_model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -129,10 +110,10 @@ class OneCompartmentModelNegativeSkew:
         [101e-4, [1, {"vary": False, "non-negative": False}]]
     )
 
-    spectral_model = SpectralModel.from_dict(
-        {
+    spectral_model = SpectralModel(
+        **{
             "megacomplex": {
-                "mc1": {"shape": {"s1": "sh1"}},
+                "mc1": {"type": "spectral", "shape": {"s1": "sh1"}},
             },
             "shape": {
                 "sh1": {
@@ -154,7 +135,7 @@ class OneCompartmentModelNegativeSkew:
     spectral = np.arange(400, 600, 5)
     axis = {"time": time, "spectral": spectral}
 
-    decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
+    decay_dataset_model = fill_item(decay_model.dataset["dataset1"], decay_model, decay_parameters)
     matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
@@ -169,13 +150,13 @@ class OneCompartmentModelZeroSkew(OneCompartmentModelNegativeSkew):
 
 
 class ThreeCompartmentModel:
-    decay_model = DecayModel.from_dict(
-        {
+    decay_model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2", "s3"], "parameters": ["4", "4", "4"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -199,15 +180,16 @@ class ThreeCompartmentModel:
         [101e-4, 101e-5, 101e-6, [1, {"vary": False, "non-negative": False}]]
     )
 
-    spectral_model = SpectralModel.from_dict(
-        {
+    spectral_model = SpectralModel(
+        **{
             "megacomplex": {
                 "mc1": {
+                    "type": "spectral",
                     "shape": {
                         "s1": "sh1",
                         "s2": "sh2",
                         "s3": "sh3",
-                    }
+                    },
                 },
             },
             "shape": {
@@ -256,7 +238,7 @@ class ThreeCompartmentModel:
     spectral = np.arange(400, 600, 5)
     axis = {"time": time, "spectral": spectral}
 
-    decay_dataset_model = decay_model.dataset["dataset1"].fill(decay_model, decay_parameters)
+    decay_dataset_model = fill_item(decay_model.dataset["dataset1"], decay_model, decay_parameters)
     matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])

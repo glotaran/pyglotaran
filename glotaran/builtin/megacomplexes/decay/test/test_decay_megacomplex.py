@@ -4,7 +4,11 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecayParallelMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.model import Model
+from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
 from glotaran.project import Scheme
@@ -21,24 +25,20 @@ def create_gaussian_clp(labels, amplitudes, centers, widths, axis):
     ).T
 
 
-class DecayModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-    ):
-        model_dict = {**model_dict, "default_megacomplex": "decay"}
-        return super().from_dict(model_dict)
+DecaySimpleModel = Model.create_class_from_megacomplexes(
+    [DecayParallelMegacomplex, DecaySequentialMegacomplex]
+)
+DecayModel = Model.create_class_from_megacomplexes([DecayMegacomplex])
 
 
 class OneComponentOneChannel:
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -71,13 +71,13 @@ class OneComponentOneChannel:
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["5"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -103,7 +103,7 @@ class OneComponentOneChannelGaussianIrf:
         [101e-4, 0.1, 1, [0.1, {"vary": False}], [1, {"vary": False, "non-negative": False}]]
     )
     assert model.megacomplex["mc1"].index_dependent(
-        model.dataset["dataset1"].fill(model, initial_parameters)
+        fill_item(model.dataset["dataset1"], model, initial_parameters)
     )
     wanted_parameters = ParameterGroup.from_list(
         [
@@ -123,8 +123,8 @@ class OneComponentOneChannelGaussianIrf:
 
 
 class ThreeComponentParallel:
-    model = DecayModel.from_dict(
-        {
+    model = DecaySimpleModel(
+        **{
             "megacomplex": {
                 "mc1": {
                     "type": "decay-parallel",
@@ -183,8 +183,8 @@ class ThreeComponentParallel:
 
 
 class ThreeComponentSequential:
-    model = DecayModel.from_dict(
-        {
+    model = DecaySimpleModel(
+        **{
             "megacomplex": {
                 "mc1": {
                     "type": "decay-sequential",
@@ -256,7 +256,7 @@ def test_kinetic_model(suite, nnls):
     model = suite.model
     print(model.validate())
     assert model.valid()
-    model.dataset_group_models["default"].method = (
+    model.dataset_groups["default"].method = (
         "non_negative_least_squares" if nnls else "variable_projection"
     )
 
@@ -307,14 +307,14 @@ def test_kinetic_model(suite, nnls):
 
 
 def test_finalize_data():
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2"], "parameters": ["3", "3"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-                "mc2": {"k_matrix": ["k2"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
+                "mc2": {"type": "decay", "k_matrix": ["k2"]},
             },
             "k_matrix": {
                 "k1": {

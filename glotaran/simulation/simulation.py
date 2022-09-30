@@ -130,7 +130,9 @@ def simulate_from_clp(
         raise ValueError("Missing coordinate 'clp_label' in clp.")
     matrices = (
         [
-            MatrixProvider.calculate_dataset_matrix(dataset_model, index, global_axis, model_axis)
+            MatrixProvider.calculate_dataset_matrix(
+                dataset_model, index, np.array(global_axis), model_axis
+            )
             for index, _ in enumerate(global_axis)
         ]
         if is_dataset_model_index_dependent(dataset_model)

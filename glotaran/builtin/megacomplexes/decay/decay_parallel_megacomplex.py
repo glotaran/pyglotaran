@@ -1,8 +1,6 @@
 """This package contains the decay megacomplex item."""
 from __future__ import annotations
 
-from typing import List
-
 import numpy as np
 import xarray as xr
 
@@ -13,22 +11,24 @@ from glotaran.builtin.megacomplexes.decay.util import finalize_data
 from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
+from glotaran.model import ModelItemType
+from glotaran.model import ParameterType
+from glotaran.model import item
 from glotaran.model import megacomplex
-from glotaran.parameter import Parameter
 
 
-@megacomplex(
-    dimension="time",
-    properties={
-        "compartments": List[str],
-        "rates": List[Parameter],
-    },
-    dataset_model_items={
-        "irf": {"type": Irf, "allow_none": True},
-    },
-    register_as="decay-parallel",
-)
+@item
+class DecayDatasetModel(DatasetModel):
+    irf: ModelItemType[Irf] | None = None
+
+
+@megacomplex(dataset_model_type=DecayDatasetModel)
 class DecayParallelMegacomplex(Megacomplex):
+    dimension: str = "time"
+    type: str = "decay-parallel"
+    compartments: list[str]
+    rates: list[ParameterType]
+
     def get_compartments(self, dataset_model: DatasetModel) -> list[str]:
         return self.compartments
 
@@ -41,12 +41,13 @@ class DecayParallelMegacomplex(Megacomplex):
         return initial_concentration
 
     def get_k_matrix(self) -> KMatrix:
-        size = len(self.compartments)
-        k_matrix = KMatrix()
-        k_matrix.matrix = {
-            (self.compartments[i], self.compartments[i]): self.rates[i] for i in range(size)
-        }
-        return k_matrix
+        return KMatrix(
+            label="",
+            matrix={
+                (self.compartments[i], self.compartments[i]): self.rates[i]
+                for i in range(len(self.compartments))
+            },
+        )
 
     def get_a_matrix(self, dataset_model: DatasetModel) -> np.ndarray:
         return self.get_k_matrix().a_matrix_general(
@@ -58,7 +59,7 @@ class DecayParallelMegacomplex(Megacomplex):
 
     def calculate_matrix(
         self,
-        dataset_model: DatasetModel,
+        dataset_model: DecayDatasetModel,
         global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,

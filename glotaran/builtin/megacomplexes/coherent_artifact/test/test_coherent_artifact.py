@@ -5,6 +5,7 @@ import xarray as xr
 from glotaran.builtin.megacomplexes.coherent_artifact import CoherentArtifactMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.model import Model
+from glotaran.model import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
@@ -34,7 +35,7 @@ def test_coherent_artifact(spectral_dependence: str):
         },
         "irf": {
             "irf1": {
-                "type": "spectral-multi-gaussian",
+                "type": "multi-gaussian",
                 "center": ["irf_center"],
                 "width": ["irf_width"],
             },
@@ -57,8 +58,9 @@ def test_coherent_artifact(spectral_dependence: str):
     irf_spec = model_dict["irf"]["irf1"]
 
     if spectral_dependence == "dispersed":
+        irf_spec["type"] = "spectral-multi-gaussian"
         irf_spec["dispersion_center"] = "irf_dispc"
-        irf_spec["center_dispersion"] = ["irf_disp1", "irf_disp2"]
+        irf_spec["center_dispersion_coefficients"] = ["irf_disp1", "irf_disp2"]
 
         parameter_list += [
             ["irf_dispc", 300, {"vary": False, "non-negative": False}],
@@ -74,12 +76,8 @@ def test_coherent_artifact(spectral_dependence: str):
             ["irf_shift3", 2],
         ]
 
-    model = Model.from_dict(
-        model_dict.copy(),
-        megacomplex_types={
-            "decay": DecayMegacomplex,
-            "coherent-artifact": CoherentArtifactMegacomplex,
-        },
+    model = Model.create_class_from_megacomplexes([DecayMegacomplex, CoherentArtifactMegacomplex])(
+        **model_dict
     )
 
     parameters = ParameterGroup.from_list(parameter_list)
@@ -87,7 +85,7 @@ def test_coherent_artifact(spectral_dependence: str):
     time = np.arange(0, 50, 1.5)
     spectral = np.asarray([200, 300, 400])
 
-    dataset_model = model.dataset["dataset1"].fill(model, parameters)
+    dataset_model = fill_item(model.dataset["dataset1"], model, parameters)
     matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, 0, spectral, time)
     compartments = matrix.clp_labels
 

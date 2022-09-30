@@ -8,8 +8,11 @@ from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
 
 
-@megacomplex(exclusive=True, register_as="clp-guide", properties={"target": str})
+@megacomplex(exclusive=True)
 class ClpGuideMegacomplex(Megacomplex):
+    type: str = "clp-guide"
+    target: str
+
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,

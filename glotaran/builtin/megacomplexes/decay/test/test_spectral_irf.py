@@ -1,9 +1,9 @@
 import warnings
-from copy import deepcopy
 from textwrap import dedent
 
 import numpy as np
 import pytest
+from attrs import evolve
 
 from glotaran.io import load_model
 from glotaran.io import load_parameters
@@ -41,7 +41,7 @@ MODEL_NO_IRF_DISPERSION = f"""\
 {MODEL_BASE}
 irf:
     irf1:
-        type: spectral-gaussian
+        type: gaussian
         center: irf.center
         width: irf.width
 """
@@ -190,8 +190,9 @@ def test_spectral_irf(suite):
     parameters = suite.parameters
     assert model.valid(parameters), model.validate(parameters)
 
-    sim_model = deepcopy(model)
+    sim_model = evolve(model)
     sim_model.dataset["dataset1"].global_megacomplex = ["mc2"]
+    print(sim_model)
     dataset = simulate(sim_model, "dataset1", parameters, suite.axis)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
