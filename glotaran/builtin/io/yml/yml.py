@@ -16,6 +16,7 @@ from glotaran.io import save_result
 from glotaran.io import save_scheme
 from glotaran.model import Model
 from glotaran.parameter import ParameterGroup
+from glotaran.plugin_system.megacomplex_registration import get_megacomplex
 from glotaran.project.dataclass_helpers import asdict
 from glotaran.project.dataclass_helpers import fromdict
 from glotaran.project.project import Result
@@ -48,7 +49,12 @@ class YmlProjectIo(ProjectIoInterface):
 
         spec = sanitize_yaml(spec)
 
+        if "megacomplex" not in spec:
+            raise ValueError("No megacomplex defined in model")
+
         default_megacomplex = spec.get("default_megacomplex")
+        if "default_megacomplex" in spec:
+            del spec["default_megacomplex"]
 
         if default_megacomplex is None and any(
             "type" not in m for m in spec["megacomplex"].values()
@@ -58,10 +64,13 @@ class YmlProjectIo(ProjectIoInterface):
                 "at least one megacomplex does not have a type."
             )
 
-        if "megacomplex" not in spec:
-            raise ValueError("No megacomplex defined in model")
+        spec["megacomplex"] = {
+            label: m | {"type": default_megacomplex} if "type" not in m else m
+            for label, m in spec["megacomplex"].items()
+        }
 
-        return Model.from_dict(spec, megacomplex_types=None, default_megacomplex_type=None)
+        megacomplex_types = {get_megacomplex(m["type"]) for m in spec["megacomplex"].values()}
+        return Model.create_class_from_megacomplexes(megacomplex_types)(**spec)
 
     def save_model(self, model: Model, file_name: str):
         """Save a Model instance to a spec file.

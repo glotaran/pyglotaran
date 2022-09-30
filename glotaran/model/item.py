@@ -89,13 +89,22 @@ def item_to_markdown(
         if item_type is Parameter and parameters is not None:
             if structure is dict:
                 value = {
-                    k: parameters.get(v).markdown(parameters, initial_parameters)
+                    k: parameters.get(v.label if isinstance(v, Parameter) else v).markdown(
+                        parameters, initial_parameters
+                    )
                     for k, v in value.items()
                 }
             elif structure is list:
-                value = [parameters.get(v).markdown(parameters, initial_parameters) for v in value]
+                value = [
+                    parameters.get(v.label if isinstance(v, Parameter) else v).markdown(
+                        parameters, initial_parameters
+                    )
+                    for v in value
+                ]
             else:
-                value = parameters.get(value).markdown(parameters, initial_parameters)
+                value = parameters.get(
+                    value.label if isinstance(value, Parameter) else value
+                ).markdown(parameters, initial_parameters)
 
         property_md = indent(f"* *{name.replace('_', ' ').title()}*: {value}\n", "  ")
 
@@ -225,7 +234,7 @@ def get_item_validator_issues(
         for attr in fields(item.__class__)
         if META_VALIDATOR in attr.metadata
     ]:
-        issues += validator(getattr(item, name), model, parameters)
+        issues += validator(getattr(item, name), item, model, parameters)
 
     return issues
 
@@ -310,11 +319,12 @@ def attribute(
     *,
     alias: str | None = None,
     default: any = NOTHING,
-    validator: Callable[[ModelItem, Model, ParameterGroup | None], list[ItemIssue]] | None = None,
+    factory: any = None,
+    validator: Callable[[any, Item, Model, ParameterGroup | None], list[ItemIssue]] | None = None,
 ) -> Attribute:
     metadata = {}
     if alias is not None:
         metadata[META_ALIAS] = alias
     if validator is not None:
         metadata[META_VALIDATOR] = validator
-    return field(default=default, metadata=metadata)
+    return field(default=default, factory=factory, metadata=metadata)

@@ -2,15 +2,15 @@
 from __future__ import annotations
 
 import itertools
-import typing
 from collections import OrderedDict
 
 import numpy as np
 from scipy.linalg import eig
 from scipy.linalg import solve
 
-from glotaran.model import model_item
-from glotaran.parameter import Parameter
+from glotaran.model import ModelItem
+from glotaran.model import ParameterType
+from glotaran.model import item
 from glotaran.utils.ipython import MarkdownStr
 
 
@@ -18,13 +18,11 @@ def calculate_gamma(eigenvectors: np.ndarray, initial_concentration: np.ndarray)
     return np.diag(solve(eigenvectors, initial_concentration))
 
 
-@model_item(
-    properties={
-        "matrix": {"type": typing.Dict[typing.Tuple[str, str], Parameter]},
-    },
-)
-class KMatrix:
+@item
+class KMatrix(ModelItem):
     """A K-Matrix represents a first order differental system."""
+
+    matrix: dict[tuple[str, str], ParameterType]
 
     @classmethod
     def empty(cls, label: str, compartments: list[str]) -> KMatrix:
@@ -76,10 +74,7 @@ class KMatrix:
         combined_matrix = {entry: self.matrix[entry] for entry in self.matrix}
         for entry in k_matrix.matrix:
             combined_matrix[entry] = k_matrix.matrix[entry]
-        combined = KMatrix()
-        combined.label = f"{self.label}+{k_matrix.label}"
-        combined.matrix = combined_matrix
-        return combined
+        return KMatrix(label=f"{self.label}+{k_matrix.label}", matrix=combined_matrix)
 
     def matrix_as_markdown(
         self,
@@ -105,9 +100,7 @@ class KMatrix:
         for index in self.matrix:
             i = compartments.index(index[0])
             j = compartments.index(index[1])
-            array[i, j] = (
-                self.matrix[index].value if fill_parameters else self.matrix[index].full_label
-            )
+            array[i, j] = self.matrix[index].value if fill_parameters else self.matrix[index]
 
         return self._array_as_markdown(array, compartments, compartments)
 

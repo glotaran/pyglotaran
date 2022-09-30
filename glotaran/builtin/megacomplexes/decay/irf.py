@@ -1,34 +1,22 @@
 """This package contains irf items."""
 
-from typing import List
-from typing import Tuple
 
 import numpy as np
 
 from glotaran.model import ModelError
-from glotaran.model import model_item
-from glotaran.model import model_item_typed
-from glotaran.parameter import Parameter
+from glotaran.model import ModelItemTyped
+from glotaran.model import ParameterType
+from glotaran.model import attribute
+from glotaran.model import item
 
 
-@model_item(has_type=True)
-class IrfMeasured:
-    """A measured IRF. The data must be supplied by the dataset."""
+@item
+class Irf(ModelItemTyped):
+    """Represents an IRF."""
 
 
-@model_item(
-    properties={
-        "center": List[Parameter],
-        "width": List[Parameter],
-        "scale": {"type": List[Parameter], "allow_none": True},
-        "shift": {"type": List[Parameter], "allow_none": True},
-        "normalize": {"type": bool, "default": True},
-        "backsweep": {"type": bool, "default": False},
-        "backsweep_period": {"type": Parameter, "allow_none": True},
-    },
-    has_type=True,
-)
-class IrfMultiGaussian:
+@item
+class IrfMultiGaussian(Irf):
     """
     Represents a gaussian IRF.
 
@@ -56,9 +44,19 @@ class IrfMultiGaussian:
 
     """
 
+    type: str = "multi-gaussian"
+
+    center: list[ParameterType]
+    width: list[ParameterType]
+    scale: list[ParameterType] | None = None
+    shift: list[ParameterType] | None = None
+    normalize: bool = True
+    backsweep: bool = False
+    backsweep_period: ParameterType | None = None
+
     def parameter(
         self, global_index: int, global_axis: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, bool, float]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, float, bool, float]:
         """Returns the properties of the irf with shift applied."""
 
         centers = self.center if isinstance(self.center, list) else [self.center]
@@ -110,26 +108,14 @@ class IrfMultiGaussian:
         return self.shift is not None
 
 
-@model_item(
-    properties={
-        "center": Parameter,
-        "width": Parameter,
-    },
-    has_type=True,
-)
+@item
 class IrfGaussian(IrfMultiGaussian):
-    pass
+    type: str = "gaussian"
+    center: ParameterType
+    width: ParameterType
 
 
-@model_item(
-    properties={
-        "dispersion_center": {"type": Parameter, "allow_none": True},
-        "center_dispersion_coefficients": {"type": List[Parameter], "default": []},
-        "width_dispersion_coefficients": {"type": List[Parameter], "default": []},
-        "model_dispersion_with_wavenumber": {"type": bool, "default": False},
-    },
-    has_type=True,
-)
+@item
 class IrfSpectralMultiGaussian(IrfMultiGaussian):
     """
     Represents a gaussian IRF.
@@ -157,6 +143,12 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
         the dispersion of the width of the irf. None for no dispersion.
 
     """
+
+    type: str = "spectral-multi-gaussian"
+    dispersion_center: ParameterType
+    center_dispersion_coefficients: list[ParameterType]
+    width_dispersion_coefficients: list[ParameterType] = attribute(factory=list)
+    model_dispersion_with_wavenumber: bool = False
 
     def parameter(self, global_index: int, global_axis: np.ndarray):
         """Returns the properties of the irf with shift and dispersion applied."""
@@ -198,24 +190,8 @@ class IrfSpectralMultiGaussian(IrfMultiGaussian):
         return super().is_index_dependent() or self.dispersion_center is not None
 
 
-@model_item(
-    properties={
-        "center": Parameter,
-        "width": Parameter,
-    },
-    has_type=True,
-)
+@item
 class IrfSpectralGaussian(IrfSpectralMultiGaussian):
-    pass
-
-
-@model_item_typed(
-    types={
-        "gaussian": IrfGaussian,
-        "multi-gaussian": IrfMultiGaussian,
-        "spectral-multi-gaussian": IrfSpectralMultiGaussian,
-        "spectral-gaussian": IrfSpectralGaussian,
-    }
-)
-class Irf:
-    """Represents an IRF."""
+    type: str = "spectral-gaussian"
+    center: ParameterType
+    width: ParameterType

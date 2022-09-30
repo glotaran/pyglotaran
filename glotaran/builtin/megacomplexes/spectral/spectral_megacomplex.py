@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import numpy as np
 import xarray as xr
 
@@ -9,21 +7,23 @@ from glotaran.builtin.megacomplexes.spectral.shape import SpectralShape
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
+from glotaran.model import ModelItemType
+from glotaran.model import item
 from glotaran.model import megacomplex
 
 
-@megacomplex(
-    dimension="spectral",
-    dataset_properties={
-        "spectral_axis_inverted": {"type": bool, "default": False},
-        "spectral_axis_scale": {"type": float, "default": 1},
-    },
-    model_items={
-        "shape": Dict[str, SpectralShape],
-    },
-    register_as="spectral",
-)
+@item
+class SpectralDatasetModel(DatasetModel):
+    spectral_axis_inverted: bool = False
+    spectral_axis_scale: float = 1
+
+
+@megacomplex(dataset_model_type=SpectralDatasetModel)
 class SpectralMegacomplex(Megacomplex):
+    dimension: str = "spectral"
+    type: str = "spectral"
+    shape: dict[str, ModelItemType[SpectralShape]]
+
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,

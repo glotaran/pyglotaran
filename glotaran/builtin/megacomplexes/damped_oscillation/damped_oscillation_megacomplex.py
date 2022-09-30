@@ -1,48 +1,68 @@
 from __future__ import annotations
 
-from typing import List
-
 import numba as nb
 import numpy as np
 import xarray as xr
 from scipy.special import erf
 
-from glotaran.builtin.megacomplexes.decay.irf import Irf
+from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import DecayDatasetModel
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.model import DatasetModel
+from glotaran.model import ItemIssue
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import ParameterType
+from glotaran.model import attribute
 from glotaran.model import megacomplex
-from glotaran.model.item import model_item_validator
-from glotaran.parameter import Parameter
+from glotaran.parameter import ParameterGroup
 
 
-@megacomplex(
-    dimension="time",
-    dataset_model_items={
-        "irf": {"type": Irf, "allow_none": True},
-    },
-    properties={
-        "labels": List[str],
-        "frequencies": List[Parameter],
-        "rates": List[Parameter],
-    },
-    register_as="damped-oscillation",
-)
-class DampedOscillationMegacomplex(Megacomplex):
-    @model_item_validator(False)
-    def ensure_oscillation_parameter(self, model: Model) -> list[str]:
+class OscillationParameterIssue(ItemIssue):
+    def __init__(self, label: str, len_labels: int, len_frequencies: int, len_rates: int):
+        self._label = label
+        self._len_labels = len_labels
+        self._len_frequencies = len_frequencies
+        self._len_rates = len_rates
 
-        problems = []
+    def to_string(self) -> str:
+        return (
+            f"Size of labels ({self.len_labels}), frequencies ({self.len_frequencies}) "
+            f"and rates ({self.len_rates}) does not match for damped oscillation "
+            f"megacomplex '{self.label}'."
+        )
 
-        if len(self.labels) != len(self.frequencies) or len(self.labels) != len(self.rates):
-            problems.append(
-                f"Size of labels ({len(self.labels)}), frequencies ({len(self.frequencies)}) "
-                f"and rates ({len(self.rates)}) does not match for damped oscillation "
-                f"megacomplex '{self.label}'."
+
+def validate_oscillation_parameter(
+    labels: list[str],
+    damped_oscillation: DampedOscillationMegacomplex,
+    model: Model,
+    parameters: ParameterGroup | None,
+) -> list[ItemIssue]:
+    issues = []
+
+    len_labels, len_frequencies, len_rates = (
+        len(damped_oscillation.labels),
+        len(damped_oscillation.frequencies),
+        len(damped_oscillation.rates),
+    )
+
+    if len({len_labels, len_frequencies, len_rates}) > 1:
+        issues.append(
+            OscillationParameterIssue(
+                damped_oscillation.label, len_labels, len_frequencies, len_rates
             )
+        )
 
-        return problems
+    return issues
+
+
+@megacomplex(dataset_model_type=DecayDatasetModel)
+class DampedOscillationMegacomplex(Megacomplex):
+    dimension: str = "time"
+    type: str = "damped-oscillation"
+    labels: list[str] = attribute(validator=validate_oscillation_parameter)
+    frequencies: list[ParameterType]
+    rates: list[ParameterType]
 
     def calculate_matrix(
         self,

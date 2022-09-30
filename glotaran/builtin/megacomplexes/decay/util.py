@@ -8,6 +8,7 @@ from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
+from glotaran.model import get_dataset_model_model_dimension
 
 
 def index_dependent(dataset_model: DatasetModel) -> bool:
@@ -233,7 +234,7 @@ def retrieve_species_associated_data(
     is_full_model: bool,
     as_global: bool,
 ):
-    model_dimension = dataset_model.get_model_dimension()
+    model_dimension = get_dataset_model_model_dimension(dataset_model)
     if as_global:
         model_dimension, global_dimension = global_dimension, model_dimension
     dataset.coords[species_dimension] = species
@@ -355,7 +356,7 @@ def retrieve_irf(dataset_model: DatasetModel, dataset: xr.Dataset, global_dimens
         return
 
     irf = dataset_model.irf
-    model_dimension = dataset_model.get_model_dimension()
+    model_dimension = get_dataset_model_model_dimension(dataset_model)
 
     dataset["irf"] = (
         (model_dimension),
