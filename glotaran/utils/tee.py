@@ -5,6 +5,8 @@ import sys
 from io import StringIO
 from types import TracebackType
 
+from glotaran.utils.regex import RegexPattern
+
 
 class TeeContext:
     """Context manager that allows to work with string written to stdout."""
@@ -33,7 +35,6 @@ class TeeContext:
     ) -> bool | None:
         """Restore ``sys.stdout`` on exiting the context."""
         sys.stdout = self.stdout
-        self.buffer.close()
         return None
 
     def write(self, data: str) -> None:
@@ -60,3 +61,20 @@ class TeeContext:
     def flush(self) -> None:
         """Flush values in the buffer."""
         self.buffer.flush()
+
+
+def get_current_optimization_iteration(optimize_stdout: str) -> int:
+    """Extract current iteration from ``optimize_stdout``.
+
+    Parameters
+    ----------
+    optimize_stdout: str
+        Scipy optimization stdout string, read out via ``TeeContext.read()``.
+
+    Returns
+    -------
+    int
+        Current iteration (``0`` if pattern did not match).
+    """
+    matches = RegexPattern.optimization_stdout.findall(optimize_stdout)
+    return 0 if len(matches) == 0 else int(matches[-1][0])

@@ -12,6 +12,8 @@ from glotaran.optimization.optimization_group import OptimizationGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project import Result
 from glotaran.project import Scheme
+from glotaran.utils.tee import TeeContext
+from glotaran.utils.tee import get_current_optimization_iteration
 
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
@@ -103,6 +105,7 @@ class Optimizer:
         self._method = SUPPORTED_METHODS[scheme.optimization_method]
 
         self._scheme = scheme
+        self._tee = TeeContext()
         self._verbose = verbose
         self._raise = raise_exception
 
@@ -131,25 +134,26 @@ class Optimizer:
             lower_bounds,
             upper_bounds,
         ) = self._scheme.parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
-        try:
-            verbose = 2 if self._verbose else 0
-            self._optimization_result = least_squares(
-                self.objective_function,
-                initial_parameter,
-                bounds=(lower_bounds, upper_bounds),
-                method=self._method,
-                max_nfev=self._scheme.maximum_number_function_evaluations,
-                verbose=verbose,
-                ftol=self._scheme.ftol,
-                gtol=self._scheme.gtol,
-                xtol=self._scheme.xtol,
-            )
-            self._termination_reason = self._optimization_result.message
-        except Exception as e:
-            if self._raise:
-                raise e
-            warn(f"Optimization failed:\n\n{e}")
-            self._termination_reason = str(e)
+        with self._tee:
+            try:
+                verbose = 2 if self._verbose else 0
+                self._optimization_result = least_squares(
+                    self.objective_function,
+                    initial_parameter,
+                    bounds=(lower_bounds, upper_bounds),
+                    method=self._method,
+                    max_nfev=self._scheme.maximum_number_function_evaluations,
+                    verbose=verbose,
+                    ftol=self._scheme.ftol,
+                    gtol=self._scheme.gtol,
+                    xtol=self._scheme.xtol,
+                )
+                self._termination_reason = self._optimization_result.message
+            except Exception as e:
+                if self._raise:
+                    raise e
+                warn(f"Optimization failed:\n\n{e}")
+                self._termination_reason = str(e)
 
     def objective_function(self, parameters: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """Calculate the objective for the optimization.
@@ -177,7 +181,9 @@ class Optimizer:
         """
         for group in self._optimization_groups:
             group.calculate(self._parameters)
-        self._parameter_history.append(self._parameters)
+        self._parameter_history.append(
+            self._parameters, get_current_optimization_iteration(self._tee.read())
+        )
 
         penalties = [group.get_full_penalty() for group in self._optimization_groups]
 

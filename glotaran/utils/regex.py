@@ -14,3 +14,10 @@ class RegexPattern:
     number: re.Pattern = re.compile(r"[\d.+-]+")
     tuple_word: re.Pattern = re.compile(r"(\([.\s\w\d]+?[,.\s\w\d]*?\))")
     tuple_number: re.Pattern = re.compile(r"(\([\s\d.+-]+?[,\s\d.+-]*?\))")
+    optimization_stdout: re.Pattern = re.compile(
+        r"^\s+(?P<iteration>\d+)\s+(?P<nfev>\d+)"
+        r"\s+(?P<cost>\d\.\d+e[+-]\d+)"
+        r"(\s+(?P<cost_reduction>\d\.\d+e[+-]\d+)\s+(?P<step_norm>\d\.\d+e[+-]\d+)|\s+)"
+        r"\s+(?P<optimality>\d\.\d+e[+-]\d+)\s*?$",
+        re.MULTILINE,
+    )
