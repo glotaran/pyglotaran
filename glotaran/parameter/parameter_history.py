@@ -122,7 +122,7 @@ class ParameterHistory:
             The delimiter of the CSV file.
         """
         self.source_path = Path(file_name).as_posix()
-        self.to_dataframe().to_csv(file_name, sep=delimiter)
+        self.to_dataframe().to_csv(file_name, sep=delimiter, index=False)
 
     def append(self, parameter_group: ParameterGroup):
         """Append a :class:`ParameterGroup` to the history.
