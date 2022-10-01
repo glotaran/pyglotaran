@@ -15,7 +15,7 @@ from glotaran.optimization.estimation_provider import EstimationProviderUnlinked
 from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 
 
@@ -72,12 +72,12 @@ class OptimizationGroup:
                     dataset.data.dims[1],
                 )
 
-    def calculate(self, parameters: ParameterGroup):
+    def calculate(self, parameters: Parameters):
         """Calculate the optimization group data.
 
         Parameters
         ----------
-        parameters : ParameterGroup
+        parameters : Parameters
             The parameters.
         """
         self._dataset_group.set_parameters(parameters)

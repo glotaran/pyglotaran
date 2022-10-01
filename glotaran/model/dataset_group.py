@@ -16,7 +16,7 @@ from glotaran.model.item import item
 
 if TYPE_CHECKING:
     from glotaran.model.model import Model
-    from glotaran.parameter import ParameterGroup
+    from glotaran.parameter import Parameters
 
 
 @item
@@ -43,18 +43,18 @@ class DatasetGroup:
     """Whether to link the clp parameter."""
 
     model: Model
-    parameters: ParameterGroup | None = None
+    parameters: Parameters | None = None
 
     dataset_models: dict[str, DatasetModel] = field(factory=dict)
 
-    def set_parameters(self, parameters: ParameterGroup):
+    def set_parameters(self, parameters: Parameters):
         self.parameters = parameters
         for label in self.dataset_models:
             self.dataset_models[label] = fill_item(
                 self.model.dataset[label], self.model, parameters
             )
 
-    def is_linkable(self, parameters: ParameterGroup, data: dict[str, xr.Dataset]) -> bool:
+    def is_linkable(self, parameters: Parameters, data: dict[str, xr.Dataset]) -> bool:
         if any(has_dataset_model_global_model(d) for d in self.dataset_models.values()):
             return False
         dataset_models = [

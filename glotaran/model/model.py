@@ -29,7 +29,7 @@ from glotaran.model.item import strip_type_and_structure_from_attribute
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.utils.ipython import MarkdownStr
 
 DEFAULT_DATASET_GROUP = "default"
@@ -226,14 +226,14 @@ class Model:
                 group[this_group].append(Parameter.create_default_list(label))
         return parameters
 
-    def get_issues(self, *, parameters: ParameterGroup | None = None) -> list[ItemIssue]:
+    def get_issues(self, *, parameters: Parameters | None = None) -> list[ItemIssue]:
         issues = []
         for item in self.iterate_all_items():
             issues += get_item_issues(item=item, model=self, parameters=parameters)
         return issues
 
     def validate(
-        self, parameters: ParameterGroup = None, raise_exception: bool = False
+        self, parameters: Parameters = None, raise_exception: bool = False
     ) -> MarkdownStr:
         """
         Returns a string listing all issues in the model and missing parameters if specified.
@@ -256,7 +256,7 @@ class Model:
             result = "Your model is valid."
         return MarkdownStr(result)
 
-    def valid(self, parameters: ParameterGroup = None) -> bool:
+    def valid(self, parameters: Parameters = None) -> bool:
         """Returns `True` if the number problems in the model is 0, else `False`
 
         Parameters
@@ -269,8 +269,8 @@ class Model:
 
     def markdown(
         self,
-        parameters: ParameterGroup = None,
-        initial_parameters: ParameterGroup = None,
+        parameters: Parameters = None,
+        initial_parameters: Parameters = None,
         base_heading_level: int = 1,
     ) -> MarkdownStr:
         """Formats the model as Markdown string.
@@ -279,9 +279,9 @@ class Model:
 
         Parameters
         ----------
-        parameter: ParameterGroup
+        parameter: Parameters
             Parameter to include.
-        initial_parameters: ParameterGroup
+        initial_parameters: Parameters
             Initial values for the parameters.
         base_heading_level: int
             Base heading level of the markdown sections.

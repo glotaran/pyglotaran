@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     import xarray as xr
 
     from glotaran.model import Model
-    from glotaran.parameter import ParameterGroup
+    from glotaran.parameter import Parameters
     from glotaran.project import Result
     from glotaran.project import Scheme
 
@@ -154,8 +154,8 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot save models with format {self.format!r}")
 
-    def load_parameters(self, file_name: str) -> ParameterGroup:
-        """Create a ParameterGroup instance from the specs defined in a file.
+    def load_parameters(self, file_name: str) -> Parameters:
+        """Create a Parameters instance from the specs defined in a file.
 
         **NOT IMPLEMENTED**
 
@@ -166,8 +166,8 @@ class ProjectIoInterface:
 
         Returns
         -------
-        ParameterGroup
-            ParameterGroup instance created from the file.
+        Parameters
+            Parameters instance created from the file.
 
 
         .. # noqa: DAR202
@@ -175,15 +175,15 @@ class ProjectIoInterface:
         """
         raise NotImplementedError(f"Cannot read parameters with format {self.format!r}")
 
-    def save_parameters(self, parameters: ParameterGroup, file_name: str):
-        """Save a ParameterGroup instance to a spec file.
+    def save_parameters(self, parameters: Parameters, file_name: str):
+        """Save a Parameters instance to a spec file.
 
         **NOT IMPLEMENTED**
 
         Parameters
         ----------
-        parameters : ParameterGroup
-            ParameterGroup instance to save to specs file.
+        parameters : Parameters
+            Parameters instance to save to specs file.
         file_name : str
             File to write the parameter specs to.
 
