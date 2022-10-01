@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from glotaran.deprecation import warn_deprecated
 from glotaran.io import load_scheme
 from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
@@ -35,7 +35,7 @@ class Scheme:
     """
 
     model: Model = file_loadable_field(Model)  # type:ignore[type-var]
-    parameters: ParameterGroup = file_loadable_field(ParameterGroup)  # type:ignore[type-var]
+    parameters: Parameters = file_loadable_field(Parameters)  # type:ignore[type-var]
     data: Mapping[str, xr.Dataset] = file_loadable_field(
         DatasetMapping, is_wrapper_class=True
     )  # type:ignore[type-var]

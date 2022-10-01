@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from typing import Literal
 
     from glotaran.model import Model
-    from glotaran.parameter import ParameterGroup
+    from glotaran.parameter import Parameters
     from glotaran.project import Result
     from glotaran.project import Scheme
     from glotaran.typing import StrOrPath
@@ -266,8 +266,8 @@ def save_model(
 
 
 @not_implemented_to_value_error
-def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> ParameterGroup:
-    """Create a :class:`ParameterGroup` instance from the specs defined in a file.
+def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> Parameters:
+    """Create a :class:`Parameters` instance from the specs defined in a file.
 
     Parameters
     ----------
@@ -281,8 +281,10 @@ def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> 
 
     Returns
     -------
-    ParameterGroup
-        :class:`ParameterGroup` instance created from the file.
+    Parameters
+        :class:`Parameters` instance created from the file.
+
+    .. # noqa: D414
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
     parameters = io.load_parameters(  # type: ignore[call-arg]
@@ -295,7 +297,7 @@ def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> 
 
 @not_implemented_to_value_error
 def save_parameters(
-    parameters: ParameterGroup,
+    parameters: Parameters,
     file_name: StrOrPath,
     format_name: str = None,
     *,
@@ -303,12 +305,12 @@ def save_parameters(
     update_source_path: bool = True,
     **kwargs: Any,
 ) -> None:
-    """Save a :class:`ParameterGroup` instance to a spec file.
+    """Save a :class:`Parameters` instance to a spec file.
 
     Parameters
     ----------
-    parameters : ParameterGroup
-        :class:`ParameterGroup` instance to save to specs file.
+    parameters : Parameters
+        :class:`Parameters` instance to save to specs file.
     file_name : StrOrPath
         File to write the parameter specs to.
     format_name : str

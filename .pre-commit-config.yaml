@@ -115,7 +115,7 @@ repos:
       - id: mypy
         files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model/property.py|builtin/io/pandas)"
         exclude: "docs"
-        additional_dependencies: [types-all]
+        additional_dependencies: [types-all, types-attrs]
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.5.0
