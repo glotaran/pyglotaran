@@ -81,7 +81,7 @@ def test_get_issues():
     issues = get_item_model_issues(m, model)
     assert len(issues) == 3
 
-    p = ParameterGroup()
+    p = ParameterGroup({})
     i = model.item1["test"]
     issues = get_item_parameter_issues(i, p)
     assert len(issues) == 3

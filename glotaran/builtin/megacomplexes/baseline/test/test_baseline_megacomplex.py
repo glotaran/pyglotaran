@@ -15,7 +15,7 @@ def test_baseline():
         }
     )
 
-    parameters = ParameterGroup()
+    parameters = ParameterGroup({})
     time = np.asarray(np.arange(0, 50, 1.5))
     pixel = np.asarray([0])
     dataset_model = fill_item(model.dataset["dataset1"], model, parameters)

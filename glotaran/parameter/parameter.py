@@ -33,17 +33,6 @@ if TYPE_CHECKING:
 RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["parameters", "iteration"]
 
 
-class OptionKeys:
-    """Keys for parameter options."""
-
-    EXPR = "expr"
-    MAX = "max"
-    MIN = "min"
-    NON_NEG = "non-negative"
-    STD_ERR = "standard-error"
-    VARY = "vary"
-
-
 OptionNamesSerialized = {
     "expression": "expr",
     "maximum": "max",
@@ -179,7 +168,7 @@ class Parameter(_SupportsArray):
         options = _retrieve_item_from_list_by_type(values, dict, {})
 
         if default_options:
-            param |= default_options
+            param |= deserializeOptions(default_options)
         param |= deserializeOptions(options)
 
         return cls(**param)
@@ -244,7 +233,7 @@ class Parameter(_SupportsArray):
         """
         md = f"{self.label}"
 
-        parameter = self if all_parameters is None else all_parameters.get(self.full_label)
+        parameter = self if all_parameters is None else all_parameters.get(self.label)
         value = f"{parameter.value:.2e}"
         if parameter.vary:
             if parameter.standard_error is not np.nan:
@@ -252,7 +241,7 @@ class Parameter(_SupportsArray):
                 value += f"±{parameter.standard_error:.2e}, t-value: {t_value}"
 
             if initial_parameters is not None:
-                initial_value = initial_parameters.get(parameter.full_label).value
+                initial_value = initial_parameters.get(parameter.label).value
                 value += f", initial: {initial_value:.2e}"
             md += f"({value})"
         elif parameter.expression is not None:

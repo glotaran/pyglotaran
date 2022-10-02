@@ -2,7 +2,6 @@ from os.path import abspath
 from os.path import dirname
 from os.path import join
 
-import numpy as np
 import pytest
 
 from glotaran.builtin.megacomplexes.decay.decay_megacomplex import DecayMegacomplex
@@ -11,12 +10,10 @@ from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.builtin.megacomplexes.spectral.shape import SpectralShapeGaussian
 from glotaran.io import load_model
 from glotaran.model import DatasetModel
-from glotaran.model import Model
+from glotaran.model import EqualAreaPenalty
+from glotaran.model import OnlyConstraint
 from glotaran.model import Weight
-from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.model.constraint import OnlyConstraint
-from glotaran.model.constraint import ZeroConstraint
-from glotaran.parameter import ParameterGroup
+from glotaran.model import ZeroConstraint
 
 THIS_DIR = dirname(abspath(__file__))
 
@@ -29,13 +26,6 @@ def model():
     return m
 
 
-def test_correct_model(model):
-    assert isinstance(model, Model)
-    assert "decay" == model.default_megacomplex
-    assert "decay" in model.megacomplex_types
-    assert "spectral" in model.megacomplex_types
-
-
 def test_dataset(model):
     assert len(model.dataset) == 2
 
@@ -46,7 +36,7 @@ def test_dataset(model):
     assert dataset.megacomplex == ["cmplx1"]
     assert dataset.initial_concentration == "inputD1"
     assert dataset.irf == "irf1"
-    assert dataset.scale.full_label == "1"
+    assert dataset.scale == "1"
 
     assert "dataset2" in model.dataset
     dataset = model.dataset["dataset2"]
@@ -55,7 +45,7 @@ def test_dataset(model):
     assert dataset.megacomplex == ["cmplx2"]
     assert dataset.initial_concentration == "inputD2"
     assert dataset.irf == "irf2"
-    assert dataset.scale.full_label == "2"
+    assert dataset.scale == "2"
     assert dataset.spectral_axis_scale == 1e7
     assert dataset.spectral_axis_inverted
 
@@ -83,7 +73,7 @@ def test_penalties(model):
     assert eac.source_intervals == [[670, 810]]
     assert eac.target == "s2"
     assert eac.target_intervals == [[670, 810]]
-    assert eac.parameter.full_label == "55"
+    assert eac.parameter == "55"
     assert eac.weight == 0.0016
 
 
@@ -108,7 +98,7 @@ def test_initial_concentration(model):
         assert initial_concentration.compartments == ["s1", "s2", "s3"]
         assert isinstance(initial_concentration, InitialConcentration)
         assert initial_concentration.label == label
-        assert [p.full_label for p in initial_concentration.parameters] == ["1", "2", "3"]
+        assert initial_concentration.parameters == ["1", "2", "3"]
 
 
 def test_irf(model):
@@ -121,17 +111,17 @@ def test_irf(model):
         assert isinstance(irf, IrfMultiGaussian)
         assert irf.label == label
         want = ["1"] if i == 1 else ["1", "2"]
-        assert [p.full_label for p in irf.center] == want
+        assert irf.center == want
         want = ["2"] if i == 1 else ["3", "4"]
-        assert [p.full_label for p in irf.width] == want
+        assert irf.width == want
 
         if i == 2:
             want = ["3"] if i == 1 else ["5", "6"]
-            assert [p.full_label for p in irf.center_dispersion_coefficients] == want
+            assert irf.center_dispersion_coefficients == want
             want = ["7", "8"]
-            assert [p.full_label for p in irf.width_dispersion_coefficients] == want
+            assert irf.width_dispersion_coefficients == want
             want = ["9"]
-            assert [p.full_label for p in irf.scale] == want
+            assert irf.scale == want
         assert irf.normalize == (i == 1)
 
         if i == 2:
@@ -144,14 +134,15 @@ def test_irf(model):
 
 def test_k_matrices(model):
     assert "km1" in model.k_matrix
-    parameter = ParameterGroup.from_list([1, 2, 3, 4, 5, 6, 7])
-    print(model.k_matrix["km1"].fill(model, parameter).matrix)
-    reduced = model.k_matrix["km1"].fill(model, parameter).reduced(["s1", "s2", "s3", "s4"])
-    print(parameter)
-    print(reduced)
-    wanted = np.asarray([[1, 3, 5, 7], [2, 0, 0, 0], [4, 0, 0, 0], [6, 0, 0, 0]])
-    print(wanted)
-    assert np.array_equal(reduced, wanted)
+    assert model.k_matrix["km1"].matrix == {
+        ("s1", "s1"): "1",
+        ("s2", "s1"): "2",
+        ("s1", "s2"): "3",
+        ("s3", "s1"): "4",
+        ("s1", "s3"): "5",
+        ("s4", "s1"): "6",
+        ("s1", "s4"): "7",
+    }
 
 
 def test_weight(model):
@@ -170,9 +161,9 @@ def test_shapes(model):
 
     shape = model.shape["shape1"]
     assert isinstance(shape, SpectralShapeGaussian)
-    assert shape.amplitude.full_label == "shape.1"
-    assert shape.location.full_label == "shape.2"
-    assert shape.width.full_label == "shape.3"
+    assert shape.amplitude == "shape.1"
+    assert shape.location == "shape.2"
+    assert shape.width == "shape.3"
 
 
 def test_megacomplexes(model):

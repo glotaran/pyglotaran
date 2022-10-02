@@ -7,7 +7,7 @@ import pandas as pd
 
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.utils.io import safe_dataframe_fillna
 from glotaran.utils.io import safe_dataframe_replace
 
@@ -16,7 +16,7 @@ from glotaran.utils.io import safe_dataframe_replace
 class CsvProjectIo(ProjectIoInterface):
     """Plugin for CSV data io."""
 
-    def load_parameters(self, file_name: str, sep: str = ",") -> ParameterGroup:
+    def load_parameters(self, file_name: str, sep: str = ",") -> Parameters:
         """Load parameters from CSV file.
 
         Parameters
@@ -28,27 +28,27 @@ class CsvProjectIo(ProjectIoInterface):
 
         Returns
         -------
-            :class:`ParameterGroup
+            :class:`Parameters
         """
         df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"], sep=sep)
         safe_dataframe_fillna(df, "minimum", -np.inf)
         safe_dataframe_fillna(df, "maximum", np.inf)
-        return ParameterGroup.from_dataframe(df, source=file_name)
+        return Parameters.from_dataframe(df, source=file_name)
 
     def save_parameters(
         self,
-        parameters: ParameterGroup,
+        parameters: Parameters,
         file_name: str,
         *,
         sep: str = ",",
         as_optimized: bool = True,
         replace_infinfinity: bool = True,
     ) -> None:
-        """Save a :class:`ParameterGroup` to a CSV file.
+        """Save a :class:`Parameters` to a CSV file.
 
         Parameters
         ----------
-        parameters : ParameterGroup
+        parameters : Parameters
             Parameters to be saved to file.
         file_name : str
             File to write the parameters to.
@@ -59,7 +59,7 @@ class CsvProjectIo(ProjectIoInterface):
         replace_infinfinity : bool
             Weather to replace infinity values with empty strings.
         """
-        df = parameters.to_dataframe(as_optimized=as_optimized)
+        df = parameters.to_dataframe()
         if replace_infinfinity is True:
             safe_dataframe_replace(df, "minimum", -np.inf, "")
             safe_dataframe_replace(df, "maximum", np.inf, "")

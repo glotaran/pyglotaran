@@ -62,6 +62,6 @@ def test_multiple_groups():
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)
     assert result.success
-    for label, param in result.optimized_parameters.all():
+    for param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)

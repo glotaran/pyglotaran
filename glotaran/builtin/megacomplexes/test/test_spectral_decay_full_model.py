@@ -211,9 +211,8 @@ def test_kinetic_model(suite, nnls):
     result = optimize(scheme)
     print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameters.all():
-        print(label, param.value, wanted_parameters.get(label).value)
-        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+    for param in result.optimized_parameters.all():
+        assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
 

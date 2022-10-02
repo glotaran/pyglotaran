@@ -10,21 +10,20 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-want = """default_megacomplex: decay-sequential
+want = """\
+clp_area_penalties: []
+clp_constraints: []
+clp_relations: []
 dataset_groups:
   default:
+    label: default
     residual_function: variable_projection
     link_clp: null
-irf:
-  gaussian_irf:
-    type: gaussian
-    center: irf.center
-    width: irf.width
-    normalize: true
-    backsweep: false
+weights: []
 megacomplex:
   megacomplex_sequential_decay:
-    type: decay-sequential
+    label: megacomplex_sequential_decay
+    dimension: time
     compartments:
     - species_1
     - species_2
@@ -33,12 +32,29 @@ megacomplex:
     - rates.species_1
     - rates.species_2
     - rates.species_3
-    dimension: time
+    type: decay-sequential
+irf:
+  gaussian_irf:
+    label: gaussian_irf
+    scale: null
+    shift: null
+    normalize: true
+    backsweep: false
+    backsweep_period: null
+    type: gaussian
+    center: irf.center
+    width: irf.width
 dataset:
   dataset_1:
+    label: dataset_1
     group: default
+    force_index_dependent: false
     megacomplex:
     - megacomplex_sequential_decay
+    megacomplex_scale: null
+    global_megacomplex: null
+    global_megacomplex_scale: null
+    scale: null
     irf: gaussian_irf
 """
 

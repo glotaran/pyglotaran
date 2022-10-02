@@ -19,7 +19,7 @@ from glotaran.model import megacomplex
 
 @item
 class DecayDatasetModel(DatasetModel):
-    initial_concentration: ModelItemType[InitialConcentration]
+    initial_concentration: ModelItemType[InitialConcentration] | None = None
     irf: ModelItemType[Irf] | None = None
 
 

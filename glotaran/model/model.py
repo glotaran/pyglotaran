@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Callable
+from typing import ClassVar
 from typing import Generator
 from uuid import uuid4
 
@@ -8,10 +10,11 @@ from attr import fields
 from attr import ib
 from attrs import Attribute
 from attrs import define
-from attrs import field
+from attrs import filters
 from attrs import make_class
 from attrs import resolve_types
 
+from glotaran.io import load_model
 from glotaran.model.clp_constraint import Constraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import Relation
@@ -108,18 +111,20 @@ def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
 
 @define(kw_only=True)
 class Model:
-    source_path: str | None = None
+    loader: ClassVar[Callable] = load_model
+
+    source_path: str | None = ib(default=None, init=False, repr=False)
     clp_area_penalties: list[EqualAreaPenalty] = _global_item_attribute(EqualAreaPenalty)
     clp_constraints: list[Constraint] = _global_item_attribute(Constraint)
     clp_relations: list[Relation] = _global_item_attribute(Relation)
 
-    dataset_groups: dict[str, DatasetGroupModel] = field(
+    dataset_groups: dict[str, DatasetGroupModel] = ib(
         factory=dict, converter=_add_default_dataset_group, metadata=META
     )
 
     dataset: dict[str, DatasetModel]
 
-    megacomplex: dict[str, Megacomplex] = field(
+    megacomplex: dict[str, Megacomplex] = ib(
         factory=dict,
         converter=lambda value: _load_model_items_from_dict(Megacomplex, value),
         metadata=META,
@@ -164,7 +169,12 @@ class Model:
         return cls.create_class(attributes)
 
     def as_dict(self) -> dict:
-        return asdict(self, recurse=True, retain_collection_types=True)
+        return asdict(
+            self,
+            recurse=True,
+            retain_collection_types=True,
+            filter=filters.exclude(fields(Model).source_path),
+        )
 
     def get_dataset_groups(self) -> dict[str, DatasetGroup]:
         groups = {}
@@ -223,7 +233,7 @@ class Model:
                     group = group[name]
                 if this_group not in group:
                     group[this_group] = []
-                group[this_group].append(Parameter.create_default_list(label))
+                group[this_group].append([label, 0])
         return parameters
 
     def get_issues(self, *, parameters: Parameters | None = None) -> list[ItemIssue]:

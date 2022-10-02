@@ -10,7 +10,7 @@ from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.model import Model
 from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -56,12 +56,10 @@ class OneComponentOneChannel:
         }
     )
 
-    initial_parameters = ParameterGroup.from_list(
+    initial_parameters = Parameters.from_list(
         [101e-4, [1, {"vary": False, "non-negative": False}]]
     )
-    wanted_parameters = ParameterGroup.from_list(
-        [101e-3, [1, {"vary": False, "non-negative": False}]]
-    )
+    wanted_parameters = Parameters.from_list([101e-3, [1, {"vary": False, "non-negative": False}]])
 
     time = np.arange(0, 50, 1.5)
     pixel = np.asarray([0])
@@ -99,13 +97,20 @@ class OneComponentOneChannelGaussianIrf:
         }
     )
 
-    initial_parameters = ParameterGroup.from_list(
-        [101e-4, 0.1, 1, [0.1, {"vary": False}], [1, {"vary": False, "non-negative": False}]]
+    initial_parameters = Parameters.from_list(
+        [
+            101e-4,
+            0.1,
+            1,
+            [0.1, {"vary": False}],
+            [1, {"vary": False, "non-negative": False}],
+        ]
     )
+    print(initial_parameters)
     assert model.megacomplex["mc1"].index_dependent(
         fill_item(model.dataset["dataset1"], model, initial_parameters)
     )
-    wanted_parameters = ParameterGroup.from_list(
+    wanted_parameters = Parameters.from_list(
         [
             [101e-3, {"non-negative": True}],
             [0.2, {"non-negative": True}],
@@ -152,7 +157,7 @@ class ThreeComponentParallel:
         }
     )
 
-    initial_parameters = ParameterGroup.from_dict(
+    initial_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -163,7 +168,7 @@ class ThreeComponentParallel:
             "irf": [["center", 1.3], ["width", 7.8]],
         }
     )
-    wanted_parameters = ParameterGroup.from_dict(
+    wanted_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -212,7 +217,7 @@ class ThreeComponentSequential:
         }
     )
 
-    initial_parameters = ParameterGroup.from_dict(
+    initial_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -223,7 +228,7 @@ class ThreeComponentSequential:
             "irf": [["center", 1.3], ["width", 7.8]],
         }
     )
-    wanted_parameters = ParameterGroup.from_dict(
+    wanted_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -286,8 +291,8 @@ def test_kinetic_model(suite, nnls):
     result = optimize(scheme)
     print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+    for param in result.optimized_parameters.all():
+        assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset["time"], resultdata["time"])
@@ -337,7 +342,7 @@ def test_finalize_data():
         }
     )
 
-    parameters = ParameterGroup.from_list(
+    parameters = Parameters.from_list(
         [101e-4, 101e-3, [1, {"vary": False, "non-negative": False}]]
     )
 
