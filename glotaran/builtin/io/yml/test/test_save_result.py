@@ -5,8 +5,10 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
+from pandas.testing import assert_frame_equal
 
 from glotaran import __version__
+from glotaran.io import load_result
 from glotaran.io import save_result
 from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
@@ -49,7 +51,10 @@ def test_save_result_yml(
     )
 
     result_dir = tmp_path / "testresult"
-    save_result(result_path=result_dir / "result.yml", result=dummy_result)
+    result_path = result_dir / "result.yml"
+    save_result(result_path=result_path, result=dummy_result)
+
+    assert dummy_result.source_path == result_path.as_posix()
 
     assert (result_dir / "result.md").exists()
     assert (result_dir / "scheme.yml").exists()
@@ -63,3 +68,30 @@ def test_save_result_yml(
     got = (result_dir / "result.yml").read_text()
     print(got)
     assert expected in got
+
+
+def test_save_result_yml_roundtrip(tmp_path: Path, dummy_result: Result):
+    """Save and reloaded Result should be the same."""
+    result_dir = tmp_path / "testresult"
+    result_path = result_dir / "result.yml"
+    save_result(result_path=result_path, result=dummy_result)
+    result_round_tripped = load_result(result_path)
+
+    assert dummy_result.source_path == result_path.as_posix()
+    assert result_round_tripped.source_path == result_path.as_posix()
+
+    assert_frame_equal(
+        dummy_result.initial_parameters.to_dataframe(),
+        result_round_tripped.initial_parameters.to_dataframe(),
+    )
+    assert_frame_equal(
+        dummy_result.optimized_parameters.to_dataframe(),
+        result_round_tripped.optimized_parameters.to_dataframe(),
+    )
+    assert_frame_equal(
+        dummy_result.parameter_history.to_dataframe(),
+        result_round_tripped.parameter_history.to_dataframe(),
+    )
+    assert_frame_equal(
+        dummy_result.optimization_history.data, result_round_tripped.optimization_history.data
+    )
