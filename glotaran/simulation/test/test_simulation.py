@@ -9,11 +9,11 @@ from glotaran.simulation import simulate
 @pytest.mark.parametrize("index_dependent", [True, False])
 @pytest.mark.parametrize("noise", [True, False])
 def test_simulate_dataset(index_dependent, noise):
-    model = SimpleTestModel.from_dict(
-        {
+    model = SimpleTestModel(
+        **{
             "megacomplex": {
-                "m1": {"is_index_dependent": index_dependent},
-                "m2": {"is_index_dependent": False},
+                "m1": {"type": "simple-test-mc", "is_index_dependent": index_dependent},
+                "m2": {"type": "simple-test-mc", "is_index_dependent": False},
             },
             "dataset": {
                 "dataset1": {

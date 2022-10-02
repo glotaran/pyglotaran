@@ -35,8 +35,12 @@ TEST_DATA = xr.DataArray(
 TEST_PARAMETERS = ParameterGroup.from_list([])
 
 
-@megacomplex(dimension="test", properties={"is_index_dependent": bool})
+@megacomplex()
 class BenchmarkMegacomplex(Megacomplex):
+    dimension: str = "test"
+    type: str = "benchmark"
+    is_index_dependent: bool
+
     def calculate_matrix(
         self,
         dataset_model,
@@ -63,7 +67,7 @@ class BenchmarkMegacomplex(Megacomplex):
 @monkeypatch_plugin_registry(test_megacomplex={"benchmark": BenchmarkMegacomplex})
 def setup_model(index_dependent, link_clp):
     model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
+        "megacomplex": {"m1": {"type": "benchmark", "is_index_dependent": index_dependent}},
         "dataset_groups": {"default": {"link_clp": link_clp}},
         "dataset": {
             "dataset1": {"megacomplex": ["m1"]},

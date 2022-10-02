@@ -113,9 +113,9 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
         assert "fitted_data" not in dataset
         if weight:
             assert "weight" in dataset
-    for label, param in result.optimized_parameters.all():
+    for param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
 
     for i, dataset in enumerate(data.values()):
         resultdata = result.data[f"dataset{i+1}"]
@@ -166,9 +166,9 @@ def test_optimization_full_model(index_dependent):
 
     result_data = result.data["dataset1"]
     assert "fitted_data" in result_data
-    for label, param in result.optimized_parameters.all():
+    for param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
 
     clp = result_data.clp
     print(clp)  # T201

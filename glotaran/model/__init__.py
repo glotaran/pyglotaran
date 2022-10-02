@@ -18,3 +18,4 @@ from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.megacomplex import megacomplex
 from glotaran.model.model import Model
 from glotaran.model.model import ModelError
+from glotaran.model.weight import Weight

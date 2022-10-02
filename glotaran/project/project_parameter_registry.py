@@ -64,6 +64,7 @@ class ProjectParameterRegistry(ProjectRegistry):
             raise FileExistsError(
                 f"Parameters {name!r} already exists and `allow_overwrite=False`."
             )
+
         if format_name in ["yml", "yaml"]:
             write_dict(parameters, file_name=parameter_file, offset=0)
         elif format_name == "csv":
