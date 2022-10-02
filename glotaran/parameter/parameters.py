@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate
 
+from glotaran.io import load_parameters
 from glotaran.parameter.parameter import Parameter
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
@@ -28,6 +29,8 @@ class ParameterNotFoundException(Exception):
 
 class Parameters:
     """A container for :class:`Parameter`."""
+
+    loader = load_parameters
 
     def __init__(self, parameters: dict[str, Parameter]):
         """Create :class:`Parameters`.
@@ -72,7 +75,9 @@ class Parameters:
 
         for i, item in enumerate(item for item in parameter_list if not isinstance(item, dict)):
             if not isinstance(item, list):
-                item = [f"{i+1}", item]
+                item = [item]
+            if not any(isinstance(v, str) for v in item):
+                item += [f"{i+1}"]
             parameter = Parameter.from_list(item, default_options=defaults)
             parameters[parameter.label] = parameter
         return cls(parameters)
@@ -160,7 +165,8 @@ class Parameters:
             if column_name in df and any(not np.isreal(v) for v in df[column_name]):
                 raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values")
 
-        for column_name in ["non-negative", "vary"]:
+        for column_name in ["non_negative", "vary"]:
+            df[column_name] = [v != 0 if isinstance(v, int) else v for v in df[column_name]]
             if column_name in df and any(not isinstance(v, bool) for v in df[column_name]):
                 raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values")
 

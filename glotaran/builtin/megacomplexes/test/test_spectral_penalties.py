@@ -9,7 +9,6 @@ import numpy as np
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.io import prepare_time_trace_dataset
-from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.optimization.optimize import optimize
 from glotaran.parameter import ParameterGroup
@@ -26,26 +25,7 @@ ModelSpec = namedtuple("ModelSpec", "base shape spectral_megacomplex equ_area")
 OptimizationSpec = namedtuple("OptimizationSpec", "nnls max_nfev")
 
 
-class SpectralDecayModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
-    ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "decay": DecayMegacomplex,
-            "spectral": SpectralMegacomplex,
-        }
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+SpectralDecayModel = Model.create_class_from_megacomplexes([DecayMegacomplex, SpectralMegacomplex])
 
 
 def plot_overview(res, title=None):
@@ -201,9 +181,9 @@ def test_equal_area_penalties(debug=False):
     mspec_fit_wp = dict(deepcopy(mspec.base), **mspec.equ_area)
     mspec_fit_np = dict(deepcopy(mspec.base))
 
-    model_sim = SpectralDecayModel.from_dict(mspec_sim)
-    model_wp = SpectralDecayModel.from_dict(mspec_fit_wp)
-    model_np = SpectralDecayModel.from_dict(mspec_fit_np)
+    model_sim = SpectralDecayModel(**mspec_sim)
+    model_wp = SpectralDecayModel(**mspec_fit_wp)
+    model_np = SpectralDecayModel(**mspec_fit_np)
     print(model_np)
 
     # %% Parameter specification (pspec)
@@ -244,7 +224,7 @@ def test_equal_area_penalties(debug=False):
 
     # %% Optimizing model without penalty (np)
 
-    model_np.dataset_group_models["default"].method = (
+    model_np.dataset_groups["default"].method = (
         "non_negative_least_squares" if optim_spec.nnls else "variable_projection"
     )
 
@@ -258,7 +238,7 @@ def test_equal_area_penalties(debug=False):
     result_np = optimize(scheme_np, raise_exception=True)
     print(result_np)
 
-    model_wp.dataset_group_models["default"].method = (
+    model_wp.dataset_groups["default"].method = (
         "non_negative_least_squares" if optim_spec.nnls else "variable_projection"
     )
 

@@ -19,6 +19,7 @@ from typing import get_origin
 from attrs import NOTHING
 from attrs import Attribute
 from attrs import define
+from attrs import evolve
 from attrs import field
 from attrs import fields
 from attrs import resolve_types
@@ -190,6 +191,7 @@ def fill_item_attributes(item: item, iterator: Iterator[Attribute], fill_functio
 
 
 def fill_item(item: T, model: Model, parameters: ParameterGroup) -> T:
+    item = evolve(item)
     fill_item_model_attributes(item, model, parameters)
     fill_item_parameter_attributes(item, parameters)
     return item

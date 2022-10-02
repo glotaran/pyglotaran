@@ -1,5 +1,8 @@
 import pytest
 
+from glotaran.builtin.megacomplexes.decay import DecayParallelMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
+from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.project.generators.generator import generate_model
 
 
@@ -25,11 +28,10 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
     megacomplex = model.megacomplex[  # type:ignore[attr-defined]
         f"megacomplex_{megacomplex_type}_decay"
     ]
+    assert isinstance(megacomplex, (DecayParallelMegacomplex, DecaySequentialMegacomplex))
     assert megacomplex.type == f"decay-{megacomplex_type}"
     assert megacomplex.compartments == expected_compartments
-    assert [r.full_label for r in megacomplex.rates] == [
-        f"rates.species_{i+1}" for i in range(nr_compartments)
-    ]
+    assert megacomplex.rates == [f"rates.species_{i+1}" for i in range(nr_compartments)]
 
     assert "dataset_1" in model.dataset  # type:ignore[attr-defined]
     dataset = model.dataset["dataset_1"]  # type:ignore[attr-defined]
@@ -38,6 +40,7 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
     if spectral:
         assert "megacomplex_spectral" in model.megacomplex  # type:ignore[attr-defined]
         megacomplex = model.megacomplex["megacomplex_spectral"]  # type:ignore[attr-defined]
+        assert isinstance(megacomplex, SpectralMegacomplex)
         assert expected_compartments == list(megacomplex.shape.keys())
         expected_shapes = [f"shape_species_{i+1}" for i in range(nr_compartments)]
         assert expected_shapes == list(megacomplex.shape.values())
@@ -46,15 +49,15 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
             assert shape in model.shape  # type:ignore[attr-defined]
             assert model.shape[shape].type == "gaussian"  # type:ignore[attr-defined]
             assert (
-                model.shape[shape].amplitude.full_label  # type:ignore[attr-defined]
+                model.shape[shape].amplitude  # type:ignore[attr-defined]
                 == f"shapes.species_{i+1}.amplitude"
             )
             assert (
-                model.shape[shape].location.full_label  # type:ignore[attr-defined]
+                model.shape[shape].location  # type:ignore[attr-defined]
                 == f"shapes.species_{i+1}.location"
             )
             assert (
-                model.shape[shape].width.full_label  # type:ignore[attr-defined]
+                model.shape[shape].width  # type:ignore[attr-defined]
                 == f"shapes.species_{i+1}.width"
             )
             assert dataset.global_megacomplex == ["megacomplex_spectral"]
@@ -63,9 +66,7 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
         assert dataset.irf == "gaussian_irf"  # type:ignore[attr-defined]
         assert "gaussian_irf" in model.irf  # type:ignore[attr-defined]
         assert (
-            model.irf["gaussian_irf"].center.full_label  # type:ignore[attr-defined]
+            model.irf["gaussian_irf"].center  # type:ignore[attr-defined]
             == "irf.center"
         )
-        assert (
-            model.irf["gaussian_irf"].width.full_label == "irf.width"  # type:ignore[attr-defined]
-        )
+        assert model.irf["gaussian_irf"].width == "irf.width"  # type:ignore[attr-defined]

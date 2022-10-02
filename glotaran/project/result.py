@@ -19,8 +19,8 @@ from glotaran.io import SavingOptions
 from glotaran.io import load_result
 from glotaran.io import save_result
 from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
+from glotaran.parameter import Parameters
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
@@ -58,12 +58,12 @@ class Result:
 
     scheme: Scheme = file_loadable_field(Scheme)  # type:ignore[type-var]
 
-    initial_parameters: ParameterGroup = file_loadable_field(  # type:ignore[type-var]
-        ParameterGroup
+    initial_parameters: Parameters = file_loadable_field(  # type:ignore[type-var]
+        Parameters
     )
 
-    optimized_parameters: ParameterGroup = file_loadable_field(  # type:ignore[type-var]
-        ParameterGroup
+    optimized_parameters: Parameters = file_loadable_field(  # type:ignore[type-var]
+        Parameters
     )
 
     parameter_history: ParameterHistory = file_loadable_field(  # type:ignore[type-var]

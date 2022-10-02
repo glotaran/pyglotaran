@@ -61,8 +61,9 @@ def test_register_megacomplex_warning():
 
     with pytest.warns(PluginOverwriteWarning, match="DecayMegacomplex.+bar.+Dummy") as record:
 
-        @megacomplex(register_as="bar")
+        @megacomplex()
         class Dummy(DecayMegacomplex):
+            type: str = "bar"
             pass
 
         assert len(record) == 1

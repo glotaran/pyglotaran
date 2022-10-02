@@ -14,7 +14,7 @@ import xarray as xr
 
 from glotaran.builtin.io.yml.utils import load_dict
 from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project.project_data_registry import ProjectDataRegistry
 from glotaran.project.project_model_registry import ProjectModelRegistry
 from glotaran.project.project_parameter_registry import ProjectParameterRegistry
@@ -305,7 +305,7 @@ class Project:
         """
         return self._parameter_registry.items
 
-    def load_parameters(self, parameters_name: str) -> ParameterGroup:
+    def load_parameters(self, parameters_name: str) -> Parameters:
         """Load parameters.
 
         Parameters
@@ -313,15 +313,17 @@ class Project:
         parameters_name : str
             The name of the parameters.
 
-        Returns
-        -------
-        ParameterGroup
-            The loaded parameters.
-
         Raises
         ------
         ValueError
             Raised if parameters do not exist.
+
+        Returns
+        -------
+        Parameters
+            The loaded parameters.
+
+        .. # noqa: D414
         """
         try:
             return self._parameter_registry.load_item(parameters_name)

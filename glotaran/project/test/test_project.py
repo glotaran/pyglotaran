@@ -148,7 +148,7 @@ def test_generate_parameters(
     for parameter in model.get_parameter_labels():
         assert parameters.has(parameter)
 
-    assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 5
+    assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 5
 
     with pytest.raises(FileExistsError) as exc_info:
         project.generate_parameters("test_model", parameters_name=name, format_name=fmt)
@@ -318,7 +318,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
 
     parameters = load_parameters(parameter_file)
 
-    assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 5
+    assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 5
 
     project.generate_model(
         "test_model", "decay_parallel", {"nr_compartments": 3}, allow_overwrite=True
@@ -335,7 +335,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     project.generate_parameters("test", allow_overwrite=True)
     parameters = load_parameters(parameter_file)
 
-    assert len(list(filter(lambda p: p[0].startswith("rates"), parameters.all()))) == 3
+    assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
 
 
 def test_missing_file_errors(tmp_path: Path):

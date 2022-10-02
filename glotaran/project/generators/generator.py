@@ -7,6 +7,9 @@ from typing import TypedDict
 from typing import cast
 
 from glotaran.builtin.io.yml.utils import write_dict
+from glotaran.builtin.megacomplexes.decay import DecayParallelMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
+from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.model import Model
 
 
@@ -219,7 +222,9 @@ def generate_model(*, generator_name: str, generator_arguments: GeneratorArgumen
             f"Known generators are: {list(generators.keys())}"
         )
     model = generators[generator_name](**generator_arguments)
-    return Model.from_dict(model)
+    return Model.create_class_from_megacomplexes(
+        [DecayParallelMegacomplex, DecaySequentialMegacomplex, SpectralMegacomplex]
+    )(**model)
 
 
 def generate_model_yml(*, generator_name: str, generator_arguments: GeneratorArguments) -> str:
