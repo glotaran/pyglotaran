@@ -13,8 +13,8 @@ from glotaran.parameter import ParameterHistory
 from glotaran.project import Result
 from glotaran.project import Scheme
 from glotaran.project.optimization_history import OptimizationHistory
+from glotaran.utils.regex import RegexPattern
 from glotaran.utils.tee import TeeContext
-from glotaran.utils.tee import get_current_optimization_iteration
 
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
@@ -183,7 +183,7 @@ class Optimizer:
         for group in self._optimization_groups:
             group.calculate(self._parameters)
         self._parameter_history.append(
-            self._parameters, get_current_optimization_iteration(self._tee.read())
+            self._parameters, self.get_current_optimization_iteration(self._tee.read())
         )
 
         penalties = [group.get_full_penalty() for group in self._optimization_groups]
@@ -292,3 +292,20 @@ class Optimizer:
         for label, error in zip(self._free_parameter_labels, standard_errors):
             self._parameters.get(label).standard_error = error
         return covariance_matrix
+
+    @staticmethod
+    def get_current_optimization_iteration(optimize_stdout: str) -> int:
+        """Extract current iteration from ``optimize_stdout``.
+
+        Parameters
+        ----------
+        optimize_stdout: str
+            Scipy optimization stdout string, read out via ``TeeContext.read()``.
+
+        Returns
+        -------
+        int
+            Current iteration (``0`` if pattern did not match).
+        """
+        matches = RegexPattern.optimization_stdout.findall(optimize_stdout)
+        return 0 if len(matches) == 0 else int(matches[-1][0])
