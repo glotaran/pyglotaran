@@ -9,7 +9,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 from pandas.testing import assert_series_equal
 
-from glotaran.project.optimization_history import OptimizationHistory
+from glotaran.optimization.optimization_history import OptimizationHistory
 
 
 def test_optimization_history_init_no_data():
