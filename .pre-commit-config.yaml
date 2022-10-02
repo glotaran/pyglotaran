@@ -58,7 +58,10 @@ repos:
     rev: 0.6.1
     hooks:
       - id: nbstripout
-        args: [--drop-empty-cells]
+        args:
+          - "--drop-empty-cells"
+          - "--extra-keys"
+          - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.5.2
