@@ -6,6 +6,8 @@
 
 ### ✨ Features
 
+- ✨ Add optimization history to result and iteration column to parameter history (#1134)
+
 ### 👌 Minor Improvements:
 
 - 👌🎨 Wrap model section in result markdown in details tag for notebooks (#1098)
