@@ -110,17 +110,17 @@ class Project:
         """
         folder = make_path_absolute_if_relative(Path(project_folder_or_file))
         if folder.name == PROJECT_FILE_NAME:
-            folder, file = folder.parent, folder
+            folder, project_file = folder.parent, folder
         else:
-            file = folder / PROJECT_FILE_NAME
+            project_file = folder / PROJECT_FILE_NAME
 
-        if file.is_file() is False:
+        if project_file.is_file() is False:
             if create_if_not_exist is False:
-                raise FileNotFoundError(f"Project file {file.as_posix()} does not exists.")
+                raise FileNotFoundError(f"Project file {project_file.as_posix()} does not exists.")
             Project.create(folder)
 
-        project_dict = load_dict(file, True)
-        project_dict["file"] = file
+        project_dict = load_dict(project_file, True)
+        project_dict["file"] = project_file
         project_dict["folder"] = folder
         version = project_dict.pop("version")
         project = cls(**project_dict)
