@@ -12,6 +12,7 @@ from glotaran.optimization.optimization_group import OptimizationGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project import Result
 from glotaran.project import Scheme
+from glotaran.project.optimization_history import OptimizationHistory
 from glotaran.utils.tee import TeeContext
 from glotaran.utils.tee import get_current_optimization_iteration
 
@@ -217,6 +218,7 @@ class Optimizer:
             "initial_parameters": self._scheme.parameters,
             "parameter_history": self._parameter_history,
             "termination_reason": self._termination_reason,
+            "optimization_history": OptimizationHistory.from_stdout_str(self._tee.read()),
             "number_of_function_evaluations": self._optimization_result.nfev
             if success
             else self._parameter_history.number_of_records,

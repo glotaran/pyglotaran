@@ -42,6 +42,7 @@ def test_save_result_yml(
         initial_parameters: initial_parameters.csv
         optimized_parameters: optimized_parameters.csv
         parameter_history: parameter_history.csv
+        optimization_history: optimization_history.csv
         data:
           dataset_1: dataset_1.nc
         """
@@ -55,6 +56,7 @@ def test_save_result_yml(
     assert (result_dir / "result.yml").exists()
     assert (result_dir / "initial_parameters.csv").exists()
     assert (result_dir / "optimized_parameters.csv").exists()
+    assert (result_dir / "optimization_history.csv").exists()
     assert (result_dir / "dataset_1.nc").exists()
 
     # We can't check equality due to numerical fluctuations

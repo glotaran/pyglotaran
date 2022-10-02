@@ -181,6 +181,10 @@ class FolderProjectIo(ProjectIoInterface):
         result.parameter_history.to_csv(parameter_history_path)
         paths.append(parameter_history_path.as_posix())
 
+        optimization_history_path = result_folder / "optimization_history.csv"
+        result.optimization_history.to_csv(optimization_history_path)
+        paths.append(optimization_history_path.as_posix())
+
         for label, dataset in result.data.items():
             data_path = result_folder / f"{label}.{saving_options.data_format}"
             if saving_options.data_filter is not None:

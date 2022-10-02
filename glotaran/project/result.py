@@ -24,6 +24,7 @@ from glotaran.parameter import ParameterHistory
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
 from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
+from glotaran.project.optimization_history import OptimizationHistory
 from glotaran.project.scheme import Scheme
 from glotaran.utils.io import DatasetMapping
 from glotaran.utils.io import create_clp_guide_dataset
@@ -68,6 +69,11 @@ class Result:
 
     parameter_history: ParameterHistory = file_loadable_field(  # type:ignore[type-var]
         ParameterHistory
+    )
+    """The parameter history."""
+
+    optimization_history: OptimizationHistory = file_loadable_field(  # type:ignore[type-var]
+        OptimizationHistory
     )
     """The parameter history."""
 
