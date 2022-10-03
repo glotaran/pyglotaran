@@ -64,6 +64,9 @@ class BenchmarkMegacomplex(Megacomplex):
         pass
 
 
+BenchmarkModel = Model.create_class_from_megacomplexes([BenchmarkMegacomplex])
+
+
 @monkeypatch_plugin_registry(test_megacomplex={"benchmark": BenchmarkMegacomplex})
 def setup_model(index_dependent, link_clp):
     model_dict = {
@@ -75,11 +78,7 @@ def setup_model(index_dependent, link_clp):
             "dataset3": {"megacomplex": ["m1"]},
         },
     }
-    return Model.from_dict(
-        model_dict,
-        megacomplex_types={"benchmark": BenchmarkMegacomplex},
-        default_megacomplex_type="benchmark",
-    )
+    return BenchmarkModel(**model_dict)
 
 
 def setup_scheme(model):
