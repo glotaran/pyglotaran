@@ -1,15 +1,14 @@
-"""This package contains compartment constraint items."""
+"""This module contains clp constraint items."""
 from __future__ import annotations
 
-from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import TypedItem
 from glotaran.model.item import item
 
 
 @item
-class Constraint(TypedItem, IntervalProperty):
-    """A constraint is applied on one clp on one or many
-    intervals on the estimated axis type.
+class Constraint(TypedItem, IntervalItem):
+    """Baseclass for clp constraints.
 
     There are two types: zero and equal. See the documentation of
     the respective classes for details.
@@ -18,8 +17,7 @@ class Constraint(TypedItem, IntervalProperty):
 
 @item
 class ZeroConstraint(Constraint):
-    """A zero constraint sets the calculated matrix row of a compartment to 0
-    in the given intervals."""
+    """Constraints the target to 0 in the given interval."""
 
     type: str = "zero"
     target: str
@@ -27,22 +25,20 @@ class ZeroConstraint(Constraint):
 
 @item
 class OnlyConstraint(ZeroConstraint):
-    """A only constraint sets the calculated matrix row of a compartment to 0
-    outside the given intervals."""
+    """Constraints the target to 0 outside the given interval."""
 
     type: str = "only"
 
-    def applies(self, value: float) -> bool:
-        """
-        Returns true if ``value`` is in one of the intervals.
+    def applies(self, index: float | None) -> bool:
+        """Check if the constraint applies on this index.
 
         Parameters
         ----------
         index : float
+            The index.
 
         Returns
         -------
-        applies : bool
-
+        bool
         """
-        return not super().applies(value)
+        return not super().applies(index)

@@ -4,6 +4,7 @@ wheel>=0.30.0
 
 # glotaran setup dependencies
 asteval==0.9.27
+attrs == 22.1.0
 click==8.1.3
 netCDF4==1.6.0
 numba==0.56.2

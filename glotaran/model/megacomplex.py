@@ -1,6 +1,8 @@
+"""This module contains the megacomplex."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Callable
 from typing import ClassVar
 
 import numpy as np
@@ -22,10 +24,21 @@ def megacomplex(
     dataset_model_type: type | None = None,
     exclusive: bool = False,
     unique: bool = False,
-):
-    """The `@megacomplex` decorator is intended to be used on subclasses of
-    :class:`glotaran.model.Megacomplex`. It registers the megacomplex model
-    and makes it available in analysis models.
+) -> Callable:
+    """Create a megacomplex from a class.
+
+    Parameters
+    ----------
+    dataset_model_type: type
+        The dataset model type.
+    exclusive: bool
+        Whether the megacomplex is exclusive.
+    unique: bool
+        Whether the megacomplex is unique.
+
+    Returns
+    -------
+    Callable
     """
 
     def decorator(cls):
@@ -60,6 +73,12 @@ class Megacomplex(ModelItemTyped):
 
     @classmethod
     def get_dataset_model_type(cls) -> type | None:
+        """Get the dataset model type.
+
+        Returns
+        -------
+        type | None
+        """
         return cls.__dataset_model_type__
 
     def calculate_matrix(
@@ -69,10 +88,47 @@ class Megacomplex(ModelItemTyped):
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
-    ) -> xr.DataArray:
+    ) -> tuple[list[str], np.typing.ArrayLike]:
+        """Calculate the megacomplex matrix.
+
+        Parameters
+        ----------
+        dataset_model: DatasetModel
+            The dataset model.
+        global_index: int | None
+            The global index.
+        global_axis: np.typing.ArrayLike
+            The global axis.
+        model_axis: np.typing.ArrayLike,
+            The model axis.
+        **kwargs
+            Additional arguments.
+
+        Returns
+        -------
+        tuple[list[str], np.typing.ArrayLike]:
+            The clp labels and the matrix.
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
         raise NotImplementedError
 
     def index_dependent(self, dataset_model: DatasetModel) -> bool:
+        """Check if the megacomplex is index dependent.
+
+        Parameters
+        ----------
+        dataset_model: DatasetModel
+            The dataset model.
+
+        Returns
+        -------
+        bool
+
+        .. # noqa: DAR202
+        .. # noqa: DAR401
+        """
         raise NotImplementedError
 
     def finalize_data(
@@ -82,12 +138,51 @@ class Megacomplex(ModelItemTyped):
         is_full_model: bool = False,
         as_global: bool = False,
     ):
+        """Finalize a dataset.
+
+        Parameters
+        ----------
+        dataset_model: DatasetModel
+            The dataset model.
+        dataset: xr.Dataset
+            The dataset.
+        is_full_model: bool
+            Whether the model is a full model.
+        as_global: bool
+            Whether megacomplex is calculated as global megacomplex.
+
+
+        .. # noqa: DAR101
+        .. # noqa: DAR401
+        """
         raise NotImplementedError
 
 
 def is_exclusive(cls: type[Megacomplex]) -> bool:
+    """Check if the megacomplex is exclusive.
+
+    Parameters
+    ----------
+    cls: type[Megacomplex]
+        The megacomplex type.
+
+    Returns
+    -------
+    bool
+    """
     return cls.__is_exclusive__
 
 
 def is_unique(cls: type[Megacomplex]) -> bool:
+    """Check if the megacomplex is unique.
+
+    Parameters
+    ----------
+    cls: type[Megacomplex]
+        The megacomplex type.
+
+    Returns
+    -------
+    bool
+    """
     return cls.__is_unique__

@@ -6,4 +6,6 @@ from glotaran.parameter.parameters import Parameters
 
 
 class ParameterGroup(Parameters):
+    """Legacy alias for Parameters."""
+
     pass
