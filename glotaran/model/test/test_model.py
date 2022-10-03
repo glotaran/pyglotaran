@@ -215,31 +215,37 @@ def test_model_items(test_model: Model):
     assert test_model.megacomplex["m2"].dimension == "model2"
     assert test_model.megacomplex["m1"].test_item == "t2"
 
-    assert test_model.test_item["t1"].param == "foo"
-    assert test_model.test_item["t1"].param_list == ["bar", "baz"]
-    assert test_model.test_item["t1"].param_dict == {("s1", "s2"): "baz"}
-    assert test_model.test_item["t1"].megacomplex == "m1"
-    assert test_model.test_item["t1"].number == 42
-    assert test_model.test_item["t2"].param == "baz"
-    assert test_model.test_item["t2"].param_list == ["foo"]
-    assert test_model.test_item["t2"].param_dict == {}
-    assert test_model.test_item["t2"].megacomplex == "m2"
-    assert test_model.test_item["t2"].number == 7
+    assert test_model.test_item["t1"].param == "foo"  # type:ignore[attr-defined]
+    assert test_model.test_item["t1"].param_list == ["bar", "baz"]  # type:ignore[attr-defined]
+    assert test_model.test_item["t1"].param_dict == {  # type:ignore[attr-defined]
+        ("s1", "s2"): "baz"
+    }
+    assert test_model.test_item["t1"].megacomplex == "m1"  # type:ignore[attr-defined]
+    assert test_model.test_item["t1"].number == 42  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].param == "baz"  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].param_list == ["foo"]  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].param_dict == {}  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].megacomplex == "m2"  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].number == 7  # type:ignore[attr-defined]
 
     assert test_model.dataset["dataset1"].megacomplex == ["m1"]
     assert test_model.dataset["dataset1"].global_megacomplex is None
     assert test_model.dataset["dataset1"].scale == "scale_1"
-    assert test_model.dataset["dataset1"].test_item_dataset == "t1"
-    assert test_model.dataset["dataset1"].test_property_dataset1 == 1
-    assert test_model.dataset["dataset1"].test_property_dataset2 == "bar"
+    assert test_model.dataset["dataset1"].test_item_dataset == "t1"  # type:ignore[attr-defined]
+    assert test_model.dataset["dataset1"].test_property_dataset1 == 1  # type:ignore[attr-defined]
+    assert (
+        test_model.dataset["dataset1"].test_property_dataset2 == "bar"  # type:ignore[attr-defined]
+    )
     assert test_model.dataset["dataset1"].group == DEFAULT_DATASET_GROUP
 
     assert test_model.dataset["dataset2"].megacomplex == ["m2"]
     assert test_model.dataset["dataset2"].global_megacomplex == ["m1"]
     assert test_model.dataset["dataset2"].scale == "scale_2"
-    assert test_model.dataset["dataset2"].test_item_dataset == "t2"
-    assert test_model.dataset["dataset2"].test_property_dataset1 == 1
-    assert test_model.dataset["dataset2"].test_property_dataset2 == "bar"
+    assert test_model.dataset["dataset2"].test_item_dataset == "t2"  # type:ignore[attr-defined]
+    assert test_model.dataset["dataset2"].test_property_dataset1 == 1  # type:ignore[attr-defined]
+    assert (
+        test_model.dataset["dataset2"].test_property_dataset2 == "bar"  # type:ignore[attr-defined]
+    )
     assert test_model.dataset["dataset2"].group == "testgroup"
 
 

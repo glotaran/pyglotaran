@@ -1,3 +1,4 @@
+"""The gloataran model module."""
 from glotaran.model.clp_constraint import OnlyConstraint
 from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.clp_penalties import EqualAreaPenalty

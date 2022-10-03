@@ -1,3 +1,4 @@
+"""This module contains the dataset group."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -48,6 +49,13 @@ class DatasetGroup:
     dataset_models: dict[str, DatasetModel] = field(factory=dict)
 
     def set_parameters(self, parameters: Parameters):
+        """Set the group parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            The parameters.
+        """
         self.parameters = parameters
         for label in self.dataset_models:
             self.dataset_models[label] = fill_item(
@@ -55,6 +63,19 @@ class DatasetGroup:
             )
 
     def is_linkable(self, parameters: Parameters, data: dict[str, xr.Dataset]) -> bool:
+        """Check if the group is linkable.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            A parameter set parameters.
+        data : dict[str, xr.Dataset]
+            A the data to link.
+
+        Returns
+        -------
+        bool
+        """
         if any(has_dataset_model_global_model(d) for d in self.dataset_models.values()):
             return False
         dataset_models = [

@@ -6,6 +6,6 @@ from glotaran.parameter.parameters import Parameters
 
 
 class ParameterGroup(Parameters):
-    """Deprecated."""
+    """Legacy alias for Parameters."""
 
     pass
