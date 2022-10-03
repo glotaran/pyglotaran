@@ -137,19 +137,26 @@ def _load_global_items_from_dict(
     return [_load_item_from_dict(item_type, value) for value in item_list]
 
 
-def _add_default_dataset_group(dataset_groups: dict[str, DatasetGroupModel]):
+def _load_dataset_groups(
+    dataset_groups: dict[str, DatasetGroupModel | Any]
+) -> dict[str, DatasetGroupModel]:
     """Add the default dataset group if not present.
 
     Parameters
     ----------
     dataset_groups: dict[str, DatasetGroupModel]
         The dataset groups.
+
+    Returns
+    -------
+    dict[str, DatasetGroupModel]
     """
     dataset_group_items = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
     if DEFAULT_DATASET_GROUP not in dataset_group_items:
         dataset_group_items[DEFAULT_DATASET_GROUP] = DatasetGroupModel(
             label=DEFAULT_DATASET_GROUP  # type:ignore[call-arg]
         )
+    return dataset_group_items  # type:ignore[return-value]
 
 
 def _global_item_attribute(item_type: type[Item]) -> Attribute:
@@ -222,7 +229,7 @@ class Model:
     clp_relations: list[Relation] = _global_item_attribute(Relation)
 
     dataset_groups: dict[str, DatasetGroupModel] = ib(
-        factory=dict, converter=_add_default_dataset_group, metadata=META
+        factory=dict, converter=_load_dataset_groups, metadata=META
     )
 
     dataset: dict[str, DatasetModel]

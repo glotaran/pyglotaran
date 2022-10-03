@@ -14,7 +14,7 @@ from glotaran.model.dataset_model import has_dataset_model_global_model
 from glotaran.model.dataset_model import is_dataset_model_index_dependent
 from glotaran.model.dataset_model import iterate_dataset_model_global_megacomplexes
 from glotaran.model.dataset_model import iterate_dataset_model_megacomplexes
-from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import fill_item
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
@@ -236,12 +236,12 @@ class MatrixProvider:
         return tmp_clp_labels, tmp_matrix
 
     @staticmethod
-    def does_interval_property_apply(prop: IntervalProperty, index: int | None) -> bool:
+    def does_interval_property_apply(prop: IntervalItem, index: int | None) -> bool:
         """Check if an interval property applies on an index.
 
         Parameters
         ----------
-        prop : IntervalProperty
+        prop : IntervalItem
             The interval property.
         index: int | None
             The index to check.
