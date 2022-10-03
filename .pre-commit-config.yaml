@@ -22,6 +22,7 @@ repos:
         types: [file]
         types_or: [python, pyi]
         args: [--py38-plus]
+        exclude: "glotaran.model.item"
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
@@ -105,7 +106,7 @@ repos:
         args:
           - "--select=D,DAR"
         name: "flake8 lint docstrings"
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model/property.py|builtin/io/pandas)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model|builtin/io/pandas)"
         exclude: "docs|tests?/"
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
@@ -113,7 +114,7 @@ repos:
     rev: v0.982
     hooks:
       - id: mypy
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model/property.py|builtin/io/pandas)"
+        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model|builtin/io/pandas)"
         exclude: "docs"
         additional_dependencies: [types-all, types-attrs]
 

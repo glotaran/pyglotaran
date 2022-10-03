@@ -1,3 +1,4 @@
+"""This module contains the interval item."""
 from __future__ import annotations
 
 from glotaran.model.item import Item
@@ -5,33 +6,41 @@ from glotaran.model.item import item
 
 
 @item
-class IntervalProperty(Item):
+class IntervalItem(Item):
+    """An item with an interval."""
+
     interval: tuple[float, float] | list[tuple[float, float]] | None = None
 
     def has_interval(self) -> bool:
-        return self.interval is not None
-
-    def applies(self, value: float | None) -> bool:
-        """
-        Returns true if ``value`` is in one of the intervals.
-
-        Parameters
-        ----------
-        value : float
+        """Check if intervals are defined.
 
         Returns
         -------
-        applies : bool
+        bool
+        """
+        return self.interval is not None
+
+    def applies(self, index: float | None) -> bool:
+        """Check if the index is in the intervals.
+
+        Parameters
+        ----------
+        index : float
+            The index.
+
+        Returns
+        -------
+        bool
 
         """
-        if self.interval is None or value is None:
+        if self.interval is None or index is None:
             return True
 
         def applies(interval: tuple[float, float]):
             lower, upper = interval[0], interval[1]
             if lower > upper:
                 lower, upper = upper, lower
-            return lower <= value <= upper
+                return lower <= index <= upper  # type:ignore[operator]
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)

@@ -1,8 +1,11 @@
+"""This module contains the model."""
 from __future__ import annotations
 
+from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Generator
+from typing import Mapping
 from uuid import uuid4
 
 from attr import asdict
@@ -23,6 +26,7 @@ from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.model.dataset_model import DatasetModel
 from glotaran.model.item import Item
 from glotaran.model.item import ItemIssue
+from glotaran.model.item import ModelItem
 from glotaran.model.item import TypedItem
 from glotaran.model.item import get_item_issues
 from glotaran.model.item import item_to_markdown
@@ -44,6 +48,13 @@ class ModelError(Exception):
     """Raised when a model contains errors."""
 
     def __init__(self, error: str):
+        """Create a model error.
+
+        Parameters
+        ----------
+        error: str
+            The error string.
+        """
         super().__init__(f"ModelError: {error}")
 
 
@@ -52,39 +63,107 @@ root_parameter_error = ModelError(
 )
 
 
-def _load_item_from_dict(cls, value: any, extra: dict[str, any] = {}) -> any:
-    if isinstance(value, dict):
-        if issubclass(cls, TypedItem):
+def _load_item_from_dict(
+    item_type: type[Item], value: Item | Mapping, extra: dict[str, Any] = {}
+) -> Item:
+    """Load an item from a dictionary.
+
+    Parameters
+    ----------
+    item_type: type[Item]
+        The item type.
+    value: Item | dict
+        The value to load from.
+    extra: dict[str, Any]
+        Extra arguments for the item.
+
+    Returns
+    -------
+    Item
+
+    Raises
+    ------
+    ModelError
+        Raised if a modelitem is missing.
+    """
+    if not isinstance(value, Item):
+        if issubclass(item_type, TypedItem):
             try:
-                item_type = value["type"]
-                cls = cls.get_item_type_class(item_type)
+                item_type = item_type.get_item_type_class(value["type"])
             except KeyError:
-                raise ModelError(f"Missing 'type' for item {cls}")
-        value = cls(**(value | extra))
+                raise ModelError(f"Missing 'type' for item {item_type}")
+        return item_type(**(value | extra))
     return value
 
 
-def _load_model_items_from_dict(cls, item_dict: dict[str, any]) -> dict[str, any]:
+def _load_model_items_from_dict(
+    item_type: type[Item], item_dict: Mapping[str, ModelItem | dict]
+) -> dict[str, ModelItem]:
+    """Load a model items from a dictionary.
+
+    Parameters
+    ----------
+    item_type: type[Item]
+        The item type.
+    item_dict: dict[str, ModelItem | dict]
+        The item dictionary.
+
+    Returns
+    -------
+    dict[str, ModelItem]
+    """
     return {
-        label: _load_item_from_dict(cls, value, extra={"label": label})
+        label: _load_item_from_dict(item_type, value, extra={"label": label})  # type:ignore[misc]
         for label, value in item_dict.items()
     }
 
 
-def _load_global_items_from_dict(cls, item_list: list[any]) -> list[any]:
-    return [_load_item_from_dict(cls, value) for value in item_list]
+def _load_global_items_from_dict(
+    item_type: type[Item], item_list: list[Item | dict]
+) -> list[Item]:
+    """Load an item from a dictionary.
+
+    Parameters
+    ----------
+    item_type: type[Item]
+        The item type.
+    item_list: list[Item | dict]
+        The list of item dicts.
+
+    Returns
+    -------
+    list[Item]
+    """
+    return [_load_item_from_dict(item_type, value) for value in item_list]
 
 
-def _add_default_dataset_group(
+def _add_default_dataset_group(dataset_groups: dict[str, DatasetGroupModel]):
+    """Add the default dataset group if not present.
+
+    Parameters
+    ----------
     dataset_groups: dict[str, DatasetGroupModel]
-) -> dict[str, DatasetGroupModel]:
-    dataset_groups = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
-    if DEFAULT_DATASET_GROUP not in dataset_groups:
-        dataset_groups[DEFAULT_DATASET_GROUP] = DatasetGroupModel(label=DEFAULT_DATASET_GROUP)
-    return dataset_groups
+        The dataset groups.
+    """
+    dataset_group_items = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
+    if DEFAULT_DATASET_GROUP not in dataset_group_items:
+        dataset_group_items[DEFAULT_DATASET_GROUP] = DatasetGroupModel(
+            label=DEFAULT_DATASET_GROUP  # type:ignore[call-arg]
+        )
 
 
-def _global_item_attribute(item_type: type):
+def _global_item_attribute(item_type: type[Item]) -> Attribute:
+    """Create a global item attribute.
+
+    Parameters
+    ----------
+    item_type: type[Item]
+        The item type.
+
+    Returns
+    -------
+    Attribute
+    """
     return ib(
         factory=list,
         converter=lambda value: _load_global_items_from_dict(item_type, value),
@@ -92,18 +171,40 @@ def _global_item_attribute(item_type: type):
     )
 
 
-def _model_item_attribute(model_item_type: type):
+def _model_item_attribute(item_type: type[ModelItem]):
+    """Create a model item attribute.
+
+    Parameters
+    ----------
+    item_type: type[ModelItem]
+        The item type.
+
+    Returns
+    -------
+    Attribute
+    """
     return ib(
-        type=dict[str, model_item_type],
+        type=dict[str, item_type],  # type:ignore[valid-type]
         factory=dict,
-        converter=lambda value: _load_model_items_from_dict(model_item_type, value),
+        converter=lambda value: _load_model_items_from_dict(item_type, value),
         metadata=META,
     )
 
 
-def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
+def _create_attributes_for_item(item_type: type[Item]) -> dict[str, Attribute]:
+    """Create attributes for an item.
+
+    Parameters
+    ----------
+    item_type: type[Item]
+        The item type.
+
+    Returns
+    -------
+    dict[str, Attribute]
+    """
     attributes = {}
-    for model_item in model_attributes(item, with_alias=False):
+    for model_item in model_attributes(item_type, with_alias=False):
         _, model_item_type = strip_type_and_structure_from_attribute(model_item)
         attributes[model_item.name] = _model_item_attribute(model_item_type)
     return attributes
@@ -111,6 +212,8 @@ def _create_attributes_for_item(item: Item) -> dict[str, Attribute]:
 
 @define(kw_only=True)
 class Model:
+    """A model for global target analysis."""
+
     loader: ClassVar[Callable] = load_model
 
     source_path: str | None = ib(default=None, init=False, repr=False)
@@ -134,6 +237,17 @@ class Model:
 
     @classmethod
     def create_class(cls, attributes: dict[str, Attribute]) -> type[Model]:
+        """Create model class.
+
+        Parameters
+        ----------
+        attributes: dict[str, Attribute]
+            The model attributes.
+
+        Returns
+        -------
+        type[Model]
+        """
         cls_name = f"GlotaranModel_{str(uuid4()).replace('-','_')}"
         return make_class(cls_name, attributes, bases=(cls,))
 
@@ -141,6 +255,17 @@ class Model:
     def create_class_from_megacomplexes(
         cls, megacomplexes: list[type[Megacomplex]]
     ) -> type[Model]:
+        """Create model class for megacomplexes.
+
+        Parameters
+        ----------
+        megacomplexes: list[type[Megacomplex]]
+            The megacomplexes.
+
+        Returns
+        -------
+        type[Model]
+        """
         attributes: dict[str, Attribute] = {}
         dataset_types = set()
         for megacomplex in megacomplexes:
@@ -169,6 +294,12 @@ class Model:
         return cls.create_class(attributes)
 
     def as_dict(self) -> dict:
+        """Get the model as dictionary.
+
+        Returns
+        -------
+        dict
+        """
         return asdict(
             self,
             recurse=True,
@@ -177,6 +308,17 @@ class Model:
         )
 
     def get_dataset_groups(self) -> dict[str, DatasetGroup]:
+        """Get the dataset groups.
+
+        Returns
+        -------
+        dict[str, DatasetGroup]
+
+        Raises
+        ------
+        ModelError
+            Raised if a dataset group is unknown.
+        """
         groups = {}
         for dataset_model in self.dataset.values():
             group = dataset_model.group
@@ -184,75 +326,103 @@ class Model:
                 try:
                     group_model = self.dataset_groups[group]
                 except KeyError:
-                    raise ValueError(f"Unknown dataset group '{group}'")
+                    raise ModelError(f"Unknown dataset group '{group}'")
                 groups[group] = DatasetGroup(
-                    residual_function=group_model.residual_function,
-                    link_clp=group_model.link_clp,
-                    model=self,
+                    residual_function=group_model.residual_function,  # type:ignore[call-arg]
+                    link_clp=group_model.link_clp,  # type:ignore[call-arg]
+                    model=self,  # type:ignore[call-arg]
                 )
             groups[group].dataset_models[dataset_model.label] = dataset_model
         return groups
 
-    def iterate_items(self) -> Generator[tuple[dict[str, Item] | list[Item]], None, None]:
+    def iterate_items(self) -> Generator[tuple[str, dict[str, Item] | list[Item]], None, None]:
+        """Iterate items.
+
+        Yields
+        ------
+        tuple[str, dict[str, Item] | list[Item]]
+            The name of the item and the individual items of the type.
+        """
         for attr in fields(self.__class__):
             if META_ITEMS in attr.metadata:
-                yield attr.name, getattr(self, attr.name)
+                yield attr.name, getattr(self, attr.name)  # type:ignore[misc]
 
     def iterate_all_items(self) -> Generator[Item, None, None]:
+        """Iterate the individual items.
+
+        Yields
+        ------
+        Item
+            The individual item.
+        """
         for _, items in self.iterate_items():
             iter = items.values() if isinstance(items, dict) else items
             yield from iter
 
     def get_parameter_labels(self) -> set[str]:
+        """Get all parameter labels.
+
+        Returns
+        -------
+        set[str]
+        """
         return {
             label
             for item in self.iterate_all_items()
             for _, label in iterate_parameter_names_and_labels(item)
         }
 
-    def generate_parameters(self) -> dict | list:
-        parameters: dict | list = {}
-        for parameter in self.get_parameter_labels():
-            groups = parameter.split(".")
-            label = groups.pop()
-            if len(groups) == 0:
-                if isinstance(parameters, dict):
-                    if len(parameters) != 0:
-                        raise root_parameter_error
-                    else:
-                        parameters = []
-                parameters.append(Parameter.create_default_list(label))
-            else:
-                if isinstance(parameters, list):
-                    raise root_parameter_error
-                this_group = groups.pop()
-                group = parameters
-                for name in groups:
-                    if name not in group:
-                        group[name] = {}
-                    group = group[name]
-                if this_group not in group:
-                    group[this_group] = []
-                group[this_group].append([label, 0])
-        return parameters
+    def generate_parameters(self) -> Parameters:
+        """Generate parameters for the model.
+
+        Returns
+        -------
+        Parameters
+            The generated parameters.
+
+        .. # noqa: D414
+        """
+        return Parameters(
+            {label: Parameter(label=label, value=0) for label in self.get_parameter_labels()}
+        )
 
     def get_issues(self, *, parameters: Parameters | None = None) -> list[ItemIssue]:
+        """Get issues.
+
+        Parameters
+        ----------
+        parameters: Parameters | None
+            The parameters.
+
+        Returns
+        -------
+        list[ItemIssue]
+        """
         issues = []
         for item in self.iterate_all_items():
             issues += get_item_issues(item=item, model=self, parameters=parameters)
         return issues
 
     def validate(
-        self, parameters: Parameters = None, raise_exception: bool = False
+        self, parameters: Parameters | None = None, raise_exception: bool = False
     ) -> MarkdownStr:
-        """
-        Returns a string listing all issues in the model and missing parameters if specified.
+        """Get a string listing all issues in the model and missing parameters if specified.
 
         Parameters
         ----------
+        parameters: Parameters | None
+            The parameters.
+        raise_exception: bool
+            Whether to raise an exception on failed validation.
 
-        parameter :
-            The parameter to validate.
+        Returns
+        -------
+        MarkdownStr
+
+        Raises
+        ------
+        ModelError
+            Raised if validation fails and raise_exception is true.
         """
         result = ""
 
@@ -261,19 +431,22 @@ class Model:
             for p in issues:
                 result += f"\n * {p}"
             if raise_exception:
-                raise ModelError(issues)
+                raise ModelError(result)
         else:
             result = "Your model is valid."
         return MarkdownStr(result)
 
-    def valid(self, parameters: Parameters = None) -> bool:
-        """Returns `True` if the number problems in the model is 0, else `False`
+    def valid(self, parameters: Parameters | None = None) -> bool:
+        """Check if the model is valid.
 
         Parameters
         ----------
+        parameters: Parameters | None
+            The parameters.
 
-        parameter :
-            The parameter to validate.
+        Returns
+        -------
+        bool
         """
         return len(self.get_issues(parameters=parameters)) == 0
 
@@ -283,13 +456,13 @@ class Model:
         initial_parameters: Parameters = None,
         base_heading_level: int = 1,
     ) -> MarkdownStr:
-        """Formats the model as Markdown string.
+        """Format the model as Markdown string.
 
         Parameters will be included if specified.
 
         Parameters
         ----------
-        parameter: Parameters
+        parameters: Parameters
             Parameter to include.
         initial_parameters: Parameters
             Initial values for the parameters.
@@ -300,6 +473,10 @@ class Model:
 
             - If it is 1 the string will start with '# Model'.
             - If it is 3 the string will start with '### Model'.
+
+        Returns
+        -------
+        MarkdownStr
         """
         base_heading = "#" * base_heading_level
         string = f"{base_heading} Model\n\n"
@@ -311,8 +488,9 @@ class Model:
             string += f"{base_heading}# {name.replace('_', ' ').title()}\n\n"
 
             if isinstance(items, dict):
-                items = items.values()
+                items = items.values()  # type:ignore[assignment]
             for item in items:
+                assert isinstance(item, Item)
                 item_str = item_to_markdown(
                     item, parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
@@ -323,5 +501,10 @@ class Model:
         return MarkdownStr(string)
 
     def _repr_markdown_(self) -> str:
-        """Special method used by ``ipython`` to render markdown."""
+        """Render ``ipython`` markdown.
+
+        Returns
+        -------
+        str
+        """
         return str(self.markdown(base_heading_level=3))

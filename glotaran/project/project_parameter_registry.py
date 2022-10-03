@@ -54,7 +54,7 @@ class ProjectParameterRegistry(ProjectRegistry):
         FileExistsError
             Raised if parameters is already existing and `allow_overwrite=False`.
         """
-        parameters = model.generate_parameters()
+        parameters = model.generate_parameters().to_parameter_dict_or_list()
         parameter_file = self.directory / f"{name}.{format_name}"
 
         if parameter_file.exists() and ignore_existing:

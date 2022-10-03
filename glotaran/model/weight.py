@@ -1,4 +1,4 @@
-"""The Weight item."""
+"""This module contains weight item."""
 
 from glotaran.model.item import Item
 from glotaran.model.item import item

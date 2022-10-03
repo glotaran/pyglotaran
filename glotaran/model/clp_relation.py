@@ -1,16 +1,16 @@
-""" Glotaran Relation """
+"""This module contains clp relation items."""
 from __future__ import annotations
 
-from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import ParameterType
 from glotaran.model.item import item
 
 
 @item
-class Relation(IntervalProperty):
-    """Applies a relation between clps as
+class Relation(IntervalItem):
+    """Applies a relation between two clps.
 
-    :math:`target = parameter * source`.
+    The relation is applied as :math:`target = parameter * source`.
     """
 
     source: str
