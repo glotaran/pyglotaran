@@ -363,8 +363,7 @@ class Model:
             The individual item.
         """
         for _, items in self.iterate_items():
-            iter = items.values() if isinstance(items, dict) else items
-            yield from iter
+            yield from items.values() if isinstance(items, dict) else items
 
     def get_parameter_labels(self) -> set[str]:
         """Get all parameter labels.

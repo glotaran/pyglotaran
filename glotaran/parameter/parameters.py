@@ -204,23 +204,22 @@ class Parameters:
         dict | list
             A dict or list of parameter definitions.
         """
-        if any("." in p.label for p in self.all()):
-            parameter_dict: dict[str, Any] = {}
-            for parameter in self.all():
-                path = parameter.label.split(".")
-                nodes = path[:-2]
-                node = parameter_dict
-                for n in nodes:
-                    if n not in node:
-                        node[n] = {}
-                    node = node[n]
-                upper_node = path[-2]
-                if upper_node not in node:
-                    node[upper_node] = []
-                node[upper_node].append(parameter)
-            return parameter_dict
-        else:
+        if all("." not in p.label for p in self.all()):
             return list(self.all())
+        parameter_dict: dict[str, Any] = {}
+        for parameter in self.all():
+            path = parameter.label.split(".")
+            nodes = path[:-2]
+            node = parameter_dict
+            for n in nodes:
+                if n not in node:
+                    node[n] = {}
+                node = node[n]
+            upper_node = path[-2]
+            if upper_node not in node:
+                node[upper_node] = []
+            node[upper_node].append(parameter)
+        return parameter_dict
 
     def set_from_history(self, history: ParameterHistory, index: int):
         """Update the :class:`Parameters` with values from a parameter history.
