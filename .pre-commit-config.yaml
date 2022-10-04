@@ -16,7 +16,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.3
+    rev: v2.38.2
     hooks:
       - id: pyupgrade
         types: [file]
@@ -32,7 +32,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.8.0
     hooks:
       - id: black
         types: [file]
@@ -55,13 +55,13 @@ repos:
 
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.6.0
+    rev: 0.6.1
     hooks:
       - id: nbstripout
         args: [--drop-empty-cells]
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.4.0
+    rev: 1.5.2
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -107,7 +107,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.971
+    rev: v0.981
     hooks:
       - id: mypy
         files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model/property.py|builtin/io/pandas)"
@@ -122,7 +122,7 @@ repos:
         pass_filenames: false
         additional_dependencies: [click<8]
 
-  - repo: https://github.com/myint/rstcheck
+  - repo: https://github.com/rstcheck/rstcheck
     rev: "v6.1.0"
     hooks:
       - id: rstcheck
