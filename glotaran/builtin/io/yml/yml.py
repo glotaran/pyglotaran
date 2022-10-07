@@ -146,7 +146,7 @@ class YmlProjectIo(ProjectIoInterface):
         * ``initial_parameters.csv``: Initially used parameters.
         * ``optimized_parameters.csv``: The optimized parameter as csv file.
         * ``parameter_history.csv``: Parameter changes over the optimization
-        * ``optimization_history.csv``: Parsed table printed by tze scipy optimizer
+        * ``optimization_history.csv``: Parsed table printed by the SciPy optimizer
         * ``{dataset_label}.nc``: The result data for each dataset as NetCDF file.
 
         Parameters
