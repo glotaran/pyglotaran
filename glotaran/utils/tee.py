@@ -10,7 +10,7 @@ class TeeContext:
     """Context manager that allows to work with string written to stdout.
 
     This context manager behaves similar to the ``tee`` shell command.
-    https://de.wikipedia.org/wiki/Tee_(Unix)
+    https://linuxize.com/post/linux-tee-command
     """
 
     def __init__(self) -> None:
