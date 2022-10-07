@@ -564,7 +564,9 @@ class ParameterGroup(dict):
             The history index.
         """
         self.set_from_label_and_value_arrays(
-            history.parameter_labels[1:], history.get_parameters(index)[1:]
+            # Omit 0th element with `iteration` label
+            history.parameter_labels[1:],
+            history.get_parameters(index)[1:],
         )
 
     def update_parameter_expression(self):
