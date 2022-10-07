@@ -1,4 +1,4 @@
-"""Module containing ``tee`` like functionality."""
+"""Module containing context manager to capture stdout output and still forward it to stdout."""
 from __future__ import annotations
 
 import sys
@@ -7,7 +7,11 @@ from types import TracebackType
 
 
 class TeeContext:
-    """Context manager that allows to work with string written to stdout."""
+    """Context manager that allows to work with string written to stdout.
+
+    This context manager behaves similar to the ``tee`` shell command.
+    https://de.wikipedia.org/wiki/Tee_(Unix)
+    """
 
     def __init__(self) -> None:
         """Create new ``StringIO`` buffer and save reference to original ``sys.stdout``."""
