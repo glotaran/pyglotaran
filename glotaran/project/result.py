@@ -19,6 +19,7 @@ from glotaran.io import SavingOptions
 from glotaran.io import load_result
 from glotaran.io import save_result
 from glotaran.model import Model
+from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterGroup
 from glotaran.parameter import ParameterHistory
 from glotaran.project.dataclass_helpers import exclude_from_dict_field
@@ -70,6 +71,11 @@ class Result:
         ParameterHistory
     )
     """The parameter history."""
+
+    optimization_history: OptimizationHistory = file_loadable_field(  # type:ignore[type-var]
+        OptimizationHistory
+    )
+    """The optimization history."""
 
     data: Mapping[str, xr.Dataset] = file_loadable_field(  # type:ignore[type-var]
         DatasetMapping, is_wrapper_class=True

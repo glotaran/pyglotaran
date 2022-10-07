@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from typing import TypeVar
 
     from glotaran.typing.protocols import FileLoadable
+    from glotaran.typing.types import T
 
     DefaultType = TypeVar("DefaultType")
 
@@ -203,12 +204,14 @@ def asdict(dataclass: object, folder: Path = None) -> dict[str, Any]:
     return dataclass_dict
 
 
-def fromdict(dataclass_type: type, dataclass_dict: dict[str, Any], folder: Path = None) -> object:
+def fromdict(
+    dataclass_type: type[T], dataclass_dict: dict[str, Any], folder: Path | None = None
+) -> T:
     """Create a dataclass instance from a dict and loads all file represented fields.
 
     Parameters
     ----------
-    dataclass_type : type
+    dataclass_type : type[T]
         A dataclass type.
     dataclass_dict : dict[str, Any]
         A dict for instancing the the dataclass.
@@ -217,7 +220,7 @@ def fromdict(dataclass_type: type, dataclass_dict: dict[str, Any], folder: Path 
 
     Returns
     -------
-    object
+    T
         Created instance of dataclass_type.
     """
     for field_item in fields(dataclass_type):

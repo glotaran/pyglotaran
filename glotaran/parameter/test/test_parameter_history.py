@@ -13,20 +13,20 @@ def test_parameter_history():
 
     history.append(group0)
 
-    assert history.parameter_labels == ["1", "2"]
+    assert history.parameter_labels == ["iteration", "1", "2"]
 
     assert history.number_of_records == 1
-    assert all(history.get_parameters(0) == [1, 4])
+    assert all(history.get_parameters(0) == [0, 1, 4])
 
-    history.append(group1)
+    history.append(group1, current_iteration=1)
 
     assert history.number_of_records == 2
-    assert all(history.get_parameters(1) == [2, 5])
+    assert all(history.get_parameters(1) == [1, 2, 5])
 
-    history.append(group2)
+    history.append(group2, current_iteration=2)
 
     assert history.number_of_records == 3
-    assert all(history.get_parameters(2) == [3, 6])
+    assert all(history.get_parameters(2) == [2, 3, 6])
 
     df = history.to_dataframe()
 

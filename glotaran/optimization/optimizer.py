@@ -9,9 +9,12 @@ from scipy.optimize import least_squares
 
 from glotaran import __version__ as glotaran_version
 from glotaran.optimization.optimization_group import OptimizationGroup
+from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
 from glotaran.project import Result
 from glotaran.project import Scheme
+from glotaran.utils.regex import RegexPattern
+from glotaran.utils.tee import TeeContext
 
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
@@ -103,6 +106,7 @@ class Optimizer:
         self._method = SUPPORTED_METHODS[scheme.optimization_method]
 
         self._scheme = scheme
+        self._tee = TeeContext()
         self._verbose = verbose
         self._raise = raise_exception
 
@@ -131,25 +135,26 @@ class Optimizer:
             lower_bounds,
             upper_bounds,
         ) = self._scheme.parameters.get_label_value_and_bounds_arrays(exclude_non_vary=True)
-        try:
-            verbose = 2 if self._verbose else 0
-            self._optimization_result = least_squares(
-                self.objective_function,
-                initial_parameter,
-                bounds=(lower_bounds, upper_bounds),
-                method=self._method,
-                max_nfev=self._scheme.maximum_number_function_evaluations,
-                verbose=verbose,
-                ftol=self._scheme.ftol,
-                gtol=self._scheme.gtol,
-                xtol=self._scheme.xtol,
-            )
-            self._termination_reason = self._optimization_result.message
-        except Exception as e:
-            if self._raise:
-                raise e
-            warn(f"Optimization failed:\n\n{e}")
-            self._termination_reason = str(e)
+        with self._tee:
+            try:
+                verbose = 2 if self._verbose else 0
+                self._optimization_result = least_squares(
+                    self.objective_function,
+                    initial_parameter,
+                    bounds=(lower_bounds, upper_bounds),
+                    method=self._method,
+                    max_nfev=self._scheme.maximum_number_function_evaluations,
+                    verbose=verbose,
+                    ftol=self._scheme.ftol,
+                    gtol=self._scheme.gtol,
+                    xtol=self._scheme.xtol,
+                )
+                self._termination_reason = self._optimization_result.message
+            except Exception as e:
+                if self._raise:
+                    raise e
+                warn(f"Optimization failed:\n\n{e}")
+                self._termination_reason = str(e)
 
     def objective_function(self, parameters: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """Calculate the objective for the optimization.
@@ -177,7 +182,9 @@ class Optimizer:
         """
         for group in self._optimization_groups:
             group.calculate(self._parameters)
-        self._parameter_history.append(self._parameters)
+        self._parameter_history.append(
+            self._parameters, self.get_current_optimization_iteration(self._tee.read())
+        )
 
         penalties = [group.get_full_penalty() for group in self._optimization_groups]
 
@@ -211,6 +218,7 @@ class Optimizer:
             "initial_parameters": self._scheme.parameters,
             "parameter_history": self._parameter_history,
             "termination_reason": self._termination_reason,
+            "optimization_history": OptimizationHistory.from_stdout_str(self._tee.read()),
             "number_of_function_evaluations": self._optimization_result.nfev
             if success
             else self._parameter_history.number_of_records,
@@ -284,3 +292,20 @@ class Optimizer:
         for label, error in zip(self._free_parameter_labels, standard_errors):
             self._parameters.get(label).standard_error = error
         return covariance_matrix
+
+    @staticmethod
+    def get_current_optimization_iteration(optimize_stdout: str) -> int:
+        """Extract current iteration from ``optimize_stdout``.
+
+        Parameters
+        ----------
+        optimize_stdout: str
+            SciPy optimization stdout string, read out via ``TeeContext.read()``.
+
+        Returns
+        -------
+        int
+            Current iteration (``0`` if pattern did not match).
+        """
+        matches = RegexPattern.optimization_stdout.findall(optimize_stdout)
+        return 0 if len(matches) == 0 else int(matches[-1][0])

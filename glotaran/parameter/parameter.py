@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
     from glotaran.parameter import ParameterGroup
 
-RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["group"]
+RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["group", "iteration"]
 
 
 class Keys:

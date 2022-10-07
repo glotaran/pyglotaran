@@ -122,15 +122,17 @@ class ParameterHistory:
             The delimiter of the CSV file.
         """
         self.source_path = Path(file_name).as_posix()
-        self.to_dataframe().to_csv(file_name, sep=delimiter)
+        self.to_dataframe().to_csv(file_name, sep=delimiter, index=False)
 
-    def append(self, parameter_group: ParameterGroup):
+    def append(self, parameter_group: ParameterGroup, current_iteration: int = 0):
         """Append a :class:`ParameterGroup` to the history.
 
         Parameters
         ----------
         parameter_group : ParameterGroup
             The group to append.
+        current_iteration: int
+            Current iteration of the optimizer.
 
         Raises
         ------
@@ -143,6 +145,7 @@ class ParameterHistory:
             _,
             _,
         ) = parameter_group.get_label_value_and_bounds_arrays()
+        parameter_labels = ["iteration", *parameter_labels]
         if len(self._parameter_labels) == 0:
             self._parameter_labels = parameter_labels
         if parameter_labels != self.parameter_labels:
@@ -150,7 +153,7 @@ class ParameterHistory:
                 "Cannot append parameter group. Parameter labels do not match existing."
             )
 
-        self._parameters.append(parameter_values)
+        self._parameters.append(np.array([current_iteration, *parameter_values]))
 
     def get_parameters(self, index: int) -> np.ndarray:
         """Get parameters for a history index.
