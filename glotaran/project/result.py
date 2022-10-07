@@ -75,7 +75,7 @@ class Result:
     optimization_history: OptimizationHistory = file_loadable_field(  # type:ignore[type-var]
         OptimizationHistory
     )
-    """The parameter history."""
+    """The optimization history."""
 
     data: Mapping[str, xr.Dataset] = file_loadable_field(  # type:ignore[type-var]
         DatasetMapping, is_wrapper_class=True

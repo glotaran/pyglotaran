@@ -300,7 +300,7 @@ class Optimizer:
         Parameters
         ----------
         optimize_stdout: str
-            Scipy optimization stdout string, read out via ``TeeContext.read()``.
+            SciPy optimization stdout string, read out via ``TeeContext.read()``.
 
         Returns
         -------
