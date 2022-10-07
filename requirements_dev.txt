@@ -10,7 +10,7 @@ numba==0.56.2
 numpy==1.23.3
 openpyxl==3.0.10
 pandas==1.5.0
-rich==12.5.1
+rich==12.6.0
 ruamel.yaml==0.17.21
 scipy==1.9.1
 sdtfile==2022.9.28
