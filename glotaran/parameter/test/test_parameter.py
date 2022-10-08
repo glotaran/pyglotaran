@@ -263,3 +263,27 @@ def test_parameter_dict_roundtrip():
     assert param.non_negative == param_from_dict.non_negative
     assert param.value == param_from_dict.value
     assert param.vary == param_from_dict.vary
+
+
+def test_parameter_list_roundtrip():
+    param = Parameter(
+        label="foo",
+        expression="1",
+        maximum=2,
+        minimum=1,
+        non_negative=True,
+        value=42,
+        vary=False,
+    )
+
+    param_list = param.as_list()
+    print(param_list)
+    param_from_list = Parameter.from_list(param_list)
+
+    assert param.label == param_from_list.label
+    assert param.expression == param_from_list.expression
+    assert param.maximum == param_from_list.maximum
+    assert param.minimum == param_from_list.minimum
+    assert param.non_negative == param_from_list.non_negative
+    assert param.value == param_from_list.value
+    assert param.vary == param_from_list.vary

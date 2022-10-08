@@ -61,6 +61,23 @@ def deserializeOptions(options: dict[str, Any]) -> dict[str, Any]:
     return {OptionNamesDeserialized.get(k, k): v for k, v in options.items()}
 
 
+def serializeOptions(options: dict[str, Any]) -> dict[str, Any]:
+    """Replace options keys with serialized format by attribute names.
+
+    Parameters
+    ----------
+    options : dict[str, Any]
+        The options.
+
+    Returns
+    -------
+    dict[str, Any]
+        The serialized options.
+
+    """
+    return {OptionNamesSerialized.get(k, k): v for k, v in options.items()}
+
+
 PARAMETER_EXPRESSION_REGEX = re.compile(r"\$(?P<parameter_expression>[\w\d\.]+)((?![\w\d\.]+)|$)")
 """A regular expression to find and replace parameter names in expressions."""
 VALID_LABEL_REGEX = re.compile(r"\W", flags=re.ASCII)
@@ -182,6 +199,29 @@ class Parameter(_SupportsArray):
             The parameter as dictionary.
         """
         return asdict(self, filter=filters.exclude(fields(Parameter).transformed_expression))
+
+    def as_list(self, label_short: bool = False) -> list[str | float | dict[str, Any]]:
+        """Get the parameter as a dictionary.
+
+        Parameters
+        ----------
+        label_short : bool
+            If true, the label will be replaced by the shortened label.
+
+        Returns
+        -------
+        dict[str, Any]
+            The parameter as dictionary.
+        """
+        options = self.as_dict()
+
+        label = options.pop("label")
+        value = options.pop("value")
+
+        if label_short:
+            label = self.label_short
+
+        return [label, value, serializeOptions(options)]
 
     def get_value_and_bounds_for_optimization(self) -> tuple[float, float, float]:
         """Get the parameter value and bounds with expression and non-negative constraints applied.
