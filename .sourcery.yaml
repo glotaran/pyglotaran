@@ -5,7 +5,7 @@ refactor:
     - simplify-boolean-comparison
     - simplify-len-comparison
     - remove-unnecessary-cast
-  python_version: "3.8"
+  python_version: "3.10"
 
 metrics:
   quality_threshold: 25.0

@@ -4,6 +4,10 @@
 
 ## 🚀 0.7.0 (Unreleased)
 
+### 💥 BREAKING CHANGE
+
+- 💥🚧 Dropped support for Python 3.8 and 3.9 and only support 3.10 (#1135)
+
 ### ✨ Features
 
 - ✨ Add optimization history to result and iteration column to parameter history (#1134)
