@@ -196,8 +196,13 @@ class Parameters:
         """
         return [p.as_dict() for p in self.all()]
 
-    def to_parameter_dict_or_list(self) -> dict | list:
+    def to_parameter_dict_or_list(self, serialize_parameters: bool = False) -> dict | list:
         """Convert to a dict or list of parameter definitions.
+
+        Parameters
+        ----------
+        serialize_parameters : bool
+            If true, the parameters will be serialized into list representation.
 
         Returns
         -------
@@ -218,7 +223,9 @@ class Parameters:
             upper_node = path[-2]
             if upper_node not in node:
                 node[upper_node] = []
-            node[upper_node].append(parameter)
+            node[upper_node].append(
+                parameter.as_list(label_short=True) if serialize_parameters else parameter
+            )
         return parameter_dict
 
     def set_from_history(self, history: ParameterHistory, index: int):
