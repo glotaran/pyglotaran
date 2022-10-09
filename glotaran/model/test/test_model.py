@@ -156,8 +156,9 @@ def test_global_items():
 
     m = Model.create_class([])(
         **{
-            "clp_area_penalties": [
+            "clp_penalties": [
                 {
+                    "type": "equal_area",
                     "source": "s",
                     "source_intervals": [(1, 2)],
                     "target": "t",
@@ -251,7 +252,7 @@ def test_model_items(test_model: Model):
 
 def test_model_as_dict():
     model_dict = {
-        "clp_area_penalties": [],
+        "clp_penalties": [],
         "clp_constraints": [],
         "clp_relations": [],
         "megacomplex": {

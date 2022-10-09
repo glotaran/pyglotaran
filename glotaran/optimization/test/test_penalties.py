@@ -17,7 +17,7 @@ def test_penalties(index_dependent, link_clp):
     model = deepcopy(suite.model)
     model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.clp_area_penalties.append(
+    model.clp_penalties.append(
         EqualAreaPenalty(
             **{
                 "source": "s1",

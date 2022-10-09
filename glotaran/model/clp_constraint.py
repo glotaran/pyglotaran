@@ -7,7 +7,7 @@ from glotaran.model.item import item
 
 
 @item
-class Constraint(TypedItem, IntervalItem):
+class ClpConstraint(TypedItem, IntervalItem):
     """Baseclass for clp constraints.
 
     There are two types: zero and equal. See the documentation of
@@ -16,7 +16,7 @@ class Constraint(TypedItem, IntervalItem):
 
 
 @item
-class ZeroConstraint(Constraint):
+class ZeroConstraint(ClpConstraint):
     """Constraints the target to 0 in the given interval."""
 
     type: str = "zero"

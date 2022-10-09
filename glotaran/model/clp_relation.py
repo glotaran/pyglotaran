@@ -7,7 +7,7 @@ from glotaran.model.item import item
 
 
 @item
-class Relation(IntervalItem):
+class ClpRelation(IntervalItem):
     """Applies a relation between two clps.
 
     The relation is applied as :math:`target = parameter * source`.

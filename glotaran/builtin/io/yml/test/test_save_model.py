@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 want = """\
-clp_area_penalties: []
+clp_penalties: []
 clp_constraints: []
 clp_relations: []
 dataset_groups:

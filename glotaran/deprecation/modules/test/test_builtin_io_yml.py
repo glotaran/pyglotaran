@@ -78,8 +78,8 @@ if TYPE_CHECKING:
                     - type: equal_area
                 """
             ),
-            1,
-            "clp_area_penalties",
+            2,
+            "clp_penalties",
             [{"type": "equal_area"}],
         ),
         (

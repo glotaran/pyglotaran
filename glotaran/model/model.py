@@ -18,9 +18,9 @@ from attrs import make_class
 from attrs import resolve_types
 
 from glotaran.io import load_model
-from glotaran.model.clp_constraint import Constraint
-from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.model.clp_relation import Relation
+from glotaran.model.clp_constraint import ClpConstraint
+from glotaran.model.clp_penalties import ClpPenalty
+from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.dataset_group import DatasetGroup
 from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.model.dataset_model import DatasetModel
@@ -224,9 +224,9 @@ class Model:
     loader: ClassVar[Callable] = load_model
 
     source_path: str | None = ib(default=None, init=False, repr=False)
-    clp_area_penalties: list[EqualAreaPenalty] = _global_item_attribute(EqualAreaPenalty)
-    clp_constraints: list[Constraint] = _global_item_attribute(Constraint)
-    clp_relations: list[Relation] = _global_item_attribute(Relation)
+    clp_penalties: list[ClpPenalty] = _global_item_attribute(ClpPenalty)
+    clp_constraints: list[ClpConstraint] = _global_item_attribute(ClpConstraint)
+    clp_relations: list[ClpRelation] = _global_item_attribute(ClpRelation)
 
     dataset_groups: dict[str, DatasetGroupModel] = ib(
         factory=dict, converter=_load_dataset_groups, metadata=META

@@ -8,6 +8,7 @@ import xarray as xr
 
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
+from glotaran.model import EqualAreaPenalty
 from glotaran.model.dataset_model import has_dataset_model_global_model
 from glotaran.model.dataset_model import is_dataset_model_index_dependent
 from glotaran.model.item import fill_item
@@ -177,7 +178,9 @@ class EstimationProvider:
         model = self.group.model
         parameters = self.group.parameters
         penalties = []
-        for penalty in model.clp_area_penalties:
+        for penalty in model.clp_penalties:
+            if not isinstance(penalty, EqualAreaPenalty):
+                continue
             penalty = fill_item(penalty, model, parameters)  # type:ignore[arg-type]
 
             source_area = _get_area(

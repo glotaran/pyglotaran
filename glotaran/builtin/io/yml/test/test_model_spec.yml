@@ -83,8 +83,9 @@ clp_constraints:
       - [1, 100]
       - [2, 200]
 
-clp_area_penalties:
-  - source: s3
+clp_penalties:
+  - type: "equal_area"
+    source: s3
     source_intervals: [[670, 810]]
     target: s2
     target_intervals: [[670, 810]]

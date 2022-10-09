@@ -66,9 +66,10 @@ def test_constraints(model):
 
 
 def test_penalties(model):
-    assert len(model.clp_area_penalties) == 1
-    assert all(isinstance(c, EqualAreaPenalty) for c in model.clp_area_penalties)
-    eac = model.clp_area_penalties[0]
+    assert len(model.clp_penalties) == 1
+    assert all(isinstance(c, EqualAreaPenalty) for c in model.clp_penalties)
+    eac = model.clp_penalties[0]
+    assert eac.type == "equal_area"
     assert eac.source == "s3"
     assert eac.source_intervals == [[670, 810]]
     assert eac.target == "s2"

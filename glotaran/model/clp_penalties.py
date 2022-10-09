@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
+from glotaran.model.item import TypedItem
 from glotaran.model.item import item
 
 
 @item
-class EqualAreaPenalty(Item):
+class ClpPenalty(TypedItem):
+    """Baseclass for clp penalties."""
+
+
+@item
+class EqualAreaPenalty(ClpPenalty):
     """Forces the area of 2 clp to be the same.
 
     An equal area constraint adds a the difference of the sum of a
@@ -17,6 +22,7 @@ class EqualAreaPenalty(Item):
     residual is scaled with the weight.
     """
 
+    type: str = "equal_area"
     source: str
     source_intervals: list[tuple[float, float]]
     target: str

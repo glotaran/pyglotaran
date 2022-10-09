@@ -140,8 +140,9 @@ def test_equal_area_penalties(debug=False):
     }
 
     equ_area = {
-        "clp_area_penalties": [
+        "clp_penalties": [
             {
+                "type": "equal_area",
                 "source": "s1",
                 "target": "s2",
                 "parameter": "rela.1",
