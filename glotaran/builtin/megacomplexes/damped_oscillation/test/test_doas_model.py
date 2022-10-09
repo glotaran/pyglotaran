@@ -8,7 +8,7 @@ from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.model import Model
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -58,7 +58,7 @@ class OneOscillation:
         }
     )
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 25.5],
@@ -68,7 +68,7 @@ class OneOscillation:
         }
     )
 
-    parameter = ParameterGroup.from_dict(
+    parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 20],
@@ -151,7 +151,7 @@ class OneOscillationWithIrf:
         }
     )
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 25],
@@ -162,7 +162,7 @@ class OneOscillationWithIrf:
         }
     )
 
-    parameter = ParameterGroup.from_dict(
+    parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 25],
@@ -289,7 +289,7 @@ class OneOscillationWithSequentialModel:
         }
     )
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameter = Parameters.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -308,7 +308,7 @@ class OneOscillationWithSequentialModel:
         }
     )
 
-    parameter = ParameterGroup.from_dict(
+    parameter = Parameters.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],

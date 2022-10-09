@@ -10,7 +10,7 @@ from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.model import megacomplex
 from glotaran.optimization.optimization_group import OptimizationGroup
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry
 
@@ -32,7 +32,7 @@ TEST_DATA = xr.DataArray(
     np.ones((TEST_AXIS_GLOBAL_SIZE, TEST_AXIS_MODEL_SIZE)),
     coords=(("global", TEST_AXIS_GLOBAL.data), ("test", TEST_AXIS_MODEL.data)),
 )
-TEST_PARAMETERS = ParameterGroup.from_list([])
+TEST_PARAMETERS = Parameters.from_list([])
 
 
 @megacomplex()

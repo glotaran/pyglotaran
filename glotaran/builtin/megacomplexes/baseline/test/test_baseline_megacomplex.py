@@ -4,7 +4,7 @@ from glotaran.builtin.megacomplexes.baseline import BaselineMegacomplex
 from glotaran.model import Model
 from glotaran.model import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 
 def test_baseline():
@@ -15,7 +15,7 @@ def test_baseline():
         }
     )
 
-    parameters = ParameterGroup({})
+    parameters = Parameters({})
     time = np.asarray(np.arange(0, 50, 1.5))
     pixel = np.asarray([0])
     dataset_model = fill_item(model.dataset["dataset1"], model, parameters)

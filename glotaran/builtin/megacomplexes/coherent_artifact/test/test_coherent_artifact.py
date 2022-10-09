@@ -8,7 +8,7 @@ from glotaran.model import Model
 from glotaran.model import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -80,7 +80,7 @@ def test_coherent_artifact(spectral_dependence: str):
         **model_dict
     )
 
-    parameters = ParameterGroup.from_list(parameter_list)
+    parameters = Parameters.from_list(parameter_list)
 
     time = np.arange(0, 50, 1.5)
     spectral = np.asarray([200, 300, 400])

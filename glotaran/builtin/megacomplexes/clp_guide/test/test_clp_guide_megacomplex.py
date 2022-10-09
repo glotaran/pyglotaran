@@ -5,7 +5,7 @@ from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import create_gaussian_clp
 from glotaran.model import Model
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation.simulation import simulate
 
@@ -32,10 +32,10 @@ def test_clp_guide():
         },
     )
 
-    initial_parameters = ParameterGroup.from_list(
+    initial_parameters = Parameters.from_list(
         [101e-5, 501e-4, [1, {"vary": False, "non-negative": False}]]
     )
-    wanted_parameters = ParameterGroup.from_list(
+    wanted_parameters = Parameters.from_list(
         [101e-4, 501e-3, [1, {"vary": False, "non-negative": False}]]
     )
 

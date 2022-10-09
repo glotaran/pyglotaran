@@ -2,14 +2,14 @@ import numpy as np
 
 from glotaran.optimization.optimize import optimize
 from glotaran.optimization.test.models import DecayModel
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
 
 def test_multiple_groups():
-    wanted_parameters = ParameterGroup.from_list([101e-4])
-    initial_parameters = ParameterGroup.from_list([100e-5])
+    wanted_parameters = Parameters.from_list([101e-4])
+    initial_parameters = Parameters.from_list([100e-5])
 
     global_axis = np.asarray([1.0])
     model_axis = np.arange(0, 150, 1.5)

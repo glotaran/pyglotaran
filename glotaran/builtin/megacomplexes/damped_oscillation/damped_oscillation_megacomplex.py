@@ -14,7 +14,7 @@ from glotaran.model import Model
 from glotaran.model import ParameterType
 from glotaran.model import attribute
 from glotaran.model import megacomplex
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 
 class OscillationParameterIssue(ItemIssue):
@@ -36,7 +36,7 @@ def validate_oscillation_parameter(
     labels: list[str],
     damped_oscillation: DampedOscillationMegacomplex,
     model: Model,
-    parameters: ParameterGroup | None,
+    parameters: Parameters | None,
 ) -> list[ItemIssue]:
     issues = []
 

@@ -10,7 +10,7 @@ from glotaran.model import Model
 from glotaran.model import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -42,9 +42,7 @@ class OneCompartmentModelInvertedAxis:
         }
     )
 
-    decay_parameters = ParameterGroup.from_list(
-        [101e-4, [1, {"vary": False, "non-negative": False}]]
-    )
+    decay_parameters = Parameters.from_list([101e-4, [1, {"vary": False, "non-negative": False}]])
 
     spectral_model = SpectralModel(
         **{
@@ -69,7 +67,7 @@ class OneCompartmentModelInvertedAxis:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([7, 1e7 / 10000, 800, -1])
+    spectral_parameters = Parameters.from_list([7, 1e7 / 10000, 800, -1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(5000, 15000, 20)
@@ -106,9 +104,7 @@ class OneCompartmentModelNegativeSkew:
         }
     )
 
-    decay_parameters = ParameterGroup.from_list(
-        [101e-4, [1, {"vary": False, "non-negative": False}]]
-    )
+    decay_parameters = Parameters.from_list([101e-4, [1, {"vary": False, "non-negative": False}]])
 
     spectral_model = SpectralModel(
         **{
@@ -129,7 +125,7 @@ class OneCompartmentModelNegativeSkew:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list([1000, 80, -1])
+    spectral_parameters = Parameters.from_list([1000, 80, -1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(400, 600, 5)
@@ -142,11 +138,11 @@ class OneCompartmentModelNegativeSkew:
 
 
 class OneCompartmentModelPositivSkew(OneCompartmentModelNegativeSkew):
-    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, 1])
+    spectral_parameters = Parameters.from_list([7, 20000, 800, 1])
 
 
 class OneCompartmentModelZeroSkew(OneCompartmentModelNegativeSkew):
-    spectral_parameters = ParameterGroup.from_list([7, 20000, 800, 0])
+    spectral_parameters = Parameters.from_list([7, 20000, 800, 0])
 
 
 class ThreeCompartmentModel:
@@ -176,7 +172,7 @@ class ThreeCompartmentModel:
         }
     )
 
-    decay_parameters = ParameterGroup.from_list(
+    decay_parameters = Parameters.from_list(
         [101e-4, 101e-5, 101e-6, [1, {"vary": False, "non-negative": False}]]
     )
 
@@ -220,7 +216,7 @@ class ThreeCompartmentModel:
         }
     )
 
-    spectral_parameters = ParameterGroup.from_list(
+    spectral_parameters = Parameters.from_list(
         [
             7,
             450,

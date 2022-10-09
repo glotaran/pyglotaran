@@ -13,7 +13,7 @@ from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.megacomplex import megacomplex
 from glotaran.model.model import Model
 from glotaran.parameter import Parameter
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 
 @item
@@ -81,7 +81,7 @@ def test_get_issues():
     issues = get_item_model_issues(m, model)
     assert len(issues) == 3
 
-    p = ParameterGroup({})
+    p = Parameters({})
     i = model.item1["test"]
     issues = get_item_parameter_issues(i, p)
     assert len(issues) == 3
@@ -106,7 +106,7 @@ def test_fill_item():
         item3={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
     )
 
-    parameters = ParameterGroup.from_list([2, 3, 4])
+    parameters = Parameters.from_list([2, 3, 4])
     assert model.valid(parameters)
 
     m = fill_item(model.megacomplex["m1"], model, parameters)

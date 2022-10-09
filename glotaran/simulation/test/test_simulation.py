@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from glotaran.optimization.test.models import SimpleTestModel
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
 
 
@@ -26,7 +26,7 @@ def test_simulate_dataset(index_dependent, noise):
     print(model.validate())
     assert model.valid()
 
-    parameter = ParameterGroup.from_list([1, 1])
+    parameter = Parameters.from_list([1, 1])
     print(model.validate(parameter))
     assert model.valid(parameter)
 

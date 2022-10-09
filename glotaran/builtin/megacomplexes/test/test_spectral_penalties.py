@@ -11,7 +11,7 @@ from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
 from glotaran.io import prepare_time_trace_dataset
 from glotaran.model import Model
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -190,7 +190,7 @@ def test_equal_area_penalties(debug=False):
     # %% Parameter specification (pspec)
 
     pspec_sim = dict(deepcopy(pspec.base), **pspec.shapes)
-    param_sim = ParameterGroup.from_dict(pspec_sim)
+    param_sim = Parameters.from_dict(pspec_sim)
 
     # For the wp model we create two version of the parameter specification
     # One has all inputs fixed, the other has all but the first free
@@ -200,8 +200,8 @@ def test_equal_area_penalties(debug=False):
     pspec_wp["i"] = [[1, {"vary": False}], 1]
     pspec_np = dict(deepcopy(pspec.base))
 
-    param_wp = ParameterGroup.from_dict(pspec_wp)
-    param_np = ParameterGroup.from_dict(pspec_np)
+    param_wp = Parameters.from_dict(pspec_wp)
+    param_np = Parameters.from_dict(pspec_np)
 
     # %% Print models with parameters
     print(model_sim.markdown(param_sim))

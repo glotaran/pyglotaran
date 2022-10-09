@@ -3,13 +3,13 @@ from __future__ import annotations
 import numpy as np
 
 from glotaran.optimization.test.models import DecayModel
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 
 class OneCompartmentDecay:
     scale = 2
-    wanted_parameters = ParameterGroup.from_list([101e-4])
-    initial_parameters = ParameterGroup.from_list([100e-5, [scale, {"vary": False}]])
+    wanted_parameters = Parameters.from_list([101e-4])
+    initial_parameters = Parameters.from_list([100e-5, [scale, {"vary": False}]])
 
     global_axis = np.asarray([1.0])
     model_axis = np.arange(0, 150, 1.5)
@@ -43,8 +43,8 @@ class OneCompartmentDecay:
 
 
 class TwoCompartmentDecay:
-    wanted_parameters = ParameterGroup.from_list([11e-4, 22e-5])
-    initial_parameters = ParameterGroup.from_list([10e-4, 20e-5])
+    wanted_parameters = Parameters.from_list([11e-4, 22e-5])
+    initial_parameters = Parameters.from_list([10e-4, 20e-5])
 
     global_axis = np.asarray([1.0])
     model_axis = np.arange(0, 150, 1.5)
@@ -78,8 +78,8 @@ class TwoCompartmentDecay:
 
 
 class ThreeDatasetDecay:
-    wanted_parameters = ParameterGroup.from_list([101e-4, 201e-3])
-    initial_parameters = ParameterGroup.from_list([100e-5, 200e-3])
+    wanted_parameters = Parameters.from_list([101e-4, 201e-3])
+    initial_parameters = Parameters.from_list([100e-5, 200e-3])
 
     global_axis = np.asarray([1.0])
     model_axis = np.arange(0, 150, 1.5)
@@ -130,7 +130,7 @@ class ThreeDatasetDecay:
 
 
 class MultichannelMulticomponentDecay:
-    wanted_parameters = ParameterGroup.from_dict(
+    wanted_parameters = Parameters.from_dict(
         {
             "k": [0.006, 0.003, 0.0003, 0.03],
             "loc": [
@@ -153,7 +153,7 @@ class MultichannelMulticomponentDecay:
             ],
         }
     )
-    initial_parameters = ParameterGroup.from_dict({"k": [0.006, 0.003, 0.0003, 0.03]})
+    initial_parameters = Parameters.from_dict({"k": [0.006, 0.003, 0.0003, 0.03]})
 
     global_axis = np.arange(12820, 15120, 50)
     model_axis = np.arange(0, 150, 1.5)
@@ -212,7 +212,7 @@ class FullModel:
             },
         }
     )
-    parameters = ParameterGroup.from_dict(
+    parameters = Parameters.from_dict(
         {
             "k": [0.006, 0.003, 0.0003, 0.03],
             "loc": [

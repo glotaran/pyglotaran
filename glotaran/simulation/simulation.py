@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from glotaran.model import Model
-    from glotaran.parameter import ParameterGroup
+    from glotaran.parameter import Parameters
 
 
 def simulate(
     model: Model,
     dataset: str,
-    parameters: ParameterGroup,
+    parameters: Parameters,
     coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,
     noise: bool = False,
@@ -38,8 +38,8 @@ def simulate(
         The model containing the dataset model.
     dataset : str
         Label of the dataset to simulate
-    parameters : ParameterGroup
-        The parameters for the simulation, organized in a `ParameterGroup`.
+    parameters : Parameters
+        The parameters for the simulation.
     coordinates : dict[str, ArrayLike]
         A dictionary with the coordinates used for simulation (e.g. time, wavelengths, ...).
     clp : xr.DataArray | None

@@ -7,7 +7,7 @@ from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.test.models import SimpleTestModel
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 
 
@@ -49,7 +49,7 @@ def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
             },
         }
     )
-    parameters = ParameterGroup.from_list([])
+    parameters = Parameters.from_list([])
 
     data = {"dataset1": dataset_one, "dataset2": dataset_two}
     return Scheme(model, parameters, data, clp_link_tolerance=1)

@@ -5,7 +5,7 @@ from IPython.core.formatters import format_display_data
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.builtin.megacomplexes.decay.k_matrix import calculate_gamma
 from glotaran.model.item import fill_item
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 
 class SequentialModel:
@@ -185,7 +185,7 @@ class ParallelModelWithEquilibria:
 )
 def test_a_matrix_general(matrix):
 
-    params = ParameterGroup.from_list(matrix.params)
+    params = Parameters.from_list(matrix.params)
 
     mat = KMatrix(label="", matrix=matrix.matrix)
     mat = fill_item(mat, None, params)
@@ -227,7 +227,7 @@ def test_a_matrix_sequential():
         ("s3", "s3"): "3",
     }
 
-    params = ParameterGroup.from_list([3, 4, 5])
+    params = Parameters.from_list([3, 4, 5])
     mat = KMatrix(label="", matrix=matrix)
     mat = fill_item(mat, None, params)
 
@@ -241,7 +241,7 @@ def test_a_matrix_sequential():
     }
 
     compartments = ["s1", "s2"]
-    params = ParameterGroup.from_list([0.55, 0.0404])
+    params = Parameters.from_list([0.55, 0.0404])
     mat = KMatrix(label="", matrix=matrix)
     mat = fill_item(mat, None, params)
 

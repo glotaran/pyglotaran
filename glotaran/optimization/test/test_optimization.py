@@ -11,7 +11,7 @@ from glotaran.optimization.test.suites import MultichannelMulticomponentDecay
 from glotaran.optimization.test.suites import OneCompartmentDecay
 from glotaran.optimization.test.suites import ThreeDatasetDecay
 from glotaran.optimization.test.suites import TwoCompartmentDecay
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -198,7 +198,7 @@ def test_result_data(model_weight: bool, index_dependent: bool):
 
     model = SimpleTestModel(**model_dict)
     assert model.valid()
-    parameters = ParameterGroup.from_list([1])
+    parameters = Parameters.from_list([1])
 
     scheme = Scheme(model, parameters, {"dataset1": data}, maximum_number_function_evaluations=1)
     result = optimize(scheme, raise_exception=True)
