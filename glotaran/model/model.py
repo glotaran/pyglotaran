@@ -13,7 +13,6 @@ from attr import fields
 from attr import ib
 from attrs import Attribute
 from attrs import define
-from attrs import filters
 from attrs import make_class
 from attrs import resolve_types
 
@@ -311,7 +310,7 @@ class Model:
             self,
             recurse=True,
             retain_collection_types=True,
-            filter=filters.exclude(fields(Model).source_path),
+            filter=lambda attr, _: attr.name != "source_path",
         )
 
     def get_dataset_groups(self) -> dict[str, DatasetGroup]:
@@ -434,8 +433,8 @@ class Model:
 
         if issues := self.get_issues(parameters=parameters):
             result = f"Your model has {len(issues)} problem{'s' if len(issues) > 1 else ''}:\n"
-            for p in issues:
-                result += f"\n * {p}"
+            for issue in issues:
+                result += f"\n * {issue.to_string()}"
             if raise_exception:
                 raise ModelError(result)
         else:
