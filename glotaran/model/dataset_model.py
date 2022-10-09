@@ -118,7 +118,7 @@ def get_megacomplex_issues(
                 )
             if (
                 is_unique(megacomplex_type)
-                and len([m for m in megacomplexes if m.__class__ is megacomplex_type]) > 0
+                and len([m for m in megacomplexes if m.__class__ is megacomplex_type]) > 1
             ):
                 issues.append(
                     UniqueMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)

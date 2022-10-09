@@ -38,14 +38,14 @@ def test_get_issues_datasetmodel():
         },
         dataset={
             "ok": {"megacomplex": ["m"]},
-            "exclusive": {"megacomplex": ["m_exclusive", "m_exclusive"]},
-            "unique": {"megacomplex": ["m", "m_unique"]},
+            "exclusive": {"megacomplex": ["m", "m_exclusive"]},
+            "unique": {"megacomplex": ["m_unique", "m_unique"]},
         },
     )
 
     assert len(get_item_issues(item=m.dataset["ok"], model=m)) == 0
-    assert len(get_item_issues(item=m.dataset["exclusive"], model=m)) == 2
-    assert len(get_item_issues(item=m.dataset["unique"], model=m)) == 1
+    assert len(get_item_issues(item=m.dataset["exclusive"], model=m)) == 1
+    assert len(get_item_issues(item=m.dataset["unique"], model=m)) == 2
 
     m = mcls(
         megacomplex={
@@ -55,11 +55,11 @@ def test_get_issues_datasetmodel():
         },
         dataset={
             "ok": {"megacomplex": [], "global_megacomplex": ["m"]},
-            "exclusive": {"megacomplex": [], "global_megacomplex": ["m_exclusive", "m_exclusive"]},
-            "unique": {"megacomplex": [], "global_megacomplex": ["m", "m_unique"]},
+            "exclusive": {"megacomplex": [], "global_megacomplex": ["m", "m_exclusive"]},
+            "unique": {"megacomplex": [], "global_megacomplex": ["m_unique", "m_unique"]},
         },
     )
 
     assert len(get_item_issues(item=m.dataset["ok"], model=m)) == 0
-    assert len(get_item_issues(item=m.dataset["exclusive"], model=m)) == 2
-    assert len(get_item_issues(item=m.dataset["unique"], model=m)) == 1
+    assert len(get_item_issues(item=m.dataset["exclusive"], model=m)) == 1
+    assert len(get_item_issues(item=m.dataset["unique"], model=m)) == 2
