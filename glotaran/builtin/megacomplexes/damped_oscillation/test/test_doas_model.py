@@ -22,7 +22,7 @@ class OneOscillation:
         **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -48,7 +48,7 @@ class OneOscillation:
         **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -90,7 +90,7 @@ class OneOscillationWithIrf:
         **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -129,7 +129,7 @@ class OneOscillationWithIrf:
         **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -197,7 +197,7 @@ class OneOscillationWithSequentialModel:
             "megacomplex": {
                 "m1": {"type": "decay", "k_matrix": ["k1"]},
                 "m2": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -266,7 +266,7 @@ class OneOscillationWithSequentialModel:
             "megacomplex": {
                 "m1": {"type": "decay", "k_matrix": ["k1"]},
                 "m2": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],

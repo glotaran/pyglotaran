@@ -59,7 +59,7 @@ def validate_oscillation_parameter(
 @megacomplex(dataset_model_type=DecayDatasetModel)
 class DampedOscillationMegacomplex(Megacomplex):
     dimension: str = "time"
-    type: str = "damped_oscillation"
+    type: str = "damped-oscillation"
     labels: list[str] = attribute(validator=validate_oscillation_parameter)
     frequencies: list[ParameterType]
     rates: list[ParameterType]
