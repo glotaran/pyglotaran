@@ -468,7 +468,7 @@ def fill_item_parameter_attributes(item: Item, parameters: Parameters):
         The parameters.
     """
     fill_item_attributes(
-        item, parameter_attributes(item.__class__), lambda name, label: parameters.get(label)
+        item, parameter_attributes(item.__class__), lambda _, label: parameters.get(label)
     )
 
 
@@ -583,7 +583,7 @@ def strip_type_and_structure_from_attribute(attr: Attribute) -> tuple[None | lis
     """
     definition = attr.type
     definition = strip_option_type(definition)
-    structure, definition = strip_struture_type(definition)
+    structure, definition = strip_structure_type(definition)
     definition = strip_option_type(definition, strip_type=str)
     return structure, definition
 
@@ -607,7 +607,7 @@ def strip_option_type(definition: type, strip_type: type = NoneType) -> type:
     return definition
 
 
-def strip_struture_type(definition: type) -> tuple[None | list | dict, type]:
+def strip_structure_type(definition: type) -> tuple[None | list | dict, type]:
     """Strip the structure from a definition.
 
     Parameters

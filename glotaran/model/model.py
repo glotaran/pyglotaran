@@ -63,7 +63,7 @@ root_parameter_error = ModelError(
 
 
 def _load_item_from_dict(
-    item_type: type[Item], value: Item | Mapping, extra: dict[str, Any] = {}
+    item_type: type[Item], value: Item | Mapping, extra: dict[str, Any] | None = None
 ) -> Item:
     """Load an item from a dictionary.
 
@@ -73,7 +73,7 @@ def _load_item_from_dict(
         The item type.
     value: Item | dict
         The value to load from.
-    extra: dict[str, Any]
+    extra: dict[str, Any] | None
         Extra arguments for the item.
 
     Returns
@@ -86,12 +86,14 @@ def _load_item_from_dict(
         Raised if a modelitem is missing.
     """
     if not isinstance(value, Item):
+        if extra:
+            value = value | extra
         if issubclass(item_type, TypedItem):
             try:
                 item_type = item_type.get_item_type_class(value["type"])
             except KeyError:
                 raise ModelError(f"Missing 'type' for item {item_type}")
-        return item_type(**(value | extra))
+        return item_type(**(value))
     return value
 
 
