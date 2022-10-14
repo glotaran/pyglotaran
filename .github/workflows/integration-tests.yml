@@ -67,9 +67,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [run-examples]
     steps:
-      - name: Checkout glotaran
-        uses: actions/checkout@v3
-
       - name: Checkout compare results
         uses: actions/checkout@v3
         with:
@@ -98,10 +95,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          pip install xarray pytest pytest-allclose netCDF4
-
-      - name: Compare Results
-        run: |
-          python -m pytest --color=yes .github/test_result_consistency.py
+      - name: Run result validator
+        uses: glotaran/pyglotaran-validation@main
+        with:
+          validation_name: pyglotaran-examples
