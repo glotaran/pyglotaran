@@ -22,6 +22,7 @@ except ImportError:
     # numpy < 1.23
     from numpy.typing._array_like import _SupportsArray
 
+from glotaran.utils.attrs_helper import no_default_vals_in_repr
 from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
@@ -125,6 +126,7 @@ def set_transformed_expression(parameter: Parameter, attribute: Attribute, expre
         )
 
 
+@no_default_vals_in_repr
 @define
 class Parameter(_SupportsArray):
     """A parameter for optimization."""

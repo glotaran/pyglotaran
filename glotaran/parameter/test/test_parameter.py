@@ -49,14 +49,24 @@ def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
         Parameter(label=label)  # type:ignore[arg-type]
 
 
-def test_parameter_repr():
+@pytest.mark.parametrize(
+    "parameter, expected_repr",
+    (
+        (
+            Parameter(label="foo"),
+            "Parameter(label='foo')",
+        ),
+        (
+            Parameter(label="foo", expression="$foo.bar", value=1.0, vary=True),
+            # vary gets set to False due to the usage of expression
+            "Parameter(label='foo', expression='$foo.bar', value=1.0, vary=False)",
+        ),
+    ),
+)
+def test_parameter_repr(parameter: Parameter, expected_repr: str):
     """Repr creates code to recreate the object."""
-    result = Parameter(label="foo", value=1.0, expression="$foo.bar", vary=True)
-    expected = (
-        "Parameter(label='foo', expression='$foo.bar', maximum=inf, minimum=-inf, "
-        "non_negative=False, standard_error=nan, value=1.0, vary=False)"
-    )
-    assert result.__repr__() == expected
+    assert parameter.__repr__() == expected_repr
+    assert parameter._deep_equals(eval(expected_repr))
 
 
 def test_parameter_from_list():
