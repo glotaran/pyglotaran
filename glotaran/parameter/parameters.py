@@ -301,8 +301,8 @@ class Parameters:
         """
         try:
             return self._parameters[label]
-        except KeyError:
-            raise ParameterNotFoundException(label)
+        except KeyError as error:
+            raise ParameterNotFoundException(label) from error
 
     def update_parameter_expression(self):
         """Update all parameters which have an expression.
@@ -409,6 +409,16 @@ class Parameters:
         """
         return str(self.markdown())
 
+    @property
+    def labels(self) -> list[str]:
+        """List of all labels.
+
+        Returns
+        -------
+        list[str]
+        """
+        return sorted(p.label for p in self.all())
+
     def __str__(self) -> str:
         """Representation used by print and str."""
         return str(self.markdown())
@@ -417,6 +427,17 @@ class Parameters:
         """Representation debug."""
         params = [f"{p.label}" for p in self.all()]
         return f"Parameters[{', '.join(params)}]"
+
+    def __eq__(self, other: object) -> bool:
+        """=="""  # noqa: D400
+        if isinstance(other, Parameters):
+            return self.labels == other.labels and all(
+                self.get(label)._deep_equals(other.get(label)) for label in self.labels
+            )
+        raise NotImplementedError(
+            "Parameters can only be compared with instances of Parameters, "
+            f"not with {type(other).__qualname__!r}."
+        )
 
 
 def flatten_parameter_dict(

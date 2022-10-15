@@ -2,11 +2,47 @@ from __future__ import annotations
 
 import pickle
 import re
+from typing import Any
 
 import numpy as np
 import pytest
 
 from glotaran.parameter import Parameter
+from glotaran.parameter.parameter import _nan_or_equal
+
+
+@pytest.mark.parametrize(
+    "lhs, rhs, expected",
+    (
+        (np.nan, np.nan, True),
+        (1, 1, True),
+        (1, 2, False),
+    ),
+)
+def test__nan_or_equal(lhs: float, rhs: float, expected: bool):
+    assert _nan_or_equal(lhs, rhs) == expected
+
+
+@pytest.mark.parametrize(
+    "key_name, value_1, value_2",
+    (
+        ("value", 1, 2),
+        ("vary", True, False),
+        ("minimum", -np.inf, -1),
+        ("maximum", np.inf, 1),
+        ("expression", None, "$a.1*10"),
+        ("standard_error", np.nan, 1),
+        ("non_negative", True, False),
+    ),
+)
+def test_parameter__deep_equals(key_name: str, value_1: Any, value_2: Any):
+    parameter_1 = Parameter(label="foo", **{key_name: value_1})
+    parameter_2 = Parameter(label="foo", **{key_name: value_1})
+    assert parameter_1._deep_equals(parameter_2)
+
+    parameter_3 = Parameter(label="foo", **{key_name: value_1})
+    parameter_4 = Parameter(label="foo", **{key_name: value_2})
+    assert not parameter_3._deep_equals(parameter_4)
 
 
 @pytest.mark.parametrize("label, expected", (("foo", "foo"), (0, "0"), (1, "1")))

@@ -200,6 +200,29 @@ class Parameter(_SupportsArray):
         """
         return asdict(self, filter=filters.exclude(fields(Parameter).transformed_expression))
 
+    def _deep_equals(self, other: Parameter) -> bool:
+        """Compare all attributes for equality not only ``value`` like ``__eq__`` does.
+
+        This is used by ``Parameters`` to check for equality.
+
+        Parameters
+        ----------
+        other: Parameter
+            Other parameter to compare against.
+
+        Returns
+        -------
+        bool
+            Whether or not all attributes are equal.
+        """
+        self_dict = self.as_dict()
+        other_dict = other.as_dict()
+        return (
+            _nan_or_equal(self_dict.pop("standard_error"), other_dict.pop("standard_error"))
+            and _nan_or_equal(self_dict.pop("value"), other_dict.pop("value"))
+            and self_dict == other_dict
+        )
+
     def as_list(self, label_short: bool = False) -> list[str | float | dict[str, Any]]:
         """Get the parameter as a dictionary.
 
@@ -423,6 +446,26 @@ class Parameter(_SupportsArray):
     def __rsub__(self, other):
         """- (right)"""  # noqa: D400
         return other - self.value
+
+
+def _nan_or_equal(lhs: float, rhs: float) -> bool:
+    """Compare values which can be nan for equality.
+
+    This helper function is needed because ``np.nan == np.nan`` returns ``False``.
+
+    Parameters
+    ----------
+    lhs: float
+        Left hand side value.
+    rhs: float
+        Right hand side value.
+
+    Returns
+    -------
+    bool
+        Whether or not values are equal.
+    """
+    return (np.isnan(lhs) and np.isnan(rhs)) or lhs == rhs
 
 
 def _log_value(value: float) -> float:

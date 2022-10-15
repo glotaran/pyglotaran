@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
+from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
 
@@ -79,18 +82,49 @@ def test_parameter_group_to_from_parameter_dict_list():
     )
 
     parameters_dict_list = parameters.to_parameter_dict_list()
-    parameters_from_dict_list = Parameters.from_parameter_dict_list(parameters_dict_list)
 
-    for wanted in parameters.all():
-        got = parameters_from_dict_list.get(wanted.label)
+    assert parameters == Parameters.from_parameter_dict_list(parameters_dict_list)
 
-        assert got.label == wanted.label
-        assert got.expression == wanted.expression
-        assert got.maximum == wanted.maximum
-        assert got.minimum == wanted.minimum
-        assert got.non_negative == wanted.non_negative
-        assert (np.isnan(got.value) and np.isnan(got.value)) or got.value == wanted.value
-        assert got.vary == wanted.vary
+
+def test_parameters_equal():
+    """Instances of ``Parameters`` that have the same values are equal."""
+    params = [2, 1]
+
+    parameters_1 = Parameters.from_list(params)
+    parameters_2 = Parameters.from_list(params)
+
+    assert parameters_1 == parameters_2
+
+
+@pytest.mark.parametrize(
+    "key_name, value_1, value_2",
+    (
+        ("vary", True, False),
+        ("min", -np.inf, -1),
+        ("max", np.inf, 1),
+        ("expression", None, "$a.1*10"),
+        ("standard-error", np.nan, 1),
+        ("non-negative", True, False),
+    ),
+)
+def test_parameters_not_equal(key_name: str, value_1: Any, value_2: Any):
+    """Instances of ``Parameters`` that have the same values are equal."""
+    parameters_1 = Parameters.from_dict({"a": [["1", 0.25, {key_name: value_1}]]})
+    parameters_2 = Parameters.from_dict({"a": [["1", 0.25, {key_name: value_2}]]})
+
+    assert parameters_1 != parameters_2
+
+
+def test_parameters_equal_error():
+    """Raise if rhs operator is not an instance of ``Parameters``."""
+    param_dict = {"foo": Parameter(label="foo")}
+    with pytest.raises(NotImplementedError) as excinfo:
+        Parameters(param_dict) == param_dict
+
+    assert (
+        str(excinfo.value)
+        == "Parameters can only be compared with instances of Parameters, not with 'dict'."
+    )
 
 
 def test_parameter_scientific_values():
@@ -112,18 +146,11 @@ def test_parameter_group_copy():
             ],
         }
     )
+
     copy = parameters.copy()
 
-    for wanted in parameters.all():
-        got = copy.get(wanted.label)
-
-        assert got.label == wanted.label
-        assert got.expression == wanted.expression
-        assert got.maximum == wanted.maximum
-        assert got.minimum == wanted.minimum
-        assert got.non_negative == wanted.non_negative
-        assert (np.isnan(got.value) and np.isnan(got.value)) or got.value == wanted.value
-        assert got.vary == wanted.vary
+    assert parameters is not copy
+    assert parameters == parameters.copy()
 
 
 def test_parameter_expressions():
@@ -223,15 +250,4 @@ def test_parameter_group_to_from_df():
 
     assert all(parameter_df["standard_error"] == 42)
 
-    parameter_group_from_df = Parameters.from_dataframe(parameter_df)
-
-    for wanted in parameters.all():
-        got = parameter_group_from_df.get(wanted.label)
-
-        assert got.label == wanted.label
-        assert got.expression == wanted.expression
-        assert got.maximum == wanted.maximum
-        assert got.minimum == wanted.minimum
-        assert got.non_negative == wanted.non_negative
-        assert got.value == wanted.value
-        assert got.vary == wanted.vary
+    assert parameters == Parameters.from_dataframe(parameter_df)
