@@ -1,0 +1,3 @@
+[submodule "validation"]
+	path = validation
+	url = git@github.com:glotaran/pyglotaran-validation.git
