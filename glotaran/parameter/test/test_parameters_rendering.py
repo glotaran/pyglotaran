@@ -52,7 +52,7 @@ RENDERED_MARKDOWN_E5_PRECISION = """\
 """  # noqa: E501
 
 
-def test_param_group_markdown_is_order_independent():
+def test_parameters_markdown_is_order_independent():
     """Markdown output of Parameters.markdown() is independent of initial order"""
     PARAMETERS_3C_INITIAL1 = f"""{PARAMETERS_3C_BASE}\n{PARAMETERS_3C_KINETIC}"""
     PARAMETERS_3C_INITIAL2 = f"""{PARAMETERS_3C_KINETIC}\n{PARAMETERS_3C_BASE}"""
@@ -83,15 +83,35 @@ def test_param_group_markdown_is_order_independent():
     assert str(minimal_params.markdown(float_format=".5e")) == RENDERED_MARKDOWN_E5_PRECISION
 
 
-def test_param_group_repr():
+def test_parameters_repr():
     """Repr creates code to recreate the object with from_dict."""
-    result = Parameters.from_dict({"foo": {"bar": [["1", 1.0], ["2", 2.0], ["3", 3.0]]}})
-    expected = "Parameters[foo.bar.1, foo.bar.2, foo.bar.3]"
+
+    # Needed to eval the Parameters repr
+    from glotaran.parameter.parameter import Parameter  # noqa:401
+
+    result = Parameters.from_dict(
+        {
+            "foo": {
+                "bar": [
+                    ["1", 1.0, {"vary": True}],
+                    ["2", 2.0, {"expression": "$foo.bar.1*2"}],
+                    ["3", 3.0, {"min": -10}],
+                ]
+            }
+        }
+    )
+    expected = (
+        "Parameters({'foo.bar.1': Parameter(label='foo.bar.1', value=1.0), "
+        "'foo.bar.2': Parameter(label='foo.bar.2', "
+        "expression='$foo.bar.1*2', value=2.0, vary=False), "
+        "'foo.bar.3': Parameter(label='foo.bar.3', minimum=-10, value=3.0)})"
+    )
 
     assert result.__repr__() == expected
+    assert result == eval(expected)
 
 
-def test_param_group_ipython_rendering():
+def test_parameters_ipython_rendering():
     """Autorendering in ipython"""
     param_group = Parameters.from_dict({"foo": {"bar": [["1", 1.0], ["2", 2.0], ["3", 3.0]]}})
     rendered_obj = format_display_data(param_group)[0]

@@ -425,8 +425,8 @@ class Parameters:
 
     def __repr__(self) -> str:
         """Representation debug."""
-        params = [f"{p.label}" for p in self.all()]
-        return f"Parameters[{', '.join(params)}]"
+        params = [f"{p.label!r}: {repr(p)}" for p in self.all()]
+        return f"Parameters({{{', '.join(params)}}})"
 
     def __eq__(self, other: object) -> bool:
         """=="""  # noqa: D400
