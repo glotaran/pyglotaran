@@ -44,7 +44,7 @@ OptionNamesSerialized = {
 OptionNamesDeserialized = {v: k for k, v in OptionNamesSerialized.items()}
 
 
-def deserializeOptions(options: dict[str, Any]) -> dict[str, Any]:
+def deserialize_options(options: dict[str, Any]) -> dict[str, Any]:
     """Replace options keys in serialized format by attribute names.
 
     Parameters
@@ -61,7 +61,7 @@ def deserializeOptions(options: dict[str, Any]) -> dict[str, Any]:
     return {OptionNamesDeserialized.get(k, k): v for k, v in options.items()}
 
 
-def serializeOptions(options: dict[str, Any]) -> dict[str, Any]:
+def serialize_options(options: dict[str, Any]) -> dict[str, Any]:
     """Replace options keys with serialized format by attribute names.
 
     Parameters
@@ -185,8 +185,8 @@ class Parameter(_SupportsArray):
         options = _retrieve_item_from_list_by_type(values, dict, {})
 
         if default_options:
-            param |= deserializeOptions(default_options)
-        param |= deserializeOptions(options)
+            param |= deserialize_options(default_options)
+        param |= deserialize_options(options)
 
         return cls(**param)
 
@@ -221,7 +221,7 @@ class Parameter(_SupportsArray):
         if label_short:
             label = self.label_short
 
-        return [label, value, serializeOptions(options)]
+        return [label, value, serialize_options(options)]
 
     def get_value_and_bounds_for_optimization(self) -> tuple[float, float, float]:
         """Get the parameter value and bounds with expression and non-negative constraints applied.
