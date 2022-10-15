@@ -117,7 +117,7 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
         dict_to_check=spec,
         deprecated_usage="clp_area_penalties",
         new_usage="clp_penalties",
-        to_be_removed_in_version="0.8.0",
+        to_be_removed_in_version="0.9.0",
         swap_keys=("clp_area_penalties", "clp_penalties"),
         stacklevel=load_model_stack_level,
     )

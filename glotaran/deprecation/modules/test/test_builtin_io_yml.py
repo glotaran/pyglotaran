@@ -85,6 +85,17 @@ if TYPE_CHECKING:
         (
             dedent(
                 """
+                clp_area_penalties:
+                    - type: equal_area
+                """
+            ),
+            1,
+            "clp_penalties",
+            [{"type": "equal_area"}],
+        ),
+        (
+            dedent(
+                """
                 irf:
                     irf1:
                         center_dispersion: [cdc1]
@@ -119,6 +130,7 @@ if TYPE_CHECKING:
         "spectral_constraints",
         "constraints",
         "equal_area_penalties",
+        "clp_area_penalties",
         "center_dispersion",
         "width_dispersion",
     ),
