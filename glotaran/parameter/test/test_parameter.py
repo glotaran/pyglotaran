@@ -8,19 +8,6 @@ import numpy as np
 import pytest
 
 from glotaran.parameter import Parameter
-from glotaran.parameter.parameter import _nan_or_equal
-
-
-@pytest.mark.parametrize(
-    "lhs, rhs, expected",
-    (
-        (np.nan, np.nan, True),
-        (1, 1, True),
-        (1, 2, False),
-    ),
-)
-def test__nan_or_equal(lhs: float, rhs: float, expected: bool):
-    assert _nan_or_equal(lhs, rhs) == expected
 
 
 @pytest.mark.parametrize(

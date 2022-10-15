@@ -22,6 +22,7 @@ except ImportError:
     # numpy < 1.23
     from numpy.typing._array_like import _SupportsArray
 
+from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_parameter_list
@@ -215,12 +216,9 @@ class Parameter(_SupportsArray):
         bool
             Whether or not all attributes are equal.
         """
-        self_dict = self.as_dict()
-        other_dict = other.as_dict()
-        return (
-            _nan_or_equal(self_dict.pop("standard_error"), other_dict.pop("standard_error"))
-            and _nan_or_equal(self_dict.pop("value"), other_dict.pop("value"))
-            and self_dict == other_dict
+        return all(
+            nan_or_equal(self_val, other_val)
+            for self_val, other_val in zip(self.as_dict().values(), other.as_dict().values())
         )
 
     def as_list(self, label_short: bool = False) -> list[str | float | dict[str, Any]]:
@@ -446,26 +444,6 @@ class Parameter(_SupportsArray):
     def __rsub__(self, other):
         """- (right)"""  # noqa: D400
         return other - self.value
-
-
-def _nan_or_equal(lhs: float, rhs: float) -> bool:
-    """Compare values which can be nan for equality.
-
-    This helper function is needed because ``np.nan == np.nan`` returns ``False``.
-
-    Parameters
-    ----------
-    lhs: float
-        Left hand side value.
-    rhs: float
-        Right hand side value.
-
-    Returns
-    -------
-    bool
-        Whether or not values are equal.
-    """
-    return (np.isnan(lhs) and np.isnan(rhs)) or lhs == rhs
 
 
 def _log_value(value: float) -> float:
