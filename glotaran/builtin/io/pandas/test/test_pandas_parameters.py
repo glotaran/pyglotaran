@@ -62,7 +62,6 @@ def test_roundtrips(
         )
 
 
-@pytest.mark.skip("Needs fixing")
 @pytest.mark.parametrize("format_name,sep", (("csv", ","), ("tsv", "\t")))
 def test_replace_infinfinity(
     yaml_reference: Parameters, tmp_path: Path, format_name: str, sep: str
@@ -75,6 +74,7 @@ def test_replace_infinfinity(
         replace_infinfinity=False,
     )
     df = pd.read_csv(parameter_path, sep=sep)
+    df = df[df["label"] != "verbose_list.no_defaults"]
     assert all(df["maximum"] == np.inf)
     assert all(df["minimum"] == -np.inf)
 
