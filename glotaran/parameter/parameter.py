@@ -12,6 +12,7 @@ from attr import ib
 from attrs import Attribute
 from attrs import asdict
 from attrs import define
+from attrs import evolve
 from attrs import fields
 from attrs import filters
 from attrs import validators
@@ -192,6 +193,16 @@ class Parameter(_SupportsArray):
         param |= deserialize_options(options)
 
         return cls(**param)
+
+    def copy(self) -> Parameter:
+        """Create a copy of the :class:`Parameter`.
+
+        Returns
+        -------
+        Parameter :
+            A copy of the :class:`Parameter`.
+        """
+        return evolve(self)
 
     def as_dict(self) -> dict[str, Any]:
         """Get the parameter as a dictionary.

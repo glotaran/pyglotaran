@@ -254,7 +254,9 @@ class Parameters:
 
         .. # noqa: D414
         """
-        return Parameters(self._parameters.copy())
+        return Parameters(
+            {label: parameter.copy() for label, parameter in self._parameters.items()}
+        )
 
     def all(self) -> Generator[Parameter, None, None]:
         """Iterate over all parameters.
