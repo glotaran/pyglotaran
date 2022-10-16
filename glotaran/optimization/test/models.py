@@ -19,24 +19,20 @@ class SimpleTestMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
 
         compartments = ["s1", "s2"]
-        r_compartments = []
         array = np.zeros((model_axis.size, len(compartments)))
 
         for i in range(len(compartments)):
-            r_compartments.append(compartments[i])
             for j in range(model_axis.size):
                 array[j, i] = (i + j) * model_axis[j]
-        return r_compartments, array
-
-    def index_dependent(self, dataset_model):
-        return self.is_index_dependent
+        if self.is_index_dependent:
+            array = np.array([array] * global_axis.size)
+        return compartments, array
 
     def finalize_data(
         self,
@@ -66,7 +62,6 @@ class SimpleKineticMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -78,10 +73,9 @@ class SimpleKineticMegacomplex(Megacomplex):
         else:
             compartments = [f"s{i+1}" for i in range(len(kinpar))]
         array = np.exp(np.outer(model_axis, kinpar))
+        if self.is_index_dependent:
+            array = np.array([array] * global_axis.size)
         return compartments, array
-
-    def index_dependent(self, dataset_model):
-        return self.is_index_dependent
 
     def finalize_data(
         self,
@@ -101,7 +95,6 @@ class SimpleSpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -115,9 +108,6 @@ class SimpleSpectralMegacomplex(Megacomplex):
         array = np.asarray([[1 for _ in range(model_axis.size)] for _ in compartments]).T
         return compartments, array
 
-    def index_dependent(self, dataset_model):
-        return False
-
 
 @megacomplex()
 class ShapedSpectralMegacomplex(Megacomplex):
@@ -130,7 +120,6 @@ class ShapedSpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -147,9 +136,6 @@ class ShapedSpectralMegacomplex(Megacomplex):
             )
         compartments = [f"s{i+1}" for i in range(location.size)]
         return compartments, array.T
-
-    def index_dependent(self, dataset_model):
-        return False
 
     def finalize_data(
         self,

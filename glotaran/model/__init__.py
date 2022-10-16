@@ -6,7 +6,6 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.dataset_group import DatasetGroup
 from glotaran.model.dataset_model import DatasetModel
 from glotaran.model.dataset_model import get_dataset_model_model_dimension
-from glotaran.model.dataset_model import is_dataset_model_index_dependent
 from glotaran.model.item import ItemIssue
 from glotaran.model.item import ModelItem
 from glotaran.model.item import ModelItemType

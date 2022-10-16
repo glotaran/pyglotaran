@@ -10,7 +10,6 @@ from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
 from glotaran.model import EqualAreaPenalty
 from glotaran.model.dataset_model import has_dataset_model_global_model
-from glotaran.model.dataset_model import is_dataset_model_index_dependent
 from glotaran.model.item import fill_item
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
@@ -336,7 +335,7 @@ class EstimationProviderUnlinked(EstimationProvider):
                     coords={global_dimension: global_axis, model_dimension: model_axis},
                     dims=[model_dimension, global_dimension],
                 )
-                clp_labels = self._matrix_provider.get_matrix_container(label, 0).clp_labels
+                clp_labels = self._matrix_provider.get_matrix_container(label).clp_labels
                 global_clp_labels = self._matrix_provider.get_global_matrix_container(
                     label
                 ).clp_labels
@@ -352,34 +351,16 @@ class EstimationProviderUnlinked(EstimationProvider):
                     coords={global_dimension: global_axis, model_dimension: model_axis},
                     dims=[model_dimension, global_dimension],
                 )
-                if is_dataset_model_index_dependent(dataset_model):
-                    clps[label] = xr.concat(
-                        [
-                            xr.DataArray(
-                                self._clps[label][i],
-                                coords={
-                                    "clp_label": self._matrix_provider.get_matrix_container(
-                                        label, i
-                                    ).clp_labels
-                                },
-                            )
-                            for i in range(len(self._clps[label]))
-                        ],
-                        dim=global_dimension,
-                    )
-                    clps[label].coords[global_dimension] = global_axis
-
-                else:
-                    clps[label] = xr.DataArray(
-                        self._clps[label],
-                        coords=(
-                            (global_dimension, global_axis),
-                            (
-                                "clp_label",
-                                self._matrix_provider.get_matrix_container(label, 0).clp_labels,
-                            ),
+                clps[label] = xr.DataArray(
+                    self._clps[label],
+                    coords=(
+                        (global_dimension, global_axis),
+                        (
+                            "clp_label",
+                            self._matrix_provider.get_matrix_container(label).clp_labels,
                         ),
-                    )
+                    ),
+                )
         return clps, residuals
 
     def calculate_full_model_estimation(self, dataset_model: DatasetModel):
@@ -416,7 +397,7 @@ class EstimationProviderUnlinked(EstimationProvider):
             reduced_clps, residual = self.calculate_residual(
                 matrix_container.matrix, data[:, index]
             )
-            clp_labels.append(self._matrix_provider.get_matrix_container(label, index).clp_labels)
+            clp_labels.append(self._matrix_provider.get_matrix_container(label).clp_labels)
             clp = self.retrieve_clps(
                 clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index_value
             )
@@ -510,13 +491,8 @@ class EstimationProviderLinked(EstimationProvider):
 
                 group_datasets = self._data_provider.group_definitions[group_label]
                 dataset_index = group_datasets.index(dataset_label)
-                global_index = self._data_provider.get_aligned_dataset_indices(index)[
-                    dataset_index
-                ]
 
-                clp_labels = self._matrix_provider.get_matrix_container(
-                    dataset_label, global_index
-                ).clp_labels
+                clp_labels = self._matrix_provider.get_matrix_container(dataset_label).clp_labels
 
                 dataset_clps.append(
                     xr.DataArray(

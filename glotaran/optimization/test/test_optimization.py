@@ -2,8 +2,6 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.model.dataset_model import is_dataset_model_index_dependent
-from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.optimization.test.suites import FullModel
@@ -57,12 +55,6 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
     print(initial_parameters)  # T201
     print(model.validate(initial_parameters))  # T201
     assert model.valid(initial_parameters)
-    assert (
-        is_dataset_model_index_dependent(
-            fill_item(model.dataset["dataset1"], model, initial_parameters)
-        )
-        == is_index_dependent
-    )
 
     nr_datasets = 3 if issubclass(suite, ThreeDatasetDecay) else 1
     data = {}
@@ -120,9 +112,11 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
 
     for i, dataset in enumerate(data.values()):
         resultdata = result.data[f"dataset{i+1}"]
-        print(f"Result Data {i+1}")  # T201
+        print(f"Result Data {i+1}")  # T201k
         print("=================")  # T201
         print(resultdata)  # T201
+        assert "matrix" in resultdata
+        assert len(resultdata.matrix.shape) == (3 if is_index_dependent else 2)
         assert "residual" in resultdata
         assert "residual_left_singular_vectors" in resultdata
         assert "residual_right_singular_vectors" in resultdata

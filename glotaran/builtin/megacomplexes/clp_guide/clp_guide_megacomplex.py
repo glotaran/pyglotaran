@@ -16,7 +16,6 @@ class ClpGuideMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -24,9 +23,6 @@ class ClpGuideMegacomplex(Megacomplex):
         clp_label = [self.target]
         matrix = np.ones((1, 1), dtype=np.float64)
         return clp_label, matrix
-
-    def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        return False
 
     def finalize_data(
         self,

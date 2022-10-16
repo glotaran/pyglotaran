@@ -14,13 +14,14 @@ class ClpConstraint(TypedItem, IntervalItem):
     the respective classes for details.
     """
 
+    target: str
+
 
 @item
 class ZeroConstraint(ClpConstraint):
     """Constraints the target to 0 in the given interval."""
 
     type: str = "zero"
-    target: str
 
 
 @item

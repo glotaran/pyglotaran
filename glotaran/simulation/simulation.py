@@ -9,7 +9,6 @@ import xarray as xr
 from glotaran.model import DatasetModel
 from glotaran.model.dataset_model import get_dataset_model_model_dimension
 from glotaran.model.dataset_model import has_dataset_model_global_model
-from glotaran.model.dataset_model import is_dataset_model_index_dependent
 from glotaran.model.item import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 
@@ -128,20 +127,8 @@ def simulate_from_clp(
     """
     if "clp_label" not in clp.coords:
         raise ValueError("Missing coordinate 'clp_label' in clp.")
-    matrices = (
-        [
-            MatrixProvider.calculate_dataset_matrix(
-                dataset_model, index, np.array(global_axis), model_axis
-            )
-            for index, _ in enumerate(global_axis)
-        ]
-        if is_dataset_model_index_dependent(dataset_model)
-        else [
-            MatrixProvider.calculate_dataset_matrix(dataset_model, None, global_axis, model_axis)
-        ]
-        * global_axis.size
-    )
 
+    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, global_axis, model_axis)
     result = xr.DataArray(
         np.zeros((model_axis.size, global_axis.size)),
         coords=[
@@ -151,9 +138,10 @@ def simulate_from_clp(
     )
     result = result.to_dataset(name="data")
     for i in range(global_axis.size):
+        this_matrix = matrix.matrix[i] if matrix.is_index_dependent else matrix.matrix
         result.data[:, i] = np.dot(
-            matrices[i].matrix,
-            clp.isel({global_dimension: i}).sel({"clp_label": matrices[i].clp_labels}),
+            this_matrix,
+            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_labels}),
         )
 
     return result
@@ -191,15 +179,11 @@ def simulate_full_model(
     ValueError
         Raised if at least one of the dataset model's global megacomplexes is index dependent.
     """
-    if any(
-        m.index_dependent(dataset_model)  # type:ignore[union-attr]
-        for m in dataset_model.global_megacomplex  # type:ignore[union-attr]
-    ):
-        raise ValueError("Index dependent models for global dimension are not supported.")
-
     global_matrix = MatrixProvider.calculate_dataset_matrix(
-        dataset_model, None, global_axis, model_axis, global_matrix=True
+        dataset_model, global_axis, model_axis, global_matrix=True
     )
+    if global_matrix.is_index_dependent:
+        raise ValueError("Index dependent models for global dimension are not supported.")
     global_clp_labels = global_matrix.clp_labels
     global_matrix = xr.DataArray(
         global_matrix.matrix.T,

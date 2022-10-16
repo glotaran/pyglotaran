@@ -19,7 +19,7 @@ def test_baseline():
     time = np.asarray(np.arange(0, 50, 1.5))
     pixel = np.asarray([0])
     dataset_model = fill_item(model.dataset["dataset1"], model, parameters)
-    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, None, pixel, time)
+    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, pixel, time)
     compartments = matrix.clp_labels
 
     assert len(compartments) == 1
