@@ -88,7 +88,7 @@ def test_coherent_artifact(spectral_dependence: str):
     spectral = np.asarray([200, 300, 400])
 
     dataset_model = fill_item(model.dataset["dataset1"], model, parameters)
-    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, 0, spectral, time)
+    matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, spectral, time)
     compartments = matrix.clp_labels
 
     print(compartments)
@@ -96,7 +96,7 @@ def test_coherent_artifact(spectral_dependence: str):
     for i in range(1, 4):
         assert compartments[i] == f"coherent_artifact_{i}"
 
-    assert matrix.matrix.shape == (time.size, 4)
+    assert matrix.matrix.shape == (spectral.size, time.size, 4)
 
     clp = xr.DataArray(
         np.ones((3, 4)),
@@ -113,7 +113,7 @@ def test_coherent_artifact(spectral_dependence: str):
             ),
         ],
     )
-    axis = {"time": time, "spectral": clp.spectral}
+    axis = {"time": time, "spectral": clp.spectral.data}
     data = simulate(model, "dataset1", parameters, axis, clp)
 
     dataset = {"dataset1": data}

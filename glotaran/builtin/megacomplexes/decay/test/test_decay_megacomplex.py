@@ -8,7 +8,6 @@ from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayParallelMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.model import Model
-from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
 from glotaran.parameter import Parameters
 from glotaran.project import Scheme
@@ -107,9 +106,6 @@ class OneComponentOneChannelGaussianIrf:
         ]
     )
     print(initial_parameters)
-    assert model.megacomplex["mc1"].index_dependent(
-        fill_item(model.dataset["dataset1"], model, initial_parameters)
-    )
     wanted_parameters = Parameters.from_list(
         [
             [101e-3, {"non-negative": True}],

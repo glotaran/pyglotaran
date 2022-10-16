@@ -33,7 +33,7 @@ def test_constraint(index_dependent, link_clp):
         if link_clp
         else optimization_group._matrix_provider.get_prepared_matrix_container("dataset1", 0)
     )
-    matrix = optimization_group._matrix_provider.get_matrix_container("dataset1", 0)
+    matrix = optimization_group._matrix_provider.get_matrix_container("dataset1")
 
     result_data = optimization_group.create_result_data()
     print(result_data)  # T201

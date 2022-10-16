@@ -74,7 +74,7 @@ class OneCompartmentModelInvertedAxis:
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = fill_item(decay_model.dataset["dataset1"], decay_model, decay_parameters)
-    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
+    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
@@ -132,7 +132,7 @@ class OneCompartmentModelNegativeSkew:
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = fill_item(decay_model.dataset["dataset1"], decay_model, decay_parameters)
-    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
+    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 
@@ -235,7 +235,7 @@ class ThreeCompartmentModel:
     axis = {"time": time, "spectral": spectral}
 
     decay_dataset_model = fill_item(decay_model.dataset["dataset1"], decay_model, decay_parameters)
-    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, None, spectral, time)
+    matrix = MatrixProvider.calculate_dataset_matrix(decay_dataset_model, spectral, time)
     decay_compartments = matrix.clp_labels
     clp = xr.DataArray(matrix.matrix, coords=[("time", time), ("clp_label", decay_compartments)])
 

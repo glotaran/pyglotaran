@@ -7,6 +7,7 @@ from scipy.special import erf
 
 from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import DecayDatasetModel
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
+from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
 from glotaran.model import ItemIssue
 from glotaran.model import Megacomplex
@@ -67,7 +68,6 @@ class DampedOscillationMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -88,33 +88,28 @@ class DampedOscillationMegacomplex(Megacomplex):
         )
         rates = np.array(self.rates)
 
-        matrix = np.ones((model_axis.size, len(clp_label)), dtype=np.float64)
+        irf = dataset_model.irf
+        matrix_shape = (
+            (global_axis.size, model_axis.size, len(clp_label))
+            if index_dependent(dataset_model)
+            else (model_axis.size, len(clp_label))
+        )
+        matrix = np.zeros(matrix_shape, dtype=np.float64)
 
-        if dataset_model.irf is None:
+        if irf is None:
             calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, model_axis)
-        elif isinstance(dataset_model.irf, IrfMultiGaussian):
-            centers, widths, scales, shift, _, _ = dataset_model.irf.parameter(
-                global_index, global_axis
-            )
-            for center, width, scale in zip(centers, widths, scales):
-                matrix += calculate_damped_oscillation_matrix_gaussian_irf(
-                    frequencies,
-                    rates,
-                    model_axis,
-                    center,
-                    width,
-                    shift,
-                    scale,
+        elif isinstance(irf, IrfMultiGaussian):
+            if index_dependent(dataset_model):
+                for i in range(global_axis.size):
+                    calculate_damped_oscillation_matrix_gaussian_irf_on_index(
+                        matrix[i], frequencies, rates, irf, i, global_axis, model_axis
+                    )
+            else:
+                calculate_damped_oscillation_matrix_gaussian_irf_on_index(
+                    matrix, frequencies, rates, irf, None, global_axis, model_axis
                 )
-            matrix /= np.sum(scales)
 
         return clp_label, matrix
-
-    def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        return (
-            isinstance(dataset_model.irf, IrfMultiGaussian)
-            and dataset_model.irf.is_index_dependent()
-        )
 
     def finalize_data(
         self,
@@ -159,7 +154,7 @@ class DampedOscillationMegacomplex(Megacomplex):
             phase,
         )
 
-        if self.index_dependent(dataset_model):
+        if index_dependent(dataset_model):
             dataset[f"{prefix}_sin"] = (
                 (
                     global_dimension,
@@ -198,6 +193,29 @@ def calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, axis)
         matrix[:, idx] = osc.real
         matrix[:, idx + 1] = osc.imag
         idx += 2
+
+
+def calculate_damped_oscillation_matrix_gaussian_irf_on_index(
+    matrix: np.typing.ArrayLike,
+    frequencies: np.typing.ArrayLike,
+    rates: np.typing.ArrayLike,
+    irf: IrfMultiGaussian,
+    global_index: int | None,
+    global_axis: np.typing.ArrayLike,
+    model_axis: np.typing.ArrayLike,
+):
+    centers, widths, scales, shift, _, _ = irf.parameter(global_index, global_axis)
+    for center, width, scale in zip(centers, widths, scales):
+        matrix += calculate_damped_oscillation_matrix_gaussian_irf(
+            frequencies,
+            rates,
+            model_axis,
+            center,
+            width,
+            shift,
+            scale,
+        )
+    matrix /= np.sum(scales)
 
 
 def calculate_damped_oscillation_matrix_gaussian_irf(

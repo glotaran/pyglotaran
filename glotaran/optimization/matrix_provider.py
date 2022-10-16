@@ -4,6 +4,7 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass
 from dataclasses import replace
+from typing import Any
 
 import numpy as np
 import xarray as xr
@@ -11,7 +12,6 @@ import xarray as xr
 from glotaran.model import DatasetGroup
 from glotaran.model import DatasetModel
 from glotaran.model.dataset_model import has_dataset_model_global_model
-from glotaran.model.dataset_model import is_dataset_model_index_dependent
 from glotaran.model.dataset_model import iterate_dataset_model_global_megacomplexes
 from glotaran.model.dataset_model import iterate_dataset_model_megacomplexes
 from glotaran.model.interval_item import IntervalItem
@@ -28,6 +28,17 @@ class MatrixContainer:
     """The clp labels."""
     matrix: np.ndarray
     """The matrix."""
+
+    @property
+    def is_index_dependent(self) -> bool:
+        """Check if the matrix is index dependent.
+
+        Returns
+        -------
+        bool
+            Whether the matrix is index dependent.
+        """
+        return len(self.matrix.shape) == 3
 
     @staticmethod
     def apply_weight(
@@ -92,7 +103,7 @@ class MatrixProvider:
             The dataset group.
         """
         self._group = dataset_group
-        self._matrix_containers: dict[str, MatrixContainer | list[MatrixContainer]] = {}
+        self._matrix_containers: dict[str, MatrixContainer] = {}
         self._global_matrix_containers: dict[str, MatrixContainer] = {}
         self._data_provider: DataProvider
 
@@ -107,25 +118,20 @@ class MatrixProvider:
         """
         return self._group
 
-    def get_matrix_container(self, dataset_label: str, global_index: int) -> MatrixContainer:
+    def get_matrix_container(self, dataset_label: str) -> MatrixContainer:
         """Get the matrix container for a dataset on an index on the global axis.
 
         Parameters
         ----------
         dataset_label : str
             The label of the dataset.
-        global_index : int
-            The index on the global axis.
 
         Returns
         -------
         MatrixContainer
             The matrix container.
         """
-        matrix_container = self._matrix_containers[dataset_label]
-        if is_dataset_model_index_dependent(self.group.dataset_models[dataset_label]):
-            matrix_container = matrix_container[global_index]  # type:ignore[index]
-        return matrix_container  # type:ignore[return-value]
+        return self._matrix_containers[dataset_label]
 
     def calculate_dataset_matrices(self):
         """Calculate the matrices of the datasets in the dataset group."""
@@ -133,22 +139,13 @@ class MatrixProvider:
             model_axis = self._data_provider.get_model_axis(label)
             global_axis = self._data_provider.get_global_axis(label)
 
-            if is_dataset_model_index_dependent(dataset_model):
-                self._matrix_containers[label] = [
-                    self.calculate_dataset_matrix(
-                        dataset_model, global_index, global_axis, model_axis
-                    )
-                    for global_index in range(self._data_provider.get_global_axis(label).size)
-                ]
-            else:
-                self._matrix_containers[label] = self.calculate_dataset_matrix(
-                    dataset_model, None, global_axis, model_axis
-                )
+            self._matrix_containers[label] = self.calculate_dataset_matrix(
+                dataset_model, global_axis, model_axis
+            )
 
     @staticmethod
     def calculate_dataset_matrix(
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         global_matrix: bool = False,
@@ -159,8 +156,6 @@ class MatrixProvider:
         ----------
         dataset_model : DatasetModel
             The dataset model.
-        global_index : int | None
-            The index on the global axis.
         global_axis: np.typing.ArrayLike
             The global axis.
         model_axis: np.typing.ArrayLike
@@ -184,7 +179,7 @@ class MatrixProvider:
 
         for scale, megacomplex in megacomplex_iterator:
             this_clp_labels, this_matrix = megacomplex.calculate_matrix(  # type:ignore[union-attr]
-                dataset_model, global_index, global_axis, model_axis
+                dataset_model, global_axis, model_axis
             )
 
             if scale is not None:
@@ -224,20 +219,44 @@ class MatrixProvider:
         tuple[list[str], np.typing.ArrayLike]:
             The combined clp labels and matrix.
         """
-        tmp_clp_labels = clp_labels_left + [
+        result_clp_labels = clp_labels_left + [
             c for c in clp_labels_right if c not in clp_labels_left
         ]
-        tmp_matrix = np.zeros((matrix_left.shape[0], len(tmp_clp_labels)), dtype=np.float64)
-        for idx, label in enumerate(tmp_clp_labels):
+        result_clp_size = len(result_clp_labels)
+
+        if len(matrix_left.shape) < len(matrix_right.shape):
+            matrix_left, matrix_right = matrix_right, matrix_left
+
+        left_index_dependent = len(matrix_left.shape) == 3
+        right_index_dependent = len(matrix_right.shape) == 3
+
+        result_shape = (
+            (matrix_left.shape[0], matrix_left.shape[1], result_clp_size)
+            if left_index_dependent
+            else (matrix_left.shape[0], result_clp_size)
+        )
+
+        result_matrix = np.zeros(result_shape, dtype=np.float64)
+        for idx, label in enumerate(result_clp_labels):
             if label in clp_labels_left:
-                tmp_matrix[:, idx] += matrix_left[:, clp_labels_left.index(label)]
+                if left_index_dependent:
+                    result_matrix[:, :, idx] += matrix_left[:, :, clp_labels_left.index(label)]
+                else:
+                    result_matrix[:, idx] += matrix_left[:, clp_labels_left.index(label)]
             if label in clp_labels_right:
-                tmp_matrix[:, idx] += matrix_right[:, clp_labels_right.index(label)]
-        return tmp_clp_labels, tmp_matrix
+                if left_index_dependent:
+                    result_matrix[:, :, idx] += (
+                        matrix_right[:, :, clp_labels_right.index(label)]
+                        if right_index_dependent
+                        else matrix_right[:, clp_labels_right.index(label)]
+                    )
+                else:
+                    result_matrix[:, idx] += matrix_right[:, clp_labels_right.index(label)]
+        return result_clp_labels, result_matrix
 
     @staticmethod
-    def does_interval_property_apply(prop: IntervalItem, index: int | None) -> bool:
-        """Check if an interval property applies on an index.
+    def does_interval_item_apply(prop: IntervalItem, index: int | None) -> bool:
+        """Check if an interval item applies on an index.
 
         Parameters
         ----------
@@ -263,8 +282,8 @@ class MatrixProvider:
     def reduce_matrix(
         self,
         matrix: MatrixContainer,
-        index: int | None,
-    ) -> MatrixContainer:
+        global_axis: np.typing.ArrayLike,
+    ) -> list[MatrixContainer]:
         """Reduce a matrix.
 
         Applies constraints and relations.
@@ -273,31 +292,39 @@ class MatrixProvider:
         ----------
         matrix : MatrixContainer
             The matrix.
-        index : int | None
-            The index on the global axis.
+        global_axis: np.typing.ArrayLike,
+            The global axis.
 
         Returns
         -------
         MatrixContainer
             The resulting matrix container.
         """
-        matrix = self.apply_relations(matrix, index)
-        matrix = self.apply_constraints(matrix, index)
-        return matrix
+        result = (
+            [
+                MatrixContainer(matrix.clp_labels, matrix.matrix[i, :, :])
+                for i in range(global_axis.size)
+            ]
+            if matrix.is_index_dependent
+            else [matrix] * global_axis.size
+        )
+        result = self.apply_relations(result, global_axis)
+        result = self.apply_constraints(result, global_axis)
+        return result
 
     def apply_constraints(
         self,
-        matrix: MatrixContainer,
-        index: int | None,
-    ) -> MatrixContainer:
+        matrices: list[MatrixContainer],
+        global_axis: np.typing.ArrayLike,
+    ) -> list[MatrixContainer]:
         """Apply constraints on a matrix.
 
         Parameters
         ----------
-        matrix : MatrixContainer
-            The matrix.
-        index : int | None
-            The index on the global axis.
+        matrices: list[MatrixContainer],
+            The matrices.
+        global_axis: np.typing.ArrayLike,
+            The global axis.
 
         Returns
         -------
@@ -306,33 +333,37 @@ class MatrixProvider:
         """
         model = self.group.model
         if len(model.clp_constraints) == 0:
-            return matrix
+            return matrices
 
-        clp_labels = matrix.clp_labels
-        removed_clp_labels = [
-            c.target  # type:ignore[attr-defined]
-            for c in model.clp_constraints
-            if c.target in clp_labels  # type:ignore[attr-defined]
-            and self.does_interval_property_apply(c, index)
-        ]
-        reduced_clp_labels = [c for c in clp_labels if c not in removed_clp_labels]
-        mask = [label in reduced_clp_labels for label in clp_labels]
-        reduced_matrix = matrix.matrix[:, mask]
-        return MatrixContainer(reduced_clp_labels, reduced_matrix)
+        for i, index in enumerate(global_axis):
+            matrix = matrices[i]
+            clp_labels = matrix.clp_labels
+            removed_clp_labels = [
+                c.target
+                for c in model.clp_constraints
+                if c.target in clp_labels and self.does_interval_item_apply(c, index)
+            ]
+            if len(removed_clp_labels) == 0:
+                continue
+            reduced_clp_labels = [c for c in clp_labels if c not in removed_clp_labels]
+            mask = [label in reduced_clp_labels for label in clp_labels]
+            reduced_matrix = matrix.matrix[:, mask]
+            matrices[i] = MatrixContainer(reduced_clp_labels, reduced_matrix)
+        return matrices
 
     def apply_relations(
         self,
-        matrix: MatrixContainer,
-        index: int | None,
-    ) -> MatrixContainer:
+        matrices: list[MatrixContainer],
+        global_axis: np.typing.ArrayLike,
+    ) -> list[MatrixContainer]:
         """Apply relations on a matrix.
 
         Parameters
         ----------
-        matrix : MatrixContainer
-            The matrix.
-        index : int | None
-            The index on the global axis.
+        matrices: list[MatrixContainer],
+            The matrices.
+        global_axis: np.typing.ArrayLike,
+            The global axis.
 
         Returns
         -------
@@ -343,32 +374,39 @@ class MatrixProvider:
         parameters = self.group.parameters
 
         if len(model.clp_relations) == 0:
-            return matrix
+            return matrices
 
-        clp_labels = matrix.clp_labels
-        relation_matrix = np.diagflat([1.0 for _ in clp_labels])
+        for i, index in enumerate(global_axis):
+            matrix = matrices[i]
 
-        idx_to_delete = []
-        for relation in model.clp_relations:
-            if relation.target in clp_labels and self.does_interval_property_apply(
-                relation, index
-            ):
+            clp_labels = matrix.clp_labels
+            relation_matrix = np.diagflat([1.0 for _ in clp_labels])
 
-                if relation.source not in clp_labels:
-                    continue
+            idx_to_delete = []
+            for relation in model.clp_relations:
+                if relation.target in clp_labels and self.does_interval_item_apply(
+                    relation, index
+                ):
 
-                relation = fill_item(relation, model, parameters)  # type:ignore[arg-type]
-                source_idx = clp_labels.index(relation.source)
-                target_idx = clp_labels.index(relation.target)
-                relation_matrix[target_idx, source_idx] = relation.parameter
-                idx_to_delete.append(target_idx)
+                    if relation.source not in clp_labels:
+                        continue
 
-        reduced_clp_labels = [
-            label for i, label in enumerate(clp_labels) if i not in idx_to_delete
-        ]
-        relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
-        reduced_matrix = matrix.matrix @ relation_matrix
-        return MatrixContainer(reduced_clp_labels, reduced_matrix)
+                    relation = fill_item(relation, model, parameters)  # type:ignore[arg-type]
+                    source_idx = clp_labels.index(relation.source)
+                    target_idx = clp_labels.index(relation.target)
+                    relation_matrix[target_idx, source_idx] = relation.parameter
+                    idx_to_delete.append(target_idx)
+
+            if len(idx_to_delete) == 0:
+                continue
+
+            reduced_clp_labels = [
+                label for i, label in enumerate(clp_labels) if i not in idx_to_delete
+            ]
+            relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
+            reduced_matrix = matrix.matrix @ relation_matrix
+            matrices[i] = MatrixContainer(reduced_clp_labels, reduced_matrix)
+        return matrices
 
     def get_result(self) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]:
         """Get the results of the matrix calculations.
@@ -386,31 +424,22 @@ class MatrixProvider:
         for label, matrix_container in self._matrix_containers.items():
             model_dimension = self._data_provider.get_model_dimension(label)
             model_axis = self._data_provider.get_model_axis(label)
-            if is_dataset_model_index_dependent(self.group.dataset_models[label]):
+            matrix_coords: tuple[tuple[str, Any], tuple[str, Any], tuple[str, list[str]]] | tuple[
+                tuple[str, Any], tuple[str, list[str]]
+            ] = (
+                (model_dimension, model_axis),
+                ("clp_label", matrix_container.clp_labels),
+            )
+            if matrix_container.is_index_dependent:
                 global_dimension = self._data_provider.get_global_dimension(label)
                 global_axis = self._data_provider.get_global_axis(label)
-                matrices[label] = xr.concat(
-                    [
-                        xr.DataArray(
-                            container.matrix,
-                            coords=(
-                                (model_dimension, model_axis),
-                                ("clp_label", container.clp_labels),
-                            ),
-                        )
-                        for container in matrix_container  # type:ignore[union-attr]
-                    ],
-                    dim=global_dimension,
+                matrix_coords = (
+                    (global_dimension, global_axis),
+                    matrix_coords[0],
+                    matrix_coords[1],
                 )
-                matrices[label].coords[global_dimension] = global_axis
-            else:
-                matrices[label] = xr.DataArray(
-                    matrix_container.matrix,  # type:ignore[union-attr]
-                    coords=(
-                        (model_dimension, model_axis),
-                        ("clp_label", matrix_container.clp_labels),  # type:ignore[union-attr]
-                    ),
-                )
+            matrices[label] = xr.DataArray(matrix_container.matrix, coords=matrix_coords)
+
         for label, matrix_container in self._global_matrix_containers.items():
             global_dimension = self._data_provider.get_global_dimension(label)
             global_axis = self._data_provider.get_global_axis(label)
@@ -513,7 +542,7 @@ class MatrixProviderUnlinked(MatrixProvider):
                 model_axis = self._data_provider.get_model_axis(label)
                 global_axis = self._data_provider.get_global_axis(label)
                 self._global_matrix_containers[label] = self.calculate_dataset_matrix(
-                    dataset_model, None, global_axis, model_axis, global_matrix=True
+                    dataset_model, global_axis, model_axis, global_matrix=True
                 )
 
     def calculate_prepared_matrices(self):
@@ -523,20 +552,11 @@ class MatrixProviderUnlinked(MatrixProvider):
                 continue
             scale = dataset_model.scale or 1
             weight = self._data_provider.get_weight(label)
-            if is_dataset_model_index_dependent(dataset_model):
-                self._prepared_matrix_container[label] = [
-                    self.reduce_matrix(
-                        self.get_matrix_container(label, i).create_scaled_matrix(scale),
-                        global_index,
-                    )
-                    for i, global_index in enumerate(self._data_provider.get_global_axis(label))
-                ]
-            else:
-                self._prepared_matrix_container[label] = [
-                    self.reduce_matrix(
-                        self.get_matrix_container(label, 0).create_scaled_matrix(scale), None
-                    )
-                ] * self._data_provider.get_global_axis(label).size
+            self._prepared_matrix_container[label] = self.reduce_matrix(
+                self.get_matrix_container(label).create_scaled_matrix(scale),
+                self._data_provider.get_global_axis(label),
+            )
+
             if weight is not None:
                 self._prepared_matrix_container[label] = [
                     matrix.create_weighted_matrix(weight[:, i])
@@ -548,23 +568,19 @@ class MatrixProviderUnlinked(MatrixProvider):
         for label, dataset_model in self.group.dataset_models.items():
             if has_dataset_model_global_model(dataset_model):
                 global_matrix_container = self.get_global_matrix_container(label)
+                global_matrix = global_matrix_container.matrix
+                matrix_container = self.get_matrix_container(label)
+                matrix = matrix_container.matrix
 
-                if is_dataset_model_index_dependent(dataset_model):
-                    global_axis = self._data_provider.get_global_axis(label)
+                if matrix_container.is_index_dependent:
                     full_matrix = np.concatenate(
                         [
-                            np.kron(
-                                global_matrix_container.matrix[i, :],
-                                self.get_matrix_container(label, i).matrix,
-                            )
-                            for i in range(global_axis.size)
+                            np.kron(global_matrix[i, :], matrix[i, :, :])
+                            for i in range(matrix.shape[0])
                         ]
                     )
                 else:
-                    full_matrix = np.kron(
-                        global_matrix_container.matrix,
-                        self.get_matrix_container(label, 0).matrix,
-                    )
+                    full_matrix = np.kron(global_matrix, matrix)
 
                 weight = self._data_provider.get_flattened_weight(label)
                 if weight is not None:
@@ -628,11 +644,17 @@ class MatrixProviderLinked(MatrixProvider):
 
     def calculate_aligned_matrices(self):
         """Calculate the aligned matrices of the dataset group."""
+        reduced_matrices = {
+            label: self.reduce_matrix(matrix_container, self._data_provider.get_global_axis(label))
+            for label, matrix_container in self._matrix_containers.items()
+        }
+        full_clp_labels = self.align_full_clp_labels()
         for i, global_index_value in enumerate(self._data_provider.aligned_global_axis):
             group_label = self._data_provider.get_aligned_group_label(i)
+            self._aligned_full_clp_labels[i] = full_clp_labels[group_label]
             group_matrix = self.align_matrices(
                 [
-                    self.get_matrix_container(label, index)
+                    reduced_matrices[label][index]
                     for label, index in zip(
                         self._data_provider.group_definitions[group_label],
                         self._data_provider.get_aligned_dataset_indices(i),
@@ -646,13 +668,34 @@ class MatrixProviderLinked(MatrixProvider):
                 ],
             )
 
-            self._aligned_full_clp_labels[i] = group_matrix.clp_labels
-            group_matrix = self.reduce_matrix(group_matrix, global_index_value)
             weight = self._data_provider.get_aligned_weight(i)
             if weight is not None:
                 group_matrix = group_matrix.create_weighted_matrix(weight)
 
             self._aligned_matrices[i] = group_matrix
+
+    def align_full_clp_labels(self) -> dict[str, list[str]]:
+        """Align the unreduced clp labels.
+
+        Returns
+        -------
+        dict[str, list[str]]
+            The aligned clp for every group.
+        """
+        aligned_full_clp_labels: dict[str, list[str]] = {}
+
+        for (
+            group_label,
+            dataset_labels,
+        ) in self._data_provider.group_definitions.items():  # type:ignore[attr-defined]
+            aligned_full_clp_labels[group_label] = []
+            for dataset_label in dataset_labels:
+                aligned_full_clp_labels[group_label] += [
+                    label
+                    for label in self.get_matrix_container(dataset_label).clp_labels
+                    if label not in aligned_full_clp_labels[group_label]
+                ]
+        return aligned_full_clp_labels
 
     @staticmethod
     def align_matrices(matrices: list[MatrixContainer], scales: list[float]) -> MatrixContainer:

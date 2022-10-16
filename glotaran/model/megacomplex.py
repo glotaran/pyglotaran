@@ -84,7 +84,6 @@ class Megacomplex(ModelItemTyped):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -95,8 +94,6 @@ class Megacomplex(ModelItemTyped):
         ----------
         dataset_model: DatasetModel
             The dataset model.
-        global_index: int | None
-            The global index.
         global_axis: np.typing.ArrayLike
             The global axis.
         model_axis: np.typing.ArrayLike,
@@ -108,23 +105,6 @@ class Megacomplex(ModelItemTyped):
         -------
         tuple[list[str], np.typing.ArrayLike]:
             The clp labels and the matrix.
-
-        .. # noqa: DAR202
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError
-
-    def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        """Check if the megacomplex is index dependent.
-
-        Parameters
-        ----------
-        dataset_model: DatasetModel
-            The dataset model.
-
-        Returns
-        -------
-        bool
 
         .. # noqa: DAR202
         .. # noqa: DAR401

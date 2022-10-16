@@ -197,26 +197,6 @@ class DatasetModel(ModelItem):
     scale: ParameterType | None = None
 
 
-def is_dataset_model_index_dependent(dataset_model: DatasetModel) -> bool:
-    """Check if the dataset model is index dependent.
-
-    Parameters
-    ----------
-    dataset_model: DatasetModel
-        The dataset model.
-
-    Returns
-    -------
-    bool
-    """
-    if dataset_model.force_index_dependent:
-        return True
-    return any(
-        m.index_dependent(dataset_model)  # type:ignore[union-attr]
-        for m in dataset_model.megacomplex
-    )
-
-
 def has_dataset_model_global_model(dataset_model: DatasetModel) -> bool:
     """Check if the dataset model can model the global dimension.
 
