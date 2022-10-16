@@ -65,3 +65,7 @@ def test_multiple_groups():
     for label, param in result.optimized_parameters.all():
         if param.vary:
             assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+
+    for dataset in result.data.values():
+        assert "weighted_root_mean_square_error" in dataset.attrs
+        assert "fitted_data" in dataset.data_vars

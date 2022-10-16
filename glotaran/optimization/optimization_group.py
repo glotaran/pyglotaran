@@ -131,7 +131,11 @@ class OptimizationGroup:
         dict[str, xr.Dataset]
             The datasets with the results.
         """
-        result_datasets = {label: data.copy() for label, data in self._data.items()}
+        result_datasets = {
+            label: data.copy()
+            for label, data in self._data.items()
+            if label in self._dataset_group.dataset_models.keys()
+        }
 
         global_matrices, matrices = self._matrix_provider.get_result()
         clps, residuals = self._estimation_provider.get_result()

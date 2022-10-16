@@ -14,6 +14,8 @@
 
 ### 🩹 Bug fixes
 
+- 🩹 Fix result data overwritten when using multiple dataset_groups (#1147)
+
 ### 📚 Documentation
 
 ### 🗑️ Deprecations (due in 0.9.0)
