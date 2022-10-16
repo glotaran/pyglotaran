@@ -108,6 +108,7 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
     print(result.data["dataset1"].fitted_data)  # T201
     assert result.success
     optimized_scheme = result.get_scheme()
+    assert result.optimized_parameters != initial_parameters
     assert result.optimized_parameters == optimized_scheme.parameters
     for dataset in optimized_scheme.data.values():
         assert "fitted_data" not in dataset
