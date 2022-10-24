@@ -48,7 +48,7 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.0.0
+    rev: v2.1.0
     hooks:
       - id: setup-cfg-fmt
         args: [--include-version-classifiers]
@@ -64,7 +64,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.5.2
+    rev: 1.5.3
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -145,7 +145,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.1
+    rev: v2.2.2
     hooks:
       - id: codespell
         types: [file]
