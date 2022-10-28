@@ -14,6 +14,9 @@ pyvenv.cfg
 /venv*
 /.env/
 
+# sensitive environment variables
+.env
+
 # TIMP data
 *.RData
 *.Rhistory
