@@ -10,6 +10,12 @@ dask-worker-space/
 # virtualenv
 bin/
 pyvenv.cfg
+/.venv*
+/venv*
+/.env/
+
+# sensitive environment variables
+.env
 
 # TIMP data
 *.RData
