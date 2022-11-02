@@ -163,7 +163,7 @@ def decay_matrix_implementation(
                 backsweep_period,
             )
         if dataset_model.irf.normalize:
-            matrix /= np.sum(irf_scale)
+            matrix /= np.sum(irf_scales)
 
     else:
         calculate_decay_matrix_no_irf(matrix, rates, model_axis)
