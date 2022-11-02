@@ -15,6 +15,7 @@
 ### 🩹 Bug fixes
 
 - 🩹 Fix result data overwritten when using multiple dataset_groups (#1147)
+- 🩹 Fix for normalization issue described in #1157 (multi-gaussian irfs and multiple time ranges (streak))
 
 ### 📚 Documentation
 
