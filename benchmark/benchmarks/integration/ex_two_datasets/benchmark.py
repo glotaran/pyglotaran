@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from glotaran import __version__
+
 try:
     # 0.4.0 -0.5.1
     from glotaran.analysis.optimize import optimize
@@ -28,15 +30,20 @@ class IntegrationTwoDatasets:
     def setup(self):
         dataset1 = load_dataset(SCRIPT_DIR / "data/data1.ascii")
         dataset2 = load_dataset(SCRIPT_DIR / "data/data2.ascii")
-        model = load_model(str(SCRIPT_DIR / "models/model.yml"))
         parameters = load_parameters(str(SCRIPT_DIR / "models/parameters.yml"))
+        addition_kwargs = {}
+        if int(__version__.split(".")[1]) < 7:
+            model = load_model(str(SCRIPT_DIR / "models/model_lt_0.7.0.yml"))
+            addition_kwargs["non_negative_least_squares"] = True
+        else:
+            model = load_model(str(SCRIPT_DIR / "models/model.yml"))
         self.scheme = Scheme(
             model,
             parameters,
             {"dataset1": dataset1, "dataset2": dataset2},
             maximum_number_function_evaluations=11,
-            non_negative_least_squares=True,
             optimization_method="TrustRegionReflection",
+            **addition_kwargs,
         )
 
     def time_optimize(self):
