@@ -48,10 +48,10 @@ def test_strip_type_and_structure_from_attribute():
         idict_option: dict[str, ModelItemType[int]] | None = None
 
     for attr in fields(MockItem):
-        structure, type = strip_type_and_structure_from_attribute(attr)
-        print(attr.name, attr.type, structure, type)
+        structure, type_ = strip_type_and_structure_from_attribute(attr)
+        print(attr.name, attr.type, structure, type_)
         assert structure in (None, dict, list)
-        assert type is int
+        assert type_ is int
 
 
 def test_model_get_items():
