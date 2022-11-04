@@ -11,6 +11,8 @@
 ### ✨ Features
 
 - ✨ Add optimization history to result and iteration column to parameter history (#1134)
+- ♻️ Complete refactor of model and parameter packages using attrs (#1135)
+
 
 ### 👌 Minor Improvements:
 
