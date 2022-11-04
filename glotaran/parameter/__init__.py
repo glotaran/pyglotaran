@@ -11,7 +11,7 @@ def __getattr__(attribute_name: str):
         return deprecate_module_attribute(
             deprecated_qual_name="glotaran.parameter.ParameterGroup",
             new_qual_name="glotaran.parameter.Parameters",
-            to_be_removed_in_version="0.9.0",
+            to_be_removed_in_version="0.8.0",
         )
 
     raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
