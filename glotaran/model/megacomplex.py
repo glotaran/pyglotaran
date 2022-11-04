@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 def megacomplex(
     *,
-    dataset_model_type: type | None = None,
+    dataset_model_type: type[DatasetModel] | None = None,
     exclusive: bool = False,
     unique: bool = False,
 ) -> Callable:

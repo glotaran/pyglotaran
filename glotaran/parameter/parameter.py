@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["parameters", "iteration"]
 
 
-OptionNamesSerialized = {
+OPTION_NAMES_SERIALIZED = {
     "expression": "expr",
     "maximum": "max",
     "minimum": "min",
@@ -44,7 +44,7 @@ OptionNamesSerialized = {
     "standard_error": "standard-error",
 }
 
-OptionNamesDeserialized = {v: k for k, v in OptionNamesSerialized.items()}
+OPTION_NAMES_DESERIALIZED = {v: k for k, v in OPTION_NAMES_SERIALIZED.items()}
 
 
 def deserialize_options(options: dict[str, Any]) -> dict[str, Any]:
@@ -61,7 +61,7 @@ def deserialize_options(options: dict[str, Any]) -> dict[str, Any]:
         The deserialized options.
 
     """
-    return {OptionNamesDeserialized.get(k, k): v for k, v in options.items()}
+    return {OPTION_NAMES_DESERIALIZED.get(k, k): v for k, v in options.items()}
 
 
 def serialize_options(options: dict[str, Any]) -> dict[str, Any]:
@@ -78,7 +78,7 @@ def serialize_options(options: dict[str, Any]) -> dict[str, Any]:
         The serialized options.
 
     """
-    return {OptionNamesSerialized.get(k, k): v for k, v in options.items()}
+    return {OPTION_NAMES_SERIALIZED.get(k, k): v for k, v in options.items()}
 
 
 PARAMETER_EXPRESSION_REGEX = re.compile(r"\$(?P<parameter_expression>[\w\d\.]+)((?![\w\d\.]+)|$)")
@@ -133,16 +133,16 @@ class Parameter(_SupportsArray):
     """A parameter for optimization."""
 
     label: str = ib(converter=str, validator=[valid_label])
-    expression: str | None = ib(default=None, validator=[set_transformed_expression])
-    maximum: float = ib(default=np.inf, validator=[validators.instance_of((int, float))])
-    minimum: float = ib(default=-np.inf, validator=[validators.instance_of((int, float))])
-    non_negative: bool = False
-    standard_error: float = np.nan
     value: float = ib(
         default=np.nan,
         converter=lambda v: float(v) if isinstance(v, int) else v,
         validator=[validators.instance_of(float)],
     )
+    standard_error: float = np.nan
+    expression: str | None = ib(default=None, validator=[set_transformed_expression])
+    maximum: float = ib(default=np.inf, validator=[validators.instance_of((int, float))])
+    minimum: float = ib(default=-np.inf, validator=[validators.instance_of((int, float))])
+    non_negative: bool = False
     vary: bool = ib(default=True)
 
     transformed_expression: str | None = ib(default=None, init=False, repr=False)

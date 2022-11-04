@@ -64,7 +64,6 @@ def test_register_megacomplex_warning():
         @megacomplex()
         class Dummy(DecayMegacomplex):
             type: str = "bar"
-            pass
 
         assert len(record) == 1
         assert Path(record[0].filename) == Path(__file__)

@@ -52,9 +52,7 @@ class YmlProjectIo(ProjectIoInterface):
         if "megacomplex" not in spec:
             raise ValueError("No megacomplex defined in model")
 
-        default_megacomplex = spec.get("default_megacomplex")
-        if "default_megacomplex" in spec:
-            del spec["default_megacomplex"]
+        default_megacomplex = spec.pop("default_megacomplex", None)
 
         if default_megacomplex is None and any(
             "type" not in m for m in spec["megacomplex"].values()

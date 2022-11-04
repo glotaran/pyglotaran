@@ -1,8 +1,8 @@
-label	expression	maximum	minimum	non_negative	standard_error	value	vary
-pure_list.1	None			False	None	1.0	True
-pure_list.2	None			False	None	2.0	True
-list_with_options.1	None			False	None	3.0	False
-list_with_options.2	None			False	None	4.0	False
-verbose_list.all_defaults	None			False	None	5.0	True
-verbose_list.no_defaults	None	1.0	-1.0	True	None	6.0	False
-verbose_list.expression_only	$verbose_list.all_defaults + $verbose_list.no_defaults			False	None	11.0	False
+label	value	standard_error	expression	maximum	minimum	non_negative	vary
+pure_list.1	1.0	None	None			False	True
+pure_list.2	2.0	None	None			False	True
+list_with_options.1	3.0	None	None			False	False
+list_with_options.2	4.0	None	None			False	False
+verbose_list.all_defaults	5.0	None	None			False	True
+verbose_list.no_defaults	6.0	None	None	1.0	-1.0	True	False
+verbose_list.expression_only	11.0	None	$verbose_list.all_defaults + $verbose_list.no_defaults			False	False

@@ -57,11 +57,6 @@ class ModelError(Exception):
         super().__init__(f"ModelError: {error}")
 
 
-root_parameter_error = ModelError(
-    "The root parameter group cannot contain both groups and parameters."
-)
-
-
 def _load_item_from_dict(
     item_type: type[Item], value: Item | Mapping, extra: dict[str, Any] | None = None
 ) -> Item:
@@ -501,7 +496,7 @@ class Model:
                 item_str = item_to_markdown(
                     item, parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
-                string += f"* {item_str[0]}\n"
+                string += f"* **{getattr(item, 'label', '')}**\n"
                 for s in item_str[1:]:
                     string += f"  {s}\n"
             string += "\n"

@@ -252,9 +252,9 @@ def get_dataset_model_model_dimension(dataset_model: DatasetModel) -> str:
         Raised if the dataset model does not have megacomplexes or if it is not filled.
     """
     if len(dataset_model.megacomplex) == 0:
-        raise ValueError(f"No megacomplex set for dataset model '{dataset_model.label}'")
+        raise ValueError(f"No megacomplex set for dataset model '{dataset_model.label}'.")
     if any(isinstance(m, str) for m in dataset_model.megacomplex):
-        raise ValueError(f"Dataset model '{dataset_model.label}' was not filled")
+        raise ValueError(f"Dataset model '{dataset_model.label}' was not filled.")
     model_dimension: str = dataset_model.megacomplex[
         0
     ].dimension  # type:ignore[union-attr, assignment]

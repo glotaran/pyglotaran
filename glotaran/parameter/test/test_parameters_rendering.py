@@ -102,11 +102,12 @@ def test_parameters_repr():
     )
     expected = (
         "Parameters({'foo.bar.1': Parameter(label='foo.bar.1', value=1.0), "
-        "'foo.bar.2': Parameter(label='foo.bar.2', "
-        "expression='$foo.bar.1*2', value=2.0, vary=False), "
-        "'foo.bar.3': Parameter(label='foo.bar.3', minimum=-10, value=3.0)})"
+        "'foo.bar.2': Parameter(label='foo.bar.2', value=2.0, expression='$foo.bar.1*2',"
+        " vary=False), "
+        "'foo.bar.3': Parameter(label='foo.bar.3', value=3.0, minimum=-10)})"
     )
 
+    print(result.__repr__())
     assert result.__repr__() == expected
     assert result == eval(expected)
 

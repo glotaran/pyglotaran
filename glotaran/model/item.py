@@ -1,6 +1,7 @@
 """This module contains the items."""
 from __future__ import annotations
 
+import contextlib
 from inspect import getmro
 from inspect import isclass
 from textwrap import indent
@@ -111,8 +112,6 @@ class ParameterIssue(ItemIssue):
 class Item:
     """A baseclass for items."""
 
-    pass
-
 
 @define(kw_only=True, slots=False)
 class ModelItem(Item):
@@ -173,8 +172,6 @@ class TypedItem(Item):
 @define(kw_only=True, slots=False)
 class ModelItemTyped(TypedItem, ModelItem):
     """A model item with a type."""
-
-    pass
 
 
 ItemT = TypeVar("ItemT", bound="Item")
@@ -256,13 +253,11 @@ def iterate_attributes_of_type(
     """
     for attr in fields(item):
         _, item_type = strip_type_and_structure_from_attribute(attr)
-        try:
-            if isclass(item_type) and issubclass(item_type, attr_type):
-                yield attr
-        except TypeError:
+        with contextlib.suppress(TypeError):
             # issubclass does for some reason not work with e.g. tuple as item_type
             # and Parameter as attr_type
-            pass
+            if isclass(item_type) and issubclass(item_type, attr_type):
+                yield attr
 
 
 def model_attributes(
@@ -323,21 +318,24 @@ def iterate_names_and_labels(
     for attr in attributes:
         structure, _ = strip_type_and_structure_from_attribute(attr)
         value = getattr(item, attr.name)
-        name = attr.metadata.get(META_ALIAS, attr.name)
+        name: str = attr.metadata.get(META_ALIAS, attr.name)
 
         if not value:
             continue
 
         if structure is dict:
             for v in value.values():
-                yield name, v if isinstance(v, str) else v.label
+                yield name, v if isinstance(v, str) else (name, v.label)  # type:ignore[misc]
 
         elif structure is list:
             for v in value:
-                yield name, v if isinstance(v, str) else v.label
+                yield name, v if isinstance(v, str) else (name, v.label)  # type:ignore[misc]
 
         else:
-            yield name, value if isinstance(value, str) else value.label
+            yield name, value if isinstance(value, str) else (
+                name,
+                value.label,  # type:ignore[misc]
+            )
 
 
 def iterate_model_item_names_and_labels(item: Item) -> Generator[tuple[str, str], None, None]:
@@ -602,8 +600,10 @@ def strip_option_type(definition: type, strip_type: type = NoneType) -> type:
     -------
     type
     """
-    if get_origin(definition) in [Union, UnionType] and strip_type in get_args(definition):
-        definition = get_args(definition)[0]
+    args = list(get_args(definition))
+    if get_origin(definition) in [Union, UnionType] and strip_type in args:
+        args.remove(strip_type)
+        definition = args[0]
     return definition
 
 
@@ -658,7 +658,7 @@ def attribute(
     *,
     alias: str | None = None,
     default: Any = NOTHING,
-    factory: Callable = None,
+    factory: Callable[[], Any] = None,
     validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None = None,
 ) -> Attribute:
     """Create an attribute for an item.

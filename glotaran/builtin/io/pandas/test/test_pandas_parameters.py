@@ -28,7 +28,7 @@ def yaml_reference() -> Parameters:
 def test_references(yaml_reference: Parameters, reference_path: Path):
     """References are the same"""
     result = load_parameters(reference_path)
-    assert result.__repr__() == yaml_reference.__repr__()
+    assert result == yaml_reference
 
 
 @pytest.mark.parametrize(
@@ -44,8 +44,8 @@ def test_roundtrips(
     save_parameters(file_name=parameter_path, format_name=format_name, parameters=yaml_reference)
     parameters_roundtrip = load_parameters(parameter_path)
 
-    assert parameters_roundtrip.__repr__() == yaml_reference.__repr__()
-    assert parameters_roundtrip.__repr__() == format_reference.__repr__()
+    assert parameters_roundtrip == yaml_reference
+    assert parameters_roundtrip == format_reference
 
     if format_name in {"csv", "tsv"}:
         assert parameter_path.read_text() == reference_path.read_text()

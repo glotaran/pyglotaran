@@ -322,19 +322,19 @@ def test_model_markdown(test_model: Model):
 
         ## Dataset Groups
 
-        *
+        * **testgroup**
             * *Label*: testgroup
             * *Residual Function*: non_negative_least_squares
             * *Link Clp*: True
 
-        *
+        * **default**
             * *Label*: default
             * *Residual Function*: variable_projection
 
 
         ## Weights
 
-        *
+        * ****
             * *Datasets*: ['d1', 'd2']
             * *Global Interval*: (1, 4)
             * *Model Interval*: (2, 3)
@@ -343,7 +343,7 @@ def test_model_markdown(test_model: Model):
 
         ## Test Item
 
-        *
+        * **t1**
             * *Label*: t1
             * *Param*: foo
             * *Param List*: ['bar', 'baz']
@@ -351,7 +351,7 @@ def test_model_markdown(test_model: Model):
             * *Megacomplex*: m1
             * *Number*: 42
 
-        *
+        * **t2**
             * *Label*: t2
             * *Param*: baz
             * *Param List*: ['foo']
@@ -362,13 +362,13 @@ def test_model_markdown(test_model: Model):
 
         ## Megacomplex
 
-        *
+        * **m1**
             * *Label*: m1
             * *Type*: simple
             * *Dimension*: model
             * *Test Item*: t2
 
-        *
+        * **m2**
             * *Label*: m2
             * *Type*: dataset
             * *Dimension*: model2
@@ -376,7 +376,7 @@ def test_model_markdown(test_model: Model):
 
         ## Test Item Dataset
 
-        *
+        * **t1**
             * *Label*: t1
             * *Param*: foo
             * *Param List*: ['bar', 'baz']
@@ -384,7 +384,7 @@ def test_model_markdown(test_model: Model):
             * *Megacomplex*: m1
             * *Number*: 42
 
-        *
+        * **t2**
             * *Label*: t2
             * *Param*: baz
             * *Param List*: ['foo']
@@ -395,7 +395,7 @@ def test_model_markdown(test_model: Model):
 
         ## Dataset
 
-        *
+        * **dataset1**
             * *Label*: dataset1
             * *Group*: default
             * *Force Index Dependent*: False
@@ -405,7 +405,7 @@ def test_model_markdown(test_model: Model):
             * *Test Property Dataset1*: 1
             * *Test Property Dataset2*: bar
 
-        *
+        * **dataset2**
             * *Label*: dataset2
             * *Group*: testgroup
             * *Force Index Dependent*: False
