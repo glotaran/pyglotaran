@@ -6,43 +6,23 @@ import pytest
 from glotaran.builtin.megacomplexes.damped_oscillation import DampedOscillationMegacomplex
 from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.builtin.megacomplexes.spectral import SpectralMegacomplex
-from glotaran.model import Megacomplex
 from glotaran.model import Model
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
-
-class DampedOscillationsModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-        *,
-        megacomplex_types: dict[str, type[Megacomplex]] | None = None,
-        default_megacomplex_type: str | None = None,
-    ):
-        defaults: dict[str, type[Megacomplex]] = {
-            "damped_oscillation": DampedOscillationMegacomplex,
-            "decay": DecayMegacomplex,
-            "spectral": SpectralMegacomplex,
-        }
-        if megacomplex_types is not None:
-            defaults.update(megacomplex_types)
-        return super().from_dict(
-            model_dict,
-            megacomplex_types=defaults,
-            default_megacomplex_type=default_megacomplex_type,
-        )
+DampedOscillationsModel = Model.create_class_from_megacomplexes(
+    [DampedOscillationMegacomplex, DecayMegacomplex, SpectralMegacomplex]
+)
 
 
 class OneOscillation:
-    sim_model = DampedOscillationsModel.from_dict(
-        {
+    sim_model = DampedOscillationsModel(
+        **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -64,11 +44,11 @@ class OneOscillation:
         }
     )
 
-    model = DampedOscillationsModel.from_dict(
-        {
+    model = DampedOscillationsModel(
+        **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -78,7 +58,7 @@ class OneOscillation:
         }
     )
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 25.5],
@@ -88,7 +68,7 @@ class OneOscillation:
         }
     )
 
-    parameter = ParameterGroup.from_dict(
+    parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 20],
@@ -106,11 +86,11 @@ class OneOscillation:
 
 
 class OneOscillationWithIrf:
-    sim_model = DampedOscillationsModel.from_dict(
-        {
+    sim_model = DampedOscillationsModel(
+        **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -145,11 +125,11 @@ class OneOscillationWithIrf:
         }
     )
 
-    model = DampedOscillationsModel.from_dict(
-        {
+    model = DampedOscillationsModel(
+        **{
             "megacomplex": {
                 "m1": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -171,7 +151,7 @@ class OneOscillationWithIrf:
         }
     )
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 25],
@@ -182,7 +162,7 @@ class OneOscillationWithIrf:
         }
     )
 
-    parameter = ParameterGroup.from_dict(
+    parameter = Parameters.from_dict(
         {
             "osc": [
                 ["freq", 25],
@@ -201,8 +181,8 @@ class OneOscillationWithIrf:
 
 
 class OneOscillationWithSequentialModel:
-    sim_model = DampedOscillationsModel.from_dict(
-        {
+    sim_model = DampedOscillationsModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
             },
@@ -217,7 +197,7 @@ class OneOscillationWithSequentialModel:
             "megacomplex": {
                 "m1": {"type": "decay", "k_matrix": ["k1"]},
                 "m2": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -270,8 +250,8 @@ class OneOscillationWithSequentialModel:
         }
     )
 
-    model = DampedOscillationsModel.from_dict(
-        {
+    model = DampedOscillationsModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
             },
@@ -286,7 +266,7 @@ class OneOscillationWithSequentialModel:
             "megacomplex": {
                 "m1": {"type": "decay", "k_matrix": ["k1"]},
                 "m2": {
-                    "type": "damped_oscillation",
+                    "type": "damped-oscillation",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
@@ -309,7 +289,7 @@ class OneOscillationWithSequentialModel:
         }
     )
 
-    wanted_parameter = ParameterGroup.from_dict(
+    wanted_parameter = Parameters.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -328,7 +308,7 @@ class OneOscillationWithSequentialModel:
         }
     )
 
-    parameter = ParameterGroup.from_dict(
+    parameter = Parameters.from_dict(
         {
             "j": [
                 ["1", 1, {"vary": False, "non-negative": False}],
@@ -394,8 +374,8 @@ def test_doas_model(suite):
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, suite.wanted_parameter.get(label).value, rtol=1e-1)
+    for param in result.optimized_parameters.all():
+        assert np.allclose(param.value, suite.wanted_parameter.get(param.label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset["time"], resultdata["time"])

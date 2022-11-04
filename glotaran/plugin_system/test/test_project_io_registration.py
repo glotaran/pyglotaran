@@ -9,7 +9,7 @@ import pytest
 from glotaran.builtin.io.pandas.csv import CsvProjectIo
 from glotaran.builtin.io.yml.yml import YmlProjectIo
 from glotaran.io import ProjectIoInterface
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.plugin_system.base_registry import PluginOverwriteWarning
 from glotaran.plugin_system.base_registry import __PluginRegistry
 from glotaran.plugin_system.project_io_registration import SAVING_OPTIONS_DEFAULT
@@ -71,14 +71,14 @@ class MockProjectIo(ProjectIoInterface):
             }
         )
 
-    def load_parameters(self, file_name: StrOrPath, **kwargs: Any) -> ParameterGroup:
+    def load_parameters(self, file_name: StrOrPath, **kwargs: Any) -> Parameters:
         mock_obj = MockFileLoadable()
         mock_obj.func_args = {"file_name": file_name, **kwargs}
         return mock_obj  # type:ignore[return-value]
 
     def save_parameters(  # type:ignore[override]
         self,
-        parameters: ParameterGroup,
+        parameters: Parameters,
         file_name: StrOrPath,
         **kwargs: Any,
     ):

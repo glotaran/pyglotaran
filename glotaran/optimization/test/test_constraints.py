@@ -13,9 +13,9 @@ from glotaran.simulation import simulate
 @pytest.mark.parametrize("link_clp", [True, False])
 def test_constraint(index_dependent, link_clp):
     model = deepcopy(suite.model)
-    model.dataset_group_models["default"].link_clp = link_clp
+    model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.clp_constraints.append(ZeroConstraint.from_dict({"target": "s2"}))
+    model.clp_constraints.append(ZeroConstraint(**{"target": "s2"}))
 
     print("link_clp", link_clp, "index_dependent", index_dependent)
     dataset = simulate(

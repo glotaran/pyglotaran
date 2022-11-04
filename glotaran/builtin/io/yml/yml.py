@@ -15,7 +15,8 @@ from glotaran.io import save_model
 from glotaran.io import save_result
 from glotaran.io import save_scheme
 from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
+from glotaran.plugin_system.megacomplex_registration import get_megacomplex
 from glotaran.project.dataclass_helpers import asdict
 from glotaran.project.dataclass_helpers import fromdict
 from glotaran.project.project import Result
@@ -48,7 +49,10 @@ class YmlProjectIo(ProjectIoInterface):
 
         spec = sanitize_yaml(spec)
 
-        default_megacomplex = spec.get("default_megacomplex")
+        if "megacomplex" not in spec:
+            raise ValueError("No megacomplex defined in model")
+
+        default_megacomplex = spec.pop("default_megacomplex", None)
 
         if default_megacomplex is None and any(
             "type" not in m for m in spec["megacomplex"].values()
@@ -58,10 +62,13 @@ class YmlProjectIo(ProjectIoInterface):
                 "at least one megacomplex does not have a type."
             )
 
-        if "megacomplex" not in spec:
-            raise ValueError("No megacomplex defined in model")
+        spec["megacomplex"] = {
+            label: m | {"type": default_megacomplex} if "type" not in m else m
+            for label, m in spec["megacomplex"].items()
+        }
 
-        return Model.from_dict(spec, megacomplex_types=None, default_megacomplex_type=None)
+        megacomplex_types = {get_megacomplex(m["type"]) for m in spec["megacomplex"].values()}
+        return Model.create_class_from_megacomplexes(megacomplex_types)(**spec)
 
     def save_model(self, model: Model, file_name: str):
         """Save a Model instance to a spec file.
@@ -85,24 +92,24 @@ class YmlProjectIo(ProjectIoInterface):
                         item[prop_name] = {f"{k}": v for k, v in zip(keys, prop.values())}
         write_dict(model_dict, file_name=file_name)
 
-    def load_parameters(self, file_name: str) -> ParameterGroup:
-        """Create a ParameterGroup instance from the specs defined in a file.
+    def load_parameters(self, file_name: str) -> Parameters:
+        """Create parameters instance from the specs defined in a file.
         Parameters
         ----------
         file_name : str
             File containing the parameter specs.
         Returns
         -------
-        ParameterGroup
-            ParameterGroup instance created from the file.
+        Parameters
+            Parameters instance created from the file.
         """
 
         spec = self._load_yml(file_name)
 
         if isinstance(spec, list):
-            return ParameterGroup.from_list(spec)
+            return Parameters.from_list(spec)
         else:
-            return ParameterGroup.from_dict(spec)
+            return Parameters.from_dict(spec)
 
     def load_scheme(self, file_name: str) -> Scheme:
         spec = self._load_yml(file_name)

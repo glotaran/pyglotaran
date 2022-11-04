@@ -4,9 +4,15 @@
 
 ## 🚀 0.7.0 (Unreleased)
 
+### 💥 BREAKING CHANGE
+
+- 💥🚧 Dropped support for Python 3.8 and 3.9 and only support 3.10 (#1135)
+
 ### ✨ Features
 
 - ✨ Add optimization history to result and iteration column to parameter history (#1134)
+- ♻️ Complete refactor of model and parameter packages using attrs (#1135)
+
 
 ### 👌 Minor Improvements:
 
@@ -21,7 +27,19 @@
 
 ### 🗑️ Deprecations (due in 0.9.0)
 
+### 🗑️ Deprecations (due in 0.8.0)
+
+- `<model_file>.clp_area_penalties` -> `<model_file>.clp_penalties`
+- `glotaran.ParameterGroup` -> `glotaran.Parameters`
+
 ### 🗑️❌ Deprecated functionality removed in this release
+
+- `glotaran.project.Scheme(..., non_negative_least_squares=...)`
+- `glotaran.project.Scheme(..., group=...)`
+- `glotaran.project.Scheme(..., group_tolerance=...)`
+- `<model_file>.non-negative-least-squares: true`
+- `<model_file>.non-negative-least-squares: false`
+- `glotaran.parameter.ParameterGroup.to_csv(file_name=parameters.csv)`
 
 ### 🚧 Maintenance
 

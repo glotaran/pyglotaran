@@ -1,4 +1,4 @@
-type: kinetic-spectrum
+default_megacomplex: decay
 
 dataset:
   dataset1:
@@ -33,16 +33,16 @@ initial_concentration:
 
 irf:
   irf1:
-    type: spectral-multi-gaussian
-    center: [irf.center]
-    width: [irf.width]
+    type: gaussian
+    center: irf.center
+    width: irf.width
   irf1_no_dispersion:
-    type: spectral-multi-gaussian
-    center: [irf.center]
-    width: [irf.width]
+    type: gaussian
+    center: irf.center
+    width: irf.width
 
 # It works without equal_area_penalties but then the inputs cannot be estimated
-equal_area_penalties:
+clp_penalties:
   - type: equal_area
     source: s1
     source_intervals: [[300, 3000]]
@@ -57,7 +57,6 @@ equal_area_penalties:
     target_intervals: [[300, 3000]]
     parameter: area.1
     weight: 0.1
-
 # Example of weight application:
 # weights:
 #   - datasets: [dataset1, dataset2]

@@ -25,6 +25,7 @@ dataset:
         irf: irf1
     dataset4:
         megacomplex: [mc2]
+        initial_concentration: j1
 megacomplex:
     mc1:
         type: decay
@@ -37,7 +38,7 @@ megacomplex:
             s3: sh3
 irf:
     irf1:
-        type: spectral-multi-gaussian
+        type: multi-gaussian
         center: [irf.center]
         width: [irf.width]
 shape:
@@ -180,7 +181,7 @@ def test_kinetic_model(suite, nnls):
     model = suite.model
     print(model.validate())
     assert model.valid()
-    model.dataset_group_models["default"].method = (
+    model.dataset_groups["default"].method = (
         "non_negative_least_squares" if nnls else "variable_projection"
     )
 
@@ -210,9 +211,8 @@ def test_kinetic_model(suite, nnls):
     result = optimize(scheme)
     print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameters.all():
-        print(label, param.value, wanted_parameters.get(label).value)
-        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+    for param in result.optimized_parameters.all():
+        assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
 

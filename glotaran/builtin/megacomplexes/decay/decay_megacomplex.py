@@ -1,7 +1,4 @@
-"""This package contains the decay megacomplex item."""
 from __future__ import annotations
-
-from typing import List
 
 import numpy as np
 import xarray as xr
@@ -15,23 +12,22 @@ from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
+from glotaran.model import ModelItemType
+from glotaran.model import item
 from glotaran.model import megacomplex
 
 
-@megacomplex(
-    dimension="time",
-    model_items={
-        "k_matrix": List[KMatrix],
-    },
-    properties={},
-    dataset_model_items={
-        "initial_concentration": {"type": InitialConcentration, "allow_none": True},
-        "irf": {"type": Irf, "allow_none": True},
-    },
-    register_as="decay",
-)
+@item
+class DecayDatasetModel(DatasetModel):
+    initial_concentration: ModelItemType[InitialConcentration] | None = None
+    irf: ModelItemType[Irf] | None = None
+
+
+@megacomplex(dataset_model_type=DecayDatasetModel)
 class DecayMegacomplex(Megacomplex):
-    """A Megacomplex with one or more K-Matrices."""
+    dimension: str = "time"
+    type: str = "decay"
+    k_matrix: list[ModelItemType[KMatrix]]
 
     def get_compartments(self, dataset_model: DatasetModel) -> list[str]:
         if dataset_model.initial_concentration is None:

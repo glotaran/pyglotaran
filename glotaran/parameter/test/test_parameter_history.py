@@ -1,13 +1,13 @@
 import numpy as np
 
-from glotaran.parameter.parameter_group import ParameterGroup
 from glotaran.parameter.parameter_history import ParameterHistory
+from glotaran.parameter.parameters import Parameters
 
 
 def test_parameter_history():
-    group0 = ParameterGroup.from_list([["1", 1], ["2", 4]])
-    group1 = ParameterGroup.from_list([["1", 2], ["2", 5]])
-    group2 = ParameterGroup.from_list([["1", 3], ["2", 6]])
+    group0 = Parameters.from_list([["1", 1], ["2", 4]])
+    group1 = Parameters.from_list([["1", 2], ["2", 5]])
+    group2 = Parameters.from_list([["1", 3], ["2", 6]])
 
     history = ParameterHistory()
 

@@ -5,15 +5,17 @@ from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.builtin.megacomplexes.decay.test.test_decay_megacomplex import create_gaussian_clp
 from glotaran.model import Model
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation.simulation import simulate
 
 
 def test_clp_guide():
 
-    model = Model.from_dict(
-        {
+    model = Model.create_class_from_megacomplexes(
+        [DecaySequentialMegacomplex, ClpGuideMegacomplex]
+    )(
+        **{
             "dataset_groups": {"default": {"link_clp": True}},
             "megacomplex": {
                 "mc1": {
@@ -28,16 +30,12 @@ def test_clp_guide():
                 "dataset2": {"megacomplex": ["mc2"]},
             },
         },
-        megacomplex_types={
-            "decay-sequential": DecaySequentialMegacomplex,
-            "clp-guide": ClpGuideMegacomplex,
-        },
     )
 
-    initial_parameters = ParameterGroup.from_list(
+    initial_parameters = Parameters.from_list(
         [101e-5, 501e-4, [1, {"vary": False, "non-negative": False}]]
     )
-    wanted_parameters = ParameterGroup.from_list(
+    wanted_parameters = Parameters.from_list(
         [101e-4, 501e-3, [1, {"vary": False, "non-negative": False}]]
     )
 
@@ -59,6 +57,5 @@ def test_clp_guide():
     )
     result = optimize(scheme)
     print(result.optimized_parameters)
-
-    for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+    for param in result.optimized_parameters.all():
+        assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)

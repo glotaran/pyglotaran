@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from glotaran.parameter.parameter_group import ParameterGroup
+from glotaran.parameter.parameters import Parameters
 
 if TYPE_CHECKING:
     from os import PathLike
@@ -112,7 +112,7 @@ class ParameterHistory:
         return pd.DataFrame(self._parameters, columns=self.parameter_labels)
 
     def to_csv(self, file_name: str | PathLike[str], delimiter: str = ","):
-        """Write a :class:`ParameterGroup` to a CSV file.
+        """Write a :class:`ParameterHistory` to a CSV file.
 
         Parameters
         ----------
@@ -124,12 +124,12 @@ class ParameterHistory:
         self.source_path = Path(file_name).as_posix()
         self.to_dataframe().to_csv(file_name, sep=delimiter, index=False)
 
-    def append(self, parameter_group: ParameterGroup, current_iteration: int = 0):
-        """Append a :class:`ParameterGroup` to the history.
+    def append(self, parameters: Parameters, current_iteration: int = 0):
+        """Append :class:`Parameters` to the history.
 
         Parameters
         ----------
-        parameter_group : ParameterGroup
+        parameters : Parameters
             The group to append.
         current_iteration: int
             Current iteration of the optimizer.
@@ -137,21 +137,19 @@ class ParameterHistory:
         Raises
         ------
         ValueError
-            Raised if the parameter labels of the group differs from previous groups.
+            Raised if the parameter labels differs from previous.
         """
         (
             parameter_labels,
             parameter_values,
             _,
             _,
-        ) = parameter_group.get_label_value_and_bounds_arrays()
+        ) = parameters.get_label_value_and_bounds_arrays()
         parameter_labels = ["iteration", *parameter_labels]
         if len(self._parameter_labels) == 0:
             self._parameter_labels = parameter_labels
         if parameter_labels != self.parameter_labels:
-            raise ValueError(
-                "Cannot append parameter group. Parameter labels do not match existing."
-            )
+            raise ValueError("Cannot append parameters. Parameter labels do not match existing.")
 
         self._parameters.append(np.array([current_iteration, *parameter_values]))
 

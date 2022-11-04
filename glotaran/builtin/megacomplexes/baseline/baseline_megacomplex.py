@@ -8,8 +8,10 @@ from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
 
 
-@megacomplex(unique=True, register_as="baseline")
+@megacomplex(unique=True)
 class BaselineMegacomplex(Megacomplex):
+    type: str = "baseline"
+
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,

@@ -6,7 +6,7 @@ import pytest
 from glotaran.model import EqualAreaPenalty
 from glotaran.optimization.optimization_group import OptimizationGroup
 from glotaran.optimization.test.suites import TwoCompartmentDecay as suite
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -15,11 +15,11 @@ from glotaran.simulation import simulate
 @pytest.mark.parametrize("link_clp", [True, False])
 def test_penalties(index_dependent, link_clp):
     model = deepcopy(suite.model)
-    model.dataset_group_models["default"].link_clp = link_clp
+    model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.clp_area_penalties.append(
-        EqualAreaPenalty.from_dict(
-            {
+    model.clp_penalties.append(
+        EqualAreaPenalty(
+            **{
                 "source": "s1",
                 "source_intervals": [(1, 20)],
                 "target": "s2",
@@ -29,7 +29,7 @@ def test_penalties(index_dependent, link_clp):
             }
         )
     )
-    parameters = ParameterGroup.from_list([11e-4, 22e-5, 2])
+    parameters = Parameters.from_list([11e-4, 22e-5, 2])
 
     global_axis = np.arange(50)
 

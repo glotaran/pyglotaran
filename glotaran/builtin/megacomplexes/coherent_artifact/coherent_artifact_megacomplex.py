@@ -5,30 +5,25 @@ import numba as nb
 import numpy as np
 import xarray as xr
 
-from glotaran.builtin.megacomplexes.decay.irf import Irf
+from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import DecayDatasetModel
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.builtin.megacomplexes.decay.util import retrieve_irf
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import ModelError
+from glotaran.model import ParameterType
+from glotaran.model import is_dataset_model_index_dependent
 from glotaran.model import megacomplex
-from glotaran.parameter import Parameter
 
 
-@megacomplex(
-    dimension="time",
-    unique=True,
-    properties={
-        "order": {"type": int},
-        "width": {"type": Parameter, "allow_none": True},
-    },
-    dataset_model_items={
-        "irf": {"type": Irf, "allow_none": True},
-    },
-    register_as="coherent-artifact",
-)
+@megacomplex(dataset_model_type=DecayDatasetModel, unique=True)
 class CoherentArtifactMegacomplex(Megacomplex):
+    dimension: str = "time"
+    type: str = "coherent-artifact"
+    order: int
+    width: ParameterType | None = None
+
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
@@ -73,7 +68,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
             model_dimension = dataset.attrs["model_dimension"]
             dataset.coords["coherent_artifact_order"] = np.arange(1, self.order + 1)
             response_dimensions = (model_dimension, "coherent_artifact_order")
-            if dataset_model.is_index_dependent() is True:
+            if is_dataset_model_index_dependent(dataset_model):
                 response_dimensions = (global_dimension, *response_dimensions)
             dataset["coherent_artifact_response"] = (
                 response_dimensions,

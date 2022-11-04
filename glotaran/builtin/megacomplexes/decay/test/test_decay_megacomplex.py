@@ -4,9 +4,13 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecayParallelMegacomplex
+from glotaran.builtin.megacomplexes.decay import DecaySequentialMegacomplex
 from glotaran.model import Model
+from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -21,24 +25,20 @@ def create_gaussian_clp(labels, amplitudes, centers, widths, axis):
     ).T
 
 
-class DecayModel(Model):
-    @classmethod
-    def from_dict(
-        cls,
-        model_dict,
-    ):
-        model_dict = {**model_dict, "default_megacomplex": "decay"}
-        return super().from_dict(model_dict)
+DecaySimpleModel = Model.create_class_from_megacomplexes(
+    [DecayParallelMegacomplex, DecaySequentialMegacomplex]
+)
+DecayModel = Model.create_class_from_megacomplexes([DecayMegacomplex])
 
 
 class OneComponentOneChannel:
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["2"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -56,12 +56,10 @@ class OneComponentOneChannel:
         }
     )
 
-    initial_parameters = ParameterGroup.from_list(
+    initial_parameters = Parameters.from_list(
         [101e-4, [1, {"vary": False, "non-negative": False}]]
     )
-    wanted_parameters = ParameterGroup.from_list(
-        [101e-3, [1, {"vary": False, "non-negative": False}]]
-    )
+    wanted_parameters = Parameters.from_list([101e-3, [1, {"vary": False, "non-negative": False}]])
 
     time = np.arange(0, 50, 1.5)
     pixel = np.asarray([0])
@@ -71,13 +69,13 @@ class OneComponentOneChannel:
 
 
 class OneComponentOneChannelGaussianIrf:
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1"], "parameters": ["5"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
             },
             "k_matrix": {
                 "k1": {
@@ -99,13 +97,20 @@ class OneComponentOneChannelGaussianIrf:
         }
     )
 
-    initial_parameters = ParameterGroup.from_list(
-        [101e-4, 0.1, 1, [0.1, {"vary": False}], [1, {"vary": False, "non-negative": False}]]
+    initial_parameters = Parameters.from_list(
+        [
+            101e-4,
+            0.1,
+            1,
+            [0.1, {"vary": False}],
+            [1, {"vary": False, "non-negative": False}],
+        ]
     )
+    print(initial_parameters)
     assert model.megacomplex["mc1"].index_dependent(
-        model.dataset["dataset1"].fill(model, initial_parameters)
+        fill_item(model.dataset["dataset1"], model, initial_parameters)
     )
-    wanted_parameters = ParameterGroup.from_list(
+    wanted_parameters = Parameters.from_list(
         [
             [101e-3, {"non-negative": True}],
             [0.2, {"non-negative": True}],
@@ -123,8 +128,8 @@ class OneComponentOneChannelGaussianIrf:
 
 
 class ThreeComponentParallel:
-    model = DecayModel.from_dict(
-        {
+    model = DecaySimpleModel(
+        **{
             "megacomplex": {
                 "mc1": {
                     "type": "decay-parallel",
@@ -152,7 +157,7 @@ class ThreeComponentParallel:
         }
     )
 
-    initial_parameters = ParameterGroup.from_dict(
+    initial_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -163,7 +168,7 @@ class ThreeComponentParallel:
             "irf": [["center", 1.3], ["width", 7.8]],
         }
     )
-    wanted_parameters = ParameterGroup.from_dict(
+    wanted_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -183,8 +188,8 @@ class ThreeComponentParallel:
 
 
 class ThreeComponentSequential:
-    model = DecayModel.from_dict(
-        {
+    model = DecaySimpleModel(
+        **{
             "megacomplex": {
                 "mc1": {
                     "type": "decay-sequential",
@@ -212,7 +217,7 @@ class ThreeComponentSequential:
         }
     )
 
-    initial_parameters = ParameterGroup.from_dict(
+    initial_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -223,7 +228,7 @@ class ThreeComponentSequential:
             "irf": [["center", 1.3], ["width", 7.8]],
         }
     )
-    wanted_parameters = ParameterGroup.from_dict(
+    wanted_parameters = Parameters.from_dict(
         {
             "kinetic": [
                 ["1", 501e-3],
@@ -256,7 +261,7 @@ def test_kinetic_model(suite, nnls):
     model = suite.model
     print(model.validate())
     assert model.valid()
-    model.dataset_group_models["default"].method = (
+    model.dataset_groups["default"].method = (
         "non_negative_least_squares" if nnls else "variable_projection"
     )
 
@@ -286,8 +291,8 @@ def test_kinetic_model(suite, nnls):
     result = optimize(scheme)
     print(result.optimized_parameters)
 
-    for label, param in result.optimized_parameters.all():
-        assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+    for param in result.optimized_parameters.all():
+        assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset["time"], resultdata["time"])
@@ -307,14 +312,14 @@ def test_kinetic_model(suite, nnls):
 
 
 def test_finalize_data():
-    model = DecayModel.from_dict(
-        {
+    model = DecayModel(
+        **{
             "initial_concentration": {
                 "j1": {"compartments": ["s1", "s2"], "parameters": ["3", "3"]},
             },
             "megacomplex": {
-                "mc1": {"k_matrix": ["k1"]},
-                "mc2": {"k_matrix": ["k2"]},
+                "mc1": {"type": "decay", "k_matrix": ["k1"]},
+                "mc2": {"type": "decay", "k_matrix": ["k2"]},
             },
             "k_matrix": {
                 "k1": {
@@ -337,7 +342,7 @@ def test_finalize_data():
         }
     )
 
-    parameters = ParameterGroup.from_list(
+    parameters = Parameters.from_list(
         [101e-4, 101e-3, [1, {"vary": False, "non-negative": False}]]
     )
 

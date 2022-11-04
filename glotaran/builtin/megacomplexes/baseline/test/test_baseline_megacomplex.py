@@ -1,55 +1,29 @@
 import numpy as np
 
 from glotaran.builtin.megacomplexes.baseline import BaselineMegacomplex
-from glotaran.builtin.megacomplexes.decay import DecayMegacomplex
 from glotaran.model import Model
+from glotaran.model import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 
 def test_baseline():
-    model = Model.from_dict(
-        {
-            "initial_concentration": {
-                "j1": {"compartments": ["s1"], "parameters": ["2"]},
-            },
-            "megacomplex": {
-                "mc1": {"type": "decay", "k_matrix": ["k1"]},
-                "mc2": {"type": "baseline", "dimension": "time"},
-            },
-            "k_matrix": {
-                "k1": {
-                    "matrix": {
-                        ("s1", "s1"): "1",
-                    }
-                }
-            },
-            "dataset": {
-                "dataset1": {
-                    "initial_concentration": "j1",
-                    "megacomplex": ["mc1", "mc2"],
-                },
-            },
-        },
-        megacomplex_types={"decay": DecayMegacomplex, "baseline": BaselineMegacomplex},
+    model = Model.create_class_from_megacomplexes([BaselineMegacomplex])(
+        **{
+            "megacomplex": {"m": {"type": "baseline", "dimension": "time"}},
+            "dataset": {"dataset1": {"megacomplex": ["m"]}},
+        }
     )
 
-    parameter = ParameterGroup.from_list(
-        [
-            101e-4,
-            [1, {"vary": False, "non-negative": False}],
-            [42, {"vary": False, "non-negative": False}],
-        ]
-    )
-
+    parameters = Parameters({})
     time = np.asarray(np.arange(0, 50, 1.5))
     pixel = np.asarray([0])
-    dataset_model = model.dataset["dataset1"].fill(model, parameter)
+    dataset_model = fill_item(model.dataset["dataset1"], model, parameters)
     matrix = MatrixProvider.calculate_dataset_matrix(dataset_model, None, pixel, time)
     compartments = matrix.clp_labels
 
-    assert len(compartments) == 2
+    assert len(compartments) == 1
     assert "dataset1_baseline" in compartments
 
-    assert matrix.matrix.shape == (time.size, 2)
-    assert np.all(matrix.matrix[:, 1] == 1)
+    assert matrix.matrix.shape == (time.size, 1)
+    assert np.all(matrix.matrix[:, 0] == 1)

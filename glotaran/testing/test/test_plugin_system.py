@@ -13,7 +13,7 @@ from glotaran.testing.plugin_system import monkeypatch_plugin_registry_megacompl
 from glotaran.testing.plugin_system import monkeypatch_plugin_registry_project_io
 
 
-@megacomplex(dimension="test")
+@megacomplex()
 class DummyMegacomplex(Megacomplex):
     pass
 

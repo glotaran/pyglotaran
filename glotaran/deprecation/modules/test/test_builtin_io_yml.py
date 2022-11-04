@@ -78,8 +78,19 @@ if TYPE_CHECKING:
                     - type: equal_area
                 """
             ),
+            2,
+            "clp_penalties",
+            [{"type": "equal_area"}],
+        ),
+        (
+            dedent(
+                """
+                clp_area_penalties:
+                    - type: equal_area
+                """
+            ),
             1,
-            "clp_area_penalties",
+            "clp_penalties",
             [{"type": "equal_area"}],
         ),
         (
@@ -119,6 +130,7 @@ if TYPE_CHECKING:
         "spectral_constraints",
         "constraints",
         "equal_area_penalties",
+        "clp_area_penalties",
         "center_dispersion",
         "width_dispersion",
     ),

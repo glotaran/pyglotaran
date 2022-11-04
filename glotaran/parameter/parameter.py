@@ -4,9 +4,18 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
+from typing import Any
 
 import asteval
 import numpy as np
+from attr import ib
+from attrs import Attribute
+from attrs import asdict
+from attrs import define
+from attrs import evolve
+from attrs import fields
+from attrs import filters
+from attrs import validators
 
 try:
     from numpy._typing._array_like import _SupportsArray
@@ -14,27 +23,62 @@ except ImportError:
     # numpy < 1.23
     from numpy.typing._array_like import _SupportsArray
 
+from glotaran.utils.attrs_helper import no_default_vals_in_repr
+from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
-    from typing import Any
 
-    from glotaran.parameter import ParameterGroup
+    from glotaran.parameter import Parameters
 
-RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["group", "iteration"]
+RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["parameters", "iteration"]
 
 
-class Keys:
-    """Keys for parameter options."""
+OPTION_NAMES_SERIALIZED = {
+    "expression": "expr",
+    "maximum": "max",
+    "minimum": "min",
+    "non_negative": "non-negative",
+    "standard_error": "standard-error",
+}
 
-    EXPR = "expr"
-    MAX = "max"
-    MIN = "min"
-    NON_NEG = "non-negative"
-    STD_ERR = "standard-error"
-    VARY = "vary"
+OPTION_NAMES_DESERIALIZED = {v: k for k, v in OPTION_NAMES_SERIALIZED.items()}
+
+
+def deserialize_options(options: dict[str, Any]) -> dict[str, Any]:
+    """Replace options keys in serialized format by attribute names.
+
+    Parameters
+    ----------
+    options : dict[str, Any]
+        The serialized options.
+
+    Returns
+    -------
+    dict[str, Any]
+        The deserialized options.
+
+    """
+    return {OPTION_NAMES_DESERIALIZED.get(k, k): v for k, v in options.items()}
+
+
+def serialize_options(options: dict[str, Any]) -> dict[str, Any]:
+    """Replace options keys with serialized format by attribute names.
+
+    Parameters
+    ----------
+    options : dict[str, Any]
+        The options.
+
+    Returns
+    -------
+    dict[str, Any]
+        The serialized options.
+
+    """
+    return {OPTION_NAMES_SERIALIZED.get(k, k): v for k, v in options.items()}
 
 
 PARAMETER_EXPRESSION_REGEX = re.compile(r"\$(?P<parameter_expression>[\w\d\.]+)((?![\w\d\.]+)|$)")
@@ -43,439 +87,175 @@ VALID_LABEL_REGEX = re.compile(r"\W", flags=re.ASCII)
 """A regular expression to validate labels."""
 
 
+def valid_label(parameter: Parameter, attribute: Attribute, label: str):
+    """Check if a label is a valid label for :class:`Parameter`.
+
+    Parameters
+    ----------
+    parameter : Parameter
+        The :class:`Parameter` instance
+    attribute : Attribute
+        The label field.
+    label : str
+        The label value.
+
+    Raises
+    ------
+    ValueError
+        Raise when the label is not valid.
+    """
+    if VALID_LABEL_REGEX.search(label.replace(".", "_")) is not None or label in RESERVED_LABELS:
+        raise ValueError(f"'{label}' is not a valid parameter label.")
+
+
+def set_transformed_expression(parameter: Parameter, attribute: Attribute, expression: str | None):
+    """Set the transformed expression from an expression.
+
+    Parameters
+    ----------
+    parameter : Parameter
+        The :class:`Parameter` instance
+    attribute : Attribute
+        The label field.
+    expression : str | None
+        The expression value.
+    """
+    if expression:
+        parameter.vary = False
+        parameter.transformed_expression = PARAMETER_EXPRESSION_REGEX.sub(
+            r"parameters.get('\g<parameter_expression>').value", expression
+        )
+
+
+@no_default_vals_in_repr
+@define
 class Parameter(_SupportsArray):
     """A parameter for optimization."""
 
-    def __init__(
-        self,
-        label: str = None,
-        full_label: str = None,
-        expression: str | None = None,
-        maximum: float = np.inf,
-        minimum: float = -np.inf,
-        non_negative: bool = False,
-        standard_error: float = np.nan,
-        value: float = np.nan,
-        vary: bool = True,
-    ):
-        """Optimization Parameter supporting numpy array operations.
+    label: str = ib(converter=str, validator=[valid_label])
+    value: float = ib(
+        default=np.nan,
+        converter=lambda v: float(v) if isinstance(v, int) else v,
+        validator=[validators.instance_of(float)],
+    )
+    standard_error: float = np.nan
+    expression: str | None = ib(default=None, validator=[set_transformed_expression])
+    maximum: float = ib(default=np.inf, validator=[validators.instance_of((int, float))])
+    minimum: float = ib(default=-np.inf, validator=[validators.instance_of((int, float))])
+    non_negative: bool = False
+    vary: bool = ib(default=True)
 
-        Parameters
-        ----------
-        label : str
-            The label of the parameter., by default None
-        full_label : str
-            The label of the parameter with its path in a parameter group prepended.
-            , by default None
-        expression : str | None
-            Expression to calculate the parameters value from,
-            e.g. if used in relation to another parameter. , by default None
-        maximum : float
-            Upper boundary for the parameter to be varied to., by default np.inf
-        minimum : float
-            Lower boundary for the parameter to be varied to., by default -np.inf
-        non_negative : bool
-            Whether the parameter should always be bigger than zero., by default False
-        standard_error: float
-            The standard error of the parameter. , by default ``np.nan``
-        value : float
-            Value of the parameter, by default np.nan
-        vary : bool
-            Whether the parameter should be changed during optimization or not.
-            , by default True
-        """
-        self.label = label
-        self.full_label = full_label or ""
-        self.expression = expression
-        self.maximum = maximum
-        self.minimum = minimum
-        self.non_negative = non_negative
-        self.standard_error = standard_error
-        self.value = value
-        self.vary = vary
+    transformed_expression: str | None = ib(default=None, init=False, repr=False)
 
-        self._transformed_expression: str | None = None
-
-    @staticmethod
-    def create_default_list(label: str) -> list:
-        """Create a default list for use with :method:`Parameter.from_list_or_value`.
-
-        Intended for parameter generation.
-
-        Parameters
-        ----------
-        label : str
-            The label of the parameter.
+    @property
+    def label_short(self) -> str:
+        """Get short label.
 
         Returns
         -------
-        list
-            The list with default values.
-
-        See Also
-        --------
-        :method:`Model.generate_parameters`
-
+        str :
+            The short label.
         """
-        return [
-            label,
-            0.0,
-            {
-                Keys.EXPR: None,
-                Keys.MAX: np.inf,
-                Keys.MIN: -np.inf,
-                Keys.NON_NEG: False,
-                Keys.VARY: True,
-            },
-        ]
-
-    @staticmethod
-    def valid_label(label: str) -> bool:
-        """Check if a label is a valid label for :class:`Parameter`.
-
-        Parameters
-        ----------
-        label : str
-            The label to validate.
-
-        Returns
-        -------
-        bool
-            Whether the label is valid.
-
-        """
-        return VALID_LABEL_REGEX.search(label) is None and label not in RESERVED_LABELS
+        return self.label.split(".")[-1]
 
     @classmethod
-    def from_list_or_value(
+    def from_list(
         cls,
-        value: int | float | list,
+        values: list[Any],
+        *,
         default_options: dict[str, Any] | None = None,
-        label: str = None,
     ) -> Parameter:
-        """Create a parameter from a list or numeric value.
+        """Create a parameter from a list.
 
         Parameters
         ----------
-        value : int | float | list
-            The list or numeric value.
-        default_options : dict[str, Any]|None
+        values : list[Any]
+            The list of parameter definitions.
+        default_options : dict[str, Any] | None
             A dictionary of default options.
-        label : str
-            The label of the parameter.
 
         Returns
         -------
         Parameter
             The created :class:`Parameter`.
         """
-        param = cls(label=label)
         options = None
 
-        if not isinstance(value, list):
-            param.value = value
-
-        else:
-            values = sanitize_parameter_list(value)
-            param.label = _retrieve_item_from_list_by_type(values, str, label)
-            param.value = float(_retrieve_item_from_list_by_type(values, (int, float), np.nan))
-            options = _retrieve_item_from_list_by_type(values, dict, None)
+        values = sanitize_parameter_list(values.copy())
+        param = {
+            "label": _retrieve_item_from_list_by_type(values, str, ""),
+            "value": _retrieve_item_from_list_by_type(values, (int, float), np.nan),
+        }
+        options = _retrieve_item_from_list_by_type(values, dict, {})
 
         if default_options:
-            param._set_options_from_dict(default_options)
+            param |= deserialize_options(default_options)
+        param |= deserialize_options(options)
 
-        if options:
-            param._set_options_from_dict(options)
-        return param
+        return cls(**param)
 
-    @classmethod
-    def from_dict(cls, parameter_dict: dict[str, Any]) -> Parameter:
-        """Create a :class:`Parameter` from a dictionary.
-
-        Expects a dictionary created by :method:`Parameter.as_dict`.
-
-        Parameters
-        ----------
-        parameter_dict : dict[str, Any]
-            The source dictionary.
+    def copy(self) -> Parameter:
+        """Create a copy of the :class:`Parameter`.
 
         Returns
         -------
-        Parameter
-            The created :class:`Parameter`
+        Parameter :
+            A copy of the :class:`Parameter`.
         """
-        parameter_dict = {k.replace("-", "_"): v for k, v in parameter_dict.items()}
-        parameter_dict["full_label"] = parameter_dict["label"]
-        parameter_dict["label"] = parameter_dict["label"].split(".")[-1]
-        return cls(**parameter_dict)
+        return evolve(self)
 
-    def as_dict(self, as_optimized: bool = True) -> dict[str, Any]:
-        """Create a dictionary containing the parameter properties.
-
-        Note:
-        -----
-        Intended for internal use.
-
-        Parameters
-        ----------
-        as_optimized : bool
-            Whether to include properties which are the result of optimization.
+    def as_dict(self) -> dict[str, Any]:
+        """Get the parameter as a dictionary.
 
         Returns
         -------
         dict[str, Any]
-            The created dictionary.
+            The parameter as dictionary.
         """
-        parameter_dict = {
-            "label": self.full_label,
-            "value": self.value,
-            "expression": self.expression,
-            "minimum": self.minimum,
-            "maximum": self.maximum,
-            "non-negative": self.non_negative,
-            "vary": self.vary,
-        }
-        if as_optimized:
-            parameter_dict["standard-error"] = self.standard_error
-        return parameter_dict
+        return asdict(self, filter=filters.exclude(fields(Parameter).transformed_expression))
 
-    def set_from_group(self, group: ParameterGroup):
-        """Set values of the parameter to the values of the corresponding parameter in the group.
+    def _deep_equals(self, other: Parameter) -> bool:
+        """Compare all attributes for equality not only ``value`` like ``__eq__`` does.
 
-        Notes
-        -----
-        For internal use.
+        This is used by ``Parameters`` to check for equality.
 
         Parameters
         ----------
-        group : ParameterGroup
-            The :class:`glotaran.parameter.ParameterGroup`.
-        """
-        p = group.get(self.full_label)
-        self.expression = p.expression
-        self.maximum = p.maximum
-        self.minimum = p.minimum
-        self.non_negative = p.non_negative
-        self.standard_error = p.standard_error
-        self.value = p.value
-        self.vary = p.vary
-
-    def _set_options_from_dict(self, options: dict[str, Any]):
-        """Set the parameter's options from a dictionary.
-
-        Parameters
-        ----------
-        options : dict[str, Any]
-            A dictionary containing parameter options.
-        """
-        if Keys.EXPR in options:
-            self.expression = options[Keys.EXPR]
-        if Keys.NON_NEG in options:
-            self.non_negative = options[Keys.NON_NEG]
-        if Keys.MAX in options:
-            self.maximum = options[Keys.MAX]
-        if Keys.MIN in options:
-            self.minimum = options[Keys.MIN]
-        if Keys.VARY in options:
-            self.vary = options[Keys.VARY]
-        if Keys.STD_ERR in options:
-            self.standard_error = options[Keys.STD_ERR]
-
-    @property
-    def label(self) -> str | None:
-        """Label of the parameter.
-
-        Returns
-        -------
-        str
-            The label.
-        """
-        return self._label
-
-    @label.setter
-    def label(self, label: str | None):
-        # ensure that label is str | None even if an int is passed
-        label = None if label is None else str(label)
-        if label is not None and not Parameter.valid_label(label):
-            raise ValueError(f"'{label}' is not a valid group label.")
-        self._label = label
-
-    @property
-    def full_label(self) -> str:
-        """Label of the parameter with its path in a parameter group prepended.
-
-        Returns
-        -------
-        str
-            The full label.
-        """
-        return self._full_label
-
-    @full_label.setter
-    def full_label(self, full_label: str):
-        self._full_label = full_label
-
-    @property
-    def non_negative(self) -> bool:
-        r"""Indicate if the parameter is non-negative.
-
-        If true, the parameter will be transformed with :math:`p' = \log{p}` and
-        :math:`p = \exp{p'}`.
-
-        Notes
-        -----
-        Always `False` if `expression` is not `None`.
+        other: Parameter
+            Other parameter to compare against.
 
         Returns
         -------
         bool
-            Whether the parameter is non-negative.
+            Whether or not all attributes are equal.
         """
-        return self._non_negative if self.expression is None else False
+        return all(
+            nan_or_equal(self_val, other_val)
+            for self_val, other_val in zip(self.as_dict().values(), other.as_dict().values())
+        )
 
-    @non_negative.setter
-    def non_negative(self, non_negative: bool):
-        self._non_negative = non_negative
+    def as_list(self, label_short: bool = False) -> list[str | float | dict[str, Any]]:
+        """Get the parameter as a dictionary.
 
-    @property
-    def vary(self) -> bool:
-        """Indicate if the parameter should be optimized.
-
-        Notes
-        -----
-        Always `False` if `expression` is not `None`.
+        Parameters
+        ----------
+        label_short : bool
+            If true, the label will be replaced by the shortened label.
 
         Returns
         -------
-        bool
-            Whether the parameter should be optimized.
+        dict[str, Any]
+            The parameter as dictionary.
         """
-        return self._vary if self.expression is None else False
+        options = self.as_dict()
 
-    @vary.setter
-    def vary(self, vary: bool):
-        self._vary = vary
+        label = options.pop("label")
+        value = options.pop("value")
 
-    @property
-    def maximum(self) -> float:
-        """Upper bound of the parameter.
+        if label_short:
+            label = self.label_short
 
-        Returns
-        -------
-        float
-            The upper bound of the parameter.
-        """
-        return self._maximum
-
-    @maximum.setter
-    def maximum(self, maximum: int | float):
-        if not isinstance(maximum, float):
-            try:
-                maximum = float(maximum)
-            except Exception:
-                raise TypeError(
-                    "Parameter maximum must be numeric."
-                    + f"'{self.full_label}' has maximum '{maximum}' of type '{type(maximum)}'"
-                )
-
-        self._maximum = maximum
-
-    @property
-    def minimum(self) -> float:
-        """Lower bound of the parameter.
-
-        Returns
-        -------
-        float
-
-            The lower bound of the parameter.
-        """
-        return self._minimum
-
-    @minimum.setter
-    def minimum(self, minimum: int | float):
-        if not isinstance(minimum, float):
-            try:
-                minimum = float(minimum)
-            except Exception:
-                raise TypeError(
-                    "Parameter minimum must be numeric."
-                    + f"'{self.full_label}' has minimum '{minimum}' of type '{type(minimum)}'"
-                )
-
-        self._minimum = minimum
-
-    @property
-    def expression(self) -> str | None:
-        """Expression to calculate the parameters value from.
-
-        This can used to set a relation to another parameter.
-
-        Returns
-        -------
-        str | None
-            The expression.
-        """
-        return self._expression
-
-    @expression.setter
-    def expression(self, expression: str | None):
-        self._expression = expression
-        self._transformed_expression = None
-
-    @property
-    def transformed_expression(self) -> str | None:
-        """Expression of the parameter transformed for evaluation within a `ParameterGroup`.
-
-        Returns
-        -------
-        str | None
-            The transformed expression.
-        """
-        if self.expression is not None and self._transformed_expression is None:
-            self._transformed_expression = PARAMETER_EXPRESSION_REGEX.sub(
-                r"group.get('\g<parameter_expression>').value", self.expression
-            )
-        return self._transformed_expression
-
-    @property
-    def standard_error(self) -> float:
-        """Standard error of the optimized parameter.
-
-        Returns
-        -------
-        float
-            The standard error of the parameter.
-        """  # noqa: D401
-        return self._stderr
-
-    @standard_error.setter
-    def standard_error(self, standard_error: float):
-        self._stderr = standard_error
-
-    @property
-    def value(self) -> float:
-        """Value of the parameter.
-
-        Returns
-        -------
-        float
-            The value of the parameter.
-        """
-        return self._value
-
-    @value.setter
-    def value(self, value: int | float):
-        if not isinstance(value, float) and value is not np.nan:
-            try:
-                value = float(value)
-            except Exception:
-                raise TypeError(
-                    "Parameter value must be numeric."
-                    + f"'{self.full_label}' has value '{value}' of type '{type(value)}'"
-                )
-
-        self._value = value
+        return [label, value, serialize_options(options)]
 
     def get_value_and_bounds_for_optimization(self) -> tuple[float, float, float]:
         """Get the parameter value and bounds with expression and non-negative constraints applied.
@@ -508,16 +288,16 @@ class Parameter(_SupportsArray):
 
     def markdown(
         self,
-        all_parameters: ParameterGroup | None = None,
-        initial_parameters: ParameterGroup | None = None,
+        all_parameters: Parameters | None = None,
+        initial_parameters: Parameters | None = None,
     ) -> MarkdownStr:
         """Get a markdown representation of the parameter.
 
         Parameters
         ----------
-        all_parameters : ParameterGroup | None
+        all_parameters : Parameters | None
             A parameter group containing the whole parameter set (used for expression lookup).
-        initial_parameters : ParameterGroup | None
+        initial_parameters : Parameters | None
             The initial parameter.
 
         Returns
@@ -525,9 +305,9 @@ class Parameter(_SupportsArray):
         MarkdownStr
             The parameter as markdown string.
         """
-        md = f"{self.full_label}"
+        md = f"{self.label}"
 
-        parameter = self if all_parameters is None else all_parameters.get(self.full_label)
+        parameter = self if all_parameters is None else all_parameters.get(self.label)
         value = f"{parameter.value:.2e}"
         if parameter.vary:
             if parameter.standard_error is not np.nan:
@@ -535,7 +315,7 @@ class Parameter(_SupportsArray):
                 value += f"±{parameter.standard_error:.2e}, t-value: {t_value}"
 
             if initial_parameters is not None:
-                initial_value = initial_parameters.get(parameter.full_label).value
+                initial_value = initial_parameters.get(parameter.label).value
                 value += f", initial: {initial_value:.2e}"
             md += f"({value})"
         elif parameter.expression is not None:
@@ -554,44 +334,9 @@ class Parameter(_SupportsArray):
 
         return MarkdownStr(md)
 
-    def __getstate__(self):
-        """Get state for pickle."""
-        return (
-            self.label,
-            self.full_label,
-            self.expression,
-            self.maximum,
-            self.minimum,
-            self.non_negative,
-            self.standard_error,
-            self.value,
-            self.vary,
-        )
-
-    def __setstate__(self, state):
-        """Set state from pickle."""
-        (
-            self.label,
-            self.full_label,
-            self.expression,
-            self.maximum,
-            self.minimum,
-            self.non_negative,
-            self.standard_error,
-            self.value,
-            self.vary,
-        ) = state
-
-    def __repr__(self):
-        """Representation used by repl and tracebacks."""
-        return (
-            f"{type(self).__name__}(label={self.label!r}, value={self.value!r},"
-            f" expression={self.expression!r}, vary={self.vary!r})"
-        )
-
     def __array__(self):
         """array"""  # noqa: D400, D403
-        return np.array(float(self._value), dtype=float)
+        return np.array(self.value, dtype=float)
 
     def __str__(self) -> str:
         """Representation used by print and str."""
@@ -603,115 +348,115 @@ class Parameter(_SupportsArray):
 
     def __abs__(self):
         """abs"""  # noqa: D400, D403
-        return abs(self._value)
+        return abs(self.value)
 
     def __neg__(self):
         """neg"""  # noqa: D400, D403
-        return -self._value
+        return -self.value
 
     def __pos__(self):
         """positive"""  # noqa: D400, D403
-        return +self._value
+        return +self.value
 
     def __int__(self):
         """int"""  # noqa: D400, D403
-        return int(self._value)
+        return int(self.value)
 
     def __float__(self):
         """float"""  # noqa: D400, D403
-        return float(self._value)
+        return float(self.value)
 
     def __trunc__(self):
         """trunc"""  # noqa: D400, D403
-        return self._value.__trunc__()
+        return self.value.__trunc__()
 
     def __add__(self, other):
         """+"""  # noqa: D400
-        return self._value + other
+        return self.value + other
 
     def __sub__(self, other):
         """-"""  # noqa: D400
-        return self._value - other
+        return self.value - other
 
     def __truediv__(self, other):
         """/"""  # noqa: D400
-        return self._value / other
+        return self.value / other
 
     def __floordiv__(self, other):
         """//"""  # noqa: D400
-        return self._value // other
+        return self.value // other
 
     def __divmod__(self, other):
         """divmod"""  # noqa: D400, D403
-        return divmod(self._value, other)
+        return divmod(self.value, other)
 
     def __mod__(self, other):
         """%"""  # noqa: D400
-        return self._value % other
+        return self.value % other
 
     def __mul__(self, other):
         """*"""  # noqa: D400
-        return self._value * other
+        return self.value * other
 
     def __pow__(self, other):
         """**"""  # noqa: D400
-        return self._value**other
+        return self.value**other
 
     def __gt__(self, other):
         """>"""  # noqa: D400
-        return self._value > other
+        return self.value > other
 
     def __ge__(self, other):
         """>="""  # noqa: D400
-        return self._value >= other
+        return self.value >= other
 
     def __le__(self, other):
         """<="""  # noqa: D400
-        return self._value <= other
+        return self.value <= other
 
     def __lt__(self, other):
         """<"""  # noqa: D400
-        return self._value < other
+        return self.value < other
 
     def __eq__(self, other):
         """=="""  # noqa: D400
-        return self._value == other
+        return self.value == other
 
     def __ne__(self, other):
         """!="""  # noqa: D400
-        return self._value != other
+        return self.value != other
 
     def __radd__(self, other):
         """+ (right)"""  # noqa: D400
-        return other + self._value
+        return other + self.value
 
     def __rtruediv__(self, other):
         """/ (right)"""  # noqa: D400
-        return other / self._value
+        return other / self.value
 
     def __rdivmod__(self, other):
         """divmod (right)"""  # noqa: D400, D403
-        return divmod(other, self._value)
+        return divmod(other, self.value)
 
     def __rfloordiv__(self, other):
         """// (right)"""  # noqa: D400
-        return other // self._value
+        return other // self.value
 
     def __rmod__(self, other):
         """% (right)"""  # noqa: D400
-        return other % self._value
+        return other % self.value
 
     def __rmul__(self, other):
         """* (right)"""  # noqa: D400
-        return other * self._value
+        return other * self.value
 
     def __rpow__(self, other):
         """** (right)"""  # noqa: D400
-        return other**self._value
+        return other**self.value
 
     def __rsub__(self, other):
         """- (right)"""  # noqa: D400
-        return other - self._value
+        return other - self.value
 
 
 def _log_value(value: float) -> float:

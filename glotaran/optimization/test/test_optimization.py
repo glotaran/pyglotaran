@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.model.dataset_model import is_dataset_model_index_dependent
+from glotaran.model.item import fill_item
 from glotaran.optimization.optimize import optimize
 from glotaran.optimization.test.models import SimpleTestModel
 from glotaran.optimization.test.suites import FullModel
@@ -9,7 +11,7 @@ from glotaran.optimization.test.suites import MultichannelMulticomponentDecay
 from glotaran.optimization.test.suites import OneCompartmentDecay
 from glotaran.optimization.test.suites import ThreeDatasetDecay
 from glotaran.optimization.test.suites import TwoCompartmentDecay
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
@@ -56,7 +58,9 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
     print(model.validate(initial_parameters))  # T201
     assert model.valid(initial_parameters)
     assert (
-        model.dataset["dataset1"].fill(model, initial_parameters).is_index_dependent()
+        is_dataset_model_index_dependent(
+            fill_item(model.dataset["dataset1"], model, initial_parameters)
+        )
         == is_index_dependent
     )
 
@@ -74,7 +78,7 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
         )
         print(f"Dataset {i+1}")  # T201
         print("=============")  # T201
-        print(dataset)  # T201
+        print(dataset.data)  # T201
 
         if hasattr(suite, "scale"):
             dataset["data"] /= suite.scale
@@ -97,20 +101,22 @@ def test_optimization(suite, is_index_dependent, link_clp, weight, method):
         optimization_method=method,
     )
 
-    model.dataset_group_models["default"].link_clp = link_clp
+    model.dataset_groups["default"].link_clp = link_clp
 
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)  # T201
+    print(result.data["dataset1"].fitted_data)  # T201
     assert result.success
     optimized_scheme = result.get_scheme()
+    assert result.optimized_parameters != initial_parameters
     assert result.optimized_parameters == optimized_scheme.parameters
     for dataset in optimized_scheme.data.values():
         assert "fitted_data" not in dataset
         if weight:
             assert "weight" in dataset
-    for label, param in result.optimized_parameters.all():
+    for param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, wanted_parameters.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
 
     for i, dataset in enumerate(data.values()):
         resultdata = result.data[f"dataset{i+1}"]
@@ -161,9 +167,9 @@ def test_optimization_full_model(index_dependent):
 
     result_data = result.data["dataset1"]
     assert "fitted_data" in result_data
-    for label, param in result.optimized_parameters.all():
+    for param in result.optimized_parameters.all():
         if param.vary:
-            assert np.allclose(param.value, parameters.get(label).value, rtol=1e-1)
+            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
 
     clp = result_data.clp
     print(clp)  # T201
@@ -182,12 +188,8 @@ def test_result_data(model_weight: bool, index_dependent: bool):
     ).to_dataset(name="data")
 
     model_dict = {
-        "megacomplex": {"m1": {"is_index_dependent": index_dependent}},
-        "dataset": {
-            "dataset1": {
-                "megacomplex": ["m1"],
-            },
-        },
+        "megacomplex": {"m1": {"type": "simple-test-mc", "is_index_dependent": index_dependent}},
+        "dataset": {"dataset1": {"megacomplex": ["m1"]}},
     }
 
     if model_weight:
@@ -195,9 +197,9 @@ def test_result_data(model_weight: bool, index_dependent: bool):
     else:
         data["weight"] = xr.ones_like(data.data) * 0.5
 
-    model = SimpleTestModel.from_dict(model_dict)
+    model = SimpleTestModel(**model_dict)
     assert model.valid()
-    parameters = ParameterGroup.from_list([1])
+    parameters = Parameters.from_list([1])
 
     scheme = Scheme(model, parameters, {"dataset1": data}, maximum_number_function_evaluations=1)
     result = optimize(scheme, raise_exception=True)

@@ -6,6 +6,7 @@ import xarray as xr
 
 from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import DatasetGroup
+from glotaran.model.dataset_model import finalize_dataset_model
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.estimation_provider import EstimationProvider
@@ -14,7 +15,7 @@ from glotaran.optimization.estimation_provider import EstimationProviderUnlinked
 from glotaran.optimization.matrix_provider import MatrixProvider
 from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 
 
@@ -71,12 +72,12 @@ class OptimizationGroup:
                     dataset.data.dims[1],
                 )
 
-    def calculate(self, parameters: ParameterGroup):
+    def calculate(self, parameters: Parameters):
         """Calculate the optimization group data.
 
         Parameters
         ----------
-        parameters : ParameterGroup
+        parameters : Parameters
             The parameters.
         """
         self._dataset_group.set_parameters(parameters)
@@ -176,13 +177,15 @@ class OptimizationGroup:
             )
 
             result_dataset.attrs["dataset_scale"] = (
-                1 if dataset_model.scale is None else dataset_model.scale.value
+                1
+                if dataset_model.scale is None
+                else dataset_model.scale.value  # type:ignore[union-attr]
             )
 
             # reconstruct fitted data
             result_dataset["fitted_data"] = result_dataset.data - result_dataset.residual
 
-            dataset_model.finalize_data(result_dataset)
+            finalize_dataset_model(dataset_model, result_dataset)
 
         return result_datasets
 

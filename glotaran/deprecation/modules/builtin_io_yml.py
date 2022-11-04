@@ -113,6 +113,15 @@ def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:
         stacklevel=load_model_stack_level,
     )
 
+    deprecate_dict_entry(
+        dict_to_check=spec,
+        deprecated_usage="clp_area_penalties",
+        new_usage="clp_penalties",
+        to_be_removed_in_version="0.8.0",
+        swap_keys=("clp_area_penalties", "clp_penalties"),
+        stacklevel=load_model_stack_level,
+    )
+
     if "irf" in spec:
         for _, irf in spec["irf"].items():
             deprecate_dict_entry(

@@ -6,7 +6,7 @@ from glotaran.model import DatasetGroup
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
 from glotaran.optimization.test.models import SimpleTestModel
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 
 
@@ -35,9 +35,9 @@ def dataset_two() -> xr.Dataset:
 
 @pytest.fixture()
 def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
-    model = SimpleTestModel.from_dict(
-        {
-            "megacomplex": {"m1": {"is_index_dependent": False}},
+    model = SimpleTestModel(
+        **{
+            "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
             "dataset": {
                 "dataset1": {
                     "megacomplex": ["m1"],
@@ -51,7 +51,7 @@ def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
     print(model.validate())
     assert model.valid()
 
-    parameters = ParameterGroup.from_list([])
+    parameters = Parameters.from_list([])
 
     data = {"dataset1": dataset_one, "dataset2": dataset_two}
     return Scheme(model, parameters, data, clp_link_tolerance=1)

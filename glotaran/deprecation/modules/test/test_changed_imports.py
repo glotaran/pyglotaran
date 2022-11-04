@@ -61,7 +61,7 @@ def test_changed_import_test_warn_attribute_no_warn(
     recwarn: WarningsRecorder,
 ):
     """Module attribute import not warning"""
-    changed_import_test_warn(recwarn, "glotaran.parameter", attribute_name="ParameterGroup")
+    changed_import_test_warn(recwarn, "glotaran.parameter", attribute_name="Parameters")
 
 
 @pytest.mark.xfail(strict=True, reason="Fail if no warning")

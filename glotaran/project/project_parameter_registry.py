@@ -8,7 +8,7 @@ from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 from glotaran.project.project_registry import ProjectRegistry
 
 
@@ -54,7 +54,9 @@ class ProjectParameterRegistry(ProjectRegistry):
         FileExistsError
             Raised if parameters is already existing and `allow_overwrite=False`.
         """
-        parameters = model.generate_parameters()
+        parameters = model.generate_parameters().to_parameter_dict_or_list(
+            serialize_parameters=True
+        )
         parameter_file = self.directory / f"{name}.{format_name}"
 
         if parameter_file.exists() and ignore_existing:
@@ -64,12 +66,14 @@ class ProjectParameterRegistry(ProjectRegistry):
             raise FileExistsError(
                 f"Parameters {name!r} already exists and `allow_overwrite=False`."
             )
+
         if format_name in ["yml", "yaml"]:
             write_dict(parameters, file_name=parameter_file, offset=0)
         elif format_name == "csv":
-            parameter_group = (
-                ParameterGroup.from_dict(parameters)
+            save_parameters(
+                Parameters.from_dict(parameters)
                 if isinstance(parameters, dict)
-                else ParameterGroup.from_list(parameters)
+                else Parameters.from_list(parameters),
+                parameter_file,
+                allow_overwrite=allow_overwrite,
             )
-            save_parameters(parameter_group, parameter_file, allow_overwrite=allow_overwrite)

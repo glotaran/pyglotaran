@@ -3,14 +3,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
-from dataclasses import fields
 from typing import TYPE_CHECKING
 
-from glotaran.deprecation import warn_deprecated
 from glotaran.io import load_scheme
 from glotaran.model import Model
-from glotaran.parameter import ParameterGroup
-from glotaran.project.dataclass_helpers import exclude_from_dict_field
+from glotaran.parameter import Parameters
 from glotaran.project.dataclass_helpers import file_loadable_field
 from glotaran.project.dataclass_helpers import init_file_loadable_fields
 from glotaran.utils.io import DatasetMapping
@@ -35,7 +32,7 @@ class Scheme:
     """
 
     model: Model = file_loadable_field(Model)  # type:ignore[type-var]
-    parameters: ParameterGroup = file_loadable_field(ParameterGroup)  # type:ignore[type-var]
+    parameters: Parameters = file_loadable_field(Parameters)  # type:ignore[type-var]
     data: Mapping[str, xr.Dataset] = file_loadable_field(
         DatasetMapping, is_wrapper_class=True
     )  # type:ignore[type-var]
@@ -44,9 +41,6 @@ class Scheme:
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
 
     maximum_number_function_evaluations: int | None = None
-    non_negative_least_squares: bool | None = exclude_from_dict_field(None)
-    group_tolerance: float | None = exclude_from_dict_field(None)
-    group: bool | None = exclude_from_dict_field(None)
     add_svd: bool = True
     ftol: float = 1e-8
     gtol: float = 1e-8
@@ -67,59 +61,6 @@ class Scheme:
     def __post_init__(self):
         """Override attributes after initialization."""
         init_file_loadable_fields(self)
-
-        # Deprecations
-        if self.non_negative_least_squares is not None:
-            warn_deprecated(
-                deprecated_qual_name_usage=(
-                    "glotaran.project.Scheme(..., non_negative_least_squares=...)"
-                ),
-                new_qual_name_usage="<model_file>dataset_groups.default.residual_function",
-                to_be_removed_in_version="0.7.0",
-                check_qual_names=(True, False),
-                stacklevel=4,
-            )
-
-            default_group = self.model.dataset_group_models["default"]
-            if self.non_negative_least_squares is True:
-                default_group.residual_function = "non_negative_least_squares"
-            else:
-                default_group.residual_function = "variable_projection"
-            for field_item in fields(self):
-                if field_item.name == "non_negative_least_squares":
-                    field_item.metadata = {}
-
-        if self.group is not None:
-            warn_deprecated(
-                deprecated_qual_name_usage="glotaran.project.Scheme(..., group=...)",
-                new_qual_name_usage="<model_file>dataset_groups.default.link_clp",
-                to_be_removed_in_version="0.7.0",
-                check_qual_names=(True, False),
-                stacklevel=4,
-            )
-            self.model.dataset_group_models["default"].link_clp = self.group
-            for field_item in fields(self):
-                if field_item.name == "group":
-                    field_item.metadata = {}
-
-        if self.group_tolerance is not None:
-            warn_deprecated(
-                deprecated_qual_name_usage="glotaran.project.Scheme(..., group_tolerance=...)",
-                new_qual_name_usage="glotaran.project.Scheme(..., clp_link_tolerance=...)",
-                to_be_removed_in_version="0.7.0",
-                stacklevel=4,
-            )
-            self.clp_link_tolerance = self.group_tolerance
-
-    def problem_list(self) -> list[str]:
-        """Return a list with all problems in the model and missing parameters.
-
-        Returns
-        -------
-        list[str]
-            A list of all problems found in the scheme's model.
-        """
-        return self.model.problem_list(self.parameters)
 
     def validate(self) -> MarkdownStr:
         """Return a string listing all problems in the model and missing parameters.
@@ -153,8 +94,6 @@ class Scheme:
         model_markdown_str = self.model.markdown(parameters=self.parameters)
 
         markdown_str = "\n\n__Scheme__\n\n"
-        if self.non_negative_least_squares is not None:
-            markdown_str += f"* *non_negative_least_squares*: {self.non_negative_least_squares}\n"
         markdown_str += (
             "* *maximum_number_function_evaluations*: "
             f"{self.maximum_number_function_evaluations}\n"

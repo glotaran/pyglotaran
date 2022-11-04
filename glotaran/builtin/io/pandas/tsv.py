@@ -10,14 +10,14 @@ from glotaran.io import register_project_io
 from glotaran.io import save_parameters
 
 if TYPE_CHECKING:
-    from glotaran.parameter import ParameterGroup
+    from glotaran.parameter import Parameters
 
 
 @register_project_io(["tsv"])
 class TsvProjectIo(ProjectIoInterface):
     """Plugin for TSV data io."""
 
-    def load_parameters(self, file_name: str) -> ParameterGroup:
+    def load_parameters(self, file_name: str) -> Parameters:
         """Load parameters from TSV file.
 
         Parameters
@@ -27,28 +27,25 @@ class TsvProjectIo(ProjectIoInterface):
 
         Returns
         -------
-            :class:`ParameterGroup
+            :class:`Parameters`
         """
         return load_parameters(file_name, format_name="csv", sep="\t")
 
     def save_parameters(
         self,
-        parameters: ParameterGroup,
+        parameters: Parameters,
         file_name: str,
         *,
-        as_optimized: bool = True,
         replace_infinfinity: bool = True,
     ) -> None:
-        """Save a :class:`ParameterGroup` to a TSV file.
+        """Save a :class:`Parameters` to a TSV file.
 
         Parameters
         ----------
-        parameters : ParameterGroup
+        parameters : Parameters
             Parameters to be saved to file.
         file_name : str
             File to write the parameters to.
-        as_optimized : bool
-            Whether to include properties which are the result of optimization.
         replace_infinfinity : bool
             Weather to replace infinity values with empty strings.
         """
@@ -57,6 +54,5 @@ class TsvProjectIo(ProjectIoInterface):
             file_name,
             format_name="csv",
             sep="\t",
-            as_optimized=as_optimized,
             replace_infinfinity=replace_infinfinity,
         )

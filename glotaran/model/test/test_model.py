@@ -1,115 +1,79 @@
-from copy import copy
-from math import inf
-from math import nan
 from textwrap import dedent
-from typing import Dict
-from typing import List
-from typing import Tuple
 
 import pytest
-from IPython.core.formatters import format_display_data
 
-from glotaran.io import load_parameters
-from glotaran.model import DatasetModel
-from glotaran.model import Megacomplex
-from glotaran.model import megacomplex
-from glotaran.model import model_item
-from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.model.constraint import Constraint
-from glotaran.model.constraint import OnlyConstraint
-from glotaran.model.constraint import ZeroConstraint
-from glotaran.model.interval_property import IntervalProperty
+from glotaran.model.dataset_model import DatasetModel
+from glotaran.model.item import ModelItem
+from glotaran.model.item import ModelItemType
+from glotaran.model.item import ParameterType
+from glotaran.model.item import item
+from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.megacomplex import megacomplex
+from glotaran.model.model import DEFAULT_DATASET_GROUP
 from glotaran.model.model import Model
-from glotaran.model.relation import Relation
-from glotaran.model.weight import Weight
-from glotaran.parameter import Parameter
-from glotaran.parameter import ParameterGroup
-from glotaran.testing.simulated_data.parallel_spectral_decay import MODEL
 
 
-@model_item(
-    properties={
-        "param": Parameter,
-        "megacomplex": str,
-        "param_list": List[Parameter],
-        "default_item": {"type": int, "default": 42},
-        "complex": {"type": Dict[Tuple[str, str], Parameter]},
-    },
-)
-class MockItem:
-    pass
+@item
+class MockItemSimple(ModelItem):
+    param: ParameterType
+    param_list: list[ParameterType]
+    param_dict: dict[tuple[str, str], ParameterType]
+    megacomplex: ModelItemType[Megacomplex]
+    number: int = 42
 
 
-@model_item(
-    properties={
-        "param": Parameter,
-        "param_list": List[Parameter],
-        "param_dict": {"type": Dict[Tuple[str, str], Parameter]},
-        "number": int,
-    },
-)
-class MockItemSimple:
-    pass
+@megacomplex()
+class MockMegacomplexSimple(Megacomplex):
+    type: str = "simple"
+    dimension: str = "model"
+    test_item: ModelItemType[MockItemSimple] | None
 
 
-@model_item(has_label=False)
-class MockItemNoLabel:
-    pass
+@megacomplex()
+class MockMegacomplexItemList(Megacomplex):
+    type: str = "list"
+    dimension: str = "model"
+    test_item_in_list: list[ModelItemType[MockItemSimple]]
 
 
-@megacomplex(dimension="model", model_items={"test_item1": {"type": MockItem, "allow_none": True}})
-class MockMegacomplex1(Megacomplex):
-    pass
+@megacomplex()
+class MockMegacomplexItemDict(Megacomplex):
+    type: str = "dict"
+    dimension: str = "model"
+    test_item_in_dict: dict[str, ModelItemType[MockItemSimple]]
 
 
-@megacomplex(dimension="model", model_items={"test_item2": MockItemNoLabel})
-class MockMegacomplex2(Megacomplex):
-    pass
+@item
+class MockDatasetModel(DatasetModel):
+    test_item_dataset: ModelItemType[MockItemSimple]
+    test_property_dataset1: int
+    test_property_dataset2: ParameterType
 
 
-@megacomplex(model_items={"test_item3": List[MockItem]})
-class MockMegacomplex3(Megacomplex):
-    pass
+@megacomplex(dataset_model_type=MockDatasetModel)
+class MockMegacomplexWithDataset(Megacomplex):
+    type: str = "dataset"
+    dimension: str = "model"
 
 
-@megacomplex(dimension="model", model_items={"test_item4": Dict[str, MockItem]})
-class MockMegacomplex4(Megacomplex):
-    pass
+@megacomplex(unique=True)
+class MockMegacomplexUnique(Megacomplex):
+    type: str = "unique"
+    dimension: str = "model"
 
 
-@megacomplex(
-    dimension="model",
-    dataset_model_items={"test_item_dataset": MockItem},
-    dataset_properties={
-        "test_property_dataset1": int,
-        "test_property_dataset2": {"type": Parameter},
-    },
-)
-class MockMegacomplex5(Megacomplex):
-    pass
-
-
-@megacomplex(dimension="model", unique=True)
-class MockMegacomplex6(Megacomplex):
-    pass
-
-
-@megacomplex(dimension="model", exclusive=True)
-class MockMegacomplex7(Megacomplex):
-    pass
-
-
-@megacomplex(dimension="model", model_items={"test_item_simple": MockItemSimple})
-class MockMegacomplex8(Megacomplex):
-    pass
+@megacomplex(exclusive=True)
+class MockMegacomplexExclusive(Megacomplex):
+    type: str = "exclusive"
+    dimension: str = "model"
 
 
 @pytest.fixture
 def test_model_dict():
     model_dict = {
         "megacomplex": {
-            "m1": {"test_item1": "t2"},
-            "m2": {"type": "type5", "dimension": "model2"},
+            "m1": {"type": "simple", "test_item": "t2"},
+            "m2": {"type": "dataset", "dimension": "model2"},
         },
         "dataset_groups": {
             "testgroup": {"residual_function": "non_negative_least_squares", "link_clp": True}
@@ -122,19 +86,19 @@ def test_model_dict():
                 "value": 5.4,
             }
         ],
-        "test_item1": {
+        "test_item": {
             "t1": {
                 "param": "foo",
                 "megacomplex": "m1",
                 "param_list": ["bar", "baz"],
-                "complex": {("s1", "s2"): "baz"},
+                "param_dict": {("s1", "s2"): "baz"},
             },
             "t2": {
                 "param": "baz",
                 "megacomplex": "m2",
                 "param_list": ["foo"],
-                "complex": {},
-                "default_item": 7,
+                "param_dict": {},
+                "number": 7,
             },
         },
         "dataset": {
@@ -156,473 +120,314 @@ def test_model_dict():
             },
         },
     }
-    model_dict["test_item_dataset"] = model_dict["test_item1"]
+    model_dict["test_item_dataset"] = model_dict["test_item"]
     return model_dict
 
 
 @pytest.fixture
 def test_model(test_model_dict):
-    return Model.from_dict(
-        test_model_dict,
-        megacomplex_types={
-            "type1": MockMegacomplex1,
-            "type5": MockMegacomplex5,
-        },
+    mcls = Model.create_class_from_megacomplexes(
+        [MockMegacomplexSimple, MockMegacomplexWithDataset]
     )
+    return mcls(**test_model_dict)
 
 
-@pytest.fixture
-def model_error():
-    model_dict = {
-        "megacomplex": {
-            "m1": {},
-            "m2": {"type": "type2"},
-            "m3": {"type": "type2"},
-            "m4": {"type": "type3"},
-        },
-        "test_item1": {
-            "t1": {
-                "param": "fool",
-                "megacomplex": "mX",
-                "param_list": ["bar", "bay"],
-                "complex": {("s1", "s3"): "boz"},
-            },
-        },
-        "dataset": {
-            "dataset1": {
-                "megacomplex": ["N1", "N2"],
-                "scale": "scale_1",
-            },
-            "dataset2": {
-                "megacomplex": ["mrX", "m4"],
-                "scale": "scale_3",
-            },
-            "dataset3": {
-                "megacomplex": ["m2", "m3"],
-            },
-        },
-    }
-    return Model.from_dict(
-        model_dict,
-        megacomplex_types={
-            "type1": MockMegacomplex1,
-            "type2": MockMegacomplex6,
-            "type3": MockMegacomplex7,
-        },
-    )
+def test_model_create_class():
+    m = Model.create_class([])(dataset={})
+    print(m)
+    assert DEFAULT_DATASET_GROUP in m.dataset_groups
 
-
-def test_model_init():
-    model = Model(
-        megacomplex_types={
-            "type1": MockMegacomplex1,
-            "type2": MockMegacomplex2,
-            "type3": MockMegacomplex3,
-            "type4": MockMegacomplex4,
-            "type5": MockMegacomplex5,
+    m = Model.create_class([])(
+        **{
+            "dataset": {},
+            "dataset_groups": {
+                "test": {"residual_function": "non_negative_least_squares", "link_clp": False}
+            },
         }
     )
-
-    assert model.default_megacomplex == "type1"
-
-    assert len(model.megacomplex_types) == 5
-    assert "type1" in model.megacomplex_types
-    assert model.megacomplex_types["type1"] == MockMegacomplex1
-    assert "type2" in model.megacomplex_types
-    assert model.megacomplex_types["type2"] == MockMegacomplex2
-
-    assert hasattr(model, "test_item1")
-    assert isinstance(model.test_item1, dict)
-    assert "test_item1" in model._model_items
-    assert issubclass(model._model_items["test_item1"], MockItem)
-
-    assert hasattr(model, "test_item2")
-    assert isinstance(model.test_item2, list)
-    assert "test_item2" in model._model_items
-    assert issubclass(model._model_items["test_item2"], MockItemNoLabel)
-
-    assert hasattr(model, "test_item3")
-    assert isinstance(model.test_item3, dict)
-    assert "test_item3" in model._model_items
-    assert issubclass(model._model_items["test_item3"], MockItem)
-
-    assert hasattr(model, "test_item4")
-    assert isinstance(model.test_item4, dict)
-    assert "test_item4" in model._model_items
-    assert issubclass(model._model_items["test_item4"], MockItem)
-
-    assert hasattr(model, "test_item_dataset")
-    assert isinstance(model.test_item_dataset, dict)
-    assert "test_item_dataset" in model._model_items
-    assert issubclass(model._model_items["test_item_dataset"], MockItem)
-    assert "test_item_dataset" in model._dataset_properties
-    assert issubclass(model._dataset_properties["test_item_dataset"]["type"], str)
-    assert "test_property_dataset1" in model._dataset_properties
-    assert issubclass(model._dataset_properties["test_property_dataset1"], int)
-    assert "test_property_dataset2" in model._dataset_properties
-    assert issubclass(model._dataset_properties["test_property_dataset2"]["type"], Parameter)
-
-    assert hasattr(model, "clp_area_penalties")
-    assert isinstance(model.clp_area_penalties, list)
-    assert "clp_area_penalties" in model._model_items
-    assert issubclass(model._model_items["clp_area_penalties"], EqualAreaPenalty)
-
-    assert hasattr(model, "clp_constraints")
-    assert isinstance(model.clp_constraints, list)
-    assert "clp_constraints" in model._model_items
-    assert issubclass(model._model_items["clp_constraints"], Constraint)
-
-    assert hasattr(model, "clp_relations")
-    assert isinstance(model.clp_relations, list)
-    assert "clp_relations" in model._model_items
-    assert issubclass(model._model_items["clp_relations"], Relation)
-
-    assert hasattr(model, "weights")
-    assert isinstance(model.weights, list)
-    assert "weights" in model._model_items
-    assert issubclass(model._model_items["weights"], Weight)
-
-    assert hasattr(model, "dataset")
-    assert isinstance(model.dataset, dict)
-    assert "dataset" in model._model_items
-    assert issubclass(model._model_items["dataset"], DatasetModel)
+    print(m)
+    assert DEFAULT_DATASET_GROUP in m.dataset_groups
+    assert "test" in m.dataset_groups
+    assert m.dataset_groups["test"].residual_function == "non_negative_least_squares"
+    assert not m.dataset_groups["test"].link_clp
 
 
-@pytest.fixture
-def parameter():
-    params = [1, 2, ["foo", 3], ["bar", 4], ["baz", 2], ["scale_1", 2], ["scale_2", 8], 4e2]
-    return ParameterGroup.from_list(params)
+def test_global_items():
+
+    m = Model.create_class([])(
+        **{
+            "clp_penalties": [
+                {
+                    "type": "equal_area",
+                    "source": "s",
+                    "source_intervals": [(1, 2)],
+                    "target": "t",
+                    "target_intervals": [(1, 2)],
+                    "parameter": "p",
+                    "weight": 1,
+                }
+            ],
+            "clp_constraints": [
+                {
+                    "type": "only",
+                    "target": "t",
+                    "interval": [(1, 2)],
+                },
+                {
+                    "type": "zero",
+                    "target": "t",
+                    "interval": (1, 2),
+                },
+            ],
+            "clp_relations": [
+                {
+                    "source": "s",
+                    "target": "t",
+                    "interval": [(1, 2)],
+                    "parameter": "p",
+                },
+            ],
+            "dataset": {},
+            "weights": [
+                {"datasets": ["d1", "d2"], "value": 1},
+                {"datasets": ["d3"], "value": 2, "global_interval": (5, 6)},
+            ],
+        }
+    )
+    print(m)
+    assert len(m.weights) == 2
+    w = m.weights[0]
+    assert w.datasets == ["d1", "d2"]
+    assert w.value == 1
+    assert w.model_interval is None
+    assert w.global_interval is None
+
+    w = m.weights[1]
+    assert w.datasets == ["d3"]
+    assert w.value == 2
+    assert w.model_interval is None
+    assert w.global_interval == (5, 6)
 
 
-def test_model_misc(test_model: Model):
-    assert isinstance(test_model.megacomplex["m1"], MockMegacomplex1)
-    assert isinstance(test_model.megacomplex["m2"], MockMegacomplex5)
+def test_model_items(test_model: Model):
+    assert isinstance(test_model.megacomplex["m1"], MockMegacomplexSimple)
+    assert isinstance(test_model.megacomplex["m2"], MockMegacomplexWithDataset)
     assert test_model.megacomplex["m1"].dimension == "model"
     assert test_model.megacomplex["m2"].dimension == "model2"
+    assert test_model.megacomplex["m1"].test_item == "t2"
 
-
-def test_dataset_group_models(test_model: Model):
-    groups = test_model.dataset_group_models
-    assert "default" in groups
-    assert groups["default"].residual_function == "variable_projection"
-    assert groups["default"].link_clp is None
-    assert "testgroup" in groups
-    assert groups["testgroup"].residual_function == "non_negative_least_squares"
-    assert groups["testgroup"].link_clp
-
-
-def test_dataset_groups(test_model: Model):
-    groups = test_model.get_dataset_groups()
-    assert "default" in groups
-    assert groups["default"].residual_function == "variable_projection"
-    assert groups["default"].link_clp is None
-    assert "dataset1" in groups["default"].dataset_models
-    assert "testgroup" in groups
-    assert groups["testgroup"].residual_function == "non_negative_least_squares"
-    assert groups["testgroup"].link_clp
-    assert "dataset2" in groups["testgroup"].dataset_models
-
-
-def test_model_validity(test_model: Model, model_error: Model, parameter: ParameterGroup):
-    print(test_model.test_item1["t1"])
-    print(test_model.problem_list())
-    print(test_model.problem_list(parameter))
-    assert test_model.valid()
-    assert test_model.valid(parameter)
-    print(model_error.problem_list())
-    print(model_error.problem_list(parameter))
-    assert not model_error.valid()
-    assert len(model_error.problem_list()) == 6
-    assert not model_error.valid(parameter)
-    assert len(model_error.problem_list(parameter)) == 10
-
-
-def test_model_validate_missing_parameters():
-    """Show list of missing parameters as a problem."""
-
-    model_dict = {
-        "default_megacomplex": "decay-sequential",
-        "megacomplex": {
-            "megacomplex_sequential_decay": {
-                "type": "decay-sequential",
-                "compartments": ["species_1", "species_2", "species_3", "species_4"],
-                "rates": [
-                    "b.missing_value_1",
-                    "b.missing_value_2",
-                    "b.2",
-                    "kinetic.j.missing_value_3",
-                ],
-                "dimension": "time",
-            }
-        },
-        "dataset": {
-            "dataset_1": {
-                "group": "default",
-                "megacomplex": ["megacomplex_sequential_decay"],
-            }
-        },
+    assert test_model.test_item["t1"].param == "foo"  # type:ignore[attr-defined]
+    assert test_model.test_item["t1"].param_list == ["bar", "baz"]  # type:ignore[attr-defined]
+    assert test_model.test_item["t1"].param_dict == {  # type:ignore[attr-defined]
+        ("s1", "s2"): "baz"
     }
-    model = Model.from_dict(model_dict)
-    parameters = load_parameters(
-        dedent(
-            """\
-            b:
-                - ["missing_value_1",]
-                - ["missing_value_2"]
-                - ["2", 0.75]
-            kinetic:
-                j:
-                    - ["missing_value_3"]
-            """
-        ),
-        format_name="yml_str",
+    assert test_model.test_item["t1"].megacomplex == "m1"  # type:ignore[attr-defined]
+    assert test_model.test_item["t1"].number == 42  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].param == "baz"  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].param_list == ["foo"]  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].param_dict == {}  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].megacomplex == "m2"  # type:ignore[attr-defined]
+    assert test_model.test_item["t2"].number == 7  # type:ignore[attr-defined]
+
+    assert test_model.dataset["dataset1"].megacomplex == ["m1"]
+    assert test_model.dataset["dataset1"].global_megacomplex is None
+    assert test_model.dataset["dataset1"].scale == "scale_1"
+    assert test_model.dataset["dataset1"].test_item_dataset == "t1"  # type:ignore[attr-defined]
+    assert test_model.dataset["dataset1"].test_property_dataset1 == 1  # type:ignore[attr-defined]
+    assert (
+        test_model.dataset["dataset1"].test_property_dataset2 == "bar"  # type:ignore[attr-defined]
     )
-    expected = dedent(
-        """\
-            Your model has 1 problem:
+    assert test_model.dataset["dataset1"].group == DEFAULT_DATASET_GROUP
 
-             * Parameter definition is missing values for the labels:
-                - b.missing_value_1
-                - b.missing_value_2
-                - kinetic.j.missing_value_3"""
+    assert test_model.dataset["dataset2"].megacomplex == ["m2"]
+    assert test_model.dataset["dataset2"].global_megacomplex == ["m1"]
+    assert test_model.dataset["dataset2"].scale == "scale_2"
+    assert test_model.dataset["dataset2"].test_item_dataset == "t2"  # type:ignore[attr-defined]
+    assert test_model.dataset["dataset2"].test_property_dataset1 == 1  # type:ignore[attr-defined]
+    assert (
+        test_model.dataset["dataset2"].test_property_dataset2 == "bar"  # type:ignore[attr-defined]
     )
-    assert str(model.validate(parameters)) == expected
-
-
-def test_items(test_model: Model):
-
-    assert "m1" in test_model.megacomplex
-    assert "m2" in test_model.megacomplex
-
-    assert "t1" in test_model.test_item1
-    t = test_model.test_item1.get("t1")
-    assert t.param.full_label == "foo"
-    assert t.megacomplex == "m1"
-    assert [p.full_label for p in t.param_list] == ["bar", "baz"]
-    assert t.default_item == 42
-    assert ("s1", "s2") in t.complex
-    assert t.complex[("s1", "s2")].full_label == "baz"
-    assert "t2" in test_model.test_item1
-    t = test_model.test_item1.get("t2")
-    assert t.param.full_label == "baz"
-    assert t.megacomplex == "m2"
-    assert [p.full_label for p in t.param_list] == ["foo"]
-    assert t.default_item == 7
-    assert t.complex == {}
-
-    assert "dataset1" in test_model.dataset
-    assert test_model.dataset.get("dataset1").megacomplex == ["m1"]
-    assert test_model.dataset.get("dataset1").scale.full_label == "scale_1"
-
-    assert "dataset2" in test_model.dataset
-    assert test_model.dataset.get("dataset2").megacomplex == ["m2"]
-    assert test_model.dataset.get("dataset2").global_megacomplex == ["m1"]
-    assert test_model.dataset.get("dataset2").scale.full_label == "scale_2"
-
-    assert len(test_model.weights) == 1
-    w = test_model.weights[0]
-    assert w.datasets == ["d1", "d2"]
-    assert w.global_interval == (1, 4)
-    assert w.model_interval == (2, 3)
-    assert w.value == 5.4
-
-
-def test_fill(test_model: Model, parameter: ParameterGroup):
-    dataset = test_model.dataset.get("dataset1").fill(test_model, parameter)
-    assert [cmplx.label for cmplx in dataset.megacomplex] == ["m1"]
-    assert dataset.scale == 2
-
-    assert not dataset.has_global_model()
-
-    dataset = test_model.dataset.get("dataset2").fill(test_model, parameter)
-    assert [cmplx.label for cmplx in dataset.megacomplex] == ["m2"]
-    assert dataset.scale == 8
-
-    assert dataset.has_global_model()
-    assert [cmplx.label for cmplx in dataset.global_megacomplex] == ["m1"]
-
-    t = test_model.test_item1.get("t1").fill(test_model, parameter)
-    assert t.param == 3
-    assert t.megacomplex.label == "m1"
-    assert t.param_list == [4, 2]
-    assert t.default_item == 42
-    assert t.complex == {("s1", "s2"): 2}
-    t = test_model.test_item1.get("t2").fill(test_model, parameter)
-    assert t.param == 2
-    assert t.megacomplex.label == "m2"
-    assert t.param_list == [3]
-    assert t.default_item == 7
-    assert t.complex == {}
+    assert test_model.dataset["dataset2"].group == "testgroup"
 
 
 def test_model_as_dict():
     model_dict = {
-        "default_megacomplex": "type8",
+        "clp_penalties": [
+            {
+                "type": "equal_area",
+                "source": "s",
+                "source_intervals": [(1, 2)],
+                "target": "t",
+                "target_intervals": [(1, 2)],
+                "parameter": "p",
+                "weight": 1,
+            }
+        ],
+        "clp_constraints": [
+            {"type": "only", "target": "t", "interval": [(1, 2)]},
+            {"type": "zero", "target": "t", "interval": (1, 2)},
+        ],
+        "clp_relations": [
+            {"source": "s", "target": "t", "interval": [(1, 2)], "parameter": "p"},
+        ],
         "megacomplex": {
-            "m1": {"test_item_simple": "t2", "dimension": "model"},
-        },
-        "test_item_simple": {
-            "t1": {
-                "param": "foo",
-                "param_list": ["bar", "baz"],
-                "param_dict": {("s1", "s2"): "baz"},
-                "number": 21,
-            },
+            "m1": {"type": "simple", "label": "m1", "dimension": "model", "test_item": "t1"},
         },
         "dataset_groups": {
-            "default": {"link_clp": None, "residual_function": "variable_projection"}
+            "default": {
+                "label": "default",
+                "residual_function": "non_negative_least_squares",
+                "link_clp": True,
+            }
+        },
+        "test_item": {
+            "t1": {
+                "label": "t1",
+                "number": 4,
+                "param": "foo",
+                "megacomplex": "m1",
+                "param_list": ["bar", "baz"],
+                "param_dict": {("s1", "s2"): "baz"},
+            },
         },
         "dataset": {
             "dataset1": {
-                "megacomplex": ["m1"],
-                "scale": "scale_1",
+                "label": "dataset1",
                 "group": "default",
+                "megacomplex": ["m1"],
+                "global_megacomplex": ["m1"],
+                "scale": "scale_1",
+                "megacomplex_scale": "scale_1",
+                "global_megacomplex_scale": "scale_1",
+                "force_index_dependent": False,
             },
         },
+        "weights": [],
     }
-    model = Model.from_dict(
-        model_dict,
-        megacomplex_types={
-            "type8": MockMegacomplex8,
-        },
-    )
-    as_model_dict = model.as_dict()
+    as_model_dict = Model.create_class_from_megacomplexes([MockMegacomplexSimple])(
+        **model_dict
+    ).as_dict()
+    print("want")
+    print(model_dict)
+    print("got")
+    print(as_model_dict)
     assert as_model_dict == model_dict
 
 
-def test_model_markdown_base_heading_level(test_model: Model):
-    """base_heading_level applies to all sections."""
-    assert test_model.markdown().startswith("# Model")
-    assert "## Test" in test_model.markdown()
-    assert test_model.markdown(base_heading_level=3).startswith("### Model")
-    assert "#### Test" in test_model.markdown(base_heading_level=3)
-
-
-def test_model_ipython_rendering(test_model: Model):
-    """Autorendering in ipython"""
-    rendered_obj = format_display_data(test_model)[0]
-
-    assert "text/markdown" in rendered_obj
-    assert rendered_obj["text/markdown"].startswith("### Model")
-
-    rendered_markdown_return = format_display_data(test_model.markdown())[0]
-
-    assert "text/markdown" in rendered_markdown_return
-    assert rendered_markdown_return["text/markdown"].startswith("# Model")
-
-
-def test_interval_property():
-    ip1 = IntervalProperty.from_dict({"interval": [[1, 1000]]})
-    assert all(ip1.applies(x) for x in (1, 500, 100))
-    assert all(not ip1.applies(x) for x in (9999, inf, nan))
-
-
-def test_zero_constraint():
-    zc1 = ZeroConstraint.from_dict({"interval": [[1, 400], [600, 1000]], "target": "s1"})
-    assert all(zc1.applies(x) for x in (1, 2, 400, 600, 1000))
-    assert all(not zc1.applies(x) for x in (400.01, 500, 599.99, 9999, inf, nan))
-    assert zc1.target == "s1"
-    zc2 = ZeroConstraint.from_dict({"interval": [[600, 700]], "target": "s2"})
-    assert all(zc2.applies(x) for x in range(600, 700, 50))
-    assert all(not zc2.applies(x) for x in (599.9999, 700.0001))
-    assert zc2.target == "s2"
-
-
-def test_only_constraint():
-    oc1 = OnlyConstraint.from_dict({"interval": [[1, 400], (600, 1000)], "target": "spectra1"})
-    assert all(oc1.applies(x) for x in (400.01, 500, 599.99, 9999, inf))
-    assert all(not oc1.applies(x) for x in (1, 400, 600, 1000))
-    assert oc1.target == "spectra1"
-    oc2 = OnlyConstraint.from_dict({"interval": [(600, 700)], "target": "spectra2"})
-    assert oc2.applies(599)
-    assert not oc2.applies(650)
-    assert oc2.applies(701)
-    assert oc2.target == "spectra2"
-
-
-def test_model_markdown():
-    """Full markdown string is as expected."""
+def test_model_markdown(test_model: Model):
+    md = test_model.markdown()
     expected = dedent(
         """\
         # Model
 
-        _Megacomplex Types_: decay-parallel
-
         ## Dataset Groups
 
-        * **default**:
-          * *Label*: default
-          * *residual_function*: variable_projection
-          * *link_clp*: None
+        * **testgroup**
+            * *Label*: testgroup
+            * *Residual Function*: non_negative_least_squares
+            * *Link Clp*: True
 
-        ## Irf
+        * **default**
+            * *Label*: default
+            * *Residual Function*: variable_projection
 
-        * **gaussian_irf** (gaussian):
-            * *Label*: gaussian_irf
-            * *Type*: gaussian
-            * *Center*: irf.center(nan)
-            * *Width*: irf.width(nan)
-            * *Normalize*: True
-            * *Backsweep*: False
+
+        ## Weights
+
+        * ****
+            * *Datasets*: ['d1', 'd2']
+            * *Global Interval*: (1, 4)
+            * *Model Interval*: (2, 3)
+            * *Value*: 5.4
+
+
+        ## Test Item
+
+        * **t1**
+            * *Label*: t1
+            * *Param*: foo
+            * *Param List*: ['bar', 'baz']
+            * *Param Dict*: {('s1', 's2'): 'baz'}
+            * *Megacomplex*: m1
+            * *Number*: 42
+
+        * **t2**
+            * *Label*: t2
+            * *Param*: baz
+            * *Param List*: ['foo']
+            * *Param Dict*: {}
+            * *Megacomplex*: m2
+            * *Number*: 7
 
 
         ## Megacomplex
 
-        * **megacomplex_parallel_decay** (decay-parallel):
-            * *Label*: megacomplex_parallel_decay
-            * *Type*: decay-parallel
-            * *Compartments*:
-              * species_1
-              * species_2
-              * species_3
-            * *Rates*:
-              * rates.species_1(nan)
-              * rates.species_2(nan)
-              * rates.species_3(nan)
-            * *Dimension*: time
+        * **m1**
+            * *Label*: m1
+            * *Type*: simple
+            * *Dimension*: model
+            * *Test Item*: t2
+
+        * **m2**
+            * *Label*: m2
+            * *Type*: dataset
+            * *Dimension*: model2
+
+
+        ## Test Item Dataset
+
+        * **t1**
+            * *Label*: t1
+            * *Param*: foo
+            * *Param List*: ['bar', 'baz']
+            * *Param Dict*: {('s1', 's2'): 'baz'}
+            * *Megacomplex*: m1
+            * *Number*: 42
+
+        * **t2**
+            * *Label*: t2
+            * *Param*: baz
+            * *Param List*: ['foo']
+            * *Param Dict*: {}
+            * *Megacomplex*: m2
+            * *Number*: 7
 
 
         ## Dataset
 
-        * **dataset_1**:
-            * *Label*: dataset_1
+        * **dataset1**
+            * *Label*: dataset1
             * *Group*: default
-            * *Megacomplex*:
-              * megacomplex_parallel_decay
-            * *Irf*: gaussian_irf
+            * *Force Index Dependent*: False
+            * *Megacomplex*: ['m1']
+            * *Scale*: scale_1
+            * *Test Item Dataset*: t1
+            * *Test Property Dataset1*: 1
+            * *Test Property Dataset2*: bar
+
+        * **dataset2**
+            * *Label*: dataset2
+            * *Group*: testgroup
+            * *Force Index Dependent*: False
+            * *Megacomplex*: ['m2']
+            * *Global Megacomplex*: ['m1']
+            * *Scale*: scale_2
+            * *Test Item Dataset*: t2
+            * *Test Property Dataset1*: 1
+            * *Test Property Dataset2*: bar
 
 
         """
     )
-    model = copy(MODEL)
-    model.dataset_group_models["default"].link_clp = None
-
+    print(md)
     # Preprocessing to remove trailing whitespace after '* *Matrix*:'
-    result = "\n".join([line.rstrip(" ") for line in str(MODEL.markdown()).split("\n")])
-    print(result)
-
+    expected = "\n".join([line.rstrip(" ") for line in str(expected).split("\n")])
+    result = "\n".join([line.rstrip(" ") for line in str(md).split("\n")])
     assert result == expected
 
 
 def test_get_parameter_labels(test_model: Model):
-    wanted = [
-        "foo",
-        "bar",
-        "baz",
-        "baz",
-        "baz",
-        "foo",
-        "foo",
-        "bar",
-        "baz",
-        "baz",
-        "baz",
-        "foo",
-        "scale_1",
-        "bar",
-        "scale_2",
-        "bar",
-    ]
+    wanted = {"foo", "scale_1", "scale_2", "baz", "bar"}
     got = test_model.get_parameter_labels()
-
+    print(got)
     assert wanted == got

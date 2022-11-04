@@ -9,7 +9,7 @@ from pandas.testing import assert_frame_equal
 
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
-from glotaran.parameter import ParameterGroup
+from glotaran.parameter import Parameters
 
 PANDAS_TEST_DATA = Path(__file__).parent / "data"
 PATH_XLSX = PANDAS_TEST_DATA / "reference_parameters.xlsx"
@@ -19,13 +19,13 @@ PATH_TSV = PANDAS_TEST_DATA / "reference_parameters.tsv"
 
 
 @pytest.fixture(scope="module")
-def yaml_reference() -> ParameterGroup:
+def yaml_reference() -> Parameters:
     """Fixture for yaml reference data."""
     return load_parameters(PANDAS_TEST_DATA / "reference_parameters.yaml")
 
 
 @pytest.mark.parametrize("reference_path", (PATH_XLSX, PATH_ODS, PATH_CSV, PATH_TSV))
-def test_references(yaml_reference: ParameterGroup, reference_path: Path):
+def test_references(yaml_reference: Parameters, reference_path: Path):
     """References are the same"""
     result = load_parameters(reference_path)
     assert result == yaml_reference
@@ -36,7 +36,7 @@ def test_references(yaml_reference: ParameterGroup, reference_path: Path):
     (("xlsx", PATH_XLSX), ("ods", PATH_ODS), ("csv", PATH_CSV), ("tsv", PATH_TSV)),
 )
 def test_roundtrips(
-    yaml_reference: ParameterGroup, tmp_path: Path, format_name: str, reference_path: Path
+    yaml_reference: Parameters, tmp_path: Path, format_name: str, reference_path: Path
 ):
     """Roundtrip via save and load have the same data."""
     format_reference = load_parameters(reference_path)
@@ -62,31 +62,10 @@ def test_roundtrips(
         )
 
 
-@pytest.mark.parametrize("format_name", ("xlsx", "ods", "csv", "tsv"))
-def test_as_optimized_false(yaml_reference: ParameterGroup, tmp_path: Path, format_name: str):
-    """Column 'standard-error' is missing if as_optimized==False"""
-    parameter_path = tmp_path / f"test_parameters.{format_name}"
-    save_parameters(
-        file_name=parameter_path,
-        format_name=format_name,
-        parameters=yaml_reference,
-        as_optimized=False,
-    )
-
-    if format_name in {"csv", "tsv"}:
-        assert "standard-error" not in parameter_path.read_text().splitlines()[0]
-    else:
-        assert (
-            "standard-error"
-            not in pd.read_excel(parameter_path, na_values=["None", "none"]).columns
-        )
-
-
 @pytest.mark.parametrize("format_name,sep", (("csv", ","), ("tsv", "\t")))
 def test_replace_infinfinity(
-    yaml_reference: ParameterGroup, tmp_path: Path, format_name: str, sep: str
+    yaml_reference: Parameters, tmp_path: Path, format_name: str, sep: str
 ):
-    """Column 'standard-error' is missing if as_optimized==False"""
     parameter_path = tmp_path / f"test_parameters.{format_name}"
     save_parameters(
         file_name=parameter_path,
@@ -95,8 +74,9 @@ def test_replace_infinfinity(
         replace_infinfinity=False,
     )
     df = pd.read_csv(parameter_path, sep=sep)
-    assert all(df["minimum"] == -np.inf)
+    df = df[df["label"] != "verbose_list.no_defaults"]
     assert all(df["maximum"] == np.inf)
+    assert all(df["minimum"] == -np.inf)
 
     first_data_line = parameter_path.read_text().splitlines()[1]
     assert f"{sep}-inf" in first_data_line

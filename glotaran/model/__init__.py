@@ -1,26 +1,22 @@
-"""Glotaran Model Package
-
-This package contains the Glotaran's base model object, the model decorators and
-common model items.
-"""
-
+"""The glotaran model package."""
+from glotaran.model.clp_constraint import OnlyConstraint
+from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.model.constraint import Constraint
-from glotaran.model.constraint import OnlyConstraint
-from glotaran.model.constraint import ZeroConstraint
+from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.dataset_group import DatasetGroup
-from glotaran.model.dataset_group import DatasetGroupModel
 from glotaran.model.dataset_model import DatasetModel
-from glotaran.model.item import model_item
-from glotaran.model.item import model_item_typed
+from glotaran.model.dataset_model import get_dataset_model_model_dimension
+from glotaran.model.dataset_model import is_dataset_model_index_dependent
+from glotaran.model.item import ItemIssue
+from glotaran.model.item import ModelItem
+from glotaran.model.item import ModelItemType
+from glotaran.model.item import ModelItemTyped
+from glotaran.model.item import ParameterType
+from glotaran.model.item import attribute
+from glotaran.model.item import fill_item
+from glotaran.model.item import item
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.megacomplex import megacomplex
 from glotaran.model.model import Model
-from glotaran.model.relation import Relation
-from glotaran.model.util import ModelError
+from glotaran.model.model import ModelError
 from glotaran.model.weight import Weight
-from glotaran.plugin_system.megacomplex_registration import get_megacomplex
-from glotaran.plugin_system.megacomplex_registration import is_known_megacomplex
-from glotaran.plugin_system.megacomplex_registration import known_megacomplex_names
-from glotaran.plugin_system.megacomplex_registration import megacomplex_plugin_table
-from glotaran.plugin_system.megacomplex_registration import set_megacomplex_plugin
