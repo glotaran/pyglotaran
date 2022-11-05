@@ -276,7 +276,7 @@ class Model:
                 dataset_types |= {
                     dataset_model_type,
                 }
-            attributes.update(_create_attributes_for_item(megacomplex))
+            attributes |= _create_attributes_for_item(megacomplex)
 
         dataset_type = (
             DatasetModel
