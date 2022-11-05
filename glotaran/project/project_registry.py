@@ -1,9 +1,9 @@
 """The glotaran registry module."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-from typing import Callable
 
 from glotaran.utils.ipython import MarkdownStr
 

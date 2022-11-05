@@ -5,11 +5,11 @@ import os
 import re
 import subprocess
 from collections import defaultdict
+from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
-from typing import Iterable
 from typing import Protocol
 from warnings import warn
 

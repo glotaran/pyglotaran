@@ -8,9 +8,9 @@ from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
     from ruamel.yaml.nodes import ScalarNode
     from ruamel.yaml.representer import BaseRepresenter
