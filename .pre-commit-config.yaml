@@ -21,7 +21,7 @@ repos:
       - id: pyupgrade
         types: [file]
         types_or: [python, pyi]
-        args: [--py38-plus]
+        args: [--py310-plus]
         exclude: "glotaran.model.item"
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports

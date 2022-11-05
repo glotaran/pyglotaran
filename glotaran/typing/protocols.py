@@ -6,9 +6,9 @@ from typing import Protocol
 from typing import TypeVar
 
 if TYPE_CHECKING:
-    from typing import Callable
-    from typing import Mapping
-    from typing import Sequence
+    from collections.abc import Callable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
 
     from glotaran.typing.types import StrOrPath
 

@@ -9,8 +9,8 @@ from unittest import mock
 from glotaran.plugin_system.base_registry import __PluginRegistry
 
 if TYPE_CHECKING:
-    from typing import Generator
-    from typing import MutableMapping
+    from collections.abc import Generator
+    from collections.abc import MutableMapping
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface

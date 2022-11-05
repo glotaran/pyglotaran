@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import Iterable
+from collections.abc import Iterable
 
 import click
 from click import echo

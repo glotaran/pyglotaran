@@ -3,19 +3,19 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from functools import partial
 from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import TypeVar
 from typing import cast
 
 DecoratedFunc = TypeVar("DecoratedFunc", bound=Callable[..., Any])  # decorated function
 
 if TYPE_CHECKING:
-    from typing import Iterable
-    from typing import Iterator
+    from collections.abc import Iterable
+    from collections.abc import Iterator
 
     from glotaran.typing import StrOrPath
 

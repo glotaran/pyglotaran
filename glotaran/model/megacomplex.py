@@ -1,8 +1,8 @@
 """This module contains the megacomplex."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 
 import numpy as np

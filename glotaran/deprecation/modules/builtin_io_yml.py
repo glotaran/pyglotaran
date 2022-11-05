@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from glotaran.deprecation import deprecate_dict_entry
 
 if TYPE_CHECKING:
+    from collections.abc import MutableMapping
     from typing import Any
-    from typing import MutableMapping
 
 
 def model_spec_deprecations(spec: MutableMapping[Any, Any]) -> None:

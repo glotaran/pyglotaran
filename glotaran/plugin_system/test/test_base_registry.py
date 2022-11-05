@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import MutableMapping
 from copy import copy
 from typing import TYPE_CHECKING
-from typing import MutableMapping
-from typing import Type
 from typing import cast
 from warnings import warn
 
@@ -66,7 +65,7 @@ mock_registry_data_io = cast(
 mock_registry_project_io = cast(
     MutableMapping[str, ProjectIoInterface], copy(mock_registry_data_io)
 )
-mock_registry_model = cast(MutableMapping[str, Type[Megacomplex]], copy(mock_registry_data_io))
+mock_registry_model = cast(MutableMapping[str, type[Megacomplex]], copy(mock_registry_data_io))
 
 
 @pytest.mark.parametrize(

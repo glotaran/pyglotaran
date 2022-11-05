@@ -17,7 +17,7 @@ from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
-    from typing import Iterator
+    from collections.abc import Iterator
 
     import pandas as pd
 

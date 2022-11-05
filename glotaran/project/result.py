@@ -6,7 +6,6 @@ from dataclasses import field
 from dataclasses import replace
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import List
 from typing import cast
 
 import numpy as np
@@ -32,8 +31,8 @@ from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
-    from typing import Callable
-    from typing import Mapping
+    from collections.abc import Callable
+    from collections.abc import Mapping
 
     from glotaran.typing import StrOrPath
 
@@ -285,7 +284,7 @@ class Result:
             Paths to all the saved files.
         """
         return cast(
-            List[str],
+            list[str],
             save_result(
                 result_path=path,
                 result=self,

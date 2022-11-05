@@ -9,10 +9,10 @@ import pytest
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Callable
-    from typing import Mapping
-    from typing import Sequence
 
     from _pytest.recwarn import WarningsRecorder
 

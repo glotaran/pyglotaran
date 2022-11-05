@@ -15,9 +15,9 @@ from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
 
-    from typing import Callable
+    from collections.abc import Callable
+    from collections.abc import Mapping
     from typing import Literal
-    from typing import Mapping
 
     import xarray as xr
 
