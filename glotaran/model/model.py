@@ -1,11 +1,11 @@
 """This module contains the model."""
 from __future__ import annotations
 
+from collections.abc import Callable
+from collections.abc import Generator
+from collections.abc import Mapping
 from typing import Any
-from typing import Callable
 from typing import ClassVar
-from typing import Generator
-from typing import Mapping
 from uuid import uuid4
 
 from attr import asdict
@@ -276,7 +276,7 @@ class Model:
                 dataset_types |= {
                     dataset_model_type,
                 }
-            attributes.update(_create_attributes_for_item(megacomplex))
+            attributes |= _create_attributes_for_item(megacomplex)
 
         dataset_type = (
             DatasetModel

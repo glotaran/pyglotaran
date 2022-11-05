@@ -9,8 +9,8 @@ from unittest import mock
 from glotaran.plugin_system.base_registry import __PluginRegistry
 
 if TYPE_CHECKING:
-    from typing import Generator
-    from typing import MutableMapping
+    from collections.abc import Generator
+    from collections.abc import MutableMapping
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
@@ -49,9 +49,7 @@ def _monkeypatch_plugin_registry(
     monkeypatch_plugin_registry_project_io
     """
     if test_registry is not None:
-        initila_plugins = (
-            __PluginRegistry.__dict__[register_name] if not create_new_registry else {}
-        )
+        initila_plugins = {} if create_new_registry else __PluginRegistry.__dict__[register_name]
 
         with mock.patch.object(
             __PluginRegistry, register_name, {**initila_plugins, **test_registry}

@@ -5,16 +5,16 @@ from __future__ import annotations
 import os
 import re
 import sys
+from collections.abc import Callable
+from collections.abc import Hashable
+from collections.abc import Mapping
+from collections.abc import MutableMapping
 from functools import wraps
 from importlib import import_module
 from importlib.metadata import distribution
 from types import ModuleType
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
-from typing import Hashable
-from typing import Mapping
-from typing import MutableMapping
 from typing import TypeVar
 from typing import cast
 from warnings import warn
@@ -26,8 +26,8 @@ DecoratedCallable = TypeVar(
 )  # decorated function or class
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import NoReturn
-    from typing import Sequence
 
 
 class OverDueDeprecation(Exception):
@@ -740,10 +740,11 @@ def deprecate_submodule(
 
     .. # noqa: DAR402
     """
-    if module_load_overwrite == "":
-        new_module = import_module(new_module_name)
-    else:
-        new_module = import_module(module_load_overwrite)
+    new_module = (
+        import_module(module_load_overwrite)
+        if module_load_overwrite
+        else import_module(new_module_name)
+    )
 
     deprecated_module = ModuleType(
         deprecated_module_name,

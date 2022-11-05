@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING
 from glotaran.utils.io import relative_posix_path
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any
-    from typing import Callable
     from typing import TypeVar
 
     from glotaran.typing.protocols import FileLoadable

@@ -1,4 +1,3 @@
-from os.path import abspath
 from os.path import dirname
 from os.path import join
 
@@ -15,7 +14,7 @@ from glotaran.model import OnlyConstraint
 from glotaran.model import Weight
 from glotaran.model import ZeroConstraint
 
-THIS_DIR = dirname(abspath(__file__))
+THIS_DIR = dirname(__file__)
 
 
 @pytest.fixture

@@ -20,9 +20,9 @@ from glotaran.deprecation.deprecation_utils import raise_deprecation_error
 from glotaran.deprecation.deprecation_utils import warn_deprecated
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable
+    from collections.abc import Mapping
     from typing import Any
-    from typing import Hashable
-    from typing import Mapping
 
     from _pytest.monkeypatch import MonkeyPatch
     from _pytest.recwarn import WarningsRecorder

@@ -1,10 +1,10 @@
 """The parameters class."""
 from __future__ import annotations
 
+from collections.abc import Generator
 from textwrap import indent
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Generator
 
 import asteval
 import numpy as np

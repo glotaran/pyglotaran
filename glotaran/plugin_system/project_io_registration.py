@@ -33,8 +33,8 @@ from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any
-    from typing import Callable
     from typing import Literal
 
     from glotaran.model import Model

@@ -32,8 +32,8 @@ from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any
-    from typing import Callable
 
     from _pytest.capture import CaptureFixture
     from _pytest.monkeypatch import MonkeyPatch

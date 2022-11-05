@@ -1,7 +1,7 @@
 """Glotaran types module containing commonly used types."""
+from collections.abc import Mapping
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Mapping
-from typing import Sequence
 from typing import TypeVar
 from typing import Union
 

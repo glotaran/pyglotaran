@@ -6,7 +6,7 @@ import numpy as np
 import xarray as xr
 
 if TYPE_CHECKING:
-    from typing import Hashable
+    from collections.abc import Hashable
 
 
 def prepare_time_trace_dataset(

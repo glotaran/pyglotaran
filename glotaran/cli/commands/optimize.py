@@ -1,5 +1,4 @@
 import sys
-import typing
 
 import click
 
@@ -53,7 +52,7 @@ from glotaran.project.scheme import Scheme
 @util.signature_analysis
 def optimize_cmd(
     dataformat: str,
-    data: typing.List[str],
+    data: list[str],
     out: str,
     outformat: str,
     nfev: int,

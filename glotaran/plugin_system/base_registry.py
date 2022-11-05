@@ -12,18 +12,17 @@ from typing import TYPE_CHECKING
 from warnings import warn
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import MutableMapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Callable
-    from typing import MutableMapping
-    from typing import Sequence
-    from typing import Type
     from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
     from glotaran.model.megacomplex import Megacomplex
 
-    _PluginType = TypeVar("_PluginType", Type[Megacomplex], DataIoInterface, ProjectIoInterface)
+    _PluginType = TypeVar("_PluginType", type[Megacomplex], DataIoInterface, ProjectIoInterface)
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
     )
