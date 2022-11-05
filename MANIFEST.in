@@ -9,3 +9,4 @@ setup.py
 recursive-include glotaran *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
+recursive-exclude validation *

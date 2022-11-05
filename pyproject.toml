@@ -90,4 +90,7 @@ ignore = [
   "readthedocs.yml",
   "requirements_dev.txt",
   "tox.ini",
+  ".gitmodules",
+  # This is just a file on the CI if not check out with git submodules option
+  "validation",
 ]

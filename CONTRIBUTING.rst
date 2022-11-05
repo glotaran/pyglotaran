@@ -352,7 +352,7 @@ Those results than will be compared to the 'gold standard' defined by the mainta
 
 To test the result consistency run::
 
-    $ pytest .github/test_result_consistency.py
+    $ pytest validation/pyglotaran-examples/test_result_consistency.py
 
 If needed this will clone the `'gold standard' results <https://github.com/glotaran/pyglotaran-examples/tree/comparison-results>`_
 to the folder ``comparison-results``, update them and test your current results against them.
