@@ -21,3 +21,16 @@ updates:
       day: friday
       time: "18:00"
       timezone: Europe/Amsterdam
+    reviewers:
+      - s-weigand
+    assignees:
+      - s-weigand
+
+  # Update git submodules
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: friday
+      time: "18:00"
+      timezone: Europe/Amsterdam
