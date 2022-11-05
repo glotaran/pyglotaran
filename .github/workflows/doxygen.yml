@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       pr_nr:
-        description: "pyglotaran branch/tag to run the examples against"
+        description: "PR number to create doxygen docs for, if omitted current branch is used."
         required: false
         default: ""
       repo:
-        description: "pyglotaran branch/tag to run the examples against"
+        description: "Repository doxygen docs for."
         required: true
         default: "glotaran/pyglotaran"
 
@@ -52,7 +52,8 @@ jobs:
               ref = merge_sha_by_pr_nr(int(pr_nr))
           else:
               ref = os.getenv("GITHUB_REF_NAME")
-          print(f"::set-output name=ref::{ref}")
+          with open(os.getenv("GITHUB_OUTPUT"), "a", encoding="utf8") as f:
+              f.writelines([f"ref={ref}"])
       - uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}

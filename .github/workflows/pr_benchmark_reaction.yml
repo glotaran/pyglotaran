@@ -49,14 +49,23 @@ jobs:
         id: bench_diff
         shell: python
         run: |
+          import os
           from pathlib import Path
 
-          comment_file_path = Path("pr-diff-comment.txt")
-          print(f"::set-output name=comment::{comment_file_path.read_text()}")
-          comment_file_path.unlink()
-          origin_pr_nr_file_path = Path("origin_pr_nr.txt")
-          print(f"::set-output name=pr_nr::{origin_pr_nr_file_path.read_text()}")
-          origin_pr_nr_file_path.unlink()
+          with open(os.getenv("GITHUB_OUTPUT"), "a", encoding="utf8") as f:
+              comment_file_path = Path("pr-diff-comment.txt")
+              f.writelines(
+                  [
+                      "comment<<EOF",
+                      *comment_file_path.read_text().splitlines(),
+                      "EOF",
+                  ]
+              )
+              comment_file_path.unlink()
+
+              origin_pr_nr_file_path = Path("origin_pr_nr.txt")
+              f.writelines([f"pr_nr={origin_pr_nr_file_path.read_text()}"])
+              origin_pr_nr_file_path.unlink()
 
       - name: Show PR Number and Comment
         shell: python
@@ -64,6 +73,7 @@ jobs:
           print(f"PR Number:\n{ ${{ steps.bench_diff.outputs.pr_nr }} }")
           print("Comment Body:")
           print("""${{ steps.bench_diff.outputs.comment }}""")
+
       - name: Comment on PR
         uses: hasura/comment-progress@v2
         with:
