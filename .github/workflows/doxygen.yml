@@ -52,7 +52,8 @@ jobs:
               ref = merge_sha_by_pr_nr(int(pr_nr))
           else:
               ref = os.getenv("GITHUB_REF_NAME")
-          print(f"::set-output name=ref::{ref}")
+          with open(os.getenv("GITHUB_OUTPUT"), "a", encoding="utf8") as f:
+              f.writelines([f"ref={ref}"])
       - uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
