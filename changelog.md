@@ -13,7 +13,6 @@
 - ✨ Add optimization history to result and iteration column to parameter history (#1134)
 - ♻️ Complete refactor of model and parameter packages using attrs (#1135)
 
-
 ### 👌 Minor Improvements:
 
 - 👌🎨 Wrap model section in result markdown in details tag for notebooks (#1098)
@@ -47,6 +46,7 @@
 - 🔧 Set sourcery-ai target python version to 3.8 (#1095)
 - 🚇🩹🔧 Fix manifest check (#1099)
 - ♻️ Refactor: optimization (#1060)
+- 🧹 Upgrade syntax to py310 using pyupgrade
 
 (changes-0_6_0)=
 
