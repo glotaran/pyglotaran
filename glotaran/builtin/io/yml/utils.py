@@ -30,6 +30,7 @@ def write_dict(
         stream = StringIO()
         yaml.dump(data, stream)
         return stream.getvalue()
+    return None
 
 
 def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:

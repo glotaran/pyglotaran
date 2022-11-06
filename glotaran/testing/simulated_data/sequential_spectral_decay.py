@@ -10,13 +10,13 @@ from glotaran.testing.simulated_data.shared_decay import SIMULATION_PARAMETERS
 
 SIMULATION_MODEL_YML = generate_model_yml(
     generator_name="spectral_decay_sequential",
-    generator_arguments={"nr_compartments": 3, "irf": True},  # type:ignore[arg-type]
+    generator_arguments={"nr_compartments": 3, "irf": True},
 )
 SIMULATION_MODEL = load_model(SIMULATION_MODEL_YML, format_name="yml_str")
 
 MODEL_YML = generate_model_yml(
     generator_name="decay_sequential",
-    generator_arguments={"nr_compartments": 3, "irf": True},  # type:ignore[arg-type]
+    generator_arguments={"nr_compartments": 3, "irf": True},
 )
 MODEL = load_model(MODEL_YML, format_name="yml_str")
 

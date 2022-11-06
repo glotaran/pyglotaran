@@ -114,7 +114,6 @@ repos:
     rev: v0.982
     hooks:
       - id: mypy
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model|builtin/io/pandas)"
         exclude: "docs"
         additional_dependencies: [types-all, types-attrs]
 
