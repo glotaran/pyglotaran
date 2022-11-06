@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# Needed to prevent a netCDF4 RuntimeWarning at import time
+# Ref.: https://github.com/pydata/xarray/issues/7259
+import netCDF4  # noqa: F401
 import xarray as xr
 
 from glotaran.io import DataIoInterface
