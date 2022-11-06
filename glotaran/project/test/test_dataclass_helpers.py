@@ -16,7 +16,7 @@ class DummyFileLoadable:
         self.data = {"foo": val}
 
     @classmethod
-    def loader(  # type:ignore[override]
+    def loader(
         cls: type[DummyFileLoadable],
         file_path: str,
     ) -> DummyFileLoadable:

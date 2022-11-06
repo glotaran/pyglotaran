@@ -22,24 +22,20 @@ def test_generate_parallel_model(megacomplex_type: str, irf: bool, spectral: boo
     )
     print(model)
 
-    assert (
-        f"megacomplex_{megacomplex_type}_decay" in model.megacomplex  # type:ignore[attr-defined]
-    )
-    megacomplex = model.megacomplex[  # type:ignore[attr-defined]
-        f"megacomplex_{megacomplex_type}_decay"
-    ]
+    assert f"megacomplex_{megacomplex_type}_decay" in model.megacomplex
+    megacomplex = model.megacomplex[f"megacomplex_{megacomplex_type}_decay"]
     assert isinstance(megacomplex, (DecayParallelMegacomplex, DecaySequentialMegacomplex))
     assert megacomplex.type == f"decay-{megacomplex_type}"
     assert megacomplex.compartments == expected_compartments
     assert megacomplex.rates == [f"rates.species_{i+1}" for i in range(nr_compartments)]
 
-    assert "dataset_1" in model.dataset  # type:ignore[attr-defined]
-    dataset = model.dataset["dataset_1"]  # type:ignore[attr-defined]
+    assert "dataset_1" in model.dataset
+    dataset = model.dataset["dataset_1"]
     assert dataset.megacomplex == [f"megacomplex_{megacomplex_type}_decay"]
 
     if spectral:
-        assert "megacomplex_spectral" in model.megacomplex  # type:ignore[attr-defined]
-        megacomplex = model.megacomplex["megacomplex_spectral"]  # type:ignore[attr-defined]
+        assert "megacomplex_spectral" in model.megacomplex
+        megacomplex = model.megacomplex["megacomplex_spectral"]
         assert isinstance(megacomplex, SpectralMegacomplex)
         assert expected_compartments == list(megacomplex.shape.keys())
         expected_shapes = [f"shape_species_{i+1}" for i in range(nr_compartments)]

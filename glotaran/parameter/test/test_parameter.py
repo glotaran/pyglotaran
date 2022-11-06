@@ -35,7 +35,7 @@ def test_parameter__deep_equals(key_name: str, value_1: Any, value_2: Any):
 @pytest.mark.parametrize("label, expected", (("foo", "foo"), (0, "0"), (1, "1")))
 def test_parameter_label_always_str_or_None(label: str | int, expected: str):
     """Parameter.label is always a string"""
-    parameter = Parameter(label=label)  # type:ignore[arg-type]
+    parameter = Parameter(label=label)
     assert parameter.label == expected
 
 
@@ -46,7 +46,7 @@ def test_parameter_label_always_str_or_None(label: str | int, expected: str):
 def test_parameter_label_error_wrong_label_pattern(label: str | int | float):
     """Error if label can't be casted to a valid label str"""
     with pytest.raises(ValueError, match=f"'{label}' is not a valid parameter label."):
-        Parameter(label=label)  # type:ignore[arg-type]
+        Parameter(label=label)
 
 
 @pytest.mark.parametrize(
@@ -110,19 +110,19 @@ def test_parameter_options():
 def test_parameter_value_not_numeric_error():
     """Error if value isn't numeric."""
     with pytest.raises(TypeError):
-        Parameter(label="", value="foo")  # type:ignore[arg-type]
+        Parameter(label="", value="foo")
 
 
 def test_parameter_maximum_not_numeric_error():
     """Error if maximum isn't numeric."""
     with pytest.raises(TypeError):
-        Parameter(label="", maximum="foo")  # type:ignore[arg-type]
+        Parameter(label="", maximum="foo")
 
 
 def test_parameter_minimum_not_numeric_error():
     """Error if minimum isn't numeric."""
     with pytest.raises(TypeError):
-        Parameter(label="", minimum="foo")  # type:ignore[arg-type]
+        Parameter(label="", minimum="foo")
 
 
 def test_parameter_non_negative():

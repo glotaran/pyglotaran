@@ -170,11 +170,7 @@ class DataProvider:
         global_dimension : str
             The global dimension.
         """
-        model_weights = [
-            weight
-            for weight in model.weights  # type:ignore[attr-defined]
-            if dataset_label in weight.datasets  # type:ignore[attr-defined]
-        ]
+        model_weights = [weight for weight in model.weights if dataset_label in weight.datasets]
         if not model_weights:
             return
 

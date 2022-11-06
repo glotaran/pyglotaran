@@ -102,7 +102,7 @@ def test_generate_model(project_folder: Path, project_file: Path):
     assert project.has_models
 
     model = project.load_model("test_model")
-    assert "megacomplex_parallel_decay" in model.megacomplex  # type:ignore[attr-defined]
+    assert "megacomplex_parallel_decay" in model.megacomplex
 
     comapartments = load_dict(model_file, is_file=True)["megacomplex"][
         "megacomplex_parallel_decay"
@@ -196,7 +196,7 @@ def test_create_scheme(project_file: Path):
     )
 
     assert "dataset_1" in scheme.data
-    assert "dataset_1" in scheme.model.dataset  # type:ignore[attr-defined]
+    assert "dataset_1" in scheme.model.dataset
     assert scheme.maximum_number_function_evaluations == 1
 
 
@@ -324,7 +324,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
         "test_model", "decay_parallel", {"nr_compartments": 3}, allow_overwrite=True
     )
     new_model = project.load_model("test")
-    assert "megacomplex_parallel_decay" in new_model.megacomplex  # type:ignore[attr-defined]
+    assert "megacomplex_parallel_decay" in new_model.megacomplex
 
     comapartments = load_dict(model_file, is_file=True)["megacomplex"][
         "megacomplex_parallel_decay"

@@ -190,7 +190,7 @@ def load_dataset(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -
         Data loaded from the file.
     """
     io = get_data_io(format_name or inferr_file_format(file_name))
-    dataset = io.load_dataset(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
+    dataset = io.load_dataset(Path(file_name).as_posix(), **kwargs)
 
     if isinstance(dataset, xr.DataArray):
         dataset = dataset.to_dataset(name="data")
@@ -239,11 +239,7 @@ def save_dataset(
     if "source_path" in dataset.attrs:
         orig_source_path: str = dataset.attrs["source_path"]
         del dataset.attrs["source_path"]
-    io.save_dataset(  # type: ignore[call-arg]
-        file_name=Path(file_name).as_posix(),
-        dataset=dataset,
-        **kwargs,
-    )
+    io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
     dataset.attrs["loader"] = load_dataset
     if update_source_path is True or "orig_source_path" not in locals():
         dataset.attrs["source_path"] = Path(file_name).as_posix()

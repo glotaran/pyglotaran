@@ -79,7 +79,7 @@ def test_analysis_optimization(recwarn: WarningsRecorder):
     from glotaran.analysis import optimize as analysis_optimize
 
     assert len(recwarn) == 0
-    assert analysis_optimize.optimize == optimize_module.optimize  # type: ignore[attr-defined]
+    assert analysis_optimize.optimize == optimize_module.optimize
 
     check_recwarn(recwarn)
 
@@ -96,7 +96,7 @@ def test_analysis_simulation(recwarn: WarningsRecorder):
     from glotaran.analysis import simulation as analysis_simulation
 
     assert len(recwarn) == 0
-    assert analysis_simulation.simulate == simulation_module.simulate  # type: ignore[attr-defined]
+    assert analysis_simulation.simulate == simulation_module.simulate
 
     check_recwarn(recwarn)
 

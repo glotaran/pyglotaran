@@ -305,15 +305,15 @@ class MatrixProvider:
             The resulting matrix container.
         """
         model = self.group.model
-        if len(model.clp_constraints) == 0:  # type:ignore[attr-defined]
+        if len(model.clp_constraints) == 0:
             return matrix
 
         clp_labels = matrix.clp_labels
         removed_clp_labels = [
             c.target  # type:ignore[attr-defined]
-            for c in model.clp_constraints  # type:ignore[attr-defined]
+            for c in model.clp_constraints
             if c.target in clp_labels  # type:ignore[attr-defined]
-            and self.does_interval_property_apply(c, index)  # type:ignore[arg-type]
+            and self.does_interval_property_apply(c, index)
         ]
         reduced_clp_labels = [c for c in clp_labels if c not in removed_clp_labels]
         mask = [label in reduced_clp_labels for label in clp_labels]

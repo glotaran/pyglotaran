@@ -115,7 +115,7 @@ class OptimizationHistory:
         """
         return cls(pd.read_csv(path), source_path=Path(path).as_posix())
 
-    loader = from_csv  # type:ignore[assignment]
+    loader = from_csv
 
     def to_csv(self, path: StrOrPath, delimiter: str = ","):
         """Write a ``OptimizationHistory`` to a CSV file and set ``source_path``.

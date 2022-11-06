@@ -303,7 +303,7 @@ def test_deprecated_decorator_function(recwarn: WarningsRecorder):
     assert dummy.__doc__ == "Dummy docstring for testing."
     assert len(recwarn) == 1
     assert recwarn[0].category == GlotaranApiDeprecationWarning
-    assert recwarn[0].message.args[0] == DEPRECATION_WARN_MESSAGE  # type: ignore [union-attr]
+    assert recwarn[0].message.args[0] == DEPRECATION_WARN_MESSAGE
     assert Path(recwarn[0].filename) == Path(__file__)
 
     dummy()
@@ -334,7 +334,7 @@ def test_deprecated_decorator_class(recwarn: WarningsRecorder):
     assert Foo.__doc__ == "Foo class docstring for testing."
     assert len(recwarn) == 1
     assert recwarn[0].category == GlotaranApiDeprecationWarning
-    assert recwarn[0].message.args[0] == DEPRECATION_WARN_MESSAGE  # type: ignore [union-attr]
+    assert recwarn[0].message.args[0] == DEPRECATION_WARN_MESSAGE
     assert Path(recwarn[0].filename) == Path(__file__)
 
     Foo.from_string("foo")
@@ -522,10 +522,7 @@ def test_deprecate_submodule(recwarn: WarningsRecorder):
 
     from glotaran.deprecation.test.dummy_package import deprecated_module
 
-    assert (
-        deprecated_module.parse_version.__code__  # type: ignore [attr-defined]
-        == parse_version.__code__
-    )
+    assert deprecated_module.parse_version.__code__ == parse_version.__code__
 
     assert len(recwarn) == 1
     assert recwarn[0].category == GlotaranApiDeprecationWarning
