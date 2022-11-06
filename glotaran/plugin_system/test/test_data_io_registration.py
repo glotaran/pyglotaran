@@ -40,7 +40,7 @@ class MockDataIO(DataIoInterface):
         self, file_name: StrOrPath, *, result_container: dict[str, Any], **kwargs: Any
     ) -> xr.Dataset | xr.DataArray:
         """This docstring is just for help testing of 'load_dataset'."""
-        result_container.update({"file_name": file_name, **kwargs})
+        result_container |= {"file_name": file_name, **kwargs}
         return xr.DataArray([1, 2])
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
