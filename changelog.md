@@ -51,6 +51,7 @@
 - ♻️ Use validation action and validation as a git submodule (#1165)
 - 🧹 Upgrade syntax to py310 using pyupgrade (#1162)
 - 🧹 Remove unused 'type: ignore' (#1168)
+- 🚧 Raise minimum dependency version to releases that support py310 (#1170)
 
 (changes-0_6_0)=
 
