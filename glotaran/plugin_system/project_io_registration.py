@@ -220,7 +220,7 @@ def load_model(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> 
         Model instance created from the file.
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    model = io.load_model(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
+    model = io.load_model(Path(file_name).as_posix(), **kwargs)
     model.source_path = Path(file_name).as_posix()
     return model
 
@@ -256,11 +256,7 @@ def save_model(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_model(  # type: ignore[call-arg]
-        file_name=Path(file_name).as_posix(),
-        model=model,
-        **kwargs,
-    )
+    io.save_model(file_name=Path(file_name).as_posix(), model=model, **kwargs)
     if update_source_path is True:
         model.source_path = Path(file_name).as_posix()
 
@@ -287,7 +283,7 @@ def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> 
     .. # noqa: D414
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
-    parameters = io.load_parameters(  # type: ignore[call-arg]
+    parameters = io.load_parameters(
         Path(file_name).as_posix(),
         **kwargs,
     )
@@ -326,11 +322,7 @@ def save_parameters(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_parameters(  # type: ignore[call-arg]
-        file_name=Path(file_name).as_posix(),
-        parameters=parameters,
-        **kwargs,
-    )
+    io.save_parameters(file_name=Path(file_name).as_posix(), parameters=parameters, **kwargs)
     if update_source_path is True:
         parameters.source_path = Path(file_name).as_posix()
 
@@ -356,7 +348,7 @@ def load_scheme(file_name: StrOrPath, format_name: str = None, **kwargs: Any) ->
     """
     io = get_project_io(format_name or inferr_file_format(file_name))
 
-    scheme = io.load_scheme(Path(file_name).as_posix(), **kwargs)  # type: ignore[call-arg]
+    scheme = io.load_scheme(Path(file_name).as_posix(), **kwargs)
     scheme.source_path = Path(file_name).as_posix()
     return scheme
 
@@ -392,11 +384,7 @@ def save_scheme(
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
-    io.save_scheme(  # type: ignore[call-arg]
-        file_name=Path(file_name).as_posix(),
-        scheme=scheme,
-        **kwargs,
-    )
+    io.save_scheme(file_name=Path(file_name).as_posix(), scheme=scheme, **kwargs)
     if update_source_path is True:
         scheme.source_path = Path(file_name).as_posix()
 
@@ -423,7 +411,7 @@ def load_result(result_path: StrOrPath, format_name: str = None, **kwargs: Any) 
     """
     io = get_project_io(format_name or inferr_file_format(result_path))
 
-    result = io.load_result(Path(result_path).as_posix(), **kwargs)  # type: ignore[call-arg]
+    result = io.load_result(Path(result_path).as_posix(), **kwargs)
     result.source_path = Path(result_path).as_posix()
     return result
 
@@ -470,7 +458,7 @@ def save_result(
     io = get_project_io(
         format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    paths = io.save_result(  # type: ignore[call-arg]
+    paths = io.save_result(
         result_path=Path(result_path).as_posix(),
         result=result,
         saving_options=saving_options,

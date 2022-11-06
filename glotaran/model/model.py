@@ -332,8 +332,8 @@ class Model:
                     raise ModelError(f"Unknown dataset group '{group}'")
                 groups[group] = DatasetGroup(
                     residual_function=group_model.residual_function,  # type:ignore[call-arg]
-                    link_clp=group_model.link_clp,  # type:ignore[call-arg]
-                    model=self,  # type:ignore[call-arg]
+                    link_clp=group_model.link_clp,
+                    model=self,
                 )
             groups[group].dataset_models[dataset_model.label] = dataset_model
         return groups
@@ -348,7 +348,7 @@ class Model:
         """
         for attr in fields(self.__class__):
             if META_ITEMS in attr.metadata:
-                yield attr.name, getattr(self, attr.name)  # type:ignore[misc]
+                yield attr.name, getattr(self, attr.name)
 
     def iterate_all_items(self) -> Generator[Item, None, None]:
         """Iterate the individual items.

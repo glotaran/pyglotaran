@@ -62,7 +62,7 @@ class ParameterHistory:
         df = pd.read_csv(path)
         return cls.from_dataframe(df)
 
-    loader = from_csv  # type:ignore[assignment]
+    loader = from_csv
 
     @property
     def parameter_labels(self) -> list[str]:

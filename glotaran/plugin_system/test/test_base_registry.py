@@ -102,7 +102,7 @@ def test_PluginOverwriteWarning():
             "to use 'glotaran.builtin.io.sdt.sdt_file_reader.SdtDataIo' instead."
         )
 
-        assert record[0].message.args[0] == expected  # type: ignore
+        assert record[0].message.args[0] == expected
 
 
 @pytest.mark.parametrize(
@@ -133,9 +133,7 @@ def test_add_plugin_to_register_naming_error():
             r"you provided the name 'bad\.name'."
         ),
     ):
-        add_plugin_to_registry(
-            "bad.name", MockPlugin, mock_registry_model, "set_plugin"  # type:ignore
-        )
+        add_plugin_to_registry("bad.name", MockPlugin, mock_registry_model, "set_plugin")
 
 
 def test_add_plugin_to_register_existing_plugin():
@@ -143,12 +141,7 @@ def test_add_plugin_to_register_existing_plugin():
 
     plugin_registry = copy(mock_registry_data_io)
     with pytest.warns(PluginOverwriteWarning, match="SdtDataIo.+sdt.+YmlProjectIo") as record:
-        add_plugin_to_registry(
-            "sdt",
-            YmlProjectIo("sdt"),
-            plugin_registry,  # type:ignore
-            "set_plugin",
-        )
+        add_plugin_to_registry("sdt", YmlProjectIo("sdt"), plugin_registry, "set_plugin")
         assert len(record) == 1
     assert plugin_registry["glotaran.builtin.io.yml.yml.YmlProjectIo"].format == "sdt"
 

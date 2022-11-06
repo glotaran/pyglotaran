@@ -264,11 +264,9 @@ def add_instantiated_plugin_to_registry(
     if isinstance(plugin_register_keys, str):
         plugin_register_keys = [plugin_register_keys]
     for plugin_register_key in plugin_register_keys:
-        # The type ignore is needed due to an issue with mypy
-        # ``Cannot instantiate type "Type[Type[DataIoInterface]]"``
         add_plugin_to_registry(
             plugin_register_key=plugin_register_key,
-            plugin=plugin_class(plugin_register_key),  # type:ignore[misc]
+            plugin=plugin_class(plugin_register_key),
             plugin_registry=plugin_registry,
             plugin_set_func_name=plugin_set_func_name,
             instance_identifier=plugin_register_key,

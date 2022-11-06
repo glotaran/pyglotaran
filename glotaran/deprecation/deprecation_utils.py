@@ -429,7 +429,7 @@ def deprecate(
         setattr(
             deprecated_object,
             "__new__",
-            inject_warn_into_call(deprecated_object.__new__),  # type: ignore[arg-type]
+            inject_warn_into_call(deprecated_object.__new__),
         )
         return deprecated_object  # type: ignore[return-value]
 

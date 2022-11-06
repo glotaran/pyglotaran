@@ -95,7 +95,7 @@ def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
     """
     if not isinstance(d, (dict, list)):
         return
-    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[attr-defined]
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):
         if isinstance(v, (list, dict)):
             sanity_scientific_notation_conversion(v)
         if isinstance(v, str):
@@ -116,7 +116,7 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
     """
     if not isinstance(d, (dict, list)):
         return
-    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[attr-defined]
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):
         if isinstance(v, list):
             leaf = all(isinstance(el, (str, tuple, float)) for el in v)
             if leaf:

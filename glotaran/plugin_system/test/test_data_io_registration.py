@@ -40,7 +40,7 @@ class MockDataIO(DataIoInterface):
         self, file_name: StrOrPath, *, result_container: dict[str, Any], **kwargs: Any
     ) -> xr.Dataset | xr.DataArray:
         """This docstring is just for help testing of 'load_dataset'."""
-        result_container.update({"file_name": file_name, **kwargs})  # type:ignore
+        result_container |= {"file_name": file_name, **kwargs}
         return xr.DataArray([1, 2])
 
     # TODO: Investigate why this raises an [override] type error and read_dataset doesn't
@@ -214,7 +214,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
     file_path.touch()
 
     with pytest.raises(FileExistsError, match="The file .+? already exists"):
-        save_dataset(xr.DataArray([1, 2]), str(file_path))  # type:ignore
+        save_dataset(xr.DataArray([1, 2]), str(file_path))
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -242,7 +242,7 @@ def test_write_dataset_error(tmp_path: Path):
     file_path = tmp_path / "dummy.foo"
 
     with pytest.raises(ValueError, match="Cannot save data with format: 'foo'"):
-        save_dataset(xr.DataArray([1, 2]), str(file_path), "foo")  # type:ignore
+        save_dataset(xr.DataArray([1, 2]), str(file_path), "foo")
 
     file_path.touch()
 

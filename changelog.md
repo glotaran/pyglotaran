@@ -49,7 +49,8 @@
 - ♻️🚇 Use GITHUB_OUTPUT instead of set-output in github actions (#1166)
 - 🚧 Add pinned version of odfpy to requirements_dev.txt (#1164)
 - ♻️ Use validation action and validation as a git submodule (#1165)
-- 🧹 Upgrade syntax to py310 using pyupgrade
+- 🧹 Upgrade syntax to py310 using pyupgrade (#1162)
+- 🧹 Remove unused 'type: ignore' (#1168)
 
 (changes-0_6_0)=
 

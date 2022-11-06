@@ -530,10 +530,7 @@ class Project:
             The created scheme.
         """
         loaded_model = self.load_model(model_name)
-        data = {
-            dataset: self.load_data(dataset)
-            for dataset in loaded_model.dataset  # type:ignore[attr-defined]
-        }
+        data = {dataset: self.load_data(dataset) for dataset in loaded_model.dataset}
         return Scheme(
             model=loaded_model,
             parameters=self.load_parameters(parameters_name),

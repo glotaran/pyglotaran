@@ -57,12 +57,7 @@ class MockProjectIo(ProjectIoInterface):
         mock_obj.func_args = {"file_name": file_name, **kwargs}
         return mock_obj  # type:ignore[return-value]
 
-    def save_model(  # type:ignore[override]
-        self,
-        model: Model,
-        file_name: StrOrPath,
-        **kwargs: Any,
-    ):
+    def save_model(self, model: Model, file_name: StrOrPath, **kwargs: Any):
         model.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": file_name,
@@ -76,12 +71,7 @@ class MockProjectIo(ProjectIoInterface):
         mock_obj.func_args = {"file_name": file_name, **kwargs}
         return mock_obj  # type:ignore[return-value]
 
-    def save_parameters(  # type:ignore[override]
-        self,
-        parameters: Parameters,
-        file_name: StrOrPath,
-        **kwargs: Any,
-    ):
+    def save_parameters(self, parameters: Parameters, file_name: StrOrPath, **kwargs: Any):
         parameters.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": file_name,
@@ -95,12 +85,7 @@ class MockProjectIo(ProjectIoInterface):
         mock_obj.func_args = {"file_name": file_name, **kwargs}
         return mock_obj  # type:ignore[return-value]
 
-    def save_scheme(  # type:ignore[override]
-        self,
-        scheme: Scheme,
-        file_name: StrOrPath,
-        **kwargs: Any,
-    ):
+    def save_scheme(self, scheme: Scheme, file_name: StrOrPath, **kwargs: Any):
         scheme.func_args.update(  # type:ignore[attr-defined]
             **{
                 "file_name": file_name,
@@ -114,7 +99,7 @@ class MockProjectIo(ProjectIoInterface):
         mock_obj.func_args = {"file_name": result_path, **kwargs}
         return mock_obj  # type:ignore[return-value]
 
-    def save_result(  # type:ignore[override]
+    def save_result(
         self,
         result: Result,
         result_path: StrOrPath,
@@ -275,11 +260,7 @@ def test_write_functions(
     mock_obj = MockFileLoadable()
 
     save_function(
-        mock_obj,  # type:ignore
-        file_path,
-        "mock",
-        update_source_path=update_source_path,
-        dummy_arg="baz",
+        mock_obj, file_path, "mock", update_source_path=update_source_path, dummy_arg="baz"
     )
 
     assert mock_obj.func_args == {
