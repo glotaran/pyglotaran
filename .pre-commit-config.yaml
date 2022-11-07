@@ -97,6 +97,8 @@ repos:
         types_or: [python, pyi]
         additional_dependencies:
           [flake8-pyi, flake8-comprehensions, flake8-print>=5.0.0]
+        args:
+          - "--count"
 
   - repo: https://github.com/PyCQA/flake8
     rev: 5.0.4
@@ -105,6 +107,7 @@ repos:
         alias: flake8-docs
         args:
           - "--select=D,DAR"
+          - "--count"
         name: "flake8 lint docstrings"
         exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
