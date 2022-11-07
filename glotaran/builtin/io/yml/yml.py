@@ -113,7 +113,7 @@ class YmlProjectIo(ProjectIoInterface):
         Returns
         -------
         Parameters
-        """
+        """  # noqa:  D414
         spec = self._load_yml(file_name)
 
         if isinstance(spec, list):
