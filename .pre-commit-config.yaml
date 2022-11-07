@@ -106,8 +106,7 @@ repos:
         args:
           - "--select=D,DAR"
         name: "flake8 lint docstrings"
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model|builtin/io/pandas)"
-        exclude: "docs|tests?/"
+        exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy

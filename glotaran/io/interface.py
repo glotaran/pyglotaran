@@ -53,7 +53,7 @@ class DataIoInterface:
 
         Parameters
         ----------
-        format_name : str
+        format_name: str
             Name of the supported format an instance uses.
         """
         self.format = format_name
@@ -65,7 +65,7 @@ class DataIoInterface:
 
         Parameters
         ----------
-        file_name : str
+        file_name: str
             File containing the data.
 
         Returns
@@ -90,9 +90,9 @@ class DataIoInterface:
 
         Parameters
         ----------
-        dataset : xr.Dataset
+        dataset: xr.Dataset
             Dataset to be saved to file.
-        file_name : str
+        file_name: str
             File to write the data to.
 
 
@@ -110,7 +110,7 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        format_name : str
+        format_name: str
             Name of the supported format an instance uses.
         """
         self.format = format_name
@@ -122,7 +122,7 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        file_name : str
+        file_name: str
             File containing the model specs.
 
         Returns
@@ -145,7 +145,7 @@ class ProjectIoInterface:
         ----------
         model: Model
             Model instance to save to specs file.
-        file_name : str
+        file_name: str
             File to write the model specs to.
 
 
@@ -161,7 +161,7 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        file_name : str
+        file_name: str
             File containing the parameter specs.
 
         Returns
@@ -182,9 +182,9 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        parameters : Parameters
+        parameters: Parameters
             Parameters instance to save to specs file.
-        file_name : str
+        file_name: str
             File to write the parameter specs to.
 
 
@@ -200,7 +200,7 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        file_name : str
+        file_name: str
             File containing the parameter specs.
 
         Returns
@@ -220,9 +220,9 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        scheme : Scheme
+        scheme: Scheme
             Scheme instance to save to specs file.
-        file_name : str
+        file_name: str
             File to write the scheme specs to.
 
 
@@ -238,7 +238,7 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        result_path : str
+        result_path: str
             Path containing the result data.
 
         Returns
@@ -265,11 +265,11 @@ class ProjectIoInterface:
 
         Parameters
         ----------
-        result : Result
+        result: Result
             Result instance to save to specs file.
-        result_path : str
+        result_path: str
             Path to write the result data to.
-        saving_options : SavingOptions
+        saving_options: SavingOptions
             Options for the saved result.
 
 

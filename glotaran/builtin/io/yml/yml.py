@@ -1,3 +1,4 @@
+"""Module containing the YAML Data and Project IO plugins."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -29,20 +30,28 @@ if TYPE_CHECKING:
 
 @register_project_io(["yml", "yaml", "yml_str"])
 class YmlProjectIo(ProjectIoInterface):
+    """Plugin for YAML project io."""
+
     def load_model(self, file_name: str) -> Model:
-        """parse_yaml_file reads the given file and parses its content as YML.
+        """Load a :class:`Model` from a model specification in a yaml file.
 
         Parameters
         ----------
-        filename : str
-            filename is the of the file to parse.
+        file_name: str
+            Path to the model file to read.
+
+        Raises
+        ------
+        ValueError
+            If ``megacomplex`` was not provided in the model specification.
+        ValueError
+            If ``default_megacomplex`` was not provided and any megacomplex is missing the type
+            attribute.
 
         Returns
         -------
         Model
-            The content of the file as dictionary.
         """
-
         spec = self._load_yml(file_name)
 
         model_spec_deprecations(spec)
@@ -71,7 +80,8 @@ class YmlProjectIo(ProjectIoInterface):
         return Model.create_class_from_megacomplexes(megacomplex_types)(**spec)
 
     def save_model(self, model: Model, file_name: str):
-        """Save a Model instance to a spec file.
+        """Save a :class:`Model` instance to a specification file.
+
         Parameters
         ----------
         model: Model
@@ -93,17 +103,17 @@ class YmlProjectIo(ProjectIoInterface):
         write_dict(model_dict, file_name=file_name)
 
     def load_parameters(self, file_name: str) -> Parameters:
-        """Create parameters instance from the specs defined in a file.
+        """Load :class:`Parameters` instance from the specification defined in ``file_name``.
+
         Parameters
         ----------
-        file_name : str
-            File containing the parameter specs.
+        file_name: str
+            File containing the parameter specification.
+
         Returns
         -------
         Parameters
-            Parameters instance created from the file.
         """
-
         spec = self._load_yml(file_name)
 
         if isinstance(spec, list):
@@ -112,11 +122,31 @@ class YmlProjectIo(ProjectIoInterface):
             return Parameters.from_dict(spec)
 
     def load_scheme(self, file_name: str) -> Scheme:
+        """Load :class:`Scheme` instance from the specification defined in ``file_name``.
+
+        Parameters
+        ----------
+        file_name: str
+            File containing the scheme specification.
+
+        Returns
+        -------
+        Scheme
+        """
         spec = self._load_yml(file_name)
         scheme_spec_deprecations(spec)
         return fromdict(Scheme, spec, folder=Path(file_name).parent)
 
     def save_scheme(self, scheme: Scheme, file_name: str):
+        """Write a :class:`Scheme` instance to a specification file ``file_name``.
+
+        Parameters
+        ----------
+        scheme: Scheme
+            :class:`Scheme` instance to save to file.
+        file_name: str
+            Path to the file to write the scheme specification to.
+        """
         scheme_dict = asdict(scheme, folder=Path(file_name).parent)
         write_dict(scheme_dict, file_name=file_name)
 
@@ -125,7 +155,7 @@ class YmlProjectIo(ProjectIoInterface):
 
         Parameters
         ----------
-        result_path : str | PathLike[str]
+        result_path : str
             Path containing the result data.
 
         Returns
@@ -142,7 +172,7 @@ class YmlProjectIo(ProjectIoInterface):
         result_path: str,
         saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     ) -> list[str]:
-        """Write a :class:`Result` instance to a spec file and data files.
+        """Write a :class:`Result` instance to a specification file and data files.
 
         Returns a list with paths of all saved items.
         The following files are saved if not configured otherwise:
@@ -158,11 +188,11 @@ class YmlProjectIo(ProjectIoInterface):
 
         Parameters
         ----------
-        result : Result
+        result: Result
             :class:`Result` instance to write.
-        result_path : str | PathLike[str]
+        result_path: str
             Path to write the result data to.
-        saving_options : SavingOptions
+        saving_options: SavingOptions
             Options for saving the the result.
 
         Returns

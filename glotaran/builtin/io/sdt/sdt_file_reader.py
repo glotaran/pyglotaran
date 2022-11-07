@@ -1,6 +1,4 @@
-"""
-Glotarans module to read files
-"""
+"""Module containing the SDT Data IO plugin."""
 from __future__ import annotations
 
 import warnings
@@ -16,6 +14,8 @@ from glotaran.io.prepare_dataset import prepare_time_trace_dataset
 
 @register_data_io("sdt")
 class SdtDataIo(DataIoInterface):
+    """Plugin for SDT data io."""
+
     def load_dataset(
         self,
         file_name: str,
@@ -26,39 +26,41 @@ class SdtDataIo(DataIoInterface):
         swap_axis: bool = False,
         orig_time_axis_index: int = 2,
     ) -> xr.Dataset:
-        """
-        Reads a `*.sdt` file and returns a pd.DataFrame (`return_dataframe==True`), a
-        SpectralTemporalDataset (`type_of_data=='st'`) or a FLIMDataset (`type_of_data=='flim'`).
+        """Read a `*.sdt` file and returns a :xarraydoc:`Dataset` containing its data.
 
         Parameters
         ----------
         file_name: str
             Path to the sdt file which should be read.
 
-        index: list, np.ndarray
+        index: np.ndarray | None
             This is only needed if `type_of_data=="st"`, since `*.sdt` files,
             which only contain spectral temporal data, lack the spectral information.
             Thus for the spectral axis data need to be given by the user.
 
-        flim:
-            Set true if reading a result from a FLIM measurement.
+        flim: bool
+            Set true if reading a result from a FLIM measurement. Defaults to False
 
-        dataset_index: int: default 0
+        dataset_index: int
             If the `*.sdt` file contains multiple datasets the index will used
-            to select the wanted one
+            to select the wanted one. Defaults to 0
 
-        swap_axis: bool, default False
+        swap_axis: bool
             Flag to switch a wavelength explicit `input_df` to time explicit `input_df`,
-            before generating the SpectralTemporalDataset.
+            before generating the SpectralTemporalDataset. Defaults to False
 
         orig_time_axis_index: int
             Index of the axis which corresponds to the time axis.
             I.e. for data of shape (64, 64, 256), which are a 64x64 pixel map
             with 256 time steps, orig_time_axis_index=2.
 
+        Returns
+        -------
+        xr.Dataset
+
         Raises
-        ______
-        IndexError:
+        ------
+        IndexError
             If the length of the index array is incompatible with the data.
         """
         sdt_parser = SdtFile(file_name)
@@ -80,7 +82,7 @@ class SdtDataIo(DataIoInterface):
         times: np.ndarray = sdt_parser.times[dataset_index]
         raw_data: np.ndarray = sdt_parser.data[dataset_index]
 
-        if index and len(index) is not raw_data.shape[0]:
+        if index and len(index) != raw_data.shape[0]:
             raise IndexError(
                 f"The Dataset contains {raw_data.shape[0]} measurements, but the "
                 f"indices supplied are {len(index)}."
