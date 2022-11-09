@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -18,7 +20,7 @@ from glotaran.simulation import simulate
     ("none", "dispersed", "shifted"),
 )
 def test_coherent_artifact(spectral_dependence: str):
-    model_dict = {
+    model_dict: dict[str, dict[str, Any]] = {
         "initial_concentration": {
             "j1": {"compartments": ["s1"], "parameters": ["irf_center"]},
         },
@@ -80,7 +82,7 @@ def test_coherent_artifact(spectral_dependence: str):
         **model_dict
     )
 
-    parameters = Parameters.from_list(parameter_list)
+    parameters = Parameters.from_list(parameter_list)  # type: ignore[arg-type]
 
     time = np.arange(0, 50, 1.5)
     spectral = np.asarray([200, 300, 400])

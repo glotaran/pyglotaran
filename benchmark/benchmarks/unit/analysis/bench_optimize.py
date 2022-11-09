@@ -12,7 +12,12 @@ except ImportError:
     from glotaran.simulation import simulate
 
     try:
-        from glotaran.optimization.test.models import MultichannelMulticomponentDecay
+        # isort: off
+        from glotaran.optimization.test.models import (  # type: ignore[attr-defined]
+            MultichannelMulticomponentDecay,
+        )
+
+        # isort: on
     except ImportError:
         # 0.7.0
         from glotaran.optimization.test.suites import MultichannelMulticomponentDecay

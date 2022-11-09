@@ -97,6 +97,8 @@ repos:
         types_or: [python, pyi]
         additional_dependencies:
           [flake8-pyi, flake8-comprehensions, flake8-print>=5.0.0]
+        args:
+          - "--count"
 
   - repo: https://github.com/PyCQA/flake8
     rev: 5.0.4
@@ -105,16 +107,15 @@ repos:
         alias: flake8-docs
         args:
           - "--select=D,DAR"
+          - "--count"
         name: "flake8 lint docstrings"
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model|builtin/io/pandas)"
-        exclude: "docs|tests?/"
+        exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.982
     hooks:
       - id: mypy
-        files: "^glotaran/(plugin_system|utils|deprecation|testing|optimization|parameter|project|simulation|model|builtin/io/pandas)"
         exclude: "docs"
         additional_dependencies: [types-all, types-attrs]
 

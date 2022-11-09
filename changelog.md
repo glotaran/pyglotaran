@@ -52,6 +52,7 @@
 - 🧹 Upgrade syntax to py310 using pyupgrade (#1162)
 - 🧹 Remove unused 'type: ignore' (#1168)
 - 🚧 Raise minimum dependency version to releases that support py310 (#1170)
+- 🔧 Make mypy and doc string linters opt out instead of opt in (#1173)
 
 (changes-0_6_0)=
 

@@ -1,9 +1,9 @@
-"""Functions for data IO
+"""Functions for data IO.
 
 Note:
 -----
 Since Io functionality is purely plugin based this package mostly
-reexports functions from the pluginsystem from a common place.
+reexports functions from the ``glotaran.plugin_system`` from a common place.
 """
 
 from glotaran.io.interface import SAVING_OPTIONS_DEFAULT

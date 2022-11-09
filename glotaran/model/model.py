@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from collections.abc import Generator
+from collections.abc import Iterable
 from collections.abc import Mapping
 from typing import Any
 from typing import ClassVar
@@ -256,7 +257,7 @@ class Model:
 
     @classmethod
     def create_class_from_megacomplexes(
-        cls, megacomplexes: list[type[Megacomplex]]
+        cls, megacomplexes: Iterable[type[Megacomplex]]
     ) -> type[Model]:
         """Create model class for megacomplexes.
 

@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class FileLoadableProtocol(Protocol):
+    """Protocol class that a file loadable class need adherer to."""
+
     loader: Callable[
         [StrOrPath | Sequence[StrOrPath] | Mapping[str, StrOrPath]],
         FileLoadableProtocol,

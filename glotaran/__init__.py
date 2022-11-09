@@ -1,4 +1,4 @@
-"""Glotaran package __init__.py"""
+"""Glotaran package root."""
 from glotaran.deprecation.deprecation_utils import deprecate_submodule
 from glotaran.plugin_system.base_registry import load_plugins
 

@@ -1,4 +1,4 @@
-"""Utility functionality module for ``glotaran.builtin.io.yml.yml``"""
+"""Utility module for ``glotaran.builtin.io.yml.yml``."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,20 +19,52 @@ if TYPE_CHECKING:
 def write_dict(
     data: Mapping[str, Any] | Sequence[Any], file_name: str | Path | None = None, offset: int = 0
 ) -> str | None:
+    """Write a mapping (e.g. ``dict``) or sequence (e.g. ``list``) as ``yaml`` to file or str.
+
+    Parameters
+    ----------
+    data: Mapping[str, Any] | Sequence[Any]
+        Data that should be converted to ``yaml``.
+    file_name: str | Path | None
+        Path of the file to write the ``yaml`` code to.
+        Defaults to None which makes this function return a string.
+    offset: int
+        Block indentation level. Defaults to 0
+        See https://yaml.readthedocs.io/en/latest/detail.html#indentation-of-block-sequences
+
+    Returns
+    -------
+    str | None
+        String if ``file_name`` is ``None`` or ``None`` if ``file_name`` is a valid path.
+    """
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
     yaml.indent(mapping=2, sequence=2, offset=offset)
 
     if file_name is not None:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf8") as f:
             yaml.dump(data, f)
     else:
         stream = StringIO()
         yaml.dump(data, stream)
         return stream.getvalue()
+    return None
 
 
 def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
+    """Load ``yaml`` code from a file or string and returns the dict interpretation.
+
+    Parameters
+    ----------
+    source: str | Path
+        Path to a file or string containing the ``yaml`` code.
+    is_file: bool
+        Whether or not ``source`` is a file.
+
+    Returns
+    -------
+    dict[str, Any]
+    """
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
     if is_file:

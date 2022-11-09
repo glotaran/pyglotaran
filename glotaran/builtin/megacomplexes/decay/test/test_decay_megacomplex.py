@@ -163,7 +163,7 @@ class ThreeComponentParallel:
                 ["1", 501e-3],
                 ["2", 202e-4],
                 ["3", 105e-5],
-                {"non-negative": True},
+                {"non-negative": True},  # type: ignore[list-item]
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
         }
@@ -223,7 +223,7 @@ class ThreeComponentSequential:
                 ["1", 501e-3],
                 ["2", 202e-4],
                 ["3", 105e-5],
-                {"non-negative": True},
+                {"non-negative": True},  # type: ignore[list-item]
             ],
             "irf": [["center", 1.3], ["width", 7.8]],
         }
