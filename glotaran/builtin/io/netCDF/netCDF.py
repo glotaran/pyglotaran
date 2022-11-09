@@ -45,7 +45,7 @@ class NetCDFDataIo(DataIoInterface):
         file_name: str
             Path of the file to write ``dataset`` to.
         data_filters: list[str] | None
-            List of data variable names that should be written to file. Defaults to None
+            List of data variable names that should be written to file. Defaults to None.
         """
         data_to_save = dataset if data_filters is None else dataset[data_filters]
         data_to_save.to_netcdf(file_name, mode="w")

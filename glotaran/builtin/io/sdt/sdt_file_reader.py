@@ -39,15 +39,15 @@ class SdtDataIo(DataIoInterface):
             Thus for the spectral axis data need to be given by the user.
 
         flim: bool
-            Set true if reading a result from a FLIM measurement. Defaults to False
+            Set true if reading a result from a FLIM measurement. Defaults to False.
 
         dataset_index: int
             If the `*.sdt` file contains multiple datasets the index will used
-            to select the wanted one. Defaults to 0
+            to select the wanted one. Defaults to 0.
 
         swap_axis: bool
             Flag to switch a wavelength explicit `input_df` to time explicit `input_df`,
-            before generating the SpectralTemporalDataset. Defaults to False
+            before generating the SpectralTemporalDataset. Defaults to False.
 
         orig_time_axis_index: int
             Index of the axis which corresponds to the time axis.
