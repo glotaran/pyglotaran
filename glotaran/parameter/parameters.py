@@ -157,6 +157,10 @@ class Parameters:
 
         .. # noqa: D414
         """
+        df.rename(
+            columns={"non-negative": "non_negative", "standard-error": "standard_error"},
+            inplace=True,
+        )
         for column_name in ["label", "value"]:
             if column_name not in df:
                 raise ValueError(f"Missing column '{column_name}' in '{source}'")
