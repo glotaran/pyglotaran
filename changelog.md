@@ -21,6 +21,7 @@
 
 - 🩹 Fix result data overwritten when using multiple dataset_groups (#1147)
 - 🩹 Fix for normalization issue described in #1157 (multi-gaussian irfs and multiple time ranges (streak))
+- 🩹 Fix reading of old pandas saved parameters files (#1174)
 
 ### 📚 Documentation
 
