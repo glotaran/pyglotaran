@@ -76,7 +76,7 @@ def test_parameter_group_to_from_parameter_dict_list():
             "b": [
                 ["total", 2],
                 ["branch1", {"expr": "$b.total * $a.1"}],
-                ["branch2", {"expr": "$b.total * $a.2"}],
+                ["branch2", {"expr": "ln($b.total) * $a.2"}],
             ],
         }
     )
