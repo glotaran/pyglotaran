@@ -44,7 +44,6 @@ class BenchmarkMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
