@@ -18,12 +18,19 @@ PATH_CSV = PANDAS_TEST_DATA / "reference_parameters.csv"
 PATH_TSV = PANDAS_TEST_DATA / "reference_parameters.tsv"
 PATH_XLSX_ALT = PANDAS_TEST_DATA / "reference_parameters_alternative_notation.xlsx"
 PATH_CSV_ALT = PANDAS_TEST_DATA / "reference_parameters_alternative_notation.csv"
+PATH_CSV_SUBSET = PANDAS_TEST_DATA / "reference_parameters_subset.csv"
 
 
 @pytest.fixture(scope="module")
 def yaml_reference() -> Parameters:
     """Fixture for yaml reference data."""
     return load_parameters(PANDAS_TEST_DATA / "reference_parameters.yaml")
+
+
+@pytest.fixture(scope="module")
+def yaml_reference_subset() -> Parameters:
+    """Fixture for yaml subset reference data."""
+    return load_parameters(PANDAS_TEST_DATA / "reference_parameters_subset.yaml")
 
 
 @pytest.mark.parametrize("reference_path", (PATH_XLSX, PATH_ODS, PATH_CSV, PATH_TSV))
@@ -37,6 +44,11 @@ def test_alternative_notations(yaml_reference: Parameters):
     """Reading parameter file with alternate syntax works and is case insensitive."""
     assert load_parameters(PATH_CSV_ALT) == yaml_reference
     assert load_parameters(PATH_XLSX_ALT) == yaml_reference
+
+
+def test_csv_subset_notations(yaml_reference_subset: Parameters):
+    """Reading parameter file with a susbset of possible attributes works."""
+    assert load_parameters(PATH_CSV_SUBSET) == yaml_reference_subset
 
 
 @pytest.mark.parametrize(
