@@ -16,12 +16,12 @@
 ### 👌 Minor Improvements:
 
 - 👌🎨 Wrap model section in result markdown in details tag for notebooks (#1098)
+- 👌 Allow more natural column names in pandas parameters file reading (#1174)
 
 ### 🩹 Bug fixes
 
 - 🩹 Fix result data overwritten when using multiple dataset_groups (#1147)
 - 🩹 Fix for normalization issue described in #1157 (multi-gaussian irfs and multiple time ranges (streak))
-- 🩹 Fix reading of old pandas saved parameters files (#1174)
 
 ### 📚 Documentation
 
