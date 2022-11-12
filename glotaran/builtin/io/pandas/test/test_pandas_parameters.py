@@ -34,7 +34,7 @@ def test_references(yaml_reference: Parameters, reference_path: Path):
 
 
 def test_alternative_notations(yaml_reference: Parameters):
-    """Reading parameter file with alternate syntax works in a case insensitive."""
+    """Reading parameter file with alternate syntax works and is case insensitive."""
     assert load_parameters(PATH_CSV_ALT) == yaml_reference
     assert load_parameters(PATH_XLSX_ALT) == yaml_reference
 
