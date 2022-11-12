@@ -16,7 +16,8 @@ PATH_XLSX = PANDAS_TEST_DATA / "reference_parameters.xlsx"
 PATH_ODS = PANDAS_TEST_DATA / "reference_parameters.ods"
 PATH_CSV = PANDAS_TEST_DATA / "reference_parameters.csv"
 PATH_TSV = PANDAS_TEST_DATA / "reference_parameters.tsv"
-PATH_CSV_LEGACY = PANDAS_TEST_DATA / "reference_parameters_legacy.csv"
+PATH_XLSX_ALT = PANDAS_TEST_DATA / "reference_parameters_alternative_notation.xlsx"
+PATH_CSV_ALT = PANDAS_TEST_DATA / "reference_parameters_alternative_notation.csv"
 
 
 @pytest.fixture(scope="module")
@@ -32,11 +33,10 @@ def test_references(yaml_reference: Parameters, reference_path: Path):
     assert result == yaml_reference
 
 
-def test_legacy_load():
-    """Reading parameter file with columns ``standard-error`` and ``non-negative`` works."""
-    assert_frame_equal(
-        load_parameters(PATH_CSV).to_dataframe(), load_parameters(PATH_CSV_LEGACY).to_dataframe()
-    )
+def test_alternative_notations(yaml_reference: Parameters):
+    """Reading parameter file with alternate syntax works in a case insensitive."""
+    assert load_parameters(PATH_CSV_ALT) == yaml_reference
+    assert load_parameters(PATH_XLSX_ALT) == yaml_reference
 
 
 @pytest.mark.parametrize(
