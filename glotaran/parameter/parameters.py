@@ -159,16 +159,16 @@ class Parameters:
         """
         for column_name in ["label", "value"]:
             if column_name not in df:
-                raise ValueError(f"Missing column '{column_name}' in '{source}'")
+                raise ValueError(f"Missing required column '{column_name}' in '{source}'.")
 
-        for column_name in ["minimum", "maximum", "value"]:
-            if column_name in df and any(not np.isreal(v) for v in df[column_name]):
-                raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values")
+        for column_name in filter(lambda x: x in df.columns, ["minimum", "maximum", "value"]):
+            if any(not np.isreal(v) for v in df[column_name]):
+                raise ValueError(f"Column '{column_name}' in '{source}' has non numeric values.")
 
-        for column_name in ["non_negative", "vary"]:
+        for column_name in filter(lambda x: x in df.columns, ["non_negative", "vary"]):
             df[column_name] = [v != 0 if isinstance(v, int) else v for v in df[column_name]]
-            if column_name in df and any(not isinstance(v, bool) for v in df[column_name]):
-                raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values")
+            if any(not isinstance(v, bool) for v in df[column_name]):
+                raise ValueError(f"Column '{column_name}' in '{source}' has non boolean values.")
 
         # clean NaN if expressions
         if "expression" in df:

@@ -8,6 +8,7 @@ import pandas as pd
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
 from glotaran.parameter import Parameters
+from glotaran.parameter.parameter import OPTION_NAMES_DESERIALIZED
 from glotaran.utils.io import safe_dataframe_fillna
 from glotaran.utils.io import safe_dataframe_replace
 
@@ -29,6 +30,8 @@ class ExcelProjectIo(ProjectIoInterface):
             :class:`Parameters`
         """
         df = pd.read_excel(file_name, na_values=["None", "none"])
+        df.columns = [column.lower() for column in df.columns]
+        df.rename(columns=OPTION_NAMES_DESERIALIZED, inplace=True)
         safe_dataframe_fillna(df, "minimum", -np.inf)
         safe_dataframe_fillna(df, "maximum", np.inf)
         return Parameters.from_dataframe(df, source=file_name)

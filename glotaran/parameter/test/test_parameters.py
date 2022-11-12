@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from glotaran.parameter import Parameter
@@ -216,7 +217,7 @@ def test_parameters_array_conversion():
         assert parameters.get(f"{i+1}").value == values[i]
 
 
-def test_parameter_group_to_from_df():
+def test_parameters_to_from_df():
     parameters = Parameters.from_dict(
         {
             "a": [
@@ -251,3 +252,39 @@ def test_parameter_group_to_from_df():
     assert all(parameter_df["standard_error"] == 42)
 
     assert parameters == Parameters.from_dataframe(parameter_df)
+
+
+def test_parameters_from_dataframe_minimal_required_columns():
+    """No error if df only contains ``label`` and ``value`` columns and error if any is missing."""
+    minimal_df = pd.DataFrame([{"label": "foo.1", "value": 1}])
+    result = Parameters.from_dataframe(minimal_df)
+    expected = Parameters.from_dict({"foo": [1]})
+
+    assert result == expected
+
+    for req_col in ["label", "value"]:
+        with pytest.raises(ValueError) as exc_info:
+            Parameters.from_dataframe(minimal_df.drop(req_col, axis=1))
+
+        assert str(exc_info.value) == f"Missing required column '{req_col}' in 'DataFrame'."
+
+
+@pytest.mark.parametrize(
+    "column_name, expected_error_str",
+    (
+        ("minimum", "Column 'minimum' in 'DataFrame' has non numeric values."),
+        ("maximum", "Column 'maximum' in 'DataFrame' has non numeric values."),
+        ("value", "Column 'value' in 'DataFrame' has non numeric values."),
+        ("non_negative", "Column 'non_negative' in 'DataFrame' has non boolean values."),
+        ("vary", "Column 'vary' in 'DataFrame' has non boolean values."),
+    ),
+)
+def test_parameters_from_dataframe(column_name: str, expected_error_str: str):
+    """Check error message on bad column values."""
+    minimal_df = pd.DataFrame([{"label": "foo.1", "value": 1}])
+    minimal_df[column_name] = "foo"
+
+    with pytest.raises(ValueError) as exc_info:
+        Parameters.from_dataframe(minimal_df)
+
+    assert str(exc_info.value) == expected_error_str
