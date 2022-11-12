@@ -96,7 +96,10 @@ def test_coherent_artifact(spectral_dependence: str):
     for i in range(1, 4):
         assert compartments[i] == f"coherent_artifact_{i}"
 
-    assert matrix.matrix.shape == (spectral.size, time.size, 4)
+    if spectral_dependence == "none":
+        assert matrix.matrix.shape == (time.size, 4)
+    else:
+        assert matrix.matrix.shape == (spectral.size, time.size, 4)
 
     clp = xr.DataArray(
         np.ones((3, 4)),
