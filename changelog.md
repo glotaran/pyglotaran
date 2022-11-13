@@ -47,7 +47,7 @@
 - 🔧 Set sourcery-ai target python version to 3.8 (#1095)
 - 🚇🩹🔧 Fix manifest check (#1099)
 - ♻️ Refactor: optimization (#1060)
-- ♻️🚇 Use GITHUB_OUTPUT instead of set-output in github actions (#1166)
+- ♻️🚇 Use GITHUB_OUTPUT instead of set-output in github actions (#1166, #1177)
 - 🚧 Add pinned version of odfpy to requirements_dev.txt (#1164)
 - ♻️ Use validation action and validation as a git submodule (#1165)
 - 🧹 Upgrade syntax to py310 using pyupgrade (#1162)
