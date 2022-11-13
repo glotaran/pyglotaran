@@ -54,13 +54,7 @@ jobs:
 
           with open(os.getenv("GITHUB_OUTPUT"), "a", encoding="utf8") as f:
               comment_file_path = Path("pr-diff-comment.txt")
-              f.writelines(
-                  [
-                      "comment<<EOF",
-                      *comment_file_path.read_text().splitlines(),
-                      "EOF",
-                  ]
-              )
+              f.write(f"comment<<EOF\n{comment_file_path.read_text().lstrip().rstrip()}\nEOF\n")
               comment_file_path.unlink()
 
               origin_pr_nr_file_path = Path("origin_pr_nr.txt")
