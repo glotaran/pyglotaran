@@ -100,7 +100,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
         retrieve_irf(dataset_model, dataset, global_dimension)
 
 
-@nb.jit(nopython=True, parallel=True)
+@nb.jit(nopython=False, parallel=False)
 def _calculate_coherent_artifact_matrix(
     matrix, centers, widths, global_axis_size, model_axis, order
 ):
@@ -110,7 +110,7 @@ def _calculate_coherent_artifact_matrix(
         )
 
 
-@nb.jit(nopython=True, parallel=True)
+@nb.jit(nopython=False, parallel=False)
 def _calculate_coherent_artifact_matrix_on_index(matrix, center, width, axis, order):
 
     matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
