@@ -687,7 +687,7 @@ class MatrixProviderLinked(MatrixProvider):
         for (
             group_label,
             dataset_labels,
-        ) in self._data_provider.group_definitions.items():  # type:ignore[attr-defined]
+        ) in self._data_provider.group_definitions.items():
             aligned_full_clp_labels[group_label] = []
             for dataset_label in dataset_labels:
                 aligned_full_clp_labels[group_label] += [
