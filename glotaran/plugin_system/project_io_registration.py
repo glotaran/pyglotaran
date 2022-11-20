@@ -201,7 +201,7 @@ def get_project_io(format_name: str) -> ProjectIoInterface:
 
 
 @not_implemented_to_value_error
-def load_model(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> Model:
+def load_model(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Model:
     """Create a Model instance from the specs defined in a file.
 
     Parameters
@@ -229,7 +229,7 @@ def load_model(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> 
 def save_model(
     model: Model,
     file_name: StrOrPath,
-    format_name: str = None,
+    format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
@@ -241,16 +241,16 @@ def save_model(
     ----------
     model: Model
         :class:`Model` instance to save to specs file.
-    file_name : StrOrPath
+    file_name: StrOrPath
         File to write the model specs to.
-    format_name : str
+    format_name: str | None
         Format the file should be in, if not provided it will be inferred from the file extension.
-    allow_overwrite : bool
+    allow_overwrite: bool
         Whether or not to allow overwriting existing files, by default False
     update_source_path: bool
         Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
         by default True
-    **kwargs : Any
+    **kwargs: Any
         Additional keyword arguments passes to the ``save_model`` implementation
         of the project io plugin.
     """
@@ -262,14 +262,14 @@ def save_model(
 
 
 @not_implemented_to_value_error
-def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> Parameters:
+def load_parameters(file_name: StrOrPath, format_name: str | None = None, **kwargs) -> Parameters:
     """Create a :class:`Parameters` instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : StrOrPath
+    file_name: StrOrPath
         File containing the parameter specs.
-    format_name : str
+    format_name: str | None
         Format the file is in, if not provided it will be inferred from the file extension.
     **kwargs: Any
         Additional keyword arguments passes to the ``load_parameters`` implementation
@@ -295,7 +295,7 @@ def load_parameters(file_name: StrOrPath, format_name: str = None, **kwargs) -> 
 def save_parameters(
     parameters: Parameters,
     file_name: StrOrPath,
-    format_name: str = None,
+    format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
@@ -305,18 +305,18 @@ def save_parameters(
 
     Parameters
     ----------
-    parameters : Parameters
+    parameters: Parameters
         :class:`Parameters` instance to save to specs file.
-    file_name : StrOrPath
+    file_name: StrOrPath
         File to write the parameter specs to.
-    format_name : str
+    format_name: str | None
         Format the file should be in, if not provided it will be inferred from the file extension.
-    allow_overwrite : bool
+    allow_overwrite: bool
         Whether or not to allow overwriting existing files, by default False
     update_source_path: bool
         Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
         by default True
-    **kwargs : Any
+    **kwargs: Any
         Additional keyword arguments passes to the ``save_parameters`` implementation
         of the project io plugin.
     """
@@ -328,16 +328,16 @@ def save_parameters(
 
 
 @not_implemented_to_value_error
-def load_scheme(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> Scheme:
+def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Scheme:
     """Create a :class:`Scheme` instance from the specs defined in a file.
 
     Parameters
     ----------
-    file_name : StrOrPath
+    file_name: StrOrPath
         File containing the parameter specs.
-    format_name : str
+    format_name: str | None
         Format the file is in, if not provided it will be inferred from the file extension.
-    **kwargs : Any
+    **kwargs: Any
         Additional keyword arguments passes to the ``load_scheme`` implementation
         of the project io plugin.
 
@@ -357,7 +357,7 @@ def load_scheme(file_name: StrOrPath, format_name: str = None, **kwargs: Any) ->
 def save_scheme(
     scheme: Scheme,
     file_name: StrOrPath,
-    format_name: str = None,
+    format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
@@ -367,18 +367,18 @@ def save_scheme(
 
     Parameters
     ----------
-    scheme : Scheme
+    scheme: Scheme
         :class:`Scheme` instance to save to specs file.
-    file_name : StrOrPath
+    file_name: StrOrPath
         File to write the scheme specs to.
-    format_name : str
+    format_name: str | None
         Format the file should be in, if not provided it will be inferred from the file extension.
-    allow_overwrite : bool
+    allow_overwrite: bool
         Whether or not to allow overwriting existing files, by default False
     update_source_path: bool
         Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
         by default True
-    **kwargs : Any
+    **kwargs: Any
         Additional keyword arguments passes to the ``save_scheme`` implementation
         of the project io plugin.
     """
@@ -390,17 +390,17 @@ def save_scheme(
 
 
 @not_implemented_to_value_error
-def load_result(result_path: StrOrPath, format_name: str = None, **kwargs: Any) -> Result:
+def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Result:
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
     ----------
-    result_path : StrOrPath
+    result_path: StrOrPath
         Path containing the result data.
-    format_name : str
+    format_name: str | None
         Format the result is in, if not provided and it is a file
         it will be inferred from the file extension.
-    **kwargs : Any
+    **kwargs: Any
         Additional keyword arguments passes to the ``load_result`` implementation
         of the project io plugin.
 
@@ -420,7 +420,7 @@ def load_result(result_path: StrOrPath, format_name: str = None, **kwargs: Any) 
 def save_result(
     result: Result,
     result_path: StrOrPath,
-    format_name: str = None,
+    format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
@@ -431,21 +431,21 @@ def save_result(
 
     Parameters
     ----------
-    result : Result
+    result: Result
         :class:`Result` instance to write.
-    result_path : StrOrPath
+    result_path: StrOrPath
         Path to write the result data to.
-    format_name : str
+    format_name: str | None
         Format the result should be saved in, if not provided and it is a file
         it will be inferred from the file extension.
-    allow_overwrite : bool
+    allow_overwrite: bool
         Whether or not to allow overwriting existing files, by default False
     update_source_path: bool
         Whether or not to update the ``source_path`` attribute to ``result_path`` when saving.
         by default True
-    saving_options : SavingOptions
+    saving_options: SavingOptions
         Options for the saved result.
-    **kwargs : Any
+    **kwargs: Any
         Additional keyword arguments passes to the ``save_result`` implementation
         of the project io plugin.
 

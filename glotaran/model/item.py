@@ -109,6 +109,7 @@ class ParameterIssue(ItemIssue):
         return f"Missing parameter with label '{self._label}'."
 
 
+@define(kw_only=True, slots=False)
 class Item:
     """A baseclass for items."""
 
@@ -658,7 +659,7 @@ def attribute(
     *,
     alias: str | None = None,
     default: Any = NOTHING,
-    factory: Callable[[], Any] = None,
+    factory: Callable[[], Any] | None = None,
     validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None = None,
 ) -> Attribute:
     """Create an attribute for an item.
@@ -669,7 +670,7 @@ def attribute(
         The alias of the attribute (only useful for model items).
     default: Any
         The default value of the attribute.
-    factory: Callable
+    factory: Callable[[], Any] | None
         A factory function for the attribute.
     validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None
         A validator function for the attribute.

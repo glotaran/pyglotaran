@@ -77,13 +77,13 @@ def _load_datasets(dataset_mappable: DatasetMappable, index: int = 1) -> dict[st
 class DatasetMapping(MutableMapping):
     """Wrapper class for a mapping of datasets which can be used for a ``file_loadable_field``."""
 
-    def __init__(self, init_map: Mapping[str, xr.Dataset] = None) -> None:
+    def __init__(self, init_map: Mapping[str, xr.Dataset] | None = None) -> None:
         """Initialize an instance of :class:`DatasetMapping`.
 
         Parameters
         ----------
-        init_dict : dict[str, xr.Dataset], optional
-            Mapping to initially populate the instance., by default None
+        init_dict : dict[str, xr.Dataset] | None
+            Mapping to initially populate the instance. Defaults to ``None``.
         """
         super().__init__()
         self.__data_dict: dict[str, xr.Dataset] = {}
