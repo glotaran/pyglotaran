@@ -1,6 +1,7 @@
 """This module contains the dataset group."""
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import Literal
 
@@ -40,7 +41,7 @@ class DatasetGroup:
     residual_function: Literal["variable_projection", "non_negative_least_squares"]
     """The residual function to use."""
 
-    link_clp: bool
+    link_clp: bool | None
     """Whether to link the clp parameter."""
 
     model: Model
@@ -62,14 +63,14 @@ class DatasetGroup:
                 self.model.dataset[label], self.model, parameters
             )
 
-    def is_linkable(self, parameters: Parameters, data: dict[str, xr.Dataset]) -> bool:
+    def is_linkable(self, parameters: Parameters, data: Mapping[str, xr.Dataset]) -> bool:
         """Check if the group is linkable.
 
         Parameters
         ----------
         parameters : Parameters
             A parameter set parameters.
-        data : dict[str, xr.Dataset]
+        data : Mapping[str, xr.Dataset]
             A the data to link.
 
         Returns

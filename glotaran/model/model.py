@@ -150,8 +150,8 @@ def _load_dataset_groups(
     """
     dataset_group_items = _load_model_items_from_dict(DatasetGroupModel, dataset_groups)
     if DEFAULT_DATASET_GROUP not in dataset_group_items:
-        dataset_group_items[DEFAULT_DATASET_GROUP] = DatasetGroupModel(
-            label=DEFAULT_DATASET_GROUP  # type:ignore[call-arg]
+        dataset_group_items[DEFAULT_DATASET_GROUP] = DatasetGroupModel(  # type:ignore[call-arg]
+            label=DEFAULT_DATASET_GROUP
         )
     return dataset_group_items  # type:ignore[return-value]
 
@@ -331,8 +331,8 @@ class Model:
                     group_model = self.dataset_groups[group]
                 except KeyError:
                     raise ModelError(f"Unknown dataset group '{group}'")
-                groups[group] = DatasetGroup(
-                    residual_function=group_model.residual_function,  # type:ignore[call-arg]
+                groups[group] = DatasetGroup(  # type:ignore[call-arg]
+                    residual_function=group_model.residual_function,
                     link_clp=group_model.link_clp,
                     model=self,
                 )
@@ -455,8 +455,8 @@ class Model:
 
     def markdown(
         self,
-        parameters: Parameters = None,
-        initial_parameters: Parameters = None,
+        parameters: Parameters | None = None,
+        initial_parameters: Parameters | None = None,
         base_heading_level: int = 1,
     ) -> MarkdownStr:
         """Format the model as Markdown string.
@@ -465,9 +465,9 @@ class Model:
 
         Parameters
         ----------
-        parameters: Parameters
+        parameters: Parameters | None
             Parameter to include.
-        initial_parameters: Parameters
+        initial_parameters: Parameters | None
             Initial values for the parameters.
         base_heading_level: int
             Base heading level of the markdown sections.

@@ -164,14 +164,14 @@ def init_file_loadable_fields(dataclass_instance: object):
             setattr(dataclass_instance, field_item.name, file_loader(value))
 
 
-def asdict(dataclass: object, folder: Path = None) -> dict[str, Any]:
+def asdict(dataclass: object, folder: Path | None = None) -> dict[str, Any]:
     """Create a dictionary containing all fields of the dataclass.
 
     Parameters
     ----------
     dataclass : object
         A dataclass instance.
-    folder: Path
+    folder: Path | None
         Parent folder of :class:`FileLoadable` fields. by default None
 
     Returns

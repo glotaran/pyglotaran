@@ -8,7 +8,7 @@ from os import PathLike
 class MarkdownStr(UserString):
     """String wrapper class for rich display integration of markdown in ipython."""
 
-    def __init__(self, wrapped_str: str, *, syntax: str = None):
+    def __init__(self, wrapped_str: str, *, syntax: str | None = None):
         """Initialize string class that is automatically displayed as markdown by ``ipython``.
 
         Parameters
@@ -59,7 +59,7 @@ class MarkdownStr(UserString):
             return NotImplemented
 
 
-def display_file(path: str | PathLike[str], *, syntax: str = None) -> MarkdownStr:
+def display_file(path: str | PathLike[str], *, syntax: str | None = None) -> MarkdownStr:
     """Display a file with syntax highlighting ``syntax``.
 
     Parameters

@@ -170,7 +170,9 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 
 @not_implemented_to_value_error
-def load_dataset(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -> xr.Dataset:
+def load_dataset(
+    file_name: StrOrPath, format_name: str | None = None, **kwargs: Any
+) -> xr.Dataset:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
     Parameters
@@ -203,7 +205,7 @@ def load_dataset(file_name: StrOrPath, format_name: str = None, **kwargs: Any) -
 def save_dataset(
     dataset: xr.Dataset | xr.DataArray,
     file_name: StrOrPath,
-    format_name: str = None,
+    format_name: str | None = None,
     *,
     data_filters: list[str] | None = None,
     allow_overwrite: bool = False,

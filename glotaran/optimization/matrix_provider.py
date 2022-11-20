@@ -521,7 +521,7 @@ class MatrixProviderUnlinked(MatrixProvider):
         for label, dataset_model in self.group.dataset_models.items():
             if has_dataset_model_global_model(dataset_model):
                 continue
-            scale = dataset_model.scale or 1
+            scale = float(dataset_model.scale or 1)
             weight = self._data_provider.get_weight(label)
             if is_dataset_model_index_dependent(dataset_model):
                 self._prepared_matrix_container[label] = [
@@ -587,7 +587,7 @@ class MatrixProviderLinked(MatrixProvider):
             The data provider.
         """
         super().__init__(group)
-        self._data_provider = data_provider
+        self._data_provider: DataProviderLinked = data_provider
         self._aligned_full_clp_labels: list[list[str]] = [
             None  # type:ignore[list-item]
         ] * self._data_provider.aligned_global_axis.size
@@ -639,7 +639,7 @@ class MatrixProviderLinked(MatrixProvider):
                     )
                 ],
                 [
-                    self.group.dataset_models[label].scale
+                    self.group.dataset_models[label].scale  # type:ignore[misc]
                     if self.group.dataset_models[label].scale is not None
                     else 1
                     for label in self._data_provider.group_definitions[group_label]

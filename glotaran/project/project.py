@@ -268,7 +268,7 @@ class Project:
         self._model_registry.generate_model(
             model_name,
             generator_name,
-            generator_arguments,
+            generator_arguments,  # type:ignore[arg-type]
             allow_overwrite=allow_overwrite,
             ignore_existing=ignore_existing,
         )
