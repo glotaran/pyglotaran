@@ -74,9 +74,9 @@ class IrfMultiGaussian(Irf):
                     f"len(widths) ({len_widths}) none of is 1."
                 )
             if len_centers == 1:
-                centers = [centers[0] for _ in range(len_widths)]
+                centers = np.asarray([centers[0] for _ in range(len_widths)])
             else:
-                widths = [widths[0] for _ in range(len_centers)]
+                widths = np.asarray([widths[0] for _ in range(len_centers)])
 
         scales = self.scale if self.scale is not None else [1.0 for _ in centers]
         scales = scales if isinstance(scales, list) else [scales]

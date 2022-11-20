@@ -15,7 +15,6 @@ class BaselineMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -23,9 +22,6 @@ class BaselineMegacomplex(Megacomplex):
         clp_label = [f"{dataset_model.label}_baseline"]
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return clp_label, matrix
-
-    def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        return False
 
     def finalize_data(
         self,

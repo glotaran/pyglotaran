@@ -9,7 +9,6 @@ from glotaran.builtin.megacomplexes.decay.decay_parallel_megacomplex import Deca
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.builtin.megacomplexes.decay.util import calculate_matrix
 from glotaran.builtin.megacomplexes.decay.util import finalize_data
-from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
 from glotaran.model import megacomplex
 
@@ -44,20 +43,14 @@ class DecaySequentialMegacomplex(DecayParallelMegacomplex):
     def get_a_matrix(self, dataset_model: DatasetModel) -> np.ndarray:
         return self.get_k_matrix().a_matrix_sequential(self.get_compartments(dataset_model))
 
-    def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        return index_dependent(dataset_model)
-
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
-        return calculate_matrix(
-            self, dataset_model, global_index, global_axis, model_axis, **kwargs
-        )
+        return calculate_matrix(self, dataset_model, global_axis, model_axis, **kwargs)
 
     def finalize_data(
         self,

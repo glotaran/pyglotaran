@@ -8,7 +8,6 @@ from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.k_matrix import KMatrix
 from glotaran.builtin.megacomplexes.decay.util import calculate_matrix
 from glotaran.builtin.megacomplexes.decay.util import finalize_data
-from glotaran.builtin.megacomplexes.decay.util import index_dependent
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import ModelItemType
@@ -54,20 +53,14 @@ class DecayParallelMegacomplex(Megacomplex):
             self.get_compartments(dataset_model), self.get_initial_concentration(dataset_model)
         )
 
-    def index_dependent(self, dataset_model: DatasetModel) -> bool:
-        return index_dependent(dataset_model)
-
     def calculate_matrix(
         self,
         dataset_model: DecayDatasetModel,
-        global_index: int | None,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
     ):
-        return calculate_matrix(
-            self, dataset_model, global_index, global_axis, model_axis, **kwargs
-        )
+        return calculate_matrix(self, dataset_model, global_axis, model_axis, **kwargs)
 
     def finalize_data(
         self,

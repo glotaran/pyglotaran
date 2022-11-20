@@ -4,6 +4,12 @@ import numba as nb
 import numpy as np
 import xarray as xr
 
+from glotaran.builtin.megacomplexes.decay.decay_matrix_gaussian_irf import (
+    calculate_decay_matrix_gaussian_irf,
+)
+from glotaran.builtin.megacomplexes.decay.decay_matrix_gaussian_irf import (
+    calculate_decay_matrix_gaussian_irf_on_index,
+)
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.model import DatasetModel
@@ -32,7 +38,6 @@ def index_dependent(dataset_model: DatasetModel) -> bool:
 def calculate_matrix(
     megacomplex: Megacomplex,
     dataset_model: DatasetModel,
-    global_index: int | None,
     global_axis: np.typing.ArrayLike,
     model_axis: np.typing.ArrayLike,
     **kwargs,
@@ -45,12 +50,21 @@ def calculate_matrix(
     rates = k_matrix.rates(compartments, initial_concentration)
 
     # init the matrix
-    size = (model_axis.size, rates.size)
-    matrix = np.zeros(size, dtype=np.float64)
-
-    decay_matrix_implementation(
-        matrix, rates, global_index, global_axis, model_axis, dataset_model
+    matrix_shape = (
+        (global_axis.size, model_axis.size, rates.size)
+        if index_dependent(dataset_model)
+        else (model_axis.size, rates.size)
     )
+    matrix = np.zeros(matrix_shape, dtype=np.float64)
+
+    if index_dependent(dataset_model):
+        decay_matrix_implementation_index_dependent(
+            matrix, rates, global_axis, model_axis, dataset_model
+        )
+    else:
+        decay_matrix_implementation_index_independent(
+            matrix, rates, global_axis, model_axis, dataset_model
+        )
 
     if not np.all(np.isfinite(matrix)):
         raise ValueError(
@@ -133,10 +147,9 @@ def finalize_data(
             )
 
 
-def decay_matrix_implementation(
+def decay_matrix_implementation_index_independent(
     matrix: np.ndarray,
     rates: np.ndarray,
-    global_index: int,
     global_axis: np.ndarray,
     model_axis: np.ndarray,
     dataset_model: DatasetModel,
@@ -150,24 +163,59 @@ def decay_matrix_implementation(
             shift,
             backsweep,
             backsweep_period,
-        ) = dataset_model.irf.parameter(global_index, global_axis)
+        ) = dataset_model.irf.parameter(None, global_axis)
 
-        for center, width, irf_scale in zip(centers, widths, irf_scales):
-            calculate_decay_matrix_gaussian_irf(
-                matrix,
-                rates,
-                model_axis,
-                center - shift,
-                width,
-                irf_scale,
-                backsweep,
-                backsweep_period,
-            )
+        calculate_decay_matrix_gaussian_irf_on_index(
+            matrix,
+            rates,
+            model_axis,
+            centers - shift,
+            widths,
+            irf_scales,
+            backsweep,
+            backsweep_period,
+        )
         if dataset_model.irf.normalize:
             matrix /= np.sum(irf_scales)
 
     else:
         calculate_decay_matrix_no_irf(matrix, rates, model_axis)
+
+
+def decay_matrix_implementation_index_dependent(
+    matrix: np.ndarray,
+    rates: np.ndarray,
+    global_axis: np.ndarray,
+    model_axis: np.ndarray,
+    dataset_model: DatasetModel,
+):
+    all_centers, all_widths = [], []
+    backsweep, backsweep_period = False, None
+    irf_scales = []
+    for global_index in range(global_axis.size):
+        (
+            centers,
+            widths,
+            irf_scales,
+            shift,
+            backsweep,
+            backsweep_period,
+        ) = dataset_model.irf.parameter(global_index, global_axis)
+        all_centers.append(centers - shift)
+        all_widths.append(widths)
+
+    calculate_decay_matrix_gaussian_irf(
+        matrix,
+        rates,
+        model_axis,
+        np.array(all_centers),
+        np.array(all_widths),
+        irf_scales,
+        backsweep,
+        backsweep_period,
+    )
+    if dataset_model.irf.normalize:
+        matrix /= np.sum(irf_scales)
 
 
 @nb.jit(nopython=True, parallel=True)
@@ -177,51 +225,6 @@ def calculate_decay_matrix_no_irf(matrix, rates, times):
         for n_t in range(times.size):
             t_n = times[n_t]
             matrix[n_t, n_r] += np.exp(-r_n * t_n)
-
-
-sqrt2 = np.sqrt(2)
-
-
-@nb.jit(nopython=True, parallel=True)
-def calculate_decay_matrix_gaussian_irf(
-    matrix, rates, times, center, width, scale, backsweep, backsweep_period
-):
-    """Calculates a decay matrix with a gaussian irf."""
-    for n_r in nb.prange(rates.size):
-        r_n = rates[n_r]
-        backsweep_valid = abs(r_n) * backsweep_period > 0.001
-        alpha = (r_n * width) / sqrt2
-        for n_t in nb.prange(times.size):
-            t_n = times[n_t]
-            beta = (t_n - center) / (width * sqrt2)
-            thresh = beta - alpha
-            if thresh < -1:
-                matrix[n_t, n_r] += scale * 0.5 * erfcx(-thresh) * np.exp(-beta * beta)
-            else:
-                matrix[n_t, n_r] += (
-                    scale * 0.5 * (1 + erf(thresh)) * np.exp(alpha * (alpha - 2 * beta))
-                )
-            if backsweep and backsweep_valid:
-                x1 = np.exp(-r_n * (t_n - center + backsweep_period))
-                x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
-                x3 = np.exp(-r_n * backsweep_period)
-                matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
-
-
-import ctypes  # noqa: E402
-
-# This is a work around to use scipy.special function with numba
-from numba.extending import get_cython_function_address  # noqa: E402
-
-_dble = ctypes.c_double
-
-functype = ctypes.CFUNCTYPE(_dble, _dble)
-
-erf_addr = get_cython_function_address("scipy.special.cython_special", "__pyx_fuse_1erf")
-erfcx_addr = get_cython_function_address("scipy.special.cython_special", "__pyx_fuse_1erfcx")
-
-erf = functype(erf_addr)
-erfcx = functype(erfcx_addr)
 
 
 def retrieve_species_associated_data(
