@@ -53,7 +53,12 @@ class CoherentArtifactMegacomplex(Megacomplex):
                 centers.append(center)
                 widths.append(width)
             _calculate_coherent_artifact_matrix(
-                matrix, centers, widths, global_axis.size, model_axis, self.order
+                matrix,
+                np.asarray(centers),
+                np.asarray(widths),
+                global_axis.size,
+                model_axis,
+                self.order,
             )
 
         else:
