@@ -94,7 +94,7 @@ class DampedOscillationMegacomplex(Megacomplex):
             if index_dependent(dataset_model)
             else (model_axis.size, len(clp_label))
         )
-        matrix = np.zeros(matrix_shape, dtype=np.float64)
+        matrix = np.ones(matrix_shape, dtype=np.float64)
 
         if irf is None:
             calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, model_axis)
