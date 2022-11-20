@@ -18,7 +18,7 @@ erfcx = functype(erfcx_addr)
 SQRT2 = np.sqrt(2)
 
 
-@nb.jit(nopython=True, parallel=True)
+@nb.jit(nopython=True, parallel=False)
 def calculate_decay_matrix_gaussian_irf_on_index(
     matrix: np.typing.ArrayLike,
     rates: np.typing.ArrayLike,
