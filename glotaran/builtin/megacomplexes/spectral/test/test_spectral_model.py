@@ -120,12 +120,12 @@ class OneCompartmentModelNegativeSkew:
                 }
             },
             "dataset": {
-                "dataset1": {"megacomplex": ["mc1"], "spectral_axis_scale": 2},
+                "dataset1": {"megacomplex": ["mc1"], "spectral_axis_scale": 1},
             },
         }
     )
 
-    spectral_parameters = Parameters.from_list([1000, 80, -1])
+    spectral_parameters = Parameters.from_list([500, 80, -1])
 
     time = np.arange(-10, 50, 1.5)
     spectral = np.arange(400, 600, 5)
@@ -138,11 +138,11 @@ class OneCompartmentModelNegativeSkew:
 
 
 class OneCompartmentModelPositivSkew(OneCompartmentModelNegativeSkew):
-    spectral_parameters = Parameters.from_list([7, 20000, 800, 1])
+    spectral_parameters = Parameters.from_list([500, 80, 1])
 
 
 class OneCompartmentModelZeroSkew(OneCompartmentModelNegativeSkew):
-    spectral_parameters = Parameters.from_list([7, 20000, 800, 0])
+    spectral_parameters = Parameters.from_list([500, 80, 0])
 
 
 class ThreeCompartmentModel:
@@ -267,6 +267,7 @@ def test_spectral_model(suite):
     print(model.markdown(initial_parameters))
 
     dataset = simulate(model, "dataset1", wanted_parameters, suite.axis, suite.clp)
+    # possible test improvement: noise=True, noise_std_dev=1e-8, noise_seed=123
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
 
@@ -283,6 +284,7 @@ def test_spectral_model(suite):
 
     for param in result.optimized_parameters.all():
         assert np.allclose(param.value, wanted_parameters.get(param.label).value, rtol=1e-1)
+        # should probably change rtol -> atol
 
     resultdata = result.data["dataset1"]
     assert np.array_equal(dataset["time"], resultdata["time"])
@@ -290,6 +292,7 @@ def test_spectral_model(suite):
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
+    # should probably change rtol -> atol
     assert "species_associated_concentrations" in resultdata
     assert resultdata.species_associated_concentrations.shape == (
         suite.axis["time"].size,
