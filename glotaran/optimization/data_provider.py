@@ -612,9 +612,11 @@ class DataProviderLinked(DataProvider):
         # into an ndarray of shape (len(global,)
         # as an alternative to the more elegant xarray built-in which is limited to 32 datasets
         # aligned_group_labels = aligned_groups.str.join(dim="dataset").data
-        aligned_group_labels = []
-        for _, sub_arr in aligned_groups.groupby("global"):
-            aligned_group_labels.append("".join(sub_arr.values))
+        aligned_group_labels = [
+            "".join(sub_arr.values)
+            for _, sub_arr in aligned_groups.groupby("global")
+        ]
+
         aligned_group_labels = np.asarray(aligned_group_labels)
 
         group_definitions: dict[str, list[str]] = {}
