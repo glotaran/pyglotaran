@@ -155,7 +155,11 @@ class DataProvider:
         return slice(minimum, maximum)
 
     def add_model_weight(
-        self, model: Model, dataset_label: str, model_dimension: str, global_dimension: str
+        self,
+        model: Model,
+        dataset_label: str,
+        model_dimension: str,
+        global_dimension: str,
     ):
         """Add model weight to data.
 
@@ -532,7 +536,9 @@ class DataProviderLinked(DataProvider):
         aligned_data = xr.concat(
             [
                 xr.DataArray(
-                    self.get_data(label), dims=["model", "global"], coords={"global": axis}
+                    self.get_data(label),
+                    dims=["model", "global"],
+                    coords={"global": axis},
                 )
                 for label, axis in aligned_global_axes.items()
             ],
@@ -602,7 +608,16 @@ class DataProviderLinked(DataProvider):
             dim="dataset",
             fill_value="",
         )
-        aligned_group_labels = aligned_groups.str.join(dim="dataset").data
+        # for every element along the global axis, concatenate all dataset labels
+        # into an ndarray of shape (len(global,)
+        # as an alternative to the more elegant xarray built-in which is limited to 32 datasets
+        # aligned_group_labels = aligned_groups.str.join(dim="dataset").data
+        aligned_group_labels = [
+            "".join(sub_arr.values) for _, sub_arr in aligned_groups.groupby("global")
+        ]
+
+        aligned_group_labels = np.asarray(aligned_group_labels)
+
         group_definitions: dict[str, list[str]] = {}
         for i, group_label in enumerate(aligned_group_labels):
             if group_label not in group_definitions:
@@ -628,7 +643,9 @@ class DataProviderLinked(DataProvider):
         """
         all_weights = {
             label: xr.DataArray(
-                weight, dims=["model", "global"], coords={"global": aligned_global_axes[label]}
+                weight,
+                dims=["model", "global"],
+                coords={"global": aligned_global_axes[label]},
             )
             for label, weight in self._weight.items()
             if weight is not None
