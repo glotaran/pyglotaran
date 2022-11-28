@@ -24,6 +24,9 @@
 - 🩹 Fix result data overwritten when using multiple dataset_groups (#1147)
 - 🩹 Fix for normalization issue described in #1157 (multi-gaussian irfs and multiple time ranges (streak))
 - 🩹 Fix for crash described in #1183 when doing an optimization using more than 30 datasets (#1184)
+<!-- Fix within the 0.7.0 release cycle, therefore hidden:
+- 🩹 Fix the matrix provider alignment/reduction ('grouping') issues introduced in #1175 (#1190)
+-->
 
 
 ### 📚 Documentation
