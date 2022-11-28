@@ -644,18 +644,25 @@ class MatrixProviderLinked(MatrixProvider):
 
     def calculate_aligned_matrices(self):
         """Calculate the aligned matrices of the dataset group."""
-        # reduced_matrices = {
-        #     label: self.reduce_matrix(matrix_container,
-        #       self._data_provider.get_global_axis(label))
-        #     for label, matrix_container in self._matrix_containers.items()
-        # }
         full_clp_labels = self.align_full_clp_labels()
         for i, global_index_value in enumerate(self._data_provider.aligned_global_axis):
+            matrix_containers = []
             group_label = self._data_provider.get_aligned_group_label(i)
-            matrix_containers = [
-                self._matrix_containers[label]
-                for label in self._data_provider.group_definitions[group_label]
-            ]
+            for label, index in zip(
+                self._data_provider.group_definitions[group_label],
+                self._data_provider.get_aligned_dataset_indices(i),
+            ):
+                matrix_container_temp = self._matrix_containers[label]
+                if matrix_container_temp.is_index_dependent:
+                    matrix_containers.append(
+                        MatrixContainer(
+                            clp_labels=matrix_container_temp.clp_labels,
+                            matrix=matrix_container_temp.matrix[index],
+                        )
+                    )
+                else:
+                    matrix_containers.append(matrix_container_temp)
+
             matrix_scales = [
                 self.group.dataset_models[label].scale
                 if self.group.dataset_models[label].scale is not None
@@ -668,10 +675,9 @@ class MatrixProviderLinked(MatrixProvider):
             )
 
             self._aligned_full_clp_labels[i] = full_clp_labels[group_label]
-            group_matrix_for_all = self.reduce_matrix(
-                group_matrix, self._data_provider.aligned_global_axis
-            )
-            group_matrix_single = group_matrix_for_all[i]
+            group_matrix_single = self.reduce_matrix(
+                group_matrix, np.array([self._data_provider.aligned_global_axis[i]])
+            )[0]
 
             weight = self._data_provider.get_aligned_weight(i)
             if weight is not None:
