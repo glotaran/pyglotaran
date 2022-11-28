@@ -43,7 +43,7 @@ class OverDueDeprecation(Exception):
     """
 
 
-class GlotaranDeprectedApiError(Exception):
+class GlotaranDeprecatedApiError(Exception):
     """Exception raised when a deprecation has no replacement.
 
     See Also
@@ -116,8 +116,8 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
         return tuple(
             map(int, (*split_version[:2], split_version[2].partition("rc")[0]))
         )  # type:ignore[return-value]
-    except ValueError:
-        raise ValueError(error_message)
+    except ValueError as err:
+        raise ValueError(error_message) from err
 
 
 def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequence[int]):
@@ -209,23 +209,23 @@ def raise_deprecation_error(
     ------
     OverDueDeprecation
         If the current version is greater or equal to ``to_be_removed_in_version``.
-    GlotaranDeprectedApiError
+    GlotaranDeprecatedApiError
         If :class:`OverDueDeprecation` wasn't raised before.
 
 
     .. # noqa: DAR402 OverDueDeprecation
-    .. # noqa: DAR401 GlotaranDeprectedApiError
+    .. # noqa: DAR401 GlotaranDeprecatedApiError
     """
     check_overdue(deprecated_qual_name_usage, to_be_removed_in_version)
     message = (
         f"Usage of {deprecated_qual_name_usage!r} was deprecated, "
         f"use {new_qual_name_usage!r} instead.\n"
         "It wasn't possible to restore the original behavior of this usage "
-        "(mostlikely due to an object hierarchy change)."
+        "(most likely due to an object hierarchy change)."
         "This usage change message won't be show as of version: "
         f"{to_be_removed_in_version!r}."
     )
-    raise GlotaranDeprectedApiError(message)
+    raise GlotaranDeprecatedApiError(message)
 
 
 def warn_deprecated(

@@ -8,7 +8,7 @@ import pytest
 
 import glotaran
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
-from glotaran.deprecation.deprecation_utils import GlotaranDeprectedApiError
+from glotaran.deprecation.deprecation_utils import GlotaranDeprecatedApiError
 from glotaran.deprecation.deprecation_utils import OverDueDeprecation
 from glotaran.deprecation.deprecation_utils import check_overdue
 from glotaran.deprecation.deprecation_utils import deprecate
@@ -43,7 +43,7 @@ DEPRECATION_ERROR_MESSAGE = (
     "Usage of 'glotaran.deprecation.deprecation_utils.parse_version(version_str)' was deprecated, "
     "use 'glotaran.deprecation.deprecation_utils.check_qualnames_in_tests(qualnames)' instead.\n"
     "It wasn't possible to restore the original behavior of this usage "
-    "(mostlikely due to an object hierarchy change)."
+    "(most likely due to an object hierarchy change)."
     "This usage change message won't be show as of version: '0.6.0'."
 )
 OVERDUE_ERROR_MESSAGE = (
@@ -130,7 +130,7 @@ def test_check_overdue_raises(monkeypatch: MonkeyPatch):
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_raise_deprecation_error(monkeypatch: MonkeyPatch):
     """Current version smaller then drop_version."""
-    with pytest.raises(GlotaranDeprectedApiError) as excinfo:
+    with pytest.raises(GlotaranDeprecatedApiError) as excinfo:
         raise_deprecation_error(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             new_qual_name_usage=NEW_QUAL_NAME,
