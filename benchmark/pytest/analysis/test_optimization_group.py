@@ -23,7 +23,7 @@ TEST_AXIS_GLOBAL_SIZE = 100
 TEST_AXIS_GLOBAL = xr.DataArray(np.arange(0, TEST_AXIS_GLOBAL_SIZE))
 TEST_CLP_SIZE = 20
 TEST_CLP_LABELS = [f"{i+1}" for i in range(TEST_CLP_SIZE)]
-TEST_MATRIX_NON_INDEX_DEPENDENT = np.ones((TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE))
+TEST_MATRIX_INDEX_INDEPENDENT = np.ones((TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE))
 TEST_MATRIX_INDEX_DEPENDENT = np.ones((TEST_AXIS_GLOBAL_SIZE, TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE))
 #  TEST_MATRIX = xr.DataArray(
 #      np.ones((TEST_AXIS_MODEL_SIZE, TEST_CLP_SIZE)),
@@ -52,7 +52,7 @@ class BenchmarkMegacomplex(Megacomplex):
         if self.is_index_dependent is True:
             return TEST_CLP_LABELS, TEST_MATRIX_INDEX_DEPENDENT
         else:
-            return TEST_CLP_LABELS, TEST_MATRIX_NON_INDEX_DEPENDENT
+            return TEST_CLP_LABELS, TEST_MATRIX_INDEX_INDEPENDENT
 
     def finalize_data(
         self,
