@@ -3,17 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
+
 from glotaran.utils.regex import RegexPattern as rp
 
 
-def pretty_format_numerical(value: float, decimal_places: int = 1) -> str:
+def pretty_format_numerical(value: float | int, decimal_places: int = 1) -> str:
     """Format value with with at most ``decimal_places`` decimal places.
 
     Used to format values like the t-value.
 
     Parameters
     ----------
-    value: float
+    value: float | int
         Numerical value to format.
     decimal_places: int
         Decimal places to display. Defaults to 1
@@ -23,10 +25,13 @@ def pretty_format_numerical(value: float, decimal_places: int = 1) -> str:
     str
         Pretty formatted version of the value.
     """
+    if abs(value - int(value)) <= np.finfo(np.float64).eps:
+        return str(int(value))
+    abs_value = abs(value)
     format_template = "{value:{format_instruction}}"
-    if abs(value) < 10 ** (-decimal_places):
+    if abs_value < 10 ** (-decimal_places):
         format_instruction = f".{decimal_places}e"
-    elif abs(value) < 10 ** (decimal_places):
+    elif abs_value < 10 ** (decimal_places):
         format_instruction = f".{decimal_places}f"
     else:
         format_instruction = ".0f"
