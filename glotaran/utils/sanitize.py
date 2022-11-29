@@ -24,9 +24,9 @@ def pretty_format_numerical(value: float, decimal_places: int = 1) -> str:
         Pretty formatted version of the value.
     """
     format_template = "{value:{format_instruction}}"
-    if value < 10 ** (-decimal_places):
+    if abs(value) < 10 ** (-decimal_places):
         format_instruction = f".{decimal_places}e"
-    elif value < 10 ** (decimal_places):
+    elif abs(value) < 10 ** (decimal_places):
         format_instruction = f".{decimal_places}f"
     else:
         format_instruction = ".0f"
