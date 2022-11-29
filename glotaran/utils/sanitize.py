@@ -32,14 +32,13 @@ def pretty_format_numerical(value: float | int, decimal_places: int = 1) -> str:
     if abs(value - int(value)) <= np.finfo(np.float64).eps:
         return str(int(value))
     abs_value = abs(value)
-    format_template = "{value:{format_instruction}}"
     if abs_value < 10 ** (-decimal_places):
         format_instruction = f".{decimal_places}e"
     elif abs_value < 10 ** (decimal_places):
         format_instruction = f".{decimal_places}f"
     else:
         format_instruction = ".0f"
-    return format_template.format(value=value, format_instruction=format_instruction)
+    return f"{value:{format_instruction}}"
 
 
 def sanitize_list_with_broken_tuples(mangled_list: list[str | float]) -> list[str]:
