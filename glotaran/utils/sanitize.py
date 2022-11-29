@@ -25,6 +25,10 @@ def pretty_format_numerical(value: float | int, decimal_places: int = 1) -> str:
     str
         Pretty formatted version of the value.
     """
+    # Bool returned by numpy do not support the ``is`` comparison (not same singleton as in python)
+    # Ref: https://stackoverflow.com/a/37744300/3990615
+    if not np.isfinite(value):
+        return str(value)
     if abs(value - int(value)) <= np.finfo(np.float64).eps:
         return str(int(value))
     abs_value = abs(value)

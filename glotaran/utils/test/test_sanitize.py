@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 from typing import NamedTuple
 
+import numpy as np
 import pytest
 
 from glotaran.utils.sanitize import pretty_format_numerical
@@ -73,6 +74,9 @@ def test_fix_tuple_string_list(test_data: MangledListTestData):
         (-0.009, 2, "-9.00e-03"),
         (0.01, 2, "0.01"),
         (12.3, 2, "12.30"),
+        (np.nan, 1, "nan"),
+        (np.inf, 1, "inf"),
+        (-np.inf, 1, "-inf"),
     ),
 )
 def test_pretty_format_numerical(value: float, decimal_places: int, expected: str):
