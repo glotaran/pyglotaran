@@ -622,7 +622,7 @@ class DataProviderLinked(DataProvider):
         for i, group_label in enumerate(aligned_group_labels):
             if group_label not in group_definitions:
                 group_definitions[group_label] = list(
-                    filter(lambda l: l != "", aligned_groups.isel({"global": i}).data)
+                    filter(lambda label: label != "", aligned_groups.isel({"global": i}).data)
                 )
         return aligned_group_labels, group_definitions
 
