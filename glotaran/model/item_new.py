@@ -260,8 +260,7 @@ def iterate_model_item_fields(item: type[Item]) -> Generator[Field, None, None]:
     Field
         The model item fields.
     """
-    for field in iterate_fields_of_type(item, ModelItem):
-        yield field
+    yield from iterate_fields_of_type(item, ModelItem)
 
 
 def iterate_parameter_fields(item: type[Item]) -> Generator[Field, None, None]:
