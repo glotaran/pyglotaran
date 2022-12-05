@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+from typing import Literal
+
 from glotaran.model.item_new import Attribute
 from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItem
 from glotaran.model.item_new import LibraryItemType
+from glotaran.model.item_new import LibraryItemTyped
 from glotaran.model.item_new import ParameterType
-from glotaran.model.item_new import TypedItem
 from glotaran.model.item_new import get_structure_and_type_from_field
 from glotaran.model.item_new import iterate_library_item_fields
 from glotaran.model.item_new import iterate_parameter_fields
@@ -16,6 +20,12 @@ class MockLibraryItem(LibraryItem):
     test_attr: str = Attribute(description="Test description.")
 
 
+class MockLibraryItemNested(LibraryItem):
+    """A library item for testing."""
+
+    test_reference: LibraryItemType[MockLibraryItem] | None = None
+
+
 class MockItem(Item):
     cscalar: int
     cscalar_option: int | None
@@ -23,12 +33,12 @@ class MockItem(Item):
     clist_option: list[int] | None
     cdict: dict[str, int]
     cdict_option: dict[str, int] | None
-    iscalar: LibraryItemType[MockLibraryItem]
-    iscalar_option: LibraryItemType[MockLibraryItem] | None
-    ilist: list[LibraryItemType[MockLibraryItem]]
-    ilist_option: list[LibraryItemType[MockLibraryItem]] | None
-    idict: dict[str, LibraryItemType[MockLibraryItem]]
-    idict_option: dict[str, LibraryItemType[MockLibraryItem]] | None
+    iscalar: LibraryItemType[MockLibraryItemNested]
+    iscalar_option: LibraryItemType[MockLibraryItemNested] | None
+    ilist: list[LibraryItemType[MockLibraryItemNested]]
+    ilist_option: list[LibraryItemType[MockLibraryItemNested]] | None
+    idict: dict[str, LibraryItemType[MockLibraryItemNested]]
+    idict_option: dict[str, LibraryItemType[MockLibraryItemNested]] | None
     pscalar: ParameterType
     pscalar_option: ParameterType | None
     plist: list[ParameterType]
@@ -37,12 +47,18 @@ class MockItem(Item):
     pdict_option: dict[str, ParameterType] | None
 
 
-class MockTypedItem(TypedItem):
+class MockTypedItem(LibraryItemTyped):
     pass
 
 
-class MockTypedItemConcrete(MockTypedItem):
-    type: str = "concrete_type"
+class MockTypedItemConcrete1(MockTypedItem):
+    type: Literal["concrete_type1"]
+    vint: int
+
+
+class MockTypedItemConcrete2(MockTypedItem):
+    type: Literal["concrete_type2"]
+    vstring: str
 
 
 def test_item_fields_structures_and_type():
@@ -57,12 +73,12 @@ def test_item_fields_structures_and_type():
             (dict, int),
         )
         + (
-            (None, MockLibraryItem),
-            (None, MockLibraryItem),
-            (list, MockLibraryItem),
-            (list, MockLibraryItem),
-            (dict, MockLibraryItem),
-            (dict, MockLibraryItem),
+            (None, MockLibraryItemNested),
+            (None, MockLibraryItemNested),
+            (list, MockLibraryItemNested),
+            (list, MockLibraryItemNested),
+            (dict, MockLibraryItemNested),
+            (dict, MockLibraryItemNested),
         )
         + (
             (None, Parameter),
@@ -80,6 +96,8 @@ def test_item_fields_structures_and_type():
 
 
 def test_iterate_library_items():
+    item_fields = list(iterate_library_item_fields(MockLibraryItemNested))
+    assert len(item_fields) == 1
     item_fields = list(iterate_library_item_fields(MockItem))
     assert len(item_fields) == 6
     assert [i.name for i in item_fields] == [
@@ -106,11 +124,7 @@ def test_iterate_parameters():
 
 
 def test_typed_item():
-    assert MockTypedItem.get_item_types() == [MockTypedItemConcrete.get_item_type()]
-    assert (
-        MockTypedItem.get_item_type_class(MockTypedItemConcrete.get_item_type())
-        is MockTypedItemConcrete
-    )
+    assert MockTypedItem.__item_types__ == [MockTypedItemConcrete1, MockTypedItemConcrete2]
 
 
 def test_item_schema():
@@ -123,7 +137,6 @@ def test_item_schema():
             "label": {
                 "title": "Label",
                 "description": "The label of the library item.",
-                "factory": None,
                 "type": "string",
             }
         },
@@ -143,13 +156,11 @@ def test_item_schema():
             "label": {
                 "title": "Label",
                 "description": "The label of the library item.",
-                "factory": None,
                 "type": "string",
             },
             "test_attr": {
                 "title": "Test Attr",
                 "description": "Test description.",
-                "factory": None,
                 "type": "string",
             },
         },
@@ -159,3 +170,7 @@ def test_item_schema():
 
     print(got)
     assert got == wanted
+
+
+def test_get_library_name():
+    assert MockLibraryItem.get_library_name() == "mock_library_item"
