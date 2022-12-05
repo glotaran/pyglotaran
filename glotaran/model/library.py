@@ -1,4 +1,4 @@
-from .megacomplex import Megacomplex
+from glotaran.model.megacomplex import Megacomplex
 
 
 class Library:
