@@ -6,6 +6,7 @@ from inspect import getmro
 from inspect import isclass
 from types import NoneType
 from types import UnionType
+from typing import Annotated
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -21,6 +22,7 @@ from pydantic import BaseModel
 from pydantic import Extra
 from pydantic import Field
 from pydantic.fields import FieldInfo
+from pydantic.fields import ModelField
 from pydantic.fields import Undefined
 
 from glotaran.parameter import Parameter
@@ -34,7 +36,7 @@ LibraryItemType: TypeAlias = LibraryItemT | str  # type:ignore[operator]
 META_VALIDATOR = "__glotaran_validator__"
 
 
-class Attribute(FieldInfo):
+class ItemAttribute(FieldInfo):
     """An attribute for items.
 
     A thin wrapper around pydantic.fields.FieldInfo.
@@ -61,10 +63,39 @@ class Attribute(FieldInfo):
         validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None
             A validator function for the attribute.
         """
-        super().__init__(default=default, factory=factory, description=description)
+        super().__init__(default=default, default_factory=factory, description=description)
         self.metadata: dict[str, Any] = {}
         if validator is not None:
             self.metadata[META_VALIDATOR] = validator
+
+
+def Attribute(
+    *,
+    description: str,
+    default: Any = Undefined,
+    factory: Callable[[], Any] | None = None,
+    validator: Callable | None = None,
+) -> Any:
+    """Create an attribute for an item.
+
+    Parameters
+    ----------
+    description: str
+        The description of the attribute as shown in the help.
+    default: Any
+        The default value of the attribute.
+    factory: Callable[[], Any] | None
+        A factory function for the attribute.
+    validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None
+        A validator function for the attribute.
+
+    Returns
+    -------
+    Any
+    """
+    return ItemAttribute(
+        description=description, default=default, factory=factory, validator=validator
+    )
 
 
 class Item(BaseModel):
@@ -81,7 +112,7 @@ class TypedItem(Item):
     """An item with a type."""
 
     type: str
-    __item_types__: ClassVar[dict[str, Type]]
+    __item_types__: ClassVar[list[Type[Item]]]
 
     def __init_subclass__(cls):
         """Create an item from a class."""
@@ -90,50 +121,19 @@ class TypedItem(Item):
         parent = getmro(cls)[1]
         if parent in (TypedItem, LibraryItemTyped):
             assert issubclass(cls, TypedItem)
-            cls.__item_types__ = {}
+            cls.__item_types__ = []
         elif issubclass(cls, TypedItem):
-            cls._register_item_class()
+            cls.__item_types__.append(cls)
 
     @classmethod
-    def _register_item_class(cls):
-        """Register a class as type."""
-        item_type = cls.get_item_type()
-        if item_type is not Undefined:
-            cls.__item_types__[item_type] = cls
-
-    @classmethod
-    def get_item_type(cls) -> str:
-        """Get the type string.
+    def get_annotated_type(cls) -> object:
+        """Get the annotated type for discrimination.
 
         Returns
         -------
-        str
+        object
         """
-        return cls.__fields__["type"].default
-
-    @classmethod
-    def get_item_types(cls) -> list[str]:
-        """Get all type strings.
-
-        Returns
-        -------
-        list[str]
-        """
-        return list(cls.__item_types__.keys())
-
-    @classmethod
-    def get_item_type_class(cls, item_type: str) -> Type:
-        """Get the type for a type string.
-
-        Parameters
-        ----------
-        item_type: str
-            The type string.
-        Returns
-        -------
-        Type
-        """
-        return cls.__item_types__[item_type]
+        return Annotated[Union[tuple(cls.__item_types__)], Field(discriminator="type")]
 
 
 class LibraryItem(Item):
@@ -158,12 +158,12 @@ class LibraryItemTyped(TypedItem, LibraryItem):
 
 
 @cache
-def get_structure_and_type_from_field(field: Field) -> tuple[None | list | dict, type]:
+def get_structure_and_type_from_field(field: ModelField) -> tuple[None | list | dict, type]:
     """Get the structure and type from a field.
 
     Parameters
     ----------
-    field: Field
+    field: ModelField
         The field.
 
     Returns
@@ -222,7 +222,9 @@ def strip_structure_type_from_definition(definition: type) -> tuple[None | list 
     return structure, definition
 
 
-def iterate_fields_of_type(item: type[Item], field_type: type) -> Generator[Field, None, None]:
+def iterate_fields_of_type(
+    item: type[Item], field_type: type
+) -> Generator[ModelField, None, None]:
     """Iterate over all fields of the given types.
 
     Parameters
@@ -234,7 +236,7 @@ def iterate_fields_of_type(item: type[Item], field_type: type) -> Generator[Fiel
 
     Yields
     ------
-    Field
+    ModelField
         The matching attributes.
     """
     for field in item.__fields__.values():
@@ -246,7 +248,7 @@ def iterate_fields_of_type(item: type[Item], field_type: type) -> Generator[Fiel
                 yield field
 
 
-def iterate_library_item_fields(item: type[Item]) -> Generator[Field, None, None]:
+def iterate_library_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
     """Iterate over all library item fields.
 
     Parameters
@@ -256,13 +258,13 @@ def iterate_library_item_fields(item: type[Item]) -> Generator[Field, None, None
 
     Yields
     ------
-    Field
+    ModelField
         The library item fields.
     """
     yield from iterate_fields_of_type(item, LibraryItem)
 
 
-def iterate_parameter_fields(item: type[Item]) -> Generator[Field, None, None]:
+def iterate_parameter_fields(item: type[Item]) -> Generator[ModelField, None, None]:
     """Iterate over all parameter fields.
 
     Parameters
@@ -272,7 +274,7 @@ def iterate_parameter_fields(item: type[Item]) -> Generator[Field, None, None]:
 
     Yields
     ------
-    Field
+    ModelField
         The parameter fields.
     """
     yield from iterate_fields_of_type(item, Parameter)
