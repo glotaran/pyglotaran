@@ -6,12 +6,13 @@ from collections.abc import Generator
 
 import xarray as xr
 
-from glotaran.model.item_new import Item, Attribute
+from glotaran.model.item_new import Attribute
+from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItemType
 from glotaran.model.item_new import ParameterType
 from glotaran.model.megacomplex_new import Megacomplex
-from glotaran.parameter import Parameter
 from glotaran.model.weight import Weight
+from glotaran.parameter import Parameter
 
 
 class DatasetModel(Item):
