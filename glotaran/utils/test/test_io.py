@@ -204,6 +204,14 @@ def test_relative_posix_path(tmp_path: Path, rel_file_path: str):
 
     assert rel_result_no_common == f"../{rel_file_path}"
 
+    result_folder = tmp_path / "results"
+    with chdir_context(result_folder):
+        original_rel_path = relative_posix_path(rel_file_path, result_folder)
+        assert original_rel_path == rel_file_path
+
+        original_rel_path = relative_posix_path(rel_file_path, "not_a_parent")
+        assert original_rel_path == rel_file_path
+
 
 def test_chdir_context(tmp_path: Path):
     """Original Path is restored even after exception is thrown."""
