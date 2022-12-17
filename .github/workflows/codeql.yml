@@ -2,11 +2,9 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
-  schedule:
-    - cron: "17 8 * * 2"
+    branches: ["main"]
 
 jobs:
   analyze:
@@ -20,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ python ]
+        language: [python]
 
     steps:
       - name: Checkout
@@ -33,6 +31,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
+          setup-python-dependencies: false
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
