@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
+import pytest
 import xarray as xr
 
 from glotaran.io import load_scheme
@@ -13,10 +14,7 @@ from glotaran.project import Scheme
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET
 from glotaran.testing.simulated_data.sequential_spectral_decay import MODEL
 from glotaran.testing.simulated_data.sequential_spectral_decay import PARAMETERS
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
+from glotaran.utils.io import chdir_context
 
 want = """\
 model: m.yml
@@ -35,7 +33,8 @@ result_path: null
 """
 
 
-def test_save_scheme(tmp_path: Path):
+@pytest.mark.parametrize("path_is_absolute", (True, False))
+def test_save_scheme(tmp_path: Path, path_is_absolute: bool):
     save_model(MODEL, tmp_path / "m.yml")
     save_parameters(PARAMETERS, tmp_path / "p.csv")
     save_dataset(DATASET, tmp_path / "d.nc")
@@ -44,12 +43,17 @@ def test_save_scheme(tmp_path: Path):
         PARAMETERS,
         {"dataset_1": DATASET},
     )
-    scheme_path = tmp_path / "testscheme.yml"
-    save_scheme(file_name=scheme_path, format_name="yml", scheme=scheme)
+    if path_is_absolute is True:
+        scheme_path = tmp_path / "testscheme.yml"
+    else:
+        scheme_path = Path("testscheme.yml")
 
-    assert scheme_path.is_file()
-    assert scheme_path.read_text() == want
-    loaded = load_scheme(scheme_path)
-    print(loaded.model.validate(loaded.parameters))
-    assert loaded.model.valid(loaded.parameters)
-    assert isinstance(scheme.data["dataset_1"], xr.Dataset)
+    with chdir_context("." if path_is_absolute is True else tmp_path):
+        save_scheme(file_name=scheme_path, format_name="yml", scheme=scheme)
+
+        assert scheme_path.is_file()
+        assert scheme_path.read_text() == want
+        loaded = load_scheme(scheme_path)
+        print(loaded.model.validate(loaded.parameters))
+        assert loaded.model.valid(loaded.parameters)
+        assert isinstance(scheme.data["dataset_1"], xr.Dataset)
