@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import html
+import os
 import sys
 from pathlib import Path
 
@@ -19,6 +20,7 @@ from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 from glotaran.testing.simulated_data.shared_decay import SPECTRAL_AXIS
 from glotaran.utils.io import DatasetMapping
+from glotaran.utils.io import chdir_context
 from glotaran.utils.io import create_clp_guide_dataset
 from glotaran.utils.io import load_datasets
 from glotaran.utils.io import relative_posix_path
@@ -196,11 +198,43 @@ def test_relative_posix_path(tmp_path: Path, rel_file_path: str):
 
     assert rel_result_path == rel_file_path
 
-    rel_result_no_coomon = relative_posix_path(
+    rel_result_no_common = relative_posix_path(
         (tmp_path / f"../{rel_file_path}").resolve().as_posix(), str(tmp_path)
     )
 
-    assert rel_result_no_coomon == f"../{rel_file_path}"
+    assert rel_result_no_common == f"../{rel_file_path}"
+
+
+def test_chdir_context(tmp_path: Path):
+    """Original Path is restored even after exception is thrown."""
+    original_dir = Path(os.curdir).resolve()
+    with chdir_context(tmp_path) as curdir:
+        assert curdir == tmp_path.resolve()
+        assert tmp_path.resolve() == Path(os.curdir).resolve()
+        assert Path("test.txt").resolve() == (tmp_path / "test.txt").resolve()
+
+    assert Path(os.curdir).resolve() == original_dir
+
+    with pytest.raises(ValueError):
+        with chdir_context(tmp_path):
+            raise ValueError("Original path will be restored after I raise.")
+
+    assert Path(os.curdir).resolve() == original_dir
+
+
+def test_chdir_context_exception(tmp_path: Path):
+    """Raise error if ``folder_path`` is an existing file instead of a folder."""
+    file_path = tmp_path / "test.txt"
+    file_path.touch()
+
+    with pytest.raises(ValueError) as excinfo:
+        with chdir_context(file_path):
+            pass
+
+    assert (
+        str(excinfo.value)
+        == "Value of 'folder_path' needs to be a folder but was an existing file."
+    )
 
 
 @pytest.mark.skipif(not sys.platform.startswith("win32"), reason="Only needed for Windows")
