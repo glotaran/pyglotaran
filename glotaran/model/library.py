@@ -33,7 +33,7 @@ def create_field_type_and_info_for_item_type(
 
 class Library(BaseModel):
     @classmethod
-    def create(cls, item_types: list[type[LibraryItem]]):
+    def create(cls, item_types: list[type[LibraryItem]]) -> Library:
         library_cls_name = f"GlotaranLibrary_{str(uuid4()).replace('-','_')}"
         library_fields = {
             it.get_library_name(): create_field_type_and_info_for_item_type(it)
