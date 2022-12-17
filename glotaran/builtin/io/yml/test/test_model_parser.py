@@ -116,12 +116,9 @@ def test_irf(model):
         assert irf.width == want
 
         if i == 2:
-            want = ["3"] if i == 1 else ["5", "6"]
-            assert irf.center_dispersion_coefficients == want
-            want = ["7", "8"]
-            assert irf.width_dispersion_coefficients == want
-            want = ["9"]
-            assert irf.scale == want
+            assert irf.center_dispersion_coefficients == ["5", "6"]
+            assert irf.width_dispersion_coefficients == ["7", "8"]
+            assert irf.scale == ["9"]
         assert irf.normalize == (i == 1)
 
         if i == 2:

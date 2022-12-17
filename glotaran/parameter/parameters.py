@@ -444,7 +444,7 @@ class Parameters:
 
 def flatten_parameter_dict(
     parameter_dict: dict,
-) -> Generator[tuple[str, list[Any], dict | None], None, None]:
+) -> Generator[tuple[str, list[Any], dict[str, Any] | None], None, None]:
     """Flatten a parameter dictionary.
 
     Parameters
@@ -457,20 +457,22 @@ def flatten_parameter_dict(
     tuple[str, list[Any], dict | None
         The concatenated keys, the parameter definition and default options.
     """
-    for k, v in parameter_dict.items():
-        if isinstance(v, dict):
-            for sub_k, v, d in flatten_parameter_dict(v):
-                yield f"{k}.{sub_k}", v, d
-        elif isinstance(v, list):
-            defaults: dict[str, Any] | None = next(
-                (item for item in v if isinstance(item, dict)), None
+    for key, value in parameter_dict.items():
+        if isinstance(value, dict):
+            for sub_key, sub_value, sub_dict in flatten_parameter_dict(value):
+                yield f"{key}.{sub_key}", sub_value, sub_dict
+        elif isinstance(value, list):
+            sub_dict: dict[str, Any] | None = next(  # type:ignore[no-redef]
+                (item for item in value if isinstance(item, dict)), None
             )
-            for i, v in enumerate(v for v in v if not isinstance(v, dict)):
-                if not isinstance(v, list):
-                    v = [str(i + 1), v]
-                elif not any(isinstance(v, str) for v in v):
-                    v += [str(i + 1)]
-                yield k, v, defaults
+            for index, list_value in enumerate(
+                (list_value for list_value in value if not isinstance(list_value, dict)), start=1
+            ):
+                if not isinstance(list_value, list):
+                    list_value = [str(index), list_value]
+                elif not any(isinstance(v, str) for v in list_value):
+                    list_value += [str(index)]
+                yield key, list_value, sub_dict
 
 
 def param_dict_to_markdown(

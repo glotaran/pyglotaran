@@ -238,15 +238,10 @@ def save_dataset(
     io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
     if "loader" in dataset.attrs:
         del dataset.attrs["loader"]
-    if "source_path" in dataset.attrs:
-        orig_source_path: str = dataset.attrs["source_path"]
-        del dataset.attrs["source_path"]
     io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
     dataset.attrs["loader"] = load_dataset
-    if update_source_path is True or "orig_source_path" not in locals():
+    if update_source_path is True or "source_path" not in dataset.attrs:
         dataset.attrs["source_path"] = Path(file_name).as_posix()
-    else:
-        dataset.attrs["source_path"] = Path(orig_source_path).as_posix()
 
 
 def get_dataloader(format_name: str) -> DataLoader:
