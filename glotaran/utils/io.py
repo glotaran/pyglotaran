@@ -9,6 +9,7 @@ import os
 from collections.abc import Mapping
 from collections.abc import MutableMapping
 from collections.abc import Sequence
+from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -19,6 +20,7 @@ from glotaran.plugin_system.data_io_registration import load_dataset
 from glotaran.typing.types import DatasetMappable
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from collections.abc import Iterator
 
     import pandas as pd
@@ -190,9 +192,42 @@ def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:
     return DatasetMapping.loader(dataset_mappable)
 
 
+@contextmanager
+def chdir_context(folder_path: StrOrPath) -> Generator[Path, None, None]:
+    """Context manager to change directory to ``folder_path``.
+
+    Parameters
+    ----------
+    folder_path: StrOrPath
+        Path to change to.
+
+    Yields
+    ------
+    Generator[Path, None, None]
+        Resolved path of ``folder_path``.
+
+    Raises
+    ------
+    ValueError
+        If ``folder_path`` is an existing file.
+    """
+    original_dir = Path(os.curdir).resolve()
+    folder_path = Path(folder_path)
+    if folder_path.is_file() is True:
+        raise ValueError("Value of 'folder_path' needs to be a folder but was an existing file.")
+    folder_path.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chdir(folder_path)
+        yield folder_path.resolve()
+    finally:
+        os.chdir(original_dir)
+
+
 def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = None) -> str:
     """Ensure that ``source_path`` is a posix path, relative to ``base_path`` if defined.
 
+    For ``source_path`` to be converted to a relative path it either needs to a an absolute path or
+    ``base_path`` needs to be a parent directory of ``source_path``.
     On Windows if ``source_path`` and ``base_path`` are on different drives, it will return
     the absolute posix path to the file.
 
@@ -201,17 +236,20 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
     source_path : StrOrPath
         Path which should be converted to a relative posix path.
     base_path : StrOrPath, optional
-        Base path the resulting path string should be relative to., by default None
+        Base path the resulting path string should be relative to. Defaults to ``None``.
 
     Returns
     -------
     str
         ``source_path`` as posix path relative to ``base_path`` if defined.
     """
-    source_path = Path(source_path).as_posix()
-    if base_path is not None and os.path.isabs(source_path):
+    source_path = Path(source_path)
+    if base_path is not None and (
+        source_path.is_absolute() or Path(base_path).resolve() in source_path.resolve().parents
+    ):
         with contextlib.suppress(ValueError):
-            source_path = os.path.relpath(source_path, Path(base_path).as_posix())
+            source_path = os.path.relpath(source_path.as_posix(), Path(base_path).as_posix())
+
     return Path(source_path).as_posix()
 
 

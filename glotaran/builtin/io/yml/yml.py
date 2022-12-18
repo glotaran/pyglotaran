@@ -1,6 +1,7 @@
 """Module containing the YAML Data and Project IO plugins."""
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -214,8 +215,11 @@ class YmlProjectIo(ProjectIoInterface):
         save_model(result.scheme.model, model_path, allow_overwrite=True)
         paths.append(model_path.as_posix())
 
+        # The source_path attribute of the datasets only gets changed for `result.data`
+        # Which why we overwrite the data attribute on a copy of `result.scheme`
+        scheme = replace(result.scheme, data=result.data)
         scheme_path = result_folder / "scheme.yml"
-        save_scheme(result.scheme, scheme_path, allow_overwrite=True)
+        save_scheme(scheme, scheme_path, allow_overwrite=True)
         paths.append(scheme_path.as_posix())
 
         result_dict = asdict(result, folder=result_folder)
