@@ -269,10 +269,10 @@ def test_parameter_numpy_operations():
     assert divmod(parm3, 2) == (1, 1)
     assert divmod(3, parm2) == (1, 1)
     assert np.allclose(parm3**parm2, 9)
-    assert parm3 > parm2
     assert parm3 >= parm2
-    assert parm1 < parm2
+    assert parm3 > parm2
     assert parm1 <= parm2
+    assert parm1 < parm2
 
 
 def test_parameter_dict_roundtrip():
