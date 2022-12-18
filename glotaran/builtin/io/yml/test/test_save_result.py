@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from functools import lru_cache
 from pathlib import Path
 from textwrap import dedent
 
@@ -9,6 +10,7 @@ from pandas.testing import assert_frame_equal
 
 from glotaran import __version__
 from glotaran.io import load_result
+from glotaran.io import save_dataset
 from glotaran.io import save_result
 from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
@@ -16,12 +18,18 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 from glotaran.utils.io import chdir_context
 
 
-@pytest.fixture(scope="session")
-def dummy_result():
+@pytest.fixture
+def dummy_result(tmp_path: Path):
     """Dummy result for testing."""
-    print(SCHEME.data["dataset_1"])
-    scheme = replace(SCHEME, maximum_number_function_evaluations=1)
-    yield optimize(scheme, raise_exception=True)
+
+    @lru_cache
+    def create_result():
+        scheme = replace(SCHEME, maximum_number_function_evaluations=1)
+        (tmp_path / "data").mkdir(parents=True, exist_ok=True)
+        save_dataset(scheme.data["dataset_1"], tmp_path / "data/ds1.nc")
+        return optimize(scheme, raise_exception=True)
+
+    yield create_result()
 
 
 @pytest.mark.parametrize("path_is_absolute", (True, False))
@@ -70,6 +78,10 @@ def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute:
     else:
         result_dir = Path("testresult")
 
+    assert (
+        dummy_result.scheme.data["dataset_1"].source_path == (tmp_path / "data/ds1.nc").as_posix()
+    )
+
     result_path = result_dir / "result.yml"
     with chdir_context("." if path_is_absolute is True else tmp_path):
         save_result(result_path=result_path, result=dummy_result)
@@ -84,6 +96,11 @@ def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute:
         assert (result_dir / "optimized_parameters.csv").exists()
         assert (result_dir / "optimization_history.csv").exists()
         assert (result_dir / "dataset_1.nc").exists()
+        # Original scheme object isn't changed
+        assert (
+            dummy_result.scheme.data["dataset_1"].source_path
+            == (tmp_path / "data/ds1.nc").as_posix()
+        )
 
         # We can't check equality due to numerical fluctuations
         got = result_path.read_text()
