@@ -1,6 +1,6 @@
 # general install dependencies
 pip>=18.0
-wheel>=0.30.0
+wheel>=0.38.0
 
 # glotaran setup dependencies
 asteval==0.9.28
@@ -39,3 +39,4 @@ types-dataclasses>=0.1.7
 # code quality assurance
 flake8>=3.8.3
 pre-commit>=2.9.0
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
