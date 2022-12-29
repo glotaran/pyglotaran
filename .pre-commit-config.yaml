@@ -41,7 +41,7 @@ repos:
         language_version: python3
 
   - repo: https://github.com/PyCQA/isort
-    rev: v5.11.3
+    rev: 5.11.4
     hooks:
       - id: isort
         types: [file]
@@ -65,7 +65,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.5.3
+    rev: 1.6.0
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
