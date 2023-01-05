@@ -8,6 +8,7 @@ from glotaran.model.test.test_item_new import MockLibraryItemNested
 from glotaran.model.test.test_item_new import MockTypedItem
 from glotaran.model.test.test_item_new import MockTypedItemConcrete1
 from glotaran.model.test.test_item_new import MockTypedItemConcrete2
+from glotaran.model.test.test_megacomplex_new import MockDataModel
 from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithDataModel
 from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithItem
 
@@ -56,6 +57,27 @@ def test_initialize_library_from_dict():
     assert isinstance(test_items_typed["test_item_typed2"], MockTypedItemConcrete2)
     assert test_items_typed["test_item_typed2"].label == "test_item_typed2"
     assert test_items_typed["test_item_typed2"].vstring == "teststr"
+
+
+def test_get_data_model():
+    library = Library.from_dict(
+        {
+            "megacomplex": {
+                "m1": {"type": "mock-w-datamodel"},
+                "m2": {"type": "mock-w-item"},
+            },
+        },
+        megacomplexes=[MockMegacomplexWithDataModel, MockMegacomplexWithItem],
+    )
+
+    d1 = library.get_data_model_for_megacomplexes(["m1"])
+    assert issubclass(d1, MockDataModel)
+
+    d2 = library.get_data_model_for_megacomplexes(["m2"])
+    assert not issubclass(d2, MockDataModel)
+
+    d3 = library.get_data_model_for_megacomplexes(["m1", "m2"])
+    assert issubclass(d3, MockDataModel)
 
 
 def test_resolve_item():
