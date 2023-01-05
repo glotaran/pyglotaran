@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from collections.abc import Mapping
+from typing import TYPE_CHECKING
 from typing import Any
 
 import xarray as xr
 
-from glotaran.model.errors import GlotaranDefinitionError
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.item_new import Attribute
 from glotaran.model.item_new import Item
@@ -17,6 +16,9 @@ from glotaran.model.item_new import ParameterType
 from glotaran.model.megacomplex_new import Megacomplex
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
+
+if TYPE_CHECKING:
+    from glotaran.model.library import Library
 
 
 class DataModel(Item):
@@ -38,24 +40,17 @@ class DataModel(Item):
     scale: ParameterType | None = None
     weights: list[Weight] | None = None
 
+    @classmethod
+    def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:
+        megacomplexes = model_dict.get("megacomplex", None)
+        if megacomplexes is None or len(megacomplexes) == 0:
+            raise GlotaranModelError("No megcomplex defined for dataset")
 
-def get_megacomplex_types_from_data_model_dict(
-    data_model_dict: dict[str, Any], megacomplex_registry: Mapping[str, type[Megacomplex]]
-) -> set[type[Megacomplex]]:
-    megacomplexes = data_model_dict.get("megacomplex", None)
-    if megacomplexes is None or len(megacomplexes) == 0:
-        raise GlotaranModelError(
-            f"No megacomplex defined for datamodel with '{data_model_dict.get('label', None)}'"
-        )
+        global_megacomplexes = model_dict.get("global_megacomplex", None)
+        if global_megacomplexes is not None:
+            megacomplexes += global_megacomplexes
 
-    global_megacomplexes = data_model_dict.get("megacomplex", None)
-    if global_megacomplexes is not None:
-        megacomplexes = megacomplexes + global_megacomplexes
-
-    try:
-        return {megacomplex_registry[megacomplex] for megacomplex in megacomplexes}
-    except KeyError as e:
-        raise GlotaranDefinitionError(f"Unknown megacomplex type '{e}'.") from e
+        return library.get_data_model_for_megacomplexes(megacomplexes).parse_obj(model_dict)
 
 
 def has_data_model_global_model(data_model: DataModel) -> bool:
