@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+from itertools import chain
 from typing import Any
 from uuid import uuid4
 
@@ -8,12 +10,15 @@ from pydantic import create_model
 from pydantic import validator
 from pydantic.fields import FieldInfo
 
+from glotaran.model.data_model import DataModel
 from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItem
 from glotaran.model.item_new import LibraryItemT
 from glotaran.model.item_new import LibraryItemTyped
 from glotaran.model.item_new import get_structure_and_type_from_field
 from glotaran.model.item_new import iterate_library_item_fields
+from glotaran.model.item_new import iterate_library_item_types
+from glotaran.model.megacomplex_new import Megacomplex
 
 
 def add_label_to_items(items: dict[str, Any]) -> dict[str, Any]:
@@ -33,7 +38,7 @@ def create_field_type_and_info_for_item_type(
 
 class Library(BaseModel):
     @classmethod
-    def create(cls, item_types: list[type[LibraryItem]]) -> Library:
+    def create(cls, item_types: Sequence[type[LibraryItem]]) -> type[Library]:
         library_cls_name = f"GlotaranLibrary_{str(uuid4()).replace('-','_')}"
         library_fields = {
             it.get_library_name(): create_field_type_and_info_for_item_type(it)
@@ -50,8 +55,27 @@ class Library(BaseModel):
         return cls
 
     @classmethod
-    def from_dict(cls, obj: dict[str, Any]) -> Library:
-        return cls.parse_obj(obj)
+    def create_for_megacomplexes(
+        cls, megacomplexes: list[type[Megacomplex]] | None = None
+    ) -> type[Library]:
+
+        megacomplexes = megacomplexes or Megacomplex.__item_types__
+        data_models = [
+            m.data_model_type
+            for m in filter(lambda m: m.data_model_type is not None, megacomplexes)
+        ] + [DataModel]
+        items = {
+            library_item
+            for item in chain(megacomplexes, data_models)
+            for library_item in iterate_library_item_types(item)
+        }
+        return cls.create(items)
+
+    @classmethod
+    def from_dict(
+        cls, obj: dict[str, Any], megacomplexes: list[type[Megacomplex]] | None = None
+    ) -> Library:
+        return cls.create_for_megacomplexes(megacomplexes).parse_obj(obj)
 
     def resolve_item_by_type_and_value(
         self, item_type: LibraryItemT, value: str | LibraryItem
