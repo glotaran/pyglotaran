@@ -197,11 +197,11 @@ class DataModel(Item):
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:
-        megacomplexes = model_dict.get("megacomplex", None)
+        megacomplexes = model_dict.get("megacomplex")
         if megacomplexes is None or len(megacomplexes) == 0:
             raise GlotaranModelError("No megcomplex defined for dataset")
 
-        global_megacomplexes = model_dict.get("global_megacomplex", None)
+        global_megacomplexes = model_dict.get("global_megacomplex")
         if global_megacomplexes is not None:
             megacomplexes += global_megacomplexes
 
