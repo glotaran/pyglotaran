@@ -3,9 +3,9 @@ from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.model.library import Library
-from glotaran.model.test.test_megacomplex_new import MockDataModel
-from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithDataModel
-from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithItem
+from glotaran.model.test.test_megacomplex import MockDataModel
+from glotaran.model.test.test_megacomplex import MockMegacomplexWithDataModel
+from glotaran.model.test.test_megacomplex import MockMegacomplexWithItem
 
 
 def test_experiment_model_from_dict():

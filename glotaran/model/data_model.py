@@ -10,11 +10,11 @@ import xarray as xr
 
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import ItemIssue
-from glotaran.model.item_new import Attribute
-from glotaran.model.item_new import Item
-from glotaran.model.item_new import LibraryItemType
-from glotaran.model.item_new import ParameterType
-from glotaran.model.megacomplex_new import Megacomplex
+from glotaran.model.item import Attribute
+from glotaran.model.item import Item
+from glotaran.model.item import LibraryItemType
+from glotaran.model.item import ParameterType
+from glotaran.model.megacomplex import Megacomplex
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 

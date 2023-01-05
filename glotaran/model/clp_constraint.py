@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Literal
 
 from glotaran.model.interval_item import IntervalItem
-from glotaran.model.item_new import TypedItem
+from glotaran.model.item import TypedItem
 
 
 class ClpConstraint(TypedItem, IntervalItem):
