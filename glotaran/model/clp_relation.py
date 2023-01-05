@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from glotaran.model.interval_item import IntervalItem
-from glotaran.model.item_new import ParameterType
+from glotaran.model.item import ParameterType
 
 
 class ClpRelation(IntervalItem):

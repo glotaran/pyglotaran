@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from glotaran.model.item_new import Item
-from glotaran.model.item_new import ParameterType
+from glotaran.model.item import Item
+from glotaran.model.item import ParameterType
 
 
 class ClpPenalty(Item):

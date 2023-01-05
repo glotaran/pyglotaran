@@ -1,6 +1,6 @@
 """This module contains weight item."""
 
-from glotaran.model.item_new import Item
+from glotaran.model.item import Item
 
 
 class Weight(Item):
