@@ -63,10 +63,12 @@ class ItemAttribute(FieldInfo):
         validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None
             A validator function for the attribute.
         """
-        super().__init__(default=default, default_factory=factory, description=description)
-        self.metadata: dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
         if validator is not None:
-            self.metadata[META_VALIDATOR] = validator
+            metadata[META_VALIDATOR] = validator
+        super().__init__(
+            default=default, default_factory=factory, description=description, **metadata
+        )
 
 
 def Attribute(
