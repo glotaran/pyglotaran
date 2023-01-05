@@ -11,6 +11,7 @@ from glotaran.model.test.test_item_new import MockTypedItemConcrete2
 from glotaran.model.test.test_megacomplex_new import MockDataModel
 from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithDataModel
 from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithItem
+from glotaran.parameter import Parameters
 
 
 def test_construct_library():
@@ -78,6 +79,27 @@ def test_get_data_model():
 
     d3 = library.get_data_model_for_megacomplexes(["m1", "m2"])
     assert issubclass(d3, MockDataModel)
+
+
+def test_get_issues():
+    library = Library.create([MockLibraryItem]).from_dict({})
+    item = MockItem(
+        cscalar=0,
+        clist=[],
+        cdict={},
+        iscalar="foo",
+        ilist=["foo", "bar"],
+        idict={1: "foo", 2: "bar"},
+        pscalar="foo",
+        plist=["foo", "bar"],
+        pdict={1: "foo", 2: "bar"},
+    )
+
+    issues = library.validate_item(item)
+    assert len(issues) == 5
+
+    issues = library.validate_item(item, parameters=Parameters({}))
+    assert len(issues) == 10
 
 
 def test_resolve_item():
