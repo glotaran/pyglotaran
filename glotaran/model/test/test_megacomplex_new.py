@@ -32,7 +32,7 @@ class MockMegacomplexWithDataModel(Megacomplex):
 class MockMegacomplexWithItem(Megacomplex):
     type: Literal["mock-w-item"]
     dimension: str = "model"
-    library_item: LibraryItemType[MockLibraryItemNested]
+    library_item: LibraryItemType[MockLibraryItemNested] | None = None
 
     def calculate_matrix(
         self,
