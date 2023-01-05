@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from glotaran.model.item import ParameterType
-from glotaran.model.item import TypedItem
-from glotaran.model.item import item
+from typing import Literal
+
+from glotaran.model.item_new import Item
+from glotaran.model.item_new import ParameterType
 
 
-@item
-class ClpPenalty(TypedItem):
+class ClpPenalty(Item):
     """Baseclass for clp penalties."""
 
 
-@item
 class EqualAreaPenalty(ClpPenalty):
     """Forces the area of 2 clp to be the same.
 
@@ -22,7 +21,9 @@ class EqualAreaPenalty(ClpPenalty):
     residual is scaled with the weight.
     """
 
-    type: str = "equal_area"
+    # note: we do not use pydantic discriminators as it needs at least 2 different types.
+    # we keep the type though for later extension.
+    type: Literal["equal_area"]
     source: str
     source_intervals: list[tuple[float, float]]
     target: str
