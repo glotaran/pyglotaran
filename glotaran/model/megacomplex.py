@@ -2,98 +2,66 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import abc
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import xarray as xr
-from attrs import NOTHING
-from attrs import fields
 
-from glotaran.model.item import ModelItemTyped
-from glotaran.model.item import item
+from glotaran.model.item import LibraryItemTyped
 from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 
 if TYPE_CHECKING:
-    from glotaran.model import DatasetModel
-    from glotaran.typing.types import ArrayLike
+
+    from glotaran.model.data_model import DataModel
 
 
-def megacomplex(
-    *,
-    dataset_model_type: type[DatasetModel] | None = None,
-    exclusive: bool = False,
-    unique: bool = False,
-) -> Callable:
-    """Create a megacomplex from a class.
-
-    Parameters
-    ----------
-    dataset_model_type: type
-        The dataset model type.
-    exclusive: bool
-        Whether the megacomplex is exclusive.
-    unique: bool
-        Whether the megacomplex is unique.
-
-    Returns
-    -------
-    Callable
-    """
-
-    def decorator(cls):
-        megacomplex_type = item(cls)
-        megacomplex_type.__dataset_model_type__ = dataset_model_type
-        megacomplex_type.__is_exclusive__ = exclusive
-        megacomplex_type.__is_unique__ = unique
-
-        megacomplex_type_str = fields(cls).type.default
-        if megacomplex_type_str is not NOTHING:
-            register_megacomplex(megacomplex_type_str, megacomplex_type)
-
-        return megacomplex_type
-
-    return decorator
-
-
-@item
-class Megacomplex(ModelItemTyped):
+class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
     """A base class for megacomplex models.
 
-    Subclasses must overwrite :method:`glotaran.model.Megacomplex.calculate_matrix`
-    and :method:`glotaran.model.Megacomplex.index_dependent`.
+    Subclasses must overwrite :method:`glotaran.model.Megacomplex.calculate_matrix`.
     """
+
+    data_model_type: ClassVar[type | None] = None
+    is_exclusive: ClassVar[bool] = False
+    is_unique: ClassVar[bool] = False
+    register_as: ClassVar[str | None] = None
 
     dimension: str | None = None
 
-    __dataset_model_type__: ClassVar[type | None] = None
-    __is_exclusive__: ClassVar[bool]
-    __is_unique__: ClassVar[bool]
+    def __init_subclass__(cls):
+        """Register the megacomplex if necessary."""
+        super().__init_subclass__()
+        if cls.register_as is not None:
+            register_megacomplex(cls.register_as, cls)
 
-    @classmethod
-    def get_dataset_model_type(cls) -> type | None:
-        """Get the dataset model type.
-
-        Returns
-        -------
-        type | None
-        """
-        return cls.__dataset_model_type__
-
+    @abc.abstractmethod
     def calculate_matrix(
         self,
+<<<<<<< HEAD
         dataset_model: DatasetModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
+=======
+        model: DataModel,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
+>>>>>>> b223d79b (Remove old model and items.)
         **kwargs,
     ) -> tuple[list[str], ArrayLike]:
         """Calculate the megacomplex matrix.
 
         Parameters
         ----------
+<<<<<<< HEAD
         dataset_model: DatasetModel
             The dataset model.
         global_axis: ArrayLike
+=======
+        data_model: DataModel
+            The data model.
+        global_axis: np.typing.ArrayLike
+>>>>>>> b223d79b (Remove old model and items.)
             The global axis.
         model_axis: ArrayLike
             The model axis.
@@ -106,62 +74,27 @@ class Megacomplex(ModelItemTyped):
             The clp labels and the matrix.
 
         .. # noqa: DAR202
-        .. # noqa: DAR401
         """
-        raise NotImplementedError
+        pass
 
     def finalize_data(
         self,
-        dataset_model: DatasetModel,
-        dataset: xr.Dataset,
+        model: DataModel,
+        data: xr.Dataset,
         is_full_model: bool = False,
         as_global: bool = False,
     ):
-        """Finalize a dataset.
+        """Finalize the result data.
 
         Parameters
         ----------
-        dataset_model: DatasetModel
-            The dataset model.
-        dataset: xr.Dataset
-            The dataset.
+        data_model: DataModel
+            The data model.
+        data: xr.Dataset
+            The data.
         is_full_model: bool
             Whether the model is a full model.
         as_global: bool
             Whether megacomplex is calculated as global megacomplex.
-
-
-        .. # noqa: DAR101
-        .. # noqa: DAR401
         """
-        raise NotImplementedError
-
-
-def is_exclusive(cls: type[Megacomplex]) -> bool:
-    """Check if the megacomplex is exclusive.
-
-    Parameters
-    ----------
-    cls: type[Megacomplex]
-        The megacomplex type.
-
-    Returns
-    -------
-    bool
-    """
-    return cls.__is_exclusive__
-
-
-def is_unique(cls: type[Megacomplex]) -> bool:
-    """Check if the megacomplex is unique.
-
-    Parameters
-    ----------
-    cls: type[Megacomplex]
-        The megacomplex type.
-
-    Returns
-    -------
-    bool
-    """
-    return cls.__is_unique__
+        pass
