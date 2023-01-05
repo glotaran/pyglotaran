@@ -1,10 +1,8 @@
 """This module contains weight item."""
 
-from glotaran.model.item import Item
-from glotaran.model.item import item
+from glotaran.model.item_new import Item
 
 
-@item
 class Weight(Item):
     """The `Weight` class describes a value by which a dataset will scaled.
 
