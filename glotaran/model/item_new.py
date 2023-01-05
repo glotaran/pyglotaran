@@ -278,3 +278,10 @@ def iterate_parameter_fields(item: type[Item]) -> Generator[ModelField, None, No
         The parameter fields.
     """
     yield from iterate_fields_of_type(item, Parameter)
+
+
+def iterate_library_item_types(item: type[Item]) -> Generator[type[LibraryItem], None, None]:
+    for field in iterate_library_item_fields(item):
+        _, item_type = get_structure_and_type_from_field(field)
+        yield item_type
+        yield from iterate_library_item_types(item_type)

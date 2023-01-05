@@ -13,7 +13,7 @@ from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 
 if TYPE_CHECKING:
 
-    from glotaran.model import DatasetModel
+    from glotaran.model.data_model import DataModel
 
 
 class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
@@ -22,7 +22,7 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
     Subclasses must overwrite :method:`glotaran.model.Megacomplex.calculate_matrix`.
     """
 
-    dataset_model_type: ClassVar[type | None] = None
+    data_model_type: ClassVar[type | None] = None
     is_exclusive: ClassVar[bool] = False
     is_unique: ClassVar[bool] = False
     register_as: ClassVar[str | None] = None
@@ -38,7 +38,7 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
     @abc.abstractmethod
     def calculate_matrix(
         self,
-        dataset_model: DatasetModel,
+        model: DataModel,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
         **kwargs,
@@ -47,8 +47,8 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
 
         Parameters
         ----------
-        dataset_model: DatasetModel
-            The dataset model.
+        data_model: DataModel
+            The data model.
         global_axis: np.typing.ArrayLike
             The global axis.
         model_axis: np.typing.ArrayLike,
@@ -67,19 +67,19 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
 
     def finalize_data(
         self,
-        dataset_model: DatasetModel,
-        dataset: xr.Dataset,
+        model: DataModel,
+        data: xr.Dataset,
         is_full_model: bool = False,
         as_global: bool = False,
     ):
-        """Finalize a dataset.
+        """Finalize the result data.
 
         Parameters
         ----------
-        dataset_model: DatasetModel
-            The dataset model.
-        dataset: xr.Dataset
-            The dataset.
+        data_model: DataModel
+            The data model.
+        data: xr.Dataset
+            The data.
         is_full_model: bool
             Whether the model is a full model.
         as_global: bool
