@@ -15,16 +15,16 @@ from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import ItemIssue
 from glotaran.model.errors import ModelItemIssue
 from glotaran.model.errors import ParameterIssue
-from glotaran.model.item_new import META_VALIDATOR
-from glotaran.model.item_new import Item
-from glotaran.model.item_new import LibraryItem
-from glotaran.model.item_new import LibraryItemT
-from glotaran.model.item_new import LibraryItemTyped
-from glotaran.model.item_new import get_structure_and_type_from_field
-from glotaran.model.item_new import iterate_library_item_fields
-from glotaran.model.item_new import iterate_library_item_types
-from glotaran.model.item_new import iterate_parameter_fields
-from glotaran.model.megacomplex_new import Megacomplex
+from glotaran.model.item import META_VALIDATOR
+from glotaran.model.item import Item
+from glotaran.model.item import LibraryItem
+from glotaran.model.item import LibraryItemT
+from glotaran.model.item import LibraryItemTyped
+from glotaran.model.item import get_structure_and_type_from_field
+from glotaran.model.item import iterate_library_item_fields
+from glotaran.model.item import iterate_library_item_types
+from glotaran.model.item import iterate_parameter_fields
+from glotaran.model.megacomplex import Megacomplex
 from glotaran.parameter import Parameters
 
 

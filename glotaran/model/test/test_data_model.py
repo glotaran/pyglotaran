@@ -2,10 +2,10 @@ from typing import Literal
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.library import Library
-from glotaran.model.megacomplex_new import Megacomplex
-from glotaran.model.test.test_megacomplex_new import MockDataModel
-from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithDataModel
-from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithItem
+from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.test.test_megacomplex import MockDataModel
+from glotaran.model.test.test_megacomplex import MockMegacomplexWithDataModel
+from glotaran.model.test.test_megacomplex import MockMegacomplexWithItem
 
 
 class MockMegacomplexNonUniqueExclusive(Megacomplex):

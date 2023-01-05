@@ -1,16 +1,16 @@
 import pytest
 
 from glotaran.model.library import Library
-from glotaran.model.megacomplex_new import Megacomplex
-from glotaran.model.test.test_item_new import MockItem
-from glotaran.model.test.test_item_new import MockLibraryItem
-from glotaran.model.test.test_item_new import MockLibraryItemNested
-from glotaran.model.test.test_item_new import MockTypedItem
-from glotaran.model.test.test_item_new import MockTypedItemConcrete1
-from glotaran.model.test.test_item_new import MockTypedItemConcrete2
-from glotaran.model.test.test_megacomplex_new import MockDataModel
-from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithDataModel
-from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithItem
+from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.test.test_item import MockItem
+from glotaran.model.test.test_item import MockLibraryItem
+from glotaran.model.test.test_item import MockLibraryItemNested
+from glotaran.model.test.test_item import MockTypedItem
+from glotaran.model.test.test_item import MockTypedItemConcrete1
+from glotaran.model.test.test_item import MockTypedItemConcrete2
+from glotaran.model.test.test_megacomplex import MockDataModel
+from glotaran.model.test.test_megacomplex import MockMegacomplexWithDataModel
+from glotaran.model.test.test_megacomplex import MockMegacomplexWithItem
 from glotaran.parameter import Parameters
 
 

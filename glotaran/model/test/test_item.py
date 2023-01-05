@@ -1,123 +1,176 @@
-from attrs import fields
+from __future__ import annotations
 
-from glotaran.model.item import ModelItem
-from glotaran.model.item import ModelItemType
+from typing import Literal
+
+from glotaran.model.item import Attribute
+from glotaran.model.item import Item
+from glotaran.model.item import LibraryItem
+from glotaran.model.item import LibraryItemType
+from glotaran.model.item import LibraryItemTyped
 from glotaran.model.item import ParameterType
-from glotaran.model.item import fill_item
-from glotaran.model.item import get_item_model_issues
-from glotaran.model.item import get_item_parameter_issues
-from glotaran.model.item import item
-from glotaran.model.item import model_attributes
-from glotaran.model.item import strip_type_and_structure_from_attribute
-from glotaran.model.megacomplex import Megacomplex
-from glotaran.model.megacomplex import megacomplex
-from glotaran.model.model import Model
+from glotaran.model.item import get_structure_and_type_from_field
+from glotaran.model.item import iterate_library_item_fields
+from glotaran.model.item import iterate_parameter_fields
 from glotaran.parameter import Parameter
-from glotaran.parameter import Parameters
 
 
-@item
-class MockModelItem(ModelItem):
-    p_scalar: ParameterType
-    p_list: list[ParameterType]
-    p_dict: dict[str, ParameterType]
+class MockLibraryItem(LibraryItem):
+    """A library item for testing."""
+
+    test_attr: str = Attribute(description="Test description.")
 
 
-@megacomplex()
-class MockMegacomplexItems(Megacomplex):
-    type: str = "test_model_items_megacomplex"
-    item1: ModelItemType[MockModelItem]
-    item2: list[ModelItemType[MockModelItem]]
-    item3: dict[str, ModelItemType[MockModelItem]]
+class MockLibraryItemNested(LibraryItem):
+    """A library item for testing."""
+
+    test_reference: LibraryItemType[MockLibraryItem] | None = None
 
 
-def test_strip_type_and_structure_from_attribute():
-    @item
-    class MockItem:
-        pscalar: int = None
-        pscalar_option: int | None = None
-        plist: list[int] = None
-        plist_option: list[int] | None = None
-        pdict: dict[str, int] = None
-        pdict_option: dict[str, int] | None = None
-        iscalar: ModelItemType[int] = None
-        iscalar_option: ModelItemType[int] | None = None
-        ilist: list[ModelItemType[int]] = None
-        ilist_option: list[ModelItemType[int]] | None = None
-        idict: dict[str, ModelItemType[int]] = None
-        idict_option: dict[str, ModelItemType[int]] | None = None
-
-    for attr in fields(MockItem):
-        structure, type_ = strip_type_and_structure_from_attribute(attr)
-        print(attr.name, attr.type, structure, type_)
-        assert structure in (None, dict, list)
-        assert type_ is int
+class MockItem(Item):
+    cscalar: int
+    cscalar_option: int | None
+    clist: list[int]
+    clist_option: list[int] | None
+    cdict: dict[str, int]
+    cdict_option: dict[str, int] | None
+    iscalar: LibraryItemType[MockLibraryItemNested]
+    iscalar_option: LibraryItemType[MockLibraryItemNested] | None
+    ilist: list[LibraryItemType[MockLibraryItemNested]]
+    ilist_option: list[LibraryItemType[MockLibraryItemNested]] | None
+    idict: dict[str, LibraryItemType[MockLibraryItemNested]]
+    idict_option: dict[str, LibraryItemType[MockLibraryItemNested]] | None
+    pscalar: ParameterType
+    pscalar_option: ParameterType | None
+    plist: list[ParameterType]
+    plist_option: list[ParameterType] | None
+    pdict: dict[str, ParameterType]
+    pdict_option: dict[str, ParameterType] | None
 
 
-def test_model_get_items():
-    items = list(model_attributes(MockMegacomplexItems))
-
-    assert len(items) == 3
-    assert items[0].name == "item1"
-    assert items[1].name == "item2"
-    assert items[2].name == "item3"
+class MockTypedItem(LibraryItemTyped):
+    pass
 
 
-def test_get_issues():
-    mcls = Model.create_class_from_megacomplexes([MockMegacomplexItems])
-    model = mcls(
-        megacomplex={
-            "m1": {
-                "type": "test_model_items_megacomplex",
-                "item1": "item1",
-                "item2": ["item2"],
-                "item3": {"foo": "item3"},
-            }
-        },
-        item1={"test": {"p_scalar": "p1", "p_list": ["p2"], "p_dict": {"p": "p2"}}},
+class MockTypedItemConcrete1(MockTypedItem):
+    type: Literal["concrete_type1"]
+    vint: int
+
+
+class MockTypedItemConcrete2(MockTypedItem):
+    type: Literal["concrete_type2"]
+    vstring: str
+
+
+def test_item_fields_structures_and_type():
+    item_fields = MockItem.__fields__.values()
+    wanted = (
+        (
+            (None, int),
+            (None, int),
+            (list, int),
+            (list, int),
+            (dict, int),
+            (dict, int),
+        )
+        + (
+            (None, MockLibraryItemNested),
+            (None, MockLibraryItemNested),
+            (list, MockLibraryItemNested),
+            (list, MockLibraryItemNested),
+            (dict, MockLibraryItemNested),
+            (dict, MockLibraryItemNested),
+        )
+        + (
+            (None, Parameter),
+            (None, Parameter),
+            (list, Parameter),
+            (list, Parameter),
+            (dict, Parameter),
+            (dict, Parameter),
+        )
     )
 
-    m = model.megacomplex["m1"]
-    issues = get_item_model_issues(m, model)
-    assert len(issues) == 3
-
-    p = Parameters({})
-    i = model.item1["test"]
-    issues = get_item_parameter_issues(i, p)
-    assert len(issues) == 3
-
-    issues = model.get_issues(parameters=p)
-    assert len(issues) == 6
+    assert len(item_fields) == len(wanted)
+    for field, field_wanted in zip(item_fields, wanted):
+        assert get_structure_and_type_from_field(field) == field_wanted
 
 
-def test_fill_item():
-    mcls = Model.create_class_from_megacomplexes([MockMegacomplexItems])
-    model = mcls(
-        megacomplex={
-            "m1": {
-                "type": "test_model_items_megacomplex",
-                "item1": "item",
-                "item2": ["item"],
-                "item3": {"foo": "item"},
+def test_iterate_library_items():
+    item_fields = list(iterate_library_item_fields(MockLibraryItemNested))
+    assert len(item_fields) == 1
+    item_fields = list(iterate_library_item_fields(MockItem))
+    assert len(item_fields) == 6
+    assert [i.name for i in item_fields] == [
+        "iscalar",
+        "iscalar_option",
+        "ilist",
+        "ilist_option",
+        "idict",
+        "idict_option",
+    ]
+
+
+def test_iterate_parameters():
+    item_fields = list(iterate_parameter_fields(MockItem))
+    assert len(item_fields) == 6
+    assert [i.name for i in item_fields] == [
+        "pscalar",
+        "pscalar_option",
+        "plist",
+        "plist_option",
+        "pdict",
+        "pdict_option",
+    ]
+
+
+def test_typed_item():
+    assert MockTypedItem.__item_types__ == [MockTypedItemConcrete1, MockTypedItemConcrete2]
+
+
+def test_item_schema():
+    got = LibraryItem.schema()
+    wanted = {
+        "title": "LibraryItem",
+        "description": "An item with a label.",
+        "type": "object",
+        "properties": {
+            "label": {
+                "title": "Label",
+                "description": "The label of the library item.",
+                "type": "string",
             }
         },
-        item1={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
-        item2={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
-        item3={"item": {"p_scalar": "1", "p_list": ["2"], "p_dict": {"p": "2"}}},
-    )
+        "required": ["label"],
+        "additionalProperties": False,
+    }
 
-    parameters = Parameters.from_list([2, 3, 4])
-    assert model.valid(parameters)
+    print(got)
+    assert got == wanted
 
-    m = fill_item(model.megacomplex["m1"], model, parameters)
-    assert isinstance(m.item1, MockModelItem)
-    assert all(isinstance(v, MockModelItem) for v in m.item2)
-    assert all(isinstance(v, MockModelItem) for v in m.item3.values())
+    got = MockLibraryItem.schema()
+    wanted = {
+        "title": "MockLibraryItem",
+        "description": "A library item for testing.",
+        "type": "object",
+        "properties": {
+            "label": {
+                "title": "Label",
+                "description": "The label of the library item.",
+                "type": "string",
+            },
+            "test_attr": {
+                "title": "Test Attr",
+                "description": "Test description.",
+                "type": "string",
+            },
+        },
+        "required": ["label", "test_attr"],
+        "additionalProperties": False,
+    }
 
-    i = m.item1
-    assert isinstance(i.p_scalar, Parameter)
-    assert all(isinstance(v, Parameter) for v in i.p_list)
-    assert all(isinstance(v, Parameter) for v in i.p_dict.values())
-    assert i.p_scalar.value == 2
-    assert i.p_list[0].value == 3
-    assert i.p_dict["p"].value == 3
+    print(got)
+    assert got == wanted
+
+
+def test_get_library_name():
+    assert MockLibraryItem.get_library_name() == "mock_library_item"
