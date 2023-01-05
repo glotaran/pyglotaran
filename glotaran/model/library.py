@@ -12,6 +12,10 @@ from pydantic.fields import FieldInfo
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.errors import GlotaranModelError
+from glotaran.model.errors import ItemIssue
+from glotaran.model.errors import ModelItemIssue
+from glotaran.model.errors import ParameterIssue
+from glotaran.model.item_new import META_VALIDATOR
 from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItem
 from glotaran.model.item_new import LibraryItemT
@@ -19,7 +23,9 @@ from glotaran.model.item_new import LibraryItemTyped
 from glotaran.model.item_new import get_structure_and_type_from_field
 from glotaran.model.item_new import iterate_library_item_fields
 from glotaran.model.item_new import iterate_library_item_types
+from glotaran.model.item_new import iterate_parameter_fields
 from glotaran.model.megacomplex_new import Megacomplex
+from glotaran.parameter import Parameters
 
 
 def add_label_to_items(items: dict[str, Any]) -> dict[str, Any]:
@@ -127,3 +133,46 @@ class Library(BaseModel):
                     k: self.resolve_item_by_type_and_value(item_type, v) for k, v in value.items()
                 }
         return item.copy(update=resolved)
+
+    def validate_library_item_value(
+        self,
+        item_type: type[LibraryItem],
+        value: Item,
+        issues: list[ItemIssue],
+        parameters: Parameters | None,
+    ):
+        try:
+            issues += self.validate_item(self.get_item(item_type, value), parameters=parameters)
+        except GlotaranModelError:
+            issues.append(ModelItemIssue(item_type.get_library_name(), value))
+
+    def validate_item(self, item: Item, parameters: Parameters | None = None) -> list[ItemIssue]:
+        issues = []
+        for field in iterate_library_item_fields(item):
+            value = getattr(item, field.name)
+            if value is None:
+                continue
+            if META_VALIDATOR in field.field_info.extra:
+                issues += field.field_info.extra[META_VALIDATOR](value, item, self, parameters)
+            structure, item_type = get_structure_and_type_from_field(field)
+            if structure is None:
+                self.validate_library_item_value(item_type, value, issues, parameters)
+            else:
+                values = value.values() if structure is dict else value
+                for v in values:
+                    self.validate_library_item_value(item_type, v, issues, parameters)
+
+        if parameters is not None:
+            for field in iterate_parameter_fields(item):
+                value = getattr(item, field.name)
+                if value is None:
+                    continue
+                structure, _ = get_structure_and_type_from_field(field)
+                if structure is None:
+                    if not parameters.has(value):
+                        issues += [ParameterIssue(value)]
+                else:
+                    values = value.values() if structure is dict else value
+                    issues += [ParameterIssue(v) for v in values if not parameters.has(v)]
+
+        return issues
