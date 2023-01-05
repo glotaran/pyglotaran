@@ -1,10 +1,15 @@
+import pytest
+
 from glotaran.model.library import Library
+from glotaran.model.megacomplex_new import Megacomplex
 from glotaran.model.test.test_item_new import MockItem
 from glotaran.model.test.test_item_new import MockLibraryItem
 from glotaran.model.test.test_item_new import MockLibraryItemNested
 from glotaran.model.test.test_item_new import MockTypedItem
 from glotaran.model.test.test_item_new import MockTypedItemConcrete1
 from glotaran.model.test.test_item_new import MockTypedItemConcrete2
+from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithDataModel
+from glotaran.model.test.test_megacomplex_new import MockMegacomplexWithItem
 
 
 def test_construct_library():
@@ -13,16 +18,26 @@ def test_construct_library():
     assert isinstance(getattr(library_cls(), MockLibraryItem.get_library_name()), dict)
 
 
+@pytest.mark.parametrize(
+    "megacomplexes",
+    ([MockMegacomplexWithDataModel, MockMegacomplexWithItem], None),
+)
+def test_construct_library_for_megacomplexes(megacomplexes):
+    library_cls = Library.create_for_megacomplexes(megacomplexes)
+    for item in [Megacomplex, MockTypedItem, MockLibraryItemNested, MockLibraryItem]:
+        assert hasattr(library_cls(), item.get_library_name())
+
+
 def test_initialize_library_from_dict():
-    library_cls = Library.create([MockLibraryItem, MockTypedItem])
-    library = library_cls.from_dict(
+    library = Library.from_dict(
         {
             MockLibraryItem.get_library_name(): {"test_item": {"test_attr": "test_val"}},
             MockTypedItem.get_library_name(): {
                 "test_item_typed1": {"type": "concrete_type1", "vint": 2},
                 "test_item_typed2": {"type": "concrete_type2", "vstring": "teststr"},
             },
-        }
+        },
+        megacomplexes=[MockMegacomplexWithDataModel, MockMegacomplexWithItem],
     )
 
     test_items = getattr(library, MockLibraryItem.get_library_name())
