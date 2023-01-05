@@ -9,15 +9,172 @@ from typing import Any
 import xarray as xr
 
 from glotaran.model.errors import GlotaranModelError
+from glotaran.model.errors import ItemIssue
 from glotaran.model.item_new import Attribute
 from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItemType
 from glotaran.model.item_new import ParameterType
 from glotaran.model.megacomplex_new import Megacomplex
 from glotaran.parameter import Parameter
+from glotaran.parameter import Parameters
 
 if TYPE_CHECKING:
     from glotaran.model.library import Library
+
+
+class ExclusiveMegacomplexIssue(ItemIssue):
+    """Issue for exclusive megacomplexes."""
+
+    def __init__(self, label: str, megacomplex_type: str, is_global: bool):
+        """Create an ExclusiveMegacomplexIssue.
+
+        Parameters
+        ----------
+        label : str
+            The megacomplex label.
+        megacomplex_type : str
+            The megacomplex type.
+        is_global : bool
+            Whether the megacomplex is global.
+        """
+        self._label = label
+        self._type = megacomplex_type
+        self._is_global = is_global
+
+    def to_string(self) -> str:
+        """Get the issue as string.
+
+        Returns
+        -------
+        str
+        """
+        return (
+            f"Exclusive {'global ' if self._is_global else ''}megacomplex '{self._label}' of "
+            f"type '{self._type}' cannot be combined with other megacomplexes."
+        )
+
+
+class UniqueMegacomplexIssue(ItemIssue):
+    """Issue for unique megacomplexes."""
+
+    def __init__(self, label: str, megacomplex_type: str, is_global: bool):
+        """Create a UniqueMegacomplexIssue.
+
+        Parameters
+        ----------
+        label : str
+            The megacomplex label.
+        megacomplex_type : str
+            The megacomplex type.
+        is_global : bool
+            Whether the megacomplex is global.
+        """
+        self._label = label
+        self._type = megacomplex_type
+        self._is_global = is_global
+
+    def to_string(self):
+        """Get the issue as string.
+
+        Returns
+        -------
+        str
+        """
+        return (
+            f"Unique {'global ' if self._is_global else ''}megacomplex '{self._label}' of "
+            f"type '{self._type}' can only be used once per dataset."
+        )
+
+
+def get_megacomplex_issues(
+    value: list[str | Megacomplex] | None, library: Library, is_global: bool
+) -> list[ItemIssue]:
+    """Get issues for megacomplexes.
+
+    Parameters
+    ----------
+    value: list[str | Megacomplex] | None
+        A list of megacomplexes.
+    model: Model
+        The model.
+    is_global: bool
+        Whether the megacomplexes are global.
+
+    Returns
+    -------
+    list[ItemIssue]
+    """
+    issues: list[ItemIssue] = []
+
+    if value is not None:
+        labels = [v if isinstance(v, str) else v.label for v in value]
+        megacomplexes = [library.get_item(Megacomplex, label) for label in labels]
+        for megacomplex in megacomplexes:
+            megacomplex_type = megacomplex.__class__
+            if megacomplex_type.is_exclusive and len(megacomplexes) > 1:
+                issues.append(
+                    ExclusiveMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)
+                )
+            if (
+                megacomplex_type.is_unique
+                and len([m for m in megacomplexes if m.__class__ is megacomplex_type]) > 1
+            ):
+                issues.append(
+                    UniqueMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)
+                )
+    return issues
+
+
+def validate_megacomplexes(
+    value: list[str | Megacomplex],
+    data_model: DataModel,
+    library: Library,
+    parameters: Parameters | None,
+) -> list[ItemIssue]:
+    """Get issues for dataset model megacomplexes.
+
+    Parameters
+    ----------
+    value: list[str | Megacomplex]
+        A list of megacomplexes.
+    dataset_model: DatasetModel
+        The dataset model.
+    model: Model
+        The model.
+    parameters: Parameters | None,
+        The parameters.
+
+    Returns
+    -------
+    list[ItemIssue]
+    """
+    return get_megacomplex_issues(value, library, False)
+
+
+def validate_global_megacomplexes(
+    value: list[str | Megacomplex] | None,
+    data_model: DataModel,
+    library: Library,
+    parameters: Parameters | None,
+) -> list[ItemIssue]:
+    """Get issues for dataset model global megacomplexes.
+
+    Parameters
+    ----------
+    value: list[str | Megacomplex] | None
+        A list of megacomplexes.
+    dataset_model: DatasetModel
+        The dataset model.
+    model: Model
+        The model.
+    parameters: Parameters | None,
+        The parameters.
+
+    Returns
+    -------
+    list[ItemIssue]
+    """
+    return get_megacomplex_issues(value, value, False)
 
 
 class DataModel(Item):
@@ -26,14 +183,14 @@ class DataModel(Item):
     data: str | xr.Dataset | None = None
     extra_data: str | xr.Dataset | None = None
     megacomplex: list[LibraryItemType[Megacomplex]] = Attribute(
-        #  validator=validate_megacomplexes  # type:ignore[arg-type]
-        description="The megacomplexes contributing to this dataset."
+        description="The megacomplexes contributing to this dataset.",
+        validator=validate_megacomplexes,  # type:ignore[arg-type]
     )
     megacomplex_scale: list[ParameterType] | None = None
     global_megacomplex: list[LibraryItemType[Megacomplex]] | None = Attribute(
         default=None,
-        description="The global megacomplexes contributing to this dataset."
-        #  validator=validate_global_megacomplexes,  # type:ignore[arg-type]
+        description="The global megacomplexes contributing to this dataset.",
+        validator=validate_global_megacomplexes,  # type:ignore[arg-type]
     )
     global_megacomplex_scale: list[ParameterType] | None = None
     scale: ParameterType | None = None
