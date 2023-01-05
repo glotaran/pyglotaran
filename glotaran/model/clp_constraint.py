@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from glotaran.model.interval_item import IntervalItem
-from glotaran.model.item import TypedItem
-from glotaran.model.item import item
+from glotaran.model.item_new import TypedItem
 
 
-@item
 class ClpConstraint(TypedItem, IntervalItem):
     """Baseclass for clp constraints.
 
@@ -18,18 +18,16 @@ class ClpConstraint(TypedItem, IntervalItem):
     target: str
 
 
-@item
 class ZeroConstraint(ClpConstraint):
     """Constraints the target to 0 in the given interval."""
 
-    type: str = "zero"
+    type: Literal["zero"]
 
 
-@item
 class OnlyConstraint(ZeroConstraint):
     """Constraints the target to 0 outside the given interval."""
 
-    type: str = "only"
+    type: Literal["only"]
 
     def applies(self, index: float | None) -> bool:
         """Check if the constraint applies on this index.
