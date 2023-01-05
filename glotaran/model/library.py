@@ -11,6 +11,7 @@ from pydantic import validator
 from pydantic.fields import FieldInfo
 
 from glotaran.model.data_model import DataModel
+from glotaran.model.errors import GlotaranModelError
 from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItem
 from glotaran.model.item_new import LibraryItemT
@@ -76,6 +77,29 @@ class Library(BaseModel):
         cls, obj: dict[str, Any], megacomplexes: list[type[Megacomplex]] | None = None
     ) -> Library:
         return cls.create_for_megacomplexes(megacomplexes).parse_obj(obj)
+
+    def get_item(self, item_type: str | type[LibraryItem], label: str) -> LibraryItem:
+
+        if not isinstance(item_type, str):
+            item_type = item_type.get_library_name()
+
+        if not hasattr(self, item_type):
+            raise GlotaranModelError(f"Cannot get item of unknown type '{item_type}'.")
+        item = getattr(self, item_type).get(label, None)
+        if item is None:
+            raise GlotaranModelError(
+                f"Library contains no item of type '{item_type}' with label '{label}'."
+            )
+        return item
+
+    def get_data_model_for_megacomplexes(self, megacomplex_labels: list[str]) -> type[DataModel]:
+        data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
+        megacomplexes = {type(self.get_item(Megacomplex, label)) for label in megacomplex_labels}
+        data_models = [
+            m.data_model_type
+            for m in filter(lambda m: m.data_model_type is not None, megacomplexes)
+        ] + [DataModel]
+        return create_model(data_model_cls_name, __base__=tuple(data_models))
 
     def resolve_item_by_type_and_value(
         self, item_type: LibraryItemT, value: str | LibraryItem
