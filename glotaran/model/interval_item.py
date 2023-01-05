@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from glotaran.model.item import Item
-from glotaran.model.item import item
+from glotaran.model.item_new import Item
 
 
-@item
 class IntervalItem(Item):
     """An item with an interval."""
 

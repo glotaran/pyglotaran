@@ -14,7 +14,6 @@ from glotaran.model.item_new import Item
 from glotaran.model.item_new import LibraryItemType
 from glotaran.model.item_new import ParameterType
 from glotaran.model.megacomplex_new import Megacomplex
-from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
@@ -38,7 +37,6 @@ class DataModel(Item):
     )
     global_megacomplex_scale: list[ParameterType] | None = None
     scale: ParameterType | None = None
-    weights: list[Weight] | None = None
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:

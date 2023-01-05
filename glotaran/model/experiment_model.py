@@ -9,10 +9,11 @@ from pydantic import Extra
 from pydantic import Field
 
 from glotaran.model.clp_constraint import ClpConstraint
-from glotaran.model.clp_penalties import ClpPenalty
+from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.library import Library
+from glotaran.model.weight import Weight
 
 
 class ExperimentModel(BaseModel):
@@ -24,14 +25,15 @@ class ExperimentModel(BaseModel):
         arbitrary_types_allowed = True
         extra = Extra.forbid
 
-    clp_constraints: list[ClpConstraint] = Field(default_factory=list)
-    clp_penalties: list[ClpPenalty] = Field(default_factory=list)
+    clp_constraints: list[ClpConstraint.get_annotated_type()] = Field(default_factory=list)
+    clp_penalties: list[EqualAreaPenalty] = Field(default_factory=list)
     clp_relations: list[ClpRelation] = Field(default_factory=list)
     datasets: dict[str, DataModel]
     link_clp: bool | None = Field(None, description="Whether to link the clp.")
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
         "variable_projection", description="The residual function to use."
     )
+    weights: list[Weight] = Field(default_factory=list)
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> ExperimentModel:
