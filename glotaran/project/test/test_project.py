@@ -331,7 +331,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     project.generate_model(
         "test_model", "decay_parallel", {"nr_compartments": 3}, allow_overwrite=True
     )
-    new_model = project.load_model("test")
+    new_model = project.load_model("test_model")
     assert "megacomplex_parallel_decay" in new_model.megacomplex
 
     comapartments = load_dict(model_file, is_file=True)["megacomplex"][
@@ -340,7 +340,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
 
     assert len(comapartments) == 3
 
-    project.generate_parameters("test", allow_overwrite=True)
+    project.generate_parameters("test_model", "test_parameters", allow_overwrite=True)
     parameters = load_parameters(parameter_file)
 
     assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
