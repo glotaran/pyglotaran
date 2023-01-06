@@ -193,7 +193,6 @@ class DataModel(Item):
         validator=validate_global_megacomplexes,  # type:ignore[arg-type]
     )
     global_megacomplex_scale: list[ParameterType] | None = None
-    scale: ParameterType | None = None
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:
