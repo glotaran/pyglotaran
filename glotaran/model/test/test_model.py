@@ -1,4 +1,4 @@
-from textwrap import dedent
+from pathlib import Path
 
 import pytest
 
@@ -315,111 +315,13 @@ def test_model_as_dict():
 
 
 def test_model_markdown(test_model: Model):
-    md = test_model.markdown()
-    expected = dedent(
-        """\
-        # Model
-
-        ## Dataset Groups
-
-        * **testgroup**
-            * *Label*: testgroup
-            * *Residual Function*: non_negative_least_squares
-            * *Link Clp*: True
-
-        * **default**
-            * *Label*: default
-            * *Residual Function*: variable_projection
-
-
-        ## Weights
-
-        * **&nbsp;**
-            * *Datasets*: ['d1', 'd2']
-            * *Global Interval*: (1, 4)
-            * *Model Interval*: (2, 3)
-            * *Value*: 5.4
-
-
-        ## Test Item
-
-        * **t1**
-            * *Label*: t1
-            * *Param*: foo
-            * *Param List*: ['bar', 'baz']
-            * *Param Dict*: {('s1', 's2'): 'baz'}
-            * *Megacomplex*: m1
-            * *Number*: 42
-
-        * **t2**
-            * *Label*: t2
-            * *Param*: baz
-            * *Param List*: ['foo']
-            * *Param Dict*: {}
-            * *Megacomplex*: m2
-            * *Number*: 7
-
-
-        ## Megacomplex
-
-        * **m1**
-            * *Label*: m1
-            * *Type*: simple
-            * *Dimension*: model
-            * *Test Item*: t2
-
-        * **m2**
-            * *Label*: m2
-            * *Type*: dataset
-            * *Dimension*: model2
-
-
-        ## Test Item Dataset
-
-        * **t1**
-            * *Label*: t1
-            * *Param*: foo
-            * *Param List*: ['bar', 'baz']
-            * *Param Dict*: {('s1', 's2'): 'baz'}
-            * *Megacomplex*: m1
-            * *Number*: 42
-
-        * **t2**
-            * *Label*: t2
-            * *Param*: baz
-            * *Param List*: ['foo']
-            * *Param Dict*: {}
-            * *Megacomplex*: m2
-            * *Number*: 7
-
-
-        ## Dataset
-
-        * **dataset1**
-            * *Label*: dataset1
-            * *Group*: default
-            * *Force Index Dependent*: False
-            * *Megacomplex*: ['m1']
-            * *Scale*: scale_1
-            * *Test Item Dataset*: t1
-            * *Test Property Dataset1*: 1
-            * *Test Property Dataset2*: bar
-
-        * **dataset2**
-            * *Label*: dataset2
-            * *Group*: testgroup
-            * *Force Index Dependent*: False
-            * *Megacomplex*: ['m2']
-            * *Global Megacomplex*: ['m1']
-            * *Scale*: scale_2
-            * *Test Item Dataset*: t2
-            * *Test Property Dataset1*: 1
-            * *Test Property Dataset2*: bar
-
-
-        """
+    md = test_model.markdown().replace("\n\n\n", "\n\n").replace("\n\n", "\n")
+    expected = (
+        (Path(__file__).parent / "expected_model_markdown.md")
+        .read_text(encoding="utf8")
+        .replace("\n\n\n", "\n\n")
+        .replace("\n\n", "\n")
     )
-    print(md)
     # Preprocessing to remove trailing whitespace after '* *Matrix*:'
     expected = "\n".join([line.rstrip(" ") for line in str(expected).split("\n")])
     result = "\n".join([line.rstrip(" ") for line in str(md).split("\n")])

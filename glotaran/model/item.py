@@ -228,7 +228,7 @@ def item_to_markdown(
                     value.label if isinstance(value, Parameter) else value
                 ).markdown(parameters, initial_parameters)
 
-        property_md = indent(f"* *{name.replace('_', ' ').title()}*: {value}\n", "  ")
+        property_md = indent(f"- _{name.replace('_', ' ').title()}_: {value}\n", "  ")
 
         md += property_md
 
