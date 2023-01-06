@@ -101,7 +101,7 @@ class ProjectResultRegistry(ProjectRegistry):
             return path
 
         raise ValueError(
-            f"Result {name!r} does not exist. " f"Known Results are: {list(self.items.keys())}"
+            f"Result {name!r} does not exist. Known Results are: {list(self.items.keys())}"
         )
 
     def create_result_run_name(self, base_name: str) -> str:
