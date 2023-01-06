@@ -10,6 +10,7 @@ import xarray as xr
 from pydantic import Field
 
 from glotaran.model.errors import GlotaranModelError
+from glotaran.model.errors import GlotaranUserError
 from glotaran.model.errors import ItemIssue
 from glotaran.model.item import Attribute
 from glotaran.model.item import Item
@@ -195,7 +196,7 @@ class DataModel(Item):
         validator=validate_global_megacomplexes,  # type:ignore[arg-type]
     )
     global_megacomplex_scale: list[ParameterType] | None = None
-    weight: list[Weight] = Field(default_factory=list)
+    weights: list[Weight] = Field(default_factory=list)
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:
@@ -210,8 +211,8 @@ class DataModel(Item):
         return library.get_data_model_for_megacomplexes(megacomplexes).parse_obj(model_dict)
 
 
-def has_data_model_global_model(data_model: DataModel) -> bool:
-    """Check if the data model can model the global dimension.
+def is_data_model_global(data_model: DataModel) -> bool:
+    """Check if a data model can model the global dimension.
 
     Parameters
     ----------
@@ -225,7 +226,7 @@ def has_data_model_global_model(data_model: DataModel) -> bool:
     return data_model.global_megacomplex is not None and len(data_model.global_megacomplex) != 0
 
 
-def get_data_model_model_dimension(data_model: DataModel) -> str:
+def get_data_model_dimension(data_model: DataModel) -> str:
     """Get the data model's model dimension.
 
     Parameters
@@ -243,9 +244,9 @@ def get_data_model_model_dimension(data_model: DataModel) -> str:
         Raised if the data model does not have megacomplexes or if it is not filled.
     """
     if len(data_model.megacomplex) == 0:
-        raise ValueError(f"No megacomplex set for data model '{data_model.label}'.")
+        raise GlotaranModelError(f"No megacomplex set for data model '{data_model.label}'.")
     if any(isinstance(m, str) for m in data_model.megacomplex):
-        raise ValueError(f"Dataset model '{data_model.label}' was not filled.")
+        raise GlotaranUserError(f"Data model '{data_model.label}' was not resolved.")
     model_dimension: str = data_model.megacomplex[
         0
     ].dimension  # type:ignore[union-attr, assignment]
@@ -253,7 +254,7 @@ def get_data_model_model_dimension(data_model: DataModel) -> str:
         model_dimension != m.dimension  # type:ignore[union-attr]
         for m in data_model.megacomplex
     ):
-        raise ValueError(
+        raise GlotaranModelError(
             f"Megacomplex dimensions do not match for data model '{data_model.label}'."
         )
     return model_dimension
@@ -317,7 +318,7 @@ def finalize_data_model(data_model: DataModel, data: xr.Dataset):
     data: xr.Dataset
         The data.
     """
-    is_full_model = has_data_model_global_model(data_model)
+    is_full_model = is_data_model_global(data_model)
     for megacomplex in data_model.megacomplex:
         megacomplex.finalize_data(  # type:ignore[union-attr]
             data_model, data, is_full_model=is_full_model
