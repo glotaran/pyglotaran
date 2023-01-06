@@ -11,6 +11,7 @@ from glotaran.model.test.test_item import MockTypedItemConcrete2
 from glotaran.model.test.test_megacomplex import MockDataModel
 from glotaran.model.test.test_megacomplex import MockMegacomplexWithDataModel
 from glotaran.model.test.test_megacomplex import MockMegacomplexWithItem
+from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
 
@@ -110,9 +111,9 @@ def test_resolve_item():
         iscalar="test_lib_item",
         ilist=["test_lib_item"],
         idict={"foo": "test_lib_item"},
-        pscalar="p",
-        plist=[],
-        pdict={},
+        pscalar="param1",
+        plist=["param1", "param2"],
+        pdict={"foo": "param2"},
     )
 
     library_cls = Library.create([MockLibraryItem, MockLibraryItemNested])
@@ -129,7 +130,15 @@ def test_resolve_item():
         }
     )
 
-    resolved = library.resolve_item(item)
+    parameters = Parameters({})
+    initial = Parameters.from_list(
+        [
+            ["param1", 1.0],
+            ["param2", 2.0],
+        ]
+    )
+
+    resolved = library.resolve_item(item, parameters, initial)
     assert item is not resolved
     assert item.iscalar == "test_lib_item"
 
@@ -139,3 +148,23 @@ def test_resolve_item():
     assert isinstance(resolved.ilist[0].test_reference, MockLibraryItem)
     assert isinstance(resolved.idict["foo"], MockLibraryItemNested)
     assert isinstance(resolved.idict["foo"].test_reference, MockLibraryItem)
+
+    assert parameters.has("param1")
+    assert parameters.get("param1") is not initial.get("param1")
+    assert parameters.has("param2")
+    assert parameters.get("param2") is not initial.get("param2")
+
+    assert isinstance(resolved.pscalar, Parameter)
+    assert resolved.pscalar.value == 1.0
+
+    assert isinstance(resolved.plist[0], Parameter)
+    assert resolved.plist[0].value == 1.0
+    assert isinstance(resolved.plist[1], Parameter)
+    assert resolved.plist[1].value == 2.0
+
+    assert isinstance(resolved.pdict["foo"], Parameter)
+    assert resolved.pdict["foo"].value == 2.0
+
+    parameters.get("param1").value = 10
+    assert parameters.get("param1").value != initial.get("param1").value
+    assert resolved.pscalar.value == 10

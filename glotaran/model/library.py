@@ -25,6 +25,7 @@ from glotaran.model.item import iterate_library_item_fields
 from glotaran.model.item import iterate_library_item_types
 from glotaran.model.item import iterate_parameter_fields
 from glotaran.model.megacomplex import Megacomplex
+from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
 
@@ -108,29 +109,57 @@ class Library(BaseModel):
         return create_model(data_model_cls_name, __base__=tuple(data_models))
 
     def resolve_item_by_type_and_value(
-        self, item_type: LibraryItemT, value: str | LibraryItem
+        self,
+        item_type: LibraryItemT,
+        value: str | LibraryItem,
+        parameters: Parameters,
+        initial: Parameters,
     ) -> LibraryItem:
         if isinstance(value, str):
             value = getattr(self, item_type.get_library_name())[value]
-            value = self.resolve_item(value)
+            value = self.resolve_item(value, parameters, initial)
         return value
 
-    def resolve_item(self, item: Item) -> Item:
+    def resolve_item(self, item: Item, parameters: Parameters, initial: Parameters) -> Item:
         resolved = {}
+
+        def resolve_parameter(parameter: Parameter | str) -> Parameter:
+            if isinstance(parameter, str):
+                if not parameters.has(parameter):
+                    parameters.add(initial.get(parameter).copy())
+                parameter = parameters.get(parameter)
+            return parameter
+
+        for field in iterate_parameter_fields(item):
+            value = getattr(item, field.name)
+            if value is None:
+                continue
+            structure, _ = get_structure_and_type_from_field(field)
+            if structure is None:
+                resolved[field.name] = resolve_parameter(value)
+            elif structure is list:
+                resolved[field.name] = [resolve_parameter(v) for v in value]
+            elif structure is dict:
+                resolved[field.name] = {k: resolve_parameter(v) for k, v in value.items()}
+
         for field in iterate_library_item_fields(item):
             value = getattr(item, field.name)
             if value is None:
                 continue
             structure, item_type = get_structure_and_type_from_field(field)
             if structure is None:
-                resolved[field.name] = self.resolve_item_by_type_and_value(item_type, value)
+                resolved[field.name] = self.resolve_item_by_type_and_value(
+                    item_type, value, parameters, initial
+                )
             elif structure is list:
                 resolved[field.name] = [
-                    self.resolve_item_by_type_and_value(item_type, v) for v in value
+                    self.resolve_item_by_type_and_value(item_type, v, parameters, initial)
+                    for v in value
                 ]
             elif structure is dict:
                 resolved[field.name] = {
-                    k: self.resolve_item_by_type_and_value(item_type, v) for k, v in value.items()
+                    k: self.resolve_item_by_type_and_value(item_type, v, parameters, initial)
+                    for k, v in value.items()
                 }
         return item.copy(update=resolved)
 

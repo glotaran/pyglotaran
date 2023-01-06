@@ -307,6 +307,16 @@ class Parameters:
         except KeyError as error:
             raise ParameterNotFoundException(label) from error
 
+    def add(self, parameter: Parameter):
+        """Add a parameter.
+
+        Parameters
+        ----------
+        parameter: Parameter
+            The parameter to add.
+        """
+        self._parameters[parameter.label] = parameter
+
     def update_parameter_expression(self):
         """Update all parameters which have an expression.
 
