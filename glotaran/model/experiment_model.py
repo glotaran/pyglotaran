@@ -29,7 +29,6 @@ class ExperimentModel(BaseModel):
     clp_penalties: list[EqualAreaPenalty] = Field(default_factory=list)
     clp_relations: list[ClpRelation] = Field(default_factory=list)
     datasets: dict[str, DataModel]
-    link_clp: bool | None = Field(None, description="Whether to link the clp.")
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
         "variable_projection", description="The residual function to use."
     )
