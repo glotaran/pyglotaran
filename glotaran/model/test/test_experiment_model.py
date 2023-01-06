@@ -24,7 +24,10 @@ def test_experiment_model_from_dict():
         {
             "datasets": {
                 "d1": {"megacomplex": ["m1"], "item": "foo"},
-                "d2": {"megacomplex": ["m2"]},
+                "d2": {
+                    "megacomplex": ["m2"],
+                    "weight": [{"value": 1}, {"value": 2, "global_interval": (5, 6)}],
+                },
                 "d3": {"megacomplex": ["m2"], "global_megacomplex": ["m1"], "item": "foo"},
             },
             "clp_penalties": [
@@ -57,10 +60,6 @@ def test_experiment_model_from_dict():
                     "interval": [(1, 2)],
                     "parameter": "p",
                 },
-            ],
-            "weights": [
-                {"datasets": ["d1", "d2"], "value": 1},
-                {"datasets": ["d3"], "value": 2, "global_interval": (5, 6)},
             ],
         },
     )

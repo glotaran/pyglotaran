@@ -10,7 +10,6 @@ class Weight(Item):
     will be used if not set.
     """
 
-    datasets: list[str]
     global_interval: tuple[float, float] | None = None
     model_interval: tuple[float, float] | None = None
     value: float
