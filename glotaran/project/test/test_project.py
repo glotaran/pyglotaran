@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from importlib.metadata import distribution
 from pathlib import Path
+from shutil import rmtree
 from textwrap import dedent
 from typing import Literal
 
@@ -51,12 +52,14 @@ def test_init(project_folder: Path, project_file: Path):
 
 
 def test_create(project_folder: Path):
+    rmtree(project_folder)
     Project.create(project_folder)
     with pytest.raises(FileExistsError):
         assert Project.create(project_folder)
 
 
 def test_open(project_folder: Path, project_file: Path):
+    rmtree(project_folder)
     project_from_folder = Project.open(project_folder)
 
     project_from_file = Project.open(project_file)
@@ -70,6 +73,11 @@ def test_open(project_folder: Path, project_file: Path):
     assert not project.has_data
     assert not project.has_parameters
     assert not project.has_results
+
+    # Will cause following tests to fails on bad fuzzy matching due to higher string sort order
+    (project_folder / "data/dataset_1-bad.nc").touch()
+    (project_folder / "models/test_model-bad.yml").touch()
+    (project_folder / "parameters/test_parameters-bad.yml").touch()
 
 
 def test_open_diff_version(tmp_path: Path):
@@ -398,17 +406,20 @@ def test_markdown_repr(project_folder: Path, project_file: Path):
         ## Data
 
         * dataset_1
+        * dataset_1-bad
         * test_data
 
 
         ## Model
 
         * test_model
+        * test_model-bad
 
 
         ## Parameters
 
         * test_parameters
+        * test_parameters-bad
 
 
         ## Results
