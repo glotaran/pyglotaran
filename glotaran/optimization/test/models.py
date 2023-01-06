@@ -1,156 +1,78 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Literal
 
 import numpy as np
 
-from glotaran.model import DatasetModel
+from glotaran.model import DataModel
 from glotaran.model import Megacomplex
-from glotaran.model import Model
 from glotaran.model import ParameterType
-from glotaran.model import item
-from glotaran.model import megacomplex
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
-@megacomplex()
-class SimpleTestMegacomplex(Megacomplex):
-    type: str = "simple-test-mc"
+class TestMegacomplexConstant(Megacomplex):
+    type: Literal["test-megacomplex-constant"]
+    is_index_dependent: bool
+    compartments: list[str]
+    value: ParameterType
+
+    def calculate_matrix(
+        self,
+        data_model: DataModel,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
+    ):
+
+        matrix = np.ones((model_axis.size, len(self.compartments))) * self.value
+        if self.is_index_dependent:
+            matrix = np.array([matrix] * global_axis.size)
+        return self.compartments, matrix
+
+
+class TestMegacomplexExponential(Megacomplex):
+    type: Literal["test-megacomplex-exponential"]
     dimension: str = "model"
     is_index_dependent: bool
+    compartments: list[str]
+    rates: list[ParameterType]
 
     def calculate_matrix(
         self,
-        dataset_model: DatasetModel,
-        global_axis: ArrayLike,
-        model_axis: ArrayLike,
-        **kwargs,
+        data_model: DataModel,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
     ):
-        compartments = ["s1", "s2"]
-        array = np.zeros((model_axis.size, len(compartments)))
-
-        for i in range(len(compartments)):
-            for j in range(model_axis.size):
-                array[j, i] = (i + j) * model_axis[j]
+        assert len(self.compartments) == len(self.rates)
+        rates = -1 * np.asarray(self.rates)
+        matrix = np.exp(np.outer(model_axis, rates))
         if self.is_index_dependent:
-            array = np.array([array] * global_axis.size)
-        return compartments, array
-
-    def finalize_data(
-        self,
-        dataset_model,
-        dataset,
-        is_full_model: bool = False,
-        as_global: bool = False,
-    ):
-        # not needed in the tests
-        pass
+            matrix = np.array([matrix] * global_axis.size)
+        return self.compartments, matrix
 
 
-SimpleTestModel = Model.create_class_from_megacomplexes([SimpleTestMegacomplex])
-
-
-@item
-class SimpleDatasetModel(DatasetModel):
-    kinetic: list[ParameterType]
-
-
-@megacomplex(dataset_model_type=SimpleDatasetModel)
-class SimpleKineticMegacomplex(Megacomplex):
-    type: str = "simple-kinetic-test-mc"
-    dimension: str = "model"
-    is_index_dependent: bool
-
-    def calculate_matrix(
-        self,
-        dataset_model,
-        global_axis: ArrayLike,
-        model_axis: ArrayLike,
-        **kwargs,
-    ):
-        kinpar = -1 * np.asarray(dataset_model.kinetic)
-        if dataset_model.label == "dataset3":
-            # this case is for the ThreeDatasetDecay test
-            compartments = [f"s{i+2}" for i in range(len(kinpar))]
-        else:
-            compartments = [f"s{i+1}" for i in range(len(kinpar))]
-        array = np.exp(np.outer(model_axis, kinpar))
-        if self.is_index_dependent:
-            array = np.array([array] * global_axis.size)
-        return compartments, array
-
-    def finalize_data(
-        self,
-        dataset_model,
-        dataset,
-        is_full_model: bool = False,
-        as_global: bool = False,
-    ):
-        pass
-
-
-@megacomplex()
-class SimpleSpectralMegacomplex(Megacomplex):
-    type: str = "simple-spectral-test-mc"
-    dimension: str = "global"
-
-    def calculate_matrix(
-        self,
-        dataset_model,
-        global_axis: ArrayLike,
-        model_axis: ArrayLike,
-        **kwargs,
-    ):
-        kinpar = dataset_model.kinetic
-        if dataset_model.label == "dataset3":
-            # this case is for the ThreeDatasetDecay test
-            compartments = [f"s{i+2}" for i in range(len(kinpar))]
-        else:
-            compartments = [f"s{i+1}" for i in range(len(kinpar))]
-        array = np.asarray([[1 for _ in range(model_axis.size)] for _ in compartments]).T
-        return compartments, array
-
-
-@megacomplex()
-class ShapedSpectralMegacomplex(Megacomplex):
-    type: str = "shaped-spectral-test-mc"
-    dimension: str = "global"
-    location: list[ParameterType]
+class TestMegacomplexGaussian(Megacomplex):
+    type: Literal["test-megacomplex-gaussian"]
+    compartments: list[str]
     amplitude: list[ParameterType]
-    delta: list[ParameterType]
+    location: list[ParameterType]
+    width: list[ParameterType]
 
     def calculate_matrix(
         self,
-        dataset_model,
-        global_axis: ArrayLike,
-        model_axis: ArrayLike,
-        **kwargs,
+        data_model: DataModel,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
     ):
+        amplitude = np.asarray(self.amplitude)
         location = np.asarray(self.location)
-        amp = np.asarray(self.amplitude)
-        delta = np.asarray(self.delta)
+        width = np.asarray(self.width)
 
-        array = np.empty((location.size, model_axis.size), dtype=np.float64)
+        matrix = np.empty((model_axis.size, location.size), dtype=np.float64)
 
         for i in range(location.size):
-            array[i, :] = amp[i] * np.exp(
-                -np.log(2) * np.square(2 * (model_axis - location[i]) / delta[i])
+            matrix[:, i] = amplitude[i] * np.exp(
+                -np.log(2) * np.square(2 * (model_axis - location[i]) / width[i])
             )
-        compartments = [f"s{i+1}" for i in range(location.size)]
-        return compartments, array.T
-
-    def finalize_data(
-        self,
-        dataset_model,
-        dataset,
-        is_full_model: bool = False,
-        as_global: bool = False,
-    ):
-        pass
-
-
-DecayModel = Model.create_class_from_megacomplexes(
-    [SimpleKineticMegacomplex, SimpleSpectralMegacomplex, ShapedSpectralMegacomplex]
-)
+        return self.compartments, matrix
