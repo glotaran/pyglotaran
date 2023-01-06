@@ -14,6 +14,7 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.library import Library
 from glotaran.model.weight import Weight
+from glotaran.parameter import Parameter
 
 
 class ExperimentModel(BaseModel):
@@ -34,6 +35,9 @@ class ExperimentModel(BaseModel):
         "variable_projection", description="The residual function to use."
     )
     weights: list[Weight] = Field(default_factory=list)
+    scale: dict[str, Parameter] = Field(
+        default_factory=dict, description="The scales of of the datasets in the experiment."
+    )
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> ExperimentModel:
