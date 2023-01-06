@@ -13,7 +13,6 @@ from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.library import Library
-from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 
 
@@ -34,7 +33,6 @@ class ExperimentModel(BaseModel):
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
         "variable_projection", description="The residual function to use."
     )
-    weights: list[Weight] = Field(default_factory=list)
     scale: dict[str, Parameter] = Field(
         default_factory=dict, description="The scales of of the datasets in the experiment."
     )
