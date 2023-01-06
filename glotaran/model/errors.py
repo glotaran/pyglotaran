@@ -6,6 +6,10 @@ class GlotaranModelError(Exception):
     pass
 
 
+class GlotaranUserError(Exception):
+    pass
+
+
 class ItemIssue:
     """Baseclass for item issues."""
 
