@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 import xarray as xr
+from pydantic import Field
 
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import ItemIssue
@@ -15,6 +16,7 @@ from glotaran.model.item import Item
 from glotaran.model.item import LibraryItemType
 from glotaran.model.item import ParameterType
 from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
@@ -193,6 +195,7 @@ class DataModel(Item):
         validator=validate_global_megacomplexes,  # type:ignore[arg-type]
     )
     global_megacomplex_scale: list[ParameterType] | None = None
+    weight: list[Weight] = Field(default_factory=list)
 
     @classmethod
     def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:
