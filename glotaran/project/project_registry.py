@@ -101,7 +101,7 @@ class ProjectRegistry:
         if name in self.items:
             return self._loader(self.items[name])
         raise ValueError(
-            f"No Item with name '{name}' exists. Known items are: {self.items.keys()}"
+            f"No Item with name '{name}' exists. Known items are: {list(self.items.keys())}"
         )
 
     def markdown(self, join_indentation: int = 0) -> MarkdownStr:

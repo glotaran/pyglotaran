@@ -169,8 +169,11 @@ class Project:
         """
         try:
             return self._data_registry.load_item(dataset_name)
-        except ValueError as e:
-            raise ValueError(f"Dataset {dataset_name!r} does not exist.") from e
+        except ValueError as err:
+            raise ValueError(
+                f"Dataset {dataset_name!r} does not exist. "
+                f"Known Datasets are: {list(self._data_registry.items.keys())}"
+            ) from err
 
     def import_data(
         self,
@@ -238,8 +241,11 @@ class Project:
         """
         try:
             return self._model_registry.load_item(name)
-        except ValueError as e:
-            raise ValueError(f"Model {name!r} does not exist.") from e
+        except ValueError as err:
+            raise ValueError(
+                f"Model {name!r} does not exist. "
+                f"Known Models are: {list(self._model_registry.items.keys())}"
+            ) from err
 
     def generate_model(
         self,
@@ -327,8 +333,11 @@ class Project:
         """
         try:
             return self._parameter_registry.load_item(parameters_name)
-        except ValueError as e:
-            raise ValueError(f"Parameters '{parameters_name}' does not exist.") from e
+        except ValueError as err:
+            raise ValueError(
+                f"Parameters '{parameters_name}' does not exist. "
+                f"Known Parameters are: {list(self._parameter_registry.items.keys())}"
+            ) from err
 
     def generate_parameters(
         self,
@@ -417,16 +426,11 @@ class Project:
         ------
         ValueError
             Raised if result does not exist.
+
+
+        .. # noqa: DAR402
         """
-        result_name = self._result_registry._latest_result_name_fallback(
-            result_name, latest=latest
-        )
-
-        path = self._result_registry.directory / result_name
-        if self._result_registry.is_item(path):
-            return path
-
-        raise ValueError(f"Result {result_name!r} does not exist.")
+        return self._result_registry._latest_result_path_fallback(result_name, latest=latest)
 
     def get_latest_result_path(self, result_name: str) -> Path:
         """Get the path to a result with name ``name``.
@@ -471,14 +475,13 @@ class Project:
         ------
         ValueError
             Raised if result does not exist.
+
+
+        .. # noqa: DAR402
         """
-        result_name = self._result_registry._latest_result_name_fallback(
-            result_name, latest=latest
+        return self._result_registry._loader(
+            self._result_registry._latest_result_path_fallback(result_name, latest=latest)
         )
-        try:
-            return self._result_registry.load_item(result_name)
-        except ValueError as e:
-            raise ValueError(f"Result {result_name!r} does not exist.") from e
 
     def load_latest_result(self, result_name: str) -> Result:
         """Load a result.

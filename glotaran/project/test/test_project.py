@@ -345,7 +345,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
 
 
-def test_missing_file_errors(tmp_path: Path):
+def test_missing_file_errors(tmp_path: Path, project_folder: Path):
     """Error when accessing non existing files."""
     with pytest.raises(FileNotFoundError) as exc_info:
         Project.open(tmp_path, create_if_not_exist=False)
@@ -355,42 +355,64 @@ def test_missing_file_errors(tmp_path: Path):
         == f"Project file {(tmp_path/'project.gta').as_posix()} does not exists."
     )
 
-    project = Project.open(tmp_path)
+    project = Project.open(project_folder)
 
     with pytest.raises(ValueError) as exc_info:
         project.load_data("not-existing")
 
-    assert str(exc_info.value) == "Dataset 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        "Dataset 'not-existing' does not exist. "
+        "Known Datasets are: ['dataset_1', 'dataset_1-bad', 'test_data']"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_model("not-existing")
 
-    assert str(exc_info.value) == "Model 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        "Model 'not-existing' does not exist. "
+        "Known Models are: ['test_model', 'test_model-bad']"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_parameters("not-existing")
 
-    assert str(exc_info.value) == "Parameters 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        "Parameters 'not-existing' does not exist. "
+        "Known Parameters are: ['test_parameters', 'test_parameters-bad']"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_result("not-existing_run_0000")
 
-    assert str(exc_info.value) == "Result 'not-existing_run_0000' does not exist."
+    expected_known_results = (
+        "Known Results are: "
+        "['sequential_run_0000', 'sequential_run_0001', 'test_run_0000', 'test_run_0001']"
+    )
+
+    assert str(exc_info.value) == (
+        f"Result 'not-existing_run_0000' does not exist. {expected_known_results}"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_latest_result("not-existing")
 
-    assert str(exc_info.value) == "Result 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        f"Result 'not-existing' does not exist. {expected_known_results}"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.get_result_path("not-existing_run_0000")
 
-    assert str(exc_info.value) == "Result 'not-existing_run_0000' does not exist."
+    assert str(exc_info.value) == (
+        f"Result 'not-existing_run_0000' does not exist. {expected_known_results}"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.get_latest_result_path("not-existing")
 
-    assert str(exc_info.value) == "Result 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        f"Result 'not-existing' does not exist. {expected_known_results}"
+    )
 
 
 def test_markdown_repr(project_folder: Path, project_file: Path):
