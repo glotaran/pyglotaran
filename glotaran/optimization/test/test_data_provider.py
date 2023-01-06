@@ -2,16 +2,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.model import DatasetGroup
+from glotaran.model import DataModel
+from glotaran.model import ExperimentModel
 from glotaran.optimization.data_provider import DataProvider
-from glotaran.optimization.data_provider import DataProviderLinked
-from glotaran.optimization.test.models import SimpleTestModel
-from glotaran.parameter import Parameters
-from glotaran.project import Scheme
+from glotaran.optimization.test.models import TestMegacomplexConstant
 
 
 @pytest.fixture()
-def dataset_one() -> xr.Dataset:
+def data_model_one() -> DataModel:
     global_axis = [1, 5, 6]
     model_axis = [5, 7, 9, 12]
 
@@ -20,78 +18,69 @@ def dataset_one() -> xr.Dataset:
     ).to_dataset(name="data")
 
     data["weight"] = xr.ones_like(data.data) * 0.5
-    return data
+    return DataModel(
+        data=data,
+        megacomplex=[
+            TestMegacomplexConstant(
+                type="test-megacomplex-constant",
+                label="test",
+                dimension="model",
+                compartments=["b"],
+                value="p2",
+                is_index_dependent=False,
+            )
+        ],
+    )
 
 
 @pytest.fixture()
-def dataset_two() -> xr.Dataset:
+def data_model_two() -> DataModel:
     global_axis = [0, 3, 7, 10]
     model_axis = [4, 11, 15]
 
-    return xr.DataArray(
+    data = xr.DataArray(
         np.ones((4, 3)) * 2, coords=[("global", global_axis), ("model", model_axis)]
     ).to_dataset(name="data")
-
-
-@pytest.fixture()
-def scheme(dataset_one: xr.Dataset, dataset_two: xr.Dataset) -> Scheme:
-    model = SimpleTestModel(
-        **{
-            "megacomplex": {"m1": {"type": "simple-kinetic-test-mc", "is_index_dependent": False}},
-            "dataset": {
-                "dataset1": {
-                    "megacomplex": ["m1"],
-                },
-                "dataset2": {
-                    "megacomplex": ["m1"],
-                },
-            },
-        }
+    return DataModel(
+        data=data,
+        megacomplex=[
+            TestMegacomplexConstant(
+                type="test-megacomplex-constant",
+                label="test",
+                dimension="model",
+                compartments=["b"],
+                value="p2",
+                is_index_dependent=False,
+            )
+        ],
     )
-    print(model.validate())
-    assert model.valid()
-
-    parameters = Parameters.from_list([])
-
-    data = {"dataset1": dataset_one, "dataset2": dataset_two}
-    return Scheme(model, parameters, data, clp_link_tolerance=1)
 
 
-@pytest.fixture()
-def dataset_group(scheme: Scheme) -> DatasetGroup:
-    dataset_group = scheme.model.get_dataset_groups()["default"]
-    dataset_group.set_parameters(scheme.parameters)
-    return dataset_group
+def test_data_provider_single_dataset(data_model_one: DataModel):
+    experiment = ExperimentModel(datasets={"dataset1": data_model_one})
+    data_provider = DataProvider(experiment)
+    assert not data_provider.multiple_data
 
-
-def test_data_provider(
-    dataset_one: xr.Dataset, dataset_two: xr.Dataset, scheme: Scheme, dataset_group: DatasetGroup
-):
-    data_provider = DataProvider(scheme, dataset_group)
-
-    print(dataset_one.data)
+    dataset = data_model_one.data
+    print(dataset.data)
     print(data_provider.get_data("dataset1"))
-    assert data_provider.get_model_dimension("dataset1") == "model"
-    assert data_provider.get_global_dimension("dataset1") == "global"
-    assert np.array_equal(
-        dataset_one.data * dataset_one.weight, data_provider.get_data("dataset1")
+    assert data_provider.model_dimension == "model"
+    assert data_provider.global_dimension == "global"
+    assert np.array_equal(dataset.data * dataset.weight, data_provider.get_data("dataset1"))
+    assert np.array_equal(dataset.weight, data_provider.get_weight("dataset1"))
+    assert np.array_equal(dataset.coords["model"], data_provider.get_model_axis("dataset1"))
+    assert np.array_equal(dataset.coords["global"], data_provider.get_global_axis("dataset1"))
+
+
+def test_data_provider_multiple_dataset(data_model_one: DataModel, data_model_two: DataModel):
+    experiment = ExperimentModel(
+        datasets={"dataset1": data_model_one, "dataset2": data_model_two}, clp_link_tolerance=1
     )
-    assert np.array_equal(dataset_one.weight, data_provider.get_weight("dataset1"))
-    assert np.array_equal(dataset_one.coords["model"], data_provider.get_model_axis("dataset1"))
-    assert np.array_equal(dataset_one.coords["global"], data_provider.get_global_axis("dataset1"))
+    data_provider = DataProvider(experiment)
+    assert data_provider.multiple_data
 
-    assert data_provider.get_model_dimension("dataset2") == "model"
-    assert data_provider.get_global_dimension("dataset2") == "global"
-    assert np.array_equal(dataset_two.data.T, data_provider.get_data("dataset2"))
-    assert data_provider.get_weight("dataset2") is None
-    assert np.array_equal(dataset_two.coords["model"], data_provider.get_model_axis("dataset2"))
-    assert np.array_equal(dataset_two.coords["global"], data_provider.get_global_axis("dataset2"))
-
-
-def test_data_provider_linked(
-    dataset_one: xr.Dataset, dataset_two: xr.Dataset, scheme: Scheme, dataset_group: DatasetGroup
-):
-    data_provider = DataProviderLinked(scheme, dataset_group)
+    dataset_one = data_model_one.data
+    dataset_two = data_model_two.data
 
     assert "dataset1" in data_provider.group_definitions
     assert data_provider.group_definitions["dataset1"] == ["dataset1"]
@@ -140,9 +129,16 @@ def test_data_provider_linked(
 
 
 @pytest.mark.parametrize("method", ["nearest", "backward", "forward"])
-def test_data_provider_linking_methods(method: str, scheme: Scheme, dataset_group: DatasetGroup):
-    scheme.clp_link_method = method  # type:ignore[assignment]
-    data_provider = DataProviderLinked(scheme, dataset_group)
+def test_data_provider_linking_methods(
+    method: str, data_model_one: DataModel, data_model_two: DataModel
+):
+    experiment = ExperimentModel(
+        datasets={"dataset1": data_model_one, "dataset2": data_model_two},
+        clp_link_tolerance=1,
+        clp_link_method=method,
+    )
+    data_provider = DataProvider(experiment)
+    assert data_provider.multiple_data
 
     #  global_axis1 = [1, 5, 6]
     #  global_axis2 = [0, 3, 7, 10]
