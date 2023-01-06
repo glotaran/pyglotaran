@@ -334,7 +334,7 @@ def test_model_markdown(test_model: Model):
 
         ## Weights
 
-        * ****
+        * **&nbsp;**
             * *Datasets*: ['d1', 'd2']
             * *Global Interval*: (1, 4)
             * *Model Interval*: (2, 3)
