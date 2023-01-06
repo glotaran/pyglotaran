@@ -1,17 +1,17 @@
 """Module containing the data provider classes."""
 from __future__ import annotations
 
-import warnings
-from typing import TYPE_CHECKING
+
+from typing import Literal
 
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DatasetGroup
-from glotaran.model import Model
-from glotaran.model.dataset_model import get_dataset_model_model_dimension
-from glotaran.model.dataset_model import has_dataset_model_global_model
-from glotaran.project import Scheme
+from glotaran.model import DataModel
+from glotaran.model import ExperimentModel
+from glotaran.model import GlotaranModelError
+from glotaran.model import get_data_model_dimension
+from glotaran.model import is_data_model_global
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -33,8 +33,8 @@ class AlignDatasetError(ValueError):
 class DataProvider:
     """A class to provide prepared data for optimization."""
 
-    def __init__(self, scheme: Scheme, dataset_group: DatasetGroup):
-        """Initialize a data provider for a scheme and a dataset_group.
+    def __init__(self, experiment: ExperimentModel):
+        """Initialize a data provider for an experiment.
 
         Parameters
         ----------
@@ -43,42 +43,82 @@ class DataProvider:
         dataset_group : DatasetGroup
             The dataset group.
         """
-        self._data: dict[str, ArrayLike] = {}
-        self._weight: dict[str, ArrayLike | None] = {}
-        self._flattened_data: dict[str, ArrayLike] = {}
-        self._flattened_weight: dict[str, ArrayLike | None] = {}
-        self._model_axes: dict[str, ArrayLike] = {}
-        self._model_dimensions: dict[str, str] = {}
-        self._global_axes: dict[str, ArrayLike] = {}
-        self._global_dimensions: dict[str, str] = {}
 
-        for label, dataset_model in dataset_group.dataset_models.items():
-            dataset = scheme.data[label]
-            model_dimension = get_dataset_model_model_dimension(dataset_model)
-            self._model_axes[label] = dataset.coords[model_dimension].data
-            self._model_dimensions[label] = model_dimension
-            global_dimension = self.infer_global_dimension(model_dimension, dataset.data.dims)
-            self._global_axes[label] = dataset.coords[global_dimension].data
-            self._global_dimensions[label] = global_dimension
+        self._data: dict[str, np.typing.ArrayLike] = {}
+        self._weight: dict[str, np.typing.ArrayLike | None] = {}
+        self._flattened_data: dict[str, np.typing.ArrayLike] = {}
+        self._flattened_weight: dict[str, np.typing.ArrayLike | None] = {}
+        self._model_dimension: str = ""
+        self._model_axes: dict[str, np.typing.ArrayLike] = {}
+        self._global_dimension: str = ""
+        self._global_axes: dict[str, np.typing.ArrayLike] = {}
+        self._multiple_data = len(experiment.datasets) > 1
 
-            self._weight[label] = self.get_from_dataset(
-                dataset, "weight", model_dimension, global_dimension
+        if self._multiple_data and any(
+            is_data_model_global(d) for d in experiment.datasets.values()
+        ):
+            raise GlotaranModelError(
+                "Global models cannot be optimized in multi data experiments."
             )
-            self.add_model_weight(scheme.model, label, model_dimension, global_dimension)
 
-            self._data[label] = self.get_from_dataset(  # type:ignore[assignment]
-                dataset, "data", model_dimension, global_dimension
+        for label, data_model in experiment.datasets.items():
+            self.add_data_model(label, data_model)
+
+        if not self._multiple_data:
+            return
+
+        aligned_global_axes = self.create_aligned_global_axes(experiment)
+        self._aligned_global_axis, self._aligned_data = self.align_data(aligned_global_axes)
+        self._aligned_dataset_indices = self.align_dataset_indices(aligned_global_axes)
+        self._aligned_group_labels, self._group_definitions = self.align_groups(
+            aligned_global_axes
+        )
+        self._aligned_weights = self.align_weights(aligned_global_axes)
+
+    @property
+    def multiple_data(self) -> bool:
+        return self._multiple_data
+
+    def add_data_model(self, label: str, data_model: DataModel):
+        data = data_model.data
+        assert isinstance(data, xr.Dataset)
+        model_dimension = get_data_model_dimension(data_model)
+        if self._model_dimension == "":
+            self._model_dimension = model_dimension
+        elif self._model_dimension != model_dimension:
+            raise GlotaranModelError(
+                f"Model dimension  of dataset '{label}'do not match with datasets: "
+                f"{','.join(self._data.keys())}"
             )
-            if self._weight[label] is not None:
-                self._data[label] *= self._weight[label]
+        self._model_axes[label] = data.coords[model_dimension].data
+        global_dimension = self.infer_global_dimension(model_dimension, data.data.dims)
+        if self._global_dimension == "":
+            self._global_dimension = global_dimension
+        elif self._global_dimension != global_dimension:
+            raise GlotaranModelError(
+                f"Global dimension  of dataset '{label}'do not match with datasets: "
+                f"{','.join(self._data.keys())}"
+            )
+        self._global_axes[label] = data.coords[global_dimension].data
 
-            if has_dataset_model_global_model(dataset_model):
-                self._flattened_data[label] = self._data[label].T.flatten()
-                self._flattened_weight[label] = (
-                    self._weight[label].T.flatten()  # type:ignore[union-attr]
-                    if self._weight[label] is not None
-                    else None
-                )
+        self._data[label] = self.get_from_dataset(data, "data")
+
+        self._weight[label] = (
+            self.get_from_dataset(data, "weight")
+            if "weight" in data
+            else self.get_model_weight(label, data_model)
+        )
+
+        if self._weight[label] is not None:
+            self._data[label] *= self._weight[label]
+
+        if is_data_model_global(data_model):
+            self._flattened_data[label] = self._data[label].T.flatten()
+            self._flattened_weight[label] = (
+                self._weight[label].T.flatten()  # type:ignore[union-attr]
+                if self._weight[label] is not None
+                else None
+            )
 
     @staticmethod
     def infer_global_dimension(model_dimension: str, dimensions: tuple[str]) -> str:
@@ -98,10 +138,7 @@ class DataProvider:
         """
         return next(dim for dim in dimensions if dim != model_dimension)
 
-    @staticmethod
-    def get_from_dataset(
-        dataset: xr.Dataset, name: str, model_dimension: str, global_dimension: str
-    ) -> ArrayLike | None:
+    def get_from_dataset(self, dataset: xr.Dataset, name: str) -> np.typing.ArrayLike | None:
         """Get a copy of data from a dataset with dimensions (model, global).
 
         Parameters
@@ -123,7 +160,7 @@ class DataProvider:
         data = None
         if name in dataset:
             data = dataset[name].data.copy()
-            if dataset[name].dims != (model_dimension, global_dimension):
+            if dataset[name].dims != (self.model_dimension, self.global_dimension):
                 data = data.T
         return data
 
@@ -156,13 +193,7 @@ class DataProvider:
 
         return slice(minimum, maximum)
 
-    def add_model_weight(
-        self,
-        model: Model,
-        dataset_label: str,
-        model_dimension: str,
-        global_dimension: str,
-    ):
+    def get_model_weight(self, label: str, data_model: DataModel) -> np.typing.ArrayLike:
         """Add model weight to data.
 
         Parameters
@@ -176,38 +207,31 @@ class DataProvider:
         global_dimension : str
             The global dimension.
         """
-        model_weights = [weight for weight in model.weights if dataset_label in weight.datasets]
+        model_weights = data_model.weights
         if not model_weights:
             return
-
-        if self._weight[dataset_label]:
-            warnings.warn(
-                f"Ignoring model weight for dataset '{dataset_label}'"
-                " because weight is already supplied by dataset."
-            )
-            return
-        model_axis = self._model_axes[dataset_label]
-        global_axis = self._global_axes[dataset_label]
+        model_axis = self._model_axes[label]
+        global_axis = self._global_axes[label]
         weight = xr.DataArray(
             np.ones((model_axis.size, global_axis.size)),
             coords=(
-                (model_dimension, model_axis),
-                (global_dimension, global_axis),
+                (self._model_dimension, model_axis),
+                (self._global_dimension, global_axis),
             ),
         )
         for model_weight in model_weights:
             idx = {}
             if model_weight.global_interval is not None:
-                idx[global_dimension] = self.get_axis_slice_from_interval(
+                idx[self._global_dimension] = self.get_axis_slice_from_interval(
                     model_weight.global_interval, global_axis
                 )
             if model_weight.model_interval is not None:
-                idx[model_dimension] = self.get_axis_slice_from_interval(
+                idx[self._model_dimension] = self.get_axis_slice_from_interval(
                     model_weight.model_interval, model_axis
                 )
             weight[idx] *= model_weight.value
 
-        self._weight[dataset_label] = weight.data
+        return weight.data
 
     def get_data(self, dataset_label: str) -> ArrayLike:
         """Get data for a dataset.
@@ -284,7 +308,8 @@ class DataProvider:
         """
         return self._model_axes[dataset_label]
 
-    def get_model_dimension(self, dataset_label: str) -> str:
+    @property
+    def model_dimension(self) -> str:
         """Get the model dimension for a dataset.
 
         Parameters
@@ -297,7 +322,7 @@ class DataProvider:
         str
             The model dimension.
         """
-        return self._model_dimensions[dataset_label]
+        return self._model_dimension
 
     def get_global_axis(self, dataset_label: str) -> ArrayLike:
         """Get the global axis for a dataset.
@@ -314,7 +339,8 @@ class DataProvider:
         """
         return self._global_axes[dataset_label]
 
-    def get_global_dimension(self, dataset_label: str) -> str:
+    @property
+    def global_dimension(self) -> str:
         """Get the global dimension for a dataset.
 
         Parameters
@@ -327,34 +353,7 @@ class DataProvider:
         str
             The global dimension.
         """
-        return self._global_dimensions[dataset_label]
-
-
-class DataProviderLinked(DataProvider):
-    """A class to provide aligned data for optimization."""
-
-    def __init__(
-        self,
-        scheme: Scheme,
-        dataset_group: DatasetGroup,
-    ):
-        """Initialize a linked data provider for a scheme and a dataset_group.
-
-        Parameters
-        ----------
-        scheme : Scheme
-            The optimization scheme.
-        dataset_group : DatasetGroup
-            The dataset group.
-        """
-        super().__init__(scheme, dataset_group)
-        aligned_global_axes = self.create_aligned_global_axes(scheme)
-        self._aligned_global_axis, self._aligned_data = self.align_data(aligned_global_axes)
-        self._aligned_dataset_indices = self.align_dataset_indices(aligned_global_axes)
-        self._aligned_group_labels, self._group_definitions = self.align_groups(
-            aligned_global_axes
-        )
-        self._aligned_weights = self.align_weights(aligned_global_axes)
+        return self._global_dimension
 
     @staticmethod
     def align_index(
@@ -476,7 +475,9 @@ class DataProviderLinked(DataProvider):
         """
         return self._aligned_weights[index]
 
-    def create_aligned_global_axes(self, scheme: Scheme) -> dict[str, ArrayLike]:
+    def create_aligned_global_axes(
+        self, experiment: ExperimentModel
+    ) -> dict[str, np.typing.ArrayLike]:
         """Create aligned global axes for the dataset group.
 
         Parameters
@@ -505,8 +506,8 @@ class DataProviderLinked(DataProvider):
                     self.align_index(
                         index,
                         aligned_axis_values,
-                        scheme.clp_link_tolerance,
-                        scheme.clp_link_method,
+                        experiment.clp_link_tolerance,
+                        experiment.clp_link_method,
                     )
                     for index in aligned_global_axis
                 ]
