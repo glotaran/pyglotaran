@@ -270,26 +270,25 @@ def test_load_result_warnings(project_folder: Path, project_file: Path):
     """Warn when using fallback to latest result."""
     project = Project.open(project_file)
 
+    expected_warning_text = (
+        "Result name 'test' is missing the run specifier, "
+        "falling back to try getting latest result. "
+        "Use latest=True to mute this warning."
+    )
+
     with pytest.warns(UserWarning) as recwarn:
         assert project_folder / "results" / "test_run_0001" == project.get_result_path("test")
 
         assert len(recwarn) == 1
         assert Path(recwarn[0].filename).samefile(__file__)
-        assert recwarn[0].message.args[0] == (
-            "Result name 'test' is missing the run specifier, "
-            "falling back to try getting latest result. "
-            "Use latest=True to mute this warning."
-        )
+        assert recwarn[0].message.args[0] == expected_warning_text
+
     with pytest.warns(UserWarning) as recwarn:
         assert isinstance(project.load_result("test"), Result)
 
         assert len(recwarn) == 1
         assert Path(recwarn[0].filename).samefile(__file__)
-        assert recwarn[0].message.args[0] == (
-            "Result name 'test' is missing the run specifier, "
-            "falling back to try getting latest result. "
-            "Use latest=True to mute this warning."
-        )
+        assert recwarn[0].message.args[0] == expected_warning_text
 
 
 def test_getting_items(project_file: Path):
