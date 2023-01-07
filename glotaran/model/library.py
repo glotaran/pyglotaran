@@ -117,8 +117,7 @@ class Library(BaseModel):
     ) -> LibraryItem:
         if isinstance(value, str):
             value = getattr(self, item_type.get_library_name())[value]
-            value = self.resolve_item(value, parameters, initial)
-        return value
+        return self.resolve_item(value, parameters, initial)
 
     def resolve_item(self, item: Item, parameters: Parameters, initial: Parameters) -> Item:
         resolved = {}
