@@ -98,11 +98,11 @@ class ProjectRegistry:
         ValueError
             Raise if the item does not exist.
         """
-        try:
-            path = next(p for p in self._directory.iterdir() if name in p.name)
-        except StopIteration as e:
-            raise ValueError(f"No Item with name '{name}' exists.") from e
-        return self._loader(path)
+        if name in self.items:
+            return self._loader(self.items[name])
+        raise ValueError(
+            f"No Item with name '{name}' exists. Known items are: {list(self.items.keys())}"
+        )
 
     def markdown(self, join_indentation: int = 0) -> MarkdownStr:
         """Format the registry items as a markdown text.

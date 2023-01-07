@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from importlib.metadata import distribution
 from pathlib import Path
+from shutil import rmtree
 from textwrap import dedent
 from typing import Literal
 
@@ -51,12 +52,14 @@ def test_init(project_folder: Path, project_file: Path):
 
 
 def test_create(project_folder: Path):
+    rmtree(project_folder)
     Project.create(project_folder)
     with pytest.raises(FileExistsError):
         assert Project.create(project_folder)
 
 
 def test_open(project_folder: Path, project_file: Path):
+    rmtree(project_folder)
     project_from_folder = Project.open(project_folder)
 
     project_from_file = Project.open(project_file)
@@ -70,6 +73,11 @@ def test_open(project_folder: Path, project_file: Path):
     assert not project.has_data
     assert not project.has_parameters
     assert not project.has_results
+
+    # Will cause following tests to fails on bad fuzzy matching due to higher string sort order
+    (project_folder / "data/dataset_1-bad.nc").touch()
+    (project_folder / "models/test_model-bad.yml").touch()
+    (project_folder / "parameters/test_parameters-bad.yml").touch()
 
 
 def test_open_diff_version(tmp_path: Path):
@@ -262,26 +270,25 @@ def test_load_result_warnings(project_folder: Path, project_file: Path):
     """Warn when using fallback to latest result."""
     project = Project.open(project_file)
 
+    expected_warning_text = (
+        "Result name 'test' is missing the run specifier, "
+        "falling back to try getting latest result. "
+        "Use latest=True to mute this warning."
+    )
+
     with pytest.warns(UserWarning) as recwarn:
         assert project_folder / "results" / "test_run_0001" == project.get_result_path("test")
 
         assert len(recwarn) == 1
         assert Path(recwarn[0].filename).samefile(__file__)
-        assert recwarn[0].message.args[0] == (
-            "Result name 'test' is missing the run specifier, "
-            "falling back to try getting latest result. "
-            "Use latest=True to mute this warning."
-        )
+        assert recwarn[0].message.args[0] == expected_warning_text
+
     with pytest.warns(UserWarning) as recwarn:
         assert isinstance(project.load_result("test"), Result)
 
         assert len(recwarn) == 1
         assert Path(recwarn[0].filename).samefile(__file__)
-        assert recwarn[0].message.args[0] == (
-            "Result name 'test' is missing the run specifier, "
-            "falling back to try getting latest result. "
-            "Use latest=True to mute this warning."
-        )
+        assert recwarn[0].message.args[0] == expected_warning_text
 
 
 def test_getting_items(project_file: Path):
@@ -323,7 +330,7 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     project.generate_model(
         "test_model", "decay_parallel", {"nr_compartments": 3}, allow_overwrite=True
     )
-    new_model = project.load_model("test")
+    new_model = project.load_model("test_model")
     assert "megacomplex_parallel_decay" in new_model.megacomplex
 
     comapartments = load_dict(model_file, is_file=True)["megacomplex"][
@@ -332,13 +339,13 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
 
     assert len(comapartments) == 3
 
-    project.generate_parameters("test", allow_overwrite=True)
+    project.generate_parameters("test_model", "test_parameters", allow_overwrite=True)
     parameters = load_parameters(parameter_file)
 
     assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
 
 
-def test_missing_file_errors(tmp_path: Path):
+def test_missing_file_errors(tmp_path: Path, project_folder: Path):
     """Error when accessing non existing files."""
     with pytest.raises(FileNotFoundError) as exc_info:
         Project.open(tmp_path, create_if_not_exist=False)
@@ -348,42 +355,64 @@ def test_missing_file_errors(tmp_path: Path):
         == f"Project file {(tmp_path/'project.gta').as_posix()} does not exists."
     )
 
-    project = Project.open(tmp_path)
+    project = Project.open(project_folder)
 
     with pytest.raises(ValueError) as exc_info:
         project.load_data("not-existing")
 
-    assert str(exc_info.value) == "Dataset 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        "Dataset 'not-existing' does not exist. "
+        "Known Datasets are: ['dataset_1', 'dataset_1-bad', 'test_data']"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_model("not-existing")
 
-    assert str(exc_info.value) == "Model 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        "Model 'not-existing' does not exist. "
+        "Known Models are: ['test_model', 'test_model-bad']"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_parameters("not-existing")
 
-    assert str(exc_info.value) == "Parameters 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        "Parameters 'not-existing' does not exist. "
+        "Known Parameters are: ['test_parameters', 'test_parameters-bad']"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_result("not-existing_run_0000")
 
-    assert str(exc_info.value) == "Result 'not-existing_run_0000' does not exist."
+    expected_known_results = (
+        "Known Results are: "
+        "['sequential_run_0000', 'sequential_run_0001', 'test_run_0000', 'test_run_0001']"
+    )
+
+    assert str(exc_info.value) == (
+        f"Result 'not-existing_run_0000' does not exist. {expected_known_results}"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_latest_result("not-existing")
 
-    assert str(exc_info.value) == "Result 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        f"Result 'not-existing' does not exist. {expected_known_results}"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.get_result_path("not-existing_run_0000")
 
-    assert str(exc_info.value) == "Result 'not-existing_run_0000' does not exist."
+    assert str(exc_info.value) == (
+        f"Result 'not-existing_run_0000' does not exist. {expected_known_results}"
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.get_latest_result_path("not-existing")
 
-    assert str(exc_info.value) == "Result 'not-existing' does not exist."
+    assert str(exc_info.value) == (
+        f"Result 'not-existing' does not exist. {expected_known_results}"
+    )
 
 
 def test_markdown_repr(project_folder: Path, project_file: Path):
@@ -398,17 +427,20 @@ def test_markdown_repr(project_folder: Path, project_file: Path):
         ## Data
 
         * dataset_1
+        * dataset_1-bad
         * test_data
 
 
         ## Model
 
         * test_model
+        * test_model-bad
 
 
         ## Parameters
 
         * test_parameters
+        * test_parameters-bad
 
 
         ## Results

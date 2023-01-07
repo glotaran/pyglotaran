@@ -60,7 +60,7 @@ class ProjectResultRegistry(ProjectRegistry):
         """
         return sorted(self.directory.glob(f"{base_name}_run_*"))
 
-    def _latest_result_name_fallback(self, name: str, *, latest: bool = False) -> str:
+    def _latest_result_path_fallback(self, name: str, *, latest: bool = False) -> Path:
         """Fallback when a user forgets to specify the run to get a result.
 
         If ``name`` contains the run number this will just return ``name``,
@@ -69,14 +69,20 @@ class ProjectResultRegistry(ProjectRegistry):
         Parameters
         ----------
         name: str
-            Name of the result, which should contain the run specifyer.
+            Name of the result, which should contain the run specifier.
         latest: bool
-            Flag to deactivate warning about using latest result. Defaults to False
+            Flag to deactivate warning about using latest result. Defaults to False.
+
 
         Returns
         -------
-        str
-            Name used to retrieve a result.
+        Path
+            Path to the result (latest result if ``name`` does not match the result pattern).
+
+        Raises
+        ------
+        ValueError
+            Raised if result does not exist.
         """
         if re.match(self.result_pattern, name) is None:
             if latest is False:
@@ -89,8 +95,14 @@ class ProjectResultRegistry(ProjectRegistry):
                     stacklevel=3,
                 )
             previous_result_paths = self.previous_result_paths(name) or [Path(name)]
-            return previous_result_paths[-1].stem
-        return name
+            name = previous_result_paths[-1].stem
+        path = self._directory / name
+        if self.is_item(path):
+            return path
+
+        raise ValueError(
+            f"Result {name!r} does not exist. Known Results are: {list(self.items.keys())}"
+        )
 
     def create_result_run_name(self, base_name: str) -> str:
         """Create a result name for a model.
