@@ -497,9 +497,9 @@ class Model:
                 item_str = item_to_markdown(
                     item, parameters=parameters, initial_parameters=initial_parameters
                 ).split("\n")
-                string += f"* **{getattr(item, 'label', '')}**\n"
+                string += f"- **{getattr(item, 'label', '&nbsp;')}**\n"
                 for s in item_str[1:]:
-                    string += f"  {s}\n"
+                    string += f"{s}\n"
             string += "\n"
         return MarkdownStr(string)
 
