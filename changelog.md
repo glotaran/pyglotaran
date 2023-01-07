@@ -26,6 +26,7 @@
 - 🩹 Fix for crash described in #1183 when doing an optimization using more than 30 datasets (#1184)
 - 🩹 Fix pretty_format_numerical for negative values (#1192)
 - 🩹 Fix yaml result saving with relative paths (#1199)
+- 🩹 Fix model markdown render for items without label (#1213)
 <!-- Fix within the 0.7.0 release cycle, therefore hidden:
 - 🩹 Fix the matrix provider alignment/reduction ('grouping') issues introduced in #1175 (#1190)
   -->
