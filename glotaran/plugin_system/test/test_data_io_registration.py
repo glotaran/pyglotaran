@@ -217,10 +217,11 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
         save_dataset(xr.DataArray([1, 2]), str(file_path))
 
 
+@pytest.mark.parametrize("sub_dir", ("", "sub_dir"))
 @pytest.mark.usefixtures("mocked_registry")
-def test_write_dataset(tmp_path: Path):
+def test_write_dataset(tmp_path: Path, sub_dir: str):
     """All args and kwargs are passes correctly."""
-    file_path = tmp_path / "dummy.mock"
+    file_path = tmp_path / sub_dir / "dummy.mock"
 
     result: dict[str, Any] = {}
     save_dataset(

@@ -231,7 +231,7 @@ def save_dataset(
         by default True
     **kwargs : Any
         Additional keyword arguments passes to the ``write_dataset`` implementation
-        of the data io plugin. If you aren't sure about those use ``get_datawriter``
+        of the data io plugin. If you aren't sure about those use ``get_datasaver``
         to get the implementation with the proper help and autocomplete.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
