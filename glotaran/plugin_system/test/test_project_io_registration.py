@@ -30,13 +30,15 @@ from glotaran.plugin_system.project_io_registration import save_result
 from glotaran.plugin_system.project_io_registration import save_scheme
 from glotaran.plugin_system.project_io_registration import set_project_plugin
 from glotaran.plugin_system.project_io_registration import show_project_io_method_help
+from glotaran.plugin_system.project_io_registration import supported_file_extensions_project_io
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry_project_io
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Sequence
     from typing import Any
 
     from _pytest.capture import CaptureFixture
-    from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.model import Model
     from glotaran.project import Result
@@ -116,17 +118,31 @@ class MockProjectIo(ProjectIoInterface):
         )
 
 
+class MockProjectIoPartial(ProjectIoInterface):
+    def load_model(self, file_name: StrOrPath, **kwargs: Any) -> Model:
+        pass
+
+    def load_parameters(self, file_name: StrOrPath, **kwargs: Any) -> Parameters:
+        pass
+
+    def load_scheme(self, file_name: StrOrPath, **kwargs: Any) -> Scheme:
+        pass
+
+    def load_result(self, result_path: StrOrPath, **kwargs: Any) -> Result:
+        pass
+
+
+MOCK_REGISTRY_VALUES = {
+    "foo": ProjectIoInterface("foo"),
+    "mock": MockProjectIo("bar"),
+    "test_project_io_registration.MockProjectIo_bar": MockProjectIo("bar"),
+}
+
+
 @pytest.fixture
-def mocked_registry(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(
-        __PluginRegistry,
-        "project_io",
-        {
-            "foo": ProjectIoInterface("foo"),
-            "mock": MockProjectIo("bar"),
-            "test_project_io_registration.MockProjectIo_bar": MockProjectIo("bar"),
-        },
-    )
+def mocked_registry():
+    with monkeypatch_plugin_registry_project_io(MOCK_REGISTRY_VALUES, create_new_registry=True):
+        yield
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -383,3 +399,31 @@ def test_project_io_plugin_table_full():
     )
 
     assert f"{project_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
+
+
+@pytest.mark.parametrize(
+    "method_names, expected",
+    (
+        (
+            "load_model",
+            [".mock", ".mock_partial"],
+        ),
+        (
+            "save_model",
+            [".mock"],
+        ),
+        (
+            ["load_model", "save_model"],
+            [".mock"],
+        ),
+    ),
+)
+def test_supported_file_extensions_project_io(
+    method_names: str | Sequence[str], expected: list[str]
+):
+    """Extension don't list full plugin name and omit extension that don't support all methods."""
+
+    with monkeypatch_plugin_registry_project_io(
+        {**MOCK_REGISTRY_VALUES, "mock_partial": MockProjectIoPartial}, create_new_registry=True
+    ):
+        assert list(supported_file_extensions_project_io(method_names)) == expected

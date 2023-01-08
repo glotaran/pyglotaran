@@ -49,10 +49,10 @@ def _monkeypatch_plugin_registry(
     monkeypatch_plugin_registry_project_io
     """
     if test_registry is not None:
-        initila_plugins = {} if create_new_registry else __PluginRegistry.__dict__[register_name]
+        initial_plugins = {} if create_new_registry else __PluginRegistry.__dict__[register_name]
 
         with mock.patch.object(
-            __PluginRegistry, register_name, {**initila_plugins, **test_registry}
+            __PluginRegistry, register_name, {**initial_plugins, **test_registry}
         ):
             yield
     else:

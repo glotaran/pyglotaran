@@ -24,6 +24,7 @@ from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_t
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
+from glotaran.plugin_system.base_registry import supported_file_extensions
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
 from glotaran.plugin_system.io_plugin_utils import inferr_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
@@ -32,6 +33,8 @@ from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Generator
+    from collections.abc import Sequence
     from typing import Any
     from typing import Literal
 
@@ -334,4 +337,32 @@ def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False
         tabulate(
             bool_table_repr(table_data), tablefmt="github", headers=headers, stralign="center"
         )
+    )
+
+
+def supported_file_extensions_data_io(
+    method_names: str | Sequence[str],
+) -> Generator[str, None, None]:
+    """Get data io formats that support all methods in ``method_names``.
+
+    Parameters
+    ----------
+    method_names: str | Sequence[str]
+        Names of Methods that need to support the file extension.
+
+    Yields
+    ------
+    Generator[str, None, None]
+        File extension supported by all methods in ``method_names``.
+
+    See Also
+    --------
+    supported_file_extensions
+    DATA_IO_METHODS
+    """
+    yield from supported_file_extensions(
+        method_names,
+        known_data_formats(),
+        get_data_io,
+        DataIoInterface,
     )

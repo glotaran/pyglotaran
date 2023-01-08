@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -17,22 +16,19 @@ from glotaran.plugin_system.megacomplex_registration import known_megacomplex_na
 from glotaran.plugin_system.megacomplex_registration import megacomplex_plugin_table
 from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 from glotaran.plugin_system.megacomplex_registration import set_megacomplex_plugin
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry_megacomplex
 
-if TYPE_CHECKING:
-    from _pytest.monkeypatch import MonkeyPatch
+MOCK_REGISTRY_VALUES = {
+    "foo": Megacomplex,
+    "bar": DecayMegacomplex,
+    "glotaran.builtin.megacomplexes.decay.DecayMegacomplex": DecayMegacomplex,
+}
 
 
 @pytest.fixture
-def mocked_registry(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(
-        __PluginRegistry,
-        "megacomplex",
-        {
-            "foo": Megacomplex,
-            "bar": DecayMegacomplex,
-            "glotaran.builtin.megacomplexes.decay.DecayMegacomplex": DecayMegacomplex,
-        },
-    )
+def mocked_registry():
+    with monkeypatch_plugin_registry_megacomplex(MOCK_REGISTRY_VALUES, create_new_registry=True):
+        yield
 
 
 @pytest.mark.usefixtures("mocked_registry")

@@ -13,8 +13,6 @@ from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from py.path import local as LocalPath
-
 
 @pytest.mark.parametrize(
     "extension,expected",
@@ -96,18 +94,19 @@ def test_protect_from_overwrite_file_exists(tmp_path: Path):
         protect_from_overwrite(path)
 
 
-def test_protect_from_overwrite_empty_dir(tmpdir: LocalPath):
+def test_protect_from_overwrite_empty_dir(tmp_path: Path):
     """Nothing happens when the folder is empty"""
-    path = tmpdir / "dummy"
-    path.mkdir()
+    path = tmp_path / "dummy"
+    path.mkdir(parents=True, exist_ok=True)
 
     protect_from_overwrite(path)
 
 
-def test_protect_from_overwrite_not_empty_dir(tmpdir: LocalPath):
+def test_protect_from_overwrite_not_empty_dir(tmp_path: Path):
     """Error by default if path is an not empty dir."""
-    path = tmpdir / "dummy"
-    path.mkdir()
+    path = tmp_path / "dummy"
+    path.mkdir(parents=True, exist_ok=True)
+
     (path / "dummy.txt").write_text("test", encoding="utf8")
 
     with pytest.raises(FileExistsError, match="The folder .+? already exists and is not empty"):

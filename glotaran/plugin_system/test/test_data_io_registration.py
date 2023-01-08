@@ -25,17 +25,19 @@ from glotaran.plugin_system.data_io_registration import register_data_io
 from glotaran.plugin_system.data_io_registration import save_dataset
 from glotaran.plugin_system.data_io_registration import set_data_plugin
 from glotaran.plugin_system.data_io_registration import show_data_io_method_help
+from glotaran.plugin_system.data_io_registration import supported_file_extensions_data_io
+from glotaran.testing.plugin_system import monkeypatch_plugin_registry_data_io
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
 
     from _pytest.capture import CaptureFixture
-    from _pytest.monkeypatch import MonkeyPatch
 
     from glotaran.typing import StrOrPath
 
 
-class MockDataIO(DataIoInterface):
+class MockDataIo(DataIoInterface):
     def load_dataset(  # type:ignore[override]
         self, file_name: StrOrPath, *, result_container: dict[str, Any], **kwargs: Any
     ) -> xr.Dataset | xr.DataArray:
@@ -61,17 +63,22 @@ class MockDataIO(DataIoInterface):
         )
 
 
+class MockDataIoPartial(DataIoInterface):
+    def load_dataset(self, file_name: StrOrPath) -> xr.Dataset | xr.DataArray:
+        return xr.DataArray([1, 2])
+
+
+MOCK_REGISTRY_VALUES = {
+    "foo": DataIoInterface("foo"),
+    "mock": MockDataIo("bar"),
+    "test_data_io_registration.MockDataIo_bar": MockDataIo("bar"),
+}
+
+
 @pytest.fixture(scope="function")
-def mocked_registry(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(
-        __PluginRegistry,
-        "data_io",
-        {
-            "foo": DataIoInterface("foo"),
-            "mock": MockDataIO("bar"),
-            "test_data_io_registration.MockDataIO_bar": MockDataIO("bar"),
-        },
-    )
+def mocked_registry():
+    with monkeypatch_plugin_registry_data_io(MOCK_REGISTRY_VALUES, create_new_registry=True):
+        yield
 
 
 @pytest.mark.usefixtures("mocked_registry")
@@ -160,8 +167,8 @@ def test_known_data_formats():
 def test_set_data_plugin():
     """Set Change Plugin used for format foo"""
     assert isinstance(get_data_io("foo"), DataIoInterface)
-    set_data_plugin("foo", "test_data_io_registration.MockDataIO_bar")
-    assert isinstance(get_data_io("foo"), MockDataIO)
+    set_data_plugin("foo", "test_data_io_registration.MockDataIo_bar")
+    assert isinstance(get_data_io("foo"), MockDataIo)
 
 
 @pytest.mark.parametrize(
@@ -254,7 +261,7 @@ def test_write_dataset_error(tmp_path: Path):
 @pytest.mark.usefixtures("mocked_registry")
 def test_show_data_io_method_help(capsys: CaptureFixture):
     """Same help as when called directly."""
-    plugin = MockDataIO("foo")
+    plugin = MockDataIo("foo")
     help(plugin.load_dataset)
     original_help, _ = capsys.readouterr()
 
@@ -288,9 +295,35 @@ def test_data_io_plugin_table_full():
         |              __Format name__               |  __load_dataset__  |  __save_dataset__  |               __Plugin name__               |
         |--------------------------------------------|--------------------|--------------------|---------------------------------------------|
         |                   `foo`                    |         /          |         /          | `glotaran.io.interface.DataIoInterface_foo` |
-        |                   `mock`                   |         *          |         *          | `test_data_io_registration.MockDataIO_mock` |
-        | `test_data_io_registration.MockDataIO_bar` |         *          |         *          | `test_data_io_registration.MockDataIO_bar`  |
+        |                   `mock`                   |         *          |         *          | `test_data_io_registration.MockDataIo_mock` |
+        | `test_data_io_registration.MockDataIo_bar` |         *          |         *          | `test_data_io_registration.MockDataIo_bar`  |
         """  # noqa: E501
     )
 
     assert f"{data_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
+
+
+@pytest.mark.parametrize(
+    "method_names, expected",
+    (
+        (
+            "load_dataset",
+            [".mock", ".mock_partial"],
+        ),
+        (
+            "save_dataset",
+            [".mock"],
+        ),
+        (
+            ["load_dataset", "save_dataset"],
+            [".mock"],
+        ),
+    ),
+)
+def test_supported_file_extensions_data_io(method_names: str | Sequence[str], expected: list[str]):
+    """Extension don't list full plugin name and omit extension that don't support all methods."""
+    with monkeypatch_plugin_registry_data_io(
+        test_data_io={**MOCK_REGISTRY_VALUES, "mock_partial": MockDataIoPartial},
+        create_new_registry=True,
+    ):
+        assert list(supported_file_extensions_data_io(method_names)) == expected
