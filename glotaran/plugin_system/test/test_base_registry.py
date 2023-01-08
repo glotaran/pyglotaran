@@ -330,7 +330,7 @@ def test_methods_differ_from_baseclass(
     """Inherited methods are the same as base class and overwritten ones differ"""
     result = methods_differ_from_baseclass(method_names, plugin, MockPlugin)
 
-    assert result == expected
+    assert list(result) == expected
 
 
 @pytest.mark.parametrize(
@@ -367,7 +367,7 @@ def test_methods_differ_from_baseclass_table(
         method_names, plugin_registry_keys, get_plugin_function, MockPlugin
     )
 
-    assert result == expected
+    assert list(result) == expected
 
 
 def test_methods_differ_from_baseclass_table_plugin_names():
@@ -383,4 +383,4 @@ def test_methods_differ_from_baseclass_table_plugin_names():
         "some_method", "base", get_plugin_function, MockPlugin, plugin_names=True
     )
 
-    assert result == [["`base`", False, "`test_base_registry.MockPlugin`"]]
+    assert list(result) == [["`base`", False, "`test_base_registry.MockPlugin`"]]
