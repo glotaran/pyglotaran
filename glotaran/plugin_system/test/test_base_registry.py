@@ -26,6 +26,7 @@ from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_t
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
+from glotaran.plugin_system.base_registry import supported_file_extensions
 
 if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture
@@ -58,6 +59,11 @@ class MockPluginSubclassFull(MockPlugin):
         return "different implementation"
 
 
+class MockPluginSubclassStr(MockPlugin):
+    def some_method(self):
+        return "different implementation"
+
+
 def get_mock_plugin_function(plugin_registry_key: str):
     if plugin_registry_key == "base":
         return MockPlugin
@@ -65,6 +71,8 @@ def get_mock_plugin_function(plugin_registry_key: str):
         return MockPluginSubclassPartial
     elif plugin_registry_key == "sub_class_full":
         return MockPluginSubclassFull
+    elif plugin_registry_key == "sub_class_str":
+        return MockPluginSubclassStr
 
 
 mock_registry_data_io = cast(
@@ -360,11 +368,12 @@ def test_methods_differ_from_baseclass(
         ("some_method", "sub_class_full", [["`sub_class_full`", True]]),
         (
             ["some_method", "some_other_method"],
-            ["base", "sub_class_partial", "sub_class_full"],
+            ["base", "sub_class_partial", "sub_class_full", "sub_class_str"],
             [
                 ["`base`", False, False],
                 ["`sub_class_partial`", True, False],
                 ["`sub_class_full`", True, True],
+                ["`sub_class_str`", True, False],
             ],
         ),
     ),
@@ -391,3 +400,26 @@ def test_methods_differ_from_baseclass_table_plugin_names():
     )
 
     assert list(result) == [["`base`", False, "`test_base_registry.MockPlugin`"]]
+
+
+@pytest.mark.parametrize(
+    "method_names, expected",
+    (
+        ("some_method", [".sub_class_partial", ".sub_class_full"]),
+        ("some_other_method", [".sub_class_full"]),
+        (["some_method", "some_other_method"], [".sub_class_full"]),
+    ),
+)
+def test_supported_file_extensions(
+    method_names: str | list[str],
+    expected: list[str],
+):
+    """Only extensions where the plugin supports all methods in ``method_names`` are returned."""
+    result = supported_file_extensions(
+        method_names,
+        ["base", "sub_class_partial", "sub_class_full", "sub_class_str"],
+        get_mock_plugin_function,
+        MockPlugin,
+    )
+
+    assert list(result) == expected
