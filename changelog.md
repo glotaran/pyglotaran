@@ -28,6 +28,7 @@
 - 🩹 Fix yaml result saving with relative paths (#1199)
 - 🩹 Fix model markdown render for items without label (#1213)
 - 🩹 Fix wrong file loading due to partial filename matching in Project (#1212)
+- 🩹 Fix `Project.import_data` path resolving for different script and cwd (#1214)
 <!-- Fix within the 0.7.0 release cycle, therefore hidden:
 - 🩹 Fix the matrix provider alignment/reduction ('grouping') issues introduced in #1175 (#1190)
   -->
