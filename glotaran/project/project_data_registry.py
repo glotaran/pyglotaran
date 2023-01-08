@@ -46,6 +46,9 @@ class ProjectDataRegistry(ProjectRegistry):
         """
         path = Path(path)
 
+        if path.is_absolute() is False:
+            path = (self.directory.parent / path).resolve()
+
         name = name or path.stem
         data_path = self.directory / f"{name}.nc"
 

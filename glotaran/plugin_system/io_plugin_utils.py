@@ -6,6 +6,7 @@ import os
 from collections.abc import Callable
 from functools import partial
 from functools import wraps
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import TypeVar
@@ -94,6 +95,8 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
 def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: bool = False) -> None:
     """Raise FileExistsError if files already exists and allow_overwrite isn't True.
 
+    As a side effect this also creates the parent directory of a file if it does not exist.
+
     Parameters
     ----------
     path : str
@@ -113,11 +116,14 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
         "If you are absolutely sure this is what you want and need to do you can "
         "use the argument 'allow_overwrite=True'."
     )
+    path = Path(path).resolve()
+    if path.parent.is_file() is False:
+        path.parent.mkdir(parents=True, exist_ok=True)
     if allow_overwrite:
         return
-    elif os.path.isfile(path):
+    elif path.is_file():
         raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
-    elif os.path.isdir(path) and os.listdir(str(path)):
+    elif path.is_dir() and os.listdir(str(path)):
         raise FileExistsError(
             f"The folder {path!r} already exists and is not empty. \n{user_info}"
         )

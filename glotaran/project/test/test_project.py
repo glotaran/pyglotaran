@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from importlib.metadata import distribution
 from pathlib import Path
 from shutil import rmtree
@@ -7,6 +8,7 @@ from textwrap import dedent
 from typing import Literal
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from _pytest.recwarn import WarningsRecorder
 from IPython.core.formatters import format_display_data
 
@@ -24,6 +26,7 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import (
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
     PARAMETERS as example_parameter,
 )
+from glotaran.utils.io import chdir_context
 
 
 @pytest.fixture(scope="module")
@@ -343,6 +346,37 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     parameters = load_parameters(parameter_file)
 
     assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
+
+
+def test_import_data_relative_paths_script_folder_not_cwd(
+    tmp_path: Path, monkeypatch: MonkeyPatch
+):
+    """Import data using relative paths where cwd and script folder differ."""
+    script_folder = tmp_path / "project"
+    script_folder.mkdir(parents=True, exist_ok=True)
+    with chdir_context(tmp_path), monkeypatch.context() as m:
+        # Pretend the currently running script is located at ``script_folder / "script.py"``
+        m.setattr(
+            sys.modules[globals()["__name__"]],
+            "__file__",
+            (script_folder / "script.py").as_posix(),
+        )
+        cwd_data_import_path = "import_data.nc"
+        save_dataset(example_dataset, cwd_data_import_path)
+        assert (tmp_path / cwd_data_import_path).is_file() is True
+
+        script_folder_data_import_path = "original/import_data.nc"
+        save_dataset(example_dataset, script_folder / script_folder_data_import_path)
+        assert (script_folder / script_folder_data_import_path).is_file() is True
+
+        project = Project.open("project.gta")
+        assert (script_folder / "project.gta").is_file() is True
+
+        project.import_data(f"../{cwd_data_import_path}", name="dataset_1")
+        assert (script_folder / "data/dataset_1.nc").is_file() is True
+
+        project.import_data(script_folder_data_import_path, name="dataset_2")
+        assert (script_folder / "data/dataset_2.nc").is_file() is True
 
 
 def test_missing_file_errors(tmp_path: Path, project_folder: Path):

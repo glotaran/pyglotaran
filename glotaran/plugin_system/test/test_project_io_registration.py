@@ -241,6 +241,7 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
     assert result.source_path == Path(file_path).as_posix()
 
 
+@pytest.mark.parametrize("sub_dir", ("", "sub_dir"))
 @pytest.mark.parametrize(
     "save_function",
     (
@@ -253,10 +254,10 @@ def test_load_functions(tmp_path: Path, load_function: Callable[..., Any]):
 @pytest.mark.parametrize("update_source_path", (True, False))
 @pytest.mark.usefixtures("mocked_registry")
 def test_write_functions(
-    tmp_path: Path, save_function: Callable[..., Any], update_source_path: bool
+    tmp_path: Path, save_function: Callable[..., Any], update_source_path: bool, sub_dir: str
 ):
     """All args and kwargs are passes correctly."""
-    file_path = tmp_path / "model.mock"
+    file_path = tmp_path / "sub_dir" / "model.mock"
     mock_obj = MockFileLoadable()
 
     save_function(
