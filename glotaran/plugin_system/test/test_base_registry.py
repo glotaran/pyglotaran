@@ -45,9 +45,26 @@ class MockPlugin:
         pass
 
 
-class MockPluginSubclass(MockPlugin):
+class MockPluginSubclassPartial(MockPlugin):
     def some_method(self):
         return "different implementation"
+
+
+class MockPluginSubclassFull(MockPlugin):
+    def some_method(self):
+        return "different implementation"
+
+    def some_other_method(self):
+        return "different implementation"
+
+
+def get_mock_plugin_function(plugin_registry_key: str):
+    if plugin_registry_key == "base":
+        return MockPlugin
+    elif plugin_registry_key == "sub_class_partial":
+        return MockPluginSubclassPartial
+    elif plugin_registry_key == "sub_class_full":
+        return MockPluginSubclassFull
 
 
 mock_registry_data_io = cast(
@@ -318,10 +335,12 @@ def test_show_method_help(capsys: CaptureFixture, plugin: MockPlugin | type[Mock
 @pytest.mark.parametrize(
     "method_names,plugin,expected",
     (
-        ("some_method", MockPluginSubclass, [True]),
-        ("some_method", MockPluginSubclass(), [True]),
-        (["some_method", "some_other_method"], MockPluginSubclass, [True, False]),
-        (["some_method", "some_other_method"], MockPluginSubclass(), [True, False]),
+        ("some_method", MockPluginSubclassPartial, [True]),
+        ("some_method", MockPluginSubclassPartial(), [True]),
+        (["some_method", "some_other_method"], MockPluginSubclassPartial, [True, False]),
+        (["some_method", "some_other_method"], MockPluginSubclassPartial(), [True, False]),
+        (["some_method", "some_other_method"], MockPluginSubclassFull, [True, True]),
+        (["some_method", "some_other_method"], MockPluginSubclassFull(), [True, True]),
     ),
 )
 def test_methods_differ_from_baseclass(
@@ -337,15 +356,15 @@ def test_methods_differ_from_baseclass(
     "method_names,plugin_registry_keys,expected",
     (
         ("some_method", "base", [["`base`", False]]),
-        ("some_method", "sub_class", [["`sub_class`", True]]),
-        ("some_method", "sub_class_inst", [["`sub_class_inst`", True]]),
+        ("some_method", "sub_class_partial", [["`sub_class_partial`", True]]),
+        ("some_method", "sub_class_full", [["`sub_class_full`", True]]),
         (
             ["some_method", "some_other_method"],
-            ["base", "sub_class", "sub_class_inst"],
+            ["base", "sub_class_partial", "sub_class_full"],
             [
                 ["`base`", False, False],
-                ["`sub_class`", True, False],
-                ["`sub_class_inst`", True, False],
+                ["`sub_class_partial`", True, False],
+                ["`sub_class_full`", True, True],
             ],
         ),
     ),
@@ -357,14 +376,8 @@ def test_methods_differ_from_baseclass_table(
 ):
     """Inherited methods are the same as base class and overwritten ones differ"""
 
-    def get_plugin_function(plugin_registry_key: str):
-        if plugin_registry_key == "base":
-            return MockPlugin
-        elif plugin_registry_key in {"sub_class", "sub_class_inst"}:
-            return MockPluginSubclass
-
     result = methods_differ_from_baseclass_table(
-        method_names, plugin_registry_keys, get_plugin_function, MockPlugin
+        method_names, plugin_registry_keys, get_mock_plugin_function, MockPlugin
     )
 
     assert list(result) == expected
@@ -373,14 +386,8 @@ def test_methods_differ_from_baseclass_table(
 def test_methods_differ_from_baseclass_table_plugin_names():
     """Show plugin name"""
 
-    def get_plugin_function(plugin_registry_key: str):
-        if plugin_registry_key == "base":
-            return MockPlugin
-        elif plugin_registry_key == "sub_class":
-            return MockPluginSubclass
-
     result = methods_differ_from_baseclass_table(
-        "some_method", "base", get_plugin_function, MockPlugin, plugin_names=True
+        "some_method", "base", get_mock_plugin_function, MockPlugin, plugin_names=True
     )
 
     assert list(result) == [["`base`", False, "`test_base_registry.MockPlugin`"]]
