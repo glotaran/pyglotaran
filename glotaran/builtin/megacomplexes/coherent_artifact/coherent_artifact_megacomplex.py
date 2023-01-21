@@ -1,6 +1,8 @@
 """This package contains the kinetic megacomplex item."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numba as nb
 import numpy as np
 import xarray as xr
@@ -15,6 +17,9 @@ from glotaran.model import ModelError
 from glotaran.model import ParameterType
 from glotaran.model import megacomplex
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 @megacomplex(dataset_model_type=DecayDatasetModel, unique=True)
 class CoherentArtifactMegacomplex(Megacomplex):
@@ -26,8 +31,8 @@ class CoherentArtifactMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         if not 1 <= self.order <= 3:
@@ -70,7 +75,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
         return self.compartments(), matrix
 
     def get_irf_parameter(
-        self, irf: IrfMultiGaussian, global_index: int | None, global_axis: np.typing.ArrayLike
+        self, irf: IrfMultiGaussian, global_index: int | None, global_axis: ArrayLike
     ) -> tuple[float, float]:
         center, width, _, shift, _, _ = irf.parameter(global_index, global_axis)
         center = center[0] - shift

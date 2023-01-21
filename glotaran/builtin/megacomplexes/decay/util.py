@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numba as nb
 import numpy as np
 import xarray as xr
@@ -15,6 +17,9 @@ from glotaran.builtin.megacomplexes.decay.irf import IrfSpectralMultiGaussian
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import get_dataset_model_model_dimension
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 def index_dependent(dataset_model: DatasetModel) -> bool:
@@ -38,8 +43,8 @@ def index_dependent(dataset_model: DatasetModel) -> bool:
 def calculate_matrix(
     megacomplex: Megacomplex,
     dataset_model: DatasetModel,
-    global_axis: np.typing.ArrayLike,
-    model_axis: np.typing.ArrayLike,
+    global_axis: ArrayLike,
+    model_axis: ArrayLike,
     **kwargs,
 ):
 

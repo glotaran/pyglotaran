@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import xarray as xr
 
 from glotaran.model import DatasetModel
 from glotaran.model import Megacomplex
 from glotaran.model import megacomplex
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 @megacomplex(exclusive=True)
@@ -16,8 +21,8 @@ class ClpGuideMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         clp_label = [self.target]

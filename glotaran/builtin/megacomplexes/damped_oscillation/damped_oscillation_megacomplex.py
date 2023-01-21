@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numba as nb
 import numpy as np
 import xarray as xr
@@ -16,6 +18,9 @@ from glotaran.model import ParameterType
 from glotaran.model import attribute
 from glotaran.model import megacomplex
 from glotaran.parameter import Parameters
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 class OscillationParameterIssue(ItemIssue):
@@ -68,8 +73,8 @@ class DampedOscillationMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
 
@@ -196,13 +201,13 @@ def calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, axis)
 
 
 def calculate_damped_oscillation_matrix_gaussian_irf_on_index(
-    matrix: np.typing.ArrayLike,
-    frequencies: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
+    matrix: ArrayLike,
+    frequencies: ArrayLike,
+    rates: ArrayLike,
     irf: IrfMultiGaussian,
     global_index: int | None,
-    global_axis: np.typing.ArrayLike,
-    model_axis: np.typing.ArrayLike,
+    global_axis: ArrayLike,
+    model_axis: ArrayLike,
 ):
     centers, widths, scales, shift, _, _ = irf.parameter(global_index, global_axis)
     for center, width, scale in zip(centers, widths, scales):

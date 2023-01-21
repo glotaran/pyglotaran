@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Literal
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
@@ -12,6 +12,11 @@ from glotaran.model import Model
 from glotaran.model.dataset_model import get_dataset_model_model_dimension
 from glotaran.model.dataset_model import has_dataset_model_global_model
 from glotaran.project import Scheme
+
+if TYPE_CHECKING:
+    from typing import Literal
+
+    from glotaran.typing.types import ArrayLike
 
 
 class AlignDatasetError(ValueError):
@@ -38,13 +43,13 @@ class DataProvider:
         dataset_group : DatasetGroup
             The dataset group.
         """
-        self._data: dict[str, np.typing.ArrayLike] = {}
-        self._weight: dict[str, np.typing.ArrayLike | None] = {}
-        self._flattened_data: dict[str, np.typing.ArrayLike] = {}
-        self._flattened_weight: dict[str, np.typing.ArrayLike | None] = {}
-        self._model_axes: dict[str, np.typing.ArrayLike] = {}
+        self._data: dict[str, ArrayLike] = {}
+        self._weight: dict[str, ArrayLike | None] = {}
+        self._flattened_data: dict[str, ArrayLike] = {}
+        self._flattened_weight: dict[str, ArrayLike | None] = {}
+        self._model_axes: dict[str, ArrayLike] = {}
         self._model_dimensions: dict[str, str] = {}
-        self._global_axes: dict[str, np.typing.ArrayLike] = {}
+        self._global_axes: dict[str, ArrayLike] = {}
         self._global_dimensions: dict[str, str] = {}
 
         for label, dataset_model in dataset_group.dataset_models.items():
@@ -62,7 +67,7 @@ class DataProvider:
             )
             self.add_model_weight(scheme.model, label, model_dimension, global_dimension)
 
-            self._data[label] = self.get_from_dataset(
+            self._data[label] = self.get_from_dataset(  # type:ignore[assignment]
                 dataset, "data", model_dimension, global_dimension
             )
             if self._weight[label] is not None:
@@ -97,7 +102,7 @@ class DataProvider:
     @staticmethod
     def get_from_dataset(
         dataset: xr.Dataset, name: str, model_dimension: str, global_dimension: str
-    ) -> np.typing.ArrayLike | None:
+    ) -> ArrayLike | None:
         """Get a copy of data from a dataset with dimensions (model, global).
 
         Parameters
@@ -113,7 +118,7 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike | None
+        ArrayLike | None
             The copy of the data. None if name is not present in dataset.
         """
         data = None
@@ -124,16 +129,14 @@ class DataProvider:
         return data
 
     @staticmethod
-    def get_axis_slice_from_interval(
-        interval: tuple[float, float], axis: np.typing.ArrayLike
-    ) -> slice:
+    def get_axis_slice_from_interval(interval: tuple[float, float], axis: ArrayLike) -> slice:
         """Get a slice of indices from a min max tuple and for an axis.
 
         Parameters
         ----------
         interval : tuple[float, float]
             The min max tuple.
-        axis : np.typing.ArrayLike
+        axis : ArrayLike
             The axis to slice.
 
         Returns
@@ -208,7 +211,7 @@ class DataProvider:
 
         self._weight[dataset_label] = weight.data
 
-    def get_data(self, dataset_label: str) -> np.typing.ArrayLike:
+    def get_data(self, dataset_label: str) -> ArrayLike:
         """Get data for a dataset.
 
         Parameters
@@ -218,12 +221,12 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The data.
         """
         return self._data[dataset_label]
 
-    def get_weight(self, dataset_label: str) -> np.typing.ArrayLike | None:
+    def get_weight(self, dataset_label: str) -> ArrayLike | None:
         """Get weight for a dataset.
 
         Parameters
@@ -233,12 +236,12 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike | None
+        ArrayLike | None
             The weight.
         """
         return self._weight[dataset_label]
 
-    def get_flattened_data(self, dataset_label: str) -> np.typing.ArrayLike:
+    def get_flattened_data(self, dataset_label: str) -> ArrayLike:
         """Get flattened data for a dataset.
 
         Parameters
@@ -248,12 +251,12 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The flattened data.
         """
         return self._flattened_data[dataset_label]
 
-    def get_flattened_weight(self, dataset_label: str) -> np.typing.ArrayLike | None:
+    def get_flattened_weight(self, dataset_label: str) -> ArrayLike | None:
         """Get flattened weight for a dataset.
 
         Parameters
@@ -263,12 +266,12 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike | None
+        ArrayLike | None
             The flattened weight.
         """
         return self._flattened_weight[dataset_label]
 
-    def get_model_axis(self, dataset_label: str) -> np.typing.ArrayLike:
+    def get_model_axis(self, dataset_label: str) -> ArrayLike:
         """Get the model axis for a dataset.
 
         Parameters
@@ -278,7 +281,7 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The model axis.
         """
         return self._model_axes[dataset_label]
@@ -298,7 +301,7 @@ class DataProvider:
         """
         return self._model_dimensions[dataset_label]
 
-    def get_global_axis(self, dataset_label: str) -> np.typing.ArrayLike:
+    def get_global_axis(self, dataset_label: str) -> ArrayLike:
         """Get the global axis for a dataset.
 
         Parameters
@@ -308,7 +311,7 @@ class DataProvider:
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The global axis.
         """
         return self._global_axes[dataset_label]
@@ -358,7 +361,7 @@ class DataProviderLinked(DataProvider):
     @staticmethod
     def align_index(
         index: int,
-        target_axis: np.typing.ArrayLike,
+        target_axis: ArrayLike,
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
     ) -> int:
@@ -368,7 +371,7 @@ class DataProviderLinked(DataProvider):
         ----------
         index : int
             The index to align.
-        target_axis : np.typing.ArrayLike
+        target_axis : ArrayLike
             The axis to align the index on.
         tolerance : float
             The alignment tolerance.
@@ -394,12 +397,12 @@ class DataProviderLinked(DataProvider):
         return index
 
     @property
-    def aligned_global_axis(self) -> np.typing.ArrayLike:
+    def aligned_global_axis(self) -> ArrayLike:
         """Get the aligned global axis for the dataset group.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The aligned global axis.
         """
         return self._aligned_global_axis
@@ -430,7 +433,7 @@ class DataProviderLinked(DataProvider):
         """
         return self._aligned_group_labels[index]
 
-    def get_aligned_dataset_indices(self, index: int) -> list[int]:
+    def get_aligned_dataset_indices(self, index: int) -> ArrayLike:
         """Get the aligned dataset indices for an index.
 
         Parameters
@@ -440,12 +443,12 @@ class DataProviderLinked(DataProvider):
 
         Returns
         -------
-        list[int]
+        ArrayLike
             The aligned dataset indices.
         """
         return self._aligned_dataset_indices[index]
 
-    def get_aligned_data(self, index: int) -> np.typing.ArrayLike:
+    def get_aligned_data(self, index: int) -> ArrayLike:
         """Get the aligned data for an index.
 
         Parameters
@@ -455,12 +458,12 @@ class DataProviderLinked(DataProvider):
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The aligned data.
         """
         return self._aligned_data[index]
 
-    def get_aligned_weight(self, index: int) -> np.typing.ArrayLike | None:
+    def get_aligned_weight(self, index: int) -> ArrayLike | None:
         """Get the aligned weight for an index.
 
         Parameters
@@ -470,12 +473,12 @@ class DataProviderLinked(DataProvider):
 
         Returns
         -------
-        np.typing.ArrayLike | None
+        ArrayLike | None
             The aligned weight.
         """
         return self._aligned_weights[index]
 
-    def create_aligned_global_axes(self, scheme: Scheme) -> dict[str, np.typing.ArrayLike]:
+    def create_aligned_global_axes(self, scheme: Scheme) -> dict[str, ArrayLike]:
         """Create aligned global axes for the dataset group.
 
         Parameters
@@ -485,7 +488,7 @@ class DataProviderLinked(DataProvider):
 
         Returns
         -------
-        dict[str, np.typing.ArrayLike]
+        dict[str, ArrayLike]
             The aligned global axes.
 
         Raises
@@ -519,18 +522,18 @@ class DataProviderLinked(DataProvider):
         return aligned_global_axes
 
     def align_data(
-        self, aligned_global_axes: dict[str, np.typing.ArrayLike]
-    ) -> tuple[np.typing.ArrayLike, list[np.typing.ArrayLike]]:
+        self, aligned_global_axes: dict[str, ArrayLike]
+    ) -> tuple[ArrayLike, list[ArrayLike]]:
         """Align the data in a dataset group.
 
         Parameters
         ----------
-        aligned_global_axes : dict[str, np.typing.ArrayLike]
+        aligned_global_axes : dict[str, ArrayLike]
             The aligned global axes.
 
         Returns
         -------
-        tuple[np.typing.ArrayLike, list[np.typing.ArrayLike]]
+        tuple[ArrayLike, list[ArrayLike]]
             The aligned global axis and data.
         """
         aligned_data = xr.concat(
@@ -553,19 +556,17 @@ class DataProviderLinked(DataProvider):
             ],
         )
 
-    def align_dataset_indices(
-        self, aligned_global_axes: dict[str, np.typing.ArrayLike]
-    ) -> list[np.typing.ArrayLike]:
+    def align_dataset_indices(self, aligned_global_axes: dict[str, ArrayLike]) -> list[ArrayLike]:
         """Align the global indices in a dataset group.
 
         Parameters
         ----------
-        aligned_global_axes : dict[str, np.typing.ArrayLike]
+        aligned_global_axes : dict[str, ArrayLike]
             The aligned global axes.
 
         Returns
         -------
-        list[np.typing.ArrayLike]
+        list[ArrayLike]
         The aligned dataset indices.
         """
         aligned_indices = xr.concat(
@@ -586,18 +587,18 @@ class DataProviderLinked(DataProvider):
 
     @staticmethod
     def align_groups(
-        aligned_global_axes: dict[str, np.typing.ArrayLike]
-    ) -> tuple[np.typing.ArrayLike, dict[str, list[str]]]:
+        aligned_global_axes: dict[str, ArrayLike]
+    ) -> tuple[ArrayLike, dict[str, list[str]]]:
         """Align the groups in a dataset group.
 
         Parameters
         ----------
-        aligned_global_axes : dict[str, np.typing.ArrayLike]
+        aligned_global_axes : dict[str, ArrayLike]
             The aligned global axes.
 
         Returns
         -------
-        tuple[np.typing.ArrayLike, dict[str, list[str]]]
+        tuple[ArrayLike, dict[str, list[str]]]
             The aligned grouplabels and group definitions.
         """
         aligned_groups = xr.concat(
@@ -612,11 +613,9 @@ class DataProviderLinked(DataProvider):
         # into an ndarray of shape (len(global,)
         # as an alternative to the more elegant xarray built-in which is limited to 32 datasets
         # aligned_group_labels = aligned_groups.str.join(dim="dataset").data
-        aligned_group_labels = [
-            "".join(sub_arr.values) for _, sub_arr in aligned_groups.groupby("global")
-        ]
-
-        aligned_group_labels = np.asarray(aligned_group_labels)
+        aligned_group_labels = np.asarray(
+            ["".join(sub_arr.values) for _, sub_arr in aligned_groups.groupby("global")]
+        )
 
         group_definitions: dict[str, list[str]] = {}
         for i, group_label in enumerate(aligned_group_labels):
@@ -626,19 +625,17 @@ class DataProviderLinked(DataProvider):
                 )
         return aligned_group_labels, group_definitions
 
-    def align_weights(
-        self, aligned_global_axes: dict[str, np.typing.ArrayLike]
-    ) -> list[np.typing.ArrayLike | None]:
+    def align_weights(self, aligned_global_axes: dict[str, ArrayLike]) -> list[ArrayLike | None]:
         """Align the weights in a dataset group.
 
         Parameters
         ----------
-        aligned_global_axes : dict[str, np.typing.ArrayLike]
+        aligned_global_axes : dict[str, ArrayLike]
             The aligned global axes.
 
         Returns
         -------
-        list[np.typing.ArrayLike | None]
+        list[ArrayLike | None]
             The aligned weights.
         """
         all_weights = {
@@ -651,7 +648,7 @@ class DataProviderLinked(DataProvider):
             if weight is not None
         }
 
-        aligned_weights = [None] * self._aligned_global_axis.size
+        aligned_weights: list[ArrayLike | None] = [None] * self._aligned_global_axis.size
         if all_weights:
             for i, group_label in enumerate(self._aligned_group_labels):
                 group_dataset_labels = self._group_definitions[group_label]

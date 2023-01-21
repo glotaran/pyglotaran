@@ -5,7 +5,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-import numpy as np
 import xarray as xr
 from attrs import NOTHING
 from attrs import fields
@@ -17,6 +16,7 @@ from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 if TYPE_CHECKING:
 
     from glotaran.model import DatasetModel
+    from glotaran.typing.types import ArrayLike
 
 
 def megacomplex(
@@ -84,26 +84,26 @@ class Megacomplex(ModelItemTyped):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
-    ) -> tuple[list[str], np.typing.ArrayLike]:
+    ) -> tuple[list[str], ArrayLike]:
         """Calculate the megacomplex matrix.
 
         Parameters
         ----------
         dataset_model: DatasetModel
             The dataset model.
-        global_axis: np.typing.ArrayLike
+        global_axis: ArrayLike
             The global axis.
-        model_axis: np.typing.ArrayLike,
+        model_axis: ArrayLike
             The model axis.
         **kwargs
             Additional arguments.
 
         Returns
         -------
-        tuple[list[str], np.typing.ArrayLike]:
+        tuple[list[str], ArrayLike]:
             The clp labels and the matrix.
 
         .. # noqa: DAR202

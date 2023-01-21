@@ -16,6 +16,7 @@ from glotaran.testing.plugin_system import monkeypatch_plugin_registry
 
 if TYPE_CHECKING:
     from glotaran.model import DatasetModel
+    from glotaran.typing.types import ArrayLike
 
 TEST_AXIS_MODEL_SIZE = 100
 TEST_AXIS_MODEL = xr.DataArray(np.arange(0, TEST_AXIS_MODEL_SIZE))
@@ -45,8 +46,8 @@ class BenchmarkMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         if self.is_index_dependent is True:

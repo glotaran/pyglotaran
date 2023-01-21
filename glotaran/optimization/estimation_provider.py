@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
@@ -18,6 +19,8 @@ from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 SUPPORTED_RESIUDAL_FUNCTIONS = {
     "variable_projection": residual_variable_projection,
     "non_negative_least_squares": residual_nnls,
@@ -76,20 +79,20 @@ class EstimationProvider:
         return self._group
 
     def calculate_residual(
-        self, matrix: np.typing.ArrayLike, data: np.typing.ArrayLike
-    ) -> tuple[np.typing.ArrayLike, np.typing.ArrayLike]:
+        self, matrix: ArrayLike, data: ArrayLike
+    ) -> tuple[ArrayLike, ArrayLike]:
         """Calculate the clps and the residual for a matrix and data.
 
         Parameters
         ----------
-        matrix : np.typing.ArrayLike
+        matrix : ArrayLike
             The matrix.
-        data : np.typing.ArrayLike
+        data : ArrayLike
             The data.
 
         Returns
         -------
-        tuple[np.typing.ArrayLike, np.typing.ArrayLike]
+        tuple[ArrayLike, ArrayLike]
             The estimated clp and residual.
         """
         return self._residual_function(matrix, data)
@@ -98,9 +101,9 @@ class EstimationProvider:
         self,
         clp_labels: list[str],
         reduced_clp_labels: list[str],
-        reduced_clps: np.typing.ArrayLike,
+        reduced_clps: ArrayLike,
         index: int,
-    ) -> np.typing.ArrayLike:
+    ) -> ArrayLike:
         """Retrieve clp from reduced clp.
 
         Parameters
@@ -109,14 +112,14 @@ class EstimationProvider:
             The original clp labels.
         reduced_clp_labels : list[str]
             The reduced clp labels.
-        reduced_clps : np.typing.ArrayLike
+        reduced_clps : ArrayLike
             The reduced clps.
         index : int
             The index on the global axis.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The retrieved clps.
         """
         model = self.group.model
@@ -164,9 +167,9 @@ class EstimationProvider:
         ----------
         clp_labels : list[list[str]]
             The clp labels.
-        clps : list[np.typing.ArrayLike]
+        clps : list[ArrayLike]
             The clps.
-        global_axis : np.typing.ArrayLike
+        global_axis : ArrayLike
             The global axis.
 
         Returns
@@ -223,12 +226,12 @@ class EstimationProvider:
         """
         raise NotImplementedError
 
-    def get_full_penalty(self) -> np.typing.ArrayLike:
+    def get_full_penalty(self) -> ArrayLike:
         """Get the full penalty.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The clp penalty.
 
         .. # noqa: DAR202
@@ -275,10 +278,10 @@ class EstimationProviderUnlinked(EstimationProvider):
         super().__init__(dataset_group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
-        self._clps: dict[str, list[np.typing.ArrayLike] | np.typing.ArrayLike] = {
+        self._clps: dict[str, list[ArrayLike] | ArrayLike] = {
             label: [] for label in self.group.dataset_models
         }
-        self._residuals: dict[str, list[np.typing.ArrayLike] | np.typing.ArrayLike] = {
+        self._residuals: dict[str, list[ArrayLike] | ArrayLike] = {
             label: [] for label in self.group.dataset_models
         }
 
@@ -292,12 +295,12 @@ class EstimationProviderUnlinked(EstimationProvider):
             else:
                 self.calculate_estimation(dataset_model)
 
-    def get_full_penalty(self) -> np.typing.ArrayLike:
+    def get_full_penalty(self) -> ArrayLike:
         """Get the full penalty.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The clp penalty.
         """
         full_penalty = np.concatenate(
@@ -385,8 +388,8 @@ class EstimationProviderUnlinked(EstimationProvider):
             The dataset model.
         """
         label = dataset_model.label
-        self._clps[label].clear()
-        self._residuals[label].clear()
+        self._clps[label].clear()  # type:ignore[union-attr]
+        self._residuals[label].clear()  # type:ignore[union-attr]
 
         global_axis = self._data_provider.get_global_axis(label)
         data = self._data_provider.get_data(label)
@@ -402,11 +405,11 @@ class EstimationProviderUnlinked(EstimationProvider):
                 clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index_value
             )
 
-            self._clps[label].append(clp)
-            self._residuals[label].append(residual)
+            self._clps[label].append(clp)  # type:ignore[union-attr]
+            self._residuals[label].append(residual)  # type:ignore[union-attr]
 
         self._clp_penalty += self.calculate_clp_penalties(
-            clp_labels, self._clps[label], global_axis
+            clp_labels, self._clps[label], global_axis  # type:ignore[arg-type]
         )
 
 
@@ -433,11 +436,11 @@ class EstimationProviderLinked(EstimationProvider):
         super().__init__(dataset_group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
-        self._clps: list[np.typing.ArrayLike] = [
-            None
+        self._clps: list[ArrayLike] = [
+            None  # type:ignore[list-item]
         ] * self._data_provider.aligned_global_axis.size
-        self._residuals: list[np.typing.ArrayLike] = [
-            None
+        self._residuals: list[ArrayLike] = [
+            None  # type:ignore[list-item]
         ] * self._data_provider.aligned_global_axis.size
 
     def estimate(self):
@@ -460,12 +463,12 @@ class EstimationProviderLinked(EstimationProvider):
             self._data_provider.aligned_global_axis,
         )
 
-    def get_full_penalty(self) -> np.typing.ArrayLike:
+    def get_full_penalty(self) -> ArrayLike:
         """Get the full penalty.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The clp penalty.
         """
         return np.concatenate((np.concatenate(self._residuals), self._clp_penalty))
@@ -533,10 +536,10 @@ class EstimationProviderLinked(EstimationProvider):
 def _get_area(
     clp_label: str,
     clp_labels: list[str] | list[list[str]],
-    clps: list[np.typing.ArrayLike],
+    clps: list[ArrayLike],
     intervals: list[tuple[float, float]],
-    global_axis: np.typing.ArrayLike,
-) -> np.typing.ArrayLike:
+    global_axis: ArrayLike,
+) -> ArrayLike:
     """Get get slice of a clp on intervals on the global axis.
 
     Parameters
@@ -545,16 +548,16 @@ def _get_area(
         The label of the clp.
     clp_labels: list[str] | list[list[str]]
         The clp labels.
-    clps : list[np.typing.ArrayLike]
+    clps : list[ArrayLike]
         The clps.
     intervals: list[tuple[float, float]]
         The intervals on the global axis.
-    global_axis : np.typing.ArrayLike
+    global_axis : ArrayLike
         The global axis.
 
     Returns
     -------
-    np.typing.ArrayLike:
+    ArrayLike:
         The concatenated slices.
     """
     area = []
