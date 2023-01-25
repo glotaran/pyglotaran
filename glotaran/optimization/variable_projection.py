@@ -1,25 +1,29 @@
 """Module for residual calculation with  the variable projection method."""
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
+
 from scipy.linalg import lapack
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 def residual_variable_projection(
-    matrix: np.typing.ArrayLike, data: np.typing.ArrayLike
-) -> tuple[np.typing.ArrayLike, np.typing.ArrayLike]:
+    matrix: ArrayLike, data: ArrayLike
+) -> tuple[ArrayLike, ArrayLike]:
     """Calculate conditionally linear parameters and residual with the variable projection method.
 
     Parameters
     ----------
-    matrix : np.typing.ArrayLike
+    matrix : ArrayLike
         The model matrix.
-    data : np.typing.ArrayLike
+    data : ArrayLike
         The data to analyze.
 
     Returns
     -------
-    tuple[np.typing.ArrayLike, np.typing.ArrayLike]
+    tuple[ArrayLike, ArrayLike]
         The clps and the residual.
     """
     # TODO: Reference Kaufman paper

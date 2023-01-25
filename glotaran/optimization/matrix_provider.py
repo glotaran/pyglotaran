@@ -4,6 +4,7 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass
 from dataclasses import replace
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
@@ -18,6 +19,9 @@ from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import fill_item
 from glotaran.optimization.data_provider import DataProvider
 from glotaran.optimization.data_provider import DataProviderLinked
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 @dataclass
@@ -41,31 +45,29 @@ class MatrixContainer:
         return len(self.matrix.shape) == 3
 
     @staticmethod
-    def apply_weight(
-        matrix: np.typing.ArrayLike, weight: np.typing.ArrayLike
-    ) -> np.typing.ArrayLike:
+    def apply_weight(matrix: ArrayLike, weight: ArrayLike) -> ArrayLike:
         """Apply weight on a matrix.
 
         Parameters
         ----------
-        matrix : np.typing.ArrayLike
+        matrix : ArrayLike
             The matrix.
-        weight : np.typing.ArrayLike
+        weight : ArrayLike
             The weight.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The weighted matrix.
         """
         return (matrix.T * weight).T
 
-    def create_weighted_matrix(self, weight: np.typing.ArrayLike) -> MatrixContainer:
+    def create_weighted_matrix(self, weight: ArrayLike) -> MatrixContainer:
         """Create a matrix container with a weighted matrix.
 
         Parameters
         ----------
-        weight : np.typing.ArrayLike
+        weight : ArrayLike
             The weight.
 
         Returns
@@ -146,8 +148,8 @@ class MatrixProvider:
     @staticmethod
     def calculate_dataset_matrix(
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         global_matrix: bool = False,
     ) -> MatrixContainer:
         """Calculate the matrix for a dataset on an index on the global axis.
@@ -156,9 +158,9 @@ class MatrixProvider:
         ----------
         dataset_model : DatasetModel
             The dataset model.
-        global_axis: np.typing.ArrayLike
+        global_axis: ArrayLike
             The global axis.
-        model_axis: np.typing.ArrayLike
+        model_axis: ArrayLike
             The model axis.
         global_matrix: bool
             Calculate the global megacomplexes if `True`.
@@ -192,22 +194,22 @@ class MatrixProvider:
                 clp_labels, matrix = MatrixProvider.combine_megacomplex_matrices(
                     matrix, this_matrix, clp_labels, this_clp_labels
                 )
-        return MatrixContainer(clp_labels, matrix)
+        return MatrixContainer(clp_labels, matrix)  # type:ignore[arg-type]
 
     @staticmethod
     def combine_megacomplex_matrices(
-        matrix_left: np.typing.ArrayLike,
-        matrix_right: np.typing.ArrayLike,
+        matrix_left: ArrayLike,
+        matrix_right: ArrayLike,
         clp_labels_left: list[str],
         clp_labels_right: list[str],
-    ) -> tuple[list[str], np.typing.ArrayLike]:
+    ) -> tuple[list[str], ArrayLike]:
         """Calculate the matrix for a dataset on an index on the global axis.
 
         Parameters
         ----------
-        matrix_left: np.typing.ArrayLike
+        matrix_left: ArrayLike
             The left matrix.
-        matrix_right: np.typing.ArrayLike
+        matrix_right: ArrayLike
             The right matrix.
         clp_labels_left: list[str]
             The left clp labels.
@@ -216,7 +218,7 @@ class MatrixProvider:
 
         Returns
         -------
-        tuple[list[str], np.typing.ArrayLike]:
+        tuple[list[str], ArrayLike]:
             The combined clp labels and matrix.
         """
         result_clp_labels = clp_labels_left + [
@@ -282,7 +284,7 @@ class MatrixProvider:
     def reduce_matrix(
         self,
         matrix: MatrixContainer,
-        global_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
     ) -> list[MatrixContainer]:
         """Reduce a matrix.
 
@@ -292,7 +294,7 @@ class MatrixProvider:
         ----------
         matrix : MatrixContainer
             The matrix.
-        global_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike
             The global axis.
 
         Returns
@@ -315,7 +317,7 @@ class MatrixProvider:
     def apply_constraints(
         self,
         matrices: list[MatrixContainer],
-        global_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
     ) -> list[MatrixContainer]:
         """Apply constraints on a matrix.
 
@@ -323,7 +325,7 @@ class MatrixProvider:
         ----------
         matrices: list[MatrixContainer],
             The matrices.
-        global_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike
             The global axis.
 
         Returns
@@ -354,7 +356,7 @@ class MatrixProvider:
     def apply_relations(
         self,
         matrices: list[MatrixContainer],
-        global_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
     ) -> list[MatrixContainer]:
         """Apply relations on a matrix.
 
@@ -362,7 +364,7 @@ class MatrixProvider:
         ----------
         matrices: list[MatrixContainer],
             The matrices.
-        global_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike
             The global axis.
 
         Returns
@@ -477,7 +479,7 @@ class MatrixProviderUnlinked(MatrixProvider):
         super().__init__(group)
         self._data_provider = data_provider
         self._prepared_matrix_container: dict[str, list[MatrixContainer]] = {}
-        self._full_matrices: dict[str, np.ArrayLike] = {}
+        self._full_matrices: dict[str, ArrayLike] = {}
 
     def get_global_matrix_container(self, dataset_label: str) -> MatrixContainer:
         """Get the global matrix container for a dataset.
@@ -513,7 +515,7 @@ class MatrixProviderUnlinked(MatrixProvider):
         """
         return self._prepared_matrix_container[dataset_label][global_index]
 
-    def get_full_matrix(self, dataset_label: str) -> np.ArrayLike:
+    def get_full_matrix(self, dataset_label: str) -> ArrayLike:
         """Get the full matrix of a dataset.
 
         Parameters
@@ -523,7 +525,7 @@ class MatrixProviderUnlinked(MatrixProvider):
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The matrix.
         """
         return self._full_matrices[dataset_label]

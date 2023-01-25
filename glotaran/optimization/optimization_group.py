@@ -1,6 +1,8 @@
 """Module containing the optimization group class."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import xarray as xr
 
@@ -17,6 +19,9 @@ from glotaran.optimization.matrix_provider import MatrixProviderLinked
 from glotaran.optimization.matrix_provider import MatrixProviderUnlinked
 from glotaran.parameter import Parameters
 from glotaran.project import Scheme
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 class OptimizationGroup:
@@ -94,12 +99,12 @@ class OptimizationGroup:
         """
         return self._estimation_provider.get_additional_penalties()
 
-    def get_full_penalty(self) -> np.typing.ArrayLike:
+    def get_full_penalty(self) -> ArrayLike:
         """Get the full penalty.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The full penalty.
         """
         return self._estimation_provider.get_full_penalty()

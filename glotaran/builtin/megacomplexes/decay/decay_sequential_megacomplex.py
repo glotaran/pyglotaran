@@ -1,6 +1,8 @@
 """This package contains the decay megacomplex item."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import xarray as xr
 
@@ -11,6 +13,9 @@ from glotaran.builtin.megacomplexes.decay.util import calculate_matrix
 from glotaran.builtin.megacomplexes.decay.util import finalize_data
 from glotaran.model import DatasetModel
 from glotaran.model import megacomplex
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 @megacomplex(dataset_model_type=DecayDatasetModel)
@@ -46,8 +51,8 @@ class DecaySequentialMegacomplex(DecayParallelMegacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         return calculate_matrix(self, dataset_model, global_axis, model_axis, **kwargs)

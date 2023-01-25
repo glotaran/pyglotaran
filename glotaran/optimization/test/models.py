@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from glotaran.model import DatasetModel
@@ -8,6 +10,9 @@ from glotaran.model import Model
 from glotaran.model import ParameterType
 from glotaran.model import item
 from glotaran.model import megacomplex
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 @megacomplex()
@@ -19,8 +24,8 @@ class SimpleTestMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
 
@@ -62,8 +67,8 @@ class SimpleKineticMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         kinpar = -1 * np.asarray(dataset_model.kinetic)
@@ -95,8 +100,8 @@ class SimpleSpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         kinpar = dataset_model.kinetic
@@ -120,8 +125,8 @@ class ShapedSpectralMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         location = np.asarray(self.location)

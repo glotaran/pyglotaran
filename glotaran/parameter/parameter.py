@@ -17,12 +17,7 @@ from attrs import fields
 from attrs import filters
 from attrs import validators
 
-try:
-    from numpy._typing._array_like import _SupportsArray
-except ImportError:
-    # numpy < 1.23
-    from numpy.typing._array_like import _SupportsArray
-
+from glotaran.typing.types import _SupportsArray
 from glotaran.utils.attrs_helper import no_default_vals_in_repr
 from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr

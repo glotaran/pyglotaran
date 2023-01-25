@@ -13,10 +13,9 @@ from glotaran.model.item import fill_item
 from glotaran.optimization.matrix_provider import MatrixProvider
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-
     from glotaran.model import Model
     from glotaran.parameter import Parameters
+    from glotaran.typing.types import ArrayLike
 
 
 def simulate(
@@ -132,8 +131,8 @@ def simulate_from_clp(
     result = xr.DataArray(
         np.zeros((model_axis.size, global_axis.size)),
         coords=[
-            (model_dimension, model_axis.data),
-            (global_dimension, global_axis.data),
+            (model_dimension, model_axis),
+            (global_dimension, global_axis),
         ],
     )
     result = result.to_dataset(name="data")

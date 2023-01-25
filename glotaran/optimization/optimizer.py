@@ -1,6 +1,7 @@
 """Module containing the optimizer class."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
@@ -16,6 +17,8 @@ from glotaran.project import Scheme
 from glotaran.utils.regex import RegexPattern
 from glotaran.utils.tee import TeeContext
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
     "Dogbox": "dogbox",
@@ -156,28 +159,28 @@ class Optimizer:
                 warn(f"Optimization failed:\n\n{e}")
                 self._termination_reason = str(e)
 
-    def objective_function(self, parameters: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def objective_function(self, parameters: ArrayLike) -> ArrayLike:
         """Calculate the objective for the optimization.
 
         Parameters
         ----------
-        parameters : np.typing.ArrayLike
+        parameters : ArrayLike
             the parameters provided by the optimizer.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The objective for the optimizer.
         """
         self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)
         return self.calculate_penalty()
 
-    def calculate_penalty(self) -> np.typing.ArrayLike:
+    def calculate_penalty(self) -> ArrayLike:
         """Calculate the penalty of the scheme.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The penalty.
         """
         for group in self._optimization_groups:
@@ -267,20 +270,20 @@ class Optimizer:
         return Result(**result_args)
 
     def calculate_covariance_matrix_and_standard_errors(
-        self, jacobian: np.typing.ArrayLike, root_mean_square_error: float
-    ) -> np.typing.ArrayLike:
+        self, jacobian: ArrayLike, root_mean_square_error: float
+    ) -> ArrayLike:
         """Calculate the covariance matrix and standard errors of the optimization.
 
         Parameters
         ----------
-        jacobian : np.typing.ArrayLike
+        jacobian : ArrayLike
             The jacobian matrix.
         root_mean_square_error : float
             The root mean square error.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The covariance matrix.
         """
         # See PR #706: More robust covariance matrix calculation

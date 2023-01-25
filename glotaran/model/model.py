@@ -386,7 +386,10 @@ class Model:
         .. # noqa: D414
         """
         return Parameters(
-            {label: Parameter(label=label, value=0) for label in self.get_parameter_labels()}
+            {
+                label: Parameter(label=label, value=0)  # type:ignore[call-arg]
+                for label in self.get_parameter_labels()
+            }
         )
 
     def get_issues(self, *, parameters: Parameters | None = None) -> list[ItemIssue]:

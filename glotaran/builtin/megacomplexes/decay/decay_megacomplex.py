@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import xarray as xr
 
@@ -14,6 +16,9 @@ from glotaran.model import ModelError
 from glotaran.model import ModelItemType
 from glotaran.model import item
 from glotaran.model import megacomplex
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 @item
@@ -72,8 +77,8 @@ class DecayMegacomplex(Megacomplex):
     def calculate_matrix(
         self,
         dataset_model: DatasetModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
         return calculate_matrix(self, dataset_model, global_axis, model_axis, **kwargs)
