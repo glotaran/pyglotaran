@@ -1,0 +1,474 @@
+"""Module containing the data provider classes."""
+from __future__ import annotations
+
+
+from typing import Literal
+
+import numpy as np
+import xarray as xr
+
+from glotaran.model import DataModel
+from glotaran.model import get_data_model_dimension
+from glotaran.model import is_data_model_global
+
+if TYPE_CHECKING:
+    from typing import Literal
+
+    from glotaran.typing.types import ArrayLike
+
+
+class AlignDatasetError(ValueError):
+    """Indicates that datasets can not be aligned."""
+
+    def __init__(self):
+        """Initialize a AlignDatasetError."""
+        super().__init__(
+            "Cannot link datasets, aligning is ambiguous. \n\n"
+            "Try to lower link tolerance or change the alignment method."
+        )
+
+
+class OptimizationData:
+    """A class to provide prepared data for optimization."""
+
+    def __init__(self, model: DataModel):
+        """Initialize a data provider for an experiment.
+
+        Parameters
+        ----------
+        scheme : Scheme
+            The optimization scheme.
+        dataset_group : DatasetGroup
+            The dataset group.
+        """
+        data = model.data
+        assert isinstance(data, xr.Dataset)
+
+        self._model = model
+        self._model_dimension = get_data_model_dimension(model)
+        self._model_axis = data.coords[self._model_dimension].data
+        self._global_dimension = self.infer_global_dimension(self._model_dimension, data.data.dims)
+        self._global_axis = data.coords[self._global_dimension].data
+
+        self._data = self.get_from_dataset(data, "data")
+
+        self._weight = self.get_from_dataset(data, "weight")
+        if self._weight is None:
+            self.get_model_weight(model)
+        if self._weight is not None:
+            self._data *= self._weight
+
+        if is_data_model_global(model):
+            self._data = self._data.T.flatten()
+            if self._weight is not None:
+                self._weight = self._weight.T.flatten()
+
+    @property
+    def data(self) -> np.typing.ArrayLike:
+        return self._data
+
+    @property
+    def global_axis(self) -> np.typing.ArrayLike:
+        return self._global_axis
+
+    @property
+    def global_dimension(self) -> str:
+        return self._global_dimension
+
+    @property
+    def model(self) -> DataModel:
+        return self._model
+
+    @property
+    def model_axis(self) -> np.typing.ArrayLike:
+        return self._model_axis
+
+    @property
+    def model_dimension(self) -> str:
+        return self._model_dimension
+
+    @property
+    def weight(self) -> np.typing.ArrayLike | None:
+        return self._weight
+
+    def get_model_weight(self, model: DataModel) -> np.typing.ArrayLike | None:
+        """Add model weight to data.
+
+        Parameters
+        ----------
+        model : Model
+            The model.
+        dataset_label : str
+            The label of the data.
+        model_dimension : str
+            The model dimension.
+        global_dimension : str
+            The global dimension.
+        """
+        if not model.weights:
+            return None
+        weight = xr.DataArray(
+            np.ones((self._model_axis.size, self._global_axis.size)),
+            coords=(
+                (self._model_dimension, self._model_axis),
+                (self._global_dimension, self._global_axis),
+            ),
+        )
+
+        for model_weight in model.weights:
+            idx = {}
+            if model_weight.global_interval is not None:
+                idx[self._global_dimension] = self.get_axis_slice_from_interval(
+                    model_weight.global_interval, self._global_axis
+                )
+            if model_weight.model_interval is not None:
+                idx[self._model_dimension] = self.get_axis_slice_from_interval(
+                    model_weight.model_interval, self._model_axis
+                )
+            weight[idx] *= model_weight.value
+
+        return weight.data
+
+    @staticmethod
+    def get_axis_slice_from_interval(
+        interval: tuple[float, float], axis: np.typing.ArrayLike
+    ) -> slice:
+        """Get a slice of indices from a min max tuple and for an axis.
+
+        Parameters
+        ----------
+        interval : tuple[float, float]
+            The min max tuple.
+        axis : np.typing.ArrayLike
+            The axis to slice.
+
+        Returns
+        -------
+        slice
+            The slice of indices.
+        """
+        interval_min = interval[0]
+        interval_max = interval[1]
+
+        if interval_min > interval_max:
+            interval_min, interval_max = interval_max, interval_min
+
+        minimum = 0 if np.isinf(interval_min) else np.abs(axis - interval_min).argmin()
+        maximum = (
+            axis.size - 1 if np.isinf(interval_max) else np.abs(axis - interval_max).argmin() + 1
+        )
+
+        return slice(minimum, maximum)
+
+    @staticmethod
+    def infer_global_dimension(model_dimension: str, dimensions: tuple[str]) -> str:
+        """Infer the name of the global dimension from tuple of dimensions.
+
+        Parameters
+        ----------
+        model_dimension : str
+            The model dimension.
+        dimensions : tuple[str]
+            The dimensions tuple to infer from.
+
+        Returns
+        -------
+        str
+            The inferred name of the global dimension.
+        """
+        return next(dim for dim in dimensions if dim != model_dimension)
+
+    def get_from_dataset(self, dataset: xr.Dataset, name: str) -> np.typing.ArrayLike | None:
+        """Get a copy of data from a dataset with dimensions (model, global).
+
+        Parameters
+        ----------
+        dataset : xr.Dataset
+            The dataset to retrieve from.
+        name : str
+            The name of the data to retrieve.
+        model_dimension : str
+            The model dimension.
+        global_dimension : str
+            The global dimension.
+
+        Returns
+        -------
+        ArrayLike | None
+            The copy of the data. None if name is not present in dataset.
+        """
+        data = None
+        if name in dataset:
+            data = dataset[name].data.copy()
+            if dataset[name].dims != (self.model_dimension, self.global_dimension):
+                data = data.T
+        return data
+
+
+class LinkedOptimizationData:
+    def __init__(
+        self,
+        all_data: dict[str, OptimizationData],
+        tolerance: float,
+        method: Literal["nearest", "backward", "forward"],
+    ):
+
+        aligned_global_axes = self.align_global_axes(all_data, tolerance, method)
+        self._global_axis, self._data = self.align_data(all_data, aligned_global_axes)
+        self._data_indices = self.align_dataset_indices(aligned_global_axes)
+        self._group_labels, self._group_definitions = self.align_groups(aligned_global_axes)
+        self._weights = self.align_weights(all_data, aligned_global_axes)
+
+    @property
+    def global_axis(self) -> np.typing.ArrayLike:
+        return self._global_axis
+
+    @property
+    def group_definitions(self) -> dict[str, list[str]]:
+        return self._group_definitions
+
+    @property
+    def group_labels(self) -> np.typing.ArrayLike:
+        return self._group_labels
+
+    @property
+    def data(self) -> list[np.typing.ArrayLike]:
+        return self._data
+
+    @property
+    def data_indices(self) -> list[np.typing.ArrayLike]:
+        return self._data_indices
+
+    @property
+    def weights(self) -> list[np.typing.ArrayLike | None]:
+        return self._weights
+
+    @staticmethod
+    def align_index(
+        index: int,
+        target_axis: ArrayLike,
+        tolerance: float,
+        method: Literal["nearest", "backward", "forward"],
+    ) -> int:
+        """Align an index on a target axis.
+
+        Parameters
+        ----------
+        index : int
+            The index to align.
+        target_axis : ArrayLike
+            The axis to align the index on.
+        tolerance : float
+            The alignment tolerance.
+        method : Literal["nearest", "backward", "forward"]
+            The alignment method.
+
+        Returns
+        -------
+        int
+            The aligned index.
+        """
+        diff = target_axis - index
+
+        if method == "forward":
+            diff = diff[diff >= 0]
+        elif method == "backward":
+            diff = diff[diff <= 0]
+
+        diff = np.abs(diff)
+
+        if len(diff) > 0 and diff.min() <= tolerance:
+            index = target_axis[diff.argmin()]
+        return index
+
+    def align_global_axes(
+        self,
+        all_data: dict[str, OptimizationData],
+        tolerance: float,
+        method: Literal["nearest", "backward", "forward"],
+    ) -> dict[str, np.typing.ArrayLike]:
+        """Create aligned global axes for the dataset group.
+
+        Parameters
+        ----------
+        scheme : Scheme
+            The optimization scheme.
+
+        Returns
+        -------
+        dict[str, ArrayLike]
+            The aligned global axes.
+
+        Raises
+        ------
+        AlignDatasetError
+            Raised when dataset alignment is ambiguous.
+        """
+        aligned_axis_values = None
+        aligned_global_axes = {}
+        for label, data in all_data.items():
+
+            aligned_global_axis = data.global_axis
+            if aligned_axis_values is None:
+                aligned_axis_values = aligned_global_axis
+            else:
+                aligned_global_axis = [
+                    self.align_index(index, aligned_axis_values, tolerance, method)
+                    for index in aligned_global_axis
+                ]
+                if len(np.unique(aligned_global_axis)) != len(aligned_global_axis):
+                    raise AlignDatasetError()
+                aligned_axis_values = np.unique(
+                    np.concatenate([aligned_axis_values, aligned_global_axis])
+                )
+            aligned_global_axes[label] = aligned_global_axis
+        return aligned_global_axes
+
+    def align_data(
+        self,
+        all_data: dict[str, OptimizationData],
+        aligned_global_axes: dict[str, np.typing.ArrayLike],
+    ) -> tuple[np.typing.ArrayLike, list[np.typing.ArrayLike]]:
+        """Align the data in a dataset group.
+
+        Parameters
+        ----------
+        aligned_global_axes : dict[str, ArrayLike]
+            The aligned global axes.
+
+        Returns
+        -------
+        tuple[ArrayLike, list[ArrayLike]]
+            The aligned global axis and data.
+        """
+        aligned_data = xr.concat(
+            [
+                xr.DataArray(
+                    all_data[label].data, dims=["model", "global"], coords={"global": axis}
+                )
+                for label, axis in aligned_global_axes.items()
+            ],
+            dim="model",
+        )
+        aligned_global_axis = aligned_data.coords["global"].data
+        return (
+            aligned_global_axis,
+            [
+                aligned_data.isel({"global": i}).dropna(dim="model").data
+                for i in range(aligned_global_axis.size)
+            ],
+        )
+
+    def align_dataset_indices(self, aligned_global_axes: dict[str, ArrayLike]) -> list[ArrayLike]:
+        """Align the global indices in a dataset group.
+
+        Parameters
+        ----------
+        aligned_global_axes : dict[str, ArrayLike]
+            The aligned global axes.
+
+        Returns
+        -------
+        list[ArrayLike]
+        The aligned dataset indices.
+        """
+        aligned_indices = xr.concat(
+            [
+                xr.DataArray(
+                    np.arange(len(axis), dtype=int),
+                    dims=["global"],
+                    coords={"global": axis},
+                )
+                for axis in aligned_global_axes.values()
+            ],
+            dim="dataset",
+        )
+        return [
+            aligned_indices.isel({"global": i}).dropna(dim="dataset").data.astype(int)
+            for i in range(self._global_axis.size)
+        ]
+
+    @staticmethod
+    def align_groups(
+        aligned_global_axes: dict[str, ArrayLike]
+    ) -> tuple[ArrayLike, dict[str, list[str]]]:
+        """Align the groups in a dataset group.
+
+        Parameters
+        ----------
+        aligned_global_axes : dict[str, ArrayLike]
+            The aligned global axes.
+
+        Returns
+        -------
+        tuple[ArrayLike, dict[str, list[str]]]
+            The aligned grouplabels and group definitions.
+        """
+        aligned_groups = xr.concat(
+            [
+                xr.DataArray(np.full(len(axis), label), dims=["global"], coords={"global": axis})
+                for label, axis in aligned_global_axes.items()
+            ],
+            dim="dataset",
+            fill_value="",
+        )
+        # for every element along the global axis, concatenate all dataset labels
+        # into an ndarray of shape (len(global,)
+        # as an alternative to the more elegant xarray built-in which is limited to 32 datasets
+        # aligned_group_labels = aligned_groups.str.join(dim="dataset").data
+        aligned_group_labels = np.asarray(
+            ["".join(sub_arr.values) for _, sub_arr in aligned_groups.groupby("global")]
+        )
+
+        group_definitions: dict[str, list[str]] = {}
+        for i, group_label in enumerate(aligned_group_labels):
+            if group_label not in group_definitions:
+                group_definitions[group_label] = list(
+                    filter(lambda label: label != "", aligned_groups.isel({"global": i}).data)
+                )
+        return aligned_group_labels, group_definitions
+
+    def align_weights(
+        self,
+        all_data: dict[str, OptimizationData],
+        aligned_global_axes: dict[str, np.typing.ArrayLike],
+    ) -> list[np.typing.ArrayLike | None]:
+        """Align the weights in a dataset group.
+
+        Parameters
+        ----------
+        aligned_global_axes : dict[str, ArrayLike]
+            The aligned global axes.
+
+        Returns
+        -------
+        list[ArrayLike | None]
+            The aligned weights.
+        """
+        all_weights = {
+            label: xr.DataArray(
+                data.weight,
+                dims=["model", "global"],
+                coords={"global": aligned_global_axes[label]},
+            )
+            for label, data in all_data.items()
+            if data.weight is not None
+        }
+
+        aligned_weights = [None] * self._global_axis.size
+        if all_weights:
+            for i, group_label in enumerate(self._group_labels):
+                group_dataset_labels = self._group_definitions[group_label]
+                if any(label in all_weights for label in group_dataset_labels):
+                    index_weights = []
+                    for label in group_dataset_labels:
+                        if label in all_weights:
+                            index_weights.append(
+                                all_weights[label].sel({"global": self._global_axis[i]}).data
+                            )
+                        else:
+                            size = all_data[label].model_axis.size
+                            index_weights.append(np.ones(size))
+                    aligned_weights[i] = np.concatenate(index_weights)
+
+        return aligned_weights
