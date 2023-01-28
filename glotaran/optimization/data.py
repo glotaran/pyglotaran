@@ -10,6 +10,7 @@ import xarray as xr
 from glotaran.model import DataModel
 from glotaran.model import get_data_model_dimension
 from glotaran.model import is_data_model_global
+from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -211,8 +212,10 @@ class LinkedOptimizationData:
         all_data: dict[str, OptimizationData],
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
+        scales: dict[str, Parameter],
     ):
 
+        self._scales = {label: scales.get(label, 1) for label in all_data}
         aligned_global_axes = self.align_global_axes(all_data, tolerance, method)
         self._global_axis, self._data = self.align_data(all_data, aligned_global_axes)
         self._data_indices = self.align_dataset_indices(aligned_global_axes)
@@ -238,6 +241,10 @@ class LinkedOptimizationData:
     @property
     def data_indices(self) -> list[np.typing.ArrayLike]:
         return self._data_indices
+
+    @property
+    def scales(self) -> dict[str, Parameter | float]:
+        return self._scales
 
     @property
     def weights(self) -> list[np.typing.ArrayLike | None]:
@@ -344,7 +351,9 @@ class LinkedOptimizationData:
         aligned_data = xr.concat(
             [
                 xr.DataArray(
-                    all_data[label].data, dims=["model", "global"], coords={"global": axis}
+                    all_data[label].data * self._scales[label],
+                    dims=["model", "global"],
+                    coords={"global": axis},
                 )
                 for label, axis in aligned_global_axes.items()
             ],

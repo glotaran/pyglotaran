@@ -25,7 +25,7 @@ class TestMegacomplexConstant(Megacomplex):
         model_axis: np.typing.ArrayLike,
     ):
 
-        matrix = np.ones((model_axis.size, len(self.compartments))) * self.value
+        matrix = np.ones((model_axis.size, len(self.compartments))) * float(self.value)
         if self.is_index_dependent:
             matrix = np.array([matrix] * global_axis.size)
         return self.compartments, matrix
