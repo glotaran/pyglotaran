@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.model import ClpRelation
 from glotaran.model import DataModel
 from glotaran.model import ZeroConstraint
 from glotaran.optimization.data import OptimizationData

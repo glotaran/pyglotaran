@@ -8,6 +8,7 @@ import numpy as np
 from glotaran.model import ClpConstraint
 from glotaran.model import ClpRelation
 from glotaran.model import DataModel
+from glotaran.model import GlotaranUserError
 from glotaran.model import Megacomplex
 from glotaran.model import iterate_data_model_megacomplexes
 from glotaran.optimization.data import LinkedOptimizationData
