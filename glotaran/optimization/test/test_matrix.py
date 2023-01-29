@@ -24,8 +24,6 @@ def test_from_data(weight, data_model):
     if weight:
         data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
     data = OptimizationData(data_model)
-    print(data.data.shape)
-    assert False
     matrix = OptimizationMatrix.from_data(data)
     assert matrix.array.shape == (
         (data.data.shape[1], data.data.shape[0], 1)
@@ -73,15 +71,13 @@ def test_relations():
     assert matrix.array.shape == (5, 3)
     assert matrix.clp_labels == ["c3_1", "c3_2", "c3_3"]
 
-    reduced_matrix = matrix.reduce(0, [], relations)
+    reduced_matrix = matrix.at_index(0).reduce(0, [], relations)
     assert reduced_matrix.array.shape == (5, 3)
     assert reduced_matrix.clp_labels == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.reduce(3, [], relations)
+    reduced_matrix = matrix.at_index(3).reduce(3, [], relations)
     assert reduced_matrix.array.shape == (5, 2)
     assert reduced_matrix.clp_labels == ["c3_1", "c3_2"]
-    assert np.array_equal(
-        reduced_matrix.array[:, 1], original_array[:, 1] + matrix.array[:, 2] * 3
-    )
+    assert np.array_equal(reduced_matrix.array[:, 1], matrix.array[:, 1] + matrix.array[:, 2] * 3)
 
 
 def test_from_linked_data():
