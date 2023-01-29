@@ -209,18 +209,19 @@ class OptimizationData:
 class LinkedOptimizationData:
     def __init__(
         self,
-        all_data: dict[str, OptimizationData],
+        datasets: dict[str, OptimizationData],
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
         scales: dict[str, Parameter],
     ):
 
-        self._scales = {label: scales.get(label, 1) for label in all_data}
-        aligned_global_axes = self.align_global_axes(all_data, tolerance, method)
-        self._global_axis, self._data = self.align_data(all_data, aligned_global_axes)
+        self._datasets = datasets
+        self._scales = {label: scales.get(label, 1) for label in self._datasets}
+        aligned_global_axes = self.align_global_axes(tolerance, method)
+        self._global_axis, self._data = self.align_data(aligned_global_axes)
         self._data_indices = self.align_dataset_indices(aligned_global_axes)
         self._group_labels, self._group_definitions = self.align_groups(aligned_global_axes)
-        self._weights = self.align_weights(all_data, aligned_global_axes)
+        self._weights = self.align_weights(aligned_global_axes)
 
     @property
     def global_axis(self) -> np.typing.ArrayLike:
@@ -241,6 +242,10 @@ class LinkedOptimizationData:
     @property
     def data_indices(self) -> list[np.typing.ArrayLike]:
         return self._data_indices
+
+    @property
+    def datasets(self) -> dict[str, OptimizationData]:
+        return self._datasets
 
     @property
     def scales(self) -> dict[str, Parameter | float]:
@@ -290,7 +295,6 @@ class LinkedOptimizationData:
 
     def align_global_axes(
         self,
-        all_data: dict[str, OptimizationData],
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
     ) -> dict[str, np.typing.ArrayLike]:
@@ -313,7 +317,7 @@ class LinkedOptimizationData:
         """
         aligned_axis_values = None
         aligned_global_axes = {}
-        for label, data in all_data.items():
+        for label, data in self._datasets.items():
 
             aligned_global_axis = data.global_axis
             if aligned_axis_values is None:
@@ -333,7 +337,6 @@ class LinkedOptimizationData:
 
     def align_data(
         self,
-        all_data: dict[str, OptimizationData],
         aligned_global_axes: dict[str, np.typing.ArrayLike],
     ) -> tuple[np.typing.ArrayLike, list[np.typing.ArrayLike]]:
         """Align the data in a dataset group.
@@ -351,7 +354,7 @@ class LinkedOptimizationData:
         aligned_data = xr.concat(
             [
                 xr.DataArray(
-                    all_data[label].data * self._scales[label],
+                    self._datasets[label].data * self._scales[label],
                     dims=["model", "global"],
                     coords={"global": axis},
                 )
@@ -439,7 +442,6 @@ class LinkedOptimizationData:
 
     def align_weights(
         self,
-        all_data: dict[str, OptimizationData],
         aligned_global_axes: dict[str, np.typing.ArrayLike],
     ) -> list[np.typing.ArrayLike | None]:
         """Align the weights in a dataset group.
@@ -460,7 +462,7 @@ class LinkedOptimizationData:
                 dims=["model", "global"],
                 coords={"global": aligned_global_axes[label]},
             )
-            for label, data in all_data.items()
+            for label, data in self._datasets.items()
             if data.weight is not None
         }
 
@@ -476,7 +478,7 @@ class LinkedOptimizationData:
                                 all_weights[label].sel({"global": self._global_axis[i]}).data
                             )
                         else:
-                            size = all_data[label].model_axis.size
+                            size = self._datasets[label].model_axis.size
                             index_weights.append(np.ones(size))
                     aligned_weights[i] = np.concatenate(index_weights)
 
