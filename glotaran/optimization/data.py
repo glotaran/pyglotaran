@@ -1,7 +1,7 @@
 """Module containing the data provider classes."""
 from __future__ import annotations
 
-
+from collections.abc import Generator
 from typing import Literal
 
 import numpy as np
@@ -204,6 +204,9 @@ class OptimizationData:
             if dataset[name].dims != (self.model_dimension, self.global_dimension):
                 data = data.T
         return data
+
+    def iterate_data_over_global_axis(self) -> Generator[np.typing.ArrayLike, None, None]:
+        return (self.data[:, i] for i in range(self.global_axis.size))
 
 
 class LinkedOptimizationData:
