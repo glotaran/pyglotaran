@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from glotaran.model import ClpRelation
 from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
-from glotaran.typing.types import ArrayLike
 
 SUPPORTED_RESIUDAL_FUNCTIONS = {
     "variable_projection": residual_variable_projection,
@@ -53,11 +53,11 @@ class OptimizationEstimation:
         relations: list[ClpRelation],
     ) -> OptimizationEstimation:
 
-        clps = self.clps
-        self.clps = np.zeros(len(clp_axis))
-        self.clps[[clp_axis.index(label) for label in reduced_clp_axis]] = clps
+        clp = self.clp
+        self.clp = np.zeros(len(clp_axis))
+        self.clp[[clp_axis.index(label) for label in reduced_clp_axis]] = clp
         for relation in [r for r in relations if r.applies(index)]:
             source_idx = clp_axis.index(relation.source)
             target_idx = clp_axis.index(relation.target)
-            self.clps[target_idx] = relation.parameter * clps[source_idx]
+            self.clp[target_idx] = relation.parameter * self.clp[source_idx]
         return self
