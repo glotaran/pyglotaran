@@ -1,130 +1,67 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.model import DataModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
-from glotaran.optimization.test.models import TestMegacomplexConstant
+from glotaran.optimization.test.models import TestDataModelConstantIndexDependent
+from glotaran.optimization.test.models import TestDataModelConstantIndexIndependent
+from glotaran.optimization.test.models import TestDataModelGlobal
 
 
-@pytest.fixture()
-def data_model_one() -> DataModel:
-    global_axis = [1, 5, 6]
-    model_axis = [5, 7, 9, 12]
+@pytest.mark.parametrize("weight", (True, False))
+def test_optimization_data(weight: bool):
+    data_model = deepcopy(TestDataModelConstantIndexIndependent)
+    if weight:
+        data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
+    data = OptimizationData(data_model)
 
-    data = xr.DataArray(
-        np.ones((4, 3)), coords=[("model", model_axis), ("global", global_axis)]
-    ).to_dataset(name="data")
-
-    data["weight"] = xr.ones_like(data.data) * 0.5
-    return DataModel(
-        data=data,
-        megacomplex=[
-            TestMegacomplexConstant(
-                type="test-megacomplex-constant",
-                label="test",
-                dimension="model",
-                compartments=["b"],
-                value="p2",
-                is_index_dependent=False,
-            )
-        ],
-    )
+    dataset = data_model.data
+    assert data.model_dimension == "model"
+    assert data.global_dimension == "global"
+    assert np.array_equal(dataset.coords["model"], data.model_axis)
+    assert np.array_equal(dataset.coords["global"], data.global_axis)
+    if weight:
+        assert np.array_equal(dataset.data * dataset.weight, data.data)
+        assert np.array_equal(dataset.weight, data.weight)
+    else:
+        assert np.array_equal(dataset.data, data.data)
 
 
-@pytest.fixture()
-def data_model_two() -> DataModel:
-    global_axis = [0, 3, 7, 10]
-    model_axis = [4, 11, 15]
+@pytest.mark.parametrize("weight", (True, False))
+def test_optimization_data_global_model(weight: bool):
+    data_model = deepcopy(TestDataModelGlobal)
+    if weight:
+        data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
+    data = OptimizationData(data_model)
 
-    data = xr.DataArray(
-        np.ones((4, 3)) * 2, coords=[("global", global_axis), ("model", model_axis)]
-    ).to_dataset(name="data")
-    return DataModel(
-        data=data,
-        megacomplex=[
-            TestMegacomplexConstant(
-                type="test-megacomplex-constant",
-                label="test",
-                dimension="model",
-                compartments=["b"],
-                value="p2",
-                is_index_dependent=False,
-            )
-        ],
-    )
-
-
-@pytest.fixture()
-def data_model_global() -> DataModel:
-    global_axis = [0, 3, 7, 10]
-    model_axis = [4, 11, 15]
-
-    data = xr.DataArray(
-        np.ones((4, 3)) * 2, coords=[("global", global_axis), ("model", model_axis)]
-    ).to_dataset(name="data")
-    data["weight"] = xr.ones_like(data.data) * 0.5
-    return DataModel(
-        data=data,
-        megacomplex=[
-            TestMegacomplexConstant(
-                type="test-megacomplex-constant",
-                label="test",
-                dimension="model",
-                compartments=["b"],
-                value="p2",
-                is_index_dependent=False,
-            )
-        ],
-        global_megacomplex=[
-            TestMegacomplexConstant(
-                type="test-megacomplex-constant",
-                label="test-global",
-                dimension="global",
-                compartments=["b"],
-                value="p2",
-                is_index_dependent=False,
-            )
-        ],
-    )
-
-
-def test_optimization_data(data_model_one: DataModel):
-    data = OptimizationData(data_model_one)
-
-    dataset = data_model_one.data
+    dataset = data_model.data
     print(dataset.data)
     assert data.model_dimension == "model"
     assert data.global_dimension == "global"
-    assert np.array_equal(dataset.data * dataset.weight, data.data)
-    assert np.array_equal(dataset.weight, data.weight)
     assert np.array_equal(dataset.coords["model"], data.model_axis)
     assert np.array_equal(dataset.coords["global"], data.global_axis)
+    if weight:
+        assert np.array_equal(
+            dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.data
+        )
+        assert np.array_equal(dataset.weight.data.T.flatten(), data.weight)
+    else:
+        assert np.array_equal(dataset.data.data.T.flatten(), data.data)
 
 
-def test_optimization_data_global_model(data_model_global: DataModel):
-    data = OptimizationData(data_model_global)
-
-    dataset = data_model_global.data
-    print(dataset.data)
-    assert data.model_dimension == "model"
-    assert data.global_dimension == "global"
-    assert np.array_equal(
-        dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.data
-    )
-    assert np.array_equal(dataset.weight.data.T.flatten(), data.weight)
-    assert np.array_equal(dataset.coords["model"], data.model_axis)
-    assert np.array_equal(dataset.coords["global"], data.global_axis)
-
-
-def test_linked_optimization_data(data_model_one: DataModel, data_model_two: DataModel):
+def test_linked_optimization_data():
+    data_model_one = deepcopy(TestDataModelConstantIndexIndependent)
+    data_model_one.data["weight"] = xr.ones_like(data_model_one.data.data) * 0.5
+    data_model_two = deepcopy(TestDataModelConstantIndexDependent)
     all_data = {
         "dataset1": OptimizationData(data_model_one),
         "dataset2": OptimizationData(data_model_two),
     }
     tolerance, method = 1, "nearest"
-    data = LinkedOptimizationData(all_data, tolerance, method)
+    data = LinkedOptimizationData(all_data, tolerance, method, scales={"dataset2": 4})
 
     dataset_one = data_model_one.data
     dataset_two = data_model_two.data
@@ -141,12 +78,14 @@ def test_linked_optimization_data(data_model_one: DataModel, data_model_two: Dat
 
     assert np.array_equal(data.global_axis, [1, 3, 5, 6, 10])
 
+    assert len(data.group_labels) == data.global_axis.size
     assert data.group_labels[0] == "dataset1dataset2"
     assert data.group_labels[1] == "dataset2"
     assert data.group_labels[2] == "dataset1"
     assert data.group_labels[3] == "dataset1dataset2"
     assert data.group_labels[4] == "dataset2"
 
+    assert len(data.data_indices) == data.global_axis.size
     assert np.array_equal(data.data_indices[0], [0, 0])
     assert np.array_equal(data.data_indices[1], [1])
     assert np.array_equal(data.data_indices[2], [1])
@@ -162,6 +101,7 @@ def test_linked_optimization_data(data_model_one: DataModel, data_model_two: Dat
     assert data.data[3].size == dataset1_size + dataset2_size
     assert data.data[4].size == dataset2_size
 
+    assert len(data.weights) == data.global_axis.size
     assert (
         data.weights[0].size  # type:ignore[union-attr]
         == dataset1_size + dataset2_size
@@ -176,13 +116,13 @@ def test_linked_optimization_data(data_model_one: DataModel, data_model_two: Dat
 
 
 @pytest.mark.parametrize("method", ["nearest", "backward", "forward"])
-def test_linking_methods(method: str, data_model_one: DataModel, data_model_two: DataModel):
+def test_linking_methods(method: str):
     all_data = {
-        "dataset1": OptimizationData(data_model_one),
-        "dataset2": OptimizationData(data_model_two),
+        "dataset1": OptimizationData(TestDataModelConstantIndexIndependent),
+        "dataset2": OptimizationData(TestDataModelConstantIndexDependent),
     }
     tolerance = 1
-    data = LinkedOptimizationData(all_data, tolerance, method)
+    data = LinkedOptimizationData(all_data, tolerance, method, {})
 
     #  global_axis1 = [1, 5, 6]
     #  global_axis2 = [0, 3, 7, 10]
