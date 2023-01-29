@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import replace
+from itertools import chain
 
 import numpy as np
 
@@ -36,11 +37,11 @@ class OptimizationMatrix:
         return len(self.array.shape) == 3
 
     @property
-    def global_size(self) -> int | None:
+    def global_axis_size(self) -> int | None:
         return self.array.shape[0] if self.is_index_dependent else None
 
     @property
-    def model_size(self) -> int:
+    def model_axis_size(self) -> int:
         return self.array.shape[1 if self.is_index_dependent else 0]
 
     @classmethod
@@ -78,7 +79,24 @@ class OptimizationMatrix:
 
         for matrix in matrices:
             clp_mask = [clp_labels.index(c) for c in matrix.clp_labels]
-            array[:, clp_mask] = matrix.array
+            array[:, clp_mask] += matrix.array
+        return cls(clp_labels, array)
+
+    @classmethod
+    def link(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
+        """"""
+        clp_labels = list(dict.fromkeys(c for m in matrices for c in m.clp_labels))
+        clp_size = len(clp_labels)
+        model_axis_size = sum(chain([m.model_axis_size for m in matrices]))
+        shape = (model_axis_size, clp_size)
+        array = np.zeros(shape, dtype=np.float64)
+
+        current_model_index, current_model_index_end = 0, 0
+        for matrix in matrices:
+            clp_mask = [clp_labels.index(c) for c in matrix.clp_labels]
+            current_model_index_end = current_model_index + matrix.model_axis_size
+            array[current_model_index:current_model_index_end, clp_mask] = matrix.array
+            current_model_index = current_model_index_end
         return cls(clp_labels, array)
 
     @classmethod
@@ -95,15 +113,17 @@ class OptimizationMatrix:
 
     @classmethod
     def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:
-        data_matrices = {label: cls.from_data(data) for label, data in linked_data.data.items()}
+        data_matrices = {
+            label: cls.from_data(data) for label, data in linked_data.datasets.items()
+        }
 
         return [
-            cls.combine(
+            cls.link(
                 [
                     data_matrices[label].at_index(index)
                     for label, index in zip(
                         linked_data.group_definitions[linked_data.group_labels[global_index]],
-                        linked_data.datas_indices[global_index],
+                        linked_data.data_indices[global_index],
                     )
                 ]
             )
@@ -140,7 +160,7 @@ class OptimizationMatrix:
                     label for i, label in enumerate(self.clp_labels) if i not in idx_to_delete
                 ]
                 relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
-                self.array @= relation_matrix
+                self.array = self.array @ relation_matrix
 
         if len(constraints) > 0:
             removed_clp_labels = [c.target for c in constraints if c.target in self.clp_labels]
@@ -201,7 +221,10 @@ class OptimizationMatrix:
         OptimizationMatrix
             The scaled matrix.
         """
-        index_matrix = self.array
+        index_array = self.array
         if self.is_index_dependent:
-            index_matrix = index_matrix[index, :, :]
-        return replace(self, matrix=index_matrix)
+            index_array = index_array[index, :, :]
+        else:
+            # necessary ih relations are applied
+            index_array = index_array.copy()
+        return replace(self, array=index_array)

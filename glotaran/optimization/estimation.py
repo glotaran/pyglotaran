@@ -52,19 +52,12 @@ class OptimizationEstimation:
         index: float,
         relations: list[ClpRelation],
     ) -> OptimizationEstimation:
-        if len(relations) == 0:
-            return self
 
-        clps = np.zeros(len(clp_axis))
-        clps[[clp_axis.index(label) for label in reduced_clp_axis]]
-
-        for relation in relations:
-            if (
-                relation.target in clp_axis
-                and relation.source in clp_axis
-                and relation.applies(index)
-            ):
-                source_idx = clp_axis.index(relation.source)
-                target_idx = clp_axis.index(relation.target)
-                clps[target_idx] = relation.parameter * clps[source_idx]
-        return clps
+        clps = self.clps
+        self.clps = np.zeros(len(clp_axis))
+        self.clps[[clp_axis.index(label) for label in reduced_clp_axis]] = clps
+        for relation in [r for r in relations if r.applies(index)]:
+            source_idx = clp_axis.index(relation.source)
+            target_idx = clp_axis.index(relation.target)
+            self.clps[target_idx] = relation.parameter * clps[source_idx]
+        return self
