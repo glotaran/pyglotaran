@@ -58,6 +58,7 @@ class OptimizationResult:
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
 
+    number_clp: int | None = None
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
 
@@ -94,6 +95,7 @@ class OptimizationResult:
         penalty: np.typing.ArrayLike,
         free_parameter_labels: list[str],
         termination_reason: str,
+        number_clp: int,
     ):
         success = result is not None
 
@@ -111,12 +113,15 @@ class OptimizationResult:
 
         result_args["cost"] = 0.5 * np.dot(penalty, penalty)
         if success:
+            result_args["number_clp"] = number_clp
             result_args["number_of_jacobian_evaluations"] = result.njev
             result_args["optimality"] = float(result.optimality)
             result_args["number_of_data_points"] = result.fun.size
             result_args["number_of_parameters"] = result.x.size
             result_args["degrees_of_freedom"] = (
-                result_args["number_of_data_points"] - result_args["number_of_parameters"]
+                result_args["number_of_data_points"]
+                - result_args["number_of_parameters"]
+                - result_args["number_clp"]
             )
             result_args["chi_square"] = float(np.sum(result.fun**2))
             result_args["reduced_chi_square"] = (
