@@ -98,6 +98,7 @@ class Optimization:
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
+        nr_clp = len({c for d in data.values() for c in d.clp_label})
         result = OptimizationResult(
             ls_result,
             self._parameter_history,
@@ -105,6 +106,7 @@ class Optimization:
             penalty,
             self._free_parameter_labels,
             termination_reason,
+            nr_clp,
         )
         return self._parameters, data, result
 
