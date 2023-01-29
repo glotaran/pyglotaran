@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Literal
 
 import xarray as xr
 from pydantic import Field
@@ -196,6 +197,9 @@ class DataModel(Item):
         validator=validate_global_megacomplexes,  # type:ignore[arg-type]
     )
     global_megacomplex_scale: list[ParameterType] | None = None
+    residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
+        default="variable_projection", description="The residual function to use."
+    )
     weights: list[Weight] = Field(default_factory=list)
 
     @classmethod
