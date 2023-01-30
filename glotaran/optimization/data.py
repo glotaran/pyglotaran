@@ -238,7 +238,6 @@ class LinkedOptimizationData(OptimizationDataProvider):
         self._global_axis, self._data = self.align_data(aligned_global_axes)
         self._data_indices = self.align_dataset_indices(aligned_global_axes)
         self._group_labels, self._group_definitions = self.align_groups(aligned_global_axes)
-        self._weights = self.align_weights(aligned_global_axes)
 
     @classmethod
     def from_experiment_model(cls, model: ExperimentModel) -> LinkedOptimizationData:
@@ -276,10 +275,6 @@ class LinkedOptimizationData(OptimizationDataProvider):
     @property
     def scales(self) -> dict[str, Parameter | float]:
         return self._scales
-
-    @property
-    def weights(self) -> list[np.typing.ArrayLike | None]:
-        return self._weights
 
     @staticmethod
     def align_index(
@@ -465,47 +460,3 @@ class LinkedOptimizationData(OptimizationDataProvider):
                     filter(lambda label: label != "", aligned_groups.isel({"global": i}).data)
                 )
         return aligned_group_labels, group_definitions
-
-    def align_weights(
-        self,
-        aligned_global_axes: dict[str, np.typing.ArrayLike],
-    ) -> list[np.typing.ArrayLike | None]:
-        """Align the weights in a dataset group.
-
-        Parameters
-        ----------
-        aligned_global_axes : dict[str, ArrayLike]
-            The aligned global axes.
-
-        Returns
-        -------
-        list[ArrayLike | None]
-            The aligned weights.
-        """
-        all_weights = {
-            label: xr.DataArray(
-                data.weight,
-                dims=["model", "global"],
-                coords={"global": aligned_global_axes[label]},
-            )
-            for label, data in self._datasets.items()
-            if data.weight is not None
-        }
-
-        aligned_weights = [None] * self._global_axis.size
-        if all_weights:
-            for i, group_label in enumerate(self._group_labels):
-                group_dataset_labels = self._group_definitions[group_label]
-                if any(label in all_weights for label in group_dataset_labels):
-                    index_weights = []
-                    for label in group_dataset_labels:
-                        if label in all_weights:
-                            index_weights.append(
-                                all_weights[label].sel({"global": self._global_axis[i]}).data
-                            )
-                        else:
-                            size = self._datasets[label].model_axis.size
-                            index_weights.append(np.ones(size))
-                    aligned_weights[i] = np.concatenate(index_weights)
-
-        return aligned_weights
