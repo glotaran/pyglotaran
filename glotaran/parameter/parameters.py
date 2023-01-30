@@ -51,6 +51,10 @@ class Parameters:
         self.update_parameter_expression()
 
     @classmethod
+    def empty(cls) -> Parameters:
+        return cls({})
+
+    @classmethod
     def from_list(
         cls, parameter_list: list[float | int | str | list[Any] | dict[str, Any]]
     ) -> Parameters:
