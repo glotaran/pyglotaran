@@ -14,6 +14,7 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.library import Library
 from glotaran.parameter import Parameter
+from glotaran.parameter import Parameters
 
 
 class ExperimentModel(BaseModel):
@@ -45,3 +46,13 @@ class ExperimentModel(BaseModel):
             for label, dataset in model_dict.get("datasets", {}).items()
         }
         return cls.parse_obj(model_dict)
+
+    def resolve(
+        self, library: Library, parameters: Parameters, initial: Parameters | None = None
+    ) -> ExperimentModel:
+        result = self.copy()
+        result.datasets = {
+            label: library.resolve_item(dataset, parameters, initial)
+            for label, dataset in self.datasets.items()
+        }
+        return result

@@ -15,5 +15,6 @@ from glotaran.model.errors import GlotaranUserError
 from glotaran.model.errors import ItemIssue
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.model.item import ParameterType
+from glotaran.model.library import Library
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.weight import Weight

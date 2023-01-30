@@ -3,14 +3,41 @@ from typing import Literal
 from warnings import warn
 
 import numpy as np
+import xarray as xr
 from scipy.optimize import least_squares
 
 from glotaran.model import ExperimentModel
+from glotaran.model import GlotaranUserError
+from glotaran.model import Library
 from glotaran.optimization.objective import OptimizationObjective
+from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationResult
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 from glotaran.utils.tee import TeeContext
+
+SUPPORTED_OPTIMIZATION_METHODS = {
+    "TrustRegionReflection": "trf",
+    "Dogbox": "dogbox",
+    "Levenberg-Marquardt": "lm",
+}
+
+
+class UnsupportedMethodError(GlotaranUserError):
+    """Inidcates that the optimization method is unsupported."""
+
+    def __init__(self, method: str):
+        """Initialize an UnsupportedMethodError.
+
+        Parameters
+        ----------
+        method : str
+            The unsupported method.
+        """
+        super().__init__(
+            f"Unsupported optimization method {method}. "
+            f"Supported methods are '{list(SUPPORTED_OPTIMIZATION_METHODS.keys())}'"
+        )
 
 
 class Optimization:
@@ -18,6 +45,7 @@ class Optimization:
         self,
         models: list[ExperimentModel],
         parameters: Parameters,
+        library: Library,
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
@@ -31,7 +59,13 @@ class Optimization:
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ):
-        self._objectives = [OptimizationObjective(experiment) for experiment in models]
+        self._parameters = Parameters.empty()
+        self._objectives = [
+            OptimizationObjective(
+                experiment.resolve(library, self._parameters, initial=parameters)
+            )
+            for experiment in models
+        ]
         self._tee = TeeContext()
         self._verbose = verbose
         self._raise = raise_exception
@@ -41,16 +75,17 @@ class Optimization:
         self._ftol = ftol
         self._gtol = gtol
         self._xtol = xtol
-        self._optimization_method = optimization_method
+        if optimization_method not in SUPPORTED_OPTIMIZATION_METHODS:
+            raise UnsupportedMethodError(optimization_method)
+        self._optimization_method = SUPPORTED_OPTIMIZATION_METHODS[optimization_method]
 
-        self._parameters = parameters
         self._parameter_history = ParameterHistory()
-        self._parameter_history.append(parameters)
-        self._free_parameter_labels, _, _, _ = parameters.get_label_value_and_bounds_arrays(
+        self._parameter_history.append(self._parameters)
+        self._free_parameter_labels, _, _, _ = self._parameters.get_label_value_and_bounds_arrays(
             exclude_non_vary=True
         )
 
-    def run(self):
+    def run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationResult]:
         """Perform the optimization.
 
         Raises
@@ -89,11 +124,11 @@ class Optimization:
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
-        nr_clp = len({c for d in data.values() for c in d.clp_label})
+        nr_clp = len({str(c.data) for d in data.values() for c in d.clp_label})
         result = OptimizationResult(
             ls_result,
             self._parameter_history,
-            self._optimization_history,
+            OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
             self._free_parameter_labels,
             termination_reason,

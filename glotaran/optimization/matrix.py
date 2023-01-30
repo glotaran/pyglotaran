@@ -127,7 +127,7 @@ class OptimizationMatrix:
     @classmethod
     def from_data(cls, data: OptimizationData) -> OptimizationMatrix:
         """"""
-        return cls.from_data_model(cls, data.model, data.global_axis, data.model_axis, data.weight)
+        return cls.from_data_model(data.model, data.global_axis, data.model_axis, data.weight)
 
     @classmethod
     def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:

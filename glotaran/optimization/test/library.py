@@ -7,9 +7,16 @@ TestLibrary = Library.create_for_megacomplexes(
 )(
     megacomplex={
         "decay_independent": {
+            "type": "test-megacomplex-exponential",
             "is_index_dependent": False,
-            "compartments": ["c1", "c2", "c3"],
-            "rates": ["rates.decay.1", "rates.decay.2", "rates.decay.3"],
-        }
+            "compartments": ["c1", "c2"],
+            "rates": ["rates.decay.1", "rates.decay.2"],
+        },
+        "decay_dependent": {
+            "type": "test-megacomplex-exponential",
+            "is_index_dependent": True,
+            "compartments": ["c1", "c2"],
+            "rates": ["rates.decay.1", "rates.decay.2"],
+        },
     }
 )
