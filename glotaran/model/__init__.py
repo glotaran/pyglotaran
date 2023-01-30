@@ -7,6 +7,7 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import get_data_model_dimension
 from glotaran.model.data_model import is_data_model_global
+from glotaran.model.data_model import iterate_data_model_global_megacomplexes
 from glotaran.model.data_model import iterate_data_model_megacomplexes
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import GlotaranUserError
