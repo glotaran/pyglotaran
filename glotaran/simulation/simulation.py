@@ -8,8 +8,10 @@ import xarray as xr
 
 from glotaran.model import DataModel
 from glotaran.model import GlotaranUserError
+from glotaran.model import Library
 from glotaran.model import get_data_model_dimension
 from glotaran.optimization.matrix import OptimizationMatrix
+from glotaran.parameter import Parameters
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -17,6 +19,8 @@ if TYPE_CHECKING:
 
 def simulate(
     model: DataModel,
+    libray: Library,
+    parameters: Parameters,
     coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,
     noise: bool = False,
@@ -56,6 +60,7 @@ def simulate(
     ValueError
         Raised if dataset model has no global megacomplex and no clp are provided.
     """
+    model = libray.resolve_item(model, parameters)
     model_dimension = get_data_model_dimension(model)
     model_axis = coordinates[model_dimension]
     global_dimension = next(dim for dim in coordinates if dim != model_dimension)
