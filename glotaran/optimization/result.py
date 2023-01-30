@@ -11,8 +11,6 @@ from glotaran import __version__ as glotaran_version
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
-from glotaran.project.dataclass_helpers import exclude_from_dict_field
-from glotaran.project.dataclass_helpers import file_loadable_field
 
 
 @dataclass
@@ -34,19 +32,15 @@ class OptimizationResult:
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
 
-    parameter_history: ParameterHistory = file_loadable_field(  # type:ignore[type-var]
-        ParameterHistory
-    )
+    parameter_history: ParameterHistory
     """The parameter history."""
 
-    optimization_history: OptimizationHistory = file_loadable_field(  # type:ignore[type-var]
-        OptimizationHistory
-    )
+    optimization_history: OptimizationHistory
     """The optimization history."""
 
     # The below can be none in case of unsuccessful optimization
 
-    cost: ArrayLike | None = exclude_from_dict_field(None)
+    cost: ArrayLike | None = None
     """The final cost."""
 
     chi_square: float | None = None
@@ -54,7 +48,7 @@ class OptimizationResult:
 
     :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
 
-    covariance_matrix: ArrayLike | None = exclude_from_dict_field(None)
+    covariance_matrix: ArrayLike | None = None
     """Covariance matrix.
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
@@ -63,7 +57,7 @@ class OptimizationResult:
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
 
-    jacobian: ArrayLike | list | None = exclude_from_dict_field(None)
+    jacobian: ArrayLike | list | None = None
     """Modified Jacobian matrix at the solution
 
     See also: :func:`scipy.optimize.least_squares`
