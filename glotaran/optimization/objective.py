@@ -13,11 +13,9 @@ from glotaran.optimization.penalty import calculate_clp_penalties
 class OptimizationObjective:
     def __init__(self, model: ExperimentModel):
         self._data = (
-            LinkedOptimizationData(
-                model.datasets, model.clp_link_tolerance, model.clp_link_method, model.scale
-            )
+            LinkedOptimizationData.from_experiment_model(model)
             if len(model.datasets) > 1
-            else OptimizationData(next(model.datasets.values()))
+            else OptimizationData(next(iter(model.datasets.values())))
         )
         self._model = model
 
@@ -27,30 +25,27 @@ class OptimizationObjective:
             return [matrix.at_index(i) for i in range(self._data.global_axis.size)]
         return OptimizationMatrix.from_linked_data(self._data)
 
-    def get_result(self) -> dict[str, xr.Dataset]:
-        return {
-            label: self.get_result_dataset(data) for label, data in self._data.datasets.items()
-        }
-
     def calculate(self) -> ArrayLike:
         matrices = self.calculate_matrices()
         reduced_matrices = [
-            matrices[i].reduce(index, self._constraints, self._relations)
-            for i, index in enumerate(self._global_axis)
+            matrices[i].reduce(index, self._model.clp_constraints, self._model.clp_relations)
+            for i, index in enumerate(self._data.global_axis)
         ]
         estimations = [
-            OptimizationEstimation.calculate(matrix.array, data, self._residual_function)
+            OptimizationEstimation.calculate(matrix.array, data, self._model.residual_function)
             for matrix, data in zip(reduced_matrices, self._data.data_slices)
         ]
 
         penalties = [e.residual for e in estimations]
-        if len(self._penalties) > 0:
+        if len(self._model.clp_penalties) > 0:
             estimations = [
-                e.resolve_clp(m.clp_labels, r.clp_labels, i, self._constraints, self._relations)
-                for e, m, r, i in zip(estimations, matrices, reduced_matrices, self._global_axis)
+                e.resolve_clp(m.clp_labels, r.clp_labels, i, self._model.clp_relations)
+                for e, m, r, i in zip(
+                    estimations, matrices, reduced_matrices, self._data.global_axis
+                )
             ]
             penalties += calculate_clp_penalties(
-                matrices, estimations, self._global_axis, self._penalties
+                matrices, estimations, self._data.global_axis, self._model.clp_penalties
             )
         return np.concatenate(penalties)
 
@@ -70,20 +65,21 @@ class OptimizationObjective:
 
         matrices = [matrix.at_index(i) for i in range(data.global_axis.size)]
         reduced_matrices = [
-            matrices[i].reduce(index, self._constraints, self._relations)
+            matrices[i].reduce(index, self._model.clp_constraints, self._model.clp_relations)
             for i, index in enumerate(data.global_axis)
         ]
         estimations = [
             OptimizationEstimation.calculate(
-                reduced_matrices[i].array, self.get_data(i), self._residual_function
+                reduced_mat.array, data_slice, self._model.residual_function
             ).resolve_clp(
-                matrices[i].clp_labels,
-                reduced_matrices[i].clp_labels,
-                data.global_axis[i],
-                self._constraints,
-                self._relations,
+                mat.clp_labels,
+                reduced_mat.clp_labels,
+                index,
+                self._model.clp_relations,
             )
-            for i in range(data.global_axis.size)
+            for mat, reduced_mat, data_slice, index in zip(
+                matrices, reduced_matrices, data.data_slices, data.global_axis
+            )
         ]
         dataset["clp"] = xr.DataArray(
             [e.clp for e in estimations],
@@ -102,3 +98,9 @@ class OptimizationObjective:
             (dataset.residual**2).sum() / size
         ).data
         return dataset
+
+    def get_result(self) -> dict[str, xr.Dataset]:
+        return {
+            label: self.get_result_dataset(OptimizationData(data))
+            for label, data in self._model.datasets.items()
+        }
