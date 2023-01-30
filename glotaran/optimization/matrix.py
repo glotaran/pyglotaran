@@ -113,9 +113,7 @@ class OptimizationMatrix:
 
     @classmethod
     def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:
-        data_matrices = {
-            label: cls.from_data(data) for label, data in linked_data.datasets.items()
-        }
+        data_matrices = {label: cls.from_data(data) for label, data in linked_data.data.items()}
 
         return [
             cls.link(

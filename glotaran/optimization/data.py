@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model import DataModel
+from glotaran.model import ExperimentModel
 from glotaran.model import get_data_model_dimension
 from glotaran.model import is_data_model_global
 from glotaran.parameter import Parameter
@@ -238,6 +239,15 @@ class LinkedOptimizationData(OptimizationDataProvider):
         self._data_indices = self.align_dataset_indices(aligned_global_axes)
         self._group_labels, self._group_definitions = self.align_groups(aligned_global_axes)
         self._weights = self.align_weights(aligned_global_axes)
+
+    @classmethod
+    def from_experiment_model(cls, model: ExperimentModel) -> LinkedOptimizationData:
+        return cls(
+            {k: OptimizationData(d) for k, d in model.datasets.items()},
+            model.clp_link_tolerance,
+            model.clp_link_method,
+            model.scale,
+        )
 
     @property
     def global_axis(self) -> np.typing.ArrayLike:

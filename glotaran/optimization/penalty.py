@@ -1,5 +1,5 @@
 import numpy as np
-from np.typing import ArrayLike
+from numpy.typing import ArrayLike
 
 from glotaran.model import EqualAreaPenalty
 from glotaran.optimization.estimation import OptimizationEstimation
