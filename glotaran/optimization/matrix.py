@@ -11,6 +11,7 @@ from glotaran.model import ClpRelation
 from glotaran.model import DataModel
 from glotaran.model import GlotaranUserError
 from glotaran.model import Megacomplex
+from glotaran.model import iterate_data_model_global_megacomplexes
 from glotaran.model import iterate_data_model_megacomplexes
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
@@ -100,16 +101,33 @@ class OptimizationMatrix:
         return cls(clp_labels, array)
 
     @classmethod
-    def from_data(cls, data: OptimizationData) -> OptimizationMatrix:
+    def from_data_model(
+        cls,
+        model: DataModel,
+        global_axis: np.typing.ArrayLike,
+        model_axis: np.typing.ArrayLike,
+        weight: np.typing.ArrayLike | None,
+        global_matrix: bool = False,
+    ) -> OptimizationMatrix:
         """"""
+        megacomplex_iterator = (
+            iterate_data_model_global_megacomplexes
+            if global_matrix
+            else iterate_data_model_megacomplexes
+        )
         matrices = [
-            cls.from_megacomplex(scale, megacomplex, data.model, data.global_axis, data.model_axis)
-            for scale, megacomplex in iterate_data_model_megacomplexes(data.model)
+            cls.from_megacomplex(scale, megacomplex, model, global_axis, model_axis)
+            for scale, megacomplex in megacomplex_iterator(model)
         ]
         matrix = matrices[0] if len(matrices) == 1 else cls.combine(matrices)
-        if data.weight is not None:
-            matrix.weight(data.weight)
+        if weight is not None:
+            matrix.weight(weight.T if global_matrix else weight)
         return matrix
+
+    @classmethod
+    def from_data(cls, data: OptimizationData) -> OptimizationMatrix:
+        """"""
+        return cls.from_data_model(cls, data.model, data.global_axis, data.model_axis, data.weight)
 
     @classmethod
     def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:
