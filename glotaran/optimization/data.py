@@ -1,7 +1,7 @@
 """Module containing the data provider classes."""
 from __future__ import annotations
 
-from collections.abc import Generator
+import abc
 from typing import Literal
 
 import numpy as np
@@ -24,7 +24,17 @@ class AlignDatasetError(ValueError):
         )
 
 
-class OptimizationData:
+class OptimizationDataProvider:
+    @abc.abstractproperty
+    def data_slices(self) -> list[np.typing.ArrayLike]:
+        pass
+
+    @abc.abstractproperty
+    def global_axis(self) -> np.typing.ArrayLike:
+        pass
+
+
+class OptimizationData(OptimizationDataProvider):
     """A class to provide prepared data for optimization."""
 
     def __init__(self, model: DataModel):
@@ -59,9 +69,15 @@ class OptimizationData:
             if self._weight is not None:
                 self._weight = self._weight.T.flatten()
 
+        self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
+
     @property
     def data(self) -> np.typing.ArrayLike:
         return self._data
+
+    @property
+    def data_slices(self) -> list[np.typing.ArrayLike]:
+        return self._data_slices
 
     @property
     def global_axis(self) -> np.typing.ArrayLike:
@@ -200,11 +216,8 @@ class OptimizationData:
                 data = data.T
         return data
 
-    def iterate_data_over_global_axis(self) -> Generator[np.typing.ArrayLike, None, None]:
-        return (self.data[:, i] for i in range(self.global_axis.size))
 
-
-class LinkedOptimizationData:
+class LinkedOptimizationData(OptimizationDataProvider):
     def __init__(
         self,
         datasets: dict[str, OptimizationData],
@@ -234,7 +247,7 @@ class LinkedOptimizationData:
         return self._group_labels
 
     @property
-    def data(self) -> list[np.typing.ArrayLike]:
+    def data_slices(self) -> list[np.typing.ArrayLike]:
         return self._data
 
     @property
@@ -242,7 +255,7 @@ class LinkedOptimizationData:
         return self._data_indices
 
     @property
-    def datasets(self) -> dict[str, OptimizationData]:
+    def data(self) -> dict[str, OptimizationData]:
         return self._datasets
 
     @property

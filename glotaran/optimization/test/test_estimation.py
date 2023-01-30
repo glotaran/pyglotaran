@@ -15,7 +15,7 @@ from glotaran.parameter import Parameter
 @pytest.mark.parametrize(
     "residual_function", ("variable_projection", "non_negative_least_squares")
 )
-def test_estimate_matrix(residual_function: str):
+def test_calculate(residual_function: str):
     data_model = deepcopy(TestDataModelConstantIndexIndependent)
     data = OptimizationData(data_model)
     matrix = OptimizationMatrix.from_data(data)
@@ -30,7 +30,7 @@ def test_estimate_matrix(residual_function: str):
     assert all(e.residual.size == data.model_axis.size for e in estimations)
 
 
-def test_constraints():
+def test_resolve_clp():
 
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
     constraints = [ZeroConstraint(type="zero", target="c3_1", interval=[(3, 7)])]

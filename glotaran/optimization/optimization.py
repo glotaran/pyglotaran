@@ -3,12 +3,10 @@ from typing import Literal
 from warnings import warn
 
 import numpy as np
-from scipy.optimize import OptimizeResult
 from scipy.optimize import least_squares
 
 from glotaran.model import ExperimentModel
-from glotaran.optimization.objective import OptimizationObjectiveData
-from glotaran.optimization.objective import OptimizationObjectiveExperiment
+from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.result import OptimizationResult
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
@@ -33,14 +31,7 @@ class Optimization:
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ):
-        self._objectives = [
-            OptimizationObjectiveExperiment(e)
-            if len(e.datasets) > 0
-            else OptimizationObjectiveData(
-                next(e.datasets.values()), e.clp_constraints, e.clp_relations, e.clp_penalties
-            )
-            for e in models
-        ]
+        self._objectives = [OptimizationObjective(experiment) for experiment in models]
         self._tee = TeeContext()
         self._verbose = verbose
         self._raise = raise_exception
