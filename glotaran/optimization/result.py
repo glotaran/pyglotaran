@@ -7,6 +7,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.optimize import OptimizeResult
 
+from glotaran import __version__ as glotaran_version
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
@@ -131,9 +132,7 @@ class OptimizationResult:
                 np.sqrt(result_args["reduced_chi_square"])
             )
             result_args["jacobian"] = result.jac
-            result_args[
-                "covariance_matrix"
-            ] = self.calculate_covariance_matrix_and_standard_errors(
+            result_args["covariance_matrix"] = calculate_covariance_matrix_and_standard_errors(
                 result_args["jacobian"], result_args["root_mean_square_error"]
             )
 

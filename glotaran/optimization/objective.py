@@ -1,15 +1,7 @@
-import abc
-from typing import Literal
-
 import numpy as np
 import xarray as xr
 from numpy.typing import ArrayLike
 
-from glotaran.io.prepare_dataset import add_svd_to_dataset
-from glotaran.model import ClpConstraint
-from glotaran.model import ClpPenalty
-from glotaran.model import ClpRelation
-from glotaran.model import DataModel
 from glotaran.model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
@@ -19,31 +11,26 @@ from glotaran.optimization.penalty import calculate_clp_penalties
 
 
 class OptimizationObjective:
-    def __init__(
-        self,
-        global_axis: ArrayLike,
-        constraints: list[ClpConstraint],
-        relations: list[ClpRelation],
-        penalties: list[ClpPenalty],
-        residual_function: Literal["variable_projection", "non_negative_least_squares"],
-    ):
-        self._global_axis = global_axis
-        self._constraints = constraints
-        self._relations = relations
-        self._penalties = penalties
-        self._residual_function = residual_function
+    def __init__(self, model: ExperimentModel):
+        self._data = (
+            LinkedOptimizationData(
+                model.datasets, model.clp_link_tolerance, model.clp_link_method, model.scale
+            )
+            if len(model.datasets) > 1
+            else OptimizationData(next(model.datasets.values()))
+        )
+        self._model = model
 
-    @abc.abstractmethod
     def calculate_matrices(self) -> list[OptimizationMatrix]:
-        pass
+        if isinstance(self._data, OptimizationData):
+            matrix = OptimizationMatrix.from_data(self._data)
+            return [matrix.at_index(i) for i in range(self._data.global_axis.size)]
+        return OptimizationMatrix.from_linked_data(self._data)
 
-    @abc.abstractmethod
-    def get_data(self, index: int) -> ArrayLike:
-        pass
-
-    @abc.abstractmethod
     def get_result(self) -> dict[str, xr.Dataset]:
-        pass
+        return {
+            label: self.get_result_dataset(data) for label, data in self._data.datasets.items()
+        }
 
     def calculate(self) -> ArrayLike:
         matrices = self.calculate_matrices()
@@ -52,10 +39,8 @@ class OptimizationObjective:
             for i, index in enumerate(self._global_axis)
         ]
         estimations = [
-            OptimizationEstimation.calculate(
-                reduced_matrices[i].array, self.get_data(i), self._residual_function
-            )
-            for i in range(self._global_axis.size)
+            OptimizationEstimation.calculate(matrix.array, data, self._residual_function)
+            for matrix, data in zip(reduced_matrices, self._data.data_slices)
         ]
 
         penalties = [e.residual for e in estimations]
@@ -117,57 +102,3 @@ class OptimizationObjective:
             (dataset.residual**2).sum() / size
         ).data
         return dataset
-
-
-class OptimizationObjectiveData(OptimizationObjective):
-    def __init__(
-        self,
-        model: DataModel,
-        constraints: list[ClpConstraint],
-        relations: list[ClpRelation],
-        penalties: list[ClpPenalty],
-        label: str = "dataset",
-    ):
-        self._data = OptimizationData(model)
-        self._label = label
-        super.__init__(
-            self._data.global_axis, constraints, relations, penalties, model.residual_function
-        )
-
-    def calculate_matrices(self) -> list[OptimizationMatrix]:
-        matrix = OptimizationMatrix.from_data(self._data)
-        return [matrix.at_index(i) for i in range(self._data.global_axis.size)]
-
-    def get_data(self, index: int) -> ArrayLike:
-        return self._data.data[:, index]
-
-    def get_result(self) -> dict[str, xr.Dataset]:
-        return {self.label: self.get_result_dataset(self._data)}
-
-
-class OptimizationObjectiveExperiment:
-    def __init__(
-        self,
-        model: ExperimentModel,
-    ):
-        self._data = LinkedOptimizationData(
-            model.datasets, model.clp_link_tolerance, model.clp_link_method, model.scale
-        )
-        super.__init__(
-            self._data.global_axis,
-            model.clp_constraints,
-            model.clp_relations,
-            model.clp_penalties,
-            model.residual_function,
-        )
-
-    def calculate_matrices(self) -> list[OptimizationMatrix]:
-        return OptimizationMatrix.from_linked_data(self._data)
-
-    def get_data(self, index: int) -> ArrayLike:
-        return self._data.data[index]
-
-    def get_result(self) -> dict[str, xr.Dataset]:
-        return {
-            label: self.get_result_dataset(data) for label, data in self._data.datasets.items()
-        }
