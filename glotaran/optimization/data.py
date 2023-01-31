@@ -63,17 +63,19 @@ class OptimizationData(OptimizationDataProvider):
         self._global_axis = data.coords[self._global_dimension].data
 
         self._data = self.get_from_dataset(data, "data")
+        self._flat_data = None
 
         self._weight = self.get_from_dataset(data, "weight")
+        self._flat_weight = None
         if self._weight is None:
             self.get_model_weight(model)
         if self._weight is not None:
             self._data *= self._weight
 
         if self.is_global:
-            self._data = self._data.T.flatten()
+            self._flat_data = self._data.T.flatten()
             if self._weight is not None:
-                self._weight = self._weight.T.flatten()
+                self._flat_weight = self._weight.T.flatten()
             self._data_slices = []
         else:
             self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
@@ -81,6 +83,10 @@ class OptimizationData(OptimizationDataProvider):
     @property
     def data(self) -> np.typing.ArrayLike:
         return self._data
+
+    @property
+    def flat_data(self) -> np.typing.ArrayLike | None:
+        return self._flat_data
 
     @property
     def data_slices(self) -> list[np.typing.ArrayLike]:
@@ -113,6 +119,10 @@ class OptimizationData(OptimizationDataProvider):
     @property
     def weight(self) -> np.typing.ArrayLike | None:
         return self._weight
+
+    @property
+    def flat_weight(self) -> np.typing.ArrayLike | None:
+        return self._flat_weight
 
     def get_model_weight(self, model: DataModel) -> np.typing.ArrayLike | None:
         """Add model weight to data.
