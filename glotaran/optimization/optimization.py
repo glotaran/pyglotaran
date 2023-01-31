@@ -142,6 +142,23 @@ class Optimization:
         )
         return self._parameters, data, result
 
+    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset]]:
+        termination_reason = "Dry run."
+
+        penalty = np.concatenate([o.calculate() for o in self._objectives])
+        data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
+        nr_clp = len({str(c.data) for d in data.values() for c in d.clp_label})
+        result = OptimizationResult(
+            None,
+            self._parameter_history,
+            OptimizationHistory.from_stdout_str(self._tee.read()),
+            penalty,
+            self._free_parameter_labels,
+            termination_reason,
+            nr_clp,
+        )
+        return self._parameters, data, result
+
     def objective_function(self, parameters: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """Calculate the objective for the optimization.
 
