@@ -11,7 +11,7 @@ def calculate_clp_penalties(
     estimations: list[OptimizationEstimation],
     global_axis: ArrayLike,
     penalties: list[EqualAreaPenalty],
-) -> list[float]:
+) -> np.typing.ArrayLike:
     """Calculate the clp penalty.
 
     Parameters
@@ -37,7 +37,9 @@ def calculate_clp_penalties(
             if penalty.target in matrix.clp_labels and penalty.target_applies(index):
                 targets[i].append(estimation.clp[matrix.clp_labels.index(penalty.target)])
 
-    return [
-        np.sum(np.abs(np.array(source) - penalty.parameter * np.array(target)))
-        for penalty, source, target in zip(penalties, sources, targets)
-    ]
+    return np.array(
+        [
+            np.abs(np.sum(np.abs(source)) - penalty.parameter * np.sum(np.abs(target)))
+            for penalty, source, target in zip(penalties, sources, targets)
+        ]
+    )
