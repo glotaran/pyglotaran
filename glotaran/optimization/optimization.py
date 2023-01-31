@@ -7,6 +7,7 @@ import xarray as xr
 from scipy.optimize import least_squares
 
 from glotaran.model import ExperimentModel
+from glotaran.model import GlotaranModelIssues
 from glotaran.model import GlotaranUserError
 from glotaran.model import Library
 from glotaran.optimization.objective import OptimizationObjective
@@ -59,6 +60,11 @@ class Optimization:
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ):
+        issues = [
+            issue for experiment in models for issue in experiment.validate(library, parameters)
+        ]
+        if len(issues) > 0:
+            raise GlotaranModelIssues(issues)
         self._parameters = Parameters.empty()
         self._objectives = [
             OptimizationObjective(
