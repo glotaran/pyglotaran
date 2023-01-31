@@ -168,8 +168,8 @@ class OptimizationMatrix:
             else np.kron(global_matrix.array, matrix.array)
         )
 
-        if data.weight is not None:
-            array *= data.weight[:, np.newaxis]
+        if data.flat_weight is not None:
+            array *= data.flat_weight[:, np.newaxis]
 
         return matrix, global_matrix, cls(clp_labels, array)
 
