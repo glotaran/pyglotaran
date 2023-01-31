@@ -18,5 +18,12 @@ TestLibrary = Library.create_for_megacomplexes(
             "compartments": ["c1", "c2"],
             "rates": ["rates.decay.1", "rates.decay.2"],
         },
+        "gaussian": {
+            "type": "test-megacomplex-gaussian",
+            "compartments": ["c1", "c2"],
+            "amplitude": ["gaussian.amplitude.1", "gaussian.amplitude.2"],
+            "location": ["gaussian.location.1", "gaussian.location.2"],
+            "width": ["gaussian.width.1", "gaussian.width.2"],
+        },
     }
 )

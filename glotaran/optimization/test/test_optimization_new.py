@@ -43,6 +43,54 @@ def test_single_data():
             assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
 
 
+def test_global_data():
+    data_model = DataModel(megacomplex=["decay_independent"], global_megacomplex=["gaussian"])
+    experiment = ExperimentModel(datasets={"decay_independent": data_model})
+    parameters = Parameters.from_dict(
+        {
+            "rates": {"decay": [0.8, 0.04]},
+            "gaussian": {
+                "amplitude": [2.0, 3.0],
+                "location": [3.0, 6.0],
+                "width": [2.0, 4.0],
+            },
+        }
+    )
+
+    global_axis = np.arange(10)
+    model_axis = np.arange(0, 150, 1)
+    data_model.data = simulate(
+        data_model, TestLibrary, parameters, {"global": global_axis, "model": model_axis}
+    )
+
+    initial_parameters = Parameters.from_dict(
+        {
+            "rates": {"decay": [0.8, 0.04]},
+            "gaussian": {
+                "amplitude": [2.0, 3.0],
+                "location": [3.0, 6.0],
+                "width": [2.0, 4.0],
+            },
+        }
+    )
+    print(initial_parameters)
+    optimization = Optimization(
+        [experiment],
+        initial_parameters,
+        TestLibrary,
+        raise_exception=True,
+        maximum_number_function_evaluations=10,
+    )
+    optimized_parameters, optimized_data, result = optimization.run()
+    assert "decay_independent" in optimized_data
+    print(optimized_parameters)
+    assert result.success
+    assert initial_parameters != optimized_parameters
+    for param in optimized_parameters.all():
+        if param.vary:
+            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
+
+
 def test_multiple_data():
     data_model_one = DataModel(megacomplex=["decay_independent"])
     data_model_two = DataModel(megacomplex=["decay_dependent"])
