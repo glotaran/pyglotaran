@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from pydantic import Extra
 from pydantic import Field
 
+from glotaran.item import ItemIssue
 from glotaran.model.clp_constraint import ClpConstraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import ClpRelation
@@ -56,3 +57,10 @@ class ExperimentModel(BaseModel):
             for label, dataset in self.datasets.items()
         }
         return result
+
+    def validate(self, library: Library, parameters: Parameters | None = None) -> list[ItemIssue]:
+        return [
+            issue
+            for dataset in self.datasets.values()
+            for issue in library.validate_item(dataset, parameters)
+        ]

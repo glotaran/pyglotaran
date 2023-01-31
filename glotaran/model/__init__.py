@@ -10,6 +10,7 @@ from glotaran.model.data_model import is_data_model_global
 from glotaran.model.data_model import iterate_data_model_global_megacomplexes
 from glotaran.model.data_model import iterate_data_model_megacomplexes
 from glotaran.model.errors import GlotaranModelError
+from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.errors import ItemIssue
 from glotaran.model.experiment_model import ExperimentModel

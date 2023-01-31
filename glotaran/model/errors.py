@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class GlotaranDefinitionError(Exception):
     pass
 
@@ -8,6 +11,11 @@ class GlotaranModelError(Exception):
 
 class GlotaranUserError(Exception):
     pass
+
+
+class GlotaranModelIssues(GlotaranModelError):
+    def __init__(self, issues: list[ItemIssue]):
+        super().__init__(f"The model has issues:\n\n* {'* '.join(issues.to_string())}")
 
 
 class ItemIssue:
