@@ -7,8 +7,8 @@ from glotaran.model import ZeroConstraint
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.optimization.test.models import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.models import TestDataModelConstantThreeCompartments
+from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
+from glotaran.optimization.test.data import TestDataModelConstantThreeCompartments
 from glotaran.parameter import Parameter
 
 
