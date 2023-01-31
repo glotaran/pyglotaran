@@ -70,12 +70,13 @@ class OptimizationData(OptimizationDataProvider):
         if self._weight is not None:
             self._data *= self._weight
 
-        if is_data_model_global(model):
+        if self.is_global:
             self._data = self._data.T.flatten()
             if self._weight is not None:
                 self._weight = self._weight.T.flatten()
-
-        self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
+            self._data_slices = []
+        else:
+            self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
 
     @property
     def data(self) -> np.typing.ArrayLike:
@@ -84,6 +85,10 @@ class OptimizationData(OptimizationDataProvider):
     @property
     def data_slices(self) -> list[np.typing.ArrayLike]:
         return self._data_slices
+
+    @property
+    def is_global(self) -> bool:
+        return is_data_model_global(self._model)
 
     @property
     def global_axis(self) -> np.typing.ArrayLike:

@@ -72,7 +72,7 @@ def simulate(
                 "Cannot simulate dataset without global megacomplexes if no clp are provided."
             )
         global_matrix = OptimizationMatrix.from_data_model(
-            model, model_axis, global_axis, None, global_matrix=True
+            model, global_axis, model_axis, None, global_matrix=True
         )
         clp = xr.DataArray(
             global_matrix.array,

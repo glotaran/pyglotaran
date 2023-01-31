@@ -9,9 +9,10 @@ from glotaran.model import ZeroConstraint
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.optimization.test.models import TestDataModelConstantIndexDependent
-from glotaran.optimization.test.models import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.models import TestDataModelConstantThreeCompartments
+from glotaran.optimization.test.data import TestDataModelConstantIndexDependent
+from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
+from glotaran.optimization.test.data import TestDataModelConstantThreeCompartments
+from glotaran.optimization.test.data import TestDataModelGlobal
 from glotaran.parameter import Parameter
 
 
@@ -31,12 +32,24 @@ def test_from_data(weight, data_model):
         else (data.data.shape[0], 1)
     )
     assert matrix.clp_labels == (
-        ["c2"] if data_model.megacomplex[0].is_index_dependent else ["c5"]
+        ["c2"] if data_model.megacomplex[0].is_index_dependent else ["c1"]
     )
     matrix_value = 2 if data_model.megacomplex[0].is_index_dependent else 5
     if weight:
         matrix_value *= 0.5
     assert (matrix.array == matrix_value).all()
+
+
+@pytest.mark.parametrize("weight", (True, False))
+def test_from_global_data(weight: bool):
+    data_model = deepcopy(TestDataModelGlobal)
+    if weight:
+        data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
+    data = OptimizationData(data_model)
+    matrix, global_matrix, full_matrix = OptimizationMatrix.from_global_data(data)
+    assert global_matrix.array.shape == (data.global_axis.size, 1)
+    assert full_matrix.array.shape == (data.global_axis.size * data.model_axis.size, 1)
+    assert full_matrix.clp_labels == ["c4@c4"]
 
 
 def test_constraints():

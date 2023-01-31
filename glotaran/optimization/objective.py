@@ -49,8 +49,12 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
-    def get_result_dataset(self, data: OptimizationData) -> xr.Dataset:
+    def get_result_dataset(self, data: OptimizationData, add_svd=True) -> xr.Dataset:
         dataset = data.model.data.copy()
+        print(dataset.data.dims)
+        if dataset.data.dims != (data.model_dimension, data.global_dimension):
+            dataset["data"] = dataset.data.T
+        print(dataset.data.dims)
         dataset.attrs["model_dimension"] = data.model_dimension
         dataset.attrs["global_dimension"] = data.global_dimension
 
@@ -91,12 +95,45 @@ class OptimizationObjective:
                 (data.global_dimension, data.global_axis),
                 (data.model_dimension, data.model_axis),
             ),
-        )
+        ).T
+
         # Calculate RMS
         size = dataset.residual.shape[0] * dataset.residual.shape[1]
         dataset.attrs["root_mean_square_error"] = np.sqrt(
             (dataset.residual**2).sum() / size
         ).data
+
+        if data.weight is not None:
+            if "weight" not in dataset:
+                dataset["weight"] = xr.DataArray(data.weight, coords=dataset.data.coords)
+            dataset["weighted_residual"] = dataset["residual"]
+            dataset["residual"] = dataset["residual"] / data.weight
+            dataset["weighted_matrix"] = dataset["matrix"]
+            print(data.data.shape, dataset["matrix"].shape, data.weight.shape)
+            dataset["matrix"] = dataset["matrix"] / data.weight.T[..., np.newaxis]
+            dataset.attrs["weighted_root_mean_square_error"] = dataset.attrs[
+                "root_mean_square_error"
+            ]
+            dataset.attrs["root_mean_square_error"] = np.sqrt(
+                (dataset.residual**2).sum() / size
+            ).data
+
+        if add_svd:
+            for name in ["data", "residual"]:
+                if f"{name}_singular_values" in dataset:
+                    continue
+                print(name, dataset[name].dims, dataset[name].shape)
+                l, s, r = np.linalg.svd(dataset[name], full_matrices=False)
+                dataset[f"{name}_left_singular_vectors"] = (
+                    (data.model_dimension, "left_singular_value_index"),
+                    l,
+                )
+                dataset[f"{name}_singular_values"] = (("singular_value_index"), s)
+                dataset[f"{name}_right_singular_vectors"] = (
+                    (data.global_dimension, "right_singular_value_index"),
+                    r.T,
+                )
+
         return dataset
 
     def get_result(self) -> dict[str, xr.Dataset]:
