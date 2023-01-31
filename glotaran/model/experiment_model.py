@@ -8,11 +8,11 @@ from pydantic import BaseModel
 from pydantic import Extra
 from pydantic import Field
 
-from glotaran.item import ItemIssue
 from glotaran.model.clp_constraint import ClpConstraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
+from glotaran.model.errors import ItemIssue
 from glotaran.model.library import Library
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters

@@ -31,9 +31,7 @@ def test_from_data(weight, data_model):
         if weight or data_model.megacomplex[0].is_index_dependent
         else (data.data.shape[0], 1)
     )
-    assert matrix.clp_labels == (
-        ["c2"] if data_model.megacomplex[0].is_index_dependent else ["c1"]
-    )
+    assert matrix.clp_axis == (["c2"] if data_model.megacomplex[0].is_index_dependent else ["c1"])
     matrix_value = 2 if data_model.megacomplex[0].is_index_dependent else 5
     if weight:
         matrix_value *= 0.5
@@ -49,7 +47,7 @@ def test_from_global_data(weight: bool):
     matrix, global_matrix, full_matrix = OptimizationMatrix.from_global_data(data)
     assert global_matrix.array.shape == (data.global_axis.size, 1)
     assert full_matrix.array.shape == (data.global_axis.size * data.model_axis.size, 1)
-    assert full_matrix.clp_labels == ["c4@c4"]
+    assert full_matrix.clp_axis == ["c4@c4"]
 
 
 def test_constraints():
@@ -60,13 +58,13 @@ def test_constraints():
     matrix = OptimizationMatrix.from_data(data)
 
     assert matrix.array.shape == (5, 3)
-    assert matrix.clp_labels == ["c3_1", "c3_2", "c3_3"]
+    assert matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
     reduced_matrix = matrix.reduce(0, constraints, [])
     assert reduced_matrix.array.shape == (5, 3)
-    assert reduced_matrix.clp_labels == ["c3_1", "c3_2", "c3_3"]
+    assert reduced_matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
     reduced_matrix = matrix.reduce(3, constraints, [])
     assert reduced_matrix.array.shape == (5, 2)
-    assert reduced_matrix.clp_labels == ["c3_1", "c3_2"]
+    assert reduced_matrix.clp_axis == ["c3_1", "c3_2"]
 
 
 def test_relations():
@@ -82,14 +80,14 @@ def test_relations():
     print(matrix)
 
     assert matrix.array.shape == (5, 3)
-    assert matrix.clp_labels == ["c3_1", "c3_2", "c3_3"]
+    assert matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
 
     reduced_matrix = matrix.at_index(0).reduce(0, [], relations)
     assert reduced_matrix.array.shape == (5, 3)
-    assert reduced_matrix.clp_labels == ["c3_1", "c3_2", "c3_3"]
+    assert reduced_matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
     reduced_matrix = matrix.at_index(3).reduce(3, [], relations)
     assert reduced_matrix.array.shape == (5, 2)
-    assert reduced_matrix.clp_labels == ["c3_1", "c3_2"]
+    assert reduced_matrix.clp_axis == ["c3_1", "c3_2"]
     assert np.array_equal(reduced_matrix.array[:, 1], matrix.array[:, 1] + matrix.array[:, 2] * 3)
 
 
@@ -113,13 +111,13 @@ def test_from_linked_data():
     assert all(m.global_axis_size is None for m in matrices)
     assert all(not m.is_index_dependent for m in matrices)
 
-    assert matrices[2].clp_labels == matrix_one.clp_labels
+    assert matrices[2].clp_axis == matrix_one.clp_axis
     assert np.array_equal(matrices[2].array, matrix_one.array)
 
-    assert matrices[1].clp_labels == matrix_two.clp_labels
+    assert matrices[1].clp_axis == matrix_two.clp_axis
     assert np.array_equal(matrices[1].array, matrix_two.at_index(1).array)
 
-    assert matrices[0].clp_labels == matrix_one.clp_labels + matrix_two.clp_labels
+    assert matrices[0].clp_axis == matrix_one.clp_axis + matrix_two.clp_axis
     print(matrices[0].array[0 : matrix_one.model_axis_size, 0], matrix_one.array[:, 0])
     assert np.array_equal(
         matrices[0].array[0 : matrix_one.model_axis_size, 0], matrix_one.array[:, 0]

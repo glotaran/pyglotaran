@@ -32,10 +32,10 @@ def calculate_clp_penalties(
     targets = [[] for _ in penalties]
     for matrix, estimation, index in zip(matrices, estimations, global_axis):
         for i, penalty in enumerate(penalties):
-            if penalty.source in matrix.clp_labels and penalty.source_applies(index):
-                sources[i].append(estimation.clp[matrix.clp_labels.index(penalty.source)])
-            if penalty.target in matrix.clp_labels and penalty.target_applies(index):
-                targets[i].append(estimation.clp[matrix.clp_labels.index(penalty.target)])
+            if penalty.source in matrix.clp_axis and penalty.source_applies(index):
+                sources[i].append(estimation.clp[matrix.clp_axis.index(penalty.source)])
+            if penalty.target in matrix.clp_axis and penalty.target_applies(index):
+                targets[i].append(estimation.clp[matrix.clp_axis.index(penalty.target)])
 
     return np.array(
         [
