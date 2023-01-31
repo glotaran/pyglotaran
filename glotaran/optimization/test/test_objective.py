@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from glotaran.model import EqualAreaPenalty
 from glotaran.model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
@@ -146,3 +147,26 @@ def test_result_data(weight: bool):
         assert "weighted_root_mean_square_error" in result_data.attrs
         assert "weighted_matrix" in result_data
         assert "weighted_residual" in result_data
+
+
+def test_penalty():
+    data_model_one = deepcopy(TestDataModelConstantIndexIndependent)
+    data_model_two = deepcopy(TestDataModelConstantIndexDependent)
+    experiment = ExperimentModel(
+        datasets={
+            "independent": data_model_one,
+            "dependent": data_model_two,
+        },
+        clp_link_tolerance=1,
+        clp_penalties=[
+            EqualAreaPenalty(type="equal_area", source="c1", target="c2", parameter=2, weight=4)
+        ],
+    )
+    objective = OptimizationObjective(experiment)
+    assert isinstance(objective._data, LinkedOptimizationData)
+
+    penalty = objective.calculate()
+    data_size_one = data_model_one.data["model"].size * data_model_one.data["global"].size
+    data_size_two = data_model_two.data["model"].size * data_model_two.data["global"].size
+    assert penalty.size == data_size_one + data_size_two + 1
+    assert penalty[-1] == 5

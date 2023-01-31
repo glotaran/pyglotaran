@@ -25,20 +25,16 @@ class EqualAreaPenalty(ClpPenalty):
     # we keep the type though for later extension.
     type: Literal["equal_area"]
     source: str
-    source_interval: list[tuple[float, float]] | tuple[float, float] | None
+    source_interval: list[tuple[float, float]] | tuple[float, float] | None = None
     target: str
-    target_interval: list[tuple[float, float]] | tuple[float, float] | None
+    target_interval: list[tuple[float, float]] | tuple[float, float] | None = None
     parameter: ParameterType
     weight: float
 
-    def source_applies(
-        self, index: float | None, intervals: list[tuple[float, float]] | None
-    ) -> bool:
+    def source_applies(self, index: float | None) -> bool:
         return self.applies(index, self.source_interval)
 
-    def target_applies(
-        self, index: float | None, intervals: list[tuple[float, float]] | None
-    ) -> bool:
+    def target_applies(self, index: float | None) -> bool:
         return self.applies(index, self.target_interval)
 
     def applies(self, index: float | None, intervals: list[tuple[float, float]] | None) -> bool:

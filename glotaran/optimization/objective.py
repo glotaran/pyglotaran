@@ -49,8 +49,10 @@ class OptimizationObjective:
                     estimations, matrices, reduced_matrices, self._data.global_axis
                 )
             ]
-            penalties += calculate_clp_penalties(
-                matrices, estimations, self._data.global_axis, self._model.clp_penalties
+            penalties.append(
+                calculate_clp_penalties(
+                    matrices, estimations, self._data.global_axis, self._model.clp_penalties
+                )
             )
         return np.concatenate(penalties)
 
