@@ -45,11 +45,11 @@ def test_optimization_data_global_model(weight: bool):
     assert np.array_equal(dataset.coords["global"], data.global_axis)
     if weight:
         assert np.array_equal(
-            dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.data
+            dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.flat_data
         )
-        assert np.array_equal(dataset.weight.data.T.flatten(), data.weight)
+        assert np.array_equal(dataset.weight.data.T.flatten(), data.flat_weight)
     else:
-        assert np.array_equal(dataset.data.data.T.flatten(), data.data)
+        assert np.array_equal(dataset.data.data.T.flatten(), data.flat_data)
 
 
 def test_linked_optimization_data():
