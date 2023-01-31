@@ -44,7 +44,7 @@ class OptimizationObjective:
         penalties = [e.residual for e in estimations]
         if len(self._model.clp_penalties) > 0:
             estimations = [
-                e.resolve_clp(m.clp_labels, r.clp_labels, i, self._model.clp_relations)
+                e.resolve_clp(m.clp_axis, r.clp_axis, i, self._model.clp_relations)
                 for e, m, r, i in zip(
                     estimations, matrices, reduced_matrices, self._data.global_axis
                 )
@@ -68,8 +68,8 @@ class OptimizationObjective:
             OptimizationEstimation.calculate(
                 reduced_mat.array, data_slice, self._model.residual_function
             ).resolve_clp(
-                mat.clp_labels,
-                reduced_mat.clp_labels,
+                mat.clp_axis,
+                reduced_mat.clp_axis,
                 index,
                 self._model.clp_relations,
             )
@@ -81,7 +81,7 @@ class OptimizationObjective:
             [e.clp for e in estimations],
             coords=(
                 (data.global_dimension, data.global_axis),
-                ("clp_label", matrix.clp_labels),
+                ("clp_label", matrix.clp_axis),
             ),
         )
         dataset["residual"] = xr.DataArray(
@@ -98,7 +98,7 @@ class OptimizationObjective:
         global_matrix = OptimizationMatrix.from_data(data, global_matrix=True)
         global_matrix_coords = (
             (data.global_dimension, data.global_axis),
-            ("global_clp_label", matrix.clp_labels),
+            ("global_clp_label", matrix.clp_axis),
         )
         if global_matrix.is_index_dependent:
             global_matrix_coords = (
@@ -110,10 +110,10 @@ class OptimizationObjective:
             full_matrix.array, data.flat_data, data.model.residual_function
         )
         dataset["clp"] = xr.DataArray(
-            estimation.clp.reshape((len(global_matrix.clp_labels), len(matrix.clp_labels))),
+            estimation.clp.reshape((len(global_matrix.clp_axis), len(matrix.clp_axis))),
             coords={
-                "global_clp_label": global_matrix.clp_labels,
-                "clp_label": matrix.clp_labels,
+                "global_clp_label": global_matrix.clp_axis,
+                "clp_label": matrix.clp_axis,
             },
             dims=["global_clp_label", "clp_label"],
         )
@@ -138,7 +138,7 @@ class OptimizationObjective:
         matrix = OptimizationMatrix.from_data(data)
         matrix_coords = (
             (data.model_dimension, data.model_axis),
-            ("clp_label", matrix.clp_labels),
+            ("clp_label", matrix.clp_axis),
         )
         if matrix.is_index_dependent:
             matrix_coords = ((data.global_dimension, data.global_axis),) + matrix_coords
