@@ -6,9 +6,9 @@ import xarray as xr
 
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
-from glotaran.optimization.test.models import TestDataModelConstantIndexDependent
-from glotaran.optimization.test.models import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.models import TestDataModelGlobal
+from glotaran.optimization.test.data import TestDataModelConstantIndexDependent
+from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
+from glotaran.optimization.test.data import TestDataModelGlobal
 
 
 @pytest.mark.parametrize("weight", (True, False))
@@ -95,24 +95,11 @@ def test_linked_optimization_data():
     dataset1_size = dataset_one.coords["model"].size
     dataset2_size = dataset_two.coords["model"].size
 
-    assert data.data[0].size == dataset1_size + dataset2_size
-    assert data.data[1].size == dataset2_size
-    assert data.data[2].size == dataset1_size
-    assert data.data[3].size == dataset1_size + dataset2_size
-    assert data.data[4].size == dataset2_size
-
-    assert len(data.weights) == data.global_axis.size
-    assert (
-        data.weights[0].size  # type:ignore[union-attr]
-        == dataset1_size + dataset2_size
-    )
-    assert data.weights[1] is None
-    assert data.weights[2].size == dataset1_size  # type:ignore[union-attr]
-    assert (
-        data.weights[3].size  # type:ignore[union-attr]
-        == dataset1_size + dataset2_size
-    )
-    assert data.weights[4] is None
+    assert data.data_slices[0].size == dataset1_size + dataset2_size
+    assert data.data_slices[1].size == dataset2_size
+    assert data.data_slices[2].size == dataset1_size
+    assert data.data_slices[3].size == dataset1_size + dataset2_size
+    assert data.data_slices[4].size == dataset2_size
 
 
 @pytest.mark.parametrize("method", ["nearest", "backward", "forward"])

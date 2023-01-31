@@ -9,6 +9,7 @@ import numpy as np
 from glotaran.model import ClpConstraint
 from glotaran.model import ClpRelation
 from glotaran.model import DataModel
+from glotaran.model import GlotaranModelError
 from glotaran.model import GlotaranUserError
 from glotaran.model import Megacomplex
 from glotaran.model import iterate_data_model_global_megacomplexes
@@ -115,6 +116,9 @@ class OptimizationMatrix:
             if global_matrix
             else iterate_data_model_megacomplexes
         )
+        if global_matrix:
+            model_axis, global_axis = global_axis, model_axis
+
         matrices = [
             cls.from_megacomplex(scale, megacomplex, model, global_axis, model_axis)
             for scale, megacomplex in megacomplex_iterator(model)
@@ -125,9 +129,49 @@ class OptimizationMatrix:
         return matrix
 
     @classmethod
-    def from_data(cls, data: OptimizationData) -> OptimizationMatrix:
+    def from_data(
+        cls, data: OptimizationData, apply_weight: bool = True, global_matrix: bool = False
+    ) -> OptimizationMatrix:
         """"""
-        return cls.from_data_model(data.model, data.global_axis, data.model_axis, data.weight)
+        return cls.from_data_model(
+            data.model,
+            data.global_axis,
+            data.model_axis,
+            data.weight if apply_weight else None,
+            global_matrix=global_matrix,
+        )
+
+    @classmethod
+    def from_global_data(
+        cls, data: OptimizationData
+    ) -> tuple(OptimizationMatrix, OptimizationMatrix, OptimizationMatrix,):
+        matrix = cls.from_data(data, apply_weight=False)
+        global_matrix = cls.from_data(data, apply_weight=False, global_matrix=True)
+
+        if global_matrix.is_index_dependent:
+            raise GlotaranModelError("Index dependent global matrices are not supported.")
+
+        clp_labels = [
+            label
+            for gl in global_matrix.clp_labels
+            for label in [gl + "@" + ml for ml in matrix.clp_labels]
+        ]
+
+        array = (
+            np.concatenate(
+                [
+                    np.kron(global_matrix.array[i, :], matrix.array[i, :, :])
+                    for i in range(data.global_axis.size)
+                ]
+            )
+            if matrix.is_index_dependent
+            else np.kron(global_matrix.array, matrix.array)
+        )
+
+        if data.weight is not None:
+            array *= data.weight[:, np.newaxis]
+
+        return matrix, global_matrix, cls(clp_labels, array)
 
     @classmethod
     def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:
