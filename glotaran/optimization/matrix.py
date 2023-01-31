@@ -23,7 +23,7 @@ from glotaran.parameter import Parameter
 class OptimizationMatrix:
     """A container of matrix and the corresponding clp labels."""
 
-    clp_labels: list[str]
+    clp_axis: list[str]
     """The clp labels."""
     array: np.typing.ArrayLike
 
@@ -56,17 +56,17 @@ class OptimizationMatrix:
         model_axis: np.typing.ArrayLike,
     ) -> OptimizationMatrix:
         """"""
-        clp_labels, array = megacomplex.calculate_matrix(data_model, global_axis, model_axis)
+        clp_axis, array = megacomplex.calculate_matrix(data_model, global_axis, model_axis)
 
         if scale is not None:
             array *= scale
-        return cls(clp_labels, array)
+        return cls(clp_axis, array)
 
     @classmethod
     def combine(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
         """"""
-        clp_labels = list({c for m in matrices for c in m.clp_labels})
-        clp_size = len(clp_labels)
+        clp_axis = list({c for m in matrices for c in m.clp_axis})
+        clp_size = len(clp_axis)
         model_axis_size = next(matrices).model_axis_size
         index_dependent_matrices = [m for m in matrices if m.is_index_dependent]
         global_axis_size = (
@@ -80,26 +80,26 @@ class OptimizationMatrix:
         array = np.zeros(shape, dtype=np.float64)
 
         for matrix in matrices:
-            clp_mask = [clp_labels.index(c) for c in matrix.clp_labels]
+            clp_mask = [clp_axis.index(c) for c in matrix.clp_axis]
             array[:, clp_mask] += matrix.array
-        return cls(clp_labels, array)
+        return cls(clp_axis, array)
 
     @classmethod
     def link(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
         """"""
-        clp_labels = list(dict.fromkeys(c for m in matrices for c in m.clp_labels))
-        clp_size = len(clp_labels)
+        clp_axis = list(dict.fromkeys(c for m in matrices for c in m.clp_axis))
+        clp_size = len(clp_axis)
         model_axis_size = sum(chain([m.model_axis_size for m in matrices]))
         shape = (model_axis_size, clp_size)
         array = np.zeros(shape, dtype=np.float64)
 
         current_model_index, current_model_index_end = 0, 0
         for matrix in matrices:
-            clp_mask = [clp_labels.index(c) for c in matrix.clp_labels]
+            clp_mask = [clp_axis.index(c) for c in matrix.clp_axis]
             current_model_index_end = current_model_index + matrix.model_axis_size
             array[current_model_index:current_model_index_end, clp_mask] = matrix.array
             current_model_index = current_model_index_end
-        return cls(clp_labels, array)
+        return cls(clp_axis, array)
 
     @classmethod
     def from_data_model(
@@ -151,10 +151,10 @@ class OptimizationMatrix:
         if global_matrix.is_index_dependent:
             raise GlotaranModelError("Index dependent global matrices are not supported.")
 
-        clp_labels = [
+        clp_axis = [
             label
-            for gl in global_matrix.clp_labels
-            for label in [gl + "@" + ml for ml in matrix.clp_labels]
+            for gl in global_matrix.clp_axis
+            for label in [gl + "@" + ml for ml in matrix.clp_axis]
         ]
 
         array = (
@@ -171,7 +171,7 @@ class OptimizationMatrix:
         if data.flat_weight is not None:
             array *= data.flat_weight[:, np.newaxis]
 
-        return matrix, global_matrix, cls(clp_labels, array)
+        return matrix, global_matrix, cls(clp_axis, array)
 
     @classmethod
     def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:
@@ -205,29 +205,29 @@ class OptimizationMatrix:
 
         if len(relations) > 0:
 
-            relation_matrix = np.diagflat([1.0] * len(self.clp_labels))
+            relation_matrix = np.diagflat([1.0] * len(self.clp_axis))
             idx_to_delete = []
             for relation in relations:
-                if relation.target in self.clp_labels and relation.source in self.clp_labels:
+                if relation.target in self.clp_axis and relation.source in self.clp_axis:
 
-                    source_idx = self.clp_labels.index(relation.source)
-                    target_idx = self.clp_labels.index(relation.target)
+                    source_idx = self.clp_axis.index(relation.source)
+                    target_idx = self.clp_axis.index(relation.target)
                     relation_matrix[target_idx, source_idx] = relation.parameter
                     idx_to_delete.append(target_idx)
 
             if len(idx_to_delete) > 0:
-                self.clp_labels = [
-                    label for i, label in enumerate(self.clp_labels) if i not in idx_to_delete
+                self.clp_axis = [
+                    label for i, label in enumerate(self.clp_axis) if i not in idx_to_delete
                 ]
                 relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
                 self.array = self.array @ relation_matrix
 
         if len(constraints) > 0:
-            removed_clp_labels = [c.target for c in constraints if c.target in self.clp_labels]
+            removed_clp_labels = [c.target for c in constraints if c.target in self.clp_axis]
             if len(removed_clp_labels) > 0:
-                mask = [label not in removed_clp_labels for label in self.clp_labels]
-                self.clp_labels = [
-                    label for label in self.clp_labels if label not in removed_clp_labels
+                mask = [label not in removed_clp_labels for label in self.clp_axis]
+                self.clp_axis = [
+                    label for label in self.clp_axis if label not in removed_clp_labels
                 ]
                 self.array = self.array[:, mask]
 

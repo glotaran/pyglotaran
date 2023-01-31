@@ -76,7 +76,7 @@ def simulate(
         )
         clp = xr.DataArray(
             global_matrix.array,
-            coords=((global_dimension, global_axis), ("clp_label", global_matrix.clp_labels)),
+            coords=((global_dimension, global_axis), ("clp_label", global_matrix.clp_axis)),
         )
 
     matrix = OptimizationMatrix.from_data_model(model, global_axis, model_axis, None)
@@ -90,7 +90,7 @@ def simulate(
     for i in range(global_axis.size):
         result[:, i] = np.dot(
             matrix.at_index(i).array,
-            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_labels}),
+            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_axis}),
         )
 
     if noise and noise_seed is not None:

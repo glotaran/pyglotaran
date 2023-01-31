@@ -26,7 +26,7 @@ def test_calculate(residual_function: str):
         OptimizationEstimation.calculate(matrices[i].array, data.data[:, i], residual_function)
         for i in range(data.global_axis.size)
     ]
-    assert all(e.clp.size == len(matrix.clp_labels) for e in estimations)
+    assert all(e.clp.size == len(matrix.clp_axis) for e in estimations)
     assert all(e.residual.size == data.model_axis.size for e in estimations)
 
 
@@ -49,6 +49,6 @@ def test_resolve_clp():
     assert estimation.clp.size == 1
 
     resolved_estimation = estimation.resolve_clp(
-        matrix.clp_labels, reduced_matrix.clp_labels, index, relations
+        matrix.clp_axis, reduced_matrix.clp_axis, index, relations
     )
     assert resolved_estimation.clp.size == 3

@@ -178,7 +178,7 @@ def validate_global_megacomplexes(
     -------
     list[ItemIssue]
     """
-    return get_megacomplex_issues(value, value, False)
+    return get_megacomplex_issues(value, library, True)
 
 
 class DataModel(Item):
