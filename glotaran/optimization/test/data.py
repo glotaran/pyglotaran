@@ -59,7 +59,7 @@ TestDataModelConstantThreeCompartments = DataModel(
 
 TestDataModelGlobal = DataModel(
     data=xr.DataArray(
-        np.ones((4, 3)) * 2, coords=[("global", [0, 3, 7, 10]), ("model", [4, 11, 15])]
+        np.ones((3, 4)) * 2, coords=[("model", [4, 11, 15]), ("global", [0, 3, 7, 10])]
     ).to_dataset(name="data"),
     megacomplex=[
         TestMegacomplexConstant(

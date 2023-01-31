@@ -26,6 +26,11 @@ class OptimizationObjective:
         return OptimizationMatrix.from_linked_data(self._data)
 
     def calculate(self) -> ArrayLike:
+        if isinstance(self._data, OptimizationData) and self._data.is_global:
+            _, _, matrix = OptimizationMatrix.from_global_data(self._data)
+            return OptimizationEstimation.calculate(
+                matrix.array, self._data.flat_data, self._model.residual_function
+            ).residual
         matrices = self.calculate_matrices()
         reduced_matrices = [
             matrices[i].reduce(index, self._model.clp_constraints, self._model.clp_relations)
@@ -49,24 +54,9 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
-    def get_result_dataset(self, data: OptimizationData, add_svd=True) -> xr.Dataset:
-        dataset = data.model.data.copy()
-        print(dataset.data.dims)
-        if dataset.data.dims != (data.model_dimension, data.global_dimension):
-            dataset["data"] = dataset.data.T
-        print(dataset.data.dims)
-        dataset.attrs["model_dimension"] = data.model_dimension
-        dataset.attrs["global_dimension"] = data.global_dimension
-
-        matrix = OptimizationMatrix.from_data(data)
-        matrix_coords = (
-            (data.model_dimension, data.model_axis),
-            ("clp_label", matrix.clp_labels),
-        )
-        if matrix.is_index_dependent:
-            matrix_coords = ((data.global_dimension, data.global_axis),) + matrix_coords
-        dataset["matrix"] = xr.DataArray(matrix.array, coords=matrix_coords)
-
+    def calculate_result_dataset(
+        self, data: OptimizationData, matrix: OptimizationMatrix, dataset: xr.Dataset
+    ):
         matrices = [matrix.at_index(i) for i in range(data.global_axis.size)]
         reduced_matrices = [
             matrices[i].reduce(index, self._model.clp_constraints, self._model.clp_relations)
@@ -87,7 +77,10 @@ class OptimizationObjective:
         ]
         dataset["clp"] = xr.DataArray(
             [e.clp for e in estimations],
-            coords=((data.global_dimension, data.global_axis), ("clp_label", matrix.clp_labels)),
+            coords=(
+                (data.global_dimension, data.global_axis),
+                ("clp_label", matrix.clp_labels),
+            ),
         )
         dataset["residual"] = xr.DataArray(
             [e.residual for e in estimations],
@@ -97,6 +90,61 @@ class OptimizationObjective:
             ),
         ).T
 
+    def calculate_result_dataset_global(
+        self, data: OptimizationData, matrix: OptimizationMatrix, dataset: xr.Dataset
+    ):
+        global_matrix = OptimizationMatrix.from_data(data, global_matrix=True)
+        global_matrix_coords = (
+            (data.global_dimension, data.global_axis),
+            ("global_clp_label", matrix.clp_labels),
+        )
+        if global_matrix.is_index_dependent:
+            global_matrix_coords = (
+                (data.model_dimension, data.model_axis),
+            ) + global_matrix_coords
+        dataset["global_matrix"] = xr.DataArray(global_matrix.array, coords=global_matrix_coords)
+        _, _, full_matrix = OptimizationMatrix.from_global_data(data)
+        estimation = OptimizationEstimation.calculate(
+            full_matrix.array, data.flat_data, data.model.residual_function
+        )
+        dataset["clp"] = xr.DataArray(
+            estimation.clp.reshape((len(global_matrix.clp_labels), len(matrix.clp_labels))),
+            coords={
+                "global_clp_label": global_matrix.clp_labels,
+                "clp_label": matrix.clp_labels,
+            },
+            dims=["global_clp_label", "clp_label"],
+        )
+        dataset["residual"] = xr.DataArray(
+            estimation.residual.reshape(
+                data.global_axis.size,
+                data.model_axis.size,
+            ),
+            coords=(
+                (data.global_dimension, data.global_axis),
+                (data.model_dimension, data.model_axis),
+            ),
+        ).T
+
+    def get_result_dataset(self, data: OptimizationData, add_svd=True) -> xr.Dataset:
+        dataset = data.model.data.copy()
+        if dataset.data.dims != (data.model_dimension, data.global_dimension):
+            dataset["data"] = dataset.data.T
+        dataset.attrs["model_dimension"] = data.model_dimension
+        dataset.attrs["global_dimension"] = data.global_dimension
+
+        matrix = OptimizationMatrix.from_data(data)
+        matrix_coords = (
+            (data.model_dimension, data.model_axis),
+            ("clp_label", matrix.clp_labels),
+        )
+        if matrix.is_index_dependent:
+            matrix_coords = ((data.global_dimension, data.global_axis),) + matrix_coords
+        dataset["matrix"] = xr.DataArray(matrix.array, coords=matrix_coords)
+        if data.is_global:
+            self.calculate_result_dataset_global(data, matrix, dataset)
+        else:
+            self.calculate_result_dataset(data, matrix, dataset)
         # Calculate RMS
         size = dataset.residual.shape[0] * dataset.residual.shape[1]
         dataset.attrs["root_mean_square_error"] = np.sqrt(
@@ -104,13 +152,16 @@ class OptimizationObjective:
         ).data
 
         if data.weight is not None:
+            weight = data.weight
+            if data.is_global:
+                dataset["global_weighted_matrix"] = dataset["global_matrix"]
+                dataset["global_matrix"] = dataset["global_matrix"] / weight[..., np.newaxis]
             if "weight" not in dataset:
                 dataset["weight"] = xr.DataArray(data.weight, coords=dataset.data.coords)
             dataset["weighted_residual"] = dataset["residual"]
-            dataset["residual"] = dataset["residual"] / data.weight
+            dataset["residual"] = dataset["residual"] / weight
             dataset["weighted_matrix"] = dataset["matrix"]
-            print(data.data.shape, dataset["matrix"].shape, data.weight.shape)
-            dataset["matrix"] = dataset["matrix"] / data.weight.T[..., np.newaxis]
+            dataset["matrix"] = dataset["matrix"] / weight.T[..., np.newaxis]
             dataset.attrs["weighted_root_mean_square_error"] = dataset.attrs[
                 "root_mean_square_error"
             ]
@@ -122,7 +173,6 @@ class OptimizationObjective:
             for name in ["data", "residual"]:
                 if f"{name}_singular_values" in dataset:
                     continue
-                print(name, dataset[name].dims, dataset[name].shape)
                 l, s, r = np.linalg.svd(dataset[name], full_matrices=False)
                 dataset[f"{name}_left_singular_vectors"] = (
                     (data.model_dimension, "left_singular_value_index"),
