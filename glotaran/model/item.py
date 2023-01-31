@@ -30,7 +30,7 @@ from glotaran.parameter import Parameter
 ItemT = TypeVar("ItemT", bound="Item")
 LibraryItemT = TypeVar("LibraryItemT", bound="LibraryItem")
 
-ParameterType: TypeAlias = Parameter | str | float
+ParameterType: TypeAlias = Parameter | float | str
 LibraryItemType: TypeAlias = LibraryItemT | str  # type:ignore[operator]
 
 META_VALIDATOR = "__glotaran_validator__"
