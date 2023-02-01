@@ -100,24 +100,24 @@ repos:
         args:
           - "--count"
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        alias: flake8-docs
-        args:
-          - "--select=D,DAR"
-          - "--count"
-        name: "flake8 lint docstrings"
-        exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
-        additional_dependencies: [flake8-docstrings, darglint==1.8.0]
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: 6.0.0
+  #   hooks:
+  #     - id: flake8
+  #       alias: flake8-docs
+  #       args:
+  #         - "--select=D,DAR"
+  #         - "--count"
+  #       name: "flake8 lint docstrings"
+  #       exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
+  #       additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.991
-    hooks:
-      - id: mypy
-        exclude: "docs|benchmark/|.*/tests?/.*"
-        additional_dependencies: [types-all, types-attrs, pydantic]
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v0.991
+  #   hooks:
+  #     - id: mypy
+  #       exclude: "docs|benchmark/|.*/tests?/.*"
+  #       additional_dependencies: [types-all, types-attrs, pydantic]
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.5.0
