@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 def simulate(
     model: DataModel,
-    libray: Library,
+    library: Library,
     parameters: Parameters,
     coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,
@@ -60,7 +60,7 @@ def simulate(
     ValueError
         Raised if dataset model has no global megacomplex and no clp are provided.
     """
-    model = libray.resolve_item(model, parameters)
+    model = library.resolve_item(model, parameters)
     model_dimension = get_data_model_dimension(model)
     model_axis = coordinates[model_dimension]
     global_dimension = next(dim for dim in coordinates if dim != model_dimension)
