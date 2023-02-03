@@ -42,7 +42,7 @@ class Kinetic(LibraryItem):
     @property
     def compartments(self) -> list[str]:
         """A list of all compartments involved in the kinetic scheme."""
-        return list(dict.from_keys(itertools.chain([list(cs) for cs in self.rates])))
+        return list(dict.fromkeys([c for cs in self.rates for c in reversed(cs)]))
 
     @property
     def array(self) -> np.typing.ArrayLike:
@@ -157,7 +157,7 @@ class Kinetic(LibraryItem):
         initial_concentration :
             The initial concentration.
         """
-        array = self.full.T
+        array = self.full_array.T
         rates = np.diag(array)
 
         a_matrix = np.zeros(array.shape, dtype=np.float64)
@@ -171,7 +171,7 @@ class Kinetic(LibraryItem):
 
         return a_matrix
 
-    def is_sequential(self) -> bool:
+    def is_sequential(self, concentrations: np.typing.ArrayLike) -> bool:
         """Returns true in the KMatrix represents an unibranched model.
 
         Parameters
@@ -179,6 +179,8 @@ class Kinetic(LibraryItem):
         initial_concentration :
             The initial concentration.
         """
+        if np.sum(concentrations) != 1:
+            return False
         array = self.array
         return not any(
             np.nonzero(array[:, i])[0].size != 1 or i != 0 and array[i, i - 1] == 0
