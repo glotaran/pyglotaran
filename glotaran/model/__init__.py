@@ -17,6 +17,7 @@ from glotaran.model.errors import ItemIssue
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.model.item import Attribute
 from glotaran.model.item import LibraryItem
+from glotaran.model.item import LibraryItemTyped
 from glotaran.model.item import ParameterType
 from glotaran.model.library import Library
 from glotaran.model.megacomplex import Megacomplex

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import replace
 from typing import Literal
 
 import numpy as np
@@ -125,17 +126,17 @@ class MultiGaussianActivation(Activation):
 
     normalize: bool = Attribute(default=True, description="Whether to normalize the gaussians.")
 
-    backsweep_period: ParameterType | None = Attribute(
+    backsweep: ParameterType | None = Attribute(
         default=None, description="The period of the backsweep in a streak experiment."
     )
     dispersion_center: ParameterType | None = Attribute(
         default=None, validator=validate_dispersion, description="The center of the dispersion."
     )
     center_dispersion_coefficients: list[ParameterType] = Attribute(
-        default_factory=list, description="The center coefficients of the dispersion."
+        factory=list, description="The center coefficients of the dispersion."
     )
     width_dispersion_coefficients: list[ParameterType] = Attribute(
-        default_factory=list, description="The width coefficients of the dispersion."
+        factory=list, description="The width coefficients of the dispersion."
     )
     reciproke_global_axis: bool = Attribute(
         default=False,
@@ -158,8 +159,8 @@ class MultiGaussianActivation(Activation):
                 widths = widths * nr_gaussians
 
         scales = self.scale or [1.0] * nr_gaussians
-        backsweep = self.backsweep_period is not None
-        backsweep_period = self.backsweep_period if backsweep else 0
+        backsweep = self.backsweep is not None
+        backsweep_period = self.backsweep if backsweep else 0
 
         parameters = [
             GaussianActivationParameters(center, width, scale, backsweep, backsweep_period)
@@ -169,7 +170,7 @@ class MultiGaussianActivation(Activation):
         if self.shift is None and self.dispersion_center is None:
             return parameters
 
-        parameters = [[p.copy() for p in parameters] for _ in global_axis]
+        parameters = [[replace(p) for p in parameters] for _ in global_axis]
 
         if self.shift is not None:
             if global_axis.size != len(self.shift):
@@ -196,6 +197,6 @@ class MultiGaussianActivation(Activation):
 
 
 class GaussianActivation(MultiGaussianActivation):
-    type: str = "gaussian"
+    type: Literal["gaussian"]
     center: ParameterType
     width: ParameterType
