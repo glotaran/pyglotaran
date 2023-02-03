@@ -132,6 +132,7 @@ def test_result_data(weight: bool):
 
     result_data = result["test"]
     assert "root_mean_square_error" in result_data.attrs
+    assert "custom_megacomplex_result" in result_data.attrs
     assert "data_left_singular_vectors" in result_data
     assert "data_right_singular_vectors" in result_data
     assert "residual_left_singular_vectors" in result_data
