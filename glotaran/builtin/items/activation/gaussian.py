@@ -174,7 +174,7 @@ class MultiGaussianActivation(Activation):
         if self.shift is not None:
             if global_axis.size != len(self.shift):
                 raise GlotaranUserError(
-                    f"the number of shifts({len(self.shift)}) does not match "
+                    f"The number of shifts({len(self.shift)}) does not match "
                     f"the size of the global axis({global_axis.size})."
                 )
             for ps, shift in zip(parameters, self.shift):
