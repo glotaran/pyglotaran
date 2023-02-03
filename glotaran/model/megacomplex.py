@@ -76,14 +76,8 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
         """
         pass
 
-    def finalize_data(
-        self,
-        model: DataModel,
-        data: xr.Dataset,
-        is_full_model: bool = False,
-        as_global: bool = False,
-    ):
-        """Finalize the result data.
+    def add_to_result_data(self, model: DataModel, data: xr.Dataset, as_global: bool):
+        """
 
         Parameters
         ----------

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model import DataModel
 from glotaran.model import Megacomplex
@@ -29,6 +30,14 @@ class TestMegacomplexConstant(Megacomplex):
         if self.is_index_dependent:
             matrix = np.array([matrix] * global_axis.size)
         return self.compartments, matrix
+
+    def add_to_result_data(
+        self,
+        model: DataModel,
+        data: xr.Dataset,
+        as_global: bool = False,
+    ):
+        data.attrs["custom_megacomplex_result"] = True
 
 
 class TestMegacomplexExponential(Megacomplex):
