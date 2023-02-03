@@ -3,7 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from np.typing import ArrayLike
+import numpy as np
+from numpy.typing import ArrayLike
 
 from glotaran.builtin.items.activation.activation import Activation
 from glotaran.model import Attribute
@@ -86,6 +87,22 @@ class GaussianActivationParameters:
     def shift(self, value: float):
         self.center -= value
 
+    def disperse(
+        self,
+        index: float,
+        center: float,
+        center_coefficients: list[float],
+        width_coefficients: list[float],
+        reciproke_global_axis: bool,
+    ):
+        distance = (
+            (1e3 / index - 1e3 / center) if reciproke_global_axis else (index - center) / 100
+        )
+        for i, coefficient in enumerate(center_coefficients):
+            self.center += coefficient * np.power(distance, i + 1)
+        for i, coefficient in enumerate(width_coefficients):
+            self.width += coefficient * np.power(distance, i + 1)
+
 
 class MultiGaussianActivation(Activation):
     type: Literal["multi-gaussian"]
@@ -114,11 +131,11 @@ class MultiGaussianActivation(Activation):
     dispersion_center: ParameterType | None = Attribute(
         default=None, validator=validate_dispersion, description="The center of the dispersion."
     )
-    center_dispersion_coefficients: list[ParameterType] | None = Attribute(
-        default=None, description="The center coefficients of the dispersion."
+    center_dispersion_coefficients: list[ParameterType] = Attribute(
+        default_factory=list, description="The center coefficients of the dispersion."
     )
     width_dispersion_coefficients: list[ParameterType] = Attribute(
-        default=None, description="The width coefficients of the dispersion."
+        default_factory=list, description="The width coefficients of the dispersion."
     )
     reciproke_global_axis: bool = Attribute(
         default=False,
@@ -145,15 +162,37 @@ class MultiGaussianActivation(Activation):
         backsweep_period = self.backsweep_period if backsweep else 0
 
         parameters = [
-            GaussianActivationParameters(center, width, backsweep, backsweep_period)
-            for center, width in zip(centers, widths)
+            GaussianActivationParameters(center, width, scale, backsweep, backsweep_period)
+            for center, width, scale in zip(centers, widths, scales)
         ]
 
-        if self.shift is not None and global_axis.size != len(self.shift):
-            raise GlotaranUserError(
-                f"the number of shifts({len(self.shift)}) does not match "
-                f"the size of the global axis({global_axis.size})."
-            )
+        if self.shift is None and self.dispersion_center is None:
+            return parameters
+
+        parameters = [[p.copy() for p in parameters] for _ in global_axis]
+
+        if self.shift is not None:
+            if global_axis.size != len(self.shift):
+                raise GlotaranUserError(
+                    f"the number of shifts({len(self.shift)}) does not match "
+                    f"the size of the global axis({global_axis.size})."
+                )
+            for ps, shift in zip(parameters, self.shift):
+                for p in ps:
+                    p.shift(shift)
+
+        if self.dispersion_center is not None:
+            for ps, index in zip(parameters, global_axis):
+                for p in ps:
+                    p.disperse(
+                        index,
+                        self.dispersion_center,
+                        self.center_dispersion_coefficients,
+                        self.width_dispersion_coefficients,
+                        self.reciproke_global_axis,
+                    )
+
+        return parameters
 
 
 class GaussianActivation(MultiGaussianActivation):
