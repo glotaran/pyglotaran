@@ -8,6 +8,6 @@ class Activation(LibraryItemTyped):
         description="A dictionary of activated compartments with the activation amplitude."
     )
     not_normalized_compartments: list[str] = Attribute(
-        default_factory=list,
+        factory=list,
         description="A list of the compartments which will not be normalized.",
     )
