@@ -100,7 +100,7 @@ class Kinetic(LibraryItem):
         eigenvalues, eigenvectors = eig(self.full_array.T, left=True, right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def calculate(self, concentrations: dict[str, float]) -> np.typing.ArrayLike:
+    def calculate(self, concentrations: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """The resulting rates of the matrix.
 
         By definition, the eigenvalues of the compartmental model are negative and
@@ -119,7 +119,7 @@ class Kinetic(LibraryItem):
         eigenvalues, _ = self.eigen()
         return -eigenvalues
 
-    def a_matrix(self, concentrations: dict[str, float]) -> np.typing.ArrayLike:
+    def a_matrix(self, concentrations: np.typing.ArrayLike) -> np.typing.ArrayLike:
         """The A matrix of the KMatrix.
 
         Parameters
@@ -133,7 +133,7 @@ class Kinetic(LibraryItem):
             else self.a_matrix_general(concentrations)
         )
 
-    def a_matrix_general(self, concentrations: dict[str, float]) -> np.ndarray:
+    def a_matrix_general(self, concentrations: np.typing.ArrayLike) -> np.ndarray:
         """The A matrix of the KMatrix for a general model.
 
         Parameters
