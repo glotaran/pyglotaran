@@ -57,7 +57,7 @@ def inferr_file_format(
         return file_format.lstrip(".")
 
     if allow_folder:
-        return "legacy"
+        return "yml"
     else:
         raise ValueError(
             f"Cannot determine format of file {file_path!r}, please provide an explicit format."
