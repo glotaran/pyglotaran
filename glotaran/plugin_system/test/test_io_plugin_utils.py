@@ -57,7 +57,7 @@ def test_inferr_file_format_allow_folder(tmp_path: Path, is_file: bool):
     if is_file:
         file_path.touch()
 
-    assert infer_file_format(file_path, allow_folder=True) == "legacy"
+    assert infer_file_format(file_path, allow_folder=True) == "yml"
 
 
 def test_inferr_file_format_none_existing_file():
