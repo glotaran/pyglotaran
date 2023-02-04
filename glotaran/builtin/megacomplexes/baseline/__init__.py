@@ -1,1 +1,1 @@
-from glotaran.builtin.megacomplexes.baseline.baseline_megacomplex import BaselineMegacomplex
+from glotaran.builtin.megacomplexes.baseline.megacomplex import BaselineMegacomplex
