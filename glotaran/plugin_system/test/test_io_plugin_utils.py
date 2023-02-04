@@ -6,7 +6,7 @@ import pytest
 
 from glotaran.plugin_system.io_plugin_utils import bool_str_repr
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
-from glotaran.plugin_system.io_plugin_utils import inferr_file_format
+from glotaran.plugin_system.io_plugin_utils import infer_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 
@@ -36,7 +36,7 @@ def test_inferr_file_format(tmp_path: Path, extension: str, expected: str):
     file_path = tmp_path / f"dummy.{extension}"
     file_path.touch()
 
-    assert inferr_file_format(file_path) == expected
+    assert infer_file_format(file_path) == expected
 
 
 def test_inferr_file_format_no_extension(tmp_path: Path):
@@ -47,7 +47,7 @@ def test_inferr_file_format_no_extension(tmp_path: Path):
     with pytest.raises(
         ValueError, match="Cannot determine format of file .+?, please provide an explicit format"
     ):
-        inferr_file_format(file_path)
+        infer_file_format(file_path)
 
 
 @pytest.mark.parametrize("is_file", (True, False))
@@ -57,13 +57,13 @@ def test_inferr_file_format_allow_folder(tmp_path: Path, is_file: bool):
     if is_file:
         file_path.touch()
 
-    assert inferr_file_format(file_path, allow_folder=True) == "legacy"
+    assert infer_file_format(file_path, allow_folder=True) == "legacy"
 
 
 def test_inferr_file_format_none_existing_file():
     """Raise error if file does not exists."""
     with pytest.raises(ValueError, match="There is no file "):
-        inferr_file_format("none-existing-file.yml")
+        infer_file_format("none-existing-file.yml")
 
 
 def test_not_implemented_to_value_error():

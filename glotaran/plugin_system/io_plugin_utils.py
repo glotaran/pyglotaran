@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from glotaran.typing import StrOrPath
 
 
-def inferr_file_format(
+def infer_file_format(
     file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder=False
 ) -> str:
     """Inferr format of a file if it exists.
@@ -87,7 +87,7 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
         try:
             return func(*args, **kwargs)
         except NotImplementedError as error:
-            raise ValueError(error.args)
+            raise ValueError(error.args) from error
 
     return cast(DecoratedFunc, wrapper)
 

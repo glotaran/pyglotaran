@@ -28,7 +28,7 @@ from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.base_registry import supported_file_extensions
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
-from glotaran.plugin_system.io_plugin_utils import inferr_file_format
+from glotaran.plugin_system.io_plugin_utils import infer_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.utils.ipython import MarkdownStr
@@ -222,7 +222,7 @@ def load_model(file_name: StrOrPath, format_name: str | None = None, **kwargs: A
     Model
         Model instance created from the file.
     """
-    io = get_project_io(format_name or inferr_file_format(file_name))
+    io = get_project_io(format_name or infer_file_format(file_name))
     model = io.load_model(Path(file_name).as_posix(), **kwargs)
     model.source_path = Path(file_name).as_posix()
     return model
@@ -258,7 +258,7 @@ def save_model(
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
+    io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
     io.save_model(file_name=Path(file_name).as_posix(), model=model, **kwargs)
     if update_source_path is True:
         model.source_path = Path(file_name).as_posix()
@@ -285,7 +285,7 @@ def load_parameters(file_name: StrOrPath, format_name: str | None = None, **kwar
 
     .. # noqa: D414
     """
-    io = get_project_io(format_name or inferr_file_format(file_name))
+    io = get_project_io(format_name or infer_file_format(file_name))
     parameters = io.load_parameters(
         Path(file_name).as_posix(),
         **kwargs,
@@ -324,7 +324,7 @@ def save_parameters(
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
+    io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
     io.save_parameters(file_name=Path(file_name).as_posix(), parameters=parameters, **kwargs)
     if update_source_path is True:
         parameters.source_path = Path(file_name).as_posix()
@@ -349,7 +349,7 @@ def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: 
     Scheme
         :class:`Scheme` instance created from the file.
     """
-    io = get_project_io(format_name or inferr_file_format(file_name))
+    io = get_project_io(format_name or infer_file_format(file_name))
 
     scheme = io.load_scheme(Path(file_name).as_posix(), **kwargs)
     scheme.source_path = Path(file_name).as_posix()
@@ -386,7 +386,7 @@ def save_scheme(
         of the project io plugin.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
+    io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
     io.save_scheme(file_name=Path(file_name).as_posix(), scheme=scheme, **kwargs)
     if update_source_path is True:
         scheme.source_path = Path(file_name).as_posix()
@@ -412,7 +412,7 @@ def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs
     Result
         :class:`Result` instance created from the saved format.
     """
-    io = get_project_io(format_name or inferr_file_format(result_path))
+    io = get_project_io(format_name or infer_file_format(result_path))
 
     result = io.load_result(Path(result_path).as_posix(), **kwargs)
     result.source_path = Path(result_path).as_posix()
@@ -459,7 +459,7 @@ def save_result(
     """
     protect_from_overwrite(result_path, allow_overwrite=allow_overwrite)
     io = get_project_io(
-        format_name or inferr_file_format(result_path, needs_to_exist=False, allow_folder=True)
+        format_name or infer_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
     paths = io.save_result(
         result_path=Path(result_path).as_posix(),

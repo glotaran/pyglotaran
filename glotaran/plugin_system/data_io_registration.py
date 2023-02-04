@@ -26,7 +26,7 @@ from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
 from glotaran.plugin_system.base_registry import supported_file_extensions
 from glotaran.plugin_system.io_plugin_utils import bool_table_repr
-from glotaran.plugin_system.io_plugin_utils import inferr_file_format
+from glotaran.plugin_system.io_plugin_utils import infer_file_format
 from glotaran.plugin_system.io_plugin_utils import not_implemented_to_value_error
 from glotaran.plugin_system.io_plugin_utils import protect_from_overwrite
 from glotaran.utils.ipython import MarkdownStr
@@ -194,7 +194,7 @@ def load_dataset(
     xr.Dataset
         Data loaded from the file.
     """
-    io = get_data_io(format_name or inferr_file_format(file_name))
+    io = get_data_io(format_name or infer_file_format(file_name))
     dataset = io.load_dataset(Path(file_name).as_posix(), **kwargs)
 
     if isinstance(dataset, xr.DataArray):
@@ -238,7 +238,7 @@ def save_dataset(
         to get the implementation with the proper help and autocomplete.
     """
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_data_io(format_name or inferr_file_format(file_name, needs_to_exist=False))
+    io = get_data_io(format_name or infer_file_format(file_name, needs_to_exist=False))
     if "loader" in dataset.attrs:
         del dataset.attrs["loader"]
     io.save_dataset(file_name=Path(file_name).as_posix(), dataset=dataset, **kwargs)
