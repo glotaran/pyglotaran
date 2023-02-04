@@ -163,7 +163,9 @@ class MultiGaussianActivation(Activation):
         backsweep_period = self.backsweep if backsweep else 0
 
         parameters = [
-            GaussianActivationParameters(center, width, scale, backsweep, backsweep_period)
+            GaussianActivationParameters(
+                float(center), float(width), float(scale), backsweep, backsweep_period
+            )
             for center, width, scale in zip(centers, widths, scales)
         ]
 
