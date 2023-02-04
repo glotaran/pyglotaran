@@ -164,7 +164,10 @@ class YmlProjectIo(ProjectIoInterface):
         Result
             :class:`Result` instance created from the saved format.
         """
-        spec = self._load_yml(result_path)
+        result_file_path = Path(result_path)
+        if result_file_path.suffix not in [".yml", ".yaml"]:
+            result_file_path = result_file_path / "result.yml"
+        spec = self._load_yml(result_file_path.as_posix())
         return fromdict(Result, spec, folder=Path(result_path).parent)
 
     def save_result(

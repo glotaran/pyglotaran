@@ -110,10 +110,12 @@ def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute:
 
 def test_save_result_yml_result_path_is_folder(tmp_path: Path, dummy_result: Result):
     """Save the result passing a folder instead of a file path"""
-    save_path = tmp_path / "testresult"
-    save_result(result_path=save_path, result=dummy_result)
+    result_folder = tmp_path / "testresult"
+    save_result(result_path=result_folder, result=dummy_result)
 
-    assert (save_path / "result.yml").is_file()
+    assert (result_folder / "result.yml").is_file()
+
+    load_result(result_folder)
 
 
 @pytest.mark.parametrize("path_is_absolute", (True, False))
