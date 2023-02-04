@@ -19,6 +19,7 @@
 - 👌🎨 Wrap model section in result markdown in details tag for notebooks (#1098)
 - 👌 Allow more natural column names in pandas parameters file reading (#1174)
 - ✨ Integrate plugin system into Project (#1229)
+- 👌 Make yaml the new default plugin when passing a folder to save_result (#1230)
 
 ### 🩹 Bug fixes
 
