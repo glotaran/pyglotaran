@@ -164,8 +164,11 @@ class YmlProjectIo(ProjectIoInterface):
         Result
             :class:`Result` instance created from the saved format.
         """
-        spec = self._load_yml(result_path)
-        return fromdict(Result, spec, folder=Path(result_path).parent)
+        result_file_path = Path(result_path)
+        if result_file_path.suffix not in [".yml", ".yaml"]:
+            result_file_path = result_file_path / "result.yml"
+        spec = self._load_yml(result_file_path.as_posix())
+        return fromdict(Result, spec, folder=result_file_path.parent)
 
     def save_result(
         self,
@@ -201,7 +204,10 @@ class YmlProjectIo(ProjectIoInterface):
         list[str]
             List of file paths which were created.
         """
-        result_folder = Path(result_path).parent
+        result_file_path = Path(result_path)
+        if result_file_path.suffix not in [".yml", ".yaml"]:
+            result_file_path = result_file_path / "result.yml"
+        result_folder = result_file_path.parent
         paths = save_result(
             result,
             result_folder,
@@ -223,8 +229,8 @@ class YmlProjectIo(ProjectIoInterface):
         paths.append(scheme_path.as_posix())
 
         result_dict = asdict(result, folder=result_folder)
-        write_dict(result_dict, file_name=result_path)
-        paths.append(result_path)
+        write_dict(result_dict, file_name=result_file_path)
+        paths.append(result_file_path.as_posix())
 
         return paths
 

@@ -108,6 +108,16 @@ def test_save_result_yml(tmp_path: Path, dummy_result: Result, path_is_absolute:
         assert expected_result in got
 
 
+def test_save_result_yml_result_path_is_folder(tmp_path: Path, dummy_result: Result):
+    """Save the result passing a folder instead of a file path"""
+    result_folder = tmp_path / "testresult"
+    save_result(result_path=result_folder, result=dummy_result)
+
+    assert (result_folder / "result.yml").is_file()
+
+    load_result(result_folder)
+
+
 @pytest.mark.parametrize("path_is_absolute", (True, False))
 def test_save_result_yml_roundtrip(tmp_path: Path, dummy_result: Result, path_is_absolute: bool):
     """Save and reloaded Result should be the same."""

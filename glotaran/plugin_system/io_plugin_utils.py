@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from glotaran.typing import StrOrPath
 
 
-def inferr_file_format(
+def infer_file_format(
     file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder=False
 ) -> str:
     """Inferr format of a file if it exists.
@@ -57,7 +57,7 @@ def inferr_file_format(
         return file_format.lstrip(".")
 
     if allow_folder:
-        return "legacy"
+        return "yml"
     else:
         raise ValueError(
             f"Cannot determine format of file {file_path!r}, please provide an explicit format."
@@ -87,7 +87,7 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
         try:
             return func(*args, **kwargs)
         except NotImplementedError as error:
-            raise ValueError(error.args)
+            raise ValueError(error.args) from error
 
     return cast(DecoratedFunc, wrapper)
 
@@ -125,7 +125,7 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
         raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
     elif path.is_dir() and os.listdir(str(path)):
         raise FileExistsError(
-            f"The folder {path!r} already exists and is not empty. \n{user_info}"
+            f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
         )
 
 
