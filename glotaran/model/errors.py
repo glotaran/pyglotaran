@@ -15,7 +15,9 @@ class GlotaranUserError(Exception):
 
 class GlotaranModelIssues(GlotaranModelError):
     def __init__(self, issues: list[ItemIssue]):
-        super().__init__(f"The model has issues:\n\n* {'* '.join(issues.to_string())}")
+        super().__init__(
+            f"The model has issues:\n\n* {'* '.join([i.to_string() for i in issues])}"
+        )
 
 
 class ItemIssue:

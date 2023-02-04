@@ -115,7 +115,7 @@ class Kinetic(LibraryItem):
             The initial concentration.
         """
         if self.is_sequential(concentrations):
-            return -np.diag(self.full)
+            return -np.diag(self.full_array)
         eigenvalues, _ = self.eigen()
         return -eigenvalues
 
