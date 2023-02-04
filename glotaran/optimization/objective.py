@@ -61,22 +61,23 @@ class OptimizationObjective:
     def calculate_result_dataset(
         self, data: OptimizationData, matrix: OptimizationMatrix, dataset: xr.Dataset
     ):
-        matrices = [matrix.at_index(i) for i in range(data.global_axis.size)]
         reduced_matrices = [
-            matrices[i].reduce(index, self._model.clp_constraints, self._model.clp_relations)
+            matrix.at_index(i).reduce(
+                index, self._model.clp_constraints, self._model.clp_relations
+            )
             for i, index in enumerate(data.global_axis)
         ]
         estimations = [
             OptimizationEstimation.calculate(
                 reduced_mat.array, data_slice, self._model.residual_function
             ).resolve_clp(
-                mat.clp_axis,
+                matrix.clp_axis,
                 reduced_mat.clp_axis,
                 index,
                 self._model.clp_relations,
             )
-            for mat, reduced_mat, data_slice, index in zip(
-                matrices, reduced_matrices, data.data_slices, data.global_axis
+            for reduced_mat, data_slice, index in zip(
+                reduced_matrices, data.data_slices, data.global_axis
             )
         ]
         dataset["clp"] = xr.DataArray(
