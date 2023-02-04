@@ -38,9 +38,7 @@ def test_single_data():
     print(optimized_parameters)
     assert result.success
     assert initial_parameters != optimized_parameters
-    for param in optimized_parameters.all():
-        if param.vary:
-            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
+    assert optimized_parameters.close_or_equal(parameters)
 
 
 def test_multiple_experiments():
@@ -76,9 +74,7 @@ def test_multiple_experiments():
     print(optimized_parameters)
     assert result.success
     assert initial_parameters != optimized_parameters
-    for param in optimized_parameters.all():
-        if param.vary:
-            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
+    assert optimized_parameters.close_or_equal(parameters)
 
 
 def test_global_data():
@@ -124,9 +120,7 @@ def test_global_data():
     print(optimized_parameters)
     assert result.success
     assert initial_parameters != optimized_parameters
-    for param in optimized_parameters.all():
-        if param.vary:
-            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
+    assert optimized_parameters.close_or_equal(parameters)
 
 
 def test_multiple_data():
@@ -163,9 +157,6 @@ def test_multiple_data():
     assert "decay_independent" in optimized_data
     assert "decay_dependent" in optimized_data
     print(optimized_parameters)
-    print(optimized_parameters)
     assert result.success
     assert initial_parameters != optimized_parameters
-    for param in optimized_parameters.all():
-        if param.vary:
-            assert np.allclose(param.value, parameters.get(param.label).value, rtol=1e-1)
+    assert optimized_parameters.close_or_equal(parameters)
