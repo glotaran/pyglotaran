@@ -73,6 +73,7 @@ def get_mock_plugin_function(plugin_registry_key: str):
         return MockPluginSubclassFull
     elif plugin_registry_key == "sub_class_str":
         return MockPluginSubclassStr
+    raise ValueError(f"No mock plugin with name {plugin_registry_key!r}")
 
 
 mock_registry_data_io = cast(
