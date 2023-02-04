@@ -250,6 +250,22 @@ def iterate_fields_of_type(
                 yield field
 
 
+def iterate_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
+    """Iterate over all item fields.
+
+    Parameters
+    ----------
+    item: type[Item]
+        The item type.
+
+    Yields
+    ------
+    ModelField
+        The item fields.
+    """
+    yield from iterate_fields_of_type(item, Item)
+
+
 def iterate_library_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
     """Iterate over all library item fields.
 

@@ -21,7 +21,7 @@ from glotaran.model.item import LibraryItem
 from glotaran.model.item import LibraryItemT
 from glotaran.model.item import LibraryItemTyped
 from glotaran.model.item import get_structure_and_type_from_field
-from glotaran.model.item import iterate_library_item_fields
+from glotaran.model.item import iterate_item_fields
 from glotaran.model.item import iterate_library_item_types
 from glotaran.model.item import iterate_parameter_fields
 from glotaran.model.megacomplex import Megacomplex
@@ -125,7 +125,7 @@ class Library(BaseModel):
         resolved = {}
         initial = initial or parameters
 
-        def resolve_parameter(parameter: Parameter | str) -> Parameter:
+        def resolve_parameter(parameter: Parameter | float | str) -> Parameter:
             if isinstance(parameter, str):
                 if not parameters.has(parameter):
                     parameters.add(initial.get(parameter).copy())
@@ -144,7 +144,7 @@ class Library(BaseModel):
             elif structure is dict:
                 resolved[field.name] = {k: resolve_parameter(v) for k, v in value.items()}
 
-        for field in iterate_library_item_fields(item):
+        for field in iterate_item_fields(item):
             value = getattr(item, field.name)
             if value is None:
                 continue
@@ -173,13 +173,16 @@ class Library(BaseModel):
         parameters: Parameters | None,
     ):
         try:
-            issues += self.validate_item(self.get_item(item_type, value), parameters=parameters)
+            issues += self.validate_item(
+                self.get_item(item_type, value) if isinstance(value, str) else value,
+                parameters=parameters,
+            )
         except GlotaranModelError:
             issues.append(ModelItemIssue(item_type.get_library_name(), value))
 
     def validate_item(self, item: Item, parameters: Parameters | None = None) -> list[ItemIssue]:
         issues = []
-        for field in iterate_library_item_fields(item):
+        for field in iterate_item_fields(item):
             value = getattr(item, field.name)
             if value is None:
                 continue
@@ -200,10 +203,14 @@ class Library(BaseModel):
                     continue
                 structure, _ = get_structure_and_type_from_field(field)
                 if structure is None:
-                    if not parameters.has(value):
+                    if isinstance(value, str) and not parameters.has(value):
                         issues += [ParameterIssue(value)]
                 else:
                     values = value.values() if structure is dict else value
-                    issues += [ParameterIssue(v) for v in values if not parameters.has(v)]
+                    issues += [
+                        ParameterIssue(v)
+                        for v in values
+                        if isinstance(v, str) and not parameters.has(v)
+                    ]
 
         return issues
