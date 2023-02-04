@@ -9,7 +9,6 @@ from glotaran.model import GlotaranUserError
 def test_gaussian_activation():
     activation = GaussianActivation(
         type="gaussian",
-        label="",
         center=1,
         width=10,
         backsweep=2,
@@ -26,7 +25,6 @@ def test_gaussian_activation():
 def test_multi_gaussian_activation():
     activation = MultiGaussianActivation(
         type="multi-gaussian",
-        label="",
         center=[1, 2],
         width=[10, 20],
         compartments={},
@@ -43,7 +41,6 @@ def test_multi_gaussian_activation():
 def test_gaussian_activation_shift():
     activation = GaussianActivation(
         type="gaussian",
-        label="",
         center=1,
         width=10,
         shift=[0.5, 1],
@@ -60,7 +57,6 @@ def test_gaussian_activation_shift():
 def test_gaussian_activation_dispersion():
     activation = GaussianActivation(
         type="gaussian",
-        label="",
         center=1,
         width=10,
         dispersion_center=100,
@@ -79,7 +75,6 @@ def test_gaussian_activation_dispersion():
 def test_gaussian_activation_dispersion_reciproke():
     activation = GaussianActivation(
         type="gaussian",
-        label="",
         center=1,
         width=10,
         dispersion_center=200,

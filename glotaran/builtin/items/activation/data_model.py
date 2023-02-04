@@ -20,21 +20,19 @@ class NoActivationIssue(ItemIssue):
 
 
 def validate_activations(
-    value: Activation | list[Activation],
+    value: list[Activation],
     activation: Activation,
     library: Library,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
     issues = []
-    if not isinstance(value, list):
-        value = [value]
     if len(value) == 0:
         issues.append(NoActivationIssue())
     return issues
 
 
 class ActivationDataModel(DataModel):
-    activation: Activation | list[Activation] = Attribute(
+    activation: list[Activation] = Attribute(
         validator=validate_activations,
         description="The activation(s) of the dataset.",
     )

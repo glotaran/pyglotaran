@@ -4,6 +4,7 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Literal
 
 import xarray as xr
 
@@ -91,3 +92,11 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
             Whether megacomplex is calculated as global megacomplex.
         """
         pass
+
+
+class InternalMockMegacomplex(Megacomplex):
+    """An internal megacomplex for testing purpose, since at least 2 items
+    are needed for pydanticx discriminators.
+    """
+
+    type: Literal["internal_mock"]

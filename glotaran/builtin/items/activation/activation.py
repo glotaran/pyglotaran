@@ -1,9 +1,9 @@
 from glotaran.model import Attribute
-from glotaran.model import LibraryItemTyped
 from glotaran.model import ParameterType
+from glotaran.model import TypedItem
 
 
-class Activation(LibraryItemTyped):
+class Activation(TypedItem):
     compartments: dict[str, ParameterType] = Attribute(
         description="A dictionary of activated compartments with the activation amplitude."
     )
