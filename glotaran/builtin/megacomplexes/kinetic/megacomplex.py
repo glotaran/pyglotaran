@@ -22,7 +22,9 @@ class KineticMegacomplex(Megacomplex):
     kinetic: list[LibraryItemType[Kinetic]]
 
     @staticmethod
-    def reduce_matrices(lhs: np.typing.ArrayLike, rhs: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def combine_matrices(
+        lhs: np.typing.ArrayLike, rhs: np.typing.ArrayLike
+    ) -> np.typing.ArrayLike:
         if lhs.shape != rhs.shape:
             if len(lhs.shape) > len(rhs):
                 return lhs + rhs[np.newaxis, :, :]
@@ -41,7 +43,7 @@ class KineticMegacomplex(Megacomplex):
         matrices = []
         for activation in model.activation:
             initial_concentrations = np.array(
-                [activation.compartments.get(label, 0) for label in compartments]
+                [float(activation.compartments.get(label, 0)) for label in compartments]
             )
             normalized_compartments = [
                 c not in activation.not_normalized_compartments for c in compartments
@@ -49,7 +51,7 @@ class KineticMegacomplex(Megacomplex):
             initial_concentrations[normalized_compartments] /= np.sum(
                 initial_concentrations[normalized_compartments]
             )
-            rates = kinetic.rates(initial_concentrations)
+            rates = kinetic.calculate(initial_concentrations)
 
             matrix = (
                 self.calculate_matrix_gaussian_activation(
@@ -70,7 +72,7 @@ class KineticMegacomplex(Megacomplex):
             matrices.append(matrix)
 
         return compartments, matrices[0] if len(matrices) == 1 else reduce(
-            self.reduce_matrices, matrices
+            self.combine_matrices, matrices
         )
 
     def calculate_matrix_gaussian_activation(
@@ -80,21 +82,21 @@ class KineticMegacomplex(Megacomplex):
         model_axis: np.typing.ArrayLike,
         compartments: list[str],
         rates: np.typing.ArrayLike,
-    ) -> np.typing.ndarray:
+    ) -> np.typing.ArrayLike:
         parameters = activation.parameters(global_axis)
         matrix_shape = (model_axis.size, len(compartments))
         index_dependent = any(isinstance(p, list) for p in parameters)
         if index_dependent:
             matrix_shape = (global_axis.size,) + matrix_shape
         matrix = np.zeros(matrix_shape, dtype=np.float64)
-        scales = [p.scale for p in (parameters[0] if index_dependent else parameters)]
+        scales = np.array([p.scale for p in (parameters[0] if index_dependent else parameters)])
         if index_dependent:
             calculate_matrix_gaussian_activation(
                 matrix,
                 rates,
                 model_axis,
-                [[p.center for p in ps] for ps in parameters],
-                [[p.width for p in ps] for ps in parameters],
+                np.array([[p.center for p in ps] for ps in parameters]),
+                np.array([[p.width for p in ps] for ps in parameters]),
                 scales,
                 parameters[0][0].backsweep,
                 parameters[0][0].backsweep_period,
@@ -104,8 +106,8 @@ class KineticMegacomplex(Megacomplex):
                 matrix,
                 rates,
                 model_axis,
-                [p.center for p in parameters],
-                [p.width for p in parameters],
+                np.array([p.center for p in parameters]),
+                np.array([p.width for p in parameters]),
                 scales,
                 parameters[0].backsweep,
                 parameters[0].backsweep_period,
