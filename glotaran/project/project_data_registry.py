@@ -5,7 +5,7 @@ from pathlib import Path
 
 from glotaran.io import load_dataset
 from glotaran.io import save_dataset
-from glotaran.plugin_system.data_io_registration import known_data_formats
+from glotaran.plugin_system.data_io_registration import supported_file_extensions_data_io
 from glotaran.project.project_registry import ProjectRegistry
 
 
@@ -21,7 +21,9 @@ class ProjectDataRegistry(ProjectRegistry):
             The registry directory.
         """
         super().__init__(
-            directory / "data", [f".{fmt}" for fmt in known_data_formats()], load_dataset
+            directory / "data",
+            supported_file_extensions_data_io("load_dataset"),
+            load_dataset,
         )
 
     def import_data(

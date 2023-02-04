@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -11,21 +12,21 @@ from glotaran.utils.ipython import MarkdownStr
 class ProjectRegistry:
     """A registry base class."""
 
-    def __init__(self, directory: Path, file_suffix: str | list[str], loader: Callable):
+    def __init__(self, directory: Path, file_suffix: str | Iterable[str], loader: Callable):
         """Initialize a registry.
 
         Parameters
         ----------
         directory : Path
             The registry directory.
-        file_suffix : str | list[str]
+        file_suffix : str | Iterable[str]
             The suffixes of item files.
         loader : Callable
             A loader for the registry items.
         """
         self._directory: Path = directory
-        self._file_suffix: list[str] = (
-            [file_suffix] if isinstance(file_suffix, str) else file_suffix
+        self._file_suffix: tuple[str, ...] = (
+            (file_suffix,) if isinstance(file_suffix, str) else tuple(file_suffix)
         )
         self._loader: Callable = loader
 
