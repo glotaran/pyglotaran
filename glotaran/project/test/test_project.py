@@ -379,6 +379,42 @@ def test_import_data_relative_paths_script_folder_not_cwd(
         assert (script_folder / "data/dataset_2.nc").is_file() is True
 
 
+@pytest.mark.parametrize("file_extension", ("ascii", "nc", "sdt"))
+def test_data_plugin_system_integration(tmp_path: Path, file_extension: str):
+    """Find data file for all builtin plugins that support ``load_dataset``."""
+    data_file = tmp_path / f"data/test_data.{file_extension}"
+    data_file.parent.mkdir(parents=True, exist_ok=True)
+    data_file.touch()
+    project = Project.open(tmp_path)
+
+    assert len(project.data) == 1
+    assert project.data["test_data"].samefile(data_file)
+
+
+@pytest.mark.parametrize("file_extension", ("yml", "yaml"))
+def test_model_plugin_system_integration(tmp_path: Path, file_extension: str):
+    """Find model file for all builtin plugins that support ``load_model``."""
+    model_file = tmp_path / f"models/test_model.{file_extension}"
+    model_file.parent.mkdir(parents=True, exist_ok=True)
+    model_file.touch()
+    project = Project.open(tmp_path)
+
+    assert len(project.models) == 1
+    assert project.models["test_model"].samefile(model_file)
+
+
+@pytest.mark.parametrize("file_extension", ("yml", "yaml", "ods", "tsv", "xlsx", "ods"))
+def test_parameters_plugin_system_integration(tmp_path: Path, file_extension: str):
+    """Find parameters file for all builtin plugins that support ``load_parameters``."""
+    parameter_file = tmp_path / f"parameters/test_parameter.{file_extension}"
+    parameter_file.parent.mkdir(parents=True, exist_ok=True)
+    parameter_file.touch()
+    project = Project.open(tmp_path)
+
+    assert len(project.parameters) == 1
+    assert project.parameters["test_parameter"].samefile(parameter_file)
+
+
 def test_missing_file_errors(tmp_path: Path, project_folder: Path):
     """Error when accessing non existing files."""
     with pytest.raises(FileNotFoundError) as exc_info:

@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from glotaran.io import load_model
+from glotaran.plugin_system.project_io_registration import supported_file_extensions_project_io
 from glotaran.project.generators.generator import GeneratorArguments
 from glotaran.project.generators.generator import generate_model_yml
 from glotaran.project.project_registry import ProjectRegistry
@@ -20,7 +21,9 @@ class ProjectModelRegistry(ProjectRegistry):
         directory : Path
             The registry directory.
         """
-        super().__init__(directory / "models", ".yml", load_model)
+        super().__init__(
+            directory / "models", supported_file_extensions_project_io("load_model"), load_model
+        )
 
     def generate_model(
         self,

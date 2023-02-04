@@ -7,12 +7,15 @@ This is to prevent issues with circular imports.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable
 from importlib import metadata
 from typing import TYPE_CHECKING
+from typing import cast
 from warnings import warn
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Generator
     from collections.abc import MutableMapping
     from collections.abc import Sequence
     from typing import Any
@@ -384,8 +387,8 @@ def get_method_from_plugin(
             return possible_method
         else:
             raise ValueError(not_a_method_error_message)
-    except AttributeError:
-        raise ValueError(not_a_method_error_message)
+    except AttributeError as err:
+        raise ValueError(not_a_method_error_message) from err
 
 
 def show_method_help(
@@ -409,7 +412,7 @@ def methods_differ_from_baseclass(
     method_names: str | Sequence[str],
     plugin: GenericPluginInstance | type[GenericPluginInstance],
     base_class: type[GenericPluginInstance],
-) -> list[bool]:
+) -> Generator[bool, None, None]:
     """Check if a plugins methods implementation differ from its baseclass.
 
     Based on the assumption that ``base_class`` didn't implement the methods
@@ -425,19 +428,17 @@ def methods_differ_from_baseclass(
     base_class : type[GenericPluginInstance]
         Base class the plugin inherited from.
 
-    Returns
-    -------
-    list[bool]
-        List containing whether or not a plugins method differs from the baseclasses.
+    Yields
+    ------
+    bool
+        Whether or not a plugins method differs from the implementation in ``base_class``.
     """
-    differs_list = []
     if isinstance(method_names, str):
         method_names = [method_names]
     for method_name in method_names:
         plugin_method = get_method_from_plugin(plugin, method_name)
         base_class_method = get_method_from_plugin(base_class, method_name)
-        differs_list.append(plugin_method.__code__ != base_class_method.__code__)
-    return differs_list
+        yield plugin_method.__code__ != base_class_method.__code__
 
 
 def methods_differ_from_baseclass_table(
@@ -446,7 +447,7 @@ def methods_differ_from_baseclass_table(
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
     base_class: type[GenericPluginInstance],
     plugin_names: bool = False,
-) -> list[list[str | bool]]:
+) -> Generator[list[str | bool], None, None]:
     """Create table of which plugins methods differ from their baseclass.
 
     This uses the assumption that all plugins have the same ``base_class``.
@@ -472,18 +473,16 @@ def methods_differ_from_baseclass_table(
     plugin_names : bool
         Whether or not to add the names of the plugins to the lists.
 
-    Returns
-    -------
-    list[list[str | bool]]
-        Table like structure with the first value of each row being the
-        ``plugin_registry_key`` and the others whether or not a plugins
-        method differs from the baseclasses.
+    Yields
+    ------
+    list[str | bool]
+        Row with the first value being the ``plugin_registry_key`` and the others whether or not
+        a plugins method differs from ``base_class``.
 
     See Also
     --------
     methods_differ_from_baseclass
     """
-    differs_table: list[list[str | bool]] = []
     if isinstance(plugin_registry_keys, str):
         plugin_registry_keys = [plugin_registry_keys]
     for plugin_registry_key in plugin_registry_keys:
@@ -497,5 +496,44 @@ def methods_differ_from_baseclass_table(
                 row.append(f"`{plugin_registry_key}`")
             else:
                 row.append(f"`{full_plugin_name(plugin)}_{plugin_registry_key}`")
-        differs_table.append(row)
-    return differs_table
+        yield row
+
+
+def supported_file_extensions(
+    method_names: str | Sequence[str],
+    plugin_registry_keys: str | Sequence[str],
+    get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
+    base_class: type[GenericPluginInstance],
+) -> Generator[str, None, None]:
+    """Get file extensions for plugins that support all methods in ``method_names``.
+
+    Parameters
+    ----------
+    method_names : str | list[str]
+        Name|s of the method|s.
+    plugin_registry_keys : str | list[str]
+        Keys the plugins are registered under
+        (e.g. return value of the implementation of func:`registered_plugins`)
+    get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]]
+        Function to get plugin from plugin registry.
+    base_class : type[GenericPluginInstance]
+        Base class the plugin inherited from.
+
+    Yields
+    ------
+    Generator[str, None, None]
+        File extension supported by all methods in ``method_names``.
+
+    See Also
+    --------
+    methods_differ_from_baseclass
+    methods_differ_from_baseclass_table
+    """
+    for plugin_registry_key, *differs_list in methods_differ_from_baseclass_table(
+        method_names, plugin_registry_keys, get_plugin_function, base_class
+    ):
+        format_name_str: str = cast(str, plugin_registry_key).replace("`", "")
+        if format_name_str.endswith("_str"):
+            continue
+        if all(cast(Iterable[bool], differs_list)) is True:
+            yield f".{format_name_str}"

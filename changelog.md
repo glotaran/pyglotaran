@@ -18,6 +18,7 @@
 
 - 👌🎨 Wrap model section in result markdown in details tag for notebooks (#1098)
 - 👌 Allow more natural column names in pandas parameters file reading (#1174)
+- ✨ Integrate plugin system into Project (#1229)
 
 ### 🩹 Bug fixes
 

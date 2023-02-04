@@ -26,6 +26,7 @@ from glotaran.plugin_system.base_registry import methods_differ_from_baseclass_t
 from glotaran.plugin_system.base_registry import registered_plugins
 from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.plugin_system.base_registry import show_method_help
+from glotaran.plugin_system.base_registry import supported_file_extensions
 
 if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture
@@ -45,9 +46,34 @@ class MockPlugin:
         pass
 
 
-class MockPluginSubclass(MockPlugin):
+class MockPluginSubclassPartial(MockPlugin):
     def some_method(self):
         return "different implementation"
+
+
+class MockPluginSubclassFull(MockPlugin):
+    def some_method(self):
+        return "different implementation"
+
+    def some_other_method(self):
+        return "different implementation"
+
+
+class MockPluginSubclassStr(MockPlugin):
+    def some_method(self):
+        return "different implementation"
+
+
+def get_mock_plugin_function(plugin_registry_key: str):
+    if plugin_registry_key == "base":
+        return MockPlugin
+    elif plugin_registry_key == "sub_class_partial":
+        return MockPluginSubclassPartial
+    elif plugin_registry_key == "sub_class_full":
+        return MockPluginSubclassFull
+    elif plugin_registry_key == "sub_class_str":
+        return MockPluginSubclassStr
+    raise ValueError(f"No mock plugin with name {plugin_registry_key!r}")
 
 
 mock_registry_data_io = cast(
@@ -318,10 +344,12 @@ def test_show_method_help(capsys: CaptureFixture, plugin: MockPlugin | type[Mock
 @pytest.mark.parametrize(
     "method_names,plugin,expected",
     (
-        ("some_method", MockPluginSubclass, [True]),
-        ("some_method", MockPluginSubclass(), [True]),
-        (["some_method", "some_other_method"], MockPluginSubclass, [True, False]),
-        (["some_method", "some_other_method"], MockPluginSubclass(), [True, False]),
+        ("some_method", MockPluginSubclassPartial, [True]),
+        ("some_method", MockPluginSubclassPartial(), [True]),
+        (["some_method", "some_other_method"], MockPluginSubclassPartial, [True, False]),
+        (["some_method", "some_other_method"], MockPluginSubclassPartial(), [True, False]),
+        (["some_method", "some_other_method"], MockPluginSubclassFull, [True, True]),
+        (["some_method", "some_other_method"], MockPluginSubclassFull(), [True, True]),
     ),
 )
 def test_methods_differ_from_baseclass(
@@ -330,22 +358,23 @@ def test_methods_differ_from_baseclass(
     """Inherited methods are the same as base class and overwritten ones differ"""
     result = methods_differ_from_baseclass(method_names, plugin, MockPlugin)
 
-    assert result == expected
+    assert list(result) == expected
 
 
 @pytest.mark.parametrize(
     "method_names,plugin_registry_keys,expected",
     (
         ("some_method", "base", [["`base`", False]]),
-        ("some_method", "sub_class", [["`sub_class`", True]]),
-        ("some_method", "sub_class_inst", [["`sub_class_inst`", True]]),
+        ("some_method", "sub_class_partial", [["`sub_class_partial`", True]]),
+        ("some_method", "sub_class_full", [["`sub_class_full`", True]]),
         (
             ["some_method", "some_other_method"],
-            ["base", "sub_class", "sub_class_inst"],
+            ["base", "sub_class_partial", "sub_class_full", "sub_class_str"],
             [
                 ["`base`", False, False],
-                ["`sub_class`", True, False],
-                ["`sub_class_inst`", True, False],
+                ["`sub_class_partial`", True, False],
+                ["`sub_class_full`", True, True],
+                ["`sub_class_str`", True, False],
             ],
         ),
     ),
@@ -357,30 +386,41 @@ def test_methods_differ_from_baseclass_table(
 ):
     """Inherited methods are the same as base class and overwritten ones differ"""
 
-    def get_plugin_function(plugin_registry_key: str):
-        if plugin_registry_key == "base":
-            return MockPlugin
-        elif plugin_registry_key in {"sub_class", "sub_class_inst"}:
-            return MockPluginSubclass
-
     result = methods_differ_from_baseclass_table(
-        method_names, plugin_registry_keys, get_plugin_function, MockPlugin
+        method_names, plugin_registry_keys, get_mock_plugin_function, MockPlugin
     )
 
-    assert result == expected
+    assert list(result) == expected
 
 
 def test_methods_differ_from_baseclass_table_plugin_names():
     """Show plugin name"""
 
-    def get_plugin_function(plugin_registry_key: str):
-        if plugin_registry_key == "base":
-            return MockPlugin
-        elif plugin_registry_key == "sub_class":
-            return MockPluginSubclass
-
     result = methods_differ_from_baseclass_table(
-        "some_method", "base", get_plugin_function, MockPlugin, plugin_names=True
+        "some_method", "base", get_mock_plugin_function, MockPlugin, plugin_names=True
     )
 
-    assert result == [["`base`", False, "`test_base_registry.MockPlugin`"]]
+    assert list(result) == [["`base`", False, "`test_base_registry.MockPlugin`"]]
+
+
+@pytest.mark.parametrize(
+    "method_names, expected",
+    (
+        ("some_method", [".sub_class_partial", ".sub_class_full"]),
+        ("some_other_method", [".sub_class_full"]),
+        (["some_method", "some_other_method"], [".sub_class_full"]),
+    ),
+)
+def test_supported_file_extensions(
+    method_names: str | list[str],
+    expected: list[str],
+):
+    """Only extensions where the plugin supports all methods in ``method_names`` are returned."""
+    result = supported_file_extensions(
+        method_names,
+        ["base", "sub_class_partial", "sub_class_full", "sub_class_str"],
+        get_mock_plugin_function,
+        MockPlugin,
+    )
+
+    assert list(result) == expected

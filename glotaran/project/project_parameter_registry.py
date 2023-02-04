@@ -9,6 +9,7 @@ from glotaran.io import load_parameters
 from glotaran.io import save_parameters
 from glotaran.model import Model
 from glotaran.parameter import Parameters
+from glotaran.plugin_system.project_io_registration import supported_file_extensions_project_io
 from glotaran.project.project_registry import ProjectRegistry
 
 
@@ -23,7 +24,11 @@ class ProjectParameterRegistry(ProjectRegistry):
         directory : Path
             The registry directory.
         """
-        super().__init__(directory / "parameters", [".yml", ".yaml", ".csv"], load_parameters)
+        super().__init__(
+            directory / "parameters",
+            supported_file_extensions_project_io("load_parameters"),
+            load_parameters,
+        )
 
     def generate_parameters(
         self,
