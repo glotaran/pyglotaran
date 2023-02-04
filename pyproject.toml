@@ -36,7 +36,6 @@ flake8 = ["--extend-ignore=E402,F404"]
 
 [tool.coverage.run]
 branch = true
-include = ['glotaran/*']
 omit = [
   'setup.py',
   '*/tests/*',

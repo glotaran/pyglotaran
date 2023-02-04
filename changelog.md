@@ -41,6 +41,7 @@
 
 - `<model_file>.clp_area_penalties` -> `<model_file>.clp_penalties`
 - `glotaran.ParameterGroup` -> `glotaran.Parameters`
+- Command Line Interface (removed without replacement) (#1228)
 
 ### 🗑️❌ Deprecated functionality removed in this release
 
