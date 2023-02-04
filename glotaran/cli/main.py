@@ -11,6 +11,13 @@ class Cli(click.Group):
     """The glotaran CLI implementation of :class:`click.group`"""
 
     def __init__(self, *args, **kwargs):
+
+        click.echo(
+            "[DEPRECATED] The pyglotaran command line interface will be removed without "
+            "replacement in version '0.8.0' since it lacks a lot of essential functionality and "
+            "isn't used. The currently recommended usage of pyglotaran is in JuPyteR notebooks.",
+            err=True,
+        )
         self.help_priorities = {}
         super().__init__(*args, **kwargs)
 
@@ -47,7 +54,6 @@ class Cli(click.Group):
 @click.version_option(version=VERSION)
 def main(prog_name="glotaran"):
     """The glotaran CLI main function."""
-    pass
 
 
 main.add_command(

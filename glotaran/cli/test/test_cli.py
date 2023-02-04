@@ -1,8 +1,19 @@
+import subprocess
 from pathlib import Path
 
 from click.testing import CliRunner
 
 from glotaran.cli import main
+
+
+def test_cli_deprecation():
+    """Needs to be tested with subprocess since CliRunner clears stdout."""
+
+    result = subprocess.run("glotaran", capture_output=True, check=True)
+
+    assert result.stderr.decode().startswith(
+        "[DEPRECATED] The pyglotaran command line interface will be removed without"
+    )
 
 
 def test_cli_help():
