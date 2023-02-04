@@ -258,9 +258,9 @@ def get_data_model_dimension(data_model: DataModel) -> str:
         model_dimension != m.dimension  # type:ignore[union-attr]
         for m in data_model.megacomplex
     ):
-        raise GlotaranModelError(
-            f"Megacomplex dimensions do not match for data model '{data_model.label}'."
-        )
+        raise GlotaranModelError("Megacomplex dimensions do not match for data model.")
+    if model_dimension is None:
+        raise GlotaranModelError("No megacomplex dimensions defined for data model.")
     return model_dimension
 
 
