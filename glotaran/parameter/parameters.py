@@ -456,6 +456,17 @@ class Parameters:
             f"not with {type(other).__qualname__!r}."
         )
 
+    def close_or_equal(self, rhs: Parameters, rtol=1e-3) -> bool:
+        try:
+            return np.all(
+                [
+                    np.allclose(parameter.value, rhs.get(label).value, rtol=rtol)
+                    for label, parameter in self._parameters.items()
+                ]
+            )
+        except ParameterNotFoundException:
+            return False
+
 
 def flatten_parameter_dict(
     parameter_dict: dict,
