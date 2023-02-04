@@ -412,7 +412,7 @@ def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs
     Result
         :class:`Result` instance created from the saved format.
     """
-    io = get_project_io(format_name or infer_file_format(result_path))
+    io = get_project_io(format_name or infer_file_format(result_path, allow_folder=True))
 
     result = io.load_result(Path(result_path).as_posix(), **kwargs)
     result.source_path = Path(result_path).as_posix()

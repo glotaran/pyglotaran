@@ -168,7 +168,7 @@ class YmlProjectIo(ProjectIoInterface):
         if result_file_path.suffix not in [".yml", ".yaml"]:
             result_file_path = result_file_path / "result.yml"
         spec = self._load_yml(result_file_path.as_posix())
-        return fromdict(Result, spec, folder=Path(result_path).parent)
+        return fromdict(Result, spec, folder=result_file_path.parent)
 
     def save_result(
         self,
