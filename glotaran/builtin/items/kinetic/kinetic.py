@@ -100,7 +100,7 @@ class Kinetic(LibraryItem):
         eigenvalues, eigenvectors = eig(self.full_array.T, left=True, right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def calculate(self, concentrations: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def calculate(self, concentrations: np.typing.ArrayLike | None = None) -> np.typing.ArrayLike:
         """The resulting rates of the matrix.
 
         By definition, the eigenvalues of the compartmental model are negative and
@@ -114,7 +114,7 @@ class Kinetic(LibraryItem):
         initial_concentration: np.ndarray
             The initial concentration.
         """
-        if self.is_sequential(concentrations):
+        if concentrations is not None and self.is_sequential(concentrations):
             return -np.diag(self.full_array)
         eigenvalues, _ = self.eigen()
         return -eigenvalues

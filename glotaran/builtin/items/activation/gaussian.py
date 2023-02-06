@@ -5,9 +5,11 @@ from dataclasses import replace
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 from numpy.typing import ArrayLike
 
 from glotaran.builtin.items.activation.activation import Activation
+from glotaran.builtin.items.activation.data_model import ActivationDataModel
 from glotaran.model import Attribute
 from glotaran.model import GlotaranUserError
 from glotaran.model import ItemIssue
@@ -143,11 +145,74 @@ class MultiGaussianActivation(Activation):
         description="Set `True` if the global axis is reciproke (e.g. for wavennumbers),",
     )
 
+    @staticmethod
+    def add_to_result_data(model: ActivationDataModel, data: xr.Dataset):
+        gaussian_activations = [
+            a for a in model.activation if isinstance(a, MultiGaussianActivation)
+        ]
+        if "gaussian_activation" in data or not len(gaussian_activations):
+            return
+        data.coords["gaussian_activation"] = np.arange(1, len(gaussian_activations) + 1)
+        global_dimension = data.attrs["global_dimension"]
+        global_axis = data.coords[global_dimension]
+        model_dimension = data.attrs["model_dimension"]
+        model_axis = data.coords[model_dimension]
+
+        activations = []
+        activation_parameters = []
+        activation_shifts = []
+        has_shifts = any(a.shift is not None for a in gaussian_activations)
+        activation_dispersions = []
+        has_dispersions = any(a.dispersion_center is not None for a in gaussian_activations)
+        for activation in gaussian_activations:
+            activations.append(activation.calculate_function(model_axis))
+            activation_parameters.append(activation.parameters())
+            if has_shifts:
+                activation_shifts.append(
+                    activation.shift if activation.shift is not None else [0] * global_axis.size
+                )
+            if has_dispersions:
+                activation_dispersions.append(
+                    activation.calculate_dispersion(global_axis)
+                    if activation.dispersion_center is not None
+                    else activation.center * global_axis.size
+                )
+
+        data["gaussian_activation_function"] = (
+            ("gaussian_activation", model_dimension),
+            activations,
+        )
+        data["gaussian_activation_center"] = (
+            ("gaussian_activation", "gaussian_activation_part"),
+            [[p.center for p in ps] for ps in activation_parameters],
+        )
+        data["gaussian_activation_width"] = (
+            ("gaussian_activation", "gaussian_activation_part"),
+            [[p.width for p in ps] for ps in activation_parameters],
+        )
+        data["gaussian_activation_scale"] = (
+            ("gaussian_activation", "gaussian_activation_part"),
+            [[p.scale for p in ps] for ps in activation_parameters],
+        )
+        if has_shifts:
+            data["gaussian_activation_shift"] = (
+                ("gaussian_activation", global_dimension),
+                activation_shifts,
+            )
+        if has_dispersions:
+            data["gaussian_activation_dispersion"] = (
+                ("gaussian_activation", global_dimension),
+                activation_dispersions,
+            )
+
+    def calculate_dispersion(self, axis: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        return np.array([[p.center for p in ps] for ps in self.parameter(axis)])
+
     def is_index_dependent(self) -> bool:
         return self.shift is not None or self.dispersion_center is not None
 
     def parameters(
-        self, global_axis: ArrayLike
+        self, global_axis: ArrayLike | None = None
     ) -> list[GaussianActivationParameters | list[GaussianActivationParameters]]:
         centers = self.center if isinstance(self.center, list) else [self.center]
         widths = self.width if isinstance(self.width, list) else [self.width]
@@ -172,7 +237,7 @@ class MultiGaussianActivation(Activation):
             for center, width, scale in zip(centers, widths, scales)
         ]
 
-        if self.shift is None and self.dispersion_center is None:
+        if global_axis is None or not self.is_index_dependent():
             return parameters
 
         parameters = [[replace(p) for p in parameters] for _ in global_axis]
@@ -199,6 +264,12 @@ class MultiGaussianActivation(Activation):
                     )
 
         return parameters
+
+    def calculate_function(self, axis: np.typing.ArrayLike) -> np.typing.ArrayLike:
+        return sum(
+            p.scale * np.exp(-1 * (axis - p.center) ** 2 / (2 * p.width**2))
+            for p in self.parameters()
+        )
 
 
 class GaussianActivation(MultiGaussianActivation):
