@@ -18,6 +18,7 @@ class SpectralDataModel(DataModel):
 class SpectralMegacomplex(Megacomplex):
     type: Literal["spectral"]
     dimension: str = "spectral"
+    register_as = "spectral"
     data_model_type = SpectralDataModel
     shapes: dict[str, SpectralShape.get_annotated_type()]
 

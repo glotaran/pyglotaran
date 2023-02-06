@@ -28,6 +28,7 @@ class Oscillation(Item):
 
 class DampedOscillationMegacomplex(Megacomplex):
     type: Literal["damped-oscillation"]
+    register_as = "damped-oscillation"
     dimension = "time"
     data_model = ActivationDataModel
     oscillations: dict[str, Oscillation]
