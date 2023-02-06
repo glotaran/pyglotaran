@@ -2,6 +2,7 @@ from functools import reduce
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
@@ -31,6 +32,9 @@ class KineticMegacomplex(Megacomplex):
             else:
                 return lhs[np.newaxis, :, :] + rhs
         return lhs + rhs
+
+    def get_species(self) -> list[str]:
+        return Kinetic.combine(self.kinetic).compartments
 
     def calculate_matrix(
         self,
@@ -116,3 +120,71 @@ class KineticMegacomplex(Megacomplex):
             matrix /= np.sum(scales)
 
         return matrix
+
+    def add_to_result_data(self, model: ActivationDataModel, data: xr.Dataset, as_global: bool):
+        MultiGaussianActivation.add_to_result_data(model, data)
+        if "species" in data.coords:
+            return
+        megacomplexes = [m for m in model.megacomplex if isinstance(m, KineticMegacomplex)]
+        kinetic = Kinetic.combine([k for m in megacomplexes for k in m.kinetic])
+        species = kinetic.compartments
+        global_dimension = data.attrs["global_dimension"]
+        model_dimension = data.attrs["model_dimension"]
+
+        data.coords["species"] = species
+        matrix = data.global_matrix if as_global else data.matrix
+        clp_dim = "global_clp_label" if as_global else "clp_label"
+        concentration_shape = (
+            global_dimension if as_global else model_dimension,
+            "species",
+        )
+        if len(matrix.shape) > 2:
+            concentration_shape = (
+                (model_dimension if as_global else global_dimension),
+            ) + concentration_shape
+        data["species_concentration"] = (
+            concentration_shape,
+            matrix.sel({clp_dim: species}).values,
+        )
+
+        data["k_matrix"] = xr.DataArray(kinetic.full_array, dims=(("species"), ("species")))
+        data["k_matrix_reduced"] = xr.DataArray(kinetic.array, dims=(("species"), ("species")))
+
+        rates = kinetic.calculate()
+        lifetimes = 1 / rates
+        data.coords["kinetic"] = np.arange(1, rates.size + 1)
+        data.coords["rate"] = ("kinetic", rates)
+        data.coords["lifetime"] = ("kinetic", lifetimes)
+
+        if hasattr(data, "global_matrix"):
+            return
+
+        species_associated_estimation = data.clp.sel(clp_label=species).data
+        data["species_associated_estimation"] = (
+            (global_dimension, "species"),
+            species_associated_estimation,
+        )
+        initial_concentrations = []
+        a_matrices = []
+        kinetic_associated_estimations = []
+        for activation in model.activation:
+            initial_concentration = np.array(
+                [float(activation.compartments.get(label, 0)) for label in species]
+            )
+            initial_concentrations.append(initial_concentration)
+            a_matrix = kinetic.a_matrix(initial_concentration)
+            a_matrices.append(a_matrix)
+            kinetic_associated_estimations.append(species_associated_estimation @ a_matrix.T)
+
+        data["initial_concentration"] = (
+            ("activation", "species"),
+            initial_concentrations,
+        )
+        data["a_matrix"] = (
+            ("activation", "species", "kinetic"),
+            kinetic_associated_estimations,
+        )
+        data["kinetic_associated_estimation"] = (
+            ("activation", global_dimension, "kinetic"),
+            kinetic_associated_estimations,
+        )
