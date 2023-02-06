@@ -10,6 +10,7 @@ from glotaran.model import Megacomplex
 
 class ClpGuideMegacomplex(Megacomplex):
     type: Literal["clp-guide"]
+    register_as = "clp-guide"
     target: str
     exclusive = True
 
