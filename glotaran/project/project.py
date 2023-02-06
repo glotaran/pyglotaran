@@ -166,14 +166,11 @@ class Project:
         ------
         ValueError
             Raised if the dataset does not exist.
+
+
+        .. # noqa: DAR402
         """
-        try:
-            return self._data_registry.load_item(dataset_name)
-        except ValueError as err:
-            raise ValueError(
-                f"Dataset {dataset_name!r} does not exist. "
-                f"Known Datasets are: {list(self._data_registry.items.keys())}"
-            ) from err
+        return self._data_registry.load_item(dataset_name)
 
     def import_data(
         self,
@@ -238,14 +235,11 @@ class Project:
         ------
         ValueError
             Raised if the model does not exist.
+
+
+        .. # noqa: DAR402
         """
-        try:
-            return self._model_registry.load_item(name)
-        except ValueError as err:
-            raise ValueError(
-                f"Model {name!r} does not exist. "
-                f"Known Models are: {list(self._model_registry.items.keys())}"
-            ) from err
+        return self._model_registry.load_item(name)
 
     def generate_model(
         self,
@@ -329,15 +323,11 @@ class Project:
         Parameters
             The loaded parameters.
 
+
         .. # noqa: D414
+        .. # noqa: DAR402
         """
-        try:
-            return self._parameter_registry.load_item(parameters_name)
-        except ValueError as err:
-            raise ValueError(
-                f"Parameters '{parameters_name}' does not exist. "
-                f"Known Parameters are: {list(self._parameter_registry.items.keys())}"
-            ) from err
+        return self._parameter_registry.load_item(parameters_name)
 
     def generate_parameters(
         self,

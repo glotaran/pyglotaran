@@ -12,7 +12,9 @@ from glotaran.utils.ipython import MarkdownStr
 class ProjectRegistry:
     """A registry base class."""
 
-    def __init__(self, directory: Path, file_suffix: str | Iterable[str], loader: Callable):
+    def __init__(
+        self, directory: Path, file_suffix: str | Iterable[str], loader: Callable, item_name: str
+    ):
         """Initialize a registry.
 
         Parameters
@@ -29,6 +31,7 @@ class ProjectRegistry:
             (file_suffix,) if isinstance(file_suffix, str) else tuple(file_suffix)
         )
         self._loader: Callable = loader
+        self._item_name = item_name
 
         self._create_directory_if_not_exist()
 
@@ -102,7 +105,8 @@ class ProjectRegistry:
         if name in self.items:
             return self._loader(self.items[name])
         raise ValueError(
-            f"No Item with name '{name}' exists. Known items are: {list(self.items.keys())}"
+            f"{self._item_name} '{name}' does not exist. "
+            f"Known {self._item_name.rstrip('s')}s are: {list(self.items.keys())}"
         )
 
     def markdown(self, join_indentation: int = 0) -> MarkdownStr:

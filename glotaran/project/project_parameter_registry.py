@@ -28,6 +28,7 @@ class ProjectParameterRegistry(ProjectRegistry):
             directory / "parameters",
             supported_file_extensions_project_io("load_parameters"),
             load_parameters,
+            item_name="Parameters",
         )
 
     def generate_parameters(
