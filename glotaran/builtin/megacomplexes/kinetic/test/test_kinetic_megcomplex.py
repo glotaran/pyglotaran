@@ -128,8 +128,13 @@ def test_decay(decay: str, activation: Activation):
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, _, result = optimization.run()
+    optimized_parameters, optimized_data, result = optimization.run()
     assert result.success
-    print(test_parameters_simulation)
-    print(optimized_parameters)
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
+    assert "decay" in optimized_data
+    assert "species_concentration" in optimized_data["decay"]
+    assert "species_associated_estimation" in optimized_data["decay"]
+    assert "kinetic_associated_estimation" in optimized_data["decay"]
+    if isinstance(activation, MultiGaussianActivation):
+        assert "gaussian_activation" in optimized_data["decay"].coords
+        assert "gaussian_activation_function" in optimized_data["decay"]
