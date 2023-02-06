@@ -1,6 +1,7 @@
 """This module contains the item classes and helper functions."""
 import contextlib
 import re
+import typing
 from functools import cache
 from inspect import getmro
 from inspect import isclass
@@ -246,6 +247,12 @@ def iterate_fields_of_type(
         with contextlib.suppress(TypeError):
             # issubclass does for some reason not work with e.g. tuple as item_type
             # and Parameter as attr_type
+            if (
+                hasattr(item_type, "__origin__")
+                and issubclass(typing.get_origin(item_type), typing.Annotated)
+                and typing.get_origin(typing.get_args(item_type)[0]) is typing.Union
+            ):
+                item_type = typing.get_args(typing.get_args(item_type)[0])[0]
             if isclass(item_type) and issubclass(item_type, field_type):
                 yield field
 
