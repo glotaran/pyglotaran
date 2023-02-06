@@ -143,6 +143,9 @@ class MultiGaussianActivation(Activation):
         description="Set `True` if the global axis is reciproke (e.g. for wavennumbers),",
     )
 
+    def is_index_dependent(self) -> bool:
+        return self.shift is not None or self.dispersion_center is not None
+
     def parameters(
         self, global_axis: ArrayLike
     ) -> list[GaussianActivationParameters | list[GaussianActivationParameters]]:

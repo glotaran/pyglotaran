@@ -1,3 +1,3 @@
-from glotaran.builtin.megacomplexes.damped_oscillation.damped_oscillation_megacomplex import (
+from glotaran.builtin.megacomplexes.damped_oscillation.megacomplex import (
     DampedOscillationMegacomplex,
 )
