@@ -11,6 +11,7 @@ from glotaran.model import Megacomplex
 
 class BaselineMegacomplex(Megacomplex):
     type: Literal["baseline"]
+    register_project_io = "baseline"
     unique = True
 
     def clp_label(self) -> str:

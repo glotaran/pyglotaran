@@ -15,6 +15,7 @@ from glotaran.model import ParameterType
 
 class CoherentArtifactMegacomplex(Megacomplex):
     type: Literal["coherent-artifact"]
+    register_as = "coherent-artifact"
     dimension = "time"
     unique = True
     data_model = ActivationDataModel
