@@ -1,22 +1,21 @@
 """This package contains the spectral shape item."""
 
+from typing import Literal
+
 import numpy as np
 
-from glotaran.model import ModelItemTyped
 from glotaran.model import ParameterType
-from glotaran.model import item
+from glotaran.model import TypedItem
 
 
-@item
-class SpectralShape(ModelItemTyped):
+class SpectralShape(TypedItem):
     pass
 
 
-@item
 class SpectralShapeGaussian(SpectralShape):
     """A Gaussian spectral shape"""
 
-    type: str = "gaussian"
+    type: Literal["gaussian"]
     amplitude: ParameterType | None = None
     location: ParameterType
     width: ParameterType
@@ -64,11 +63,10 @@ class SpectralShapeGaussian(SpectralShape):
         return shape
 
 
-@item
 class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
     """A skewed Gaussian spectral shape"""
 
-    type: str = "skewed-gaussian"
+    type: Literal["skewed-gaussian"]
     skewness: ParameterType
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
@@ -136,11 +134,10 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
         return shape
 
 
-@item
 class SpectralShapeOne(SpectralShape):
     """A constant spectral shape with value 1"""
 
-    type: str = "one"
+    type: Literal["one"]
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
         """calculate calculates the shape.
@@ -158,11 +155,10 @@ class SpectralShapeOne(SpectralShape):
         return np.ones(axis.shape[0])
 
 
-@item
 class SpectralShapeZero(SpectralShape):
     """A constant spectral shape with value 0"""
 
-    type: str = "zero"
+    type: Literal["zero"]
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
         """calculate calculates the shape.
