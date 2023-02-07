@@ -18,7 +18,7 @@ from glotaran.model import Megacomplex
 class KineticMegacomplex(Megacomplex):
     type: Literal["kinetic"]
     register_as = "kinetic"
-    data_model = ActivationDataModel
+    data_model_type = ActivationDataModel
     dimension: str = "time"
     kinetic: list[LibraryItemType[Kinetic]]
 

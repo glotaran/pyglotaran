@@ -1,7 +1,7 @@
-from itertools import chain
 from typing import Literal
 
 from pydantic import BaseModel
+from pydantic import Extra
 
 from glotaran.model import ExperimentModel
 from glotaran.model import Library
@@ -12,21 +12,22 @@ from glotaran.project.result_new import Result
 
 
 class Scheme(BaseModel):
+    class Config:
+        """Config for pydantic.BaseModel."""
+
+        arbitrary_types_allowed = True
+        extra = Extra.forbid
+
     experiments: list[ExperimentModel]
     library: Library
 
     @classmethod
     def from_dict(cls, spec: dict):
         megacomplex_types = {
-            get_megacomplex(m["type"])
-            for e in spec["experiments"]
-            for d in e
-            for m in chain(d["megacomplex"], d.get("global_megacomples", []))
+            get_megacomplex(m["type"]) for m in spec["library"]["megacomplex"].values()
         }
         library = Library.create_for_megacomplexes(megacomplex_types)(**spec["library"])
-        experiments = {
-            k: ExperimentModel.from_dict(library, v) for k, v in spec["experiment"].items()
-        }
+        experiments = [ExperimentModel.from_dict(library, e) for e in spec["experiments"]]
         return cls(experiments=experiments, library=library)
 
     def optimize(
@@ -57,11 +58,11 @@ class Scheme(BaseModel):
             gtol=gtol,
             xtol=xtol,
             optimization_method=optimization_method,
-        )
+        ).run()
         return Result(
             data=optimized_data,
+            experiments=self.experiments,
             optimization=optimization_result,
             parameters_intitial=parameters,
             parameters_optimized=optimized_parameters,
-            scheme=self,
         )

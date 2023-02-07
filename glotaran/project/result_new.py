@@ -1,18 +1,21 @@
-from typing import TYPE_CHECKING
-
 import xarray as xr
 from pydantic import BaseModel
+from pydantic import Extra
 
+from glotaran.model import ExperimentModel
 from glotaran.optimization import OptimizationResult
 from glotaran.parameter import Parameters
 
-if TYPE_CHECKING:
-    from glotaran.project.scheme_new import Scheme
-
 
 class Result(BaseModel):
+    class Config:
+        """Config for pydantic.BaseModel."""
+
+        arbitrary_types_allowed = True
+        extra = Extra.forbid
+
     data: dict[str, xr.Dataset]
+    experiments: list[ExperimentModel]
     optimization: OptimizationResult
     parameters_intitial: Parameters
     parameters_optimized: Parameters
-    scheme: Scheme
