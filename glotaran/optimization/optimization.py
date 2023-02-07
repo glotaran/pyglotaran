@@ -131,7 +131,7 @@ class Optimization:
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
         nr_clp = len({str(c.data) for d in data.values() for c in d.clp_label})
-        result = OptimizationResult(
+        result = OptimizationResult.from_least_squares_result(
             ls_result,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
@@ -148,7 +148,7 @@ class Optimization:
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
         nr_clp = len({str(c.data) for d in data.values() for c in d.clp_label})
-        result = OptimizationResult(
+        result = OptimizationResult.from_least_squares_result(
             None,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
