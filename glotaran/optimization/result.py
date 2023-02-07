@@ -1,10 +1,10 @@
 """The result class for global analysis."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
 from numpy.typing import ArrayLike
+from pydantic import BaseModel
+from pydantic import Extra
 from scipy.optimize import OptimizeResult
 
 from glotaran import __version__ as glotaran_version
@@ -13,8 +13,13 @@ from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 
 
-@dataclass
-class OptimizationResult:
+class OptimizationResult(BaseModel):
+    class Config:
+        """Config for pydantic.BaseModel."""
+
+        arbitrary_types_allowed = True
+        extra = Extra.forbid
+
     """The result of a global analysis."""
 
     number_of_function_evaluations: int
