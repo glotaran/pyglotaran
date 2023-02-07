@@ -109,9 +109,9 @@ class OptimizationResult(BaseModel):
             "number_of_function_evaluations": result.nfev
             if success
             else parameter_history.number_of_records,
+            "cost": 0.5 * np.dot(penalty, penalty),
         }
 
-        result_args["cost"] = 0.5 * np.dot(penalty, penalty)
         if success:
             result_args["number_clp"] = number_clp
             result_args["number_of_jacobian_evaluations"] = result.njev
@@ -164,5 +164,4 @@ def calculate_covariance_matrix_and_standard_errors(
     _, jacobian_sv, jacobian_rsv = np.linalg.svd(jacobian, full_matrices=False)
     jacobian_sv_square = jacobian_sv**2
     mask = jacobian_sv_square > np.finfo(float).eps
-    covariance_matrix = (jacobian_rsv[mask].T / jacobian_sv_square[mask]) @ jacobian_rsv[mask]
-    return covariance_matrix
+    return (jacobian_rsv[mask].T / jacobian_sv_square[mask]) @ jacobian_rsv[mask]
