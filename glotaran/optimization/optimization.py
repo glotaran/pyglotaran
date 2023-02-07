@@ -61,7 +61,9 @@ class Optimization:
         ] = "TrustRegionReflection",
     ):
         issues = [
-            issue for experiment in models for issue in experiment.validate(library, parameters)
+            issue
+            for experiment in models
+            for issue in experiment.validate_model(library, parameters)
         ]
         if len(issues) > 0:
             raise GlotaranModelIssues(issues)
