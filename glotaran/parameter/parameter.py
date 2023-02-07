@@ -25,7 +25,6 @@ from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
-
     from glotaran.parameter import Parameters
 
 RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["parameters", "iteration"]

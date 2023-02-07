@@ -36,7 +36,6 @@ class SpectralMegacomplex(Megacomplex):
         model_axis: ArrayLike,
         **kwargs,
     ):
-
         compartments = []
         for compartment in self.shape:
             if compartment in compartments:

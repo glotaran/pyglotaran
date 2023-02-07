@@ -99,7 +99,6 @@ class SdtDataIo(DataIoInterface):
             )
 
         if flim:
-
             if orig_time_axis_index != 2:
                 np.swapaxes(raw_data, 2, orig_time_axis_index)
 

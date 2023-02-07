@@ -47,7 +47,6 @@ def calculate_matrix(
     model_axis: ArrayLike,
     **kwargs,
 ):
-
     compartments = megacomplex.get_compartments(dataset_model)
     initial_concentration = megacomplex.get_initial_concentration(dataset_model)
     k_matrix = megacomplex.get_k_matrix()
@@ -160,7 +159,6 @@ def decay_matrix_implementation_index_independent(
     dataset_model: DatasetModel,
 ):
     if isinstance(dataset_model.irf, IrfMultiGaussian):
-
         (
             centers,
             widths,
@@ -285,7 +283,6 @@ def retrieve_initial_concentration(
     dataset: xr.Dataset,
     species_dimension: str,
 ):
-
     if (
         not hasattr(dataset_model, "initial_concentration")
         or dataset_model.initial_concentration is None

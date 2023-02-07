@@ -184,7 +184,6 @@ class MultiCenterIrfDispersion:
     ],
 )
 def test_spectral_irf(suite):
-
     model = suite.model
     assert model.valid(), model.validate()
 

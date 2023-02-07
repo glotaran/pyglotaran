@@ -10,7 +10,6 @@ import pandas as pd
 from glotaran.utils.regex import RegexPattern
 
 if TYPE_CHECKING:
-
     from glotaran.typing import StrOrPath
 
 

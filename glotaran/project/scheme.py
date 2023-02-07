@@ -14,7 +14,6 @@ from glotaran.utils.io import DatasetMapping
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
-
     from collections.abc import Callable
     from collections.abc import Mapping
     from typing import Literal

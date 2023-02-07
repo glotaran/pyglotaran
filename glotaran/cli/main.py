@@ -11,7 +11,6 @@ class Cli(click.Group):
     """The glotaran CLI implementation of :class:`click.group`"""
 
     def __init__(self, *args, **kwargs):
-
         click.echo(
             "[DEPRECATED] The pyglotaran command line interface will be removed without "
             "replacement in version '0.8.0' since it lacks a lot of essential functionality and "

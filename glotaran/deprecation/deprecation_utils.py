@@ -752,7 +752,6 @@ def deprecate_submodule(
     )
 
     def warn_getattr(attribute_name: str):
-
         if attribute_name == "__file__":
             return new_module.__file__
 

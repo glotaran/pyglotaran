@@ -30,7 +30,6 @@ from glotaran.utils.io import create_clp_guide_dataset
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
-
     from collections.abc import Callable
     from collections.abc import Mapping
 
@@ -218,7 +217,6 @@ class Result:
             disable_numparse=True,
         )
         if len(self.data) > 1:
-
             RMSE_rows = [
                 [
                     f"{index}.{label}:",

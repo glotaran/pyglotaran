@@ -126,7 +126,6 @@ def test_parameter_minimum_not_numeric_error():
 
 
 def test_parameter_non_negative():
-
     notnonneg = Parameter(label="", value=1, non_negative=False)
     valuenotnoneg, _, _ = notnonneg.get_value_and_bounds_for_optimization()
     assert np.allclose(1, valuenotnoneg)
@@ -225,7 +224,6 @@ def test_label_validator():
 
 
 def test_parameter_pickle(tmpdir):
-
     parameter = Parameter(
         label="testlabel",
         expression="testexpression",

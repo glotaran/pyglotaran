@@ -11,7 +11,6 @@ from glotaran.simulation.simulation import simulate
 
 
 def test_clp_guide():
-
     model = Model.create_class_from_megacomplexes(
         [DecaySequentialMegacomplex, ClpGuideMegacomplex]
     )(

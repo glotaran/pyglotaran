@@ -153,7 +153,6 @@ def test_model_create_class():
 
 
 def test_global_items():
-
     m = Model.create_class([])(
         **{
             "clp_penalties": [

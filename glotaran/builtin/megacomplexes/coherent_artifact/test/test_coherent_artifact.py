@@ -70,7 +70,6 @@ def test_coherent_artifact(spectral_dependence: str):
             ["irf_disp2", 0.001, {"vary": False, "non-negative": False}],
         ]
     elif spectral_dependence == "shifted":
-
         irf_spec["shift"] = ["irf_shift1", "irf_shift2", "irf_shift3"]
         parameter_list += [
             ["irf_shift1", -2],

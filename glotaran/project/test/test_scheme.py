@@ -10,7 +10,6 @@ from glotaran.project import Scheme
 
 @pytest.fixture
 def mock_scheme(tmp_path: Path) -> Scheme:
-
     model_yml_str = """
     megacomplex:
         m1:

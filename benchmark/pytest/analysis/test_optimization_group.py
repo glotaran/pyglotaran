@@ -99,7 +99,6 @@ def setup_optimization_group(scheme):
 
 
 def test_benchmark_align_data(benchmark):
-
     model = setup_model(False, True)
     assert model.valid()
 
@@ -111,7 +110,6 @@ def test_benchmark_align_data(benchmark):
 @pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
 def test_benchmark_calculate_matrix(benchmark, link_clp, index_dependent):
-
     model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
@@ -124,7 +122,6 @@ def test_benchmark_calculate_matrix(benchmark, link_clp, index_dependent):
 @pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
 def test_benchmark_calculate_residual(benchmark, link_clp, index_dependent):
-
     model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
@@ -139,7 +136,6 @@ def test_benchmark_calculate_residual(benchmark, link_clp, index_dependent):
 @pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
 def test_benchmark_calculate_result_data(benchmark, link_clp, index_dependent):
-
     model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
@@ -155,7 +151,6 @@ def test_benchmark_calculate_result_data(benchmark, link_clp, index_dependent):
 @pytest.mark.parametrize("link_clp", [True, False])
 @pytest.mark.parametrize("index_dependent", [True, False])
 def test_benchmark_optimize_20_runs(benchmark, link_clp, index_dependent):
-
     model = setup_model(index_dependent, link_clp)
     assert model.valid()
 
@@ -164,7 +159,6 @@ def test_benchmark_optimize_20_runs(benchmark, link_clp, index_dependent):
 
     @benchmark
     def run():
-
         for _ in range(20):
             optimization_group.calculate(scheme.parameters)
 

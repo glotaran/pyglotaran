@@ -241,7 +241,6 @@ class ThreeComponentSequential:
 )
 @pytest.mark.parametrize("nnls", [True, False])
 def test_decay_model(suite, nnls):
-
     model = suite.model
     print(model.validate())
     assert model.valid()

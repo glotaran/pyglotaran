@@ -184,7 +184,6 @@ class ParallelModelWithEquilibria:
     [SequentialModel, SequentialModelWithBacktransfer, ParallelModel, ParallelModelWithEquilibria],
 )
 def test_a_matrix_general(matrix):
-
     params = Parameters.from_list(matrix.params)
 
     mat = KMatrix(label="", matrix=matrix.matrix)
@@ -218,7 +217,6 @@ def test_a_matrix_general(matrix):
 
 
 def test_a_matrix_sequential():
-
     compartments = ["s1", "s2", "s3"]
     matrix = {
         ("s2", "s1"): "1",
@@ -262,7 +260,6 @@ def test_a_matrix_sequential():
 
 
 def test_combine_matrices():
-
     matrix1 = {
         ("s1", "s1"): "1",
         ("s2", "s2"): "2",

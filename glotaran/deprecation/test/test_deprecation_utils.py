@@ -494,7 +494,6 @@ def test_deprecate_module_attribute():
     """Same code as the original import and warning"""
 
     with pytest.warns(GlotaranApiDeprecationWarning) as record:
-
         from glotaran.deprecation.test.dummy_package.deprecated_module_attribute import (
             deprecated_attribute,
         )
@@ -508,7 +507,6 @@ def test_deprecate_module_attribute_overwrite():
     """Qualname was only used for the warning"""
 
     with pytest.warns(GlotaranApiDeprecationWarning) as record:
-
         from glotaran.deprecation.test.dummy_package.deprecated_module_attribute import foo_bar
 
         assert foo_bar.__code__ == parse_version.__code__
@@ -560,7 +558,6 @@ def test_deprecate_submodule_import_error(recwarn: WarningsRecorder):
     """Raise warning when Attribute of fake module is imported"""
 
     with pytest.raises(ImportError) as excinfo:
-
         from glotaran.deprecation.test.dummy_package.deprecated_module import (  # noqa: F401
             does_not_exists,
         )

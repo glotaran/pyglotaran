@@ -16,7 +16,6 @@ from glotaran.builtin.io.sdt.test import TEMPORAL_DATA
 )
 @pytest.mark.filterwarnings("ignore:There was no `index`:UserWarning")
 def test_read_sdt(test_file_path, result_file_path, index):
-
     sdt_reader = SdtDataIo("sdt")
     test_dataset = sdt_reader.load_dataset(test_file_path, index=index)
     result_df = pd.read_csv(
