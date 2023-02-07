@@ -1,71 +1,63 @@
-from pathlib import Path
-
-import pytest
+import numpy as np
 import xarray as xr
-from IPython.core.formatters import format_display_data
 
-from glotaran.io import load_scheme
-from glotaran.project import Scheme
+from glotaran.builtin.items.activation import ActivationDataModel
+from glotaran.builtin.megacomplexes.kinetic import KineticMegacomplex
+from glotaran.parameter import Parameters
+from glotaran.project.scheme import Scheme
+from glotaran.simulation import simulate
 
-
-@pytest.fixture
-def mock_scheme(tmp_path: Path) -> Scheme:
-    model_yml_str = """
-    megacomplex:
-        m1:
-            type: decay
-            k_matrix: []
-    dataset:
-        dataset1:
-            megacomplex: [m1]
-    """
-    model_path = tmp_path / "model.yml"
-    model_path.write_text(model_yml_str)
-
-    parameter_path = tmp_path / "parameters.yml"
-    parameter_path.write_text("[1.0, 67.0]")
-
-    dataset_path = tmp_path / "dataset.nc"
-    xr.DataArray([[1, 2, 3]], coords=[("spectral", [1]), ("time", [1, 2, 3])]).to_dataset(
-        name="data"
-    ).to_netcdf(dataset_path)
-
-    scheme_yml_str = f"""
-    model: {model_path}
-    parameters: {parameter_path}
-    maximum_number_function_evaluations: 42
-    data:
-        dataset1: {dataset_path}
-    """
-    scheme_path = tmp_path / "scheme.yml"
-    scheme_path.write_text(scheme_yml_str)
-
-    return load_scheme(scheme_path)
+test_scheme_dict = {
+    "library": {
+        "megacomplex": {
+            "parallel": {"type": "kinetic", "kinetic": ["parallel"]},
+        },
+        "kinetic": {
+            "parallel": {
+                "rates": {
+                    ("s1", "s1"): "rates.1",
+                }
+            },
+        },
+    },
+    "experiments": [
+        {
+            "datasets": {
+                "kinetic_parallel": {
+                    "megacomplex": ["parallel"],
+                    "activation": [
+                        {"type": "instant", "compartments": {"s1": 1}},
+                    ],
+                }
+            }
+        }
+    ],
+}
 
 
-def test_scheme(mock_scheme: Scheme):
-    """Test scheme attributes."""
-    assert mock_scheme.model is not None
-
-    assert mock_scheme.parameters is not None
-    assert mock_scheme.parameters.get("1") == 1.0
-    assert mock_scheme.parameters.get("2") == 67.0
-
-    assert mock_scheme.maximum_number_function_evaluations == 42
-
-    assert "dataset1" in mock_scheme.data
-    assert mock_scheme.data["dataset1"].data.shape == (1, 3)
+test_parameters = Parameters.from_dict(
+    {"rates": [0.1, 0.02, 0.08, {"min": 0}], "gaussian": [["center", 60], ["width", 8]]}
+)
+test_global_axis = np.array([0])
+test_model_axis = np.arange(100)
+test_axies = {"spectral": test_global_axis, "time": test_model_axis}
+test_clp = xr.DataArray(
+    [[1]],
+    coords=[("clp_label", ["s1"]), ("spectral", test_global_axis.data)],
+).T
 
 
-def test_scheme_ipython_rendering(mock_scheme: Scheme):
-    """Autorendering in ipython"""
-
-    rendered_obj = format_display_data(mock_scheme)[0]
-
-    assert "text/markdown" in rendered_obj
-    assert rendered_obj["text/markdown"].startswith("# Model")
-
-    rendered_markdown_return = format_display_data(mock_scheme.markdown())[0]
-
-    assert "text/markdown" in rendered_markdown_return
-    assert rendered_markdown_return["text/markdown"].startswith("# Model")
+def test_scheme():
+    scheme = Scheme.from_dict(test_scheme_dict)
+    assert "parallel" in scheme.library.megacomplex
+    assert isinstance(scheme.library.megacomplex["parallel"], KineticMegacomplex)
+    assert isinstance(scheme.experiments[0].datasets["kinetic_parallel"], ActivationDataModel)
+    scheme.experiments[0].datasets["kinetic_parallel"].data = simulate(
+        scheme.experiments[0].datasets["kinetic_parallel"],
+        scheme.library,
+        test_parameters,
+        test_axies,
+        clp=test_clp,
+    )
+    result = scheme.optimize(test_parameters)
+    assert result.optimization.success
