@@ -250,7 +250,6 @@ class ThreeCompartmentModel:
     ],
 )
 def test_spectral_model(suite):
-
     model = suite.spectral_model
     print(model.validate())
     assert model.valid()

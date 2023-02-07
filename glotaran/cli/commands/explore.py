@@ -57,7 +57,6 @@ def export(filename: str, select, out: str, name: str):
             stop = True
 
     while not stop:
-
         echo(f"Selected dataset '{name}'.")
         echo(f"\nDataset Content\n\n{data}\n")
 

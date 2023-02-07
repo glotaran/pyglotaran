@@ -13,7 +13,6 @@ def validate_cmd(parameters_file: str, model_file: str, scheme_file: str):
         return
 
     if model_file is not None:
-
         model = util.load_model_file(model_file, verbose=True)
         parameters = None
         if parameters_file is not None:

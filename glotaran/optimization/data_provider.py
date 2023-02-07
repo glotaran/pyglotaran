@@ -53,7 +53,6 @@ class DataProvider:
         self._global_dimensions: dict[str, str] = {}
 
         for label, dataset_model in dataset_group.dataset_models.items():
-
             dataset = scheme.data[label]
             model_dimension = get_dataset_model_model_dimension(dataset_model)
             self._model_axes[label] = dataset.coords[model_dimension].data
@@ -197,7 +196,6 @@ class DataProvider:
             ),
         )
         for model_weight in model_weights:
-
             idx = {}
             if model_weight.global_interval is not None:
                 idx[global_dimension] = self.get_axis_slice_from_interval(
@@ -499,7 +497,6 @@ class DataProviderLinked(DataProvider):
         aligned_axis_values = None
         aligned_global_axes = {}
         for label, global_axis in self._global_axes.items():
-
             aligned_global_axis = global_axis
             if aligned_axis_values is None:
                 aligned_axis_values = aligned_global_axis

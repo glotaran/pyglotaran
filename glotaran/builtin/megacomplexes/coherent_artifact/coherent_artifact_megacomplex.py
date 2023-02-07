@@ -122,7 +122,6 @@ def _calculate_coherent_artifact_matrix(
 
 @nb.jit(nopython=True, parallel=True)
 def _calculate_coherent_artifact_matrix_on_index(matrix, center, width, axis, order):
-
     matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
     if order > 1:
         matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2

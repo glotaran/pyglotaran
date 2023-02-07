@@ -14,7 +14,6 @@ from glotaran.model.item import item
 from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 
 if TYPE_CHECKING:
-
     from glotaran.model import DatasetModel
     from glotaran.typing.types import ArrayLike
 
@@ -42,7 +41,6 @@ def megacomplex(
     """
 
     def decorator(cls):
-
         megacomplex_type = item(cls)
         megacomplex_type.__dataset_model_type__ = dataset_model_type
         megacomplex_type.__is_exclusive__ = exclusive

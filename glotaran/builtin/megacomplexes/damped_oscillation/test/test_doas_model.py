@@ -343,7 +343,6 @@ class OneOscillationWithSequentialModel:
     ],
 )
 def test_doas_model(suite):
-
     print(suite.sim_model.validate())
     assert suite.sim_model.valid()
 

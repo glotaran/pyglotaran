@@ -389,7 +389,6 @@ class MatrixProvider:
                 if relation.target in clp_labels and self.does_interval_item_apply(
                     relation, index
                 ):
-
                     if relation.source not in clp_labels:
                         continue
 

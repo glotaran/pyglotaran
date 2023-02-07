@@ -143,7 +143,6 @@ def test_k_matrices(model):
 
 
 def test_weight(model):
-
     weight = model.weights[0]
     assert isinstance(weight, Weight)
     assert weight.datasets == ["d1", "d2"]
@@ -153,7 +152,6 @@ def test_weight(model):
 
 
 def test_shapes(model):
-
     assert "shape1" in model.shape
 
     shape = model.shape["shape1"]

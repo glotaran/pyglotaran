@@ -216,7 +216,7 @@ def test_result_data(model_weight: bool, index_dependent: bool):
         ("fitted_data", ("model", "global")),
     ]
 
-    for (label, dims) in wanted:
+    for label, dims in wanted:
         print("Check label", label)
         assert label in result_data
         print("Check dims", result_data[label].dims, dims)

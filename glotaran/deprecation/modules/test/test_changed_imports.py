@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 
 def check_recwarn(records: WarningsRecorder, warn_nr=1):
-
     for record in records:
         print(record)
 

@@ -77,7 +77,6 @@ class DampedOscillationMegacomplex(Megacomplex):
         model_axis: ArrayLike,
         **kwargs,
     ):
-
         clp_label = [f"{label}_cos" for label in self.labels] + [
             f"{label}_sin" for label in self.labels
         ]
@@ -191,7 +190,6 @@ class DampedOscillationMegacomplex(Megacomplex):
 
 @nb.jit(nopython=True, parallel=True)
 def calculate_damped_oscillation_matrix_no_irf(matrix, frequencies, rates, axis):
-
     idx = 0
     for frequency, rate in zip(frequencies, rates):
         osc = np.exp(-rate * axis - 1j * frequency * axis)

@@ -17,7 +17,6 @@ class ParameterHistory:
     """A class representing a history of parameters."""
 
     def __init__(self):  # noqa: D107
-
         self._parameter_labels: list[str] = []
         self._parameters: list[np.ndarray] = []
         self.source_path = "parameter_history.csv"

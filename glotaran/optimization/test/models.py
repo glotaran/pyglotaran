@@ -28,7 +28,6 @@ class SimpleTestMegacomplex(Megacomplex):
         model_axis: ArrayLike,
         **kwargs,
     ):
-
         compartments = ["s1", "s2"]
         array = np.zeros((model_axis.size, len(compartments)))
 
