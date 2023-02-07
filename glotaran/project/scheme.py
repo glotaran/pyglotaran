@@ -1,118 +1,68 @@
-"""The module for :class:``Scheme``."""
-from __future__ import annotations
+from typing import Literal
 
-from dataclasses import dataclass
-from dataclasses import field
-from typing import TYPE_CHECKING
+from pydantic import BaseModel
+from pydantic import Extra
 
-from glotaran.io import load_scheme
-from glotaran.model import Model
+from glotaran.model import ExperimentModel
+from glotaran.model import Library
+from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
-from glotaran.project.dataclass_helpers import file_loadable_field
-from glotaran.project.dataclass_helpers import init_file_loadable_fields
-from glotaran.utils.io import DatasetMapping
-from glotaran.utils.ipython import MarkdownStr
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-    from collections.abc import Mapping
-    from typing import Literal
-
-    import xarray as xr
-
-    from glotaran.typing import StrOrPath
+from glotaran.plugin_system.megacomplex_registration import get_megacomplex
+from glotaran.project.result import Result
 
 
-@dataclass
-class Scheme:
-    """A scheme is a collection of a model, parameters and a dataset.
+class Scheme(BaseModel):
+    class Config:
+        """Config for pydantic.BaseModel."""
 
-    A scheme also holds options for optimization.
-    """
+        arbitrary_types_allowed = True
+        extra = Extra.forbid
 
-    model: Model = file_loadable_field(Model)  # type:ignore[type-var]
-    parameters: Parameters = file_loadable_field(Parameters)  # type:ignore[type-var]
-    data: Mapping[str, xr.Dataset] = file_loadable_field(
-        DatasetMapping, is_wrapper_class=True
-    )  # type:ignore[type-var]
+    experiments: list[ExperimentModel]
+    library: Library
 
-    clp_link_tolerance: float = 0.0
-    clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
+    @classmethod
+    def from_dict(cls, spec: dict):
+        megacomplex_types = {
+            get_megacomplex(m["type"]) for m in spec["library"]["megacomplex"].values()
+        }
+        library = Library.create_for_megacomplexes(megacomplex_types)(**spec["library"])
+        experiments = [ExperimentModel.from_dict(library, e) for e in spec["experiments"]]
+        return cls(experiments=experiments, library=library)
 
-    maximum_number_function_evaluations: int | None = None
-    add_svd: bool = True
-    ftol: float = 1e-8
-    gtol: float = 1e-8
-    xtol: float = 1e-8
-    optimization_method: Literal[
-        "TrustRegionReflection",
-        "Dogbox",
-        "Levenberg-Marquardt",
-    ] = "TrustRegionReflection"
-    result_path: str | None = None
-    source_path: StrOrPath = field(
-        default="scheme.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
-    )
-    loader: Callable[[StrOrPath], Scheme] = field(
-        default=load_scheme, init=False, repr=False, metadata={"exclude_from_dict": True}
-    )
-
-    def __post_init__(self):
-        """Override attributes after initialization."""
-        init_file_loadable_fields(self)
-
-    def validate(self) -> MarkdownStr:
-        """Return a string listing all problems in the model and missing parameters.
-
-        Returns
-        -------
-        MarkdownStr
-            A user-friendly string containing all the problems of a model if any.
-            Defaults to 'Your model is valid.' if no problems are found.
-        """
-        return self.model.validate(self.parameters)
-
-    def valid(self) -> bool:
-        """Check if there are no problems with the model or the parameters.
-
-        Returns
-        -------
-        bool
-            Whether the scheme is valid.
-        """
-        return self.model.valid(self.parameters)
-
-    def markdown(self):
-        """Format the :class:`Scheme` as markdown string.
-
-        Returns
-        -------
-        MarkdownStr
-            The scheme as markdown string.
-        """
-        model_markdown_str = self.model.markdown(parameters=self.parameters)
-
-        markdown_str = "\n\n__Scheme__\n\n"
-        markdown_str += (
-            "* *maximum_number_function_evaluations*: "
-            f"{self.maximum_number_function_evaluations}\n"
+    def optimize(
+        self,
+        parameters: Parameters,
+        verbose: bool = True,
+        raise_exception: bool = False,
+        maximum_number_function_evaluations: int | None = None,
+        add_svd: bool = True,
+        ftol: float = 1e-8,
+        gtol: float = 1e-8,
+        xtol: float = 1e-8,
+        optimization_method: Literal[
+            "TrustRegionReflection",
+            "Dogbox",
+            "Levenberg-Marquardt",
+        ] = "TrustRegionReflection",
+    ) -> Result:
+        optimized_parameters, optimized_data, optimization_result = Optimization(
+            self.experiments,
+            parameters,
+            library=self.library,
+            verbose=verbose,
+            raise_exception=raise_exception,
+            maximum_number_function_evaluations=maximum_number_function_evaluations,
+            add_svd=add_svd,
+            ftol=ftol,
+            gtol=gtol,
+            xtol=xtol,
+            optimization_method=optimization_method,
+        ).run()
+        return Result(
+            data=optimized_data,
+            experiments=self.experiments,
+            optimization=optimization_result,
+            parameters_intitial=parameters,
+            parameters_optimized=optimized_parameters,
         )
-        markdown_str += f"* *clp_link_tolerance*: {self.clp_link_tolerance}\n"
-
-        return model_markdown_str + MarkdownStr(markdown_str)
-
-    def _repr_markdown_(self) -> str:
-        """Return a markdown representation str.
-
-        Special method used by ``ipython`` to render markdown.
-
-        Returns
-        -------
-        str
-            The scheme as markdown string.
-        """
-        return str(self.markdown())
-
-    def __str__(self) -> str:
-        """Representation used by print and str."""
-        return str(self.markdown())
