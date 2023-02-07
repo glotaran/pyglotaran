@@ -58,7 +58,9 @@ class ExperimentModel(BaseModel):
         }
         return result
 
-    def validate(self, library: Library, parameters: Parameters | None = None) -> list[ItemIssue]:
+    def validate_model(
+        self, library: Library, parameters: Parameters | None = None
+    ) -> list[ItemIssue]:
         return [
             issue
             for dataset in self.datasets.values()
