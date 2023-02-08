@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Literal
 
-    from glotaran.model import Model
     from glotaran.parameter import Parameters
     from glotaran.project import Result
     from glotaran.project import Scheme
@@ -202,67 +201,6 @@ def get_project_io(format_name: str) -> ProjectIoInterface:
             f"Known formats are: {known_project_formats()}"
         ),
     )
-
-
-@not_implemented_to_value_error
-def load_model(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Model:
-    """Create a Model instance from the specs defined in a file.
-
-    Parameters
-    ----------
-    file_name : StrOrPath
-        File containing the model specs.
-    format_name : str
-        Format the file is in, if not provided it will be inferred from the file extension.
-    **kwargs: Any
-        Additional keyword arguments passes to the ``load_model`` implementation
-        of the project io plugin.
-
-    Returns
-    -------
-    Model
-        Model instance created from the file.
-    """
-    io = get_project_io(format_name or infer_file_format(file_name))
-    model = io.load_model(Path(file_name).as_posix(), **kwargs)
-    model.source_path = Path(file_name).as_posix()
-    return model
-
-
-@not_implemented_to_value_error
-def save_model(
-    model: Model,
-    file_name: StrOrPath,
-    format_name: str | None = None,
-    *,
-    allow_overwrite: bool = False,
-    update_source_path: bool = True,
-    **kwargs: Any,
-) -> None:
-    """Save a :class:`Model` instance to a spec file.
-
-    Parameters
-    ----------
-    model: Model
-        :class:`Model` instance to save to specs file.
-    file_name: StrOrPath
-        File to write the model specs to.
-    format_name: str | None
-        Format the file should be in, if not provided it will be inferred from the file extension.
-    allow_overwrite: bool
-        Whether or not to allow overwriting existing files, by default False
-    update_source_path: bool
-        Whether or not to update the ``source_path`` attribute to ``file_name`` when saving.
-        by default True
-    **kwargs: Any
-        Additional keyword arguments passes to the ``save_model`` implementation
-        of the project io plugin.
-    """
-    protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
-    io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
-    io.save_model(file_name=Path(file_name).as_posix(), model=model, **kwargs)
-    if update_source_path is True:
-        model.source_path = Path(file_name).as_posix()
 
 
 @not_implemented_to_value_error
