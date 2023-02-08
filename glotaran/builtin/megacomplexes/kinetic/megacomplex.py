@@ -7,21 +7,19 @@ import xarray as xr
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.builtin.items.activation import add_activation_to_result_data
-from glotaran.builtin.items.kinetic import Kinetic
+from glotaran.builtin.megacomplexes.kinetic.kinetic import Kinetic
 from glotaran.builtin.megacomplexes.kinetic.matrix import calculate_matrix_gaussian_activation
 from glotaran.builtin.megacomplexes.kinetic.matrix import (
     calculate_matrix_gaussian_activation_on_index,
 )
-from glotaran.model import LibraryItemType
 from glotaran.model import Megacomplex
 
 
-class KineticMegacomplex(Megacomplex):
+class KineticMegacomplex(Megacomplex, Kinetic):
     type: Literal["kinetic"]
     register_as = "kinetic"
     data_model_type = ActivationDataModel
     dimension: str = "time"
-    kinetic: list[LibraryItemType[Kinetic]]
 
     @staticmethod
     def combine_matrices(
@@ -35,7 +33,7 @@ class KineticMegacomplex(Megacomplex):
         return lhs + rhs
 
     def get_species(self) -> list[str]:
-        return Kinetic.combine(self.kinetic).compartments
+        return self.compartments
 
     def calculate_matrix(
         self,
@@ -43,8 +41,7 @@ class KineticMegacomplex(Megacomplex):
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
     ) -> tuple[list[str], np.typing.ArrayLike]:
-        kinetic = Kinetic.combine(self.kinetic)
-        compartments = kinetic.compartments
+        compartments = self.species
         matrices = []
         for activation in model.activation:
             initial_concentrations = np.array(
@@ -56,7 +53,7 @@ class KineticMegacomplex(Megacomplex):
             initial_concentrations[normalized_compartments] /= np.sum(
                 initial_concentrations[normalized_compartments]
             )
-            rates = kinetic.calculate(initial_concentrations)
+            rates = self.calculate(initial_concentrations)
 
             matrix = (
                 self.calculate_matrix_gaussian_activation(
@@ -69,11 +66,11 @@ class KineticMegacomplex(Megacomplex):
             if not np.all(np.isfinite(matrix)):
                 raise ValueError(
                     f"Non-finite concentrations for kinetic of data model '{model.label}':\n"
-                    f"{kinetic.matrix_as_markdown()}"
+                    f"{self.matrix_as_markdown()}"
                 )
 
             # apply A matrix
-            matrix = matrix @ kinetic.a_matrix(initial_concentrations)
+            matrix = matrix @ self.a_matrix(initial_concentrations)
             matrices.append(matrix)
 
         return compartments, matrices[0] if len(matrices) == 1 else reduce(
@@ -126,8 +123,7 @@ class KineticMegacomplex(Megacomplex):
         add_activation_to_result_data(model, data)
         if "species" in data.coords:
             return
-        megacomplexes = [m for m in model.megacomplex if isinstance(m, KineticMegacomplex)]
-        kinetic = Kinetic.combine([k for m in megacomplexes for k in m.kinetic])
+        kinetic = self.combine([m for m in model.megacomplex if isinstance(m, KineticMegacomplex)])
         species = kinetic.compartments
         global_dimension = data.attrs["global_dimension"]
         model_dimension = data.attrs["model_dimension"]
