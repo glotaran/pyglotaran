@@ -6,6 +6,7 @@ import xarray as xr
 
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
+from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.builtin.items.kinetic import Kinetic
 from glotaran.builtin.megacomplexes.kinetic.matrix import calculate_matrix_gaussian_activation
 from glotaran.builtin.megacomplexes.kinetic.matrix import (
@@ -122,7 +123,7 @@ class KineticMegacomplex(Megacomplex):
         return matrix
 
     def add_to_result_data(self, model: ActivationDataModel, data: xr.Dataset, as_global: bool):
-        MultiGaussianActivation.add_to_result_data(model, data)
+        add_activation_to_result_data(model, data)
         if "species" in data.coords:
             return
         megacomplexes = [m for m in model.megacomplex if isinstance(m, KineticMegacomplex)]
@@ -182,7 +183,7 @@ class KineticMegacomplex(Megacomplex):
         )
         data["a_matrix"] = (
             ("activation", "species", "kinetic"),
-            kinetic_associated_estimations,
+            a_matrices,
         )
         data["kinetic_associated_estimation"] = (
             ("activation", global_dimension, "kinetic"),
