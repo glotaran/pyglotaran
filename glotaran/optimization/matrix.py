@@ -67,7 +67,7 @@ class OptimizationMatrix:
         """"""
         clp_axis = list({c for m in matrices for c in m.clp_axis})
         clp_size = len(clp_axis)
-        model_axis_size = next(matrices).model_axis_size
+        model_axis_size = matrices[0].model_axis_size
         index_dependent_matrices = [m for m in matrices if m.is_index_dependent]
         global_axis_size = (
             index_dependent_matrices[0].global_axis_size if index_dependent_matrices else None
@@ -81,7 +81,7 @@ class OptimizationMatrix:
 
         for matrix in matrices:
             clp_mask = [clp_axis.index(c) for c in matrix.clp_axis]
-            array[:, clp_mask] += matrix.array
+            array[..., clp_mask] += matrix.array
         return cls(clp_axis, array)
 
     @classmethod
