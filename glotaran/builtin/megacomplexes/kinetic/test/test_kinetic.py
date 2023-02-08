@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from glotaran.builtin.items.kinetic import Kinetic
+from glotaran.builtin.megacomplexes.kinetic import Kinetic
 
 
 class SequentialModel:

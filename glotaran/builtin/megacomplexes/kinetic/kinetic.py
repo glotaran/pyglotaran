@@ -8,11 +8,11 @@ import numpy as np
 from scipy.linalg import eig
 from scipy.linalg import solve
 
-from glotaran.model import LibraryItem
+from glotaran.model import Item
 from glotaran.model import ParameterType
 
 
-class Kinetic(LibraryItem):
+class Kinetic(Item):
     """A scheme for kinetic dynamics, e.g. anergy transfers betwwen states."""
 
     rates: dict[tuple[str, str], ParameterType]
@@ -40,8 +40,8 @@ class Kinetic(LibraryItem):
         )
 
     @property
-    def compartments(self) -> list[str]:
-        """A list of all compartments involved in the kinetic scheme."""
+    def species(self) -> list[str]:
+        """A list of all species involved in the kinetic scheme."""
         return list(dict.fromkeys([c for cs in self.rates for c in reversed(cs)]))
 
     @property
@@ -54,12 +54,12 @@ class Kinetic(LibraryItem):
             The compartment order.
         """
 
-        compartments = self.compartments
-        size = len(compartments)
+        species = self.species
+        size = len(species)
         array = np.zeros((size, size), dtype=np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = compartments.index(to_comp)
-            fr_idx = compartments.index(from_comp)
+            to_idx = species.index(to_comp)
+            fr_idx = species.index(from_comp)
             array[to_idx, fr_idx] = rate
         return array
 
@@ -72,12 +72,12 @@ class Kinetic(LibraryItem):
         compartments :
             The compartment order.
         """
-        compartments = self.compartments
-        size = len(compartments)
+        species = self.species
+        size = len(species)
         array = np.zeros((size, size), np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = compartments.index(to_comp)
-            fr_idx = compartments.index(from_comp)
+            to_idx = species.index(to_comp)
+            fr_idx = species.index(from_comp)
 
             if to_idx == fr_idx:
                 array[to_idx, fr_idx] -= rate
