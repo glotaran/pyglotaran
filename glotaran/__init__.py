@@ -7,6 +7,8 @@ load_plugins()
 
 __version__ = "0.7.5"
 
+load_plugins()
+
 examples = deprecate_submodule(
     deprecated_module_name="glotaran.examples",
     new_module_name="glotaran.testing.simulated_data",
