@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from glotaran.builtin.io.yml.utils import load_dict
 from glotaran.builtin.io.yml.utils import write_dict
-from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
+from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import ProjectIoInterface
 from glotaran.io import SavingOptions
@@ -15,14 +15,11 @@ from glotaran.io import register_project_io
 from glotaran.io import save_model
 from glotaran.io import save_result
 from glotaran.io import save_scheme
-from glotaran.model import Model
 from glotaran.parameter import Parameters
-from glotaran.plugin_system.megacomplex_registration import get_megacomplex
 from glotaran.project.dataclass_helpers import asdict
 from glotaran.project.dataclass_helpers import fromdict
 from glotaran.project.project import Result
 from glotaran.project.scheme import Scheme
-from glotaran.utils.sanitize import sanitize_yaml
 
 if TYPE_CHECKING:
     from typing import Any
@@ -31,76 +28,6 @@ if TYPE_CHECKING:
 @register_project_io(["yml", "yaml", "yml_str"])
 class YmlProjectIo(ProjectIoInterface):
     """Plugin for YAML project io."""
-
-    def load_model(self, file_name: str) -> Model:
-        """Load a :class:`Model` from a model specification in a yaml file.
-
-        Parameters
-        ----------
-        file_name: str
-            Path to the model file to read.
-
-        Raises
-        ------
-        ValueError
-            If ``megacomplex`` was not provided in the model specification.
-        ValueError
-            If ``default_megacomplex`` was not provided and any megacomplex is missing the type
-            attribute.
-
-        Returns
-        -------
-        Model
-        """
-        spec = self._load_yml(file_name)
-
-        model_spec_deprecations(spec)
-
-        spec = sanitize_yaml(spec)
-
-        if "megacomplex" not in spec:
-            raise ValueError("No megacomplex defined in model")
-
-        default_megacomplex = spec.pop("default_megacomplex", None)
-
-        if default_megacomplex is None and any(
-            "type" not in m for m in spec["megacomplex"].values()
-        ):
-            raise ValueError(
-                "Default megacomplex is not defined in model and "
-                "at least one megacomplex does not have a type."
-            )
-
-        spec["megacomplex"] = {
-            label: m | {"type": default_megacomplex} if "type" not in m else m
-            for label, m in spec["megacomplex"].items()
-        }
-
-        megacomplex_types = {get_megacomplex(m["type"]) for m in spec["megacomplex"].values()}
-        return Model.create_class_from_megacomplexes(megacomplex_types)(**spec)
-
-    def save_model(self, model: Model, file_name: str):
-        """Save a :class:`Model` instance to a specification file.
-
-        Parameters
-        ----------
-        model: Model
-            Model instance to save to specs file.
-        file_name : str
-            File to write the model specs to.
-        """
-        model_dict = model.as_dict()
-        # We replace tuples with strings
-        for items in model_dict.values():
-            if not isinstance(items, (list, dict)):
-                continue
-            item_iterator = items if isinstance(items, list) else items.values()
-            for item in item_iterator:
-                for prop_name, prop in item.items():
-                    if isinstance(prop, dict) and any(isinstance(k, tuple) for k in prop):
-                        keys = [f"({k[0]}, {k[1]})" for k in prop]
-                        item[prop_name] = {f"{k}": v for k, v in zip(keys, prop.values())}
-        write_dict(model_dict, file_name=file_name)
 
     def load_parameters(self, file_name: str) -> Parameters:
         """Load :class:`Parameters` instance from the specification defined in ``file_name``.
