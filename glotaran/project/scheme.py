@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 from pydantic import Extra
 
+from glotaran.io import load_dataset
 from glotaran.model import ExperimentModel
 from glotaran.model import Library
 from glotaran.optimization import Optimization
@@ -28,6 +29,10 @@ class Scheme(BaseModel):
         }
         library = Library.create_for_megacomplexes(megacomplex_types)(**spec["library"])
         experiments = [ExperimentModel.from_dict(library, e) for e in spec["experiments"]]
+        for e in experiments:
+            for d in e.datasets.values():
+                if isinstance(d.data, str):
+                    d.data = load_dataset(d.data)
         return cls(experiments=experiments, library=library)
 
     def optimize(
