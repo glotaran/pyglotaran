@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
     import xarray as xr
 
-    from glotaran.model import Model
     from glotaran.parameter import Parameters
     from glotaran.project import Result
     from glotaran.project import Scheme
@@ -114,45 +113,6 @@ class ProjectIoInterface:
             Name of the supported format an instance uses.
         """
         self.format = format_name
-
-    def load_model(self, file_name: str) -> Model:
-        """Create a Model instance from the specs defined in a file.
-
-        **NOT IMPLEMENTED**
-
-        Parameters
-        ----------
-        file_name: str
-            File containing the model specs.
-
-        Returns
-        -------
-        Model
-            Model instance created from the file.
-
-
-        .. # noqa: DAR202
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError(f"Cannot read models with format {self.format!r}")
-
-    def save_model(self, model: Model, file_name: str):
-        """Save a Model instance to a spec file.
-
-        **NOT IMPLEMENTED**
-
-        Parameters
-        ----------
-        model: Model
-            Model instance to save to specs file.
-        file_name: str
-            File to write the model specs to.
-
-
-        .. # noqa: DAR101
-        .. # noqa: DAR401
-        """
-        raise NotImplementedError(f"Cannot save models with format {self.format!r}")
 
     def load_parameters(self, file_name: str) -> Parameters:
         """Create a Parameters instance from the specs defined in a file.
