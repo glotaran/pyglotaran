@@ -93,3 +93,16 @@ def test_get_data_model_issues():
     assert len(library.validate_item(ok)) == 0
     assert len(library.validate_item(exclusive)) == 1
     assert len(library.validate_item(unique)) == 2
+
+
+def test_create_from_dict():
+    library = {"m1": MockMegacomplexWithDataModel, "m2": MockMegacomplexWithItem}
+
+    d1 = DataModel.from_dict(library, {"megacomplex": ["m1"]})
+    assert isinstance(d1, MockDataModel)
+
+    d2 = DataModel.from_dict(library, {"megacomplex": ["m2"]})
+    assert not isinstance(d2, MockDataModel)
+
+    d3 = DataModel.from_dict(library, {"megacomplex": ["m1", "m2"]})
+    assert isinstance(d3, MockDataModel)
