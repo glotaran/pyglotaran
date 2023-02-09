@@ -8,7 +8,7 @@ from typing import Literal
 
 import xarray as xr
 
-from glotaran.model.item import LibraryItemTyped
+from glotaran.model.item import TypedItem
 from glotaran.plugin_system.megacomplex_registration import register_megacomplex
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
 
 
-class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
+class Megacomplex(TypedItem, abc.ABC):  # type:ignore[misc]
     """A base class for megacomplex models.
 
     Subclasses must overwrite :method:`glotaran.model.Megacomplex.calculate_matrix`.
@@ -28,6 +28,7 @@ class Megacomplex(LibraryItemTyped, abc.ABC):  # type:ignore[misc]
     register_as: ClassVar[str | None] = None
 
     dimension: str | None = None
+    label: str
 
     def __init_subclass__(cls):
         """Register the megacomplex if necessary."""

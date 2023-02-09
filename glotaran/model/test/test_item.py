@@ -2,28 +2,15 @@ from __future__ import annotations
 
 from typing import Literal
 
-from glotaran.model.item import Attribute
 from glotaran.model.item import Item
-from glotaran.model.item import LibraryItem
-from glotaran.model.item import LibraryItemType
 from glotaran.model.item import LibraryItemTyped
 from glotaran.model.item import ParameterType
+from glotaran.model.item import get_item_issues
 from glotaran.model.item import get_structure_and_type_from_field
-from glotaran.model.item import iterate_library_item_fields
 from glotaran.model.item import iterate_parameter_fields
+from glotaran.model.item import resolve_item_parameters
 from glotaran.parameter import Parameter
-
-
-class MockLibraryItem(LibraryItem):
-    """A library item for testing."""
-
-    test_attr: str = Attribute(description="Test description.")
-
-
-class MockLibraryItemNested(LibraryItem):
-    """A library item for testing."""
-
-    test_reference: LibraryItemType[MockLibraryItem] | None = None
+from glotaran.parameter import Parameters
 
 
 class MockItem(Item):
@@ -33,12 +20,6 @@ class MockItem(Item):
     clist_option: list[int] | None
     cdict: dict[str, int]
     cdict_option: dict[str, int] | None
-    iscalar: LibraryItemType[MockLibraryItemNested]
-    iscalar_option: LibraryItemType[MockLibraryItemNested] | None
-    ilist: list[LibraryItemType[MockLibraryItemNested]]
-    ilist_option: list[LibraryItemType[MockLibraryItemNested]] | None
-    idict: dict[str, LibraryItemType[MockLibraryItemNested]]
-    idict_option: dict[str, LibraryItemType[MockLibraryItemNested]] | None
     pscalar: ParameterType
     pscalar_option: ParameterType | None
     plist: list[ParameterType]
@@ -63,51 +44,18 @@ class MockTypedItemConcrete2(MockTypedItem):
 
 def test_item_fields_structures_and_type():
     item_fields = MockItem.__fields__.values()
-    wanted = (
-        (
-            (None, int),
-            (None, int),
-            (list, int),
-            (list, int),
-            (dict, int),
-            (dict, int),
-        )
-        + (
-            (None, MockLibraryItemNested),
-            (None, MockLibraryItemNested),
-            (list, MockLibraryItemNested),
-            (list, MockLibraryItemNested),
-            (dict, MockLibraryItemNested),
-            (dict, MockLibraryItemNested),
-        )
-        + (
-            (None, Parameter),
-            (None, Parameter),
-            (list, Parameter),
-            (list, Parameter),
-            (dict, Parameter),
-            (dict, Parameter),
-        )
+    wanted = ((None, int), (None, int), (list, int), (list, int), (dict, int), (dict, int),) + (
+        (None, Parameter),
+        (None, Parameter),
+        (list, Parameter),
+        (list, Parameter),
+        (dict, Parameter),
+        (dict, Parameter),
     )
 
     assert len(item_fields) == len(wanted)
     for field, field_wanted in zip(item_fields, wanted):
         assert get_structure_and_type_from_field(field) == field_wanted
-
-
-def test_iterate_library_items():
-    item_fields = list(iterate_library_item_fields(MockLibraryItemNested))
-    assert len(item_fields) == 1
-    item_fields = list(iterate_library_item_fields(MockItem))
-    assert len(item_fields) == 6
-    assert [i.name for i in item_fields] == [
-        "iscalar",
-        "iscalar_option",
-        "ilist",
-        "ilist_option",
-        "idict",
-        "idict_option",
-    ]
 
 
 def test_iterate_parameters():
@@ -128,7 +76,7 @@ def test_typed_item():
 
 
 def test_item_schema():
-    got = LibraryItem.schema()
+    got = MockItem.schema()
     wanted = {
         "title": "LibraryItem",
         "description": "An item with a label.",
@@ -147,30 +95,58 @@ def test_item_schema():
     print(got)
     assert got == wanted
 
-    got = MockLibraryItem.schema()
-    wanted = {
-        "title": "MockLibraryItem",
-        "description": "A library item for testing.",
-        "type": "object",
-        "properties": {
-            "label": {
-                "title": "Label",
-                "description": "The label of the library item.",
-                "type": "string",
-            },
-            "test_attr": {
-                "title": "Test Attr",
-                "description": "Test description.",
-                "type": "string",
-            },
-        },
-        "required": ["label", "test_attr"],
-        "additionalProperties": False,
-    }
 
-    print(got)
-    assert got == wanted
+def test_get_issues():
+    item = MockItem(
+        cscalar=0,
+        clist=[],
+        cdict={},
+        pscalar="foo",
+        plist=["foo", "bar"],
+        pdict={1: "foo", 2: "bar"},
+    )
+
+    issues = get_item_issues(item, Parameters({}))
+    assert len(issues) == 5
 
 
-def test_get_library_name():
-    assert MockLibraryItem.get_library_name() == "mock_library_item"
+def test_resolve_item_parameters():
+    item = MockItem(
+        cscalar=2,
+        clist=[],
+        cdict={},
+        pscalar="param1",
+        plist=["param1", "param2"],
+        pdict={"foo": "param2"},
+    )
+
+    parameters = Parameters({})
+    initial = Parameters.from_list(
+        [
+            ["param1", 1.0],
+            ["param2", 2.0],
+        ]
+    )
+
+    resolved = resolve_item_parameters(item, parameters, initial)
+    assert item is not resolved
+
+    assert parameters.has("param1")
+    assert parameters.get("param1") is not initial.get("param1")
+    assert parameters.has("param2")
+    assert parameters.get("param2") is not initial.get("param2")
+
+    assert isinstance(resolved.pscalar, Parameter)
+    assert resolved.pscalar.value == 1.0
+
+    assert isinstance(resolved.plist[0], Parameter)
+    assert resolved.plist[0].value == 1.0
+    assert isinstance(resolved.plist[1], Parameter)
+    assert resolved.plist[1].value == 2.0
+
+    assert isinstance(resolved.pdict["foo"], Parameter)
+    assert resolved.pdict["foo"].value == 2.0
+
+    parameters.get("param1").value = 10
+    assert parameters.get("param1").value != initial.get("param1").value
+    assert resolved.pscalar.value == 10

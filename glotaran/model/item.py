@@ -1,6 +1,5 @@
 """This module contains the item classes and helper functions."""
 import contextlib
-import re
 import typing
 from functools import cache
 from inspect import getmro
@@ -26,13 +25,14 @@ from pydantic.fields import FieldInfo
 from pydantic.fields import ModelField
 from pydantic.fields import Undefined
 
+from glotaran.model.errors import ItemIssue
+from glotaran.model.errors import ParameterIssue
 from glotaran.parameter import Parameter
+from glotaran.parameter import Parameters
 
 ItemT = TypeVar("ItemT", bound="Item")
-LibraryItemT = TypeVar("LibraryItemT", bound="LibraryItem")
 
 ParameterType: TypeAlias = Parameter | float | str
-LibraryItemType: TypeAlias = LibraryItemT | str  # type:ignore[operator]
 
 META_VALIDATOR = "__glotaran_validator__"
 
@@ -122,7 +122,7 @@ class TypedItem(Item):
         if cls.__qualname__ == "LibraryItemTyped":
             return
         parent = getmro(cls)[1]
-        if parent in (TypedItem, LibraryItemTyped):
+        if parent is TypedItem:
             assert issubclass(cls, TypedItem)
             cls.__item_types__ = []
         elif issubclass(cls, TypedItem):
@@ -137,27 +137,6 @@ class TypedItem(Item):
         object
         """
         return Annotated[Union[tuple(cls.__item_types__)], Field(discriminator="type")]
-
-
-class LibraryItem(Item):
-    """An item with a label."""
-
-    label: str = Attribute(description="The label of the library item.")
-
-    @classmethod
-    def get_library_name(cls) -> str:
-        """Get the name under which the item is stored in the library.
-
-        Returns
-        -------
-        str
-        """
-        # Thanks gptChat!
-        return re.sub("(?!^)([A-Z]+)", r"_\1", cls.__name__).lower()
-
-
-class LibraryItemTyped(TypedItem, LibraryItem):
-    """A library item with a type."""
 
 
 @cache
@@ -273,22 +252,6 @@ def iterate_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
     yield from iterate_fields_of_type(item, Item)
 
 
-def iterate_library_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
-    """Iterate over all library item fields.
-
-    Parameters
-    ----------
-    item: type[Item]
-        The item type.
-
-    Yields
-    ------
-    ModelField
-        The library item fields.
-    """
-    yield from iterate_fields_of_type(item, LibraryItem)
-
-
 def iterate_parameter_fields(item: type[Item]) -> Generator[ModelField, None, None]:
     """Iterate over all parameter fields.
 
@@ -305,8 +268,75 @@ def iterate_parameter_fields(item: type[Item]) -> Generator[ModelField, None, No
     yield from iterate_fields_of_type(item, Parameter)
 
 
-def iterate_library_item_types(item: type[Item]) -> Generator[type[LibraryItem], None, None]:
-    for field in iterate_library_item_fields(item):
-        _, item_type = get_structure_and_type_from_field(field)
-        yield item_type
-        yield from iterate_library_item_types(item_type)
+def resolve_item_parameters(
+    item: ItemT, parameters: Parameters, initial: Parameters | None = None
+) -> ItemT:
+    resolved = {}
+    initial = initial or parameters
+
+    def resolve_parameter(parameter: Parameter | float | str) -> Parameter:
+        if isinstance(parameter, str):
+            if not parameters.has(parameter):
+                parameters.add(initial.get(parameter).copy())
+            parameter = parameters.get(parameter)
+        return parameter
+
+    for field in iterate_parameter_fields(item):
+        value = getattr(item, field.name)
+        if value is None:
+            continue
+        structure, _ = get_structure_and_type_from_field(field)
+        if structure is None:
+            resolved[field.name] = resolve_parameter(value)
+        elif structure is list:
+            resolved[field.name] = [resolve_parameter(v) for v in value]
+        elif structure is dict:
+            resolved[field.name] = {k: resolve_parameter(v) for k, v in value.items()}
+
+    for field in iterate_item_fields(item):
+        value = getattr(item, field.name)
+        if value is None:
+            continue
+        structure, item_type = get_structure_and_type_from_field(field)
+        if structure is None:
+            resolved[field.name] = resolve_item_parameters(value, parameters, initial)
+        elif structure is list:
+            resolved[field.name] = [resolve_item_parameters(v, parameters, initial) for v in value]
+        elif structure is dict:
+            resolved[field.name] = {
+                k: resolve_item_parameters(v, parameters, initial) for k, v in value.items()
+            }
+    return item.copy(update=resolved)
+
+
+def get_item_issues(item: Item, parameters: Parameters) -> list[ItemIssue]:
+    issues = []
+    for field in iterate_item_fields(item):
+        value = getattr(item, field.name)
+        if value is None:
+            continue
+        if META_VALIDATOR in field.field_info.extra:
+            issues += field.field_info.extra[META_VALIDATOR](value, item, parameters)
+        structure, item_type = get_structure_and_type_from_field(field)
+        if structure is None:
+            issues += get_item_issues(value, parameters)
+        else:
+            values = value.values() if structure is dict else value
+            for v in values:
+                issues += get_item_issues(v, parameters)
+
+    for field in iterate_parameter_fields(item):
+        value = getattr(item, field.name)
+        if value is None:
+            continue
+        structure, _ = get_structure_and_type_from_field(field)
+        if structure is None:
+            if isinstance(value, str) and not parameters.has(value):
+                issues += [ParameterIssue(value)]
+        else:
+            values = value.values() if structure is dict else value
+            issues += [
+                ParameterIssue(v) for v in values if isinstance(v, str) and not parameters.has(v)
+            ]
+
+    return issues

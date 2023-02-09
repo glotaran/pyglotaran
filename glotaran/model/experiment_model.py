@@ -12,8 +12,10 @@ from glotaran.model.clp_constraint import ClpConstraint
 from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import resolve_data_model
 from glotaran.model.errors import ItemIssue
-from glotaran.model.library import Library
+from glotaran.model.item import get_item_issues
+from glotaran.model.megacomplex import Megacomplex
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
@@ -41,8 +43,9 @@ class ExperimentModel(BaseModel):
     )
 
     @classmethod
-    def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> ExperimentModel:
-        #  print(model_dict)
+    def from_dict(
+        cls, library: dict[str, Megacomplex], model_dict: dict[str, Any]
+    ) -> ExperimentModel:
         model_dict["datasets"] = {
             label: DataModel.from_dict(library, dataset)
             for label, dataset in model_dict.get("datasets", {}).items()
@@ -50,20 +53,21 @@ class ExperimentModel(BaseModel):
         return cls.parse_obj(model_dict)
 
     def resolve(
-        self, library: Library, parameters: Parameters, initial: Parameters | None = None
+        self,
+        library: dict[str, Megacomplex],
+        parameters: Parameters,
+        initial: Parameters | None = None,
     ) -> ExperimentModel:
         result = self.copy()
         result.datasets = {
-            label: library.resolve_item(dataset, parameters, initial)
+            label: resolve_data_model(dataset, parameters, initial)
             for label, dataset in self.datasets.items()
         }
         return result
 
-    def validate_model(
-        self, library: Library, parameters: Parameters | None = None
-    ) -> list[ItemIssue]:
+    def get_issues(self, parameters: Parameters) -> list[ItemIssue]:
         return [
             issue
             for dataset in self.datasets.values()
-            for issue in library.validate_item(dataset, parameters)
+            for issue in get_item_issues(dataset, parameters)
         ]

@@ -9,7 +9,7 @@ from scipy.optimize import least_squares
 from glotaran.model import ExperimentModel
 from glotaran.model import GlotaranModelIssues
 from glotaran.model import GlotaranUserError
-from glotaran.model import Library
+from glotaran.model import Megacomplex
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationResult
@@ -46,7 +46,7 @@ class Optimization:
         self,
         models: list[ExperimentModel],
         parameters: Parameters,
-        library: Library,
+        library: dict[str, Megacomplex],
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
@@ -60,20 +60,15 @@ class Optimization:
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
     ):
-        issues = [
-            issue
+        models = [
+            experiment.resolve(library, self._parameters, initial=parameters)
             for experiment in models
-            for issue in experiment.validate_model(library, parameters)
         ]
+        issues = [issue for experiment in models for issue in experiment.get_issues(parameters)]
         if len(issues) > 0:
             raise GlotaranModelIssues(issues)
         self._parameters = Parameters.empty()
-        self._objectives = [
-            OptimizationObjective(
-                experiment.resolve(library, self._parameters, initial=parameters)
-            )
-            for experiment in models
-        ]
+        self._objectives = [OptimizationObjective(experiment) for experiment in models]
         self._tee = TeeContext()
         self._verbose = verbose
         self._raise = raise_exception

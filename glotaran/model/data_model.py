@@ -3,27 +3,25 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
+from uuid import uuid4
 
 import xarray as xr
 from pydantic import Field
+from pydantic import create_model
 
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.errors import ItemIssue
 from glotaran.model.item import Attribute
 from glotaran.model.item import Item
-from glotaran.model.item import LibraryItemType
 from glotaran.model.item import ParameterType
+from glotaran.model.item import resolve_item_parameters
 from glotaran.model.megacomplex import Megacomplex
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
-
-if TYPE_CHECKING:
-    from glotaran.model.library import Library
 
 
 class ExclusiveMegacomplexIssue(ItemIssue):
@@ -91,7 +89,7 @@ class UniqueMegacomplexIssue(ItemIssue):
 
 
 def get_megacomplex_issues(
-    value: list[str | Megacomplex] | None, library: Library, is_global: bool
+    value: list[str | Megacomplex] | None, is_global: bool
 ) -> list[ItemIssue]:
     """Get issues for megacomplexes.
 
@@ -111,8 +109,7 @@ def get_megacomplex_issues(
     issues: list[ItemIssue] = []
 
     if value is not None:
-        labels = [v if isinstance(v, str) else v.label for v in value]
-        megacomplexes = [library.get_item(Megacomplex, label) for label in labels]
+        megacomplexes = [v for v in value if isinstance(v, Megacomplex)]
         for megacomplex in megacomplexes:
             megacomplex_type = megacomplex.__class__
             if megacomplex_type.is_exclusive and len(megacomplexes) > 1:
@@ -132,7 +129,6 @@ def get_megacomplex_issues(
 def validate_megacomplexes(
     value: list[str | Megacomplex],
     data_model: DataModel,
-    library: Library,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
     """Get issues for dataset model megacomplexes.
@@ -152,13 +148,12 @@ def validate_megacomplexes(
     -------
     list[ItemIssue]
     """
-    return get_megacomplex_issues(value, library, False)
+    return get_megacomplex_issues(value, False)
 
 
 def validate_global_megacomplexes(
     value: list[str | Megacomplex] | None,
     data_model: DataModel,
-    library: Library,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
     """Get issues for dataset model global megacomplexes.
@@ -178,7 +173,7 @@ def validate_global_megacomplexes(
     -------
     list[ItemIssue]
     """
-    return get_megacomplex_issues(value, library, True)
+    return get_megacomplex_issues(value, True)
 
 
 class DataModel(Item):
@@ -186,12 +181,12 @@ class DataModel(Item):
 
     data: str | xr.Dataset | None = None
     extra_data: str | xr.Dataset | None = None
-    megacomplex: list[LibraryItemType[Megacomplex]] = Attribute(
+    megacomplex: list[Megacomplex | str] = Attribute(
         description="The megacomplexes contributing to this dataset.",
         validator=validate_megacomplexes,  # type:ignore[arg-type]
     )
     megacomplex_scale: list[ParameterType] | None = None
-    global_megacomplex: list[LibraryItemType[Megacomplex]] | None = Attribute(
+    global_megacomplex: list[Megacomplex | str] | None = Attribute(
         default=None,
         description="The global megacomplexes contributing to this dataset.",
         validator=validate_global_megacomplexes,  # type:ignore[arg-type]
@@ -203,16 +198,19 @@ class DataModel(Item):
     weights: list[Weight] = Field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, library: Library, model_dict: dict[str, Any]) -> DataModel:
-        megacomplexes = model_dict.get("megacomplex", None)
-        if megacomplexes is None or len(megacomplexes) == 0:
+    def from_dict(cls, library: dict[str, Megacomplex], model_dict: dict[str, Any]) -> DataModel:
+        data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
+        megacomplex_labels = model_dict.get("megcomplex", []) + model_dict.get(
+            "global_megacomplex", []
+        )
+        if len(megacomplex_labels) == 0:
             raise GlotaranModelError("No megcomplex defined for dataset")
-
-        global_megacomplexes = model_dict.get("global_megacomplex", None)
-        if global_megacomplexes is not None:
-            megacomplexes += global_megacomplexes
-
-        return library.get_data_model_for_megacomplexes(megacomplexes).parse_obj(model_dict)
+        megacomplexes = {type(library[label]) for label in megacomplex_labels}
+        data_models = [
+            m.data_model_type
+            for m in filter(lambda m: m.data_model_type is not None, megacomplexes)
+        ] + [DataModel]
+        return create_model(data_model_cls_name, __base__=tuple(data_models))(**model_dict)
 
 
 def is_data_model_global(data_model: DataModel) -> bool:
@@ -310,6 +308,17 @@ def iterate_data_model_global_megacomplexes(
             else None
         )
         yield scale, megacomplex
+
+
+def resolve_data_model(
+    model: DataModel,
+    library: dict[str, Megacomplex],
+    parameters: Parameters,
+    initial: Parameters | None = None,
+) -> DataModel:
+    model = model.copy()
+    model.megcomplex = [library[m] if isinstance(m, str) else m for m in model.megcomplex]
+    return resolve_item_parameters(model, parameters, initial)
 
 
 def finalize_data_model(data_model: DataModel, data: xr.Dataset):
