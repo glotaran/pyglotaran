@@ -17,10 +17,10 @@ if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
 
 
-class Megacomplex(TypedItem, abc.ABC):  # type:ignore[misc]
-    """A base class for megacomplex models.
+class Model(TypedItem, abc.ABC):  # type:ignore[misc]
+    """
 
-    Subclasses must overwrite :method:`glotaran.model.Megacomplex.calculate_matrix`.
+    Subclasses must overwrite :method:`glotaran.model.Model.calculate_matrix`.
     """
 
     data_model_type: ClassVar[type | None] = None
@@ -96,8 +96,8 @@ class Megacomplex(TypedItem, abc.ABC):  # type:ignore[misc]
         pass
 
 
-class InternalMockMegacomplex(Megacomplex):
-    """An internal megacomplex for testing purpose, since at least 2 items
+class InternalMockModel(Model):
+    """An internal model for testing purpose, since at least 2 items
     are needed for pydanticx discriminators.
     """
 

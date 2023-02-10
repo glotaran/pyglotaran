@@ -8,8 +8,8 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import get_data_model_dimension
 from glotaran.model.data_model import is_data_model_global
-from glotaran.model.data_model import iterate_data_model_global_megacomplexes
-from glotaran.model.data_model import iterate_data_model_megacomplexes
+from glotaran.model.data_model import iterate_data_model_global_models
+from glotaran.model.data_model import iterate_data_model_models
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
@@ -19,5 +19,5 @@ from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import TypedItem
-from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.model import Model
 from glotaran.model.weight import Weight

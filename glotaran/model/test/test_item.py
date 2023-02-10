@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Literal
 
 from glotaran.model.item import Item
-from glotaran.model.item import LibraryItemTyped
 from glotaran.model.item import ParameterType
+from glotaran.model.item import TypedItem
 from glotaran.model.item import get_item_issues
 from glotaran.model.item import get_structure_and_type_from_field
 from glotaran.model.item import iterate_parameter_fields
@@ -28,7 +28,7 @@ class MockItem(Item):
     pdict_option: dict[str, ParameterType] | None
 
 
-class MockTypedItem(LibraryItemTyped):
+class MockTypedItem(TypedItem):
     pass
 
 
@@ -76,19 +76,13 @@ def test_typed_item():
 
 
 def test_item_schema():
-    got = MockItem.schema()
+    got = MockTypedItem.schema()
     wanted = {
-        "title": "LibraryItem",
-        "description": "An item with a label.",
+        "title": "MockTypedItem",
+        "description": "An item with a type.",
         "type": "object",
-        "properties": {
-            "label": {
-                "title": "Label",
-                "description": "The label of the library item.",
-                "type": "string",
-            }
-        },
-        "required": ["label"],
+        "properties": {"type": {"title": "Type", "type": "string"}},
+        "required": ["type"],
         "additionalProperties": False,
     }
 

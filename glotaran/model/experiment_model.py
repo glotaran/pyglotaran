@@ -15,7 +15,7 @@ from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import resolve_data_model
 from glotaran.model.errors import ItemIssue
 from glotaran.model.item import get_item_issues
-from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.model import Model
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
@@ -43,9 +43,7 @@ class ExperimentModel(BaseModel):
     )
 
     @classmethod
-    def from_dict(
-        cls, library: dict[str, Megacomplex], model_dict: dict[str, Any]
-    ) -> ExperimentModel:
+    def from_dict(cls, library: dict[str, Model], model_dict: dict[str, Any]) -> ExperimentModel:
         model_dict["datasets"] = {
             label: DataModel.from_dict(library, dataset)
             for label, dataset in model_dict.get("datasets", {}).items()
@@ -54,7 +52,7 @@ class ExperimentModel(BaseModel):
 
     def resolve(
         self,
-        library: dict[str, Megacomplex],
+        library: dict[str, Model],
         parameters: Parameters,
         initial: Parameters | None = None,
     ) -> ExperimentModel:
