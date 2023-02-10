@@ -2,29 +2,20 @@ import numpy as np
 import xarray as xr
 
 from glotaran.builtin.items.activation import ActivationDataModel
-from glotaran.builtin.megacomplexes.kinetic import KineticMegacomplex
+from glotaran.builtin.models.kinetic import KineticModel
 from glotaran.parameter import Parameters
 from glotaran.project.scheme import Scheme
 from glotaran.simulation import simulate
 
 test_scheme_dict = {
     "library": {
-        "megacomplex": {
-            "parallel": {"type": "kinetic", "kinetic": ["parallel"]},
-        },
-        "kinetic": {
-            "parallel": {
-                "rates": {
-                    ("s1", "s1"): "rates.1",
-                }
-            },
-        },
+        "parallel": {"type": "kinetic", "rates": {("s1", "s1"): "rates.1"}},
     },
     "experiments": [
         {
             "datasets": {
                 "kinetic_parallel": {
-                    "megacomplex": ["parallel"],
+                    "models": ["parallel"],
                     "activation": [
                         {"type": "instant", "compartments": {"s1": 1}},
                     ],
@@ -49,8 +40,8 @@ test_clp = xr.DataArray(
 
 def test_scheme():
     scheme = Scheme.from_dict(test_scheme_dict)
-    assert "parallel" in scheme.library.megacomplex
-    assert isinstance(scheme.library.megacomplex["parallel"], KineticMegacomplex)
+    assert "parallel" in scheme.library
+    assert isinstance(scheme.library["parallel"], KineticModel)
     assert isinstance(scheme.experiments[0].datasets["kinetic_parallel"], ActivationDataModel)
     scheme.experiments[0].datasets["kinetic_parallel"].data = simulate(
         scheme.experiments[0].datasets["kinetic_parallel"],

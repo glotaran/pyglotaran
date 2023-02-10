@@ -121,10 +121,15 @@ def load_plugins():
     - ``glotaran.plugins.project_io``
     """
     if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
-        for entry_point_name, entry_points in metadata.entry_points().items():
-            if entry_point_name.startswith("glotaran.plugins"):
-                for entry_point in entry_points:
-                    entry_point.load()
+        plugin_names = [
+            "glotaran.plugins.models",
+            "glotaran.plugins.data_io",
+            "glotaran.plugins.project_io",
+        ]
+        entry_points = metadata.entry_points()
+        for entry_points in [entry_points[p] for p in plugin_names]:
+            for entry_point in entry_points:
+                entry_point.load()
 
 
 def set_plugin(

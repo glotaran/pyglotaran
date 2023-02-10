@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from glotaran.project.model import Model
+from glotaran.model import Model
 
 
 class ModelLibrary(BaseModel):
