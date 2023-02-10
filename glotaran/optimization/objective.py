@@ -3,8 +3,8 @@ import xarray as xr
 from numpy.typing import ArrayLike
 
 from glotaran.model import ExperimentModel
-from glotaran.model import iterate_data_model_global_megacomplexes
-from glotaran.model import iterate_data_model_megacomplexes
+from glotaran.model import iterate_data_model_global_models
+from glotaran.model import iterate_data_model_models
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -188,10 +188,10 @@ class OptimizationObjective:
                     (data.global_dimension, "right_singular_value_index"),
                     r.T,
                 )
-        for _, megacomplex in iterate_data_model_megacomplexes(data.model):
-            megacomplex.add_to_result_data(data.model, dataset, False)
-        for _, megacomplex in iterate_data_model_global_megacomplexes(data.model):
-            megacomplex.add_to_result_data(data.model, dataset, True)
+        for _, model in iterate_data_model_models(data.model):
+            model.add_to_result_data(data.model, dataset, False)
+        for _, model in iterate_data_model_global_models(data.model):
+            model.add_to_result_data(data.model, dataset, True)
 
         return dataset
 

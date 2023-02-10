@@ -28,11 +28,11 @@ def test_from_data(weight, data_model):
     matrix = OptimizationMatrix.from_data(data)
     assert matrix.array.shape == (
         (data.data.shape[1], data.data.shape[0], 1)
-        if weight or data_model.megacomplex[0].is_index_dependent
+        if weight or data_model.models[0].is_index_dependent
         else (data.data.shape[0], 1)
     )
-    assert matrix.clp_axis == (["c2"] if data_model.megacomplex[0].is_index_dependent else ["c1"])
-    matrix_value = 2 if data_model.megacomplex[0].is_index_dependent else 5
+    assert matrix.clp_axis == (["c2"] if data_model.models[0].is_index_dependent else ["c1"])
+    matrix_value = 2 if data_model.models[0].is_index_dependent else 5
     if weight:
         matrix_value *= 0.5
     assert (matrix.array == matrix_value).all()

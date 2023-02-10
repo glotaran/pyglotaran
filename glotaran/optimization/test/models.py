@@ -6,15 +6,15 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model import DataModel
-from glotaran.model import Megacomplex
+from glotaran.model import Model
 from glotaran.model import ParameterType
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
-class TestMegacomplexConstant(Megacomplex):
-    type: Literal["test-megacomplex-constant"]
+class TestModelConstant(Model):
+    type: Literal["test-model-constant"]
     is_index_dependent: bool
     compartments: list[str]
     value: ParameterType
@@ -40,8 +40,8 @@ class TestMegacomplexConstant(Megacomplex):
         data.attrs["custom_megacomplex_result"] = True
 
 
-class TestMegacomplexExponential(Megacomplex):
-    type: Literal["test-megacomplex-exponential"]
+class TestModelExponential(Model):
+    type: Literal["test-model-exponential"]
     dimension: str = "model"
     is_index_dependent: bool
     compartments: list[str]
@@ -61,8 +61,8 @@ class TestMegacomplexExponential(Megacomplex):
         return self.compartments, matrix
 
 
-class TestMegacomplexGaussian(Megacomplex):
-    type: Literal["test-megacomplex-gaussian"]
+class TestModelGaussian(Model):
+    type: Literal["test-model-gaussian"]
     compartments: list[str]
     amplitude: list[ParameterType]
     location: list[ParameterType]

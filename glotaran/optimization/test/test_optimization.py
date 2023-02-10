@@ -4,13 +4,13 @@ import xarray as xr
 from glotaran.model import DataModel
 from glotaran.model import ExperimentModel
 from glotaran.optimization.optimization import Optimization
-from glotaran.optimization.test.library import TestLibrary
+from glotaran.optimization.test.library import test_library
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
 
 
 def test_single_data():
-    data_model = DataModel(megacomplex=["decay_independent"])
+    data_model = DataModel(models=["decay_independent"])
     experiment = ExperimentModel(datasets={"decay_independent": data_model})
     parameters = Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}})
 
@@ -21,7 +21,7 @@ def test_single_data():
         coords=(("global", global_axis), ("clp_label", ["c1", "c2"])),
     )
     data_model.data = simulate(
-        data_model, TestLibrary, parameters, {"global": global_axis, "model": model_axis}, clp
+        data_model, test_library, parameters, {"global": global_axis, "model": model_axis}, clp
     )
 
     initial_parameters = Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}})
@@ -29,7 +29,7 @@ def test_single_data():
     optimization = Optimization(
         [experiment],
         initial_parameters,
-        TestLibrary,
+        test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
@@ -42,7 +42,7 @@ def test_single_data():
 
 
 def test_multiple_experiments():
-    data_model = DataModel(megacomplex=["decay_independent"])
+    data_model = DataModel(models=["decay_independent"])
     experiments = [
         ExperimentModel(datasets={"decay_independent_1": data_model}),
         ExperimentModel(datasets={"decay_independent_2": data_model}),
@@ -56,7 +56,7 @@ def test_multiple_experiments():
         coords=(("global", global_axis), ("clp_label", ["c1", "c2"])),
     )
     data_model.data = simulate(
-        data_model, TestLibrary, parameters, {"global": global_axis, "model": model_axis}, clp
+        data_model, test_library, parameters, {"global": global_axis, "model": model_axis}, clp
     )
 
     initial_parameters = Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}})
@@ -64,7 +64,7 @@ def test_multiple_experiments():
     optimization = Optimization(
         experiments,
         initial_parameters,
-        TestLibrary,
+        test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
@@ -78,7 +78,7 @@ def test_multiple_experiments():
 
 
 def test_global_data():
-    data_model = DataModel(megacomplex=["decay_independent"], global_megacomplex=["gaussian"])
+    data_model = DataModel(models=["decay_independent"], global_models=["gaussian"])
     experiment = ExperimentModel(datasets={"decay_independent": data_model})
     parameters = Parameters.from_dict(
         {
@@ -94,7 +94,7 @@ def test_global_data():
     global_axis = np.arange(10)
     model_axis = np.arange(0, 150, 1)
     data_model.data = simulate(
-        data_model, TestLibrary, parameters, {"global": global_axis, "model": model_axis}
+        data_model, test_library, parameters, {"global": global_axis, "model": model_axis}
     )
 
     initial_parameters = Parameters.from_dict(
@@ -111,7 +111,7 @@ def test_global_data():
     optimization = Optimization(
         [experiment],
         initial_parameters,
-        TestLibrary,
+        test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
@@ -124,8 +124,8 @@ def test_global_data():
 
 
 def test_multiple_data():
-    data_model_one = DataModel(megacomplex=["decay_independent"])
-    data_model_two = DataModel(megacomplex=["decay_dependent"])
+    data_model_one = DataModel(models=["decay_independent"])
+    data_model_two = DataModel(models=["decay_dependent"])
     experiment = ExperimentModel(
         datasets={"decay_independent": data_model_one, "decay_dependent": data_model_two}
     )
@@ -138,10 +138,10 @@ def test_multiple_data():
         coords=(("global", global_axis), ("clp_label", ["c1", "c2"])),
     )
     data_model_one.data = simulate(
-        data_model_one, TestLibrary, parameters, {"global": global_axis, "model": model_axis}, clp
+        data_model_one, test_library, parameters, {"global": global_axis, "model": model_axis}, clp
     )
     data_model_two.data = simulate(
-        data_model_two, TestLibrary, parameters, {"global": global_axis, "model": model_axis}, clp
+        data_model_two, test_library, parameters, {"global": global_axis, "model": model_axis}, clp
     )
 
     initial_parameters = Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}})
@@ -149,7 +149,7 @@ def test_multiple_data():
     optimization = Optimization(
         [experiment],
         initial_parameters,
-        TestLibrary,
+        test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
