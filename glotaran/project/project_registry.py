@@ -117,7 +117,7 @@ class ProjectRegistry:
             The items of the registry.
         """
         items = {}
-        for path in self._directory.rglob("*"):
+        for path in sorted(self._directory.rglob("*")):
             if self.is_item(path) is True:
                 rel_parent_path = path.parent.relative_to(self._directory)
                 item_key = (rel_parent_path / path.stem).as_posix()
