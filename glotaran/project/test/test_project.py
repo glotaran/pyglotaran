@@ -8,6 +8,7 @@ from textwrap import dedent
 from typing import Literal
 
 import pytest
+import xarray as xr
 from _pytest.monkeypatch import MonkeyPatch
 from _pytest.recwarn import WarningsRecorder
 from IPython.core.formatters import format_display_data
@@ -195,6 +196,23 @@ def test_import_data(project_folder: Path, project_file: Path, test_data: Path, 
 
     data = project.load_data("dataset_1" if name is None else name)
     assert data == example_dataset
+
+
+@pytest.mark.parametrize(
+    "data",
+    (
+        xr.DataArray([1]),
+        xr.Dataset({"data": xr.DataArray([1])}),
+    ),
+)
+def test_import_data_xarray(tmp_path: Path, data: xr.Dataset | xr.DataArray):
+    """Loaded data are always a dataset."""
+    project = Project.open(tmp_path)
+    project.import_data(data, name="test_data")
+
+    assert (tmp_path / "data/test_data.nc").is_file() is True
+
+    assert project.load_data("test_data").equals(xr.Dataset({"data": xr.DataArray([1])}))
 
 
 def test_create_scheme(project_file: Path):
@@ -526,6 +544,22 @@ def test_missing_file_errors(tmp_path: Path, project_folder: Path):
     )
 
     project = Project.open(project_folder)
+
+    with pytest.raises(ValueError) as exc_info:
+        project.import_data(xr.Dataset({"data": [1]}))
+
+    assert str(exc_info.value) == (
+        "When importing data from a 'xarray.Dataset' or 'xarray.DataArray' "
+        "it is required to also pass a name."
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        project.import_data(xr.DataArray([1]))
+
+    assert str(exc_info.value) == (
+        "When importing data from a 'xarray.Dataset' or 'xarray.DataArray' "
+        "it is required to also pass a name."
+    )
 
     with pytest.raises(ValueError) as exc_info:
         project.load_data("not-existing")
