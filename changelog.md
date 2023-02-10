@@ -21,6 +21,7 @@
 - ✨ Integrate plugin system into Project (#1229)
 - 👌 Make yaml the default plugin when passing a folder to save_result and load_result (#1230)
 - ✨ Allow usage of subfolders in project API for parameters, models and data (#1232)
+- ✨ Allow import of xarray objects in project API import_data (#1235)
 
 ### 🩹 Bug fixes
 
