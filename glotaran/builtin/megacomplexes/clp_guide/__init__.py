@@ -1,1 +1,0 @@
-from glotaran.builtin.megacomplexes.clp_guide.megacomplex import ClpGuideMegacomplex

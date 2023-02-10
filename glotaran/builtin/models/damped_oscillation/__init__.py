@@ -1,0 +1,1 @@
+from glotaran.builtin.models.damped_oscillation.model import DampedOscillationModel
