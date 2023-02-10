@@ -9,8 +9,9 @@ import xarray as xr
 
 from glotaran.model import DataModel
 from glotaran.model import GlotaranUserError
-from glotaran.model import Library
+from glotaran.model import Model
 from glotaran.model import get_data_model_dimension
+from glotaran.model import resolve_data_model
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.parameter import Parameters
 
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
 
 def simulate(
     model: DataModel,
-    library: Library,
+    library: dict[str, Model],
     parameters: Parameters,
     coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,
@@ -61,14 +62,14 @@ def simulate(
     ValueError
         Raised if dataset model has no global megacomplex and no clp are provided.
     """
-    model = library.resolve_item(model, parameters)
+    model = resolve_data_model(model, library, parameters)
     model_dimension = get_data_model_dimension(model)
     model_axis = coordinates[model_dimension]
     global_dimension = next(dim for dim in coordinates if dim != model_dimension)
     global_axis = coordinates[global_dimension]
 
     if clp is None:
-        if not model.global_megacomplex:
+        if not model.global_models:
             raise GlotaranUserError(
                 "Cannot simulate dataset without global megacomplexes if no clp are provided."
             )
