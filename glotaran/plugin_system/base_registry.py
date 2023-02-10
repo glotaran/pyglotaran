@@ -25,9 +25,9 @@ if TYPE_CHECKING:
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
-    from glotaran.model.megacomplex import Megacomplex
+    from glotaran.model import Model
 
-    _PluginType = TypeVar("_PluginType", type[Megacomplex], DataIoInterface, ProjectIoInterface)
+    _PluginType = TypeVar("_PluginType", type[Model], DataIoInterface, ProjectIoInterface)
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
     )
@@ -41,7 +41,7 @@ class __PluginRegistry:
     This is super private since if anyone messes with it, the pluginsystem could break.
     """
 
-    megacomplex: MutableMapping[str, type[Megacomplex]] = {}
+    model: MutableMapping[str, type[Model]] = {}
     data_io: MutableMapping[str, DataIoInterface] = {}
     project_io: MutableMapping[str, ProjectIoInterface] = {}
 
@@ -119,7 +119,7 @@ def load_plugins():
     Currently used builtin entrypoints are:
 
     - ``glotaran.plugins.data_io``
-    - ``glotaran.plugins.megacomplex``
+    - ``glotaran.plugins.model``
     - ``glotaran.plugins.project_io``
     """
     if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
@@ -371,7 +371,7 @@ def get_method_from_plugin(
     plugin : object | type[object],
         Plugin instance or class.
     method_name : str
-        Method name, e.g. load_megacomplex.
+        Method name, e.g. load_model.
 
     Returns
     -------
@@ -409,7 +409,7 @@ def show_method_help(
     plugin : object | type[object],
         Plugin instance or class.
     method_name : str
-        Method name, e.g. load_megacomplex.
+        Method name, e.g. load_model.
     """
     method = get_method_from_plugin(plugin, method_name)
     help(method)

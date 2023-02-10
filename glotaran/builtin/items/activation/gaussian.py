@@ -11,7 +11,6 @@ from glotaran.builtin.items.activation.activation import Activation
 from glotaran.model import Attribute
 from glotaran.model import GlotaranUserError
 from glotaran.model import ItemIssue
-from glotaran.model import Library
 from glotaran.model import ParameterType
 from glotaran.parameter import Parameters
 
@@ -48,7 +47,6 @@ class MultiGaussianIssue(ItemIssue):
 def validate_multi_gaussian(
     value: list[ParameterType],
     activation: MultiGaussianActivation,
-    library: Library,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
     issues = []
@@ -64,7 +62,6 @@ def validate_multi_gaussian(
 def validate_dispersion(
     value: ParameterType | None,
     activation: MultiGaussianActivation,
-    library: Library,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
     issues = []

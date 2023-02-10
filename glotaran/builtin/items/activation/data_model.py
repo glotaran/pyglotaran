@@ -5,10 +5,10 @@ import xarray as xr
 
 from glotaran.builtin.items.activation.activation import Activation
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
+from glotaran.builtin.items.activation.instant import InstantActivation  # noqa: F401
 from glotaran.model import Attribute
 from glotaran.model import DataModel
 from glotaran.model import ItemIssue
-from glotaran.model import Library
 from glotaran.parameter import Parameters
 
 
@@ -26,7 +26,6 @@ class NoActivationIssue(ItemIssue):
 def validate_activations(
     value: list[Activation],
     activation: Activation,
-    library: Library,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
     issues = []
