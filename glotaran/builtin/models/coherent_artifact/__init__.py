@@ -1,0 +1,1 @@
+from glotaran.builtin.models.coherent_artifact.model import CoherentArtifactModel

@@ -1,2 +1,0 @@
-from glotaran.builtin.megacomplexes.spectral.megacomplex import SpectralDataModel
-from glotaran.builtin.megacomplexes.spectral.megacomplex import SpectralMegacomplex

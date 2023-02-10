@@ -5,10 +5,9 @@ from pydantic import Extra
 
 from glotaran.io import load_dataset
 from glotaran.model import ExperimentModel
-from glotaran.model import Library
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
-from glotaran.plugin_system.megacomplex_registration import get_megacomplex
+from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
 
 
@@ -20,14 +19,13 @@ class Scheme(BaseModel):
         extra = Extra.forbid
 
     experiments: list[ExperimentModel]
-    library: Library
+    library: ModelLibrary
 
     @classmethod
     def from_dict(cls, spec: dict):
-        megacomplex_types = {
-            get_megacomplex(m["type"]) for m in spec["library"]["megacomplex"].values()
-        }
-        library = Library.create_for_megacomplexes(megacomplex_types)(**spec["library"])
+        library = ModelLibrary(
+            {label: m | {"label": label} for label, m in spec["library"].items()}
+        )
         experiments = [ExperimentModel.from_dict(library, e) for e in spec["experiments"]]
         for e in experiments:
             for d in e.datasets.values():
