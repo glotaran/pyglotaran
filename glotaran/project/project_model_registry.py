@@ -22,7 +22,10 @@ class ProjectModelRegistry(ProjectRegistry):
             The registry directory.
         """
         super().__init__(
-            directory / "models", supported_file_extensions_project_io("load_model"), load_model
+            directory / "models",
+            supported_file_extensions_project_io("load_model"),
+            load_model,
+            item_name="Model",
         )
 
     def generate_model(

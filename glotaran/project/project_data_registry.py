@@ -24,6 +24,7 @@ class ProjectDataRegistry(ProjectRegistry):
             directory / "data",
             supported_file_extensions_data_io("load_dataset"),
             load_dataset,
+            item_name="Dataset",
         )
 
     def import_data(

@@ -18,6 +18,7 @@ from glotaran.io import load_parameters
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.project.project import Project
+from glotaran.project.project_registry import AmbiguousNameWarning
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET as example_dataset
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
@@ -413,6 +414,105 @@ def test_parameters_plugin_system_integration(tmp_path: Path, file_extension: st
 
     assert len(project.parameters) == 1
     assert project.parameters["test_parameter"].samefile(parameter_file)
+
+
+def test_data_subfolder_folders(tmp_path: Path):
+    """Models in sub folders are found."""
+    data_file = tmp_path / "data/subfolder/test_data.ascii"
+    data_file.parent.mkdir(parents=True, exist_ok=True)
+    data_file.touch()
+    project = Project.open(tmp_path)
+
+    assert len(project.data) == 1
+    assert project.data["subfolder/test_data"].samefile(data_file)
+
+    data_file2 = tmp_path / "data/subfolder/test_data.nc"
+    data_file2.touch()
+
+    with pytest.warns(AmbiguousNameWarning) as records:
+        assert len(project.data) == 2
+        assert project.data["subfolder/test_data"].samefile(data_file)
+        assert project.data["subfolder/test_data.nc"].samefile(data_file2)
+        # One warning pre accessing project.models
+        assert len(records) == 3, [r.message for r in records]
+        for record in records:
+            assert Path(record.filename) == Path(__file__)
+            assert str(record.message) == (
+                "The Dataset name 'subfolder/test_data' is ambiguous since it could "
+                "refer to the following files: ['data/subfolder/test_data.ascii', "
+                "'data/subfolder/test_data.nc']\n"
+                "The file 'data/subfolder/test_data.nc' will be accessible by the name "
+                "'subfolder/test_data.nc'. \n"
+                "While 'subfolder/test_data' refers to the file "
+                "'data/subfolder/test_data.ascii'.\n"
+                "Rename the files with unambiguous names to silence this warning."
+            )
+
+
+def test_model_subfolder_folders(tmp_path: Path):
+    """Models in sub folders are found."""
+    model_file = tmp_path / "models/subfolder/test_model.yaml"
+    model_file.parent.mkdir(parents=True, exist_ok=True)
+    model_file.touch()
+    project = Project.open(tmp_path)
+
+    assert len(project.models) == 1
+    assert project.models["subfolder/test_model"].samefile(model_file)
+
+    model_file2 = tmp_path / "models/subfolder/test_model.yml"
+    model_file2.touch()
+
+    with pytest.warns(AmbiguousNameWarning) as records:
+        assert len(project.models) == 2
+        assert project.models["subfolder/test_model"].samefile(model_file)
+        assert project.models["subfolder/test_model.yml"].samefile(model_file2)
+        # One warning pre accessing project.models
+        assert len(records) == 3, [r.message for r in records]
+        for record in records:
+            assert Path(record.filename) == Path(__file__)
+            assert str(record.message) == (
+                "The Model name 'subfolder/test_model' is ambiguous since it could "
+                "refer to the following files: ['models/subfolder/test_model.yaml', "
+                "'models/subfolder/test_model.yml']\n"
+                "The file 'models/subfolder/test_model.yml' will be accessible by the name "
+                "'subfolder/test_model.yml'. \n"
+                "While 'subfolder/test_model' refers to the file "
+                "'models/subfolder/test_model.yaml'.\n"
+                "Rename the files with unambiguous names to silence this warning."
+            )
+
+
+def test_parameters_subfolder_folders(tmp_path: Path):
+    """Parameters in sub folders are found."""
+    parameter_file = tmp_path / "parameters/subfolder/test_parameter.yaml"
+    parameter_file.parent.mkdir(parents=True, exist_ok=True)
+    parameter_file.touch()
+    project = Project.open(tmp_path)
+
+    assert len(project.parameters) == 1
+    assert project.parameters["subfolder/test_parameter"].samefile(parameter_file)
+
+    parameter_file2 = tmp_path / "parameters/subfolder/test_parameter.yml"
+    parameter_file2.touch()
+
+    with pytest.warns(AmbiguousNameWarning) as records:
+        assert len(project.parameters) == 2
+        assert project.parameters["subfolder/test_parameter"].samefile(parameter_file)
+        assert project.parameters["subfolder/test_parameter.yml"].samefile(parameter_file2)
+        # One warning pre accessing project.parameters
+        assert len(records) == 3, [r.message for r in records]
+        for record in records:
+            assert Path(record.filename) == Path(__file__)
+            assert str(record.message) == (
+                "The Parameters name 'subfolder/test_parameter' is ambiguous since it could "
+                "refer to the following files: ['parameters/subfolder/test_parameter.yaml', "
+                "'parameters/subfolder/test_parameter.yml']\n"
+                "The file 'parameters/subfolder/test_parameter.yml' will be accessible by the "
+                "name 'subfolder/test_parameter.yml'. \n"
+                "While 'subfolder/test_parameter' refers to the file "
+                "'parameters/subfolder/test_parameter.yaml'.\n"
+                "Rename the files with unambiguous names to silence this warning."
+            )
 
 
 def test_missing_file_errors(tmp_path: Path, project_folder: Path):

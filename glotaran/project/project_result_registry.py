@@ -28,6 +28,7 @@ class ProjectResultRegistry(ProjectRegistry):
             directory / "results",
             [],
             lambda path: load_result(path / "result.yml", format_name="yml"),
+            item_name="Result",
         )
 
     def is_item(self, path: Path) -> bool:
