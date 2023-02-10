@@ -20,7 +20,7 @@ class Scheme(BaseModel):
         extra = Extra.forbid
 
     experiments: list[ExperimentModel]
-    library: dict[str, Model]
+    library: dict[str, Model.get_annotated_type()]
 
     @classmethod
     def from_dict(cls, spec: dict):
