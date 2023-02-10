@@ -5,8 +5,56 @@ from collections.abc import Callable
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
+from warnings import warn
 
 from glotaran.utils.ipython import MarkdownStr
+
+
+class AmbiguousNameWarning(UserWarning):
+    """Warning thrown when an item with the same name already exists.
+
+    This is the case if two files with the same name but different extensions exist next to
+    each other.
+    """
+
+    def __init__(
+        self,
+        *,
+        item_name: str,
+        items: dict[str, Path],
+        item_key: str,
+        unique_item_key: str,
+        project_root_path: Path,
+    ):
+        """Initialize ``AmbiguousNameWarning`` with a formatted message.
+
+        Parameters
+        ----------
+        item_name: str
+            Name of items in the registry (e.g. 'Parameters').
+        items: dict[str, Path]
+            Known items at this iteration point.
+        item_key: str
+            Key that would have been used if the file names weren't ambiguous.
+        unique_item_key: str
+            Unique key for the item with ambiguous file name.
+        project_root_path: Path
+            Root path of the project.
+        """
+        ambiguous_file_names = [
+            value.relative_to(project_root_path).as_posix()
+            for key, value in items.items()
+            if key.startswith(item_key)
+        ]
+        super().__init__(
+            f"The {item_name} name {item_key!r} is ambiguous since it could "
+            f"refer to the following files: {ambiguous_file_names}\n"
+            f"The file {items[unique_item_key].relative_to(project_root_path).as_posix()!r} "
+            f"will be accessible by the name {unique_item_key!r}. \n"
+            f"While {item_key!r} refers to the file "
+            f"{items[item_key].relative_to(project_root_path).as_posix()!r}.\n"
+            "Rename the files with unambiguous names to silence this warning."
+        )
 
 
 class ProjectRegistry:
@@ -25,6 +73,8 @@ class ProjectRegistry:
             The suffixes of item files.
         loader : Callable
             A loader for the registry items.
+        item_name: str
+            Name of items in the registry used to format warning and exception (e.g. 'Parameters').
         """
         self._directory: Path = directory
         self._file_suffix: tuple[str, ...] = (
@@ -66,7 +116,26 @@ class ProjectRegistry:
         dict[str, Path]
             The items of the registry.
         """
-        items = {path.stem: path for path in self._directory.iterdir() if self.is_item(path)}
+        items = {}
+        for path in self._directory.rglob("*"):
+            if self.is_item(path) is True:
+                rel_parent_path = path.parent.relative_to(self._directory)
+                item_key = (rel_parent_path / path.stem).as_posix()
+                if item_key not in items:
+                    items[item_key] = path
+                else:
+                    unique_item_key = (rel_parent_path / path.name).as_posix()
+                    items[unique_item_key] = path
+                    warn(
+                        AmbiguousNameWarning(
+                            item_name=self._item_name,
+                            items=items,
+                            item_key=item_key,
+                            unique_item_key=unique_item_key,
+                            project_root_path=self._directory.parent,
+                        ),
+                        stacklevel=3,
+                    )
         return dict(sorted(items.items()))
 
     def is_item(self, path: Path) -> bool:
