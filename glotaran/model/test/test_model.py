@@ -3,17 +3,16 @@ from typing import Literal
 import numpy as np
 
 from glotaran.model.data_model import DataModel
-from glotaran.model.item import LibraryItemType
-from glotaran.model.megacomplex import Megacomplex
-from glotaran.model.test.test_item import MockLibraryItemNested
+from glotaran.model.model import Model
+from glotaran.model.test.test_item import MockItem
 from glotaran.model.test.test_item import MockTypedItem
 
 
 class MockDataModel(DataModel):
-    item: LibraryItemType[MockTypedItem]
+    item: MockTypedItem | None = None
 
 
-class MockMegacomplexWithDataModel(Megacomplex):
+class MockModelWithDataModel(Model):
     type: Literal["mock-w-datamodel"]
     dimension: str = "model"
     data_model_type = MockDataModel
@@ -29,10 +28,10 @@ class MockMegacomplexWithDataModel(Megacomplex):
         return ["a"], np.array([[1]])
 
 
-class MockMegacomplexWithItem(Megacomplex):
+class MockModelWithItem(Model):
     type: Literal["mock-w-item"]
     dimension: str = "model"
-    library_item: LibraryItemType[MockLibraryItemNested] | None = None
+    item: MockItem | None = None
 
     def calculate_matrix(
         self,

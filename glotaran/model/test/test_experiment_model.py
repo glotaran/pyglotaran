@@ -2,41 +2,35 @@ from glotaran.model.clp_constraint import OnlyConstraint
 from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
-from glotaran.model.library import Library
-from glotaran.model.test.test_megacomplex import MockDataModel
-from glotaran.model.test.test_megacomplex import MockMegacomplexWithDataModel
-from glotaran.model.test.test_megacomplex import MockMegacomplexWithItem
+from glotaran.model.test.test_model import MockDataModel
+from glotaran.model.test.test_model import MockModelWithDataModel
+from glotaran.model.test.test_model import MockModelWithItem
 
 
 def test_experiment_model_from_dict():
-    library = Library.from_dict(
-        {
-            "megacomplex": {
-                "m1": {"type": "mock-w-datamodel"},
-                "m2": {"type": "mock-w-item"},
-            },
-        },
-        megacomplexes=[MockMegacomplexWithDataModel, MockMegacomplexWithItem],
-    )
+    library = {
+        "m1": MockModelWithDataModel(label="m1", type="mock-w-datamodel"),
+        "m2": MockModelWithItem(label="m2", type="mock-w-item"),
+    }
 
     experiment_model = ExperimentModel.from_dict(
         library,
         {
             "datasets": {
-                "d1": {"megacomplex": ["m1"], "item": "foo"},
+                "d1": {"models": ["m1"]},
                 "d2": {
-                    "megacomplex": ["m2"],
-                    "weight": [{"value": 1}, {"value": 2, "global_interval": (5, 6)}],
+                    "models": ["m2"],
+                    "weights": [{"value": 1}, {"value": 2, "global_interval": (5, 6)}],
                 },
-                "d3": {"megacomplex": ["m2"], "global_megacomplex": ["m1"], "item": "foo"},
+                "d3": {"models": ["m2"], "global_models": ["m1"]},
             },
             "clp_penalties": [
                 {
                     "type": "equal_area",
                     "source": "s",
-                    "source_intervals": [(1, 2)],
+                    "source_interval": (1, 2),
                     "target": "t",
-                    "target_intervals": [(1, 2)],
+                    "target_interval": [(1, 2)],
                     "parameter": "p",
                     "weight": 1,
                 }

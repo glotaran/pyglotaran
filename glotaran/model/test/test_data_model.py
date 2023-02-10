@@ -1,46 +1,47 @@
 from typing import Literal
 
 from glotaran.model.data_model import DataModel
-from glotaran.model.library import Library
-from glotaran.model.megacomplex import Megacomplex
-from glotaran.model.test.test_megacomplex import MockDataModel
-from glotaran.model.test.test_megacomplex import MockMegacomplexWithDataModel
-from glotaran.model.test.test_megacomplex import MockMegacomplexWithItem
+from glotaran.model.item import get_item_issues
+from glotaran.model.model import Model
+from glotaran.model.test.test_model import MockDataModel
+from glotaran.model.test.test_model import MockModelWithDataModel
+from glotaran.model.test.test_model import MockModelWithItem
+from glotaran.parameter import Parameters
 
 
-class MockMegacomplexNonUniqueExclusive(Megacomplex):
-    type: Literal["test_megacomplex_not_exclusive_unique"]
+class MockModelNonUniqueExclusive(Model):
+    type: Literal["test_model_not_exclusive_unique"]
 
     def calculate_matrix():
         pass
 
 
-class MockMegacomplexExclusive(Megacomplex):
-    type: Literal["test_megacomplex_exclusive"]
+class MockModelExclusive(Model):
+    type: Literal["test_model_exclusive"]
     is_exclusive = True
 
     def calculate_matrix():
         pass
 
 
-class MockMegacomplexUnique(Megacomplex):
-    type: Literal["test_megacomplex_unique"]
+class MockModelUnique(Model):
+    type: Literal["test_model_unique"]
     is_unique = True
 
     def calculate_matrix():
         pass
 
 
-class MockMegacomplexDim1(Megacomplex):
-    type: Literal["test_megacomplex_dim1"]
+class MockModelDim1(Model):
+    type: Literal["test_model_dim1"]
     dimension: str = "dim1"
 
     def calculate_matrix():
         pass
 
 
-class MockMegacomplexDim2(Megacomplex):
-    type: Literal["test_megacomplex_dim2"]
+class MockModelDim2(Model):
+    type: Literal["test_model_dim2"]
     dimension: str = "dim2"
 
     def calculate_matrix():
@@ -48,61 +49,46 @@ class MockMegacomplexDim2(Megacomplex):
 
 
 def test_data_model_from_dict():
-    library = Library.from_dict(
-        {
-            "megacomplex": {
-                "m1": {"type": "mock-w-datamodel"},
-                "m2": {"type": "mock-w-item"},
-            },
-        },
-        megacomplexes=[MockMegacomplexWithDataModel, MockMegacomplexWithItem],
-    )
-
-    d1 = DataModel.from_dict(library, {"megacomplex": ["m1"], "item": "foo"})
+    library = {
+        "m1": MockModelWithDataModel(label="m1", type="mock-w-datamodel"),
+        "m2": MockModelWithItem(label="m2", type="mock-w-item"),
+    }
+    d1 = DataModel.from_dict(library, {"models": ["m1"]})
     assert isinstance(d1, MockDataModel)
 
-    d2 = DataModel.from_dict(library, {"megacomplex": ["m2"]})
+    d2 = DataModel.from_dict(library, {"models": ["m2"]})
     assert isinstance(d2, DataModel)
     assert not isinstance(d2, MockDataModel)
 
-    d3 = DataModel.from_dict(
-        library, {"megacomplex": ["m2"], "global_megacomplex": ["m1"], "item": "foo"}
-    )
+    d3 = DataModel.from_dict(library, {"models": ["m2"], "global_models": ["m1"]})
     assert isinstance(d3, MockDataModel)
 
 
 def test_get_data_model_issues():
-    library = Library.from_dict(
-        {
-            "megacomplex": {
-                "m": {"type": "test_megacomplex_not_exclusive_unique"},
-                "m_exclusive": {"type": "test_megacomplex_exclusive"},
-                "m_unique": {"type": "test_megacomplex_unique"},
-            },
+    ok = DataModel(
+        **{
+            "models": [
+                MockModelNonUniqueExclusive(label="m", type="test_model_not_exclusive_unique")
+            ]
         },
-        [
-            MockMegacomplexNonUniqueExclusive,
-            MockMegacomplexExclusive,
-            MockMegacomplexUnique,
-        ],
     )
-    ok = DataModel.from_dict(library, {"megacomplex": ["m"]})
-    exclusive = DataModel.from_dict(library, {"megacomplex": ["m", "m_exclusive"]})
-    unique = DataModel.from_dict(library, {"megacomplex": ["m_unique", "m_unique"]})
+    exclusive = DataModel(
+        **{
+            "models": [
+                MockModelNonUniqueExclusive(label="m", type="test_model_not_exclusive_unique"),
+                MockModelExclusive(label="m_exclusive", type="test_model_exclusive"),
+            ]
+        },
+    )
+    unique = DataModel(
+        **{
+            "models": [
+                MockModelUnique(label="m_unique", type="test_model_unique"),
+                MockModelUnique(label="m_unique", type="test_model_unique"),
+            ]
+        },
+    )
 
-    assert len(library.validate_item(ok)) == 0
-    assert len(library.validate_item(exclusive)) == 1
-    assert len(library.validate_item(unique)) == 2
-
-
-def test_create_from_dict():
-    library = {"m1": MockMegacomplexWithDataModel, "m2": MockMegacomplexWithItem}
-
-    d1 = DataModel.from_dict(library, {"megacomplex": ["m1"]})
-    assert isinstance(d1, MockDataModel)
-
-    d2 = DataModel.from_dict(library, {"megacomplex": ["m2"]})
-    assert not isinstance(d2, MockDataModel)
-
-    d3 = DataModel.from_dict(library, {"megacomplex": ["m1", "m2"]})
-    assert isinstance(d3, MockDataModel)
+    assert len(get_item_issues(ok, Parameters({}))) == 0
+    assert len(get_item_issues(exclusive, Parameters({}))) == 1
+    assert len(get_item_issues(unique, Parameters({}))) == 2

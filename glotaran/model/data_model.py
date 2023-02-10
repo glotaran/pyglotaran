@@ -18,29 +18,29 @@ from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
-from glotaran.model.megacomplex import Megacomplex
+from glotaran.model.model import Model
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
 
-class ExclusiveMegacomplexIssue(ItemIssue):
-    """Issue for exclusive megacomplexes."""
+class ExclusiveModelIssue(ItemIssue):
+    """Issue for exclusive models."""
 
-    def __init__(self, label: str, megacomplex_type: str, is_global: bool):
-        """Create an ExclusiveMegacomplexIssue.
+    def __init__(self, label: str, model_type: str, is_global: bool):
+        """Create an ExclusiveModelIssue.
 
         Parameters
         ----------
         label : str
-            The megacomplex label.
-        megacomplex_type : str
-            The megacomplex type.
+            The model label.
+        model_type : str
+            The model type.
         is_global : bool
-            Whether the megacomplex is global.
+            Whether the model is global.
         """
         self._label = label
-        self._type = megacomplex_type
+        self._type = model_type
         self._is_global = is_global
 
     def to_string(self) -> str:
@@ -51,28 +51,28 @@ class ExclusiveMegacomplexIssue(ItemIssue):
         str
         """
         return (
-            f"Exclusive {'global ' if self._is_global else ''}megacomplex '{self._label}' of "
-            f"type '{self._type}' cannot be combined with other megacomplexes."
+            f"Exclusive {'global ' if self._is_global else ''}model '{self._label}' of "
+            f"type '{self._type}' cannot be combined with other models."
         )
 
 
-class UniqueMegacomplexIssue(ItemIssue):
-    """Issue for unique megacomplexes."""
+class UniqueModelIssue(ItemIssue):
+    """Issue for unique models."""
 
-    def __init__(self, label: str, megacomplex_type: str, is_global: bool):
-        """Create a UniqueMegacomplexIssue.
+    def __init__(self, label: str, model_type: str, is_global: bool):
+        """Create a UniqueModelIssue.
 
         Parameters
         ----------
         label : str
-            The megacomplex label.
-        megacomplex_type : str
-            The megacomplex type.
+            The model label.
+        model_type : str
+            The model type.
         is_global : bool
-            Whether the megacomplex is global.
+            Whether the model is global.
         """
         self._label = label
-        self._type = megacomplex_type
+        self._type = model_type
         self._is_global = is_global
 
     def to_string(self):
@@ -83,24 +83,22 @@ class UniqueMegacomplexIssue(ItemIssue):
         str
         """
         return (
-            f"Unique {'global ' if self._is_global else ''}megacomplex '{self._label}' of "
+            f"Unique {'global ' if self._is_global else ''}model '{self._label}' of "
             f"type '{self._type}' can only be used once per dataset."
         )
 
 
-def get_megacomplex_issues(
-    value: list[str | Megacomplex] | None, is_global: bool
-) -> list[ItemIssue]:
-    """Get issues for megacomplexes.
+def get_model_issues(value: list[str | Model] | None, is_global: bool) -> list[ItemIssue]:
+    """Get issues for models.
 
     Parameters
     ----------
-    value: list[str | Megacomplex] | None
-        A list of megacomplexes.
+    value: list[str | Model] | None
+        A list of models.
     model: Model
         The model.
     is_global: bool
-        Whether the megacomplexes are global.
+        Whether the models are global.
 
     Returns
     -------
@@ -109,34 +107,27 @@ def get_megacomplex_issues(
     issues: list[ItemIssue] = []
 
     if value is not None:
-        megacomplexes = [v for v in value if isinstance(v, Megacomplex)]
-        for megacomplex in megacomplexes:
-            megacomplex_type = megacomplex.__class__
-            if megacomplex_type.is_exclusive and len(megacomplexes) > 1:
-                issues.append(
-                    ExclusiveMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)
-                )
-            if (
-                megacomplex_type.is_unique
-                and len([m for m in megacomplexes if m.__class__ is megacomplex_type]) > 1
-            ):
-                issues.append(
-                    UniqueMegacomplexIssue(megacomplex.label, megacomplex.type, is_global)
-                )
+        models = [v for v in value if isinstance(v, Model)]
+        for model in models:
+            model_type = model.__class__
+            if model_type.is_exclusive and len(models) > 1:
+                issues.append(ExclusiveModelIssue(model.label, model.type, is_global))
+            if model_type.is_unique and len([m for m in models if m.__class__ is model_type]) > 1:
+                issues.append(UniqueModelIssue(model.label, model.type, is_global))
     return issues
 
 
-def validate_megacomplexes(
-    value: list[str | Megacomplex],
+def validate_models(
+    value: list[str | Model],
     data_model: DataModel,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    """Get issues for dataset model megacomplexes.
+    """Get issues for dataset model models.
 
     Parameters
     ----------
-    value: list[str | Megacomplex]
-        A list of megacomplexes.
+    value: list[str | Model]
+        A list of models.
     dataset_model: DatasetModel
         The dataset model.
     model: Model
@@ -148,20 +139,20 @@ def validate_megacomplexes(
     -------
     list[ItemIssue]
     """
-    return get_megacomplex_issues(value, False)
+    return get_model_issues(value, False)
 
 
-def validate_global_megacomplexes(
-    value: list[str | Megacomplex] | None,
+def validate_global_models(
+    value: list[str | Model] | None,
     data_model: DataModel,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    """Get issues for dataset model global megacomplexes.
+    """Get issues for dataset model global models.
 
     Parameters
     ----------
-    value: list[str | Megacomplex] | None
-        A list of megacomplexes.
+    value: list[str | Model] | None
+        A list of models.
     dataset_model: DatasetModel
         The dataset model.
     model: Model
@@ -173,7 +164,7 @@ def validate_global_megacomplexes(
     -------
     list[ItemIssue]
     """
-    return get_megacomplex_issues(value, True)
+    return get_model_issues(value, True)
 
 
 class DataModel(Item):
@@ -181,34 +172,31 @@ class DataModel(Item):
 
     data: str | xr.Dataset | None = None
     extra_data: str | xr.Dataset | None = None
-    megacomplex: list[Megacomplex | str] = Attribute(
-        description="The megacomplexes contributing to this dataset.",
-        validator=validate_megacomplexes,  # type:ignore[arg-type]
+    models: list[Model | str] = Attribute(
+        description="The models contributing to this dataset.",
+        validator=validate_models,  # type:ignore[arg-type]
     )
-    megacomplex_scale: list[ParameterType] | None = None
-    global_megacomplex: list[Megacomplex | str] | None = Attribute(
+    model_scale: list[ParameterType] | None = None
+    global_models: list[Model | str] | None = Attribute(
         default=None,
-        description="The global megacomplexes contributing to this dataset.",
-        validator=validate_global_megacomplexes,  # type:ignore[arg-type]
+        description="The global models contributing to this dataset.",
+        validator=validate_global_models,  # type:ignore[arg-type]
     )
-    global_megacomplex_scale: list[ParameterType] | None = None
+    global_model_scale: list[ParameterType] | None = None
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
         default="variable_projection", description="The residual function to use."
     )
     weights: list[Weight] = Field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, library: dict[str, Megacomplex], model_dict: dict[str, Any]) -> DataModel:
+    def from_dict(cls, library: dict[str, Model], model_dict: dict[str, Any]) -> DataModel:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
-        megacomplex_labels = model_dict.get("megcomplex", []) + model_dict.get(
-            "global_megacomplex", []
-        )
-        if len(megacomplex_labels) == 0:
-            raise GlotaranModelError("No megcomplex defined for dataset")
-        megacomplexes = {type(library[label]) for label in megacomplex_labels}
+        model_labels = model_dict.get("models", []) + model_dict.get("global_models", [])
+        if len(model_labels) == 0:
+            raise GlotaranModelError("No model defined for dataset")
+        models = {type(library[label]) for label in model_labels}
         data_models = [
-            m.data_model_type
-            for m in filter(lambda m: m.data_model_type is not None, megacomplexes)
+            m.data_model_type for m in filter(lambda m: m.data_model_type is not None, models)
         ] + [DataModel]
         return create_model(data_model_cls_name, __base__=tuple(data_models))(**model_dict)
 
@@ -225,7 +213,7 @@ def is_data_model_global(data_model: DataModel) -> bool:
     -------
     bool
     """
-    return data_model.global_megacomplex is not None and len(data_model.global_megacomplex) != 0
+    return data_model.global_models is not None and len(data_model.global_models) != 0
 
 
 def get_data_model_dimension(data_model: DataModel) -> str:
@@ -243,29 +231,27 @@ def get_data_model_dimension(data_model: DataModel) -> str:
     Raises
     ------
     ValueError
-        Raised if the data model does not have megacomplexes or if it is not filled.
+        Raised if the data model does not have models or if it is not filled.
     """
-    if len(data_model.megacomplex) == 0:
-        raise GlotaranModelError(f"No megacomplex set for data model '{data_model.label}'.")
-    if any(isinstance(m, str) for m in data_model.megacomplex):
+    if len(data_model.models) == 0:
+        raise GlotaranModelError(f"No models set for data model '{data_model.label}'.")
+    if any(isinstance(m, str) for m in data_model.models):
         raise GlotaranUserError(f"Data model '{data_model.label}' was not resolved.")
-    model_dimension: str = data_model.megacomplex[
-        0
-    ].dimension  # type:ignore[union-attr, assignment]
+    model_dimension: str = data_model.models[0].dimension  # type:ignore[union-attr, assignment]
     if any(
         model_dimension != m.dimension  # type:ignore[union-attr]
-        for m in data_model.megacomplex
+        for m in data_model.models
     ):
-        raise GlotaranModelError("Megacomplex dimensions do not match for data model.")
+        raise GlotaranModelError("Model dimensions do not match for data model.")
     if model_dimension is None:
-        raise GlotaranModelError("No megacomplex dimensions defined for data model.")
+        raise GlotaranModelError("No models dimensions defined for data model.")
     return model_dimension
 
 
-def iterate_data_model_megacomplexes(
+def iterate_data_model_models(
     data_model: DataModel,
-) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
-    """Iterate the data model's megacomplexes.
+) -> Generator[tuple[Parameter | str | None, Model | str], None, None]:
+    """Iterate the data model's models.
 
     Parameters
     ----------
@@ -274,20 +260,18 @@ def iterate_data_model_megacomplexes(
 
     Yields
     ------
-    tuple[Parameter | str | None, Megacomplex | str]
-        A scale and megacomplex.
+    tuple[Parameter | str | None, Model | str]
+        A scale and models.
     """
-    for i, megacomplex in enumerate(data_model.megacomplex):
-        scale = (
-            data_model.megacomplex_scale[i] if data_model.megacomplex_scale is not None else None
-        )
-        yield scale, megacomplex
+    for i, model in enumerate(data_model.models):
+        scale = data_model.models_scale[i] if data_model.model_scale is not None else None
+        yield scale, model
 
 
-def iterate_data_model_global_megacomplexes(
+def iterate_data_model_global_models(
     data_model: DataModel,
-) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
-    """Iterate the data model's global megacomplexes.
+) -> Generator[tuple[Parameter | str | None, Model | str], None, None]:
+    """Iterate the data model's global models.
 
     Parameters
     ----------
@@ -296,33 +280,31 @@ def iterate_data_model_global_megacomplexes(
 
     Yields
     ------
-    tuple[Parameter | str | None, Megacomplex | str]
-        A scale and megacomplex.
+    tuple[Parameter | str | None, Model | str]
+        A scale and model.
     """
-    if data_model.global_megacomplex is None:
+    if data_model.global_modelsone:
         return
-    for i, megacomplex in enumerate(data_model.global_megacomplex):
+    for i, model in enumerate(data_model.global_models):
         scale = (
-            data_model.global_megacomplex_scale[i]
-            if data_model.global_megacomplex_scale is not None
-            else None
+            data_model.global_model_scale[i] if data_model.global_model_scale is not None else None
         )
-        yield scale, megacomplex
+        yield scale, model
 
 
 def resolve_data_model(
     model: DataModel,
-    library: dict[str, Megacomplex],
+    library: dict[str, Model],
     parameters: Parameters,
     initial: Parameters | None = None,
 ) -> DataModel:
     model = model.copy()
-    model.megcomplex = [library[m] if isinstance(m, str) else m for m in model.megcomplex]
+    model.models = [library[m] if isinstance(m, str) else m for m in model.models]
     return resolve_item_parameters(model, parameters, initial)
 
 
 def finalize_data_model(data_model: DataModel, data: xr.Dataset):
-    """Finalize a data by applying all megacomplex finalize methods.
+    """Finalize a data by applying all model finalize methods.
 
     Parameters
     ----------
@@ -332,12 +314,12 @@ def finalize_data_model(data_model: DataModel, data: xr.Dataset):
         The data.
     """
     is_full_model = is_data_model_global(data_model)
-    for megacomplex in data_model.megacomplex:
-        megacomplex.finalize_data(  # type:ignore[union-attr]
+    for model in data_model.models:
+        model.finalize_data(  # type:ignore[union-attr]
             data_model, data, is_full_model=is_full_model
         )
-    if is_full_model and data_model.global_megacomplex is not None:
-        for megacomplex in data_model.global_megacomplex:
-            megacomplex.finalize_data(  # type:ignore[union-attr]
+    if is_full_model and data_model.global_models is not None:
+        for model in data_model.global_models:
+            model.finalize_data(  # type:ignore[union-attr]
                 data_model, data, is_full_model=is_full_model, as_global=True
             )
