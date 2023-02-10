@@ -58,7 +58,7 @@ class ExperimentModel(BaseModel):
     ) -> ExperimentModel:
         result = self.copy()
         result.datasets = {
-            label: resolve_data_model(dataset, parameters, initial)
+            label: resolve_data_model(dataset, library, parameters, initial)
             for label, dataset in self.datasets.items()
         }
         return result

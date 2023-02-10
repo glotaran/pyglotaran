@@ -53,7 +53,7 @@ class OptimizationResult(BaseModel):
 
     :math:`\chi^2 = \sum_i^N [{Residual}_i]^2`."""
 
-    covariance_matrix: ArrayLike | None = None
+    covariance_matrix: np.ndarray | None = None
     """Covariance matrix.
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
@@ -62,7 +62,7 @@ class OptimizationResult(BaseModel):
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
 
-    jacobian: ArrayLike | list | None = None
+    jacobian: np.ndarray | list | None = None
     """Modified Jacobian matrix at the solution
 
     See also: :func:`scipy.optimize.least_squares`

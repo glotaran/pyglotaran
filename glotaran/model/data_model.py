@@ -283,7 +283,7 @@ def iterate_data_model_global_models(
     tuple[Parameter | str | None, Model | str]
         A scale and model.
     """
-    if data_model.global_modelsone:
+    if data_model.global_models is None:
         return
     for i, model in enumerate(data_model.global_models):
         scale = (
@@ -300,6 +300,10 @@ def resolve_data_model(
 ) -> DataModel:
     model = model.copy()
     model.models = [library[m] if isinstance(m, str) else m for m in model.models]
+    if model.global_models is not None:
+        model.global_models = [
+            library[m] if isinstance(m, str) else m for m in model.global_models
+        ]
     return resolve_item_parameters(model, parameters, initial)
 
 

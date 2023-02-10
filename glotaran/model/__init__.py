@@ -9,6 +9,7 @@ from glotaran.model.data_model import get_data_model_dimension
 from glotaran.model.data_model import is_data_model_global
 from glotaran.model.data_model import iterate_data_model_global_models
 from glotaran.model.data_model import iterate_data_model_models
+from glotaran.model.data_model import resolve_data_model
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError

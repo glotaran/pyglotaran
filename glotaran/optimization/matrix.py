@@ -11,9 +11,9 @@ from glotaran.model import ClpRelation
 from glotaran.model import DataModel
 from glotaran.model import GlotaranModelError
 from glotaran.model import GlotaranUserError
-from glotaran.model import Megacomplex
-from glotaran.model import iterate_data_model_global_megacomplexes
-from glotaran.model import iterate_data_model_megacomplexes
+from glotaran.model import Model
+from glotaran.model import iterate_data_model_global_models
+from glotaran.model import iterate_data_model_models
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.parameter import Parameter
@@ -50,13 +50,13 @@ class OptimizationMatrix:
     def from_megacomplex(
         cls,
         scale: Parameter | None,
-        megacomplex: Megacomplex,
+        model: Model,
         data_model: DataModel,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
     ) -> OptimizationMatrix:
         """"""
-        clp_axis, array = megacomplex.calculate_matrix(data_model, global_axis, model_axis)
+        clp_axis, array = model.calculate_matrix(data_model, global_axis, model_axis)
 
         if scale is not None:
             array *= scale
@@ -112,9 +112,7 @@ class OptimizationMatrix:
     ) -> OptimizationMatrix:
         """"""
         megacomplex_iterator = (
-            iterate_data_model_global_megacomplexes
-            if global_matrix
-            else iterate_data_model_megacomplexes
+            iterate_data_model_global_models if global_matrix else iterate_data_model_models
         )
         if global_matrix:
             model_axis, global_axis = global_axis, model_axis
