@@ -35,9 +35,9 @@ test_clp = xr.DataArray(
         (
             "clp_label",
             [
-                "coherent_artifact_order_1",
-                "coherent_artifact_order_2",
-                "coherent_artifact_order_3",
+                "coherent_artifact_coherent-artifact_order_1_activation_0",
+                "coherent_artifact_coherent-artifact_order_2_activation_0",
+                "coherent_artifact_coherent-artifact_order_3_activation_0",
             ],
         ),
         ("spectral", test_global_axis.data),
@@ -50,20 +50,20 @@ test_clp = xr.DataArray(
     (
         GaussianActivation(
             type="gaussian",
-            compartments={},
+            compartments={"coherent-artifact": 1},
             center="gaussian.center",
             width="gaussian.width",
         ),
         GaussianActivation(
             type="gaussian",
-            compartments={},
+            compartments={"coherent-artifact": 1},
             center="gaussian.center",
             width="gaussian.width",
             shift=[0],
         ),
         MultiGaussianActivation(
             type="multi-gaussian",
-            compartments={},
+            compartments={"coherent-artifact": 1},
             center=["gaussian.center"],
             width=["gaussian.width", "gaussian.width"],
         ),
