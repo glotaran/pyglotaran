@@ -7,7 +7,10 @@ import numpy as np
 import xarray as xr
 
 from glotaran.builtin.items.activation import ActivationDataModel
-from glotaran.builtin.items.activation import MultiGaussianActivation
+from glotaran.builtin.items.activation import (
+    MultiGaussianActivation,
+    add_activation_to_result_data,
+)
 from glotaran.model import GlotaranModelError
 from glotaran.model import Model
 from glotaran.model import ParameterType
@@ -17,7 +20,6 @@ class CoherentArtifactModel(Model):
     type: Literal["coherent-artifact"]
     register_as = "coherent-artifact"
     dimension = "time"
-    unique = True
     data_model = ActivationDataModel
     order: int
     width: ParameterType | None = None
@@ -32,13 +34,13 @@ class CoherentArtifactModel(Model):
             raise GlotaranModelError("Coherent artifact order must be between in [1,3]")
 
         activations = [a for a in model.activation if isinstance(a, MultiGaussianActivation)]
-        if not len(activations):
-            raise GlotaranModelError(
-                f'No (multi-)gaussian activation in dataset with coherent-artifact "{self.label}".'
-            )
 
         matrices = []
-        for activation in activations:
+        activation_indices = []
+        for i, activation in enumerate(activations):
+            if self.label not in activation.compartments:
+                continue
+            activation_indices.append(i)
             parameters = activation.parameters(global_axis)
 
             matrix_shape = (model_axis.size, self.order)
@@ -64,18 +66,21 @@ class CoherentArtifactModel(Model):
                     model_axis,
                     self.order,
                 )
+            matrix *= activation.compartments[self.label]
             matrices.append(matrix)
 
-        if len(matrices) == 1:
-            return self.compartments(), matrices[0]
+        if not len(matrices):
+            raise GlotaranModelError(
+                f'No (multi-)gaussian activation for coherent-artifact "{self.label}".'
+            )
 
         clp_axis = []
-        for i in range(len(matrices)):
+        for i in activation_indices:
             clp_axis += [f"{label}_activation_{i}" for label in self.compartments()]
         return clp_axis, np.concatenate(matrices, axis=len(matrices[0].shape) - 1)
 
     def compartments(self):
-        return [f"coherent_artifact_order_{i}" for i in range(1, self.order + 1)]
+        return [f"coherent_artifact_{self.label}_order_{i}" for i in range(1, self.order + 1)]
 
     def add_to_result_data(
         self,
@@ -83,36 +88,60 @@ class CoherentArtifactModel(Model):
         data: xr.Dataset,
         as_global: bool = False,
     ):
-        if not as_global:
-            nr_activations = len(
-                [a for a in model.activation if isinstance(a, MultiGaussianActivation)]
+        add_activation_to_result_data(model, data)
+        if "coherent_artifact_order" in data.coords:
+            return
+
+        data_matrix = data.global_matrix if "global_matrix" in data else data.matrix
+        models = [m for m in model.models if isinstance(m, CoherentArtifactModel)]
+        nr_activations = data.gaussian_activation.size
+        matrices = []
+        estimations = []
+        for coherent_artifact in models:
+            artifact_matrices = []
+            artifact_estimations = []
+            activation_indices = []
+            for i in range(nr_activations):
+                clp_axis = [
+                    label
+                    for label in data.clp_label.data
+                    if label.startswith(f"coherent_artifact_{coherent_artifact.label}")
+                    and label.endswith(f"_activation_{i}")
+                ]
+                if not len(clp_axis):
+                    continue
+                activation_indices.append(i)
+                order = [label.split("_activation_")[0].split("_order")[1] for label in clp_axis]
+
+                artifact_matrices.append(
+                    data_matrix.sel(clp_label=clp_axis)
+                    .rename(clp_label="coherent_artifact_order")
+                    .assign_coords({"coherent_artifact_order": order})
+                )
+                if "global_matrix" not in data:
+                    artifact_estimations.append(
+                        data.clp.sel(clp_label=clp_axis)
+                        .rename(clp_label="coherent_artifact_order")
+                        .assign_coords({"coherent_artifact_order": order})
+                    )
+            matrices.append(
+                xr.concat(artifact_matrices, dim="gaussian_activation").assign_coords(
+                    {"gaussian_activation": activation_indices}
+                )
             )
-            global_dimension = data.attrs["global_dimension"]
-            model_dimension = data.attrs["model_dimension"]
-            data.coords["coherent_artifact_order"] = np.arange(1, self.order + 1)
-            response_dimensions = (model_dimension, "coherent_artifact_order")
-            if len(data.matrix.shape) == 3:
-                response_dimensions = (global_dimension, *response_dimensions)
-            if nr_activations == 1:
-                data["coherent_artifact_response"] = (
-                    response_dimensions,
-                    data.matrix.sel(clp_label=self.compartments()).values,
-                )
-                data["coherent_artifact_associated_estimation"] = (
-                    (global_dimension, "coherent_artifact_order"),
-                    data.clp.sel(clp_label=self.compartments()).values,
-                )
-            else:
-                for i in range(nr_activations):
-                    clp_axis = [f"{label}_activation_{i}" for label in self.compartments()]
-                    data["coherent_artifact_response_activation_{i}"] = (
-                        response_dimensions,
-                        data.matrix.sel(clp_label=clp_axis).values,
+            if "global_matrix" not in data:
+                estimations.append(
+                    xr.concat(artifact_estimations, dim="gaussian_activation").assign_coords(
+                        {"gaussian_activation": activation_indices}
                     )
-                    data["coherent_artifact_associated_estimation_activation_{i}"] = (
-                        (global_dimension, "coherent_artifact_order"),
-                        data.clp.sel(clp_label=clp_axis).values,
-                    )
+                )
+        data["coherent_artifact_response"] = xr.concat(
+            matrices, dim="coherent_artifact"
+        ).assign_coords({"coherent_artifact": [m.label for m in models]})
+        if "global_matrix" not in data:
+            data["coherent_artifact_associated_estimation"] = xr.concat(
+                estimations, dim="coherent_artifact"
+            ).assign_coords({"coherent_artifact": [m.label for m in models]})
 
 
 @nb.jit(nopython=True, parallel=False)
@@ -130,11 +159,11 @@ def _calculate_coherent_artifact_matrix_on_index(
     matrix: np.ndarray, center: float, width: float, axis: np.ndarray, order: int
 ):
 
-    matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
+    matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width ** 2))
     if order > 1:
-        matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2
+        matrix[:, 1] = matrix[:, 0] * (center - axis) / width ** 2
 
     if order > 2:
         matrix[:, 2] = (
-            matrix[:, 0] * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
+            matrix[:, 0] * (center ** 2 - width ** 2 - 2 * center * axis + axis ** 2) / width ** 4
         )
