@@ -22,6 +22,10 @@ if TYPE_CHECKING:
             "yaml",
         ),
         (
+            "yml",
+            "yaml",
+        ),
+        (
             "sdt",
             "sdt",
         ),
@@ -31,8 +35,8 @@ if TYPE_CHECKING:
         ),
     ),
 )
-def test_inferr_file_format(tmp_path: Path, extension: str, expected: str):
-    """Inferr type from existing files with extension."""
+def test_infer_file_format(tmp_path: Path, extension: str, expected: str):
+    """Infer type from existing files with extension."""
     file_path = tmp_path / f"dummy.{extension}"
     file_path.touch()
 
@@ -51,13 +55,13 @@ def test_inferr_file_format_no_extension(tmp_path: Path):
 
 
 @pytest.mark.parametrize("is_file", (True, False))
-def test_inferr_file_format_allow_folder(tmp_path: Path, is_file: bool):
+def test_infer_file_format_allow_folder(tmp_path: Path, is_file: bool):
     """If there is no extension, return legacy."""
     file_path = tmp_path / "dummy"
     if is_file:
         file_path.touch()
 
-    assert infer_file_format(file_path, allow_folder=True) == "yml"
+    assert infer_file_format(file_path, allow_folder=True) == "yaml"
 
 
 def test_inferr_file_format_none_existing_file():

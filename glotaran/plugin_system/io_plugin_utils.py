@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 def infer_file_format(
     file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder=False
 ) -> str:
-    """Inferr format of a file if it exists.
+    """Infer format of a file if it exists.
 
     Parameters
     ----------
@@ -54,10 +54,11 @@ def infer_file_format(
 
     _, file_format = os.path.splitext(file_path)
     if file_format != "":
-        return file_format.lstrip(".")
+        file_format = file_format.lstrip(".")
+        return "yaml" if file_format == "yml" else file_format
 
     if allow_folder:
-        return "yml"
+        return "yaml"
     else:
         raise ValueError(
             f"Cannot determine format of file {file_path!r}, please provide an explicit format."
