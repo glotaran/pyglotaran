@@ -372,6 +372,16 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
 
 
+def test_show_model_definition(tmp_path: Path):
+    """Syntax is correct inferred and expected file content."""
+    project = Project.open(tmp_path)
+    file_content = "foo:\n  bar"
+
+    (tmp_path / "models/yml_model.yml").write_text(file_content)
+
+    assert str(project.show_model_definition("yml_model")) == "```yaml\nfoo:\n  bar\n```"
+
+
 def test_import_data_relative_paths_script_folder_not_cwd(
     tmp_path: Path, monkeypatch: MonkeyPatch
 ):

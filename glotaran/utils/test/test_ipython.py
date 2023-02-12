@@ -37,8 +37,15 @@ def test_display_file(tmp_path: Path):
     """str and PathLike give the same result"""
     file_content = "kinetic:\n  - ['1', 1]"
     expected = MarkdownStr(file_content, syntax="yaml")
-    tmp_file = tmp_path / "test.yml"
-    tmp_file.write_text(file_content)
+    yml_file = tmp_path / "test.yml"
+    yml_file.write_text(file_content)
 
-    assert display_file(tmp_file, syntax="yaml") == expected
-    assert display_file(str(tmp_file), syntax="yaml") == expected
+    assert display_file(yml_file) == expected
+    assert display_file(str(yml_file)) == expected
+
+    yaml_file = tmp_path / "test.yaml"
+    yaml_file.write_text(file_content)
+    assert display_file(yaml_file) == expected
+
+    assert str(display_file(yaml_file, syntax="json")) == f"```json\n{file_content}\n```"
+    assert str(display_file(yaml_file, syntax="")) == f"```\n{file_content}\n```"

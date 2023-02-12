@@ -24,6 +24,7 @@ from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
 from glotaran.utils.io import make_path_absolute_if_relative
 from glotaran.utils.ipython import MarkdownStr
+from glotaran.utils.ipython import display_file
 
 TEMPLATE = "version: {gta_version}"
 
@@ -248,6 +249,25 @@ class Project:
         .. # noqa: DAR402
         """
         return self._model_registry.load_item(model_name)
+
+    def show_model_definition(self, model_name: str, syntax: str | None = None) -> MarkdownStr:
+        """Show model definition file content with syntax highlighting.
+
+        Parameters
+        ----------
+        model_name: str
+            The name of the model.
+        syntax: str | None
+            Syntax used for syntax highlighting. Defaults to None which means that the syntax is
+            inferred based on the file extension. Pass the value ``""`` to deactivate syntax
+            highlighting.
+
+        Returns
+        -------
+        MarkdownStr
+            Model definition file content with syntax highlighting to render in ipython.
+        """
+        return display_file(self.models[model_name], syntax=syntax)
 
     def generate_model(
         self,
