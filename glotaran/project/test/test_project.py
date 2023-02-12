@@ -73,6 +73,10 @@ def test_open(project_folder: Path, project_file: Path):
 
     project = project_from_file
 
+    assert (project_folder / "data").is_dir()
+    assert (project_folder / "models").is_dir()
+    assert (project_folder / "parameters").is_dir()
+
     assert project.version == gta_version
     assert not project.has_models
     assert not project.has_data
