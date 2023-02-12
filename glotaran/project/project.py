@@ -290,6 +290,29 @@ class Project:
         """
         return display_file(self.models[model_name], syntax=syntax)
 
+    def validate(self, model_name: str, parameters_name: str | None = None) -> MarkdownStr:
+        """Check that the model is valid, list all issues in the model if there are any.
+
+        If ``parameters_name`` also consider the ``Parameters`` when validating.
+
+        Parameters
+        ----------
+        model_name: str
+            The name of the model to validate.
+        parameters_name: str | None
+            The name of the parameters to use when validating. Defaults to ``None`` which means
+            that parameters are not considered when validating the model.
+
+        Returns
+        -------
+        MarkdownStr
+            Text indicating if the model is valid or not.
+        """
+        model = self.load_model(model_name)
+        return model.validate(
+            self.load_parameters(parameters_name) if parameters_name is not None else None
+        )
+
     def generate_model(
         self,
         model_name: str,

@@ -378,6 +378,21 @@ def test_generators_allow_overwrite(project_folder: Path, project_file: Path):
     assert len(list(filter(lambda p: p.label.startswith("rates"), parameters.all()))) == 3
 
 
+def test_validate(project_file: Path):
+    """Validation works"""
+    project = Project.open(project_file)
+
+    assert str(project.validate("test_model")) == "Your model is valid."
+    assert str(project.validate("test_model", "test_parameters")) == "Your model is valid."
+
+    bad_parameters_path = project_file.parent / "parameters/bad_parameters.yml"
+    bad_parameters_path.write_text("pure_list: [1.0]")
+    assert str(project.validate("test_model", "bad_parameters")).startswith(
+        "Your model has 3 problems"
+    )
+    bad_parameters_path.unlink()
+
+
 def test_show_model_definition(tmp_path: Path):
     """Syntax is correct inferred and expected file content."""
     project = Project.open(tmp_path)
