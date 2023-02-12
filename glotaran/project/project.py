@@ -8,6 +8,7 @@ from dataclasses import field
 from importlib.metadata import distribution
 from pathlib import Path
 from textwrap import dedent
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 
@@ -15,6 +16,7 @@ import pandas as pd
 import xarray as xr
 
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import Model
 from glotaran.parameter import Parameters
 from glotaran.project.project_data_registry import ProjectDataRegistry
@@ -26,6 +28,9 @@ from glotaran.project.scheme import Scheme
 from glotaran.utils.io import make_path_absolute_if_relative
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.ipython import display_file
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
 
 TEMPLATE = "version: {gta_version}"
 
@@ -152,18 +157,31 @@ class Project:
         """
         return self._data_registry.items
 
-    def load_data(self, dataset_name: str) -> xr.Dataset:
-        """Load a dataset.
+    def load_data(
+        self,
+        dataset_name: str,
+        *,
+        add_svd: bool = False,
+        lsv_dim: Hashable = "time",
+        rsv_dim: Hashable = "spectral",
+    ) -> xr.Dataset:
+        """Load a dataset, with SVD data if ``add_svd`` is ``True``.
 
         Parameters
         ----------
         dataset_name : str
             The name of the dataset.
+        add_svd: bool
+            Whether or not to calculate and add SVD data. Defaults to False.
+        lsv_dim: Hashable
+            Dimension of the left singular vectors. Defaults to "time".
+        rsv_dim: Hashable
+            Dimension of the right singular vectors. Defaults to "spectral",
 
         Returns
         -------
-        Result
-            The loaded dataset.
+        xr.Dataset
+            The loaded dataset, with SVD data if ``add_svd`` is ``True``.
 
         Raises
         ------
@@ -176,6 +194,8 @@ class Project:
         dataset = self._data_registry.load_item(dataset_name)
         if isinstance(dataset, xr.DataArray):
             dataset = dataset.to_dataset(name="data")
+        if add_svd is True:
+            add_svd_to_dataset(dataset, name="data", lsv_dim=lsv_dim, rsv_dim=rsv_dim)
         return dataset
 
     def import_data(

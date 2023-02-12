@@ -200,7 +200,12 @@ def test_import_data(project_folder: Path, project_file: Path, test_data: Path, 
     assert project.has_data
 
     data = project.load_data("dataset_1" if name is None else name)
-    assert data == example_dataset
+    assert data.equals(example_dataset)
+
+    data_with_svd = project.load_data("dataset_1" if name is None else name, add_svd=True)
+    assert "data_left_singular_vectors" in data_with_svd
+    assert "data_singular_values" in data_with_svd
+    assert "data_right_singular_vectors" in data_with_svd
 
 
 @pytest.mark.parametrize(
