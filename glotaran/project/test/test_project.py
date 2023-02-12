@@ -253,12 +253,13 @@ def test_run_optimization(project_folder: Path, project_file: Path, name: str | 
     name = name or "sequential"
 
     for i in range(2):
-        project.optimize(
+        result = project.optimize(
             model_name="sequential",
             parameters_name="sequential",
             maximum_number_function_evaluations=1,
             result_name=name,
         )
+        assert isinstance(result, Result)
         assert project.has_results
         result_name = f"{name}_run_000{i}"
         assert (project_folder / "results" / result_name).exists()

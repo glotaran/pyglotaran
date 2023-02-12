@@ -543,7 +543,7 @@ class Project:
         result_name: str | None = None,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
-    ):
+    ) -> Result:
         """Optimize a model.
 
         Parameters
@@ -558,6 +558,11 @@ class Project:
             The maximum number of function evaluations.
         clp_link_tolerance : float
             The CLP link tolerance.
+
+        Returns
+        -------
+        Result
+            Result of the optimization.
         """
         from glotaran.optimization.optimize import optimize
 
@@ -568,6 +573,7 @@ class Project:
 
         result_name = result_name or model_name
         self._result_registry.save(result_name, result)
+        return result
 
     def markdown(self) -> MarkdownStr:
         """Format the project as a markdown text.
