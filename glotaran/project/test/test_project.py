@@ -32,23 +32,23 @@ from glotaran.utils.io import chdir_context
 
 
 @pytest.fixture(scope="module")
-def project_folder(tmpdir_factory):
-    return Path(tmpdir_factory.mktemp("test_project"))
+def project_folder(tmp_path_factory):
+    return tmp_path_factory.mktemp("test_project", numbered=False)
 
 
 @pytest.fixture(scope="module")
 def project_file(project_folder: Path):
-    return Path(project_folder) / "project.gta"
+    return project_folder / "project.gta"
 
 
 @pytest.fixture(scope="module")
-def test_data(tmpdir_factory):
-    path = Path(tmpdir_factory.mktemp("test_project")) / "dataset_1.nc"
+def test_data(project_folder):
+    path = project_folder / "dataset_1.nc"
     save_dataset(example_dataset, path)
     return path
 
 
-def test_init(project_folder: Path, project_file: Path):
+def test_init(project_file: Path):
     """Init project directly."""
     file_only_init = Project(project_file)
     file_and_folder_init = Project(project_file)
@@ -624,9 +624,9 @@ def test_markdown_repr(project_folder: Path, project_file: Path):
     project = Project.open(project_file)
 
     expected = f"""\
-        # Project _{project_folder.as_posix()}_
+        # Project (_test_project_)
 
-        pyglotaran version: {distribution('pyglotaran').version}
+        pyglotaran version: `{distribution('pyglotaran').version}`
 
         ## Data
 

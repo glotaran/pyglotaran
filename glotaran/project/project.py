@@ -39,7 +39,7 @@ class Project:
     version: str = field(init=False)
 
     file: Path
-    folder: Path | None = field(default=None)
+    folder: Path = field(default=None)  # type:ignore[assignment]
 
     def __post_init__(self):
         """Overwrite of post init."""
@@ -577,11 +577,10 @@ class Project:
         MarkdownStr : str
             The markdown string.
         """
-        folder_as_posix = self.folder.as_posix()  # type:ignore[union-attr]
         md = f"""\
-            # Project _{folder_as_posix}_
+            # Project (_{self.folder.name}_)
 
-            pyglotaran version: {self.version}
+            pyglotaran version: `{self.version}`
 
             ## Data
 
