@@ -179,7 +179,7 @@ class Project:
     def import_data(
         self,
         dataset: str | Path | xr.Dataset | xr.DataArray,
-        name: str | None = None,
+        dataset_name: str | None = None,
         allow_overwrite: bool = False,
         ignore_existing: bool = False,
     ):
@@ -189,7 +189,7 @@ class Project:
         ----------
         dataset : str | Path | xr.Dataset | xr.DataArray
             Dataset instance or path to a dataset.
-        name : str | None
+        dataset_name : str | None
             The name of the dataset (needs to be provided when dataset is an xarray instance).
             Defaults to None.
         allow_overwrite: bool
@@ -198,7 +198,10 @@ class Project:
             Whether to ignore import if the dataset already exists.
         """
         self._data_registry.import_data(
-            dataset, name=name, allow_overwrite=allow_overwrite, ignore_existing=ignore_existing
+            dataset,
+            dataset_name=dataset_name,
+            allow_overwrite=allow_overwrite,
+            ignore_existing=ignore_existing,
         )
 
     @property
@@ -223,12 +226,12 @@ class Project:
         """
         return self._model_registry.items
 
-    def load_model(self, name: str) -> Model:
+    def load_model(self, model_name: str) -> Model:
         """Load a model.
 
         Parameters
         ----------
-        name : str
+        model_name : str
             The name of the model.
 
         Returns
@@ -244,7 +247,7 @@ class Project:
 
         .. # noqa: DAR402
         """
-        return self._model_registry.load_item(name)
+        return self._model_registry.load_item(model_name)
 
     def generate_model(
         self,

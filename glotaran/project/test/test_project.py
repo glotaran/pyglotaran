@@ -182,12 +182,12 @@ def test_generate_parameters(
 def test_import_data(project_folder: Path, project_file: Path, test_data: Path, name: str | None):
     project = Project.open(project_file)
 
-    project.import_data(test_data, name=name)
+    project.import_data(test_data, dataset_name=name)
     with pytest.raises(FileExistsError):
-        project.import_data(test_data, name=name)
+        project.import_data(test_data, dataset_name=name)
 
-    project.import_data(test_data, name=name, allow_overwrite=True)
-    project.import_data(test_data, name=name, ignore_existing=True)
+    project.import_data(test_data, dataset_name=name, allow_overwrite=True)
+    project.import_data(test_data, dataset_name=name, ignore_existing=True)
 
     data_folder = project_folder / "data"
     assert data_folder.exists()
@@ -212,7 +212,7 @@ def test_import_data(project_folder: Path, project_file: Path, test_data: Path, 
 def test_import_data_xarray(tmp_path: Path, data: xr.Dataset | xr.DataArray):
     """Loaded data are always a dataset."""
     project = Project.open(tmp_path)
-    project.import_data(data, name="test_data")
+    project.import_data(data, dataset_name="test_data")
 
     assert (tmp_path / "data/test_data.nc").is_file() is True
 
@@ -396,10 +396,10 @@ def test_import_data_relative_paths_script_folder_not_cwd(
         project = Project.open("project.gta")
         assert (script_folder / "project.gta").is_file() is True
 
-        project.import_data(f"../{cwd_data_import_path}", name="dataset_1")
+        project.import_data(f"../{cwd_data_import_path}", dataset_name="dataset_1")
         assert (script_folder / "data/dataset_1.nc").is_file() is True
 
-        project.import_data(script_folder_data_import_path, name="dataset_2")
+        project.import_data(script_folder_data_import_path, dataset_name="dataset_2")
         assert (script_folder / "data/dataset_2.nc").is_file() is True
 
 
@@ -555,7 +555,7 @@ def test_missing_file_errors(tmp_path: Path, project_folder: Path):
 
     assert str(exc_info.value) == (
         "When importing data from a 'xarray.Dataset' or 'xarray.DataArray' "
-        "it is required to also pass a name."
+        "it is required to also pass a ``dataset_name``."
     )
 
     with pytest.raises(ValueError) as exc_info:
@@ -563,7 +563,7 @@ def test_missing_file_errors(tmp_path: Path, project_folder: Path):
 
     assert str(exc_info.value) == (
         "When importing data from a 'xarray.Dataset' or 'xarray.DataArray' "
-        "it is required to also pass a name."
+        "it is required to also pass a ``dataset_name``."
     )
 
     no_exist_data_error_msg = (
