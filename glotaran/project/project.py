@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
 from importlib.metadata import distribution
@@ -139,12 +140,12 @@ class Project:
         return not self._data_registry.empty
 
     @property
-    def data(self) -> dict[str, Path]:
+    def data(self) -> Mapping[str, Path]:
         """Get all project datasets.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The models of the datasets.
         """
         return self._data_registry.items
@@ -212,12 +213,12 @@ class Project:
         return not self._model_registry.empty
 
     @property
-    def models(self) -> dict[str, Path]:
+    def models(self) -> Mapping[str, Path]:
         """Get all project models.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The models of the project.
         """
         return self._model_registry.items
@@ -299,12 +300,12 @@ class Project:
         return not self._parameter_registry.empty
 
     @property
-    def parameters(self) -> dict[str, Path]:
+    def parameters(self) -> Mapping[str, Path]:
         """Get all project parameters.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The parameters of the project.
         """
         return self._parameter_registry.items
@@ -391,12 +392,12 @@ class Project:
         return not self._result_registry.empty
 
     @property
-    def results(self) -> dict[str, Path]:
+    def results(self) -> Mapping[str, Path]:
         """Get all project results.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The results of the project.
         """
         return self._result_registry.items

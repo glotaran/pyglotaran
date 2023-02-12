@@ -566,41 +566,69 @@ def test_missing_file_errors(tmp_path: Path, project_folder: Path):
         "it is required to also pass a name."
     )
 
-    with pytest.raises(ValueError) as exc_info:
-        project.load_data("not-existing")
-
-    assert str(exc_info.value) == (
+    no_exist_data_error_msg = (
         "Dataset 'not-existing' does not exist. "
         "Known Datasets are: ['dataset_1', 'dataset_1-bad', 'test_data']"
     )
 
     with pytest.raises(ValueError) as exc_info:
-        project.load_model("not-existing")
+        project.data["not-existing"]
 
-    assert str(exc_info.value) == (
+    assert str(exc_info.value) == no_exist_data_error_msg
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_data("not-existing")
+
+    assert str(exc_info.value) == no_exist_data_error_msg
+
+    no_exist_model_error_msg = (
         "Model 'not-existing' does not exist. "
         "Known Models are: ['test_model', 'test_model-bad']"
     )
 
     with pytest.raises(ValueError) as exc_info:
-        project.load_parameters("not-existing")
+        project.models["not-existing"]
 
-    assert str(exc_info.value) == (
+    assert str(exc_info.value) == no_exist_model_error_msg
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_model("not-existing")
+
+    assert str(exc_info.value) == no_exist_model_error_msg
+
+    no_exist_parameters_error_msg = (
         "Parameters 'not-existing' does not exist. "
         "Known Parameters are: ['test_parameters', 'test_parameters-bad']"
     )
 
     with pytest.raises(ValueError) as exc_info:
-        project.load_result("not-existing_run_0000")
+        project.parameters["not-existing"]
+
+    assert str(exc_info.value) == no_exist_parameters_error_msg
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_parameters("not-existing")
+
+    assert str(exc_info.value) == no_exist_parameters_error_msg
 
     expected_known_results = (
         "Known Results are: "
         "['sequential_run_0000', 'sequential_run_0001', 'test_run_0000', 'test_run_0001']"
     )
 
-    assert str(exc_info.value) == (
+    no_exist_full_result_name_error_msg = (
         f"Result 'not-existing_run_0000' does not exist. {expected_known_results}"
     )
+
+    with pytest.raises(ValueError) as exc_info:
+        project.results["not-existing_run_0000"]
+
+    assert str(exc_info.value) == no_exist_full_result_name_error_msg
+
+    with pytest.raises(ValueError) as exc_info:
+        project.load_result("not-existing_run_0000")
+
+    assert str(exc_info.value) == no_exist_full_result_name_error_msg
 
     with pytest.raises(ValueError) as exc_info:
         project.load_latest_result("not-existing")

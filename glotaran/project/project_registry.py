@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 from warnings import warn
@@ -57,6 +59,48 @@ class AmbiguousNameWarning(UserWarning):
         )
 
 
+class ItemMapping(Mapping):
+    """Container class for ``ProjectRegistry`` items.
+
+    The main purpose of this class is to show a user friendly error when accessing none existing
+    items.
+    """
+
+    def __init__(self, data: Mapping[str, Path], item_name: str) -> None:
+        """Initialize class instance as wrapper around ``data``.
+
+        Parameters
+        ----------
+        data: Mapping[str, Path]
+            Underlying data that are used for mapping.
+        item_name: str
+            Name of items in the registry used to format warning and exception (e.g. 'Parameters').
+        """
+        self.data = dict(sorted(data.items()))
+        self._item_name = item_name
+
+    def __getitem__(self, key: str) -> Path:
+        """Protocol method used when accessing an item."""
+        if key in self.data:
+            return self.data[key]
+        raise ValueError(
+            f"{self._item_name} '{key}' does not exist. "
+            f"Known {self._item_name.rstrip('s')}s are: {list(self.data.keys())}"
+        )
+
+    def __iter__(self) -> Iterator[str]:
+        """Protocol method used when iterating over an instance."""
+        return iter(self.data)
+
+    def __len__(self) -> int:
+        """Protocol method used by ``len``."""
+        return len(self.data)
+
+    def __repr__(self) -> str:
+        """Protocol method used to display instance."""
+        return repr(self.data)
+
+
 class ProjectRegistry:
     """A registry base class."""
 
@@ -108,12 +152,12 @@ class ProjectRegistry:
         return len(self.items) == 0
 
     @property
-    def items(self) -> dict[str, Path]:
+    def items(self) -> ItemMapping:
         """Get the items of the registry.
 
         Returns
         -------
-        dict[str, Path]
+        ItemMapping
             The items of the registry.
         """
         items = {}
@@ -136,7 +180,7 @@ class ProjectRegistry:
                         ),
                         stacklevel=3,
                     )
-        return dict(sorted(items.items()))
+        return ItemMapping(items, self._item_name)
 
     def is_item(self, path: Path) -> bool:
         """Check if the path contains an registry item.
@@ -170,13 +214,11 @@ class ProjectRegistry:
         ------
         ValueError
             Raise if the item does not exist.
+
+
+        .. # noqa: DAR402
         """
-        if name in self.items:
-            return self._loader(self.items[name])
-        raise ValueError(
-            f"{self._item_name} '{name}' does not exist. "
-            f"Known {self._item_name.rstrip('s')}s are: {list(self.items.keys())}"
-        )
+        return self._loader(self.items[name])
 
     def markdown(self, join_indentation: int = 0) -> MarkdownStr:
         """Format the registry items as a markdown text.
