@@ -12,6 +12,7 @@ import xarray as xr
 from _pytest.monkeypatch import MonkeyPatch
 from _pytest.recwarn import WarningsRecorder
 from IPython.core.formatters import format_display_data
+from pandas.testing import assert_frame_equal
 
 from glotaran import __version__ as gta_version
 from glotaran.builtin.io.yml.utils import load_dict
@@ -380,6 +381,34 @@ def test_show_model_definition(tmp_path: Path):
     (tmp_path / "models/yml_model.yml").write_text(file_content)
 
     assert str(project.show_model_definition("yml_model")) == "```yaml\nfoo:\n  bar\n```"
+
+
+def test_show_parameters_definition(tmp_path: Path):
+    """Syntax is correct inferred and expected file content and dataframes are returned when
+    ``as_dataframe=True`` or file is excel format."""
+    project = Project.open(tmp_path)
+    file_content = "pure_list: [1.0]"
+
+    (tmp_path / "parameters/yml_parameters.yml").write_text(file_content)
+
+    assert (
+        str(project.show_parameters_definition("yml_parameters"))
+        == "```yaml\npure_list: [1.0]\n```"
+    )
+
+    dummy_parameters = load_parameters("pure_list: [1.0]", format_name="yml_str")
+
+    assert_frame_equal(
+        project.show_parameters_definition("yml_parameters", as_dataframe=True),
+        dummy_parameters.to_dataframe(),
+    )
+
+    save_parameters(dummy_parameters, (tmp_path / "parameters/excel_parameters.xlsx"))
+
+    assert_frame_equal(
+        project.show_parameters_definition("excel_parameters"),
+        dummy_parameters.to_dataframe(),
+    )
 
 
 def test_import_data_relative_paths_script_folder_not_cwd(

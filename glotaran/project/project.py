@@ -11,6 +11,7 @@ from textwrap import dedent
 from typing import Any
 from typing import Literal
 
+import pandas as pd
 import xarray as xr
 
 from glotaran.builtin.io.yml.utils import load_dict
@@ -356,6 +357,35 @@ class Project:
         .. # noqa: DAR402
         """
         return self._parameter_registry.load_item(parameters_name)
+
+    def show_parameters_definition(
+        self, parameters_name: str, syntax: str | None = None, *, as_dataframe: bool | None = None
+    ) -> MarkdownStr | pd.DataFrame:
+        """Show parameters definition file content with syntax highlighting.
+
+        Parameters
+        ----------
+        parameters_name: str
+            The name of the parameters.
+        syntax: str | None
+            Syntax used for syntax highlighting. Defaults to None which means that the syntax is
+            inferred based on the file extension. Pass the value ``""`` to deactivate syntax
+            highlighting.
+        as_dataframe: bool | None
+            Whether or not to show the ``Parameters`` definition as pandas.DataFrame (mostly useful
+            for non string formats). Defaults to None which means that it will be inferred to
+            ``True`` for known non string formats like ``xlsx``.
+
+        Returns
+        -------
+        MarkdownStr | pd.DataFrame
+            Parameters definition file content with syntax highlighting to render in ipython.
+        """
+        if as_dataframe is True or (
+            as_dataframe is None and self.parameters[parameters_name].suffix in [".xlsx", ".ods"]
+        ):
+            return self.load_parameters(parameters_name).to_dataframe()
+        return display_file(self.parameters[parameters_name], syntax=syntax)
 
     def generate_parameters(
         self,
