@@ -179,7 +179,7 @@ ItemT = TypeVar("ItemT", bound="Item")
 ModelItemT = TypeVar("ModelItemT", bound="ModelItem")
 
 ParameterType: TypeAlias = Parameter | str
-ModelItemType: TypeAlias = ModelItemT | str  # type:ignore[operator]
+ModelItemType: TypeAlias = ModelItemT | str
 
 
 def item_to_markdown(
