@@ -31,5 +31,5 @@ def remove_files(path: Path, glob_pattern: str):
 if __name__ == "__main__":
     remove_files(NOTEBOOK_PATH / "quickstart", "*.nc")
     remove_files(NOTEBOOK_PATH / "quickstart/quickstart_project", "*.gta")
-    shutil.rmtree(NOTEBOOK_PATH / "quickstart/quickstart_project/data")
-    shutil.rmtree(NOTEBOOK_PATH / "quickstart/quickstart_project/results")
+    shutil.rmtree(NOTEBOOK_PATH / "quickstart/quickstart_project/data", ignore_errors=True)
+    shutil.rmtree(NOTEBOOK_PATH / "quickstart/quickstart_project/results", ignore_errors=True)
