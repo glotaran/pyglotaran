@@ -100,9 +100,7 @@ class ItemMapping(Mapping):
         """Protocol method used for equality checks."""
         if isinstance(other, ItemMapping):
             return self.data == other.data
-        if isinstance(other, Mapping):
-            return self.data == other
-        return NotImplemented
+        return self.data == other if isinstance(other, Mapping) else NotImplemented
 
     def __repr__(self) -> str:
         """Protocol method used to display instance."""
