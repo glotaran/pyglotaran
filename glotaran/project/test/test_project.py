@@ -128,6 +128,9 @@ def test_open_diff_version(tmp_path: Path):
     assert project.version == "0.1.0"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::glotaran.deprecation.deprecation_utils.GlotaranApiDeprecationWarning"
+)
 def test_generate_model(tmp_path: Path):
     project = Project.open(tmp_path / "test_project")
 
@@ -165,6 +168,9 @@ def test_generate_model(tmp_path: Path):
     )
 
 
+@pytest.mark.filterwarnings(
+    "ignore::glotaran.deprecation.deprecation_utils.GlotaranApiDeprecationWarning"
+)
 @pytest.mark.parametrize("name", ["test_parameter", None])
 @pytest.mark.parametrize("fmt", ["yml", "yaml", "csv"])
 def test_generate_parameters(tmp_path: Path, name: str | None, fmt: Literal["yml", "yaml", "csv"]):
@@ -582,6 +588,9 @@ def test_parameters_subfolder_folders(tmp_path: Path):
             )
 
 
+@pytest.mark.filterwarnings(
+    "ignore::glotaran.deprecation.deprecation_utils.GlotaranApiDeprecationWarning"
+)
 def test_generators_allow_overwrite(existing_project: Project):
     """Overwrite doesn't throw an exception.
     This is the last test not to interfere with other tests.

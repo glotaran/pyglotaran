@@ -11,11 +11,14 @@ from textwrap import dedent
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
+from warnings import warn
 
 import pandas as pd
 import xarray as xr
 
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
+from glotaran.deprecation.deprecation_utils import check_overdue
 from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import Model
 from glotaran.parameter import Parameters
@@ -337,6 +340,14 @@ class Project:
         ignore_existing: bool
             Whether to ignore generation of a model file if it already exists.
         """
+        check_overdue("Project.generate_model", "0.8.0")
+        warn(
+            GlotaranApiDeprecationWarning(
+                "Usage of 'Project.generate_model' was deprecated without replacement.\n"
+                "This usage will be an error in version: '0.8.0'."
+            ),
+            stacklevel=2,
+        )
         self._model_registry.generate_model(
             model_name,
             generator_name,
@@ -454,6 +465,14 @@ class Project:
         ignore_existing: bool
             Whether to ignore generation of a parameter file if it already exists.
         """
+        check_overdue("Project.generate_parameters", "0.8.0")
+        warn(
+            GlotaranApiDeprecationWarning(
+                "Usage of 'Project.generate_parameters' was deprecated without replacement.\n"
+                "This usage will be an error in version: '0.8.0'."
+            ),
+            stacklevel=2,
+        )
         model = self.load_model(model_name)
         parameters_name = (
             parameters_name if parameters_name is not None else f"{model_name}_parameters"
