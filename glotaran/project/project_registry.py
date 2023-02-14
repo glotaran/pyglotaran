@@ -96,6 +96,14 @@ class ItemMapping(Mapping):
         """Protocol method used by ``len``."""
         return len(self.data)
 
+    def __eq__(self, other: object) -> bool:
+        """Protocol method used for equality checks."""
+        if isinstance(other, ItemMapping):
+            return self.data == other.data
+        if isinstance(other, Mapping):  # sourcery skip: assign-if-exp
+            return self.data == other
+        return NotImplemented
+
     def __repr__(self) -> str:
         """Protocol method used to display instance."""
         return repr(self.data)

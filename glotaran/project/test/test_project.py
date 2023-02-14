@@ -21,6 +21,7 @@ from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.project.project import Project
 from glotaran.project.project_registry import AmbiguousNameWarning
+from glotaran.project.project_registry import ItemMapping
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import DATASET as example_dataset
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
@@ -82,6 +83,31 @@ def dummy_results(persistent_result: Path, existing_project: Project):
         "test_run_0001",
     ):
         copytree(persistent_result, existing_project.folder / f"results/{dummy_result_folder}")
+
+
+def test_item_mapping():
+    """Test all protocol methods work as expected"""
+    data = {"foo": Path("foo"), "bar": Path("bar")}
+    item_mapping = ItemMapping(data, "test")
+
+    assert len(item_mapping) == 2
+
+    assert repr(item_mapping) == repr({"bar": Path("bar"), "foo": Path("foo")})
+
+    assert item_mapping["foo"] == Path("foo")
+
+    assert item_mapping == ItemMapping(data, "test")
+    assert item_mapping == ItemMapping(data, "test2")
+    assert item_mapping == data
+
+    assert "foo" in item_mapping
+
+    assert dict(item_mapping.items()) == data
+
+    with pytest.raises(ValueError) as exc_info:
+        item_mapping["baz"]
+
+    assert str(exc_info.value) == ("test 'baz' does not exist. Known tests are: ['bar', 'foo']")
 
 
 def test_init(tmp_path: Path):
