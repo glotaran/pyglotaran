@@ -2,17 +2,24 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
 from importlib.metadata import distribution
 from pathlib import Path
 from textwrap import dedent
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
+from warnings import warn
 
+import pandas as pd
 import xarray as xr
 
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
+from glotaran.deprecation.deprecation_utils import check_overdue
+from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model import Model
 from glotaran.parameter import Parameters
 from glotaran.project.project_data_registry import ProjectDataRegistry
@@ -23,6 +30,10 @@ from glotaran.project.result import Result
 from glotaran.project.scheme import Scheme
 from glotaran.utils.io import make_path_absolute_if_relative
 from glotaran.utils.ipython import MarkdownStr
+from glotaran.utils.ipython import display_file
+
+if TYPE_CHECKING:
+    from collections.abc import Hashable
 
 TEMPLATE = "version: {gta_version}"
 
@@ -39,7 +50,7 @@ class Project:
     version: str = field(init=False)
 
     file: Path
-    folder: Path | None = field(default=None)
+    folder: Path = field(default=None)  # type:ignore[assignment]
 
     def __post_init__(self):
         """Overwrite of post init."""
@@ -139,28 +150,41 @@ class Project:
         return not self._data_registry.empty
 
     @property
-    def data(self) -> dict[str, Path]:
+    def data(self) -> Mapping[str, Path]:
         """Get all project datasets.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The models of the datasets.
         """
         return self._data_registry.items
 
-    def load_data(self, dataset_name: str) -> xr.Dataset:
-        """Load a dataset.
+    def load_data(
+        self,
+        dataset_name: str,
+        *,
+        add_svd: bool = False,
+        lsv_dim: Hashable = "time",
+        rsv_dim: Hashable = "spectral",
+    ) -> xr.Dataset:
+        """Load a dataset, with SVD data if ``add_svd`` is ``True``.
 
         Parameters
         ----------
         dataset_name : str
             The name of the dataset.
+        add_svd: bool
+            Whether or not to calculate and add SVD data. Defaults to False.
+        lsv_dim: Hashable
+            Dimension of the left singular vectors. Defaults to "time".
+        rsv_dim: Hashable
+            Dimension of the right singular vectors. Defaults to "spectral",
 
         Returns
         -------
-        Result
-            The loaded dataset.
+        xr.Dataset
+            The loaded dataset, with SVD data if ``add_svd`` is ``True``.
 
         Raises
         ------
@@ -173,12 +197,14 @@ class Project:
         dataset = self._data_registry.load_item(dataset_name)
         if isinstance(dataset, xr.DataArray):
             dataset = dataset.to_dataset(name="data")
+        if add_svd is True:
+            add_svd_to_dataset(dataset, name="data", lsv_dim=lsv_dim, rsv_dim=rsv_dim)
         return dataset
 
     def import_data(
         self,
         dataset: str | Path | xr.Dataset | xr.DataArray,
-        name: str | None = None,
+        dataset_name: str | None = None,
         allow_overwrite: bool = False,
         ignore_existing: bool = False,
     ):
@@ -188,7 +214,7 @@ class Project:
         ----------
         dataset : str | Path | xr.Dataset | xr.DataArray
             Dataset instance or path to a dataset.
-        name : str | None
+        dataset_name : str | None
             The name of the dataset (needs to be provided when dataset is an xarray instance).
             Defaults to None.
         allow_overwrite: bool
@@ -197,7 +223,10 @@ class Project:
             Whether to ignore import if the dataset already exists.
         """
         self._data_registry.import_data(
-            dataset, name=name, allow_overwrite=allow_overwrite, ignore_existing=ignore_existing
+            dataset,
+            dataset_name=dataset_name,
+            allow_overwrite=allow_overwrite,
+            ignore_existing=ignore_existing,
         )
 
     @property
@@ -212,22 +241,22 @@ class Project:
         return not self._model_registry.empty
 
     @property
-    def models(self) -> dict[str, Path]:
+    def models(self) -> Mapping[str, Path]:
         """Get all project models.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The models of the project.
         """
         return self._model_registry.items
 
-    def load_model(self, name: str) -> Model:
+    def load_model(self, model_name: str) -> Model:
         """Load a model.
 
         Parameters
         ----------
-        name : str
+        model_name : str
             The name of the model.
 
         Returns
@@ -243,7 +272,49 @@ class Project:
 
         .. # noqa: DAR402
         """
-        return self._model_registry.load_item(name)
+        return self._model_registry.load_item(model_name)
+
+    def show_model_definition(self, model_name: str, syntax: str | None = None) -> MarkdownStr:
+        """Show model definition file content with syntax highlighting.
+
+        Parameters
+        ----------
+        model_name: str
+            The name of the model.
+        syntax: str | None
+            Syntax used for syntax highlighting. Defaults to None which means that the syntax is
+            inferred based on the file extension. Pass the value ``""`` to deactivate syntax
+            highlighting.
+
+        Returns
+        -------
+        MarkdownStr
+            Model definition file content with syntax highlighting to render in ipython.
+        """
+        return display_file(self.models[model_name], syntax=syntax)
+
+    def validate(self, model_name: str, parameters_name: str | None = None) -> MarkdownStr:
+        """Check that the model is valid, list all issues in the model if there are any.
+
+        If ``parameters_name`` also consider the ``Parameters`` when validating.
+
+        Parameters
+        ----------
+        model_name: str
+            The name of the model to validate.
+        parameters_name: str | None
+            The name of the parameters to use when validating. Defaults to ``None`` which means
+            that parameters are not considered when validating the model.
+
+        Returns
+        -------
+        MarkdownStr
+            Text indicating if the model is valid or not.
+        """
+        model = self.load_model(model_name)
+        return model.validate(
+            self.load_parameters(parameters_name) if parameters_name is not None else None
+        )
 
     def generate_model(
         self,
@@ -269,6 +340,14 @@ class Project:
         ignore_existing: bool
             Whether to ignore generation of a model file if it already exists.
         """
+        check_overdue("Project.generate_model", "0.8.0")
+        warn(
+            GlotaranApiDeprecationWarning(
+                "Usage of 'Project.generate_model' was deprecated without replacement.\n"
+                "This usage will be an error in version: '0.8.0'."
+            ),
+            stacklevel=2,
+        )
         self._model_registry.generate_model(
             model_name,
             generator_name,
@@ -299,12 +378,12 @@ class Project:
         return not self._parameter_registry.empty
 
     @property
-    def parameters(self) -> dict[str, Path]:
+    def parameters(self) -> Mapping[str, Path]:
         """Get all project parameters.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The parameters of the project.
         """
         return self._parameter_registry.items
@@ -333,6 +412,35 @@ class Project:
         """
         return self._parameter_registry.load_item(parameters_name)
 
+    def show_parameters_definition(
+        self, parameters_name: str, syntax: str | None = None, *, as_dataframe: bool | None = None
+    ) -> MarkdownStr | pd.DataFrame:
+        """Show parameters definition file content with syntax highlighting.
+
+        Parameters
+        ----------
+        parameters_name: str
+            The name of the parameters.
+        syntax: str | None
+            Syntax used for syntax highlighting. Defaults to None which means that the syntax is
+            inferred based on the file extension. Pass the value ``""`` to deactivate syntax
+            highlighting.
+        as_dataframe: bool | None
+            Whether or not to show the ``Parameters`` definition as pandas.DataFrame (mostly useful
+            for non string formats). Defaults to None which means that it will be inferred to
+            ``True`` for known non string formats like ``xlsx``.
+
+        Returns
+        -------
+        MarkdownStr | pd.DataFrame
+            Parameters definition file content with syntax highlighting to render in ipython.
+        """
+        if as_dataframe is True or (
+            as_dataframe is None and self.parameters[parameters_name].suffix in [".xlsx", ".ods"]
+        ):
+            return self.load_parameters(parameters_name).to_dataframe()
+        return display_file(self.parameters[parameters_name], syntax=syntax)
+
     def generate_parameters(
         self,
         model_name: str,
@@ -357,6 +465,14 @@ class Project:
         ignore_existing: bool
             Whether to ignore generation of a parameter file if it already exists.
         """
+        check_overdue("Project.generate_parameters", "0.8.0")
+        warn(
+            GlotaranApiDeprecationWarning(
+                "Usage of 'Project.generate_parameters' was deprecated without replacement.\n"
+                "This usage will be an error in version: '0.8.0'."
+            ),
+            stacklevel=2,
+        )
         model = self.load_model(model_name)
         parameters_name = (
             parameters_name if parameters_name is not None else f"{model_name}_parameters"
@@ -391,12 +507,12 @@ class Project:
         return not self._result_registry.empty
 
     @property
-    def results(self) -> dict[str, Path]:
+    def results(self) -> Mapping[str, Path]:
         """Get all project results.
 
         Returns
         -------
-        dict[str, Path]
+        Mapping[str, Path]
             The results of the project.
         """
         return self._result_registry.items
@@ -543,7 +659,7 @@ class Project:
         result_name: str | None = None,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
-    ):
+    ) -> Result:
         """Optimize a model.
 
         Parameters
@@ -558,6 +674,11 @@ class Project:
             The maximum number of function evaluations.
         clp_link_tolerance : float
             The CLP link tolerance.
+
+        Returns
+        -------
+        Result
+            Result of the optimization.
         """
         from glotaran.optimization.optimize import optimize
 
@@ -568,6 +689,7 @@ class Project:
 
         result_name = result_name or model_name
         self._result_registry.save(result_name, result)
+        return result
 
     def markdown(self) -> MarkdownStr:
         """Format the project as a markdown text.
@@ -577,11 +699,10 @@ class Project:
         MarkdownStr : str
             The markdown string.
         """
-        folder_as_posix = self.folder.as_posix()  # type:ignore[union-attr]
         md = f"""\
-            # Project _{folder_as_posix}_
+            # Project (_{self.folder.name}_)
 
-            pyglotaran version: {self.version}
+            pyglotaran version: `{self.version}`
 
             ## Data
 

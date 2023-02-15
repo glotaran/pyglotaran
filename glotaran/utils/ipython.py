@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from collections import UserString
-from os import PathLike
+
+from glotaran.plugin_system.io_plugin_utils import infer_file_format
+from glotaran.typing.types import StrOrPath
 
 
 class MarkdownStr(UserString):
@@ -59,20 +61,24 @@ class MarkdownStr(UserString):
             return NotImplemented
 
 
-def display_file(path: str | PathLike[str], *, syntax: str | None = None) -> MarkdownStr:
+def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:
     """Display a file with syntax highlighting ``syntax``.
 
     Parameters
     ----------
-    path : str | PathLike[str]
+    path : StrOrPath
         Paths to the file
-    syntax : str
-        Syntax highlighting which should be applied, by default None
+    syntax: str | None
+        Syntax used for syntax highlighting. Defaults to None which means that the syntax is
+        inferred based on the file extension. Pass the value ``""`` to deactivate syntax
+        highlighting.
 
     Returns
     -------
     MarkdownStr
         File content with syntax highlighting to render in ipython.
     """
+    if syntax is None:
+        syntax = infer_file_format(path)
     with open(path, encoding="utf8") as file:
         return MarkdownStr(file.read(), syntax=syntax)

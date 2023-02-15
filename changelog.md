@@ -33,6 +33,7 @@
 - 🩹 Fix model markdown render for items without label (#1213)
 - 🩹 Fix wrong file loading due to partial filename matching in Project (#1212)
 - 🩹 Fix `Project.import_data` path resolving for different script and cwd (#1214)
+- 👌 Refine project API (#1240)
 <!-- Fix within the 0.7.0 release cycle, therefore hidden:
 - 🩹 Fix the matrix provider alignment/reduction ('grouping') issues introduced in #1175 (#1190)
   -->
@@ -46,6 +47,8 @@
 - `<model_file>.clp_area_penalties` -> `<model_file>.clp_penalties`
 - `glotaran.ParameterGroup` -> `glotaran.Parameters`
 - Command Line Interface (removed without replacement) (#1228)
+- `Project.generate_model` (removed without replacement)
+- `Project.generate_parameters` (removed without replacement)
 
 ### 🗑️❌ Deprecated functionality removed in this release
 

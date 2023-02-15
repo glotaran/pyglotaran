@@ -182,3 +182,8 @@ benchmark/.asv
 # https://github.com/glotaran/pyglotaran-examples/tree/comparison-results
 comparison-results
 comparison-results-current
+
+# Quickstart docs output files
+docs/source/notebooks/quickstart/quickstart_project/data
+docs/source/notebooks/quickstart/quickstart_project/results
+docs/source/notebooks/quickstart/quickstart_project/project.gta
