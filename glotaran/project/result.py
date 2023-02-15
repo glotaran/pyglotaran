@@ -244,7 +244,14 @@ class Result:
             if wrap_model_in_details is False:
                 result_table = f"{result_table}\n\n{model_md}"
             else:
-                result_table = f"{result_table}\n\n<br><details>\n\n{model_md}\n</details>"
+                # The section part is just a hack to generate properly rendering docs due to a bug
+                # in sphinx which causes a wrong tag opening and closing order of html tags
+                result_table = (
+                    f"{result_table}\n\n<br><details>\n\n{model_md}\n"
+                    f"{'</section>'*(base_heading_level+1)}"
+                    "</details>"
+                    f"{'<section>'*(base_heading_level+1)}"
+                )
 
         return MarkdownStr(result_table)
 
