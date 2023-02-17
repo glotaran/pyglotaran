@@ -9,11 +9,11 @@ import numpy as np
 from glotaran.model import ClpConstraint
 from glotaran.model import ClpRelation
 from glotaran.model import DataModel
+from glotaran.model import Element
 from glotaran.model import GlotaranModelError
 from glotaran.model import GlotaranUserError
-from glotaran.model import Model
-from glotaran.model import iterate_data_model_global_models
-from glotaran.model import iterate_data_model_models
+from glotaran.model import iterate_data_model_elements
+from glotaran.model import iterate_data_model_global_elements
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.parameter import Parameter
@@ -47,16 +47,16 @@ class OptimizationMatrix:
         return self.array.shape[1 if self.is_index_dependent else 0]
 
     @classmethod
-    def from_megacomplex(
+    def from_element(
         cls,
         scale: Parameter | None,
-        model: Model,
+        element: Element,
         data_model: DataModel,
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
     ) -> OptimizationMatrix:
         """"""
-        clp_axis, array = model.calculate_matrix(data_model, global_axis, model_axis)
+        clp_axis, array = element.calculate_matrix(data_model, global_axis, model_axis)
 
         if scale is not None:
             array *= scale
@@ -93,12 +93,12 @@ class OptimizationMatrix:
         shape = (model_axis_size, clp_size)
         array = np.zeros(shape, dtype=np.float64)
 
-        current_model_index, current_model_index_end = 0, 0
+        current_element_index, current_element_index_end = 0, 0
         for matrix in matrices:
             clp_mask = [clp_axis.index(c) for c in matrix.clp_axis]
-            current_model_index_end = current_model_index + matrix.model_axis_size
-            array[current_model_index:current_model_index_end, clp_mask] = matrix.array
-            current_model_index = current_model_index_end
+            current_element_index_end = current_element_index + matrix.model_axis_size
+            array[current_element_index:current_element_index_end, clp_mask] = matrix.array
+            current_element_index = current_element_index_end
         return cls(clp_axis, array)
 
     @classmethod
@@ -111,15 +111,15 @@ class OptimizationMatrix:
         global_matrix: bool = False,
     ) -> OptimizationMatrix:
         """"""
-        megacomplex_iterator = (
-            iterate_data_model_global_models if global_matrix else iterate_data_model_models
+        element_iterator = (
+            iterate_data_model_global_elements if global_matrix else iterate_data_model_elements
         )
         if global_matrix:
             model_axis, global_axis = global_axis, model_axis
 
         matrices = [
-            cls.from_megacomplex(scale, megacomplex, model, global_axis, model_axis)
-            for scale, megacomplex in megacomplex_iterator(model)
+            cls.from_element(scale, element, model, global_axis, model_axis)
+            for scale, element in element_iterator(model)
         ]
         matrix = matrices[0] if len(matrices) == 1 else cls.combine(matrices)
         if weight is not None:

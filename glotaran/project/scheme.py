@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from pydantic import Extra
 
 from glotaran.io import load_dataset
+from glotaran.model import Element
 from glotaran.model import ExperimentModel
-from glotaran.model import Model
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.project.library import ModelLibrary
@@ -20,7 +20,7 @@ class Scheme(BaseModel):
         extra = Extra.forbid
 
     experiments: list[ExperimentModel]
-    library: dict[str, Model.get_annotated_type()]
+    library: dict[str, Element.get_annotated_type()]
 
     @classmethod
     def from_dict(cls, spec: dict):

@@ -10,7 +10,7 @@ from glotaran.simulation import simulate
 
 
 def test_single_data():
-    data_model = DataModel(models=["decay_independent"])
+    data_model = DataModel(elements=["decay_independent"])
     experiment = ExperimentModel(datasets={"decay_independent": data_model})
     parameters = Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}})
 
@@ -42,7 +42,7 @@ def test_single_data():
 
 
 def test_multiple_experiments():
-    data_model = DataModel(models=["decay_independent"])
+    data_model = DataModel(elements=["decay_independent"])
     experiments = [
         ExperimentModel(datasets={"decay_independent_1": data_model}),
         ExperimentModel(datasets={"decay_independent_2": data_model}),
@@ -78,7 +78,7 @@ def test_multiple_experiments():
 
 
 def test_global_data():
-    data_model = DataModel(models=["decay_independent"], global_models=["gaussian"])
+    data_model = DataModel(elements=["decay_independent"], global_elements=["gaussian"])
     experiment = ExperimentModel(datasets={"decay_independent": data_model})
     parameters = Parameters.from_dict(
         {
@@ -124,8 +124,8 @@ def test_global_data():
 
 
 def test_multiple_data():
-    data_model_one = DataModel(models=["decay_independent"])
-    data_model_two = DataModel(models=["decay_dependent"])
+    data_model_one = DataModel(elements=["decay_independent"])
+    data_model_two = DataModel(elements=["decay_dependent"])
     experiment = ExperimentModel(
         datasets={"decay_independent": data_model_one, "decay_dependent": data_model_two}
     )
