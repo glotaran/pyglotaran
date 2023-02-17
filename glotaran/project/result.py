@@ -15,7 +15,7 @@ class Result(BaseModel):
         extra = Extra.forbid
 
     data: dict[str, xr.Dataset]
-    experiments: list[ExperimentModel]
+    experiments: dict[str, ExperimentModel]
     optimization: OptimizationResult
     parameters_intitial: Parameters
     parameters_optimized: Parameters

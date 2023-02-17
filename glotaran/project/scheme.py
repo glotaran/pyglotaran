@@ -19,7 +19,7 @@ class Scheme(BaseModel):
         arbitrary_types_allowed = True
         extra = Extra.forbid
 
-    experiments: list[ExperimentModel]
+    experiments: dict[str, ExperimentModel]
     library: dict[str, Element.get_annotated_type()]
 
     @classmethod
@@ -27,8 +27,10 @@ class Scheme(BaseModel):
         library = ModelLibrary.parse_obj(
             {label: m | {"label": label} for label, m in spec["library"].items()}
         ).__root__
-        experiments = [ExperimentModel.from_dict(library, e) for e in spec["experiments"]]
-        for e in experiments:
+        experiments = {
+            k: ExperimentModel.from_dict(library, e) for k, e in spec["experiments"].items()
+        }
+        for e in experiments.values():
             for d in e.datasets.values():
                 if isinstance(d.data, str):
                     d.data = load_dataset(d.data)
@@ -51,7 +53,7 @@ class Scheme(BaseModel):
         ] = "TrustRegionReflection",
     ) -> Result:
         optimized_parameters, optimized_data, optimization_result = Optimization(
-            self.experiments,
+            list(self.experiments.values()),
             parameters,
             library=self.library,
             verbose=verbose,
