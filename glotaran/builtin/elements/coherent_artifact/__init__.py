@@ -1,0 +1,1 @@
+from glotaran.builtin.elements.coherent_artifact.element import CoherentArtifactElement

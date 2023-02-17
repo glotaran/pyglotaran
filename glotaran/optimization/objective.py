@@ -3,8 +3,8 @@ import xarray as xr
 from numpy.typing import ArrayLike
 
 from glotaran.model import ExperimentModel
-from glotaran.model import iterate_data_model_global_models
-from glotaran.model import iterate_data_model_models
+from glotaran.model import iterate_data_model_elements
+from glotaran.model import iterate_data_model_global_elements
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -188,9 +188,9 @@ class OptimizationObjective:
                     (data.global_dimension, "right_singular_value_index"),
                     r.T,
                 )
-        for _, model in iterate_data_model_models(data.model):
+        for _, model in iterate_data_model_elements(data.model):
             model.add_to_result_data(data.model, dataset, False)
-        for _, model in iterate_data_model_global_models(data.model):
+        for _, model in iterate_data_model_global_elements(data.model):
             model.add_to_result_data(data.model, dataset, True)
 
         return dataset
