@@ -2,27 +2,27 @@ from glotaran.model.clp_constraint import OnlyConstraint
 from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
-from glotaran.model.test.test_model import MockDataModel
-from glotaran.model.test.test_model import MockModelWithDataModel
-from glotaran.model.test.test_model import MockModelWithItem
+from glotaran.model.test.test_data_model import MockDataModel
+from glotaran.model.test.test_data_model import MockElementWithDataModel
+from glotaran.model.test.test_data_model import MockElementWithItem
 
 
 def test_experiment_model_from_dict():
     library = {
-        "m1": MockModelWithDataModel(label="m1", type="mock-w-datamodel"),
-        "m2": MockModelWithItem(label="m2", type="mock-w-item"),
+        "m1": MockElementWithDataModel(label="m1", type="mock-w-datamodel"),
+        "m2": MockElementWithItem(label="m2", type="mock-w-item"),
     }
 
     experiment_model = ExperimentModel.from_dict(
         library,
         {
             "datasets": {
-                "d1": {"models": ["m1"]},
+                "d1": {"elements": ["m1"]},
                 "d2": {
-                    "models": ["m2"],
+                    "elements": ["m2"],
                     "weights": [{"value": 1}, {"value": 2, "global_interval": (5, 6)}],
                 },
-                "d3": {"models": ["m2"], "global_models": ["m1"]},
+                "d3": {"elements": ["m2"], "global_elements": ["m1"]},
             },
             "clp_penalties": [
                 {

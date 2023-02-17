@@ -6,10 +6,10 @@ import numpy as np
 import xarray as xr
 from scipy.optimize import least_squares
 
+from glotaran.model import Element
 from glotaran.model import ExperimentModel
 from glotaran.model import GlotaranModelIssues
 from glotaran.model import GlotaranUserError
-from glotaran.model import Model
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationResult
@@ -46,7 +46,7 @@ class Optimization:
         self,
         models: list[ExperimentModel],
         parameters: Parameters,
-        library: dict[str, Model],
+        library: dict[str, Element],
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,

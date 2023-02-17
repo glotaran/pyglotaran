@@ -122,7 +122,7 @@ def load_plugins():
     """
     if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
         plugin_names = [
-            "glotaran.plugins.models",
+            "glotaran.plugins.elements",
             "glotaran.plugins.data_io",
             "glotaran.plugins.project_io",
         ]

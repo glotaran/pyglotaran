@@ -11,6 +11,7 @@ import xarray as xr
 from pydantic import Field
 from pydantic import create_model
 
+from glotaran.model.element import Element
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.errors import ItemIssue
@@ -18,29 +19,28 @@ from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
-from glotaran.model.model import Model
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
 
 class ExclusiveModelIssue(ItemIssue):
-    """Issue for exclusive models."""
+    """Issue for exclusive elements."""
 
-    def __init__(self, label: str, model_type: str, is_global: bool):
+    def __init__(self, label: str, element_type: str, is_global: bool):
         """Create an ExclusiveModelIssue.
 
         Parameters
         ----------
         label : str
-            The model label.
-        model_type : str
-            The model type.
+            The element label.
+        element_type : str
+            The element type.
         is_global : bool
-            Whether the model is global.
+            Whether the element is global.
         """
         self._label = label
-        self._type = model_type
+        self._type = element_type
         self._is_global = is_global
 
     def to_string(self) -> str:
@@ -51,28 +51,28 @@ class ExclusiveModelIssue(ItemIssue):
         str
         """
         return (
-            f"Exclusive {'global ' if self._is_global else ''}model '{self._label}' of "
-            f"type '{self._type}' cannot be combined with other models."
+            f"Exclusive {'global ' if self._is_global else ''}element '{self._label}' of "
+            f"type '{self._type}' cannot be combined with other elements."
         )
 
 
 class UniqueModelIssue(ItemIssue):
-    """Issue for unique models."""
+    """Issue for unique elements."""
 
-    def __init__(self, label: str, model_type: str, is_global: bool):
+    def __init__(self, label: str, element_type: str, is_global: bool):
         """Create a UniqueModelIssue.
 
         Parameters
         ----------
         label : str
-            The model label.
-        model_type : str
-            The model type.
+            The element label.
+        element_type : str
+            The element type.
         is_global : bool
-            Whether the model is global.
+            Whether the element is global.
         """
         self._label = label
-        self._type = model_type
+        self._type = element_type
         self._is_global = is_global
 
     def to_string(self):
@@ -83,22 +83,22 @@ class UniqueModelIssue(ItemIssue):
         str
         """
         return (
-            f"Unique {'global ' if self._is_global else ''}model '{self._label}' of "
+            f"Unique {'global ' if self._is_global else ''}element '{self._label}' of "
             f"type '{self._type}' can only be used once per dataset."
         )
 
 
-def get_model_issues(value: list[str | Model] | None, is_global: bool) -> list[ItemIssue]:
-    """Get issues for models.
+def get_element_issues(value: list[str | Element] | None, is_global: bool) -> list[ItemIssue]:
+    """Get issues for elements.
 
     Parameters
     ----------
-    value: list[str | Model] | None
-        A list of models.
-    model: Model
-        The model.
+    value: list[str | Element] | None
+        A list of elements.
+    element: Element
+        The element.
     is_global: bool
-        Whether the models are global.
+        Whether the elements are global.
 
     Returns
     -------
@@ -107,31 +107,34 @@ def get_model_issues(value: list[str | Model] | None, is_global: bool) -> list[I
     issues: list[ItemIssue] = []
 
     if value is not None:
-        models = [v for v in value if isinstance(v, Model)]
-        for model in models:
-            model_type = model.__class__
-            if model_type.is_exclusive and len(models) > 1:
-                issues.append(ExclusiveModelIssue(model.label, model.type, is_global))
-            if model_type.is_unique and len([m for m in models if m.__class__ is model_type]) > 1:
-                issues.append(UniqueModelIssue(model.label, model.type, is_global))
+        elements = [v for v in value if isinstance(v, Element)]
+        for element in elements:
+            element_type = element.__class__
+            if element_type.is_exclusive and len(elements) > 1:
+                issues.append(ExclusiveModelIssue(element.label, element.type, is_global))
+            if (
+                element_type.is_unique
+                and len([m for m in elements if m.__class__ is element_type]) > 1
+            ):
+                issues.append(UniqueModelIssue(element.label, element.type, is_global))
     return issues
 
 
-def validate_models(
-    value: list[str | Model],
+def validate_elements(
+    value: list[str | Element],
     data_model: DataModel,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    """Get issues for dataset model models.
+    """Get issues for dataset model elements.
 
     Parameters
     ----------
-    value: list[str | Model]
-        A list of models.
+    value: list[str | Element]
+        A list of elements.
     dataset_model: DatasetModel
         The dataset model.
-    model: Model
-        The model.
+    element: Element
+        The element.
     parameters: Parameters | None,
         The parameters.
 
@@ -139,24 +142,24 @@ def validate_models(
     -------
     list[ItemIssue]
     """
-    return get_model_issues(value, False)
+    return get_element_issues(value, False)
 
 
-def validate_global_models(
-    value: list[str | Model] | None,
+def validate_global_elements(
+    value: list[str | Element] | None,
     data_model: DataModel,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    """Get issues for dataset model global models.
+    """Get issues for dataset model global elements.
 
     Parameters
     ----------
-    value: list[str | Model] | None
-        A list of models.
+    value: list[str | Element] | None
+        A list of elements.
     dataset_model: DatasetModel
         The dataset model.
-    model: Model
-        The model.
+    element: Element
+        The element.
     parameters: Parameters | None,
         The parameters.
 
@@ -164,7 +167,7 @@ def validate_global_models(
     -------
     list[ItemIssue]
     """
-    return get_model_issues(value, True)
+    return get_element_issues(value, True)
 
 
 class DataModel(Item):
@@ -172,31 +175,31 @@ class DataModel(Item):
 
     data: str | xr.Dataset | None = None
     extra_data: str | xr.Dataset | None = None
-    models: list[Model | str] = Attribute(
-        description="The models contributing to this dataset.",
-        validator=validate_models,  # type:ignore[arg-type]
+    elements: list[Element | str] = Attribute(
+        description="The elements contributing to this dataset.",
+        validator=validate_elements,  # type:ignore[arg-type]
     )
-    model_scale: list[ParameterType] | None = None
-    global_models: list[Model | str] | None = Attribute(
+    element_scale: list[ParameterType] | None = None
+    global_elements: list[Element | str] | None = Attribute(
         default=None,
-        description="The global models contributing to this dataset.",
-        validator=validate_global_models,  # type:ignore[arg-type]
+        description="The global elements contributing to this dataset.",
+        validator=validate_global_elements,  # type:ignore[arg-type]
     )
-    global_model_scale: list[ParameterType] | None = None
+    global_element_scale: list[ParameterType] | None = None
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
         default="variable_projection", description="The residual function to use."
     )
     weights: list[Weight] = Field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, library: dict[str, Model], model_dict: dict[str, Any]) -> DataModel:
+    def from_dict(cls, library: dict[str, Element], model_dict: dict[str, Any]) -> DataModel:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
-        model_labels = model_dict.get("models", []) + model_dict.get("global_models", [])
-        if len(model_labels) == 0:
-            raise GlotaranModelError("No model defined for dataset")
-        models = {type(library[label]) for label in model_labels}
+        element_labels = model_dict.get("elements", []) + model_dict.get("global_elements", [])
+        if len(element_labels) == 0:
+            raise GlotaranModelError("No element defined for dataset")
+        elements = {type(library[label]) for label in element_labels}
         data_models = [
-            m.data_model_type for m in filter(lambda m: m.data_model_type is not None, models)
+            m.data_model_type for m in filter(lambda m: m.data_model_type is not None, elements)
         ] + [DataModel]
         return create_model(data_model_cls_name, __base__=tuple(data_models))(**model_dict)
 
@@ -213,7 +216,7 @@ def is_data_model_global(data_model: DataModel) -> bool:
     -------
     bool
     """
-    return data_model.global_models is not None and len(data_model.global_models) != 0
+    return data_model.global_elements is not None and len(data_model.global_elements) != 0
 
 
 def get_data_model_dimension(data_model: DataModel) -> str:
@@ -231,16 +234,16 @@ def get_data_model_dimension(data_model: DataModel) -> str:
     Raises
     ------
     ValueError
-        Raised if the data model does not have models or if it is not filled.
+        Raised if the data model does not have elements or if it is not filled.
     """
-    if len(data_model.models) == 0:
-        raise GlotaranModelError(f"No models set for data model '{data_model.label}'.")
-    if any(isinstance(m, str) for m in data_model.models):
+    if len(data_model.elements) == 0:
+        raise GlotaranModelError(f"No elements set for data model '{data_model.label}'.")
+    if any(isinstance(m, str) for m in data_model.elements):
         raise GlotaranUserError(f"Data model '{data_model.label}' was not resolved.")
-    model_dimension: str = data_model.models[0].dimension  # type:ignore[union-attr, assignment]
+    model_dimension: str = data_model.elements[0].dimension  # type:ignore[union-attr, assignment]
     if any(
         model_dimension != m.dimension  # type:ignore[union-attr]
-        for m in data_model.models
+        for m in data_model.elements
     ):
         raise GlotaranModelError("Model dimensions do not match for data model.")
     if model_dimension is None:
@@ -248,10 +251,10 @@ def get_data_model_dimension(data_model: DataModel) -> str:
     return model_dimension
 
 
-def iterate_data_model_models(
+def iterate_data_model_elements(
     data_model: DataModel,
-) -> Generator[tuple[Parameter | str | None, Model | str], None, None]:
-    """Iterate the data model's models.
+) -> Generator[tuple[Parameter | str | None, Element | str], None, None]:
+    """Iterate the data model's elements.
 
     Parameters
     ----------
@@ -260,18 +263,18 @@ def iterate_data_model_models(
 
     Yields
     ------
-    tuple[Parameter | str | None, Model | str]
-        A scale and models.
+    tuple[Parameter | str | None, Element | str]
+        A scale and elements.
     """
-    for i, model in enumerate(data_model.models):
-        scale = data_model.models_scale[i] if data_model.model_scale is not None else None
-        yield scale, model
+    for i, element in enumerate(data_model.elements):
+        scale = data_model.elements_scale[i] if data_model.element_scale is not None else None
+        yield scale, element
 
 
-def iterate_data_model_global_models(
+def iterate_data_model_global_elements(
     data_model: DataModel,
-) -> Generator[tuple[Parameter | str | None, Model | str], None, None]:
-    """Iterate the data model's global models.
+) -> Generator[tuple[Parameter | str | None, Element | str], None, None]:
+    """Iterate the data model's global elements.
 
     Parameters
     ----------
@@ -280,29 +283,31 @@ def iterate_data_model_global_models(
 
     Yields
     ------
-    tuple[Parameter | str | None, Model | str]
-        A scale and model.
+    tuple[Parameter | str | None, Element | str]
+        A scale and element.
     """
-    if data_model.global_models is None:
+    if data_model.global_elements is None:
         return
-    for i, model in enumerate(data_model.global_models):
+    for i, element in enumerate(data_model.global_elements):
         scale = (
-            data_model.global_model_scale[i] if data_model.global_model_scale is not None else None
+            data_model.global_element_scale[i]
+            if data_model.global_element_scale is not None
+            else None
         )
-        yield scale, model
+        yield scale, element
 
 
 def resolve_data_model(
     model: DataModel,
-    library: dict[str, Model],
+    library: dict[str, Element],
     parameters: Parameters,
     initial: Parameters | None = None,
 ) -> DataModel:
     model = model.copy()
-    model.models = [library[m] if isinstance(m, str) else m for m in model.models]
-    if model.global_models is not None:
-        model.global_models = [
-            library[m] if isinstance(m, str) else m for m in model.global_models
+    model.elements = [library[m] if isinstance(m, str) else m for m in model.elements]
+    if model.global_elements is not None:
+        model.global_elements = [
+            library[m] if isinstance(m, str) else m for m in model.global_elements
         ]
     return resolve_item_parameters(model, parameters, initial)
 
