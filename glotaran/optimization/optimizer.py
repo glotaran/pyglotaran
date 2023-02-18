@@ -230,10 +230,10 @@ class Optimizer:
         if success:
             result_args["number_of_jacobian_evaluations"] = self._optimization_result.njev
             result_args["optimality"] = float(self._optimization_result.optimality)
-            result_args["number_of_data_points"] = self._optimization_result.fun.size
+            result_args["number_of_residuals"] = self._optimization_result.fun.size
             result_args["number_of_parameters"] = self._optimization_result.x.size
             result_args["degrees_of_freedom"] = (
-                result_args["number_of_data_points"] - result_args["number_of_parameters"]
+                result_args["number_of_residuals"] - result_args["number_of_parameters"]
             )
             result_args["chi_square"] = float(np.sum(self._optimization_result.fun**2))
             result_args["reduced_chi_square"] = (
