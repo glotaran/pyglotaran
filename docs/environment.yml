@@ -1,0 +1,11 @@
+name: RTD-env
+channels:
+  - conda-forge
+dependencies:
+  # Python interpreter
+  - python=3.10
+  - pandoc>=2.19.2
+  - pip
+  - pip:
+      - -r requirements.txt
+      - ..
