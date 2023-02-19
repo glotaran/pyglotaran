@@ -40,6 +40,8 @@
 
 ### 📚 Documentation
 
+- 📚 Update quickstart guide to use Project API (#1241)
+
 ### 🗑️ Deprecations (due in 0.9.0)
 
 ### 🗑️ Deprecations (due in 0.8.0)

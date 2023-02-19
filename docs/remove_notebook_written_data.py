@@ -6,6 +6,7 @@ the tests pass w/o using ``allow_overwrite=True`` all over the docs.
 If you use ``tox`` to run the tests (``tox`` or ``tox -e docs-notebooks``)
 this script will be run before the tests.
 """
+import shutil
 from pathlib import Path
 
 NOTEBOOK_PATH = Path(__file__).parent / "source/notebooks"
@@ -29,3 +30,6 @@ def remove_files(path: Path, glob_pattern: str):
 
 if __name__ == "__main__":
     remove_files(NOTEBOOK_PATH / "quickstart", "*.nc")
+    remove_files(NOTEBOOK_PATH / "quickstart/quickstart_project", "*.gta")
+    shutil.rmtree(NOTEBOOK_PATH / "quickstart/quickstart_project/data", ignore_errors=True)
+    shutil.rmtree(NOTEBOOK_PATH / "quickstart/quickstart_project/results", ignore_errors=True)

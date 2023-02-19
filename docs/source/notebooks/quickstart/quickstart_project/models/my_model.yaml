@@ -23,7 +23,7 @@ irf:
     width: irf.width
 
 dataset:
-  dataset1:
+  my_data:
     initial_concentration: input
     megacomplex: [m1]
     irf: irf1
