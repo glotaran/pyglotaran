@@ -461,6 +461,22 @@ class MatrixProvider:
         """
         raise NotImplementedError
 
+    @property
+    def number_of_clps(self) -> int:
+        """Return number of conditionally linear parameters.
+
+        Raises
+        ------
+        NotImplementedError
+            This property needs to be implemented by subclasses.
+
+        See Also
+        --------
+        MatrixProviderUnlinked
+        MatrixProviderLinked
+        """
+        raise NotImplementedError
+
 
 class MatrixProviderUnlinked(MatrixProvider):
     """A class to provide matrix calculations for optimization of unlinked dataset groups."""
@@ -588,6 +604,31 @@ class MatrixProviderUnlinked(MatrixProvider):
                     full_matrix = MatrixContainer.apply_weight(full_matrix, weight)
 
                 self._full_matrices[label] = full_matrix
+
+    @property
+    def number_of_clps(self) -> int:
+        """Return number of conditionally linear parameters.
+
+        Returns
+        -------
+        int
+        """
+        nr_of_clps = 0
+        for dataset_label, dataset_model in self.group.dataset_models.items():
+            if has_dataset_model_global_model(dataset_model):
+                model_clp_labels = self.get_matrix_container(dataset_label).clp_labels
+                global_clp_labels = self.get_global_matrix_container(dataset_label).clp_labels
+                nr_of_clps += len(model_clp_labels) * len(global_clp_labels)
+            else:
+                global_axis_indexes = range(
+                    len(self._data_provider.get_global_axis(dataset_label))
+                )
+                nr_of_clps += sum(
+                    len(self.get_prepared_matrix_container(dataset_label, index).clp_labels)
+                    for index in global_axis_indexes
+                )
+
+        return nr_of_clps
 
 
 class MatrixProviderLinked(MatrixProvider):
@@ -755,3 +796,17 @@ class MatrixProviderLinked(MatrixProvider):
             start = end
 
         return MatrixContainer(full_clp_labels, full_matrix)
+
+    @property
+    def number_of_clps(self) -> int:
+        """Return number of conditionally linear parameters.
+
+        Returns
+        -------
+        int
+        """
+        global_axis_indexes = range(len(self._data_provider.aligned_global_axis))
+        return sum(
+            len(self.get_aligned_matrix_container(index).clp_labels)
+            for index in global_axis_indexes
+        )
