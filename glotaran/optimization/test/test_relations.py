@@ -16,7 +16,9 @@ def test_relations(index_dependent, link_clp):
     model = deepcopy(suite.model)
     model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.clp_relations.append(ClpRelation(**{"source": "s1", "target": "s2", "parameter": "3"}))
+    model.clp_relations.append(
+        ClpRelation(**{"source": "s1", "target": "s2", "parameter": "3", "interval": (1, 1)})
+    )
     parameters = Parameters.from_list([11e-4, 22e-5, 2])
 
     print("link_clp", link_clp, "index_dependent", index_dependent)  # T201
@@ -43,5 +45,10 @@ def test_relations(index_dependent, link_clp):
 
     assert "s2" not in reduced_matrix.clp_labels
     assert "s2" in clps.coords["clp_label"]
-    assert clps.sel(clp_label="s2") == clps.sel(clp_label="s1") * 2
+    assert clps.sel(clp_label="s2")[0] == clps.sel(clp_label="s1")[0] * 2
+    assert clps.sel(clp_label="s2")[1] != clps.sel(clp_label="s1")[1] * 2
     assert "s2" in matrix.clp_labels
+
+    # 1 compartment (s1 due to relation) * 2 items in global axis
+    # + 1 compartment (s2 outside of interval) * 1 item in global axis
+    assert optimization_group.number_of_clps == 3

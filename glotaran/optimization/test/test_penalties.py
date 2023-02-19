@@ -53,3 +53,6 @@ def test_penalties(index_dependent, link_clp):
     assert full_penalty.size == (suite.model_axis.size * global_axis.size) + len(
         additional_penalty
     )
+
+    # 2 compartments * 50 items in global axis
+    assert optimization_group.number_of_clps == 100
