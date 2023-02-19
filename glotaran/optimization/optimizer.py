@@ -19,6 +19,7 @@ from glotaran.utils.tee import TeeContext
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
+
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
     "Dogbox": "dogbox",
@@ -231,9 +232,14 @@ class Optimizer:
             result_args["number_of_jacobian_evaluations"] = self._optimization_result.njev
             result_args["optimality"] = float(self._optimization_result.optimality)
             result_args["number_of_residuals"] = self._optimization_result.fun.size
+            result_args["number_of_clps"] = sum(
+                group.number_of_clps for group in self._optimization_groups
+            )
             result_args["number_of_parameters"] = self._optimization_result.x.size
             result_args["degrees_of_freedom"] = (
-                result_args["number_of_residuals"] - result_args["number_of_parameters"]
+                result_args["number_of_residuals"]
+                - result_args["number_of_parameters"]
+                - result_args["number_of_clps"]
             )
             result_args["chi_square"] = float(np.sum(self._optimization_result.fun**2))
             result_args["reduced_chi_square"] = (

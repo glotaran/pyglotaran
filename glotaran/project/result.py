@@ -106,7 +106,9 @@ class Result:
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
 
     degrees_of_freedom: int | None = None
-    """Degrees of freedom in optimization :math:`N - N_{vars}`."""
+    """Degrees of freedom in optimization :math:`N - N_{vars} - N_{clps}`."""
+    number_of_clps: int | None = None
+    """Number of conditionally linear parameters :math:`N_{clps}`."""
 
     jacobian: ArrayLike | list | None = exclude_from_dict_field(None)
     """Modified Jacobian matrix at the solution
@@ -123,7 +125,7 @@ class Result:
     reduced_chi_square: float | None = None
     r"""The reduced chi-square of the optimization.
 
-    :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
+    :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars} - N_{clps})}`.
     """
     root_mean_square_error: float | None = None
     r"""
@@ -218,8 +220,9 @@ class Result:
         """
         general_table_rows: list[list[Any]] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
-            ["Number of parameters", self.number_of_parameters],
             ["Number of residuals", self.number_of_residuals],
+            ["Number of parameters", self.number_of_parameters],
+            ["Number of conditionally linear parameters", self.number_of_clps],
             ["Degrees of freedom", self.degrees_of_freedom],
             ["Chi Square", f"{self.chi_square or np.nan:.2e}"],
             ["Reduced Chi Square", f"{self.reduced_chi_square or np.nan:.2e}"],
