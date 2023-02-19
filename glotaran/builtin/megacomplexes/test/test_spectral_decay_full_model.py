@@ -222,3 +222,15 @@ def test_kinetic_model(suite, nnls):
     assert dataset.data.shape == resultdata.data.shape
     assert dataset.data.shape == resultdata.fitted_data.shape
     assert np.allclose(dataset.data, resultdata.fitted_data, rtol=1e-2)
+
+    # 3 compartments * 3 shapes (dataset1)
+    # + 3 shapes * 3 compartments (dataset2)
+    expected_number_of_clps_common = 18
+    if suite is ThreeComponentParallel:
+        # + 3 compartments * 15 items in global axis (dataset3)
+        # + 3 shapes * 74 items in global axis (dataset4)
+        assert result.number_of_clps == expected_number_of_clps_common + 45 + 222
+    else:
+        # + 3 compartments * 30 items in global axis (dataset3)
+        # + 3 shapes * 60 items in global axis (dataset4)
+        assert result.number_of_clps == expected_number_of_clps_common + 90 + 180
