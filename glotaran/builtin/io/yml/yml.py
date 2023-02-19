@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from glotaran.builtin.io.yml.utils import load_dict
 from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.deprecation.modules.builtin_io_yml import model_spec_deprecations
-from glotaran.deprecation.modules.builtin_io_yml import scheme_spec_deprecations
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import ProjectIoInterface
 from glotaran.io import SavingOptions
@@ -135,7 +134,6 @@ class YmlProjectIo(ProjectIoInterface):
         Scheme
         """
         spec = self._load_yml(file_name)
-        scheme_spec_deprecations(spec)
         return fromdict(Scheme, spec, folder=Path(file_name).parent)
 
     def save_scheme(self, scheme: Scheme, file_name: str):
