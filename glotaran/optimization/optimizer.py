@@ -28,7 +28,7 @@ SUPPORTED_METHODS = {
 
 
 class InitialParameterError(ValueError):
-    """Inidcates that initial parameters can not be evaluated."""
+    """Indicates that initial parameters can not be evaluated."""
 
     def __init__(self):
         """Initialize a InitialParameterError."""
@@ -36,7 +36,7 @@ class InitialParameterError(ValueError):
 
 
 class ParameterNotInitializedError(ValueError):
-    """Inidcates that scheme parameters are not initialized."""
+    """Indicates that scheme parameters are not initialized."""
 
     def __init__(self):
         """Initialize a ParameterNotInitializedError."""
@@ -44,7 +44,7 @@ class ParameterNotInitializedError(ValueError):
 
 
 class MissingDatasetsError(ValueError):
-    """Inidcates that datasets are missing in the scheme."""
+    """Indicates that datasets are missing in the scheme."""
 
     def __init__(self, missing_datasets: list[str]):
         """Initialize a MissingDatasetsError.
@@ -58,7 +58,7 @@ class MissingDatasetsError(ValueError):
 
 
 class UnsupportedMethodError(ValueError):
-    """Inidcates that the optimization method is unsupported."""
+    """Indicates that the optimization method is unsupported."""
 
     def __init__(self, method: str):
         """Initialize an UnsupportedMethodError.
