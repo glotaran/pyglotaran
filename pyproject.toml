@@ -77,6 +77,8 @@ ignore = [
   ".sourcery.yaml",
   ".zenodo.json",
   "codecov.yml",
+  "flake.nix",
+  "flake.lock",
   "readthedocs.yml",
   "requirements_dev.txt",
   "tox.ini",
