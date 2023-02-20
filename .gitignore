@@ -13,6 +13,8 @@ pyvenv.cfg
 /.venv*
 /venv*
 /.env/
+/.direnv/
+.envrc
 
 # sensitive environment variables
 .env
