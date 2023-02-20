@@ -71,6 +71,10 @@ def test_matrix_provider_unlinked_index_independent(scheme: Scheme):
     assert matrices["dataset2"].shape == (scheme.data["dataset2"].model.size, 2)
     assert all(matrices["dataset2"].clp_label == ["s1", "s2"])
 
+    # 2 compartments * 3 items in global axis of dataset1
+    # + 2 compartments * 4 items in global axis of dataset2
+    assert matrix_provider.number_of_clps == (2 * 3) + (2 * 4)
+
 
 def test_matrix_provider_linked_index_independent(scheme: Scheme):
     dataset_group = scheme.model.get_dataset_groups()["default"]
@@ -109,6 +113,10 @@ def test_matrix_provider_linked_index_independent(scheme: Scheme):
     )
     assert matrix_provider.get_aligned_matrix_container(4).matrix.shape == (dataset2_size, 2)
 
+    # 2 compartments * 5 items in aligned global axis
+    # See also: test_data_provider_linking_methods
+    assert matrix_provider.number_of_clps == 2 * 5
+
 
 def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
     scheme.model.megacomplex["m1"].is_index_dependent = True  # type:ignore[attr-defined]
@@ -131,6 +139,10 @@ def test_matrix_provider_unlinked_index_dependent(scheme: Scheme):
     assert "dataset2" in matrices
     assert matrices["dataset2"].shape == (dataset2_global_size, dataset2_model_size, 2)
     assert all(matrices["dataset2"].clp_label == ["s1", "s2"])
+
+    # 2 compartments * 3 items in global axis of dataset1
+    # + 2 compartments * 4 items in global axis of dataset2
+    assert matrix_provider.number_of_clps == (2 * 3) + (2 * 4)
 
 
 def test_matrix_provider_linked_index_dependent(scheme: Scheme):
@@ -172,3 +184,7 @@ def test_matrix_provider_linked_index_dependent(scheme: Scheme):
         2,
     )
     assert matrix_provider.get_aligned_matrix_container(4).matrix.shape == (dataset2_model_size, 2)
+
+    # 2 compartments * 5 items in aligned global axis
+    # See also: test_data_provider_linking_methods
+    assert matrix_provider.number_of_clps == 2 * 5

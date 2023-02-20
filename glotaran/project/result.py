@@ -13,6 +13,7 @@ import xarray as xr
 from numpy.typing import ArrayLike
 from tabulate import tabulate
 
+from glotaran.deprecation import deprecate
 from glotaran.io import SAVING_OPTIONS_DEFAULT
 from glotaran.io import SavingOptions
 from glotaran.io import load_result
@@ -105,15 +106,17 @@ class Result:
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
 
     degrees_of_freedom: int | None = None
-    """Degrees of freedom in optimization :math:`N - N_{vars}`."""
+    """Degrees of freedom in optimization :math:`N - N_{vars} - N_{clps}`."""
+    number_of_clps: int | None = None
+    """Number of conditionally linear parameters :math:`N_{clps}`."""
 
     jacobian: ArrayLike | list | None = exclude_from_dict_field(None)
     """Modified Jacobian matrix at the solution
 
     See also: :func:`scipy.optimize.least_squares`
     """
-    number_of_data_points: int | None = None
-    """Number of data points :math:`N`."""
+    number_of_residuals: int | None = None
+    """Number of values in the residual vector :math:`N`."""
     number_of_jacobian_evaluations: int | None = None
     """The number of jacobian evaluations."""
     number_of_parameters: int | None = None
@@ -122,7 +125,7 @@ class Result:
     reduced_chi_square: float | None = None
     r"""The reduced chi-square of the optimization.
 
-    :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars})}`.
+    :math:`\chi^2_{red}= {\chi^2} / {(N - N_{vars} - N_{clps})}`.
     """
     root_mean_square_error: float | None = None
     r"""
@@ -143,6 +146,25 @@ class Result:
         if isinstance(self.jacobian, list):
             self.jacobian = np.array(self.jacobian)
             self.covariance_matrix = np.array(self.covariance_matrix)
+
+    @property
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.project.Result.number_of_data_points",
+        new_qual_name_usage="glotaran.project.Result.number_of_residuals",
+        to_be_removed_in_version="0.8.0",
+        importable_indices=(2, 2),
+    )
+    def number_of_data_points(self) -> int | None:
+        """Return the number of values in the residual vector :math:`N`.
+
+        Deprecated since it returned the wrong value.
+
+        Returns
+        -------
+        int | None
+            Number of values in the residual vector :math:`N`.
+        """
+        return self.number_of_residuals
 
     @property
     def model(self) -> Model:
@@ -198,8 +220,9 @@ class Result:
         """
         general_table_rows: list[list[Any]] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
+            ["Number of residuals", self.number_of_residuals],
             ["Number of parameters", self.number_of_parameters],
-            ["Number of datapoints", self.number_of_data_points],
+            ["Number of conditionally linear parameters", self.number_of_clps],
             ["Degrees of freedom", self.degrees_of_freedom],
             ["Chi Square", f"{self.chi_square or np.nan:.2e}"],
             ["Reduced Chi Square", f"{self.reduced_chi_square or np.nan:.2e}"],

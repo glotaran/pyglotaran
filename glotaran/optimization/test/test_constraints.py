@@ -15,7 +15,7 @@ def test_constraint(index_dependent, link_clp):
     model = deepcopy(suite.model)
     model.dataset_groups["default"].link_clp = link_clp
     model.megacomplex["m1"].is_index_dependent = index_dependent
-    model.clp_constraints.append(ZeroConstraint(**{"target": "s2"}))
+    model.clp_constraints.append(ZeroConstraint(**{"target": "s2", "interval": (1, 1)}))
 
     print("link_clp", link_clp, "index_dependent", index_dependent)
     dataset = simulate(
@@ -41,5 +41,10 @@ def test_constraint(index_dependent, link_clp):
 
     assert "s2" not in reduced_matrix.clp_labels
     assert "s2" in clps.coords["clp_label"]
-    assert clps.sel(clp_label="s2") == 0
+    assert clps.sel(clp_label="s2")[0] == 0
+    assert clps.sel(clp_label="s2")[1] != 0
     assert "s2" in matrix.clp_labels
+
+    # 1 compartment * 2 items in global axis
+    # + 1 compartment * 1 item in global axis
+    assert optimization_group.number_of_clps == 3

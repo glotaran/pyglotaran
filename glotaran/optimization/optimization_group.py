@@ -212,3 +212,13 @@ class OptimizationGroup:
         add_svd_to_dataset(
             dataset, name=name, lsv_dim=lsv_dim, rsv_dim=rsv_dim, data_array=dataset[name]
         )
+
+    @property
+    def number_of_clps(self) -> int:
+        """Return number of conditionally linear parameters.
+
+        Returns
+        -------
+        int
+        """
+        return self._matrix_provider.number_of_clps

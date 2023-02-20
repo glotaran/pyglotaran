@@ -22,6 +22,7 @@
 - 👌 Make yaml the default plugin when passing a folder to save_result and load_result (#1230)
 - ✨ Allow usage of subfolders in project API for parameters, models and data (#1232)
 - ✨ Allow import of xarray objects in project API import_data (#1235)
+- 🩹 Add number_of_clps to result and correct degrees_of_freedom calculation (#1249)
 
 ### 🩹 Bug fixes
 
@@ -51,6 +52,7 @@
 - Command Line Interface (removed without replacement) (#1228)
 - `Project.generate_model` (removed without replacement)
 - `Project.generate_parameters` (removed without replacement)
+- `glotaran.project.Result.number_of_data_points` -> `glotaran.project.Result.number_of_residuals`
 
 ### 🗑️❌ Deprecated functionality removed in this release
 

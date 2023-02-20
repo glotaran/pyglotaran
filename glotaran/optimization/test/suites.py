@@ -46,7 +46,7 @@ class TwoCompartmentDecay:
     wanted_parameters = Parameters.from_list([11e-4, 22e-5])
     initial_parameters = Parameters.from_list([10e-4, 20e-5])
 
-    global_axis = np.asarray([1.0])
+    global_axis = np.asarray([1.0, 2])
     model_axis = np.arange(0, 150, 1.5)
 
     sim_model = DecayModel(

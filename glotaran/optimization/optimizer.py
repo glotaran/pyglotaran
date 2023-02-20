@@ -19,6 +19,7 @@ from glotaran.utils.tee import TeeContext
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
+
 SUPPORTED_METHODS = {
     "TrustRegionReflection": "trf",
     "Dogbox": "dogbox",
@@ -27,7 +28,7 @@ SUPPORTED_METHODS = {
 
 
 class InitialParameterError(ValueError):
-    """Inidcates that initial parameters can not be evaluated."""
+    """Indicates that initial parameters can not be evaluated."""
 
     def __init__(self):
         """Initialize a InitialParameterError."""
@@ -35,7 +36,7 @@ class InitialParameterError(ValueError):
 
 
 class ParameterNotInitializedError(ValueError):
-    """Inidcates that scheme parameters are not initialized."""
+    """Indicates that scheme parameters are not initialized."""
 
     def __init__(self):
         """Initialize a ParameterNotInitializedError."""
@@ -43,7 +44,7 @@ class ParameterNotInitializedError(ValueError):
 
 
 class MissingDatasetsError(ValueError):
-    """Inidcates that datasets are missing in the scheme."""
+    """Indicates that datasets are missing in the scheme."""
 
     def __init__(self, missing_datasets: list[str]):
         """Initialize a MissingDatasetsError.
@@ -57,7 +58,7 @@ class MissingDatasetsError(ValueError):
 
 
 class UnsupportedMethodError(ValueError):
-    """Inidcates that the optimization method is unsupported."""
+    """Indicates that the optimization method is unsupported."""
 
     def __init__(self, method: str):
         """Initialize an UnsupportedMethodError.
@@ -230,10 +231,15 @@ class Optimizer:
         if success:
             result_args["number_of_jacobian_evaluations"] = self._optimization_result.njev
             result_args["optimality"] = float(self._optimization_result.optimality)
-            result_args["number_of_data_points"] = self._optimization_result.fun.size
+            result_args["number_of_residuals"] = self._optimization_result.fun.size
+            result_args["number_of_clps"] = sum(
+                group.number_of_clps for group in self._optimization_groups
+            )
             result_args["number_of_parameters"] = self._optimization_result.x.size
             result_args["degrees_of_freedom"] = (
-                result_args["number_of_data_points"] - result_args["number_of_parameters"]
+                result_args["number_of_residuals"]
+                - result_args["number_of_parameters"]
+                - result_args["number_of_clps"]
             )
             result_args["chi_square"] = float(np.sum(self._optimization_result.fun**2))
             result_args["reduced_chi_square"] = (
