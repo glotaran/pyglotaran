@@ -68,7 +68,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.6.1
+    rev: 1.6.3
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -116,7 +116,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"
