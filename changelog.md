@@ -37,6 +37,7 @@
 - 👌 Refine project API (#1240)
 <!-- Fix within the 0.7.0 release cycle, therefore hidden:
 - 🩹 Fix the matrix provider alignment/reduction ('grouping') issues introduced in #1175 (#1190)
+- 🩹 Fix loading of old results containing number_of_data_points (#1255)
   -->
 
 ### 📚 Documentation
