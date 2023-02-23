@@ -249,10 +249,10 @@ def test_import_data(tmp_path: Path, name: str | None):
 
     project.import_data(test_data, dataset_name=name)
     with pytest.raises(FileExistsError):
-        project.import_data(test_data, dataset_name=name)
+        project.import_data(test_data, dataset_name=name, ignore_existing=False)
 
     project.import_data(test_data, dataset_name=name, allow_overwrite=True)
-    project.import_data(test_data, dataset_name=name, ignore_existing=True)
+    project.import_data(test_data, dataset_name=name)
 
     data_folder = tmp_path / "test_project/data"
 

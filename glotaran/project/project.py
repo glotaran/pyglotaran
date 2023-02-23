@@ -206,7 +206,7 @@ class Project:
         dataset: str | Path | xr.Dataset | xr.DataArray,
         dataset_name: str | None = None,
         allow_overwrite: bool = False,
-        ignore_existing: bool = False,
+        ignore_existing: bool = True,
     ):
         """Import a dataset.
 
@@ -220,7 +220,7 @@ class Project:
         allow_overwrite: bool
             Whether to overwrite an existing dataset.
         ignore_existing: bool
-            Whether to ignore import if the dataset already exists.
+            Whether to ignore import if the dataset already exists. Defaults to ``True``.
         """
         self._data_registry.import_data(
             dataset,
