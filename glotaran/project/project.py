@@ -35,6 +35,8 @@ from glotaran.utils.ipython import display_file
 if TYPE_CHECKING:
     from collections.abc import Hashable
 
+    from glotaran.typing.types import LoadableDataset
+
 TEMPLATE = "version: {gta_version}"
 
 PROJECT_FILE_NAME = "project.gta"
@@ -203,16 +205,16 @@ class Project:
 
     def import_data(
         self,
-        dataset: str | Path | xr.Dataset | xr.DataArray,
+        dataset: LoadableDataset | Mapping[str, LoadableDataset],
         dataset_name: str | None = None,
         allow_overwrite: bool = False,
-        ignore_existing: bool = False,
+        ignore_existing: bool = True,
     ):
-        """Import a dataset.
+        """Import a dataset by saving it as an .nc file in the project's data folder.
 
         Parameters
         ----------
-        dataset : str | Path | xr.Dataset | xr.DataArray
+        dataset : LoadableDataset
             Dataset instance or path to a dataset.
         dataset_name : str | None
             The name of the dataset (needs to be provided when dataset is an xarray instance).
@@ -220,14 +222,19 @@ class Project:
         allow_overwrite: bool
             Whether to overwrite an existing dataset.
         ignore_existing: bool
-            Whether to ignore import if the dataset already exists.
+            Whether to skip import if the dataset already exists and allow_overwrite is False.
+            Defaults to ``True``.
         """
-        self._data_registry.import_data(
-            dataset,
-            dataset_name=dataset_name,
-            allow_overwrite=allow_overwrite,
-            ignore_existing=ignore_existing,
-        )
+        if not isinstance(dataset, Mapping) or isinstance(dataset, (xr.Dataset, xr.DataArray)):
+            dataset = {dataset_name: dataset}
+
+        for key, value in dataset.items():
+            self._data_registry.import_data(
+                value,
+                dataset_name=key,
+                allow_overwrite=allow_overwrite,
+                ignore_existing=ignore_existing,
+            )
 
     @property
     def has_models(self) -> bool:
@@ -623,6 +630,7 @@ class Project:
         parameters_name: str,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
+        data_lookup_override: Mapping[str, LoadableDataset] | None = None,
     ) -> Scheme:
         """Create a scheme for optimization.
 
@@ -636,18 +644,33 @@ class Project:
             The maximum number of function evaluations.
         clp_link_tolerance : float
             The CLP link tolerance.
+        data_lookup_override: Mapping[str, LoadableDataset] | None
+            Allows to bypass the default dataset lookup in the project ``data`` folder and use a
+            different dataset for the optimization without changing the model. This is especially
+            useful when working with preprocessed data. Defaults to ``None``.
 
         Returns
         -------
         Scheme
             The created scheme.
         """
+        if data_lookup_override is None:
+            data_lookup_override = {}
         loaded_model = self.load_model(model_name)
-        data = {dataset: self.load_data(dataset) for dataset in loaded_model.dataset}
+        data_lookup_override = {
+            dataset_name: dataset_value
+            for dataset_name, dataset_value in data_lookup_override.items()
+            if dataset_name in loaded_model.dataset
+        }
+        data = {
+            dataset_name: self.data[dataset_name]
+            for dataset_name in loaded_model.dataset
+            if dataset_name not in data_lookup_override
+        }
         return Scheme(
             model=loaded_model,
             parameters=self.load_parameters(parameters_name),
-            data=data,
+            data=data | data_lookup_override,
             maximum_number_function_evaluations=maximum_number_function_evaluations,
             clp_link_tolerance=clp_link_tolerance,
         )
@@ -659,6 +682,7 @@ class Project:
         result_name: str | None = None,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
+        data_lookup_override: Mapping[str, LoadableDataset] | None = None,
     ) -> Result:
         """Optimize a model.
 
@@ -674,6 +698,10 @@ class Project:
             The maximum number of function evaluations.
         clp_link_tolerance : float
             The CLP link tolerance.
+        data_lookup_override: Mapping[str, LoadableDataset] | None
+            Allows to bypass the default dataset lookup in the project ``data`` folder and use a
+            different dataset for the optimization without changing the model. This is especially
+            useful when working with preprocessed data. Defaults to ``None``.
 
         Returns
         -------
@@ -683,7 +711,11 @@ class Project:
         from glotaran.optimization.optimize import optimize
 
         scheme = self.create_scheme(
-            model_name, parameters_name, maximum_number_function_evaluations, clp_link_tolerance
+            model_name=model_name,
+            parameters_name=parameters_name,
+            maximum_number_function_evaluations=maximum_number_function_evaluations,
+            clp_link_tolerance=clp_link_tolerance,
+            data_lookup_override=data_lookup_override,
         )
         result = optimize(scheme)
 

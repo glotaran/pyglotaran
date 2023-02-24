@@ -16,6 +16,7 @@ from pandas.testing import assert_frame_equal
 
 from glotaran import __version__ as gta_version
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.io import load_dataset
 from glotaran.io import load_parameters
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
@@ -30,6 +31,7 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import (
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
     PARAMETERS as example_parameter,
 )
+from glotaran.typing.types import LoadableDataset
 from glotaran.utils.io import chdir_context
 
 
@@ -248,11 +250,10 @@ def test_import_data(tmp_path: Path, name: str | None):
     save_dataset(example_dataset, test_data)
 
     project.import_data(test_data, dataset_name=name)
-    with pytest.raises(FileExistsError):
-        project.import_data(test_data, dataset_name=name)
+    project.import_data(test_data, dataset_name=name)
 
-    project.import_data(test_data, dataset_name=name, allow_overwrite=True)
-    project.import_data(test_data, dataset_name=name, ignore_existing=True)
+    with pytest.raises(FileExistsError):
+        project.import_data(test_data, dataset_name=name, ignore_existing=False)
 
     data_folder = tmp_path / "test_project/data"
 
@@ -288,6 +289,41 @@ def test_import_data_xarray(tmp_path: Path, data: xr.Dataset | xr.DataArray):
     assert project.load_data("test_data").equals(xr.Dataset({"data": xr.DataArray([1])}))
 
 
+def test_import_data_allow_overwrite(existing_project: Project):
+    """Overwrite data when ``allow_overwrite==True``."""
+
+    dummy_data = xr.Dataset({"data": xr.DataArray([1])})
+
+    assert not existing_project.load_data("dataset_1").equals(dummy_data)
+
+    existing_project.import_data(dummy_data, dataset_name="dataset_1", allow_overwrite=True)
+
+    assert existing_project.load_data("dataset_1").equals(dummy_data)
+
+
+@pytest.mark.parametrize(
+    "data",
+    (
+        xr.DataArray([1]),
+        xr.Dataset({"data": xr.DataArray([1])}),
+    ),
+)
+def test_import_data_mapping(tmp_path: Path, data: xr.Dataset | xr.DataArray):
+    """Import data as a mapping"""
+    project = Project.open(tmp_path)
+
+    test_data = tmp_path / "import_data.nc"
+    save_dataset(example_dataset, test_data)
+
+    project.import_data({"test_data_1": data, "test_data_2": test_data})
+
+    assert (tmp_path / "data/test_data_1.nc").is_file() is True
+    assert (tmp_path / "data/test_data_2.nc").is_file() is True
+
+    assert project.load_data("test_data_1").equals(xr.Dataset({"data": xr.DataArray([1])}))
+    assert project.load_data("test_data_2").equals(load_dataset(test_data))
+
+
 def test_create_scheme(existing_project: Project):
     scheme = existing_project.create_scheme(
         model_name="test_model",
@@ -298,6 +334,31 @@ def test_create_scheme(existing_project: Project):
     assert "dataset_1" in scheme.data
     assert "dataset_1" in scheme.model.dataset
     assert scheme.maximum_number_function_evaluations == 1
+
+
+@pytest.mark.parametrize(
+    "data",
+    (xr.DataArray([1]), xr.Dataset({"data": xr.DataArray([1])}), "file"),
+)
+def test_create_scheme_data_lookup_override(
+    tmp_path: Path, existing_project: Project, data: LoadableDataset
+):
+    """Test data_lookup_override functionality."""
+
+    if data == "file":
+        data = tmp_path / "file_data.nc"
+        save_dataset(xr.Dataset({"data": xr.DataArray([1])}), data)
+
+    scheme = existing_project.create_scheme(
+        model_name="test_model",
+        parameters_name="test_parameters",
+        data_lookup_override={"dataset_1": data},
+    )
+
+    assert len(scheme.data) == 1
+    assert "dataset_1" in scheme.data
+    assert "dataset_1" in scheme.model.dataset
+    assert scheme.data["dataset_1"].equals(xr.Dataset({"data": xr.DataArray([1])}))
 
 
 @pytest.mark.parametrize("result_name", ["test", None])
