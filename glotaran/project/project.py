@@ -35,6 +35,8 @@ from glotaran.utils.ipython import display_file
 if TYPE_CHECKING:
     from collections.abc import Hashable
 
+    from glotaran.typing.types import LoadableDataset
+
 TEMPLATE = "version: {gta_version}"
 
 PROJECT_FILE_NAME = "project.gta"
@@ -203,7 +205,7 @@ class Project:
 
     def import_data(
         self,
-        dataset: str | Path | xr.Dataset | xr.DataArray,
+        dataset: LoadableDataset | Mapping[str, LoadableDataset],
         dataset_name: str | None = None,
         allow_overwrite: bool = False,
         ignore_existing: bool = True,
@@ -212,7 +214,7 @@ class Project:
 
         Parameters
         ----------
-        dataset : str | Path | xr.Dataset | xr.DataArray
+        dataset : LoadableDataset
             Dataset instance or path to a dataset.
         dataset_name : str | None
             The name of the dataset (needs to be provided when dataset is an xarray instance).
@@ -222,12 +224,16 @@ class Project:
         ignore_existing: bool
             Whether to ignore import if the dataset already exists. Defaults to ``True``.
         """
-        self._data_registry.import_data(
-            dataset,
-            dataset_name=dataset_name,
-            allow_overwrite=allow_overwrite,
-            ignore_existing=ignore_existing,
-        )
+        if not isinstance(dataset, Mapping) or isinstance(dataset, (xr.Dataset, xr.DataArray)):
+            dataset = {dataset_name: dataset}
+
+        for key, value in dataset.items():
+            self._data_registry.import_data(
+                value,
+                dataset_name=key,
+                allow_overwrite=allow_overwrite,
+                ignore_existing=ignore_existing,
+            )
 
     @property
     def has_models(self) -> bool:

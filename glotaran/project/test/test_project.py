@@ -16,6 +16,7 @@ from pandas.testing import assert_frame_equal
 
 from glotaran import __version__ as gta_version
 from glotaran.builtin.io.yml.utils import load_dict
+from glotaran.io import load_dataset
 from glotaran.io import load_parameters
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
@@ -286,6 +287,29 @@ def test_import_data_xarray(tmp_path: Path, data: xr.Dataset | xr.DataArray):
     assert (tmp_path / "data/test_data.nc").is_file() is True
 
     assert project.load_data("test_data").equals(xr.Dataset({"data": xr.DataArray([1])}))
+
+
+@pytest.mark.parametrize(
+    "data",
+    (
+        xr.DataArray([1]),
+        xr.Dataset({"data": xr.DataArray([1])}),
+    ),
+)
+def test_import_data_mapping(tmp_path: Path, data: xr.Dataset | xr.DataArray):
+    """Import data as a mapping"""
+    project = Project.open(tmp_path)
+
+    test_data = tmp_path / "import_data.nc"
+    save_dataset(example_dataset, test_data)
+
+    project.import_data({"test_data_1": data, "test_data_2": test_data})
+
+    assert (tmp_path / "data/test_data_1.nc").is_file() is True
+    assert (tmp_path / "data/test_data_2.nc").is_file() is True
+
+    assert project.load_data("test_data_1").equals(xr.Dataset({"data": xr.DataArray([1])}))
+    assert project.load_data("test_data_2").equals(load_dataset(test_data))
 
 
 def test_create_scheme(existing_project: Project):
