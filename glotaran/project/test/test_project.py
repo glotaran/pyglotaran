@@ -31,6 +31,7 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import (
 from glotaran.testing.simulated_data.sequential_spectral_decay import (
     PARAMETERS as example_parameter,
 )
+from glotaran.typing.types import LoadableDataset
 from glotaran.utils.io import chdir_context
 
 
@@ -322,6 +323,31 @@ def test_create_scheme(existing_project: Project):
     assert "dataset_1" in scheme.data
     assert "dataset_1" in scheme.model.dataset
     assert scheme.maximum_number_function_evaluations == 1
+
+
+@pytest.mark.parametrize(
+    "data",
+    (xr.DataArray([1]), xr.Dataset({"data": xr.DataArray([1])}), "file"),
+)
+def test_create_scheme_data_overwrite(
+    tmp_path: Path, existing_project: Project, data: LoadableDataset
+):
+    """Test data_overwrite functionality."""
+
+    if data == "file":
+        data = tmp_path / "file_data.nc"
+        save_dataset(xr.Dataset({"data": xr.DataArray([1])}), data)
+
+    scheme = existing_project.create_scheme(
+        model_name="test_model",
+        parameters_name="test_parameters",
+        data_overwrite={"dataset_1": data},
+    )
+
+    assert len(scheme.data) == 1
+    assert "dataset_1" in scheme.data
+    assert "dataset_1" in scheme.model.dataset
+    assert scheme.data["dataset_1"].equals(xr.Dataset({"data": xr.DataArray([1])}))
 
 
 @pytest.mark.parametrize("result_name", ["test", None])
