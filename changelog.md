@@ -23,6 +23,7 @@
 - ✨ Allow usage of subfolders in project API for parameters, models and data (#1232)
 - ✨ Allow import of xarray objects in project API import_data (#1235)
 - 🩹 Add number_of_clps to result and correct degrees_of_freedom calculation (#1249)
+- 👌 Improve Project API data handling (#1257)
 
 ### 🩹 Bug fixes
 
