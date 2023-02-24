@@ -629,7 +629,7 @@ class Project:
         parameters_name: str,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
-        data_overwrite: Mapping[str, LoadableDataset] | None = None,
+        data_lookup_overwrite: Mapping[str, LoadableDataset] | None = None,
     ) -> Scheme:
         """Create a scheme for optimization.
 
@@ -643,7 +643,7 @@ class Project:
             The maximum number of function evaluations.
         clp_link_tolerance : float
             The CLP link tolerance.
-        data_overwrite: Mapping[str, LoadableDataset] | None
+        data_lookup_overwrite: Mapping[str, LoadableDataset] | None
             Allows to bypass the default dataset lookup in the project ``data`` folder and use a
             different dataset for the optimization without changing the model. This especially
             useful when working with preprocessed data. Defaults to ``None``.
@@ -653,23 +653,23 @@ class Project:
         Scheme
             The created scheme.
         """
-        if data_overwrite is None:
-            data_overwrite = {}
+        if data_lookup_overwrite is None:
+            data_lookup_overwrite = {}
         loaded_model = self.load_model(model_name)
-        data_overwrite = {
+        data_lookup_overwrite = {
             dataset_name: dataset_value
-            for dataset_name, dataset_value in data_overwrite.items()
+            for dataset_name, dataset_value in data_lookup_overwrite.items()
             if dataset_name in loaded_model.dataset
         }
         data = {
             dataset_name: self.data[dataset_name]
             for dataset_name in loaded_model.dataset
-            if dataset_name not in data_overwrite
+            if dataset_name not in data_lookup_overwrite
         }
         return Scheme(
             model=loaded_model,
             parameters=self.load_parameters(parameters_name),
-            data=data | data_overwrite,
+            data=data | data_lookup_overwrite,
             maximum_number_function_evaluations=maximum_number_function_evaluations,
             clp_link_tolerance=clp_link_tolerance,
         )
@@ -681,7 +681,7 @@ class Project:
         result_name: str | None = None,
         maximum_number_function_evaluations: int | None = None,
         clp_link_tolerance: float = 0.0,
-        data_overwrite: Mapping[str, LoadableDataset] | None = None,
+        data_lookup_overwrite: Mapping[str, LoadableDataset] | None = None,
     ) -> Result:
         """Optimize a model.
 
@@ -697,7 +697,7 @@ class Project:
             The maximum number of function evaluations.
         clp_link_tolerance : float
             The CLP link tolerance.
-        data_overwrite: Mapping[str, LoadableDataset] | None
+        data_lookup_overwrite: Mapping[str, LoadableDataset] | None
             Allows to bypass the default dataset lookup in the project ``data`` folder and use a
             different dataset for the optimization without changing the model. This especially
             useful when working with preprocessed data. Defaults to ``None``.
@@ -714,7 +714,7 @@ class Project:
             parameters_name=parameters_name,
             maximum_number_function_evaluations=maximum_number_function_evaluations,
             clp_link_tolerance=clp_link_tolerance,
-            data_overwrite=data_overwrite,
+            data_lookup_overwrite=data_lookup_overwrite,
         )
         result = optimize(scheme)
 
