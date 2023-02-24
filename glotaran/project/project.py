@@ -210,7 +210,7 @@ class Project:
         allow_overwrite: bool = False,
         ignore_existing: bool = True,
     ):
-        """Import a dataset.
+        """Import a dataset by saving it as an .nc file in the project's data folder.
 
         Parameters
         ----------
@@ -222,7 +222,8 @@ class Project:
         allow_overwrite: bool
             Whether to overwrite an existing dataset.
         ignore_existing: bool
-            Whether to ignore import if the dataset already exists. Defaults to ``True``.
+            Whether to skip import if the dataset already exists and allow_overwrite is False.
+            Defaults to ``True``.
         """
         if not isinstance(dataset, Mapping) or isinstance(dataset, (xr.Dataset, xr.DataArray)):
             dataset = {dataset_name: dataset}
@@ -645,7 +646,7 @@ class Project:
             The CLP link tolerance.
         data_lookup_override: Mapping[str, LoadableDataset] | None
             Allows to bypass the default dataset lookup in the project ``data`` folder and use a
-            different dataset for the optimization without changing the model. This especially
+            different dataset for the optimization without changing the model. This is especially
             useful when working with preprocessed data. Defaults to ``None``.
 
         Returns
@@ -699,7 +700,7 @@ class Project:
             The CLP link tolerance.
         data_lookup_override: Mapping[str, LoadableDataset] | None
             Allows to bypass the default dataset lookup in the project ``data`` folder and use a
-            different dataset for the optimization without changing the model. This especially
+            different dataset for the optimization without changing the model. This is especially
             useful when working with preprocessed data. Defaults to ``None``.
 
         Returns
