@@ -340,10 +340,10 @@ def test_create_scheme(existing_project: Project):
     "data",
     (xr.DataArray([1]), xr.Dataset({"data": xr.DataArray([1])}), "file"),
 )
-def test_create_scheme_data_lookup_overwrite(
+def test_create_scheme_data_lookup_override(
     tmp_path: Path, existing_project: Project, data: LoadableDataset
 ):
-    """Test data_lookup_overwrite functionality."""
+    """Test data_lookup_override functionality."""
 
     if data == "file":
         data = tmp_path / "file_data.nc"
@@ -352,7 +352,7 @@ def test_create_scheme_data_lookup_overwrite(
     scheme = existing_project.create_scheme(
         model_name="test_model",
         parameters_name="test_parameters",
-        data_lookup_overwrite={"dataset_1": data},
+        data_lookup_override={"dataset_1": data},
     )
 
     assert len(scheme.data) == 1
