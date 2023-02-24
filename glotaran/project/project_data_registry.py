@@ -73,6 +73,6 @@ class ProjectDataRegistry(ProjectRegistry):
             dataset = load_dataset(dataset)
 
         data_path = self.directory / f"{dataset_name}.nc"
-        if data_path.exists() and ignore_existing:
+        if data_path.exists() and ignore_existing and allow_overwrite is False:
             return
         save_dataset(dataset, data_path, allow_overwrite=allow_overwrite)

@@ -250,11 +250,10 @@ def test_import_data(tmp_path: Path, name: str | None):
     save_dataset(example_dataset, test_data)
 
     project.import_data(test_data, dataset_name=name)
+    project.import_data(test_data, dataset_name=name)
+
     with pytest.raises(FileExistsError):
         project.import_data(test_data, dataset_name=name, ignore_existing=False)
-
-    project.import_data(test_data, dataset_name=name, allow_overwrite=True)
-    project.import_data(test_data, dataset_name=name)
 
     data_folder = tmp_path / "test_project/data"
 
@@ -288,6 +287,18 @@ def test_import_data_xarray(tmp_path: Path, data: xr.Dataset | xr.DataArray):
     assert (tmp_path / "data/test_data.nc").is_file() is True
 
     assert project.load_data("test_data").equals(xr.Dataset({"data": xr.DataArray([1])}))
+
+
+def test_import_data_allow_overwrite(existing_project: Project):
+    """Overwrite data when ``allow_overwrite==True``."""
+
+    dummy_data = xr.Dataset({"data": xr.DataArray([1])})
+
+    assert not existing_project.load_data("dataset_1").equals(dummy_data)
+
+    existing_project.import_data(dummy_data, dataset_name="dataset_1", allow_overwrite=True)
+
+    assert existing_project.load_data("dataset_1").equals(dummy_data)
 
 
 @pytest.mark.parametrize(
