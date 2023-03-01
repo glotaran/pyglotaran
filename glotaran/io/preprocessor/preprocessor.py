@@ -58,7 +58,8 @@ class CorrectBaselineAverage(PreProcessor):
     """Corrects a dataset by subtracting the average over a part of the data."""
 
     action: Literal["baseline-average"] = "baseline-average"
-    selection: dict[str, slice | list[int] | int]
+    selection: dict[str, slice | list[int] | int] | None = None
+    exclude: dict[str, slice | list[int] | int] | None = None
 
     def apply(self, data: xr.DataArray) -> xr.DataArray:
         """Apply the pre-processor.
@@ -72,5 +73,5 @@ class CorrectBaselineAverage(PreProcessor):
         -------
         xr.DataArray
         """
-        selection = data.sel(self.selection)
+        selection = data.sel(self.selection or {}).drop_sel(self.exclude or {})
         return data - (selection.sum() / selection.size)
