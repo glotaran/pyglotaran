@@ -66,14 +66,14 @@ class PreProcessingPipeline(BaseModel):
 
     def correct_baseline_average(
         self,
-        selection: dict[str, slice | list[int] | int] | None = None,
+        select: dict[str, slice | list[int] | int] | None = None,
         exclude: dict[str, slice | list[int] | int] | None = None,
     ) -> PreProcessingPipeline:
         """Correct a dataset by subtracting the average over a part of the data.
 
         Parameters
         ----------
-        selection: dict[str, slice | list[int] | int] | None
+        select: dict[str, slice | list[int] | int] | None
             The selection to average as dictionary of dimension and indexer.
             The indexer can be a slice, a list or an integer value.
         exclude: dict[str, slice | list[int] | int] | None
@@ -84,5 +84,5 @@ class PreProcessingPipeline(BaseModel):
         -------
         PreProcessingPipeline
         """
-        self._push_action(CorrectBaselineAverage(exclude=exclude, selection=selection))
+        self._push_action(CorrectBaselineAverage(exclude=exclude, select=select))
         return self
