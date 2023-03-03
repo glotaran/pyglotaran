@@ -305,9 +305,9 @@ ipython_savefig_dir = "images/plot"
 
 # -- Options for extlinks extension ---------------------------------------
 extlinks = {
-    "numpydoc": ("https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html", "numpy."),
-    "scipydoc": ("https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html", "scipy."),
-    "xarraydoc": ("https://xarray.pydata.org/en/stable/generated/xarray.%s.html", "xarray."),
+    "numpydoc": ("https://docs.scipy.org/doc/numpy/reference/generated/numpy.%s.html", "numpy.%s"),
+    "scipydoc": ("https://docs.scipy.org/doc/scipy/reference/generated/scipy.%s.html", "scipy.%s"),
+    "xarraydoc": ("https://xarray.pydata.org/en/stable/generated/xarray.%s.html", "xarray.%s"),
 }
 
 # cleanup notebook data
