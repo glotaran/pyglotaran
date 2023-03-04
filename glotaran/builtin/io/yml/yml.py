@@ -170,6 +170,8 @@ class YmlProjectIo(ProjectIoInterface):
         spec = self._load_yml(result_file_path.as_posix())
         if "number_of_data_points" in spec:
             spec["number_of_residuals"] = spec.pop("number_of_data_points")
+        if "number_of_parameters" in spec:
+            spec["number_of_free_parameters"] = spec.pop("number_of_parameters")
         return fromdict(Result, spec, folder=result_file_path.parent)
 
     def save_result(

@@ -55,6 +55,7 @@
 - `Project.generate_model` (removed without replacement)
 - `Project.generate_parameters` (removed without replacement)
 - `glotaran.project.Result.number_of_data_points` -> `glotaran.project.Result.number_of_residuals`
+- `glotaran.project.Result.number_of_parameters` -> `glotaran.project.Result.number_of_free_parameters`
 
 ### 🗑️❌ Deprecated functionality removed in this release
 

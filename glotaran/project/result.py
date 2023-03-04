@@ -119,8 +119,8 @@ class Result:
     """Number of values in the residual vector :math:`N`."""
     number_of_jacobian_evaluations: int | None = None
     """The number of jacobian evaluations."""
-    number_of_parameters: int | None = None
-    """Number of parameters in optimization :math:`N_{vars}`"""
+    number_of_free_parameters: int | None = None
+    """Number of free parameters in optimization :math:`N_{vars}`"""
     optimality: float | None = None
     reduced_chi_square: float | None = None
     r"""The reduced chi-square of the optimization.
@@ -150,6 +150,23 @@ class Result:
     @property
     @deprecate(
         deprecated_qual_name_usage="glotaran.project.Result.number_of_data_points",
+        new_qual_name_usage="glotaran.project.Result.number_of_free_parameters",
+        to_be_removed_in_version="0.8.0",
+        importable_indices=(2, 2),
+    )
+    def number_of_parameters(self) -> int | None:
+        """Return the number of free parameters in optimization :math:`N_{vars}`.
+
+        Returns
+        -------
+        int | None
+            Number of free parameters in optimization :math:`N_{vars}`.
+        """
+        return self.number_of_free_parameters
+
+    @property
+    @deprecate(
+        deprecated_qual_name_usage="glotaran.project.Result.number_of_parameters",
         new_qual_name_usage="glotaran.project.Result.number_of_residuals",
         to_be_removed_in_version="0.8.0",
         importable_indices=(2, 2),
@@ -221,7 +238,7 @@ class Result:
         general_table_rows: list[list[Any]] = [
             ["Number of residual evaluation", self.number_of_function_evaluations],
             ["Number of residuals", self.number_of_residuals],
-            ["Number of parameters", self.number_of_parameters],
+            ["Number of free parameters", self.number_of_free_parameters],
             ["Number of conditionally linear parameters", self.number_of_clps],
             ["Degrees of freedom", self.degrees_of_freedom],
             ["Chi Square", f"{self.chi_square or np.nan:.2e}"],
