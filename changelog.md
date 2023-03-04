@@ -24,6 +24,7 @@
 - ✨ Allow import of xarray objects in project API import_data (#1235)
 - 🩹 Add number_of_clps to result and correct degrees_of_freedom calculation (#1249)
 - 👌 Improve Project API data handling (#1257)
+- 🗑️ Deprecate Result.number_of_parameters in favor of Result.number_of_free_parameters (#1262)
 
 ### 🩹 Bug fixes
 
