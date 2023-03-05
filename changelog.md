@@ -13,6 +13,7 @@
 - ✨ Add optimization history to result and iteration column to parameter history (#1134)
 - ♻️ Complete refactor of model and parameter packages using attrs (#1135)
 - ♻️ Move index dependent calculation to megacomplexes for speed-up (#1175)
+- ✨ Add PreProcessingPipeline (#1256, #1263)
 
 ### 👌 Minor Improvements:
 
