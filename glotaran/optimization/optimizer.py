@@ -235,10 +235,10 @@ class Optimizer:
             result_args["number_of_clps"] = sum(
                 group.number_of_clps for group in self._optimization_groups
             )
-            result_args["number_of_parameters"] = self._optimization_result.x.size
+            result_args["number_of_free_parameters"] = self._optimization_result.x.size
             result_args["degrees_of_freedom"] = (
                 result_args["number_of_residuals"]
-                - result_args["number_of_parameters"]
+                - result_args["number_of_free_parameters"]
                 - result_args["number_of_clps"]
             )
             result_args["chi_square"] = float(np.sum(self._optimization_result.fun**2))
