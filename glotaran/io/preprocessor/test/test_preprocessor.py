@@ -5,8 +5,7 @@ from glotaran.io.preprocessor import PreProcessingPipeline
 
 
 def test_correct_baseline_value():
-    pl = PreProcessingPipeline()
-    pl.correct_baseline_value(1)
+    pl = PreProcessingPipeline().correct_baseline_value(1)
     data = xr.DataArray([[1]])
     result = pl.apply(data)
     assert result == data - 1
@@ -14,16 +13,16 @@ def test_correct_baseline_value():
 
 @pytest.mark.parametrize("indexer", (slice(0, 2), [0, 1]))
 def test_correct_baseline_average(indexer: slice | list[int]):
-    pl = PreProcessingPipeline()
-    pl.correct_baseline_average(select={"dim_0": 0, "dim_1": indexer})
+    pl = PreProcessingPipeline().correct_baseline_average(select={"dim_0": 0, "dim_1": indexer})
     data = xr.DataArray([[1.1, 0.9]])
     result = pl.apply(data)
     assert (result == data - 1).all()
 
 
 def test_correct_baseline_average_exclude():
-    pl = PreProcessingPipeline()
-    pl.correct_baseline_average(select={"dim_0": 0}, exclude={"dim_1": 1})
+    pl = PreProcessingPipeline().correct_baseline_average(
+        select={"dim_0": 0}, exclude={"dim_1": 1}
+    )
     data = xr.DataArray([[1.1, 0.9]])
     result = pl.apply(data)
     print(result)
@@ -31,9 +30,11 @@ def test_correct_baseline_average_exclude():
 
 
 def test_to_from_dict():
-    pl = PreProcessingPipeline()
-    pl.correct_baseline_value(1)
-    pl.correct_baseline_average({"dim_1": slice(0, 2)})
+    pl = (
+        PreProcessingPipeline()
+        .correct_baseline_value(1)
+        .correct_baseline_average({"dim_1": slice(0, 2)})
+    )
     pl_dict = pl.dict()
     assert pl_dict == {
         "actions": [

@@ -39,16 +39,6 @@ class PreProcessingPipeline(BaseModel):
             result = action.apply(result)
         return result
 
-    def _push_action(self, action: PipelineAction):
-        """Push an action.
-
-        Parameters
-        ----------
-        action: PipelineAction
-            The action to push.
-        """
-        self.actions.append(action)
-
     def correct_baseline_value(self, value: float) -> PreProcessingPipeline:
         """Correct a dataset by subtracting baseline value.
 
@@ -61,8 +51,7 @@ class PreProcessingPipeline(BaseModel):
         -------
         PreProcessingPipeline
         """
-        self._push_action(CorrectBaselineValue(value=value))
-        return self
+        return PreProcessingPipeline(actions=[*self.actions, CorrectBaselineValue(value=value)])
 
     def correct_baseline_average(
         self,
@@ -84,5 +73,6 @@ class PreProcessingPipeline(BaseModel):
         -------
         PreProcessingPipeline
         """
-        self._push_action(CorrectBaselineAverage(exclude=exclude, select=select))
-        return self
+        return PreProcessingPipeline(
+            actions=[*self.actions, CorrectBaselineAverage(exclude=exclude, select=select)]
+        )
