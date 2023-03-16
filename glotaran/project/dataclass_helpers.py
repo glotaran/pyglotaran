@@ -17,10 +17,12 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import TypeVar
 
+    from _typeshed import DataclassInstance
+
     from glotaran.typing.protocols import FileLoadable
-    from glotaran.typing.types import T
 
     DefaultType = TypeVar("DefaultType")
+    DataclassInstanceType = TypeVar("DataclassInstanceType", bound=DataclassInstance)
 
 
 def exclude_from_dict_field(
@@ -141,7 +143,7 @@ def file_loadable_field(
     )
 
 
-def init_file_loadable_fields(dataclass_instance: object):
+def init_file_loadable_fields(dataclass_instance: DataclassInstance):
     """Load objects into class when dataclass is initialized with paths.
 
     If the class has file_loadable fields, this needs be called in the
@@ -149,7 +151,7 @@ def init_file_loadable_fields(dataclass_instance: object):
 
     Parameters
     ----------
-    dataclass_instance : object
+    dataclass_instance : DataclassInstance
         Instance of the dataclass being initialized.
         When used inside of ``__post_init__`` for the class itself use ``self``.
 
@@ -164,12 +166,12 @@ def init_file_loadable_fields(dataclass_instance: object):
             setattr(dataclass_instance, field_item.name, file_loader(value))
 
 
-def asdict(dataclass: object, folder: Path | None = None) -> dict[str, Any]:
+def asdict(dataclass: DataclassInstance, folder: Path | None = None) -> dict[str, Any]:
     """Create a dictionary containing all fields of the dataclass.
 
     Parameters
     ----------
-    dataclass : object
+    dataclass : DataclassInstance
         A dataclass instance.
     folder: Path | None
         Parent folder of :class:`FileLoadable` fields. by default None
@@ -205,13 +207,15 @@ def asdict(dataclass: object, folder: Path | None = None) -> dict[str, Any]:
 
 
 def fromdict(
-    dataclass_type: type[T], dataclass_dict: dict[str, Any], folder: Path | None = None
-) -> T:
+    dataclass_type: type[DataclassInstanceType],
+    dataclass_dict: dict[str, Any],
+    folder: Path | None = None,
+) -> DataclassInstanceType:
     """Create a dataclass instance from a dict and loads all file represented fields.
 
     Parameters
     ----------
-    dataclass_type : type[T]
+    dataclass_type : type[DataclassInstanceType]
         A dataclass type.
     dataclass_dict : dict[str, Any]
         A dict for instancing the the dataclass.
@@ -220,7 +224,7 @@ def fromdict(
 
     Returns
     -------
-    T
+    DataclassInstanceType
         Created instance of dataclass_type.
     """
     for field_item in fields(dataclass_type):
