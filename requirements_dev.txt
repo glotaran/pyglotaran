@@ -10,7 +10,7 @@ netCDF4==1.6.3
 numba==0.56.4
 numpy==1.23.5
 odfpy==1.4.1
-openpyxl==3.1.1
+openpyxl==3.1.2
 pandas==1.5.3
 pydantic==1.10.6
 rich==13.3.2
