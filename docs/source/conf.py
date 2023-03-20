@@ -61,6 +61,7 @@ extensions = [
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
+    "sphinx_rtd_theme",
 ]
 
 autoclass_content = "both"
