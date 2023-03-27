@@ -2,7 +2,7 @@
 
 (changes-0_7_0)=
 
-## 🚀 0.7.0 (Unreleased)
+## 🚀 0.7.0 (2023-03-27)
 
 ### 💥 BREAKING CHANGE
 
@@ -47,8 +47,6 @@
 ### 📚 Documentation
 
 - 📚 Update quickstart guide to use Project API (#1241)
-
-### 🗑️ Deprecations (due in 0.9.0)
 
 ### 🗑️ Deprecations (due in 0.8.0)
 
