@@ -13,7 +13,7 @@ odfpy==1.4.1
 openpyxl==3.1.2
 pandas==1.5.3
 pydantic==1.10.7
-rich==13.3.2
+rich==13.3.3
 ruamel.yaml==0.17.21
 scipy==1.10.1
 sdtfile==2022.9.28
