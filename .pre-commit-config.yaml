@@ -36,7 +36,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
         types: [file]
@@ -68,7 +68,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.6.4
+    rev: 1.7.0
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
