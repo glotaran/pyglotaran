@@ -11,7 +11,7 @@ numba==0.56.4
 numpy==1.23.5
 odfpy==1.4.1
 openpyxl==3.1.2
-pandas==1.5.3
+pandas==2.0.0
 pydantic==1.10.7
 rich==13.3.4
 ruamel.yaml==0.17.21
