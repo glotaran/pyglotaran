@@ -12,6 +12,7 @@ from glotaran import __version__ as glotaran_version
 from glotaran.optimization.optimization_group import OptimizationGroup
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
+from glotaran.parameter.parameter import _log_value
 from glotaran.project import Result
 from glotaran.project import Scheme
 from glotaran.utils.regex import RegexPattern
@@ -299,7 +300,14 @@ class Optimizer:
         covariance_matrix = (jacobian_rsv[mask].T / jacobian_sv_square[mask]) @ jacobian_rsv[mask]
         standard_errors = root_mean_square_error * np.sqrt(np.diag(covariance_matrix))
         for label, error in zip(self._free_parameter_labels, standard_errors):
-            self._parameters.get(label).standard_error = error
+            parameter = self._parameters.get(label)
+            if parameter.non_negative:
+                if error < np.abs(_log_value(parameter.value)):
+                    parameter.standard_error = parameter.value * (np.exp(error) - 1.0)
+                else:
+                    parameter.standard_error = np.abs(parameter.value)
+            else:
+                self._parameters.get(label).standard_error = error
         return covariance_matrix
 
     @staticmethod
