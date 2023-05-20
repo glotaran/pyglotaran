@@ -93,7 +93,7 @@ def test_coherent_artifact(spectral_dependence: str):
     print(compartments)
     assert len(compartments) == 4
     for i in range(1, 4):
-        assert compartments[i] == f"coherent_artifact_{i}"
+        assert compartments[i] == f"coherent_artifact_{i}_mc2"
 
     if spectral_dependence == "none":
         assert matrix.matrix.shape == (time.size, 4)
@@ -108,9 +108,9 @@ def test_coherent_artifact(spectral_dependence: str):
                 "clp_label",
                 [
                     "s1",
-                    "coherent_artifact_1",
-                    "coherent_artifact_2",
-                    "coherent_artifact_3",
+                    "coherent_artifact_1_mc2",
+                    "coherent_artifact_2_mc2",
+                    "coherent_artifact_3_mc2",
                 ],
             ),
         ],
