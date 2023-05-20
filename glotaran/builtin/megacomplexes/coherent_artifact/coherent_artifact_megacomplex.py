@@ -83,7 +83,7 @@ class CoherentArtifactMegacomplex(Megacomplex):
         return center, width
 
     def compartments(self):
-        return [f"coherent_artifact_{i}" for i in range(1, self.order + 1)]
+        return [f"coherent_artifact_{i}_{self.label}" for i in range(1, self.order + 1)]
 
     def finalize_data(
         self,
