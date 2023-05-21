@@ -41,11 +41,13 @@ jobs:
           pip install wheel
           pip install -r requirements_dev.txt
           pip install .
+          pip install git+https://github.com/s-weigand/pyglotaran-extras.git@raise-max-python
       - name: ${{ matrix.example_name }}
         id: example-run
         uses: glotaran/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
+          install_extras: false
       - name: Installed packages
         if: always()
         run: |
