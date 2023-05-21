@@ -7,7 +7,7 @@ Installation
 Prerequisites
 -------------
 
-* Python 3.6 or later
+* Python 3.10 or 3.11
 
 Windows
 +++++++
