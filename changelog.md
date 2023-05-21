@@ -6,6 +6,8 @@
 
 ### ✨ Features
 
+- ✨ Python 3.11 support (#1161)
+
 ### 👌 Minor Improvements:
 
 ### 🩹 Bug fixes
