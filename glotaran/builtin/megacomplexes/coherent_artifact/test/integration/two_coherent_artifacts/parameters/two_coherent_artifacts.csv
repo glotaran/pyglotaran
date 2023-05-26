@@ -1,0 +1,5 @@
+label,value,standard_error,expression,maximum,minimum,non_negative,vary
+irf.center1,0.028220108,None,None,,,False,True
+irf.width1,5.71E-02,None,None,,,False,True
+irf.center2,0.028220108,None,None,,,False,True
+irf.width2,5.71E-02,None,None,,,False,True
