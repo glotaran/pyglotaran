@@ -143,3 +143,69 @@ def test_coherent_artifact(spectral_dependence: str):
 
     assert "coherent_artifact_associated_spectra" in resultdata
     assert resultdata["coherent_artifact_associated_spectra"].shape == (3, 3)
+
+
+def test_two_coherent_artifacts():
+    """Test 2 coherent artifacts with 2 different pure solvents."""
+    model_dict: dict[str, dict[str, Any]] = {
+        "megacomplex": {
+            "ac1": {"type": "coherent-artifact", "order": 3},
+            "ac2": {"type": "coherent-artifact", "order": 3},
+        },
+        "irf": {
+            "irf1": {
+                "type": "gaussian",
+                "center": "irf_center_1",
+                "width": "irf_width",
+            },
+            "irf2": {
+                "type": "gaussian",
+                "center": "irf_center_2",
+                "width": "irf_width",
+            },
+        },
+        "dataset": {
+            "dataset1": {
+                "megacomplex": ["ac1"],
+                "irf": "irf1",
+            },
+            "dataset2": {
+                "megacomplex": ["ac2"],
+                "irf": "irf2",
+            },
+        },
+    }
+
+    parameter_list = [
+        ["irf_center_1", 10, {"vary": False, "non-negative": False}],
+        ["irf_center_2", 20, {"vary": False, "non-negative": False}],
+        ["irf_width", 30, {"vary": False, "non-negative": False}],
+    ]
+
+    model = Model.create_class_from_megacomplexes([CoherentArtifactMegacomplex])(**model_dict)
+
+    parameters = Parameters.from_list(parameter_list)  # type: ignore[arg-type]
+
+    time = np.arange(0, 50, 1.5)
+    spectral = np.asarray([200, 300, 400])
+
+    dataset_model1 = fill_item(model.dataset["dataset1"], model, parameters)
+    dataset_matrix1 = MatrixProvider.calculate_dataset_matrix(dataset_model1, spectral, time)
+
+    assert dataset_matrix1.matrix.shape == (time.size, 3)
+
+    dataset_model2 = fill_item(model.dataset["dataset2"], model, parameters)
+    dataset_matrix2 = MatrixProvider.calculate_dataset_matrix(dataset_model2, spectral, time)
+
+    assert len(dataset_matrix2.clp_labels) == 3
+
+    assert dataset_matrix2.matrix.shape == (time.size, 3)
+
+    assert dataset_matrix1.clp_labels != dataset_matrix2.clp_labels
+    assert not np.array_equal(dataset_matrix1.matrix, dataset_matrix2.matrix)
+
+    for i in range(0, 3):
+        assert dataset_matrix1.clp_labels[i] == f"coherent_artifact_{i+1}_ac1"
+
+    for i in range(0, 3):
+        assert dataset_matrix2.clp_labels[i] == f"coherent_artifact_{i+1}_ac2"
