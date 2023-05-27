@@ -12,6 +12,8 @@
 
 ### 🩹 Bug fixes
 
+- 🩹 Fix coherent artifact clp label duplication (#1292)
+
 ### 📚 Documentation
 
 ### 🗑️ Deprecations (due in 0.9.0)

@@ -1,0 +1,30 @@
+# default_megacomplex: decay
+dataset_groups:
+  default:
+    residual_function: variable_projection
+    link_clp: True
+
+dataset:
+  CA670:
+    megacomplex: [artifact670]
+    irf: irf1
+  CA700:
+    megacomplex: [artifact700]
+    irf: irf2
+
+megacomplex:
+  artifact670:
+    type: coherent-artifact
+    order: 3
+  artifact700:
+    type: coherent-artifact
+    order: 3
+irf:
+  irf1:
+    type: gaussian
+    center: irf.center1
+    width: irf.width1
+  irf2:
+    type: gaussian
+    center: irf.center2
+    width: irf.width2
