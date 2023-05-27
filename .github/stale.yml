@@ -1,12 +1,17 @@
 # Number of days of inactivity before an issue becomes stale
 daysUntilStale: 93
 # Number of days of inactivity before a stale issue is closed
-daysUntilClose: 31
+daysUntilClose: 183
 # Issues with these labels will never be considered stale
 exemptLabels:
   - pinned
   - security
   - 'Type: Serious Bug'
+  - 'Priority: Critical'
+  - 'Priority: High'
+  - 'Status: In Progress'
+  - 'Status: Need Feedback'
+  - 'good first issue'
 # Label to use when marking an issue as stale
 staleLabel: 'Status: Lack of interest'
 # Comment to post when marking an issue as stale. Set to `false` to disable
@@ -15,4 +20,7 @@ markComment: >
   recent activity. It will be closed if no further activity occurs. Thank you
   for your contributions.
 # Comment to post when closing a stale issue. Set to `false` to disable
-closeComment: false
+closeComment: >
+  This issue has been closed due to lack of recent activity. Please open a new issue if you're still encountering this problem. Thanks for your contributions!
+exemptAllPullRequests: true
+# exemptAssignees: true
