@@ -31,7 +31,7 @@ jobs:
       - name: 🚀 Create Release
         uses: softprops/action-gh-release@v1
         with:
-          repository: s-weigand/pyglotaran-examples
+          repository: glotaran/pyglotaran-examples
           body_path: ${{ github.workspace }}-release-body.txt
           token: ${{ secrets.release_token }}
 
@@ -59,7 +59,7 @@ jobs:
       - name: 🚀 Create Release
         uses: softprops/action-gh-release@v1
         with:
-          repository: s-weigand/pyglotaran-validation
+          repository: glotaran/pyglotaran-validation
           body_path: ${{ github.workspace }}-release-body.txt
           generate_release_notes: true
           append_body: true
