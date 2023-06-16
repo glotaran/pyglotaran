@@ -1,0 +1,66 @@
+name: 🚀🚇 Release Validation and Examples
+
+on:
+  push:
+    tags:
+      - v**
+
+jobs:
+  release-examples:
+    name: 🚀 Release Examples
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: ⏬ Checkout examples repo
+        uses: actions/checkout@v3
+        with:
+          repository: glotaran/pyglotaran-examples
+          fetch-depth: 1
+
+      - name: 🏷️ Get tag name
+        id: tag
+        uses: devops-actions/action-get-tag@v1.0.2
+
+      - name: 📚 Create release body
+        run: |
+          echo "# pyglotaran-examples ${{ steps.tag.outputs.tag }} Release Notes" > ${{ github.workspace }}-release-body.txt
+          echo "This repository hold examples showcasing the use of [pyglotaran](https://github.com/glotaran/pyglotaran/)." >> ${{ github.workspace }}-release-body.txt
+          echo "And was used for validation of the [pyglotaran ${{ steps.tag.outputs.tag }} release](https://github.com/glotaran/pyglotaran/releases/tag/${{ steps.tag.outputs.tag }})." >> ${{ github.workspace }}-release-body.txt
+
+      - name: 🚀 Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          repository: s-weigand/pyglotaran-examples
+          body_path: ${{ github.workspace }}-release-body.txt
+          token: ${{ secrets.release_token }}
+
+  release-validation:
+    name: 🚀 Release Validation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: ⏬ Checkout validation repo
+        uses: actions/checkout@v3
+        with:
+          repository: glotaran/pyglotaran-validation
+          fetch-depth: 1
+
+      - name: 🏷️ Get tag name
+        id: tag
+        uses: devops-actions/action-get-tag@v1.0.2
+
+      - name: 📚 Create release body
+        run: |
+          echo "# pyglotaran-validation ${{ steps.tag.outputs.tag }} Release Notes" > ${{ github.workspace }}-release-body.txt
+          echo "This repository was used for validation of the [pyglotaran ${{ steps.tag.outputs.tag }} release](https://github.com/glotaran/pyglotaran/releases/tag/${{ steps.tag.outputs.tag }})." >> ${{ github.workspace }}-release-body.txt
+
+      - name: 🚀 Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          repository: s-weigand/pyglotaran-validation
+          body_path: ${{ github.workspace }}-release-body.txt
+          generate_release_notes: true
+          append_body: true
+          token: ${{ secrets.release_token }}
