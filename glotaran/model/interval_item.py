@@ -40,7 +40,7 @@ class IntervalItem(Item):
             lower, upper = interval[0], interval[1]
             if lower > upper:
                 lower, upper = upper, lower
-            return lower <= index <= upper  # type:ignore[operator]
+            return lower <= index <= upper
 
         if isinstance(self.interval, tuple):
             return applies(self.interval)
