@@ -19,7 +19,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.7.0
+    rev: v3.8.0
     hooks:
       - id: pyupgrade
         types: [file]
@@ -52,7 +52,7 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.3.0
+    rev: v2.4.0
     hooks:
       - id: setup-cfg-fmt
         args: [--include-version-classifiers]
