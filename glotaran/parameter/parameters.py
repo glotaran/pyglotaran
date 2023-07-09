@@ -522,7 +522,7 @@ def param_dict_to_markdown(
                 parameter.label_short,
                 parameter.value,
                 parameter.standard_error,
-                repr(pretty_format_numerical(parameter.value / parameter.standard_error)),
+                repr(pretty_format_numerical(abs(parameter.value / parameter.standard_error))),
                 parameter.minimum,
                 parameter.maximum,
                 parameter.vary,
