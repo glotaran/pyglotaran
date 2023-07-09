@@ -1,26 +1,16 @@
 # Changelog
 
-(changes-0_8_0)=
+(changes-0_7_1)=
 
-## 🚀 0.8.0 (Unreleased)
+## 🚀 0.7.1 (2023-07-09)
 
 ### ✨ Features
 
 - ✨ Python 3.11 support (#1161)
 
-### 👌 Minor Improvements:
-
 ### 🩹 Bug fixes
 
 - 🩹 Fix coherent artifact clp label duplication (#1292)
-
-### 📚 Documentation
-
-### 🗑️ Deprecations (due in 0.9.0)
-
-### 🗑️❌ Deprecated functionality removed in this release
-
-### 🚧 Maintenance
 
 (changes-0_7_0)=
 
