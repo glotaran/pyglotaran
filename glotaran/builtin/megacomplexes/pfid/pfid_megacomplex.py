@@ -265,6 +265,6 @@ def calculate_pfid_matrix_gaussian_irf(
     )
 
     osc = a * b * scale
-    pfid = (osc.real * rates - frequency_diff * osc.imag) / (rates**2 + frequency_diff**2)
-
-    return pfid
+    return (osc.real * rates - frequency_diff * osc.imag) / (
+        rates**2 + frequency_diff**2
+    )
