@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numba as nb
 import numpy as np
 import xarray as xr
 from scipy.special import erf
@@ -89,10 +88,11 @@ class PFIDMegacomplex(Megacomplex):
             if index_dependent(dataset_model)
             else (model_axis.size, len(clp_label))
         )
-        matrix = np.ones(matrix_shape, dtype=np.float64)
+        # matrix = np.ones(matrix_shape, dtype=np.float64)
+        matrix = np.zeros(matrix_shape, dtype=np.float64)
 
         if irf is None:
-            calculate_pfid_matrix_no_irf(matrix, frequencies, rates, model_axis)
+            raise ValueError("IRF is required for PFID megacomplex")
         elif isinstance(irf, IrfMultiGaussian):
             if index_dependent(dataset_model):
                 for i in range(global_axis.size):
@@ -149,16 +149,6 @@ class PFIDMegacomplex(Megacomplex):
             ),
             dataset.matrix.sel(clp_label=[f"{label}_pfid" for label in self.labels]).values,
         )
-
-
-@nb.jit(nopython=True, parallel=True)
-def calculate_pfid_matrix_no_irf(matrix, frequencies, rates, axis):
-    idx = 0
-    for frequency, rate in zip(frequencies, rates):
-        osc = np.exp(-rate * axis - 1j * frequency * axis)
-        matrix[:, idx] = osc.real
-        matrix[:, idx + 1] = osc.imag
-        idx += 2
 
 
 def calculate_pfid_matrix_gaussian_irf_on_index(
