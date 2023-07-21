@@ -80,15 +80,7 @@ class PFIDMegacomplex(Megacomplex):
     ):
         clp_label = [f"{label}_pfid" for label in self.labels]
 
-        delta = np.abs(model_axis[1:] - model_axis[:-1])
-        delta_min = delta[np.argmin(delta)]
-        # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
-        # where 0.03 is the product of speed of light 3*10**10 cm/s and time-unit ps (10^-12)
-        frequency_max = 1 / (2 * 0.03 * delta_min)
-        frequencies = np.array(self.frequencies)  # * 0.03 * 2 * np.pi
-        frequencies[frequencies >= frequency_max] = np.mod(
-            frequencies[frequencies >= frequency_max], frequency_max
-        )
+        frequencies = np.array(self.frequencies)
         rates = np.array(self.rates)
 
         irf = dataset_model.irf
@@ -240,7 +232,11 @@ def calculate_pfid_matrix_gaussian_irf(
     right_shifted_axis = shifted_axis[right_shifted_axis_indices]
     pos_idx = np.where(rates >= 0)[0]
 
-    frequency_diff = global_axis_value - frequencies
+    # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
+    # where 0.03 is the product of speed of light 3*10**10 cm/s and time-unit ps (10^-12)
+    # we postpone the conversion because the global axis is
+    # always expected to be in cm-1 for relevant experiments
+    frequency_diff = (global_axis_value - frequencies) * 0.03 * 2 * np.pi
     d = width**2
     k = rates + 1j * frequency_diff
     dk = k * d
