@@ -8,7 +8,7 @@ attrs == 23.1.0
 click==8.1.6
 netCDF4==1.6.4
 numba==0.57.1
-numpy==1.24.3
+numpy==1.24.4
 odfpy==1.4.1
 openpyxl==3.1.2
 pandas==2.0.3
