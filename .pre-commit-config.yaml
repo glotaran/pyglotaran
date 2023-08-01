@@ -19,7 +19,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.9.0
+    rev: v3.10.1
     hooks:
       - id: pyupgrade
         types: [file]
@@ -92,7 +92,7 @@ repos:
         additional_dependencies: [flake8-docstrings, flake8-print>=5.0.0]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         name: "flake8 lint code"
@@ -104,7 +104,7 @@ repos:
           - "--count"
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         alias: flake8-docs
