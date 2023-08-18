@@ -25,6 +25,8 @@
           python
           pre-commit
           (python3.withPackages (ps: with ps; [
+            pip
+            pytz
             virtualenvwrapper
           ]))
         ];
@@ -33,6 +35,7 @@
           export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${lib-path}"
 
           # Setup the virtual environment if it doesn't already exist.
+          export PYTHONPATH=`pwd`/$VENV/${python.sitePackages}/:$PYTHONPATH
           VENV=.venv
           if test ! -d $VENV; then
             virtualenv $VENV
@@ -41,7 +44,6 @@
             pip install -e .
           fi
           source ./$VENV/bin/activate
-          export PYTHONPATH=`pwd`/$VENV/${python.sitePackages}/:$PYTHONPATH
 
           pre-commit install
         '';
