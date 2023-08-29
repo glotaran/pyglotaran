@@ -18,6 +18,8 @@
 
 ### 🚧 Maintenance
 
+- 🧹 Remove unused dependency: 'rich' (#1345)
+
 (changes-0_7_1)=
 
 ## 🚀 0.7.1 (2023-07-28)
