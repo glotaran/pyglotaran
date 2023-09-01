@@ -12,6 +12,7 @@ from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.model.data_model import iterate_data_model_global_elements
 from glotaran.model.data_model import resolve_data_model
 from glotaran.model.element import Element
+from glotaran.model.element import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
