@@ -13,17 +13,20 @@ from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_a
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.builtin.items.activation import add_activation_to_result_data
-from glotaran.model import Element
+from glotaran.model import ExtendableElement
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
-class KineticElement(Element, Kinetic):
+class KineticElement(ExtendableElement, Kinetic):
     type: Literal["kinetic"] = Literal["kinetic"]
     register_as = "kinetic"
     data_model_type = ActivationDataModel
     dimension: str = "time"
+
+    def extend(self, other: KineticElement):
+        return other.copy(update={"rates": self.rates | other.rates})
 
     @classmethod
     def combine(cls, kinetics: list[KineticElement]) -> KineticElement:

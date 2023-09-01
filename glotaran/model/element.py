@@ -83,12 +83,11 @@ class Element(TypedItem, abc.ABC):  # type:ignore[misc]
         pass
 
 
-class ExtendableElement:
-    #  class ExtendableElement(Element):
+class ExtendableElement(Element):
     extends: list[str] | None = None
 
     def is_extended(self) -> bool:
-        return self.extend is not None
+        return self.extends is not None
 
     @abc.abstractmethod
     def extend(self, other: ExtendableElement) -> ExtendableElement:
