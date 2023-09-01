@@ -84,7 +84,8 @@ class Element(TypedItem, abc.ABC):  # type:ignore[misc]
         pass
 
 
-class ExtendableElement(Element):
+class ExtendableElement:
+    #  class ExtendableElement(Element):
     extends: list[str] | None = None
 
     def is_extended(self) -> bool:
