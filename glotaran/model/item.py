@@ -11,6 +11,7 @@ from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Generator
+from typing import Literal
 from typing import Type
 from typing import TypeAlias
 from typing import TypeVar
@@ -114,7 +115,7 @@ class Item(BaseModel):
 class TypedItem(Item):
     """An item with a type."""
 
-    type: str
+    type: Literal[None]
     __item_types__: ClassVar[list[Type[Item]]]
 
     def __init_subclass__(cls):

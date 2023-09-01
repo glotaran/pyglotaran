@@ -2,15 +2,16 @@
 from __future__ import annotations
 
 import numpy as np
-from numpy.typing import ArrayLike
 from pydantic import BaseModel
 from pydantic import Extra
 from scipy.optimize import OptimizeResult
 
-from glotaran import __version__ as glotaran_version
+# TODO: Fix circular import
+#  from glotaran import __version__ as glotaran_version
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
+from glotaran.typing.types import ArrayLike
 
 
 class OptimizationResult(BaseModel):
@@ -31,8 +32,8 @@ class OptimizationResult(BaseModel):
     termination_reason: str
     """The reason (message when) the optimizer terminated"""
 
-    glotaran_version: str
-    """The glotaran version used to create the result."""
+    #  glotaran_version: str
+    #  """The glotaran version used to create the result."""
 
     free_parameter_labels: list[str]
     """List of labels of the free parameters used in optimization."""
@@ -45,7 +46,7 @@ class OptimizationResult(BaseModel):
 
     # The below can be none in case of unsuccessful optimization
 
-    cost: ArrayLike | None = None
+    cost: float | None = None
     """The final cost."""
 
     chi_square: float | None = None
@@ -92,7 +93,7 @@ class OptimizationResult(BaseModel):
         result: OptimizeResult | None,
         parameter_history: ParameterHistory,
         optimization_history: OptimizationHistory,
-        penalty: np.typing.ArrayLike,
+        penalty: ArrayLike,
         free_parameter_labels: list[str],
         termination_reason: str,
         number_clp: int,
@@ -101,7 +102,7 @@ class OptimizationResult(BaseModel):
 
         result_args = {
             "success": success,
-            "glotaran_version": glotaran_version,
+            #  "glotaran_version": glotaran_version,
             "free_parameter_labels": free_parameter_labels,
             "parameter_history": parameter_history,
             "termination_reason": termination_reason,

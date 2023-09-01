@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import reduce
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
@@ -14,9 +15,12 @@ from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.model import Element
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 class KineticElement(Element, Kinetic):
-    type: Literal["kinetic"] = "kinetic"
+    type: Literal["kinetic"] = Literal["kinetic"]
     register_as = "kinetic"
     data_model_type = ActivationDataModel
     dimension: str = "time"
@@ -42,9 +46,7 @@ class KineticElement(Element, Kinetic):
         return cls(rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]), label="")
 
     @staticmethod
-    def combine_matrices(
-        lhs: np.typing.ArrayLike, rhs: np.typing.ArrayLike
-    ) -> np.typing.ArrayLike:
+    def combine_matrices(lhs: ArrayLike, rhs: ArrayLike) -> ArrayLike:
         if lhs.shape != rhs.shape:
             if len(lhs.shape) > len(rhs):
                 return lhs + rhs[np.newaxis, :, :]
@@ -55,9 +57,9 @@ class KineticElement(Element, Kinetic):
     def calculate_matrix(
         self,
         model: ActivationDataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
-    ) -> tuple[list[str], np.typing.ArrayLike]:
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
+    ) -> tuple[list[str], ArrayLike]:
         compartments = self.species
         matrices = []
         for activation in model.activation:
@@ -97,11 +99,11 @@ class KineticElement(Element, Kinetic):
     def calculate_matrix_gaussian_activation(
         self,
         activation: MultiGaussianActivation,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         compartments: list[str],
-        rates: np.typing.ArrayLike,
-    ) -> np.typing.ArrayLike:
+        rates: ArrayLike,
+    ) -> ArrayLike:
         parameters = activation.parameters(global_axis)
         matrix_shape = (model_axis.size, len(compartments))
         index_dependent = any(isinstance(p, list) for p in parameters)

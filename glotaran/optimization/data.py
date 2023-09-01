@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
@@ -32,11 +33,11 @@ class AlignDatasetError(ValueError):
 
 class OptimizationDataProvider:
     @abc.abstractproperty
-    def data_slices(self) -> list[np.typing.ArrayLike]:
+    def data_slices(self) -> list[ArrayLike]:
         pass
 
     @abc.abstractproperty
-    def global_axis(self) -> np.typing.ArrayLike:
+    def global_axis(self) -> ArrayLike:
         pass
 
 
@@ -246,7 +247,6 @@ class LinkedOptimizationData(OptimizationDataProvider):
         method: Literal["nearest", "backward", "forward"],
         scales: dict[str, Parameter],
     ):
-
         self._datasets = datasets
         self._scales = {label: scales.get(label, 1) for label in self._datasets}
         aligned_global_axes = self.align_global_axes(tolerance, method)
@@ -354,7 +354,6 @@ class LinkedOptimizationData(OptimizationDataProvider):
         aligned_axis_values = None
         aligned_global_axes = {}
         for label, data in self._datasets.items():
-
             aligned_global_axis = data.global_axis
             if aligned_axis_values is None:
                 aligned_axis_values = aligned_global_axis
