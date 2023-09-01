@@ -10,9 +10,9 @@ import xarray as xr
 
 from glotaran.model.item import TypedItem
 from glotaran.plugin_system.model_registration import register_model
+from glotaran.typing.types import ArrayLike
 
 if TYPE_CHECKING:
-
     from glotaran.model.data_model import DataModel
 
 
@@ -40,17 +40,17 @@ class Element(TypedItem, abc.ABC):  # type:ignore[misc]
     def calculate_matrix(
         self,
         model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
-    ) -> tuple[list[str], np.typing.ArrayLike]:
+    ) -> tuple[list[str], ArrayLike]:
         """Calculate the model matrix.
 
         Parameters
         ----------
         data_model: DataModel
             The data model.
-        global_axis: np.typing.ArrayLike
+        global_axis: ArrayLike
             The global axis.
         model_axis: ArrayLike
             The model axis.
@@ -80,6 +80,17 @@ class Element(TypedItem, abc.ABC):  # type:ignore[misc]
         as_global: bool
             Whether model is calculated as global model.
         """
+        pass
+
+
+class ExtendableElement(Element):
+    extends: list[str] | None = None
+
+    def is_extended(self) -> bool:
+        return self.extend is not None
+
+    @abc.abstractmethod
+    def extend(self, other: ExtendableElement) -> ExtendableElement:
         pass
 
 
