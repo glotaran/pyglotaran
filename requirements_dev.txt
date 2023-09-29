@@ -12,7 +12,7 @@ numpy==1.24.4
 odfpy==1.4.1
 openpyxl==3.1.2
 pandas==2.1.0
-pydantic==1.10.12
+pydantic==1.10.13
 ruamel.yaml==0.17.32
 scipy==1.11.2
 sdtfile==2023.8.30
