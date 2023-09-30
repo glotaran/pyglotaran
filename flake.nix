@@ -15,6 +15,7 @@
       python = pkgs.python310;
       lib-path = with pkgs; lib.makeLibraryPath [
         stdenv.cc.cc
+          zlib
       ];
 
 
@@ -29,6 +30,7 @@
             pytz
             virtualenvwrapper
           ]))
+          zlib
         ];
         shellHook = ''
           # Augment the dynamic linker path
