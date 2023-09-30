@@ -39,6 +39,7 @@
           VENV=.venv
           if test ! -d $VENV; then
             virtualenv $VENV
+            source ./$VENV/bin/activate
             # Install Python dependencies
             pip install -r requirements_dev.txt
             pip install -e .
