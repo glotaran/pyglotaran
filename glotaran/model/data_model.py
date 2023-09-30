@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from typing import Any
 from typing import Literal
+from typing import Type
 from uuid import uuid4
 
 import xarray as xr
@@ -191,17 +192,21 @@ class DataModel(Item):
     )
     weights: list[Weight] = Field(default_factory=list)
 
+    @staticmethod
+    def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
+        data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
+        data_models = [
+            m.data_model_type for m in filter(lambda m: m.data_model_type is not None, elements)
+        ] + [DataModel]
+        return create_model(data_model_cls_name, __base__=tuple(data_models))
+
     @classmethod
     def from_dict(cls, library: dict[str, Element], model_dict: dict[str, Any]) -> DataModel:
-        data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
         element_labels = model_dict.get("elements", []) + model_dict.get("global_elements", [])
         if len(element_labels) == 0:
             raise GlotaranModelError("No element defined for dataset")
         elements = {type(library[label]) for label in element_labels}
-        data_models = [
-            m.data_model_type for m in filter(lambda m: m.data_model_type is not None, elements)
-        ] + [DataModel]
-        return create_model(data_model_cls_name, __base__=tuple(data_models))(**model_dict)
+        return cls.create_class_for_elements(elements)(**model_dict)
 
 
 def is_data_model_global(data_model: DataModel) -> bool:
