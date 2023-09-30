@@ -12,7 +12,6 @@ from glotaran.io import register_project_io
 from glotaran.parameter import Parameters
 from glotaran.project import Result
 from glotaran.project import Scheme
-from glotaran.project.dataclass_helpers import fromdict
 from glotaran.utils.sanitize import sanitize_yaml
 
 if TYPE_CHECKING:
@@ -91,7 +90,7 @@ class YmlProjectIo(ProjectIoInterface):
             spec["number_of_residuals"] = spec.pop("number_of_data_points")
         if "number_of_parameters" in spec:
             spec["number_of_free_parameters"] = spec.pop("number_of_parameters")
-        return fromdict(Result, spec, folder=result_file_path.parent)
+        return Result.parse_obj(spec)
 
     #  def save_result(
     #      self,

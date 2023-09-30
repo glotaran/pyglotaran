@@ -14,6 +14,7 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.model import ExtendableElement
+from glotaran.model.data_model import is_data_model_global
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
@@ -143,7 +144,7 @@ class KineticElement(ExtendableElement, Kinetic):
 
     def add_to_result_data(self, model: ActivationDataModel, data: xr.Dataset, as_global: bool):
         add_activation_to_result_data(model, data)
-        if "species" in data.coords:
+        if "species" in data.coords or is_data_model_global(model):
             return
         kinetic = self.combine([m for m in model.elements if isinstance(m, KineticElement)])
         species = kinetic.species
