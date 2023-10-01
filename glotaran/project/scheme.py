@@ -1,13 +1,16 @@
 from typing import Literal
 
+import xarray as xr
 from pydantic import BaseModel
 from pydantic import Extra
 
 from glotaran.io import load_dataset
 from glotaran.model import Element
 from glotaran.model import ExperimentModel
+from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
+from glotaran.project.library import LibraryType
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
 
@@ -20,13 +23,11 @@ class Scheme(BaseModel):
         extra = Extra.forbid
 
     experiments: dict[str, ExperimentModel]
-    library: dict[str, Element.get_annotated_type()]
+    library: LibraryType
 
     @classmethod
     def from_dict(cls, spec: dict):
-        library = ModelLibrary.parse_obj(
-            {label: m | {"label": label} for label, m in spec["library"].items()}
-        ).__root__
+        library = ModelLibrary.from_dict(spec["library"])
         experiments = {
             k: ExperimentModel.from_dict(library, e) for k, e in spec["experiments"].items()
         }
@@ -35,6 +36,14 @@ class Scheme(BaseModel):
                 if isinstance(d.data, str):
                     d.data = load_dataset(d.data)
         return cls(experiments=experiments, library=library)
+
+    def load_data(self, data: dict[str, xr.Dataset]):
+        for experiment in self.experiments.values():
+            for label, data_model in experiment.datasets.items():
+                try:
+                    data_model.data = data[label]
+                except KeyError as e:
+                    raise GlotaranUserError(f"Not data for data model '{label}' provided.") from e
 
     def optimize(
         self,
