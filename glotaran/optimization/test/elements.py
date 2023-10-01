@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
@@ -25,7 +26,6 @@ class TestElementConstant(Element):
         global_axis: np.typing.ArrayLike,
         model_axis: np.typing.ArrayLike,
     ):
-
         matrix = np.ones((model_axis.size, len(self.compartments))) * float(self.value)
         if self.is_index_dependent:
             matrix = np.array([matrix] * global_axis.size)
