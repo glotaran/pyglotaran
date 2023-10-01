@@ -12,7 +12,6 @@ from glotaran import __version__
 from glotaran.io import load_result
 from glotaran.io import save_dataset
 from glotaran.io import save_result
-from glotaran.optimization.optimize import optimize
 from glotaran.project.result import Result
 from glotaran.testing.simulated_data.sequential_spectral_decay import SCHEME
 from glotaran.utils.io import chdir_context
