@@ -1,4 +1,5 @@
 from functools import reduce
+from typing import TypeAlias
 
 from pydantic import BaseModel
 
@@ -6,9 +7,11 @@ from glotaran.model import Element
 from glotaran.model import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 
+LibraryType: TypeAlias = dict[str, Element.get_annotated_type()]
+
 
 class ModelLibrary(BaseModel):
-    __root__: dict[str, Element.get_annotated_type()]
+    __root__: LibraryType
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -30,6 +33,10 @@ class ModelLibrary(BaseModel):
                     "The extended elements could not be resolved because of cyclic dependencies."
                 )
             current_size = len(extended_elements)
+
+    @classmethod
+    def from_dict(cls, spec: dict) -> LibraryType:
+        return cls.parse_obj({label: m | {"label": label} for label, m in spec.items()}).__root__
 
     def _get_extended_elements(self) -> list[str]:
         return [
