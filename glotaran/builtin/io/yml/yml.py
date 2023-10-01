@@ -69,28 +69,28 @@ class YmlProjectIo(ProjectIoInterface):
     #      scheme_dict = asdict(scheme, folder=Path(file_name).parent)
     #      write_dict(scheme_dict, file_name=file_name)
 
-    def load_result(self, result_path: str) -> Result:
-        """Create a :class:`Result` instance from the specs defined in a file.
-
-        Parameters
-        ----------
-        result_path : str
-            Path containing the result data.
-
-        Returns
-        -------
-        Result
-            :class:`Result` instance created from the saved format.
-        """
-        result_file_path = Path(result_path)
-        if result_file_path.suffix not in [".yml", ".yaml"]:
-            result_file_path = result_file_path / "result.yml"
-        spec = self._load_yml(result_file_path.as_posix())
-        if "number_of_data_points" in spec:
-            spec["number_of_residuals"] = spec.pop("number_of_data_points")
-        if "number_of_parameters" in spec:
-            spec["number_of_free_parameters"] = spec.pop("number_of_parameters")
-        return Result.parse_obj(spec)
+    #  def load_result(self, result_path: str) -> Result:
+    #      """Create a :class:`Result` instance from the specs defined in a file.
+    #
+    #      Parameters
+    #      ----------
+    #      result_path : str
+    #          Path containing the result data.
+    #
+    #      Returns
+    #      -------
+    #      Result
+    #          :class:`Result` instance created from the saved format.
+    #      """
+    #      result_file_path = Path(result_path)
+    #      if result_file_path.suffix not in [".yml", ".yaml"]:
+    #          result_file_path = result_file_path / "result.yml"
+    #      spec = self._load_yml(result_file_path.as_posix())
+    #      if "number_of_data_points" in spec:
+    #          spec["number_of_residuals"] = spec.pop("number_of_data_points")
+    #      if "number_of_parameters" in spec:
+    #          spec["number_of_free_parameters"] = spec.pop("number_of_parameters")
+    #      return Result.parse_obj(spec)
 
     #  def save_result(
     #      self,
