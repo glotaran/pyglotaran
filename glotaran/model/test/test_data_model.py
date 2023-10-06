@@ -8,6 +8,7 @@ from glotaran.model.item import get_item_issues
 from glotaran.model.test.test_item import MockItem
 from glotaran.model.test.test_item import MockTypedItem
 from glotaran.parameter import Parameters
+from glotaran.typing.types import ArrayLike
 
 
 class MockDataModel(DataModel):
@@ -22,11 +23,10 @@ class MockElementWithDataModel(Element):
     def calculate_matrix(
         self,
         model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
-
         return ["a"], np.array([[1]])
 
 
@@ -38,11 +38,10 @@ class MockElementWithItem(Element):
     def calculate_matrix(
         self,
         model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
         **kwargs,
     ):
-
         return ["a"], np.array([[1]])
 
 

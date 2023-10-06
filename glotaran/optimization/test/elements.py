@@ -23,8 +23,8 @@ class TestElementConstant(Element):
     def calculate_matrix(
         self,
         data_model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ):
         matrix = np.ones((model_axis.size, len(self.compartments))) * float(self.value)
         if self.is_index_dependent:
@@ -50,8 +50,8 @@ class TestElementExponential(Element):
     def calculate_matrix(
         self,
         data_model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ):
         assert len(self.compartments) == len(self.rates)
         rates = -1 * np.asarray(self.rates)
@@ -71,8 +71,8 @@ class TestElementGaussian(Element):
     def calculate_matrix(
         self,
         data_model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ):
         amplitude = np.asarray(self.amplitude)
         location = np.asarray(self.location)

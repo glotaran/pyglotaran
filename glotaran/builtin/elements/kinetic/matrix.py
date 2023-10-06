@@ -4,6 +4,8 @@ import numba as nb
 import numpy as np
 from numba.extending import get_cython_function_address
 
+from glotaran.typing.types import ArrayLike
+
 # This is a work around to use scipy.special function with numba
 _dble = ctypes.c_double
 
@@ -20,12 +22,12 @@ SQRT2 = np.sqrt(2)
 
 @nb.jit(nopython=True, parallel=False)
 def calculate_matrix_gaussian_activation_on_index(
-    matrix: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
-    times: np.typing.ArrayLike,
-    centers: np.typing.ArrayLike,
-    widths: np.typing.ArrayLike,
-    scales: np.typing.ArrayLike,
+    matrix: ArrayLike,
+    rates: ArrayLike,
+    times: ArrayLike,
+    centers: ArrayLike,
+    widths: ArrayLike,
+    scales: ArrayLike,
     backsweep: bool,
     backsweep_period: float | None,
 ):
@@ -55,12 +57,12 @@ def calculate_matrix_gaussian_activation_on_index(
 
 @nb.jit(nopython=True, parallel=True)
 def calculate_matrix_gaussian_activation(
-    matrix: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
-    times: np.typing.ArrayLike,
-    all_centers: np.typing.ArrayLike,
-    all_widths: np.typing.ArrayLike,
-    scales: np.typing.ArrayLike,
+    matrix: ArrayLike,
+    rates: ArrayLike,
+    times: ArrayLike,
+    all_centers: ArrayLike,
+    all_widths: ArrayLike,
+    scales: ArrayLike,
     backsweep: bool,
     backsweep_period: float | None,
 ):

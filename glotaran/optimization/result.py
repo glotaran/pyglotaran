@@ -145,20 +145,20 @@ class OptimizationResult(BaseModel):
 
 
 def calculate_covariance_matrix_and_standard_errors(
-    jacobian: np.typing.ArrayLike, root_mean_square_error: float
-) -> np.typing.ArrayLike:
+    jacobian: ArrayLike, root_mean_square_error: float
+) -> ArrayLike:
     """Calculate the covariance matrix and standard errors of the optimization.
 
     Parameters
     ----------
-    jacobian : np.typing.ArrayLike
+    jacobian : ArrayLike
         The jacobian matrix.
     root_mean_square_error : float
         The root mean square error.
 
     Returns
     -------
-    np.typing.ArrayLike
+    ArrayLike
         The covariance matrix.
     """
     # See PR #706: More robust covariance matrix calculation

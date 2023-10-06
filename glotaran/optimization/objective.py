@@ -1,6 +1,5 @@
 import numpy as np
 import xarray as xr
-from numpy.typing import ArrayLike
 
 from glotaran.model import ExperimentModel
 from glotaran.model import iterate_data_model_elements
@@ -10,6 +9,7 @@ from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.optimization.penalty import calculate_clp_penalties
+from glotaran.typing.types import ArrayLike
 
 
 class OptimizationObjective:

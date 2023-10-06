@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numba as nb
@@ -13,6 +14,9 @@ from glotaran.model import Element
 from glotaran.model import GlotaranModelError
 from glotaran.model import ParameterType
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 class CoherentArtifactElement(Element):
     type: Literal["coherent-artifact"]
@@ -25,8 +29,8 @@ class CoherentArtifactElement(Element):
     def calculate_matrix(
         self,
         model: ActivationDataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ):
         if not 1 <= self.order <= 3:
             raise GlotaranModelError("Coherent artifact order must be between in [1,3]")
@@ -156,7 +160,6 @@ def _calculate_coherent_artifact_matrix(
 def _calculate_coherent_artifact_matrix_on_index(
     matrix: np.ndarray, center: float, width: float, axis: np.ndarray, order: int
 ):
-
     matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
     if order > 1:
         matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2

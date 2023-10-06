@@ -17,7 +17,7 @@ DATASET = simulate(
     KineticSpectrumDataModel(
         elements=["parallel"],
         global_elements=["spectral"],
-        activation=[GaussianActivation.parse_obj(ACTIVATION)],
+        activation=[GaussianActivation.parse_obj(ACTIVATION)],  # type:ignore[call-arg]
     ),
     ModelLibrary.from_dict(LIBRARY),
     SIMULATION_PARAMETERS,
