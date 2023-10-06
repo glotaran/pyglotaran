@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import replace
 from itertools import chain
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -18,6 +19,9 @@ from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.parameter import Parameter
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 @dataclass
 class OptimizationMatrix:
@@ -25,7 +29,7 @@ class OptimizationMatrix:
 
     clp_axis: list[str]
     """The clp labels."""
-    array: np.typing.ArrayLike
+    array: ArrayLike
 
     @property
     def is_index_dependent(self) -> bool:
@@ -52,8 +56,8 @@ class OptimizationMatrix:
         scale: Parameter | None,
         element: Element,
         data_model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ) -> OptimizationMatrix:
         """"""
         clp_axis, array = element.calculate_matrix(data_model, global_axis, model_axis)
@@ -105,9 +109,9 @@ class OptimizationMatrix:
     def from_data_model(
         cls,
         model: DataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
-        weight: np.typing.ArrayLike | None,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
+        weight: ArrayLike | None,
         global_matrix: bool = False,
     ) -> OptimizationMatrix:
         """"""
@@ -202,12 +206,10 @@ class OptimizationMatrix:
             return self
 
         if len(relations) > 0:
-
             relation_matrix = np.diagflat([1.0] * len(self.clp_axis))
             idx_to_delete = []
             for relation in relations:
                 if relation.target in self.clp_axis and relation.source in self.clp_axis:
-
                     source_idx = self.clp_axis.index(relation.source)
                     target_idx = self.clp_axis.index(relation.target)
                     relation_matrix[target_idx, source_idx] = relation.parameter
@@ -231,12 +233,12 @@ class OptimizationMatrix:
 
         return self
 
-    def weight(self, weight: np.typing.ArrayLike) -> OptimizationMatrix:
+    def weight(self, weight: ArrayLike) -> OptimizationMatrix:
         """Create a matrix container with a weighted matrix.
 
         Parameters
         ----------
-        weight : np.typing.ArrayLike
+        weight : ArrayLike
             The weight.
 
         Returns

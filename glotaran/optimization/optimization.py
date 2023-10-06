@@ -15,6 +15,7 @@ from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationResult
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
+from glotaran.typing.types import ArrayLike
 from glotaran.utils.tee import TeeContext
 
 SUPPORTED_OPTIMIZATION_METHODS = {
@@ -156,17 +157,17 @@ class Optimization:
         )
         return self._parameters, data, result
 
-    def objective_function(self, parameters: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def objective_function(self, parameters: ArrayLike) -> ArrayLike:
         """Calculate the objective for the optimization.
 
         Parameters
         ----------
-        parameters : np.typing.ArrayLike
+        parameters : ArrayLike
             the parameters provided by the optimizer.
 
         Returns
         -------
-        np.typing.ArrayLike
+        ArrayLike
             The objective for the optimizer.
         """
         self._parameters.set_from_label_and_value_arrays(self._free_parameter_labels, parameters)

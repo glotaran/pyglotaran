@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
-from numpy.typing import ArrayLike
 
 from glotaran.model import ClpRelation
 from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 SUPPORTED_RESIUDAL_FUNCTIONS = {
     "variable_projection": residual_variable_projection,
@@ -32,14 +35,14 @@ class OptimizationEstimation:
 
         Parameters
         ----------
-        matrix : np.typing.ArrayLike
+        matrix : ArrayLike
             The matrix.
-        data : np.typing.ArrayLike
+        data : ArrayLike
             The data.
 
         Returns
         -------
-        tuple[np.typing.ArrayLike, np.typing.ArrayLike]
+        tuple[ArrayLike, ArrayLike]
             The estimated clp and residual.
         """
         residual_fn = SUPPORTED_RESIUDAL_FUNCTIONS[residual_function]
@@ -52,7 +55,6 @@ class OptimizationEstimation:
         index: float,
         relations: list[ClpRelation],
     ) -> OptimizationEstimation:
-
         clp = self.clp
         self.clp = np.zeros(len(clp_axis))
         self.clp[[clp_axis.index(label) for label in reduced_clp_axis]] = clp

@@ -1,9 +1,9 @@
 import numpy as np
-from numpy.typing import ArrayLike
 
 from glotaran.model import EqualAreaPenalty
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
+from glotaran.typing.types import ArrayLike
 
 
 def calculate_clp_penalties(
@@ -11,16 +11,16 @@ def calculate_clp_penalties(
     estimations: list[OptimizationEstimation],
     global_axis: ArrayLike,
     penalties: list[EqualAreaPenalty],
-) -> np.typing.ArrayLike:
+) -> ArrayLike:
     """Calculate the clp penalty.
 
     Parameters
     ----------
     clp_labels : list[list[str]]
         The clp labels.
-    clps : list[np.typing.ArrayLike]
+    clps : list[ArrayLike]
         The clps.
-    global_axis : np.typing.ArrayLike
+    global_axis : ArrayLike
         The global axis.
 
     Returns

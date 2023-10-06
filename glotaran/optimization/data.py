@@ -15,8 +15,6 @@ from glotaran.model import is_data_model_global
 from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
-    from typing import Literal
-
     from glotaran.typing.types import ArrayLike
 
 
@@ -82,15 +80,15 @@ class OptimizationData(OptimizationDataProvider):
             self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
 
     @property
-    def data(self) -> np.typing.ArrayLike:
+    def data(self) -> ArrayLike:
         return self._data
 
     @property
-    def flat_data(self) -> np.typing.ArrayLike | None:
+    def flat_data(self) -> ArrayLike | None:
         return self._flat_data
 
     @property
-    def data_slices(self) -> list[np.typing.ArrayLike]:
+    def data_slices(self) -> list[ArrayLike]:
         return self._data_slices
 
     @property
@@ -98,7 +96,7 @@ class OptimizationData(OptimizationDataProvider):
         return is_data_model_global(self._model)
 
     @property
-    def global_axis(self) -> np.typing.ArrayLike:
+    def global_axis(self) -> ArrayLike:
         return self._global_axis
 
     @property
@@ -110,7 +108,7 @@ class OptimizationData(OptimizationDataProvider):
         return self._model
 
     @property
-    def model_axis(self) -> np.typing.ArrayLike:
+    def model_axis(self) -> ArrayLike:
         return self._model_axis
 
     @property
@@ -118,14 +116,14 @@ class OptimizationData(OptimizationDataProvider):
         return self._model_dimension
 
     @property
-    def weight(self) -> np.typing.ArrayLike | None:
+    def weight(self) -> ArrayLike | None:
         return self._weight
 
     @property
-    def flat_weight(self) -> np.typing.ArrayLike | None:
+    def flat_weight(self) -> ArrayLike | None:
         return self._flat_weight
 
-    def get_model_weight(self, model: DataModel) -> np.typing.ArrayLike | None:
+    def get_model_weight(self, model: DataModel) -> ArrayLike | None:
         """Add model weight to data.
 
         Parameters
@@ -164,16 +162,14 @@ class OptimizationData(OptimizationDataProvider):
         return weight.data
 
     @staticmethod
-    def get_axis_slice_from_interval(
-        interval: tuple[float, float], axis: np.typing.ArrayLike
-    ) -> slice:
+    def get_axis_slice_from_interval(interval: tuple[float, float], axis: ArrayLike) -> slice:
         """Get a slice of indices from a min max tuple and for an axis.
 
         Parameters
         ----------
         interval : tuple[float, float]
             The min max tuple.
-        axis : np.typing.ArrayLike
+        axis : ArrayLike
             The axis to slice.
 
         Returns
@@ -212,7 +208,7 @@ class OptimizationData(OptimizationDataProvider):
         """
         return next(dim for dim in dimensions if dim != model_dimension)
 
-    def get_from_dataset(self, dataset: xr.Dataset, name: str) -> np.typing.ArrayLike | None:
+    def get_from_dataset(self, dataset: xr.Dataset, name: str) -> ArrayLike | None:
         """Get a copy of data from a dataset with dimensions (model, global).
 
         Parameters
@@ -264,7 +260,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
         )
 
     @property
-    def global_axis(self) -> np.typing.ArrayLike:
+    def global_axis(self) -> ArrayLike:
         return self._global_axis
 
     @property
@@ -272,15 +268,15 @@ class LinkedOptimizationData(OptimizationDataProvider):
         return self._group_definitions
 
     @property
-    def group_labels(self) -> np.typing.ArrayLike:
+    def group_labels(self) -> ArrayLike:
         return self._group_labels
 
     @property
-    def data_slices(self) -> list[np.typing.ArrayLike]:
+    def data_slices(self) -> list[ArrayLike]:
         return self._data
 
     @property
-    def data_indices(self) -> list[np.typing.ArrayLike]:
+    def data_indices(self) -> list[ArrayLike]:
         return self._data_indices
 
     @property
@@ -333,7 +329,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
         self,
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
-    ) -> dict[str, np.typing.ArrayLike]:
+    ) -> dict[str, ArrayLike]:
         """Create aligned global axes for the dataset group.
 
         Parameters
@@ -372,8 +368,8 @@ class LinkedOptimizationData(OptimizationDataProvider):
 
     def align_data(
         self,
-        aligned_global_axes: dict[str, np.typing.ArrayLike],
-    ) -> tuple[np.typing.ArrayLike, list[np.typing.ArrayLike]]:
+        aligned_global_axes: dict[str, ArrayLike],
+    ) -> tuple[ArrayLike, list[ArrayLike]]:
         """Align the data in a dataset group.
 
         Parameters

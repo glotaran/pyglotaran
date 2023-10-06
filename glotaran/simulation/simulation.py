@@ -1,8 +1,6 @@
 """Functions for simulating a dataset using a global optimization model."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 import xarray as xr
 
@@ -13,9 +11,7 @@ from glotaran.model import get_data_model_dimension
 from glotaran.model import resolve_data_model
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.parameter import Parameters
-
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
+from glotaran.typing.types import ArrayLike
 
 
 def simulate(
