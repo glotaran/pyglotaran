@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
@@ -20,6 +21,9 @@ from glotaran.model import Element
 from glotaran.model import Item
 from glotaran.model import ParameterType
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 class Oscillation(Item):
     frequency: ParameterType
@@ -36,10 +40,9 @@ class DampedOscillationElement(Element):
     def calculate_matrix(
         self,
         model: ActivationDataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ):
-
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
         # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)

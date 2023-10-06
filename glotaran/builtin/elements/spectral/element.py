@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
@@ -8,6 +9,9 @@ import xarray as xr
 from glotaran.builtin.elements.spectral.shape import SpectralShape
 from glotaran.model import DataModel
 from glotaran.model import Element
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 class SpectralDataModel(DataModel):
@@ -25,10 +29,9 @@ class SpectralElement(Element):
     def calculate_matrix(
         self,
         model: SpectralDataModel,
-        global_axis: np.typing.ArrayLike,
-        model_axis: np.typing.ArrayLike,
+        global_axis: ArrayLike,
+        model_axis: ArrayLike,
     ):
-
         compartments = list(self.shapes.keys())
 
         if model.spectral_axis_inverted:

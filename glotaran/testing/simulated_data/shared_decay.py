@@ -49,7 +49,7 @@ TIME_AXIS = np.arange(-1, 20, 0.01)
 SPECTRAL_AXIS = np.arange(600, 700, 1.4)
 SIMULATION_COORDINATES = {"time": TIME_AXIS, "spectral": SPECTRAL_AXIS}
 
-KineticSpectrumDataModel = DataModel.create_class_for_elements((KineticElement, SpectralElement))
+KineticSpectrumDataModel = DataModel.create_class_for_elements({KineticElement, SpectralElement})
 
 LIBRARY = {
     "sequential": {

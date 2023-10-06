@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import replace
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
-from numpy.typing import ArrayLike
 
 from glotaran.builtin.items.activation.activation import Activation
 from glotaran.model import Attribute
@@ -13,6 +13,9 @@ from glotaran.model import GlotaranUserError
 from glotaran.model import ItemIssue
 from glotaran.model import ParameterType
 from glotaran.parameter import Parameters
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 class DispersionIssue(ItemIssue):
@@ -75,7 +78,6 @@ def validate_dispersion(
 
 @dataclass
 class GaussianActivationParameters:
-
     center: float
     width: float
     scale: float
@@ -140,7 +142,7 @@ class MultiGaussianActivation(Activation):
         description="Set `True` if the global axis is reciproke (e.g. for wavennumbers),",
     )
 
-    def calculate_dispersion(self, axis: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def calculate_dispersion(self, axis: ArrayLike) -> ArrayLike:
         return np.array([[p.center for p in ps] for ps in self.parameters(axis)]).T
 
     def is_index_dependent(self) -> bool:
@@ -200,7 +202,7 @@ class MultiGaussianActivation(Activation):
 
         return parameters
 
-    def calculate_function(self, axis: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def calculate_function(self, axis: ArrayLike) -> ArrayLike:
         return sum(
             p.scale * np.exp(-1 * (axis - p.center) ** 2 / (2 * p.width**2))
             for p in self.parameters()

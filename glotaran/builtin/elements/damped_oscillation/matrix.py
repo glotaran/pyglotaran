@@ -1,21 +1,25 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numba as nb
 import numpy as np
 from scipy.special import erf
 
 from glotaran.builtin.items.activation import GaussianActivationParameters
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 @nb.jit(nopython=True, parallel=True)
 def calculate_damped_oscillation_matrix_instant_activation(
-    matrix: np.typing.ArrayLike,
-    inputs: np.typing.ArrayLike,
-    frequencies: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
-    axis: np.typing.ArrayLike,
+    matrix: ArrayLike,
+    inputs: ArrayLike,
+    frequencies: ArrayLike,
+    rates: ArrayLike,
+    axis: ArrayLike,
 ):
-
     for idx, (amplitude, frequency, rate) in enumerate(zip(inputs, frequencies, rates)):
         osc = np.exp(-rate * axis - 1j * frequency * axis)
         matrix[:, idx] = osc.real * amplitude
@@ -23,12 +27,12 @@ def calculate_damped_oscillation_matrix_instant_activation(
 
 
 def calculate_damped_oscillation_matrix_gaussian_activation(
-    matrix: np.typing.ArrayLike,
-    inputs: np.typing.ArrayLike,
-    frequencies: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
+    matrix: ArrayLike,
+    inputs: ArrayLike,
+    frequencies: ArrayLike,
+    rates: ArrayLike,
     parameters: list[list[GaussianActivationParameters]],
-    model_axis: np.typing.ArrayLike,
+    model_axis: ArrayLike,
 ):
     for i, parameter in enumerate(parameters):
         calculate_damped_oscillation_matrix_gaussian_activation_on_index(
@@ -37,12 +41,12 @@ def calculate_damped_oscillation_matrix_gaussian_activation(
 
 
 def calculate_damped_oscillation_matrix_gaussian_activation_on_index(
-    matrix: np.typing.ArrayLike,
-    inputs: np.typing.ArrayLike,
-    frequencies: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
+    matrix: ArrayLike,
+    inputs: ArrayLike,
+    frequencies: ArrayLike,
+    rates: ArrayLike,
     parameters: list[GaussianActivationParameters],
-    model_axis: np.typing.ArrayLike,
+    model_axis: ArrayLike,
 ):
     scales = 0
     for parameter in parameters:
@@ -60,14 +64,14 @@ def calculate_damped_oscillation_matrix_gaussian_activation_on_index(
 
 
 def calculate_damped_oscillation_matrix_gaussian_activation_sin_cos(
-    inputs: np.typing.ArrayLike,
-    frequencies: np.typing.ArrayLike,
-    rates: np.typing.ArrayLike,
-    model_axis: np.typing.ArrayLike,
+    inputs: ArrayLike,
+    frequencies: ArrayLike,
+    rates: ArrayLike,
+    model_axis: ArrayLike,
     center: float,
     width: float,
     scale: float,
-) -> np.typing.ArrayLike:
+) -> ArrayLike:
     """Calculate the damped oscillation matrix taking into account a gaussian irf
 
     Parameters

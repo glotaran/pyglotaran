@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import itertools
 from functools import reduce
+from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy.linalg import eig
@@ -11,9 +12,12 @@ from scipy.linalg import solve
 from glotaran.model import Item
 from glotaran.model import ParameterType
 
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
+
 
 class Kinetic(Item):
-    """A scheme for kinetic dynamics, e.g. anergy transfers betwwen states."""
+    """A scheme for kinetic dynamics, e.g. anergy transfers between states."""
 
     rates: dict[tuple[str, str], ParameterType]
 
@@ -43,7 +47,7 @@ class Kinetic(Item):
         return list(dict.fromkeys([c for cs in self.rates for c in reversed(cs)]))
 
     @property
-    def array(self) -> np.typing.ArrayLike:
+    def array(self) -> ArrayLike:
         """The reduced representation of the KMatrix as numpy array.
 
         Parameters
@@ -62,7 +66,7 @@ class Kinetic(Item):
         return array
 
     @property
-    def full_array(self) -> np.typing.ArrayLike:
+    def full_array(self) -> ArrayLike:
         """The full representation of the KMatrix as numpy array.
 
         Parameters
@@ -84,7 +88,7 @@ class Kinetic(Item):
                 array[fr_idx, fr_idx] -= rate
         return array
 
-    def eigen(self) -> tuple[np.typing.ArrayLike, np.typing.ArrayLike]:
+    def eigen(self) -> tuple[ArrayLike, ArrayLike]:
         """Returns the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
@@ -98,7 +102,7 @@ class Kinetic(Item):
         eigenvalues, eigenvectors = eig(self.full_array.T, left=True, right=False)
         return (eigenvalues.real, eigenvectors.real)
 
-    def calculate(self, concentrations: np.typing.ArrayLike | None = None) -> np.typing.ArrayLike:
+    def calculate(self, concentrations: ArrayLike | None = None) -> ArrayLike:
         """The resulting rates of the matrix.
 
         By definition, the eigenvalues of the compartmental model are negative and
@@ -117,7 +121,7 @@ class Kinetic(Item):
         eigenvalues, _ = self.eigen()
         return -eigenvalues
 
-    def a_matrix(self, concentrations: np.typing.ArrayLike) -> np.typing.ArrayLike:
+    def a_matrix(self, concentrations: ArrayLike) -> ArrayLike:
         """The A matrix of the KMatrix.
 
         Parameters
@@ -131,7 +135,7 @@ class Kinetic(Item):
             else self.a_matrix_general(concentrations)
         )
 
-    def a_matrix_general(self, concentrations: np.typing.ArrayLike) -> np.ndarray:
+    def a_matrix_general(self, concentrations: ArrayLike) -> np.ndarray:
         """The A matrix of the KMatrix for a general model.
 
         Parameters
@@ -169,7 +173,7 @@ class Kinetic(Item):
 
         return a_matrix
 
-    def is_sequential(self, concentrations: np.typing.ArrayLike) -> bool:
+    def is_sequential(self, concentrations: ArrayLike) -> bool:
         """Returns true in the KMatrix represents an unibranched model.
 
         Parameters
