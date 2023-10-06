@@ -12,17 +12,20 @@ library:
             (s1, s1): rates.1
 
 experiments:
-    - datasets:
-        kinetic_parallel:
-            models: [parallel]
-            activation:
-                - type: instant
-                  compartments:
-                      "s1": 1
+    myexp:
+        datasets:
+            kinetic_parallel:
+                elements: [parallel]
+                activation:
+                    - type: instant
+                      compartments:
+                          "s1": 1
 """
 
 
 def test_load_scheme():
     scheme = load_scheme(test_scheme_yml, format_name="yml_str")
     assert isinstance(scheme.library["parallel"], KineticElement)
-    assert isinstance(scheme.experiments[0].datasets["kinetic_parallel"], ActivationDataModel)
+    assert isinstance(
+        scheme.experiments["myexp"].datasets["kinetic_parallel"], ActivationDataModel
+    )
