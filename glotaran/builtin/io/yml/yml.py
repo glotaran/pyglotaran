@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from glotaran.builtin.io.yml.utils import load_dict
 from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
+from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
 from glotaran.parameter import Parameters
 from glotaran.project import Result
 from glotaran.project import Scheme
@@ -92,63 +93,63 @@ class YmlProjectIo(ProjectIoInterface):
     #          spec["number_of_free_parameters"] = spec.pop("number_of_parameters")
     #      return Result.parse_obj(spec)
 
-    #  def save_result(
-    #      self,
-    #      result: Result,
-    #      result_path: str,
-    #      saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
-    #  ) -> list[str]:
-    #      """Write a :class:`Result` instance to a specification file and data files.
-    #
-    #      Returns a list with paths of all saved items.
-    #      The following files are saved if not configured otherwise:
-    #      * ``result.md``: The result with the model formatted as markdown text.
-    #      * ``result.yml``: Yaml spec file of the result
-    #      * ``model.yml``: Model spec file.
-    #      * ``scheme.yml``: Scheme spec file.
-    #      * ``initial_parameters.csv``: Initially used parameters.
-    #      * ``optimized_parameters.csv``: The optimized parameter as csv file.
-    #      * ``parameter_history.csv``: Parameter changes over the optimization
-    #      * ``optimization_history.csv``: Parsed table printed by the SciPy optimizer
-    #      * ``{dataset_label}.nc``: The result data for each dataset as NetCDF file.
-    #
-    #      Parameters
-    #      ----------
-    #      result: Result
-    #          :class:`Result` instance to write.
-    #      result_path: str
-    #          Path to write the result data to.
-    #      saving_options: SavingOptions
-    #          Options for saving the the result.
-    #
-    #      Returns
-    #      -------
-    #      list[str]
-    #          List of file paths which were created.
-    #      """
-    #      result_folder = Path(result_path).parent
-    #      paths = save_result(
-    #          result,
-    #          result_folder,
-    #          format_name="folder",
-    #          saving_options=saving_options,
-    #          allow_overwrite=True,
-    #          used_inside_of_plugin=True,
-    #      )
-    #
-    #      model_path = result_folder / "model.yml"
-    #      save_model(result.scheme.model, model_path, allow_overwrite=True)
-    #      paths.append(model_path.as_posix())
-    #
-    #      scheme_path = result_folder / "scheme.yml"
-    #      save_scheme(result.scheme, scheme_path, allow_overwrite=True)
-    #      paths.append(scheme_path.as_posix())
-    #
-    #      result_dict = asdict(result, folder=result_folder)
-    #      write_dict(result_dict, file_name=result_path)
-    #      paths.append(result_path)
-    #
-    #      return paths
+    def save_result(
+        self,
+        result: Result,
+        result_path: str,
+        saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+    ) -> list[str]:
+        """Write a :class:`Result` instance to a specification file and data files.
+
+        Returns a list with paths of all saved items.
+        The following files are saved if not configured otherwise:
+        * ``result.md``: The result with the model formatted as markdown text.
+        * ``result.yml``: Yaml spec file of the result
+        * ``model.yml``: Model spec file.
+        * ``scheme.yml``: Scheme spec file.
+        * ``initial_parameters.csv``: Initially used parameters.
+        * ``optimized_parameters.csv``: The optimized parameter as csv file.
+        * ``parameter_history.csv``: Parameter changes over the optimization
+        * ``optimization_history.csv``: Parsed table printed by the SciPy optimizer
+        * ``{dataset_label}.nc``: The result data for each dataset as NetCDF file.
+
+        Parameters
+        ----------
+        result: Result
+            :class:`Result` instance to write.
+        result_path: str
+            Path to write the result data to.
+        saving_options: SavingOptions
+            Options for saving the the result.
+
+        Returns
+        -------
+        list[str]
+            List of file paths which were created.
+        """
+        result_folder = Path(result_path).parent
+        paths = save_result(
+            result,
+            result_folder,
+            format_name="folder",
+            saving_options=saving_options,
+            allow_overwrite=True,
+            used_inside_of_plugin=True,
+        )
+
+        model_path = result_folder / "model.yml"
+        save_model(result.scheme.model, model_path, allow_overwrite=True)
+        paths.append(model_path.as_posix())
+
+        scheme_path = result_folder / "scheme.yml"
+        save_scheme(result.scheme, scheme_path, allow_overwrite=True)
+        paths.append(scheme_path.as_posix())
+
+        result_dict = asdict(result, folder=result_folder)
+        write_dict(result_dict, file_name=result_path)
+        paths.append(result_path)
+
+        return paths
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
         return load_dict(file_name, self.format != "yml_str")

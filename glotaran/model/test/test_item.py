@@ -44,7 +44,14 @@ class MockTypedItemConcrete2(MockTypedItem):
 
 def test_item_fields_structures_and_type():
     item_fields = MockItem.__fields__.values()
-    wanted = ((None, int), (None, int), (list, int), (list, int), (dict, int), (dict, int),) + (
+    wanted = (
+        (None, int),
+        (None, int),
+        (list, int),
+        (list, int),
+        (dict, int),
+        (dict, int),
+    ) + (
         (None, Parameter),
         (None, Parameter),
         (list, Parameter),
@@ -81,7 +88,7 @@ def test_item_schema():
         "title": "MockTypedItem",
         "description": "An item with a type.",
         "type": "object",
-        "properties": {"type": {"title": "Type", "type": "string"}},
+        "properties": {"type": {"title": "Type", "type": "null"}},
         "required": ["type"],
         "additionalProperties": False,
     }
