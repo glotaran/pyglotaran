@@ -11,7 +11,6 @@ from glotaran.simulation import simulate
 @pytest.mark.parametrize("is_index_dependent", [True, False])
 @pytest.mark.parametrize("noise", [True, False])
 def test_simulate_from_clp(is_index_dependent, noise):
-
     model = (
         TestDataModelConstantIndexDependent
         if is_index_dependent
@@ -30,6 +29,8 @@ def test_simulate_from_clp(is_index_dependent, noise):
 
     data = simulate(
         model,
+        {},
+        None,
         {"global": global_axis, "model": model_axis},
         clp=clp,
         noise=noise,
@@ -68,7 +69,7 @@ def test_simulate_from_global_model():
     model = TestDataModelGlobal
     global_axis = np.asarray([1, 2, 3, 4])
     model_axis = np.asarray([1, 2, 3])
-    data = simulate(model, {"global": global_axis, "model": model_axis})
+    data = simulate(model, {}, None, {"global": global_axis, "model": model_axis})
     assert np.array_equal(data["global"], global_axis)
     assert np.array_equal(data["model"], model_axis)
     assert data.data.shape == (3, 4)
