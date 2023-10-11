@@ -7,17 +7,17 @@ asteval==0.9.31
 attrs == 23.1.0
 click==8.1.7
 netCDF4==1.6.4
-numba==0.57.1
+numba==0.58.0
 numpy==1.24.4
 odfpy==1.4.1
 openpyxl==3.1.2
-pandas==2.1.0
-pydantic==1.10.12
-ruamel.yaml==0.17.32
+pandas==2.1.1
+pydantic==1.10.13
+ruamel.yaml==0.17.35
 scipy==1.11.2
-sdtfile==2023.8.30
+sdtfile==2023.9.28
 tabulate==0.9.0
-xarray==2023.8.0
+xarray==2023.9.0
 
 # documentation dependencies
 -r docs/requirements.txt
