@@ -89,7 +89,7 @@ jobs:
           git commit -m "🧪 PR benchmark"
 
       - name: Push result repo
-        uses: ad-m/github-push-action@v0.6.0
+        uses: ad-m/github-push-action@v0.8.0
         with:
           github_token: ${{ secrets.BENCHMARK_PUSH_TOKEN }}
           repository: "glotaran/pyglotaran-benchmarks"
