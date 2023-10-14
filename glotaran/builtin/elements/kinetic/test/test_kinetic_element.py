@@ -125,6 +125,8 @@ def test_decay(decay: str, activation: Activation):
     assert result.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
     assert "decay" in optimized_data
+    assert "clp" in optimized_data["decay"]
+    assert "residual" in optimized_data["decay"]
     assert "species_concentration" in optimized_data["decay"]
     assert "species_associated_estimation" in optimized_data["decay"]
     assert "kinetic_associated_estimation" in optimized_data["decay"]

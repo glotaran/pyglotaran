@@ -140,7 +140,7 @@ class Optimization:
         )
         return self._parameters, data, result
 
-    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset]]:
+    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationResult]:
         termination_reason = "Dry run."
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])

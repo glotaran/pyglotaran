@@ -94,6 +94,7 @@ class OptimizationObjective:
                 (data.model_dimension, data.model_axis),
             ),
         ).T
+        dataset["fitted_data"] = dataset.data - dataset.residual
 
     def calculate_result_dataset_global(
         self, data: OptimizationData, matrix: OptimizationMatrix, dataset: xr.Dataset
@@ -130,8 +131,10 @@ class OptimizationObjective:
                 (data.model_dimension, data.model_axis),
             ),
         ).T
+        dataset["fitted_data"] = dataset.data - dataset.residual
 
     def get_result_dataset(self, data: OptimizationData, add_svd=True) -> xr.Dataset:
+        assert isinstance(data.model.data, xr.Dataset)
         dataset = data.model.data.copy()
         if dataset.data.dims != (data.model_dimension, data.global_dimension):
             dataset["data"] = dataset.data.T
