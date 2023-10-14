@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class KineticElement(ExtendableElement, Kinetic):
-    type: Literal["kinetic"] = Literal["kinetic"]
+    type: Literal["kinetic"] = Literal["kinetic"]  # type:ignore[assignment]
     register_as = "kinetic"  # type:ignore[pydantic-field]
     data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
     dimension: str = "time"
@@ -90,8 +90,7 @@ class KineticElement(ExtendableElement, Kinetic):
 
             if not np.all(np.isfinite(matrix)):
                 raise ValueError(
-                    f"Non-finite concentrations for kinetic of data model '{model.label}':\n"
-                    f"{self.matrix_as_markdown()}"
+                    f"Non-finite concentrations for kinetic of element '{self.label}'"
                 )
 
             # apply A matrix
@@ -114,30 +113,37 @@ class KineticElement(ExtendableElement, Kinetic):
         matrix_shape = (model_axis.size, len(compartments))
         index_dependent = any(isinstance(p, list) for p in parameters)
         if index_dependent:
-            matrix_shape = (global_axis.size,) + matrix_shape
+            matrix_shape = (global_axis.size,) + matrix_shape  # type:ignore[assignment]
         matrix = np.zeros(matrix_shape, dtype=np.float64)
-        scales = np.array([p.scale for p in (parameters[0] if index_dependent else parameters)])
+        scales = np.array(
+            [
+                p.scale  # type:ignore[union-attr]
+                for p in (
+                    parameters[0] if index_dependent else parameters  # type:ignore[union-attr]
+                )
+            ]
+        )
         if index_dependent:
             calculate_matrix_gaussian_activation(
                 matrix,
                 rates,
                 model_axis,
-                np.array([[p.center for p in ps] for ps in parameters]),
-                np.array([[p.width for p in ps] for ps in parameters]),
+                np.array([[p.center for p in ps] for ps in parameters]),  # type:ignore[union-attr]
+                np.array([[p.width for p in ps] for ps in parameters]),  # type:ignore[union-attr]
                 scales,
-                parameters[0][0].backsweep,
-                parameters[0][0].backsweep_period,
+                parameters[0][0].backsweep,  # type:ignore[index]
+                parameters[0][0].backsweep_period,  # type:ignore[index]
             )
         else:
             calculate_matrix_gaussian_activation_on_index(
                 matrix,
                 rates,
                 model_axis,
-                np.array([p.center for p in parameters]),
-                np.array([p.width for p in parameters]),
+                np.array([p.center for p in parameters]),  # type:ignore[union-attr]
+                np.array([p.width for p in parameters]),  # type:ignore[union-attr]
                 scales,
-                parameters[0].backsweep,
-                parameters[0].backsweep_period,
+                parameters[0].backsweep,  # type:ignore[union-attr]
+                parameters[0].backsweep_period,  # type:ignore[union-attr]
             )
         if activation.normalize:
             matrix /= np.sum(scales)
@@ -163,7 +169,7 @@ class KineticElement(ExtendableElement, Kinetic):
             "species",
         )
         if len(matrix.shape) > 2:
-            concentration_shape = (
+            concentration_shape = (  # type:ignore[assignment]
                 (model_dimension if as_global else global_dimension),
             ) + concentration_shape
         data["species_concentration"] = (
