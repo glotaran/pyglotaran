@@ -26,11 +26,12 @@ class KineticElement(ExtendableElement, Kinetic):
     data_model_type = ActivationDataModel
     dimension: str = "time"
 
-    def extend(self, other: KineticElement):
+    def extend(self, other: KineticElement):  # type:ignore[override]
         return other.copy(update={"rates": self.rates | other.rates})
 
+    # TODO: consolidate parent method.
     @classmethod
-    def combine(cls, kinetics: list[KineticElement]) -> KineticElement:
+    def combine(cls, kinetics: list[KineticElement]) -> KineticElement:  # type:ignore[override]
         """Creates a combined matrix.
 
         When combining k-matrices km1 and km2 (km1.combine(km2)),
@@ -58,11 +59,12 @@ class KineticElement(ExtendableElement, Kinetic):
                 return lhs[np.newaxis, :, :] + rhs
         return lhs + rhs
 
-    def calculate_matrix(
+    def calculate_matrix(  # type:ignore[override]
         self,
         model: ActivationDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
+        **kwargs,
     ) -> tuple[list[str], ArrayLike]:
         compartments = self.species
         matrices = []
@@ -142,7 +144,9 @@ class KineticElement(ExtendableElement, Kinetic):
 
         return matrix
 
-    def add_to_result_data(self, model: ActivationDataModel, data: xr.Dataset, as_global: bool):
+    def add_to_result_data(  # type:ignore[override]
+        self, model: ActivationDataModel, data: xr.Dataset, as_global: bool
+    ):
         add_activation_to_result_data(model, data)
         if "species" in data.coords or is_data_model_global(model):
             return

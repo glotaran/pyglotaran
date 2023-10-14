@@ -37,7 +37,7 @@ class DampedOscillationElement(Element):
     data_model = ActivationDataModel
     oscillations: dict[str, Oscillation]
 
-    def calculate_matrix(
+    def calculate_matrix(  # type:ignore[override]
         self,
         model: ActivationDataModel,
         global_axis: ArrayLike,
@@ -120,7 +120,7 @@ class DampedOscillationElement(Element):
 
         return clp_axis, matrix
 
-    def add_to_result_data(
+    def add_to_result_data(  # type:ignore[override]
         self,
         model: ActivationDataModel,
         data: xr.Dataset,

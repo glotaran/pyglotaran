@@ -26,7 +26,7 @@ class SpectralElement(Element):
     data_model_type = SpectralDataModel
     shapes: dict[str, SpectralShape.get_annotated_type()]
 
-    def calculate_matrix(
+    def calculate_matrix(  # type:ignore[override]
         self,
         model: SpectralDataModel,
         global_axis: ArrayLike,
@@ -48,7 +48,7 @@ class SpectralElement(Element):
 
         return compartments, matrix
 
-    def add_to_result_data(
+    def add_to_result_data(  # type:ignore[override]
         self,
         model: SpectralDataModel,
         data: xr.Dataset,

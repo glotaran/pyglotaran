@@ -26,7 +26,7 @@ class CoherentArtifactElement(Element):
     order: int
     width: ParameterType | None = None
 
-    def calculate_matrix(
+    def calculate_matrix(  # type:ignore[override]
         self,
         model: ActivationDataModel,
         global_axis: ArrayLike,
@@ -84,7 +84,7 @@ class CoherentArtifactElement(Element):
     def compartments(self):
         return [f"coherent_artifact_{self.label}_order_{i}" for i in range(1, self.order + 1)]
 
-    def add_to_result_data(
+    def add_to_result_data(  # type:ignore[override]
         self,
         model: ActivationDataModel,
         data: xr.Dataset,
