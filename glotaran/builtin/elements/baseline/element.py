@@ -23,10 +23,11 @@ class BaselineElement(Element):
 
     def calculate_matrix(
         self,
-        dataset_model: DataModel,
+        model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+        **kwargs,
+    ) -> tuple[list[str], ArrayLike]:
         clp_label = [self.clp_label()]
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return clp_label, matrix
