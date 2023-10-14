@@ -76,7 +76,7 @@ class OptimizationData(OptimizationDataProvider):
             if self._weight is not None:
                 self._flat_weight = self._weight.T.flatten()
             self._data_slices = []
-        else:
+        else:  # type:ignore[assignment]
             self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
 
     @property
@@ -244,7 +244,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
         scales: dict[str, Parameter],
     ):
         self._datasets = datasets
-        self._scales = {label: scales.get(label, 1) for label in self._datasets}
+        self._scales = {label: scales.get(label, 1.0) for label in self._datasets}
         aligned_global_axes = self.align_global_axes(tolerance, method)
         self._global_axis, self._data = self.align_data(aligned_global_axes)
         self._data_indices = self.align_dataset_indices(aligned_global_axes)

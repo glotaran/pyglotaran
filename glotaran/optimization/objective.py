@@ -9,6 +9,7 @@ from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.optimization.penalty import calculate_clp_penalties
+from glotaran.parameter.parameter import Parameter
 from glotaran.typing.types import ArrayLike
 
 
@@ -133,13 +134,17 @@ class OptimizationObjective:
         ).T
         dataset["fitted_data"] = dataset.data - dataset.residual
 
-    def get_result_dataset(self, data: OptimizationData, add_svd=True) -> xr.Dataset:
+    def get_result_dataset(self, label: str, data: OptimizationData, add_svd=True) -> xr.Dataset:
         assert isinstance(data.model.data, xr.Dataset)
         dataset = data.model.data.copy()
         if dataset.data.dims != (data.model_dimension, data.global_dimension):
             dataset["data"] = dataset.data.T
         dataset.attrs["model_dimension"] = data.model_dimension
         dataset.attrs["global_dimension"] = data.global_dimension
+
+        if isinstance(self._data, LinkedOptimizationData):
+            scale = self._data.scales[label]
+            dataset.attrs["scale"] = scale.value if isinstance(scale, Parameter) else scale
 
         matrix = OptimizationMatrix.from_data(data)
         matrix_coords = (
@@ -200,6 +205,6 @@ class OptimizationObjective:
 
     def get_result(self) -> dict[str, xr.Dataset]:
         return {
-            label: self.get_result_dataset(OptimizationData(data))
+            label: self.get_result_dataset(label, OptimizationData(data))
             for label, data in self._model.datasets.items()
         }
