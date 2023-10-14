@@ -193,10 +193,14 @@ class DataModel(Item):
     @staticmethod
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
-        data_models = [
-            m.data_model_type for m in filter(lambda m: m.data_model_type is not None, elements)
-        ] + [DataModel]
-        return create_model(data_model_cls_name, __base__=tuple(data_models))
+        data_models = tuple(
+            set(
+                [e.data_model_type for e in elements if e.data_model_type is not None]
+            )
+        )+ (DataModel,)
+        return create_model(
+            data_model_cls_name, __base__=data_models  # type:ignore[arg-type]
+        )
 
     @classmethod
     def from_dict(cls, library: dict[str, Element], model_dict: dict[str, Any]) -> DataModel:
