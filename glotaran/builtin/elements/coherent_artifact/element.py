@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class CoherentArtifactElement(Element):
-    type: Literal["coherent-artifact"]
+    type: Literal["coherent-artifact"]  # type:ignore[assignment]
     register_as = "coherent-artifact"  # type:ignore[pydantic-field]
     dimension = "time"  # type:ignore[pydantic-field]
     data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
@@ -48,13 +48,15 @@ class CoherentArtifactElement(Element):
             matrix_shape = (model_axis.size, self.order)
             index_dependent = any(isinstance(p, list) for p in parameters)
             if index_dependent:
-                matrix_shape = (global_axis.size,) + matrix_shape
+                matrix_shape = (global_axis.size,) + matrix_shape  # type:ignore[assignment]
             matrix = np.zeros(matrix_shape, dtype=np.float64)
             if index_dependent:
                 _calculate_coherent_artifact_matrix(
                     matrix,
-                    np.array([ps[0].center for ps in parameters]),
-                    np.array([self.width or ps[0].width for ps in parameters]),
+                    np.array([ps[0].center for ps in parameters]),  # type:ignore[index]
+                    np.array(
+                        [self.width or ps[0].width for ps in parameters]  # type:ignore[index]
+                    ),
                     global_axis.size,
                     model_axis,
                     self.order,
@@ -63,12 +65,12 @@ class CoherentArtifactElement(Element):
             else:
                 _calculate_coherent_artifact_matrix_on_index(
                     matrix,
-                    parameters[0].center,
-                    self.width or parameters[0].width,
+                    parameters[0].center,  # type:ignore[union-attr]
+                    self.width or parameters[0].width,  # type:ignore[union-attr]
                     model_axis,
                     self.order,
                 )
-            matrix *= activation.compartments[self.label]
+            matrix *= activation.compartments[self.label]  # type:ignore[arg-type]
             matrices.append(matrix)
 
         if not len(matrices):
