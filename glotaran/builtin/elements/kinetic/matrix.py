@@ -50,7 +50,9 @@ def calculate_matrix_gaussian_activation_on_index(
                     )
                 if backsweep and backsweep_valid:
                     x1 = np.exp(-r_n * (t_n - center + backsweep_period))
-                    x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
+                    x2 = np.exp(
+                        -r_n * ((backsweep_period / 2) - (t_n - center))  # type:ignore[operator]
+                    )
                     x3 = np.exp(-r_n * backsweep_period)
                     matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
