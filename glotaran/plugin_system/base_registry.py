@@ -23,9 +23,9 @@ if TYPE_CHECKING:
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
-    from glotaran.model import Model
+    from glotaran.model import Element
 
-    _PluginType = TypeVar("_PluginType", type[Model], DataIoInterface, ProjectIoInterface)
+    _PluginType = TypeVar("_PluginType", type[Element], DataIoInterface, ProjectIoInterface)
     _PluginInstantiableType = TypeVar(
         "_PluginInstantiableType", DataIoInterface, ProjectIoInterface
     )
@@ -39,7 +39,7 @@ class __PluginRegistry:
     This is super private since if anyone messes with it, the pluginsystem could break.
     """
 
-    model: MutableMapping[str, type[Model]] = {}
+    element: MutableMapping[str, type[Element]] = {}
     data_io: MutableMapping[str, DataIoInterface] = {}
     project_io: MutableMapping[str, ProjectIoInterface] = {}
 
@@ -117,7 +117,7 @@ def load_plugins():
     Currently used builtin entrypoints are:
 
     - ``glotaran.plugins.data_io``
-    - ``glotaran.plugins.model``
+    - ``glotaran.plugins.element``
     - ``glotaran.plugins.project_io``
     """
     if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
@@ -127,9 +127,9 @@ def load_plugins():
             "glotaran.plugins.project_io",
         ]
         entry_points = metadata.entry_points()
-        for entry_points in [entry_points[p] for p in plugin_names]:
+        for entry_points in [entry_points[p] for p in plugin_names]:  # type:ignore[assignment]
             for entry_point in entry_points:
-                entry_point.load()
+                entry_point.load()  # type:ignore[attr-defined]
 
 
 def set_plugin(

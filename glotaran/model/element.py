@@ -9,7 +9,7 @@ from typing import Literal
 import xarray as xr
 
 from glotaran.model.item import TypedItem
-from glotaran.plugin_system.model_registration import register_model
+from glotaran.plugin_system.element_registration import register_element
 from glotaran.typing.types import ArrayLike
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class Element(TypedItem, abc.ABC):
         """Register the model if necessary."""
         super().__init_subclass__()
         if cls.register_as is not None:
-            register_model(cls.register_as, cls)
+            register_element(cls.register_as, cls)
 
     @abc.abstractmethod
     def calculate_matrix(
