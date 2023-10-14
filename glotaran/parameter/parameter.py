@@ -198,6 +198,13 @@ class Parameter(_SupportsArray):
         """
         return evolve(self)
 
+    def get_dependency_paramenters(self) -> list[str]:
+        return (
+            [match[0] for match in PARAMETER_EXPRESSION_REGEX.finditer(self.expression)]
+            if self.expression is not None
+            else []
+        )
+
     def as_dict(self) -> dict[str, Any]:
         """Get the parameter as a dictionary.
 

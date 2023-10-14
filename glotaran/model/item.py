@@ -275,11 +275,16 @@ def resolve_item_parameters(
     resolved = {}
     initial = initial or parameters
 
-    def resolve_parameter(parameter: Parameter | float | str) -> Parameter:
+    def add_to_initial(label: str) -> Parameter:
+        if not parameters.has(label):
+            parameters.add(initial.get(label).copy())
+            for dep_label in parameters.get(label).get_dependency_paramenters():
+                add_to_initial(dep_label)
+        return parameters.get(label)
+
+    def resolve_parameter(parameter: Parameter | float | str) -> Parameter | float:
         if isinstance(parameter, str):
-            if not parameters.has(parameter):
-                parameters.add(initial.get(parameter).copy())
-            parameter = parameters.get(parameter)
+            parameter = add_to_initial(parameter)
         return parameter
 
     for field in iterate_parameter_fields(item):
