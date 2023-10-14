@@ -20,9 +20,9 @@ class ClpGuideElement(Element):
 
     def calculate_matrix(
         self,
-        dataset_model: DataModel,
+        model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
         **kwargs,
-    ):
+    ) -> tuple[list[str], ArrayLike]:
         return [self.target], np.ones((1, 1), dtype=np.float64)
