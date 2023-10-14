@@ -21,13 +21,13 @@ class ClpConstraint(TypedItem, IntervalItem):
 class ZeroConstraint(ClpConstraint):
     """Constraints the target to 0 in the given interval."""
 
-    type: Literal["zero"]
+    type: Literal["zero"]  # type:ignore[assignment]
 
 
 class OnlyConstraint(ZeroConstraint):
     """Constraints the target to 0 outside the given interval."""
 
-    type: Literal["only"]
+    type: Literal["only"]  # type:ignore[assignment]
 
     def applies(self, index: float | None) -> bool:
         """Check if the constraint applies on this index.
