@@ -48,7 +48,7 @@ def calculate_damped_oscillation_matrix_gaussian_activation_on_index(
     parameters: list[GaussianActivationParameters],
     model_axis: ArrayLike,
 ):
-    scales = 0
+    scales = 0.0
     for parameter in parameters:
         scales += parameter.scale
         matrix += calculate_damped_oscillation_matrix_gaussian_activation_sin_cos(
@@ -60,7 +60,7 @@ def calculate_damped_oscillation_matrix_gaussian_activation_on_index(
             parameter.width,
             parameter.scale,
         )
-    matrix /= np.sum(scales)
+    matrix /= scales
 
 
 def calculate_damped_oscillation_matrix_gaussian_activation_sin_cos(
