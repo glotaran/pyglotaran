@@ -20,11 +20,11 @@ class SpectralDataModel(DataModel):
 
 
 class SpectralElement(Element):
-    type: Literal["spectral"]
-    dimension: str = "spectral"  # type:ignore[pydantic-field]
+    type: Literal["spectral"]  # type:ignore[assignment]
+    dimension: str = "spectral"
     register_as = "spectral"  # type:ignore[pydantic-field]
     data_model_type = SpectralDataModel  # type:ignore[pydantic-field]
-    shapes: dict[str, SpectralShape.get_annotated_type()]
+    shapes: dict[str, SpectralShape.get_annotated_type()]  # type:ignore[valid-type]
 
     def calculate_matrix(  # type:ignore[override]
         self,

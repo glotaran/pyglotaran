@@ -6,6 +6,7 @@ import numpy as np
 
 from glotaran.model import ParameterType
 from glotaran.model import TypedItem
+from glotaran.typing.types import ArrayLike
 
 
 class SpectralShape(TypedItem):
@@ -15,7 +16,7 @@ class SpectralShape(TypedItem):
 class SpectralShapeGaussian(SpectralShape):
     """A Gaussian spectral shape"""
 
-    type: Literal["gaussian"]
+    type: Literal["gaussian"]  # type:ignore[assignment]
     amplitude: ParameterType | None = None
     location: ParameterType
     width: ParameterType
@@ -57,7 +58,10 @@ class SpectralShapeGaussian(SpectralShape):
         np.ndarray
             An array representing a Gaussian shape.
         """
-        shape = np.exp(-np.log(2) * np.square(2 * (axis - self.location) / self.width))
+        shape = np.exp(
+            -np.log(2)
+            * np.square(2 * (axis - self.location) / self.width)  # type:ignore[operator]
+        )
         if self.amplitude is not None:
             shape *= self.amplitude
         return shape
@@ -66,7 +70,7 @@ class SpectralShapeGaussian(SpectralShape):
 class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
     """A skewed Gaussian spectral shape"""
 
-    type: Literal["skewed-gaussian"]
+    type: Literal["skewed-gaussian"]  # type:ignore[assignment]
     skewness: ParameterType
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
@@ -123,21 +127,23 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
         """
         if np.allclose(self.skewness, 0):
             return super().calculate(axis)
-        log_args = 1 + (2 * self.skewness * (axis - self.location) / self.width)
+        log_args: ArrayLike = 1 + (  # type:ignore[assignment]
+            2 * self.skewness * (axis - self.location) / self.width  # type:ignore[operator]
+        )
         shape = np.zeros(log_args.shape)
         valid_arg_mask = np.where(log_args > 0)
         shape[valid_arg_mask] = np.exp(
             -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
         if self.amplitude is not None:
-            shape *= self.amplitude
+            shape *= self.amplitude  # type:ignore[arg-type]
         return shape
 
 
 class SpectralShapeOne(SpectralShape):
     """A constant spectral shape with value 1"""
 
-    type: Literal["one"]
+    type: Literal["one"]  # type:ignore[assignment]
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
         """calculate calculates the shape.
@@ -158,7 +164,7 @@ class SpectralShapeOne(SpectralShape):
 class SpectralShapeZero(SpectralShape):
     """A constant spectral shape with value 0"""
 
-    type: Literal["zero"]
+    type: Literal["zero"]  # type:ignore[assignment]
 
     def calculate(self, axis: np.ndarray) -> np.ndarray:
         """calculate calculates the shape.
