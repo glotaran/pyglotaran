@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class BaselineElement(Element):
-    type: Literal["baseline"]
+    type: Literal["baseline"]  # type:ignore[assignment]
     register_as = "baseline"  # type:ignore[pydantic-field]
     unique = True  # type:ignore[pydantic-field]
 
