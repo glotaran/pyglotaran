@@ -21,9 +21,9 @@ class SpectralDataModel(DataModel):
 
 class SpectralElement(Element):
     type: Literal["spectral"]
-    dimension: str = "spectral"
-    register_as = "spectral"
-    data_model_type = SpectralDataModel
+    dimension: str = "spectral"  # type:ignore[pydantic-field]
+    register_as = "spectral"  # type:ignore[pydantic-field]
+    data_model_type = SpectralDataModel  # type:ignore[pydantic-field]
     shapes: dict[str, SpectralShape.get_annotated_type()]
 
     def calculate_matrix(  # type:ignore[override]

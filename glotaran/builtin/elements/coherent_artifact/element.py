@@ -20,9 +20,9 @@ if TYPE_CHECKING:
 
 class CoherentArtifactElement(Element):
     type: Literal["coherent-artifact"]
-    register_as = "coherent-artifact"
-    dimension = "time"
-    data_model = ActivationDataModel
+    register_as = "coherent-artifact"  # type:ignore[pydantic-field]
+    dimension = "time"  # type:ignore[pydantic-field]
+    data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
     order: int
     width: ParameterType | None = None
 
