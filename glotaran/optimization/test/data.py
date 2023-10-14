@@ -71,6 +71,7 @@ TestDataModelGlobal = DataModel(
             is_index_dependent=False,
         )
     ],
+    element_scale={"test": 1},
     global_elements=[
         TestElementConstant(
             type="test-element-constant",
@@ -81,4 +82,5 @@ TestDataModelGlobal = DataModel(
             is_index_dependent=False,
         )
     ],
+    global_element_scale={"test_global": 1},
 )

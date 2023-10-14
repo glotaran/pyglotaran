@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Generator
 from typing import Any
 from typing import Literal
-from typing import Type
 from uuid import uuid4
 
 import xarray as xr
@@ -21,7 +20,6 @@ from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
 from glotaran.model.weight import Weight
-from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
 
@@ -180,13 +178,13 @@ class DataModel(Item):
         description="The elements contributing to this dataset.",
         validator=validate_elements,  # type:ignore[arg-type]
     )
-    element_scale: list[ParameterType] | None = None
+    element_scale: dict[str, ParameterType] | None = None
     global_elements: list[Element | str] | None = Attribute(
         default=None,
         description="The global elements contributing to this dataset.",
         validator=validate_global_elements,  # type:ignore[arg-type]
     )
-    global_element_scale: list[ParameterType] | None = None
+    global_element_scale: dict[str, ParameterType] | None = None
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
         default="variable_projection", description="The residual function to use."
     )
@@ -258,7 +256,7 @@ def get_data_model_dimension(data_model: DataModel) -> str:
 
 def iterate_data_model_elements(
     data_model: DataModel,
-) -> Generator[tuple[Parameter | str | None, Element | str], None, None]:
+) -> Generator[tuple[ParameterType | None, Element | str], None, None]:
     """Iterate the data model's elements.
 
     Parameters
@@ -271,14 +269,18 @@ def iterate_data_model_elements(
     tuple[Parameter | str | None, Element | str]
         A scale and elements.
     """
-    for i, element in enumerate(data_model.elements):
-        scale = data_model.elements_scale[i] if data_model.element_scale is not None else None
+    scales = data_model.element_scale
+    for element in data_model.elements:
+        scale = None
+        if scales is not None:
+            element_label = element if isinstance(element, str) else element.label
+            scale = scales.get(element_label, 1)
         yield scale, element
 
 
 def iterate_data_model_global_elements(
     data_model: DataModel,
-) -> Generator[tuple[Parameter | str | None, Element | str], None, None]:
+) -> Generator[tuple[ParameterType | None, Element | str], None, None]:
     """Iterate the data model's global elements.
 
     Parameters
@@ -293,12 +295,12 @@ def iterate_data_model_global_elements(
     """
     if data_model.global_elements is None:
         return
-    for i, element in enumerate(data_model.global_elements):
-        scale = (
-            data_model.global_element_scale[i]
-            if data_model.global_element_scale is not None
-            else None
-        )
+    scales = data_model.global_element_scale
+    for element in data_model.global_elements:
+        scale = None
+        if scales is not None:
+            element_label = element if isinstance(element, str) else element.label
+            scale = scales.get(element_label, 1)
         yield scale, element
 
 
