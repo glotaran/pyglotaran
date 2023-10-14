@@ -75,5 +75,4 @@ class Result(BaseModel):
         save_parameters(self.parameters_optimized, parameters_optimized_path)
 
         result_path = path / "glotaran_result.yml"
-        print(result_dict)
         write_dict(result_dict, result_path)

@@ -26,7 +26,7 @@ SUPPORTED_OPTIMIZATION_METHODS = {
 
 
 class UnsupportedMethodError(GlotaranUserError):
-    """Inidcates that the optimization method is unsupported."""
+    """Indicates that the optimization method is unsupported."""
 
     def __init__(self, method: str):
         """Initialize an UnsupportedMethodError.
