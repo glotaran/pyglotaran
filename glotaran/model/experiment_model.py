@@ -31,7 +31,11 @@ class ExperimentModel(BaseModel):
 
     clp_link_tolerance: float = 0.0
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
-    clp_constraints: list[ClpConstraint.get_annotated_type()] = Field(default_factory=list)
+    clp_constraints: list[  # type:ignore[valid-type]
+        ClpConstraint.get_annotated_type()
+    ] = Field(
+        default_factory=list
+    )
     clp_penalties: list[EqualAreaPenalty] = Field(default_factory=list)
     clp_relations: list[ClpRelation] = Field(default_factory=list)
     datasets: dict[str, DataModel]
