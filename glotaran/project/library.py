@@ -7,7 +7,9 @@ from glotaran.model import Element
 from glotaran.model import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 
-LibraryType: TypeAlias = dict[str, Element.get_annotated_type()]
+LibraryType: TypeAlias = dict[  # type:ignore[misc,valid-type]
+    str, Element.get_annotated_type()  # type:ignore[index]
+]
 
 
 class ModelLibrary(BaseModel):
