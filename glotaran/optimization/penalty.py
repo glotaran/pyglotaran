@@ -28,8 +28,8 @@ def calculate_clp_penalties(
     list[float]
         The clp penalty.
     """
-    sources = [[] for _ in penalties]
-    targets = [[] for _ in penalties]
+    sources: list[list[float]] = [[] for _ in penalties]
+    targets: list[list[float]] = [[] for _ in penalties]
     for matrix, estimation, index in zip(matrices, estimations, global_axis):
         for i, penalty in enumerate(penalties):
             if penalty.source in matrix.clp_axis and penalty.source_applies(index):
