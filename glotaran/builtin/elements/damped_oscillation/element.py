@@ -32,9 +32,9 @@ class Oscillation(Item):
 
 class DampedOscillationElement(Element):
     type: Literal["damped-oscillation"]
-    register_as = "damped-oscillation"
-    dimension = "time"
-    data_model = ActivationDataModel
+    register_as = "damped-oscillation"  # type:ignore[pydantic-field]
+    dimension: str = "time"
+    data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
     oscillations: dict[str, Oscillation]
 
     def calculate_matrix(  # type:ignore[override]

@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
 class KineticElement(ExtendableElement, Kinetic):
     type: Literal["kinetic"] = Literal["kinetic"]
-    register_as = "kinetic"
-    data_model_type = ActivationDataModel
+    register_as = "kinetic"  # type:ignore[pydantic-field]
+    data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
     dimension: str = "time"
 
     def extend(self, other: KineticElement):  # type:ignore[override]
