@@ -107,7 +107,7 @@ class OptimizationResult(BaseModel):
             "parameter_history": parameter_history,
             "termination_reason": termination_reason,
             "optimization_history": optimization_history,
-            "number_of_function_evaluations": result.nfev
+            "number_of_function_evaluations": result.nfev  # type:ignore[union-attr]
             if success
             else parameter_history.number_of_records,
         }
@@ -115,23 +115,23 @@ class OptimizationResult(BaseModel):
         result_args["cost"] = 0.5 * np.dot(penalty, penalty)
         if success:
             result_args["number_clp"] = number_clp
-            result_args["number_of_jacobian_evaluations"] = result.njev
-            result_args["optimality"] = float(result.optimality)
-            result_args["number_of_data_points"] = result.fun.size
-            result_args["number_of_parameters"] = result.x.size
+            result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
+            result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
+            result_args["number_of_data_points"] = result.fun.size  # type:ignore[union-attr]
+            result_args["number_of_parameters"] = result.x.size  # type:ignore[union-attr]
             result_args["degrees_of_freedom"] = (
                 result_args["number_of_data_points"]
                 - result_args["number_of_parameters"]
                 - result_args["number_clp"]
             )
-            result_args["chi_square"] = float(np.sum(result.fun**2))
+            result_args["chi_square"] = float(np.sum(result.fun**2))  # type:ignore[union-attr]
             result_args["reduced_chi_square"] = (
                 result_args["chi_square"] / result_args["degrees_of_freedom"]
             )
             result_args["root_mean_square_error"] = float(
                 np.sqrt(result_args["reduced_chi_square"])
             )
-            result_args["jacobian"] = result.jac
+            result_args["jacobian"] = result.jac  # type:ignore[union-attr]
             result_args["covariance_matrix"] = calculate_covariance_matrix_and_standard_errors(
                 result_args["jacobian"], result_args["root_mean_square_error"]
             )
@@ -139,9 +139,12 @@ class OptimizationResult(BaseModel):
         return cls(**result_args)
 
     def calculate_parameter_errors(self, parameters: Parameters):
-        standard_errors = self.root_mean_square_error * np.sqrt(np.diag(self.covariance_matrix))
-        for label, error in zip(self.free_parameter_labels, standard_errors):
-            self._parameters.get(label).standard_error = error
+        if self.covariance_matrix is not None:
+            standard_errors = self.root_mean_square_error * np.sqrt(
+                np.diag(self.covariance_matrix)
+            )
+            for label, error in zip(self.free_parameter_labels, standard_errors):
+                parameters.get(label).standard_error = error
 
 
 def calculate_covariance_matrix_and_standard_errors(

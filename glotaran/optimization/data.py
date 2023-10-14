@@ -61,7 +61,7 @@ class OptimizationData(OptimizationDataProvider):
         self._global_dimension = self.infer_global_dimension(self._model_dimension, data.data.dims)
         self._global_axis = data.coords[self._global_dimension].data
 
-        self._data = self.get_from_dataset(data, "data")
+        self._data: ArrayLike = self.get_from_dataset(data, "data")  # type:ignore[assignment]
         self._flat_data = None
 
         self._weight = self.get_from_dataset(data, "weight")
@@ -76,7 +76,7 @@ class OptimizationData(OptimizationDataProvider):
             if self._weight is not None:
                 self._flat_weight = self._weight.T.flatten()
             self._data_slices = []
-        else:  # type:ignore[assignment]
+        else:
             self._data_slices = [self._data[:, i] for i in range(self.global_axis.size)]
 
     @property
