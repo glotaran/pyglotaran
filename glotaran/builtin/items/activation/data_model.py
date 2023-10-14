@@ -28,14 +28,14 @@ def validate_activations(
     activation: Activation,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    issues = []
+    issues: list[ItemIssue] = []
     if len(value) == 0:
         issues.append(NoActivationIssue())
     return issues
 
 
 class ActivationDataModel(DataModel):
-    activation: list[Activation.get_annotated_type()] = Attribute(
+    activation: list[Activation.get_annotated_type()] = Attribute(  # type:ignore[valid-type]
         validator=validate_activations,
         description="The activation(s) of the dataset.",
     )
@@ -77,15 +77,15 @@ def add_activation_to_result_data(model: ActivationDataModel, data: xr.Dataset):
     )
     data["gaussian_activation_center"] = (
         ("gaussian_activation", "gaussian_activation_part"),
-        [[p.center for p in ps] for ps in activation_parameters],
+        [[p.center for p in ps] for ps in activation_parameters],  # type:ignore[union-attr]
     )
     data["gaussian_activation_width"] = (
         ("gaussian_activation", "gaussian_activation_part"),
-        [[p.width for p in ps] for ps in activation_parameters],
+        [[p.width for p in ps] for ps in activation_parameters],  # type:ignore[union-attr]
     )
     data["gaussian_activation_scale"] = (
         ("gaussian_activation", "gaussian_activation_part"),
-        [[p.scale for p in ps] for ps in activation_parameters],
+        [[p.scale for p in ps] for ps in activation_parameters],  # type:ignore[union-attr]
     )
     if has_shifts:
         data["gaussian_activation_shift"] = (

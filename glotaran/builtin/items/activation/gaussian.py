@@ -52,7 +52,7 @@ def validate_multi_gaussian(
     activation: MultiGaussianActivation,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    issues = []
+    issues: list[ItemIssue] = []
     if not isinstance(value, list):
         value = [value]
     len_centers = len(value)
@@ -67,7 +67,7 @@ def validate_dispersion(
     activation: MultiGaussianActivation,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
-    issues = []
+    issues: list[ItemIssue] = []
     if value is not None:
         len_centers = len(activation.center_dispersion_coefficients)
         len_widths = len(activation.width_dispersion_coefficients)
@@ -105,10 +105,10 @@ class GaussianActivationParameters:
 
 
 class MultiGaussianActivation(Activation):
-    type: Literal["multi-gaussian"]
+    type: Literal["multi-gaussian"]  # type:ignore[assignment]
 
     center: list[ParameterType] = Attribute(
-        validator=validate_multi_gaussian,  # type:ignore[arg-type]
+        validator=validate_multi_gaussian,
         description="The center of the gaussian",
     )
 
@@ -143,16 +143,24 @@ class MultiGaussianActivation(Activation):
     )
 
     def calculate_dispersion(self, axis: ArrayLike) -> ArrayLike:
-        return np.array([[p.center for p in ps] for ps in self.parameters(axis)]).T
+        return np.array(
+            [[p.center for p in ps] for ps in self.parameters(axis)]  # type:ignore[union-attr]
+        ).T
 
     def is_index_dependent(self) -> bool:
         return self.shift is not None or self.dispersion_center is not None
 
     def parameters(
         self, global_axis: ArrayLike | None = None
-    ) -> list[GaussianActivationParameters | list[GaussianActivationParameters]]:
-        centers = self.center if isinstance(self.center, list) else [self.center]
-        widths = self.width if isinstance(self.width, list) else [self.width]
+    ) -> list[GaussianActivationParameters] | list[list[GaussianActivationParameters]]:
+        centers = (
+            self.center
+            if isinstance(self.center, list)
+            else [self.center]  # type:ignore[list-item]
+        )
+        widths = (
+            self.width if isinstance(self.width, list) else [self.width]  # type:ignore[list-item]
+        )
 
         len_centers = len(centers)
         len_widths = len(widths)
@@ -167,9 +175,13 @@ class MultiGaussianActivation(Activation):
         backsweep = self.backsweep is not None
         backsweep_period = self.backsweep if backsweep else 0
 
-        parameters = [
+        parameters: list[GaussianActivationParameters] = [
             GaussianActivationParameters(
-                float(center), float(width), float(scale), backsweep, backsweep_period
+                float(center),
+                float(width),
+                float(scale),
+                backsweep,
+                backsweep_period,  # type:ignore[arg-type]
             )
             for center, width, scale in zip(centers, widths, scales)
         ]
@@ -177,7 +189,9 @@ class MultiGaussianActivation(Activation):
         if global_axis is None or not self.is_index_dependent():
             return parameters
 
-        parameters = [[replace(p) for p in parameters] for _ in global_axis]
+        global_parameters: list[list[GaussianActivationParameters]] = [
+            [replace(p) for p in parameters] for _ in global_axis
+        ]
 
         if self.shift is not None:
             if global_axis.size != len(self.shift):
@@ -185,31 +199,37 @@ class MultiGaussianActivation(Activation):
                     f"The number of shifts({len(self.shift)}) does not match "
                     f"the size of the global axis({global_axis.size})."
                 )
-            for ps, shift in zip(parameters, self.shift):
+            for ps, shift in zip(global_parameters, self.shift):
                 for p in ps:
-                    p.shift(shift)
+                    p.shift(shift)  # type:ignore[arg-type]
 
         if self.dispersion_center is not None:
-            for ps, index in zip(parameters, global_axis):
+            for ps, index in zip(global_parameters, global_axis):
                 for p in ps:
                     p.disperse(
                         index,
-                        self.dispersion_center,
-                        self.center_dispersion_coefficients,
-                        self.width_dispersion_coefficients,
+                        self.dispersion_center,  # type:ignore[arg-type]
+                        self.center_dispersion_coefficients,  # type:ignore[arg-type]
+                        self.width_dispersion_coefficients,  # type:ignore[arg-type]
                         self.reciproke_global_axis,
                     )
 
         return parameters
 
     def calculate_function(self, axis: ArrayLike) -> ArrayLike:
-        return sum(
-            p.scale * np.exp(-1 * (axis - p.center) ** 2 / (2 * p.width**2))
-            for p in self.parameters()
+        return np.sum(
+            [
+                p.scale  # type:ignore[union-attr]
+                * np.exp(
+                    -1 * (axis - p.center) ** 2 / (2 * p.width**2)  # type:ignore[union-attr]
+                )
+                for p in self.parameters()
+            ],
+            axis=0,
         )
 
 
 class GaussianActivation(MultiGaussianActivation):
-    type: Literal["gaussian"]
-    center: ParameterType
-    width: ParameterType
+    type: Literal["gaussian"]  # type:ignore[assignment]
+    center: ParameterType  # type:ignore[assignment]
+    width: ParameterType  # type:ignore[assignment]
