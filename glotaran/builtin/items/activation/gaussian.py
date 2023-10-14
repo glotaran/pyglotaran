@@ -214,7 +214,7 @@ class MultiGaussianActivation(Activation):
                         self.reciproke_global_axis,
                     )
 
-        return parameters
+        return global_parameters
 
     def calculate_function(self, axis: ArrayLike) -> ArrayLike:
         return np.sum(

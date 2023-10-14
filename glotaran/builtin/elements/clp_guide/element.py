@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class ClpGuideElement(Element):
-    type: Literal["clp-guide"]
+    type: Literal["clp-guide"]  # type:ignore[assignment]
     register_as = "clp-guide"  # type:ignore[pydantic-field]
     exclusive = True  # type:ignore[pydantic-field]
     target: str
