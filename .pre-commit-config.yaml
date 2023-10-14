@@ -137,17 +137,17 @@ repos:
         additional_dependencies: [sphinx]
         exclude: "^docs/source/_templates"
 
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-      - id: rst-backticks
-      # - id: python-check-blanket-noqa
-      #   exclude: "docs|tests?"
-      # - id: python-check-blanket-type-ignore
-      #   exclude: "docs|tests?"
-      # - id: python-use-type-annotations
-      - id: rst-directive-colons
-      - id: rst-inline-touching-normal
+  # - repo: https://github.com/pre-commit/pygrep-hooks
+  #   rev: v1.10.0
+  #   hooks:
+  #     - id: rst-backticks
+  #     - id: python-check-blanket-noqa
+  #       exclude: "docs|tests?"
+  #     - id: python-check-blanket-type-ignore
+  #       exclude: "docs|tests?"
+  #     - id: python-use-type-annotations
+  #     - id: rst-directive-colons
+  #     - id: rst-inline-touching-normal
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6

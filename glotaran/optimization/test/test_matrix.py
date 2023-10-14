@@ -51,7 +51,6 @@ def test_from_global_data(weight: bool):
 
 
 def test_constraints():
-
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
     constraints = [ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])]
     data = OptimizationData(data_model)
@@ -68,7 +67,6 @@ def test_constraints():
 
 
 def test_relations():
-
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
     relations = [
         ClpRelation(

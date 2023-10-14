@@ -172,7 +172,6 @@ class ParallelModelWithEquilibria:
     [SequentialModel, SequentialModelWithBacktransfer, ParallelModel, ParallelModelWithEquilibria],
 )
 def test_a_matrix_general(model):
-
     kinetic = Kinetic(rates=model.rates)
     assert kinetic.species == model.species
 
@@ -200,7 +199,6 @@ def test_a_matrix_general(model):
 
 
 def test_a_matrix_sequential():
-
     rates = {
         ("s2", "s1"): 1,
         ("s3", "s2"): 4,
@@ -237,7 +235,6 @@ def test_a_matrix_sequential():
 
 
 def test_combine_matrices():
-
     matrix1 = {
         ("s1", "s1"): 1,
         ("s2", "s2"): 2,

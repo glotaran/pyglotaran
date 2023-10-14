@@ -200,7 +200,10 @@ class Parameter(_SupportsArray):
 
     def get_dependency_paramenters(self) -> list[str]:
         return (
-            [match[0].replace("$", "") for match in PARAMETER_EXPRESSION_REGEX.finditer(self.expression)]
+            [
+                match[0].replace("$", "")
+                for match in PARAMETER_EXPRESSION_REGEX.finditer(self.expression)
+            ]
             if self.expression is not None
             else []
         )
