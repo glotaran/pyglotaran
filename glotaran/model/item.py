@@ -23,8 +23,8 @@ from pydantic import BaseModel
 from pydantic import Extra
 from pydantic import Field
 from pydantic.fields import FieldInfo
-from pydantic.fields import ModelField
-from pydantic.fields import Undefined
+from pydantic.fields import ModelField  # type:ignore[attr-defined]
+from pydantic.fields import Undefined  # type:ignore[attr-defined]
 
 from glotaran.model.errors import ItemIssue
 from glotaran.model.errors import ParameterIssue
@@ -206,7 +206,7 @@ def strip_structure_type_from_definition(definition: type) -> tuple[None | list 
 
 
 def iterate_fields_of_type(
-    item: type[Item], field_type: type
+    item: type[ItemT] | ItemT, field_type: type
 ) -> Generator[ModelField, None, None]:
     """Iterate over all fields of the given types.
 
@@ -222,14 +222,16 @@ def iterate_fields_of_type(
     ModelField
         The matching attributes.
     """
-    for field in item.__fields__.values():
+    for field in item.__fields__.values():  # type:ignore[union-attr]
         _, item_type = get_structure_and_type_from_field(field)
         with contextlib.suppress(TypeError):
             # issubclass does for some reason not work with e.g. tuple as item_type
             # and Parameter as attr_type
             if (
                 hasattr(item_type, "__origin__")
-                and issubclass(typing.get_origin(item_type), typing.Annotated)
+                and issubclass(
+                    typing.get_origin(item_type), typing.Annotated  # type:ignore[arg-type]
+                )
                 and typing.get_origin(typing.get_args(item_type)[0]) is typing.Union
             ):
                 item_type = typing.get_args(typing.get_args(item_type)[0])[0]
@@ -237,7 +239,7 @@ def iterate_fields_of_type(
                 yield field
 
 
-def iterate_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
+def iterate_item_fields(item: type[ItemT] | ItemT) -> Generator[ModelField, None, None]:
     """Iterate over all item fields.
 
     Parameters
@@ -253,7 +255,7 @@ def iterate_item_fields(item: type[Item]) -> Generator[ModelField, None, None]:
     yield from iterate_fields_of_type(item, Item)
 
 
-def iterate_parameter_fields(item: type[Item]) -> Generator[ModelField, None, None]:
+def iterate_parameter_fields(item: type[ItemT] | ItemT) -> Generator[ModelField, None, None]:
     """Iterate over all parameter fields.
 
     Parameters
@@ -272,7 +274,7 @@ def iterate_parameter_fields(item: type[Item]) -> Generator[ModelField, None, No
 def resolve_item_parameters(
     item: ItemT, parameters: Parameters, initial: Parameters | None = None
 ) -> ItemT:
-    resolved = {}
+    resolved: dict[str, Any] = {}
     initial = initial or parameters
 
     def add_to_initial(label: str) -> Parameter:

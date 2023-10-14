@@ -110,12 +110,20 @@ def get_element_issues(value: list[str | Element] | None, is_global: bool) -> li
         for element in elements:
             element_type = element.__class__
             if element_type.is_exclusive and len(elements) > 1:
-                issues.append(ExclusiveModelIssue(element.label, element.type, is_global))
+                issues.append(
+                    ExclusiveModelIssue(
+                        element.label, element.type, is_global  # type:ignore[arg-type]
+                    )
+                )
             if (
                 element_type.is_unique
                 and len([m for m in elements if m.__class__ is element_type]) > 1
             ):
-                issues.append(UniqueModelIssue(element.label, element.type, is_global))
+                issues.append(
+                    UniqueModelIssue(
+                        element.label, element.type, is_global  # type:ignore[arg-type]
+                    )
+                )
     return issues
 
 
@@ -176,13 +184,13 @@ class DataModel(Item):
     extra_data: str | xr.Dataset | None = None
     elements: list[Element | str] = Attribute(
         description="The elements contributing to this dataset.",
-        validator=validate_elements,  # type:ignore[arg-type]
+        validator=validate_elements,
     )
     element_scale: dict[str, ParameterType] | None = None
     global_elements: list[Element | str] | None = Attribute(
         default=None,
         description="The global elements contributing to this dataset.",
-        validator=validate_global_elements,  # type:ignore[arg-type]
+        validator=validate_global_elements,
     )
     global_element_scale: dict[str, ParameterType] | None = None
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Attribute(
@@ -194,13 +202,9 @@ class DataModel(Item):
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
         data_models = tuple(
-            set(
-                [e.data_model_type for e in elements if e.data_model_type is not None]
-            )
-        )+ (DataModel,)
-        return create_model(
-            data_model_cls_name, __base__=data_models  # type:ignore[arg-type]
-        )
+            {e.data_model_type for e in elements if e.data_model_type is not None}
+        ) + (DataModel,)
+        return create_model(data_model_cls_name, __base__=data_models)
 
     @classmethod
     def from_dict(cls, library: dict[str, Element], model_dict: dict[str, Any]) -> DataModel:
@@ -244,9 +248,9 @@ def get_data_model_dimension(data_model: DataModel) -> str:
         Raised if the data model does not have elements or if it is not filled.
     """
     if len(data_model.elements) == 0:
-        raise GlotaranModelError(f"No elements set for data model '{data_model.label}'.")
+        raise GlotaranModelError("No elements set for data model.")
     if any(isinstance(m, str) for m in data_model.elements):
-        raise GlotaranUserError(f"Data model '{data_model.label}' was not resolved.")
+        raise GlotaranUserError("Data model was not resolved.")
     model_dimension: str = data_model.elements[0].dimension  # type:ignore[union-attr, assignment]
     if any(
         model_dimension != m.dimension  # type:ignore[union-attr]
@@ -321,25 +325,3 @@ def resolve_data_model(
             library[m] if isinstance(m, str) else m for m in model.global_elements
         ]
     return resolve_item_parameters(model, parameters, initial)
-
-
-def finalize_data_model(data_model: DataModel, data: xr.Dataset):
-    """Finalize a data by applying all model finalize methods.
-
-    Parameters
-    ----------
-    data_model: DataModel
-        The data model.
-    data: xr.Dataset
-        The data.
-    """
-    is_full_model = is_data_model_global(data_model)
-    for model in data_model.models:
-        model.finalize_data(  # type:ignore[union-attr]
-            data_model, data, is_full_model=is_full_model
-        )
-    if is_full_model and data_model.global_models is not None:
-        for model in data_model.global_models:
-            model.finalize_data(  # type:ignore[union-attr]
-                data_model, data, is_full_model=is_full_model, as_global=True
-            )

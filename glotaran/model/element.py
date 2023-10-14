@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel
 
 
-class Element(TypedItem, abc.ABC):  # type:ignore[misc]
+class Element(TypedItem, abc.ABC):
     """
 
     Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`.
@@ -99,4 +99,4 @@ class InternalMockElement(Element):
     are needed for pydanticx discriminators.
     """
 
-    type: Literal["internal_mock"]
+    type: Literal["internal_mock"]  # type:ignore[assignment]

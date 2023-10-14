@@ -32,10 +32,10 @@ class EqualAreaPenalty(ClpPenalty):
     weight: float
 
     def source_applies(self, index: float | None) -> bool:
-        return self.applies(index, self.source_interval)
+        return self.applies(index, self.source_interval)  # type:ignore[arg-type]
 
     def target_applies(self, index: float | None) -> bool:
-        return self.applies(index, self.target_interval)
+        return self.applies(index, self.target_interval)  # type:ignore[arg-type]
 
     def applies(self, index: float | None, intervals: list[tuple[float, float]] | None) -> bool:
         """Check if the index is in the intervals.
@@ -57,7 +57,7 @@ class EqualAreaPenalty(ClpPenalty):
             lower, upper = interval[0], interval[1]
             if lower > upper:
                 lower, upper = upper, lower
-            return lower <= index <= upper  # type:ignore[operator]
+            return lower <= index <= upper
 
         if isinstance(intervals, tuple):
             return applies(self.interval)
