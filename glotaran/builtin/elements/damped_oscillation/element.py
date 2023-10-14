@@ -31,7 +31,7 @@ class Oscillation(Item):
 
 
 class DampedOscillationElement(Element):
-    type: Literal["damped-oscillation"]
+    type: Literal["damped-oscillation"]  # type:ignore[assignment]
     register_as = "damped-oscillation"  # type:ignore[pydantic-field]
     dimension: str = "time"
     data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
@@ -84,11 +84,21 @@ class DampedOscillationElement(Element):
 
                 if activation.is_index_dependent():
                     calculate_damped_oscillation_matrix_gaussian_activation(
-                        matrix, inputs, frequencies, rates, parameters, model_axis
+                        matrix,
+                        inputs,
+                        frequencies,
+                        rates,
+                        parameters,  # type:ignore[arg-type]
+                        model_axis,
                     )
                 else:
                     calculate_damped_oscillation_matrix_gaussian_activation_on_index(
-                        matrix, inputs, frequencies, rates, parameters, model_axis
+                        matrix,
+                        inputs,
+                        frequencies,
+                        rates,
+                        parameters,  # type:ignore[arg-type]
+                        model_axis,
                     )
             else:
                 matrix = np.zeros((model_axis.size, len(clp_label)), dtype=np.float64)
@@ -107,7 +117,7 @@ class DampedOscillationElement(Element):
         ]
         index_dependent = any(len(m.shape) > 2 for m in matrices)
         matrix_shape = (
-            (global_axis.size, model_axis.size, len(clp_label))
+            (global_axis.size, model_axis.size, len(clp_labels))
             if index_dependent
             else (model_axis.size, len(clp_axis))
         )
