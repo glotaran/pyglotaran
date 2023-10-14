@@ -26,13 +26,15 @@ class OptimizationObjective:
         if isinstance(self._data, OptimizationData):
             matrix = OptimizationMatrix.from_data(self._data)
             return [matrix.at_index(i) for i in range(self._data.global_axis.size)]
-        return OptimizationMatrix.from_linked_data(self._data)
+        return OptimizationMatrix.from_linked_data(self._data)  # type:ignore[arg-type]
 
     def calculate(self) -> ArrayLike:
         if isinstance(self._data, OptimizationData) and self._data.is_global:
             _, _, matrix = OptimizationMatrix.from_global_data(self._data)
             return OptimizationEstimation.calculate(
-                matrix.array, self._data.flat_data, self._model.residual_function
+                matrix.array,
+                self._data.flat_data,  # type:ignore[arg-type]
+                self._model.residual_function,
             ).residual
         matrices = self.calculate_matrices()
         reduced_matrices = [
@@ -106,13 +108,15 @@ class OptimizationObjective:
             ("global_clp_label", matrix.clp_axis),
         )
         if global_matrix.is_index_dependent:
-            global_matrix_coords = (
+            global_matrix_coords = (  # type:ignore[assignment]
                 (data.model_dimension, data.model_axis),
             ) + global_matrix_coords
         dataset["global_matrix"] = xr.DataArray(global_matrix.array, coords=global_matrix_coords)
         _, _, full_matrix = OptimizationMatrix.from_global_data(data)
         estimation = OptimizationEstimation.calculate(
-            full_matrix.array, data.flat_data, data.model.residual_function
+            full_matrix.array,
+            data.flat_data,  # type:ignore[arg-type]
+            data.model.residual_function,
         )
         dataset["clp"] = xr.DataArray(
             estimation.clp.reshape((len(global_matrix.clp_axis), len(matrix.clp_axis))),
@@ -152,7 +156,9 @@ class OptimizationObjective:
             ("clp_label", matrix.clp_axis),
         )
         if matrix.is_index_dependent:
-            matrix_coords = ((data.global_dimension, data.global_axis),) + matrix_coords
+            matrix_coords = (  # type:ignore[assignment]
+                (data.global_dimension, data.global_axis),
+            ) + matrix_coords
         dataset["matrix"] = xr.DataArray(matrix.array, coords=matrix_coords)
         if data.is_global:
             self.calculate_result_dataset_global(data, matrix, dataset)
@@ -197,9 +203,9 @@ class OptimizationObjective:
                     r.T,
                 )
         for _, model in iterate_data_model_elements(data.model):
-            model.add_to_result_data(data.model, dataset, False)
+            model.add_to_result_data(data.model, dataset, False)  # type:ignore[union-attr]
         for _, model in iterate_data_model_global_elements(data.model):
-            model.add_to_result_data(data.model, dataset, True)
+            model.add_to_result_data(data.model, dataset, True)  # type:ignore[union-attr]
 
         return dataset
 
