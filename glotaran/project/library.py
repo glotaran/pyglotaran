@@ -26,7 +26,7 @@ class ModelLibrary(BaseModel):
                 element = self.__root__[label]
                 assert element.extends is not None
                 extends = [self.__root__[label] for label in element.extends]
-                if all(not e.is_extended() for e in extends):
+                if all(e.label not in extended_elements for e in extends):
                     extends += [element]
                     self.__root__[label] = reduce(lambda a, b: a.extend(b), extends)
                     extended_elements.remove(label)

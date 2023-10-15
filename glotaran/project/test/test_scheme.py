@@ -18,6 +18,7 @@ test_scheme_dict = {
             "rates": {("s1", "s1"): "rates.4", ("s3", "s3"): "rates.3"},
             "extends": ["parallel"],
         },
+        "nested_extend": {"type": "kinetic", "extends": ["extended"], "rates": {}},
     },
     "experiments": {
         "test_experiment": {
