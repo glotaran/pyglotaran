@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 
 class ClpGuideElement(Element):
     type: Literal["clp-guide"]  # type:ignore[assignment]
-    register_as = "clp-guide"  # type:ignore[pydantic-field]
-    exclusive = True  # type:ignore[pydantic-field]
+    register_as: str = "clp-guide"  # type:ignore[misc]
+    exclusive: bool = True
     target: str
 
     def calculate_matrix(

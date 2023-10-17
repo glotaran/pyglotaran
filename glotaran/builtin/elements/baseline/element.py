@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 class BaselineElement(Element):
     type: Literal["baseline"]  # type:ignore[assignment]
-    register_as = "baseline"  # type:ignore[pydantic-field]
-    unique = True  # type:ignore[pydantic-field]
+    register_as: str = "baseline"  # type:ignore[misc]
+    unique: bool = True
 
     def clp_label(self) -> str:
         return f"baseline_{self.label}"
