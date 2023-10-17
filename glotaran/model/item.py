@@ -23,19 +23,24 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic.fields import FieldInfo
-from pydantic.fields import ModelField  # type:ignore[attr-defined]
-from pydantic.fields import Undefined  # type:ignore[attr-defined]
 
 from glotaran.model.errors import ItemIssue
 from glotaran.model.errors import ParameterIssue
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
+#  from pydantic.fields import ModelField  # type:ignore[attr-defined]
+#  from pydantic.fields import Undefined  # type:ignore[attr-defined]
+
+
 ItemT = TypeVar("ItemT", bound="Item")
 
 ParameterType: TypeAlias = Parameter | float | str
 
 META_VALIDATOR = "__glotaran_validator__"
+
+ModelField = Any
+Undefined = Any
 
 
 class ItemAttribute(FieldInfo):
