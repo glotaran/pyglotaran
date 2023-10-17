@@ -40,6 +40,7 @@ def calculate_clp_penalties(
     return np.array(
         [
             np.abs(np.sum(np.abs(source)) - penalty.parameter * np.sum(np.abs(target)))
+            * penalty.weight
             for penalty, source, target in zip(penalties, sources, targets)
         ]
     )
