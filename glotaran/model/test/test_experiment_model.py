@@ -28,9 +28,9 @@ def test_experiment_model_from_dict():
                 {
                     "type": "equal_area",
                     "source": "s",
-                    "source_interval": (1, 2),
+                    "source_intervals": (1, 2),
                     "target": "t",
-                    "target_interval": [(1, 2)],
+                    "target_intervals": [(1, 2)],
                     "parameter": "p",
                     "weight": 1,
                 }
