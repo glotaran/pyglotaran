@@ -73,9 +73,12 @@ class ItemAttribute(FieldInfo):
         metadata: dict[str, Any] = {}
         if validator is not None:
             metadata[META_VALIDATOR] = validator
-        super().__init__(
-            default=default, default_factory=factory, description=description, **metadata
-        )
+        if factory is not None:
+            super().__init__(
+                default_factory=factory, description=description, **metadata
+            )
+        else:
+            super().__init__(default=default, description=description, **metadata)
 
 
 def Attribute(
