@@ -5,7 +5,7 @@ from typing import Any
 from typing import Literal
 
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 from pydantic import Field
 
 from glotaran.model.clp_constraint import ClpConstraint
@@ -25,11 +25,7 @@ from glotaran.parameter import Parameters
 class ExperimentModel(BaseModel):
     """A dataset group for optimization."""
 
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     clp_link_tolerance: float = 0.0
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"

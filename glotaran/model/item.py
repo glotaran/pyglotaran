@@ -20,7 +20,7 @@ from typing import get_args
 from typing import get_origin
 
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 from pydantic import Field
 from pydantic.fields import FieldInfo
 from pydantic.fields import ModelField  # type:ignore[attr-defined]
@@ -105,11 +105,7 @@ def Attribute(
 class Item(BaseModel):
     """A baseclass for items."""
 
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
 
 class TypedItem(Item):

@@ -2,7 +2,7 @@ from typing import Literal
 
 import xarray as xr
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 
 from glotaran.io import load_dataset
 from glotaran.model import ExperimentModel
@@ -15,11 +15,7 @@ from glotaran.project.result import Result
 
 
 class Scheme(BaseModel):
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     experiments: dict[str, ExperimentModel]
     library: LibraryType
