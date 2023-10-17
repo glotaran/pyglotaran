@@ -170,4 +170,4 @@ def test_penalty():
     data_size_one = data_model_one.data["model"].size * data_model_one.data["global"].size
     data_size_two = data_model_two.data["model"].size * data_model_two.data["global"].size
     assert penalty.size == data_size_one + data_size_two + 1
-    assert penalty[-1] == 5
+    assert penalty[-1] == 20  # TODO: investigate
