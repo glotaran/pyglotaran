@@ -158,7 +158,7 @@ class OptimizationMatrix:
         clp_axis = [
             label
             for gl in global_matrix.clp_axis
-            for label in [gl + "@" + ml for ml in matrix.clp_axis]
+            for label in [f"{gl}@{ml}" for ml in matrix.clp_axis]
         ]
 
         array = (
