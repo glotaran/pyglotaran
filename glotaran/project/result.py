@@ -4,7 +4,7 @@ from typing import Literal
 
 import xarray as xr
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 
 from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import save_dataset
@@ -27,11 +27,7 @@ SAVING_OPTIONS_DEFAULT = SavingOptions()
 
 
 class Result(BaseModel):
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     data: dict[str, xr.Dataset]
     experiments: dict[str, ExperimentModel]

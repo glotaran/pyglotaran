@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 from scipy.optimize import OptimizeResult
 
 # TODO: Fix circular import
@@ -15,11 +15,7 @@ from glotaran.typing.types import ArrayLike
 
 
 class OptimizationResult(BaseModel):
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     """The result of a global analysis."""
 

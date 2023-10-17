@@ -15,17 +15,17 @@ from glotaran.parameter import Parameters
 
 class MockItem(Item):
     cscalar: int
-    cscalar_option: int | None
+    cscalar_option: int | None = None
     clist: list[int]
-    clist_option: list[int] | None
+    clist_option: list[int] | None = None
     cdict: dict[str, int]
-    cdict_option: dict[str, int] | None
+    cdict_option: dict[str, int] | None = None
     pscalar: ParameterType
-    pscalar_option: ParameterType | None
+    pscalar_option: ParameterType | None = None
     plist: list[ParameterType]
-    plist_option: list[ParameterType] | None
+    plist_option: list[ParameterType] | None = None
     pdict: dict[str, ParameterType]
-    pdict_option: dict[str, ParameterType] | None
+    pdict_option: dict[str, ParameterType] | None = None
 
 
 class MockTypedItem(TypedItem):
