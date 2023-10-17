@@ -60,5 +60,5 @@ class EqualAreaPenalty(ClpPenalty):
             return lower <= index <= upper
 
         if isinstance(intervals, tuple):
-            return applies(self.interval)
+            return applies(intervals)
         return any(applies(i) for i in intervals)
