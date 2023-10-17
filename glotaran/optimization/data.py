@@ -256,7 +256,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
             {k: OptimizationData(d) for k, d in model.datasets.items()},
             model.clp_link_tolerance,
             model.clp_link_method,
-            model.scale,
+            model.scale,  # type:ignore[arg-type]
         )
 
     @property

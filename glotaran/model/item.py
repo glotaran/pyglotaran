@@ -271,23 +271,27 @@ def iterate_parameter_fields(item: type[ItemT] | ItemT) -> Generator[ModelField,
     yield from iterate_fields_of_type(item, Parameter)
 
 
+def add_to_initial(label: str, parameters: Parameters, initial: Parameters) -> Parameter:
+    if not parameters.has(label):
+        parameters.add(initial.get(label).copy())
+        for dep_label in parameters.get(label).get_dependency_paramenters():
+            add_to_initial(dep_label, parameters, initial)
+    return parameters.get(label)
+
+
+def resolve_parameter(
+    parameter: Parameter | float | str, parameters: Parameters, initial: Parameters
+) -> Parameter | float:
+    if isinstance(parameter, str):
+        parameter = add_to_initial(parameter, parameters, initial)
+    return parameter
+
+
 def resolve_item_parameters(
     item: ItemT, parameters: Parameters, initial: Parameters | None = None
 ) -> ItemT:
     resolved: dict[str, Any] = {}
     initial = initial or parameters
-
-    def add_to_initial(label: str) -> Parameter:
-        if not parameters.has(label):
-            parameters.add(initial.get(label).copy())
-            for dep_label in parameters.get(label).get_dependency_paramenters():
-                add_to_initial(dep_label)
-        return parameters.get(label)
-
-    def resolve_parameter(parameter: Parameter | float | str) -> Parameter | float:
-        if isinstance(parameter, str):
-            parameter = add_to_initial(parameter)
-        return parameter
 
     for field in iterate_parameter_fields(item):
         value = getattr(item, field.name)
@@ -295,11 +299,13 @@ def resolve_item_parameters(
             continue
         structure, _ = get_structure_and_type_from_field(field)
         if structure is None:
-            resolved[field.name] = resolve_parameter(value)
+            resolved[field.name] = resolve_parameter(value, parameters, initial)
         elif structure is list:
-            resolved[field.name] = [resolve_parameter(v) for v in value]
+            resolved[field.name] = [resolve_parameter(v, parameters, initial) for v in value]
         elif structure is dict:
-            resolved[field.name] = {k: resolve_parameter(v) for k, v in value.items()}
+            resolved[field.name] = {
+                k: resolve_parameter(v, parameters, initial) for k, v in value.items()
+            }
 
     for field in iterate_item_fields(item):
         value = getattr(item, field.name)
