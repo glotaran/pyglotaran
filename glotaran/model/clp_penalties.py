@@ -25,17 +25,17 @@ class EqualAreaPenalty(ClpPenalty):
     # we keep the type though for later extension.
     type: Literal["equal_area"]
     source: str
-    source_interval: list[tuple[float, float]] | tuple[float, float] | None = None
+    source_intervals: list[tuple[float, float]] | tuple[float, float] | None = None
     target: str
-    target_interval: list[tuple[float, float]] | tuple[float, float] | None = None
+    target_intervals: list[tuple[float, float]] | tuple[float, float] | None = None
     parameter: ParameterType
     weight: float
 
     def source_applies(self, index: float | None) -> bool:
-        return self.applies(index, self.source_interval)  # type:ignore[arg-type]
+        return self.applies(index, self.source_intervals)  # type:ignore[arg-type]
 
     def target_applies(self, index: float | None) -> bool:
-        return self.applies(index, self.target_interval)  # type:ignore[arg-type]
+        return self.applies(index, self.target_intervals)  # type:ignore[arg-type]
 
     def applies(self, index: float | None, intervals: list[tuple[float, float]] | None) -> bool:
         """Check if the index is in the intervals.
@@ -60,5 +60,5 @@ class EqualAreaPenalty(ClpPenalty):
             return lower <= index <= upper
 
         if isinstance(intervals, tuple):
-            return applies(self.interval)
+            return applies(intervals)
         return any(applies(i) for i in intervals)

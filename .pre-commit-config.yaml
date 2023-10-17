@@ -156,3 +156,5 @@ repos:
         types: [file]
         types_or: [python, pyi, markdown, rst, jupyter]
         additional_dependencies: [tomli]
+        args:
+          - --ignore-words-list=glotaran,doas,projectio

@@ -15,8 +15,10 @@ from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import resolve_data_model
 from glotaran.model.element import Element
 from glotaran.model.errors import ItemIssue
+from glotaran.model.item import ParameterType
 from glotaran.model.item import get_item_issues
-from glotaran.parameter import Parameter
+from glotaran.model.item import resolve_item_parameters
+from glotaran.model.item import resolve_parameter
 from glotaran.parameter import Parameters
 
 
@@ -42,7 +44,7 @@ class ExperimentModel(BaseModel):
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
         "variable_projection", description="The residual function to use."
     )
-    scale: dict[str, Parameter] = Field(
+    scale: dict[str, ParameterType] = Field(
         default_factory=dict, description="The scales of of the datasets in the experiment."
     )
 
@@ -64,6 +66,17 @@ class ExperimentModel(BaseModel):
         result.datasets = {
             label: resolve_data_model(dataset, library, parameters, initial)
             for label, dataset in self.datasets.items()
+        }
+        result.clp_penalties = [
+            resolve_item_parameters(i, parameters, initial) for i in self.clp_penalties
+        ]
+        result.clp_relations = [
+            resolve_item_parameters(i, parameters, initial) for i in self.clp_relations
+        ]
+        assert isinstance(initial, Parameters)
+        result.scale = {
+            label: resolve_parameter(parameter, parameters, initial)
+            for label, parameter in self.scale.items()
         }
         return result
 

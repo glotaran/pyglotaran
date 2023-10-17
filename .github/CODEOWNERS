@@ -28,7 +28,7 @@ LICENSE                             @glotaran/pyglotaran_creators
 # /docs/**/*.md                     @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
-/glotaran/analysis/                 @jsnel @joernweissenborn
+# /glotaran/analysis/                 @jsnel @joernweissenborn
 
 # builtin module:
 /glotaran/builtin/io/*              @glotaran/admins
@@ -36,10 +36,10 @@ LICENSE                             @glotaran/pyglotaran_creators
 /glotaran/builtin/io/pandas         @glotaran/maintainers
 /glotaran/builtin/io/netCDF         @glotaran/maintainers
 /glotaran/builtin/io/sdt            @glotaran/maintainers
-/glotaran/builtin/megacomplexes/    @jsnel @joernweissenborn
+# /glotaran/builtin/megacomplexes/    @jsnel @joernweissenborn
 
-# cli
-/glotaran/cli/                      @jsnel @glotaran/admins
+# cli (deprecated)
+# /glotaran/cli/                      @jsnel @glotaran/admins
 
 # examples # Removed in PR #866
 # /glotaran/examples/                 @jsnel @glotaran/maintainers
