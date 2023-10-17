@@ -59,8 +59,9 @@ class Scheme(BaseModel):
             "Dogbox",
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
+        dry_run: bool = False,
     ) -> Result:
-        optimized_parameters, optimized_data, optimization_result = Optimization(
+        optimization = Optimization(
             list(self.experiments.values()),
             parameters,
             library=self.library,
@@ -72,7 +73,10 @@ class Scheme(BaseModel):
             gtol=gtol,
             xtol=xtol,
             optimization_method=optimization_method,
-        ).run()
+        )
+        optimized_parameters, optimized_data, optimization_result = (
+            optimization.dry_run() if dry_run else optimization.run()
+        )
         return Result(
             data=optimized_data,
             experiments=self.experiments,
