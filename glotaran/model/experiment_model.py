@@ -16,6 +16,7 @@ from glotaran.model.data_model import resolve_data_model
 from glotaran.model.element import Element
 from glotaran.model.errors import ItemIssue
 from glotaran.model.item import get_item_issues
+from glotaran.model.item import resolve_item_parameters
 from glotaran.parameter import Parameter
 from glotaran.parameter import Parameters
 
@@ -65,6 +66,12 @@ class ExperimentModel(BaseModel):
             label: resolve_data_model(dataset, library, parameters, initial)
             for label, dataset in self.datasets.items()
         }
+        result.clp_penalties = [
+            resolve_item_parameters(i, parameters, initial) for i in self.clp_penalties
+        ]
+        result.clp_relations = [
+            resolve_item_parameters(i, parameters, initial) for i in self.clp_relations
+        ]
         return result
 
     def get_issues(self, parameters: Parameters) -> list[ItemIssue]:
