@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class KineticElement(ExtendableElement, Kinetic):
-    type: Literal["kinetic"] = Literal["kinetic"]  # type:ignore[assignment]
+    type: Literal["kinetic"]  # type:ignore[assignment]
     register_as: str = "kinetic"  # type:ignore[misc]
     data_model_type: type[DataModel] = ActivationDataModel  # type:ignore[misc, valid-type]
     dimension: str = "time"
@@ -49,7 +49,11 @@ class KineticElement(ExtendableElement, Kinetic):
             The combined KMatrix.
 
         """
-        return cls(rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]), label="")
+        return cls(
+            type="kinetic",
+            rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]),
+            label="",
+        )
 
     @staticmethod
     def combine_matrices(lhs: ArrayLike, rhs: ArrayLike) -> ArrayLike:
