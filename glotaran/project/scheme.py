@@ -77,6 +77,7 @@ class Scheme(BaseModel):
         optimized_parameters, optimized_data, optimization_result = (
             optimization.dry_run() if dry_run else optimization.run()
         )
+        optimization_result.calculate_parameter_errors(optimized_parameters)
         return Result(
             data=optimized_data,
             experiments=self.experiments,
