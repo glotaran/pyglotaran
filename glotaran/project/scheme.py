@@ -9,7 +9,6 @@ from glotaran.model import ExperimentModel
 from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
-from glotaran.project.library import LibraryType
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
 
@@ -18,7 +17,7 @@ class Scheme(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     experiments: dict[str, ExperimentModel]
-    library: LibraryType
+    library: ModelLibrary
 
     @classmethod
     def from_dict(cls, spec: dict):

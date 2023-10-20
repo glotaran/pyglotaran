@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 from uuid import uuid4
@@ -21,6 +22,9 @@ from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
 from glotaran.model.weight import Weight
 from glotaran.parameter import Parameters
+
+if TYPE_CHECKING:
+    from glotaran.project.library import ModelLibrary
 
 
 class ExclusiveModelIssue(ItemIssue):
@@ -207,7 +211,7 @@ class DataModel(Item):
         return create_model(data_model_cls_name, __base__=data_models)
 
     @classmethod
-    def from_dict(cls, library: dict[str, Element], model_dict: dict[str, Any]) -> DataModel:
+    def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> DataModel:
         element_labels = model_dict.get("elements", []) + model_dict.get("global_elements", [])
         if len(element_labels) == 0:
             raise GlotaranModelError("No element defined for dataset")
@@ -314,7 +318,7 @@ def iterate_data_model_global_elements(
 
 def resolve_data_model(
     model: DataModel,
-    library: dict[str, Element],
+    library: ModelLibrary,
     parameters: Parameters,
     initial: Parameters | None = None,
 ) -> DataModel:
