@@ -35,7 +35,7 @@ def test_to_from_dict():
         .correct_baseline_value(1)
         .correct_baseline_average({"dim_1": slice(0, 2)})
     )
-    pl_dict = pl.dict()
+    pl_dict = pl.model_dump()
     assert pl_dict == {
         "actions": [
             {"action": "baseline-value", "value": 1.0},
