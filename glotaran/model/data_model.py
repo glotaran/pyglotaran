@@ -327,7 +327,7 @@ def resolve_data_model(
     parameters: Parameters,
     initial: Parameters | None = None,
 ) -> DataModel:
-    model = model.copy()
+    model = model.model_copy()
     model.elements = [library[m] if isinstance(m, str) else m for m in model.elements]
     if model.global_elements is not None:
         model.global_elements = [
