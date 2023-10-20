@@ -68,7 +68,7 @@ def test_item_fields_structures_and_type():
 def test_iterate_parameters():
     item_fields = list(iterate_parameter_fields(MockItem))
     assert len(item_fields) == 6
-    assert [i.name for i in item_fields] == [
+    assert [name for name, _ in item_fields] == [
         "pscalar",
         "pscalar_option",
         "plist",
