@@ -44,7 +44,8 @@ class ExperimentModel(BaseModel):
         "variable_projection", description="The residual function to use."
     )
     scale: dict[str, ParameterType] = Field(
-        default_factory=dict, description="The scales of of the datasets in the experiment."
+        default_factory=dict,
+        description="The scales of of the datasets in the experiment.",
     )
 
     @classmethod
@@ -53,7 +54,7 @@ class ExperimentModel(BaseModel):
             label: DataModel.from_dict(library, dataset)
             for label, dataset in model_dict.get("datasets", {}).items()
         }
-        return cls.parse_obj(model_dict)
+        return cls.model_validate(model_dict)
 
     def resolve(
         self,
