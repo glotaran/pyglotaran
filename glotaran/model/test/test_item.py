@@ -104,7 +104,7 @@ def test_get_issues():
         cdict={},
         pscalar="foo",
         plist=["foo", "bar"],
-        pdict={1: "foo", 2: "bar"},
+        pdict={"1": "foo", "2": "bar"},
     )
 
     issues = get_item_issues(item, Parameters({}))
