@@ -28,7 +28,7 @@ class KineticElement(ExtendableElement, Kinetic):
     dimension: str = "time"
 
     def extend(self, other: KineticElement):  # type:ignore[override]
-        return other.copy(update={"rates": self.rates | other.rates})
+        return other.model_copy(update={"rates": self.rates | other.rates})
 
     # TODO: consolidate parent method.
     @classmethod

@@ -348,7 +348,7 @@ def resolve_item_parameters(
             resolved[name] = {
                 k: resolve_item_parameters(v, parameters, initial) for k, v in value.items()
             }
-    return item.copy(update=resolved)
+    return item.model_copy(update=resolved)
 
 
 def get_item_issues(item: Item, parameters: Parameters) -> list[ItemIssue]:
