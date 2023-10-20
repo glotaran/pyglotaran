@@ -29,7 +29,7 @@ class MockItem(Item):
 
 
 class MockTypedItem(TypedItem):
-    pass
+    """This is just a mock item for testing."""
 
 
 class MockTypedItemConcrete1(MockTypedItem):
@@ -43,7 +43,7 @@ class MockTypedItemConcrete2(MockTypedItem):
 
 
 def test_item_fields_structures_and_type():
-    item_fields = MockItem.__fields__.values()
+    item_fields = MockItem.model_fields.values()
     wanted = (
         (None, int),
         (None, int),
@@ -83,12 +83,12 @@ def test_typed_item():
 
 
 def test_item_schema():
-    got = MockTypedItem.schema()
+    got = MockTypedItem.model_json_schema()
     wanted = {
         "title": "MockTypedItem",
-        "description": "An item with a type.",
+        "description": "This is just a mock item for testing.",
         "type": "object",
-        "properties": {"type": {"title": "Type", "type": "null"}},
+        "properties": {"type": {"const": None, "title": "Type"}},
         "required": ["type"],
         "additionalProperties": False,
     }
