@@ -56,7 +56,7 @@ class Result(BaseModel):
         #  for label, experiment in self.experiments.items():
         #      experiment_path = experiment_folder / f"{label}.yml"
         #      result_dict["experiments"][label] = experiment_path
-        #      write_dict(experiment.dict(), experiment_path)
+        #      write_dict(experiment.model_dump(), experiment_path)
 
         data_path = path / "data"
         data_path.mkdir(exist_ok=True)
