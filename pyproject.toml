@@ -27,7 +27,7 @@ select = [
   # "UP", # pyupgrade
   # "D", # pydocstyle
   "N", # pep8-naming
-  # "YTT", # flake8-2020
+  "YTT", # flake8-2020
   # "BLE", # flake8-blind-except
   # "FBT", # flake8-boolean-trap
   # "B", # flake8-bugbear
@@ -48,7 +48,7 @@ select = [
   # "PTH", # flake8-use-pathlib
   # "ERA", # eradicate
   # "PD", # pandas-vet
-  # "PGH", # pygrep-hooks
+  "PGH", # pygrep-hooks
   # "NPY", # NumPy-specific
   "RUF", # Ruff-specific
 ]

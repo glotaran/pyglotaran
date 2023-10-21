@@ -109,7 +109,7 @@ def test_parameters_repr():
 
     print(result.__repr__())
     assert result.__repr__() == expected
-    assert result == eval(expected)
+    assert result == eval(expected)  # noqa: PGH001
 
 
 def test_parameters_ipython_rendering():
