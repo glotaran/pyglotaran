@@ -49,7 +49,7 @@ select = [
   # "ERA", # eradicate
   # "PD", # pandas-vet
   "PGH", # pygrep-hooks
-  # "NPY", # NumPy-specific
+  "NPY", # NumPy-specific
   "RUF", # Ruff-specific
 ]
 

@@ -95,7 +95,7 @@ def simulate(
         )
 
     if noise and noise_seed is not None:
-        np.random.seed(noise_seed)
-        result = xr.DataArray(np.random.normal(result.data, noise_std_dev), coords=result.coords)
+        rng = np.random.default_rng(noise_seed)
+        result = xr.DataArray(rng.normal(result.data, noise_std_dev), coords=result.coords)
 
     return result.to_dataset(name="data")
