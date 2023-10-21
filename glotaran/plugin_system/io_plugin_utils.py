@@ -49,10 +49,11 @@ def infer_file_format(
     ValueError
         If file has no extension.
     """
-    if not os.path.isfile(file_path) and needs_to_exist and not allow_folder:
+    file_path = Path(file_path)
+    if file_path.is_file() is False and needs_to_exist and not allow_folder:
         raise ValueError(f"There is no file {file_path!r}.")
 
-    _, file_format = os.path.splitext(file_path)
+    file_format = file_path.suffix
     if file_format != "":
         file_format = file_format.lstrip(".")
         return "yaml" if file_format == "yml" else file_format

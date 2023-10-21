@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import UserString
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from glotaran.plugin_system.io_plugin_utils import infer_file_format
@@ -79,7 +80,7 @@ def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:
     MarkdownStr
         File content with syntax highlighting to render in ipython.
     """
+    path = Path(path)
     if syntax is None:
         syntax = infer_file_format(path)
-    with open(path, encoding="utf8") as file:
-        return MarkdownStr(file.read(), syntax=syntax)
+    return MarkdownStr(path.read_text("utf8"), syntax=syntax)

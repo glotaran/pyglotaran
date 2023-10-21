@@ -45,7 +45,7 @@ select = [
   "SIM", # flake8-simplify
   "TCH", # flake8-type-checking
   # "ARG", # flake8-unused-arguments
-  # "PTH", # flake8-use-pathlib
+  "PTH", # flake8-use-pathlib
   # "ERA", # eradicate
   "PD", # pandas-vet
   "PGH", # pygrep-hooks
@@ -110,6 +110,9 @@ unfixable = ["F401"]
 "*/__init__.py" = ["F401"]
 "glotaran/builtin/io/netCDF/netCDF.py" = ["N999"]
 "docs/*" = ["INP001"]
+# Needs a full rewrite anyway
+"glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = ["PTH"]
+
 
 [tool.isort]
 profile = "hug"

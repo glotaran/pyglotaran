@@ -1,6 +1,7 @@
 """Utility module for ``glotaran.builtin.io.yml.yml``."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ruamel.yaml import YAML
@@ -9,7 +10,6 @@ from ruamel.yaml.compat import StringIO
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from pathlib import Path
     from typing import Any
 
     from ruamel.yaml.nodes import ScalarNode
@@ -42,7 +42,7 @@ def write_dict(
     yaml.indent(mapping=2, sequence=2, offset=offset)
 
     if file_name is not None:
-        with open(file_name, "w", encoding="utf8") as f:
+        with Path(file_name).open("w", encoding="utf8") as f:
             yaml.dump(data, f)
     else:
         stream = StringIO()
@@ -68,11 +68,9 @@ def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
     yaml = YAML()
     yaml.representer.add_representer(type(None), _yaml_none_representer)
     if is_file:
-        with open(source) as f:
-            spec = yaml.load(f)
-    else:
-        spec = yaml.load(source)
-    return spec
+        with Path(source).open() as f:
+            return yaml.load(f)
+    return yaml.load(source)
 
 
 def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:

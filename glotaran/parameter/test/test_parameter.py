@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import pickle
 import re
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
 import pytest
 
 from glotaran.parameter import Parameter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.parametrize(
@@ -223,7 +227,7 @@ def test_label_validator():
             Parameter(label=label)
 
 
-def test_parameter_pickle(tmpdir):
+def test_parameter_pickle(tmp_path: Path):
     parameter = Parameter(
         label="testlabel",
         expression="testexpression",
@@ -234,9 +238,10 @@ def test_parameter_pickle(tmpdir):
         vary=False,
     )
 
-    with open(tmpdir.join("test_param_pickle"), "wb") as f:
+    pickle_path = tmp_path / "test_param_pickle"
+    with pickle_path.open("wb") as f:
         pickle.dump(parameter, f)
-    with open(tmpdir.join("test_param_pickle"), "rb") as f:
+    with pickle_path.open("rb") as f:
         pickled_parameter = pickle.load(f)
 
     assert parameter == pickled_parameter
