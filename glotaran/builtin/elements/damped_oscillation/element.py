@@ -176,7 +176,7 @@ class DampedOscillationElement(Element):
                     model_dimension,
                     prefix,
                 ),
-                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).to_numpy(),
             )
 
             data[f"{prefix}_cos"] = (
@@ -185,15 +185,15 @@ class DampedOscillationElement(Element):
                     model_dimension,
                     prefix,
                 ),
-                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).to_numpy(),
             )
         else:
             data[f"{prefix}_sin"] = (
                 (model_dimension, prefix),
-                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).to_numpy(),
             )
 
             data[f"{prefix}_cos"] = (
                 (model_dimension, prefix),
-                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).to_numpy(),
             )

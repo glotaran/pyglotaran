@@ -180,7 +180,7 @@ class KineticElement(ExtendableElement, Kinetic):
             )
         data["species_concentration"] = (
             concentration_shape,
-            matrix.sel({clp_dim: species}).values,
+            matrix.sel({clp_dim: species}).to_numpy(),
         )
 
         data["k_matrix"] = xr.DataArray(kinetic.full_array, dims=(("species"), ("species")))

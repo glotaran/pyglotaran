@@ -47,7 +47,7 @@ select = [
   # "ARG", # flake8-unused-arguments
   # "PTH", # flake8-use-pathlib
   # "ERA", # eradicate
-  # "PD", # pandas-vet
+  "PD", # pandas-vet
   "PGH", # pygrep-hooks
   "NPY", # NumPy-specific
   "RUF", # Ruff-specific

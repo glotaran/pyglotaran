@@ -22,9 +22,9 @@ def test_read_sdt(test_file_path, result_file_path, index):
         result_file_path, skiprows=1, sep=r"\s+", dtype={"Delay": float, "Data": np.uint16}
     )
     result_df.Delay = result_df.Delay * 1e-9
-    result_traces = pd.DataFrame([result_df.Data.values], columns=result_df.Delay)
+    result_traces = pd.DataFrame([result_df.Data.to_numpy()], columns=result_df.Delay)
     assert isinstance(test_dataset, xr.Dataset)
-    assert np.all(test_dataset.data.T[0] == result_df.Data.values)
+    assert np.all(test_dataset.data.T[0] == result_df.Data.to_numpy())
 
-    assert test_dataset.data.T.shape == result_traces.values.shape
+    assert test_dataset.data.T.shape == result_traces.to_numpy().shape
     assert np.allclose(test_dataset.time, np.array(result_traces.columns))
