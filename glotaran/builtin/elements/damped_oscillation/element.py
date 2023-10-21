@@ -20,6 +20,7 @@ from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model import Element
 from glotaran.model import Item
 from glotaran.model import ParameterType
+from glotaran.model.data_model import DataModel
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
@@ -32,9 +33,11 @@ class Oscillation(Item):
 
 class DampedOscillationElement(Element):
     type: Literal["damped-oscillation"]  # type:ignore[assignment]
-    register_as = "damped-oscillation"  # type:ignore[pydantic-field]
+    register_as: str = "damped-oscillation"  # type:ignore[misc]
     dimension: str = "time"
-    data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
+    data_model_type: type[  # type:ignore[misc,valid-type]
+        DataModel
+    ] = ActivationDataModel
     oscillations: dict[str, Oscillation]
 
     def calculate_matrix(  # type:ignore[override]

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from collections import ChainMap
+from typing import TYPE_CHECKING
 from typing import Literal
 from warnings import warn
 
@@ -6,7 +9,6 @@ import numpy as np
 import xarray as xr
 from scipy.optimize import least_squares
 
-from glotaran.model import Element
 from glotaran.model import ExperimentModel
 from glotaran.model import GlotaranModelIssues
 from glotaran.model import GlotaranUserError
@@ -17,6 +19,10 @@ from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 from glotaran.typing.types import ArrayLike
 from glotaran.utils.tee import TeeContext
+
+if TYPE_CHECKING:
+    from glotaran.project.library import ModelLibrary
+
 
 SUPPORTED_OPTIMIZATION_METHODS = {
     "TrustRegionReflection": "trf",
@@ -47,7 +53,7 @@ class Optimization:
         self,
         models: list[ExperimentModel],
         parameters: Parameters,
-        library: dict[str, Element],
+        library: ModelLibrary,
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
