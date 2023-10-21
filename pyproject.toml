@@ -31,9 +31,9 @@ select = [
   # "BLE", # flake8-blind-except
   # "FBT", # flake8-boolean-trap
   # "B", # flake8-bugbear
-  # "C4", # flake8-comprehensions
-  # "T10", # flake8-debugger
-  # "FA", # flake8-future-annotations
+  "C4", # flake8-comprehensions
+  "T10", # flake8-debugger
+  "FA", # flake8-future-annotations
   # "EM", # flake8-errmsg
   "ISC", # flake8-implicit-str-concat
   # "INP", # flake8-no-pep420
