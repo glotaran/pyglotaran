@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from collections.abc import MutableMapping
     from collections.abc import Sequence
     from typing import Any
+    from typing import ClassVar
     from typing import TypeVar
 
     from glotaran.io.interface import DataIoInterface
@@ -33,15 +34,15 @@ if TYPE_CHECKING:
     GenericPluginInstance = TypeVar("GenericPluginInstance", bound=object)
 
 
-class __PluginRegistry:
+class __PluginRegistry:  # noqa: N801
     """Central Plugin Registry.
 
     This is super private since if anyone messes with it, the pluginsystem could break.
     """
 
-    element: MutableMapping[str, type[Element]] = {}
-    data_io: MutableMapping[str, DataIoInterface] = {}
-    project_io: MutableMapping[str, ProjectIoInterface] = {}
+    element: ClassVar[MutableMapping[str, type[Element]]] = {}
+    data_io: ClassVar[MutableMapping[str, DataIoInterface]] = {}
+    project_io: ClassVar[MutableMapping[str, ProjectIoInterface]] = {}
 
 
 def full_plugin_name(plugin: object | type[object]) -> str:

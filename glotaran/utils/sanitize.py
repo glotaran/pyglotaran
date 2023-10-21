@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from glotaran.utils.regex import RegexPattern as rp
+from glotaran.utils.regex import RegexPattern as rp  # noqa: N813
 
 
 def pretty_format_numerical(value: float | int, decimal_places: int = 1) -> str:

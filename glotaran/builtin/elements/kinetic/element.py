@@ -118,7 +118,7 @@ class KineticElement(ExtendableElement, Kinetic):
         matrix_shape = (model_axis.size, len(compartments))
         index_dependent = any(isinstance(p, list) for p in parameters)
         if index_dependent:
-            matrix_shape = (global_axis.size,) + matrix_shape  # type:ignore[assignment]
+            matrix_shape = (global_axis.size, *matrix_shape)  # type:ignore[assignment]
         matrix = np.zeros(matrix_shape, dtype=np.float64)
         scales = np.array(
             [
@@ -176,7 +176,8 @@ class KineticElement(ExtendableElement, Kinetic):
         if len(matrix.shape) > 2:
             concentration_shape = (  # type:ignore[assignment]
                 (model_dimension if as_global else global_dimension),
-            ) + concentration_shape
+                *concentration_shape,
+            )
         data["species_concentration"] = (
             concentration_shape,
             matrix.sel({clp_dim: species}).values,

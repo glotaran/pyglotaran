@@ -33,7 +33,7 @@ def test_parameter__deep_equals(key_name: str, value_1: Any, value_2: Any):
 
 
 @pytest.mark.parametrize("label, expected", (("foo", "foo"), (0, "0"), (1, "1")))
-def test_parameter_label_always_str_or_None(label: str | int, expected: str):
+def test_parameter_label_always_str_or_none(label: str | int, expected: str):
     """Parameter.label is always a string"""
     parameter = Parameter(label=label)
     assert parameter.label == expected

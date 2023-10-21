@@ -49,7 +49,7 @@ class CoherentArtifactElement(Element):
             matrix_shape = (model_axis.size, self.order)
             index_dependent = any(isinstance(p, list) for p in parameters)
             if index_dependent:
-                matrix_shape = (global_axis.size,) + matrix_shape  # type:ignore[assignment]
+                matrix_shape = (global_axis.size, *matrix_shape)  # type:ignore[assignment]
             matrix = np.zeros(matrix_shape, dtype=np.float64)
             if index_dependent:
                 _calculate_coherent_artifact_matrix(

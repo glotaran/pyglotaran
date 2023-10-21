@@ -103,7 +103,7 @@ class ItemAttribute(FieldInfo):
         self.metadata.append(glotaran_field_metadata)
 
 
-def Attribute(
+def Attribute(  # noqa: N802
     *,
     description: str,
     default: Any = PydanticUndefined,

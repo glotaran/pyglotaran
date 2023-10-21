@@ -27,8 +27,11 @@ from glotaran.utils.sanitize import sanitize_parameter_list
 if TYPE_CHECKING:
     from glotaran.parameter import Parameters
 
-RESERVED_LABELS: list[str] = list(asteval.make_symbol_table().keys()) + ["parameters", "iteration"]
-
+RESERVED_LABELS: tuple[str] = (  # type:ignore[assignment]
+    *tuple(asteval.make_symbol_table().keys()),
+    "parameters",
+    "iteration",
+)
 
 OPTION_NAMES_SERIALIZED = {
     "expression": "expr",

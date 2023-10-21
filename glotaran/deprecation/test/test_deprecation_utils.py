@@ -9,7 +9,7 @@ import pytest
 import glotaran
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import GlotaranDeprecatedApiError
-from glotaran.deprecation.deprecation_utils import OverDueDeprecation
+from glotaran.deprecation.deprecation_utils import OverDueDeprecationError
 from glotaran.deprecation.deprecation_utils import check_overdue
 from glotaran.deprecation.deprecation_utils import deprecate
 from glotaran.deprecation.deprecation_utils import deprecate_dict_entry
@@ -118,7 +118,7 @@ def test_check_overdue_no_raise(monkeypatch: MonkeyPatch):
 @pytest.mark.usefixtures("glotaran_1_0_0")
 def test_check_overdue_raises(monkeypatch: MonkeyPatch):
     """Current version is equal or bigger than drop_version."""
-    with pytest.raises(OverDueDeprecation) as excinfo:
+    with pytest.raises(OverDueDeprecationError) as excinfo:
         check_overdue(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             to_be_removed_in_version="0.6.0",
@@ -142,7 +142,7 @@ def test_raise_deprecation_error(monkeypatch: MonkeyPatch):
 @pytest.mark.usefixtures("glotaran_1_0_0")
 def test_raise_deprecation_error_overdue(monkeypatch: MonkeyPatch):
     """Current version is equal or bigger than drop_version."""
-    with pytest.raises(OverDueDeprecation) as excinfo:
+    with pytest.raises(OverDueDeprecationError) as excinfo:
         raise_deprecation_error(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             new_qual_name_usage=NEW_QUAL_NAME,
@@ -170,7 +170,7 @@ def test_warn_deprecated():
 def test_warn_deprecated_overdue_deprecation(monkeypatch: MonkeyPatch):
     """Current version is equal or bigger than drop_version."""
 
-    with pytest.raises(OverDueDeprecation) as excinfo:
+    with pytest.raises(OverDueDeprecationError) as excinfo:
         warn_deprecated(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             new_qual_name_usage=NEW_QUAL_NAME,
@@ -187,7 +187,7 @@ def test_warn_deprecated_no_overdue_deprecation_on_dev(monkeypatch: MonkeyPatch)
         glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "0.6.0-dev"
     )
 
-    with pytest.raises(OverDueDeprecation):
+    with pytest.raises(OverDueDeprecationError):
         warn_deprecated(
             deprecated_qual_name_usage=DEPRECATION_QUAL_NAME,
             new_qual_name_usage=NEW_QUAL_NAME,
