@@ -51,7 +51,7 @@ def test_item_fields_structures_and_type():
         (list, int),
         (dict, int),
         (dict, int),
-    ) + (
+        # Actual parameters instead of const values
         (None, Parameter),
         (None, Parameter),
         (list, Parameter),

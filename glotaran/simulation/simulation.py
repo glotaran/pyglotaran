@@ -12,11 +12,11 @@ from glotaran.model import GlotaranUserError
 from glotaran.model import get_data_model_dimension
 from glotaran.model import resolve_data_model
 from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.parameter import Parameters
-from glotaran.typing.types import ArrayLike
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
     from glotaran.project.library import ModelLibrary
+    from glotaran.typing.types import ArrayLike
 
 
 def simulate(
@@ -96,7 +96,7 @@ def simulate(
         )
 
     if noise and noise_seed is not None:
-        np.random.seed(noise_seed)
-        result = xr.DataArray(np.random.normal(result.data, noise_std_dev), coords=result.coords)
+        rng = np.random.default_rng(noise_seed)
+        result = xr.DataArray(rng.normal(result.data, noise_std_dev), coords=result.coords)
 
     return result.to_dataset(name="data")

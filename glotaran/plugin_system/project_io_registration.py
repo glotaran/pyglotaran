@@ -290,8 +290,7 @@ def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: 
     """
     io = get_project_io(format_name or infer_file_format(file_name))
 
-    scheme = io.load_scheme(Path(file_name).as_posix(), **kwargs)
-    return scheme
+    return io.load_scheme(Path(file_name).as_posix(), **kwargs)
 
 
 @not_implemented_to_value_error

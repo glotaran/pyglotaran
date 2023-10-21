@@ -1,17 +1,22 @@
 """The result class for global analysis."""
 from __future__ import annotations
 
+# TODO: Fix circular import
+#  from glotaran import __version__ as glotaran_version
+from typing import TYPE_CHECKING
+
 import numpy as np
 from pydantic import BaseModel
 from pydantic import ConfigDict
-from scipy.optimize import OptimizeResult
 
-# TODO: Fix circular import
-#  from glotaran import __version__ as glotaran_version
-from glotaran.optimization.optimization_history import OptimizationHistory
-from glotaran.parameter import ParameterHistory
-from glotaran.parameter import Parameters
-from glotaran.typing.types import ArrayLike
+from glotaran.optimization.optimization_history import OptimizationHistory  # noqa: TCH001
+from glotaran.parameter import ParameterHistory  # noqa: TCH001
+
+if TYPE_CHECKING:
+    from scipy.optimize import OptimizeResult
+
+    from glotaran.parameter import Parameters
+    from glotaran.typing.types import ArrayLike
 
 
 class OptimizationResult(BaseModel):

@@ -99,7 +99,7 @@ def test_register_data_io():
         assert __PluginRegistry.data_io[format_name].format == format_name
         assert isinstance(
             __PluginRegistry.data_io[
-                f"test_data_io_registration.{plugin_class.__name__}_{format_name}"
+                f"glotaran.plugin_system.test.test_data_io_registration.{plugin_class.__name__}_{format_name}"
             ],
             plugin_class,
         )
@@ -292,11 +292,11 @@ def test_data_io_plugin_table_full():
     """Full Table with all extras"""
     expected = dedent(
         """\
-        |              __Format name__               |  __load_dataset__  |  __save_dataset__  |               __Plugin name__               |
-        |--------------------------------------------|--------------------|--------------------|---------------------------------------------|
-        |                   `foo`                    |         /          |         /          | `glotaran.io.interface.DataIoInterface_foo` |
-        |                   `mock`                   |         *          |         *          | `test_data_io_registration.MockDataIo_mock` |
-        | `test_data_io_registration.MockDataIo_bar` |         *          |         *          | `test_data_io_registration.MockDataIo_bar`  |
+        |              __Format name__               |  __load_dataset__  |  __save_dataset__  |                             __Plugin name__                             |
+        |--------------------------------------------|--------------------|--------------------|-------------------------------------------------------------------------|
+        |                   `foo`                    |         /          |         /          |               `glotaran.io.interface.DataIoInterface_foo`               |
+        |                   `mock`                   |         *          |         *          | `glotaran.plugin_system.test.test_data_io_registration.MockDataIo_mock` |
+        | `test_data_io_registration.MockDataIo_bar` |         *          |         *          |               `test_data_io_registration.MockDataIo_bar`                |
         """  # noqa: E501
     )
 

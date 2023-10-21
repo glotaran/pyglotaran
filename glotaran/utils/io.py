@@ -253,25 +253,59 @@ def relative_posix_path(source_path: StrOrPath, base_path: StrOrPath | None = No
     return Path(source_path).as_posix()
 
 
-def safe_dataframe_fillna(df: pd.DataFrame, column_name: str, fill_value: Any) -> None:
+def normalize_dataframe_columns(
+    input_df: pd.DataFrame, rename_dict: dict[str, str] | None = None
+) -> pd.DataFrame:
+    """Convert columns to lower case and rename them using ``rename_dict`` if provided.
+
+    Parameters
+    ----------
+    input_df : pd.DataFrame
+        DataFrame from which specific columns names should ne normalized
+    rename_dict : dict[str, str]
+        Dict with lowercase column names as key and rename target name as value.
+
+    Returns
+    -------
+    pd.DataFrame
+    """
+    if rename_dict is None:
+        rename_dict = {}
+    rename_dict = {
+        column: (
+            column.lower() if column.lower() not in rename_dict else rename_dict[column.lower()]
+        )
+        for column in input_df.columns
+    }
+    return input_df.rename(columns=rename_dict)
+
+
+def safe_dataframe_fillna(
+    input_df: pd.DataFrame, column_name: str, fill_value: Any
+) -> pd.DataFrame:
     """Fill NaN values with ``fill_value``  if the column exists or do nothing.
 
     Parameters
     ----------
-    df : pd.DataFrame
+    input_df : pd.DataFrame
         DataFrame from which specific column values will be replaced
     column_name : str
-        Name of column of ``df`` to fill NaNs
+        Name of column of ``input_df`` to fill NaNs
     fill_value : Any
         Value to fill NaNs with
+
+    Returns
+    -------
+        pd.DataFrame
     """
-    if column_name in df.columns:
-        df[column_name] = df[column_name].fillna(fill_value)
+    if column_name in input_df.columns:
+        return input_df.assign(**{column_name: input_df[column_name].fillna(fill_value)})
+    return input_df
 
 
 def safe_dataframe_replace(
-    df: pd.DataFrame, column_name: str, to_be_replaced_values: Any, replace_value: Any
-) -> None:
+    input_df: pd.DataFrame, column_name: str, to_be_replaced_values: Any, replace_value: Any
+) -> pd.DataFrame:
     """Replace column values with ``replace_value`` if the column exists or do nothing.
 
     If ``to_be_replaced_values`` is not list or tuple format,
@@ -279,19 +313,26 @@ def safe_dataframe_replace(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    input_df : pd.DataFrame
         DataFrame from which specific column values will be replaced
     column_name : str
-        Name of column of ``df`` to replace values for
+        Name of column of ``input_df`` to replace values for
     to_be_replaced_values : Any
         Values to be replaced
     replace_value : Any
         Value to replace ``to_be_replaced_values`` with
+
+    Returns
+    -------
+        pd.DataFrame
     """
     if not isinstance(to_be_replaced_values, (list, tuple)):
         to_be_replaced_values = [to_be_replaced_values]
-    if column_name in df.columns:
-        df[column_name] = df[column_name].replace(to_be_replaced_values, replace_value)
+    if column_name in input_df.columns:
+        return input_df.assign(
+            **{column_name: input_df[column_name].replace(to_be_replaced_values, replace_value)}
+        )
+    return input_df
 
 
 def get_script_dir(*, nesting: int = 0) -> Path:
@@ -414,9 +455,9 @@ def create_clp_guide_dataset(
     value_dimension = next(filter(lambda x: x != dataset.model_dimension, clp_values.dims))
 
     return xr.DataArray(
-        clp_values.values.T,
+        clp_values.to_numpy().T,
         coords={
             dataset.model_dimension: [dataset.coords[dataset.model_dimension][0].item()],
-            value_dimension: clp_values.coords[value_dimension].values,
+            value_dimension: clp_values.coords[value_dimension].to_numpy(),
         },
     ).to_dataset(name="data")

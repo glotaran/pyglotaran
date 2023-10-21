@@ -44,7 +44,7 @@ def no_default_vals_in_repr(cls):
             class_name = real_cls.__name__
 
         args_str = ", ".join(
-            f"{name}={repr(getattr(self, name))}"
+            f"{name}={getattr(self, name)!r}"
             for name in defaults
             if not nan_or_equal(getattr(self, name), defaults[name])
         )

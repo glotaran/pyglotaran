@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from typing import NoReturn
 
 
-class OverDueDeprecation(Exception):
+class OverDueDeprecationError(Exception):
     """Error thrown when a deprecation should have been removed.
 
     See Also
@@ -176,7 +176,7 @@ def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str
         parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
         and "dev" not in glotaran_version()
     ):
-        raise OverDueDeprecation(
+        raise OverDueDeprecationError(
             f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
             f"supposed to be dropped in version: {to_be_removed_in_version!r}.\n"
             f"Current version is: {glotaran_version()!r}"
@@ -755,7 +755,7 @@ def deprecate_submodule(
         if attribute_name == "__file__":
             return new_module.__file__
 
-        elif attribute_name in dir(new_module):
+        if attribute_name in dir(new_module):
             return deprecate_module_attribute(
                 deprecated_qual_name=f"{deprecated_module_name}.{attribute_name}",
                 new_qual_name=f"{new_module_name}.{attribute_name}",

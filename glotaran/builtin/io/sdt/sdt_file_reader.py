@@ -88,7 +88,7 @@ class SdtDataIo(DataIoInterface):
                 f"The Dataset contains {raw_data.shape[0]} measurements, but the "
                 f"indices supplied are {len(index)}."
             )
-        elif not index and not flim:
+        if not index and not flim:
             warnings.warn(
                 UserWarning(
                     f"There was no `index` provided."
@@ -104,10 +104,13 @@ class SdtDataIo(DataIoInterface):
                 np.swapaxes(raw_data, 2, orig_time_axis_index)
 
             full_data = xr.DataArray(raw_data, coords={"time": times}, dims=["x", "y", "time"])
-            data = full_data.stack(pixel=("x", "y")).to_dataset(name="data")
+            data = full_data.melt(pixel=("x", "y")).to_dataset(name="data")
             data["full_data"] = full_data.rename({"x": "pixel_x", "y": "pixel_y"})
             data["data_intensity_map"] = (
-                data.data.groupby("pixel").sum().unstack().rename({"x": "pixel_x", "y": "pixel_y"})
+                data.data.groupby("pixel")
+                .sum()
+                .pivot_table()
+                .rename({"x": "pixel_x", "y": "pixel_y"})
             )
         else:
             if swap_axis:
