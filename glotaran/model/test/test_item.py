@@ -15,21 +15,21 @@ from glotaran.parameter import Parameters
 
 class MockItem(Item):
     cscalar: int
-    cscalar_option: int | None
+    cscalar_option: int | None = None
     clist: list[int]
-    clist_option: list[int] | None
+    clist_option: list[int] | None = None
     cdict: dict[str, int]
-    cdict_option: dict[str, int] | None
+    cdict_option: dict[str, int] | None = None
     pscalar: ParameterType
-    pscalar_option: ParameterType | None
+    pscalar_option: ParameterType | None = None
     plist: list[ParameterType]
-    plist_option: list[ParameterType] | None
+    plist_option: list[ParameterType] | None = None
     pdict: dict[str, ParameterType]
-    pdict_option: dict[str, ParameterType] | None
+    pdict_option: dict[str, ParameterType] | None = None
 
 
 class MockTypedItem(TypedItem):
-    pass
+    """This is just a mock item for testing."""
 
 
 class MockTypedItemConcrete1(MockTypedItem):
@@ -43,7 +43,7 @@ class MockTypedItemConcrete2(MockTypedItem):
 
 
 def test_item_fields_structures_and_type():
-    item_fields = MockItem.__fields__.values()
+    item_fields = MockItem.model_fields.values()
     wanted = (
         (None, int),
         (None, int),
@@ -68,7 +68,7 @@ def test_item_fields_structures_and_type():
 def test_iterate_parameters():
     item_fields = list(iterate_parameter_fields(MockItem))
     assert len(item_fields) == 6
-    assert [i.name for i in item_fields] == [
+    assert [name for name, _ in item_fields] == [
         "pscalar",
         "pscalar_option",
         "plist",
@@ -83,12 +83,12 @@ def test_typed_item():
 
 
 def test_item_schema():
-    got = MockTypedItem.schema()
+    got = MockTypedItem.model_json_schema()
     wanted = {
         "title": "MockTypedItem",
-        "description": "An item with a type.",
+        "description": "This is just a mock item for testing.",
         "type": "object",
-        "properties": {"type": {"title": "Type", "type": "null"}},
+        "properties": {"type": {"const": None, "title": "Type"}},
         "required": ["type"],
         "additionalProperties": False,
     }
@@ -104,7 +104,7 @@ def test_get_issues():
         cdict={},
         pscalar="foo",
         plist=["foo", "bar"],
-        pdict={1: "foo", 2: "bar"},
+        pdict={"1": "foo", "2": "bar"},
     )
 
     issues = get_item_issues(item, Parameters({}))

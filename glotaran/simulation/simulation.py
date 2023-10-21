@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import xarray as xr
 
 from glotaran.model import DataModel
-from glotaran.model import Element
 from glotaran.model import GlotaranUserError
 from glotaran.model import get_data_model_dimension
 from glotaran.model import resolve_data_model
@@ -14,10 +15,13 @@ from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.parameter import Parameters
 from glotaran.typing.types import ArrayLike
 
+if TYPE_CHECKING:
+    from glotaran.project.library import ModelLibrary
+
 
 def simulate(
     model: DataModel,
-    library: dict[str, Element],
+    library: ModelLibrary,
     parameters: Parameters,
     coordinates: dict[str, ArrayLike],
     clp: xr.DataArray | None = None,

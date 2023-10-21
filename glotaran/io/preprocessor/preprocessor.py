@@ -7,15 +7,13 @@ from typing import Literal
 
 import xarray as xr
 from pydantic import BaseModel
+from pydantic import ConfigDict
 
 
 class PreProcessor(BaseModel, abc.ABC):
     """A base class for pre=processors."""
 
-    class Config:
-        """Config for BaseModel."""
-
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @abc.abstractmethod
     def apply(self, data: xr.DataArray) -> xr.DataArray:

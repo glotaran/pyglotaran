@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 from scipy.optimize import OptimizeResult
 
 # TODO: Fix circular import
@@ -15,11 +15,7 @@ from glotaran.typing.types import ArrayLike
 
 
 class OptimizationResult(BaseModel):
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     """The result of a global analysis."""
 
@@ -102,7 +98,6 @@ class OptimizationResult(BaseModel):
 
         result_args = {
             "success": success,
-            #  "glotaran_version": glotaran_version,
             "free_parameter_labels": free_parameter_labels,
             "parameter_history": parameter_history,
             "termination_reason": termination_reason,
@@ -110,9 +105,9 @@ class OptimizationResult(BaseModel):
             "number_of_function_evaluations": result.nfev  # type:ignore[union-attr]
             if success
             else parameter_history.number_of_records,
+            "cost": 0.5 * np.dot(penalty, penalty),
         }
 
-        result_args["cost"] = 0.5 * np.dot(penalty, penalty)
         if success:
             result_args["number_clp"] = number_clp
             result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
@@ -168,5 +163,4 @@ def calculate_covariance_matrix_and_standard_errors(
     _, jacobian_sv, jacobian_rsv = np.linalg.svd(jacobian, full_matrices=False)
     jacobian_sv_square = jacobian_sv**2
     mask = jacobian_sv_square > np.finfo(float).eps
-    covariance_matrix = (jacobian_rsv[mask].T / jacobian_sv_square[mask]) @ jacobian_rsv[mask]
-    return covariance_matrix
+    return (jacobian_rsv[mask].T / jacobian_sv_square[mask]) @ jacobian_rsv[mask]

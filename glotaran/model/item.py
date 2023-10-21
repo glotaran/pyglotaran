@@ -1,6 +1,7 @@
 """This module contains the item classes and helper functions."""
 import contextlib
 import typing
+from collections import UserDict
 from functools import cache
 from inspect import getmro
 from inspect import isclass
@@ -20,11 +21,10 @@ from typing import get_args
 from typing import get_origin
 
 from pydantic import BaseModel
-from pydantic import Extra
+from pydantic import ConfigDict
 from pydantic import Field
 from pydantic.fields import FieldInfo
-from pydantic.fields import ModelField  # type:ignore[attr-defined]
-from pydantic.fields import Undefined  # type:ignore[attr-defined]
+from pydantic_core import PydanticUndefined
 
 from glotaran.model.errors import ItemIssue
 from glotaran.model.errors import ParameterIssue
@@ -38,6 +38,34 @@ ParameterType: TypeAlias = Parameter | float | str
 META_VALIDATOR = "__glotaran_validator__"
 
 
+class GlotaranFieldMetadata(UserDict):
+    """Container to hold glotaran field meta data."""
+
+    @property
+    def validator(self) -> Callable | None:
+        """Glotaran validator function if defined, else None."""
+        return self[META_VALIDATOR] if META_VALIDATOR in self else None
+
+
+def extract_glotaran_field_metadata(info: FieldInfo) -> GlotaranFieldMetadata:
+    """Extract glotaran metadata from field info metadata list.
+
+    Parameters
+    ----------
+    info : FieldInfo
+        Field info to for glotaran metadata in.
+
+    Returns
+    -------
+    GlotaranFieldMetadata
+        Glotaran meta data from the field info metadata or empty if not present.
+    """
+    for item in info.metadata:
+        if isinstance(item, GlotaranFieldMetadata):
+            return item
+    return GlotaranFieldMetadata()
+
+
 class ItemAttribute(FieldInfo):
     """An attribute for items.
 
@@ -48,7 +76,7 @@ class ItemAttribute(FieldInfo):
         self,
         *,
         description: str,
-        default: Any = Undefined,
+        default: Any = PydanticUndefined,
         factory: Callable[[], Any] | None = None,
         validator: Callable | None = None,
     ):
@@ -65,18 +93,20 @@ class ItemAttribute(FieldInfo):
         validator: Callable[[Any, Item, Model, Parameters | None], list[ItemIssue]] | None
             A validator function for the attribute.
         """
-        metadata: dict[str, Any] = {}
+        glotaran_field_metadata = GlotaranFieldMetadata()
         if validator is not None:
-            metadata[META_VALIDATOR] = validator
-        super().__init__(
-            default=default, default_factory=factory, description=description, **metadata
-        )
+            glotaran_field_metadata[META_VALIDATOR] = validator
+        if factory is not None:
+            super().__init__(default_factory=factory, description=description)
+        else:
+            super().__init__(default=default, description=description)
+        self.metadata.append(glotaran_field_metadata)
 
 
 def Attribute(
     *,
     description: str,
-    default: Any = Undefined,
+    default: Any = PydanticUndefined,
     factory: Callable[[], Any] | None = None,
     validator: Callable | None = None,
 ) -> Any:
@@ -105,11 +135,7 @@ def Attribute(
 class Item(BaseModel):
     """A baseclass for items."""
 
-    class Config:
-        """Config for pydantic.BaseModel."""
-
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
 
 class TypedItem(Item):
@@ -141,12 +167,12 @@ class TypedItem(Item):
 
 
 @cache
-def get_structure_and_type_from_field(field: ModelField) -> tuple[None | list | dict, type]:
+def get_structure_and_type_from_field(info: FieldInfo) -> tuple[None | list | dict, type]:
     """Get the structure and type from a field.
 
     Parameters
     ----------
-    field: ModelField
+    info: FieldInfo
         The field.
 
     Returns
@@ -154,7 +180,7 @@ def get_structure_and_type_from_field(field: ModelField) -> tuple[None | list | 
     tuple[None | list | dict, type]:
         The structure and type as atuple.
     """
-    definition = strip_option_type_from_definition(field.annotation)
+    definition = strip_option_type_from_definition(info.annotation)  # type:ignore[arg-type]
     structure, definition = strip_structure_type_from_definition(definition)
     definition = strip_option_type_from_definition(definition, strip_type=str)
     return structure, definition
@@ -207,7 +233,7 @@ def strip_structure_type_from_definition(definition: type) -> tuple[None | list 
 
 def iterate_fields_of_type(
     item: type[ItemT] | ItemT, field_type: type
-) -> Generator[ModelField, None, None]:
+) -> Generator[tuple[str, FieldInfo], None, None]:
     """Iterate over all fields of the given types.
 
     Parameters
@@ -219,11 +245,11 @@ def iterate_fields_of_type(
 
     Yields
     ------
-    ModelField
+    tuple[str, FieldInfo]
         The matching attributes.
     """
-    for field in item.__fields__.values():  # type:ignore[union-attr]
-        _, item_type = get_structure_and_type_from_field(field)
+    for name, info in item.model_fields.items():
+        _, item_type = get_structure_and_type_from_field(info)
         with contextlib.suppress(TypeError):
             # issubclass does for some reason not work with e.g. tuple as item_type
             # and Parameter as attr_type
@@ -236,10 +262,10 @@ def iterate_fields_of_type(
             ):
                 item_type = typing.get_args(typing.get_args(item_type)[0])[0]
             if isclass(item_type) and issubclass(item_type, field_type):
-                yield field
+                yield name, info
 
 
-def iterate_item_fields(item: type[ItemT] | ItemT) -> Generator[ModelField, None, None]:
+def iterate_item_fields(item: type[ItemT] | ItemT) -> Generator[tuple[str, FieldInfo], None, None]:
     """Iterate over all item fields.
 
     Parameters
@@ -249,13 +275,15 @@ def iterate_item_fields(item: type[ItemT] | ItemT) -> Generator[ModelField, None
 
     Yields
     ------
-    ModelField
+    tuple[str, FieldInfo]
         The item fields.
     """
     yield from iterate_fields_of_type(item, Item)
 
 
-def iterate_parameter_fields(item: type[ItemT] | ItemT) -> Generator[ModelField, None, None]:
+def iterate_parameter_fields(
+    item: type[ItemT] | ItemT,
+) -> Generator[tuple[str, FieldInfo], None, None]:
     """Iterate over all parameter fields.
 
     Parameters
@@ -265,7 +293,7 @@ def iterate_parameter_fields(item: type[ItemT] | ItemT) -> Generator[ModelField,
 
     Yields
     ------
-    ModelField
+    tuple[str, FieldInfo]
         The parameter fields.
     """
     yield from iterate_fields_of_type(item, Parameter)
@@ -293,45 +321,47 @@ def resolve_item_parameters(
     resolved: dict[str, Any] = {}
     initial = initial or parameters
 
-    for field in iterate_parameter_fields(item):
-        value = getattr(item, field.name)
+    for name, info in iterate_parameter_fields(item):
+        value = getattr(item, name)
         if value is None:
             continue
-        structure, _ = get_structure_and_type_from_field(field)
+        structure, _ = get_structure_and_type_from_field(info)
         if structure is None:
-            resolved[field.name] = resolve_parameter(value, parameters, initial)
+            resolved[name] = resolve_parameter(value, parameters, initial)
         elif structure is list:
-            resolved[field.name] = [resolve_parameter(v, parameters, initial) for v in value]
+            resolved[name] = [resolve_parameter(v, parameters, initial) for v in value]
         elif structure is dict:
-            resolved[field.name] = {
+            resolved[name] = {
                 k: resolve_parameter(v, parameters, initial) for k, v in value.items()
             }
 
-    for field in iterate_item_fields(item):
-        value = getattr(item, field.name)
+    for name, info in iterate_item_fields(item):
+        value = getattr(item, name)
         if value is None:
             continue
-        structure, item_type = get_structure_and_type_from_field(field)
+        structure, item_type = get_structure_and_type_from_field(info)
         if structure is None:
-            resolved[field.name] = resolve_item_parameters(value, parameters, initial)
+            resolved[name] = resolve_item_parameters(value, parameters, initial)
         elif structure is list:
-            resolved[field.name] = [resolve_item_parameters(v, parameters, initial) for v in value]
+            resolved[name] = [resolve_item_parameters(v, parameters, initial) for v in value]
         elif structure is dict:
-            resolved[field.name] = {
+            resolved[name] = {
                 k: resolve_item_parameters(v, parameters, initial) for k, v in value.items()
             }
-    return item.copy(update=resolved)
+    return item.model_copy(update=resolved)
 
 
 def get_item_issues(item: Item, parameters: Parameters) -> list[ItemIssue]:
     issues = []
-    for field in iterate_item_fields(item):
-        value = getattr(item, field.name)
+    for name, info in iterate_item_fields(item):
+        value = getattr(item, name)
         if value is None:
             continue
-        if META_VALIDATOR in field.field_info.extra:
-            issues += field.field_info.extra[META_VALIDATOR](value, item, parameters)
-        structure, item_type = get_structure_and_type_from_field(field)
+
+        glotaran_field_metadata = extract_glotaran_field_metadata(info)
+        if glotaran_field_metadata.validator is not None:
+            issues += glotaran_field_metadata.validator(value, item, parameters)
+        structure, _ = get_structure_and_type_from_field(info)
         if structure is None:
             issues += get_item_issues(value, parameters)
         else:
@@ -339,11 +369,11 @@ def get_item_issues(item: Item, parameters: Parameters) -> list[ItemIssue]:
             for v in values:
                 issues += get_item_issues(v, parameters)
 
-    for field in iterate_parameter_fields(item):
-        value = getattr(item, field.name)
+    for name, info in iterate_parameter_fields(item):
+        value = getattr(item, name)
         if value is None:
             continue
-        structure, _ = get_structure_and_type_from_field(field)
+        structure, _ = get_structure_and_type_from_field(info)
         if structure is None:
             if isinstance(value, str) and not parameters.has(value):
                 issues += [ParameterIssue(value)]

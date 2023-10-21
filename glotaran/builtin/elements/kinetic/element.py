@@ -14,6 +14,7 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.model import ExtendableElement
+from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import is_data_model_global
 
 if TYPE_CHECKING:
@@ -21,13 +22,13 @@ if TYPE_CHECKING:
 
 
 class KineticElement(ExtendableElement, Kinetic):
-    type: Literal["kinetic"] = Literal["kinetic"]  # type:ignore[assignment]
-    register_as = "kinetic"  # type:ignore[pydantic-field]
-    data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
+    type: Literal["kinetic"]  # type:ignore[assignment]
+    register_as: str = "kinetic"  # type:ignore[misc]
+    data_model_type: type[DataModel] = ActivationDataModel  # type:ignore[misc, valid-type]
     dimension: str = "time"
 
     def extend(self, other: KineticElement):  # type:ignore[override]
-        return other.copy(update={"rates": self.rates | other.rates})
+        return other.model_copy(update={"rates": self.rates | other.rates})
 
     # TODO: consolidate parent method.
     @classmethod
@@ -48,7 +49,11 @@ class KineticElement(ExtendableElement, Kinetic):
             The combined KMatrix.
 
         """
-        return cls(rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]), label="")
+        return cls(
+            type="kinetic",
+            rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]),
+            label="",
+        )
 
     @staticmethod
     def combine_matrices(lhs: ArrayLike, rhs: ArrayLike) -> ArrayLike:
