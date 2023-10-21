@@ -359,7 +359,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
                     for index in aligned_global_axis
                 ]
                 if len(np.unique(aligned_global_axis)) != len(aligned_global_axis):
-                    raise AlignDatasetError()
+                    raise AlignDatasetError
                 aligned_axis_values = np.unique(
                     np.concatenate([aligned_axis_values, aligned_global_axis])
                 )
