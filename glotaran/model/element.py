@@ -64,7 +64,6 @@ class Element(TypedItem, abc.ABC):
 
         .. # noqa: DAR202
         """
-        pass
 
     def add_to_result_data(self, model: DataModel, data: xr.Dataset, as_global: bool):
         """
@@ -80,7 +79,6 @@ class Element(TypedItem, abc.ABC):
         as_global: bool
             Whether model is calculated as global model.
         """
-        pass
 
 
 class ExtendableElement(Element):
