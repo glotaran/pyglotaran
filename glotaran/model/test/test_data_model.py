@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Literal
 
 import numpy as np
@@ -18,7 +20,7 @@ class MockDataModel(DataModel):
 class MockElementWithDataModel(Element):
     type: Literal["mock-w-datamodel"]
     dimension: str = "model"
-    data_model_type = MockDataModel
+    data_model_type: type[DataModel] = MockDataModel
 
     def calculate_matrix(
         self,

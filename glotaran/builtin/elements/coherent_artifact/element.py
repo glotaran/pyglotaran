@@ -13,6 +13,7 @@ from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.model import Element
 from glotaran.model import GlotaranModelError
 from glotaran.model import ParameterType
+from glotaran.model.data_model import DataModel
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
@@ -20,9 +21,9 @@ if TYPE_CHECKING:
 
 class CoherentArtifactElement(Element):
     type: Literal["coherent-artifact"]  # type:ignore[assignment]
-    register_as = "coherent-artifact"  # type:ignore[pydantic-field]
-    dimension = "time"  # type:ignore[pydantic-field]
-    data_model_type = ActivationDataModel  # type:ignore[pydantic-field]
+    register_as: str = "coherent-artifact"  # type:ignore[misc]
+    dimension: str = "time"
+    data_model_type: type[DataModel] = ActivationDataModel  # type:ignore[misc,valid-type]
     order: int
     width: ParameterType | None = None
 

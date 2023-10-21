@@ -39,7 +39,11 @@ def test_to_from_dict():
     assert pl_dict == {
         "actions": [
             {"action": "baseline-value", "value": 1.0},
-            {"action": "baseline-average", "select": {"dim_1": slice(0, 2)}, "exclude": None},
+            {
+                "action": "baseline-average",
+                "select": {"dim_1": slice(0, 2)},
+                "exclude": None,
+            },
         ]
     }
     assert PreProcessingPipeline.model_validate(pl_dict) == pl
