@@ -260,7 +260,7 @@ class Parameters:
         .. # noqa: D414
         """
         return Parameters(
-            {label: parameter.copy() for label, parameter in self._parameters.items()}
+            {label: parameter.model_copy() for label, parameter in self._parameters.items()}
         )
 
     def all(self) -> Generator[Parameter, None, None]:
