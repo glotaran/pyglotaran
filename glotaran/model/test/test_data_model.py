@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numpy as np
@@ -23,7 +24,7 @@ class MockDataModel(DataModel):
 class MockElementWithDataModel(Element):
     type: Literal["mock-w-datamodel"]
     dimension: str = "model"
-    data_model_type: type[DataModel] = MockDataModel
+    _data_model_type: ClassVar[type[DataModel]] = MockDataModel
 
     def calculate_matrix(
         self,
@@ -59,7 +60,7 @@ class MockElementNonUniqueExclusive(Element):
 
 class MockElementExclusive(Element):
     type: Literal["test_element_exclusive"]
-    is_exclusive = True
+    _is_exclusive = True
 
     def calculate_matrix():
         pass
@@ -67,7 +68,7 @@ class MockElementExclusive(Element):
 
 class MockElementUnique(Element):
     type: Literal["test_element_unique"]
-    is_unique = True
+    _is_unique = True
 
     def calculate_matrix():
         pass

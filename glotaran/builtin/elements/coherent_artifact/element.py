@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numba as nb
@@ -21,9 +22,9 @@ if TYPE_CHECKING:
 
 class CoherentArtifactElement(Element):
     type: Literal["coherent-artifact"]  # type:ignore[assignment]
-    register_as: str = "coherent-artifact"  # type:ignore[misc]
+    _register_as: str = "coherent-artifact"  # type:ignore[misc]
     dimension: str = "time"
-    data_model_type: type[DataModel] = ActivationDataModel  # type:ignore[misc,valid-type]
+    _data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     order: int
     width: ParameterType | None = None
 
