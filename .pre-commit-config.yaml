@@ -25,7 +25,6 @@ repos:
         types: [file]
         types_or: [python, pyi]
         args: [--py310-plus]
-        exclude: "glotaran.model.item"
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
