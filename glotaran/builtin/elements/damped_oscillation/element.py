@@ -35,9 +35,9 @@ class Oscillation(Item):
 
 class DampedOscillationElement(Element):
     type: Literal["damped-oscillation"]  # type:ignore[assignment]
-    _register_as: str = "damped-oscillation"  # type:ignore[misc]
+    register_as: ClassVar[str] = "damped-oscillation"
     dimension: str = "time"
-    _data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
+    data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     oscillations: dict[str, Oscillation]
 
     def calculate_matrix(  # type:ignore[override]

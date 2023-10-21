@@ -22,9 +22,9 @@ if TYPE_CHECKING:
 
 class CoherentArtifactElement(Element):
     type: Literal["coherent-artifact"]  # type:ignore[assignment]
-    _register_as: str = "coherent-artifact"  # type:ignore[misc]
+    register_as: ClassVar[str] = "coherent-artifact"
     dimension: str = "time"
-    _data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
+    data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     order: int
     width: ParameterType | None = None
 

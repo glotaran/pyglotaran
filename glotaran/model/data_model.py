@@ -114,14 +114,14 @@ def get_element_issues(value: list[str | Element] | None, is_global: bool) -> li
         elements = [v for v in value if isinstance(v, Element)]
         for element in elements:
             element_type = element.__class__
-            if element_type._is_exclusive and len(elements) > 1:
+            if element_type.is_exclusive and len(elements) > 1:
                 issues.append(
                     ExclusiveModelIssue(
                         element.label, element.type, is_global  # type:ignore[arg-type]
                     )
                 )
             if (
-                element_type._is_unique
+                element_type.is_unique
                 and len([m for m in elements if m.__class__ is element_type]) > 1
             ):
                 issues.append(
@@ -207,7 +207,7 @@ class DataModel(Item):
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
         data_models = (
-            *tuple({e._data_model_type for e in elements if e._data_model_type is not None}),
+            *tuple({e.data_model_type for e in elements if e.data_model_type is not None}),
             DataModel,
         )
         return create_model(data_model_cls_name, __base__=data_models)

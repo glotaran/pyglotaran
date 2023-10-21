@@ -23,9 +23,9 @@ class SpectralDataModel(DataModel):
 
 class SpectralElement(Element):
     type: Literal["spectral"]  # type:ignore[assignment]
-    _register_as: str = "spectral"  # type:ignore[misc]
+    register_as: ClassVar[str] = "spectral"
     dimension: str = "spectral"
-    _data_model_type: ClassVar[type[DataModel]] = SpectralDataModel  # type:ignore[valid-type]
+    data_model_type: ClassVar[type[DataModel]] = SpectralDataModel  # type:ignore[valid-type]
     shapes: dict[str, SpectralShape.get_annotated_type()]  # type:ignore[valid-type]
 
     def calculate_matrix(  # type:ignore[override]

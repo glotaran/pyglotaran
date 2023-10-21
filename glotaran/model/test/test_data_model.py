@@ -24,7 +24,7 @@ class MockDataModel(DataModel):
 class MockElementWithDataModel(Element):
     type: Literal["mock-w-datamodel"]
     dimension: str = "model"
-    _data_model_type: ClassVar[type[DataModel]] = MockDataModel
+    data_model_type: ClassVar[type[DataModel]] = MockDataModel
 
     def calculate_matrix(
         self,
@@ -60,7 +60,7 @@ class MockElementNonUniqueExclusive(Element):
 
 class MockElementExclusive(Element):
     type: Literal["test_element_exclusive"]
-    _is_exclusive = True
+    is_exclusive = True
 
     def calculate_matrix():
         pass
@@ -68,7 +68,7 @@ class MockElementExclusive(Element):
 
 class MockElementUnique(Element):
     type: Literal["test_element_unique"]
-    _is_unique = True
+    is_unique = True
 
     def calculate_matrix():
         pass

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class BaselineElement(Element):
     type: Literal["baseline"]  # type:ignore[assignment]
-    _register_as: ClassVar[str] = "baseline"
+    register_as: ClassVar[str] = "baseline"
     _unique: ClassVar[bool] = True
 
     def clp_label(self) -> str:

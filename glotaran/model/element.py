@@ -17,15 +17,12 @@ if TYPE_CHECKING:
 
 
 class Element(TypedItem, abc.ABC):
-    """
+    """Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`."""
 
-    Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`.
-    """
-
-    _data_model_type: ClassVar[type | None] = None
-    _is_exclusive: ClassVar[bool] = False
-    _is_unique: ClassVar[bool] = False
-    _register_as: ClassVar[str | None] = None
+    data_model_type: ClassVar[type | None] = None
+    is_exclusive: ClassVar[bool] = False
+    is_unique: ClassVar[bool] = False
+    register_as: ClassVar[str | None] = None
 
     dimension: str | None = None
     label: str
@@ -33,8 +30,8 @@ class Element(TypedItem, abc.ABC):
     def __init_subclass__(cls):
         """Register the model if necessary."""
         super().__init_subclass__()
-        if cls._register_as is not None:
-            register_element(cls._register_as, cls)
+        if cls.register_as is not None:
+            register_element(cls.register_as, cls)
 
     @abc.abstractmethod
     def calculate_matrix(

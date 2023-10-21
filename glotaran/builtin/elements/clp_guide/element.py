@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numpy as np
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 class ClpGuideElement(Element):
     type: Literal["clp-guide"]  # type:ignore[assignment]
-    _register_as: str = "clp-guide"  # type:ignore[misc]
+    register_as: ClassVar[str] = "clp-guide"
     _exclusive: bool = True
     target: str
 
