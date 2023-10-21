@@ -35,7 +35,7 @@ select = [
   # "T10", # flake8-debugger
   # "FA", # flake8-future-annotations
   # "EM", # flake8-errmsg
-  # "ISC", # flake8-implicit-str-concat
+  "ISC", # flake8-implicit-str-concat
   # "INP", # flake8-no-pep420
   # "PIE", # flake8-pie
   "T20", # flake8-print

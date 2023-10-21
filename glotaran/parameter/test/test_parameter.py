@@ -174,7 +174,7 @@ def test_parameter_non_negative():
         ),
         (
             "$foo.7.bar + $kinetic6",
-            "parameters.get('foo.7.bar').value " "+ parameters.get('kinetic6').value",
+            "parameters.get('foo.7.bar').value + parameters.get('kinetic6').value",
         ),
         ("$1", "parameters.get('1').value"),
         ("$1-$2", "parameters.get('1').value-parameters.get('2').value"),
