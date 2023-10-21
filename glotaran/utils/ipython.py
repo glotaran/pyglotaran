@@ -46,8 +46,7 @@ class MarkdownStr(UserString):
         """
         if self.syntax is not None:
             return f"```{self.syntax}\n{self.data}\n```"
-        else:
-            return self.data
+        return self.data
 
     def __str__(self) -> str:
         """Representation used by print and str."""
@@ -57,8 +56,7 @@ class MarkdownStr(UserString):
         """Equality check."""
         if isinstance(other, (str, MarkdownStr)):
             return str(self) == str(other)
-        else:
-            return NotImplemented
+        return NotImplemented
 
 
 def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:

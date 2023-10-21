@@ -87,7 +87,7 @@ class SdtDataIo(DataIoInterface):
                 f"The Dataset contains {raw_data.shape[0]} measurements, but the "
                 f"indices supplied are {len(index)}."
             )
-        elif not index and not flim:
+        if not index and not flim:
             warnings.warn(
                 UserWarning(
                     f"There was no `index` provided."

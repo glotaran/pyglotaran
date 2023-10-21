@@ -59,10 +59,9 @@ def infer_file_format(
 
     if allow_folder:
         return "yaml"
-    else:
-        raise ValueError(
-            f"Cannot determine format of file {file_path!r}, please provide an explicit format."
-        )
+    raise ValueError(
+        f"Cannot determine format of file {file_path!r}, please provide an explicit format."
+    )
 
 
 def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
@@ -122,9 +121,9 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
         path.parent.mkdir(parents=True, exist_ok=True)
     if allow_overwrite:
         return
-    elif path.is_file():
+    if path.is_file():
         raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
-    elif path.is_dir() and os.listdir(str(path)):
+    if path.is_dir() and os.listdir(str(path)):
         raise FileExistsError(
             f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
         )
@@ -161,10 +160,7 @@ def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> An
     """
     if value is True:
         return true_repr
-    elif value is False:
-        return false_repr
-    else:
-        return value
+    return false_repr if value is False else value
 
 
 def bool_table_repr(

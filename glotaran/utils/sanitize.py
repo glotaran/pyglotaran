@@ -162,12 +162,11 @@ def string_to_tuple(
     """
     if rp.tuple_number.match(tuple_str):
         return tuple(map(float, rp.number.findall(tuple_str)))
-    elif rp.tuple_word.match(tuple_str):
+    if rp.tuple_word.match(tuple_str):
         return tuple(map(str, rp.word.findall(tuple_str)))
-    elif from_list and rp.number.match(tuple_str):
+    if from_list and rp.number.match(tuple_str):
         return float(tuple_str)
-    else:
-        return tuple_str
+    return tuple_str
 
 
 def list_string_to_tuple(

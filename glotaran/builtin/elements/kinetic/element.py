@@ -60,8 +60,7 @@ class KineticElement(ExtendableElement, Kinetic):
         if lhs.shape != rhs.shape:
             if len(lhs.shape) > len(rhs):
                 return lhs + rhs[np.newaxis, :, :]
-            else:
-                return lhs[np.newaxis, :, :] + rhs
+            return lhs[np.newaxis, :, :] + rhs
         return lhs + rhs
 
     def calculate_matrix(  # type:ignore[override]

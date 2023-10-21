@@ -68,8 +68,7 @@ def full_plugin_name(plugin: object | type[object]) -> str:
     """
     if isinstance(plugin, type):
         return f"{plugin.__module__}.{plugin.__name__}"
-    else:
-        return f"{plugin.__module__}.{type(plugin).__name__}"
+    return f"{plugin.__module__}.{type(plugin).__name__}"
 
 
 class PluginOverwriteWarning(UserWarning):
@@ -303,8 +302,7 @@ def registered_plugins(
     if full_names:
         return sorted(plugin_registry.keys())
 
-    else:
-        return sorted(filter(lambda key: "." not in key, plugin_registry.keys()))
+    return sorted(filter(lambda key: "." not in key, plugin_registry.keys()))
 
 
 def is_registered_plugin(
@@ -355,8 +353,7 @@ def get_plugin_from_registry(
     """
     if not is_registered_plugin(plugin_register_key, plugin_registry):
         raise ValueError(not_found_error_message)
-    else:
-        return plugin_registry[plugin_register_key]
+    return plugin_registry[plugin_register_key]
 
 
 def get_method_from_plugin(
@@ -391,8 +388,7 @@ def get_method_from_plugin(
         possible_method = getattr(plugin, method_name)
         if callable(possible_method):
             return possible_method
-        else:
-            raise ValueError(not_a_method_error_message)
+        raise ValueError(not_a_method_error_message)
     except AttributeError as err:
         raise ValueError(not_a_method_error_message) from err
 
