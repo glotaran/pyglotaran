@@ -28,10 +28,10 @@ def test_parameter_history():
     assert history.number_of_records == 3
     assert all(history.get_parameters(2) == [2, 3, 6])
 
-    df = history.to_dataframe()
+    history_df = history.to_dataframe()
 
-    assert all(df.columns == history.parameter_labels)
-    assert np.all(df.values == history.parameters)
+    assert all(history_df.columns == history.parameter_labels)
+    assert np.all(history_df.to_numpy() == history.parameters)
 
     group2.set_from_history(history, 0)
 

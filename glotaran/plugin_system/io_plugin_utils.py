@@ -49,20 +49,20 @@ def infer_file_format(
     ValueError
         If file has no extension.
     """
-    if not os.path.isfile(file_path) and needs_to_exist and not allow_folder:
+    file_path = Path(file_path)
+    if file_path.is_file() is False and needs_to_exist and not allow_folder:
         raise ValueError(f"There is no file {file_path!r}.")
 
-    _, file_format = os.path.splitext(file_path)
+    file_format = file_path.suffix
     if file_format != "":
         file_format = file_format.lstrip(".")
         return "yaml" if file_format == "yml" else file_format
 
     if allow_folder:
         return "yaml"
-    else:
-        raise ValueError(
-            f"Cannot determine format of file {file_path!r}, please provide an explicit format."
-        )
+    raise ValueError(
+        f"Cannot determine format of file {file_path!r}, please provide an explicit format."
+    )
 
 
 def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
@@ -122,9 +122,9 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
         path.parent.mkdir(parents=True, exist_ok=True)
     if allow_overwrite:
         return
-    elif path.is_file():
+    if path.is_file():
         raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
-    elif path.is_dir() and os.listdir(str(path)):
+    if path.is_dir() and os.listdir(str(path)):
         raise FileExistsError(
             f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
         )
@@ -161,10 +161,7 @@ def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> An
     """
     if value is True:
         return true_repr
-    elif value is False:
-        return false_repr
-    else:
-        return value
+    return false_repr if value is False else value
 
 
 def bool_table_repr(

@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Literal
 
-import xarray as xr
-
 from glotaran.model.item import TypedItem
 from glotaran.plugin_system.element_registration import register_element
-from glotaran.typing.types import ArrayLike
 
 if TYPE_CHECKING:
+    import xarray as xr
+
     from glotaran.model.data_model import DataModel
+    from glotaran.typing.types import ArrayLike
 
 
 class Element(TypedItem, abc.ABC):
@@ -64,7 +64,6 @@ class Element(TypedItem, abc.ABC):
 
         .. # noqa: DAR202
         """
-        pass
 
     def add_to_result_data(self, model: DataModel, data: xr.Dataset, as_global: bool):
         """
@@ -80,7 +79,6 @@ class Element(TypedItem, abc.ABC):
         as_global: bool
             Whether model is calculated as global model.
         """
-        pass
 
 
 class ExtendableElement(Element):

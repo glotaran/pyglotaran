@@ -36,7 +36,7 @@ class TsvProjectIo(ProjectIoInterface):
         parameters: Parameters,
         file_name: str,
         *,
-        replace_infinfinity: bool = True,
+        replace_infinity: bool = True,
     ) -> None:
         """Save a :class:`Parameters` to a TSV file.
 
@@ -46,7 +46,7 @@ class TsvProjectIo(ProjectIoInterface):
             Parameters to be saved to file.
         file_name : str
             File to write the parameters to.
-        replace_infinfinity : bool
+        replace_infinity : bool
             Weather to replace infinity values with empty strings.
         """
         save_parameters(
@@ -54,5 +54,5 @@ class TsvProjectIo(ProjectIoInterface):
             file_name,
             format_name="csv",
             sep="\t",
-            replace_infinfinity=replace_infinfinity,
+            replace_infinity=replace_infinity,
         )

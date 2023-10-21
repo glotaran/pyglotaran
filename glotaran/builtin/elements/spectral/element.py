@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
-import xarray as xr
 
-from glotaran.builtin.elements.spectral.shape import SpectralShape
+from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TCH001
 from glotaran.model import DataModel
 from glotaran.model import Element
 
 if TYPE_CHECKING:
+    import xarray as xr
+
     from glotaran.typing.types import ArrayLike
 
 
@@ -66,7 +67,7 @@ class SpectralElement(Element):
         data["spectra"] = (
             data.attrs["global_dimension"] if as_global else data.attrs["model_dimension"],
             "shape",
-        ), matrix.sel({clp_dim: shapes}).values
+        ), matrix.sel({clp_dim: shapes}).to_numpy()
 
         if not hasattr(data, "global_matrix"):
             data["spectrum_associated_estimation"] = (

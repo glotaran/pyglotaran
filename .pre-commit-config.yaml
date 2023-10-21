@@ -25,7 +25,6 @@ repos:
         types: [file]
         types_or: [python, pyi]
         args: [--py310-plus]
-        exclude: "glotaran.model.item"
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
@@ -36,7 +35,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 23.10.0
     hooks:
       - id: black
         types: [file]
@@ -83,25 +82,11 @@ repos:
         args: [--nbqa-mutate]
 
   # Linters
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.5.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.1
     hooks:
-      - id: yesqa
-        types: [file]
-        types_or: [python, pyi]
-        additional_dependencies: [flake8-docstrings, flake8-print>=5.0.0]
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        name: "flake8 lint code"
-        types: [file]
-        types_or: [python, pyi]
-        additional_dependencies:
-          [flake8-pyi, flake8-comprehensions, flake8-print>=5.0.0]
-        args:
-          - "--count"
+      - id: ruff
 
   # - repo: https://github.com/PyCQA/flake8
   #   rev: 6.0.0
@@ -109,14 +94,14 @@ repos:
   #     - id: flake8
   #       alias: flake8-docs
   #       args:
-  #         - "--select=D,DAR"
+  #         - "--select=DAR"
   #         - "--count"
   #       name: "flake8 lint docstrings"
   #       exclude: "docs|setup.py|tests?/|glotaran/builtin/megacomplexes|glotaran/cli|benchmark|glotaran/builtin/io/ascii"
   #       additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.6.0
+    rev: v1.6.1
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"

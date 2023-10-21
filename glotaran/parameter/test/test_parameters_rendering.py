@@ -54,8 +54,8 @@ RENDERED_MARKDOWN_E5_PRECISION = """\
 
 def test_parameters_markdown_is_order_independent():
     """Markdown output of Parameters.markdown() is independent of initial order"""
-    PARAMETERS_3C_INITIAL1 = f"""{PARAMETERS_3C_BASE}\n{PARAMETERS_3C_KINETIC}"""
-    PARAMETERS_3C_INITIAL2 = f"""{PARAMETERS_3C_KINETIC}\n{PARAMETERS_3C_BASE}"""
+    parameters_3c_initial1 = f"""{PARAMETERS_3C_BASE}\n{PARAMETERS_3C_KINETIC}"""
+    parameters_3c_initial2 = f"""{PARAMETERS_3C_KINETIC}\n{PARAMETERS_3C_BASE}"""
 
     initial_parameters_ref = Parameters.from_dict(
         {
@@ -69,8 +69,8 @@ def test_parameters_markdown_is_order_independent():
         }
     )
 
-    initial_parameters1 = load_parameters(PARAMETERS_3C_INITIAL1, format_name="yml_str")
-    initial_parameters2 = load_parameters(PARAMETERS_3C_INITIAL2, format_name="yml_str")
+    initial_parameters1 = load_parameters(parameters_3c_initial1, format_name="yml_str")
+    initial_parameters2 = load_parameters(parameters_3c_initial2, format_name="yml_str")
 
     assert str(initial_parameters1.markdown()) == RENDERED_MARKDOWN
     assert str(initial_parameters2.markdown()) == RENDERED_MARKDOWN
@@ -87,7 +87,7 @@ def test_parameters_repr():
     """Repr creates code to recreate the object with from_dict."""
 
     # Needed to eval the Parameters repr
-    from glotaran.parameter.parameter import Parameter  # noqa:401
+    from glotaran.parameter.parameter import Parameter  # noqa: F401
 
     result = Parameters.from_dict(
         {
@@ -109,7 +109,7 @@ def test_parameters_repr():
 
     print(result.__repr__())
     assert result.__repr__() == expected
-    assert result == eval(expected)
+    assert result == eval(expected)  # noqa: PGH001
 
 
 def test_parameters_ipython_rendering():

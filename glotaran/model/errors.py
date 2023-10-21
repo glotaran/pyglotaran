@@ -13,7 +13,7 @@ class GlotaranUserError(Exception):
     pass
 
 
-class GlotaranModelIssues(GlotaranModelError):
+class GlotaranModelIssues(GlotaranModelError):  # noqa: N818
     def __init__(self, issues: list[ItemIssue]):
         joiner = "\n* "
         super().__init__(

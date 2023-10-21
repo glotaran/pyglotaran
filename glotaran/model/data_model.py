@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 from uuid import uuid4
 
-import xarray as xr
+import xarray as xr  # noqa: TCH002
 from pydantic import Field
 from pydantic import create_model
 
@@ -20,10 +19,12 @@ from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
-from glotaran.model.weight import Weight
-from glotaran.parameter import Parameters
+from glotaran.model.weight import Weight  # noqa: TCH001
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from glotaran.parameter import Parameters
     from glotaran.project.library import ModelLibrary
 
 
@@ -205,14 +206,17 @@ class DataModel(Item):
     @staticmethod
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
-        data_models = tuple(
-            {
-                e.model_fields["data_model_type"].default
-                for e in elements
-                if "data_model_type" in e.model_fields
-                and e.model_fields["data_model_type"].default is not None
-            }
-        ) + (DataModel,)
+        data_models = (
+            *tuple(
+                {
+                    e.model_fields["data_model_type"].default
+                    for e in elements
+                    if "data_model_type" in e.model_fields
+                    and e.model_fields["data_model_type"].default is not None
+                }
+            ),
+            DataModel,
+        )
         return create_model(data_model_cls_name, __base__=data_models)
 
     @classmethod

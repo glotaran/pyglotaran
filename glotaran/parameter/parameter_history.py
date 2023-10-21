@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from glotaran.parameter.parameters import Parameters
-
 if TYPE_CHECKING:
     from os import PathLike
+
+    from glotaran.parameter.parameters import Parameters
 
 
 class ParameterHistory:
@@ -39,7 +39,7 @@ class ParameterHistory:
 
         history._parameter_labels = history_df.columns
 
-        for parameter_values in history_df.values:
+        for parameter_values in history_df.to_numpy():
             history._parameters.append(parameter_values)
 
         return history
@@ -58,8 +58,8 @@ class ParameterHistory:
         ParameterHistory
             The created history.
         """
-        df = pd.read_csv(path)
-        return cls.from_dataframe(df)
+        history_df = pd.read_csv(path)
+        return cls.from_dataframe(history_df)
 
     loader = from_csv
 

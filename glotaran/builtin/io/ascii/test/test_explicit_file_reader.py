@@ -19,14 +19,14 @@ def test_read_explicit_file():
     test_dataarray = data_file.read(prepare=False)
     assert isinstance(test_dataarray, xr.DataArray)
     assert test_dataarray.shape == (501, 51)
-    assert np.array_equal(TEST_BLOCK_2x2_TOP_LEFT, test_dataarray[:2, :2].values.T)
-    assert np.array_equal(TEST_BLOCK_2x2_BOTTOM_RIGHT, test_dataarray[-2:, -2:].values.T)
+    assert np.array_equal(TEST_BLOCK_2x2_TOP_LEFT, test_dataarray[:2, :2].to_numpy().T)
+    assert np.array_equal(TEST_BLOCK_2x2_BOTTOM_RIGHT, test_dataarray[-2:, -2:].to_numpy().T)
     test_dataset = data_file.read()
     assert isinstance(test_dataset, xr.Dataset)
-    assert 400 == min(test_dataset.coords["spectral"].values)
-    assert 600 == max(test_dataset.coords["spectral"].values)
-    assert 0.0 == min(test_dataset.coords["time"].values)
-    assert 5.0 == max(test_dataset.coords["time"].values)
+    assert min(test_dataset.coords["spectral"].values) == 400
+    assert max(test_dataset.coords["spectral"].values) == 600
+    assert min(test_dataset.coords["time"].values) == 0.0
+    assert max(test_dataset.coords["time"].values) == 5.0
     test_dataset.sel(spectral=[620, 630, 650], method="nearest")
 
 

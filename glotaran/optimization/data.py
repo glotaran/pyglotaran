@@ -12,9 +12,9 @@ from glotaran.model import DataModel
 from glotaran.model import ExperimentModel
 from glotaran.model import get_data_model_dimension
 from glotaran.model import is_data_model_global
-from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameter
     from glotaran.typing.types import ArrayLike
 
 
@@ -359,7 +359,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
                     for index in aligned_global_axis
                 ]
                 if len(np.unique(aligned_global_axis)) != len(aligned_global_axis):
-                    raise AlignDatasetError()
+                    raise AlignDatasetError
                 aligned_axis_values = np.unique(
                     np.concatenate([aligned_axis_values, aligned_global_axis])
                 )

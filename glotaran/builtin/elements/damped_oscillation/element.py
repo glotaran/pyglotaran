@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
-import xarray as xr
 
 from glotaran.builtin.elements.damped_oscillation.matrix import (
     calculate_damped_oscillation_matrix_gaussian_activation,
@@ -20,9 +19,11 @@ from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model import Element
 from glotaran.model import Item
 from glotaran.model import ParameterType
-from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import DataModel  # noqa: TCH001
 
 if TYPE_CHECKING:
+    import xarray as xr
+
     from glotaran.typing.types import ArrayLike
 
 
@@ -176,7 +177,7 @@ class DampedOscillationElement(Element):
                     model_dimension,
                     prefix,
                 ),
-                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).to_numpy(),
             )
 
             data[f"{prefix}_cos"] = (
@@ -185,15 +186,15 @@ class DampedOscillationElement(Element):
                     model_dimension,
                     prefix,
                 ),
-                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).to_numpy(),
             )
         else:
             data[f"{prefix}_sin"] = (
                 (model_dimension, prefix),
-                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).to_numpy(),
             )
 
             data[f"{prefix}_cos"] = (
                 (model_dimension, prefix),
-                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).values,
+                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).to_numpy(),
             )

@@ -6,7 +6,6 @@ from typing import Literal
 from warnings import warn
 
 import numpy as np
-import xarray as xr
 from scipy.optimize import least_squares
 
 from glotaran.model import ExperimentModel
@@ -17,11 +16,13 @@ from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationResult
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
-from glotaran.typing.types import ArrayLike
 from glotaran.utils.tee import TeeContext
 
 if TYPE_CHECKING:
+    import xarray as xr
+
     from glotaran.project.library import ModelLibrary
+    from glotaran.typing.types import ArrayLike
 
 
 SUPPORTED_OPTIMIZATION_METHODS = {
@@ -126,7 +127,8 @@ class Optimization:
                     xtol=self._xtol,
                 )
                 termination_reason = ls_result.message
-            except Exception as e:
+            # No matter the error we want to behave gracefully
+            except Exception as e:  # noqa: BLE001
                 if self._raise:
                     raise e
                 warn(f"Optimization failed:\n\n{e}")

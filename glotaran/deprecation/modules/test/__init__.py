@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
-from glotaran.deprecation.deprecation_utils import OverDueDeprecation
+from glotaran.deprecation.deprecation_utils import OverDueDeprecationError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -66,10 +66,10 @@ def deprecation_warning_on_call_test_helper(
 
             return record, result
 
-        except OverDueDeprecation as error:
+        except OverDueDeprecationError as error:
             raise error
 
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             if raise_exception:
                 raise error
             return record, None

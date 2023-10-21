@@ -1,12 +1,15 @@
 """This package contains the spectral shape item."""
 
+from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
 
 from glotaran.model import ParameterType
 from glotaran.model import TypedItem
-from glotaran.typing.types import ArrayLike
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 
 class SpectralShape(TypedItem):

@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import pickle
 import re
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
 import pytest
 
 from glotaran.parameter import Parameter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.parametrize(
@@ -33,7 +37,7 @@ def test_parameter__deep_equals(key_name: str, value_1: Any, value_2: Any):
 
 
 @pytest.mark.parametrize("label, expected", (("foo", "foo"), (0, "0"), (1, "1")))
-def test_parameter_label_always_str_or_None(label: str | int, expected: str):
+def test_parameter_label_always_str_or_none(label: str | int, expected: str):
     """Parameter.label is always a string"""
     parameter = Parameter(label=label)
     assert parameter.label == expected
@@ -67,7 +71,7 @@ def test_parameter_repr(parameter: Parameter, expected_repr: str):
     """Repr creates code to recreate the object."""
     print(parameter.__repr__())
     assert parameter.__repr__() == expected_repr
-    assert parameter._deep_equals(eval(expected_repr))
+    assert parameter._deep_equals(eval(expected_repr))  # noqa: PGH001
 
 
 def test_parameter_from_list():
@@ -174,7 +178,7 @@ def test_parameter_non_negative():
         ),
         (
             "$foo.7.bar + $kinetic6",
-            "parameters.get('foo.7.bar').value " "+ parameters.get('kinetic6').value",
+            "parameters.get('foo.7.bar').value + parameters.get('kinetic6').value",
         ),
         ("$1", "parameters.get('1').value"),
         ("$1-$2", "parameters.get('1').value-parameters.get('2').value"),
@@ -223,7 +227,7 @@ def test_label_validator():
             Parameter(label=label)
 
 
-def test_parameter_pickle(tmpdir):
+def test_parameter_pickle(tmp_path: Path):
     parameter = Parameter(
         label="testlabel",
         expression="testexpression",
@@ -234,9 +238,10 @@ def test_parameter_pickle(tmpdir):
         vary=False,
     )
 
-    with open(tmpdir.join("test_param_pickle"), "wb") as f:
+    pickle_path = tmp_path / "test_param_pickle"
+    with pickle_path.open("wb") as f:
         pickle.dump(parameter, f)
-    with open(tmpdir.join("test_param_pickle"), "rb") as f:
+    with pickle_path.open("rb") as f:
         pickled_parameter = pickle.load(f)
 
     assert parameter == pickled_parameter

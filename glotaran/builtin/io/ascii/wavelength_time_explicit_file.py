@@ -76,7 +76,7 @@ class ExplicitFile:
             raise FileExistsError(f"File already exist:\n{self._file}")
         comment = f"{self._comment} {comment}"
 
-        comments = f"# Filename: {str(self._file)}\n{' '.join(comment.splitlines())}\n"
+        comments = f"# Filename: {self._file!s}\n{' '.join(comment.splitlines())}\n"
 
         if file_format == DataFileType.wavelength_explicit:
             wav = "\t".join(repr(num) for num in self._spectral_indices)
@@ -115,10 +115,12 @@ class ExplicitFile:
         # read the first line (explicit_axis) separately
         explicit_axis = pd.read_csv(
             self._file, skiprows=4, delimiter=r"\s+", header=None, nrows=1
-        ).values
+        ).to_numpy()
         explicit_axis = explicit_axis[0, :]  # reshape to (n,)
         # then the rest of the data:
-        rest_of_data = pd.read_csv(self._file, skiprows=5, delimiter=r"\s+", header=None).values
+        rest_of_data = pd.read_csv(
+            self._file, skiprows=5, delimiter=r"\s+", header=None
+        ).to_numpy()
         secondary_axis = rest_of_data[:, 0]
         observations = rest_of_data[:, 1:]
         if self._file_data_format == DataFileType.time_explicit:
@@ -130,7 +132,7 @@ class ExplicitFile:
             self._times = secondary_axis
             self._observations = observations
         else:
-            raise NotImplementedError()
+            raise NotImplementedError
         return self.dataset(prepare=prepare)
 
     def dataset(self, prepare: bool = True) -> xr.Dataset | xr.DataArray:
@@ -230,7 +232,7 @@ def get_data_file_format(line):
         # print("Wavelength explicit format") #TODO: verbosity / debug statement
         data_file_format = DataFileType.wavelength_explicit
     else:
-        raise NotImplementedError()
+        raise NotImplementedError
     return data_file_format
 
 

@@ -13,7 +13,7 @@ from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.model import Element
 from glotaran.model import GlotaranModelError
 from glotaran.model import ParameterType
-from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import DataModel  # noqa: TCH001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
@@ -49,7 +49,7 @@ class CoherentArtifactElement(Element):
             matrix_shape = (model_axis.size, self.order)
             index_dependent = any(isinstance(p, list) for p in parameters)
             if index_dependent:
-                matrix_shape = (global_axis.size,) + matrix_shape  # type:ignore[assignment]
+                matrix_shape = (global_axis.size, *matrix_shape)  # type:ignore[assignment]
             matrix = np.zeros(matrix_shape, dtype=np.float64)
             if index_dependent:
                 _calculate_coherent_artifact_matrix(
