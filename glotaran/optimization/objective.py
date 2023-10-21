@@ -110,7 +110,8 @@ class OptimizationObjective:
         if global_matrix.is_index_dependent:
             global_matrix_coords = (  # type:ignore[assignment]
                 (data.model_dimension, data.model_axis),
-            ) + global_matrix_coords
+                *global_matrix_coords,
+            )
         dataset["global_matrix"] = xr.DataArray(global_matrix.array, coords=global_matrix_coords)
         _, _, full_matrix = OptimizationMatrix.from_global_data(data)
         estimation = OptimizationEstimation.calculate(
@@ -158,7 +159,8 @@ class OptimizationObjective:
         if matrix.is_index_dependent:
             matrix_coords = (  # type:ignore[assignment]
                 (data.global_dimension, data.global_axis),
-            ) + matrix_coords
+                *matrix_coords,
+            )
         dataset["matrix"] = xr.DataArray(matrix.array, coords=matrix_coords)
         if data.is_global:
             self.calculate_result_dataset_global(data, matrix, dataset)
@@ -192,15 +194,15 @@ class OptimizationObjective:
             for name in ["data", "residual"]:
                 if f"{name}_singular_values" in dataset:
                     continue
-                l, s, r = np.linalg.svd(dataset[name], full_matrices=False)
+                lsv, sv, rsv = np.linalg.svd(dataset[name], full_matrices=False)
                 dataset[f"{name}_left_singular_vectors"] = (
                     (data.model_dimension, "left_singular_value_index"),
-                    l,
+                    lsv,
                 )
-                dataset[f"{name}_singular_values"] = (("singular_value_index"), s)
+                dataset[f"{name}_singular_values"] = (("singular_value_index"), sv)
                 dataset[f"{name}_right_singular_vectors"] = (
                     (data.global_dimension, "right_singular_value_index"),
-                    r.T,
+                    rsv.T,
                 )
         for _, model in iterate_data_model_elements(data.model):
             model.add_to_result_data(data.model, dataset, False)  # type:ignore[union-attr]

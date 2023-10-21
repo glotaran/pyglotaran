@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -9,7 +10,9 @@ from pandas.testing import assert_frame_equal
 
 from glotaran.io import load_parameters
 from glotaran.io import save_parameters
-from glotaran.parameter import Parameters
+
+if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
 
 PANDAS_TEST_DATA = Path(__file__).parent / "data"
 PATH_XLSX = PANDAS_TEST_DATA / "reference_parameters.xlsx"
@@ -83,20 +86,18 @@ def test_roundtrips(
 
 
 @pytest.mark.parametrize("format_name,sep", (("csv", ","), ("tsv", "\t")))
-def test_replace_infinfinity(
-    yaml_reference: Parameters, tmp_path: Path, format_name: str, sep: str
-):
+def test_replace_infinity(yaml_reference: Parameters, tmp_path: Path, format_name: str, sep: str):
     parameter_path = tmp_path / f"test_parameters.{format_name}"
     save_parameters(
         file_name=parameter_path,
         format_name=format_name,
         parameters=yaml_reference,
-        replace_infinfinity=False,
+        replace_infinity=False,
     )
-    df = pd.read_csv(parameter_path, sep=sep)
-    df = df[df["label"] != "verbose_list.no_defaults"]
-    assert all(df["maximum"] == np.inf)
-    assert all(df["minimum"] == -np.inf)
+    parameter_df = pd.read_csv(parameter_path, sep=sep)
+    parameter_df = parameter_df[parameter_df["label"] != "verbose_list.no_defaults"]
+    assert all(parameter_df["maximum"] == np.inf)
+    assert all(parameter_df["minimum"] == -np.inf)
 
     first_data_line = parameter_path.read_text().splitlines()[1]
     assert f"{sep}-inf" in first_data_line

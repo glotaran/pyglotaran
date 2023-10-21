@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 from typing import Literal
 
-import xarray as xr
 from pydantic import BaseModel
 from pydantic import ConfigDict
+
+if TYPE_CHECKING:
+    import xarray as xr
 
 
 class PreProcessor(BaseModel, abc.ABC):

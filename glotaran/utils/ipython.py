@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from collections import UserString
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from glotaran.plugin_system.io_plugin_utils import infer_file_format
-from glotaran.typing.types import StrOrPath
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import StrOrPath
 
 
 class MarkdownStr(UserString):
@@ -47,8 +51,7 @@ class MarkdownStr(UserString):
         """
         if self.syntax is not None:
             return f"```{self.syntax}\n{self.data}\n```"
-        else:
-            return self.data
+        return self.data
 
     def __str__(self) -> str:
         """Representation used by print and str."""
@@ -58,8 +61,7 @@ class MarkdownStr(UserString):
         """Equality check."""
         if isinstance(other, (str, MarkdownStr)):
             return str(self) == str(other)
-        else:
-            return NotImplemented
+        return NotImplemented
 
 
 def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:
@@ -79,7 +81,7 @@ def display_file(path: StrOrPath, *, syntax: str | None = None) -> MarkdownStr:
     MarkdownStr
         File content with syntax highlighting to render in ipython.
     """
+    path = Path(path)
     if syntax is None:
         syntax = infer_file_format(path)
-    with open(path, encoding="utf8") as file:
-        return MarkdownStr(file.read(), syntax=syntax)
+    return MarkdownStr(path.read_text("utf8"), syntax=syntax)

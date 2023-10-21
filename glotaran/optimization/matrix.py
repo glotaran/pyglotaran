@@ -15,11 +15,11 @@ from glotaran.model import GlotaranModelError
 from glotaran.model import GlotaranUserError
 from glotaran.model import iterate_data_model_elements
 from glotaran.model import iterate_data_model_global_elements
-from glotaran.optimization.data import LinkedOptimizationData
-from glotaran.optimization.data import OptimizationData
-from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from glotaran.optimization.data import LinkedOptimizationData
+    from glotaran.optimization.data import OptimizationData
+    from glotaran.parameter import Parameter
     from glotaran.typing.types import ArrayLike
 
 
@@ -158,7 +158,7 @@ class OptimizationMatrix:
         clp_axis = [
             label
             for gl in global_matrix.clp_axis
-            for label in [gl + "@" + ml for ml in matrix.clp_axis]
+            for label in [f"{gl}@{ml}" for ml in matrix.clp_axis]
         ]
 
         array = (
@@ -283,10 +283,9 @@ class OptimizationMatrix:
         OptimizationMatrix
             The scaled matrix.
         """
-        index_array = self.array
-        if self.is_index_dependent:
-            index_array = index_array[index, :, :]
+        if self.is_index_dependent:  # noqa: SIM108
+            index_array = self.array[index, :, :]
         else:
-            # necessary ih relations are applied
-            index_array = index_array.copy()
+            # necessary if relations are applied
+            index_array = self.array.copy()
         return replace(self, array=index_array)

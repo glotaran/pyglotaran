@@ -9,6 +9,7 @@ from glotaran.io import ProjectIoInterface
 from glotaran.io import register_project_io
 from glotaran.parameter import Parameters
 from glotaran.parameter.parameter import OPTION_NAMES_DESERIALIZED
+from glotaran.utils.io import normalize_dataframe_columns
 from glotaran.utils.io import safe_dataframe_fillna
 from glotaran.utils.io import safe_dataframe_replace
 
@@ -29,12 +30,13 @@ class ExcelProjectIo(ProjectIoInterface):
         -------
             :class:`Parameters`
         """
-        df = pd.read_excel(file_name, na_values=["None", "none"])
-        df.columns = [column.lower() for column in df.columns]
-        df = df.rename(columns=OPTION_NAMES_DESERIALIZED)
-        safe_dataframe_fillna(df, "minimum", -np.inf)
-        safe_dataframe_fillna(df, "maximum", np.inf)
-        return Parameters.from_dataframe(df, source=file_name)
+        parameter_df = (
+            pd.read_excel(file_name, na_values=["None", "none"])
+            .pipe(normalize_dataframe_columns, rename_dict=OPTION_NAMES_DESERIALIZED)
+            .pipe(safe_dataframe_fillna, column_name="minimum", fill_value=-np.inf)
+            .pipe(safe_dataframe_fillna, column_name="maximum", fill_value=np.inf)
+        )
+        return Parameters.from_dataframe(parameter_df, source=file_name)
 
     def save_parameters(self, parameters: Parameters, file_name: str):
         """Save a :class:`Parameters` to a Excel file.
@@ -46,7 +48,19 @@ class ExcelProjectIo(ProjectIoInterface):
         file_name : str
             File to write the parameters to.
         """
-        df = parameters.to_dataframe()
-        safe_dataframe_replace(df, "minimum", -np.inf, "")
-        safe_dataframe_replace(df, "maximum", np.inf, "")
-        df.to_excel(file_name, na_rep="None", index=False)
+        parameter_df = (
+            parameters.to_dataframe()
+            .pipe(
+                safe_dataframe_replace,
+                column_name="minimum",
+                to_be_replaced_values=-np.inf,
+                replace_value="",
+            )
+            .pipe(
+                safe_dataframe_replace,
+                column_name="maximum",
+                to_be_replaced_values=np.inf,
+                replace_value="",
+            )
+        )
+        parameter_df.to_excel(file_name, na_rep="None", index=False)

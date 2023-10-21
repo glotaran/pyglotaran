@@ -12,9 +12,9 @@ from glotaran.model import Attribute
 from glotaran.model import GlotaranUserError
 from glotaran.model import ItemIssue
 from glotaran.model import ParameterType
-from glotaran.parameter import Parameters
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
     from glotaran.typing.types import ArrayLike
 
 

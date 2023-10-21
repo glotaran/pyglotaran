@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from textwrap import indent
 from typing import TYPE_CHECKING
 from typing import Any
@@ -18,10 +17,12 @@ from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from glotaran.parameter.parameter_history import ParameterHistory
 
 
-class ParameterNotFoundException(Exception):
+class ParameterNotFoundError(Exception):
     """Raised when a Parameter is not found."""
 
     def __init__(self, label: str):  # noqa: D107
@@ -309,7 +310,7 @@ class Parameters:
         try:
             return self._parameters[label]
         except KeyError as error:
-            raise ParameterNotFoundException(label) from error
+            raise ParameterNotFoundError(label) from error
 
     def add(self, parameter: Parameter):
         """Add a parameter.
@@ -442,7 +443,7 @@ class Parameters:
 
     def __repr__(self) -> str:
         """Representation debug."""
-        params = [f"{p.label!r}: {repr(p)}" for p in self.all()]
+        params = [f"{p.label!r}: {p!r}" for p in self.all()]
         return f"Parameters({{{', '.join(params)}}})"
 
     def __eq__(self, other: object) -> bool:
@@ -462,7 +463,7 @@ class Parameters:
                 np.allclose(parameter.value, rhs.get(label).value, rtol=rtol)
                 for label, parameter in self._parameters.items()
             )
-        except ParameterNotFoundException:
+        except ParameterNotFoundError:
             return False
 
 

@@ -35,8 +35,7 @@ class YmlProjectIo(ProjectIoInterface):
 
         if isinstance(spec, list):
             return Parameters.from_list(spec)
-        else:
-            return Parameters.from_dict(spec)
+        return Parameters.from_dict(spec)
 
     def load_scheme(self, file_name: str) -> Scheme:
         """Load :class:`Scheme` instance from the specification defined in ``file_name``.
