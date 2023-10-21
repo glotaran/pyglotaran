@@ -12,9 +12,9 @@ from glotaran.model import DataModel
 from glotaran.model import ExperimentModel
 from glotaran.model import get_data_model_dimension
 from glotaran.model import is_data_model_global
-from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameter
     from glotaran.typing.types import ArrayLike
 
 

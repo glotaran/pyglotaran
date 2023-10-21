@@ -1,7 +1,6 @@
 """Utility module for ``glotaran.builtin.io.yml.yml``."""
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ruamel.yaml import YAML
@@ -10,6 +9,7 @@ from ruamel.yaml.compat import StringIO
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
+    from pathlib import Path
     from typing import Any
 
     from ruamel.yaml.nodes import ScalarNode

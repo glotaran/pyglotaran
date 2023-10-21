@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from glotaran.parameter.parameters import Parameters
-
 if TYPE_CHECKING:
     from os import PathLike
+
+    from glotaran.parameter.parameters import Parameters
 
 
 class ParameterHistory:

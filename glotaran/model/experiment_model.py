@@ -9,12 +9,11 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
-from glotaran.model.clp_constraint import ClpConstraint
-from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.model.clp_relation import ClpRelation
+from glotaran.model.clp_constraint import ClpConstraint  # noqa: TCH001
+from glotaran.model.clp_penalties import EqualAreaPenalty  # noqa: TCH001
+from glotaran.model.clp_relation import ClpRelation  # noqa: TCH001
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import resolve_data_model
-from glotaran.model.errors import ItemIssue
 from glotaran.model.item import ParameterType
 from glotaran.model.item import get_item_issues
 from glotaran.model.item import resolve_item_parameters
@@ -22,6 +21,7 @@ from glotaran.model.item import resolve_parameter
 from glotaran.parameter import Parameters
 
 if TYPE_CHECKING:
+    from glotaran.model.errors import ItemIssue
     from glotaran.project.library import ModelLibrary
 
 

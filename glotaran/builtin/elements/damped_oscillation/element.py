@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
-import xarray as xr
 
 from glotaran.builtin.elements.damped_oscillation.matrix import (
     calculate_damped_oscillation_matrix_gaussian_activation,
@@ -20,9 +19,11 @@ from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model import Element
 from glotaran.model import Item
 from glotaran.model import ParameterType
-from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import DataModel  # noqa: TCH001
 
 if TYPE_CHECKING:
+    import xarray as xr
+
     from glotaran.typing.types import ArrayLike
 
 

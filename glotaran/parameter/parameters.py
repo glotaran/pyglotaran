@@ -1,7 +1,6 @@
 """The parameters class."""
 from __future__ import annotations
 
-from collections.abc import Generator
 from textwrap import indent
 from typing import TYPE_CHECKING
 from typing import Any
@@ -17,6 +16,8 @@ from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from glotaran.parameter.parameter_history import ParameterHistory
 
 

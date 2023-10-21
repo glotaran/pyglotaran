@@ -1,15 +1,19 @@
 from __future__ import annotations
 
-import numpy as np
-import xarray as xr
+from typing import TYPE_CHECKING
 
-from glotaran.builtin.items.activation.activation import Activation
+import numpy as np
+import xarray as xr  # noqa: TCH002
+
+from glotaran.builtin.items.activation.activation import Activation  # noqa: TCH001
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
 from glotaran.builtin.items.activation.instant import InstantActivation  # noqa: F401
 from glotaran.model import Attribute
 from glotaran.model import DataModel
 from glotaran.model import ItemIssue
-from glotaran.parameter import Parameters
+
+if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
 
 
 class NoActivationIssue(ItemIssue):

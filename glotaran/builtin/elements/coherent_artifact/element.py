@@ -13,7 +13,7 @@ from glotaran.builtin.items.activation import add_activation_to_result_data
 from glotaran.model import Element
 from glotaran.model import GlotaranModelError
 from glotaran.model import ParameterType
-from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import DataModel  # noqa: TCH001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

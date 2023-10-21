@@ -15,11 +15,11 @@ from glotaran.model import GlotaranModelError
 from glotaran.model import GlotaranUserError
 from glotaran.model import iterate_data_model_elements
 from glotaran.model import iterate_data_model_global_elements
-from glotaran.optimization.data import LinkedOptimizationData
-from glotaran.optimization.data import OptimizationData
-from glotaran.parameter import Parameter
 
 if TYPE_CHECKING:
+    from glotaran.optimization.data import LinkedOptimizationData
+    from glotaran.optimization.data import OptimizationData
+    from glotaran.parameter import Parameter
     from glotaran.typing.types import ArrayLike
 
 

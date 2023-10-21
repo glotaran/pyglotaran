@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 from collections import UserString
+from typing import TYPE_CHECKING
 
 from glotaran.plugin_system.io_plugin_utils import infer_file_format
-from glotaran.typing.types import StrOrPath
+
+if TYPE_CHECKING:
+    from glotaran.typing.types import StrOrPath
 
 
 class MarkdownStr(UserString):

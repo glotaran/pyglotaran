@@ -11,11 +11,11 @@ from glotaran.model import GlotaranUserError
 from glotaran.model import get_data_model_dimension
 from glotaran.model import resolve_data_model
 from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.parameter import Parameters
-from glotaran.typing.types import ArrayLike
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
     from glotaran.project.library import ModelLibrary
+    from glotaran.typing.types import ArrayLike
 
 
 def simulate(
