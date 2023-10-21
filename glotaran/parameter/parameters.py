@@ -331,7 +331,7 @@ class Parameters:
         """
         for parameter in self.all():
             if parameter.expression is not None:
-                value = self._evaluator(parameter.transformed_expression)
+                value = self._evaluator(parameter._transformed_expression)
                 if not isinstance(value, (int, float)):
                     raise ValueError(
                         f"Expression '{parameter.expression}' of parameter '{parameter.label}' "
