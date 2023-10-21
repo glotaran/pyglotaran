@@ -127,7 +127,8 @@ class Optimization:
                     xtol=self._xtol,
                 )
                 termination_reason = ls_result.message
-            except Exception as e:
+            # No matter the error we want to behave gracefully
+            except Exception as e:  # noqa: BLE001
                 if self._raise:
                     raise e
                 warn(f"Optimization failed:\n\n{e}")
