@@ -36,7 +36,7 @@ select = [
   "FA", # flake8-future-annotations
   # "EM", # flake8-errmsg
   "ISC", # flake8-implicit-str-concat
-  # "INP", # flake8-no-pep420
+  "INP", # flake8-no-pep420
   "PIE", # flake8-pie
   "T20", # flake8-print
   # "PT", # flake8-pytest-style
@@ -109,6 +109,7 @@ unfixable = ["F401"]
 "*/test_*.py" = ["ARG001", "RUF012", "N811", "T20", "PIE804"]
 "*/__init__.py" = ["F401"]
 "glotaran/builtin/io/netCDF/netCDF.py" = ["N999"]
+"docs/*" = ["INP001"]
 
 [tool.isort]
 profile = "hug"
