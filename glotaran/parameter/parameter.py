@@ -171,7 +171,7 @@ class Parameter(BaseModel):
 
         return cls(**param)
 
-    def get_dependency_paramenters(self) -> list[str]:
+    def get_dependency_parameters(self) -> list[str]:
         return (
             [
                 match[0].replace("$", "")
