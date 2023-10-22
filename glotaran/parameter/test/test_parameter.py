@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from glotaran.parameter import Parameter
 
@@ -113,19 +114,19 @@ def test_parameter_options():
 
 def test_parameter_value_not_numeric_error():
     """Error if value isn't numeric."""
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         Parameter(label="", value="foo")
 
 
 def test_parameter_maximum_not_numeric_error():
     """Error if maximum isn't numeric."""
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         Parameter(label="", maximum="foo")
 
 
 def test_parameter_minimum_not_numeric_error():
     """Error if minimum isn't numeric."""
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         Parameter(label="", minimum="foo")
 
 
@@ -193,9 +194,9 @@ def test_parameter_non_negative():
 def test_transform_expression(case):
     expression, wanted_parameters = case
     parameter = Parameter(label="", expression=expression)
-    assert parameter.transformed_expression == wanted_parameters
+    assert parameter._transformed_expression == wanted_parameters
     # just for the test coverage so the if condition is wrong
-    assert parameter.transformed_expression == wanted_parameters
+    assert parameter._transformed_expression == wanted_parameters
 
 
 def test_label_validator():
@@ -206,7 +207,7 @@ def test_label_validator():
         "extra_valid3",
     ]
     for label in valid_names:
-        Parameter(label)
+        Parameter(label=label)
 
     invalid_names = [
         "testé",

@@ -260,7 +260,7 @@ class Parameters:
         .. # noqa: D414
         """
         return Parameters(
-            {label: parameter.copy() for label, parameter in self._parameters.items()}
+            {label: parameter.model_copy() for label, parameter in self._parameters.items()}
         )
 
     def all(self) -> Generator[Parameter, None, None]:
@@ -331,7 +331,7 @@ class Parameters:
         """
         for parameter in self.all():
             if parameter.expression is not None:
-                value = self._evaluator(parameter.transformed_expression)
+                value = self._evaluator(parameter._transformed_expression)
                 if not isinstance(value, (int, float)):
                     raise ValueError(
                         f"Expression '{parameter.expression}' of parameter '{parameter.label}' "

@@ -4,27 +4,24 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
+from typing import Annotated
 from typing import Any
 
 import asteval
 import numpy as np
-from attr import ib
-from attrs import Attribute
-from attrs import asdict
-from attrs import define
-from attrs import evolve
-from attrs import fields
-from attrs import filters
-from attrs import validators
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import model_validator
+from pydantic.functional_validators import BeforeValidator  # noqa: TCH002
 
-from glotaran.typing.types import _SupportsArray
-from glotaran.utils.attrs_helper import no_default_vals_in_repr
 from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr
 from glotaran.utils.sanitize import pretty_format_numerical
 from glotaran.utils.sanitize import sanitize_parameter_list
 
 if TYPE_CHECKING:
+    from pydantic._internal import _repr
+
     from glotaran.parameter import Parameters
 
 RESERVED_LABELS: tuple[str] = (  # type:ignore[assignment]
@@ -84,65 +81,48 @@ VALID_LABEL_REGEX = re.compile(r"\W", flags=re.ASCII)
 """A regular expression to validate labels."""
 
 
-def valid_label(parameter: Parameter, attribute: Attribute, label: str):
+def validate_label(label: Any) -> str:
     """Check if a label is a valid label for :class:`Parameter`.
 
     Parameters
     ----------
-    parameter : Parameter
-        The :class:`Parameter` instance
-    attribute : Attribute
-        The label field.
-    label : str
-        The label value.
+    label : Any
+        The label value passed as argument to :class:`Parameter`.
 
     Raises
     ------
     ValueError
         Raise when the label is not valid.
     """
+    label = str(label)
     if VALID_LABEL_REGEX.search(label.replace(".", "_")) is not None or label in RESERVED_LABELS:
         raise ValueError(f"'{label}' is not a valid parameter label.")
+    return label
 
 
-def set_transformed_expression(parameter: Parameter, attribute: Attribute, expression: str | None):
-    """Set the transformed expression from an expression.
-
-    Parameters
-    ----------
-    parameter : Parameter
-        The :class:`Parameter` instance
-    attribute : Attribute
-        The label field.
-    expression : str | None
-        The expression value.
-    """
-    if expression:
-        parameter.vary = False
-        parameter.transformed_expression = PARAMETER_EXPRESSION_REGEX.sub(
-            r"parameters.get('\g<parameter_expression>').value", expression
-        )
-
-
-@no_default_vals_in_repr
-@define
-class Parameter(_SupportsArray):
+class Parameter(BaseModel):
     """A parameter for optimization."""
 
-    label: str = ib(converter=str, validator=[valid_label])
-    value: float = ib(
-        default=np.nan,
-        converter=lambda v: float(v) if isinstance(v, int) else v,
-        validator=[validators.instance_of(float)],
-    )
-    standard_error: float = np.nan
-    expression: str | None = ib(default=None, validator=[set_transformed_expression])
-    maximum: float = ib(default=np.inf, validator=[validators.instance_of((int, float))])
-    minimum: float = ib(default=-np.inf, validator=[validators.instance_of((int, float))])
-    non_negative: bool = False
-    vary: bool = ib(default=True)
+    label: Annotated[str, BeforeValidator(validate_label)]
+    value: Annotated[float, Field(default=np.nan)]
+    standard_error: Annotated[float, Field(default=np.nan)]
+    expression: Annotated[str | None, Field(default=None)]
+    maximum: Annotated[float, Field(default=np.inf)]
+    minimum: Annotated[float, Field(default=-np.inf)]
+    non_negative: Annotated[bool, Field(default=False)]
+    vary: Annotated[bool, Field(default=True)]
 
-    transformed_expression: str | None = ib(default=None, init=False, repr=False)
+    _transformed_expression: Annotated[str | None, Field(default=None, init_var=False, repr=False)]
+
+    @model_validator(mode="after")
+    def _set_transformed_expression(self) -> Parameter:
+        """Set ``_transformed_expression`` after instance was initialized."""
+        if self.expression:
+            self.vary = False
+            self._transformed_expression = PARAMETER_EXPRESSION_REGEX.sub(
+                r"parameters.get('\g<parameter_expression>').value", self.expression
+            )
+        return self
 
     @property
     def label_short(self) -> str:
@@ -191,17 +171,7 @@ class Parameter(_SupportsArray):
 
         return cls(**param)
 
-    def copy(self) -> Parameter:
-        """Create a copy of the :class:`Parameter`.
-
-        Returns
-        -------
-        Parameter :
-            A copy of the :class:`Parameter`.
-        """
-        return evolve(self)
-
-    def get_dependency_paramenters(self) -> list[str]:
+    def get_dependency_parameters(self) -> list[str]:
         return (
             [
                 match[0].replace("$", "")
@@ -219,7 +189,8 @@ class Parameter(_SupportsArray):
         dict[str, Any]
             The parameter as dictionary.
         """
-        return asdict(self, filter=filters.exclude(fields(Parameter).transformed_expression))
+        # return asdict(self, filter=filters.exclude(fields(Parameter).transformed_expression))
+        return self.model_dump(exclude={"transformed_expression"})
 
     def _deep_equals(self, other: Parameter) -> bool:
         """Compare all attributes for equality not only ``value`` like ``__eq__`` does.
@@ -464,6 +435,12 @@ class Parameter(_SupportsArray):
     def __rsub__(self, other):
         """- (right)"""  # noqa: D400
         return other - self.value
+
+    def __repr_args__(self) -> _repr.ReprArgs:
+        """Strip defaults from args shown in repr."""
+        for key, val in super().__repr_args__():
+            if key in self.model_fields and not nan_or_equal(val, self.model_fields[key].default):
+                yield key, val
 
 
 def _log_value(value: float) -> float:
