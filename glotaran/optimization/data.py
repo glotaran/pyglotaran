@@ -67,7 +67,7 @@ class OptimizationData(OptimizationDataProvider):
         self._weight = self.get_from_dataset(data, "weight")
         self._flat_weight = None
         if self._weight is None:
-            self.get_model_weight(model)
+            self._weight = self.get_model_weight(model)
         if self._weight is not None:
             self._data *= self._weight
 
