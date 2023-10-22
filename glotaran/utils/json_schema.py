@@ -37,7 +37,12 @@ def _create_vanilla_schema_cached() -> tuple[dict[str, Any], dict[str, Any]]:
         Json Schema for :class:`Scheme` and a :class:`DataModel`
     """
     data_model_class = create_model(
-        "GlotaranDataModel", __base__=tuple(DataModel.__subclasses__())
+        "GlotaranDataModel",
+        __base__=tuple(
+            subclass
+            for subclass in DataModel.__subclasses__()
+            if subclass.__qualname__.startswith("GlotaranDataModel_") is False
+        ),
     )
     return Scheme.model_json_schema(), data_model_class.model_json_schema()
 
