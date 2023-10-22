@@ -105,7 +105,7 @@ repos:
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"
-        additional_dependencies: [types-tabulate, types-attrs, pydantic]
+        additional_dependencies: [types-tabulate, pydantic]
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.7.0
