@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numpy as np
@@ -16,8 +17,8 @@ if TYPE_CHECKING:
 
 class BaselineElement(Element):
     type: Literal["baseline"]  # type:ignore[assignment]
-    register_as: str = "baseline"  # type:ignore[misc]
-    unique: bool = True
+    register_as: ClassVar[str] = "baseline"
+    _unique: ClassVar[bool] = True
 
     def clp_label(self) -> str:
         return f"baseline_{self.label}"

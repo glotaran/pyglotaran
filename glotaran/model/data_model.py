@@ -207,14 +207,7 @@ class DataModel(Item):
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
         data_models = (
-            *tuple(
-                {
-                    e.model_fields["data_model_type"].default
-                    for e in elements
-                    if "data_model_type" in e.model_fields
-                    and e.model_fields["data_model_type"].default is not None
-                }
-            ),
+            *tuple({e.data_model_type for e in elements if e.data_model_type is not None}),
             DataModel,
         )
         return create_model(data_model_cls_name, __base__=data_models)

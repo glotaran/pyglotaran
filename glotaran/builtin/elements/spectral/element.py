@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numpy as np
@@ -22,9 +23,9 @@ class SpectralDataModel(DataModel):
 
 class SpectralElement(Element):
     type: Literal["spectral"]  # type:ignore[assignment]
-    register_as: str = "spectral"  # type:ignore[misc]
+    register_as: ClassVar[str] = "spectral"
     dimension: str = "spectral"
-    data_model_type: type[DataModel] = SpectralDataModel  # type:ignore[misc,valid-type]
+    data_model_type: ClassVar[type[DataModel]] = SpectralDataModel  # type:ignore[valid-type]
     shapes: dict[str, SpectralShape.get_annotated_type()]  # type:ignore[valid-type]
 
     def calculate_matrix(  # type:ignore[override]

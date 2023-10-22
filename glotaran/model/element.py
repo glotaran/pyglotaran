@@ -18,10 +18,7 @@ if TYPE_CHECKING:
 
 
 class Element(TypedItem, abc.ABC):
-    """
-
-    Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`.
-    """
+    """Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`."""
 
     data_model_type: ClassVar[type | None] = None
     is_exclusive: ClassVar[bool] = False
