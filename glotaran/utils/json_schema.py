@@ -7,6 +7,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import overload
 
+from pydantic import create_model
+
+from glotaran.model.data_model import DataModel
 from glotaran.project import Scheme
 
 if TYPE_CHECKING:
@@ -45,6 +48,23 @@ def create_model_scheme_json_schema(
     dict[str, Any] | None
         Json Schema dict if no ``output_path`` was provided.
     """
+    json_schema = lru_cache(lambda: Scheme.model_json_schema())()
+
+    # Since GlotaranDataModel is created dynamically we create a schema that would fit all
+    data_model_schema = lru_cache(
+        lambda: create_model(
+            "GlotaranDataModel", __base__=(*DataModel.__subclasses__(), DataModel)
+        ).model_json_schema()
+    )()
+    # Overwrite required fields with required fields from base class
+    data_model_schema["required"] = [
+        name for name, field in DataModel.model_fields.items() if field.is_required()
+    ]
+    json_schema["$defs"] |= data_model_schema.pop("$defs")
+    json_schema["$defs"]["GlotaranDataModel"] = data_model_schema
+    json_schema["$defs"]["ExperimentModel"]["properties"]["datasets"]["additionalProperties"][
+        "$ref"
+    ] = "#/$defs/GlotaranDataModel"
 
     # We need this overwrite since we generate json schema for editor support (auto completion and
     # linting) of model schema files where the parameter label is used rather than defining a
@@ -56,7 +76,6 @@ def create_model_scheme_json_schema(
     }
     if parameters is not None:
         parameter_label_schema |= {"enum": parameters.labels}
-    json_schema = lru_cache(lambda: Scheme.model_json_schema())()
     json_schema["$defs"]["Parameter"] = parameter_label_schema
 
     if output_path is None:
