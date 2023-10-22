@@ -6,7 +6,6 @@ load_plugins()
 
 __version__ = "0.8.0.dev0"
 
-load_plugins()
 
 examples = deprecate_submodule(
     deprecated_module_name="glotaran.examples",
