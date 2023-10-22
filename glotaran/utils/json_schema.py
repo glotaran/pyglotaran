@@ -9,6 +9,7 @@ from typing import overload
 
 from pydantic import create_model
 
+from glotaran.io import load_parameters
 from glotaran.model.data_model import DataModel
 from glotaran.project import Scheme
 
@@ -19,20 +20,20 @@ if TYPE_CHECKING:
 
 @overload
 def create_model_scheme_json_schema(
-    output_path: None, parameters: Parameters | None = None
+    output_path: None, parameters: Parameters | StrOrPath | None = None
 ) -> dict[str, Any]:
     ...
 
 
 @overload
 def create_model_scheme_json_schema(
-    output_path: StrOrPath, parameters: Parameters | None = None
+    output_path: StrOrPath, parameters: Parameters | StrOrPath | None = None
 ) -> None:
     ...
 
 
 def create_model_scheme_json_schema(
-    output_path: StrOrPath | None = None, parameters: Parameters | None = None
+    output_path: StrOrPath | None = None, parameters: Parameters | StrOrPath | None = None
 ) -> dict[str, Any] | None:
     """Create the json scheme for the model scheme.
 
@@ -40,7 +41,7 @@ def create_model_scheme_json_schema(
     ----------
     output_path : StrOrPath | None
         Path to write the schema to. Defaults to None
-    parameters : Parameters | None
+    parameters : Parameters | StrOrPath | None
         Parameters to inject labels into schema. Defaults to None
 
     Returns
@@ -75,6 +76,8 @@ def create_model_scheme_json_schema(
         "type": "string",
     }
     if parameters is not None:
+        if isinstance(parameters, (str, Path)):
+            parameters = load_parameters(parameters)
         parameter_label_schema |= {"enum": parameters.labels}
     json_schema["$defs"]["Parameter"] = parameter_label_schema
 
