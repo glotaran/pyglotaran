@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numpy as np
@@ -34,11 +35,9 @@ class Oscillation(Item):
 
 class DampedOscillationElement(Element):
     type: Literal["damped-oscillation"]  # type:ignore[assignment]
-    register_as: str = "damped-oscillation"  # type:ignore[misc]
+    register_as: ClassVar[str] = "damped-oscillation"
     dimension: str = "time"
-    data_model_type: type[  # type:ignore[misc,valid-type]
-        DataModel
-    ] = ActivationDataModel
+    data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     oscillations: dict[str, Oscillation]
 
     def calculate_matrix(  # type:ignore[override]

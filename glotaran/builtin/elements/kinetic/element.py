@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import reduce
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Literal
 
 import numpy as np
@@ -23,8 +24,8 @@ if TYPE_CHECKING:
 
 class KineticElement(ExtendableElement, Kinetic):
     type: Literal["kinetic"]  # type:ignore[assignment]
-    register_as: str = "kinetic"  # type:ignore[misc]
-    data_model_type: type[DataModel] = ActivationDataModel  # type:ignore[misc, valid-type]
+    register_as: ClassVar[str] = "kinetic"
+    data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     dimension: str = "time"
 
     def extend(self, other: KineticElement):  # type:ignore[override]
