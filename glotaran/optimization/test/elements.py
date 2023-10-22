@@ -5,9 +5,9 @@ from typing import Literal
 
 import numpy as np
 
-from glotaran.model import DataModel
-from glotaran.model import Element
-from glotaran.model import ParameterType
+from glotaran.model.data_model import DataModel  # noqa: TCH001
+from glotaran.model.element import Element
+from glotaran.model.item import ParameterType  # noqa: TCH001
 
 if TYPE_CHECKING:
     import xarray as xr

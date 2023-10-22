@@ -3,7 +3,7 @@ import pytest
 
 from glotaran.builtin.items.activation import GaussianActivation
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model import GlotaranUserError
+from glotaran.model.errors import GlotaranUserError
 
 
 def test_gaussian_activation():

@@ -2,8 +2,8 @@ from copy import deepcopy
 
 import pytest
 
-from glotaran.model import ClpRelation
-from glotaran.model import ZeroConstraint
+from glotaran.model.clp_constraint import ZeroConstraint
+from glotaran.model.clp_relation import ClpRelation
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
