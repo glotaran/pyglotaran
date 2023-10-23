@@ -5,8 +5,8 @@ from typing import Literal
 
 import numpy as np
 
-from glotaran.model import ParameterType
-from glotaran.model import TypedItem
+from glotaran.model.item import ParameterType
+from glotaran.model.item import TypedItem
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

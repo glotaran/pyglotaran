@@ -9,8 +9,8 @@ from pydantic import ConfigDict
 from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
-from glotaran.model import ExperimentModel
-from glotaran.model import GlotaranUserError
+from glotaran.model.errors import GlotaranUserError
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import OptimizationResult
 from glotaran.parameter import Parameters
 

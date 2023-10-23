@@ -9,8 +9,8 @@ import numpy as np
 from scipy.linalg import eig
 from scipy.linalg import solve
 
-from glotaran.model import Item
-from glotaran.model import ParameterType
+from glotaran.model.item import Item
+from glotaran.model.item import ParameterType
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

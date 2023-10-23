@@ -1,6 +1,6 @@
 import numpy as np
 
-from glotaran.model import EqualAreaPenalty
+from glotaran.model.clp_penalties import EqualAreaPenalty
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.typing.types import ArrayLike

@@ -7,16 +7,16 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from glotaran.model import ClpConstraint
-from glotaran.model import ClpRelation
-from glotaran.model import DataModel
-from glotaran.model import Element
-from glotaran.model import GlotaranModelError
-from glotaran.model import GlotaranUserError
-from glotaran.model import iterate_data_model_elements
-from glotaran.model import iterate_data_model_global_elements
+from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import iterate_data_model_elements
+from glotaran.model.data_model import iterate_data_model_global_elements
+from glotaran.model.errors import GlotaranModelError
+from glotaran.model.errors import GlotaranUserError
 
 if TYPE_CHECKING:
+    from glotaran.model.clp_constraint import ClpConstraint
+    from glotaran.model.clp_relation import ClpRelation
+    from glotaran.model.element import Element
     from glotaran.optimization.data import LinkedOptimizationData
     from glotaran.optimization.data import OptimizationData
     from glotaran.parameter import Parameter

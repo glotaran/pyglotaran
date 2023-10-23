@@ -5,8 +5,8 @@ from glotaran.builtin.elements.spectral import SpectralElement
 from glotaran.builtin.elements.spectral.element import SpectralDataModel
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import InstantActivation
-from glotaran.model import DataModel
-from glotaran.model import ExperimentModel
+from glotaran.model.data_model import DataModel
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate

@@ -15,7 +15,7 @@ from glotaran.plugin_system.base_registry import set_plugin
 from glotaran.utils.ipython import MarkdownStr
 
 if TYPE_CHECKING:
-    from glotaran.model import Element
+    from glotaran.model.element import Element
 
 
 def register_element(element_type: str, element: type[Element]) -> None:

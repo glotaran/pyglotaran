@@ -5,7 +5,7 @@ import numpy as np
 from glotaran.builtin.elements.kinetic import KineticElement
 from glotaran.builtin.elements.spectral import SpectralElement
 from glotaran.io import load_parameters
-from glotaran.model import DataModel
+from glotaran.model.data_model import DataModel
 
 SIMULATION_PARAMETERS_YML = """
 rates:

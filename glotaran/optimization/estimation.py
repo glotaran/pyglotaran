@@ -10,7 +10,7 @@ from glotaran.optimization.nnls import residual_nnls
 from glotaran.optimization.variable_projection import residual_variable_projection
 
 if TYPE_CHECKING:
-    from glotaran.model import ClpRelation
+    from glotaran.model.clp_relation import ClpRelation
     from glotaran.typing.types import ArrayLike
 
 SUPPORTED_RESIUDAL_FUNCTIONS = {
