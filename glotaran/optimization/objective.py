@@ -1,9 +1,9 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.model import ExperimentModel
-from glotaran.model import iterate_data_model_elements
-from glotaran.model import iterate_data_model_global_elements
+from glotaran.model.data_model import iterate_data_model_elements
+from glotaran.model.data_model import iterate_data_model_global_elements
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation

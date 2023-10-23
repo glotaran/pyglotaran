@@ -1,8 +1,8 @@
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DataModel
-from glotaran.model import ExperimentModel
+from glotaran.model.data_model import DataModel
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.optimization import Optimization
 from glotaran.optimization.test.library import test_library
 from glotaran.parameter import Parameters

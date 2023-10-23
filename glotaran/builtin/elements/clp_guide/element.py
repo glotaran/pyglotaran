@@ -6,10 +6,10 @@ from typing import Literal
 
 import numpy as np
 
-from glotaran.model import DataModel
-from glotaran.model import Element
+from glotaran.model.element import Element
 
 if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
 

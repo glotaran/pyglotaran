@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DataModel
-from glotaran.model import GlotaranUserError
-from glotaran.model import get_data_model_dimension
-from glotaran.model import resolve_data_model
+from glotaran.model.data_model import get_data_model_dimension
+from glotaran.model.data_model import resolve_data_model
+from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.matrix import OptimizationMatrix
 
 if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
     from glotaran.parameter import Parameters
     from glotaran.project.library import ModelLibrary
     from glotaran.typing.types import ArrayLike

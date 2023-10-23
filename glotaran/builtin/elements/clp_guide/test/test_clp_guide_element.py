@@ -2,7 +2,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.builtin.elements.clp_guide import ClpGuideElement
-from glotaran.model import DataModel
+from glotaran.model.data_model import DataModel
 from glotaran.optimization import OptimizationData
 from glotaran.optimization import OptimizationMatrix
 

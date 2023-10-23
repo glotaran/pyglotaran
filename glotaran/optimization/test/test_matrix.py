@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.model import ClpRelation
-from glotaran.model import ZeroConstraint
+from glotaran.model.clp_constraint import ZeroConstraint
+from glotaran.model.clp_relation import ClpRelation
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.matrix import OptimizationMatrix

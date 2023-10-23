@@ -8,10 +8,10 @@ from typing import Literal
 import numpy as np
 
 from glotaran.builtin.items.activation.activation import Activation
-from glotaran.model import Attribute
-from glotaran.model import GlotaranUserError
-from glotaran.model import ItemIssue
-from glotaran.model import ParameterType
+from glotaran.model.errors import GlotaranUserError
+from glotaran.model.errors import ItemIssue
+from glotaran.model.item import Attribute
+from glotaran.model.item import ParameterType
 
 if TYPE_CHECKING:
     from glotaran.parameter import Parameters

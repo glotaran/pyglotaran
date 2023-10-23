@@ -8,9 +8,8 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import least_squares
 
-from glotaran.model import ExperimentModel
-from glotaran.model import GlotaranModelIssues
-from glotaran.model import GlotaranUserError
+from glotaran.model.errors import GlotaranModelIssues
+from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization_history import OptimizationHistory
 from glotaran.optimization.result import OptimizationResult
@@ -21,6 +20,7 @@ from glotaran.utils.tee import TeeContext
 if TYPE_CHECKING:
     import xarray as xr
 
+    from glotaran.model.experiment_model import ExperimentModel
     from glotaran.project.library import ModelLibrary
     from glotaran.typing.types import ArrayLike
 

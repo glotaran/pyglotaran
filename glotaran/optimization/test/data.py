@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DataModel
+from glotaran.model.data_model import DataModel
 from glotaran.optimization.test.elements import TestElementConstant
 
 TestDataModelConstantIndexIndependent = DataModel(

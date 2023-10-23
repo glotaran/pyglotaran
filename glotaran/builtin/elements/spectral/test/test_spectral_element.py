@@ -4,7 +4,7 @@ import xarray as xr
 
 from glotaran.builtin.elements.spectral import SpectralDataModel
 from glotaran.builtin.elements.spectral import SpectralElement
-from glotaran.model import ExperimentModel
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate

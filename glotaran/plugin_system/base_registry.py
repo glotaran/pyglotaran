@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
     from glotaran.io.interface import DataIoInterface
     from glotaran.io.interface import ProjectIoInterface
-    from glotaran.model import Element
+    from glotaran.model.element import Element
 
     _PluginType = TypeVar("_PluginType", type[Element], DataIoInterface, ProjectIoInterface)
     _PluginInstantiableType = TypeVar(

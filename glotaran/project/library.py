@@ -5,8 +5,8 @@ from typing import TypeAlias
 
 from pydantic import RootModel
 
-from glotaran.model import Element
-from glotaran.model import ExtendableElement
+from glotaran.model.element import Element
+from glotaran.model.element import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 
 LibraryType: TypeAlias = dict[  # type:ignore[misc,valid-type]
