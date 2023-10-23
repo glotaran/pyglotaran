@@ -8,12 +8,12 @@ from typing import Literal
 import numpy as np
 import xarray as xr
 
-from glotaran.model import DataModel
-from glotaran.model import ExperimentModel
-from glotaran.model import get_data_model_dimension
-from glotaran.model import is_data_model_global
+from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import get_data_model_dimension
+from glotaran.model.data_model import is_data_model_global
 
 if TYPE_CHECKING:
+    from glotaran.model.experiment_model import ExperimentModel
     from glotaran.parameter import Parameter
     from glotaran.typing.types import ArrayLike
 

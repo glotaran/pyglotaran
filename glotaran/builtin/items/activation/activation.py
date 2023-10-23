@@ -1,6 +1,6 @@
-from glotaran.model import Attribute
-from glotaran.model import ParameterType
-from glotaran.model import TypedItem
+from glotaran.model.item import Attribute
+from glotaran.model.item import ParameterType
+from glotaran.model.item import TypedItem
 
 
 class Activation(TypedItem):

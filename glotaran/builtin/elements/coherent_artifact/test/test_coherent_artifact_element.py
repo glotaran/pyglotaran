@@ -7,7 +7,7 @@ from glotaran.builtin.items.activation import Activation
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import GaussianActivation
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model import ExperimentModel
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate

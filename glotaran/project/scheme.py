@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 
 from glotaran.io import load_dataset
-from glotaran.model import ExperimentModel
 from glotaran.model.errors import GlotaranUserError
+from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
 from glotaran.project.library import ModelLibrary
