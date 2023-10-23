@@ -9,11 +9,11 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.optimization.test.data import TestDataModelConstantIndexDependent
-from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.data import TestDataModelConstantThreeCompartments
-from glotaran.optimization.test.data import TestDataModelGlobal
 from glotaran.parameter import Parameter
+from tests.optimization.data import TestDataModelConstantIndexDependent
+from tests.optimization.data import TestDataModelConstantIndexIndependent
+from tests.optimization.data import TestDataModelConstantThreeCompartments
+from tests.optimization.data import TestDataModelGlobal
 
 
 @pytest.mark.parametrize("weight", (True, False))

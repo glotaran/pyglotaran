@@ -2,9 +2,9 @@ from glotaran.model.clp_constraint import OnlyConstraint
 from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
-from glotaran.model.test.test_data_model import MockDataModel
-from glotaran.model.test.test_data_model import MockElementWithDataModel
-from glotaran.model.test.test_data_model import MockElementWithItem
+from tests.model.test_data_model import MockDataModel
+from tests.model.test_data_model import MockElementWithDataModel
+from tests.model.test_data_model import MockElementWithItem
 
 
 def test_experiment_model_from_dict():

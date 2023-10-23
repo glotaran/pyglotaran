@@ -248,7 +248,7 @@ def test_warn_deprecated_sliced_method():
     with pytest.warns(GlotaranApiDeprecationWarning):
         warn_deprecated(
             deprecated_qual_name_usage=(
-                "glotaran.deprecation.test.test_deprecation_utils.DummyClass.foo()"
+                "tests.deprecation.test_deprecation_utils.DummyClass.foo()"
             ),
             new_qual_name_usage=DEPRECATION_QUAL_NAME,
             to_be_removed_in_version="0.6.0",
@@ -262,7 +262,7 @@ def test_warn_deprecated_sliced_mapping():
     with pytest.warns(GlotaranApiDeprecationWarning):
         warn_deprecated(
             deprecated_qual_name_usage=(
-                "glotaran.deprecation.test.test_deprecation_utils.DummyClass.foo['bar']"
+                "tests.deprecation.test_deprecation_utils.DummyClass.foo['bar']"
             ),
             new_qual_name_usage=DEPRECATION_QUAL_NAME,
             to_be_removed_in_version="0.6.0",
@@ -494,7 +494,7 @@ def test_deprecate_module_attribute():
     """Same code as the original import and warning"""
 
     with pytest.warns(GlotaranApiDeprecationWarning) as record:
-        from glotaran.deprecation.test.dummy_package.deprecated_module_attribute import (
+        from tests.deprecation.dummy_package.deprecated_module_attribute import (
             deprecated_attribute,
         )
 
@@ -507,7 +507,7 @@ def test_deprecate_module_attribute_overwrite():
     """Qualname was only used for the warning"""
 
     with pytest.warns(GlotaranApiDeprecationWarning) as record:
-        from glotaran.deprecation.test.dummy_package.deprecated_module_attribute import foo_bar
+        from tests.deprecation.dummy_package.deprecated_module_attribute import foo_bar
 
         assert foo_bar.__code__ == parse_version.__code__
         assert Path(record[0].filename) == Path(__file__)
@@ -518,7 +518,7 @@ def test_deprecate_module_attribute_overwrite():
 def test_deprecate_submodule(recwarn: WarningsRecorder):
     """Raise warning when Attribute of fake module is used"""
 
-    from glotaran.deprecation.test.dummy_package import deprecated_module
+    from tests.deprecation.dummy_package import deprecated_module
 
     assert deprecated_module.parse_version.__code__ == parse_version.__code__
 
@@ -530,9 +530,7 @@ def test_deprecate_submodule(recwarn: WarningsRecorder):
 def test_deprecate_submodule_from_import(recwarn: WarningsRecorder):
     """Raise warning when Attribute of fake module is imported"""
 
-    from glotaran.deprecation.test.dummy_package.deprecated_module import (  # noqa: F401
-        parse_version,
-    )
+    from tests.deprecation.dummy_package.deprecated_module import parse_version  # noqa: F401
 
     assert len(recwarn) == 1
     assert recwarn[0].category == GlotaranApiDeprecationWarning
@@ -543,9 +541,7 @@ def test_deprecate_submodule_from_import(recwarn: WarningsRecorder):
 def test_deprecate_submodule_from_import_overwrite(recwarn: WarningsRecorder):
     """Qualname was only used for the warning"""
 
-    from glotaran.deprecation.test.dummy_package.overwritten_module import (  # noqa: F401
-        parse_version,
-    )
+    from tests.deprecation.dummy_package.overwritten_module import parse_version  # noqa: F401
 
     assert len(recwarn) == 1
     assert recwarn[0].category == GlotaranApiDeprecationWarning
@@ -558,13 +554,11 @@ def test_deprecate_submodule_import_error(recwarn: WarningsRecorder):
     """Raise warning when Attribute of fake module is imported"""
 
     with pytest.raises(ImportError) as excinfo:
-        from glotaran.deprecation.test.dummy_package.deprecated_module import (  # noqa: F401
-            does_not_exists,
-        )
+        from tests.deprecation.dummy_package.deprecated_module import does_not_exists  # noqa: F401
 
     assert str(excinfo.value) == (
         "cannot import name 'does_not_exists' from "
-        "'glotaran.deprecation.test.dummy_package.deprecated_module' (unknown location)"
+        "'tests.deprecation.dummy_package.deprecated_module' (unknown location)"
     )
 
 
@@ -573,7 +567,7 @@ def test_deprecate_submodule_attr__file__(recwarn: WarningsRecorder):
     """Now warning when inspecting __file__ attribute (pytest using inspect)"""
     warnings.simplefilter("always")
 
-    from glotaran.deprecation.test import dummy_package
+    from tests.deprecation import dummy_package
 
     dummy_package.__file__
 

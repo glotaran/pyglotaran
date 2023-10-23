@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 
 from glotaran.model.data_model import DataModel
-from glotaran.optimization.test.elements import TestElementConstant
+from tests.optimization.elements import TestElementConstant
 
 TestDataModelConstantIndexIndependent = DataModel(
     data=xr.DataArray(

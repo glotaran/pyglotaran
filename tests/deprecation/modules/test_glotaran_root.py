@@ -6,7 +6,7 @@ from warnings import warn
 import pytest
 
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
-from glotaran.deprecation.modules.test import deprecation_warning_on_call_test_helper
+from tests.deprecation.modules import deprecation_warning_on_call_test_helper
 
 
 def dummy_warn(foo, bar=False):

@@ -9,9 +9,9 @@ import numpy as np
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
 from glotaran.model.item import get_item_issues
-from glotaran.model.test.test_item import MockItem  # noqa: TCH001
-from glotaran.model.test.test_item import MockTypedItem  # noqa: TCH001
 from glotaran.parameter import Parameters
+from tests.model.test_item import MockItem  # noqa: TCH001
+from tests.model.test_item import MockTypedItem  # noqa: TCH001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

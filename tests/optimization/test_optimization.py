@@ -4,9 +4,9 @@ import xarray as xr
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.optimization import Optimization
-from glotaran.optimization.test.library import test_library
 from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
+from tests.optimization.library import test_library
 
 
 def test_single_data():

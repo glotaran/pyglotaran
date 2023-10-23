@@ -2,10 +2,10 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from glotaran.optimization.test.data import TestDataModelConstantIndexDependent
-from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.data import TestDataModelGlobal
 from glotaran.simulation import simulate
+from tests.optimization.data import TestDataModelConstantIndexDependent
+from tests.optimization.data import TestDataModelConstantIndexIndependent
+from tests.optimization.data import TestDataModelGlobal
 
 
 @pytest.mark.parametrize("is_index_dependent", [True, False])

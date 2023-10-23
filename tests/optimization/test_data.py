@@ -6,9 +6,9 @@ import xarray as xr
 
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
-from glotaran.optimization.test.data import TestDataModelConstantIndexDependent
-from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.data import TestDataModelGlobal
+from tests.optimization.data import TestDataModelConstantIndexDependent
+from tests.optimization.data import TestDataModelConstantIndexIndependent
+from tests.optimization.data import TestDataModelGlobal
 
 
 @pytest.mark.parametrize("weight", (True, False))

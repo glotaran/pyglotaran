@@ -7,9 +7,9 @@ from glotaran.model.clp_relation import ClpRelation
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.optimization.test.data import TestDataModelConstantIndexIndependent
-from glotaran.optimization.test.data import TestDataModelConstantThreeCompartments
 from glotaran.parameter import Parameter
+from tests.optimization.data import TestDataModelConstantIndexIndependent
+from tests.optimization.data import TestDataModelConstantThreeCompartments
 
 
 @pytest.mark.parametrize(

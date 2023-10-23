@@ -1,5 +1,5 @@
-from glotaran.optimization.test.elements import TestElementExponential
-from glotaran.optimization.test.elements import TestElementGaussian
+from tests.optimization.elements import TestElementExponential
+from tests.optimization.elements import TestElementGaussian
 
 test_library = {
     "decay_independent": TestElementExponential(
