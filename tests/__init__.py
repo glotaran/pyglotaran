@@ -1,0 +1,1 @@
+"""Glotaran test suite."""
