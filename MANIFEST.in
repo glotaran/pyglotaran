@@ -8,6 +8,7 @@ setup.cfg
 setup.py
 
 recursive-include glotaran *
+recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 recursive-exclude validation *
