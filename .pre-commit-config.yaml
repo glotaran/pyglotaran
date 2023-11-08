@@ -39,22 +39,6 @@ repos:
         types: [file]
         types_or: [python, pyi]
 
-  - repo: https://github.com/psf/black
-    rev: 23.10.0
-    hooks:
-      - id: black
-        types: [file]
-        types_or: [python, pyi]
-        language_version: python3
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        types: [file]
-        types_or: [python, pyi]
-        minimum_pre_commit_version: 2.9.0
-
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
     rev: 0.6.1
@@ -65,26 +49,41 @@ repos:
           - "--extra-keys"
           - "metadata.vscode metadata.language_info.version"
 
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.0
-    hooks:
-      - id: nbqa-black
-        additional_dependencies: [black==22.6.0]
-        args: [--nbqa-mutate]
-      - id: nbqa-pyupgrade
-        additional_dependencies: [pyupgrade==2.37.3]
-        args: [--nbqa-mutate, --py38-plus]
-      - id: nbqa-flake8
-      - id: nbqa-check-ast
-      - id: nbqa-isort
-        additional_dependencies: [isort==5.10.1]
-        args: [--nbqa-mutate]
-
-  # Linters
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.1.1
+    rev: v0.1.4
     hooks:
+      - id: ruff
+        args:
+          - "--fix"
+          - "--select=I"
+          - "--config=.ruff-notebooks.toml"
+        alias: isort-notebooks
+        types_or: [jupyter]
+      - id: ruff-format
+        types_or: [jupyter]
+        args:
+          - "--config=.ruff-notebooks.toml"
+        alias: format-notebooks
+      - id: ruff
+        types_or: [jupyter]
+        args:
+          - "--config=.ruff-notebooks.toml"
+        alias: check-notebooks
+
+  # Linters
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.4
+    hooks:
+      - id: ruff
+        args:
+          - "--fix"
+          - "--select=I"
+        alias: isort
+      - id: ruff-format
+      # Commands above are both formatters an not linters
+      # See also: https://github.com/astral-sh/ruff/discussions/7310#discussioncomment-7102010
       - id: ruff
 
   # - repo: https://github.com/PyCQA/flake8
