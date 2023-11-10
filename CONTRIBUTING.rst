@@ -65,16 +65,11 @@ Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 1.  Fork the ``pyglotaran`` repo on GitHub.
 2.  Clone your fork locally::
 
-        $ git clone https://github.com/<your_name_here>/pyglotaran.git
+    $ git clone https://github.com/<your_name_here>/pyglotaran.git
 
-3.  Install your local copy into a virtualenv. Assuming you have
-    `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_
-    installed, this is how you set up your fork for local development::
+3.  Install your local copy into a virtualenv.::
 
-        $ mkvirtualenv pyglotaran
-        (pyglotaran)$ cd pyglotaran
-        (pyglotaran)$ python -m pip install -r requirements_dev.txt
-        (pyglotaran)$ pip install -e . --process-dependency-links
+    $ hatch shell
 
 4.  Install the ``pre-commit`` hooks, to automatically format and check your code::
 
@@ -86,15 +81,10 @@ Ready to contribute? Here's how to set up ``pyglotaran`` for local development.
 
     Now you can make your changes locally.
 
-6.  When you're done making changes, check that your changes pass flake8 and the
-    tests, including testing other Python versions with tox::
+6.  When you're done making changes, check that your changes pass linting and the tests::
 
-        $ pre-commit run -a
-        $ py.test
-
-    Or to run all at once::
-
-        $ tox
+    $ pre-commit run -a
+    $ pytest
 
 
 7.  Commit your changes and push your branch to GitHub::

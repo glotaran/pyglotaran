@@ -43,8 +43,8 @@
             virtualenv $VENV
             source ./$VENV/bin/activate
             # Install Python dependencies
-            pip install -r requirements_dev.txt
-            pip install -e .
+            pip install -r requirements_pinned.txt
+            pip install -e .[dev]
           fi
           source ./$VENV/bin/activate
 

@@ -50,12 +50,6 @@ repos:
         types_or: [python, pyi]
         minimum_pre_commit_version: 2.9.0
 
-  - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.5.0
-    hooks:
-      - id: setup-cfg-fmt
-        args: [--include-version-classifiers]
-
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
     rev: 0.6.1
