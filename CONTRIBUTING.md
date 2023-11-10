@@ -1,4 +1,5 @@
 ```{highlight} shell
+
 ```
 
 # Contributing
@@ -68,7 +69,8 @@ Ready to contribute? Here's how to set up `pyglotaran` for local development.
    $ hatch shell
    ```
 
-4. Install the `pre-commit` hooks, to automatically format and check your code:
+4. Install the `pre-commit` hooks, to automatically format and check your code
+   (if you don't already have `pre-commit` install it using `pipx install pre-commit`):
 
    ```
    $ pre-commit install
@@ -114,7 +116,7 @@ To use them you need to add the following query parameters to the url when creat
 - ✨ Feature PR: `?expand=1&template=feature_PR.md`
 - 🩹 Bug Fix PR: `?expand=1&template=bug_fix_PR`
 - 📚 Documentation PR: `?expand=1&template=docs_PR.md`
-:::
+  :::
 
 ## Pull Request Guidelines
 
@@ -319,7 +321,7 @@ If you have one of those rare cases you can use {func}`raise_deprecation_error`.
 
 ## Testing Result consistency
 
-To test the consistency of results  locally you need to clone the
+To test the consistency of results locally you need to clone the
 [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples)
 and run them:
 
