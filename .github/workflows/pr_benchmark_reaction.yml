@@ -82,7 +82,7 @@ jobs:
           PR_RESULT_BRANCH: pr-${{steps.bench_diff.outputs.pr_nr}}
         run: |
           git init
-          git checkout --orphan $PR_RESULT_BRANCH
+          git checkout --orphan "$PR_RESULT_BRANCH"
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git config user.name 'github-actions[bot]'
           git add .

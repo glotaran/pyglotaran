@@ -49,12 +49,12 @@ jobs:
           git remote add upstream https://github.com/glotaran/pyglotaran
           git fetch upstream
           pushd benchmark
-          last_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-          asv run $last_tag^..$last_tag --machine gh_action
+          last_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+          asv run "$last_tag^..$last_tag" --machine gh_action
           asv run upstream/main^..upstream/main --machine gh_action
           asv run HEAD^..HEAD --machine gh_action
           asv publish
-          echo "last_tag=$last_tag" >> $GITHUB_OUTPUT
+          echo "last_tag=$last_tag" >> "$GITHUB_OUTPUT"
 
       - name: Checkout benchmark result repo
         uses: actions/checkout@v4
