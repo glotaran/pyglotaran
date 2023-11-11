@@ -62,7 +62,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install pyglotaran
-        run: uv pip install . -r requirements_dev.txt
+        run: uv pip install . -r requirements_pinned.txt
       - name: ${{ matrix.example_name }}
         id: example-run
         uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
