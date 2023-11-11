@@ -10,5 +10,5 @@ dependencies:
   # update outdated repo2docker version
   - pip
   - pip:
-      - -r ../requirements_dev.txt
+      - -r ../requirements_pinned.txt
       - ..

@@ -12,55 +12,58 @@
 # This should make it easy to add new rules without breaking existing ones.
 
 # Global rule:
-*                                   @glotaran/admins
+*                                       @glotaran/admins
 
 # tooling
-/.github                            @glotaran/admins @glotaran/maintainers
-/.*                                 @glotaran/admins @glotaran/maintainers
-/*.y*ml                             @glotaran/admins @glotaran/maintainers
-/*.ini                              @glotaran/admins @glotaran/maintainers
-/*.toml                             @glotaran/admins @glotaran/maintainers
-/*.txt                              @glotaran/admins @glotaran/maintainers
-LICENSE                             @glotaran/pyglotaran_creators
+/.github                                @glotaran/admins @glotaran/maintainers
+/.*                                     @glotaran/admins @glotaran/maintainers
+/*.y*ml                                 @glotaran/admins @glotaran/maintainers
+/*.toml                                 @glotaran/admins @glotaran/maintainers
+/*.txt                                  @glotaran/admins @glotaran/maintainers
+LICENSE                                 @glotaran/pyglotaran_creators
 
 # docs
-/docs/**/*.rst                      @glotaran/maintainers @glotaran/pyglotaran_creators
-# /docs/**/*.md                     @glotaran/maintainers @glotaran/pyglotaran_creators
+/docs/**/*.rst                          @glotaran/maintainers @glotaran/pyglotaran_creators
+/docs/**/*.md                           @glotaran/maintainers @glotaran/pyglotaran_creators
 
 # analysis module:
-# /glotaran/analysis/                 @jsnel @joernweissenborn
+# /glotaran/analysis/                     @jsnel @joernweissenborn
 
 # builtin module:
-/glotaran/builtin/io/*              @glotaran/admins
-/glotaran/builtin/io/ascii          @jsnel @glotaran/maintainers
-/glotaran/builtin/io/pandas         @glotaran/maintainers
-/glotaran/builtin/io/netCDF         @glotaran/maintainers
-/glotaran/builtin/io/sdt            @glotaran/maintainers
-# /glotaran/builtin/megacomplexes/    @jsnel @joernweissenborn
+/glotaran/builtin/io/*                  @glotaran/admins
+/glotaran/builtin/io/ascii              @jsnel @glotaran/maintainers
+/glotaran/builtin/io/pandas             @glotaran/maintainers
+/glotaran/builtin/io/netCDF             @glotaran/maintainers
+/glotaran/builtin/io/sdt                @glotaran/maintainers
+
+/glotaran/builtin/elements              @jsnel @joernweissenborn
+/glotaran/builtin/items                 @jsnel @joernweissenborn
+/glotaran/optimization                  @jsnel @joernweissenborn
+/glotaran/model                         @jsnel @joernweissenborn
 
 # cli (deprecated)
-# /glotaran/cli/                      @jsnel @glotaran/admins
+# /glotaran/cli/                          @jsnel @glotaran/admins
 
 # examples # Removed in PR #866
-# /glotaran/examples/                 @jsnel @glotaran/maintainers
+# /glotaran/examples/                     @jsnel @glotaran/maintainers
 
 # io
-/glotaran/io/                       @jsnel @glotaran/maintainers
+/glotaran/io/                           @jsnel @glotaran/maintainers
 
 # model
-/glotaran/model/                    @jsnel @glotaran/admins @joernweissenborn
+/glotaran/model/                        @jsnel @glotaran/admins @joernweissenborn
 
 # parameter
-/glotaran/parameter/                @jsnel @glotaran/admins @joernweissenborn
+/glotaran/parameter/                    @jsnel @glotaran/admins @joernweissenborn
 
 # plugin_system
-glotaran/plugin_system              @s-weigand @glotaran/admins
+/glotaran/plugin_system                 @s-weigand @glotaran/admins
 
-# deprecation framework and tests
-glotaran/deprecation                @s-weigand @glotaran/admins
+# deprecation framework
+/glotaran/deprecation                   @s-weigand @glotaran/admins
 
 # utility function
-glotaran/utils                      @s-weigand @glotaran/admins
+/glotaran/utils                         @s-weigand @glotaran/admins
 
 # project
-/glotaran/project/                  @jsnel @glotaran/admins
+/glotaran/project/                      @jsnel @glotaran/admins

@@ -1,3 +1,129 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = [
+  "hatchling",
+]
+
+[project]
+name = "pyglotaran"
+description = "The Glotaran fitting engine."
+readme = "README.md"
+license = { text = "LGPL-3.0" }
+authors = [
+  { name = "Joern Weissenborn", email = "joern.weissenborn@gmail.com" },
+  { name = "Joris Snellenburg", email = "j.snellenburg@gmail.com" },
+  { name = "Ivo van Stokkum", email = "i.h.m.van.stokkum@vu.nl" },
+]
+requires-python = ">=3.10, <3.12"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Chemistry",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dynamic = [
+  "version",
+]
+dependencies = [
+  "asteval!=0.9.28,>=0.9.22",
+  "netCDF4>=1.5.7",
+  "numba>=0.55",
+  "numpy<1.25,>=1.21.2",
+  "odfpy>=1.4.1",
+  "openpyxl>=3.0.10",
+  "pandas>=1.3.4",
+  "pydantic>=2",
+  "ruamel.yaml>=0.17.17",
+  "scipy>=1.7.2",
+  "sdtfile>=2020.8.3",
+  "tabulate>=0.8.9",
+  "xarray>=2022.3",
+]
+[project.optional-dependencies]
+dev = [
+  "pyglotaran[docs,test]",
+]
+docs = [
+  # documentation dependencies
+  "Jinja2<3.1.0",
+  "jupyterlab>=3",
+  "matplotlib>=3",
+  "myst-parser>=0.12",
+  "nbsphinx>=0.8.1", # notebook docs
+  "nbval>=0.9.6",
+  "numpydoc>=0.8",
+  "Sphinx>=3.2",
+  "sphinx-click>=3.0.1",
+  "sphinx-copybutton>=0.3",
+  "sphinx-last-updated-by-git>=0.3",
+  "sphinx-rtd-theme>=1.2",
+  "sphinxcontrib-jquery>=4.1", # Needed for the search to work Ref.: https://github.com/readthedocs/sphinx_rtd_theme/issues/1434
+]
+extras = [
+  "pyglotaran-extras>=0.5",
+]
+full = [
+  "pyglotaran[extras]",
+]
+test = [
+  "coverage[toml]",
+  "IPython>=7.2",
+  "pluggy>=0.7",
+  "pytest>=3.7.1",
+  "pytest-allclose>=1",
+  "pytest-benchmark>=3.1.1",
+  "pytest-cov>=2.5.1",
+  "pytest-env>=0.6.2",
+  "pytest-runner>=2.11.1",
+  "types-dataclasses>=0.1.7",
+]
+[project.urls]
+Changelog = "https://pyglotaran.readthedocs.io/en/latest/changelog.html"
+Documentation = "https://pyglotaran.readthedocs.io"
+"Glotaran Ecosystem" = "https://glotaran.org"
+Homepage = "https://github.com/glotaran/pyglotaran"
+Source = "https://github.com/glotaran/pyglotaran"
+Tracker = "https://github.com/glotaran/pyglotaran/issues"
+[project.scripts]
+glotaran = "glotaran.cli.main:main"
+[project.entry-points."glotaran.plugins.data_io"]
+ascii = "glotaran.builtin.io.ascii.wavelength_time_explicit_file"
+nc = "glotaran.builtin.io.netCDF.netCDF"
+sdt = "glotaran.builtin.io.sdt.sdt_file_reader"
+yml = "glotaran.builtin.io.yml.yml"
+[project.entry-points."glotaran.plugins.elements"]
+baseline = "glotaran.builtin.elements.baseline"
+clp_guide = "glotaran.builtin.elements.clp_guide"
+coherent_artifact = "glotaran.builtin.elements.coherent_artifact"
+damped_oscillation = "glotaran.builtin.elements.damped_oscillation"
+kinetic = "glotaran.builtin.elements.kinetic"
+spectral = "glotaran.builtin.elements.spectral"
+[project.entry-points."glotaran.plugins.project_io"]
+csv = "glotaran.builtin.io.pandas.csv"
+tsv = "glotaran.builtin.io.pandas.tsv"
+xlsx = "glotaran.builtin.io.pandas.xlsx"
+xsx = "glotaran.builtin.io.pandas.xlsx"
+
+[tool.hatch.version]
+path = "glotaran/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["glotaran", "tests"]
+
+[tool.hatch.build.targets.wheel]
+only-include = ["glotaran"]
+
+[tool.hatch.envs.default]
+features = ["dev"]
+
 [tool.black]
 line-length = 99
 target-version = ['py38']
@@ -15,7 +141,6 @@ exclude = '''
   | dist
 )/
 '''
-
 
 [tool.ruff]
 
@@ -113,7 +238,6 @@ unfixable = ["F401"]
 # Needs a full rewrite anyway
 "glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = ["PTH"]
 
-
 [tool.isort]
 profile = "hug"
 src_paths = ["glotaran"]
@@ -123,14 +247,21 @@ known_first_party = ["glotaran", "tests"]
 force_single_line = true
 remove_redundant_aliases = true
 
-[tool.interrogate]
-exclude = ["setup.py", "docs", "tests", "benchmark/*"]
-ignore-init-module = true
-fail-under = 63
-
-[tool.nbqa.addopts]
-flake8 = ["--extend-ignore=E402,F404"]
-
+[tool.pytest.ini_options]
+# env = [
+#   "DEACTIVATE_GTA_PLUGINS=1",
+#   # Uncomment the following lines to deactivate pyglotaran all plugins
+#   # Uncomment "env =" and "COMPARE_RESULTS_LOCAL" and set it to a local folder
+#   # with results to use as a reference in lieu of the comparison-results branch
+#   # in the pyglotaran-examples git repository
+#   "COMPARE_RESULTS_LOCAL=~/local_results/", # On *nix
+#   "COMPARE_RESULTS_LOCAL=%USERPROFILE%/local_results/", # On Windows
+# ]
+# Uncomment to ignore deprecation warnings coming from pyglotaran
+# (this helps to see the warnings from dependencies)
+# filterwarnings = [
+#   "ignore:.+glotaran:GlotaranApiDeprecationWarning",
+# ]
 
 [tool.coverage.run]
 branch = true
@@ -161,31 +292,6 @@ exclude_lines = [
   'if TYPE_CHECKING:',
 ]
 
-[tool.check-manifest]
-ignore = [
-  "benchmark/**/*",
-  "binder/**/*",
-  "docs/**/*",
-  "*/.pytest_cache/**/*",
-  "*/.mypy_cache/**/*",
-  ".git-blame-ignore-revs",
-  ".gitignore",
-  ".pre-commit-config.yaml",
-  ".sonarcloud.properties",
-  ".sourcery.yaml",
-  ".zenodo.json",
-  "codecov.yml",
-  "flake.nix",
-  "flake.lock",
-  "readthedocs.yml",
-  "requirements_dev.txt",
-  "tox.ini",
-  ".gitmodules",
-  # This is just a file on the CI if not check out with git submodules option
-  "validation",
-]
-
-
 [tool.mypy]
 plugins = "pydantic.mypy"
 ignore_missing_imports = true
@@ -211,3 +317,11 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = "benchmark.*"
 ignore_errors = true
+
+[tool.interrogate]
+exclude = ["setup.py", "docs", "tests", "benchmark/*"]
+ignore-init-module = true
+fail-under = 63
+
+[tool.nbqa.addopts]
+flake8 = ["--extend-ignore=E402,F404"]

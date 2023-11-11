@@ -13,8 +13,8 @@ jobs:
     name: Comment and upload
     runs-on: ubuntu-latest
     if: >
-      ${{ github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.conclusion == 'success' }}
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Download artifact
         uses: actions/github-script@v6
@@ -64,7 +64,7 @@ jobs:
       - name: Show PR Number and Comment
         shell: python
         run: |
-          print(f"PR Number:\n{ ${{ steps.bench_diff.outputs.pr_nr }} }")
+          print(f"PR Number:\n{ '${{ steps.bench_diff.outputs.pr_nr }}' }")
           print("Comment Body:")
           print("""${{ steps.bench_diff.outputs.comment }}""")
 
@@ -82,7 +82,7 @@ jobs:
           PR_RESULT_BRANCH: pr-${{steps.bench_diff.outputs.pr_nr}}
         run: |
           git init
-          git checkout --orphan $PR_RESULT_BRANCH
+          git checkout --orphan "$PR_RESULT_BRANCH"
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git config user.name 'github-actions[bot]'
           git add .

@@ -18,6 +18,11 @@ repos:
       - id: fix-encoding-pragma
         args: [--remove]
 
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "1.3.0"
+    hooks:
+      - id: pyproject-fmt
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.0
     hooks:
@@ -49,12 +54,6 @@ repos:
         types: [file]
         types_or: [python, pyi]
         minimum_pre_commit_version: 2.9.0
-
-  - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.5.0
-    hooks:
-      - id: setup-cfg-fmt
-        args: [--include-version-classifiers]
 
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
@@ -115,24 +114,14 @@ repos:
         pass_filenames: false
         additional_dependencies: [click<8]
 
-  - repo: https://github.com/rstcheck/rstcheck
-    rev: "v6.2.0"
-    hooks:
-      - id: rstcheck
-        additional_dependencies: [sphinx]
-        exclude: "^docs/source/_templates"
-
   # - repo: https://github.com/pre-commit/pygrep-hooks
   #   rev: v1.10.0
   #   hooks:
-  #     - id: rst-backticks
   #     - id: python-check-blanket-noqa
   #       exclude: "docs|tests?"
   #     - id: python-check-blanket-type-ignore
   #       exclude: "docs|tests?"
   #     - id: python-use-type-annotations
-  #     - id: rst-directive-colons
-  #     - id: rst-inline-touching-normal
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
@@ -142,3 +131,8 @@ repos:
         types_or: [python, pyi, markdown, rst, jupyter]
         args:
           - --ignore-words-list=glotaran,doas,projectio
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: "v1.6.26"
+    hooks:
+      - id: actionlint

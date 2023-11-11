@@ -39,7 +39,7 @@ jobs:
       - name: Install pyglotaran
         run: |
           pip install wheel
-          pip install -r requirements_dev.txt
+          pip install -r requirements_pinned.txt
           pip install .
       - name: ${{ matrix.example_name }}
         id: example-run
