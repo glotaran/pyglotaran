@@ -26,27 +26,6 @@ jobs:
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 
-  check-manifest:
-    name: Check Manifest
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-
-      - name: Install check manifest
-        run: uv pip install check-manifest 'setuptools>=62.4.0'
-      - name: Run check manifest
-        run: check-manifest
-
   docs:
     runs-on: ubuntu-latest
     steps:
@@ -69,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install . -r docs/requirements.txt -p $(which python)
+          uv pip install ".[docs]" -p $(which python)
       - name: Show installed packages
         run: uv pip list
       - name: Build docs
@@ -97,16 +76,16 @@ jobs:
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install . -r docs/requirements.txt -p $(which python)
+          uv pip install ".[docs]" -p $(which python)
       - name: Show installed packages
         run: uv pip list
       - name: Check doc links
         run: |
-          make --directory=docs clean linkcheck $@ | tee linkcheck-output.txt
-          exit ${PIPESTATUS[0]}
+          make --directory=docs clean linkcheck "$@" | tee linkcheck-output.txt
+          exit "${PIPESTATUS[0]}"
       - name: Linkcheck summary
         if: ${{ always() }}
-        run: cat linkcheck-output.txt | grep -E "(\(line.*\)|writing output)"
+        run: grep -E "(\(line.*\)|writing output)" < linkcheck-output.txt
 
   docs-notebooks:
     runs-on: ubuntu-latest
@@ -124,7 +103,7 @@ jobs:
       - name: Install dependencies
         run: |
           conda install -y pandoc
-          uv pip install . -r docs/requirements.txt
+          uv pip install -r requirements_pinned.txt ".[docs]"
       - name: Show installed packages
         run: uv pip list
       - name: Build docs
@@ -133,7 +112,7 @@ jobs:
 
   test:
     runs-on: ${{ matrix.os }}
-    needs: [pre-commit, check-manifest]
+    needs: [pre-commit]
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
@@ -152,7 +131,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e . -r requirements_dev.txt
+          uv pip install -e ".[test]" -r requirements_pinned.txt
       - name: Show installed packages
         run: uv pip list
       - name: Run tests
@@ -168,6 +147,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     needs: [test, docs, docs-notebooks]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pyglotaran
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:

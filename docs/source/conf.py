@@ -273,7 +273,7 @@ intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "python": ("https://docs.python.org/", None),
+    "python": ("https://docs.python.org/3", None),
 }
 
 ipython_savefig_dir = "images/plot"
