@@ -1,4 +1,6 @@
 """Shared variables for simulated decays."""
+from __future__ import annotations
+
 import numpy as np
 
 from glotaran.builtin.elements.kinetic import KineticElement

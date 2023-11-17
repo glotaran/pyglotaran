@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from glotaran.model.clp_constraint import OnlyConstraint
 from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel

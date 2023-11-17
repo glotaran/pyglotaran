@@ -154,9 +154,7 @@ class MultiGaussianActivation(Activation):
         self, global_axis: ArrayLike | None = None
     ) -> list[GaussianActivationParameters] | list[list[GaussianActivationParameters]]:
         centers = (
-            self.center
-            if isinstance(self.center, list)
-            else [self.center]  # type:ignore[list-item]
+            self.center if isinstance(self.center, list) else [self.center]  # type:ignore[list-item]
         )
         widths = (
             self.width if isinstance(self.width, list) else [self.width]  # type:ignore[list-item]

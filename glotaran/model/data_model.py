@@ -116,19 +116,13 @@ def get_element_issues(value: list[str | Element] | None, is_global: bool) -> li
             element_type = element.__class__
             if element_type.is_exclusive and len(elements) > 1:
                 issues.append(
-                    ExclusiveModelIssue(
-                        element.label, element.type, is_global  # type:ignore[arg-type]
-                    )
+                    ExclusiveModelIssue(element.label, element.type, is_global)  # type:ignore[arg-type]
                 )
             if (
                 element_type.is_unique
                 and len([m for m in elements if m.__class__ is element_type]) > 1
             ):
-                issues.append(
-                    UniqueModelIssue(
-                        element.label, element.type, is_global  # type:ignore[arg-type]
-                    )
-                )
+                issues.append(UniqueModelIssue(element.label, element.type, is_global))  # type:ignore[arg-type]
     return issues
 
 

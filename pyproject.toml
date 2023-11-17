@@ -124,7 +124,6 @@ only-include = ["glotaran"]
 [tool.hatch.envs.default]
 features = ["dev"]
 
-
 [tool.pytest.ini_options]
 # env = [
 #   "DEACTIVATE_GTA_PLUGINS=1",
@@ -200,6 +199,3 @@ ignore_errors = true
 exclude = ["setup.py", "docs", "tests", "benchmark/*"]
 ignore-init-module = true
 fail-under = 63
-
-[tool.nbqa.addopts]
-flake8 = ["--extend-ignore=E402,F404"]

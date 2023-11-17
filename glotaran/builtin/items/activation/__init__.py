@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from glotaran.builtin.items.activation.activation import Activation
 from glotaran.builtin.items.activation.data_model import ActivationDataModel
 from glotaran.builtin.items.activation.data_model import add_activation_to_result_data

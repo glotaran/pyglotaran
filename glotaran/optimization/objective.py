@@ -1,16 +1,22 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import xarray as xr
 
 from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.model.data_model import iterate_data_model_global_elements
-from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
 from glotaran.optimization.matrix import OptimizationMatrix
 from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.parameter.parameter import Parameter
-from glotaran.typing.types import ArrayLike
+
+if TYPE_CHECKING:
+    from glotaran.model.experiment_model import ExperimentModel
+    from glotaran.typing.types import ArrayLike
 
 
 class OptimizationObjective:
@@ -56,7 +62,10 @@ class OptimizationObjective:
             ]
             penalties.append(
                 calculate_clp_penalties(
-                    matrices, estimations, self._data.global_axis, self._model.clp_penalties
+                    matrices,
+                    estimations,
+                    self._data.global_axis,
+                    self._model.clp_penalties,
                 )
             )
         return np.concatenate(penalties)
@@ -168,9 +177,7 @@ class OptimizationObjective:
             self.calculate_result_dataset(data, matrix, dataset)
         # Calculate RMS
         size = dataset.residual.shape[0] * dataset.residual.shape[1]
-        dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (dataset.residual**2).sum() / size
-        ).data
+        dataset.attrs["root_mean_square_error"] = np.sqrt((dataset.residual**2).sum() / size).data
 
         if data.weight is not None:
             weight = data.weight

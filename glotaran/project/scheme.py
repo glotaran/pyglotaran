@@ -1,6 +1,8 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Literal
 
-import xarray as xr
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
@@ -8,9 +10,13 @@ from glotaran.io import load_dataset
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
-from glotaran.parameter import Parameters
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
+
+if TYPE_CHECKING:
+    import xarray as xr
+
+    from glotaran.parameter import Parameters
 
 
 class Scheme(BaseModel):

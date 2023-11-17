@@ -1,8 +1,10 @@
-from pathlib import Path
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 
-import xarray as xr
+import xarray as xr  # noqa: TCH002
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
@@ -10,9 +12,12 @@ from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
-from glotaran.model.experiment_model import ExperimentModel
-from glotaran.optimization import OptimizationResult
-from glotaran.parameter import Parameters
+from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
+from glotaran.optimization import OptimizationResult  # noqa: TCH001
+from glotaran.parameter import Parameters  # noqa: TCH001
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class SavingOptions(BaseModel):
@@ -41,7 +46,7 @@ class Result(BaseModel):
         options: SavingOptions = SAVING_OPTIONS_DEFAULT,
         allow_overwrite: bool = False,
     ):
-        if path.exists() and path.is_file():
+        if path.is_file():
             raise GlotaranUserError("Save path must be a folder.")
         if path.exists() and not allow_overwrite:
             raise GlotaranUserError(
@@ -74,13 +79,17 @@ class Result(BaseModel):
         parameters_initial_path = path / f"parameters_initial.{options.parameter_format}"
         result_dict["parameters_initial"] = str(parameters_initial_path)
         save_parameters(
-            self.parameters_intitial, parameters_initial_path, allow_overwrite=allow_overwrite
+            self.parameters_intitial,
+            parameters_initial_path,
+            allow_overwrite=allow_overwrite,
         )
 
         parameters_optimized_path = path / f"parameters_optimized.{options.parameter_format}"
         result_dict["parameters_optimized"] = str(parameters_optimized_path)
         save_parameters(
-            self.parameters_optimized, parameters_optimized_path, allow_overwrite=allow_overwrite
+            self.parameters_optimized,
+            parameters_optimized_path,
+            allow_overwrite=allow_overwrite,
         )
 
         result_path = path / "glotaran_result.yml"

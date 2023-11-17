@@ -1,4 +1,5 @@
 """This package contains the spectral shape item."""
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Literal
@@ -62,8 +63,7 @@ class SpectralShapeGaussian(SpectralShape):
             An array representing a Gaussian shape.
         """
         shape = np.exp(
-            -np.log(2)
-            * np.square(2 * (axis - self.location) / self.width)  # type:ignore[operator]
+            -np.log(2) * np.square(2 * (axis - self.location) / self.width)  # type:ignore[operator]
         )
         if self.amplitude is not None:
             shape *= self.amplitude

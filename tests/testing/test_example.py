@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import xarray as xr
 
 from glotaran.testing.simulated_data.parallel_spectral_decay import DATASET as parallel_dataset
