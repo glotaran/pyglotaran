@@ -54,6 +54,7 @@ repos:
     rev: v0.1.6
     hooks:
       - id: ruff
+        name: "ruff sort notebooks"
         args:
           - "--fix"
           - "--select=I"
@@ -61,11 +62,13 @@ repos:
         alias: isort-notebooks
         types_or: [jupyter]
       - id: ruff-format
+        name: "ruff format notebooks"
         types_or: [jupyter]
         args:
           - "--config=.ruff-notebooks.toml"
         alias: format-notebooks
       - id: ruff
+        name: "ruff lint notebooks"
         types_or: [jupyter]
         args:
           - "--config=.ruff-notebooks.toml"
@@ -77,6 +80,7 @@ repos:
     rev: v0.1.6
     hooks:
       - id: ruff
+        name: "ruff sort imports"
         args:
           - "--fix"
           - "--select=I"
@@ -85,6 +89,7 @@ repos:
       # Commands above are both formatters an not linters
       # See also: https://github.com/astral-sh/ruff/discussions/7310#discussioncomment-7102010
       - id: ruff
+        name: "ruff lint"
         exclude: "docs/source/conf.py"
 
   # - repo: https://github.com/PyCQA/flake8
