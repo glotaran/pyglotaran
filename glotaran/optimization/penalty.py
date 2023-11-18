@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-from glotaran.model.clp_penalties import EqualAreaPenalty
-from glotaran.optimization.estimation import OptimizationEstimation
-from glotaran.optimization.matrix import OptimizationMatrix
-from glotaran.typing.types import ArrayLike
+if TYPE_CHECKING:
+    from glotaran.model.clp_penalties import EqualAreaPenalty
+    from glotaran.optimization.estimation import OptimizationEstimation
+    from glotaran.optimization.matrix import OptimizationMatrix
+    from glotaran.typing.types import ArrayLike
 
 
 def calculate_clp_penalties(

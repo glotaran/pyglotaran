@@ -1,4 +1,6 @@
 """This package contains builtin plugins."""
+from __future__ import annotations
+
 from glotaran.deprecation.deprecation_utils import deprecate_submodule
 
 read_data_file = deprecate_submodule(

@@ -259,7 +259,8 @@ def iterate_fields_of_type(
             if (
                 hasattr(item_type, "__origin__")
                 and issubclass(
-                    typing.get_origin(item_type), typing.Annotated  # type:ignore[arg-type]
+                    typing.get_origin(item_type),  # type:ignore[arg-type]
+                    typing.Annotated,  # type:ignore[arg-type]
                 )
                 and typing.get_origin(typing.get_args(item_type)[0]) is typing.Union
             ):

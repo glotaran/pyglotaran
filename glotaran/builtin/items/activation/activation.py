@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from glotaran.model.item import Attribute
 from glotaran.model.item import ParameterType
 from glotaran.model.item import TypedItem

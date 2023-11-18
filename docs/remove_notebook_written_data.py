@@ -6,6 +6,8 @@ the tests pass w/o using ``allow_overwrite=True`` all over the docs.
 If you use ``tox`` to run the tests (``tox`` or ``tox -e docs-notebooks``)
 this script will be run before the tests.
 """
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 

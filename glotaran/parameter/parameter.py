@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from glotaran.parameter import Parameters
 
-RESERVED_LABELS: tuple[str] = (  # type:ignore[assignment]
+RESERVED_LABELS: tuple[str] = (
     *tuple(asteval.make_symbol_table().keys()),
     "parameters",
     "iteration",
@@ -303,7 +303,8 @@ class Parameter(BaseModel):
                     label = match[0]
                     parameter = all_parameters.get(label)
                     expression = expression.replace(
-                        f"${label}", f"_{parameter.markdown(all_parameters=all_parameters)}_"
+                        f"${label}",
+                        f"_{parameter.markdown(all_parameters=all_parameters)}_",
                     )
 
             md += f"({value}={expression})"

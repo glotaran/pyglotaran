@@ -113,9 +113,7 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
     if len(split_version) < 3:
         raise ValueError(error_message)
     try:
-        return tuple(
-            map(int, (*split_version[:2], split_version[2].partition("rc")[0]))
-        )  # type:ignore[return-value]
+        return tuple(map(int, (*split_version[:2], split_version[2].partition("rc")[0])))  # type:ignore[return-value]
     except ValueError as err:
         raise ValueError(error_message) from err
 

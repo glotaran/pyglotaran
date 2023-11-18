@@ -122,9 +122,7 @@ class OptimizationMatrix:
             model_axis, global_axis = global_axis, model_axis
 
         matrices = [
-            cls.from_element(
-                scale, element, model, global_axis, model_axis  # type:ignore[arg-type]
-            )
+            cls.from_element(scale, element, model, global_axis, model_axis)  # type:ignore[arg-type]
             for scale, element in element_iterator(model)
         ]
         matrix = matrices[0] if len(matrices) == 1 else cls.combine(matrices)
@@ -134,7 +132,10 @@ class OptimizationMatrix:
 
     @classmethod
     def from_data(
-        cls, data: OptimizationData, apply_weight: bool = True, global_matrix: bool = False
+        cls,
+        data: OptimizationData,
+        apply_weight: bool = True,
+        global_matrix: bool = False,
     ) -> OptimizationMatrix:
         """"""
         return cls.from_data_model(
@@ -148,7 +149,11 @@ class OptimizationMatrix:
     @classmethod
     def from_global_data(
         cls, data: OptimizationData
-    ) -> tuple[OptimizationMatrix, OptimizationMatrix, OptimizationMatrix,]:
+    ) -> tuple[
+        OptimizationMatrix,
+        OptimizationMatrix,
+        OptimizationMatrix,
+    ]:
         matrix = cls.from_data(data, apply_weight=False)
         global_matrix = cls.from_data(data, apply_weight=False, global_matrix=True)
 
