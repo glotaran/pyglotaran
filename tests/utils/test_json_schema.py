@@ -1,9 +1,14 @@
 """Tests for ``glotaran.utils.json_schema``."""
+from __future__ import annotations
+
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from glotaran.parameter import Parameters
 from glotaran.utils.json_schema import create_model_scheme_json_schema
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_create_model_scheme_json_schema(tmp_path: Path):

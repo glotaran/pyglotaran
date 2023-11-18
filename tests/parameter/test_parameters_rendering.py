@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from IPython.core.formatters import format_display_data
 
 from glotaran.io import load_parameters

@@ -7,6 +7,8 @@ If you use ``tox`` to run the tests (``tox`` or ``tox -e docs-notebooks``)
 this script will be run before the tests.
 """
 
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 

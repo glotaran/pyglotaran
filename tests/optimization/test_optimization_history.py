@@ -1,7 +1,8 @@
 """Tests for ``glotaran.project.optimization_history``."""
+from __future__ import annotations
 
-from pathlib import Path
 from textwrap import dedent
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -10,6 +11,9 @@ from pandas.testing import assert_frame_equal
 from pandas.testing import assert_series_equal
 
 from glotaran.optimization.optimization_history import OptimizationHistory
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_optimization_history_init_no_data():
@@ -28,7 +32,14 @@ def test_optimization_history_init_no_data():
             "random string",
             pd.DataFrame(
                 None,
-                columns=["iteration", "nfev", "cost", "cost_reduction", "step_norm", "optimality"],
+                columns=[
+                    "iteration",
+                    "nfev",
+                    "cost",
+                    "cost_reduction",
+                    "step_norm",
+                    "optimality",
+                ],
             ).set_index("iteration"),
         ),
         (
@@ -51,7 +62,14 @@ def test_optimization_history_init_no_data():
                     "step_norm": [np.nan, 4.55e-5, 6.44e-9],
                     "optimality": [38.4, 0.126, 1.64e-5],
                 },
-                columns=["iteration", "nfev", "cost", "cost_reduction", "step_norm", "optimality"],
+                columns=[
+                    "iteration",
+                    "nfev",
+                    "cost",
+                    "cost_reduction",
+                    "step_norm",
+                    "optimality",
+                ],
             ).set_index("iteration"),
         ),
     ),

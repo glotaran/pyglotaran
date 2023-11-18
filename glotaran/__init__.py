@@ -1,5 +1,7 @@
 """Glotaran package root."""
 
+from __future__ import annotations
+
 from glotaran.deprecation.deprecation_utils import deprecate_submodule
 from glotaran.plugin_system.base_registry import load_plugins
 

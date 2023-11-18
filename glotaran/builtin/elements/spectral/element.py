@@ -66,9 +66,12 @@ class SpectralElement(Element):
         matrix = data.global_matrix if as_global else data.matrix
         clp_dim = "global_clp_label" if as_global else "clp_label"
         data["spectra"] = (
-            data.attrs["global_dimension"] if as_global else data.attrs["model_dimension"],
-            "shape",
-        ), matrix.sel({clp_dim: shapes}).to_numpy()
+            (
+                data.attrs["global_dimension"] if as_global else data.attrs["model_dimension"],
+                "shape",
+            ),
+            matrix.sel({clp_dim: shapes}).to_numpy(),
+        )
 
         if not hasattr(data, "global_matrix"):
             data["spectrum_associated_estimation"] = (
