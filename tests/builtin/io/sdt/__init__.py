@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent / "data_files"

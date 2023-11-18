@@ -1,5 +1,7 @@
 """Glotaran module with regular expression patterns and functions."""
 
+from __future__ import annotations
+
 import re
 
 

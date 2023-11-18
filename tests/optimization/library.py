@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from tests.optimization.elements import TestElementExponential
 from tests.optimization.elements import TestElementGaussian
 

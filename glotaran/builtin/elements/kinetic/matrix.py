@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import ctypes
+from typing import TYPE_CHECKING
 
 import numba as nb
 import numpy as np
 from numba.extending import get_cython_function_address
 
-from glotaran.typing.types import ArrayLike
+if TYPE_CHECKING:
+    from glotaran.typing.types import ArrayLike
 
 # This is a work around to use scipy.special function with numba
 _dble = ctypes.c_double
