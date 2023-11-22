@@ -96,6 +96,6 @@ jobs:
           python-version: "3.10"
 
       - name: Run result validator
-        uses: glotaran/pyglotaran-validation@main
+        uses: s-weigand/pyglotaran-validation@fix-sting-column-detection
         with:
           validation_name: pyglotaran-examples
