@@ -1,20 +1,12 @@
 # Changelog
 
-(changes-0_8_0)=
+(changes-0_7_2)=
 
-## 🚀 0.8.0 (Unreleased)
+## 🚀 0.7.2 (Unreleased)
 
 ### ✨ Features
 
-### 👌 Minor Improvements:
-
-### 🩹 Bug fixes
-
-### 📚 Documentation
-
-### 🗑️ Deprecations (due in 0.9.0)
-
-### 🗑️❌ Deprecated functionality removed in this release
+- ✨ Official numpy 1.26 support (#1374)
 
 ### 🚧 Maintenance
 
