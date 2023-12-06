@@ -145,9 +145,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     needs: [test, docs, docs-notebooks]
-    environment:
-      name: pypi
-      url: https://pypi.org/p/pyglotaran
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
