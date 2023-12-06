@@ -86,7 +86,7 @@ def export(filename: str, select, out: str, name: str):
                 else:
                     dim = choice
                     choice = prompt(
-                        "Please select a value. Type 2 values sperated by ',' to select a range.",
+                        "Please select a value. Type 2 values separated by ',' to select a range.",
                         default="back",
                         type=util.VALORRANGEORLIST,
                     )

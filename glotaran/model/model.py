@@ -59,7 +59,7 @@ class ModelError(Exception):
 
 
 def _load_item_from_dict(
-    item_type: type[Item], value: Item | Mapping, extra: dict[str, Any] | None = None
+    item_type: type[Item], value: Item | dict[str, Any], extra: dict[str, Any] | None = None
 ) -> Item:
     """Load an item from a dictionary.
 
@@ -94,7 +94,7 @@ def _load_item_from_dict(
 
 
 def _load_model_items_from_dict(
-    item_type: type[Item], item_dict: Mapping[str, ModelItem | dict]
+    item_type: type[Item], item_dict: Mapping[str, ModelItem | dict[str, Any]]
 ) -> dict[str, ModelItem]:
     """Load a model items from a dictionary.
 
@@ -116,7 +116,7 @@ def _load_model_items_from_dict(
 
 
 def _load_global_items_from_dict(
-    item_type: type[Item], item_list: list[Item | dict]
+    item_type: type[Item], item_list: list[Item | dict[str, Any]]
 ) -> list[Item]:
     """Load an item from a dictionary.
 

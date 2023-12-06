@@ -75,7 +75,7 @@ def glotaran_version() -> str:
     This is basically the same as ``glotaran.__version__`` but independent from glotaran.
     This way all of the deprecation functionality can be used even in
     ``glotaran.__init__.py`` without moving the import below the definition of
-    ``__version__`` or causeing a circular import issue.
+    ``__version__`` or causing a circular import issue.
 
     Returns
     -------

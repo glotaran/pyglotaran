@@ -7,7 +7,7 @@ default_language_version:
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -19,7 +19,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
+    rev: v3.15.0
     hooks:
       - id: pyupgrade
         types: [file]
@@ -36,7 +36,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.11.0
     hooks:
       - id: black
         types: [file]
@@ -52,7 +52,7 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.4.0
+    rev: v2.5.0
     hooks:
       - id: setup-cfg-fmt
         args: [--include-version-classifiers]
@@ -68,7 +68,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.0
+    rev: 1.7.1
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -116,7 +116,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.7.1
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"
@@ -131,7 +131,7 @@ repos:
         additional_dependencies: [click<8]
 
   - repo: https://github.com/rstcheck/rstcheck
-    rev: "v6.1.2"
+    rev: "v6.2.0"
     hooks:
       - id: rstcheck
         additional_dependencies: [sphinx]
@@ -150,9 +150,9 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.5
+    rev: v2.2.6
     hooks:
       - id: codespell
         types: [file]
         types_or: [python, pyi, markdown, rst, jupyter]
-        args: [-L doas]
+        additional_dependencies: [tomli]
