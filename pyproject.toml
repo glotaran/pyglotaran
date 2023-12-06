@@ -112,3 +112,6 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = "benchmark.*"
 ignore_errors = true
+
+[tool.codespell]
+ignore-words-list = "projectio"

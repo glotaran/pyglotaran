@@ -28,7 +28,7 @@ SUPPORTED_RESIUDAL_FUNCTIONS = {
 
 
 class UnsupportedResidualFunctionError(ValueError):
-    """Inidcates that the residual function is unsupported."""
+    """Indicates that the residual function is unsupported."""
 
     def __init__(self, residual_function: str):
         """Initialize an UnsupportedMethodError.
