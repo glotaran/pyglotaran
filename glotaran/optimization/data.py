@@ -433,7 +433,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
 
     @staticmethod
     def align_groups(
-        aligned_global_axes: dict[str, ArrayLike]
+        aligned_global_axes: dict[str, ArrayLike],
     ) -> tuple[ArrayLike, dict[str, list[str]]]:
         """Align the groups in a dataset group.
 
