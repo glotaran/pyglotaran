@@ -51,13 +51,13 @@ jobs:
         run: |
           pip freeze
       - name: Upload Example Plots Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: example-plots
           path: ${{ steps.example-run.outputs.plots-path }}
 
       - name: Upload Example Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: example-results
           path: ~/pyglotaran_examples_results

@@ -45,7 +45,7 @@ jobs:
           pushd benchmark
           asv run 0d41d63ca3ca33bb0b70e25fe76ab0c16f6d2e1d..main --machine gh_action
       - name: Upload results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
           path: benchmark/.asv/results
