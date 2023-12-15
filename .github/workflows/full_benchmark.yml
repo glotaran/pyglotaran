@@ -64,7 +64,7 @@ jobs:
           ref: main
 
       - name: Download result artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: benchmark-results
           path: results
