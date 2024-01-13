@@ -1,0 +1,23 @@
+
+rates:
+  - [species_1, 0.5]
+  - [species_2, 0.3]
+
+irf:
+  - [center, 0.3]
+  - [width, 0.1]
+
+shapes:
+  species_1:
+    - [amplitude, 250]
+    - [location, 620]
+    - [width, 50]
+  species_2:
+    - [amplitude, 300]
+    - [location, 650]
+    - [width, 60]
+
+inputs:
+  - [s1, 1]
+  - [s2_low, 0.01]
+  - [s2_normal, 0.75]
