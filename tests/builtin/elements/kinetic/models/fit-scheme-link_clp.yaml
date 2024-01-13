@@ -1,0 +1,28 @@
+library:
+  parallel_model:
+    type: kinetic
+    rates:
+      "(species_1, species_1)": rates.species_1
+      "(species_2, species_2)": rates.species_2
+
+experiments:
+  link_clp:
+    datasets:
+      dataset_1:
+        elements: [parallel_model]
+        activation:
+          - type: gaussian
+            compartments:
+              species_1: inputs.s1
+              species_2: inputs.s2_low
+            center: irf.center
+            width: irf.width
+      dataset_2:
+        elements: [parallel_model]
+        activation:
+          - type: gaussian
+            compartments:
+              species_1: inputs.s1
+              species_2: inputs.s2_normal
+            center: irf.center
+            width: irf.width
