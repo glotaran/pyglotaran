@@ -248,7 +248,9 @@ class LinkedOptimizationData(OptimizationDataProvider):
         aligned_global_axes = self.align_global_axes(tolerance, method)
         self._global_axis, self._data = self.align_data(aligned_global_axes)
         self._data_indices = self.align_dataset_indices(aligned_global_axes)
-        self._group_labels, self._group_definitions = self.align_groups(aligned_global_axes)
+        self._group_labels, self._group_definitions, self._group_sizes = self.align_groups(
+            aligned_global_axes, datasets
+        )
 
     @classmethod
     def from_experiment_model(cls, model: ExperimentModel) -> LinkedOptimizationData:
@@ -266,6 +268,10 @@ class LinkedOptimizationData(OptimizationDataProvider):
     @property
     def group_definitions(self) -> dict[str, list[str]]:
         return self._group_definitions
+
+    @property
+    def group_sizes(self) -> dict[str, list[int]]:
+        return self._group_sizes
 
     @property
     def group_labels(self) -> ArrayLike:
@@ -433,8 +439,9 @@ class LinkedOptimizationData(OptimizationDataProvider):
 
     @staticmethod
     def align_groups(
-        aligned_global_axes: dict[str, ArrayLike]
-    ) -> tuple[ArrayLike, dict[str, list[str]]]:
+        aligned_global_axes: dict[str, ArrayLike],
+        datasets: dict[str, OptimizationData],
+    ) -> tuple[ArrayLike, dict[str, list[str]], dict[str, list[int]]]:
         """Align the groups in a dataset group.
 
         Parameters
@@ -464,9 +471,16 @@ class LinkedOptimizationData(OptimizationDataProvider):
         )
 
         group_definitions: dict[str, list[str]] = {}
+        group_sizes: dict[str, list[int]] = {}
         for i, group_label in enumerate(aligned_group_labels):
             if group_label not in group_definitions:
                 group_definitions[group_label] = list(
-                    filter(lambda label: label != "", aligned_groups.isel({"global": i}).data)
+                    filter(
+                        lambda label: label != "",
+                        aligned_groups.isel({"global": i}).data,
+                    )
                 )
-        return aligned_group_labels, group_definitions
+                group_sizes[group_label] = [
+                    datasets[label].model_axis.size for label in group_definitions[group_label]
+                ]
+        return aligned_group_labels, group_definitions, group_sizes

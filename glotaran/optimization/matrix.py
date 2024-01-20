@@ -183,13 +183,19 @@ class OptimizationMatrix:
         return matrix, global_matrix, cls(clp_axis, array)
 
     @classmethod
-    def from_linked_data(cls, linked_data: LinkedOptimizationData) -> list[OptimizationMatrix]:
-        data_matrices = {label: cls.from_data(data) for label, data in linked_data.data.items()}
+    def from_linked_data(
+        cls,
+        linked_data: LinkedOptimizationData,
+        matrices: dict[str, OptimizationMatrix] | None = None,
+    ) -> list[OptimizationMatrix]:
+        matrices = matrices or {
+            label: cls.from_data(data) for label, data in linked_data.data.items()
+        }
 
         return [
             cls.link(
                 [
-                    data_matrices[label].at_index(index)
+                    matrices[label].at_index(index)
                     for label, index in zip(
                         linked_data.group_definitions[linked_data.group_labels[global_index]],
                         linked_data.data_indices[global_index],
@@ -276,17 +282,17 @@ class OptimizationMatrix:
         return self
 
     def at_index(self, index: int) -> OptimizationMatrix:
-        """Create a matrix container with a scaled matrix.
+        """Get the matrix at a global index.
 
         Parameters
         ----------
-        scale : float
-            The scale.
+        index : int
+            The global index.
 
         Returns
         -------
         OptimizationMatrix
-            The scaled matrix.
+            The matrix at the index. A copy of the array if not index dependent.
         """
         if self.is_index_dependent:  # noqa: SIM108
             index_array = self.array[index, :, :]
@@ -294,3 +300,18 @@ class OptimizationMatrix:
             # necessary if relations are applied
             index_array = self.array.copy()
         return replace(self, array=index_array)
+
+    def as_global_list(self, global_axis: ArrayLike) -> list[OptimizationMatrix]:
+        """Get a list of matrices.
+
+        Parameters
+        ----------
+        global_axis : ArrayLike
+            The global axis.
+
+        Returns
+        -------
+        list[OptimizationMatrix]
+            A list of matrices.
+        """
+        return [self.at_index(i) for i in range(global_axis.size)]
