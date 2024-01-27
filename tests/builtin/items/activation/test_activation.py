@@ -18,7 +18,6 @@ def test_gaussian_activation():
     )
     parameter = activation.parameters(np.array([0]))
     assert len(parameter) == 1
-    assert parameter[0].backsweep
     assert parameter[0].backsweep_period == 2
     assert parameter[0].center == 1
     assert parameter[0].width == 10
@@ -33,7 +32,7 @@ def test_multi_gaussian_activation():
     )
     parameter = activation.parameters(np.array([0]))
     assert len(parameter) == 2
-    assert not parameter[0].backsweep
+    assert parameter[0].backsweep_period == 0
     assert parameter[0].center == 1
     assert parameter[0].width == 10
     assert parameter[1].center == 2
