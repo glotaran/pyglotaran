@@ -81,7 +81,6 @@ class GaussianActivationParameters:
     center: float
     width: float
     scale: float
-    backsweep: bool
     backsweep_period: float
 
     def shift(self, value: float):
@@ -170,7 +169,6 @@ class MultiGaussianActivation(Activation):
                 widths = widths * nr_gaussians
 
         scales = self.scale or [1.0] * nr_gaussians
-        backsweep = self.backsweep is not None
         backsweep_period = float(self.backsweep) if self.backsweep is not None else 0
 
         parameters: list[GaussianActivationParameters] = [
@@ -178,7 +176,6 @@ class MultiGaussianActivation(Activation):
                 float(center),
                 float(width),
                 float(scale),
-                backsweep,
                 backsweep_period,
             )
             for center, width, scale in zip(centers, widths, scales)
