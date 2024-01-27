@@ -32,15 +32,14 @@ def calculate_matrix_gaussian_activation_on_index(
     centers: ArrayLike,
     widths: ArrayLike,
     scales: ArrayLike,
-    backsweep: bool,
-    backsweep_period: float | None,
+    backsweep_period: float,
 ):
     """Calculates a decay matrix with a gaussian irf."""
     for n_i in nb.prange(centers.size):
         center, width, scale = centers[n_i], widths[n_i], scales[n_i]
         for n_r in nb.prange(rates.size):
             r_n = rates[n_r]
-            backsweep_valid = backsweep and abs(r_n) * backsweep_period > 0.001
+            backsweep_valid = abs(r_n) * backsweep_period > 0.001
             alpha = (r_n * width) / SQRT2
             for n_t in nb.prange(times.size):
                 t_n = times[n_t]
@@ -52,11 +51,9 @@ def calculate_matrix_gaussian_activation_on_index(
                     matrix[n_t, n_r] += (
                         scale * 0.5 * (1 + erf(thresh)) * np.exp(alpha * (alpha - 2 * beta))
                     )
-                if backsweep and backsweep_valid:
+                if backsweep_valid:
                     x1 = np.exp(-r_n * (t_n - center + backsweep_period))
-                    x2 = np.exp(
-                        -r_n * ((backsweep_period / 2) - (t_n - center))  # type:ignore[operator]
-                    )
+                    x2 = np.exp(-r_n * ((backsweep_period / 2) - (t_n - center)))
                     x3 = np.exp(-r_n * backsweep_period)
                     matrix[n_t, n_r] += scale * (x1 + x2) / (1 - x3)
 
@@ -69,8 +66,7 @@ def calculate_matrix_gaussian_activation(
     all_centers: ArrayLike,
     all_widths: ArrayLike,
     scales: ArrayLike,
-    backsweep: bool,
-    backsweep_period: float | None,
+    backsweep_period: float,
 ):
     for n_w in nb.prange(all_centers.shape[0]):
         calculate_matrix_gaussian_activation_on_index(
@@ -80,6 +76,5 @@ def calculate_matrix_gaussian_activation(
             all_centers[n_w],
             all_widths[n_w],
             scales,
-            backsweep,
             backsweep_period,
         )
