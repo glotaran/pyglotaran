@@ -72,7 +72,7 @@ def test_parameter_repr(parameter: Parameter, expected_repr: str):
     """Repr creates code to recreate the object."""
     print(parameter.__repr__())
     assert parameter.__repr__() == expected_repr
-    assert parameter._deep_equals(eval(expected_repr))  # noqa: PGH001
+    assert parameter._deep_equals(eval(expected_repr))
 
 
 def test_parameter_from_list():
