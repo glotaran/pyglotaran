@@ -171,7 +171,7 @@ class MultiGaussianActivation(Activation):
 
         scales = self.scale or [1.0] * nr_gaussians
         backsweep = self.backsweep is not None
-        backsweep_period = self.backsweep if backsweep else 0
+        backsweep_period = float(self.backsweep) if self.backsweep is not None else 0
 
         parameters: list[GaussianActivationParameters] = [
             GaussianActivationParameters(
@@ -179,7 +179,7 @@ class MultiGaussianActivation(Activation):
                 float(width),
                 float(scale),
                 backsweep,
-                backsweep_period,  # type:ignore[arg-type]
+                backsweep_period,
             )
             for center, width, scale in zip(centers, widths, scales)
         ]
