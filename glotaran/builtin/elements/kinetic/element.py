@@ -136,7 +136,6 @@ class KineticElement(ExtendableElement, Kinetic):
                 np.array([[p.center for p in ps] for ps in parameters]),  # type:ignore[union-attr]
                 np.array([[p.width for p in ps] for ps in parameters]),  # type:ignore[union-attr]
                 scales,
-                parameters[0][0].backsweep,  # type:ignore[index]
                 parameters[0][0].backsweep_period,  # type:ignore[index]
             )
         else:
@@ -147,7 +146,6 @@ class KineticElement(ExtendableElement, Kinetic):
                 np.array([p.center for p in parameters]),  # type:ignore[union-attr]
                 np.array([p.width for p in parameters]),  # type:ignore[union-attr]
                 scales,
-                parameters[0].backsweep,  # type:ignore[union-attr]
                 parameters[0].backsweep_period,  # type:ignore[union-attr]
             )
         if activation.normalize:
