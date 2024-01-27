@@ -12,7 +12,6 @@ from glotaran.model.errors import GlotaranUserError
 from glotaran.model.errors import ItemIssue
 from glotaran.model.item import Attribute
 from glotaran.model.item import ParameterType
-from glotaran.parameter.parameter import Parameter
 
 if TYPE_CHECKING:
     from glotaran.parameter import Parameters
@@ -172,9 +171,7 @@ class MultiGaussianActivation(Activation):
 
         scales = self.scale or [1.0] * nr_gaussians
         backsweep = self.backsweep is not None
-        backsweep_period = self.backsweep if backsweep else 0
-        if isinstance(backsweep_period, Parameter):
-            backsweep_period = backsweep_period.value
+        backsweep_period = float(self.backsweep) if backsweep else 0
 
         parameters: list[GaussianActivationParameters] = [
             GaussianActivationParameters(
