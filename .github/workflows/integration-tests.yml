@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@main
+        uses: glotaran/pyglotaran-examples@staging/rewrite
         with:
           example_name: set example list
           set_example_list: true
