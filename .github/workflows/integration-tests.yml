@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@staging/rewrite
+        uses: glotaran/pyglotaran-examples@staging_rewrite
         with:
           example_name: set example list
           set_example_list: true
@@ -43,7 +43,7 @@ jobs:
           pip install .
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@main
+        uses: glotaran/pyglotaran-examples@staging_rewrite
         with:
           example_name: ${{ matrix.example_name }}
       - name: Installed packages
