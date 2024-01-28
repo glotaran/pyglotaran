@@ -48,6 +48,7 @@ jobs:
           pip install wheel
           pip install -r requirements_pinned.txt
           pip install .
+          pip install git+https://github.com/glotaran/pyglotaran-extras.git@staging_support
       - name: ${{ matrix.example_name }}
         id: example-run
         uses: glotaran/pyglotaran-examples@main
