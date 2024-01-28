@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [create-example-list]
     strategy:
+      fail-fast: false
       matrix:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
