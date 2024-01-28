@@ -18,10 +18,16 @@ jobs:
     steps:
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@staging_rewrite
-        with:
-          example_name: set example list
-          set_example_list: true
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          example_names=["fluorescence"]
+          gh_output = Path(os.getenv("GITHUB_OUTPUT", ""))
+          with gh_output.open("a", encoding="utf8") as f:
+              f.writelines([f"example-list={json.dumps(example_names)}"])
 
   run-examples:
     name: "Run Example: "
@@ -44,9 +50,10 @@ jobs:
           pip install .
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@staging_rewrite
+        uses: glotaran/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
+          examples_branch: staging_rewrite
       - name: Installed packages
         if: always()
         run: |
