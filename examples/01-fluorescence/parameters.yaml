@@ -1,0 +1,18 @@
+input:
+  - ["1", 1]
+  - { vary: false }
+
+irf:
+  - ["center", -83.0]
+  - ["width", 1.5]
+
+constants:
+  - ["backsweep_period", 13200.0]
+  - { vary: false }
+
+rates_global:
+  - 0.2
+  - 0.07
+  - 0.02
+  - 0.00016
+  - { non-negative: true }

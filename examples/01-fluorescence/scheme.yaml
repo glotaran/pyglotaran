@@ -1,0 +1,22 @@
+library:
+  sequential_model:  # TJust a name, could be MyDescriptiveModelName
+    type: kinetic
+    rates:
+      (s2, s1): rates_global.1
+      (s3, s2): rates_global.2
+      (s4, s3): rates_global.3
+      (s4, s4): rates_global.4
+
+experiments:
+  experiment1:  # Just a name, could be MyFirstExperiment
+    datasets:
+      dataset1:
+        elements: [sequential_model]
+        activation:
+          - type: gaussian
+            compartments:
+              s1: 1.0  # input.1
+            center: irf.center
+            width: irf.width
+            backsweep: 13200.0 # backsweep.period
+    residual_function: non_negative_least_squares
