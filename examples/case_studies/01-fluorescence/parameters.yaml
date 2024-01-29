@@ -16,3 +16,7 @@ rates_global:
   - 0.02
   - 0.00016
   - { non-negative: true }
+
+rates:
+  - ["sb", 1]
+  - ["tb", 1]
