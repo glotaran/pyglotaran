@@ -1,0 +1,37 @@
+inputs:
+  - ['1', 1, {vary: False}]
+  - ['0', 0, {vary: False}]
+  - ['iC', 1, {vary: False}]
+
+scale:
+  - ['1', 1, {vary: False}]
+
+rel:
+  - ['r1', 1, {vary: False}]
+
+b:
+  - [0.22, {vary: True}]
+  - [0.78, {expr: '1.0 - $b.1'}]
+  - {'non-negative': True}
+# - [0.913, {vary: False}]
+# - [0.087, {vary: False}]
+
+rates:
+  - ['k1sum', 9.49943878184853, {vary: False}]
+  - ['k1', 0.8265, {expr: '$b.1 * $rates.k1sum', vary: False}]
+  - ['k2', 8.7635, {expr: '$b.2 * $rates.k1sum', vary: False}]
+  # - ['k1', 0.8265, {vary: False}]
+  # - ['k2', 8.7635, {vary: False}]
+  - ['k3', 0.4839723]
+  - ['k4', 0.0368954]
+  - ['k5', 0.0192859]
+  - ['kC', 99, {vary: False}]
+  - {vary: True,'non-negative': True}
+
+irf:
+  - ['center',1.19809]
+  - ['width', 0.05843]
+  - ['dispc',550, {vary: False}]
+  - ['disp1',0.30895710]
+  - ['disp2',-0.0833899]
+  - ['disp3',0.0047]
