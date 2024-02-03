@@ -2,14 +2,18 @@ from __future__ import annotations
 
 from functools import reduce
 from typing import TypeAlias
+from typing import Union
 
 from pydantic import RootModel
 
-from glotaran.model.element import Element
 from glotaran.model.element import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
+from glotaran.plugin_system.base_registry import __PluginRegistry
 
-LibraryType: TypeAlias = dict[str, Element.get_annotated_type()]  # type:ignore[misc,valid-type]
+LibraryType: TypeAlias = dict[  # type:ignore[misc,valid-type]
+    str,
+    Union[tuple(__PluginRegistry.element.values())],
+]
 
 
 class ModelLibrary(RootModel[LibraryType]):

@@ -5,7 +5,6 @@ import abc
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Literal
 
 from pydantic import ConfigDict
 
@@ -104,11 +103,3 @@ class ExtendableElement(Element):
     @abc.abstractmethod
     def extend(self, other: ExtendableElement) -> ExtendableElement:
         pass
-
-
-class InternalMockElement(Element):
-    """An internal model for testing purpose, since at least 2 items
-    are needed for pydanticx discriminators.
-    """
-
-    type: Literal["internal_mock"]  # type:ignore[assignment]

@@ -47,7 +47,7 @@ class GlotaranFieldMetadata(UserDict):
     @property
     def validator(self) -> Callable | None:
         """Glotaran validator function if defined, else None."""
-        return self[META_VALIDATOR] if META_VALIDATOR in self else None
+        return self.get(META_VALIDATOR, None)
 
 
 def extract_glotaran_field_metadata(info: FieldInfo) -> GlotaranFieldMetadata:

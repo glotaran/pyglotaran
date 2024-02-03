@@ -1,7 +1,10 @@
 #:schema https://json.schemastore.org/ruff.json
+
 extend = ".ruff.toml"
+
+[lint]
 extend-ignore = ["D", "E402", "F404", "N811", "E703", "T201"]
 
-[isort]
+[lint.isort]
 required-imports = []
 force-single-line = false
