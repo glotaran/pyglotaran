@@ -1,4 +1,14 @@
+extend-exclude = ["venv", "docs/conf.py"]
 
+line-length = 99
+
+# Assume Python 3.10.
+target-version = "py310"
+
+# Enable using ruff with notebooks
+extend-include = ["*.ipynb"]
+
+[lint]
 select = [
   "E", # pycodestyle
   "W", # pycodestyle
@@ -6,14 +16,14 @@ select = [
   "F", # pyflakes
   # "UP", # pyupgrade
   # "D", # pydocstyle
-  "N", # pep8-naming
+  "N",   # pep8-naming
   "YTT", # flake8-2020
   "BLE", # flake8-blind-except
   # "FBT", # flake8-boolean-trap
   # "B", # flake8-bugbear
-  "C4", # flake8-comprehensions
+  "C4",  # flake8-comprehensions
   "T10", # flake8-debugger
-  "FA", # flake8-future-annotations
+  "FA",  # flake8-future-annotations
   # "EM", # flake8-errmsg
   "ISC", # flake8-implicit-str-concat
   "INP", # flake8-no-pep420
@@ -27,7 +37,7 @@ select = [
   # "ARG", # flake8-unused-arguments
   "PTH", # flake8-use-pathlib
   # "ERA", # eradicate
-  "PD", # pandas-vet
+  "PD",  # pandas-vet
   "PGH", # pygrep-hooks
   "NPY", # NumPy-specific
   "RUF", # Ruff-specific
@@ -49,27 +59,12 @@ ignore = [
   "ISC001",
 ]
 
-# Exclude a variety of commonly ignored directories.
-extend-exclude = [
-  "venv",
-  "docs/conf.py",
-]
-# Same as Black.
-line-length = 99
-
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-# Assume Python 3.10.
-target-version = "py310"
-
-# Enable using ruff with notebooks
-extend-include = ["*.ipynb"]
-
-[lint]
 unfixable = ["F401"]
 
-[per-file-ignores]
+[lint.per-file-ignores]
 "*/test_*.py" = ["ARG001", "RUF012", "N811", "T20", "PIE804"]
 "*/__init__.py" = ["F401"]
 "glotaran/builtin/io/netCDF/netCDF.py" = ["N999"]
@@ -77,7 +72,7 @@ unfixable = ["F401"]
 # Needs a full rewrite anyway
 "glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = ["PTH"]
 
-[isort]
+[lint.isort]
 required-imports = ["from __future__ import annotations"]
 known-first-party = ["glotaran"]
 force-single-line = true
