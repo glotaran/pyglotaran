@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=schema_2d.json
 library:
-  cmplx1:
+  base:
     type: kinetic
     rates:
       (s2, s1): "rates.k1"
@@ -8,13 +8,18 @@ library:
       (s4, s2): "rates.k3"
       (s4, s3): "rates.k4"
       (s4, s4): "rates.k5"
+  cmplx1:
+    type: kinetic
+    extends: [base]
+    rates:
       (s5, s5): "rates.kC"
   cmplx2:
     type: kinetic
-    extends: [cmplx1]
+    extends: [base]
     rates:
-      (s4, s2): "rates.k3d2"
-      (s4, s3): "rates.k4d2"
+      (s4, s2): "rates.k3d2" # override
+      (s4, s3): "rates.k4d2" # override
+      (s6, s6): "rates.kC"
 
 experiments:
   my_exp:
@@ -31,12 +36,12 @@ experiments:
             dispersion_center: irf.dispc
             center_dispersion_coefficients: [irf.disp1, irf.disp2, irf.disp3]
       dataset2:
-        elements: [cmplx1]
+        elements: [cmplx2]
         activation:
           - type: gaussian
             compartments:
               s1: 1
-              s5: 1
+              s6: 1
             center: irf2.center
             width: irf.width
             dispersion_center: irf.dispc

@@ -51,5 +51,9 @@ if __name__ == "__main__":
     root_dir = Path(__file__).parent
     scheme, parameters = initialize(root_dir)
     result = optimize(scheme, parameters)
+    # copied from tests\examples\test_02_transient_absorption.py
+    assert result is not None
+    assert result.data["dataset1"].root_mean_square_error < 1  # TBD
+    # TODO: define some meaningful assertion for the result
     save_result(result)
     plot(result)
