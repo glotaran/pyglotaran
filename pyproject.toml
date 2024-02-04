@@ -84,6 +84,7 @@ test = [
   "pytest-cov>=2.5.1",
   "pytest-env>=0.6.2",
   "pytest-runner>=2.11.1",
+  "pytest-xdist>=3.5",
   "types-dataclasses>=0.1.7",
 ]
 [project.urls]

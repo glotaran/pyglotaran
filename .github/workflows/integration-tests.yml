@@ -24,7 +24,7 @@ jobs:
           import os
           from pathlib import Path
 
-          example_names=["fluorescence"]
+          example_names=["fluorescence", "transient_absorption", "transient_absorption_two_datasets", "spectral_constraints", "spectral_guidance"]
           gh_output = Path(os.getenv("GITHUB_OUTPUT", ""))
           with gh_output.open("a", encoding="utf8") as f:
               f.writelines([f"example-list={json.dumps(example_names)}"])
@@ -51,10 +51,10 @@ jobs:
           pip install git+https://github.com/glotaran/pyglotaran-extras.git@staging_support
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@main
+        uses: s-weigand/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
-          examples_branch: staging_rewrite
+          examples_branch: port-examples
       - name: Installed packages
         if: always()
         run: |
