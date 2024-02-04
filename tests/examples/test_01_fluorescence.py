@@ -1,3 +1,4 @@
+"""Single dataset time-resolved fluorescence spectroscopy analysis integration tests."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -9,11 +10,11 @@ from glotaran.io import load_dataset
 from glotaran.io import load_parameters
 from glotaran.io import load_scheme
 
-repo_root = Path(project_root(__file__, root_files=[".git", "pyproject.toml"]))
+repo_root = Path(project_root(__file__, root_files=["pyproject.toml"]))
 example_folder = repo_root / "examples/case_studies/01-fluorescence"
 
 
-def test_01_fluorescence():
+def test_target_analysis():
     fit_scheme = load_scheme(example_folder / "scheme.yaml", format_name="yml")
     parameters = load_parameters(example_folder / "parameters.yaml")
     data_path = example_folder / "data/data.ascii"
@@ -24,4 +25,4 @@ def test_01_fluorescence():
 
 
 if __name__ == "__main__":
-    test_01_fluorescence()
+    test_target_analysis()
