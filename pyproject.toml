@@ -77,12 +77,14 @@ test = [
   "coverage[toml]",
   "IPython>=7.2",
   "pluggy>=0.7",
+  "py-repo-root>=2.0.1",
   "pytest>=3.7.1",
   "pytest-allclose>=1",
   "pytest-benchmark>=3.1.1",
   "pytest-cov>=2.5.1",
   "pytest-env>=0.6.2",
   "pytest-runner>=2.11.1",
+  "pytest-xdist>=3.5",
   "types-dataclasses>=0.1.7",
 ]
 [project.urls]

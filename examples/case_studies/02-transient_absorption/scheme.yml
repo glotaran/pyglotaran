@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=schema.json
+library:
+  cmplx1:
+    type: kinetic
+    rates:
+      (s2, s1): "rates.k1"
+      (s3, s1): "rates.k2"
+      (s4, s2): "rates.k3"
+      (s4, s3): "rates.k4"
+      (s4, s4): "rates.k5"
+      (s5, s5): "rates.kC"
+
+
+experiments:
+  my_exp:
+    datasets:
+      dataset1:
+        elements: [cmplx1]
+        activation:
+          - type: gaussian
+            compartments:
+              s1: 1
+              s5: 1
+            center: irf.center
+            width: irf.width
+            dispersion_center: irf.dispc
+            center_dispersion_coefficients: [irf.disp1,irf.disp2,irf.disp3]
+
+        weights:
+          - value: 0.1
+            global_interval: [280, 550]
+          - value: 0.1
+            global_interval: [720, 890]
+    clp_relations:
+      - source: s2
+        target: s3
+        parameter: rel.r1
