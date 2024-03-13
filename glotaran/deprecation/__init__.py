@@ -1,4 +1,5 @@
 """Deprecation helpers and place to put deprecated implementations till removing."""
+
 from glotaran.deprecation.deprecation_utils import GlotaranApiDeprecationWarning
 from glotaran.deprecation.deprecation_utils import GlotaranDeprecatedApiError
 from glotaran.deprecation.deprecation_utils import deprecate

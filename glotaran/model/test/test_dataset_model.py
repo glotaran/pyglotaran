@@ -1,4 +1,5 @@
 """Tests for glotaran.model.dataset_model.DatasetModel"""
+
 from __future__ import annotations
 
 import pytest

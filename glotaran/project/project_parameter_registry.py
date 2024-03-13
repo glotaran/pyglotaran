@@ -1,4 +1,5 @@
 """The glotaran parameter registry module."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -77,9 +78,11 @@ class ProjectParameterRegistry(ProjectRegistry):
             write_dict(parameters, file_name=parameter_file, offset=0)
         elif format_name == "csv":
             save_parameters(
-                Parameters.from_dict(parameters)
-                if isinstance(parameters, dict)
-                else Parameters.from_list(parameters),
+                (
+                    Parameters.from_dict(parameters)
+                    if isinstance(parameters, dict)
+                    else Parameters.from_list(parameters)
+                ),
                 parameter_file,
                 allow_overwrite=allow_overwrite,
             )

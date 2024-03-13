@@ -4,6 +4,7 @@ Since this module is imported at the root ``__init__.py`` file all other
 glotaran imports should be used for typechecking only in the 'if TYPE_CHECKING' block.
 This is to prevent issues with circular imports.
 """
+
 from __future__ import annotations
 
 import os

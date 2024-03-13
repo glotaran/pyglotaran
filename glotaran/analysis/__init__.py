@@ -1,4 +1,5 @@
 """This package contains functions for model simulation and fitting."""
+
 from glotaran.deprecation.deprecation_utils import deprecate_submodule
 
 simulation = deprecate_submodule(

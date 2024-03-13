@@ -1,4 +1,5 @@
 """Module for residual calculation with the non-negative least-squares method."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

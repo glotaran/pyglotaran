@@ -1,4 +1,5 @@
 """Shared variables for simulated decays."""
+
 import numpy as np
 
 from glotaran.io import load_parameters

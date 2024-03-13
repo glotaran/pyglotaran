@@ -1,4 +1,5 @@
 """Functions for simulating a dataset using a global optimization model."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

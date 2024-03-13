@@ -1,4 +1,5 @@
 """Helper functions for attrs."""
+
 from glotaran.utils.helpers import nan_or_equal
 
 

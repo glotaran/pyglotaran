@@ -1,4 +1,5 @@
 """This module contains the megacomplex."""
+
 from __future__ import annotations
 
 from collections.abc import Callable

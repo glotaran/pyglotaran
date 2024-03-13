@@ -1,4 +1,5 @@
 """This module contains the dataset group."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -25,9 +26,9 @@ if TYPE_CHECKING:
 class DatasetGroupModel(ModelItem):
     """A group of datasets which will evaluated independently."""
 
-    residual_function: Literal[
-        "variable_projection", "non_negative_least_squares"
-    ] = "variable_projection"
+    residual_function: Literal["variable_projection", "non_negative_least_squares"] = (
+        "variable_projection"
+    )
     """The residual function to use."""
 
     link_clp: bool | None = None

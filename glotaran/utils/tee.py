@@ -1,4 +1,5 @@
 """Module containing context manager to capture stdout output and still forward it to stdout."""
+
 from __future__ import annotations
 
 import sys
