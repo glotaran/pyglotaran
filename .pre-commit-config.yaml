@@ -51,7 +51,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.2.0
+    rev: v0.3.3
     hooks:
       - id: ruff
         name: "ruff sort notebooks"
@@ -77,7 +77,7 @@ repos:
   # Linters
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.0
+    rev: v0.3.3
     hooks:
       - id: ruff
         name: "ruff sort imports"
@@ -139,6 +139,6 @@ repos:
           - --ignore-words-list=glotaran,doas,projectio
 
   - repo: https://github.com/rhysd/actionlint
-    rev: "v1.6.26"
+    rev: "v1.6.27"
     hooks:
       - id: actionlint

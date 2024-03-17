@@ -1,4 +1,5 @@
 """Tests for ``glotaran.project.optimization_history``."""
+
 from __future__ import annotations
 
 from textwrap import dedent

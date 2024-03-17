@@ -4,6 +4,7 @@ This script uses https://github.com/shakiba/svgexport
 
 ``npm install svgexport -g``
 """
+
 from __future__ import annotations
 
 import subprocess
