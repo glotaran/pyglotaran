@@ -1,5 +1,13 @@
 # Changelog
 
+(changes-0_7_3)=
+
+## 🚀 0.7.3 (Not released)
+
+### ✨ Features
+
+- ✨ Add official Python 3.12 support (#1437)
+
 (changes-0_7_2)=
 
 ## 🚀 0.7.2 (2023-12-07)
