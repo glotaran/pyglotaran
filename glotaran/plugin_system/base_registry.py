@@ -8,6 +8,7 @@ This is to prevent issues with circular imports.
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Iterable
 from importlib import metadata
 from typing import TYPE_CHECKING
@@ -122,10 +123,15 @@ def load_plugins():
     - ``glotaran.plugins.project_io``
     """
     if "DEACTIVATE_GTA_PLUGINS" not in os.environ:  # pragma: no branch
-        for entry_point_name, entry_points in metadata.entry_points().items():
-            if entry_point_name.startswith("glotaran.plugins"):
-                for entry_point in entry_points:
-                    entry_point.load()
+        if sys.version_info < (3, 12):
+            for entry_point_name, entry_points in metadata.entry_points().items():
+                if entry_point_name.startswith("glotaran.plugins"):
+                    for entry_point in entry_points:
+                        entry_point.load()
+        else:
+            for entry_point in metadata.entry_points():
+                if entry_point.group.startswith("glotaran.plugins"):  # type:ignore[attr-defined]
+                    entry_point.load()  # type:ignore[attr-defined]
 
 
 def set_plugin(
