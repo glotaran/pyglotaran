@@ -3,21 +3,21 @@ pip>=18.0
 wheel>=0.38.0
 
 # glotaran setup dependencies
-asteval==0.9.31
-attrs == 23.1.0
+asteval==0.9.32
+attrs == 23.2.0
 click==8.1.7
 netCDF4==1.6.5
-numba==0.58.1
-numpy==1.26.2
+numba==0.59.0
+numpy==1.26.4
 odfpy==1.4.1
 openpyxl==3.1.2
-pandas==2.1.4
-pydantic==1.10.13
-ruamel.yaml==0.18.5
-scipy==1.11.4
+pandas==2.2.1
+pydantic==1.10.14
+ruamel.yaml==0.18.6
+scipy==1.12.0
 sdtfile==2023.9.28
 tabulate==0.9.0
-xarray==2023.11.0
+xarray==2024.2.0
 
 # documentation dependencies
 -r docs/requirements.txt
