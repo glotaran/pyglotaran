@@ -113,7 +113,7 @@ jobs:
           Path("benchmark/.asv/html/origin_pr_nr.txt").write_text(pr_nr)
 
       - name: Upload PR html results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-pr-html
           path: benchmark/.asv/html
