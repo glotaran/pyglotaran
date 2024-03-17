@@ -1,4 +1,5 @@
 """Module containing the NetCDF4 Data IO plugin."""
+
 from __future__ import annotations
 
 # Needed to prevent a netCDF4 RuntimeWarning at import time

@@ -1,4 +1,5 @@
 """Test for ``glotaran.utils.tee``."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

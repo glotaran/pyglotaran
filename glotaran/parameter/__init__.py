@@ -1,4 +1,5 @@
 """The glotaran parameter package."""
+
 from __future__ import annotations
 
 from glotaran.parameter.parameter import Parameter

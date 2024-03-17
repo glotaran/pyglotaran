@@ -5,6 +5,7 @@ Note:
 Since Io functionality is purely plugin based this package mostly
 reexports functions from the ``glotaran.plugin_system`` from a common place.
 """
+
 from __future__ import annotations
 
 from glotaran.io.interface import SAVING_OPTIONS_DEFAULT

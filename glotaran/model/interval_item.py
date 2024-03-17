@@ -1,4 +1,5 @@
 """This module contains the interval item."""
+
 from __future__ import annotations
 
 from glotaran.model.item import Item

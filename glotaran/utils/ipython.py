@@ -1,4 +1,5 @@
 """Glotaran module with utilities for ``ipython`` integration (e.g. ``notebooks``)."""
+
 from __future__ import annotations
 
 from collections import UserString

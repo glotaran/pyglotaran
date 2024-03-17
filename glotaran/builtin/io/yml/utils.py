@@ -1,4 +1,5 @@
 """Utility module for ``glotaran.builtin.io.yml.yml``."""
+
 from __future__ import annotations
 
 from pathlib import Path

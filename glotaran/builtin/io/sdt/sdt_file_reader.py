@@ -1,4 +1,5 @@
 """Module containing the SDT Data IO plugin."""
+
 from __future__ import annotations
 
 import warnings
