@@ -33,7 +33,7 @@ class CsvProjectIo(ProjectIoInterface):
         """
         df = pd.read_csv(file_name, skipinitialspace=True, na_values=["None", "none"], sep=sep)
         df.columns = [column.lower() for column in df.columns]
-        df.rename(columns=OPTION_NAMES_DESERIALIZED, inplace=True)
+        df = df.rename(columns=OPTION_NAMES_DESERIALIZED)
         safe_dataframe_fillna(df, "minimum", -np.inf)
         safe_dataframe_fillna(df, "maximum", np.inf)
         return Parameters.from_dataframe(df, source=file_name)

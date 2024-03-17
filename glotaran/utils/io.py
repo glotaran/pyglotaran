@@ -266,7 +266,7 @@ def safe_dataframe_fillna(df: pd.DataFrame, column_name: str, fill_value: Any) -
         Value to fill NaNs with
     """
     if column_name in df.columns:
-        df[column_name].fillna(fill_value, inplace=True)
+        df[column_name] = df[column_name].fillna(fill_value)
 
 
 def safe_dataframe_replace(
@@ -291,7 +291,7 @@ def safe_dataframe_replace(
     if not isinstance(to_be_replaced_values, (list, tuple)):
         to_be_replaced_values = [to_be_replaced_values]
     if column_name in df.columns:
-        df[column_name].replace(to_be_replaced_values, replace_value, inplace=True)
+        df[column_name] = df[column_name].replace(to_be_replaced_values, replace_value)
 
 
 def get_script_dir(*, nesting: int = 0) -> Path:
