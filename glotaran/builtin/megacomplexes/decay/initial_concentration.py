@@ -1,4 +1,5 @@
 """This package contains the initial concentration item."""
+
 from __future__ import annotations
 
 import numpy as np

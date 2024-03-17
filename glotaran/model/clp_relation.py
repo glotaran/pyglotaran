@@ -1,4 +1,5 @@
 """This module contains clp relation items."""
+
 from __future__ import annotations
 
 from glotaran.model.interval_item import IntervalItem

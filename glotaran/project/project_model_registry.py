@@ -1,4 +1,5 @@
 """The glotaran model registry module."""
+
 from __future__ import annotations
 
 from pathlib import Path

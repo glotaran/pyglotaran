@@ -1,4 +1,5 @@
 """Glotaran module with regular expression patterns and functions."""
+
 import re
 
 

@@ -1,4 +1,5 @@
 """Module containing the matrix provider classes."""
+
 from __future__ import annotations
 
 import warnings
@@ -425,9 +426,10 @@ class MatrixProvider:
         for label, matrix_container in self._matrix_containers.items():
             model_dimension = self._data_provider.get_model_dimension(label)
             model_axis = self._data_provider.get_model_axis(label)
-            matrix_coords: tuple[tuple[str, Any], tuple[str, Any], tuple[str, list[str]]] | tuple[
-                tuple[str, Any], tuple[str, list[str]]
-            ] = (
+            matrix_coords: (
+                tuple[tuple[str, Any], tuple[str, Any], tuple[str, list[str]]]
+                | tuple[tuple[str, Any], tuple[str, list[str]]]
+            ) = (
                 (model_dimension, model_axis),
                 ("clp_label", matrix_container.clp_labels),
             )
@@ -706,9 +708,11 @@ class MatrixProviderLinked(MatrixProvider):
                     matrix_containers.append(matrix_container_temp)
 
             matrix_scales = [
-                self.group.dataset_models[label].scale
-                if self.group.dataset_models[label].scale is not None
-                else 1
+                (
+                    self.group.dataset_models[label].scale
+                    if self.group.dataset_models[label].scale is not None
+                    else 1
+                )
                 for label in self._data_provider.group_definitions[group_label]
             ]
 

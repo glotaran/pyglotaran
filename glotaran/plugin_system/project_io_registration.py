@@ -6,6 +6,7 @@ The [call-arg] type error would be raised since the base methods doesn't have a 
 argument, but we rather ignore this error here, than adding ``**kwargs`` to the base method
 and causing an [override] type error in the plugins implementation.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

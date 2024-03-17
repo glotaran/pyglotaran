@@ -1,4 +1,5 @@
 """Module containing the YAML Data and Project IO plugins."""
+
 from __future__ import annotations
 
 from dataclasses import replace

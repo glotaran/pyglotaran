@@ -1,4 +1,5 @@
 """Module containing the optimize function."""
+
 from __future__ import annotations
 
 from glotaran.optimization.optimizer import Optimizer

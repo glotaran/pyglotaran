@@ -1,4 +1,5 @@
 """This module contains the items."""
+
 from __future__ import annotations
 
 import contextlib
@@ -333,9 +334,13 @@ def iterate_names_and_labels(
                 yield name, v if isinstance(v, str) else (name, v.label)  # type:ignore[misc]
 
         else:
-            yield name, value if isinstance(value, str) else (
-                name,
-                value.label,  # type:ignore[misc]
+            yield name, (
+                value
+                if isinstance(value, str)
+                else (
+                    name,
+                    value.label,  # type:ignore[misc]
+                )
             )
 
 

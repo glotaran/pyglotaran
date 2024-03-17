@@ -1,4 +1,5 @@
 """Glotaran types module containing commonly used types."""
+
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path

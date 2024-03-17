@@ -1,4 +1,5 @@
 """Module containing the estimation provider classes."""
+
 from __future__ import annotations
 
 import warnings
@@ -241,7 +242,10 @@ class EstimationProvider:
 
     def get_result(
         self,
-    ) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray],]:
+    ) -> tuple[
+        dict[str, xr.DataArray],
+        dict[str, xr.DataArray],
+    ]:
         """Get the results of the estimation.
 
         Returns
@@ -305,9 +309,11 @@ class EstimationProviderUnlinked(EstimationProvider):
         """
         full_penalty = np.concatenate(
             [
-                self._residuals[label]
-                if has_dataset_model_global_model(dataset_model)
-                else np.concatenate(self._residuals[label])
+                (
+                    self._residuals[label]
+                    if has_dataset_model_global_model(dataset_model)
+                    else np.concatenate(self._residuals[label])
+                )
                 for label, dataset_model in self.group.dataset_models.items()
             ]
         )
@@ -317,7 +323,10 @@ class EstimationProviderUnlinked(EstimationProvider):
 
     def get_result(
         self,
-    ) -> tuple[dict[str, list[xr.DataArray]], dict[str, list[xr.DataArray]],]:
+    ) -> tuple[
+        dict[str, list[xr.DataArray]],
+        dict[str, list[xr.DataArray]],
+    ]:
         """Get the results of the estimation.
 
         Returns
@@ -475,7 +484,10 @@ class EstimationProviderLinked(EstimationProvider):
 
     def get_result(
         self,
-    ) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray],]:
+    ) -> tuple[
+        dict[str, xr.DataArray],
+        dict[str, xr.DataArray],
+    ]:
         """Get the results of the estimation.
 
         Returns

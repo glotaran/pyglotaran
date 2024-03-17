@@ -1,4 +1,5 @@
 """Module containing a deprecated fake module."""
+
 from glotaran.deprecation.deprecation_utils import deprecate_submodule
 
 # just here to be tested

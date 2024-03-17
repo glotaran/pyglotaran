@@ -1,4 +1,5 @@
 """Module containing the optimizer class."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -224,9 +225,11 @@ class Optimizer:
             "parameter_history": self._parameter_history,
             "termination_reason": self._termination_reason,
             "optimization_history": OptimizationHistory.from_stdout_str(self._tee.read()),
-            "number_of_function_evaluations": self._optimization_result.nfev
-            if success
-            else self._parameter_history.number_of_records,
+            "number_of_function_evaluations": (
+                self._optimization_result.nfev
+                if success
+                else self._parameter_history.number_of_records
+            ),
         }
 
         if success:
@@ -254,10 +257,10 @@ class Optimizer:
             self._parameters.set_from_label_and_value_arrays(
                 self._free_parameter_labels, self._optimization_result.x
             )
-            result_args[
-                "covariance_matrix"
-            ] = self.calculate_covariance_matrix_and_standard_errors(
-                result_args["jacobian"], result_args["root_mean_square_error"]
+            result_args["covariance_matrix"] = (
+                self.calculate_covariance_matrix_and_standard_errors(
+                    result_args["jacobian"], result_args["root_mean_square_error"]
+                )
             )
 
         result_args["additional_penalty"] = [

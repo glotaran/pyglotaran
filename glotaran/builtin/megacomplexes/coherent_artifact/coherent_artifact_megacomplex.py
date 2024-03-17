@@ -1,4 +1,5 @@
 """This package contains the kinetic megacomplex item."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

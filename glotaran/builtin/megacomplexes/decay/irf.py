@@ -1,6 +1,5 @@
 """This package contains irf items."""
 
-
 import numpy as np
 
 from glotaran.model import ModelError

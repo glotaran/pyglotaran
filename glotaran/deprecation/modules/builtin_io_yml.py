@@ -1,4 +1,5 @@
 """Deprecation functions for the yaml parser."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
