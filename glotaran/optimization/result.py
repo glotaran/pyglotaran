@@ -1,4 +1,5 @@
 """The result class for global analysis."""
+
 from __future__ import annotations
 
 # TODO: Fix circular import

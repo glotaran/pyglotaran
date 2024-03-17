@@ -1,4 +1,5 @@
 """Dummy module to test deprecate_module_attribute."""
+
 from __future__ import annotations
 
 

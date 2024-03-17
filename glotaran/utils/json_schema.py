@@ -62,15 +62,13 @@ def _create_vanilla_schema() -> tuple[dict[str, Any], dict[str, Any]]:
 @overload
 def create_model_scheme_json_schema(
     output_path: None = None, parameters: Parameters | StrOrPath | None = None
-) -> dict[str, Any]:
-    ...
+) -> dict[str, Any]: ...
 
 
 @overload
 def create_model_scheme_json_schema(
     output_path: StrOrPath, parameters: Parameters | StrOrPath | None = None
-) -> None:
-    ...
+) -> None: ...
 
 
 def create_model_scheme_json_schema(

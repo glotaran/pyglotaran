@@ -1,4 +1,5 @@
 """A simple sequential decay for testing purposes."""
+
 from __future__ import annotations
 
 from glotaran.builtin.items.activation.gaussian import GaussianActivation
