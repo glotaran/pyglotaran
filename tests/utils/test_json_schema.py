@@ -1,4 +1,5 @@
 """Tests for ``glotaran.utils.json_schema``."""
+
 from __future__ import annotations
 
 import json

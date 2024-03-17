@@ -1,4 +1,5 @@
 """This module contains the dataset group."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -1,4 +1,5 @@
 """A pre-processor pipeline for data."""
+
 from __future__ import annotations
 
 import abc

@@ -1,4 +1,5 @@
 """Module containing the data provider classes."""
+
 from __future__ import annotations
 
 import abc

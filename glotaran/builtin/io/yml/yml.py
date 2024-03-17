@@ -1,4 +1,5 @@
 """Module containing the YAML Data and Project IO plugins."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

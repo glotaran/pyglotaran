@@ -1,4 +1,5 @@
 """Glotaran types module containing commonly used types."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping

@@ -1,4 +1,5 @@
 """Deprecated functionality export for 'glotaran.examples.sequential'."""
+
 from __future__ import annotations
 
 sequential_deprecation_mapping = {

@@ -1,4 +1,5 @@
 """This module contains the model."""
+
 from __future__ import annotations
 
 import abc

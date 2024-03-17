@@ -1,4 +1,5 @@
 """This module contains the item classes and helper functions."""
+
 from __future__ import annotations
 
 import contextlib

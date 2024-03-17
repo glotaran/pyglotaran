@@ -1,4 +1,5 @@
 """Glotaran module with utilities for sanitation of parsed content."""
+
 from __future__ import annotations
 
 from typing import Any

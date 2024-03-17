@@ -1,4 +1,5 @@
 """Module for residual calculation with  the variable projection method."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
