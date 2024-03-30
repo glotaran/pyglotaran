@@ -1,4 +1,5 @@
 """Single dataset time-resolved fluorescence spectroscopy analysis integration tests."""
+
 from __future__ import annotations
 
 from pathlib import Path
