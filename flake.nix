@@ -35,12 +35,8 @@
           ]))
           zlib
         ];
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${lib-path}";
         shellHook = ''
-          # Augment the dynamic linker path
-          export "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${lib-path}"
-          export "NIX_LD_LIBRARY_PATH=${lib-path}"
-          export "NIX_LD=${ld-path}"
-
           # Setup the virtual environment if it doesn't already exist.
           export PYTHONPATH=`pwd`/$VENV/${python.sitePackages}/:$PYTHONPATH
           VENV=.venv
