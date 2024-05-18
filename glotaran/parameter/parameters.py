@@ -517,7 +517,11 @@ def param_dict_to_markdown(
     ]
     if label is not None:
         return_string += f"{node_indentation}* __{label}__:\n"
+
     if isinstance(parameters, list):
+        for parameter in parameters:
+            if abs(parameter.standard_error) < 1e-15:
+                parameter.standard_error = np.nan
         parameter_rows = [
             [
                 parameter.label_short,
