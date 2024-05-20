@@ -6,9 +6,6 @@ import numpy as np
 import xarray as xr
 from scipy.special import erf
 
-from glotaran.builtin.megacomplexes.decay.decay_matrix_gaussian_irf import (
-    calculate_decay_matrix_gaussian_irf_on_index,
-)
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.model import DatasetModel
 from glotaran.model import ItemIssue
@@ -78,8 +75,6 @@ class PFIDMegacomplex(Megacomplex):
     labels: list[str] = attribute(validator=validate_pfid_parameter)
     frequencies: list[ParameterType]  # omega_a
     rates: list[ParameterType]  # 1/T2
-    alpha: list[ParameterType]  # currently unused
-    kappa: list[ParameterType]  # describes an excited state decaying with rate kd(ecay)
 
     def calculate_matrix(
         self,
@@ -95,8 +90,6 @@ class PFIDMegacomplex(Megacomplex):
 
         frequencies = np.array(self.frequencies)
         rates = np.array(self.rates)
-        alpha = np.array(self.alpha)
-        kappa = np.array(self.kappa)
 
         if dataset_model.spectral_axis_inverted:
             frequencies = dataset_model.spectral_axis_scale / frequencies
@@ -121,8 +114,6 @@ class PFIDMegacomplex(Megacomplex):
                         matrix[i],
                         frequencies,
                         rates,
-                        alpha,
-                        kappa,
                         irf,
                         i,
                         global_axis,
@@ -133,8 +124,6 @@ class PFIDMegacomplex(Megacomplex):
                     matrix,
                     frequencies,
                     rates,
-                    alpha,
-                    kappa,
                     irf,
                     None,
                     global_axis,
@@ -220,8 +209,6 @@ def calculate_pfid_matrix_gaussian_irf_on_index(
     matrix: ArrayLike,
     frequencies: ArrayLike,
     rates: ArrayLike,
-    alpha: ArrayLike,
-    kappa: ArrayLike,
     irf: IrfMultiGaussian,
     global_index: int | None,
     global_axis: ArrayLike,
@@ -232,8 +219,6 @@ def calculate_pfid_matrix_gaussian_irf_on_index(
         matrix += calculate_pfid_matrix_gaussian_irf(
             frequencies,
             rates,
-            alpha,
-            kappa,
             model_axis,
             center,
             width,
@@ -247,8 +232,6 @@ def calculate_pfid_matrix_gaussian_irf_on_index(
 def calculate_pfid_matrix_gaussian_irf(
     frequencies: np.ndarray,
     rates: np.ndarray,
-    alpha: np.ndarray,
-    kappa: np.ndarray,
     model_axis: np.ndarray,
     center: float,
     width: float,
@@ -264,10 +247,6 @@ def calculate_pfid_matrix_gaussian_irf(
         an array of frequencies in THz, one per oscillation
     rates : np.ndarray
         an array of dephasing rates (negative), one per oscillation
-    alpha: np.ndarray
-        attempt: alpha[0] is a shift of the frequencies to mimic inhomogeneous broadening
-    kappa : np.ndarray
-        an array of decay rates (positive), only the first is used
     model_axis : np.ndarray
         the model axis (time)
     center : float
@@ -288,20 +267,10 @@ def calculate_pfid_matrix_gaussian_irf(
     shifted_axis = model_axis - center - shift
     # For calculations using the negative rates we use the time axis
     # from the beginning up to 5 σ from the irf center
-    # try 20231223
+    # this is to guard again overflows
     left_shifted_axis_indices = np.where(shifted_axis < 5 * width)[0]
-    # modify this to enable positive time response according to Hamm 1995, eq.1.6
-    # left_shifted_axis_indices = np.where(shifted_axis < 0)[0]
     left_shifted_axis = shifted_axis[left_shifted_axis_indices]
     neg_idx = np.where(rates < 0)[0]
-    # For calculations using the positive rates axis we use the time axis
-    # from 5 σ before the irf center until the end
-    # right_shifted_axis_indices = np.where(shifted_axis > -5 * width)[0]
-    # modify this to enable positive time response according to Hamm 1995, eq.1.6
-    # TODO: remove unused code related to right_shifted_axis
-    # right_shifted_axis_indices = np.where(shifted_axis > 0)[0]
-    # right_shifted_axis = shifted_axis[right_shifted_axis_indices]
-    # pos_idx = np.where(rates >= 0)[0]
 
     # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
     # where 0.03 is the product of speed of light 3*10**10 cm/s and time-unit ps (10^-12)
@@ -309,9 +278,7 @@ def calculate_pfid_matrix_gaussian_irf(
     # always expected to be in cm-1 for relevant experiments
     frequency_diff = (global_axis_value - frequencies) * 0.03 * 2 * np.pi
     d = width**2
-    # rates2 = rates*(alpha[0]/(alpha[0]+abs(frequency_diff)))
     k = rates + 1j * frequency_diff
-    # k = rates2 + 1j * frequency_diff
     dk = k * d
     sqwidth = np.sqrt(2) * width
 
@@ -321,40 +288,11 @@ def calculate_pfid_matrix_gaussian_irf(
     )
 
     b = np.zeros((len(model_axis), len(rates)), dtype=np.complex128)
-    # b[np.ix_(right_shifted_axis_indices, pos_idx)] = 1 + erf(
-    #     (right_shifted_axis[:, None] - dk[pos_idx]) / sqwidth
-    # )
     # For negative rates we flip the sign of the `erf` by using `-sqwidth` in lieu of `sqwidth`
-    # after 20240104
     b[np.ix_(left_shifted_axis_indices, neg_idx)] = 1 + erf(
         (left_shifted_axis[:, None] - dk[:]) / -sqwidth
     )
-    # b[np.ix_(True, neg_idx)] = 1 + erf(
-    # b[np.ix_(neg_idx)] = 1 + erf(
-    # until 20240103
-    # b = 1 + erf((shifted_axis[:, None] - dk[:]) / -sqwidth)
-    # c = np.zeros((len(model_axis), len(rates)), dtype=np.complex128)
-    c = np.zeros((len(model_axis), len(rates)), dtype=np.float64)
-    # this c term describes a nondecaying excited state following Hamm 1995
-    # c = 1 - erf((shifted_axis[:, None]) / -sqwidth)
-    # this c term describes an excited state decaying with rate kd(ecay)
-    # equal to the parameter kappa[0]
-    kd = np.zeros((len(rates)), dtype=np.float64) + kappa[0]
-    #  we need to call calculate_decay_matrix_gaussian_irf_on_index to avoid overflows
-    calculate_decay_matrix_gaussian_irf_on_index(
-        matrix=c,
-        rates=kd,
-        times=model_axis,
-        centers=np.array([center]),
-        widths=np.array([width]),
-        scales=np.array([1.0]),
-        backsweep=False,
-        backsweep_period=1.0,
-    )
-    # added a minus to facilitate the NNLS fit of the instantaneous bleach
-    # osc = -(a * b + c/ (rates**2 + frequency_diff**2)) * scale
+
     osc = -(a * b) * scale
-    # output = np.zeros((len(model_axis), len(rates)), dtype=np.float64)
-    # output = (osc.real * rates - frequency_diff * osc.imag) / (rates**2 + frequency_diff**2)
-    # return output
+
     return np.concatenate((osc.real, osc.imag), axis=1)
