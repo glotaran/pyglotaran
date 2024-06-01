@@ -325,8 +325,8 @@ def save_scheme(
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
     io.save_scheme(file_name=Path(file_name).as_posix(), scheme=scheme, **kwargs)
-    if update_source_path is True:
-        scheme.source_path = Path(file_name).as_posix()
+    # if update_source_path is True:
+    #     scheme.source_path = Path(file_name).as_posix()
 
 
 @not_implemented_to_value_error
@@ -351,9 +351,9 @@ def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs
     """
     io = get_project_io(format_name or infer_file_format(result_path, allow_folder=True))
 
-    result = io.load_result(Path(result_path).as_posix(), **kwargs)
-    result.source_path = Path(result_path).as_posix()
-    return result
+    return io.load_result(Path(result_path).as_posix(), **kwargs)
+    # result.source_path = Path(result_path).as_posix()
+    # return result
 
 
 @not_implemented_to_value_error
@@ -363,7 +363,7 @@ def save_result(
     format_name: str | None = None,
     *,
     allow_overwrite: bool = False,
-    update_source_path: bool = True,
+    # update_source_path: bool = True,
     saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
     **kwargs: Any,
 ) -> list[str]:
@@ -398,15 +398,15 @@ def save_result(
     io = get_project_io(
         format_name or infer_file_format(result_path, needs_to_exist=False, allow_folder=True)
     )
-    paths = io.save_result(
+    return io.save_result(
         result_path=Path(result_path).as_posix(),
         result=result,
         saving_options=saving_options,
         **kwargs,
     )
-    if update_source_path is True:
-        result.source_path = Path(result_path).as_posix()
-    return paths
+    # if update_source_path is True:
+    #     result.source_path = Path(result_path).as_posix()
+    # return paths
 
 
 def get_project_io_method(format_name: str, method_name: ProjectIoMethods) -> Callable[..., Any]:
