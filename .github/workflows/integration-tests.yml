@@ -18,16 +18,23 @@ jobs:
     steps:
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@main
-        with:
-          example_name: set example list
-          set_example_list: true
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          example_names=["fluorescence", "transient_absorption", "transient_absorption_two_datasets", "spectral_constraints", "spectral_guidance"]
+          gh_output = Path(os.getenv("GITHUB_OUTPUT", ""))
+          with gh_output.open("a", encoding="utf8") as f:
+              f.writelines([f"example-list={json.dumps(example_names)}"])
 
   run-examples:
     name: "Run Example: "
     runs-on: ubuntu-latest
     needs: [create-example-list]
     strategy:
+      fail-fast: false
       matrix:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
@@ -41,11 +48,13 @@ jobs:
           pip install wheel
           pip install -r requirements_pinned.txt
           pip install .
+          pip install git+https://github.com/glotaran/pyglotaran-extras.git@staging_support
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@main
+        uses: s-weigand/pyglotaran-examples@main
         with:
           example_name: ${{ matrix.example_name }}
+          examples_branch: port-examples
       - name: Installed packages
         if: always()
         run: |

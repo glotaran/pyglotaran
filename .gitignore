@@ -189,3 +189,6 @@ comparison-results-current
 docs/source/notebooks/quickstart/quickstart_project/data
 docs/source/notebooks/quickstart/quickstart_project/results
 docs/source/notebooks/quickstart/quickstart_project/project.gta
+
+# Auto generated autocompletions files
+examples/case_studies/*/schema*.json

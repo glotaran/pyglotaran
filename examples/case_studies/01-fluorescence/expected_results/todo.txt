@@ -1,0 +1,1 @@
+.nc files with results or something to feed the comparison in integrations tests
