@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import replace
 from itertools import chain
@@ -210,41 +211,43 @@ class OptimizationMatrix:
         index: float,
         constraints: list[ClpConstraint],
         relations: list[ClpRelation],
+        copy: bool = False,
     ) -> OptimizationMatrix:
-        if self.is_index_dependent:
+        result = deepcopy(self) if copy else self
+        if result.is_index_dependent:
             raise GlotaranUserError("Cannot reduce index dependent matrix.")
         constraints = [c for c in constraints if c.applies(index)]
         relations = [r for r in relations if r.applies(index)]
         if len(constraints) + len(relations) == 0:
-            return self
+            return result
 
         if len(relations) > 0:
-            relation_matrix = np.diagflat([1.0] * len(self.clp_axis))
+            relation_matrix = np.diagflat([1.0] * len(result.clp_axis))
             idx_to_delete = []
             for relation in relations:
-                if relation.target in self.clp_axis and relation.source in self.clp_axis:
-                    source_idx = self.clp_axis.index(relation.source)
-                    target_idx = self.clp_axis.index(relation.target)
+                if relation.target in result.clp_axis and relation.source in result.clp_axis:
+                    source_idx = result.clp_axis.index(relation.source)
+                    target_idx = result.clp_axis.index(relation.target)
                     relation_matrix[target_idx, source_idx] = relation.parameter
                     idx_to_delete.append(target_idx)
 
             if len(idx_to_delete) > 0:
-                self.clp_axis = [
-                    label for i, label in enumerate(self.clp_axis) if i not in idx_to_delete
+                result.clp_axis = [
+                    label for i, label in enumerate(result.clp_axis) if i not in idx_to_delete
                 ]
                 relation_matrix = np.delete(relation_matrix, idx_to_delete, axis=1)
-                self.array = self.array @ relation_matrix
+                result.array = result.array @ relation_matrix
 
         if len(constraints) > 0:
-            removed_clp_labels = [c.target for c in constraints if c.target in self.clp_axis]
+            removed_clp_labels = [c.target for c in constraints if c.target in result.clp_axis]
             if len(removed_clp_labels) > 0:
-                mask = [label not in removed_clp_labels for label in self.clp_axis]
-                self.clp_axis = [
-                    label for label in self.clp_axis if label not in removed_clp_labels
+                mask = [label not in removed_clp_labels for label in result.clp_axis]
+                result.clp_axis = [
+                    label for label in result.clp_axis if label not in removed_clp_labels
                 ]
-                self.array = self.array[:, mask]
+                result.array = result.array[:, mask]
 
-        return self
+        return result
 
     def weight(self, weight: ArrayLike) -> OptimizationMatrix:
         """Create a matrix container with a weighted matrix.
