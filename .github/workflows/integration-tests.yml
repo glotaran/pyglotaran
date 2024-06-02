@@ -19,23 +19,17 @@ jobs:
     outputs:
       example-list: ${{ steps.create-example-list.outputs.example-list }}
     steps:
-      # Pre-checkout the notebooks: the shared action otherwise clones main.
-      - name: Checkout pinned examples
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: "glotaran/pyglotaran-examples"
-          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
-          path: pyglotaran-examples
       - name: Set up Python 3.10
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.10"
       - name: Set example list output
         id: create-example-list
-        uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+        uses: glotaran/pyglotaran-examples@staging_rewrite
         with:
           example_name: set example list
           set_example_list: true
+          examples_branch: staging_rewrite
 
   run-examples:
     name: "Run Example: "
@@ -46,12 +40,6 @@ jobs:
         example_name: ${{fromJson(needs.create-example-list.outputs.example-list)}}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Checkout pinned examples
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: "glotaran/pyglotaran-examples"
-          ref: fcfe1519ac3a49e1826318646dfdda7892d0bbf1
-          path: pyglotaran-examples
       - name: Set up Python 3.10
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -65,15 +53,17 @@ jobs:
         run: uv pip install . -r requirements_pinned.txt
       - name: ${{ matrix.example_name }}
         id: example-run
-        uses: glotaran/pyglotaran-examples@fcfe1519ac3a49e1826318646dfdda7892d0bbf1
+        uses: glotaran/pyglotaran-examples@staging_rewrite
         with:
           example_name: ${{ matrix.example_name }}
-          install_extras: false
+          examples_branch: staging_rewrite
       - name: Installed packages
         if: always()
         run: |
           uv pip list
-      - name: Upload Example Plots Artifact
+
+      - name: Upload Example Notebook Artifact
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-notebooks-${{ matrix.example_name }}
@@ -83,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: example-results-${{ matrix.example_name }}
-          path: ~/pyglotaran_examples_results
+          path: ~/pyglotaran_examples_results_staging
 
   collect-artifacts:
     if: always()
