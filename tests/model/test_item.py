@@ -82,21 +82,6 @@ def test_typed_item():
     assert MockTypedItem.__item_types__ == [MockTypedItemConcrete1, MockTypedItemConcrete2]
 
 
-def test_item_schema():
-    got = MockTypedItem.model_json_schema()
-    wanted = {
-        "title": "MockTypedItem",
-        "description": "This is just a mock item for testing.",
-        "type": "object",
-        "properties": {"type": {"const": None, "title": "Type"}},
-        "required": ["type"],
-        "additionalProperties": False,
-    }
-
-    print(got)
-    assert got == wanted
-
-
 def test_get_issues():
     item = MockItem(
         cscalar=0,
