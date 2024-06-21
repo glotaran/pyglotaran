@@ -6,7 +6,7 @@ wheel>=0.38.0
 asteval==0.9.33
 attrs == 23.2.0
 click==8.1.7
-netCDF4==1.7.0
+netCDF4==1.7.1
 numba==0.60.0
 numpy==1.26.4
 odfpy==1.4.1
