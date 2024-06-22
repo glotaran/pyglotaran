@@ -196,7 +196,7 @@ class OptimizationMatrix:
         return [
             cls.link(
                 [
-                    matrices[label].at_index(index)
+                    matrices[label].at_index(index).scale(linked_data.scales[label])
                     for label, index in zip(
                         linked_data.group_definitions[linked_data.group_labels[global_index]],
                         linked_data.data_indices[global_index],
@@ -268,12 +268,12 @@ class OptimizationMatrix:
             self.array = self.array[np.newaxis, :, :] * weight.T[:, :, np.newaxis]
         return self
 
-    def scale(self, scale: float) -> OptimizationMatrix:
+    def scale(self, scale: float | Parameter) -> OptimizationMatrix:
         """Create a matrix container with a scaled matrix.
 
         Parameters
         ----------
-        scale : float
+        scale : float | Parameter
             The scale.
 
         Returns

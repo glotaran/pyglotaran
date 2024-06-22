@@ -115,7 +115,7 @@ def test_from_linked_data():
     assert np.array_equal(matrices[2].array, matrix_one.array)
 
     assert matrices[1].clp_axis == matrix_two.clp_axis
-    assert np.array_equal(matrices[1].array, matrix_two.at_index(1).array)
+    assert np.array_equal(matrices[1].array, matrix_two.at_index(1).array * 4)
 
     assert matrices[0].clp_axis == matrix_one.clp_axis + matrix_two.clp_axis
     print(matrices[0].array[0 : matrix_one.model_axis_size, 0], matrix_one.array[:, 0])
@@ -126,5 +126,5 @@ def test_from_linked_data():
         matrices[0].array[
             matrix_one.model_axis_size : matrix_one.model_axis_size + matrix_two.model_axis_size, 1
         ],
-        matrix_two.at_index(0).array[:, 0],
+        matrix_two.at_index(0).array[:, 0] * 4,
     )
