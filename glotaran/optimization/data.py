@@ -392,7 +392,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
         aligned_data = xr.concat(
             [
                 xr.DataArray(
-                    self._datasets[label].data * self._scales[label],
+                    self._datasets[label].data,
                     dims=["model", "global"],
                     coords={"global": axis},
                 )
