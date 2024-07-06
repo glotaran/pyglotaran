@@ -137,7 +137,7 @@ class Optimization:
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
         data = dict(ChainMap(*[r.data for r in results]))
-        nr_clp = sum(r.free_clp_size for r in results)
+        number_of_free_clp = sum(r.free_clp_size for r in results)
         result = OptimizationResult.from_least_squares_result(
             ls_result,
             self._parameter_history,
@@ -145,7 +145,7 @@ class Optimization:
             penalty,
             self._free_parameter_labels,
             termination_reason,
-            nr_clp,
+            number_of_free_clp,
         )
         return self._parameters, data, result
 
@@ -155,7 +155,7 @@ class Optimization:
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
         data = dict(ChainMap(*[r.data for r in results]))
-        nr_clp = sum(r.free_clp_size for r in results)
+        number_of_free_clp = sum(r.free_clp_size for r in results)
         result = OptimizationResult.from_least_squares_result(
             None,
             self._parameter_history,
@@ -163,7 +163,7 @@ class Optimization:
             penalty,
             self._free_parameter_labels,
             termination_reason,
-            nr_clp,
+            number_of_free_clp,
         )
         return self._parameters, data, result
 
