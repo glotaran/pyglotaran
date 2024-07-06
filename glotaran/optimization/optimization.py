@@ -135,8 +135,9 @@ class Optimization:
                 termination_reason = str(e)
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
-        data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
-        nr_clp = len({str(c.data) for d in data.values() for c in d.clp_label})
+        results = [o.get_result() for o in self._objectives]
+        data = dict(ChainMap(*[r.data for r in results]))
+        nr_clp = sum(r.free_clp_size for r in results)
         result = OptimizationResult.from_least_squares_result(
             ls_result,
             self._parameter_history,
@@ -152,8 +153,9 @@ class Optimization:
         termination_reason = "Dry run."
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
-        data = dict(ChainMap(*[o.get_result() for o in self._objectives]))
-        nr_clp = len({str(c.data) for d in data.values() for c in d.clp_label})
+        results = [o.get_result() for o in self._objectives]
+        data = dict(ChainMap(*[r.data for r in results]))
+        nr_clp = sum(r.free_clp_size for r in results)
         result = OptimizationResult.from_least_squares_result(
             None,
             self._parameter_history,

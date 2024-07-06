@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -17,6 +18,12 @@ from glotaran.parameter.parameter import Parameter
 if TYPE_CHECKING:
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.typing.types import ArrayLike
+
+
+@dataclass
+class OptimizationObjectiveResult:
+    data: dict[str, xr.Dataset]
+    free_clp_size: int
 
 
 class OptimizationObjective:
@@ -90,7 +97,7 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
-    def get_result(self) -> dict[str, xr.Dataset]:
+    def get_result(self) -> OptimizationObjectiveResult:
         return (
             self.create_unlinked_result()
             if isinstance(self._data, OptimizationData)
@@ -268,7 +275,7 @@ class OptimizationObjective:
                 data.model, dataset, True
             )
 
-    def create_linked_result(self) -> dict[str, xr.Dataset]:
+    def create_linked_result(self) -> OptimizationObjectiveResult:
         assert isinstance(self._data, LinkedOptimizationData)
         matrices = {
             label: OptimizationMatrix.from_data(data) for label, data in self._data.data.items()
@@ -276,6 +283,7 @@ class OptimizationObjective:
         linked_matrices = OptimizationMatrix.from_linked_data(self._data, matrices)
         clp_axes = [matrix.clp_axis for matrix in linked_matrices]
         reduced_matrices = self.calculate_reduced_matrices(linked_matrices)
+        free_clp_size = sum(len(matrix.clp_axis) for matrix in reduced_matrices)
         estimations = self.resolve_estimations(
             linked_matrices,
             reduced_matrices,
@@ -291,9 +299,9 @@ class OptimizationObjective:
                 results[label], label, clp_axes, estimations
             )
             self.finalize_result_dataset(results[label], data)
-        return results
+        return OptimizationObjectiveResult(results, free_clp_size)
 
-    def create_unlinked_result(self) -> dict[str, xr.Dataset]:
+    def create_unlinked_result(self) -> OptimizationObjectiveResult:
         assert isinstance(self._data, OptimizationData)
 
         label = next(iter(self._model.datasets.keys()))
@@ -303,10 +311,13 @@ class OptimizationObjective:
         self.add_matrix_to_dataset(result, matrix)
         if self._data.is_global:
             self.add_global_clp_and_residual_to_dataset(result, self._data, matrix)
+            free_clp_size = len(matrix.clp_axis)
+
         else:
             reduced_matrices = self.calculate_reduced_matrices(
                 matrix.as_global_list(self._data.global_axis)
             )
+            free_clp_size = sum(len(matrix.clp_axis) for matrix in reduced_matrices)
             estimations = self.resolve_estimations(
                 matrix.as_global_list(self._data.global_axis),
                 reduced_matrices,
@@ -315,4 +326,4 @@ class OptimizationObjective:
             self.add_unlinked_clp_and_residual_to_dataset(result, estimations)
 
         self.finalize_result_dataset(result, self._data)
-        return {label: result}
+        return OptimizationObjectiveResult({label: result}, free_clp_size)
