@@ -88,6 +88,7 @@ class OptimizationResult(BaseModel):
 
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
+    additional_penalty: float | None = None
 
     @classmethod
     def from_least_squares_result(
@@ -96,6 +97,7 @@ class OptimizationResult(BaseModel):
         parameter_history: ParameterHistory,
         optimization_history: OptimizationHistory,
         penalty: ArrayLike,
+        additional_penalty: float,
         free_parameter_labels: list[str],
         termination_reason: str,
         number_of_clps: int,
@@ -116,6 +118,7 @@ class OptimizationResult(BaseModel):
 
         if success:
             result_args["number_of_clps"] = number_of_clps
+            result_args["additional_penalty"] = additional_penalty
             result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
             result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
             result_args["number_of_data_points"] = result.fun.size  # type:ignore[union-attr]

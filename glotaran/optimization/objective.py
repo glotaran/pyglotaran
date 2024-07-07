@@ -24,6 +24,8 @@ if TYPE_CHECKING:
 class OptimizationObjectiveResult:
     data: dict[str, xr.Dataset]
     free_clp_size: int
+    additional_penalty: float
+    dataset_penalty: dict[str, float]
 
 
 class OptimizationObjective:
@@ -299,7 +301,18 @@ class OptimizationObjective:
                 results[label], label, clp_axes, estimations
             )
             self.finalize_result_dataset(results[label], data)
-        return OptimizationObjectiveResult(results, free_clp_size)
+        additional_penalty = sum(
+            calculate_clp_penalties(
+                linked_matrices,
+                estimations,
+                self._data.global_axis,
+                self._model.clp_penalties,
+            )
+        )
+        dataset_penalties = {label: d.residual.sum().data for label, d in results.items()}
+        return OptimizationObjectiveResult(
+            results, free_clp_size, additional_penalty, dataset_penalties
+        )
 
     def create_unlinked_result(self) -> OptimizationObjectiveResult:
         assert isinstance(self._data, OptimizationData)
@@ -309,6 +322,7 @@ class OptimizationObjective:
 
         matrix = OptimizationMatrix.from_data(self._data)
         self.add_matrix_to_dataset(result, matrix)
+        additional_penalty = 0
         if self._data.is_global:
             self.add_global_clp_and_residual_to_dataset(result, self._data, matrix)
             free_clp_size = len(matrix.clp_axis)
@@ -324,6 +338,17 @@ class OptimizationObjective:
                 self.calculate_estimations(reduced_matrices),
             )
             self.add_unlinked_clp_and_residual_to_dataset(result, estimations)
+            additional_penalty = sum(
+                calculate_clp_penalties(
+                    [matrix],
+                    estimations,
+                    self._data.global_axis,
+                    self._model.clp_penalties,
+                )
+            )
 
         self.finalize_result_dataset(result, self._data)
-        return OptimizationObjectiveResult({label: result}, free_clp_size)
+        dataset_penalties = {label: result.residual.sum().data}
+        return OptimizationObjectiveResult(
+            {label: result}, free_clp_size, additional_penalty, dataset_penalties
+        )

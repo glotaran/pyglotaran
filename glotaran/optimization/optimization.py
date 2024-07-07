@@ -138,11 +138,13 @@ class Optimization:
         results = [o.get_result() for o in self._objectives]
         data = dict(ChainMap(*[r.data for r in results]))
         number_of_clps = sum(r.free_clp_size for r in results)
+        additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationResult.from_least_squares_result(
             ls_result,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
+            additional_penalty,
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
@@ -156,11 +158,13 @@ class Optimization:
         results = [o.get_result() for o in self._objectives]
         data = dict(ChainMap(*[r.data for r in results]))
         number_of_clps = sum(r.free_clp_size for r in results)
+        additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationResult.from_least_squares_result(
             None,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
             penalty,
+            additional_penalty,
             self._free_parameter_labels,
             termination_reason,
             number_of_clps,
