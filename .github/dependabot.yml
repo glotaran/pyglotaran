@@ -19,6 +19,7 @@ updates:
         update-types:
           - minor
           - patch
+    rebase-strategy: "disabled"
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -37,6 +38,7 @@ updates:
         update-types:
           - minor
           - patch
+    rebase-strategy: "disabled"
 
   # Update git submodules
   - package-ecosystem: "gitsubmodule"
