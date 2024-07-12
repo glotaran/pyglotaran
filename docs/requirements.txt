@@ -9,7 +9,7 @@ sphinx-copybutton>=0.3.0
 myst-parser>=0.12.0
 numpydoc>=0.8.0
 # notebook docs
-nbsphinx>=0.8.1
+nbsphinx>=0.9.4
 sphinx-last-updated-by-git>=0.3.0
 jupyterlab>=3.0.0
 matplotlib>=3.0.0

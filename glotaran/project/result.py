@@ -135,10 +135,16 @@ class Result:
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
     source_path: StrOrPath = field(
-        default="result.yml", init=False, repr=False, metadata={"exclude_from_dict": True}
+        default="result.yml",
+        init=False,
+        repr=False,
+        metadata={"exclude_from_dict": True},
     )
     loader: Callable[[StrOrPath], Result] = field(
-        default=load_result, init=False, repr=False, metadata={"exclude_from_dict": True}
+        default=load_result,
+        init=False,
+        repr=False,
+        metadata={"exclude_from_dict": True},
     )
 
     def __post_init__(self):
@@ -244,7 +250,10 @@ class Result:
             ["Degrees of freedom", self.degrees_of_freedom],
             ["Chi Square", f"{self.chi_square or np.nan:.2e}"],
             ["Reduced Chi Square", f"{self.reduced_chi_square or np.nan:.2e}"],
-            ["Root Mean Square Error (RMSE)", f"{self.root_mean_square_error or np.nan:.2e}"],
+            [
+                "Root Mean Square Error (RMSE)",
+                f"{self.root_mean_square_error or np.nan:.2e}",
+            ],
         ]
         if self.additional_penalty is not None and any(
             len(penalty) != 0 for penalty in self.additional_penalty
@@ -285,15 +294,7 @@ class Result:
             if wrap_model_in_details is False:
                 result_table = f"{result_table}\n\n{model_md}"
             else:
-                # The section part is just a hack to generate properly rendering docs due to a bug
-                # in sphinx which causes a wrong tag opening and closing order of html tags
-                # Since model_md contains 2 heading levels we need to close 2 sections
-                result_table = (
-                    f"{result_table}\n\n<br><details>\n\n{model_md}\n"
-                    f"{'</section>'*(2)}"
-                    "</details>"
-                    f"{'<section>'*(2)}"
-                )
+                result_table = f"{result_table}\n\n<br><details>\n\n{model_md}\n</details>"
 
         return MarkdownStr(result_table)
 

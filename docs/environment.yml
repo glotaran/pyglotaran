@@ -4,7 +4,7 @@ channels:
 dependencies:
   # Python interpreter
   - python=3.10
-  - pandoc>=2.19.2
+  - pandoc>=3.2.1
   - pip
   - pip:
       - -r requirements.txt
