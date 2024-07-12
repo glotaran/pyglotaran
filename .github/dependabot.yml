@@ -10,8 +10,16 @@ updates:
     open-pull-requests-limit: 20
     reviewers:
       - jsnel
+      - s-weigand
     assignees:
       - jsnel
+      - s-weigand
+    groups:
+      runtime-dependencies:
+        update-types:
+          - minor
+          - patch
+    rebase-strategy: "disabled"
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -25,9 +33,69 @@ updates:
       - s-weigand
     assignees:
       - s-weigand
+    groups:
+      GH-Actions:
+        update-types:
+          - minor
+          - patch
+    rebase-strategy: "disabled"
 
   # Update git submodules
   - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: friday
+      time: "20:00"
+      timezone: Europe/Amsterdam
+
+  # Staging branch
+
+  - package-ecosystem: pip
+    target-branch: staging
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: friday
+      time: "20:00"
+      timezone: Europe/Amsterdam
+    open-pull-requests-limit: 20
+    reviewers:
+      - jsnel
+      - s-weigand
+    assignees:
+      - jsnel
+      - s-weigand
+    groups:
+      runtime-dependencies:
+        update-types:
+          - minor
+          - patch
+    rebase-strategy: "disabled"
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    target-branch: staging
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: friday
+      time: "20:00"
+      timezone: Europe/Amsterdam
+    reviewers:
+      - s-weigand
+    assignees:
+      - s-weigand
+    groups:
+      GH-Actions:
+        update-types:
+          - minor
+          - patch
+    rebase-strategy: "disabled"
+
+  # Update git submodules
+  - package-ecosystem: "gitsubmodule"
+    target-branch: staging
     directory: "/"
     schedule:
       interval: "weekly"
