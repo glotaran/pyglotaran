@@ -10,8 +10,15 @@ updates:
     open-pull-requests-limit: 20
     reviewers:
       - jsnel
+      - s-weigand
     assignees:
       - jsnel
+      - s-weigand
+    groups:
+      runtime-dependencies:
+        update-types:
+          - minor
+          - patch
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -25,6 +32,11 @@ updates:
       - s-weigand
     assignees:
       - s-weigand
+    groups:
+      GH-Actions:
+        update-types:
+          - minor
+          - patch
 
   # Update git submodules
   - package-ecosystem: "gitsubmodule"
