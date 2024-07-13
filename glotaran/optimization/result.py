@@ -61,7 +61,7 @@ class OptimizationResult(BaseModel):
 
     The rows and columns are corresponding to :attr:`free_parameter_labels`."""
 
-    number_clp: int | None = None
+    number_of_clps: int | None = None
     degrees_of_freedom: int | None = None
     """Degrees of freedom in optimization :math:`N - N_{vars}`."""
 
@@ -88,6 +88,7 @@ class OptimizationResult(BaseModel):
 
     :math:`rms = \sqrt{\chi^2_{red}}`
     """
+    additional_penalty: float | None = None
 
     @classmethod
     def from_least_squares_result(
@@ -96,9 +97,10 @@ class OptimizationResult(BaseModel):
         parameter_history: ParameterHistory,
         optimization_history: OptimizationHistory,
         penalty: ArrayLike,
+        additional_penalty: float,
         free_parameter_labels: list[str],
         termination_reason: str,
-        number_clp: int,
+        number_of_clps: int,
     ):
         success = result is not None
 
@@ -115,7 +117,8 @@ class OptimizationResult(BaseModel):
         }
 
         if success:
-            result_args["number_clp"] = number_clp
+            result_args["number_of_clps"] = number_of_clps
+            result_args["additional_penalty"] = additional_penalty
             result_args["number_of_jacobian_evaluations"] = result.njev  # type:ignore[union-attr]
             result_args["optimality"] = float(result.optimality)  # type:ignore[union-attr]
             result_args["number_of_data_points"] = result.fun.size  # type:ignore[union-attr]
@@ -123,7 +126,7 @@ class OptimizationResult(BaseModel):
             result_args["degrees_of_freedom"] = (
                 result_args["number_of_data_points"]
                 - result_args["number_of_parameters"]
-                - result_args["number_clp"]
+                - result_args["number_of_clps"]
             )
             result_args["chi_square"] = float(np.sum(result.fun**2))  # type:ignore[union-attr]
             result_args["reduced_chi_square"] = (

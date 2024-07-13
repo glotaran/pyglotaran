@@ -26,7 +26,7 @@ def test_single_data():
     data_size = data_model.data["model"].size * data_model.data["global"].size
     assert penalty.size == data_size
 
-    result = objective.get_result()
+    result = objective.get_result().data
     assert "test" in result
 
     result_data = result["test"]
@@ -51,7 +51,7 @@ def test_global_data(weight: bool):
     data_size = data_model.data["model"].size * data_model.data["global"].size
     assert penalty.size == data_size
 
-    result = objective.get_result()
+    result = objective.get_result().data
     assert "test" in result
 
     result_data = result["test"]
@@ -90,7 +90,7 @@ def test_multiple_data():
     data_size_two = data_model_two.data["model"].size * data_model_two.data["global"].size
     assert penalty.size == data_size_one + data_size_two
 
-    result = objective.get_result()
+    result = objective.get_result().data
 
     assert "independent" in result
     result_data = result["independent"]
@@ -129,7 +129,7 @@ def test_result_data(weight: bool):
     data_size = data_model.data["model"].size * data_model.data["global"].size
     assert penalty.size == data_size
 
-    result = objective.get_result()
+    result = objective.get_result().data
     assert "test" in result
 
     result_data = result["test"]
