@@ -314,9 +314,9 @@ def iterate_parameter_fields(
 
 def add_to_initial(label: str, parameters: Parameters, initial: Parameters) -> Parameter:
     if not parameters.has(label):
-        parameters.add(initial.get(label).model_copy())
-        for dep_label in parameters.get(label).get_dependency_parameters():
+        for dep_label in initial.get(label).get_dependency_parameters():
             add_to_initial(dep_label, parameters, initial)
+        parameters.add(initial.get(label).model_copy())
     return parameters.get(label)
 
 
