@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import random
 from typing import Literal
 
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import TypedItem
+from glotaran.model.item import add_to_initial
 from glotaran.model.item import get_item_issues
 from glotaran.model.item import get_structure_and_type_from_field
 from glotaran.model.item import iterate_parameter_fields
@@ -136,3 +138,105 @@ def test_resolve_item_parameters():
     parameters.get("param1").value = 10
     assert parameters.get("param1").value != initial.get("param1").value
     assert resolved.pscalar.value == 10
+
+
+RATES_DICT = {
+    "rates": [
+        ["k1sum", 10, {"vary": False, "non-negative": True}],
+        ["k1", 2.0, {"expr": "$b.1 * $rates.k1sum", "non-negative": True, "vary": False}],
+        ["k2", 8.0, {"expr": "$b.2 * $rates.k1sum", "non-negative": True, "vary": False}],
+        ["k3", 0.54321, {"non-negative": True}],
+    ]
+}
+
+B_DICT = {
+    "b": [
+        ["1", 0.2, {"vary": True, "non-negative": True}],
+        ["2", 0.8, {"expr": "1.0 - $b.1", "non-negative": True, "vary": False}],
+    ]
+}
+
+
+def _add_parameters_to_initial(labels, parameters, initial_parameters):
+    for label in labels:
+        add_to_initial(label, parameters, initial_parameters)
+
+
+def _test_add_to_initial(initial_parameters):
+    def check_parameter_order(parameters, expected_order):
+        actual_order = list(parameters._parameters.keys())
+        assert (
+            actual_order == expected_order
+        ), f"Parameters not in expected order. Got: {actual_order}, Expected: {expected_order}"
+
+    def test_ordered_addition():
+        parameters = Parameters({})
+        _add_parameters_to_initial(
+            ["b.1", "b.2", "rates.k1", "rates.k2"], parameters, initial_parameters
+        )
+        check_parameter_order(parameters, ["b.1", "b.2", "rates.k1sum", "rates.k1", "rates.k2"])
+
+    def test_unordered_addition():
+        parameters = Parameters({})
+        _add_parameters_to_initial(
+            ["b.2", "b.1", "rates.k1", "rates.k2"], parameters, initial_parameters
+        )
+        check_parameter_order(parameters, ["b.1", "b.2", "rates.k1sum", "rates.k1", "rates.k2"])
+
+    def test_partial_addition():
+        parameters = Parameters({})
+        _add_parameters_to_initial(["rates.k1", "rates.k2"], parameters, initial_parameters)
+        check_parameter_order(parameters, ["b.1", "rates.k1sum", "rates.k1", "b.2", "rates.k2"])
+
+    def test_randomized_addition():
+        parameter_labels = ["b.1", "b.2", "rates.k1", "rates.k2", "rates.k3"]
+        random.shuffle(parameter_labels)
+        parameters = Parameters({})
+        for label in parameter_labels:
+            add_to_initial(label, parameters, initial_parameters)
+
+        keys_list = list(parameters._parameters.keys())
+
+        assert keys_list.index("rates.k2") > keys_list.index(
+            "b.2"
+        ), "rates.k2 should come after b.2"
+        assert keys_list.index("b.2") > keys_list.index("b.1"), "b.2 should come after b.1"
+        assert keys_list.index("rates.k1") > keys_list.index(
+            "rates.k1sum"
+        ), "rates.k1 should come after rates.k1sum"
+        assert keys_list.index("rates.k2") > keys_list.index(
+            "rates.k1sum"
+        ), "rates.k2 should come after rates.k1sum"
+
+        return parameters
+
+    def check_expressions(parameters):
+        assert (
+            parameters.get("b.2").expression == "1.0 - $b.1"
+        ), f"Incorrect expression for b.2. Got: {parameters.get('b.2').expression}"
+        assert (
+            parameters.get("rates.k1").expression == "$b.1 * $rates.k1sum"
+        ), f"Incorrect expression for rates.k1. Got: {parameters.get('rates.k1').expression}"
+        assert (
+            parameters.get("rates.k2").expression == "$b.2 * $rates.k1sum"
+        ), f"Incorrect expression for rates.k2. Got: {parameters.get('rates.k2').expression}"
+
+    test_ordered_addition()
+    test_unordered_addition()
+    test_partial_addition()
+    parameters = test_randomized_addition()
+    check_expressions(parameters)
+
+
+def initial_parameters_b_first():
+    return _test_add_to_initial(Parameters.from_dict({**B_DICT, **RATES_DICT}))
+
+
+def initial_parameters_b_last():
+    return _test_add_to_initial(Parameters.from_dict({**RATES_DICT, **B_DICT}))
+
+
+if __name__ == "__main__":
+    for _ in range(1000):
+        initial_parameters_b_first()
+        initial_parameters_b_last()
