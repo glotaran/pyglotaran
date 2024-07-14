@@ -228,15 +228,15 @@ def _test_add_to_initial(initial_parameters):
     check_expressions(parameters)
 
 
-def initial_parameters_b_first():
+def test_add_to_initial_b_first():
     return _test_add_to_initial(Parameters.from_dict({**B_DICT, **RATES_DICT}))
 
 
-def initial_parameters_b_last():
+def test_add_to_initial_b_last():
     return _test_add_to_initial(Parameters.from_dict({**RATES_DICT, **B_DICT}))
 
 
 if __name__ == "__main__":
     for _ in range(1000):
-        initial_parameters_b_first()
-        initial_parameters_b_last()
+        test_add_to_initial_b_first()
+        test_add_to_initial_b_last()
