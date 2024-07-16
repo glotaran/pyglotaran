@@ -27,17 +27,17 @@ jobs:
           submodules: recursive
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
           setup-python-dependencies: false
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           upload: False
           output: sarif-results
@@ -51,6 +51,6 @@ jobs:
           output: sarif-results/${{ matrix.language }}.sarif
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif-results/${{ matrix.language }}.sarif
