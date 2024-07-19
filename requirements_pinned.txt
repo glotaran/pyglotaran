@@ -1,5 +1,5 @@
 # glotaran setup dependencies
-asteval==0.9.33
+asteval==1.0.1
 netCDF4==1.7.1.post1
 numba==0.60.0
 numpy==1.26.4
