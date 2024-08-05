@@ -7,7 +7,7 @@ default_language_version:
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -19,7 +19,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         types: [file]
@@ -36,7 +36,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 24.2.0
+    rev: 24.8.0
     hooks:
       - id: black
         types: [file]
@@ -68,7 +68,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.4
+    rev: 1.8.7
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -92,7 +92,7 @@ repos:
         additional_dependencies: [flake8-docstrings, flake8-print>=5.0.0]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         name: "flake8 lint code"
@@ -104,7 +104,7 @@ repos:
           - "--count"
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         alias: flake8-docs
@@ -116,14 +116,14 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
+    rev: v1.11.1
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"
         additional_dependencies: [types-tabulate, types-attrs]
 
   - repo: https://github.com/econchick/interrogate
-    rev: 1.5.0
+    rev: 1.7.0
     hooks:
       - id: interrogate
         args: [--config=pyproject.toml, glotaran]
@@ -131,7 +131,7 @@ repos:
         additional_dependencies: [click<8]
 
   - repo: https://github.com/rstcheck/rstcheck
-    rev: "v6.2.0"
+    rev: "v6.2.4"
     hooks:
       - id: rstcheck
         additional_dependencies: [sphinx]
@@ -150,7 +150,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         types: [file]
