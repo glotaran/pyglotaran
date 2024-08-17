@@ -27,7 +27,7 @@ class TeeContext:
         TeeContext
             Instance that can be read from.
         """
-        sys.stdout = self  # type:ignore[assignment]
+        sys.stdout = self
         return self
 
     def __exit__(

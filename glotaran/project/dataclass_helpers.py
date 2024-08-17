@@ -186,7 +186,9 @@ def asdict(dataclass: DataclassInstance, folder: Path | None = None) -> dict[str
     for field_item in fields(dataclass):
         if "exclude_from_dict" not in field_item.metadata:
             value = getattr(dataclass, field_item.name)
-            dataclass_dict[field_item.name] = asdict(value) if is_dataclass(value) else value
+            dataclass_dict[field_item.name] = (
+                asdict(value) if is_dataclass(value) else value  # type:ignore[arg-type]
+            )
         if "file_loader" in field_item.metadata:
             value = getattr(dataclass, field_item.name)
             if value.source_path is not None:
