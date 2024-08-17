@@ -45,7 +45,7 @@
 
 (changes-0_7_0)=
 
-## 🚀 0.7.0 (Unreleased)
+## 🚀 0.7.0 (2023-03-27)
 
 ### 💥 BREAKING CHANGE
 
