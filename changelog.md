@@ -8,6 +8,10 @@
 
 - ✨ Add official Python 3.12 support (#1437)
 
+### 🚧 Maintenance
+
+-🧹🚇 Remove asv benchmarks and binder integration
+
 (changes-0_7_2)=
 
 ## 🚀 0.7.2 (2023-12-07)
