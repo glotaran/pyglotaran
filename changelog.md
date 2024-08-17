@@ -17,7 +17,7 @@
 
 ### 🚧 Maintenance
 
--🧹🚇 Remove asv benchmarks and binder integration
+-🧹🚇 Remove asv benchmarks and binder integration (#1511)
 
 (changes-0_7_2)=
 
