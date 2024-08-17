@@ -195,7 +195,7 @@ class MatrixProvider:
                 clp_labels, matrix = MatrixProvider.combine_megacomplex_matrices(
                     matrix, this_matrix, clp_labels, this_clp_labels
                 )
-        return MatrixContainer(clp_labels, matrix)  # type:ignore[arg-type]
+        return MatrixContainer(clp_labels, matrix)
 
     @staticmethod
     def combine_megacomplex_matrices(
@@ -717,7 +717,8 @@ class MatrixProviderLinked(MatrixProvider):
             ]
 
             group_matrix = self.align_matrices(
-                matrix_containers, matrix_scales  # type:ignore[arg-type]
+                matrix_containers,
+                matrix_scales,  # type:ignore[arg-type]
             )
 
             self._aligned_full_clp_labels[i] = full_clp_labels[group_label]

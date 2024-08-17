@@ -353,7 +353,10 @@ class EstimationProviderUnlinked(EstimationProvider):
                 ).clp_labels
                 clps[label] = xr.DataArray(
                     np.array(self._clps[label]).reshape((len(global_clp_labels), len(clp_labels))),
-                    coords={"global_clp_label": global_clp_labels, "clp_label": clp_labels},
+                    coords={
+                        "global_clp_label": global_clp_labels,
+                        "clp_label": clp_labels,
+                    },
                     dims=["global_clp_label", "clp_label"],
                 )
 
@@ -397,8 +400,8 @@ class EstimationProviderUnlinked(EstimationProvider):
             The dataset model.
         """
         label = dataset_model.label
-        self._clps[label].clear()  # type:ignore[union-attr]
-        self._residuals[label].clear()  # type:ignore[union-attr]
+        self._clps[label].clear()
+        self._residuals[label].clear()
 
         global_axis = self._data_provider.get_global_axis(label)
         data = self._data_provider.get_data(label)
@@ -411,14 +414,19 @@ class EstimationProviderUnlinked(EstimationProvider):
             )
             clp_labels.append(self._matrix_provider.get_matrix_container(label).clp_labels)
             clp = self.retrieve_clps(
-                clp_labels[index], matrix_container.clp_labels, reduced_clps, global_index_value
+                clp_labels[index],
+                matrix_container.clp_labels,
+                reduced_clps,
+                global_index_value,
             )
 
-            self._clps[label].append(clp)  # type:ignore[union-attr]
-            self._residuals[label].append(residual)  # type:ignore[union-attr]
+            self._clps[label].append(clp)
+            self._residuals[label].append(residual)
 
         self._clp_penalty += self.calculate_clp_penalties(
-            clp_labels, self._clps[label], global_axis  # type:ignore[arg-type]
+            clp_labels,
+            self._clps[label],
+            global_axis,
         )
 
 
@@ -445,12 +453,8 @@ class EstimationProviderLinked(EstimationProvider):
         super().__init__(dataset_group)
         self._data_provider = data_provider
         self._matrix_provider = matrix_provider
-        self._clps: list[ArrayLike] = [
-            None  # type:ignore[list-item]
-        ] * self._data_provider.aligned_global_axis.size
-        self._residuals: list[ArrayLike] = [
-            None  # type:ignore[list-item]
-        ] * self._data_provider.aligned_global_axis.size
+        self._clps: list[ArrayLike] = [None] * self._data_provider.aligned_global_axis.size
+        self._residuals: list[ArrayLike] = [None] * self._data_provider.aligned_global_axis.size
 
     def estimate(self):
         """Calculate the estimation."""
