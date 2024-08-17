@@ -12,7 +12,7 @@ try:
     from numpy._typing._array_like import _SupportsArray
 except ImportError:
     # numpy < 1.23
-    from numpy.typing._array_like import _SupportsArray  # type:ignore[no-redef]
+    from numpy.typing._array_like import _SupportsArray
 
 import xarray as xr
 

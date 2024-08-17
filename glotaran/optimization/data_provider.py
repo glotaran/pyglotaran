@@ -67,7 +67,7 @@ class DataProvider:
             )
             self.add_model_weight(scheme.model, label, model_dimension, global_dimension)
 
-            self._data[label] = self.get_from_dataset(  # type:ignore[assignment]
+            self._data[label] = self.get_from_dataset(
                 dataset, "data", model_dimension, global_dimension
             )
             if self._weight[label] is not None:
@@ -585,7 +585,7 @@ class DataProviderLinked(DataProvider):
 
     @staticmethod
     def align_groups(
-        aligned_global_axes: dict[str, ArrayLike]
+        aligned_global_axes: dict[str, ArrayLike],
     ) -> tuple[ArrayLike, dict[str, list[str]]]:
         """Align the groups in a dataset group.
 
@@ -622,7 +622,10 @@ class DataProviderLinked(DataProvider):
         for i, group_label in enumerate(aligned_group_labels):
             if group_label not in group_definitions:
                 group_definitions[group_label] = list(
-                    filter(lambda label: label != "", aligned_groups.isel({"global": i}).data)
+                    filter(
+                        lambda label: label != "",
+                        aligned_groups.isel({"global": i}).data,
+                    )
                 )
         return aligned_group_labels, group_definitions
 

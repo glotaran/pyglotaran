@@ -60,7 +60,9 @@ class ModelError(Exception):
 
 
 def _load_item_from_dict(
-    item_type: type[Item], value: Item | dict[str, Any], extra: dict[str, Any] | None = None
+    item_type: type[Item],
+    value: Item | dict[str, Any],
+    extra: dict[str, Any] | None = None,
 ) -> Item:
     """Load an item from a dictionary.
 
@@ -136,7 +138,7 @@ def _load_global_items_from_dict(
 
 
 def _load_dataset_groups(
-    dataset_groups: dict[str, DatasetGroupModel | Any]
+    dataset_groups: dict[str, DatasetGroupModel | Any],
 ) -> dict[str, DatasetGroupModel]:
     """Add the default dataset group if not present.
 
@@ -340,7 +342,9 @@ class Model:
             groups[group].dataset_models[dataset_model.label] = dataset_model
         return groups
 
-    def iterate_items(self) -> Generator[tuple[str, dict[str, Item] | list[Item]], None, None]:
+    def iterate_items(
+        self,
+    ) -> Generator[tuple[str, dict[str, Item] | list[Item]], None, None]:
         """Iterate items.
 
         Yields
@@ -387,10 +391,7 @@ class Model:
         .. # noqa: D414
         """
         return Parameters(
-            {
-                label: Parameter(label=label, value=0)  # type:ignore[call-arg]
-                for label in self.get_parameter_labels()
-            }
+            {label: Parameter(label=label, value=0) for label in self.get_parameter_labels()}
         )
 
     def get_issues(self, *, parameters: Parameters | None = None) -> list[ItemIssue]:
