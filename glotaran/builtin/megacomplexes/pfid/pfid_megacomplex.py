@@ -17,14 +17,10 @@ from glotaran.model import ParameterType
 from glotaran.model import attribute
 from glotaran.model import item
 from glotaran.model import megacomplex
-from glotaran.parameter import Parameters
 
 if TYPE_CHECKING:
+    from glotaran.parameter import Parameters
     from glotaran.typing.types import ArrayLike
-
-
-def index_dependent(*args, **kwargs):
-    return True
 
 
 class OscillationParameterIssue(ItemIssue):
@@ -99,39 +95,26 @@ class PFIDMegacomplex(Megacomplex):
             frequencies = frequencies * dataset_model.spectral_axis_scale
 
         irf = dataset_model.irf
-        matrix_shape = (
-            (global_axis.size, model_axis.size, len(clp_label))
-            if index_dependent(dataset_model)
-            else (model_axis.size, len(clp_label))
-        )
-        # matrix = np.ones(matrix_shape, dtype=np.float64)
+        matrix_shape = (global_axis.size, model_axis.size, len(clp_label))
         matrix = np.zeros(matrix_shape, dtype=np.float64)
 
         if irf is None:
-            raise ValueError("IRF is required for PFID megacomplex")
-        elif isinstance(irf, IrfMultiGaussian):
-            if index_dependent(dataset_model):
-                for i in range(global_axis.size):
-                    calculate_pfid_matrix_gaussian_irf_on_index(
-                        matrix[i],
-                        frequencies,
-                        rates,
-                        irf,
-                        i,
-                        global_axis,
-                        model_axis,
-                    )
-            else:
+            msg = "IRF is required for PFID megacomplex"
+            raise ValueError(msg)
+        if isinstance(irf, IrfMultiGaussian):
+            for i in range(global_axis.size):
                 calculate_pfid_matrix_gaussian_irf_on_index(
-                    matrix,
+                    matrix[i],
                     frequencies,
                     rates,
                     irf,
-                    None,
+                    i,
                     global_axis,
                     model_axis,
                 )
-
+        else:
+            msg = "IRF should be instance of IrfMultiGaussian"
+            raise ValueError(msg)
         return clp_label, matrix
 
     def finalize_data(
@@ -184,7 +167,7 @@ class PFIDMegacomplex(Megacomplex):
                 model_dimension,
                 prefix,
             ),
-            dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).values,
+            dataset.matrix.sel(clp_label=[f"{label}_sin" for label in self.labels]).to_numpy(),
         )
 
         dataset[f"{prefix}_cos"] = (
@@ -193,7 +176,7 @@ class PFIDMegacomplex(Megacomplex):
                 model_dimension,
                 prefix,
             ),
-            dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).values,
+            dataset.matrix.sel(clp_label=[f"{label}_cos" for label in self.labels]).to_numpy(),
         )
 
 
@@ -207,7 +190,7 @@ def calculate_pfid_matrix_gaussian_irf_on_index(
     model_axis: ArrayLike,
 ):
     centers, widths, scales, shift, _, _ = irf.parameter(global_index, global_axis)
-    for center, width, scale in zip(centers, widths, scales):
+    for center, width, scale in zip(centers, widths, scales, strict=True):
         matrix += calculate_pfid_matrix_gaussian_irf(
             frequencies,
             rates,
@@ -231,7 +214,7 @@ def calculate_pfid_matrix_gaussian_irf(
     scale: float,
     global_axis_value: float,
 ):
-    """Calculate the damped oscillation matrix taking into account a gaussian irf
+    """Calculate the damped oscillation matrix taking into account a gaussian irf.
 
     Parameters
     ----------
