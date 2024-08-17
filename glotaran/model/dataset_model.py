@@ -250,7 +250,7 @@ def get_dataset_model_model_dimension(dataset_model: DatasetModel) -> str:
 
 def iterate_dataset_model_megacomplexes(
     dataset_model: DatasetModel,
-) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
+) -> Generator[tuple[Parameter | str | None, Megacomplex | str]]:
     """Iterate the dataset model's megacomplexes.
 
     Parameters
@@ -274,7 +274,7 @@ def iterate_dataset_model_megacomplexes(
 
 def iterate_dataset_model_global_megacomplexes(
     dataset_model: DatasetModel,
-) -> Generator[tuple[Parameter | str | None, Megacomplex | str], None, None]:
+) -> Generator[tuple[Parameter | str | None, Megacomplex | str]]:
     """Iterate the dataset model's global megacomplexes.
 
     Parameters

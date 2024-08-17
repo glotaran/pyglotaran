@@ -558,7 +558,7 @@ def project_io_plugin_table(
 
 def supported_file_extensions_project_io(
     method_names: str | Sequence[str],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Get project io formats that support all methods in ``method_names``.
 
     Parameters

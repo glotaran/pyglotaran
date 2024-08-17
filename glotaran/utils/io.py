@@ -193,7 +193,7 @@ def load_datasets(dataset_mappable: DatasetMappable) -> DatasetMapping:
 
 
 @contextmanager
-def chdir_context(folder_path: StrOrPath) -> Generator[Path, None, None]:
+def chdir_context(folder_path: StrOrPath) -> Generator[Path]:
     """Context manager to change directory to ``folder_path``.
 
     Parameters
