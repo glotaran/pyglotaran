@@ -12,24 +12,24 @@ from glotaran.parameter import Parameters
 from glotaran.project import Scheme
 from glotaran.simulation import simulate
 
-PFIDModel = Model.create_class_from_megacomplexes(
-    [PFIDMegacomplex, DecayMegacomplex, SpectralMegacomplex]
-)
-
 
 class OneOscillationWithIrf:
-    sim_model = PFIDModel(
+    pure_pfid_model = Model.create_class_from_megacomplexes([PFIDMegacomplex, SpectralMegacomplex])
+    sim_model = pure_pfid_model(
         **{
             "megacomplex": {
-                "m1": {
+                "pfid": {
                     "type": "pfid",
                     "labels": ["osc1"],
                     "frequencies": ["osc.freq"],
                     "rates": ["osc.rate"],
                 },
-                "m2": {
+                "spectral": {
                     "type": "spectral",
-                    "shape": {"osc1_pfid": "sh1"},
+                    "shape": {
+                        "osc1_cos": "sh2",
+                        "osc1_sin": "sh1",
+                    },
                 },
             },
             "shape": {
@@ -38,6 +38,12 @@ class OneOscillationWithIrf:
                     "amplitude": "shapes.amps.1",
                     "location": "shapes.locs.1",
                     "width": "shapes.width.1",
+                },
+                "sh2": {
+                    "type": "gaussian",
+                    "amplitude": "shapes.amps.2",
+                    "location": "shapes.locs.2",
+                    "width": "shapes.width.2",
                 },
             },
             "irf": {
@@ -49,15 +55,15 @@ class OneOscillationWithIrf:
             },
             "dataset": {
                 "dataset1": {
-                    "megacomplex": ["m1"],
-                    "global_megacomplex": ["m2"],
+                    "megacomplex": ["pfid"],
+                    "global_megacomplex": ["spectral"],
                     "irf": "irf1",
                 }
             },
         }
     )
 
-    model = PFIDModel(
+    model = pure_pfid_model(
         **{
             "megacomplex": {
                 "m1": {
@@ -89,7 +95,7 @@ class OneOscillationWithIrf:
                 ["freq", 1500],
                 ["rate", -2],
             ],
-            "shapes": {"amps": [3], "locs": [1500], "width": [20]},
+            "shapes": {"amps": [2, -2], "locs": [1490, 1510], "width": [4, 4]},
             "irf": [["center", 0.01], ["width", 0.05]],
         }
     )
@@ -97,8 +103,8 @@ class OneOscillationWithIrf:
     parameter = Parameters.from_dict(
         {
             "osc": [
-                ["freq", 1500],
-                ["rate", -2],
+                ["freq", 1501],
+                ["rate", -2.1],
             ],
             "irf": [["center", 0.01], ["width", 0.05]],
         }
@@ -112,165 +118,178 @@ class OneOscillationWithIrf:
     wanted_shape = (40, 1)
 
 
-# class OneOscillationWithSequentialModel:
-#     sim_model = DampedOscillationsModel(
-#         **{
-#             "initial_concentration": {
-#                 "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
-#             },
-#             "k_matrix": {
-#                 "k1": {
-#                     "matrix": {
-#                         ("s2", "s1"): "kinetic.1",
-#                         ("s2", "s2"): "kinetic.2",
-#                     }
-#                 }
-#             },
-#             "megacomplex": {
-#                 "m1": {"type": "decay", "k_matrix": ["k1"]},
-#                 "m2": {
-#                     "type": "pfid",
-#                     "labels": ["osc1"],
-#                     "frequencies": ["osc.freq"],
-#                     "rates": ["osc.rate"],
-#                 },
-#                 "m3": {
-#                     "type": "spectral",
-#                     "shape": {
-#                         "osc1_cos": "sh1",
-#                         "osc1_sin": "sh1",
-#                         "s1": "sh2",
-#                         "s2": "sh3",
-#                     },
-#                 },
-#             },
-#             "shape": {
-#                 "sh1": {
-#                     "type": "gaussian",
-#                     "amplitude": "shapes.amps.1",
-#                     "location": "shapes.locs.1",
-#                     "width": "shapes.width.1",
-#                 },
-#                 "sh2": {
-#                     "type": "gaussian",
-#                     "amplitude": "shapes.amps.2",
-#                     "location": "shapes.locs.2",
-#                     "width": "shapes.width.2",
-#                 },
-#                 "sh3": {
-#                     "type": "gaussian",
-#                     "amplitude": "shapes.amps.3",
-#                     "location": "shapes.locs.3",
-#                     "width": "shapes.width.3",
-#                 },
-#             },
-#             "irf": {
-#                 "irf1": {
-#                     "type": "gaussian",
-#                     "center": "irf.center",
-#                     "width": "irf.width",
-#                 },
-#             },
-#             "dataset": {
-#                 "dataset1": {
-#                     "initial_concentration": "j1",
-#                     "irf": "irf1",
-#                     "megacomplex": ["m1", "m2"],
-#                     "global_megacomplex": ["m3"],
-#                 }
-#             },
-#         }
-#     )
+class OneOscillationWithSequentialModel:
+    decay_pfid_model = Model.create_class_from_megacomplexes(
+        [PFIDMegacomplex, DecayMegacomplex, SpectralMegacomplex]
+    )
+    sim_model = decay_pfid_model(
+        **{
+            "initial_concentration": {
+                "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s2", "s1"): "kinetic.1",
+                        ("s2", "s2"): "kinetic.2",
+                    }
+                }
+            },
+            "megacomplex": {
+                "m1": {"type": "decay", "k_matrix": ["k1"]},
+                "m2": {
+                    "type": "pfid",
+                    "labels": ["osc1"],
+                    "frequencies": ["osc.freq"],
+                    "rates": ["osc.rate"],
+                },
+                "m3": {
+                    "type": "spectral",
+                    "shape": {
+                        "s1": "sh3",
+                        "s2": "sh4",
+                        "osc1_cos": "sh2",
+                        "osc1_sin": "sh1",
+                    },
+                },
+            },
+            "shape": {
+                "sh1": {
+                    "type": "gaussian",
+                    "amplitude": "shapes.amps.1",
+                    "location": "shapes.locs.1",
+                    "width": "shapes.width.1",
+                },
+                "sh2": {
+                    "type": "gaussian",
+                    "amplitude": "shapes.amps.2",
+                    "location": "shapes.locs.2",
+                    "width": "shapes.width.2",
+                },
+                "sh3": {
+                    "type": "gaussian",
+                    "amplitude": "shapes.amps.3",
+                    "location": "shapes.locs.3",
+                    "width": "shapes.width.3",
+                },
+                "sh4": {
+                    "type": "gaussian",
+                    "amplitude": "shapes.amps.4",
+                    "location": "shapes.locs.4",
+                    "width": "shapes.width.4",
+                },
+            },
+            "irf": {
+                "irf1": {
+                    "type": "gaussian",
+                    "center": "irf.center",
+                    "width": "irf.width",
+                },
+            },
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "irf": "irf1",
+                    "megacomplex": ["m1", "m2"],
+                    "global_megacomplex": ["m3"],
+                }
+            },
+        }
+    )
 
-#     model = DampedOscillationsModel(
-#         **{
-#             "initial_concentration": {
-#                 "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
-#             },
-#             "k_matrix": {
-#                 "k1": {
-#                     "matrix": {
-#                         ("s2", "s1"): "kinetic.1",
-#                         ("s2", "s2"): "kinetic.2",
-#                     }
-#                 }
-#             },
-#             "megacomplex": {
-#                 "m1": {"type": "decay", "k_matrix": ["k1"]},
-#                 "m2": {
-#                     "type": "pfid",
-#                     "labels": ["osc1"],
-#                     "frequencies": ["osc.freq"],
-#                     "rates": ["osc.rate"],
-#                 },
-#             },
-#             "irf": {
-#                 "irf1": {
-#                     "type": "gaussian",
-#                     "center": "irf.center",
-#                     "width": "irf.width",
-#                 },
-#             },
-#             "dataset": {
-#                 "dataset1": {
-#                     "initial_concentration": "j1",
-#                     "irf": "irf1",
-#                     "megacomplex": ["m1", "m2"],
-#                 }
-#             },
-#         }
-#     )
+    model = decay_pfid_model(
+        **{
+            "initial_concentration": {
+                "j1": {"compartments": ["s1", "s2"], "parameters": ["j.1", "j.0"]},
+            },
+            "k_matrix": {
+                "k1": {
+                    "matrix": {
+                        ("s2", "s1"): "kinetic.1",
+                        ("s2", "s2"): "kinetic.2",
+                    }
+                }
+            },
+            "megacomplex": {
+                "m1": {"type": "decay", "k_matrix": ["k1"]},
+                "m2": {
+                    "type": "pfid",
+                    "labels": ["osc1"],
+                    "frequencies": ["osc.freq"],
+                    "rates": ["osc.rate"],
+                },
+            },
+            "irf": {
+                "irf1": {
+                    "type": "gaussian",
+                    "center": "irf.center",
+                    "width": "irf.width",
+                },
+            },
+            "dataset": {
+                "dataset1": {
+                    "initial_concentration": "j1",
+                    "irf": "irf1",
+                    "megacomplex": ["m1", "m2"],
+                }
+            },
+        }
+    )
 
-#     wanted_parameter = Parameters.from_dict(
-#         {
-#             "j": [
-#                 ["1", 1, {"vary": False, "non-negative": False}],
-#                 ["0", 0, {"vary": False, "non-negative": False}],
-#             ],
-#             "kinetic": [
-#                 ["1", 0.2],
-#                 ["2", 0.01],
-#             ],
-#             "osc": [
-#                 ["freq", 25],
-#                 ["rate", 0.1],
-#             ],
-#             "shapes": {"amps": [0.07, 2, 4], "locs": [5, 2, 8], "width": [4, 2, 3]},
-#             "irf": [["center", 0.3], ["width", 0.1]],
-#         }
-#     )
+    wanted_parameter = Parameters.from_dict(
+        {
+            "j": [
+                ["1", 1, {"vary": False, "non-negative": False}],
+                ["0", 0, {"vary": False, "non-negative": False}],
+            ],
+            "kinetic": [
+                ["1", 0.05],
+                ["2", 0.001],
+            ],
+            "osc": [
+                ["freq", 1500],
+                ["rate", -2],
+            ],
+            "shapes": {
+                "amps": [2, -2, 8, 9],
+                "locs": [1490, 1510, 1495, 1505],
+                "width": [4, 4, 3, 5],
+            },
+            "irf": [["center", 0.01], ["width", 0.05]],
+        }
+    )
 
-#     parameter = Parameters.from_dict(
-#         {
-#             "j": [
-#                 ["1", 1, {"vary": False, "non-negative": False}],
-#                 ["0", 0, {"vary": False, "non-negative": False}],
-#             ],
-#             "kinetic": [
-#                 ["1", 0.2],
-#                 ["2", 0.01],
-#             ],
-#             "osc": [
-#                 ["freq", 25],
-#                 ["rate", 0.1],
-#             ],
-#             "irf": [["center", 0.3], ["width", 0.1]],
-#         }
-#     )
+    parameter = Parameters.from_dict(
+        {
+            "j": [
+                ["1", 1, {"vary": False, "non-negative": False}],
+                ["0", 0, {"vary": False, "non-negative": False}],
+            ],
+            "kinetic": [
+                ["1", 0.05],
+                ["2", 0.001],
+            ],
+            "osc": [
+                ["freq", 1501],
+                ["rate", -2.1],
+            ],
+            "irf": [["center", 0.01], ["width", 0.05]],
+        }
+    )
 
-#     time = np.arange(-1, 5, 0.01)
-#     spectral = np.arange(0, 10)
-#     axis = {"time": time, "spectral": spectral}
+    time = np.arange(-5, 80, 0.01)
+    spectral = np.arange(1480, 1520, 1)
+    axis = {"time": time, "spectral": spectral}
 
-#     wanted_clp = ["osc1_cos", "osc1_sin", "s1", "s2"]
-#     wanted_shape = (600, 4)
+    wanted_clp = ["osc1_cos", "osc1_sin", "s1", "s2"]
+    wanted_shape = (600, 4)
 
 
 @pytest.mark.parametrize(
     "suite",
     [
         OneOscillationWithIrf,
-        # OneOscillationWithSequentialModel,
+        OneOscillationWithSequentialModel,
     ],
 )
 def test_pfid_model(suite):
@@ -286,7 +305,15 @@ def test_pfid_model(suite):
     print(suite.model.validate(suite.parameter))
     assert suite.model.valid(suite.parameter)
 
-    dataset = simulate(suite.sim_model, "dataset1", suite.wanted_parameter, suite.axis)
+    dataset = simulate(
+        suite.sim_model,
+        "dataset1",
+        suite.wanted_parameter,
+        suite.axis,
+        noise=True,
+        noise_std_dev=1e-8,
+        noise_seed=123,
+    )
     print(dataset)
 
     assert dataset.data.shape == (suite.axis["time"].size, suite.axis["spectral"].size)
@@ -299,7 +326,7 @@ def test_pfid_model(suite):
         model=suite.model,
         parameters=suite.parameter,
         data=data,
-        maximum_number_function_evaluations=20,
+        maximum_number_function_evaluations=10,
     )
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)
@@ -311,10 +338,10 @@ def test_pfid_model(suite):
     assert np.array_equal(dataset["time"], resultdata["time"])
     assert np.array_equal(dataset["spectral"], resultdata["spectral"])
     assert dataset.data.shape == resultdata.fitted_data.shape
-    assert np.allclose(dataset.data, resultdata.fitted_data)
+    assert np.allclose(dataset.data, resultdata.fitted_data, atol=1e-5)
 
     assert "pfid_associated_spectra" in resultdata
-    assert "pfid_associated_concentration" in resultdata
+    assert "pfid_phase" in resultdata
 
 
 if __name__ == "__main__":

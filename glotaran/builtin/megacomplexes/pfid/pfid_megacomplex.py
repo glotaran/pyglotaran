@@ -6,11 +6,13 @@ import numpy as np
 import xarray as xr
 from scipy.special import erf
 
+from glotaran.builtin.megacomplexes.decay.irf import Irf
 from glotaran.builtin.megacomplexes.decay.irf import IrfMultiGaussian
 from glotaran.model import DatasetModel
 from glotaran.model import ItemIssue
 from glotaran.model import Megacomplex
 from glotaran.model import Model
+from glotaran.model import ModelItemType
 from glotaran.model import ParameterType
 from glotaran.model import attribute
 from glotaran.model import item
@@ -66,6 +68,7 @@ def validate_pfid_parameter(
 class PFIDDatasetModel(DatasetModel):
     spectral_axis_inverted: bool = False
     spectral_axis_scale: float = 1
+    irf: ModelItemType[Irf] | None = None
 
 
 @megacomplex(dataset_model_type=PFIDDatasetModel)
