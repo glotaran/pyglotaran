@@ -222,13 +222,14 @@ class MatrixProvider:
         tuple[list[str], ArrayLike]:
             The combined clp labels and matrix.
         """
+        if len(matrix_left.shape) < len(matrix_right.shape):
+            matrix_left, matrix_right = matrix_right, matrix_left
+            clp_labels_left, clp_labels_right = clp_labels_right, clp_labels_left
+
         result_clp_labels = clp_labels_left + [
             c for c in clp_labels_right if c not in clp_labels_left
         ]
         result_clp_size = len(result_clp_labels)
-
-        if len(matrix_left.shape) < len(matrix_right.shape):
-            matrix_left, matrix_right = matrix_right, matrix_left
 
         left_index_dependent = len(matrix_left.shape) == 3
         right_index_dependent = len(matrix_right.shape) == 3
