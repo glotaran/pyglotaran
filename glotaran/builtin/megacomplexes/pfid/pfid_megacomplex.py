@@ -86,7 +86,6 @@ class PFIDMegacomplex(Megacomplex):
         model_axis: ArrayLike,
         **kwargs,
     ):
-        # clp_label = [f"{label}_pfid" for label in self.labels]
         clp_label = [f"{label}_cos" for label in self.labels] + [
             f"{label}_sin" for label in self.labels
         ]
@@ -161,9 +160,8 @@ class PFIDMegacomplex(Megacomplex):
         dim1 = dataset.coords[global_dimension].size
         dim2 = len(self.labels)
         pfid = np.zeros((dim1, dim2), dtype=np.float64)
-        # for i, label in enumerate(self.labels):
-        #     pfid[:, i] = dataset.clp.sel(clp_label=f"{label}_pfid")
         phase = np.zeros((dim1, dim2), dtype=np.float64)
+
         for i, label in enumerate(self.labels):
             sin = dataset.clp.sel(clp_label=f"{label}_sin")
             cos = dataset.clp.sel(clp_label=f"{label}_cos")
@@ -180,15 +178,6 @@ class PFIDMegacomplex(Megacomplex):
             phase,
         )
 
-        # always index dependent
-        # dataset[f"{prefix}_associated_concentration"] = (
-        #     (
-        #         global_dimension,
-        #         model_dimension,
-        #         prefix,
-        #     ),
-        #     dataset.matrix.sel(clp_label=[f"{label}_pfid" for label in self.labels]).values,
-        # )
         dataset[f"{prefix}_sin"] = (
             (
                 global_dimension,
