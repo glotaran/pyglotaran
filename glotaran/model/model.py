@@ -344,7 +344,7 @@ class Model:
 
     def iterate_items(
         self,
-    ) -> Generator[tuple[str, dict[str, Item] | list[Item]], None, None]:
+    ) -> Generator[tuple[str, dict[str, Item] | list[Item]]]:
         """Iterate items.
 
         Yields
@@ -356,7 +356,7 @@ class Model:
             if META_ITEMS in attr.metadata:
                 yield attr.name, getattr(self, attr.name)
 
-    def iterate_all_items(self) -> Generator[Item, None, None]:
+    def iterate_all_items(self) -> Generator[Item]:
         """Iterate the individual items.
 
         Yields

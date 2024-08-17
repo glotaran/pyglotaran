@@ -259,7 +259,7 @@ class Parameters:
             {label: parameter.copy() for label, parameter in self._parameters.items()}
         )
 
-    def all(self) -> Generator[Parameter, None, None]:
+    def all(self) -> Generator[Parameter]:
         """Iterate over all parameters.
 
         Yields
@@ -445,7 +445,7 @@ class Parameters:
 
 def flatten_parameter_dict(
     parameter_dict: dict,
-) -> Generator[tuple[str, list[Any], dict[str, Any] | None], None, None]:
+) -> Generator[tuple[str, list[Any], dict[str, Any] | None]]:
     """Flatten a parameter dictionary.
 
     Parameters

@@ -419,7 +419,7 @@ def methods_differ_from_baseclass(
     method_names: str | Sequence[str],
     plugin: GenericPluginInstance | type[GenericPluginInstance],
     base_class: type[GenericPluginInstance],
-) -> Generator[bool, None, None]:
+) -> Generator[bool]:
     """Check if a plugins methods implementation differ from its baseclass.
 
     Based on the assumption that ``base_class`` didn't implement the methods
@@ -454,7 +454,7 @@ def methods_differ_from_baseclass_table(
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
     base_class: type[GenericPluginInstance],
     plugin_names: bool = False,
-) -> Generator[list[str | bool], None, None]:
+) -> Generator[list[str | bool]]:
     """Create table of which plugins methods differ from their baseclass.
 
     This uses the assumption that all plugins have the same ``base_class``.
@@ -511,7 +511,7 @@ def supported_file_extensions(
     plugin_registry_keys: str | Sequence[str],
     get_plugin_function: Callable[[str], GenericPluginInstance | type[GenericPluginInstance]],
     base_class: type[GenericPluginInstance],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Get file extensions for plugins that support all methods in ``method_names``.
 
     Parameters

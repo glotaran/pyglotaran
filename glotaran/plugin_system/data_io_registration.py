@@ -343,7 +343,7 @@ def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False
 
 def supported_file_extensions_data_io(
     method_names: str | Sequence[str],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Get data io formats that support all methods in ``method_names``.
 
     Parameters
