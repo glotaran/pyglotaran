@@ -190,7 +190,7 @@ class OneOscillationWithSequentialModel:
                 "dataset1": {
                     "initial_concentration": "j1",
                     "irf": "irf1",
-                    "megacomplex": ["m1", "m2"],
+                    "megacomplex": ["m2", "m1"],
                     "global_megacomplex": ["m3"],
                 }
             },
@@ -266,8 +266,8 @@ class OneOscillationWithSequentialModel:
                 ["0", 0, {"vary": False, "non-negative": False}],
             ],
             "kinetic": [
-                ["1", 0.05],
-                ["2", 0.001],
+                ["1", 0.055],
+                ["2", 0.0015],
             ],
             "osc": [
                 ["freq", 1501],
@@ -293,6 +293,7 @@ class OneOscillationWithSequentialModel:
     ],
 )
 def test_pfid_model(suite):
+    class_name = suite.__name__
     print(suite.sim_model.validate())
     assert suite.sim_model.valid()
 
@@ -326,7 +327,7 @@ def test_pfid_model(suite):
         model=suite.model,
         parameters=suite.parameter,
         data=data,
-        maximum_number_function_evaluations=10,
+        maximum_number_function_evaluations=5,
     )
     result = optimize(scheme, raise_exception=True)
     print(result.optimized_parameters)
@@ -343,6 +344,11 @@ def test_pfid_model(suite):
     assert "pfid_associated_spectra" in resultdata
     assert "pfid_phase" in resultdata
 
+    # Ensure that s1, s2 are not mixed up with osc1_cos and osc1_sin by checking amplitudes
+    if "OneOscillationWithSequentialModel" in class_name:
+        assert resultdata.species_associated_spectra.sel(species="s1").max() > 7
+        assert resultdata.species_associated_spectra.sel(species="s2").max() > 8
+
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    pytest.main([__file__, "-s", "-v"])
