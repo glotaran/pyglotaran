@@ -18,7 +18,7 @@ from tests.optimization.data import TestDataModelGlobal
 
 def test_single_data():
     data_model = deepcopy(TestDataModelConstantIndexIndependent)
-    experiment = ExperimentModel(datasets={"test": data_model})
+    experiment = ExperimentModel(datasets={"test_data": data_model})
     objective = OptimizationObjective(experiment)
     assert isinstance(objective._data, OptimizationData)
 
@@ -27,13 +27,14 @@ def test_single_data():
     assert penalty.size == data_size
 
     result = objective.get_result().data
-    assert "test" in result
+    assert "test_data" in result
+    result_data = result["test_data"]
+    print(result_data)
 
-    result_data = result["test"]
-    assert "matrix" in result_data
-    assert result_data.matrix.shape == (data_model.data.model.size, 1)
-    assert "clp" in result_data
-    assert result_data.clp.shape == (data_model.data["global"].size, 1)
+    assert "test_associated_concentration_test_ele" in result_data
+    assert result_data.test_associated_concentration_test_ele.shape == (data_model.data.model.size, 1)
+    assert "test_associated_amplitude_test_ele" in result_data
+    assert result_data.test_associated_amplitude_test_ele.shape == (data_model.data["global"].size, 1)
     assert "residual" in result_data
     assert result_data.residual.shape == data_model.data.data.shape
 
@@ -55,6 +56,7 @@ def test_global_data(weight: bool):
     assert "test" in result
 
     result_data = result["test"]
+    print(result_data)
     assert "matrix" in result_data
     assert result_data.matrix.shape == (
         (data_model.data["global"].size, data_model.data.model.size, 1)
@@ -94,23 +96,24 @@ def test_multiple_data():
 
     assert "independent" in result
     result_data = result["independent"]
-    assert "matrix" in result_data
-    assert result_data.matrix.shape == (data_model_one.data.model.size, 1)
-    assert "clp" in result_data
-    assert result_data.clp.shape == (data_model_one.data["global"].size, 1)
+    print(result_data)
+    assert "test_associated_concentration_test_ele" in result_data
+    assert result_data.test_associated_concentration_test_ele.shape == (data_model_one.data.model.size, 1)
+    assert "test_associated_amplitude_test_ele" in result_data
+    assert result_data.test_associated_amplitude_test_ele.shape == (data_model_one.data["global"].size, 1)
     assert "residual" in result_data
     assert result_data.residual.shape == data_model_one.data.data.shape
 
     assert "dependent" in result
     result_data = result["dependent"]
-    assert "matrix" in result_data
-    assert result_data.matrix.shape == (
+    assert "test_associated_concentration_test_ele_index_dependent" in result_data
+    assert result_data.test_associated_concentration_test_ele_index_dependent.shape == (
         data_model_two.data["global"].size,
         data_model_two.data.model.size,
         1,
     )
-    assert "clp" in result_data
-    assert result_data.clp.shape == (data_model_two.data["global"].size, 1)
+    assert "test_associated_amplitude_test_ele_index_dependent" in result_data
+    assert result_data.test_associated_amplitude_test_ele_index_dependent.shape == (data_model_two.data["global"].size, 1)
     assert "residual" in result_data
     # this datamodel has transposed input
     assert result_data.residual.shape == data_model_two.data.data.T.shape
@@ -134,7 +137,6 @@ def test_result_data(weight: bool):
 
     result_data = result["test"]
     assert "root_mean_square_error" in result_data.attrs
-    assert "custom_element_result" in result_data.attrs
     assert "data_left_singular_vectors" in result_data
     assert "data_right_singular_vectors" in result_data
     assert "residual_left_singular_vectors" in result_data
@@ -148,7 +150,6 @@ def test_result_data(weight: bool):
     if weight:
         assert "weight" in result_data
         assert "weighted_root_mean_square_error" in result_data.attrs
-        assert "weighted_matrix" in result_data
         assert "weighted_residual" in result_data
 
 

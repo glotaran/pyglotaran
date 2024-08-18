@@ -6,7 +6,7 @@ from typing import Literal
 
 import numpy as np
 
-from glotaran.model.element import Element
+from glotaran.model.element import Element, ElementResult
 
 if TYPE_CHECKING:
     import xarray as xr
@@ -34,11 +34,15 @@ class BaselineElement(Element):
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return clp_label, matrix
 
-    def add_to_result_data(
+    def create_result(
         self,
         model: DataModel,
-        data: xr.Dataset,
-        as_global: bool = False,
-    ):
-        if not as_global:
-            data["baseline"] = data.clp.sel(clp_label=self.clp_label())
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> ElementResult:
+        return ElementResult(
+            amplitudes={"baseline": amplitudes.sel(amplitude_label=self.clp_label())},
+            concentrations={},
+        )

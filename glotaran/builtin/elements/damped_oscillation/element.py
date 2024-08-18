@@ -18,12 +18,12 @@ from glotaran.builtin.elements.damped_oscillation.matrix import (
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.data_model import DataModel  # noqa: TCH001
-from glotaran.model.element import Element
+from glotaran.model.element import Element, ElementResult
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
+import xarray as xr
 
 if TYPE_CHECKING:
-    import xarray as xr
 
     from glotaran.typing.types import ArrayLike
 
@@ -133,67 +133,70 @@ class DampedOscillationElement(Element):
 
         return clp_axis, matrix
 
-    def add_to_result_data(  # type:ignore[override]
+    def create_result(
         self,
         model: ActivationDataModel,
-        data: xr.Dataset,
-        as_global: bool = False,
-    ):
-        prefix = "damped_oscillation"
-        if as_global or prefix in data:
-            # not implemented
-            return
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> ElementResult:
+        oscillations = list(self.oscillations)
+        frequencies = [self.oscillations[label].frequency for label in oscillations]
+        rates = [self.oscillations[label].rate for label in oscillations]
 
-        elements = [m for m in model.elements if isinstance(m, DampedOscillationElement)]
-        oscillations = [label for m in elements for label in m.oscillations]
-        frequencies = [o.frequency for m in elements for o in m.oscillations.values()]
-        rates = [o.rate for m in elements for o in m.oscillations.values()]
+        oscillation_coords = {
+            "damped_oscillation": oscillations,
+            "damped_oscillation_frequency": ("damped_oscillation", frequencies),
+            "damped_oscillation_rate": ("damped_oscillation", rates),
+        }
 
-        data.coords[f"{prefix}"] = oscillations
-        data.coords[f"{prefix}_frequency"] = (prefix, frequencies)
-        data.coords[f"{prefix}_rate"] = (prefix, rates)
+        sin_label = [f"{label}_sin" for label in oscillations]
+        cos_label = [f"{label}_cos" for label in oscillations]
 
-        model_dimension = data.attrs["model_dimension"]
-        global_dimension = data.attrs["global_dimension"]
-        dim1 = data.coords[global_dimension].size
-        dim2 = len(oscillations)
-        doas = np.zeros((dim1, dim2), dtype=np.float64)
-        phase = np.zeros((dim1, dim2), dtype=np.float64)
-        for i, label in enumerate(oscillations):
-            sin = data.clp.sel(clp_label=f"{label}_sin")
-            cos = data.clp.sel(clp_label=f"{label}_cos")
-            doas[:, i] = np.sqrt(sin * sin + cos * cos)
-            phase[:, i] = np.unwrap(np.arctan2(sin, cos))
+        sin_amplitudes = (
+            amplitudes.sel(amplitude_label=sin_label)
+            .rename(amplitude_label="damped_oscillation")
+            .assign_coords(oscillation_coords)
+        )
+        cos_amplitudes = (
+            amplitudes.sel(amplitude_label=cos_label)
+            .rename(amplitude_label="damped_oscillation")
+            .assign_coords(oscillation_coords)
+        )
+        doas_amplitudes = np.sqrt(sin_amplitudes**2 + cos_amplitudes**2)
+        phase_amplitudes = xr.DataArray(
+            np.unwrap(np.arctan2(sin_amplitudes, cos_amplitudes)),
+            coords=doas_amplitudes.coords,
+        )
 
-        data[f"{prefix}_associated_estimation"] = ((global_dimension, prefix), doas)
+        sin_concentrations = (
+            concentrations.sel(amplitude_label=sin_label)
+            .rename(amplitude_label="damped_oscillation")
+            .assign_coords(oscillation_coords)
+        )
+        cos_concentrations = (
+            concentrations.sel(amplitude_label=cos_label)
+            .rename(amplitude_label="damped_oscillation")
+            .assign_coords(oscillation_coords)
+        )
+        doas_concentrations = np.sqrt(sin_concentrations**2 + cos_concentrations**2)
+        phase_concentrations = xr.DataArray(
+            np.unwrap(np.arctan2(sin_concentrations, cos_concentrations)),
+            coords=doas_concentrations.coords,
+        )
 
-        data[f"{prefix}_phase"] = ((global_dimension, prefix), phase)
-
-        if len(data.matrix.shape) > 2:
-            data[f"{prefix}_sin"] = (
-                (
-                    global_dimension,
-                    model_dimension,
-                    prefix,
-                ),
-                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).to_numpy(),
-            )
-
-            data[f"{prefix}_cos"] = (
-                (
-                    global_dimension,
-                    model_dimension,
-                    prefix,
-                ),
-                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).to_numpy(),
-            )
-        else:
-            data[f"{prefix}_sin"] = (
-                (model_dimension, prefix),
-                data.matrix.sel(clp_label=[f"{label}_sin" for label in oscillations]).to_numpy(),
-            )
-
-            data[f"{prefix}_cos"] = (
-                (model_dimension, prefix),
-                data.matrix.sel(clp_label=[f"{label}_cos" for label in oscillations]).to_numpy(),
-            )
+        return ElementResult(
+            amplitudes={
+                "damped_oscillation": doas_amplitudes,
+                "damped_oscillation_phase": phase_amplitudes,
+                "damped_oscillation_sin": sin_amplitudes,
+                "damped_oscillation_cos": cos_amplitudes,
+            },
+            concentrations={
+                "damped_oscillation": doas_concentrations,
+                "damped_oscillation_phase": phase_concentrations,
+                "damped_oscillation_sin": sin_concentrations,
+                "damped_oscillation_cos": cos_concentrations,
+            },
+        )

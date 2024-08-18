@@ -7,6 +7,7 @@ from itertools import chain
 from typing import TYPE_CHECKING
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
@@ -318,3 +319,12 @@ class OptimizationMatrix:
             A list of matrices.
         """
         return [self.at_index(i) for i in range(global_axis.size)]
+
+    def to_data_array(
+        self, global_dim: str, global_axis: ArrayLike, model_dim: str, model_axis: ArrayLike
+    ) -> xr.DataArray:
+        coords = {model_dim: model_axis, "amplitude_label": self.clp_axis}
+        if self.is_index_dependent:
+            coords = {global_dim: global_axis} | coords
+
+        return xr.DataArray(self.array, dims=coords.keys(), coords=coords)

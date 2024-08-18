@@ -135,6 +135,5 @@ def test_spectral(shape: str):
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
     assert "spectral" in optimized_data
-    assert "spectrum" in optimized_data["spectral"]
-    assert "spectrum_associated_estimation" in optimized_data["spectral"]
-    assert "spectra" in optimized_data["spectral"]
+    assert f"spectrum_associated_amplitude_{shape}" in optimized_data["spectral"]
+    assert f"spectrum_associated_concentration_{shape}" in optimized_data["spectral"]

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-import xarray as xr  # noqa: TCH002
+import xarray as xr 
 
 from glotaran.builtin.items.activation.activation import Activation  # noqa: TCH001
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
@@ -44,60 +44,89 @@ class ActivationDataModel(DataModel):
         description="The activation(s) of the dataset.",
     )
 
+    @staticmethod
+    def create_result(
+        model: ActivationDataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.DataArray,
+        concentrations: xr.DataArray,
+    ) -> dict[str, xr.DataArray]:
 
-def add_activation_to_result_data(model: ActivationDataModel, data: xr.Dataset):
-    gaussian_activations = [a for a in model.activation if isinstance(a, MultiGaussianActivation)]
-    if "gaussian_activation" in data or not len(gaussian_activations):
-        return
-    data.coords["gaussian_activation"] = np.arange(1, len(gaussian_activations) + 1)
-    global_dimension = data.attrs["global_dimension"]
-    global_axis = data.coords[global_dimension]
-    model_dimension = data.attrs["model_dimension"]
-    model_axis = data.coords[model_dimension]
+        gaussian_activations = [
+            a for a in model.activation if isinstance(a, MultiGaussianActivation)
+        ]
+        if not len(gaussian_activations):
+            return {}
 
-    activations = []
-    activation_parameters = []
-    activation_shifts = []
-    has_shifts = any(a.shift is not None for a in gaussian_activations)
-    activation_dispersions = []
-    has_dispersions = any(a.dispersion_center is not None for a in gaussian_activations)
-    for activation in gaussian_activations:
-        activations.append(activation.calculate_function(model_axis))
-        activation_parameters.append(activation.parameters())
+        global_axis = amplitudes.coords[global_dimension]
+        model_axis = concentrations.coords[model_dimension]
+
+        activations = []
+        activation_parameters = []
+        activation_shifts = []
+        activation_dispersions = []
+
+        has_shifts = any(a.shift is not None for a in gaussian_activations)
+        has_dispersions = any(a.dispersion_center is not None for a in gaussian_activations)
+
+        for activation in gaussian_activations:
+            activations.append(activation.calculate_function(model_axis))
+            activation_parameters.append(activation.parameters())
+            if has_shifts:
+                activation_shifts.append(
+                    activation.shift
+                    if activation.shift is not None
+                    else [0] * global_axis.size
+                )
+            if has_dispersions:
+                activation_dispersions.append(
+                    activation.calculate_dispersion(global_axis)
+                    if activation.dispersion_center is not None
+                    else activation.center * global_axis.size
+                )
+
+        result = {}
+
+        activation_coords = {"gaussian_activation": np.arange(1, len(gaussian_activations) + 1)}
+        result["gaussian_activation_function"] = xr.DataArray(
+            activations,
+            coords=activation_coords | {model_dimension: model_axis},
+            dims=("gaussian_activation", model_dimension),
+        )
+
         if has_shifts:
-            activation_shifts.append(
-                activation.shift if activation.shift is not None else [0] * global_axis.size
-            )
-        if has_dispersions:
-            activation_dispersions.append(
-                activation.calculate_dispersion(global_axis)
-                if activation.dispersion_center is not None
-                else activation.center * global_axis.size
+            result["activation_shift"] = xr.DataArray(
+                activation_shifts,
+                coords=activation_coords | {global_dimension: global_axis},
+                dims=("gaussian_activation", global_dimension),
             )
 
-    data["gaussian_activation_function"] = (
-        ("gaussian_activation", model_dimension),
-        activations,
-    )
-    data["gaussian_activation_center"] = (
-        ("gaussian_activation", "gaussian_activation_part"),
-        [[p.center for p in ps] for ps in activation_parameters],  # type:ignore[union-attr]
-    )
-    data["gaussian_activation_width"] = (
-        ("gaussian_activation", "gaussian_activation_part"),
-        [[p.width for p in ps] for ps in activation_parameters],  # type:ignore[union-attr]
-    )
-    data["gaussian_activation_scale"] = (
-        ("gaussian_activation", "gaussian_activation_part"),
-        [[p.scale for p in ps] for ps in activation_parameters],  # type:ignore[union-attr]
-    )
-    if has_shifts:
-        data["gaussian_activation_shift"] = (
-            ("gaussian_activation", global_dimension),
-            activation_shifts,
+        activation_coords = activation_coords | {
+            "gaussian_activation_part": np.arange(max([len(ps) for ps in activation_parameters]))
+        }
+
+        result["activation_center"] = xr.DataArray(
+            [[p.center for p in ps] for ps in activation_parameters],
+            coords=activation_coords,
+            dims=("gaussian_activation", "gaussian_activation_part"),
         )
-    if has_dispersions:
-        data["gaussian_activation_dispersion"] = (
-            ("gaussian_activation", "gaussian_activation_part", global_dimension),
-            activation_dispersions,
+        result["activation_width"] = xr.DataArray(
+            [[p.width for p in ps] for ps in activation_parameters],
+            coords=activation_coords,
+            dims=("gaussian_activation", "gaussian_activation_part"),
         )
+        result["activation_scale"] = xr.DataArray(
+            [[p.scale for p in ps] for ps in activation_parameters],
+            coords=activation_coords,
+            dims=("gaussian_activation", "gaussian_activation_part"),
+        )
+
+        if has_dispersions:
+            result["activation_dispersion"] = xr.DataArray(
+                activation_dispersions,
+                coords=activation_coords | {global_dimension: global_axis},
+                dims=("gaussian_activation", "gaussian_activation_part", global_dimension),
+            )
+
+        return result

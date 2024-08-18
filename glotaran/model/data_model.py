@@ -214,6 +214,16 @@ class DataModel(Item):
         elements = {type(library[label]) for label in element_labels}
         return cls.create_class_for_elements(elements)(**model_dict)
 
+    @staticmethod
+    def create_result(
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.DataArray,
+        concentrations: xr.DataArray,
+    ) -> dict[str, xr.Dataarray]:
+        return {}
+
 
 def is_data_model_global(data_model: DataModel) -> bool:
     """Check if a data model can model the global dimension.

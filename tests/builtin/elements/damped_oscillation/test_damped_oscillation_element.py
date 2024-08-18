@@ -115,10 +115,35 @@ def test_coherent_artifact(activation: Activation):
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
     assert "damped_oscillation" in optimized_data
-    assert "damped_oscillation" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_associated_estimation" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_frequency" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_rate" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_phase" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_sin" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_cos" in optimized_data["damped_oscillation"]
+    assert (
+        "damped_oscillation_associated_amplitude_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )
+    assert (
+        "damped_oscillation_associated_concentration_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )
+    assert (
+        "damped_oscillation_frequency_damped-oscillation" in optimized_data["damped_oscillation"]
+    )
+    assert "damped_oscillation_rate_damped-oscillation" in optimized_data["damped_oscillation"]
+    assert (
+        "damped_oscillation_phase_associated_amplitude_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )
+    assert (
+        "damped_oscillation_sin_associated_amplitude_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )
+    assert (
+        "damped_oscillation_cos_associated_amplitude_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )
+    assert (
+        "damped_oscillation_sin_associated_concentration_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )
+    assert (
+        "damped_oscillation_cos_associated_concentration_damped-oscillation"
+        in optimized_data["damped_oscillation"]
+    )

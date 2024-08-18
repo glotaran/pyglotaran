@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import abc
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -29,6 +30,13 @@ def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
     """
     json_schema["properties"].pop("label")
     json_schema["required"].remove("label")
+
+
+@dataclass
+class ElementResult:
+    amplitudes: dict[str, xr.DataArray]
+    concentrations: dict[str, xr.DataArray]
+    extra: dict[str, xr.DataArray] = field(default_factory=dict)
 
 
 class Element(TypedItem, abc.ABC):
@@ -79,7 +87,14 @@ class Element(TypedItem, abc.ABC):
         .. # noqa: DAR202
         """
 
-    def add_to_result_data(self, model: DataModel, data: xr.Dataset, as_global: bool):
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> ElementResult:
         """
 
         Parameters
@@ -93,6 +108,7 @@ class Element(TypedItem, abc.ABC):
         as_global: bool
             Whether model is calculated as global model.
         """
+        return ElementResult({}, {})
 
 
 class ExtendableElement(Element):

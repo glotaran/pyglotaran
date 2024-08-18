@@ -127,11 +127,12 @@ def test_decay(decay: str, activation: Activation):
     assert result.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
     assert "decay" in optimized_data
-    assert "clp" in optimized_data["decay"]
+    print(optimized_data["decay"])
     assert "residual" in optimized_data["decay"]
-    assert "species_concentration" in optimized_data["decay"]
-    assert "species_associated_estimation" in optimized_data["decay"]
-    assert "kinetic_associated_estimation" in optimized_data["decay"]
+    assert f"species_associated_concentration_{decay}" in optimized_data["decay"]
+    assert f"species_associated_amplitude_{decay}" in optimized_data["decay"]
+    assert f"kinetic_associated_amplitude_{decay}" in optimized_data["decay"]
+    assert f"k_matrix_{decay}" in optimized_data["decay"]
     if isinstance(activation, MultiGaussianActivation):
         assert "gaussian_activation" in optimized_data["decay"].coords
         assert "gaussian_activation_function" in optimized_data["decay"]

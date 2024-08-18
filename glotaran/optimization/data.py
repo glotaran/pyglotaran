@@ -235,6 +235,21 @@ class OptimizationData(OptimizationDataProvider):
                 data = data.T
         return data
 
+    def unweight_result_dataset(self, result_dataset: xr.Dataset):
+        if self.weight is None:
+            return
+
+        if "weight" not in result_dataset:
+            result_dataset["weight"] = xr.DataArray(self.weight, coords=result_dataset.data.coords)
+        result_dataset["weighted_residual"] = result_dataset["residual"]
+        result_dataset["residual"] = result_dataset["residual"] / self.weight
+        result_dataset.attrs["weighted_root_mean_square_error"] = result_dataset.attrs[
+            "root_mean_square_error"
+        ]
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual**2).sum() / sum(result_dataset.residual.shape)
+        ).to_numpy()
+
 
 class LinkedOptimizationData(OptimizationDataProvider):
     def __init__(
@@ -468,7 +483,10 @@ class LinkedOptimizationData(OptimizationDataProvider):
         # as an alternative to the more elegant xarray built-in which is limited to 32 datasets
         # aligned_group_labels = aligned_groups.str.join(dim="dataset").data
         aligned_group_labels = np.asarray(
-            ["".join(sub_arr.values) for _, sub_arr in aligned_groups.groupby("global")]
+            [
+                "".join(v[0] for v in sub_arr.to_numpy())
+                for _, sub_arr in aligned_groups.groupby("global")
+            ]
         )
 
         group_definitions: dict[str, list[str]] = {}

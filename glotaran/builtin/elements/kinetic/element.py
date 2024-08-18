@@ -13,12 +13,10 @@ from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_a
 from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_activation_on_index
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.builtin.items.activation import add_activation_to_result_data
-from glotaran.model.data_model import DataModel
-from glotaran.model.data_model import is_data_model_global
-from glotaran.model.element import ExtendableElement
+from glotaran.model.element import ElementResult, ExtendableElement
 
 if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
 
@@ -153,72 +151,83 @@ class KineticElement(ExtendableElement, Kinetic):
 
         return matrix
 
-    def add_to_result_data(  # type:ignore[override]
-        self, model: ActivationDataModel, data: xr.Dataset, as_global: bool
-    ):
-        add_activation_to_result_data(model, data)
-        if "species" in data.coords or is_data_model_global(model):
-            return
-        kinetic = self.combine([m for m in model.elements if isinstance(m, KineticElement)])
-        species = kinetic.species
-        global_dimension = data.attrs["global_dimension"]
-        model_dimension = data.attrs["model_dimension"]
-
-        data.coords["species"] = species
-        matrix = data.global_matrix if as_global else data.matrix
-        clp_dim = "global_clp_label" if as_global else "clp_label"
-        concentration_shape = (
-            global_dimension if as_global else model_dimension,
-            "species",
+    def create_result(
+        self,
+        model: ActivationDataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> ElementResult:
+        species_amplitude = amplitudes.sel(amplitude_label=self.species).rename(
+            amplitude_label="species"
         )
-        if len(matrix.shape) > 2:
-            concentration_shape = (  # type:ignore[assignment]
-                (model_dimension if as_global else global_dimension),
-                *concentration_shape,
-            )
-        data["species_concentration"] = (
-            concentration_shape,
-            matrix.sel({clp_dim: species}).to_numpy(),
+        species_concentration = concentrations.sel(amplitude_label=self.species).rename(
+            amplitude_label="species"
         )
 
-        data["k_matrix"] = xr.DataArray(kinetic.full_array, dims=(("species"), ("species")))
-        data["k_matrix_reduced"] = xr.DataArray(kinetic.array, dims=(("species"), ("species")))
+        k_matrix = xr.DataArray(
+            self.full_array, coords={"to_species": self.species, "from_species": self.species}
+        )
+        reduced_k_matrix = xr.DataArray(
+            self.array, coords={"to_species": self.species, "from_species": self.species}
+        )
 
-        rates = kinetic.calculate()
+        rates = self.calculate()
         lifetimes = 1 / rates
-        data.coords["kinetic"] = np.arange(1, rates.size + 1)
-        data.coords["rate"] = ("kinetic", rates)
-        data.coords["lifetime"] = ("kinetic", lifetimes)
+        kinetic_coords = {
+            "kinetic": np.arange(1, rates.size + 1),
+            "rate": ("kinetic", rates),
+            "lifetime": ("kinetic", lifetimes),
+        }
 
-        if hasattr(data, "global_matrix"):
-            return
-
-        species_associated_estimation = data.clp.sel(clp_label=species).data
-        data["species_associated_estimation"] = (
-            (global_dimension, "species"),
-            species_associated_estimation,
-        )
         initial_concentrations = []
         a_matrices = []
-        kinetic_associated_estimations = []
+        kinetic_amplitudes = []
         for activation in model.activation:
             initial_concentration = np.array(
-                [float(activation.compartments.get(label, 0)) for label in species]
+                [float(activation.compartments.get(label, 0)) for label in self.species]
             )
             initial_concentrations.append(initial_concentration)
-            a_matrix = kinetic.a_matrix(initial_concentration)
+            a_matrix = self.a_matrix(initial_concentration)
             a_matrices.append(a_matrix)
-            kinetic_associated_estimations.append(species_associated_estimation @ a_matrix.T)
+            kinetic_amplitudes.append(species_amplitude.to_numpy() @ a_matrix.T)
 
-        data["initial_concentration"] = (
-            ("activation", "species"),
+        initial_concentration = xr.DataArray(
             initial_concentrations,
+            coords={"activation": range(len(initial_concentrations)), "species": self.species},
         )
-        data["a_matrix"] = (
-            ("activation", "species", "kinetic"),
+        a_matrix = xr.DataArray(
             a_matrices,
+            coords={
+                "activation": range(len(a_matrices)),
+                "species": self.species,
+            }
+            | kinetic_coords,
+            dims=("activation", "species", "kinetic"),
         )
-        data["kinetic_associated_estimation"] = (
-            ("activation", global_dimension, "kinetic"),
-            kinetic_associated_estimations,
+        kinetic_amplitude_coords = (
+            {"activation": range(len(kinetic_amplitudes))}
+            | kinetic_coords
+            | dict(species_amplitude.coords)
+        )
+        del kinetic_amplitude_coords["species"]
+        kinetic_amplitude = xr.DataArray(
+            kinetic_amplitudes,
+            coords=kinetic_amplitude_coords,
+            dims=("activation", global_dimension, "kinetic"),
+        )
+
+        return ElementResult(
+            amplitudes={
+                "species": species_amplitude,
+                "kinetic": kinetic_amplitude,
+            },
+            concentrations={"species": species_concentration},
+            extra={
+                "k_matrix": k_matrix,
+                "reduced_k_matrix": reduced_k_matrix,
+                "initial_concentration": initial_concentration,
+                "a_matrix": a_matrix,
+            },
         )

@@ -37,9 +37,9 @@ test_clp = xr.DataArray(
         (
             "clp_label",
             [
-                "coherent_artifact_coherent-artifact_order_1_activation_0",
-                "coherent_artifact_coherent-artifact_order_2_activation_0",
-                "coherent_artifact_coherent-artifact_order_3_activation_0",
+                "coherent_artifact_coherent-artifact_order_1",
+                "coherent_artifact_coherent-artifact_order_2",
+                "coherent_artifact_coherent-artifact_order_3",
             ],
         ),
         ("spectral", test_global_axis.data),
@@ -95,5 +95,11 @@ def test_coherent_artifact(activation: Activation):
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
     assert "coherent_artifact" in optimized_data
-    assert "coherent_artifact_response" in optimized_data["coherent_artifact"]
-    assert "coherent_artifact_associated_estimation" in optimized_data["coherent_artifact"]
+    assert (
+        "coherent_artifact_associated_concentration_coherent-artifact"
+        in optimized_data["coherent_artifact"]
+    )
+    assert (
+        "coherent_artifact_associated_amplitude_coherent-artifact"
+        in optimized_data["coherent_artifact"]
+    )
