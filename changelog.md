@@ -8,6 +8,10 @@
 
 - ✨ Add official Python 3.12 support (#1437)
 
+### 🩹 Bug fixes
+
+- 🩹 Fix ordering bug in MatrixProvider class (#1512)
+
 ### 🚧 Maintenance
 
 -🧹🚇 Remove asv benchmarks and binder integration
