@@ -38,5 +38,4 @@ types-dataclasses>=0.1.7
 
 # code quality assurance
 flake8>=3.8.3
-pre-commit>=2.9.0
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
