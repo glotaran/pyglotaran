@@ -350,5 +350,22 @@ def test_pfid_model(suite):
         assert resultdata.species_associated_spectra.sel(species="s2").max() > 8
 
 
+def test_pfid_model_validate():
+    """An ``OscillationParameterIssue`` should be raised if there is a list length mismatch.
+
+    List values are: ``labels``, ``frequencies``, ``rates``.
+    """
+    pure_pfid_model = Model.create_class_from_megacomplexes([PFIDMegacomplex, SpectralMegacomplex])
+    model_data = OneOscillationWithIrf.sim_model.as_dict()
+    model_data["megacomplex"]["pfid"]["labels"].append("extra-label")
+    model = pure_pfid_model(**model_data)
+    validation_msg = model.validate()
+    assert (
+        validation_msg == "Your model has 1 problem:\n\n"
+        " * The size of labels (2), frequencies (1), and rates (1) does not match for pfid "
+        "megacomplex 'pfid'."
+    )
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-s", "-v"])
