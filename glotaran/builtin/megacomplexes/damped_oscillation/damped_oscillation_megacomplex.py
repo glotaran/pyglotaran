@@ -25,14 +25,14 @@ if TYPE_CHECKING:
 
 class OscillationParameterIssue(ItemIssue):
     def __init__(self, label: str, len_labels: int, len_frequencies: int, len_rates: int):
-        self._label = label
-        self._len_labels = len_labels
-        self._len_frequencies = len_frequencies
-        self._len_rates = len_rates
+        self.label = label
+        self.len_labels = len_labels
+        self.len_frequencies = len_frequencies
+        self.len_rates = len_rates
 
     def to_string(self) -> str:
         return (
-            f"Size of labels ({self.len_labels}), frequencies ({self.len_frequencies}) "
+            f"The size of labels ({self.len_labels}), frequencies ({self.len_frequencies}), "
             f"and rates ({self.len_rates}) does not match for damped oscillation "
             f"megacomplex '{self.label}'."
         )
