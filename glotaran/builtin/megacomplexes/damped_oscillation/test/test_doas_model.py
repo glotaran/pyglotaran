@@ -386,3 +386,19 @@ def test_doas_model(suite):
     assert "damped_oscillation_sin" in resultdata
     assert "damped_oscillation_associated_spectra" in resultdata
     assert "damped_oscillation_phase" in resultdata
+
+
+def test_doas_model_validate():
+    """A ``OscillationParameterIssue`` should be raise if there is list length mismatch.
+
+    List values are: ``labels``, ``frequencies``, ``rates``
+    """
+    model_data = OneOscillation.sim_model.as_dict()
+    model_data["megacomplex"]["m1"]["labels"].append("extra-label")
+    model = DampedOscillationsModel(**model_data)
+    validation_msg = model.validate()
+    assert (
+        validation_msg == "Your model has 1 problem:\n\n"
+        " * Size of labels (2), frequencies (1) and rates (1) does not match for damped "
+        "oscillation megacomplex 'm1'."
+    )
