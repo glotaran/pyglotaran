@@ -32,7 +32,7 @@ class OscillationParameterIssue(ItemIssue):
 
     def to_string(self) -> str:
         return (
-            f"Size of labels ({self.len_labels}), frequencies ({self.len_frequencies}) "
+            f"The size of labels ({self.len_labels}), frequencies ({self.len_frequencies}), "
             f"and rates ({self.len_rates}) does not match for damped oscillation "
             f"megacomplex '{self.label}'."
         )
