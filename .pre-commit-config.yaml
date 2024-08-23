@@ -109,7 +109,7 @@ repos:
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|tests/.*"
-        additional_dependencies: [types-tabulate, pydantic]
+        additional_dependencies: [types-tabulate, numpy, pydantic]
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.7.0
@@ -117,7 +117,6 @@ repos:
       - id: interrogate
         args: [--config=pyproject.toml, glotaran]
         pass_filenames: false
-        additional_dependencies: [click<8]
 
   # - repo: https://github.com/pre-commit/pygrep-hooks
   #   rev: v1.10.0
