@@ -85,7 +85,7 @@ def add_svd_to_dataset(
     if data_array is None:
         data_array = dataset[name] if name != "data" else dataset.data
     if f"{name}_singular_values" not in dataset:
-        l, s, r = np.linalg.svd(data_array, full_matrices=False)
+        l, s, r = np.linalg.svd(data_array.data, full_matrices=False)
         dataset[f"{name}_left_singular_vectors"] = ((lsv_dim, "left_singular_value_index"), l)
         dataset[f"{name}_singular_values"] = (("singular_value_index"), s)
         dataset[f"{name}_right_singular_vectors"] = ((rsv_dim, "right_singular_value_index"), r.T)
