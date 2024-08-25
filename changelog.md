@@ -14,10 +14,11 @@
 
 - 🩹 Fix ordering bug in MatrixProvider class (#1512)
 - 🩹 Fix AttributeError validating bad DOAS user definition (#1513)
+- 🩹 Fix error with `xarray==2024.7.0` due to breaking change in applied deprecation (#1458)
 
 ### 🚧 Maintenance
 
--🧹🚇 Remove asv benchmarks and binder integration
+-🧹🚇 Remove asv benchmarks and binder integration (#1511)
 
 (changes-0_7_2)=
 
@@ -45,7 +46,7 @@
 
 (changes-0_7_0)=
 
-## 🚀 0.7.0 (Unreleased)
+## 🚀 0.7.0 (2023-03-27)
 
 ### 💥 BREAKING CHANGE
 
