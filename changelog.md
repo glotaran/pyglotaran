@@ -14,6 +14,7 @@
 
 - 🩹 Fix ordering bug in MatrixProvider class (#1512)
 - 🩹 Fix AttributeError validating bad DOAS user definition (#1513)
+- 🩹 Fix error with `xarray==2024.7.0` due to breaking change in applied deprecation (#1458)
 
 ### 🚧 Maintenance
 
