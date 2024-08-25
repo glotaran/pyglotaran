@@ -442,7 +442,7 @@ def create_clp_guide_dataset(
     if clp_label not in dataset.clp_label:
         raise ValueError(
             f"Unknown clp_label {clp_label!r}. "
-            f"Known clp_labels are:\n {list(dataset.clp_label.values)}"
+            f"Known clp_labels are:\n {[str(label) for label in dataset.clp_label.to_numpy()]}"
         )
     if "model_dimension" not in dataset.attrs:
         raise ValueError(
