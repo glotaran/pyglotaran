@@ -20,7 +20,7 @@ DOC_FOLDER = Path(__file__).parent.parent
 
 # -- Project information -----------------------------------------------------
 
-authors = ("Joern Weissenborn", "Joris Snellenburg", "Ivo van Stokkum")
+authors = ("Joern Weissenborn", "Joris Snellenburg", "Sebastian Weigand", "Ivo van Stokkum")
 
 project = "pyglotaran"
 title = f"{project} Documentation"
