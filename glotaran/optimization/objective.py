@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from glotaran.io.prepare_dataset import add_svd_to_dataset
 from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.model.data_model import iterate_data_model_global_elements
 from glotaran.optimization.data import LinkedOptimizationData
@@ -256,18 +257,7 @@ class OptimizationObjective:
 
         if add_svd:
             for name in ["data", "residual"]:
-                if f"{name}_singular_values" in dataset:
-                    continue
-                lsv, sv, rsv = np.linalg.svd(dataset[name], full_matrices=False)
-                dataset[f"{name}_left_singular_vectors"] = (
-                    (data.model_dimension, "left_singular_value_index"),
-                    lsv,
-                )
-                dataset[f"{name}_singular_values"] = (("singular_value_index"), sv)
-                dataset[f"{name}_right_singular_vectors"] = (
-                    (data.global_dimension, "right_singular_value_index"),
-                    rsv.T,
-                )
+                add_svd_to_dataset(dataset, name, data.model_dimension, data.global_dimension)
         for _, model in iterate_data_model_elements(data.model):
             model.add_to_result_data(  # type:ignore[union-attr]
                 data.model, dataset, False
