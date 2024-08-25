@@ -1,8 +1,26 @@
 # Changelog
 
+(changes-0_7_4)=
+
+## 🚀 0.7.4 (Unreleased)
+
+### ✨ Features
+
+### 👌 Minor Improvements:
+
+### 🩹 Bug fixes
+
+### 📚 Documentation
+
+### 🗑️ Deprecations (due in 0.9.0)
+
+### 🗑️❌ Deprecated functionality removed in this release
+
+### 🚧 Maintenance
+
 (changes-0_7_3)=
 
-## 🚀 0.7.3 (Not released)
+## 🚀 0.7.3 (2024-08-25)
 
 ### ✨ Features
 

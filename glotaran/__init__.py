@@ -5,7 +5,7 @@ from glotaran.plugin_system.base_registry import load_plugins
 
 load_plugins()
 
-__version__ = "0.7.3"
+__version__ = "0.7.4.dev0"
 
 examples = deprecate_submodule(
     deprecated_module_name="glotaran.examples",
