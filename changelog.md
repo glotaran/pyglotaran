@@ -8,6 +8,7 @@
 
 - ✨ Add official Python 3.12 support (#1437)
 - ✨ Add support for pfid megacomplex (#1510)
+- ✨ Add official numpy 2 support (#1520, #1503)
 
 ### 🩹 Bug fixes
 
