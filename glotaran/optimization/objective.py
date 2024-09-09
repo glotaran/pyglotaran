@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from glotaran.model.data_model import DataModel, iterate_data_model_elements
+from glotaran.model.data_model import DataModel
+from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -180,7 +181,7 @@ class OptimizationObjective:
             ),
         ).T
         dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (dataset.residual.to_numpy()**2).sum() / sum(dataset.residual.shape)
+            (dataset.residual.to_numpy() ** 2).sum() / sum(dataset.residual.shape)
         )
 
     def create_single_dataset_result(self) -> OptimizationObjectiveResult:
@@ -226,7 +227,8 @@ class OptimizationObjective:
                 [e.residual for e in estimations], dims=residual_dims
             ).T
             result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-                (result_dataset.residual.to_numpy()**2).sum() / sum(result_dataset.residual.shape)
+                (result_dataset.residual.to_numpy() ** 2).sum()
+                / sum(result_dataset.residual.shape)
             )
             additional_penalty = sum(
                 calculate_clp_penalties(
@@ -380,7 +382,7 @@ class OptimizationObjective:
             label, estimations, model_dim, model_axis, global_dim, global_axis
         )
         result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (result_dataset.residual.to_numpy()**2).sum() / sum(result_dataset.residual.shape)
+            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
         )
         self._data.data[label].unweight_result_dataset(result_dataset)
         result_dataset["fit"] = result_dataset.data - result_dataset.residual

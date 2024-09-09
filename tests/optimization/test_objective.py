@@ -32,9 +32,15 @@ def test_single_data():
     print(result_data)
 
     assert "test_associated_concentration_test_ele" in result_data
-    assert result_data.test_associated_concentration_test_ele.shape == (data_model.data.model.size, 1)
+    assert result_data.test_associated_concentration_test_ele.shape == (
+        data_model.data.model.size,
+        1,
+    )
     assert "test_associated_amplitude_test_ele" in result_data
-    assert result_data.test_associated_amplitude_test_ele.shape == (data_model.data["global"].size, 1)
+    assert result_data.test_associated_amplitude_test_ele.shape == (
+        data_model.data["global"].size,
+        1,
+    )
     assert "residual" in result_data
     assert result_data.residual.shape == data_model.data.data.shape
 
@@ -98,9 +104,15 @@ def test_multiple_data():
     result_data = result["independent"]
     print(result_data)
     assert "test_associated_concentration_test_ele" in result_data
-    assert result_data.test_associated_concentration_test_ele.shape == (data_model_one.data.model.size, 1)
+    assert result_data.test_associated_concentration_test_ele.shape == (
+        data_model_one.data.model.size,
+        1,
+    )
     assert "test_associated_amplitude_test_ele" in result_data
-    assert result_data.test_associated_amplitude_test_ele.shape == (data_model_one.data["global"].size, 1)
+    assert result_data.test_associated_amplitude_test_ele.shape == (
+        data_model_one.data["global"].size,
+        1,
+    )
     assert "residual" in result_data
     assert result_data.residual.shape == data_model_one.data.data.shape
 
@@ -113,7 +125,10 @@ def test_multiple_data():
         1,
     )
     assert "test_associated_amplitude_test_ele_index_dependent" in result_data
-    assert result_data.test_associated_amplitude_test_ele_index_dependent.shape == (data_model_two.data["global"].size, 1)
+    assert result_data.test_associated_amplitude_test_ele_index_dependent.shape == (
+        data_model_two.data["global"].size,
+        1,
+    )
     assert "residual" in result_data
     # this datamodel has transposed input
     assert result_data.residual.shape == data_model_two.data.data.T.shape

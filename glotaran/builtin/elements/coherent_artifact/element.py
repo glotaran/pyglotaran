@@ -9,12 +9,14 @@ import numpy as np
 
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model.element import Element, ElementResult
+from glotaran.model.element import Element
+from glotaran.model.element import ElementResult
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.item import ParameterType  # noqa: TCH001
 
 if TYPE_CHECKING:
     import xarray as xr
+
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 

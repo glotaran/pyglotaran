@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-import xarray as xr 
+import xarray as xr
 
 from glotaran.builtin.items.activation.activation import Activation  # noqa: TCH001
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
@@ -52,7 +52,6 @@ class ActivationDataModel(DataModel):
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
     ) -> dict[str, xr.DataArray]:
-
         gaussian_activations = [
             a for a in model.activation if isinstance(a, MultiGaussianActivation)
         ]
@@ -75,9 +74,7 @@ class ActivationDataModel(DataModel):
             activation_parameters.append(activation.parameters())
             if has_shifts:
                 activation_shifts.append(
-                    activation.shift
-                    if activation.shift is not None
-                    else [0] * global_axis.size
+                    activation.shift if activation.shift is not None else [0] * global_axis.size
                 )
             if has_dispersions:
                 activation_dispersions.append(

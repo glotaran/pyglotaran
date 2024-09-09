@@ -6,7 +6,8 @@ from typing import Literal
 
 import numpy as np
 
-from glotaran.model.element import Element, ElementResult
+from glotaran.model.element import Element
+from glotaran.model.element import ElementResult
 
 if TYPE_CHECKING:
     import xarray as xr

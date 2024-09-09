@@ -8,7 +8,8 @@ import numpy as np
 
 from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TCH001
 from glotaran.model.data_model import DataModel
-from glotaran.model.element import Element, ElementResult
+from glotaran.model.element import Element
+from glotaran.model.element import ElementResult
 
 if TYPE_CHECKING:
     import xarray as xr
