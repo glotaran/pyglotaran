@@ -483,10 +483,10 @@ class LinkedOptimizationData(OptimizationDataProvider):
         # as an alternative to the more elegant xarray built-in which is limited to 32 datasets
         # aligned_group_labels = aligned_groups.str.join(dim="dataset").data
         aligned_group_labels = np.asarray(
-            [
-                "".join(v[0] for v in sub_arr.to_numpy())
-                for _, sub_arr in aligned_groups.groupby("global")
-            ]
+            tuple(
+                "".join(sub_arr.to_numpy().flatten())
+                for _, sub_arr in aligned_groups.groupby("global", squeeze=False)
+            )
         )
 
         group_definitions: dict[str, list[str]] = {}

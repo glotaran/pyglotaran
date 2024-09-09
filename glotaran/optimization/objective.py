@@ -259,6 +259,7 @@ class OptimizationObjective:
         estimated_amplitude_axes = [concentration.clp_axis for concentration in full_concentration]
         clp_concentration = self.calculate_reduced_matrices(full_concentration)
         clp_size = sum(len(concentration.clp_axis) for concentration in clp_concentration)
+
         estimations = self.resolve_estimations(
             full_concentration,
             clp_concentration,
