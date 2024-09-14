@@ -157,7 +157,7 @@ class Optimization:
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
         data = dict(ChainMap(*[r.data for r in results]))
-        number_of_clps = sum(r.free_clp_size for r in results)
+        number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationResult.from_least_squares_result(
             None,

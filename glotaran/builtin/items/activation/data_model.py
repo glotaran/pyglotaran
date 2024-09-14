@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import cast
 
 import numpy as np
 import xarray as xr
 
 from glotaran.builtin.items.activation.activation import Activation  # noqa: TCH001
+from glotaran.builtin.items.activation.gaussian import GaussianActivationParameters
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
 from glotaran.builtin.items.activation.instant import InstantActivation  # noqa: F401
 from glotaran.model.data_model import DataModel
@@ -46,7 +48,7 @@ class ActivationDataModel(DataModel):
 
     @staticmethod
     def create_result(
-        model: ActivationDataModel,
+        model: ActivationDataModel,  # type:ignore[override]
         global_dimension: str,
         model_dimension: str,
         amplitudes: xr.DataArray,
@@ -62,7 +64,7 @@ class ActivationDataModel(DataModel):
         model_axis = concentrations.coords[model_dimension]
 
         activations = []
-        activation_parameters = []
+        activation_parameters: list[list[GaussianActivationParameters]] = []
         activation_shifts = []
         activation_dispersions = []
 
@@ -71,7 +73,9 @@ class ActivationDataModel(DataModel):
 
         for activation in gaussian_activations:
             activations.append(activation.calculate_function(model_axis))
-            activation_parameters.append(activation.parameters())
+            activation_parameters.append(
+                cast(list[GaussianActivationParameters], activation.parameters())
+            )
             if has_shifts:
                 activation_shifts.append(
                     activation.shift if activation.shift is not None else [0] * global_axis.size

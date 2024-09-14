@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import cast
 
 import numpy as np
 import xarray as xr
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
+from glotaran.model.element import Element
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -115,7 +118,8 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
-    def get_global_indices(self, label: str) -> list[str]:
+    def get_global_indices(self, label: str) -> list[int]:
+        assert isinstance(self._data, LinkedOptimizationData)
         return [
             i
             for i, group_label in enumerate(self._data.group_labels)
@@ -252,7 +256,7 @@ class OptimizationObjective:
             data={label: result_dataset}, clp_size=clp_size, additional_penalty=additional_penalty
         )
 
-    def create_multi_dataset_result(self) -> dict[str, xr.Dataset]:
+    def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
         assert isinstance(self._data, LinkedOptimizationData)
         dataset_concentrations = {
             label: OptimizationMatrix.from_data(data) for label, data in self._data.data.items()
@@ -358,21 +362,23 @@ class OptimizationObjective:
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
     ) -> dict[str, ElementResult]:
+        assert any(isinstance(element, str) for element in model.elements) is False
         return {
             element.label: element.create_result(
                 model, global_dim, model_dim, amplitudes, concentrations
             )
-            for element in model.elements
+            for element in cast(list[Element], model.elements)
         }
 
     def create_dataset_result(
         self,
         label: str,
         data: OptimizationData,
-        concentration: OptimizationEstimation,
+        concentration: OptimizationMatrix,
         estimated_amplitude_axes: list[list[str]],
         estimations: list[OptimizationEstimation],
     ) -> xr.Dataset:
+        assert isinstance(self._data, LinkedOptimizationData)
         result_dataset = self.create_result_dataset(label, data)
 
         global_dim = result_dataset.attrs["global_dimension"]
@@ -460,10 +466,11 @@ class OptimizationObjective:
         concentrations: xr.DataArray,
     ):
         data_model = self._model.datasets[label]
+        assert any(isinstance(e, str) for _, e in iterate_data_model_elements(data_model)) is False
         for data_model_cls in {
-            e[1].__class__.data_model_type
-            for e in iterate_data_model_elements(data_model)
-            if e[1].__class__.data_model_type is not None
+            e.__class__.data_model_type
+            for _, e in cast(tuple[Any, Element], iterate_data_model_elements(data_model))
+            if e.__class__.data_model_type is not None
         }:
             result_dataset.update(
                 data_model_cls.create_result(

@@ -91,7 +91,7 @@ class CoherentArtifactElement(Element):
 
     def create_result(
         self,
-        model: ActivationDataModel,
+        model: ActivationDataModel,  # type:ignore[override]
         global_dimension: str,
         model_dimension: str,
         amplitudes: xr.Dataset,

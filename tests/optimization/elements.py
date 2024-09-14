@@ -35,9 +35,9 @@ class TestElementConstant(Element):
 
     def create_result(
         self,
+        model: DataModel,
         global_dimension: str,
         model_dimension: str,
-        model: DataModel,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
     ) -> ElementResult:

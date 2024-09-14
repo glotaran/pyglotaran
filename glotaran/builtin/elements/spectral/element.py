@@ -51,7 +51,7 @@ class SpectralElement(Element):
 
         return compartments, matrix
 
-    def add_to_result_data(  # type:ignore[override]
+    def add_to_result_data(
         self,
         model: SpectralDataModel,
         data: xr.Dataset,
@@ -82,7 +82,7 @@ class SpectralElement(Element):
 
     def create_result(
         self,
-        model: SpectralDataModel,
+        model: SpectralDataModel,  # type:ignore[override]
         global_dimension: str,
         model_dimension: str,
         amplitudes: xr.Dataset,
