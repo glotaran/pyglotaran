@@ -248,7 +248,9 @@ class OptimizationObjective:
         self._data.unweight_result_dataset(result_dataset)
         result_dataset["fit"] = result_dataset.data - result_dataset.residual
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
-        return OptimizationObjectiveResult({label: result_dataset}, clp_size, additional_penalty)
+        return OptimizationObjectiveResult(
+            data={label: result_dataset}, clp_size=clp_size, additional_penalty=additional_penalty
+        )
 
     def create_multi_dataset_result(self) -> dict[str, xr.Dataset]:
         assert isinstance(self._data, LinkedOptimizationData)
@@ -287,9 +289,9 @@ class OptimizationObjective:
             for label, data in self._data.data.items()
         }
         return OptimizationObjectiveResult(
-            results,
-            clp_size,
-            additional_penalty,
+            data=results,
+            clp_size=clp_size,
+            additional_penalty=additional_penalty,
         )
 
     def get_dataset_amplitudes(
