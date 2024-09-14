@@ -96,10 +96,10 @@ def test_coherent_artifact(activation: Activation):
 
     assert "coherent_artifact" in optimized_data
     assert (
-        "coherent_artifact_associated_concentration_coherent-artifact"
+        "coherent_artifact_associated_concentrations_coherent-artifact"
         in optimized_data["coherent_artifact"]
     )
     assert (
-        "coherent_artifact_associated_amplitude_coherent-artifact"
+        "coherent_artifact_associated_amplitudes_coherent-artifact"
         in optimized_data["coherent_artifact"]
     )

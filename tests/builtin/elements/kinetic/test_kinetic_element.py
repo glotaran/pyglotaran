@@ -129,9 +129,9 @@ def test_decay(decay: str, activation: Activation):
     assert "decay" in optimized_data
     print(optimized_data["decay"])
     assert "residual" in optimized_data["decay"]
-    assert f"species_associated_concentration_{decay}" in optimized_data["decay"]
-    assert f"species_associated_amplitude_{decay}" in optimized_data["decay"]
-    assert f"kinetic_associated_amplitude_{decay}" in optimized_data["decay"]
+    assert f"species_associated_concentrations_{decay}" in optimized_data["decay"]
+    assert f"species_associated_amplitudes_{decay}" in optimized_data["decay"]
+    assert f"kinetic_associated_amplitudes_{decay}" in optimized_data["decay"]
     assert f"k_matrix_{decay}" in optimized_data["decay"]
     if isinstance(activation, MultiGaussianActivation):
         assert "gaussian_activation" in optimized_data["decay"].coords

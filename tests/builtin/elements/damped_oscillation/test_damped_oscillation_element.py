@@ -116,11 +116,11 @@ def test_coherent_artifact(activation: Activation):
 
     assert "damped_oscillation" in optimized_data
     assert (
-        "damped_oscillation_associated_amplitude_damped-oscillation"
+        "damped_oscillation_associated_amplitudes_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )
     assert (
-        "damped_oscillation_associated_concentration_damped-oscillation"
+        "damped_oscillation_associated_concentrations_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )
     assert (
@@ -128,22 +128,22 @@ def test_coherent_artifact(activation: Activation):
     )
     assert "damped_oscillation_rate_damped-oscillation" in optimized_data["damped_oscillation"]
     assert (
-        "damped_oscillation_phase_associated_amplitude_damped-oscillation"
+        "damped_oscillation_phase_associated_amplitudes_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )
     assert (
-        "damped_oscillation_sin_associated_amplitude_damped-oscillation"
+        "damped_oscillation_sin_associated_amplitudes_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )
     assert (
-        "damped_oscillation_cos_associated_amplitude_damped-oscillation"
+        "damped_oscillation_cos_associated_amplitudes_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )
     assert (
-        "damped_oscillation_sin_associated_concentration_damped-oscillation"
+        "damped_oscillation_sin_associated_concentrations_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )
     assert (
-        "damped_oscillation_cos_associated_concentration_damped-oscillation"
+        "damped_oscillation_cos_associated_concentrations_damped-oscillation"
         in optimized_data["damped_oscillation"]
     )

@@ -428,7 +428,7 @@ class OptimizationObjective:
             self._model.datasets[label], global_dim, model_dim, amplitudes, concentrations
         ).items():
             for amplitude_label, amplitude in element_result.amplitudes.items():
-                result_dataset[f"{amplitude_label}_associated_amplitude_{element_label}"] = (
+                result_dataset[f"{amplitude_label}_associated_amplitudes_{element_label}"] = (
                     amplitude.rename(
                         {
                             c: f"{c}_{element_label}"
@@ -439,7 +439,7 @@ class OptimizationObjective:
                 )
             for concentration_label, concentration in element_result.concentrations.items():
                 result_dataset[
-                    f"{concentration_label}_associated_concentration_{element_label}"
+                    f"{concentration_label}_associated_concentrations_{element_label}"
                 ] = concentration.rename(
                     {
                         c: f"{c}_{element_label}"

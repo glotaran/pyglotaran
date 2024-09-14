@@ -31,13 +31,13 @@ def test_single_data():
     result_data = result["test_data"]
     print(result_data)
 
-    assert "test_associated_concentration_test_ele" in result_data
-    assert result_data.test_associated_concentration_test_ele.shape == (
+    assert "test_associated_concentrations_test_ele" in result_data
+    assert result_data.test_associated_concentrations_test_ele.shape == (
         data_model.data.model.size,
         1,
     )
-    assert "test_associated_amplitude_test_ele" in result_data
-    assert result_data.test_associated_amplitude_test_ele.shape == (
+    assert "test_associated_amplitudes_test_ele" in result_data
+    assert result_data.test_associated_amplitudes_test_ele.shape == (
         data_model.data["global"].size,
         1,
     )
@@ -103,13 +103,13 @@ def test_multiple_data():
     assert "independent" in result
     result_data = result["independent"]
     print(result_data)
-    assert "test_associated_concentration_test_ele" in result_data
-    assert result_data.test_associated_concentration_test_ele.shape == (
+    assert "test_associated_concentrations_test_ele" in result_data
+    assert result_data.test_associated_concentrations_test_ele.shape == (
         data_model_one.data.model.size,
         1,
     )
-    assert "test_associated_amplitude_test_ele" in result_data
-    assert result_data.test_associated_amplitude_test_ele.shape == (
+    assert "test_associated_amplitudes_test_ele" in result_data
+    assert result_data.test_associated_amplitudes_test_ele.shape == (
         data_model_one.data["global"].size,
         1,
     )
@@ -118,14 +118,14 @@ def test_multiple_data():
 
     assert "dependent" in result
     result_data = result["dependent"]
-    assert "test_associated_concentration_test_ele_index_dependent" in result_data
-    assert result_data.test_associated_concentration_test_ele_index_dependent.shape == (
+    assert "test_associated_concentrations_test_ele_index_dependent" in result_data
+    assert result_data.test_associated_concentrations_test_ele_index_dependent.shape == (
         data_model_two.data["global"].size,
         data_model_two.data.model.size,
         1,
     )
-    assert "test_associated_amplitude_test_ele_index_dependent" in result_data
-    assert result_data.test_associated_amplitude_test_ele_index_dependent.shape == (
+    assert "test_associated_amplitudes_test_ele_index_dependent" in result_data
+    assert result_data.test_associated_amplitudes_test_ele_index_dependent.shape == (
         data_model_two.data["global"].size,
         1,
     )
