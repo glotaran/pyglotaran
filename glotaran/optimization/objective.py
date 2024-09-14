@@ -25,7 +25,7 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
     for name in ["data", "residual"]:
         if f"{name}_singular_values" in dataset:
             continue
-        lsv, sv, rsv = np.linalg.svd(dataset[name], full_matrices=False)
+        lsv, sv, rsv = np.linalg.svd(dataset[name].data, full_matrices=False)
         dataset[f"{name}_left_singular_vectors"] = (
             (model_dim, "left_singular_value_index"),
             lsv,
