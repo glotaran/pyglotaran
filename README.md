@@ -17,7 +17,7 @@ pyglotaran is a Python library for Global and Target Analysis
 
 A scientific publication about the architecture and the design of the software package entitled "Pyglotaran: a lego-like Python framework for global and target analysis of time-resolved spectra" is available via
 DOI: [10.1007/s43630-023-00460-y](https://doi.org/10.1007/s43630-023-00460-y)
-detailing the flexibility of the software and showing why we believe this software package is the future of global and target analysis. This and other publications you can also find in the 
+detailing the flexibility of the software and showing why we believe this software package is the future of global and target analysis. This and other publications you can also find in the
 [pyglotaran-publications](https://github.com/glotaran/pyglotaran-publications) repository on github.
 
 ## Usage of pyglotaran
