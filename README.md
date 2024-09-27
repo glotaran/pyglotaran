@@ -4,6 +4,12 @@
 
 pyglotaran is a Python library for Global and Target Analysis
 
+## The future of global and target analysis
+
+Eventually, and hopefully sooner than later, a (scientific) publication about the architecture and the design of the software package will appear, detailing the flexibility of the software and showing why we believe this software package is the future of global and target analysis.
+
+Until then, enjoy your glimpse into the future.
+
 A common use case for the library is the analysis of time-resolved spectroscopy measurements in the study of energy transfer pathways in photosynthesis, or the characterization of energy transfer (in-)efficiencies in photovoltaics.
 
 [![PyPI version](https://badge.fury.io/py/pyglotaran.svg)](https://badge.fury.io/py/pyglotaran)
@@ -66,23 +72,17 @@ This software package is made available as an early access release, to the advan
 
 Anyone using this package for serious work - scientists and academic users in particular - are cautioned, and treat it as any other instrument or tool that requires calibration or validation. Also be prepared for some refactoring of models or analysis specifications, sometime down the line.
 
-As of yet, the pyglotaran package has not yet been used in any peer-reviewed scientific publications (contribution welcome), but it has been partially cross-validated against comparable software, such as the [R-package TIMP](https://dx.doi.org/10.18637/jss.v018.i03), and the TIM software described in [this publication](https://doi.org/10.1016/j.bbabio.2004.04.011) ([DOI: 10.1016/j.bbabio.2004.04.011](https://doi.org/10.1016/j.bbabio.2004.04.011)).
+As of yet, the pyglotaran package has been used in several peer-reviewed scientific publications, and it has been partially cross-validated against comparable software, such as the [R-package TIMP](https://dx.doi.org/10.18637/jss.v018.i03), and the TIM software described in [this publication](https://doi.org/10.1016/j.bbabio.2004.04.011) ([DOI: 10.1016/j.bbabio.2004.04.011](https://doi.org/10.1016/j.bbabio.2004.04.011)).
 
 The examples used in this validation process can be obtained from the [pyglotaran-examples repository](https://github.com/glotaran/pyglotaran-examples).
 
-An early access version of the v0.6.0 release was used in scientific teaching by a number of students in the 2022 Photosynthesis and Energy course under supervision by [dr. Ivo van Stokkum](https://www.nat.vu.nl/~ivo/) ([profile](https://research.vu.nl/en/persons/ihm-van-stokkum), github: [ism200](https://github.com/ism200/)). Course material can be found here: [ism200\PE2022](https://github.com/ism200/PE2022/)
+An early access version of the v0.7.0 release was used in scientific teaching by a number of students in the Photosynthesis and Energy course from 2022-2024 under the supervision of [dr. Ivo van Stokkum](https://www.nat.vu.nl/~ivo/) ([profile](https://research.vu.nl/en/persons/ihm-van-stokkum), github: [ism200](https://github.com/ism200/)). Course material can be found here: [ism200\PE2022](https://github.com/ism200/PE2022/)
 
 ## Glotaran legacy
 
 The pyglotaran package derives its name from the Glotaran software package (now called [glotaran-legacy](https://github.com/glotaran/glotaran-legacy)), first released in 2011 and described in a highly-cited publication in the Journal of Statistical Software, under the title [Glotaran: A Java-Based Graphical User Interface for the R Package TIMP](https://www.jstatsoft.org/article/view/v049i03) ([DOI: 10.18637/jss.v049.i03](https://dx.doi.org/10.18637/jss.v049.i03)).
 
 The [pyglotaran](https://github.com/glotaran/pyglotaran) software can be considered the spiritual successor of the [glotaran-legacy](https://github.com/glotaran/glotaran-legacy) software and has the backing of many of its original creators.
-
-## The future of global and target analysis
-
-Eventually, and hopefully sooner than later, a (scientific) publication about the architecture and the design of the software package will appear, detailing the flexibility of the software and showing why we believe this software package is the future of global and target analysis.
-
-Until then, enjoy your glimpse into the future.
 
 ## Community Support
 
