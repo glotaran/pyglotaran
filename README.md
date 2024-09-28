@@ -19,25 +19,16 @@ A scientific publication titled "pyglotaran: a lego-like Python framework for gl
 
 ## Usage of pyglotaran
 
-<sub>**Warning**: This is an _early access_ release, please refer to the [usage notice](#usage-notice) down below prior to committing to use pyglotaran to avoid surprises down the line.</sub>
+<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
 
 A common use case for the framework is the analysis of time-resolved spectroscopy measurements in the study of energy transfer pathways in photosynthesis, or the characterization of energy transfer (in-)efficiencies in photovoltaics.
 
-pyglotaran can be used from a Python script, or ideally Notebook, and involves specifying your desired analysis scheme consisting of a `model` and its `parameters` together with your `experiment_data`, and then letting it `optimize` this for you. This will fitting your data while optimizing for the residuals given the model you specified, the constraints you specified therein given the (free) parameters and its starting values you provided.
+[in a nutshell] pyglotaran can be used from a Python script, or ideally Notebook, and involves specifying your desired analysis scheme consisting of a `model` and its `parameters` together with your `experiment_data`, and then letting it `optimize` this for you. This will fit your data while optimizing for the residuals given the model you specified, the constraints you specified therein, given the (free) parameters and its starting values you provided.
 
-We have prepared a number of comprehensive examples in the form of python notebooks in the [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) which illustrate how to use the frameowork. Download the example that best aligns with your use case, and give it go!
+We have prepared a number of comprehensive examples in the form of python notebooks in the [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) which illustrate how to use the framework. Download the example that best aligns with your use case, and give it go, and perhaps soon you will also be looking at a georgous breakdown of your data like this.
 
-### Usage notice
-
-This software package is made available as an early access release, to the advantage of the (scientific) community who wishes to make use of it before it has fully matured, but without any warranties.
-
-Anyone using this package for serious work - scientists and academic users in particular - are cautioned, and treat it as any other instrument or tool that requires calibration or validation. Also be prepared for some refactoring of models or analysis specifications, sometime down the line.
-
-That said, the pyglotaran package has been used in several peer-reviewed scientific publications, and it has been partially cross-validated against comparable software, such as the [R-package TIMP](https://dx.doi.org/10.18637/jss.v018.i03), and the TIM software described in [this publication](https://doi.org/10.1016/j.bbabio.2004.04.011) ([DOI: 10.1016/j.bbabio.2004.04.011](https://doi.org/10.1016/j.bbabio.2004.04.011)).
-
-The examples used in this validation process can be obtained from the [pyglotaran-examples repository](https://github.com/glotaran/pyglotaran-examples).
-
-Since the early access version `v0.6.0` it was used in scientific teaching by a number of students in the Photosynthesis and Energy course from 2022-2024 under the supervision of [dr. Ivo van Stokkum](https://www.nat.vu.nl/~ivo/) ([profile](https://research.vu.nl/en/persons/ihm-van-stokkum), github: [ism200](https://github.com/ism200/)). Course material can be found here: [ism200\PE2022](https://github.com/ism200/PE2022/)
+![overview plot of the fluorescence case study from the pyglotaran-examples](docs/source/images/png/plot_overview_study_fluorescence.png)
+The results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)
 
 ## Glotaran legacy
 
