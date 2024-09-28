@@ -3,7 +3,6 @@ include CONTRIBUTING.rst
 include changelog.md
 include LICENSE
 include README.md
-include INSTALLATION.md
 include NOTICE.md
 setup.cfg
 setup.py
