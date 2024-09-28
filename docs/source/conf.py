@@ -33,11 +33,8 @@ author = ", ".join(authors)
 # for |version| and |release|, also used in various other places throughout
 # the built documents.
 #
-# The short X.Y version.
-version = ".".join(glotaran.__version__.split(".")[:2])
-# The full version, including alpha/beta/rc tags.
+version = glotaran.__version__
 release = glotaran.__version__
-
 
 # -- General configuration ---------------------------------------------------
 
