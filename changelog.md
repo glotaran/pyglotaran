@@ -440,3 +440,7 @@
 
 - First release on PyPI, support for Windows installs added.
 - Pre-Alpha Development
+
+## 🎉 Initial Commit (2016-05-09)
+
+- Development on what would become pyglotaran started.
