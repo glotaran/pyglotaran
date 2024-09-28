@@ -12,7 +12,7 @@ Welcome to pyglotaran's documentation!
 
    introduction
    installation
-   notebooks/quickstart/quickstart
+   notebooks/getting_started/getting_started
    changelog
    authors
 

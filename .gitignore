@@ -185,7 +185,7 @@ benchmark/.asv
 comparison-results
 comparison-results-current
 
-# Quickstart docs output files
-docs/source/notebooks/quickstart/quickstart_project/data
-docs/source/notebooks/quickstart/quickstart_project/results
-docs/source/notebooks/quickstart/quickstart_project/project.gta
+# getting_started docs output files
+docs/source/notebooks/getting_started/my_project/data
+docs/source/notebooks/getting_started/my_project/results
+docs/source/notebooks/getting_started/my_project/project.gta
