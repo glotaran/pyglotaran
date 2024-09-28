@@ -15,3 +15,13 @@ The examples used in this validation process can be obtained from the [pyglotara
 Since the early access version `v0.6.0` it was used in scientific teaching by a number of students in the Photosynthesis and Energy course from 2022-2024 under the supervision of [dr. Ivo van Stokkum](https://www.nat.vu.nl/~ivo/) ([profile](https://research.vu.nl/en/persons/ihm-van-stokkum), github: [ism200](https://github.com/ism200/)). Course material can be found here: [ism200\PE2022](https://github.com/ism200/PE2022/)
 
 ## Quality Control
+
+<!-- placeholder text -->
+
+As pyglotaran developers we strive to deliver high quality but also very reliable software, software you can trust as the basis for your scientific publications. How do we do this?
+
+The development process follows best practices in software engineering, we use git, automated testing, continuous integration, and code reviews. All code changes must pass a comprehensive (unit) test suite and is revied by at least one core maintainers before being merged. We use GitHub Actions to automatically run tests, linting, and other quality checks on every pull request and code push.
+
+But more importantly for quality assurance is the pyglotaran-validation framework. As described in Sebastian Weigand's MSc thesis, this framework allows for automated validation of pyglotaran's results against established known good results. It decouples result validation from the main project, allowing us to eaily compare results from earlier with newer versions. The validation framework compares pyglotaran outputs to manually validated reference results (or so-called gold standard).
+
+<!-- end of placeholder text -->
