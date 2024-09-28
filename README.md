@@ -25,7 +25,7 @@ A common use case for the framework is the analysis of time-resolved spectroscop
 
 [in a nutshell] pyglotaran can be used from a Python script, or ideally Notebook, and involves specifying your desired analysis scheme consisting of a `model` and its `parameters` together with your `experiment_data`, and then letting it `optimize` this for you. This will fit your data while optimizing for the residuals given the model you specified, the constraints you specified therein, given the (free) parameters and its starting values you provided.
 
-We have prepared a number of comprehensive examples in the form of python notebooks in the [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) which illustrate how to use the framework. Download the example that best aligns with your use case, and give it go, and perhaps soon you will also be looking at a georgous breakdown of your data like this.
+We have prepared a number of comprehensive examples in the form of python notebooks in the [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) which illustrate how to use the framework. Download the example that best aligns with your use case, and give it a go, and perhaps soon you will also be looking at a gorgeous breakdown of your data like this.
 
 ![overview plot of the fluorescence case study from the pyglotaran-examples](docs/source/images/png/plot_overview_study_fluorescence.png)
 The results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)

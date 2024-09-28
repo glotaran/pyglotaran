@@ -20,8 +20,8 @@ Since the early access version `v0.6.0` it was used in scientific teaching by a 
 
 As pyglotaran developers we strive to deliver high quality but also very reliable software, software you can trust as the basis for your scientific publications. How do we do this?
 
-The development process follows best practices in software engineering, we use git, automated testing, continuous integration, and code reviews. All code changes must pass a comprehensive (unit) test suite and is revied by at least one core maintainers before being merged. We use GitHub Actions to automatically run tests, linting, and other quality checks on every pull request and code push.
+The development process follows best practices in software engineering, we use git, automated testing, continuous integration, and code reviews. All code changes must pass a comprehensive (unit) test suite and is reviewed by at least one core maintainers before being merged. We use GitHub Actions to automatically run tests, linting, and other quality checks on every pull request and code push.
 
-But more importantly for quality assurance is the pyglotaran-validation framework. As described in Sebastian Weigand's MSc thesis, this framework allows for automated validation of pyglotaran's results against established known good results. It decouples result validation from the main project, allowing us to eaily compare results from earlier with newer versions. The validation framework compares pyglotaran outputs to manually validated reference results (or so-called gold standard).
+But more importantly for quality assurance is the pyglotaran-validation framework. As described in Sebastian Weigand's MSc thesis, this framework allows for automated validation of pyglotaran's results against established known good results. It decouples result validation from the main project, allowing us to easily compare results from earlier with newer versions. The validation framework compares pyglotaran outputs to manually validated reference results (or so-called gold standard).
 
 <!-- end of placeholder text -->
