@@ -12,6 +12,7 @@
 
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import glotaran
@@ -24,7 +25,8 @@ authors = ("Joern Weissenborn", "Joris Snellenburg", "Sebastian Weigand", "Ivo v
 
 project = "pyglotaran"
 title = f"{project} Documentation"
-copyright = ", ".join(("2018", *authors))
+current_year = datetime.now().year
+copyright = f"2018-{current_year}, " + ", ".join(authors)
 author = ", ".join(authors)
 
 # The version info for the project you're documenting, acts as replacement
@@ -32,7 +34,7 @@ author = ", ".join(authors)
 # the built documents.
 #
 # The short X.Y version.
-version = glotaran.__version__
+version = ".".join(glotaran.__version__.split(".")[:2])
 # The full version, including alpha/beta/rc tags.
 release = glotaran.__version__
 
