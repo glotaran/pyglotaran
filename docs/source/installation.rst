@@ -42,7 +42,7 @@ If you go down this route, note that uv can also be used to install Python itsel
 
    .. code-block:: shell
 
-      uv pip install pyglotaran
+      uv pip install pyglotaran pyglotaran-extras jupyterlab
 
 .. note::
 
@@ -82,7 +82,7 @@ Within a terminal, navigate to directory where you have unpacked or cloned the c
 
 .. code-block:: shell
 
-   $ uv pip install -e .
+   $ uv pip install -e .[full]
 
 For updating, simply download and unpack the newest version (or run ``$ git pull`` in pyglotaran directory if you used `git`_) and and re-run the command above.
 
