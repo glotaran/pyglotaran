@@ -11,24 +11,28 @@
 [![Discord](https://img.shields.io/discord/883443835135475753.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/KfnEYRSTJx)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4534043.svg)](https://doi.org/10.5281/zenodo.4534043)
 
-A framework for Global and Target Analysis written in Python.
+A framework written in Python for global and target analysis; commonly used for the analysis of time-resolved spectroscopy measurements in the study of energy transfer pathways in photosynthesis, or the characterization of energy transfer (in-)efficiencies in photovoltaics.
 
 ## The Future of Global and Target Analysis
 
-A scientific publication titled "pyglotaran: a lego-like Python framework for global and target analysis of time-resolved spectra" (DOI: [10.1007/s43630-023-00460-y](https://doi.org/10.1007/s43630-023-00460-y)) covers aspects of the architecture and the design of the software whille illustrating its flexibility as an analysis tool through some exciting case studies. This publication, along with other [pyglotaran-publications](https://github.com/glotaran/pyglotaran-publications) demonstrates why we believe this framework is the future of global and target analysis.
+A scientific publication titled "pyglotaran: a lego-like Python framework for global and target analysis of time-resolved spectra" (DOI: [10.1007/s43630-023-00460-y](https://doi.org/10.1007/s43630-023-00460-y)) covers aspects of the architecture and the design of the software while illustrating its flexibility as an analysis tool through some exciting case studies. This publication, along with other [pyglotaran-publications](https://github.com/glotaran/pyglotaran-publications) demonstrates why we believe this framework is the future of global and target analysis.
 
 ## Usage of pyglotaran
 
-<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
+If you just want to get started analyzing your data, jump straight to the [getting started](https://pyglotaran.readthedocs.io/en/latest/notebooks/getting_started/getting_started.html) guide that is part of our [documentation](https://pyglotaran.readthedocs.io/en/latest/).
 
-A common use case for the framework is the analysis of time-resolved spectroscopy measurements in the study of energy transfer pathways in photosynthesis, or the characterization of energy transfer (in-)efficiencies in photovoltaics.
+Afterwards, you may also want to have a look at our comprehensive collection of real-world examples in the [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) repository. There most like is an example that aligns well with your use case.
 
-[in a nutshell] pyglotaran can be used from a Python script, or ideally Notebook, and involves specifying your desired analysis scheme consisting of a `model` and its `parameters` together with your `experiment_data`, and then letting it `optimize` this for you. This will fit your data while optimizing for the residuals given the model you specified, the constraints you specified therein, given the (free) parameters and its starting values you provided.
+For state of the art usage of this framework you may want to check out the list of [pyglotaran-publications](https://github.com/glotaran/pyglotaran-publications).
 
-We have prepared a number of comprehensive examples in the form of python notebooks in the [pyglotaran-examples](https://github.com/glotaran/pyglotaran-examples) which illustrate how to use the framework. Download the example that best aligns with your use case, and give it a go, and perhaps soon you will also be looking at a gorgeous breakdown of your data like this.
+### Example analysis results
+
+Results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)
 
 ![overview plot of the fluorescence case study from the pyglotaran-examples](docs/source/images/png/plot_overview_study_fluorescence.png)
-The results of a target analysis of Photosystem I (see [study_florescence](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples/study_fluorescence) in the [examples](https://github.com/glotaran/pyglotaran-examples/tree/main/pyglotaran_examples).)
+<sub>Plot created with the `plot_overview` function of the [pyglotaran-extras](https://github.com/glotaran/pyglotaran-extras) package.</sub>
+
+<sub>**Notice**: This is (still) an _early access_ release, please refer to the [usage notice](NOTICE.md#usage-notice) prior to committing to use pyglotaran to avoid surprises down the line.</sub>
 
 ## Glotaran legacy
 
