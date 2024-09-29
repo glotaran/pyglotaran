@@ -66,7 +66,7 @@ class OptimizationObjective:
     ) -> list[OptimizationMatrix]:
         return [
             matrices[i].reduce(
-                index, self._model.clp_constraints, self._model.clp_relations, copy=True
+                index, self._model.clp_relations, copy=True
             )
             for i, index in enumerate(self._data.global_axis)
         ]

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from copy import deepcopy
 
 import numpy as np
 import xarray as xr
@@ -13,11 +14,13 @@ from tests.optimization.library import test_library
 
 
 def test_zero_contraint():
+    library = deepcopy(test_library)
+    library["decay_independent"].clp_constraints = [ZeroConstraint(type="zero", target="c1")]
+    library["constant"].clp_constraints = [ZeroConstraint(type="zero", target="c1")]
     data_model_one = DataModel(elements=["decay_independent"])
     data_model_two = DataModel(elements=["constant"])
     experiment = ExperimentModel(
         datasets={"decay_independent": data_model_one, "constant": data_model_two},
-        clp_constraints=[ZeroConstraint(type="zero", target="c1")],
     )
     parameters = Parameters.from_dict({"rates": {"decay": [0.8, 0.04]}})
 
@@ -29,14 +32,14 @@ def test_zero_contraint():
     )
     data_model_one.data = simulate(
         data_model_one,
-        test_library,
+        library,
         parameters,
         {"global": global_axis, "model": model_axis},
         clp,
     )
     data_model_two.data = simulate(
         data_model_two,
-        test_library,
+        library,
         parameters,
         {"global": global_axis, "model": model_axis},
         clp,
@@ -45,7 +48,7 @@ def test_zero_contraint():
     optimization = Optimization(
         [experiment],
         parameters,
-        test_library,
+        library,
         raise_exception=True,
         maximum_number_function_evaluations=1,
     )

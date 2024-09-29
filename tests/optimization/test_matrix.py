@@ -54,16 +54,16 @@ def test_from_global_data(weight: bool):
 
 def test_constraints():
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
-    constraints = [ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])]
+    data_model.elements[0].clp_constraints = [ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])]
     data = OptimizationData(data_model)
     matrix = OptimizationMatrix.from_data(data)
 
     assert matrix.array.shape == (5, 3)
     assert matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.reduce(0, constraints, [])
+    reduced_matrix = matrix.reduce(0, [])
     assert reduced_matrix.array.shape == (5, 3)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.reduce(3, constraints, [])
+    reduced_matrix = matrix.reduce(3, [])
     assert reduced_matrix.array.shape == (5, 2)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2"]
 
@@ -82,10 +82,10 @@ def test_relations():
     assert matrix.array.shape == (5, 3)
     assert matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
 
-    reduced_matrix = matrix.at_index(0).reduce(0, [], relations)
+    reduced_matrix = matrix.at_index(0).reduce(0, relations)
     assert reduced_matrix.array.shape == (5, 3)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2", "c3_3"]
-    reduced_matrix = matrix.at_index(3).reduce(3, [], relations)
+    reduced_matrix = matrix.at_index(3).reduce(3, relations)
     assert reduced_matrix.array.shape == (5, 2)
     assert reduced_matrix.clp_axis == ["c3_1", "c3_2"]
     assert np.array_equal(reduced_matrix.array[:, 1], matrix.array[:, 1] + matrix.array[:, 2] * 3)

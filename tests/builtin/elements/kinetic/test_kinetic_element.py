@@ -46,6 +46,10 @@ test_library = {
                 ("s2", "s2"): "rates.2",
                 ("s1", "s2"): "rates.3",
             },
+            "clp_constraints": [
+                {"type": "zero", "target": "s1", "interval": (1, 1)},
+                {"type": "zero", "target": "s2", "interval": (0, 0)},
+            ],
         }
     ),
 }
@@ -105,17 +109,7 @@ def test_decay(decay: str, activation: Activation):
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
-    experiments = [
-        ExperimentModel(
-            datasets={"decay": data_model},
-            clp_constraints=[
-                ZeroConstraint(type="zero", target="s1", interval=(1, 1)),
-                ZeroConstraint(type="zero", target="s2", interval=(0, 0)),
-            ]
-            if decay == "equilibrium"
-            else [],
-        )
-    ]
+    experiments = [ExperimentModel(datasets={"decay": data_model})]
     optimization = Optimization(
         experiments,
         test_parameters,

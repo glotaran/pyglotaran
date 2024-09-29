@@ -10,7 +10,9 @@ from typing import Any
 from typing import ClassVar
 
 from pydantic import ConfigDict
+from pydantic import Field
 
+from glotaran.model.clp_constraint import ClpConstraint  # noqa: TCH001
 from glotaran.model.item import TypedItem
 from glotaran.plugin_system.element_registration import register_element
 
@@ -50,6 +52,9 @@ class Element(TypedItem, abc.ABC):
 
     dimension: str | None = None
     label: str
+    clp_constraints: list[ClpConstraint.get_annotated_type()] = (  # type:ignore[valid-type]
+        Field(default_factory=list)
+    )
 
     model_config = ConfigDict(json_schema_extra=_sanitize_json_schema)
 

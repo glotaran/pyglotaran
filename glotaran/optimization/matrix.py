@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import replace
 from itertools import chain
 from typing import TYPE_CHECKING
@@ -32,6 +33,7 @@ class OptimizationMatrix:
     clp_axis: list[str]
     """The clp labels."""
     array: ArrayLike
+    constraints: list[ClpConstraint] = field(default_factory=list)
 
     @property
     def is_index_dependent(self) -> bool:
@@ -66,7 +68,7 @@ class OptimizationMatrix:
 
         if scale is not None:
             array *= scale
-        return cls(clp_axis, array)
+        return cls(clp_axis, array, element.clp_constraints)
 
     @classmethod
     def combine(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
@@ -88,7 +90,7 @@ class OptimizationMatrix:
         for matrix in matrices:
             clp_mask = [clp_axis.index(c) for c in matrix.clp_axis]
             array[..., clp_mask] += matrix.array
-        return cls(clp_axis, array)
+        return cls(clp_axis, array, [c for m in matrices for c in m.constraints])
 
     @classmethod
     def link(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
@@ -105,7 +107,7 @@ class OptimizationMatrix:
             current_element_index_end = current_element_index + matrix.model_axis_size
             array[current_element_index:current_element_index_end, clp_mask] = matrix.array
             current_element_index = current_element_index_end
-        return cls(clp_axis, array)
+        return cls(clp_axis, array, [c for m in matrices for c in m.constraints])
 
     @classmethod
     def from_data_model(
@@ -210,14 +212,13 @@ class OptimizationMatrix:
     def reduce(
         self,
         index: float,
-        constraints: list[ClpConstraint],
         relations: list[ClpRelation],
         copy: bool = False,
     ) -> OptimizationMatrix:
         result = deepcopy(self) if copy else self
         if result.is_index_dependent:
             raise GlotaranUserError("Cannot reduce index dependent matrix.")
-        constraints = [c for c in constraints if c.applies(index)]
+        constraints = [c for c in self.constraints if c.applies(index)]
         relations = [r for r in relations if r.applies(index)]
         if len(constraints) + len(relations) == 0:
             return result
