@@ -242,7 +242,7 @@ class OptimizationMatrix:
 
         if len(constraints) > 0:
             removed_clp_labels = {
-                label for c in constraints for label in c.target if c.target in result.clp_axis
+                label for c in constraints for label in c.target if label in result.clp_axis
             }
             if len(removed_clp_labels) > 0:
                 mask = [label not in removed_clp_labels for label in result.clp_axis]
