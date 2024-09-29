@@ -34,7 +34,9 @@ def test_calculate(residual_function: str):
 
 def test_resolve_clp():
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
-    data_model.elements[0].clp_constraints = [ZeroConstraint(type="zero", target="c3_1", interval=[(3, 7)])]
+    data_model.elements[0].clp_constraints = [
+        ZeroConstraint(type="zero", target="c3_1", interval=[(3, 7)])
+    ]
     relations = [
         ClpRelation(
             source="c3_2", target="c3_3", parameter=Parameter(label="", value=3), interval=[(3, 7)]

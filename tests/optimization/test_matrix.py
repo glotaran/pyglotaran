@@ -54,7 +54,9 @@ def test_from_global_data(weight: bool):
 
 def test_constraints():
     data_model = deepcopy(TestDataModelConstantThreeCompartments)
-    data_model.elements[0].clp_constraints = [ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])]
+    data_model.elements[0].clp_constraints = [
+        ZeroConstraint(type="zero", target="c3_3", interval=[(3, 7)])
+    ]
     data = OptimizationData(data_model)
     matrix = OptimizationMatrix.from_data(data)
 
