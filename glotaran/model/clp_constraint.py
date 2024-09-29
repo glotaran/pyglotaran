@@ -18,9 +18,7 @@ class ClpConstraint(TypedItem, IntervalItem):
     the respective classes for details.
     """
 
-    target: Annotated[
-        str | list[str], AfterValidator(lambda v: [v] if isinstance(v, str) else v)
-    ]
+    target: Annotated[str | list[str], AfterValidator(lambda v: [v] if isinstance(v, str) else v)]
 
 
 class ZeroConstraint(ClpConstraint):
