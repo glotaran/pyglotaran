@@ -1,5 +1,3 @@
-default_megacomplex: decay
-
 initial_concentration:
   input:
     compartments: [s1, s2, s3]
@@ -15,6 +13,7 @@ k_matrix:
 megacomplex:
   m1:
     k_matrix: [k1]
+    type: decay
 
 irf:
   irf1:
