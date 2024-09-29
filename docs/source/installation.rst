@@ -16,12 +16,12 @@ Recommended installation method: using uv
 -----------------------------------------
 
 It appears the Python community is quickly converging to uv as the preferred way to install Python and Python packages across all platforms.
-They have an excellent `getting started <_uv_getting_started>`_ guide available,
-which explains how to `set it up <_uv_installation>`_.
+They have an excellent `getting started <uv_getting_started>`_ guide available,
+which explains how to `set it up <uv_installation>`_.
 
 If you go down this route, note that uv can also be used to install Python itself, so you don't have to install it separately.
 
-1. Install ``uv``: follow the `getting started <_uv_getting_started>`_ guide to set it up for your platform.
+1. Install ``uv``: follow the `getting started <uv_getting_started>`_ guide to set it up for your platform.
 
 2. Use ``uv`` to install Python (if not already installed):
 
