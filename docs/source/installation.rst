@@ -15,13 +15,12 @@ Prerequisites
 Recommended installation method: using uv
 -----------------------------------------
 
-It appears the Python community is quickly converging to uv as the preferred way to install Python and Python packages across all platforms.
-They have an excellent `getting started <uv_getting_started>`_ guide available,
-which explains how to `set it up <uv_installation>`_.
+It appears the Python community is quickly converging to uv as the preferred way to install Python and Python packages across all platforms, so this is what we will be recommending.
+They have an excellent `getting started <https://docs.astral.sh/uv/getting-started>`_ guide available, which explains how to `set it up <https://docs.astral.sh/uv/getting-started/installation>`_.
 
 If you go down this route, note that uv can also be used to install Python itself, so you don't have to install it separately.
 
-1. Install ``uv``: follow the `getting started <uv_getting_started>`_ guide to set it up for your platform.
+1. Install ``uv``: follow the getting started guide (linked above) to set it up for your platform.
 
 2. Use ``uv`` to install Python (if not already installed):
 
@@ -90,5 +89,3 @@ For updating, simply download and unpack the newest version (or run ``$ git pull
 .. _git: https://git-scm.com/
 .. _uv_docs: https://docs.astral.sh/uv/
 .. _uv_github: https://github.com/astral-sh/uv
-.. _uv_getting_started: https://docs.astral.sh/uv/getting-started
-.. _uv_installation: https://docs.astral.sh/uv/getting-started/installation
