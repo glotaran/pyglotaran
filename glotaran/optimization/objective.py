@@ -11,6 +11,7 @@ import xarray as xr
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.model.element import Element
+from glotaran.model.element import ElementResult
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -19,7 +20,6 @@ from glotaran.optimization.penalty import calculate_clp_penalties
 from glotaran.parameter.parameter import Parameter
 
 if TYPE_CHECKING:
-    from glotaran.model.element import ElementResult
     from glotaran.model.experiment_model import ExperimentModel
     from glotaran.typing.types import ArrayLike
 
@@ -41,8 +41,15 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
 
 
 @dataclass
+class DatasetResult:
+    data: xr.Dataset
+    elements: dict[str, ElementResult]
+    extra: dict[str, xr.Dataset]
+
+
+@dataclass
 class OptimizationObjectiveResult:
-    data: dict[str, xr.Dataset]
+    data: dict[str, DatasetResult]
     additional_penalty: float
     clp_size: int
 
@@ -138,33 +145,28 @@ class OptimizationObjective:
             dataset.attrs["scale"] = scale.value if isinstance(scale, Parameter) else scale
         return dataset
 
-    def add_global_clp_and_residual_to_dataset(
-        self,
-        dataset: xr.Dataset,
-        data: OptimizationData,
-        matrix: OptimizationMatrix,
-    ):
-        dataset["matrix"] = matrix.to_data_array(
-            data.global_dimension, data.global_axis, data.model_dimension, data.model_axis
+    def create_global_result(self) -> OptimizationObjectiveResult:
+        label = next(iter(self._model.datasets.keys()))
+        result_dataset = self.create_result_dataset(label, self._data)
+
+        global_dim = result_dataset.attrs["global_dimension"]
+        global_axis = result_dataset.coords[global_dim]
+        model_dim = result_dataset.attrs["model_dimension"]
+        model_axis = result_dataset.coords[model_dim]
+
+        matrix = OptimizationMatrix.from_data(self._data).to_data_array(
+            global_dim, global_axis, model_dim, model_axis
         )
-        global_matrix = OptimizationMatrix.from_data(data, global_matrix=True)
-        global_matrix_coords = (
-            (data.global_dimension, data.global_axis),
-            ("global_clp_label", matrix.clp_axis),
+        global_matrix = OptimizationMatrix.from_data(self._data, global_matrix=True).to_data_array(
+            model_dim, model_axis, global_dim, global_axis
         )
-        if global_matrix.is_index_dependent:
-            global_matrix_coords = (  # type:ignore[assignment]
-                (data.model_dimension, data.model_axis),
-                *global_matrix_coords,
-            )
-        dataset["global_matrix"] = xr.DataArray(global_matrix.array, coords=global_matrix_coords)
-        _, _, full_matrix = OptimizationMatrix.from_global_data(data)
+        _, _, full_matrix = OptimizationMatrix.from_global_data(self._data)
         estimation = OptimizationEstimation.calculate(
             full_matrix.array,
-            data.flat_data,  # type:ignore[arg-type]
-            data.model.residual_function,
+            self._data.flat_data,  # type:ignore[arg-type]
+            self._data.model.residual_function,
         )
-        dataset["clp"] = xr.DataArray(
+        clp = xr.DataArray(
             estimation.clp.reshape((len(global_matrix.clp_axis), len(matrix.clp_axis))),
             coords={
                 "global_clp_label": global_matrix.clp_axis,
@@ -172,22 +174,35 @@ class OptimizationObjective:
             },
             dims=["global_clp_label", "clp_label"],
         )
-        dataset["residual"] = xr.DataArray(
-            estimation.residual.reshape(
-                data.global_axis.size,
-                data.model_axis.size,
-            ),
-            coords=(
-                (data.global_dimension, data.global_axis),
-                (data.model_dimension, data.model_axis),
-            ),
+        result_dataset["residual"] = xr.DataArray(
+            estimation.residual.reshape(global_axis.size, model_axis.size),
+            coords=((global_dim, global_axis), (model_dim, model_axis)),
         ).T
-        dataset.attrs["root_mean_square_error"] = np.sqrt(
-            (dataset.residual.to_numpy() ** 2).sum() / sum(dataset.residual.shape)
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
+        )
+        clp_size = len(matrix.clp_axis) + len(global_matrix.clp_axis)
+        self._data.unweight_result_dataset(result_dataset)
+        result_dataset["fit"] = result_dataset.data - result_dataset.residual
+        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
+        result = DatasetResult(
+            result_dataset,
+            {
+                label: ElementResult(
+                    amplitudes={"clp": clp},
+                    concentrations={"global": global_matrix, "model": matrix},
+                )
+            },
+            {},
+        )
+        return OptimizationObjectiveResult(
+            data={label: result}, clp_size=clp_size, additional_penalty=0
         )
 
     def create_single_dataset_result(self) -> OptimizationObjectiveResult:
         assert isinstance(self._data, OptimizationData)
+        if self._data.is_global:
+            return self.create_global_result()
 
         label = next(iter(self._model.datasets.keys()))
         result_dataset = self.create_result_dataset(label, self._data)
@@ -199,59 +214,55 @@ class OptimizationObjective:
 
         concentrations = OptimizationMatrix.from_data(self._data)
         additional_penalty = 0
-        if self._data.is_global:
-            self.add_global_clp_and_residual_to_dataset(result_dataset, self._data, concentrations)
-            clp_size = len(concentrations.clp_axis)
 
-        else:
-            clp_concentration = self.calculate_reduced_matrices(
-                concentrations.as_global_list(self._data.global_axis)
-            )
-            clp_size = sum(len(c.clp_axis) for c in clp_concentration)
-            estimations = self.resolve_estimations(
-                concentrations.as_global_list(self._data.global_axis),
-                clp_concentration,
-                self.calculate_estimations(clp_concentration),
-            )
-            amplitude_coords = {
-                global_dim: global_axis,
-                "amplitude_label": concentrations.clp_axis,
-            }
-            amplitude = xr.DataArray(
-                [e.clp for e in estimations], dims=amplitude_coords.keys(), coords=amplitude_coords
-            )
-            concentration = concentrations.to_data_array(
-                global_dim, global_axis, model_dim, model_axis
-            )
+        clp_concentration = self.calculate_reduced_matrices(
+            concentrations.as_global_list(self._data.global_axis)
+        )
+        clp_size = sum(len(c.clp_axis) for c in clp_concentration)
+        estimations = self.resolve_estimations(
+            concentrations.as_global_list(self._data.global_axis),
+            clp_concentration,
+            self.calculate_estimations(clp_concentration),
+        )
+        amplitude_coords = {
+            global_dim: global_axis,
+            "amplitude_label": concentrations.clp_axis,
+        }
+        amplitude = xr.DataArray(
+            [e.clp for e in estimations], dims=amplitude_coords.keys(), coords=amplitude_coords
+        )
+        concentration = concentrations.to_data_array(
+            global_dim, global_axis, model_dim, model_axis
+        )
 
-            residual_dims = (global_dim, model_dim)
-            result_dataset["residual"] = xr.DataArray(
-                [e.residual for e in estimations], dims=residual_dims
-            ).T
-            result_dataset.attrs["root_mean_square_error"] = np.sqrt(
-                (result_dataset.residual.to_numpy() ** 2).sum()
-                / sum(result_dataset.residual.shape)
+        residual_dims = (global_dim, model_dim)
+        result_dataset["residual"] = xr.DataArray(
+            [e.residual for e in estimations], dims=residual_dims
+        ).T
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
+        )
+        additional_penalty = sum(
+            calculate_clp_penalties(
+                [concentrations],
+                estimations,
+                global_axis,
+                self._model.clp_penalties,
             )
-            additional_penalty = sum(
-                calculate_clp_penalties(
-                    [concentrations],
-                    estimations,
-                    global_axis,
-                    self._model.clp_penalties,
-                )
-            )
-            self.add_element_results(
-                result_dataset, label, global_dim, model_dim, amplitude, concentration
-            )
-            self.add_data_model_results(
-                label, result_dataset, global_dim, model_dim, amplitude, concentration
-            )
+        )
+        element_results = self.create_element_results(
+            self._model.datasets[label], global_dim, model_dim, amplitude, concentration
+        )
+        extra = self.create_data_model_results(
+            label, global_dim, model_dim, amplitude, concentration
+        )
 
         self._data.unweight_result_dataset(result_dataset)
         result_dataset["fit"] = result_dataset.data - result_dataset.residual
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
+        result = DatasetResult(result_dataset, element_results, extra)
         return OptimizationObjectiveResult(
-            data={label: result_dataset}, clp_size=clp_size, additional_penalty=additional_penalty
+            data={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
         )
 
     def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
@@ -405,64 +416,23 @@ class OptimizationObjective:
             global_dim,
             global_axis,
         )
-        self.add_element_results(
-            result_dataset, label, global_dim, model_dim, amplitudes, concentrations
-        )
-        self.add_data_model_results(
-            label, result_dataset, global_dim, model_dim, amplitudes, concentrations
-        )
-        return result_dataset
-
-    def add_element_results(
-        self,
-        result_dataset: xr.Dataset,
-        label: str,
-        global_dim: str,
-        model_dim: str,
-        amplitudes: xr.DataArray,
-        concentrations: xr.DataArray,
-    ):
-        for element_label, element_result in self.create_element_results(
+        element_results = self.create_element_results(
             self._model.datasets[label], global_dim, model_dim, amplitudes, concentrations
-        ).items():
-            for amplitude_label, amplitude in element_result.amplitudes.items():
-                result_dataset[f"{amplitude_label}_associated_amplitudes_{element_label}"] = (
-                    amplitude.rename(
-                        {
-                            c: f"{c}_{element_label}"
-                            for c in amplitude.coords
-                            if c not in [global_dim, model_dim]
-                        }
-                    )
-                )
-            for concentration_label, concentration in element_result.concentrations.items():
-                result_dataset[
-                    f"{concentration_label}_associated_concentrations_{element_label}"
-                ] = concentration.rename(
-                    {
-                        c: f"{c}_{element_label}"
-                        for c in concentration.coords
-                        if c not in [global_dim, model_dim]
-                    }
-                )
-            for extra_label, extra in element_result.extra.items():
-                result_dataset[f"{extra_label}_{element_label}"] = extra.rename(
-                    {
-                        c: f"{c}_{element_label}"
-                        for c in extra.coords
-                        if c not in [global_dim, model_dim]
-                    }
-                )
+        )
+        extra = self.create_data_model_results(
+            label, global_dim, model_dim, amplitudes, concentrations
+        )
+        return DatasetResult(result_dataset, element_results, extra)
 
-    def add_data_model_results(
+    def create_data_model_results(
         self,
         label: str,
-        result_dataset: xr.Dataset,
         global_dim: str,
         model_dim: str,
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
-    ):
+    ) -> dict[str, ElementResult]:
+        result = {}
         data_model = self._model.datasets[label]
         assert any(isinstance(e, str) for _, e in iterate_data_model_elements(data_model)) is False
         for data_model_cls in {
@@ -470,15 +440,14 @@ class OptimizationObjective:
             for _, e in cast(tuple[Any, Element], iterate_data_model_elements(data_model))
             if e.__class__.data_model_type is not None
         }:
-            result_dataset.update(
-                data_model_cls.create_result(
-                    data_model,
-                    global_dim,
-                    model_dim,
-                    amplitudes,
-                    concentrations,
-                )
+            result = result | data_model_cls.create_result(
+                data_model,
+                global_dim,
+                model_dim,
+                amplitudes,
+                concentrations,
             )
+        return result
 
     def get_result(self) -> OptimizationObjectiveResult:
         return (

@@ -30,19 +30,21 @@ def test_single_data():
     assert "test_data" in result
     result_data = result["test_data"]
     print(result_data)
+    assert "test_ele" in result_data.elements
+    element_result = result_data.elements["test_ele"]
 
-    assert "test_associated_concentrations_test_ele" in result_data
-    assert result_data.test_associated_concentrations_test_ele.shape == (
+    assert "test" in element_result.concentrations
+    assert element_result.concentrations["test"].shape == (
         data_model.data.model.size,
         1,
     )
-    assert "test_associated_amplitudes_test_ele" in result_data
-    assert result_data.test_associated_amplitudes_test_ele.shape == (
+    assert "test" in element_result.amplitudes
+    assert element_result.amplitudes["test"].shape == (
         data_model.data["global"].size,
         1,
     )
-    assert "residual" in result_data
-    assert result_data.residual.shape == data_model.data.data.shape
+    assert "residual" in result_data.data
+    assert result_data.data.residual.shape == data_model.data.data.shape
 
 
 @pytest.mark.parametrize("weight", {True, False})

@@ -221,7 +221,7 @@ class DataModel(Item):
         model_dimension: str,
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
-    ) -> dict[str, xr.Dataarray]:
+    ) -> dict[str, xr.DataArray]:
         return {}
 
 
