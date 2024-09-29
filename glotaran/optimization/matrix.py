@@ -241,7 +241,9 @@ class OptimizationMatrix:
                 result.array = result.array @ relation_matrix
 
         if len(constraints) > 0:
-            removed_clp_labels = [c.target for c in constraints if c.target in result.clp_axis]
+            removed_clp_labels = {
+                label for c in constraints for label in c.target if c.target in result.clp_axis
+            }
             if len(removed_clp_labels) > 0:
                 mask = [label not in removed_clp_labels for label in result.clp_axis]
                 result.clp_axis = [
