@@ -9,6 +9,7 @@ import numpy as np
 from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TCH001
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
+from glotaran.model.element import ElementResult
 
 if TYPE_CHECKING:
     import xarray as xr
@@ -50,7 +51,7 @@ class SpectralElement(Element):
 
         return compartments, matrix
 
-    def add_to_result_data(  # type:ignore[override]
+    def add_to_result_data(
         self,
         model: SpectralDataModel,
         data: xr.Dataset,
@@ -78,3 +79,23 @@ class SpectralElement(Element):
                 (data.attrs["global_dimension"], "spectrum"),
                 data.clp.sel(clp_label=shapes).data,
             )
+
+    def create_result(
+        self,
+        model: SpectralDataModel,  # type:ignore[override]
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> ElementResult:
+        shapes = list(self.shapes.keys())
+
+        spectra_amplitude = amplitudes.sel(amplitude_label=shapes).rename(amplitude_label="shape")
+        spectra_concentration = concentrations.sel(amplitude_label=shapes).rename(
+            amplitude_label="shape"
+        )
+
+        return ElementResult(
+            amplitudes={"spectrum": spectra_amplitude},
+            concentrations={"spectrum": spectra_concentration},
+        )

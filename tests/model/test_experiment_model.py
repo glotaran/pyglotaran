@@ -37,18 +37,6 @@ def test_experiment_model_from_dict():
                     "weight": 1,
                 }
             ],
-            "clp_constraints": [
-                {
-                    "type": "only",
-                    "target": "t",
-                    "interval": [(1, 2)],
-                },
-                {
-                    "type": "zero",
-                    "target": "t",
-                    "interval": (1, 2),
-                },
-            ],
             "clp_relations": [
                 {
                     "source": "s",
@@ -69,9 +57,3 @@ def test_experiment_model_from_dict():
 
     d3 = experiment_model.datasets["d3"]
     assert isinstance(d3, MockDataModel)
-
-    only = experiment_model.clp_constraints[0]
-    assert isinstance(only, OnlyConstraint)
-
-    zero = experiment_model.clp_constraints[1]
-    assert isinstance(zero, ZeroConstraint)

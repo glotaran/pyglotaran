@@ -42,9 +42,9 @@ def test_single_data():
     assert optimized_parameters.close_or_equal(parameters)
     assert "decay_independent" in optimized_data
     result_data = optimized_data["decay_independent"]
-    assert "clp" in result_data
+    print(result_data)
     assert "residual" in result_data
-    assert "fitted_data" in result_data
+    assert "fit" in result_data
 
 
 def test_multiple_experiments():

@@ -10,7 +10,6 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import GaussianActivation
 from glotaran.builtin.items.activation import InstantActivation
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
 from glotaran.parameter import Parameters
@@ -46,6 +45,10 @@ test_library = {
                 ("s2", "s2"): "rates.2",
                 ("s1", "s2"): "rates.3",
             },
+            "clp_constraints": [
+                {"type": "zero", "target": "s1", "interval": (1, 1)},
+                {"type": "zero", "target": "s2", "interval": (0, 0)},
+            ],
         }
     ),
 }
@@ -105,17 +108,7 @@ def test_decay(decay: str, activation: Activation):
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
-    experiments = [
-        ExperimentModel(
-            datasets={"decay": data_model},
-            clp_constraints=[
-                ZeroConstraint(type="zero", target="s1", interval=(1, 1)),
-                ZeroConstraint(type="zero", target="s2", interval=(0, 0)),
-            ]
-            if decay == "equilibrium"
-            else [],
-        )
-    ]
+    experiments = [ExperimentModel(datasets={"decay": data_model})]
     optimization = Optimization(
         experiments,
         test_parameters,
@@ -127,11 +120,12 @@ def test_decay(decay: str, activation: Activation):
     assert result.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
     assert "decay" in optimized_data
-    assert "clp" in optimized_data["decay"]
+    print(optimized_data["decay"])
     assert "residual" in optimized_data["decay"]
-    assert "species_concentration" in optimized_data["decay"]
-    assert "species_associated_estimation" in optimized_data["decay"]
-    assert "kinetic_associated_estimation" in optimized_data["decay"]
+    assert f"species_associated_concentrations_{decay}" in optimized_data["decay"]
+    assert f"species_associated_amplitudes_{decay}" in optimized_data["decay"]
+    assert f"kinetic_associated_amplitudes_{decay}" in optimized_data["decay"]
+    assert f"k_matrix_{decay}" in optimized_data["decay"]
     if isinstance(activation, MultiGaussianActivation):
         assert "gaussian_activation" in optimized_data["decay"].coords
         assert "gaussian_activation_function" in optimized_data["decay"]

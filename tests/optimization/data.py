@@ -13,7 +13,7 @@ TestDataModelConstantIndexIndependent = DataModel(
     elements=[
         TestElementConstant(
             type="test-element-constant",
-            label="test",
+            label="test_ele",
             dimension="model",
             compartments=["c1"],
             value=5,
@@ -29,7 +29,7 @@ TestDataModelConstantIndexDependent = DataModel(
     elements=[
         TestElementConstant(
             type="test-element-constant",
-            label="test",
+            label="test_ele_index_dependent",
             dimension="model",
             compartments=["c2"],
             value=2,

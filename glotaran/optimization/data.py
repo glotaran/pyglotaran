@@ -235,6 +235,21 @@ class OptimizationData(OptimizationDataProvider):
                 data = data.T
         return data
 
+    def unweight_result_dataset(self, result_dataset: xr.Dataset):
+        if self.weight is None:
+            return
+
+        if "weight" not in result_dataset:
+            result_dataset["weight"] = xr.DataArray(self.weight, coords=result_dataset.data.coords)
+        result_dataset["weighted_residual"] = result_dataset["residual"]
+        result_dataset["residual"] = result_dataset["residual"] / self.weight
+        result_dataset.attrs["weighted_root_mean_square_error"] = result_dataset.attrs[
+            "root_mean_square_error"
+        ]
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual**2).sum() / sum(result_dataset.residual.shape)
+        ).to_numpy()
+
 
 class LinkedOptimizationData(OptimizationDataProvider):
     def __init__(

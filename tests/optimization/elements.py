@@ -7,6 +7,7 @@ import numpy as np
 
 from glotaran.model.data_model import DataModel  # noqa: TCH001
 from glotaran.model.element import Element
+from glotaran.model.element import ElementResult
 from glotaran.model.item import ParameterType  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -32,13 +33,18 @@ class TestElementConstant(Element):
             matrix = np.array([matrix] * global_axis.size)
         return self.compartments, matrix
 
-    def add_to_result_data(
+    def create_result(
         self,
         model: DataModel,
-        data: xr.Dataset,
-        as_global: bool = False,
-    ):
-        data.attrs["custom_element_result"] = True
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> ElementResult:
+        return ElementResult(
+            amplitudes={"test": amplitudes},
+            concentrations={"test": concentrations},
+        )
 
 
 class TestElementExponential(Element):

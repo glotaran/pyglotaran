@@ -10,7 +10,6 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
-from glotaran.model.clp_constraint import ClpConstraint  # noqa: TCH001
 from glotaran.model.clp_penalties import EqualAreaPenalty  # noqa: TCH001
 from glotaran.model.clp_relation import ClpRelation  # noqa: TCH001
 from glotaran.model.data_model import DataModel
@@ -33,7 +32,6 @@ class ExperimentModel(BaseModel):
 
     clp_link_tolerance: float = 0.0
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
-    clp_constraints: list[ClpConstraint.get_annotated_type()] = Field(default_factory=list)  # type:ignore[valid-type]
     clp_penalties: list[EqualAreaPenalty] = Field(default_factory=list)
     clp_relations: list[ClpRelation] = Field(default_factory=list)
     datasets: dict[str, DataModel]
