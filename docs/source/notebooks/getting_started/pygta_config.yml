@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=pygta_config.schema.json
+
+plotting:
+  general:
+    default_args_override:
+      linlog: false
+      use_svd_number: false
+      linthresh: 2
+
+    axis_label_override:
+      time: Time (ps)
+      spectral: Wavelength (nm)
+      data_left_singular_vectors: ""
+      data_singular_values: ""
+      data_right_singular_vectors: ""
+      residual_left_singular_vectors: ""
+      residual_right_singular_vectors: ""
+      species_associated_spectra: ""
+      decay_associated_spectra_mc1: ""
+      species_concentration: "concentration"
+      residual_singular_values: ""
+      # singular_value_index: ""
+  plot_data_overview:
+    default_args_override:
+      use_svd_number: true
+  plot_svd:
+    default_args_override:
+      use_svd_number: true
+  plot_overview:
+    default_args_override:
+      show_data: false
+      show_data_svd_legend: false
+      show_residual_svd_legend: false

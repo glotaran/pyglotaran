@@ -79,6 +79,7 @@ ignore = [
   "codecov.yml",
   "flake.nix",
   "flake.lock",
+  "INSTALLATION.md",
   "readthedocs.yml",
   "requirements_dev.txt",
   "tox.ini",

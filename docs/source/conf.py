@@ -12,6 +12,7 @@
 
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import glotaran
@@ -24,18 +25,16 @@ authors = ("Joern Weissenborn", "Joris Snellenburg", "Sebastian Weigand", "Ivo v
 
 project = "pyglotaran"
 title = f"{project} Documentation"
-copyright = ", ".join(("2018", *authors))
+current_year = datetime.now().year
+copyright = f"2018-{current_year}, " + ", ".join(authors)
 author = ", ".join(authors)
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
 # the built documents.
 #
-# The short X.Y version.
 version = glotaran.__version__
-# The full version, including alpha/beta/rc tags.
 release = glotaran.__version__
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -113,39 +112,8 @@ pygments_style = "sphinx"
 # This is processed by Jinja2 and inserted before each notebook
 nbsphinx_prolog = r"""
 {% set docname = 'docs/source/' + env.doc2path(env.docname, base=None)| replace('\\', '/') %}
-{% set binder_url = 'lab/tree/docs/source/' + env.doc2path(env.docname, base=None)|urlencode %}
-
-.. raw:: html
-    {{ binder_url }}
-
-    <div class="admonition note">
-      This page was generated from
-      <a class="reference external" href="https://github.com/glotaran/pyglotaran/blob/{{ env.config.release|e }}/{{ docname|e }}">{{ docname|e }}</a>.
-      Interactive online version:
-    <span style="white-space: nowrap;">
-        <a
-            href="https://mybinder.org/v2/gh/glotaran/pyglotaran/{{ env.config.release|e }}?urlpath={{ binder_url|e }}">
-            <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom">
-        </a>
-    </span>
-
-      <script>
-        if (document.location.host) {
-          $(document.currentScript).replaceWith(
-            '<a class="reference external" ' +
-            'href="https://nbviewer.jupyter.org/url' +
-            (window.location.protocol == 'https:' ? 's/' : '/') +
-            window.location.host +
-            window.location.pathname.slice(0, -4) +
-            'ipynb">View in <em>nbviewer</em></a>.'
-          );
-        }
-      </script>
-    </div>
-
 
 .. raw:: latex
-
 
     \nbsphinxstartnotebook{\scriptsize\noindent\strut
     \textcolor{gray}{The following section was generated from

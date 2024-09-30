@@ -7,88 +7,85 @@ Installation
 Prerequisites
 -------------
 
-* Python 3.10 or 3.11
+* Python 3.10 or higher
+* (Recommended) `uv <https://docs.astral.sh/uv/>`_ installed and on the path.
+* Basic familiarity with command-line interfaces.
 
-Windows
-+++++++
 
-The easiest way of getting Python (and some basic tools to work with it) in Windows is to use `Anaconda <https://www.anaconda.com/>`_, which provides python.
+Recommended installation method: using uv
+-----------------------------------------
 
-You will need a terminal for the installation. One is provided by *Anaconda* and is called *Anaconda Console*. You can find it in the start menu.
+It appears the Python community is quickly converging to uv as the preferred way to install Python and Python packages across all platforms, so this is what we will be recommending.
+They have an excellent `getting started <https://docs.astral.sh/uv/getting-started>`_ guide available, which explains how to `set it up <https://docs.astral.sh/uv/getting-started/installation>`_.
+
+If you go down this route, note that uv can also be used to install Python itself, so you don't have to install it separately.
+
+1. Install ``uv``: follow the getting started guide (linked above) to set it up for your platform.
+
+2. Use ``uv`` to install Python (if not already installed):
+
+   .. code-block:: shell
+
+      uv python install # Automatically installs the latest Python version
+      # or use `uv python install 3.10`` to install a specific Python version
+
+3. Create a virtual environment and activate it:
+
+   .. code-block:: shell
+
+      uv venv
+      source .venv/bin/activate  # On Unix or macOS
+      .venv\Scripts\activate  # On Windows (both cmd.exe and PowerShell)
+
+4. Install pyglotaran:
+
+   .. code-block:: shell
+
+      uv pip install pyglotaran pyglotaran-extras jupyterlab
 
 .. note::
 
-   If you use a Windows Shell like cmd.exe or PowerShell, you might have to prefix '$PATH_TO_ANACONDA/' to all commands (e.g. *C:/Anaconda/pip.exe* instead of *pip*)
+   If you use PowerShell you may have to set your LocalMachine's Execution Policy to RemoteSigned to be able to run scripts.
+   To do so, start a new PowerShell session as Administrator and run the following command:
 
-Stable release
---------------
+   .. code-block:: shell
 
-.. warning::
+      Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
-   pyglotaran is early development, so for the moment stable releases are sparse and outdated.
-   We try to keep the master code stable, so please install from source for now.
-
-
-This is the preferred method to install pyglotaran, as it will always install the most recent stable release.
-
-To install pyglotaran, run this command in your terminal:
-
-.. code-block:: console
-
-    $ pip install pyglotaran
-
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
-
-.. _pip: https://pip.pypa.io/en/stable/
-
-.. _Python installation guide: https://docs.python-guide.org/starting/installation/
-
-If you want to install it via conda, you can run the following command:
-
-.. code-block:: console
-
-    $ conda install -c conda-forge pyglotaran
+   This makes sure that local scripts are not required to be signed, but still prevents running scripts from the internet.
 
 
 From sources
 ------------
 
-First you have to install or update some dependencies.
+Prerequisites
+~~~~~~~~~~~~~
 
-Within a terminal:
+* git installed
 
-.. code-block:: console
+Follow the steps outlined above to setup a virtual environment and activate it.
 
-   $ pip install -U numpy scipy Cython
+.. code-block:: shell
 
-Alternatively, for Anaconda users:
-
-.. code-block:: console
-
-   $ conda install numpy scipy Cython
-
-Afterwards you can simply use `pip`_ to install it directly from `Github`_.
-
-.. code-block:: console
-
-   $ pip install git+https://github.com/glotaran/pyglotaran.git
+   $ uv pip install https://github.com/glotaran/pyglotaran.git
 
 For updating pyglotaran, just re-run the command above.
 
 If you prefer to manually download the source files, you can find them on `Github`_. Alternatively you can clone them with `git`_ (preferred):
 
-.. code-block:: console
+.. code-block:: shell
 
    $ git clone https://github.com/glotaran/pyglotaran.git
 
 Within a terminal, navigate to directory where you have unpacked or cloned the code and enter
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ pip install -e .
+   $ uv pip install -e .[full]
 
 For updating, simply download and unpack the newest version (or run ``$ git pull`` in pyglotaran directory if you used `git`_) and and re-run the command above.
 
 .. _Github: https://github.com/glotaran/pyglotaran
 .. _git: https://git-scm.com/
+.. _uv_docs: https://docs.astral.sh/uv/
+.. _uv_github: https://github.com/astral-sh/uv
