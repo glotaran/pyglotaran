@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 
-import xarray as xr  # noqa: TCH002
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
@@ -14,6 +13,7 @@ from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
 from glotaran.optimization import OptimizationResult  # noqa: TCH001
+from glotaran.optimization.objective import DatasetResult
 from glotaran.parameter import Parameters  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ SAVING_OPTIONS_DEFAULT = SavingOptions()
 class Result(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    data: dict[str, xr.Dataset]
+    data: dict[str, DatasetResult]
     experiments: dict[str, ExperimentModel]
     optimization: OptimizationResult
     parameters_intitial: Parameters
