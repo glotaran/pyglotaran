@@ -84,6 +84,6 @@ class Scheme(BaseModel):
             datasets=optimized_data,
             experiments=self.experiments,
             optimization_info=optimization_info,
-            parameters_intitial=parameters,
-            parameters_optimized=optimized_parameters,
+            initial_parameters=parameters,
+            optimized_parameters=optimized_parameters,
         )

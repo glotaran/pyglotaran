@@ -37,8 +37,8 @@ class Result(BaseModel):
     datasets: dict[str, DatasetResult]
     experiments: dict[str, ExperimentModel]
     optimization_info: OptimizationInfo
-    parameters_intitial: Parameters
-    parameters_optimized: Parameters
+    initial_parameters: Parameters
+    optimized_parameters: Parameters
 
     def save(
         self,
@@ -79,7 +79,7 @@ class Result(BaseModel):
         parameters_initial_path = path / f"parameters_initial.{options.parameter_format}"
         result_dict["parameters_initial"] = str(parameters_initial_path)
         save_parameters(
-            self.parameters_intitial,
+            self.initial_parameters,
             parameters_initial_path,
             allow_overwrite=allow_overwrite,
         )
@@ -87,7 +87,7 @@ class Result(BaseModel):
         parameters_optimized_path = path / f"parameters_optimized.{options.parameter_format}"
         result_dict["parameters_optimized"] = str(parameters_optimized_path)
         save_parameters(
-            self.parameters_optimized,
+            self.optimized_parameters,
             parameters_optimized_path,
             allow_overwrite=allow_overwrite,
         )
