@@ -80,7 +80,7 @@ class Scheme(BaseModel):
         )
         optimization_result.calculate_parameter_errors(optimized_parameters)
         return Result(
-            data=optimized_data,
+            datasets=optimized_data,
             experiments=self.experiments,
             optimization=optimization_result,
             parameters_intitial=parameters,
