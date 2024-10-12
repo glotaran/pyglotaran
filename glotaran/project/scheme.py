@@ -10,6 +10,7 @@ from glotaran.io import load_dataset
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel
 from glotaran.optimization import Optimization
+from glotaran.optimization.result import calculate_parameter_errors
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
 
@@ -75,14 +76,14 @@ class Scheme(BaseModel):
             xtol=xtol,
             optimization_method=optimization_method,
         )
-        optimized_parameters, optimized_data, optimization_result = (
+        optimized_parameters, optimized_data, optimization_info = (
             optimization.dry_run() if dry_run else optimization.run()
         )
-        optimization_result.calculate_parameter_errors(optimized_parameters)
+        calculate_parameter_errors(optimization_info=optimization_info, parameters=optimized_parameters)
         return Result(
             datasets=optimized_data,
             experiments=self.experiments,
-            optimization=optimization_result,
+            optimization_info=optimization_info,
             parameters_intitial=parameters,
             parameters_optimized=optimized_parameters,
         )

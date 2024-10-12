@@ -77,4 +77,4 @@ def test_scheme():
         }
     )
     result = scheme.optimize(test_parameters)
-    assert result.optimization.success
+    assert result.optimization_info.success

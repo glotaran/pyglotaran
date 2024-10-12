@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
-class OptimizationResult(BaseModel):
+class OptimizationInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     """The result of a global analysis."""
@@ -142,13 +142,32 @@ class OptimizationResult(BaseModel):
 
         return cls(**result_args)
 
-    def calculate_parameter_errors(self, parameters: Parameters):
-        if self.covariance_matrix is not None:
-            standard_errors = self.root_mean_square_error * np.sqrt(
-                np.diag(self.covariance_matrix)
-            )
-            for label, error in zip(self.free_parameter_labels, standard_errors):
-                parameters.get(label).standard_error = error
+def calculate_parameter_errors(optimization_info: OptimizationInfo, parameters: Parameters) -> None:
+    """Calculate and assign standard errors to parameters in place based on optimization information.
+
+    This function calculates the standard errors for the free parameters
+    based on the provided optimization information and assigns these errors
+    directly to the corresponding parameters.
+
+    Parameters
+    ----------
+    optimization_info : OptimizationInfo
+        An object containing the optimization results, including the covariance
+        matrix and root mean square error.
+    parameters : Parameters
+        An object containing the parameters to be updated. The standard errors
+        will be assigned to the parameters in place.
+
+    Returns
+    -------
+    None
+    """
+    if optimization_info.covariance_matrix is not None:
+        standard_errors = optimization_info.root_mean_square_error * np.sqrt(
+            np.diag(optimization_info.covariance_matrix)
+        )
+        for label, error in zip(optimization_info.free_parameter_labels, standard_errors):
+            parameters.get(label).standard_error = error
 
 
 def calculate_covariance_matrix_and_standard_errors(

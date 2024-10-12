@@ -12,7 +12,7 @@ from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
-from glotaran.optimization import OptimizationResult  # noqa: TCH001
+from glotaran.optimization import OptimizationInfo  # noqa: TCH001
 from glotaran.optimization.objective import DatasetResult
 from glotaran.parameter import Parameters  # noqa: TCH001
 
@@ -36,7 +36,7 @@ class Result(BaseModel):
 
     datasets: dict[str, DatasetResult]
     experiments: dict[str, ExperimentModel]
-    optimization: OptimizationResult
+    optimization_info: OptimizationInfo
     parameters_intitial: Parameters
     parameters_optimized: Parameters
 
@@ -74,7 +74,7 @@ class Result(BaseModel):
 
         optimization_history_path = path / "optimization_history.csv"
         result_dict["optimization_history"] = str(optimization_history_path)
-        self.optimization.optimization_history.to_csv(optimization_history_path)
+        self.optimization_info.optimization_history.to_csv(optimization_history_path)
 
         parameters_initial_path = path / f"parameters_initial.{options.parameter_format}"
         result_dict["parameters_initial"] = str(parameters_initial_path)

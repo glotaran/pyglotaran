@@ -12,7 +12,7 @@ from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization_history import OptimizationHistory
-from glotaran.optimization.result import OptimizationResult
+from glotaran.optimization.result import OptimizationInfo
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 from glotaran.utils.tee import TeeContext
@@ -96,7 +96,7 @@ class Optimization:
             exclude_non_vary=True
         )
 
-    def run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationResult]:
+    def run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
         """Perform the optimization.
 
         Raises
@@ -139,7 +139,7 @@ class Optimization:
         data = dict(ChainMap(*[r.data for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
-        result = OptimizationResult.from_least_squares_result(
+        result = OptimizationInfo.from_least_squares_result(
             ls_result,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
@@ -151,7 +151,7 @@ class Optimization:
         )
         return self._parameters, data, result
 
-    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationResult]:
+    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
         termination_reason = "Dry run."
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
@@ -159,7 +159,7 @@ class Optimization:
         data = dict(ChainMap(*[r.data for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
-        result = OptimizationResult.from_least_squares_result(
+        result = OptimizationInfo.from_least_squares_result(
             None,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
