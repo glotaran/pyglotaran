@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import cast
@@ -40,11 +40,19 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
         )
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DatasetResult:
-    data: xr.Dataset
-    elements: dict[str, ElementResult]
-    extra: dict[str, xr.Dataset]
+    elements: dict[str, ElementResult] = field(default_factory=dict)
+    activations: dict[str, xr.Dataset] = field(default_factory=dict)
+    input_data: xr.Dataset | None = None
+    residuals: xr.Dataset | None = None
+
+    @property
+    def fitted_data(self) -> xr.Dataset:
+        if self.input_data is None or self.residuals is None:
+            raise ValueError("Data and residuals must be set to calculate fitted data.")
+        return self.input_data - self.residuals
+
 
 
 @dataclass
@@ -228,7 +236,7 @@ class OptimizationObjective:
             global_dim: global_axis,
             "amplitude_label": concentrations.clp_axis,
         }
-        amplitude = xr.DataArray(
+        amplitudes = xr.DataArray(
             [e.clp for e in estimations], dims=amplitude_coords.keys(), coords=amplitude_coords
         )
         concentration = concentrations.to_data_array(
@@ -251,16 +259,16 @@ class OptimizationObjective:
             )
         )
         element_results = self.create_element_results(
-            self._model.datasets[label], global_dim, model_dim, amplitude, concentration
+            self._model.datasets[label], global_dim, model_dim, amplitudes, concentration
         )
-        extra = self.create_data_model_results(
-            label, global_dim, model_dim, amplitude, concentration
+        activations = self.create_data_model_results(
+            label, global_dim, model_dim, amplitudes, concentration
         )
 
+
         self._data.unweight_result_dataset(result_dataset)
-        result_dataset["fit"] = result_dataset.data - result_dataset.residual
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
-        result = DatasetResult(result_dataset, element_results, extra)
+        result = DatasetResult(input_data=result_dataset.data, residuals=result_dataset.residual, elements=element_results, activations=activations)
         return OptimizationObjectiveResult(
             data={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
         )
@@ -419,10 +427,11 @@ class OptimizationObjective:
         element_results = self.create_element_results(
             self._model.datasets[label], global_dim, model_dim, amplitudes, concentrations
         )
-        extra = self.create_data_model_results(
-            label, global_dim, model_dim, amplitudes, concentrations
+        activations = self.create_data_model_results(
+            label, global_dim, model_dim, amplitudes, concentration
         )
-        return DatasetResult(result_dataset, element_results, extra)
+
+        return DatasetResult(input_data=result_dataset.data, residuals=result_dataset.residual, elements=element_results, activations=activations)
 
     def create_data_model_results(
         self,
@@ -431,7 +440,7 @@ class OptimizationObjective:
         model_dim: str,
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
-    ) -> dict[str, ElementResult]:
+    ) -> xr.Dataset:
         result = {}
         data_model = self._model.datasets[label]
         assert any(isinstance(e, str) for _, e in iterate_data_model_elements(data_model)) is False
@@ -447,7 +456,7 @@ class OptimizationObjective:
                 amplitudes,
                 concentrations,
             )
-        return result
+        return xr.Dataset(result)
 
     def get_result(self) -> OptimizationObjectiveResult:
         return (

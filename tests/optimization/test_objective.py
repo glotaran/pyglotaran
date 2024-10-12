@@ -43,8 +43,10 @@ def test_single_data():
         data_model.data["global"].size,
         1,
     )
-    assert "residual" in result_data.data
-    assert result_data.data.residual.shape == data_model.data.data.shape
+    assert result_data.residuals is not None
+    assert result_data.input_data is not None
+    assert result_data.input_data.shape == data_model.data.data.shape
+    assert result_data.residuals.shape == data_model.data.data.shape
 
 
 @pytest.mark.parametrize("weight", {True, False})
@@ -161,9 +163,8 @@ def test_result_data(weight: bool):
     assert "residual_singular_values" in result_data
     assert np.array_equal(data_model.data.coords["model"], result_data.coords["model"])
     assert np.array_equal(data_model.data.coords["global"], result_data.coords["global"])
-    assert data_model.data.data.shape == result_data.data.shape
-    print(data_model.data.data[0, 0], result_data.data[0, 0])  # T201
-    assert np.allclose(data_model.data.data, result_data.data)
+    assert result_data.input_data.shape == data_model.data.data.shape
+    assert np.allclose(result_data.input_data, data_model.data.data)
     if weight:
         assert "weight" in result_data
         assert "weighted_root_mean_square_error" in result_data.attrs
