@@ -142,7 +142,10 @@ class OptimizationInfo(BaseModel):
 
         return cls(**result_args)
 
-def calculate_parameter_errors(optimization_info: OptimizationInfo, parameters: Parameters) -> None:
+
+def calculate_parameter_errors(
+    optimization_info: OptimizationInfo, parameters: Parameters
+) -> None:
     """Calculate and assign standard errors to parameters in place based on optimization information.
 
     This function calculates the standard errors for the free parameters

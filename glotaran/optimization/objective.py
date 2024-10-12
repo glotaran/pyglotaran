@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import cast
 
 import numpy as np
 import xarray as xr
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
@@ -40,19 +43,19 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
         )
 
 
-@dataclass(kw_only=True)
-class DatasetResult:
-    elements: dict[str, ElementResult] = field(default_factory=dict)
-    activations: dict[str, xr.Dataset] = field(default_factory=dict)
-    input_data: xr.Dataset | None = None
-    residuals: xr.Dataset | None = None
+class DatasetResult(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+
+    elements: dict[str, ElementResult] = Field(default_factory=dict)
+    activations: xr.Dataset = Field(default_factory=dict)
+    input_data: xr.DataArray | xr.Dataset | None = None
+    residuals: xr.DataArray | xr.Dataset | None = None
 
     @property
     def fitted_data(self) -> xr.Dataset:
         if self.input_data is None or self.residuals is None:
             raise ValueError("Data and residuals must be set to calculate fitted data.")
         return self.input_data - self.residuals
-
 
 
 @dataclass
@@ -265,10 +268,14 @@ class OptimizationObjective:
             label, global_dim, model_dim, amplitudes, concentration
         )
 
-
         self._data.unweight_result_dataset(result_dataset)
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
-        result = DatasetResult(input_data=result_dataset.data, residuals=result_dataset.residual, elements=element_results, activations=activations)
+        result = DatasetResult(
+            input_data=result_dataset.data,
+            residuals=result_dataset.residual,
+            elements=element_results,
+            activations=activations,
+        )
         return OptimizationObjectiveResult(
             data={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
         )
@@ -431,7 +438,12 @@ class OptimizationObjective:
             label, global_dim, model_dim, amplitudes, concentration
         )
 
-        return DatasetResult(input_data=result_dataset.data, residuals=result_dataset.residual, elements=element_results, activations=activations)
+        return DatasetResult(
+            input_data=result_dataset.data,
+            residuals=result_dataset.residual,
+            elements=element_results,
+            activations=activations,
+        )
 
     def create_data_model_results(
         self,
