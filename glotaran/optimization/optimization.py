@@ -136,10 +136,10 @@ class Optimization:
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
-        data = dict(ChainMap(*[r.data for r in results]))
+        optimization_results = dict(ChainMap(*[r.optimization_result for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
-        result = OptimizationInfo.from_least_squares_result(
+        optimization_info = OptimizationInfo.from_least_squares_result(
             ls_result,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
@@ -149,14 +149,14 @@ class Optimization:
             termination_reason,
             number_of_clps,
         )
-        return self._parameters, data, result
+        return self._parameters, optimization_results, optimization_info
 
     def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
         termination_reason = "Dry run."
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
-        data = dict(ChainMap(*[r.data for r in results]))
+        data = dict(ChainMap(*[r.optimization_result for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationInfo.from_least_squares_result(

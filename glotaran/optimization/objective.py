@@ -42,7 +42,7 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
         )
 
 
-class DatasetResult(BaseModel):
+class OptimizationResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     elements: dict[str, xr.Dataset] = Field(default_factory=dict)
@@ -59,7 +59,7 @@ class DatasetResult(BaseModel):
 
 @dataclass
 class OptimizationObjectiveResult:
-    data: dict[str, DatasetResult]
+    optimization_result: dict[str, OptimizationResult]
     additional_penalty: float
     clp_size: int
 
@@ -195,7 +195,7 @@ class OptimizationObjective:
         self._data.unweight_result_dataset(result_dataset)
 
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
-        result = DatasetResult(
+        result = OptimizationResult(
             input_data=result_dataset.data,
             residuals=result_dataset.residual,
             elements={
@@ -209,7 +209,7 @@ class OptimizationObjective:
             },
         )
         return OptimizationObjectiveResult(
-            data={label: result}, clp_size=clp_size, additional_penalty=0
+            optimization_result={label: result}, clp_size=clp_size, additional_penalty=0
         )
 
     def create_single_dataset_result(self) -> OptimizationObjectiveResult:
@@ -272,14 +272,14 @@ class OptimizationObjective:
 
         self._data.unweight_result_dataset(result_dataset)
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
-        result = DatasetResult(
+        result = OptimizationResult(
             input_data=result_dataset.data,
             residuals=result_dataset.residual,
             elements=element_results,
             activations=activations,
         )
         return OptimizationObjectiveResult(
-            data={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
+            optimization_result={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
         )
 
     def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
@@ -319,7 +319,7 @@ class OptimizationObjective:
             for label, data in self._data.data.items()
         }
         return OptimizationObjectiveResult(
-            data=results,
+            optimization_result=results,
             clp_size=clp_size,
             additional_penalty=additional_penalty,
         )
@@ -440,7 +440,7 @@ class OptimizationObjective:
             label, global_dim, model_dim, amplitudes, concentration
         )
 
-        return DatasetResult(
+        return OptimizationResult(
             input_data=result_dataset.data,
             residuals=result_dataset.residual,
             elements=element_results,

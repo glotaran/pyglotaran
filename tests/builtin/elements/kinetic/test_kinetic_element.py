@@ -73,7 +73,7 @@ test_clp = xr.DataArray(
 ).T
 
 
-@pytest.mark.parametrize("decay", ("parallel", "sequential", "equilibrium"))
+@pytest.mark.parametrize("decay_method", ("parallel", "sequential", "equilibrium"))
 @pytest.mark.parametrize(
     "activation",
     (
@@ -99,16 +99,16 @@ test_clp = xr.DataArray(
         ),
     ),
 )
-def test_decay(decay: str, activation: Activation):
-    if decay == "parallel":
+def test_decay(decay_method: str, activation: Activation):
+    if decay_method == "parallel":
         activation.compartments = {"s1": 1, "s2": 1}
     else:
         activation.compartments = {"s1": 1}
-    data_model = ActivationDataModel(elements=[decay], activation=[activation])
+    data_model = ActivationDataModel(elements=[decay_method], activation=[activation])
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
-    experiments = [ExperimentModel(datasets={"decay": data_model})]
+    experiments = [ExperimentModel(datasets={"dataset1": data_model})]
     optimization = Optimization(
         experiments,
         test_parameters,
@@ -116,20 +116,32 @@ def test_decay(decay: str, activation: Activation):
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
-    assert result.success
+    optimized_parameters, optimization_result, optimization_info = optimization.run()
+    assert optimization_info.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
-    assert "decay" in optimized_data
-    print(optimized_data["decay"])
-    assert optimized_data["decay"].residuals is not None
-    assert f"species_associated_concentrations_{decay}" in optimized_data["decay"]
-    assert f"species_associated_amplitudes_{decay}" in optimized_data["decay"]
-    assert f"kinetic_associated_amplitudes_{decay}" in optimized_data["decay"]
-    assert f"k_matrix_{decay}" in optimized_data["decay"]
+    assert "dataset1" in optimization_result
+    print(optimization_result["dataset1"])
+    assert optimization_result["dataset1"].residuals is not None
+    assert f"species_associated_concentrations_{decay_method}" in optimization_result["dataset1"]
+    assert f"species_associated_amplitudes_{decay_method}" in optimization_result["dataset1"]
+    assert f"kinetic_associated_amplitudes_{decay_method}" in optimization_result["dataset1"]
+    assert f"k_matrix_{decay_method}" in optimization_result["dataset1"]
     if isinstance(activation, MultiGaussianActivation):
-        assert "gaussian_activation" in optimized_data["decay"].coords
-        assert "gaussian_activation_function" in optimized_data["decay"]
+        assert "gaussian_activation" in optimization_result["dataset1"].coords
+        assert "gaussian_activation_function" in optimization_result["dataset1"]
 
 
 if __name__ == "__main__":
     test_decay("parallel", InstantActivation(type="instant", compartments={}))
+    test_decay("sequential", InstantActivation(type="instant", compartments={}))
+    test_decay("equilibrium", InstantActivation(type="instant", compartments={}))
+    test_decay("parallel", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
+    test_decay("sequential", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
+    test_decay("equilibrium", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
+    test_decay("parallel", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
+    test_decay("sequential", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
+    test_decay("equilibrium", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
+    test_decay("parallel", MultiGaussianActivation(type="multi-gaussian", compartments={}, center=["gaussian.center"], width=["gaussian.width", "gaussian.width"]))
+    test_decay("sequential", MultiGaussianActivation(type="multi-gaussian", compartments={}, center=["gaussian.center"], width=["gaussian.width", "gaussian.width"]))
+    test_decay("equilibrium", MultiGaussianActivation(type="multi-gaussian", compartments={}, center=["gaussian.center"], width=["gaussian.width", "gaussian.width"]))
+    

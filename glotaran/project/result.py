@@ -13,7 +13,7 @@ from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
 from glotaran.optimization import OptimizationInfo  # noqa: TCH001
-from glotaran.optimization.objective import DatasetResult
+from glotaran.optimization.objective import OptimizationResult
 from glotaran.parameter import Parameters  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ SAVING_OPTIONS_DEFAULT = SavingOptions()
 class Result(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    datasets: dict[str, DatasetResult]
+    datasets: dict[str, OptimizationResult]
     experiments: dict[str, ExperimentModel]
     optimization_info: OptimizationInfo
     initial_parameters: Parameters
