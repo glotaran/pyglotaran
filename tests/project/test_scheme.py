@@ -27,9 +27,9 @@ test_scheme_dict = {
             "datasets": {
                 "kinetic_parallel": {
                     "elements": ["parallel"],
-                    "activation": [
+                    "activations": {"irf":
                         {"type": "instant", "compartments": {"s1": 1}},
-                    ],
+                    },
                 }
             }
         }

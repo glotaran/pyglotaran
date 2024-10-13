@@ -104,7 +104,7 @@ def test_decay(decay_method: str, activation: Activation):
         activation.compartments = {"s1": 1, "s2": 1}
     else:
         activation.compartments = {"s1": 1}
-    data_model = ActivationDataModel(elements=[decay_method], activation=[activation])
+    data_model = ActivationDataModel(elements=[decay_method], activations={"irf":activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )

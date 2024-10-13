@@ -30,7 +30,7 @@ class NoActivationIssue(ItemIssue):
 
 
 def validate_activations(
-    value: list[Activation],
+    value: dict[str,Activation],
     activation: Activation,
     parameters: Parameters | None,
 ) -> list[ItemIssue]:
@@ -41,7 +41,7 @@ def validate_activations(
 
 
 class ActivationDataModel(DataModel):
-    activation: list[Activation.get_annotated_type()] = Attribute(  # type:ignore[valid-type]
+    activations: dict[str,Activation.get_annotated_type()] = Attribute(  # type:ignore[valid-type]
         validator=validate_activations,
         description="The activation(s) of the dataset.",
     )
@@ -54,9 +54,9 @@ class ActivationDataModel(DataModel):
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
     ) -> dict[str, xr.DataArray]:
-        gaussian_activations = [
-            a for a in model.activation if isinstance(a, MultiGaussianActivation)
-        ]
+        gaussian_activations = {
+            key:a for a in model.activations.items() if isinstance(a, MultiGaussianActivation)
+        }
         if not len(gaussian_activations):
             return {}
 

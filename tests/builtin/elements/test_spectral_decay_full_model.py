@@ -85,13 +85,13 @@ test_parameters = Parameters.from_dict(
 test_global_axis = np.arange(0, 50)
 test_model_axis = np.arange(-10, 1500, 1)
 test_axies = {"spectral": test_global_axis, "time": test_model_axis}
-test_activation = [InstantActivation(type="instant", compartments={"s1": 1})]
+test_activation = {"no_irf":InstantActivation(type="instant", compartments={"s1": 1})}
 test_data_model_cls = DataModel.create_class_for_elements((KineticElement, SpectralElement))
 test_data = simulate(
     test_data_model_cls(
         elements=["decay"],
         global_elements=["spectral"],
-        activation=test_activation,
+        activations=test_activation,
     ),
     test_library,
     test_parameters_simulation,
@@ -102,7 +102,7 @@ test_experiments = [
     ExperimentModel(
         datasets={
             "decay": ActivationDataModel(
-                elements=["decay"], data=test_data, activation=test_activation
+                elements=["decay"], data=test_data, activations=test_activation
             ),
         },
     ),
@@ -117,7 +117,7 @@ test_experiments = [
                 elements=["decay"],
                 global_elements=["spectral"],
                 data=test_data,
-                activation=test_activation,
+                activations=test_activation,
             ),
         },
     ),
@@ -127,7 +127,7 @@ test_experiments = [
                 elements=["spectral"],
                 global_elements=["decay"],
                 data=test_data,
-                activation=test_activation,
+                activations=test_activation,
             ),
         },
     ),

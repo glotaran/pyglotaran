@@ -74,29 +74,29 @@ test_data_model_simulation_cls = DataModel.create_class_for_elements(
     (KineticElement, SpectralElement)
 )
 
-test_activation_1 = [
+test_activation_1 = {"irf":
     GaussianActivation(
         type="gaussian",
         compartments={"s1": 1, "s2": 0.75},
         center="activation.center",
         width="activation.width",
     ),
-]
+}
 
-test_activation_2 = [
+test_activation_2 = {"irf":
     GaussianActivation(
         type="gaussian",
         compartments={"s1": 1, "s2": 0.1},
         center="activation.center",
         width="activation.width",
     ),
-]
+}
 
 test_data_1 = simulate(
     test_data_model_simulation_cls(
         elements=["decay"],
         global_elements=["spectral"],
-        activation=test_activation_1,
+        activations=test_activation_1,
     ),
     test_library,
     test_parameters_simulation,
@@ -110,7 +110,7 @@ test_data_2 = simulate(
     test_data_model_simulation_cls(
         elements=["decay"],
         global_elements=["spectral"],
-        activation=test_activation_2,
+        activations=test_activation_2,
     ),
     test_library,
     test_parameters_simulation,
@@ -126,12 +126,12 @@ test_experiments = [
             "decay_1": ActivationDataModel(
                 elements=["decay"],
                 data=test_data_1,
-                activation=test_activation_1,
+                activations=test_activation_1,
             ),
             "decay_2": ActivationDataModel(
                 elements=["decay"],
                 data=test_data_2,
-                activation=test_activation_2,
+                activations=test_activation_2,
             ),
         },
     ),

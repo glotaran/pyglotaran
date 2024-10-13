@@ -53,7 +53,7 @@ class DampedOscillationElement(Element):
 
         clp_labels = []
         matrices = []
-        for activation in model.activation:
+        for _, activation in model.activations.items():
             oscillation_labels = [
                 label for label in self.oscillations if label in activation.compartments
             ]

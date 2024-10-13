@@ -36,11 +36,11 @@ class CoherentArtifactElement(Element):
         if not 1 <= self.order <= 3:
             raise GlotaranModelError("Coherent artifact order must be between in [1,3]")
 
-        activations = [
-            a
-            for a in model.activation
+        activations = {
+            key: a
+            for key,a in model.activations.items()
             if isinstance(a, MultiGaussianActivation) and self.label in a.compartments
-        ]
+        }
 
         if not len(activations):
             raise GlotaranModelError(
@@ -50,7 +50,7 @@ class CoherentArtifactElement(Element):
             raise GlotaranModelError(
                 f'Coherent artifact "{self.label}" must be associated with exactly one activation.'
             )
-        activation = activations[0]
+        activation = next(iter(activations.values()))
 
         parameters = activation.parameters(global_axis)
 

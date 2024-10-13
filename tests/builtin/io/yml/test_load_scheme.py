@@ -16,10 +16,11 @@ experiments:
         datasets:
             kinetic_parallel:
                 elements: [parallel]
-                activation:
-                    - type: instant
-                      compartments:
-                          "s1": 1
+                activations:
+                    irf:
+                        type: instant
+                        compartments:
+                            "s1": 1
 """
 
 

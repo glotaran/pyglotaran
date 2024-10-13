@@ -19,7 +19,7 @@ DATASET = simulate(
     KineticSpectrumDataModel(
         elements=["parallel"],
         global_elements=["spectral"],
-        activation=[GaussianActivation.model_validate(ACTIVATION)],  # type:ignore[call-arg]
+        activations={"irf":GaussianActivation.model_validate(ACTIVATION)},  # type:ignore[call-arg]
     ),
     ModelLibrary.from_dict(LIBRARY),
     SIMULATION_PARAMETERS,
@@ -35,7 +35,7 @@ SCHEME_DICT = {
             "datasets": {
                 "parallel-decay": {
                     "elements": ["parallel"],
-                    "activation": [ACTIVATION],
+                    "activations": {"irf":ACTIVATION},
                 }
             }
         }
