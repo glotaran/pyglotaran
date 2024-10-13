@@ -33,13 +33,13 @@ def test_single_data():
     assert "test_ele" in result_data.elements
     element_result = result_data.elements["test_ele"]
 
-    assert "test" in element_result.concentrations
-    assert element_result.concentrations["test"].shape == (
+    assert "concentrations" in element_result
+    assert element_result.concentrations.shape == (
         data_model.data.model.size,
         1,
     )
-    assert "test" in element_result.amplitudes
-    assert element_result.amplitudes["test"].shape == (
+    assert "amplitudes" in element_result
+    assert element_result.amplitudes.shape == (
         data_model.data["global"].size,
         1,
     )

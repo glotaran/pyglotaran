@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
+import xarray as xr
 from pydantic import ConfigDict
 from pydantic import Field
 
@@ -17,8 +18,6 @@ from glotaran.model.item import TypedItem
 from glotaran.plugin_system.element_registration import register_element
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
@@ -33,13 +32,6 @@ def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
     """
     json_schema["properties"].pop("label")
     json_schema["required"].remove("label")
-
-
-@dataclass
-class ElementResult:
-    amplitudes: dict[str, xr.DataArray]
-    concentrations: dict[str, xr.DataArray]
-    extra: dict[str, xr.DataArray] = field(default_factory=dict)
 
 
 class Element(TypedItem, abc.ABC):
@@ -93,6 +85,7 @@ class Element(TypedItem, abc.ABC):
         .. # noqa: DAR202
         """
 
+    @abc.abstractmethod
     def create_result(
         self,
         model: DataModel,
@@ -100,7 +93,7 @@ class Element(TypedItem, abc.ABC):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
+    ) -> xr.Dataset:
         """
 
         Parameters
@@ -114,7 +107,6 @@ class Element(TypedItem, abc.ABC):
         as_global: bool
             Whether model is calculated as global model.
         """
-        return ElementResult({}, {})
 
 
 class ExtendableElement(Element):

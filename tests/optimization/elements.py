@@ -4,15 +4,13 @@ from typing import TYPE_CHECKING
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.data_model import DataModel  # noqa: TCH001
 from glotaran.model.element import Element
-from glotaran.model.element import ElementResult
 from glotaran.model.item import ParameterType  # noqa: TCH001
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.typing.types import ArrayLike
 
 
@@ -40,10 +38,12 @@ class TestElementConstant(Element):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
-        return ElementResult(
-            amplitudes={"test": amplitudes},
-            concentrations={"test": concentrations},
+    ) -> xr.Dataset:
+        return xr.Dataset(
+            {
+                "amplitudes": amplitudes,
+                "concentrations": concentrations,
+            }
         )
 
 
@@ -66,6 +66,16 @@ class TestElementExponential(Element):
         if self.is_index_dependent:
             matrix = np.array([matrix] * global_axis.size)
         return self.compartments, matrix
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class TestElementGaussian(Element):
@@ -92,3 +102,13 @@ class TestElementGaussian(Element):
                 -np.log(2) * np.square(2 * (model_axis - location[i]) / width[i])
             )
         return self.compartments, matrix
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()

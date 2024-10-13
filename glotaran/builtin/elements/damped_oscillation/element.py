@@ -20,7 +20,6 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.data_model import DataModel  # noqa: TCH001
 from glotaran.model.element import Element
-from glotaran.model.element import ElementResult
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 
@@ -140,7 +139,7 @@ class DampedOscillationElement(Element):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
+    ) -> xr.Dataset:
         oscillations = list(self.oscillations)
         frequencies = [self.oscillations[label].frequency for label in oscillations]
         rates = [self.oscillations[label].rate for label in oscillations]
@@ -186,17 +185,15 @@ class DampedOscillationElement(Element):
             coords=doas_concentrations.coords,
         )
 
-        return ElementResult(
-            amplitudes={
-                "damped_oscillation": doas_amplitudes,
-                "damped_oscillation_phase": phase_amplitudes,
-                "damped_oscillation_sin": sin_amplitudes,
-                "damped_oscillation_cos": cos_amplitudes,
-            },
-            concentrations={
-                "damped_oscillation": doas_concentrations,
-                "damped_oscillation_phase": phase_concentrations,
-                "damped_oscillation_sin": sin_concentrations,
-                "damped_oscillation_cos": cos_concentrations,
+        return xr.Dataset(
+            {
+                "damped_oscillation_amplitudes": doas_amplitudes,
+                "damped_oscillation_phase_amplitudes": phase_amplitudes,
+                "damped_oscillation_sin_amplitudes": sin_amplitudes,
+                "damped_oscillation_cos_amplitudes": cos_amplitudes,
+                "damped_oscillation_concentrations": doas_concentrations,
+                "damped_oscillation_phase_concentrations": phase_concentrations,
+                "damped_oscillation_sin_concentrations": sin_concentrations,
+                "damped_oscillation_cos_concentrations": cos_concentrations,
             },
         )

@@ -5,6 +5,7 @@ from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
@@ -35,6 +36,16 @@ class MockElementWithDataModel(Element):
     ):
         return ["a"], np.array([[1]])
 
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
+
 
 class MockElementWithItem(Element):
     type: Literal["mock-w-item"]
@@ -50,12 +61,32 @@ class MockElementWithItem(Element):
     ):
         return ["a"], np.array([[1]])
 
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
+
 
 class MockElementNonUniqueExclusive(Element):
     type: Literal["test_element_not_exclusive_unique"]
 
     def calculate_matrix():
         pass
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class MockElementExclusive(Element):
@@ -65,6 +96,16 @@ class MockElementExclusive(Element):
     def calculate_matrix():
         pass
 
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
+
 
 class MockElementUnique(Element):
     type: Literal["test_element_unique"]
@@ -72,6 +113,16 @@ class MockElementUnique(Element):
 
     def calculate_matrix():
         pass
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 class MockElementDim1(Element):
@@ -81,6 +132,16 @@ class MockElementDim1(Element):
     def calculate_matrix():
         pass
 
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
+
 
 class MockElementDim2(Element):
     type: Literal["test_element_dim2"]
@@ -88,6 +149,16 @@ class MockElementDim2(Element):
 
     def calculate_matrix():
         pass
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()
 
 
 def test_data_model_from_dict():

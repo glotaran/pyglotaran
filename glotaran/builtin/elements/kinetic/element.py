@@ -13,7 +13,6 @@ from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_a
 from glotaran.builtin.elements.kinetic.matrix import calculate_matrix_gaussian_activation_on_index
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model.element import ElementResult
 from glotaran.model.element import ExtendableElement
 
 if TYPE_CHECKING:
@@ -159,7 +158,7 @@ class KineticElement(ExtendableElement, Kinetic):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
+    ) -> xr.Dataset:
         species_amplitude = amplitudes.sel(amplitude_label=self.species).rename(
             amplitude_label="species"
         )
@@ -219,16 +218,14 @@ class KineticElement(ExtendableElement, Kinetic):
             dims=("activation", global_dimension, "kinetic"),
         )
 
-        return ElementResult(
-            amplitudes={
-                "species": species_amplitude,
-                "kinetic": kinetic_amplitude,
-            },
-            concentrations={"species": species_concentration},
-            extra={
+        return xr.Dataset(
+            {
+                "species_amplitude": species_amplitude,
+                "kinetic_amplitude": kinetic_amplitude,
+                "species_concentration": species_concentration,
                 "k_matrix": k_matrix,
                 "reduced_k_matrix": reduced_k_matrix,
                 "initial_concentration": initial_concentration,
                 "a_matrix": a_matrix,
-            },
+            }
         )

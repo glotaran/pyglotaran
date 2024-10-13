@@ -5,13 +5,11 @@ from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.element import Element
-from glotaran.model.element import ElementResult
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
@@ -42,8 +40,5 @@ class BaselineElement(Element):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
-        return ElementResult(
-            amplitudes={"baseline": amplitudes.sel(amplitude_label=self.clp_label())},
-            concentrations={},
-        )
+    ) -> xr.Dataset:
+        return xr.Dataset({"amplitudes": amplitudes.sel(amplitude_label=self.clp_label())})

@@ -5,15 +5,13 @@ from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TCH001
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
-from glotaran.model.element import ElementResult
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.typing.types import ArrayLike
 
 
@@ -87,7 +85,7 @@ class SpectralElement(Element):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
+    ) -> xr.Dataset:
         shapes = list(self.shapes.keys())
 
         spectra_amplitude = amplitudes.sel(amplitude_label=shapes).rename(amplitude_label="shape")
@@ -95,7 +93,9 @@ class SpectralElement(Element):
             amplitude_label="shape"
         )
 
-        return ElementResult(
-            amplitudes={"spectrum": spectra_amplitude},
-            concentrations={"spectrum": spectra_concentration},
+        return xr.Dataset(
+            {
+                "amplitudes": spectra_amplitude,
+                "concentrations": spectra_concentration,
+            }
         )

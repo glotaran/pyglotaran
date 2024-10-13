@@ -5,6 +5,7 @@ from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.element import Element
 
@@ -27,3 +28,13 @@ class ClpGuideElement(Element):
         **kwargs,
     ) -> tuple[list[str], ArrayLike]:
         return [self.target], np.ones((1, 1), dtype=np.float64)
+
+    def create_result(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset()  # TODO: return correct data

@@ -6,17 +6,15 @@ from typing import Literal
 
 import numba as nb
 import numpy as np
+import xarray as xr
 
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.element import Element
-from glotaran.model.element import ElementResult
 from glotaran.model.errors import GlotaranModelError
 from glotaran.model.item import ParameterType  # noqa: TCH001
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
@@ -96,7 +94,7 @@ class CoherentArtifactElement(Element):
         model_dimension: str,
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
-    ) -> ElementResult:
+    ) -> xr.Dataset:
         amplitude = (
             amplitudes.sel(amplitude_label=self.compartments)
             .rename(amplitude_label="coherent_artifact_order")
@@ -107,10 +105,7 @@ class CoherentArtifactElement(Element):
             .rename(amplitude_label="coherent_artifact_order")
             .assign_coords({"coherent_artifact_order": range(1, self.order + 1)})
         )
-        return ElementResult(
-            amplitudes={"coherent_artifact": amplitude},
-            concentrations={"coherent_artifact": concentration},
-        )
+        return xr.Dataset({"amplitudes": amplitude, "concentrations": concentration})
 
 
 @nb.jit(nopython=True, parallel=False)

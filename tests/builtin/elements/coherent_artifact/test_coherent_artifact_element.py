@@ -103,3 +103,31 @@ def test_coherent_artifact(activation: Activation):
         "coherent_artifact_associated_amplitudes_coherent-artifact"
         in optimized_data["coherent_artifact"]
     )
+
+
+if __name__ == "__main__":
+    test_coherent_artifact(
+        GaussianActivation(
+            type="gaussian",
+            compartments={"coherent-artifact": 1},
+            center="gaussian.center",
+            width="gaussian.width",
+        )
+    )
+    test_coherent_artifact(
+        GaussianActivation(
+            type="gaussian",
+            compartments={"coherent-artifact": 1},
+            center="gaussian.center",
+            width="gaussian.width",
+            shift=[0],
+        )
+    )
+    test_coherent_artifact(
+        MultiGaussianActivation(
+            type="multi-gaussian",
+            compartments={"coherent-artifact": 1},
+            center=["gaussian.center"],
+            width=["gaussian.width", "gaussian.width"],
+        )
+    )

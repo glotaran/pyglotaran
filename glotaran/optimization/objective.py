@@ -14,7 +14,6 @@ from pydantic import Field
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
 from glotaran.model.element import Element
-from glotaran.model.element import ElementResult
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -46,7 +45,7 @@ def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: s
 class DatasetResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    elements: dict[str, ElementResult] = Field(default_factory=dict)
+    elements: dict[str, xr.Dataset] = Field(default_factory=dict)
     activations: xr.Dataset = Field(default_factory=dict)
     input_data: xr.DataArray | xr.Dataset | None = None
     residuals: xr.DataArray | xr.Dataset | None = None
@@ -194,17 +193,20 @@ class OptimizationObjective:
         )
         clp_size = len(matrix.clp_axis) + len(global_matrix.clp_axis)
         self._data.unweight_result_dataset(result_dataset)
-        result_dataset["fit"] = result_dataset.data - result_dataset.residual
+
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
         result = DatasetResult(
-            result_dataset,
-            {
-                label: ElementResult(
-                    amplitudes={"clp": clp},
-                    concentrations={"global": global_matrix, "model": matrix},
+            input_data=result_dataset.data,
+            residuals=result_dataset.residual,
+            elements={
+                label: xr.Dataset(
+                    {
+                        "amplitudes": clp,
+                        "global_concentrations": global_matrix,
+                        "model_concentrations": matrix,
+                    }
                 )
             },
-            {},
         )
         return OptimizationObjectiveResult(
             data={label: result}, clp_size=clp_size, additional_penalty=0
@@ -385,7 +387,7 @@ class OptimizationObjective:
         model_dim: str,
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
-    ) -> dict[str, ElementResult]:
+    ) -> dict[str, xr.Dataset]:
         assert any(isinstance(element, str) for element in model.elements) is False
         return {
             element.label: element.create_result(
