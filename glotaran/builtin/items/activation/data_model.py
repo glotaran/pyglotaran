@@ -55,7 +55,7 @@ class ActivationDataModel(DataModel):
         concentrations: xr.DataArray,
     ) -> dict[str, xr.DataArray]:
         gaussian_activations = {
-            key:a for a in model.activations.items() if isinstance(a, MultiGaussianActivation)
+            key:a for key, a in model.activations.items() if isinstance(a, MultiGaussianActivation)
         }
         if not len(gaussian_activations):
             return {}
@@ -68,10 +68,10 @@ class ActivationDataModel(DataModel):
         activation_shifts = []
         activation_dispersions = []
 
-        has_shifts = any(a.shift is not None for a in gaussian_activations)
-        has_dispersions = any(a.dispersion_center is not None for a in gaussian_activations)
+        has_shifts = any(a.shift is not None for a in gaussian_activations.values())
+        has_dispersions = any(a.dispersion_center is not None for a in gaussian_activations.values())
 
-        for activation in gaussian_activations:
+        for _, activation in gaussian_activations.items():
             activations.append(activation.calculate_function(model_axis))
             activation_parameters.append(
                 cast(list[GaussianActivationParameters], activation.parameters())
