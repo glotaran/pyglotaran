@@ -71,7 +71,7 @@ class KineticElement(ExtendableElement, Kinetic):
     ) -> tuple[list[str], ArrayLike]:
         compartments = self.compartments
         matrices = []
-        for _,activation in model.activations.items():
+        for _, activation in model.activations.items():
             initial_concentrations = np.array(
                 [float(activation.compartments.get(label, 0)) for label in compartments]
             )
@@ -185,7 +185,7 @@ class KineticElement(ExtendableElement, Kinetic):
         initial_concentrations = []
         a_matrices = []
         kinetic_amplitudes = []
-        for _,activation in model.activations.items():
+        for _, activation in model.activations.items():
             initial_concentration = np.array(
                 [float(activation.compartments.get(label, 0)) for label in self.compartments]
             )
@@ -196,7 +196,10 @@ class KineticElement(ExtendableElement, Kinetic):
 
         initial_concentration = xr.DataArray(
             initial_concentrations,
-            coords={"activation": range(len(initial_concentrations)), "compartment": self.compartments},
+            coords={
+                "activation": range(len(initial_concentrations)),
+                "compartment": self.compartments,
+            },
         )
         a_matrix = xr.DataArray(
             a_matrices,

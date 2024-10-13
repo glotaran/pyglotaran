@@ -72,7 +72,9 @@ test_clp = xr.DataArray(
     ),
 )
 def test_coherent_artifact(activation: Activation):
-    data_model = ActivationDataModel(elements=["coherent-artifact"], activations={"irf":activation})
+    data_model = ActivationDataModel(
+        elements=["coherent-artifact"], activations={"irf": activation}
+    )
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )

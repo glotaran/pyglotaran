@@ -32,13 +32,13 @@ test_library = {
 test_parameters_simulation = Parameters.from_dict(
     {
         "osc": [["frequency", 3], ["rate", 1]],
-        "gaussian": [["center", 0], ["width", 10]],
+        "irf": [["center", 0], ["width", 10]],
     }
 )
 test_parameters = Parameters.from_dict(
     {
         "osc": [["frequency", 3], ["rate", 1, {"min": 0}]],
-        "gaussian": [["center", 0], ["width", 10]],
+        "irf": [["center", 0], ["width", 10]],
     }
 )
 
@@ -92,7 +92,7 @@ test_clp = xr.DataArray(
     ),
 )
 def test_coherent_artifact(activation: Activation):
-    data_model = ActivationDataModel(elements=["does"], activations={"irf": activation})
+    data_model = ActivationDataModel(elements=["doas"], activations={"irf": activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
@@ -124,9 +124,12 @@ def test_coherent_artifact(activation: Activation):
         in optimization_results["damped_oscillation"]
     )
     assert (
-        "damped_oscillation_frequency_damped-oscillation" in optimization_results["damped_oscillation"]
+        "damped_oscillation_frequency_damped-oscillation"
+        in optimization_results["damped_oscillation"]
     )
-    assert "damped_oscillation_rate_damped-oscillation" in optimization_results["damped_oscillation"]
+    assert (
+        "damped_oscillation_rate_damped-oscillation" in optimization_results["damped_oscillation"]
+    )
     assert (
         "damped_oscillation_phase_associated_amplitudes_damped-oscillation"
         in optimization_results["damped_oscillation"]
@@ -148,27 +151,36 @@ def test_coherent_artifact(activation: Activation):
         in optimization_results["damped_oscillation"]
     )
 
+
 if __name__ == "__main__":
-    test_coherent_artifact(InstantActivation(
-        type="instant",
-        compartments={"osc": 1},
-    ))
-    test_coherent_artifact(GaussianActivation(
-        type="gaussian",
-        compartments={"osc": 1},
-        center="gaussian.center",
-        width="gaussian.width",
-    ))
-    test_coherent_artifact(GaussianActivation(
-        type="gaussian",
-        compartments={"osc": 1},
-        center="gaussian.center",
-        width="gaussian.width",
-        shift=[0],
-    ))
-    test_coherent_artifact(MultiGaussianActivation(
-        type="multi-gaussian",
-        compartments={},
-        center=["gaussian.center"],
-        width=["gaussian.width", "gaussian.width"],
-    ))
+    test_coherent_artifact(
+        InstantActivation(
+            type="instant",
+            compartments={"osc": 1},
+        )
+    )
+    test_coherent_artifact(
+        GaussianActivation(
+            type="gaussian",
+            compartments={"osc": 1},
+            center="irf.center",
+            width="irf.width",
+        )
+    )
+    test_coherent_artifact(
+        GaussianActivation(
+            type="gaussian",
+            compartments={"osc": 1},
+            center="irf.center",
+            width="irf.width",
+            shift=[0],
+        )
+    )
+    test_coherent_artifact(
+        MultiGaussianActivation(
+            type="multi-gaussian",
+            compartments={},
+            center=["irf.center"],
+            width=["irf.width", "irf.width"],
+        )
+    )

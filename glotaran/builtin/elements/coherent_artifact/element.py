@@ -38,7 +38,7 @@ class CoherentArtifactElement(Element):
 
         activations = {
             key: a
-            for key,a in model.activations.items()
+            for key, a in model.activations.items()
             if isinstance(a, MultiGaussianActivation) and self.label in a.compartments
         }
 

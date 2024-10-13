@@ -74,8 +74,8 @@ test_data_model_simulation_cls = DataModel.create_class_for_elements(
     (KineticElement, SpectralElement)
 )
 
-test_activation_1 = {"irf":
-    GaussianActivation(
+test_activation_1 = {
+    "irf": GaussianActivation(
         type="gaussian",
         compartments={"s1": 1, "s2": 0.75},
         center="activation.center",
@@ -83,8 +83,8 @@ test_activation_1 = {"irf":
     ),
 }
 
-test_activation_2 = {"irf":
-    GaussianActivation(
+test_activation_2 = {
+    "irf": GaussianActivation(
         type="gaussian",
         compartments={"s1": 1, "s2": 0.1},
         center="activation.center",

@@ -19,7 +19,7 @@ DATASET = simulate(
     KineticSpectrumDataModel(
         elements=["sequential"],
         global_elements=["spectral"],
-        activations={"irf":GaussianActivation.model_validate(ACTIVATION)},  # type:ignore[call-arg]
+        activations={"irf": GaussianActivation.model_validate(ACTIVATION)},  # type:ignore[call-arg]
     ),
     ModelLibrary.from_dict(LIBRARY),
     SIMULATION_PARAMETERS,
@@ -35,7 +35,7 @@ SCHEME_DICT = {
             "datasets": {
                 "sequential-decay": {
                     "elements": ["sequential"],
-                    "activations": {"irf":ACTIVATION},
+                    "activations": {"irf": ACTIVATION},
                 }
             }
         }

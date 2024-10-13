@@ -46,7 +46,7 @@ class OptimizationResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
     elements: dict[str, xr.Dataset] = Field(default_factory=dict)
-    activations: xr.Dataset = Field(default_factory=dict)
+    activations: dict[str, xr.Dataset] = Field(default_factory=dict)
     input_data: xr.DataArray | xr.Dataset | None = None
     residuals: xr.DataArray | xr.Dataset | None = None
 
@@ -279,7 +279,9 @@ class OptimizationObjective:
             activations=activations,
         )
         return OptimizationObjectiveResult(
-            optimization_results={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
+            optimization_results={label: result},
+            clp_size=clp_size,
+            additional_penalty=additional_penalty,
         )
 
     def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
@@ -470,7 +472,7 @@ class OptimizationObjective:
                 amplitudes,
                 concentrations,
             )
-        return xr.Dataset(result)
+        return result
 
     def get_result(self) -> OptimizationObjectiveResult:
         return (

@@ -85,7 +85,7 @@ test_parameters = Parameters.from_dict(
 test_global_axis = np.arange(0, 50)
 test_model_axis = np.arange(-10, 1500, 1)
 test_axies = {"spectral": test_global_axis, "time": test_model_axis}
-test_activation = {"no_irf":InstantActivation(type="instant", compartments={"s1": 1})}
+test_activation = {"no_irf": InstantActivation(type="instant", compartments={"s1": 1})}
 test_data_model_cls = DataModel.create_class_for_elements((KineticElement, SpectralElement))
 test_data = simulate(
     test_data_model_cls(

@@ -104,7 +104,7 @@ def test_decay(decay_method: str, activation: Activation):
         activation.compartments = {"s1": 1, "s2": 1}
     else:
         activation.compartments = {"s1": 1}
-    data_model = ActivationDataModel(elements=[decay_method], activations={"irf":activation})
+    data_model = ActivationDataModel(elements=[decay_method], activations={"irf": activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
@@ -122,8 +122,8 @@ def test_decay(decay_method: str, activation: Activation):
     assert "dataset1" in optimization_result
     print(optimization_result["dataset1"])
     assert optimization_result["dataset1"].residuals is not None
-    assert optimization_result["dataset1"].elements is not None 
-    assert optimization_result["dataset1"].elements[decay_method] is not None 
+    assert optimization_result["dataset1"].elements is not None
+    assert optimization_result["dataset1"].elements[decay_method] is not None
     decay_result = optimization_result["dataset1"].elements[decay_method]
     assert "amplitudes" in decay_result
     assert "concentrations" in decay_result
@@ -134,22 +134,57 @@ def test_decay(decay_method: str, activation: Activation):
     assert "kinetic_amplitude" in decay_result
 
     if isinstance(activation, MultiGaussianActivation):
-        assert optimization_result["dataset1"].activations[decay_method] is not None
+        assert optimization_result["dataset1"].activations["irf"] is not None
         # assert "gaussian_activation" in optimization_result["dataset1"].coords
         # assert "gaussian_activation_function" in optimization_result["dataset1"]
 
 
 if __name__ == "__main__":
-    test_decay("parallel", InstantActivation(type="instant", compartments={}))
-    test_decay("sequential", InstantActivation(type="instant", compartments={}))
-    test_decay("equilibrium", InstantActivation(type="instant", compartments={}))
-    test_decay("parallel", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
-    test_decay("sequential", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
-    test_decay("equilibrium", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
-    test_decay("parallel", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
-    test_decay("sequential", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
-    test_decay("equilibrium", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
-    test_decay("parallel", MultiGaussianActivation(type="multi-gaussian", compartments={}, center=["gaussian.center"], width=["gaussian.width", "gaussian.width"]))
-    test_decay("sequential", MultiGaussianActivation(type="multi-gaussian", compartments={}, center=["gaussian.center"], width=["gaussian.width", "gaussian.width"]))
-    test_decay("equilibrium", MultiGaussianActivation(type="multi-gaussian", compartments={}, center=["gaussian.center"], width=["gaussian.width", "gaussian.width"]))
-    
+    # test_decay("parallel", InstantActivation(type="instant", compartments={}))
+    # test_decay("sequential", InstantActivation(type="instant", compartments={}))
+    # test_decay("equilibrium", InstantActivation(type="instant", compartments={}))
+    # test_decay("parallel", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
+    # test_decay("sequential", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
+    # test_decay("equilibrium", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width"))
+    # test_decay("parallel", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
+    # test_decay("sequential", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
+    # test_decay("equilibrium", GaussianActivation(type="gaussian", compartments={}, center="gaussian.center", width="gaussian.width", shift=[1, 0]))
+    test_decay(
+        "parallel",
+        MultiGaussianActivation(
+            type="multi-gaussian",
+            compartments={},
+            dispersion_center=0,
+            center_dispersion_coefficients=[0.003, 0.002, -0.001],
+            width_dispersion_coefficients=[0.05, -0.06],
+            center=["gaussian.center"],
+            width=["gaussian.width", "gaussian.width"],
+        ),
+    )
+    test_decay(
+        "parallel",
+        MultiGaussianActivation(
+            type="multi-gaussian",
+            compartments={},
+            center=["gaussian.center"],
+            width=["gaussian.width", "gaussian.width"],
+        ),
+    )
+    test_decay(
+        "sequential",
+        MultiGaussianActivation(
+            type="multi-gaussian",
+            compartments={},
+            center=["gaussian.center"],
+            width=["gaussian.width", "gaussian.width"],
+        ),
+    )
+    test_decay(
+        "equilibrium",
+        MultiGaussianActivation(
+            type="multi-gaussian",
+            compartments={},
+            center=["gaussian.center"],
+            width=["gaussian.width", "gaussian.width"],
+        ),
+    )
