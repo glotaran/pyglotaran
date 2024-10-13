@@ -59,7 +59,7 @@ class OptimizationResult(BaseModel):
 
 @dataclass
 class OptimizationObjectiveResult:
-    optimization_result: dict[str, OptimizationResult]
+    optimization_results: dict[str, OptimizationResult]
     additional_penalty: float
     clp_size: int
 
@@ -209,7 +209,7 @@ class OptimizationObjective:
             },
         )
         return OptimizationObjectiveResult(
-            optimization_result={label: result}, clp_size=clp_size, additional_penalty=0
+            optimization_results={label: result}, clp_size=clp_size, additional_penalty=0
         )
 
     def create_single_dataset_result(self) -> OptimizationObjectiveResult:
@@ -279,7 +279,7 @@ class OptimizationObjective:
             activations=activations,
         )
         return OptimizationObjectiveResult(
-            optimization_result={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
+            optimization_results={label: result}, clp_size=clp_size, additional_penalty=additional_penalty
         )
 
     def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
@@ -319,7 +319,7 @@ class OptimizationObjective:
             for label, data in self._data.data.items()
         }
         return OptimizationObjectiveResult(
-            optimization_result=results,
+            optimization_results=results,
             clp_size=clp_size,
             additional_penalty=additional_penalty,
         )

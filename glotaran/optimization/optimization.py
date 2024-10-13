@@ -134,9 +134,10 @@ class Optimization:
                 warn(f"Optimization failed:\n\n{e}")
                 termination_reason = str(e)
 
+        # TODO: check how this works for multiple experiments with possible the same dataset name
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
-        optimization_results = dict(ChainMap(*[r.optimization_result for r in results]))
+        optimization_results = dict(ChainMap(*[r.optimization_results for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
         optimization_info = OptimizationInfo.from_least_squares_result(
@@ -156,7 +157,7 @@ class Optimization:
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
-        data = dict(ChainMap(*[r.optimization_result for r in results]))
+        data = dict(ChainMap(*[r.optimization_results for r in results]))
         number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
         result = OptimizationInfo.from_least_squares_result(
