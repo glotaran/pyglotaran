@@ -43,8 +43,8 @@ class Kinetic(Item):
         return cls(rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]))
 
     @property
-    def species(self) -> list[str]:
-        """A list of all species involved in the kinetic scheme."""
+    def compartments(self) -> list[str]:
+        """A list of all compartments involved in the kinetic scheme."""
         return list(dict.fromkeys([c for cs in self.rates for c in reversed(cs)]))
 
     @property
@@ -57,12 +57,11 @@ class Kinetic(Item):
             The compartment order.
         """
 
-        species = self.species
-        size = len(species)
+        size = len(self.compartments)
         array = np.zeros((size, size), dtype=np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = species.index(to_comp)
-            fr_idx = species.index(from_comp)
+            to_idx = self.compartments.index(to_comp)
+            fr_idx = self.compartments.index(from_comp)
             array[to_idx, fr_idx] = rate
         return array
 
@@ -75,12 +74,11 @@ class Kinetic(Item):
         compartments :
             The compartment order.
         """
-        species = self.species
-        size = len(species)
+        size = len(self.compartments)
         array = np.zeros((size, size), np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = species.index(to_comp)
-            fr_idx = species.index(from_comp)
+            to_idx = self.compartments.index(to_comp)
+            fr_idx = self.compartments.index(from_comp)
 
             if to_idx == fr_idx:
                 array[to_idx, fr_idx] -= rate

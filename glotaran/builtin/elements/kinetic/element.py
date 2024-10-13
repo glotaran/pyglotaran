@@ -69,7 +69,7 @@ class KineticElement(ExtendableElement, Kinetic):
         model_axis: ArrayLike,
         **kwargs,
     ) -> tuple[list[str], ArrayLike]:
-        compartments = self.species
+        compartments = self.compartments
         matrices = []
         for activation in model.activation:
             initial_concentrations = np.array(
@@ -159,20 +159,21 @@ class KineticElement(ExtendableElement, Kinetic):
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
     ) -> xr.Dataset:
-        species_amplitude = amplitudes.sel(amplitude_label=self.species).rename(
-            amplitude_label="species"
+        species_amplitude = amplitudes.sel(amplitude_label=self.compartments).rename(
+            amplitude_label="compartment"
         )
-        species_concentration = concentrations.sel(amplitude_label=self.species).rename(
-            amplitude_label="species"
+        species_concentration = concentrations.sel(amplitude_label=self.compartments).rename(
+            amplitude_label="compartment"
         )
 
         k_matrix = xr.DataArray(
-            self.full_array, coords={"to_species": self.species, "from_species": self.species}
+            self.full_array, coords={"to": self.compartments, "from": self.compartments}
         )
         reduced_k_matrix = xr.DataArray(
-            self.array, coords={"to_species": self.species, "from_species": self.species}
+            self.array, coords={"to": self.compartments, "from": self.compartments}
         )
 
+        # TODO: do we want to store it in this format?
         rates = self.calculate()
         lifetimes = 1 / rates
         kinetic_coords = {
@@ -186,7 +187,7 @@ class KineticElement(ExtendableElement, Kinetic):
         kinetic_amplitudes = []
         for activation in model.activation:
             initial_concentration = np.array(
-                [float(activation.compartments.get(label, 0)) for label in self.species]
+                [float(activation.compartments.get(label, 0)) for label in self.compartments]
             )
             initial_concentrations.append(initial_concentration)
             a_matrix = self.a_matrix(initial_concentration)
@@ -195,23 +196,23 @@ class KineticElement(ExtendableElement, Kinetic):
 
         initial_concentration = xr.DataArray(
             initial_concentrations,
-            coords={"activation": range(len(initial_concentrations)), "species": self.species},
+            coords={"activation": range(len(initial_concentrations)), "compartment": self.compartments},
         )
         a_matrix = xr.DataArray(
             a_matrices,
             coords={
                 "activation": range(len(a_matrices)),
-                "species": self.species,
+                "compartment": self.compartments,
             }
             | kinetic_coords,
-            dims=("activation", "species", "kinetic"),
+            dims=("activation", "compartment", "kinetic"),
         )
         kinetic_amplitude_coords = (
             {"activation": range(len(kinetic_amplitudes))}
             | kinetic_coords
             | dict(species_amplitude.coords)
         )
-        del kinetic_amplitude_coords["species"]
+        del kinetic_amplitude_coords["compartment"]
         kinetic_amplitude = xr.DataArray(
             kinetic_amplitudes,
             coords=kinetic_amplitude_coords,
