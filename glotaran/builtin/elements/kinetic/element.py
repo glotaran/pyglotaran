@@ -221,12 +221,12 @@ class KineticElement(ExtendableElement, Kinetic):
 
         return xr.Dataset(
             {
-                "species_amplitude": species_amplitude,
+                "amplitudes": species_amplitude,
+                "concentrations": species_concentration,
+                "initial_concentration": initial_concentration,
                 "kinetic_amplitude": kinetic_amplitude,
-                "species_concentration": species_concentration,
                 "k_matrix": k_matrix,
                 "reduced_k_matrix": reduced_k_matrix,
-                "initial_concentration": initial_concentration,
                 "a_matrix": a_matrix,
             }
         )

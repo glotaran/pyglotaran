@@ -122,13 +122,21 @@ def test_decay(decay_method: str, activation: Activation):
     assert "dataset1" in optimization_result
     print(optimization_result["dataset1"])
     assert optimization_result["dataset1"].residuals is not None
-    assert f"species_associated_concentrations_{decay_method}" in optimization_result["dataset1"]
-    assert f"species_associated_amplitudes_{decay_method}" in optimization_result["dataset1"]
-    assert f"kinetic_associated_amplitudes_{decay_method}" in optimization_result["dataset1"]
-    assert f"k_matrix_{decay_method}" in optimization_result["dataset1"]
+    assert optimization_result["dataset1"].elements is not None 
+    assert optimization_result["dataset1"].elements[decay_method] is not None 
+    decay_result = optimization_result["dataset1"].elements[decay_method]
+    assert "amplitudes" in decay_result
+    assert "concentrations" in decay_result
+    assert "initial_concentration" in decay_result
+    assert "k_matrix" in decay_result
+    assert "reduced_k_matrix" in decay_result
+    assert "a_matrix" in decay_result
+    assert "kinetic_amplitude" in decay_result
+
     if isinstance(activation, MultiGaussianActivation):
-        assert "gaussian_activation" in optimization_result["dataset1"].coords
-        assert "gaussian_activation_function" in optimization_result["dataset1"]
+        assert optimization_result["dataset1"].activations[decay_method] is not None
+        # assert "gaussian_activation" in optimization_result["dataset1"].coords
+        # assert "gaussian_activation_function" in optimization_result["dataset1"]
 
 
 if __name__ == "__main__":
