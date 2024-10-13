@@ -81,7 +81,7 @@ def test_global_data(weight: bool):
     )
     assert "clp" in result_data
     assert result_data.clp.shape == (1, 1)
-    assert "residual" in result_data
+    assert result_data.residuals is not None
     assert result_data.residual.shape == data_model.data.data.shape
 
 
@@ -117,7 +117,7 @@ def test_multiple_data():
         data_model_one.data["global"].size,
         1,
     )
-    assert "residual" in result_data
+    assert result_data.residuals is not None
     assert result_data.residual.shape == data_model_one.data.data.shape
 
     assert "dependent" in result
@@ -133,7 +133,7 @@ def test_multiple_data():
         data_model_two.data["global"].size,
         1,
     )
-    assert "residual" in result_data
+    assert result_data.residuals is not None
     # this datamodel has transposed input
     assert result_data.residual.shape == data_model_two.data.data.T.shape
 

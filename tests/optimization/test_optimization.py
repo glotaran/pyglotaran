@@ -43,7 +43,7 @@ def test_single_data():
     assert "decay_independent" in optimized_data
     result_data = optimized_data["decay_independent"]
     print(result_data)
-    assert "residual" in result_data
+    assert result_data.residuals is not None
     assert "fit" in result_data
 
 

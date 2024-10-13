@@ -121,7 +121,7 @@ def test_decay(decay: str, activation: Activation):
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
     assert "decay" in optimized_data
     print(optimized_data["decay"])
-    assert "residual" in optimized_data["decay"]
+    assert optimized_data["decay"].residuals is not None
     assert f"species_associated_concentrations_{decay}" in optimized_data["decay"]
     assert f"species_associated_amplitudes_{decay}" in optimized_data["decay"]
     assert f"kinetic_associated_amplitudes_{decay}" in optimized_data["decay"]
@@ -129,3 +129,7 @@ def test_decay(decay: str, activation: Activation):
     if isinstance(activation, MultiGaussianActivation):
         assert "gaussian_activation" in optimized_data["decay"].coords
         assert "gaussian_activation_function" in optimized_data["decay"]
+
+
+if __name__ == "__main__":
+    test_decay("parallel", InstantActivation(type="instant", compartments={}))
