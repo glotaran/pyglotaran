@@ -24,7 +24,7 @@ class CoherentArtifactElement(Element):
     register_as: ClassVar[str] = "coherent-artifact"
     dimension: str = "time"
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
-    order: int
+    order: int  # TODO: different name? count, number, degree?
     width: ParameterType | None = None
 
     def calculate_matrix(  # type:ignore[override]
@@ -85,7 +85,7 @@ class CoherentArtifactElement(Element):
 
     @property
     def compartments(self):
-        return [f"coherent_artifact_{self.label}_order_{i}" for i in range(1, self.order + 1)]
+        return [f"{self.label}_derivative_{i}" for i in range(self.order)]
 
     def create_result(
         self,
@@ -97,13 +97,13 @@ class CoherentArtifactElement(Element):
     ) -> xr.Dataset:
         amplitude = (
             amplitudes.sel(amplitude_label=self.compartments)
-            .rename(amplitude_label="coherent_artifact_order")
-            .assign_coords({"coherent_artifact_order": range(1, self.order + 1)})
+            .rename(amplitude_label="derivative")
+            .assign_coords({"derivative": range(self.order)})
         )
         concentration = (
             concentrations.sel(amplitude_label=self.compartments)
-            .rename(amplitude_label="coherent_artifact_order")
-            .assign_coords({"coherent_artifact_order": range(1, self.order + 1)})
+            .rename(amplitude_label="derivative")
+            .assign_coords({"derivative": range(self.order)})
         )
         return xr.Dataset({"amplitudes": amplitude, "concentrations": concentration})
 
