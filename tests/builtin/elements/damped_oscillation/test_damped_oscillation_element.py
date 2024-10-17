@@ -17,7 +17,7 @@ from glotaran.simulation import simulate
 
 test_library = {
     "doas": DampedOscillationElement(
-        label="damped-oscillation",
+        label="doas",
         type="damped-oscillation",
         oscillations={
             "osc": {
@@ -92,13 +92,15 @@ test_clp = xr.DataArray(
     ),
 )
 def test_coherent_artifact(activation: Activation):
-    data_model = ActivationDataModel(elements=["doas"], activations={"irf": activation})
+    dataset_label = "dataset1"
+    element_label = "doas"
+    data_model = ActivationDataModel(elements=[element_label], activations={"irf": activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
     experiments = [
         ExperimentModel(
-            datasets={"dataset1": data_model},
+            datasets={dataset_label: data_model},
         )
     ]
     optimization = Optimization(
@@ -114,42 +116,17 @@ def test_coherent_artifact(activation: Activation):
     print(optimized_parameters)
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
-    assert "dataset1" in optimization_results
-    assert (
-        "damped_oscillation_associated_amplitudes_damped-oscillation"
-        in optimization_results["dataset1"]
-    )
-    assert (
-        "damped_oscillation_associated_concentrations_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_frequency_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_rate_damped-oscillation" in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_phase_associated_amplitudes_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_sin_associated_amplitudes_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_cos_associated_amplitudes_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_sin_associated_concentrations_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
-    assert (
-        "damped_oscillation_cos_associated_concentrations_damped-oscillation"
-        in optimization_results["damped_oscillation"]
-    )
+    assert dataset_label in optimization_results
+    assert element_label in optimization_results[dataset_label].elements
+    doas_result = optimization_results[dataset_label].elements[element_label]
+    assert "amplitudes" in doas_result.data_vars
+    assert "phase_amplitudes" in doas_result.data_vars
+    assert "sin_amplitudes" in doas_result.data_vars
+    assert "cos_amplitudes" in doas_result.data_vars
+    assert "concentrations" in doas_result.data_vars
+    assert "phase_concentrations" in doas_result.data_vars
+    assert "sin_concentrations" in doas_result.data_vars
+    assert "cos_concentrations" in doas_result.data_vars
 
 
 if __name__ == "__main__":

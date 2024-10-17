@@ -145,9 +145,9 @@ class DampedOscillationElement(Element):
         rates = [self.oscillations[label].rate for label in oscillations]
 
         oscillation_coords = {
-            "damped_oscillation": oscillations,
-            "damped_oscillation_frequency": ("damped_oscillation", frequencies),
-            "damped_oscillation_rate": ("damped_oscillation", rates),
+            "oscillation": oscillations,
+            "oscillation_frequency": ("oscillation", frequencies),
+            "oscillation_rate": ("oscillation", rates),
         }
 
         sin_label = [f"{label}_sin" for label in oscillations]
@@ -155,12 +155,12 @@ class DampedOscillationElement(Element):
 
         sin_amplitudes = (
             amplitudes.sel(amplitude_label=sin_label)
-            .rename(amplitude_label="damped_oscillation")
+            .rename(amplitude_label="oscillation")
             .assign_coords(oscillation_coords)
         )
         cos_amplitudes = (
             amplitudes.sel(amplitude_label=cos_label)
-            .rename(amplitude_label="damped_oscillation")
+            .rename(amplitude_label="oscillation")
             .assign_coords(oscillation_coords)
         )
         doas_amplitudes = np.sqrt(sin_amplitudes**2 + cos_amplitudes**2)
@@ -171,12 +171,12 @@ class DampedOscillationElement(Element):
 
         sin_concentrations = (
             concentrations.sel(amplitude_label=sin_label)
-            .rename(amplitude_label="damped_oscillation")
+            .rename(amplitude_label="oscillation")
             .assign_coords(oscillation_coords)
         )
         cos_concentrations = (
             concentrations.sel(amplitude_label=cos_label)
-            .rename(amplitude_label="damped_oscillation")
+            .rename(amplitude_label="oscillation")
             .assign_coords(oscillation_coords)
         )
         doas_concentrations = np.sqrt(sin_concentrations**2 + cos_concentrations**2)
@@ -187,13 +187,13 @@ class DampedOscillationElement(Element):
 
         return xr.Dataset(
             {
-                "damped_oscillation_amplitudes": doas_amplitudes,
-                "damped_oscillation_phase_amplitudes": phase_amplitudes,
-                "damped_oscillation_sin_amplitudes": sin_amplitudes,
-                "damped_oscillation_cos_amplitudes": cos_amplitudes,
-                "damped_oscillation_concentrations": doas_concentrations,
-                "damped_oscillation_phase_concentrations": phase_concentrations,
-                "damped_oscillation_sin_concentrations": sin_concentrations,
-                "damped_oscillation_cos_concentrations": cos_concentrations,
+                "amplitudes": doas_amplitudes,
+                "phase_amplitudes": phase_amplitudes,
+                "sin_amplitudes": sin_amplitudes,
+                "cos_amplitudes": cos_amplitudes,
+                "concentrations": doas_concentrations,
+                "phase_concentrations": phase_concentrations,
+                "sin_concentrations": sin_concentrations,
+                "cos_concentrations": cos_concentrations,
             },
         )
