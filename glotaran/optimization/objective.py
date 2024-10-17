@@ -439,7 +439,7 @@ class OptimizationObjective:
             self._model.datasets[label], global_dim, model_dim, amplitudes, concentrations
         )
         activations = self.create_data_model_results(
-            label, global_dim, model_dim, amplitudes, concentration
+            label, global_dim, model_dim, amplitudes, concentrations
         )
 
         return OptimizationResult(
