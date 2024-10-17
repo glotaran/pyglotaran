@@ -87,6 +87,4 @@ def test_pretty_format_numerical(value: float, decimal_places: int, expected: st
 
 
 if __name__ == "__main__":
-    for test_data in test_data_list:
-        test_mangled_list_sanitization(test_data)
-        test_fix_tuple_string_list(test_data)
+    pytest.main([__file__])

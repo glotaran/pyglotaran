@@ -24,7 +24,7 @@ def test_simulate_from_clp(is_index_dependent, noise):
     clp = xr.DataArray(
         [[10], [20], [30], [40]],
         coords=(
-            ("global", global_axis),
+            ("global_dim", global_axis),
             ("clp_label", [f"c{2 if is_index_dependent else 1}"]),
         ),
     )
@@ -33,13 +33,13 @@ def test_simulate_from_clp(is_index_dependent, noise):
         model,
         {},
         None,
-        {"global": global_axis, "model": model_axis},
+        {"global_dim": global_axis, "model_dim": model_axis},
         clp=clp,
         noise=noise,
         noise_std_dev=0.1,
     )
-    assert np.array_equal(data["global"], global_axis)
-    assert np.array_equal(data["model"], model_axis)
+    assert np.array_equal(data["global_dim"], global_axis)
+    assert np.array_equal(data["model_dim"], model_axis)
     assert data.data.shape == (3, 4)
     print(data.data)
     if not noise:
@@ -71,7 +71,7 @@ def test_simulate_from_global_model():
     model = TestDataModelGlobal
     global_axis = np.asarray([1, 2, 3, 4])
     model_axis = np.asarray([1, 2, 3])
-    data = simulate(model, {}, None, {"global": global_axis, "model": model_axis})
-    assert np.array_equal(data["global"], global_axis)
-    assert np.array_equal(data["model"], model_axis)
+    data = simulate(model, {}, None, {"global_dim": global_axis, "model_dim": model_axis})
+    assert np.array_equal(data["global_dim"], global_axis)
+    assert np.array_equal(data["model_dim"], model_axis)
     assert data.data.shape == (3, 4)

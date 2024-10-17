@@ -180,7 +180,8 @@ class DataModel(Item):
     """A model for datasets."""
 
     data: str | xr.Dataset | None = None
-    extra_data: str | xr.Dataset | None = None
+    # Seems unused:
+    # extra_data: str | xr.Dataset | None = None
     elements: list[Element | str] = Attribute(
         description="The elements contributing to this dataset.",
         validator=validate_elements,

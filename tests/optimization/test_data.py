@@ -21,10 +21,10 @@ def test_optimization_data(weight: bool):
     data = OptimizationData(data_model)
 
     dataset = data_model.data
-    assert data.model_dimension == "model"
-    assert data.global_dimension == "global"
-    assert np.array_equal(dataset.coords["model"], data.model_axis)
-    assert np.array_equal(dataset.coords["global"], data.global_axis)
+    assert data.model_dimension == "model_dim"
+    assert data.global_dimension == "global_dim"
+    assert np.array_equal(dataset.coords["model_dim"], data.model_axis)
+    assert np.array_equal(dataset.coords["global_dim"], data.global_axis)
     if weight:
         assert np.array_equal(dataset.data * dataset.weight, data.data)
         assert np.array_equal(dataset.weight, data.weight)
@@ -41,10 +41,10 @@ def test_optimization_data_global_model(weight: bool):
 
     dataset = data_model.data
     print(dataset.data)
-    assert data.model_dimension == "model"
-    assert data.global_dimension == "global"
-    assert np.array_equal(dataset.coords["model"], data.model_axis)
-    assert np.array_equal(dataset.coords["global"], data.global_axis)
+    assert data.model_dimension == "model_dim"
+    assert data.global_dimension == "global_dim"
+    assert np.array_equal(dataset.coords["model_dim"], data.model_axis)
+    assert np.array_equal(dataset.coords["global_dim"], data.global_axis)
     if weight:
         assert np.array_equal(
             dataset.data.data.T.flatten() * dataset.weight.data.T.flatten(), data.flat_data
@@ -94,8 +94,8 @@ def test_linked_optimization_data():
     assert np.array_equal(data.data_indices[3], [2, 2])
     assert np.array_equal(data.data_indices[4], [3])
 
-    dataset1_size = dataset_one.coords["model"].size
-    dataset2_size = dataset_two.coords["model"].size
+    dataset1_size = dataset_one.coords["model_dim"].size
+    dataset2_size = dataset_two.coords["model_dim"].size
 
     assert data.data_slices[0].size == dataset1_size + dataset2_size
     assert data.data_slices[1].size == dataset2_size

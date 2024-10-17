@@ -130,34 +130,4 @@ def test_coherent_artifact(activation: Activation):
 
 
 if __name__ == "__main__":
-    test_coherent_artifact(
-        InstantActivation(
-            type="instant",
-            compartments={"osc": 1},
-        )
-    )
-    test_coherent_artifact(
-        GaussianActivation(
-            type="gaussian",
-            compartments={"osc": 1},
-            center="irf.center",
-            width="irf.width",
-        )
-    )
-    test_coherent_artifact(
-        GaussianActivation(
-            type="gaussian",
-            compartments={"osc": 1},
-            center="irf.center",
-            width="irf.width",
-            shift=[0],
-        )
-    )
-    test_coherent_artifact(
-        MultiGaussianActivation(
-            type="multi-gaussian",
-            compartments={},
-            center=["irf.center"],
-            width=["irf.width", "irf.width"],
-        )
-    )
+    pytest.main([__file__])

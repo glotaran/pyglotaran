@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from glotaran.builtin.elements.kinetic import KineticElement
 from glotaran.builtin.elements.spectral import SpectralElement
@@ -151,9 +152,13 @@ def test_spectral_decay_linking():
     print(optimized_parameters)
     print(test_parameters_simulation)
     assert optimized_parameters.close_or_equal(test_parameters_simulation, rtol=1e-1)
-    sas_ds1 = optimized_data["decay_1"].species_associated_amplitudes_decay.to_numpy()
-    sas_sd2 = optimized_data["decay_2"].species_associated_amplitudes_decay.to_numpy()
-    print("Diff SAS: ", sas_ds1.sum() - sas_sd2.sum())
-    print(sas_ds1[0, 0], sas_sd2[0, 0])
+    sas_ds1 = optimized_data["decay_1"].elements["decay"].amplitudes.to_numpy()
+    sas_ds2 = optimized_data["decay_2"].elements["decay"].amplitudes.to_numpy()
+    print("Diff SAS: ", sas_ds1.sum() - sas_ds2.sum())
+    print(sas_ds1[0, 0], sas_ds2[0, 0])
     assert not np.allclose(sas_ds1, np.zeros_like(sas_ds1))
-    assert np.allclose(sas_ds1, sas_sd2)
+    assert np.allclose(sas_ds1, sas_ds2)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

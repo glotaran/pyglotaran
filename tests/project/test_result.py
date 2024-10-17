@@ -21,3 +21,8 @@ def test_saving(tmp_path: Path, path_is_absolute: bool):
         assert (result_dir / "parameters_optimized.csv").exists()
         assert (result_dir / "optimization_history.csv").exists()
         assert (result_dir / "data" / "sequential-decay.nc").exists()
+
+
+if __name__ == "__main__":
+    # TODO: disable for now
+    pytest.main([__file__])

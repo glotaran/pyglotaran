@@ -141,7 +141,4 @@ def test_spectral(shape: str):
 
 
 if __name__ == "__main__":
-    test_spectral("gaussian")
-    test_spectral("skewed_gaussian_neg")
-    test_spectral("skewed_gaussian_pos")
-    test_spectral("skewed_gaussian_zero")
+    pytest.main([__file__])

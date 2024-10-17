@@ -35,16 +35,16 @@ def test_single_data():
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
+    optimized_parameters, optimization_results, optimization_info = optimization.run()
     print(optimized_parameters)
-    assert result.success
+    assert optimization_info.success
     assert initial_parameters != optimized_parameters
     assert optimized_parameters.close_or_equal(parameters)
-    assert "decay_independent" in optimized_data
-    result_data = optimized_data["decay_independent"]
-    print(result_data)
-    assert result_data.residuals is not None
-    assert "fit" in result_data
+    assert "decay_independent" in optimization_results
+    optimization_result = optimization_results["decay_independent"]
+    print(optimization_result)
+    assert optimization_result.residuals is not None
+    assert optimization_result.fitted_data is not None
 
 
 def test_multiple_experiments():

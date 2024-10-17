@@ -173,25 +173,27 @@ class OptimizationObjective:
         _, _, full_matrix = OptimizationMatrix.from_global_data(self._data)
         estimation = OptimizationEstimation.calculate(
             full_matrix.array,
-            self._data.flat_data,  # type:ignore[arg-type]
+            self._data.flat_data,
             self._data.model.residual_function,
         )
         clp = xr.DataArray(
-            estimation.clp.reshape((len(global_matrix.clp_axis), len(matrix.clp_axis))),
+            estimation.clp.reshape(
+                (len(global_matrix.amplitude_label), len(matrix.amplitude_label))
+            ),
             coords={
-                "global_clp_label": global_matrix.clp_axis,
-                "clp_label": matrix.clp_axis,
+                "global_clp_label": global_matrix.amplitude_label.to_numpy(),
+                "clp_label": matrix.amplitude_label.to_numpy(),
             },
             dims=["global_clp_label", "clp_label"],
         )
         result_dataset["residual"] = xr.DataArray(
             estimation.residual.reshape(global_axis.size, model_axis.size),
-            coords=((global_dim, global_axis), (model_dim, model_axis)),
+            coords=((global_dim, global_axis.to_numpy()), (model_dim, model_axis.to_numpy())),
         ).T
         result_dataset.attrs["root_mean_square_error"] = np.sqrt(
             (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
         )
-        clp_size = len(matrix.clp_axis) + len(global_matrix.clp_axis)
+        clp_size = len(matrix.amplitude_label) + len(global_matrix.amplitude_label)
         self._data.unweight_result_dataset(result_dataset)
 
         add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
@@ -280,8 +282,8 @@ class OptimizationObjective:
         )
         return OptimizationObjectiveResult(
             optimization_results={label: result},
-            clp_size=clp_size,
             additional_penalty=additional_penalty,
+            clp_size=clp_size,
         )
 
     def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
