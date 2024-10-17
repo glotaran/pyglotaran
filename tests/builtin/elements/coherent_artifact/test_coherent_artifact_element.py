@@ -21,8 +21,8 @@ test_library = {
 }
 
 
-test_parameters_simulation = Parameters.from_dict({"gaussian": [["center", 50], ["width", 20]]})
-test_parameters = Parameters.from_dict({"gaussian": [["center", 60], ["width", 8]]})
+test_parameters_simulation = Parameters.from_dict({"irf": [["center", 50], ["width", 20]]})
+test_parameters = Parameters.from_dict({"irf": [["center", 60], ["width", 8]]})
 
 test_global_axis = np.array([0])
 test_model_axis = np.arange(-10, 1500, 1)
@@ -53,34 +53,36 @@ test_clp = xr.DataArray(
         GaussianActivation(
             type="gaussian",
             compartments={"coherent-artifact": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            center="irf.center",
+            width="irf.width",
         ),
         GaussianActivation(
             type="gaussian",
             compartments={"coherent-artifact": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            center="irf.center",
+            width="irf.width",
             shift=[0],
         ),
         MultiGaussianActivation(
             type="multi-gaussian",
             compartments={"coherent-artifact": 1},
-            center=["gaussian.center"],
-            width=["gaussian.width", "gaussian.width"],
+            center=["irf.center"],
+            width=["irf.width", "irf.width"],
         ),
     ),
 )
 def test_coherent_artifact(activation: Activation):
+    element_label = "coherent-artifact"
+    dataset_label = "dataset1"
     data_model = ActivationDataModel(
-        elements=["coherent-artifact"], activations={"irf": activation}
+        elements=[element_label], activations={"irf": activation}
     )
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
     experiments = [
         ExperimentModel(
-            datasets={"coherent_artifact": data_model},
+            datasets={dataset_label: data_model},
         )
     ]
     optimization = Optimization(
@@ -90,21 +92,15 @@ def test_coherent_artifact(activation: Activation):
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
-    assert result.success
-    print(test_parameters_simulation)
-    print(optimized_parameters)
+    optimized_parameters, optimization_result, optimization_info = optimization.run()
+    assert optimization_info.success
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
-    assert "coherent_artifact" in optimized_data
-    assert (
-        "coherent_artifact_associated_concentrations_coherent-artifact"
-        in optimized_data["coherent_artifact"]
-    )
-    assert (
-        "coherent_artifact_associated_amplitudes_coherent-artifact"
-        in optimized_data["coherent_artifact"]
-    )
+    assert dataset_label in optimization_result
+    assert element_label in optimization_result[dataset_label].elements
+    ca_result = optimization_result[dataset_label].elements[element_label]
+    assert "amplitudes" in ca_result.data_vars
+    assert "concentrations" in ca_result.data_vars
 
 
 if __name__ == "__main__":
@@ -112,16 +108,16 @@ if __name__ == "__main__":
         GaussianActivation(
             type="gaussian",
             compartments={"coherent-artifact": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            center="irf.center",
+            width="irf.width",
         )
     )
     test_coherent_artifact(
         GaussianActivation(
             type="gaussian",
             compartments={"coherent-artifact": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            center="irf.center",
+            width="irf.width",
             shift=[0],
         )
     )
@@ -129,7 +125,7 @@ if __name__ == "__main__":
         MultiGaussianActivation(
             type="multi-gaussian",
             compartments={"coherent-artifact": 1},
-            center=["gaussian.center"],
-            width=["gaussian.width", "gaussian.width"],
+            center=["irf.center"],
+            width=["irf.width", "irf.width"],
         )
     )
