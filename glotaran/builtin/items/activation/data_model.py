@@ -4,7 +4,6 @@ from dataclasses import asdict
 from typing import TYPE_CHECKING
 from typing import cast
 
-import attr
 import numpy as np
 import xarray as xr
 
@@ -77,7 +76,11 @@ class ActivationDataModel(DataModel):
                 if activation.dispersion_center is not None
                 else activation.center * global_axis.size
             )
-            props = [asdict(p) for p in activation.parameters()]
+            # Since we don't pass the ``global_axis`` the type ambiguity is resolved
+            props = [
+                asdict(p)
+                for p in cast(list[GaussianActivationParameters], activation.parameters())
+            ]
             result[key] = xr.Dataset(
                 {
                     "trace": xr.DataArray(

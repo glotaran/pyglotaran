@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
+from typing import cast
 from uuid import uuid4
 
 import xarray as xr  # noqa: TCH002
@@ -201,8 +202,11 @@ class DataModel(Item):
     @staticmethod
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
         data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
-        data_models = (
-            *tuple({e.data_model_type for e in elements if e.data_model_type is not None}),
+        data_models: tuple[type[DataModel], ...] = (
+            *cast(
+                tuple[type[DataModel], ...],
+                tuple({e.data_model_type for e in elements if e.data_model_type is not None}),
+            ),
             DataModel,
         )
         return create_model(data_model_cls_name, __base__=data_models)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
@@ -76,7 +77,7 @@ class OptimizationObjective:
     def calculate_matrices(self) -> list[OptimizationMatrix]:
         if isinstance(self._data, OptimizationData):
             return OptimizationMatrix.from_data(self._data).as_global_list(self._data.global_axis)
-        return OptimizationMatrix.from_linked_data(self._data)  # type:ignore[arg-type]
+        return OptimizationMatrix.from_linked_data(self._data)
 
     def calculate_reduced_matrices(
         self, matrices: list[OptimizationMatrix]
@@ -106,10 +107,12 @@ class OptimizationObjective:
         ]
 
     def calculate_global_penalty(self) -> ArrayLike:
-        _, _, matrix = OptimizationMatrix.from_global_data(self._data)  # type:ignore[arg-type]
+        assert isinstance(self._data, OptimizationData)
+        assert self._data.flat_data is not None
+        _, _, matrix = OptimizationMatrix.from_global_data(self._data)
         return OptimizationEstimation.calculate(
             matrix.array,
-            self._data.flat_data,  # type:ignore[attr-defined]
+            self._data.flat_data,
             self._model.residual_function,
         ).residual
 
@@ -157,6 +160,7 @@ class OptimizationObjective:
 
     def create_global_result(self) -> OptimizationObjectiveResult:
         label = next(iter(self._model.datasets.keys()))
+        assert isinstance(self._data, OptimizationData)
         result_dataset = self.create_result_dataset(label, self._data)
 
         global_dim = result_dataset.attrs["global_dimension"]
@@ -165,12 +169,14 @@ class OptimizationObjective:
         model_axis = result_dataset.coords[model_dim]
 
         matrix = OptimizationMatrix.from_data(self._data).to_data_array(
-            global_dim, global_axis, model_dim, model_axis
+            global_dim, global_axis.to_numpy(), model_dim, model_axis.to_numpy()
         )
         global_matrix = OptimizationMatrix.from_data(self._data, global_matrix=True).to_data_array(
-            model_dim, model_axis, global_dim, global_axis
+            model_dim, model_axis.to_numpy(), global_dim, global_axis.to_numpy()
         )
         _, _, full_matrix = OptimizationMatrix.from_global_data(self._data)
+
+        assert self._data.flat_data is not None
         estimation = OptimizationEstimation.calculate(
             full_matrix.array,
             self._data.flat_data,
@@ -458,16 +464,18 @@ class OptimizationObjective:
         model_dim: str,
         amplitudes: xr.DataArray,
         concentrations: xr.DataArray,
-    ) -> xr.Dataset:
-        result = {}
+    ) -> dict[str, xr.Dataset]:
+        result: dict[str, xr.Dataset] = {}
         data_model = self._model.datasets[label]
         assert any(isinstance(e, str) for _, e in iterate_data_model_elements(data_model)) is False
         for data_model_cls in {
             e.__class__.data_model_type
-            for _, e in cast(tuple[Any, Element], iterate_data_model_elements(data_model))
+            for _, e in cast(
+                Iterable[tuple[Any, Element]], iterate_data_model_elements(data_model)
+            )
             if e.__class__.data_model_type is not None
         }:
-            result = result | data_model_cls.create_result(
+            result = result | cast(type[DataModel], data_model_cls).create_result(
                 data_model,
                 global_dim,
                 model_dim,

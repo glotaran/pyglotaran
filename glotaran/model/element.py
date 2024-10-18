@@ -3,13 +3,10 @@
 from __future__ import annotations
 
 import abc
-from dataclasses import dataclass
-from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-import xarray as xr
 from pydantic import ConfigDict
 from pydantic import Field
 
@@ -18,6 +15,8 @@ from glotaran.model.item import TypedItem
 from glotaran.plugin_system.element_registration import register_element
 
 if TYPE_CHECKING:
+    import xarray as xr
+
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
@@ -37,7 +36,7 @@ def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
 class Element(TypedItem, abc.ABC):
     """Subclasses must overwrite :method:`glotaran.model.Element.calculate_matrix`."""
 
-    data_model_type: ClassVar[type | None] = None
+    data_model_type: ClassVar[type[DataModel] | None] = None  # type: ignore[valid-type]
     is_exclusive: ClassVar[bool] = False
     is_unique: ClassVar[bool] = False
     register_as: ClassVar[str | None] = None

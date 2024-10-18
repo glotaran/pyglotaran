@@ -13,7 +13,7 @@ from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
 from glotaran.optimization import OptimizationInfo  # noqa: TCH001
-from glotaran.optimization.objective import OptimizationResult
+from glotaran.optimization.objective import OptimizationResult  # noqa: TCH001
 from glotaran.parameter import Parameters  # noqa: TCH001
 
 if TYPE_CHECKING:

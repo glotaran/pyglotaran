@@ -104,11 +104,11 @@ def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
     """
     if not isinstance(d, (dict, list)):
         return
-    for k, v in d.items() if isinstance(d, dict) else enumerate(d):
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[union-attr]
         if isinstance(v, (list, dict)):
             sanity_scientific_notation_conversion(v)
         if isinstance(v, str):
-            d[k] = convert_scientific_to_float(v)  # type: ignore[index,call-overload]
+            d[k] = convert_scientific_to_float(v)  # type: ignore[index]
 
 
 def sanitize_dict_values(d: dict[str, Any] | list[Any]):
@@ -125,12 +125,12 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
     """
     if not isinstance(d, (dict, list)):
         return
-    for k, v in d.items() if isinstance(d, dict) else enumerate(d):
+    for k, v in d.items() if isinstance(d, dict) else enumerate(d):  # type: ignore[union-attr]
         if isinstance(v, list):
             leaf = all(isinstance(el, (str, tuple, float)) for el in v)
             if leaf:
                 if "(" in str(v):
-                    d[k] = list_string_to_tuple(  # type: ignore[index,call-overload]
+                    d[k] = list_string_to_tuple(  # type: ignore[index]
                         sanitize_list_with_broken_tuples(v)
                     )
             else:
@@ -138,7 +138,7 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
         if isinstance(v, dict):
             sanitize_dict_values(v)
         if isinstance(v, str):
-            d[k] = string_to_tuple(v)  # type: ignore[index,call-overload]
+            d[k] = string_to_tuple(v)  # type: ignore[index]
 
 
 def string_to_tuple(

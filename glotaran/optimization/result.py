@@ -146,7 +146,7 @@ class OptimizationInfo(BaseModel):
 def calculate_parameter_errors(
     optimization_info: OptimizationInfo, parameters: Parameters
 ) -> None:
-    """Calculate and assign standard errors to parameters in place based on optimization information.
+    """Calculate and assign standard errors to parameters in place based on ``optimization_info``.
 
     This function calculates the standard errors for the free parameters
     based on the provided optimization information and assigns these errors

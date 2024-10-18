@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from glotaran.model.clp_constraint import OnlyConstraint
-from glotaran.model.clp_constraint import ZeroConstraint
 from glotaran.model.data_model import DataModel
 from glotaran.model.experiment_model import ExperimentModel
 from tests.model.test_data_model import MockDataModel

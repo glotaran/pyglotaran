@@ -91,12 +91,15 @@ repos:
           - "--fix"
           - "--select=I"
         alias: isort
+        types_or: [python, pyi]
       - id: ruff-format
+        types_or: [python, pyi]
       # Commands above are both formatters an not linters
       # See also: https://github.com/astral-sh/ruff/discussions/7310#discussioncomment-7102010
       - id: ruff
         name: "ruff lint"
         exclude: "docs/source/conf.py"
+        types_or: [python, pyi]
 
   # - repo: https://github.com/PyCQA/flake8
   #   rev: 6.0.0

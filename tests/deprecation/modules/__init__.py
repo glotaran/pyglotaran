@@ -70,7 +70,7 @@ def deprecation_warning_on_call_test_helper(
         except OverDueDeprecationError as error:
             raise error
 
-        except Exception as error:  # noqa: BLE001
+        except Exception as error:
             if raise_exception:
                 raise error
             return record, None

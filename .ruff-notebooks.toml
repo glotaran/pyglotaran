@@ -2,8 +2,11 @@
 
 extend = ".ruff.toml"
 
+# Enable using ruff with notebooks
+include = [ "*.ipynb", "**/pyproject.toml" ]
+
 [lint]
-extend-ignore = [ "D", "E402", "F404", "N811", "E703", "T201" ]
+extend-ignore = [ "D", "E402", "N811", "E703", "T201" ]
 
 [lint.isort]
 required-imports = [  ]
