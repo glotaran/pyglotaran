@@ -14,7 +14,7 @@ authors = [
   { name = "Joris Snellenburg", email = "j.snellenburg@gmail.com" },
   { name = "Ivo van Stokkum", email = "i.h.m.van.stokkum@vu.nl" },
 ]
-requires-python = ">=3.10, <3.13"
+requires-python = ">=3.10,<3.13"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Education",
@@ -35,48 +35,47 @@ dynamic = [
 ]
 dependencies = [
   "asteval!=0.9.28,>=0.9.22",
-  "netCDF4>=1.5.7",
+  "netcdf4>=1.5.7",
   "numba>=0.55",
   "numpy<2.1,>=1.21.2",
   "odfpy>=1.4.1",
   "openpyxl>=3.0.10",
   "pandas>=1.3.4",
   "pydantic>=2",
-  "ruamel.yaml>=0.17.17",
+  "ruamel-yaml>=0.17.17",
   "scipy>=1.7.2",
   "sdtfile>=2020.8.3",
   "tabulate>=0.8.9",
   "xarray>=2022.3",
 ]
-[project.optional-dependencies]
-dev = [
+optional-dependencies.dev = [
   "pyglotaran[docs,test]",
 ]
-docs = [
+optional-dependencies.docs = [
   # documentation dependencies
-  "Jinja2<3.2.0",
+  "jinja2<3.2",
   "jupyterlab>=3",
   "matplotlib>=3",
   "myst-parser>=0.12",
-  "nbsphinx>=0.8.1", # notebook docs
+  "nbsphinx>=0.8.1",                 # notebook docs
   "nbval>=0.9.6",
   "numpydoc>=0.8",
-  "Sphinx>=3.2",
+  "sphinx>=3.2",
   "sphinx-click>=3.0.1",
   "sphinx-copybutton>=0.3",
   "sphinx-last-updated-by-git>=0.3",
   "sphinx-rtd-theme>=1.2",
-  "sphinxcontrib-jquery>=4.1", # Needed for the search to work Ref.: https://github.com/readthedocs/sphinx_rtd_theme/issues/1434
+  "sphinxcontrib-jquery>=4.1",       # Needed for the search to work Ref.: https://github.com/readthedocs/sphinx_rtd_theme/issues/1434
 ]
-extras = [
+optional-dependencies.extras = [
   "pyglotaran-extras>=0.5",
 ]
-full = [
+optional-dependencies.full = [
   "pyglotaran[extras]",
 ]
-test = [
+optional-dependencies.test = [
   "coverage[toml]",
-  "IPython>=7.2",
+  "ipython>=7.2",
   "pluggy>=0.7",
   "pytest>=3.7.1",
   "pytest-allclose>=1",
@@ -86,44 +85,39 @@ test = [
   "pytest-runner>=2.11.1",
   "types-dataclasses>=0.1.7",
 ]
-[project.urls]
-Changelog = "https://pyglotaran.readthedocs.io/en/latest/changelog.html"
-Documentation = "https://pyglotaran.readthedocs.io"
-"Glotaran Ecosystem" = "https://glotaran.org"
-Homepage = "https://github.com/glotaran/pyglotaran"
-Source = "https://github.com/glotaran/pyglotaran"
-Tracker = "https://github.com/glotaran/pyglotaran/issues"
-[project.scripts]
-glotaran = "glotaran.cli.main:main"
-[project.entry-points."glotaran.plugins.data_io"]
-ascii = "glotaran.builtin.io.ascii.wavelength_time_explicit_file"
-nc = "glotaran.builtin.io.netCDF.netCDF"
-sdt = "glotaran.builtin.io.sdt.sdt_file_reader"
-yml = "glotaran.builtin.io.yml.yml"
-[project.entry-points."glotaran.plugins.elements"]
-baseline = "glotaran.builtin.elements.baseline"
-clp_guide = "glotaran.builtin.elements.clp_guide"
-coherent_artifact = "glotaran.builtin.elements.coherent_artifact"
-damped_oscillation = "glotaran.builtin.elements.damped_oscillation"
-kinetic = "glotaran.builtin.elements.kinetic"
-spectral = "glotaran.builtin.elements.spectral"
-[project.entry-points."glotaran.plugins.project_io"]
-csv = "glotaran.builtin.io.pandas.csv"
-tsv = "glotaran.builtin.io.pandas.tsv"
-xlsx = "glotaran.builtin.io.pandas.xlsx"
-xsx = "glotaran.builtin.io.pandas.xlsx"
+urls.Changelog = "https://pyglotaran.readthedocs.io/en/latest/changelog.html"
+urls.Documentation = "https://pyglotaran.readthedocs.io"
+urls."Glotaran Ecosystem" = "https://glotaran.org"
+urls.Homepage = "https://github.com/glotaran/pyglotaran"
+urls.Source = "https://github.com/glotaran/pyglotaran"
+urls.Tracker = "https://github.com/glotaran/pyglotaran/issues"
+scripts.glotaran = "glotaran.cli.main:main"
+entry-points."glotaran.plugins.data_io".ascii = "glotaran.builtin.io.ascii.wavelength_time_explicit_file"
+entry-points."glotaran.plugins.data_io".nc = "glotaran.builtin.io.netCDF.netCDF"
+entry-points."glotaran.plugins.data_io".sdt = "glotaran.builtin.io.sdt.sdt_file_reader"
+entry-points."glotaran.plugins.data_io".yml = "glotaran.builtin.io.yml.yml"
+entry-points."glotaran.plugins.elements".baseline = "glotaran.builtin.elements.baseline"
+entry-points."glotaran.plugins.elements".clp_guide = "glotaran.builtin.elements.clp_guide"
+entry-points."glotaran.plugins.elements".coherent_artifact = "glotaran.builtin.elements.coherent_artifact"
+entry-points."glotaran.plugins.elements".damped_oscillation = "glotaran.builtin.elements.damped_oscillation"
+entry-points."glotaran.plugins.elements".kinetic = "glotaran.builtin.elements.kinetic"
+entry-points."glotaran.plugins.elements".spectral = "glotaran.builtin.elements.spectral"
+entry-points."glotaran.plugins.project_io".csv = "glotaran.builtin.io.pandas.csv"
+entry-points."glotaran.plugins.project_io".tsv = "glotaran.builtin.io.pandas.tsv"
+entry-points."glotaran.plugins.project_io".xlsx = "glotaran.builtin.io.pandas.xlsx"
+entry-points."glotaran.plugins.project_io".xsx = "glotaran.builtin.io.pandas.xlsx"
 
 [tool.hatch.version]
 path = "glotaran/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-include = ["glotaran", "tests"]
+include = [ "glotaran", "tests" ]
 
 [tool.hatch.build.targets.wheel]
-only-include = ["glotaran"]
+only-include = [ "glotaran" ]
 
 [tool.hatch.envs.default]
-features = ["dev"]
+features = [ "dev" ]
 
 [tool.pytest.ini_options]
 # env = [
@@ -197,6 +191,6 @@ module = "benchmark.*"
 ignore_errors = true
 
 [tool.interrogate]
-exclude = ["setup.py", "docs", "tests", "benchmark/*"]
+exclude = [ "setup.py", "docs", "tests", "benchmark/*" ]
 ignore-init-module = true
 fail-under = 63

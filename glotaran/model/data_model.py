@@ -275,7 +275,7 @@ def get_data_model_dimension(data_model: DataModel) -> str:
 
 def iterate_data_model_elements(
     data_model: DataModel,
-) -> Generator[tuple[ParameterType | None, Element | str], None, None]:
+) -> Generator[tuple[ParameterType | None, Element | str]]:
     """Iterate the data model's elements.
 
     Parameters
@@ -299,7 +299,7 @@ def iterate_data_model_elements(
 
 def iterate_data_model_global_elements(
     data_model: DataModel,
-) -> Generator[tuple[ParameterType | None, Element | str], None, None]:
+) -> Generator[tuple[ParameterType | None, Element | str]]:
     """Iterate the data model's global elements.
 
     Parameters

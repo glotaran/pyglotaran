@@ -1,4 +1,4 @@
-extend-exclude = ["venv", "docs/conf.py"]
+extend-exclude = [ "venv", "docs/conf.py" ]
 
 line-length = 99
 
@@ -6,7 +6,7 @@ line-length = 99
 target-version = "py310"
 
 # Enable using ruff with notebooks
-extend-include = ["*.ipynb"]
+extend-include = [ "*.ipynb" ]
 
 [lint]
 select = [
@@ -44,7 +44,7 @@ select = [
 ]
 
 # Not actually external but we deactivated them for now
-external = ["D400", "D403", "D107", "D414"]
+external = [ "D400", "D403", "D107", "D414" ]
 
 ignore = [
   "D202",
@@ -62,17 +62,17 @@ ignore = [
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-unfixable = ["F401"]
+unfixable = [ "F401" ]
 
 [lint.per-file-ignores]
-"*/test_*.py" = ["ARG001", "RUF012", "N811", "T20", "PIE804"]
-"*/__init__.py" = ["F401"]
-"glotaran/builtin/io/netCDF/netCDF.py" = ["N999"]
-"docs/*" = ["INP001"]
+"*/test_*.py" = [ "ARG001", "RUF012", "N811", "T20", "PIE804" ]
+"*/__init__.py" = [ "F401" ]
+"glotaran/builtin/io/netCDF/netCDF.py" = [ "N999" ]
+"docs/*" = [ "INP001" ]
 # Needs a full rewrite anyway
-"glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = ["PTH"]
+"glotaran/builtin/io/ascii/wavelength_time_explicit_file.py" = [ "PTH" ]
 
 [lint.isort]
-required-imports = ["from __future__ import annotations"]
-known-first-party = ["glotaran"]
+required-imports = [ "from __future__ import annotations" ]
+known-first-party = [ "glotaran" ]
 force-single-line = true

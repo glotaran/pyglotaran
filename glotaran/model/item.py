@@ -243,7 +243,7 @@ def strip_structure_type_from_definition(
 
 def iterate_fields_of_type(
     item: type[ItemT] | ItemT, field_type: type
-) -> Generator[tuple[str, FieldInfo], None, None]:
+) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all fields of the given types.
 
     Parameters
@@ -278,7 +278,7 @@ def iterate_fields_of_type(
 
 def iterate_item_fields(
     item: type[ItemT] | ItemT,
-) -> Generator[tuple[str, FieldInfo], None, None]:
+) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all item fields.
 
     Parameters
@@ -296,7 +296,7 @@ def iterate_item_fields(
 
 def iterate_parameter_fields(
     item: type[ItemT] | ItemT,
-) -> Generator[tuple[str, FieldInfo], None, None]:
+) -> Generator[tuple[str, FieldInfo]]:
     """Iterate over all parameter fields.
 
     Parameters
