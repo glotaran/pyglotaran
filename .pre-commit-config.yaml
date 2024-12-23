@@ -7,7 +7,7 @@ default_language_version:
 repos:
   # Formatters
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -19,7 +19,7 @@ repos:
         args: [--remove]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         types: [file]
@@ -36,7 +36,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 24.10.0
     hooks:
       - id: black
         types: [file]
@@ -52,14 +52,14 @@ repos:
         minimum_pre_commit_version: 2.9.0
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.5.0
+    rev: v2.7.0
     hooks:
       - id: setup-cfg-fmt
         args: [--include-version-classifiers]
 
   # Notebook tools
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.1
     hooks:
       - id: nbstripout
         args:
@@ -68,7 +68,7 @@ repos:
           - "metadata.vscode metadata.language_info.version"
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.7
+    rev: 1.9.1
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.6.0]
@@ -116,7 +116,7 @@ repos:
         additional_dependencies: [flake8-docstrings, darglint==1.8.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.14.0
     hooks:
       - id: mypy
         exclude: "docs|benchmark/|.*/tests?/.*"
