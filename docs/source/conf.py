@@ -78,7 +78,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = [".rst", ".md"]
+source_suffix = {".rst": "restructuredtext", ".md": "restructuredtext"}
 # source_suffix = ".rst"
 
 linkcheck_ignore = [
@@ -95,7 +95,7 @@ imgmath_image_format = "svg"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -267,7 +267,7 @@ intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "https://docs.python.org/": None,
+    "python": ("https://docs.python.org/", None),
 }
 
 ipython_savefig_dir = "images/plot"
