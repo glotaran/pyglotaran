@@ -3,7 +3,7 @@ pip>=18.0
 wheel>=0.38.0
 
 # glotaran setup dependencies
-asteval==1.0.5
+asteval==1.0.6
 attrs == 24.3.0
 click==8.1.8
 netCDF4==1.7.2
