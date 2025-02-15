@@ -82,3 +82,6 @@ class ExperimentModel(BaseModel):
             for dataset in self.datasets.values()
             for issue in get_item_issues(dataset, parameters)
         ]
+
+
+ExperimentModel.model_rebuild()
