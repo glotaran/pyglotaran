@@ -52,7 +52,7 @@ class OptimizationResult(BaseModel):
     residuals: xr.DataArray | xr.Dataset | None = None
 
     @property
-    def fitted_data(self) -> xr.Dataset:
+    def fitted_data(self) -> xr.Dataset | xr.DataArray:
         if self.input_data is None or self.residuals is None:
             raise ValueError("Data and residuals must be set to calculate fitted data.")
         return self.input_data - self.residuals
@@ -400,7 +400,7 @@ class OptimizationObjective:
     ) -> dict[str, xr.Dataset]:
         assert any(isinstance(element, str) for element in model.elements) is False
         return {
-            element.label: element.create_result(
+            element.label: element.create_result_with_uid(
                 model, global_dim, model_dim, amplitudes, concentrations
             )
             for element in cast(list[Element], model.elements)

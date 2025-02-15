@@ -14,6 +14,7 @@ from pydantic import Field
 
 from glotaran.model.clp_constraint import ClpConstraint  # noqa: TCH001
 from glotaran.model.item import TypedItem
+from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.element_registration import register_element
 
 if TYPE_CHECKING:
@@ -115,6 +116,46 @@ class Element(TypedItem, abc.ABC):
         as_global: bool
             Whether model is calculated as global model.
         """
+
+    def create_result_with_uid(
+        self,
+        model: DataModel,
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        """Create a result dataset with a unique element identifier.
+
+        This method calls the underlying ``create_result`` method to build the
+        basic result dataset and then adds an ``element_uid`` attribute to it.
+        The attribute holds the fully qualified name of the element (obtained via
+        ``full_plugin_name``), allowing the origin of the result to be traced back
+        to the specific element class. This is needed for plotting.
+
+        Parameters
+        ----------
+        model : DataModel
+            The data model instance associated with the element.
+        global_dimension : str
+            The label for the global dimension.
+        model_dimension : str
+            The label for the model dimension.
+        amplitudes : xr.Dataset
+            The dataset containing amplitude data.
+        concentrations : xr.Dataset
+            The dataset containing concentration data.
+
+        Returns
+        -------
+        xr.Dataset
+            The result dataset with an added ``element_uid`` attribute.
+        """
+        result = self.create_result(
+            model, global_dimension, model_dimension, amplitudes, concentrations
+        )
+        result.attrs["element_uid"] = full_plugin_name(self)
+        return result
 
 
 class ExtendableElement(Element):
