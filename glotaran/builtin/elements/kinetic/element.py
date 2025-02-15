@@ -185,6 +185,7 @@ class KineticElement(ExtendableElement, Kinetic):
         initial_concentrations = []
         a_matrices = []
         kinetic_amplitudes = []
+        activation_names = list(model.activations.keys())
         for _, activation in model.activations.items():
             initial_concentration = np.array(
                 [float(activation.compartments.get(label, 0)) for label in self.compartments]
@@ -197,23 +198,21 @@ class KineticElement(ExtendableElement, Kinetic):
         initial_concentration = xr.DataArray(
             initial_concentrations,
             coords={
-                "activation": range(len(initial_concentrations)),
+                "activation": activation_names,
                 "compartment": self.compartments,
             },
         )
         a_matrix = xr.DataArray(
             a_matrices,
             coords={
-                "activation": range(len(a_matrices)),
+                "activation": activation_names,
                 "compartment": self.compartments,
             }
             | kinetic_coords,
             dims=("activation", "compartment", "kinetic"),
         )
         kinetic_amplitude_coords = (
-            {"activation": range(len(kinetic_amplitudes))}
-            | kinetic_coords
-            | dict(species_amplitude.coords)
+            {"activation": activation_names} | kinetic_coords | dict(species_amplitude.coords)
         )
         del kinetic_amplitude_coords["compartment"]
         kinetic_amplitude = xr.DataArray(
