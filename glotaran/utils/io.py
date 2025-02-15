@@ -432,13 +432,13 @@ def create_clp_guide_dataset(
     """
     if isinstance(result, xr.Dataset):
         dataset = result
-    elif dataset_name is None or dataset_name not in result.datasets:
+    elif dataset_name is None or dataset_name not in result.optimization_results:
         raise ValueError(
             f"Unknown dataset {dataset_name!r}. "
-            f"Known datasets are:\n {list(result.datasets.keys())}"
+            f"Known datasets are:\n {list(result.optimization_results.keys())}"
         )
     else:
-        dataset = result.datasets[dataset_name]
+        dataset = result.optimization_results[dataset_name]
     if clp_label not in dataset.clp_label:
         raise ValueError(
             f"Unknown clp_label {clp_label!r}. "

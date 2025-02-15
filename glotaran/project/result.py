@@ -34,7 +34,7 @@ SAVING_OPTIONS_DEFAULT = SavingOptions()
 class Result(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    datasets: dict[str, OptimizationResult]
+    optimization_results: dict[str, OptimizationResult]
     experiments: dict[str, ExperimentModel]
     optimization_info: OptimizationInfo
     initial_parameters: Parameters
@@ -65,7 +65,7 @@ class Result(BaseModel):
 
         data_path = path / "data"
         data_path.mkdir(exist_ok=True)
-        for label, data in self.datasets.items():
+        for label, data in self.optimization_results.items():
             dataset_path = data_path / f"{label}.{options.data_format}"
             result_dict["data"][label] = str(dataset_path)
             if options.data_filter is not None:

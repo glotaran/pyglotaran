@@ -83,7 +83,7 @@ class Scheme(BaseModel):
             optimization_info=optimization_info, parameters=optimized_parameters
         )
         return Result(
-            datasets=optimized_data,
+            optimization_results=optimized_data,
             experiments=self.experiments,
             optimization_info=optimization_info,
             initial_parameters=parameters,
