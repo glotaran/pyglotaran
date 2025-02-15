@@ -159,10 +159,10 @@ class KineticElement(ExtendableElement, Kinetic):
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
     ) -> xr.Dataset:
-        species_amplitude = amplitudes.sel(amplitude_label=self.compartments).rename(
+        species_amplitudes = amplitudes.sel(amplitude_label=self.compartments).rename(
             amplitude_label="compartment"
         )
-        species_concentration = concentrations.sel(amplitude_label=self.compartments).rename(
+        species_concentrations = concentrations.sel(amplitude_label=self.compartments).rename(
             amplitude_label="compartment"
         )
 
@@ -182,21 +182,21 @@ class KineticElement(ExtendableElement, Kinetic):
             "lifetime": ("kinetic", lifetimes),
         }
 
-        initial_concentrations = []
+        initial_concentrations_list = []
         a_matrices = []
-        kinetic_amplitudes = []
+        kinetic_amplitudes_list = []
         activation_names = list(model.activations.keys())
         for _, activation in model.activations.items():
-            initial_concentration = np.array(
+            initial_concentration_activation = np.array(
                 [float(activation.compartments.get(label, 0)) for label in self.compartments]
             )
-            initial_concentrations.append(initial_concentration)
-            a_matrix = self.a_matrix(initial_concentration)
+            initial_concentrations_list.append(initial_concentration_activation)
+            a_matrix = self.a_matrix(initial_concentration_activation)
             a_matrices.append(a_matrix)
-            kinetic_amplitudes.append(species_amplitude.to_numpy() @ a_matrix.T)
+            kinetic_amplitudes_list.append(species_amplitudes.to_numpy() @ a_matrix.T)
 
-        initial_concentration = xr.DataArray(
-            initial_concentrations,
+        initial_concentrations = xr.DataArray(
+            initial_concentrations_list,
             coords={
                 "activation": activation_names,
                 "compartment": self.compartments,
@@ -211,22 +211,22 @@ class KineticElement(ExtendableElement, Kinetic):
             | kinetic_coords,
             dims=("activation", "compartment", "kinetic"),
         )
-        kinetic_amplitude_coords = (
-            {"activation": activation_names} | kinetic_coords | dict(species_amplitude.coords)
+        kinetic_amplitudes_coords = (
+            {"activation": activation_names} | kinetic_coords | dict(species_amplitudes.coords)
         )
-        del kinetic_amplitude_coords["compartment"]
-        kinetic_amplitude = xr.DataArray(
-            kinetic_amplitudes,
-            coords=kinetic_amplitude_coords,
+        del kinetic_amplitudes_coords["compartment"]
+        kinetic_amplitudes = xr.DataArray(
+            kinetic_amplitudes_list,
+            coords=kinetic_amplitudes_coords,
             dims=("activation", global_dimension, "kinetic"),
         )
 
         return xr.Dataset(
             {
-                "amplitudes": species_amplitude,
-                "concentrations": species_concentration,
-                "initial_concentration": initial_concentration,
-                "kinetic_amplitude": kinetic_amplitude,
+                "amplitudes": species_amplitudes,
+                "concentrations": species_concentrations,
+                "initial_concentrations": initial_concentrations,
+                "kinetic_amplitudes": kinetic_amplitudes,
                 "k_matrix": k_matrix,
                 "reduced_k_matrix": reduced_k_matrix,
                 "a_matrix": a_matrix,

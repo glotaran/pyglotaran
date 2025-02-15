@@ -36,7 +36,7 @@ class ExperimentModel(BaseModel):
     clp_relations: list[ClpRelation] = Field(default_factory=list)
     datasets: dict[str, DataModel]
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
-        "variable_projection", description="The residual function to use."
+        default="variable_projection", description="The residual function to use."
     )
     scale: dict[str, ParameterType] = Field(
         default_factory=dict,

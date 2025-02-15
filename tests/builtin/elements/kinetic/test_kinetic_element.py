@@ -129,11 +129,11 @@ def test_decay(decay_method: str, activation: Activation):
     decay_result = optimization_result.elements[decay_method]
     assert "amplitudes" in decay_result
     assert "concentrations" in decay_result
-    assert "initial_concentration" in decay_result
+    assert "initial_concentrations" in decay_result
     assert "k_matrix" in decay_result
     assert "reduced_k_matrix" in decay_result
     assert "a_matrix" in decay_result
-    assert "kinetic_amplitude" in decay_result
+    assert "kinetic_amplitudes" in decay_result
 
     if isinstance(activation, MultiGaussianActivation):
         assert optimization_result.activations["irf"] is not None
