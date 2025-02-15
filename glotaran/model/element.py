@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import abc
+from dataclasses import dataclass
+from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -31,6 +33,13 @@ def _sanitize_json_schema(json_schema: dict[str, Any]) -> None:
     """
     json_schema["properties"].pop("label")
     json_schema["required"].remove("label")
+
+
+@dataclass
+class ElementResult:
+    amplitudes: dict[str, xr.DataArray]
+    concentrations: dict[str, xr.DataArray]
+    extra: dict[str, xr.DataArray] = field(default_factory=dict)
 
 
 class Element(TypedItem, abc.ABC):
