@@ -83,7 +83,7 @@ class Parameters:
             if not isinstance(item, list):
                 item = [item]
             if not any(isinstance(v, str) for v in item):
-                item += [f"{i+1}"]
+                item += [f"{i + 1}"]
             parameter = Parameter.from_list(item, default_options=defaults)
             parameters[parameter.label] = parameter
         return cls(parameters)

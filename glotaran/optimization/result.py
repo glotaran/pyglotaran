@@ -10,8 +10,8 @@ import numpy as np
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
-from glotaran.optimization.optimization_history import OptimizationHistory  # noqa: TCH001
-from glotaran.parameter import ParameterHistory  # noqa: TCH001
+from glotaran.optimization.optimization_history import OptimizationHistory  # noqa: TC001
+from glotaran.parameter import ParameterHistory  # noqa: TC001
 
 if TYPE_CHECKING:
     from scipy.optimize import OptimizeResult

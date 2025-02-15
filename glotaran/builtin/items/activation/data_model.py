@@ -7,7 +7,7 @@ from typing import cast
 import numpy as np
 import xarray as xr
 
-from glotaran.builtin.items.activation.activation import Activation  # noqa: TCH001
+from glotaran.builtin.items.activation.activation import Activation  # noqa: TC001
 from glotaran.builtin.items.activation.gaussian import GaussianActivationParameters
 from glotaran.builtin.items.activation.gaussian import MultiGaussianActivation
 from glotaran.builtin.items.activation.instant import InstantActivation  # noqa: F401

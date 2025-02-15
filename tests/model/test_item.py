@@ -209,28 +209,28 @@ def _test_add_to_initial(initial_parameters):
 
         keys_list = list(parameters._parameters.keys())
 
-        assert keys_list.index("rates.k2") > keys_list.index(
-            "b.2"
-        ), f"rates.k2 should come after b.2 for permutation {perm}"
-        assert keys_list.index("b.2") > keys_list.index(
-            "b.1"
-        ), f"b.2 should come after b.1 for permutation {perm}"
-        assert keys_list.index("rates.k1") > keys_list.index(
-            "rates.k1sum"
-        ), f"rates.k1 should come after rates.k1sum for permutation {perm}"
-        assert keys_list.index("rates.k2") > keys_list.index(
-            "rates.k1sum"
-        ), f"rates.k2 should come after rates.k1sum for permutation {perm}"
+        assert keys_list.index("rates.k2") > keys_list.index("b.2"), (
+            f"rates.k2 should come after b.2 for permutation {perm}"
+        )
+        assert keys_list.index("b.2") > keys_list.index("b.1"), (
+            f"b.2 should come after b.1 for permutation {perm}"
+        )
+        assert keys_list.index("rates.k1") > keys_list.index("rates.k1sum"), (
+            f"rates.k1 should come after rates.k1sum for permutation {perm}"
+        )
+        assert keys_list.index("rates.k2") > keys_list.index("rates.k1sum"), (
+            f"rates.k2 should come after rates.k1sum for permutation {perm}"
+        )
 
-        assert (
-            parameters.get("b.2").expression == "1.0 - $b.1"
-        ), f"Incorrect expression for b.2. Got: {parameters.get('b.2').expression}"
-        assert (
-            parameters.get("rates.k1").expression == "$b.1 * $rates.k1sum"
-        ), f"Incorrect expression for rates.k1. Got: {parameters.get('rates.k1').expression}"
-        assert (
-            parameters.get("rates.k2").expression == "$b.2 * $rates.k1sum"
-        ), f"Incorrect expression for rates.k2. Got: {parameters.get('rates.k2').expression}"
+        assert parameters.get("b.2").expression == "1.0 - $b.1", (
+            f"Incorrect expression for b.2. Got: {parameters.get('b.2').expression}"
+        )
+        assert parameters.get("rates.k1").expression == "$b.1 * $rates.k1sum", (
+            f"Incorrect expression for rates.k1. Got: {parameters.get('rates.k1').expression}"
+        )
+        assert parameters.get("rates.k2").expression == "$b.2 * $rates.k1sum", (
+            f"Incorrect expression for rates.k2. Got: {parameters.get('rates.k2').expression}"
+        )
 
 
 def test_add_to_initial_b_first():

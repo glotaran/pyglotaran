@@ -7,7 +7,7 @@ from typing import Literal
 import numpy as np
 import xarray as xr
 
-from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TCH001
+from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TC001
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
 

@@ -376,7 +376,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
             if aligned_axis_values is None:
                 aligned_axis_values = aligned_global_axis
             else:
-                aligned_global_axis = [
+                aligned_global_axis = [  # type:ignore[assignment]
                     self.align_index(index, aligned_axis_values, tolerance, method)
                     for index in aligned_global_axis
                 ]

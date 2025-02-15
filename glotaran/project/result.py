@@ -11,10 +11,10 @@ from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
-from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
-from glotaran.optimization import OptimizationInfo  # noqa: TCH001
-from glotaran.optimization.objective import OptimizationResult  # noqa: TCH001
-from glotaran.parameter import Parameters  # noqa: TCH001
+from glotaran.model.experiment_model import ExperimentModel  # noqa: TC001
+from glotaran.optimization import OptimizationInfo  # noqa: TC001
+from glotaran.optimization.objective import OptimizationResult  # noqa: TC001
+from glotaran.parameter import Parameters  # noqa: TC001
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -68,8 +68,9 @@ class Result(BaseModel):
         for label, data in self.optimization_results.items():
             dataset_path = data_path / f"{label}.{options.data_format}"
             result_dict["data"][label] = str(dataset_path)
-            if options.data_filter is not None:
-                data = data[options.data_filter]
+            # TODO: Make saving options more granular on a per element base
+            # if options.data_filter is not None:
+            #     data = data[options.data_filter]
             save_dataset(data, dataset_path, allow_overwrite=allow_overwrite)
 
         optimization_history_path = path / "optimization_history.csv"

@@ -12,7 +12,7 @@ from typing import ClassVar
 from pydantic import ConfigDict
 from pydantic import Field
 
-from glotaran.model.clp_constraint import ClpConstraint  # noqa: TCH001
+from glotaran.model.clp_constraint import ClpConstraint  # noqa: TC001
 from glotaran.model.item import TypedItem
 from glotaran.plugin_system.base_registry import full_plugin_name
 from glotaran.plugin_system.element_registration import register_element

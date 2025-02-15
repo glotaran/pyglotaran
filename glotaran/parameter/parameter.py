@@ -12,7 +12,7 @@ import numpy as np
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
-from pydantic.functional_validators import BeforeValidator  # noqa: TCH002
+from pydantic.functional_validators import BeforeValidator
 
 from glotaran.utils.helpers import nan_or_equal
 from glotaran.utils.ipython import MarkdownStr

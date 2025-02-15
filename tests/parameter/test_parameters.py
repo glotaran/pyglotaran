@@ -214,7 +214,7 @@ def test_parameters_array_conversion():
     values[1] = np.exp(values[1])
 
     for i in range(3):
-        assert parameters.get(f"{i+1}").value == values[i]
+        assert parameters.get(f"{i + 1}").value == values[i]
 
 
 def test_parameters_to_from_df():

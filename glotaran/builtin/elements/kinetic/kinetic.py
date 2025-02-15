@@ -184,6 +184,6 @@ class Kinetic(Item):
             return False
         array = self.array
         return not any(
-            np.nonzero(array[:, i])[0].size != 1 or i != 0 and array[i, i - 1] == 0
+            np.nonzero(array[:, i])[0].size != 1 or (i != 0 and array[i, i - 1] == 0)
             for i in range(array.shape[1])
         )

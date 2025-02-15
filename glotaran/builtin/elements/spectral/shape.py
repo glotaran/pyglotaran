@@ -140,7 +140,7 @@ class SpectralShapeSkewedGaussian(SpectralShapeGaussian):
             -np.log(2) * np.square(np.log(log_args[valid_arg_mask]) / self.skewness)
         )
         if self.amplitude is not None:
-            shape *= self.amplitude  # type:ignore[arg-type]
+            shape *= self.amplitude
         return shape
 
 

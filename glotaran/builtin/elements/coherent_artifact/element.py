@@ -12,7 +12,7 @@ from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
 from glotaran.model.element import Element
 from glotaran.model.errors import GlotaranModelError
-from glotaran.model.item import ParameterType  # noqa: TCH001
+from glotaran.model.item import ParameterType  # noqa: TC001
 
 if TYPE_CHECKING:
     from glotaran.model.data_model import DataModel

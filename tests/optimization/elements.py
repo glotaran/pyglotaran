@@ -6,9 +6,9 @@ from typing import Literal
 import numpy as np
 import xarray as xr
 
-from glotaran.model.data_model import DataModel  # noqa: TCH001
+from glotaran.model.data_model import DataModel  # noqa: TC001
 from glotaran.model.element import Element
-from glotaran.model.item import ParameterType  # noqa: TCH001
+from glotaran.model.item import ParameterType  # noqa: TC001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

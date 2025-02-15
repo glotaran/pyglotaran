@@ -8,7 +8,7 @@ from typing import Literal
 from typing import cast
 from uuid import uuid4
 
-import xarray as xr  # noqa: TCH002
+import xarray as xr  # noqa: TC002
 from pydantic import Field
 from pydantic import create_model
 
@@ -20,8 +20,7 @@ from glotaran.model.item import Attribute
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
-from glotaran.model.weight import Weight  # noqa: TCH001
-# from glotaran.model.item import ParameterType   # noqa: TCH001
+from glotaran.model.weight import Weight  # noqa: TC001
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -202,7 +201,7 @@ class DataModel(Item):
 
     @staticmethod
     def create_class_for_elements(elements: set[type[Element]]) -> type[DataModel]:
-        data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-','_')}"
+        data_model_cls_name = f"GlotaranDataModel_{str(uuid4()).replace('-', '_')}"
         data_models: tuple[type[DataModel], ...] = (
             *cast(
                 tuple[type[DataModel], ...],

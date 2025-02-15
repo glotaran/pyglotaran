@@ -61,9 +61,9 @@ def deprecation_warning_on_call_test_helper(
             result = deprecated_callable(*args, **kwargs)
 
             assert len(record) >= 1, f"{len(record)=}"
-            assert Path(record[0].filename) == Path(
-                __file__
-            ), f"{Path(record[0].filename)=}, {Path(__file__)=}"
+            assert Path(record[0].filename) == Path(__file__), (
+                f"{Path(record[0].filename)=}, {Path(__file__)=}"
+            )
 
             return record, result
 

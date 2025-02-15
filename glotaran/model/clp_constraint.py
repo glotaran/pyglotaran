@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 from typing import Literal
 
-from pydantic import AfterValidator  # noqa: TCH002
+from pydantic import AfterValidator
 
 from glotaran.model.interval_item import IntervalItem
 from glotaran.model.item import TypedItem

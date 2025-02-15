@@ -18,7 +18,7 @@ from glotaran.builtin.elements.damped_oscillation.matrix import (
 )
 from glotaran.builtin.items.activation import ActivationDataModel
 from glotaran.builtin.items.activation import MultiGaussianActivation
-from glotaran.model.data_model import DataModel  # noqa: TCH001
+from glotaran.model.data_model import DataModel  # noqa: TC001
 from glotaran.model.element import Element
 from glotaran.model.item import Item
 from glotaran.model.item import ParameterType

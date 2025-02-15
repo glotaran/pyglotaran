@@ -11,8 +11,8 @@ from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
 from glotaran.model.item import get_item_issues
 from glotaran.parameter import Parameters
-from tests.model.test_item import MockItem  # noqa: TCH001
-from tests.model.test_item import MockTypedItem  # noqa: TCH001
+from tests.model.test_item import MockItem  # noqa: TC001
+from tests.model.test_item import MockTypedItem  # noqa: TC001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

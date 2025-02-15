@@ -300,7 +300,7 @@ def test_data_io_plugin_table_full():
         """  # noqa: E501
     )
 
-    assert f"{data_io_plugin_table(plugin_names=True,full_names=True)}\n" == expected
+    assert f"{data_io_plugin_table(plugin_names=True, full_names=True)}\n" == expected
 
 
 @pytest.mark.parametrize(

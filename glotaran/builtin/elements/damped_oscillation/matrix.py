@@ -6,7 +6,7 @@ import numba as nb
 import numpy as np
 from scipy.special import erf
 
-from glotaran.builtin.items.activation import GaussianActivationParameters  # noqa: TCH001
+from glotaran.builtin.items.activation import GaussianActivationParameters  # noqa: TC001
 
 if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike

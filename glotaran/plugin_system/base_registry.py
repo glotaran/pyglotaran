@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     GenericPluginInstance = TypeVar("GenericPluginInstance", bound=object)
 
 
-class __PluginRegistry:  # noqa: N801
+class __PluginRegistry:
     """Central Plugin Registry.
 
     This is super private since if anyone messes with it, the pluginsystem could break.
