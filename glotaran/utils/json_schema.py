@@ -13,6 +13,7 @@ from pydantic import create_model
 from glotaran.io import load_parameters
 from glotaran.model.data_model import DataModel
 from glotaran.project import Scheme
+# from glotaran.model.item import ParameterType   # noqa: TCH001
 
 if TYPE_CHECKING:
     from glotaran.parameter import Parameters

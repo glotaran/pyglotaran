@@ -45,6 +45,7 @@ class ExperimentModel(BaseModel):
 
     @classmethod
     def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> ExperimentModel:
+        # ExperimentModel(datasets={})
         model_dict["datasets"] = {
             label: DataModel.from_dict(library, dataset)
             for label, dataset in model_dict.get("datasets", {}).items()

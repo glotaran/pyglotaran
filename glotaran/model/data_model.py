@@ -21,6 +21,7 @@ from glotaran.model.item import Item
 from glotaran.model.item import ParameterType
 from glotaran.model.item import resolve_item_parameters
 from glotaran.model.weight import Weight  # noqa: TCH001
+# from glotaran.model.item import ParameterType   # noqa: TCH001
 
 if TYPE_CHECKING:
     from collections.abc import Generator
