@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
-def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: str):
+def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: str) -> None:
     for name in ["data", "residual"]:
         if f"{name}_singular_values" in dataset:
             continue
@@ -54,7 +54,8 @@ class OptimizationResult(BaseModel):
     @property
     def fitted_data(self) -> xr.Dataset | xr.DataArray:
         if self.input_data is None or self.residuals is None:
-            raise ValueError("Data and residuals must be set to calculate fitted data.")
+            msg = "Data and residuals must be set to calculate fitted data."
+            raise ValueError(msg)
         return self.input_data - self.residuals
 
 
@@ -66,7 +67,7 @@ class OptimizationObjectiveResult:
 
 
 class OptimizationObjective:
-    def __init__(self, model: ExperimentModel):
+    def __init__(self, model: ExperimentModel) -> None:
         self._data = (
             LinkedOptimizationData.from_experiment_model(model)
             if len(model.datasets) > 1
@@ -92,7 +93,7 @@ class OptimizationObjective:
     ) -> list[OptimizationEstimation]:
         return [
             OptimizationEstimation.calculate(matrix.array, data, self._model.residual_function)
-            for matrix, data in zip(reduced_matrices, self._data.data_slices)
+            for matrix, data in zip(reduced_matrices, self._data.data_slices, strict=True)
         ]
 
     def resolve_estimations(
@@ -103,7 +104,9 @@ class OptimizationObjective:
     ) -> list[OptimizationEstimation]:
         return [
             e.resolve_clp(m.clp_axis, r.clp_axis, i, self._model.clp_relations)
-            for e, m, r, i in zip(estimations, matrices, reduced_matrices, self._data.global_axis)
+            for e, m, r, i in zip(
+                estimations, matrices, reduced_matrices, self._data.global_axis, strict=True
+            )
         ]
 
     def calculate_global_penalty(self) -> ArrayLike:
@@ -377,14 +380,14 @@ class OptimizationObjective:
         coords = {global_dim: global_axis, model_dim: model_axis}
         offsets = []
         for i in global_indices:
-            group_label = self._data._group_labels[i]
+            group_label = self._data._group_labels[i]  # noqa: SLF001
             group_index = self._data.group_definitions[group_label].index(label)
             offsets.append(sum(self._data.group_sizes[group_label][:group_index]))
         size = model_axis.size
         return xr.DataArray(
             [
                 estimations[i].residual[offset : offset + size]
-                for i, offset in zip(global_indices, offsets)
+                for i, offset in zip(global_indices, offsets, strict=True)
             ],
             dims=coords.keys(),
             coords=coords,

@@ -35,7 +35,7 @@ SUPPORTED_OPTIMIZATION_METHODS = {
 class UnsupportedMethodError(GlotaranUserError):
     """Indicates that the optimization method is unsupported."""
 
-    def __init__(self, method: str):
+    def __init__(self, method: str) -> None:
         """Initialize an UnsupportedMethodError.
 
         Parameters
@@ -55,6 +55,7 @@ class Optimization:
         models: list[ExperimentModel],
         parameters: Parameters,
         library: ModelLibrary,
+        *,
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,
@@ -67,7 +68,7 @@ class Optimization:
             "Dogbox",
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
-    ):
+    ) -> None:
         self._parameters = Parameters.empty()
         models = [
             experiment.resolve(library, self._parameters, initial=parameters)
@@ -130,8 +131,8 @@ class Optimization:
             # No matter the error we want to behave gracefully
             except Exception as e:
                 if self._raise:
-                    raise e
-                warn(f"Optimization failed:\n\n{e}")
+                    raise
+                warn(f"Optimization failed:\n\n{e}", stacklevel=3)
                 termination_reason = str(e)
 
         # TODO: check how this works for multiple experiments with possible the same dataset name

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import reduce
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Literal
 
@@ -26,13 +27,13 @@ class KineticElement(ExtendableElement, Kinetic):
     data_model_type: ClassVar[type[DataModel]] = ActivationDataModel  # type:ignore[valid-type]
     dimension: str = "time"
 
-    def extend(self, other: KineticElement):  # type:ignore[override]
+    def extend(self, other: KineticElement) -> KineticElement:  # type:ignore[override]
         return other.model_copy(update={"rates": self.rates | other.rates})
 
     # TODO: consolidate parent method.
     @classmethod
     def combine(cls, kinetics: list[KineticElement]) -> KineticElement:  # type:ignore[override]
-        """Creates a combined matrix.
+        """Create a combined matrix.
 
         When combining k-matrices km1 and km2 (km1.combine(km2)),
         entries in km1 will be overwritten by corresponding entries in km2.
@@ -46,7 +47,6 @@ class KineticElement(ExtendableElement, Kinetic):
         -------
         combined :
             The combined KMatrix.
-
         """
         return cls(
             type="kinetic",
@@ -67,11 +67,11 @@ class KineticElement(ExtendableElement, Kinetic):
         model: ActivationDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,  # noqa: ANN401
     ) -> tuple[list[str], ArrayLike]:
         compartments = self.compartments
         matrices = []
-        for _, activation in model.activations.items():
+        for activation in model.activations.values():
             initial_concentrations = np.array(
                 [float(activation.compartments.get(label, 0)) for label in compartments]
             )
@@ -92,9 +92,8 @@ class KineticElement(ExtendableElement, Kinetic):
             )
 
             if not np.all(np.isfinite(matrix)):
-                raise ValueError(
-                    f"Non-finite concentrations for kinetic of element '{self.label}'"
-                )
+                msg = f"Non-finite concentrations for kinetic of element '{self.label}'"
+                raise ValueError(msg)
 
             # apply A matrix
             matrix = matrix @ self.a_matrix(initial_concentrations)
@@ -186,7 +185,7 @@ class KineticElement(ExtendableElement, Kinetic):
         a_matrices = []
         kinetic_amplitudes_list = []
         activation_names = list(model.activations.keys())
-        for _, activation in model.activations.items():
+        for activation in model.activations.values():
             initial_concentration_activation = np.array(
                 [float(activation.compartments.get(label, 0)) for label in self.compartments]
             )

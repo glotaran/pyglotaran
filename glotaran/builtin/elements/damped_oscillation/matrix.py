@@ -19,8 +19,10 @@ def calculate_damped_oscillation_matrix_instant_activation(
     frequencies: ArrayLike,
     rates: ArrayLike,
     axis: ArrayLike,
-):
-    for idx, (amplitude, frequency, rate) in enumerate(zip(inputs, frequencies, rates)):
+) -> None:
+    for idx, (amplitude, frequency, rate) in enumerate(
+        zip(inputs, frequencies, rates, strict=True)
+    ):
         osc = np.exp(-rate * axis - 1j * frequency * axis)
         matrix[:, idx] = osc.real * amplitude
         matrix[:, idx + rates.size] = osc.imag * amplitude
@@ -33,7 +35,7 @@ def calculate_damped_oscillation_matrix_gaussian_activation(
     rates: ArrayLike,
     parameters: list[list[GaussianActivationParameters]],
     model_axis: ArrayLike,
-):
+) -> None:
     for i, parameter in enumerate(parameters):
         calculate_damped_oscillation_matrix_gaussian_activation_on_index(
             matrix[i], inputs, frequencies, rates, parameter, model_axis
@@ -47,7 +49,7 @@ def calculate_damped_oscillation_matrix_gaussian_activation_on_index(
     rates: ArrayLike,
     parameters: list[GaussianActivationParameters],
     model_axis: ArrayLike,
-):
+) -> None:
     scales = 0.0
     for parameter in parameters:
         scales += parameter.scale
@@ -72,7 +74,7 @@ def calculate_damped_oscillation_matrix_gaussian_activation_sin_cos(
     width: float,
     scale: float,
 ) -> ArrayLike:
-    """Calculate the damped oscillation matrix taking into account a gaussian irf
+    """Calculate the damped oscillation matrix taking into account a gaussian irf.
 
     Parameters
     ----------

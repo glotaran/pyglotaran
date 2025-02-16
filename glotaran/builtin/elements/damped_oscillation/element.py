@@ -44,7 +44,7 @@ class DampedOscillationElement(Element):
         model: ActivationDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+    ) -> tuple[list[str], ArrayLike]:
         delta = np.abs(model_axis[1:] - model_axis[:-1])
         delta_min = delta[np.argmin(delta)]
         # c multiply by 0.03 to convert wavenumber (cm-1) to frequency (THz)
@@ -53,7 +53,7 @@ class DampedOscillationElement(Element):
 
         clp_labels = []
         matrices = []
-        for _, activation in model.activations.items():
+        for activation in model.activations.values():
             oscillation_labels = [
                 label for label in self.oscillations if label in activation.compartments
             ]
@@ -117,14 +117,14 @@ class DampedOscillationElement(Element):
         clp_axis = [f"{label}_cos" for label in self.oscillations] + [
             f"{label}_sin" for label in self.oscillations
         ]
-        index_dependent = any(len(m.shape) > 2 for m in matrices)
+        index_dependent = any(len(m.shape) > 2 for m in matrices)  # noqa: PLR2004
         matrix_shape = (
             (global_axis.size, model_axis.size, len(clp_labels))
             if index_dependent
             else (model_axis.size, len(clp_axis))
         )
         matrix = np.zeros(matrix_shape, dtype=np.float64)
-        for clp_label, m in zip(clp_labels, matrices):
+        for clp_label, m in zip(clp_labels, matrices, strict=True):
             need_new_axis = len(matrix.shape) > len(m.shape)
             matrix[..., [clp_axis.index(label) for label in clp_label]] += (
                 m[np.newaxis, :, :] if need_new_axis else m

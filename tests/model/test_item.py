@@ -63,7 +63,7 @@ def test_item_fields_structures_and_type():
     )
 
     assert len(item_fields) == len(wanted)
-    for field, field_wanted in zip(item_fields, wanted):
+    for field, field_wanted in zip(item_fields, wanted, strict=True):
         assert get_structure_and_type_from_field(field) == field_wanted
 
 
@@ -157,12 +157,14 @@ B_DICT = {
 }
 
 
-def _add_parameters_to_initial(labels, parameters, initial_parameters):
+def _add_parameters_to_initial(
+    labels: list[str], parameters: Parameters, initial_parameters: Parameters
+):
     for label in labels:
         add_to_initial(label, parameters, initial_parameters)
 
 
-def _test_add_to_initial(initial_parameters):
+def _test_add_to_initial(initial_parameters: Parameters):
     # test_ordered_addition
     parameters = Parameters.empty()
     _add_parameters_to_initial(

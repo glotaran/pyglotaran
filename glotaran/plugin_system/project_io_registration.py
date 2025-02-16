@@ -129,7 +129,7 @@ def is_known_project_format(format_name: str) -> bool:
     )
 
 
-def known_project_formats(full_names: bool = False) -> list[str]:
+def known_project_formats(*, full_names: bool = False) -> list[str]:
     """Names of the registered project io plugins.
 
     Parameters
@@ -204,7 +204,11 @@ def get_project_io(format_name: str) -> ProjectIoInterface:
 
 
 @not_implemented_to_value_error
-def load_parameters(file_name: StrOrPath, format_name: str | None = None, **kwargs) -> Parameters:
+def load_parameters(
+    file_name: StrOrPath,
+    format_name: str | None = None,
+    **kwargs: Any,  # noqa: ANN401
+) -> Parameters:
     """Create a :class:`Parameters` instance from the specs defined in a file.
 
     Parameters
@@ -219,7 +223,7 @@ def load_parameters(file_name: StrOrPath, format_name: str | None = None, **kwar
 
     Returns
     -------
-    Parameters
+    :class:`Parameters`
         :class:`Parameters` instance created from the file.
 
     .. # noqa: D414
@@ -241,7 +245,7 @@ def save_parameters(
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> None:
     """Save a :class:`Parameters` instance to a spec file.
 
@@ -270,7 +274,7 @@ def save_parameters(
 
 
 @not_implemented_to_value_error
-def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Scheme:
+def load_scheme(file_name: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Scheme:  # noqa: ANN401
     """Create a :class:`Scheme` instance from the specs defined in a file.
 
     Parameters
@@ -301,7 +305,7 @@ def save_scheme(
     *,
     allow_overwrite: bool = False,
     update_source_path: bool = True,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> None:
     """Save a :class:`Scheme` instance to a spec file.
 
@@ -325,12 +329,12 @@ def save_scheme(
     protect_from_overwrite(file_name, allow_overwrite=allow_overwrite)
     io = get_project_io(format_name or infer_file_format(file_name, needs_to_exist=False))
     io.save_scheme(file_name=Path(file_name).as_posix(), scheme=scheme, **kwargs)
-    # if update_source_path is True:
-    #     scheme.source_path = Path(file_name).as_posix()
+    if update_source_path is True:
+        scheme.source_path = Path(file_name).as_posix()  # type:ignore[attr-defined]
 
 
 @not_implemented_to_value_error
-def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Result:
+def load_result(result_path: StrOrPath, format_name: str | None = None, **kwargs: Any) -> Result:  # noqa: ANN401
     """Create a :class:`Result` instance from the specs defined in a file.
 
     Parameters
@@ -365,7 +369,7 @@ def save_result(
     allow_overwrite: bool = False,
     # update_source_path: bool = True,
     saving_options: SavingOptions = SAVING_OPTIONS_DEFAULT,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> list[str]:
     """Write a :class:`Result` instance to a spec file.
 

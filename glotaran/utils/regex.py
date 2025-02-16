@@ -8,7 +8,6 @@ import re
 class RegexPattern:
     """An 'Enum' of (compiled) regular expression patterns (rp)."""
 
-    # tuple = re.compile(r"(\(.*?,.*?\))")
     elements_in_string_of_list: re.Pattern = re.compile(r"(\(.+?\)|[-+.\d]+)")
     group: re.Pattern = re.compile(r"(\(.+?\))")
     list_with_tuples: re.Pattern = re.compile(r"(\[.+\(.+\).+\])")

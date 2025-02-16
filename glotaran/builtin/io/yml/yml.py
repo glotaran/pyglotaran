@@ -29,7 +29,7 @@ class YmlProjectIo(ProjectIoInterface):
 
         Returns
         -------
-        Parameters
+        ``Parameters``
         """  # noqa:  D414
         spec = self._load_yml(file_name)
 
@@ -66,4 +66,4 @@ class YmlProjectIo(ProjectIoInterface):
     #      write_dict(scheme_dict, file_name=file_name)
 
     def _load_yml(self, file_name: str) -> dict[str, Any]:
-        return load_dict(file_name, self.format != "yml_str")
+        return load_dict(file_name, is_file=self.format != "yml_str")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Literal
 
@@ -32,7 +33,7 @@ class MockElementWithDataModel(Element):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,
     ):
         return ["a"], np.array([[1]])
 
@@ -57,7 +58,7 @@ class MockElementWithItem(Element):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,
     ):
         return ["a"], np.array([[1]])
 

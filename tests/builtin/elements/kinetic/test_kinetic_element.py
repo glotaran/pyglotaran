@@ -73,10 +73,10 @@ test_clp = xr.DataArray(
 ).T
 
 
-@pytest.mark.parametrize("decay_method", ("parallel", "sequential", "equilibrium"))
+@pytest.mark.parametrize("decay_method", ["parallel", "sequential", "equilibrium"])
 @pytest.mark.parametrize(
     "activation",
-    (
+    [
         InstantActivation(type="instant", compartments={}),
         GaussianActivation(
             type="gaussian",
@@ -97,7 +97,7 @@ test_clp = xr.DataArray(
             center=["gaussian.center"],
             width=["gaussian.width", "gaussian.width"],
         ),
-    ),
+    ],
 )
 def test_decay(decay_method: str, activation: Activation):
     dataset_label = "dataset1"

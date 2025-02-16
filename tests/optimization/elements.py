@@ -25,7 +25,7 @@ class TestElementConstant(Element):
         data_model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+    ) -> tuple[list[str], ArrayLike]:
         matrix = np.ones((model_axis.size, len(self.compartments))) * float(self.value)
         if self.is_index_dependent:
             matrix = np.array([matrix] * global_axis.size)
@@ -59,7 +59,7 @@ class TestElementExponential(Element):
         data_model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+    ) -> tuple[list[str], ArrayLike]:
         assert len(self.compartments) == len(self.rates)
         rates = -1 * np.asarray(self.rates)
         matrix = np.exp(np.outer(model_axis, rates))
@@ -90,7 +90,7 @@ class TestElementGaussian(Element):
         data_model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+    ) -> tuple[list[str], ArrayLike]:
         amplitude = np.asarray(self.amplitude)
         location = np.asarray(self.location)
         width = np.asarray(self.width)

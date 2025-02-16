@@ -80,10 +80,10 @@ class ItemAttribute(FieldInfo):
         self,
         *,
         description: str,
-        default: Any = PydanticUndefined,
+        default: Any = PydanticUndefined,  # noqa: ANN401
         factory: Callable[[], Any] | None = None,
         validator: Callable | None = None,
-    ):
+    ) -> None:
         """Create an attribute for an item.
 
         Parameters
@@ -110,10 +110,10 @@ class ItemAttribute(FieldInfo):
 def Attribute(  # noqa: N802
     *,
     description: str,
-    default: Any = PydanticUndefined,
+    default: Any = PydanticUndefined,  # noqa: ANN401
     factory: Callable[[], Any] | None = None,
     validator: Callable | None = None,
-) -> Any:
+) -> Any:  # noqa: ANN401
     """Create an attribute for an item.
 
     Parameters
@@ -150,7 +150,7 @@ class TypedItem(Item):
     type: Literal[None]
     __item_types__: ClassVar[list[type[Item]]]  # type:ignore[valid-type]
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         """Create an item from a class."""
         if cls.__qualname__ == "LibraryItemTyped":
             return
@@ -169,7 +169,7 @@ class TypedItem(Item):
         -------
         object
         """
-        return Annotated[Union[tuple(cls.__item_types__)], Field(discriminator="type")]
+        return Annotated[Union[tuple(cls.__item_types__)], Field(discriminator="type")]  # noqa: UP007
 
 
 @cache
@@ -328,7 +328,7 @@ def resolve_parameter(
     return parameter
 
 
-def resolve_item_parameters(
+def resolve_item_parameters(  # noqa: C901
     item: ItemT, parameters: Parameters, initial: Parameters | None = None
 ) -> ItemT:
     resolved: dict[str, Any] = {}

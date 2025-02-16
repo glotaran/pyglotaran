@@ -30,7 +30,7 @@ class DispersionIssue(ItemIssue):
 
 
 class MultiGaussianIssue(ItemIssue):
-    def __init__(self, centers: int, widths: int):
+    def __init__(self, centers: int, widths: int) -> None:
         self._centers = centers
         self._widths = widths
 
@@ -50,7 +50,7 @@ class MultiGaussianIssue(ItemIssue):
 def validate_multi_gaussian(
     value: list[ParameterType],
     activation: MultiGaussianActivation,
-    parameters: Parameters | None,
+    parameters: Parameters | None,  # noqa: ARG001
 ) -> list[ItemIssue]:
     issues: list[ItemIssue] = []
     if not isinstance(value, list):
@@ -65,7 +65,7 @@ def validate_multi_gaussian(
 def validate_dispersion(
     value: ParameterType | None,
     activation: MultiGaussianActivation,
-    parameters: Parameters | None,
+    parameters: Parameters | None,  # noqa: ARG001
 ) -> list[ItemIssue]:
     issues: list[ItemIssue] = []
     if value is not None:
@@ -83,7 +83,7 @@ class GaussianActivationParameters:
     scale: float
     backsweep_period: float
 
-    def shift(self, value: float):
+    def shift(self, value: float) -> None:
         self.center -= value
 
     def disperse(
@@ -92,8 +92,9 @@ class GaussianActivationParameters:
         center: float,
         center_coefficients: list[float],
         width_coefficients: list[float],
+        *,
         reciproke_global_axis: bool,
-    ):
+    ) -> None:
         distance = (
             (1e3 / index - 1e3 / center) if reciproke_global_axis else (index - center) / 100
         )
@@ -149,7 +150,7 @@ class MultiGaussianActivation(Activation):
     def is_index_dependent(self) -> bool:
         return self.shift is not None or self.dispersion_center is not None
 
-    def parameters(
+    def parameters(  # noqa: C901
         self, global_axis: ArrayLike | None = None
     ) -> list[GaussianActivationParameters] | list[list[GaussianActivationParameters]]:
         centers = self.center if isinstance(self.center, list) else [self.center]
@@ -174,7 +175,7 @@ class MultiGaussianActivation(Activation):
                 float(scale),
                 backsweep_period,
             )
-            for center, width, scale in zip(centers, widths, scales)
+            for center, width, scale in zip(centers, widths, scales, strict=False)
         ]
 
         if global_axis is None or not self.is_index_dependent():
@@ -186,23 +187,24 @@ class MultiGaussianActivation(Activation):
 
         if self.shift is not None:
             if global_axis.size != len(self.shift):
-                raise GlotaranUserError(
+                msg = (
                     f"The number of shifts({len(self.shift)}) does not match "
                     f"the size of the global axis({global_axis.size})."
                 )
-            for ps, shift in zip(global_parameters, self.shift):
+                raise GlotaranUserError(msg)
+            for ps, shift in zip(global_parameters, self.shift, strict=True):
                 for p in ps:
                     p.shift(shift)  # type:ignore[arg-type]
 
         if self.dispersion_center is not None:
-            for ps, index in zip(global_parameters, global_axis):
+            for ps, index in zip(global_parameters, global_axis, strict=True):
                 for p in ps:
                     p.disperse(
                         index,
                         self.dispersion_center,  # type:ignore[arg-type]
                         self.center_dispersion_coefficients,  # type:ignore[arg-type]
                         self.width_dispersion_coefficients,  # type:ignore[arg-type]
-                        self.reciproke_global_axis,
+                        reciproke_global_axis=self.reciproke_global_axis,
                     )
 
         return global_parameters

@@ -59,7 +59,7 @@ class Element(TypedItem, abc.ABC):
 
     model_config = ConfigDict(json_schema_extra=_sanitize_json_schema)
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         """Register the model if necessary."""
         super().__init_subclass__()
         if cls.register_as is not None:
@@ -71,7 +71,7 @@ class Element(TypedItem, abc.ABC):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,  # noqa: ANN401
     ) -> tuple[list[str], ArrayLike]:
         """Calculate the model matrix.
 
@@ -103,7 +103,7 @@ class Element(TypedItem, abc.ABC):
         amplitudes: xr.Dataset,
         concentrations: xr.Dataset,
     ) -> xr.Dataset:
-        """
+        """Create the result dataset for the element.
 
         Parameters
         ----------

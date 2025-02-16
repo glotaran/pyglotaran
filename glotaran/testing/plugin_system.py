@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 def _monkeypatch_plugin_registry(
     register_name: str,
     test_registry: MutableMapping[str, _PluginType] | None = None,
+    *,
     create_new_registry: bool = False,
 ) -> Generator[None]:
     """Contextmanager to monkeypatch any Pluginregistry with name ``register_name``.
@@ -63,6 +64,7 @@ def _monkeypatch_plugin_registry(
 @contextmanager
 def monkeypatch_plugin_registry_megacomplex(
     test_megacomplex: MutableMapping[str, type[Megacomplex]] | None = None,
+    *,
     create_new_registry: bool = False,
 ) -> Generator[None]:
     """Monkeypatch the :class:`Megacomplex` registry.
@@ -81,13 +83,16 @@ def monkeypatch_plugin_registry_megacomplex(
     Generator[None, None, None]
         Just to keep the context alive.
     """
-    with _monkeypatch_plugin_registry("megacomplex", test_megacomplex, create_new_registry):
+    with _monkeypatch_plugin_registry(
+        "megacomplex", test_megacomplex, create_new_registry=create_new_registry
+    ):
         yield
 
 
 @contextmanager
 def monkeypatch_plugin_registry_data_io(
     test_data_io: MutableMapping[str, DataIoInterface] | None = None,
+    *,
     create_new_registry: bool = False,
 ) -> Generator[None]:
     """Monkeypatch the :class:`DataIoInterface` registry.
@@ -106,13 +111,16 @@ def monkeypatch_plugin_registry_data_io(
     Generator[None, None, None]
         Just to keep the context alive.
     """
-    with _monkeypatch_plugin_registry("data_io", test_data_io, create_new_registry):
+    with _monkeypatch_plugin_registry(
+        "data_io", test_data_io, create_new_registry=create_new_registry
+    ):
         yield
 
 
 @contextmanager
 def monkeypatch_plugin_registry_project_io(
     test_project_io: MutableMapping[str, ProjectIoInterface] | None = None,
+    *,
     create_new_registry: bool = False,
 ) -> Generator[None]:
     """Monkeypatch the :class:`ProjectIoInterface` registry.
@@ -131,7 +139,9 @@ def monkeypatch_plugin_registry_project_io(
     Generator[None, None, None]
         Just to keep the context alive.
     """
-    with _monkeypatch_plugin_registry("project_io", test_project_io, create_new_registry):
+    with _monkeypatch_plugin_registry(
+        "project_io", test_project_io, create_new_registry=create_new_registry
+    ):
         yield
 
 
@@ -172,9 +182,13 @@ def monkeypatch_plugin_registry(
     monkeypatch_plugin_registry_project_io
     """
     context_managers = [
-        monkeypatch_plugin_registry_megacomplex(test_megacomplex, create_new_registry),
-        monkeypatch_plugin_registry_data_io(test_data_io, create_new_registry),
-        monkeypatch_plugin_registry_project_io(test_project_io, create_new_registry),
+        monkeypatch_plugin_registry_megacomplex(
+            test_megacomplex, create_new_registry=create_new_registry
+        ),
+        monkeypatch_plugin_registry_data_io(test_data_io, create_new_registry=create_new_registry),
+        monkeypatch_plugin_registry_project_io(
+            test_project_io, create_new_registry=create_new_registry
+        ),
     ]
 
     with ExitStack() as stack:

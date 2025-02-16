@@ -13,7 +13,7 @@ def test_correct_baseline_value():
     assert result == data - 1
 
 
-@pytest.mark.parametrize("indexer", (slice(0, 2), [0, 1]))
+@pytest.mark.parametrize("indexer", [slice(0, 2), [0, 1]])
 def test_correct_baseline_average(indexer: slice | list[int]):
     pl = PreProcessingPipeline().correct_baseline_average(select={"dim_0": 0, "dim_1": indexer})
     data = xr.DataArray([[1.1, 0.9]])

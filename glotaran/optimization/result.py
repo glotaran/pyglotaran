@@ -15,6 +15,7 @@ from glotaran.parameter import ParameterHistory  # noqa: TC001
 
 if TYPE_CHECKING:
     from scipy.optimize import OptimizeResult
+    from typing_extensions import Self
 
     from glotaran.parameter import Parameters
     from glotaran.typing.types import ArrayLike
@@ -101,7 +102,7 @@ class OptimizationInfo(BaseModel):
         free_parameter_labels: list[str],
         termination_reason: str,
         number_of_clps: int,
-    ):
+    ) -> Self:
         success = result is not None
 
         result_args = {
@@ -169,12 +170,15 @@ def calculate_parameter_errors(
         standard_errors = optimization_info.root_mean_square_error * np.sqrt(
             np.diag(optimization_info.covariance_matrix)
         )
-        for label, error in zip(optimization_info.free_parameter_labels, standard_errors):
+        for label, error in zip(
+            optimization_info.free_parameter_labels, standard_errors, strict=False
+        ):
             parameters.get(label).standard_error = error
 
 
 def calculate_covariance_matrix_and_standard_errors(
-    jacobian: ArrayLike, root_mean_square_error: float
+    jacobian: ArrayLike,
+    root_mean_square_error: float,  # noqa: ARG001
 ) -> ArrayLike:
     """Calculate the covariance matrix and standard errors of the optimization.
 

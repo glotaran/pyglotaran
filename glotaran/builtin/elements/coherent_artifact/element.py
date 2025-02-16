@@ -32,9 +32,10 @@ class CoherentArtifactElement(Element):
         model: ActivationDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
-        if not 1 <= self.order <= 3:
-            raise GlotaranModelError("Coherent artifact order must be between in [1,3]")
+    ) -> tuple[list[str], ArrayLike]:
+        if not 1 <= self.order <= 3:  # noqa: PLR2004
+            msg = "Coherent artifact order must be between in [1,3]"
+            raise GlotaranModelError(msg)
 
         activations = {
             key: a
@@ -43,13 +44,13 @@ class CoherentArtifactElement(Element):
         }
 
         if not len(activations):
-            raise GlotaranModelError(
-                f'No (multi-)gaussian activation for coherent-artifact "{self.label}".'
-            )
+            msg = f'No (multi-)gaussian activation for coherent-artifact "{self.label}".'
+            raise GlotaranModelError(msg)
         if len(activations) > 1:
-            raise GlotaranModelError(
+            msg = (
                 f'Coherent artifact "{self.label}" must be associated with exactly one activation.'
             )
+            raise GlotaranModelError(msg)
         activation = next(iter(activations.values()))
 
         parameters = activation.parameters(global_axis)
@@ -84,7 +85,7 @@ class CoherentArtifactElement(Element):
         return self.compartments, matrix
 
     @property
-    def compartments(self):
+    def compartments(self) -> list[str]:
         return [f"{self.label}_derivative_{i}" for i in range(self.order)]
 
     def create_result(
@@ -110,8 +111,13 @@ class CoherentArtifactElement(Element):
 
 @nb.jit(nopython=True, parallel=False)
 def _calculate_coherent_artifact_matrix(
-    matrix, centers, widths, global_axis_size, model_axis, order
-):
+    matrix: np.ndarray,
+    centers: list[float],
+    widths: list[float],
+    global_axis_size: np.ndarray,
+    model_axis: np.ndarray,
+    order: int,
+) -> None:
     for i in nb.prange(global_axis_size):
         _calculate_coherent_artifact_matrix_on_index(
             matrix[i], centers[i], widths[i], model_axis, order
@@ -121,12 +127,12 @@ def _calculate_coherent_artifact_matrix(
 @nb.jit(nopython=True, parallel=True)
 def _calculate_coherent_artifact_matrix_on_index(
     matrix: np.ndarray, center: float, width: float, axis: np.ndarray, order: int
-):
+) -> None:
     matrix[:, 0] = np.exp(-1 * (axis - center) ** 2 / (2 * width**2))
     if order > 1:
         matrix[:, 1] = matrix[:, 0] * (center - axis) / width**2
 
-    if order > 2:
+    if order > 2:  # noqa: PLR2004
         matrix[:, 2] = (
             matrix[:, 0] * (center**2 - width**2 - 2 * center * axis + axis**2) / width**4
         )

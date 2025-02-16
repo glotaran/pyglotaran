@@ -52,7 +52,7 @@ def write_dict(
     return None
 
 
-def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
+def load_dict(source: str | Path, *, is_file: bool) -> dict[str, Any]:
     """Load ``yaml`` code from a file or string and returns the dict interpretation.
 
     Parameters
@@ -74,7 +74,7 @@ def load_dict(source: str | Path, is_file: bool) -> dict[str, Any]:
     return yaml.load(source)
 
 
-def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:
+def _yaml_none_representer(representer: BaseRepresenter, data: Mapping[str, Any]) -> ScalarNode:  # noqa: ARG001
     """Yaml repr for ``None`` python values.
 
     Parameters

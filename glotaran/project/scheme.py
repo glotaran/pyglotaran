@@ -16,6 +16,7 @@ from glotaran.project.result import Result
 
 if TYPE_CHECKING:
     import xarray as xr
+    from typing_extensions import Self
 
     from glotaran.parameter import Parameters
 
@@ -27,7 +28,7 @@ class Scheme(BaseModel):
     library: ModelLibrary
 
     @classmethod
-    def from_dict(cls, spec: dict):
+    def from_dict(cls, spec: dict) -> Self:
         library = ModelLibrary.from_dict(spec["library"])
         experiments = {
             k: ExperimentModel.from_dict(library, e) for k, e in spec["experiments"].items()
@@ -38,21 +39,20 @@ class Scheme(BaseModel):
                     d.data = load_dataset(d.data)
         return cls(experiments=experiments, library=library)
 
-    def load_data(self, data: dict[str, xr.Dataset]):
-        for experiment in self.experiments.values():
-            for label, data_model in experiment.datasets.items():
-                try:
+    def load_data(self, data: dict[str, xr.Dataset]) -> None:
+        try:
+            for experiment in self.experiments.values():
+                for label, data_model in experiment.datasets.items():
                     data_model.data = data[label]
-                except KeyError as e:
-                    raise GlotaranUserError(f"Not data for data model '{label}' provided.") from e
+        except KeyError as e:
+            msg = f"Not data for data model '{label}' provided."
+            raise GlotaranUserError(msg) from e
 
     def optimize(
         self,
         parameters: Parameters,
-        verbose: bool = True,
-        raise_exception: bool = False,
+        *,
         maximum_number_function_evaluations: int | None = None,
-        add_svd: bool = True,
         ftol: float = 1e-8,
         gtol: float = 1e-8,
         xtol: float = 1e-8,
@@ -61,7 +61,10 @@ class Scheme(BaseModel):
             "Dogbox",
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
+        add_svd: bool = True,
         dry_run: bool = False,
+        verbose: bool = True,
+        raise_exception: bool = False,
     ) -> Result:
         optimization = Optimization(
             list(self.experiments.values()),

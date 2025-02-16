@@ -1,4 +1,4 @@
-"""K-Matrix"""
+"""K-Matrix."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ class Kinetic(Item):
 
     @classmethod
     def combine(cls, kinetics: list[Kinetic]) -> Kinetic:
-        """Creates a combined matrix.
+        """Create a combined matrix.
 
         When combining k-matrices km1 and km2 (km1.combine(km2)),
         entries in km1 will be overwritten by corresponding entries in km2.
@@ -88,7 +88,7 @@ class Kinetic(Item):
         return array
 
     def eigen(self) -> tuple[ArrayLike, ArrayLike]:
-        """Returns the eigenvalues and eigenvectors of the k matrix.
+        """Return the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
         ----------
@@ -102,7 +102,7 @@ class Kinetic(Item):
         return (eigenvalues.real, eigenvectors.real)
 
     def calculate(self, concentrations: ArrayLike | None = None) -> ArrayLike:
-        """The resulting rates of the matrix.
+        """Calculate resulting rates of the matrix.
 
         By definition, the eigenvalues of the compartmental model are negative and
         the rates are the negatives of the eigenvalues, thus the eigenvalues need to be
@@ -121,7 +121,7 @@ class Kinetic(Item):
         return -eigenvalues
 
     def a_matrix(self, concentrations: ArrayLike) -> ArrayLike:
-        """The A matrix of the KMatrix.
+        """Return A matrix of the KMatrix.
 
         Parameters
         ----------
@@ -135,7 +135,7 @@ class Kinetic(Item):
         )
 
     def a_matrix_general(self, concentrations: ArrayLike) -> np.ndarray:
-        """The A matrix of the KMatrix for a general model.
+        """Return A matrix of the KMatrix for a general model.
 
         Parameters
         ----------
@@ -151,7 +151,7 @@ class Kinetic(Item):
         return a_matrix.T
 
     def a_matrix_sequential(self) -> np.ndarray:
-        """The A matrix of the KMatrix for a sequential model.
+        """Return A matrix of the KMatrix for a sequential model.
 
         Parameters
         ----------
@@ -173,7 +173,7 @@ class Kinetic(Item):
         return a_matrix
 
     def is_sequential(self, concentrations: ArrayLike) -> bool:
-        """Returns true in the KMatrix represents an unibranched model.
+        """Return true in the KMatrix represents an unibranched model.
 
         Parameters
         ----------

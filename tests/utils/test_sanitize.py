@@ -53,12 +53,12 @@ def test_mangled_list_sanitization(test_data: MangledListTestData):
 @pytest.mark.parametrize("test_data", test_data_list)
 def test_fix_tuple_string_list(test_data: MangledListTestData):
     actual = sanitize_list_with_broken_tuples(test_data.input)
-    assert all(a in b for a, b in zip(actual, test_data.output))
+    assert all(a in b for a, b in zip(actual, test_data.output, strict=True))
 
 
 @pytest.mark.parametrize(
-    "value, decimal_places, expected",
-    (
+    ("value", "decimal_places", "expected"),
+    [
         (0.00000001, 1, "1.0e-08"),
         (-0.00000001, 1, "-1.0e-08"),
         (0.1, 1, "0.1"),
@@ -77,7 +77,7 @@ def test_fix_tuple_string_list(test_data: MangledListTestData):
         (np.nan, 1, "nan"),
         (np.inf, 1, "inf"),
         (-np.inf, 1, "-inf"),
-    ),
+    ],
 )
 def test_pretty_format_numerical(value: float, decimal_places: int, expected: str):
     """Pretty format values depending on decimal_places to show."""

@@ -32,8 +32,8 @@ class NoActivationIssue(ItemIssue):
 
 def validate_activations(
     value: dict[str, Activation],
-    activation: Activation,
-    parameters: Parameters | None,
+    activation: Activation,  # noqa: ARG001
+    parameters: Parameters | None,  # noqa: ARG001
 ) -> list[ItemIssue]:
     issues: list[ItemIssue] = []
     if len(value) == 0:

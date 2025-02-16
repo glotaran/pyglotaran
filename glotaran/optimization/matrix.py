@@ -44,7 +44,7 @@ class OptimizationMatrix:
         bool
             Whether the matrix is index dependent.
         """
-        return len(self.array.shape) == 3
+        return len(self.array.shape) == 3  # noqa: PLR2004
 
     @property
     def global_axis_size(self) -> int | None:
@@ -63,7 +63,6 @@ class OptimizationMatrix:
         global_axis: ArrayLike,
         model_axis: ArrayLike,
     ) -> OptimizationMatrix:
-        """"""
         clp_axis, array = element.calculate_matrix(data_model, global_axis, model_axis)
 
         if scale is not None:
@@ -72,7 +71,6 @@ class OptimizationMatrix:
 
     @classmethod
     def combine(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
-        """"""
         clp_axis = list({c for m in matrices for c in m.clp_axis})
         clp_size = len(clp_axis)
         model_axis_size = matrices[0].model_axis_size
@@ -94,7 +92,6 @@ class OptimizationMatrix:
 
     @classmethod
     def link(cls, matrices: list[OptimizationMatrix]) -> OptimizationMatrix:
-        """"""
         clp_axis = list(dict.fromkeys(c for m in matrices for c in m.clp_axis))
         clp_size = len(clp_axis)
         model_axis_size = sum(chain([m.model_axis_size for m in matrices]))
@@ -116,9 +113,9 @@ class OptimizationMatrix:
         global_axis: ArrayLike,
         model_axis: ArrayLike,
         weight: ArrayLike | None,
+        *,
         global_matrix: bool = False,
     ) -> OptimizationMatrix:
-        """"""
         element_iterator = (
             iterate_data_model_global_elements if global_matrix else iterate_data_model_elements
         )
@@ -138,10 +135,10 @@ class OptimizationMatrix:
     def from_data(
         cls,
         data: OptimizationData,
+        *,
         apply_weight: bool = True,
         global_matrix: bool = False,
     ) -> OptimizationMatrix:
-        """"""
         return cls.from_data_model(
             data.model,
             data.global_axis,
@@ -162,7 +159,8 @@ class OptimizationMatrix:
         global_matrix = cls.from_data(data, apply_weight=False, global_matrix=True)
 
         if global_matrix.is_index_dependent:
-            raise GlotaranModelError("Index dependent global matrices are not supported.")
+            msg = "Index dependent global matrices are not supported."
+            raise GlotaranModelError(msg)
 
         clp_axis = [
             label
@@ -203,6 +201,7 @@ class OptimizationMatrix:
                     for label, index in zip(
                         linked_data.group_definitions[linked_data.group_labels[global_index]],
                         linked_data.data_indices[global_index],
+                        strict=True,
                     )
                 ]
             )
@@ -213,11 +212,13 @@ class OptimizationMatrix:
         self,
         index: float,
         relations: list[ClpRelation],
+        *,
         copy: bool = False,
     ) -> OptimizationMatrix:
         result = deepcopy(self) if copy else self
         if result.is_index_dependent:
-            raise GlotaranUserError("Cannot reduce index dependent matrix.")
+            msg = "Cannot reduce index dependent matrix."
+            raise GlotaranUserError(msg)
         constraints = [c for c in self.constraints if c.applies(index)]
         relations = [r for r in relations if r.applies(index)]
         if len(constraints) + len(relations) == 0:

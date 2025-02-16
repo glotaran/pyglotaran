@@ -13,7 +13,7 @@ from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelGlobal
 
 
-@pytest.mark.parametrize("weight", (True, False))
+@pytest.mark.parametrize("weight", [True, False])
 def test_optimization_data(weight: bool):
     data_model = deepcopy(TestDataModelConstantIndexIndependent)
     if weight:
@@ -32,7 +32,7 @@ def test_optimization_data(weight: bool):
         assert np.array_equal(dataset.data, data.data)
 
 
-@pytest.mark.parametrize("weight", (True, False))
+@pytest.mark.parametrize("weight", [True, False])
 def test_optimization_data_global_model(weight: bool):
     data_model = deepcopy(TestDataModelGlobal)
     if weight:
@@ -75,9 +75,6 @@ def test_linked_optimization_data():
     assert "dataset1dataset2" in data.group_definitions
     assert data.group_definitions["dataset1dataset2"] == ["dataset1", "dataset2"]
 
-    #  global_axis1 = [1, 5, 6]
-    #  global_axis2 = [0, 3, 7, 10]
-
     assert np.array_equal(data.global_axis, [1, 3, 5, 6, 10])
 
     assert len(data.group_labels) == data.global_axis.size
@@ -112,9 +109,6 @@ def test_linking_methods(method: str):
     }
     tolerance = 1
     data = LinkedOptimizationData(all_data, tolerance, method, {})
-
-    #  global_axis1 = [1, 5, 6]
-    #  global_axis2 = [0, 3, 7, 10]
 
     wanted_global_axis = [1, 3, 5, 6, 10]
     if method == "backward":

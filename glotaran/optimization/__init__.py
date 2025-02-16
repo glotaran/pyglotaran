@@ -1,4 +1,4 @@
-"""This package contains functions for optimization."""
+"""Package containing functions for optimization."""
 
 from __future__ import annotations
 

@@ -47,7 +47,7 @@ test_clp = xr.DataArray(
 
 @pytest.mark.parametrize(
     "activation",
-    (
+    [
         GaussianActivation(
             type="gaussian",
             compartments={"ca": 1},
@@ -67,7 +67,7 @@ test_clp = xr.DataArray(
             center=["irf.center"],
             width=["irf.width", "irf.width"],
         ),
-    ),
+    ],
 )
 def test_coherent_artifact(activation: Activation):
     element_label = "ca"

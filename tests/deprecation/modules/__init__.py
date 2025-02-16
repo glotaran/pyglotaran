@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 def deprecation_warning_on_call_test_helper(
     deprecated_callable: Callable[..., Any],
     *,
-    raise_exception=False,
+    raise_exception: bool = False,
     args: Sequence[Any] = [],
     kwargs: Mapping[str, Any] = {},
 ) -> tuple[WarningsRecorder, Any]:
@@ -67,10 +67,10 @@ def deprecation_warning_on_call_test_helper(
 
             return record, result
 
-        except OverDueDeprecationError as error:
-            raise error
+        except OverDueDeprecationError:
+            raise
 
-        except Exception as error:
+        except Exception:
             if raise_exception:
-                raise error
+                raise
             return record, None

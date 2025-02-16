@@ -42,6 +42,7 @@ dependencies = [
   "scipy>=1.7.2",
   "sdtfile>=2020.8.3",
   "tabulate>=0.8.9",
+  "typing-extensions>=4.12.2",
   "xarray>=2022.3",
 ]
 optional-dependencies.dev = [ "pyglotaran[docs,test]" ]

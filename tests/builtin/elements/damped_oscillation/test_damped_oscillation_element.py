@@ -65,7 +65,7 @@ test_clp = xr.DataArray(
 
 @pytest.mark.parametrize(
     "activation",
-    (
+    [
         InstantActivation(
             type="instant",
             compartments={"osc": 1},
@@ -89,7 +89,7 @@ test_clp = xr.DataArray(
             center=["irf.center"],
             width=["irf.width", "irf.width"],
         ),
-    ),
+    ],
 )
 def test_coherent_artifact(activation: Activation):
     dataset_label = "dataset1"

@@ -104,12 +104,12 @@ test_clp = xr.DataArray(
 
 @pytest.mark.parametrize(
     "shape",
-    (
+    [
         "gaussian",
         "skewed_gaussian_neg",
         "skewed_gaussian_pos",
         "skewed_gaussian_zero",
-    ),
+    ],
 )
 def test_spectral(shape: str):
     dataset_label = "dataset1"

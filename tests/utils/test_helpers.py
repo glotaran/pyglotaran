@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pytest
 
@@ -11,15 +9,15 @@ from glotaran.utils.helpers import nan_or_equal
 
 
 @pytest.mark.parametrize(
-    "lhs, rhs, expected",
-    (
+    ("lhs", "rhs", "expected"),
+    [
         ("foo", "foo", True),
         (np.nan, np.nan, True),
         (1, 1, True),
         (1, 2, False),
         ("foo", "bar", False),
-    ),
+    ],
 )
-def test_nan_or_equal(lhs: Any, rhs: Any, expected: bool):
+def test_nan_or_equal(lhs: str | float, rhs: str | float, expected: bool):
     """Only ``False`` if values actually differ."""
     assert nan_or_equal(lhs, rhs) == expected

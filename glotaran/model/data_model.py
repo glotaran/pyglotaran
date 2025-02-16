@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 class ExclusiveModelIssue(ItemIssue):
     """Issue for exclusive elements."""
 
-    def __init__(self, label: str, element_type: str, is_global: bool):
+    def __init__(self, label: str, element_type: str, *, is_global: bool) -> None:
         """Create an ExclusiveModelIssue.
 
         Parameters
@@ -64,7 +64,7 @@ class ExclusiveModelIssue(ItemIssue):
 class UniqueModelIssue(ItemIssue):
     """Issue for unique elements."""
 
-    def __init__(self, label: str, element_type: str, is_global: bool):
+    def __init__(self, label: str, element_type: str, *, is_global: bool) -> None:
         """Create a UniqueModelIssue.
 
         Parameters
@@ -80,7 +80,7 @@ class UniqueModelIssue(ItemIssue):
         self._type = element_type
         self._is_global = is_global
 
-    def to_string(self):
+    def to_string(self) -> str:
         """Get the issue as string.
 
         Returns
@@ -93,7 +93,7 @@ class UniqueModelIssue(ItemIssue):
         )
 
 
-def get_element_issues(value: list[str | Element] | None, is_global: bool) -> list[ItemIssue]:
+def get_element_issues(value: list[str | Element] | None, *, is_global: bool) -> list[ItemIssue]:
     """Get issues for elements.
 
     Parameters
@@ -117,20 +117,20 @@ def get_element_issues(value: list[str | Element] | None, is_global: bool) -> li
             element_type = element.__class__
             if element_type.is_exclusive and len(elements) > 1:
                 issues.append(
-                    ExclusiveModelIssue(element.label, element.type, is_global)  # type:ignore[arg-type]
+                    ExclusiveModelIssue(element.label, element.type, is_global=is_global)  # type:ignore[arg-type]
                 )
             if (
                 element_type.is_unique
                 and len([m for m in elements if m.__class__ is element_type]) > 1
             ):
-                issues.append(UniqueModelIssue(element.label, element.type, is_global))  # type:ignore[arg-type]
+                issues.append(UniqueModelIssue(element.label, element.type, is_global=is_global))  # type:ignore[arg-type]
     return issues
 
 
 def validate_elements(
     value: list[str | Element],
-    data_model: DataModel,
-    parameters: Parameters | None,
+    data_model: DataModel,  # noqa: ARG001
+    parameters: Parameters | None,  # noqa: ARG001
 ) -> list[ItemIssue]:
     """Get issues for dataset model elements.
 
@@ -149,13 +149,13 @@ def validate_elements(
     -------
     list[ItemIssue]
     """
-    return get_element_issues(value, False)
+    return get_element_issues(value, is_global=False)
 
 
 def validate_global_elements(
     value: list[str | Element] | None,
-    data_model: DataModel,
-    parameters: Parameters | None,
+    data_model: DataModel,  # noqa: ARG001
+    parameters: Parameters | None,  # noqa: ARG001
 ) -> list[ItemIssue]:
     """Get issues for dataset model global elements.
 
@@ -174,7 +174,7 @@ def validate_global_elements(
     -------
     list[ItemIssue]
     """
-    return get_element_issues(value, True)
+    return get_element_issues(value, is_global=True)
 
 
 class DataModel(Item):
@@ -215,17 +215,18 @@ class DataModel(Item):
     def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> DataModel:
         element_labels = model_dict.get("elements", []) + model_dict.get("global_elements", [])
         if len(element_labels) == 0:
-            raise GlotaranModelError("No element defined for dataset")
+            msg = "No element defined for dataset"
+            raise GlotaranModelError(msg)
         elements = {type(library[label]) for label in element_labels}
         return cls.create_class_for_elements(elements)(**model_dict)
 
     @staticmethod
     def create_result(
-        model: DataModel,
-        global_dimension: str,
-        model_dimension: str,
-        amplitudes: xr.DataArray,
-        concentrations: xr.DataArray,
+        model: DataModel,  # noqa: ARG004
+        global_dimension: str,  # noqa: ARG004
+        model_dimension: str,  # noqa: ARG004
+        amplitudes: xr.DataArray,  # noqa: ARG004
+        concentrations: xr.DataArray,  # noqa: ARG004
     ) -> dict[str, xr.DataArray]:
         return {}
 
@@ -263,17 +264,21 @@ def get_data_model_dimension(data_model: DataModel) -> str:
         Raised if the data model does not have elements or if it is not filled.
     """
     if len(data_model.elements) == 0:
-        raise GlotaranModelError("No elements set for data model.")
+        msg = "No elements set for data model."
+        raise GlotaranModelError(msg)
     if any(isinstance(m, str) for m in data_model.elements):
-        raise GlotaranUserError("Data model was not resolved.")
+        msg = "Data model was not resolved."
+        raise GlotaranUserError(msg)
     model_dimension: str = data_model.elements[0].dimension  # type:ignore[union-attr, assignment]
     if any(
         model_dimension != m.dimension  # type:ignore[union-attr]
         for m in data_model.elements
     ):
-        raise GlotaranModelError("Model dimensions do not match for data model.")
+        msg = "Model dimensions do not match for data model."
+        raise GlotaranModelError(msg)
     if model_dimension is None:
-        raise GlotaranModelError("No models dimensions defined for data model.")
+        msg = "No models dimensions defined for data model."
+        raise GlotaranModelError(msg)
     return model_dimension
 
 

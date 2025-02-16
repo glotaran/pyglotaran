@@ -65,7 +65,6 @@ def glotaran_0_3_0(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
         glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "0.3.0"
     )
-    yield
 
 
 @pytest.fixture
@@ -74,7 +73,6 @@ def glotaran_1_0_0(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(
         glotaran.deprecation.deprecation_utils, "glotaran_version", lambda: "1.0.0"
     )
-    yield
 
 
 def test_glotaran_version():
@@ -83,13 +81,13 @@ def test_glotaran_version():
 
 
 @pytest.mark.parametrize(
-    "version_str, expected",
-    (
+    ("version_str", "expected"),
+    [
         ("0.0.1", (0, 0, 1)),
         ("0.0.1.post", (0, 0, 1)),
         ("0.0.1-dev", (0, 0, 1)),
         ("0.0.1-dev.post", (0, 0, 1)),
-    ),
+    ],
 )
 def test_parse_version(version_str: str, expected: tuple[int, int, int]):
     """Valid version strings."""
@@ -98,7 +96,7 @@ def test_parse_version(version_str: str, expected: tuple[int, int, int]):
 
 @pytest.mark.parametrize(
     "version_str",
-    ("1", "0.1", "a.b.c"),
+    ["1", "0.1", "a.b.c"],
 )
 def test_parse_version_errors(version_str: str):
     """Invalid version strings"""
@@ -196,8 +194,8 @@ def test_warn_deprecated_no_overdue_deprecation_on_dev(monkeypatch: MonkeyPatch)
 
 
 @pytest.mark.parametrize(
-    "deprecated_qual_name_usage,new_qual_name_usage",
-    (
+    ("deprecated_qual_name_usage", "new_qual_name_usage"),
+    [
         (
             "glotaran.does_not_exists(foo)",
             DEPRECATION_QUAL_NAME,
@@ -206,7 +204,7 @@ def test_warn_deprecated_no_overdue_deprecation_on_dev(monkeypatch: MonkeyPatch)
             DEPRECATION_QUAL_NAME,
             "glotaran.does_not_exists(foo)",
         ),
-    ),
+    ],
 )
 @pytest.mark.xfail(strict=True, reason="Should fail if any qualname is wrong.")
 @pytest.mark.usefixtures("glotaran_0_3_0")
@@ -222,11 +220,11 @@ def test_warn_deprecated_broken_deprecated_qualname(
 
 
 @pytest.mark.parametrize(
-    "deprecated_qual_name_usage,new_qual_name_usage,check_qualnames",
-    (
+    ("deprecated_qual_name_usage", "new_qual_name_usage", "check_qualnames"),
+    [
         ("glotaran.does_not_exists(foo)", DEPRECATION_QUAL_NAME, (False, True)),
         (DEPRECATION_QUAL_NAME, "glotaran.does_not_exists(foo)", (True, False)),
-    ),
+    ],
 )
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_warn_deprecated_broken_qualname_no_check(
@@ -325,7 +323,7 @@ def test_deprecated_decorator_class(recwarn: WarningsRecorder):
         """Foo class docstring for testing."""
 
         @classmethod
-        def from_string(cls, string: str):
+        def from_string(cls, string: str) -> Foo:
             """Just another method to init the class for testing."""
             return cls()
 
@@ -430,10 +428,10 @@ def test_deprecate_dict_key_does_not_apply_swap_keys():
 @pytest.mark.xfail(strict=True)
 @pytest.mark.parametrize(
     "replace_rules",
-    (
+    [
         ({"bar": 123}, {"bar": 321}),
         ({"foo": 111}, {"bar": 321}),
-    ),
+    ],
 )
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_deprecate_dict_key_does_not_apply(
@@ -453,11 +451,11 @@ def test_deprecate_dict_key_does_not_apply(
 
 
 @pytest.mark.parametrize(
-    "swap_keys, replace_rules",
-    (
+    ("swap_keys", "replace_rules"),
+    [
         (None, None),
         (("bar", "baz"), ({"bar": 1}, {"baz": 2})),
-    ),
+    ],
 )
 @pytest.mark.usefixtures("glotaran_0_3_0")
 def test_deprecate_dict_key_error_no_action(
@@ -569,6 +567,6 @@ def test_deprecate_submodule_attr__file__(recwarn: WarningsRecorder):
 
     from tests.deprecation import dummy_package
 
-    dummy_package.__file__
+    dummy_package.__file__  # noqa: B018
 
     assert len(recwarn) == 0

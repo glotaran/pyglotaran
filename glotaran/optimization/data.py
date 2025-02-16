@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class AlignDatasetError(ValueError):
     """Indicates that datasets can not be aligned."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize a AlignDatasetError."""
         super().__init__(
             "Cannot link datasets, aligning is ambiguous. \n\n"
@@ -43,7 +43,7 @@ class OptimizationDataProvider:
 class OptimizationData(OptimizationDataProvider):
     """A class to provide prepared data for optimization."""
 
-    def __init__(self, model: DataModel):
+    def __init__(self, model: DataModel) -> None:
         """Initialize a data provider for an experiment.
 
         Parameters
@@ -235,7 +235,7 @@ class OptimizationData(OptimizationDataProvider):
                 data = data.T
         return data
 
-    def unweight_result_dataset(self, result_dataset: xr.Dataset):
+    def unweight_result_dataset(self, result_dataset: xr.Dataset) -> None:
         if self.weight is None:
             return
 
@@ -258,7 +258,7 @@ class LinkedOptimizationData(OptimizationDataProvider):
         tolerance: float,
         method: Literal["nearest", "backward", "forward"],
         scales: dict[str, Parameter],
-    ):
+    ) -> None:
         self._datasets = datasets
         self._scales = {label: scales.get(label, 1.0) for label in self._datasets}
         aligned_global_axes = self.align_global_axes(tolerance, method)

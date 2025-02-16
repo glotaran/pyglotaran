@@ -12,7 +12,7 @@ from tests.optimization.data import TestDataModelGlobal
 
 @pytest.mark.parametrize("is_index_dependent", [True, False])
 @pytest.mark.parametrize("noise", [True, False])
-def test_simulate_from_clp(is_index_dependent, noise):
+def test_simulate_from_clp(is_index_dependent: bool, noise: bool):
     model = (
         TestDataModelConstantIndexDependent
         if is_index_dependent

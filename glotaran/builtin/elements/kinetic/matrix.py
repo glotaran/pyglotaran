@@ -33,13 +33,13 @@ def calculate_matrix_gaussian_activation_on_index(
     widths: ArrayLike,
     scales: ArrayLike,
     backsweep_period: float,
-):
-    """Calculates a decay matrix with a gaussian irf."""
+) -> None:
+    """Calculate a decay matrix with a gaussian irf."""
     for n_i in nb.prange(centers.size):
         center, width, scale = centers[n_i], widths[n_i], scales[n_i]
         for n_r in nb.prange(rates.size):
             r_n = rates[n_r]
-            backsweep_valid = abs(r_n) * backsweep_period > 0.001
+            backsweep_valid = abs(r_n) * backsweep_period > 0.001  # noqa: PLR2004
             alpha = (r_n * width) / SQRT2
             for n_t in nb.prange(times.size):
                 t_n = times[n_t]
@@ -67,7 +67,7 @@ def calculate_matrix_gaussian_activation(
     all_widths: ArrayLike,
     scales: ArrayLike,
     backsweep_period: float,
-):
+) -> None:
     for n_w in nb.prange(all_centers.shape[0]):
         calculate_matrix_gaussian_activation_on_index(
             matrix[n_w],

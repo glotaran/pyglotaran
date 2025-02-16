@@ -15,15 +15,13 @@ from tests.optimization.data import TestDataModelConstantThreeCompartments
 
 
 @pytest.mark.parametrize(
-    "residual_function", ("variable_projection", "non_negative_least_squares")
+    "residual_function", ["variable_projection", "non_negative_least_squares"]
 )
 def test_calculate(residual_function: str):
     data_model = deepcopy(TestDataModelConstantIndexIndependent)
     data = OptimizationData(data_model)
     matrix = OptimizationMatrix.from_data(data)
-    matrices = [
-        matrix.at_index(i).reduce(index, [], []) for i, index in enumerate(data.global_axis)
-    ]
+    matrices = [matrix.at_index(i).reduce(index, []) for i, index in enumerate(data.global_axis)]
     estimations = [
         OptimizationEstimation.calculate(matrices[i].array, data.data[:, i], residual_function)
         for i in range(data.global_axis.size)

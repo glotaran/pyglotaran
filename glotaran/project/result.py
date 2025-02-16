@@ -44,14 +44,15 @@ class Result(BaseModel):
         self,
         path: Path,
         options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+        *,
         allow_overwrite: bool = False,
-    ):
+    ) -> None:
         if path.is_file():
-            raise GlotaranUserError("Save path must be a folder.")
+            msg = "Save path must be a folder."
+            raise GlotaranUserError(msg)
         if path.exists() and not allow_overwrite:
-            raise GlotaranUserError(
-                "Save path already exists. Use allow_overwrite=True to overwrite."
-            )
+            msg = "Save path already exists. Use allow_overwrite=True to overwrite."
+            raise GlotaranUserError(msg)
         result_dict: dict[str, Any] = {"data": {}, "experiments": {}}
         path.mkdir(exist_ok=True, parents=True)
 

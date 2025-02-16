@@ -173,7 +173,7 @@ class ParallelModelWithEquilibria:
     "model",
     [SequentialModel, SequentialModelWithBacktransfer, ParallelModel, ParallelModelWithEquilibria],
 )
-def test_a_matrix_general(model):
+def test_a_matrix_general(model):  # noqa: ANN001
     kinetic = Kinetic(rates=model.rates)
     assert kinetic.compartments == model.species
 

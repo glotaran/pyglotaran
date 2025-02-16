@@ -75,7 +75,7 @@ MOCK_REGISTRY_VALUES = {
 }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def mocked_registry():
     with monkeypatch_plugin_registry_data_io(MOCK_REGISTRY_VALUES, create_new_registry=True):
         yield
@@ -144,12 +144,12 @@ def test_known_data_format_actual_register():
 
 
 @pytest.mark.parametrize(
-    "format_name, io_class",
-    (
+    ("format_name", "io_class"),
+    [
         ("sdt", SdtDataIo),
         ("ascii", AsciiDataIo),
         ("nc", NetCDFDataIo),
-    ),
+    ],
 )
 def test_get_data_io(format_name: str, io_class: type[DataIoInterface]):
     """Get the right instance"""
@@ -172,12 +172,12 @@ def test_set_data_plugin():
 
 
 @pytest.mark.parametrize(
-    "format_name, io_class",
-    (
+    ("format_name", "io_class"),
+    [
         ("sdt", SdtDataIo),
         ("ascii", AsciiDataIo),
         ("nc", NetCDFDataIo),
-    ),
+    ],
 )
 def test_get_dataloader(format_name: str, io_class: type[DataIoInterface]):
     """Code of the dataloader is the same as original classes method code"""
@@ -186,12 +186,12 @@ def test_get_dataloader(format_name: str, io_class: type[DataIoInterface]):
 
 
 @pytest.mark.parametrize(
-    "format_name, io_class",
-    (
+    ("format_name", "io_class"),
+    [
         ("sdt", SdtDataIo),
         ("ascii", AsciiDataIo),
         ("nc", NetCDFDataIo),
-    ),
+    ],
 )
 def test_get_datawriter(format_name: str, io_class: type[DataIoInterface]):
     """Code of the datawriter is the same as original classes method code"""
@@ -224,7 +224,7 @@ def test_protect_from_overwrite_write_functions(tmp_path: Path):
         save_dataset(xr.DataArray([1, 2]), str(file_path))
 
 
-@pytest.mark.parametrize("sub_dir", ("", "sub_dir"))
+@pytest.mark.parametrize("sub_dir", ["", "sub_dir"])
 @pytest.mark.usefixtures("mocked_registry")
 def test_write_dataset(tmp_path: Path, sub_dir: str):
     """All args and kwargs are passes correctly."""
@@ -304,8 +304,8 @@ def test_data_io_plugin_table_full():
 
 
 @pytest.mark.parametrize(
-    "method_names, expected",
-    (
+    ("method_names", "expected"),
+    [
         (
             "load_dataset",
             [".mock", ".mock_partial"],
@@ -318,7 +318,7 @@ def test_data_io_plugin_table_full():
             ["load_dataset", "save_dataset"],
             [".mock"],
         ),
-    ),
+    ],
 )
 def test_supported_file_extensions_data_io(method_names: str | Sequence[str], expected: list[str]):
     """Extension don't list full plugin name and omit extension that don't support all methods."""

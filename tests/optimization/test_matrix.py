@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -17,12 +18,15 @@ from tests.optimization.data import TestDataModelConstantIndexIndependent
 from tests.optimization.data import TestDataModelConstantThreeCompartments
 from tests.optimization.data import TestDataModelGlobal
 
+if TYPE_CHECKING:
+    from glotaran.model.data_model import DataModel
 
-@pytest.mark.parametrize("weight", (True, False))
+
+@pytest.mark.parametrize("weight", [True, False])
 @pytest.mark.parametrize(
-    "data_model", (TestDataModelConstantIndexIndependent, TestDataModelConstantIndexDependent)
+    "data_model", [TestDataModelConstantIndexIndependent, TestDataModelConstantIndexDependent]
 )
-def test_from_data(weight, data_model):
+def test_from_data(weight: bool, data_model: DataModel):
     data_model = deepcopy(data_model)
     if weight:
         data_model.data["weight"] = xr.ones_like(data_model.data.data) * 0.5
@@ -40,7 +44,7 @@ def test_from_data(weight, data_model):
     assert (matrix.array == matrix_value).all()
 
 
-@pytest.mark.parametrize("weight", (True, False))
+@pytest.mark.parametrize("weight", [True, False])
 def test_from_global_data(weight: bool):
     data_model = deepcopy(TestDataModelGlobal)
     if weight:

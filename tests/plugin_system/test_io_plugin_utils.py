@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    "extension,expected",
-    (
+    ("extension", "expected"),
+    [
         (
             "yaml",
             "yaml",
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
             "something.sdt",
             "sdt",
         ),
-    ),
+    ],
 )
 def test_infer_file_format(tmp_path: Path, extension: str, expected: str):
     """Infer type from existing files with extension."""
@@ -54,7 +54,7 @@ def test_inferr_file_format_no_extension(tmp_path: Path):
         infer_file_format(file_path)
 
 
-@pytest.mark.parametrize("is_file", (True, False))
+@pytest.mark.parametrize("is_file", [True, False])
 def test_infer_file_format_allow_folder(tmp_path: Path, is_file: bool):
     """If there is no extension, return legacy."""
     file_path = tmp_path / "dummy"
@@ -131,5 +131,5 @@ def test_bool_table_repr():
     table_data = [["foo", True, False], ["bar", False, True]]
     expected = [["foo", "*", "/"], ["bar", "/", "*"]]
 
-    for row, expected_row in zip(bool_table_repr(table_data), expected):
+    for row, expected_row in zip(bool_table_repr(table_data), expected, strict=True):
         assert list(row) == expected_row

@@ -32,7 +32,7 @@ class SpectralElement(Element):
         model: SpectralDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+    ) -> tuple[list[str], np.ndarray]:
         compartments = list(self.shapes.keys())
 
         if model.spectral_axis_inverted:
@@ -53,8 +53,9 @@ class SpectralElement(Element):
         self,
         model: SpectralDataModel,
         data: xr.Dataset,
+        *,
         as_global: bool = False,
-    ):
+    ) -> None:
         if "spectrum" in data.coords:
             return
 
