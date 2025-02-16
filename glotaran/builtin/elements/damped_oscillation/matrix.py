@@ -21,7 +21,7 @@ def calculate_damped_oscillation_matrix_instant_activation(
     axis: ArrayLike,
 ) -> None:
     for idx, (amplitude, frequency, rate) in enumerate(
-        zip(inputs, frequencies, rates, strict=True)
+        zip(inputs, frequencies, rates)  # noqa: B905
     ):
         osc = np.exp(-rate * axis - 1j * frequency * axis)
         matrix[:, idx] = osc.real * amplitude
