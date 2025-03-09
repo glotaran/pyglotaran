@@ -43,6 +43,5 @@ SCHEME_DICT = {
 }
 
 SCHEME = Scheme.from_dict(SCHEME_DICT)
-SCHEME.load_data({"sequential-decay": DATASET})
 
-RESULT = SCHEME.optimize(PARAMETERS)
+RESULT = SCHEME.optimize(PARAMETERS, {"sequential-decay": DATASET})

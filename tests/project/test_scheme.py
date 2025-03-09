@@ -65,16 +65,14 @@ def test_scheme():
     assert isinstance(
         scheme.experiments["test_experiment"].datasets["kinetic_parallel"], ActivationDataModel
     )
-    scheme.load_data(
-        {
-            "kinetic_parallel": simulate(
-                scheme.experiments["test_experiment"].datasets["kinetic_parallel"],
-                scheme.library,
-                test_parameters,
-                test_axies,
-                clp=test_clp,
-            )
-        }
-    )
-    result = scheme.optimize(test_parameters)
+    datasets = {
+        "kinetic_parallel": simulate(
+            scheme.experiments["test_experiment"].datasets["kinetic_parallel"],
+            scheme.library,
+            test_parameters,
+            test_axies,
+            clp=test_clp,
+        )
+    }
+    result = scheme.optimize(test_parameters, datasets)
     assert result.optimization_info.success

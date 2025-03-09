@@ -13,12 +13,14 @@ from glotaran.optimization import Optimization
 from glotaran.optimization.result import calculate_parameter_errors
 from glotaran.project.library import ModelLibrary
 from glotaran.project.result import Result
+from glotaran.utils.io import DatasetMapping
+from glotaran.utils.io import load_datasets
 
 if TYPE_CHECKING:
-    import xarray as xr
     from typing_extensions import Self
 
     from glotaran.parameter import Parameters
+    from glotaran.typing.types import DatasetMappable
 
 
 class Scheme(BaseModel):
@@ -39,11 +41,11 @@ class Scheme(BaseModel):
                     d.data = load_dataset(d.data)
         return cls(experiments=experiments, library=library)
 
-    def load_data(self, data: dict[str, xr.Dataset]) -> None:
+    def _load_data(self, datasets: DatasetMapping) -> None:
         try:
             for experiment in self.experiments.values():
                 for label, data_model in experiment.datasets.items():
-                    data_model.data = data[label]
+                    data_model.data = datasets[label]
         except KeyError as e:
             msg = f"Not data for data model '{label}' provided."
             raise GlotaranUserError(msg) from e
@@ -51,6 +53,7 @@ class Scheme(BaseModel):
     def optimize(
         self,
         parameters: Parameters,
+        datasets: DatasetMappable,
         *,
         maximum_number_function_evaluations: int | None = None,
         ftol: float = 1e-8,
@@ -66,9 +69,10 @@ class Scheme(BaseModel):
         verbose: bool = True,
         raise_exception: bool = False,
     ) -> Result:
+        self._load_data(load_datasets(datasets))
         optimization = Optimization(
-            list(self.experiments.values()),
-            parameters,
+            models=list(self.experiments.values()),
+            parameters=parameters,
             library=self.library,
             verbose=verbose,
             raise_exception=raise_exception,
