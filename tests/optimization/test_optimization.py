@@ -29,9 +29,9 @@ def test_single_data():
     initial_parameters = Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}})
     print(initial_parameters)
     optimization = Optimization(
-        [experiment],
-        initial_parameters,
-        test_library,
+        models=[experiment],
+        parameters=initial_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
@@ -68,9 +68,9 @@ def test_multiple_experiments():
     initial_parameters = Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}})
     print(initial_parameters)
     optimization = Optimization(
-        experiments,
-        initial_parameters,
-        test_library,
+        models=experiments,
+        parameters=initial_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
@@ -115,9 +115,9 @@ def test_global_data():
     )
     print(initial_parameters)
     optimization = Optimization(
-        [experiment],
-        initial_parameters,
-        test_library,
+        models=[experiment],
+        parameters=initial_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )
@@ -153,9 +153,9 @@ def test_multiple_data():
     initial_parameters = Parameters.from_dict({"rates": {"decay": [0.9, 0.02]}})
     print(initial_parameters)
     optimization = Optimization(
-        [experiment],
-        initial_parameters,
-        test_library,
+        models=[experiment],
+        parameters=initial_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=10,
     )

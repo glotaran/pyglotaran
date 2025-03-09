@@ -47,9 +47,9 @@ def test_zero_contraint():
     )
 
     optimization = Optimization(
-        [experiment],
-        parameters,
-        library,
+        models=[experiment],
+        parameters=parameters,
+        library=library,
         raise_exception=True,
         maximum_number_function_evaluations=1,
     )

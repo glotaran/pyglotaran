@@ -111,9 +111,9 @@ def test_decay(decay_method: str, activation: Activation):
     )
     experiments = [ExperimentModel(datasets={"dataset1": data_model})]
     optimization = Optimization(
-        experiments,
-        test_parameters,
-        test_library,
+        models=experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )

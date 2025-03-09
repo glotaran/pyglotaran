@@ -52,10 +52,10 @@ class UnsupportedMethodError(GlotaranUserError):
 class Optimization:
     def __init__(
         self,
+        *,
         models: list[ExperimentModel],
         parameters: Parameters,
         library: ModelLibrary,
-        *,
         verbose: bool = True,
         raise_exception: bool = False,
         maximum_number_function_evaluations: int | None = None,

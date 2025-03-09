@@ -141,9 +141,9 @@ test_experiments = [
 
 def test_spectral_decay_linking():
     optimization = Optimization(
-        test_experiments,
-        test_parameters,
-        test_library,
+        models=test_experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )

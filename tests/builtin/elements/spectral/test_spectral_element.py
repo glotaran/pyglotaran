@@ -123,9 +123,9 @@ def test_spectral(shape: str):
         )
     ]
     optimization = Optimization(
-        experiments,
-        test_parameters,
-        test_library,
+        models=experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
