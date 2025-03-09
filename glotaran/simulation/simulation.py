@@ -92,7 +92,7 @@ def simulate(
     for i in range(global_axis.size):
         result[:, i] = np.dot(
             matrix.at_index(i).array,
-            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_axis}),
+            clp.isel({global_dimension: i}).sel({"clp_label": matrix.clp_axis}).to_numpy(),
         )
 
     if noise and noise_seed is not None:
