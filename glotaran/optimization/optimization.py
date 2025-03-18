@@ -12,7 +12,7 @@ from glotaran.model.errors import GlotaranModelIssues
 from glotaran.model.errors import GlotaranUserError
 from glotaran.optimization.objective import OptimizationObjective
 from glotaran.optimization.optimization_history import OptimizationHistory
-from glotaran.optimization.result import OptimizationResult
+from glotaran.optimization.result import OptimizationInfo
 from glotaran.parameter import ParameterHistory
 from glotaran.parameter import Parameters
 from glotaran.utils.tee import TeeContext
@@ -35,7 +35,7 @@ SUPPORTED_OPTIMIZATION_METHODS = {
 class UnsupportedMethodError(GlotaranUserError):
     """Indicates that the optimization method is unsupported."""
 
-    def __init__(self, method: str):
+    def __init__(self, method: str) -> None:
         """Initialize an UnsupportedMethodError.
 
         Parameters
@@ -52,6 +52,7 @@ class UnsupportedMethodError(GlotaranUserError):
 class Optimization:
     def __init__(
         self,
+        *,
         models: list[ExperimentModel],
         parameters: Parameters,
         library: ModelLibrary,
@@ -67,7 +68,7 @@ class Optimization:
             "Dogbox",
             "Levenberg-Marquardt",
         ] = "TrustRegionReflection",
-    ):
+    ) -> None:
         self._parameters = Parameters.empty()
         models = [
             experiment.resolve(library, self._parameters, initial=parameters)
@@ -96,7 +97,7 @@ class Optimization:
             exclude_non_vary=True
         )
 
-    def run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationResult]:
+    def run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
         """Perform the optimization.
 
         Raises
@@ -128,18 +129,19 @@ class Optimization:
                 )
                 termination_reason = ls_result.message
             # No matter the error we want to behave gracefully
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 if self._raise:
-                    raise e
-                warn(f"Optimization failed:\n\n{e}")
+                    raise
+                warn(f"Optimization failed:\n\n{e}", stacklevel=3)
                 termination_reason = str(e)
 
+        # TODO: check how this works for multiple experiments with possible the same dataset name
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
-        data = dict(ChainMap(*[r.data for r in results]))
-        number_of_clps = sum(r.free_clp_size for r in results)
+        optimization_results = dict(ChainMap(*[r.optimization_results for r in results]))
+        number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
-        result = OptimizationResult.from_least_squares_result(
+        optimization_info = OptimizationInfo.from_least_squares_result(
             ls_result,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),
@@ -149,17 +151,17 @@ class Optimization:
             termination_reason,
             number_of_clps,
         )
-        return self._parameters, data, result
+        return self._parameters, optimization_results, optimization_info
 
-    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationResult]:
+    def dry_run(self) -> tuple[Parameters, dict[str, xr.Dataset], OptimizationInfo]:
         termination_reason = "Dry run."
 
         penalty = np.concatenate([o.calculate() for o in self._objectives])
         results = [o.get_result() for o in self._objectives]
-        data = dict(ChainMap(*[r.data for r in results]))
-        number_of_clps = sum(r.free_clp_size for r in results)
+        data = dict(ChainMap(*[r.optimization_results for r in results]))
+        number_of_clps = sum(r.clp_size for r in results)
         additional_penalty = sum(r.additional_penalty for r in results)
-        result = OptimizationResult.from_least_squares_result(
+        result = OptimizationInfo.from_least_squares_result(
             None,
             self._parameter_history,
             OptimizationHistory.from_stdout_str(self._tee.read()),

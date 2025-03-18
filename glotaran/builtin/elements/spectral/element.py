@@ -5,14 +5,13 @@ from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
-from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TCH001
+from glotaran.builtin.elements.spectral.shape import SpectralShape  # noqa: TC001
 from glotaran.model.data_model import DataModel
 from glotaran.model.element import Element
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.typing.types import ArrayLike
 
 
@@ -33,7 +32,7 @@ class SpectralElement(Element):
         model: SpectralDataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-    ):
+    ) -> tuple[list[str], np.ndarray]:
         compartments = list(self.shapes.keys())
 
         if model.spectral_axis_inverted:
@@ -50,12 +49,13 @@ class SpectralElement(Element):
 
         return compartments, matrix
 
-    def add_to_result_data(  # type:ignore[override]
+    def add_to_result_data(
         self,
         model: SpectralDataModel,
         data: xr.Dataset,
+        *,
         as_global: bool = False,
-    ):
+    ) -> None:
         if "spectrum" in data.coords:
             return
 
@@ -78,3 +78,25 @@ class SpectralElement(Element):
                 (data.attrs["global_dimension"], "spectrum"),
                 data.clp.sel(clp_label=shapes).data,
             )
+
+    def create_result(
+        self,
+        model: SpectralDataModel,  # type:ignore[override]
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        shapes = list(self.shapes.keys())
+
+        spectra_amplitude = amplitudes.sel(amplitude_label=shapes).rename(amplitude_label="shape")
+        spectra_concentration = concentrations.sel(amplitude_label=shapes).rename(
+            amplitude_label="shape"
+        )
+
+        return xr.Dataset(
+            {
+                "amplitudes": spectra_amplitude,
+                "concentrations": spectra_concentration,
+            }
+        )

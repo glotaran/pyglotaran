@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from glotaran.builtin.elements.kinetic import KineticElement
 from glotaran.builtin.elements.spectral import SpectralElement
@@ -74,29 +75,29 @@ test_data_model_simulation_cls = DataModel.create_class_for_elements(
     (KineticElement, SpectralElement)
 )
 
-test_activation_1 = [
-    GaussianActivation(
+test_activation_1 = {
+    "irf": GaussianActivation(
         type="gaussian",
         compartments={"s1": 1, "s2": 0.75},
         center="activation.center",
         width="activation.width",
     ),
-]
+}
 
-test_activation_2 = [
-    GaussianActivation(
+test_activation_2 = {
+    "irf": GaussianActivation(
         type="gaussian",
         compartments={"s1": 1, "s2": 0.1},
         center="activation.center",
         width="activation.width",
     ),
-]
+}
 
 test_data_1 = simulate(
     test_data_model_simulation_cls(
         elements=["decay"],
         global_elements=["spectral"],
-        activation=test_activation_1,
+        activations=test_activation_1,
     ),
     test_library,
     test_parameters_simulation,
@@ -110,7 +111,7 @@ test_data_2 = simulate(
     test_data_model_simulation_cls(
         elements=["decay"],
         global_elements=["spectral"],
-        activation=test_activation_2,
+        activations=test_activation_2,
     ),
     test_library,
     test_parameters_simulation,
@@ -126,12 +127,12 @@ test_experiments = [
             "decay_1": ActivationDataModel(
                 elements=["decay"],
                 data=test_data_1,
-                activation=test_activation_1,
+                activations=test_activation_1,
             ),
             "decay_2": ActivationDataModel(
                 elements=["decay"],
                 data=test_data_2,
-                activation=test_activation_2,
+                activations=test_activation_2,
             ),
         },
     ),
@@ -140,9 +141,9 @@ test_experiments = [
 
 def test_spectral_decay_linking():
     optimization = Optimization(
-        test_experiments,
-        test_parameters,
-        test_library,
+        models=test_experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
@@ -151,9 +152,13 @@ def test_spectral_decay_linking():
     print(optimized_parameters)
     print(test_parameters_simulation)
     assert optimized_parameters.close_or_equal(test_parameters_simulation, rtol=1e-1)
-    sas_ds1 = optimized_data["decay_1"].clp.to_numpy()
-    sas_sd2 = optimized_data["decay_2"].clp.to_numpy()
-    print("Diff SAS: ", sas_ds1.sum() - sas_sd2.sum())
-    print(sas_ds1[0, 0], sas_sd2[0, 0])
+    sas_ds1 = optimized_data["decay_1"].elements["decay"].amplitudes.to_numpy()
+    sas_ds2 = optimized_data["decay_2"].elements["decay"].amplitudes.to_numpy()
+    print("Diff SAS: ", sas_ds1.sum() - sas_ds2.sum())
+    print(sas_ds1[0, 0], sas_ds2[0, 0])
     assert not np.allclose(sas_ds1, np.zeros_like(sas_ds1))
-    assert np.allclose(sas_ds1, sas_sd2)
+    assert np.allclose(sas_ds1, sas_ds2)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

@@ -38,7 +38,7 @@ class ExcelProjectIo(ProjectIoInterface):
         )
         return Parameters.from_dataframe(parameter_df, source=file_name)
 
-    def save_parameters(self, parameters: Parameters, file_name: str):
+    def save_parameters(self, parameters: Parameters, file_name: str) -> None:
         """Save a :class:`Parameters` to a Excel file.
 
         Parameters

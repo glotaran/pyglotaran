@@ -7,7 +7,7 @@ from glotaran.parameter.parameter_history import ParameterHistory
 from glotaran.parameter.parameters import Parameters
 
 
-def __getattr__(attribute_name: str):
+def __getattr__(attribute_name: str):  # noqa: ANN202
     from glotaran.deprecation import deprecate_module_attribute
 
     if attribute_name == "ParameterGroup":
@@ -17,4 +17,5 @@ def __getattr__(attribute_name: str):
             to_be_removed_in_version="0.8.0",
         )
 
-    raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
+    msg = f"module {__name__} has no attribute {attribute_name}"
+    raise AttributeError(msg)

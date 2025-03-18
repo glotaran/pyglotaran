@@ -12,12 +12,12 @@ from glotaran.deprecation.deprecation_utils import raise_deprecation_error
 from glotaran.deprecation.deprecation_utils import warn_deprecated
 
 __all__ = [
+    "GlotaranApiDeprecationWarning",
+    "GlotaranDeprecatedApiError",
     "deprecate",
     "deprecate_dict_entry",
     "deprecate_module_attribute",
     "deprecate_submodule",
     "raise_deprecation_error",
     "warn_deprecated",
-    "GlotaranApiDeprecationWarning",
-    "GlotaranDeprecatedApiError",
 ]

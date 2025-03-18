@@ -16,13 +16,13 @@ from glotaran.parameter import Parameters
 from glotaran.simulation import simulate
 
 test_library = {
-    "damped-oscillation": DampedOscillationElement(
-        label="damped-oscillation",
+    "doas": DampedOscillationElement(
+        label="doas",
         type="damped-oscillation",
         oscillations={
             "osc": {
-                "frequency": "damped_oscillation.frequency",
-                "rate": "damped_oscillation.rate",
+                "frequency": "osc.frequency",
+                "rate": "osc.rate",
             },
         },
     ),
@@ -31,14 +31,14 @@ test_library = {
 
 test_parameters_simulation = Parameters.from_dict(
     {
-        "damped_oscillation": [["frequency", 3], ["rate", 1]],
-        "gaussian": [["center", 0], ["width", 10]],
+        "osc": [["frequency", 3], ["rate", 1]],
+        "irf": [["center", 0], ["width", 10]],
     }
 )
 test_parameters = Parameters.from_dict(
     {
-        "damped_oscillation": [["frequency", 3], ["rate", 1, {"min": 0}]],
-        "gaussian": [["center", 0], ["width", 10]],
+        "osc": [["frequency", 3], ["rate", 1, {"min": 0}]],
+        "irf": [["center", 0], ["width", 10]],
     }
 )
 
@@ -65,7 +65,7 @@ test_clp = xr.DataArray(
 
 @pytest.mark.parametrize(
     "activation",
-    (
+    [
         InstantActivation(
             type="instant",
             compartments={"osc": 1},
@@ -73,52 +73,61 @@ test_clp = xr.DataArray(
         GaussianActivation(
             type="gaussian",
             compartments={"osc": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            center="irf.center",
+            width="irf.width",
         ),
         GaussianActivation(
             type="gaussian",
             compartments={"osc": 1},
-            center="gaussian.center",
-            width="gaussian.width",
+            center="irf.center",
+            width="irf.width",
             shift=[0],
         ),
         MultiGaussianActivation(
             type="multi-gaussian",
             compartments={},
-            center=["gaussian.center"],
-            width=["gaussian.width", "gaussian.width"],
+            center=["irf.center"],
+            width=["irf.width", "irf.width"],
         ),
-    ),
+    ],
 )
 def test_coherent_artifact(activation: Activation):
-    data_model = ActivationDataModel(elements=["damped-oscillation"], activation=[activation])
+    dataset_label = "dataset1"
+    element_label = "doas"
+    data_model = ActivationDataModel(elements=[element_label], activations={"irf": activation})
     data_model.data = simulate(
         data_model, test_library, test_parameters_simulation, test_axies, clp=test_clp
     )
     experiments = [
         ExperimentModel(
-            datasets={"damped_oscillation": data_model},
+            datasets={dataset_label: data_model},
         )
     ]
     optimization = Optimization(
-        experiments,
-        test_parameters,
-        test_library,
+        models=experiments,
+        parameters=test_parameters,
+        library=test_library,
         raise_exception=True,
         maximum_number_function_evaluations=25,
     )
-    optimized_parameters, optimized_data, result = optimization.run()
-    assert result.success
+    optimized_parameters, optimization_results, optimization_info = optimization.run()
+    assert optimization_info.success
     print(test_parameters_simulation)
     print(optimized_parameters)
     assert optimized_parameters.close_or_equal(test_parameters_simulation)
 
-    assert "damped_oscillation" in optimized_data
-    assert "damped_oscillation" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_associated_estimation" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_frequency" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_rate" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_phase" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_sin" in optimized_data["damped_oscillation"]
-    assert "damped_oscillation_cos" in optimized_data["damped_oscillation"]
+    assert dataset_label in optimization_results
+    assert element_label in optimization_results[dataset_label].elements
+    doas_result = optimization_results[dataset_label].elements[element_label]
+    assert "amplitudes" in doas_result.data_vars
+    assert "phase_amplitudes" in doas_result.data_vars
+    assert "sin_amplitudes" in doas_result.data_vars
+    assert "cos_amplitudes" in doas_result.data_vars
+    assert "concentrations" in doas_result.data_vars
+    assert "phase_concentrations" in doas_result.data_vars
+    assert "sin_concentrations" in doas_result.data_vars
+    assert "cos_concentrations" in doas_result.data_vars
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

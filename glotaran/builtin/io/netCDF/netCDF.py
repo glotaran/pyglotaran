@@ -36,7 +36,7 @@ class NetCDFDataIo(DataIoInterface):
         file_name: str,
         *,
         data_filters: list[str] | None = None,
-    ):
+    ) -> None:
         """Write a :xarraydoc:`Dataset` to the ``*.nc`` at path ``file_name``.
 
         Parameters

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 def deprecation_warning_on_call_test_helper(
     deprecated_callable: Callable[..., Any],
     *,
-    raise_exception=False,
+    raise_exception: bool = False,
     args: Sequence[Any] = [],
     kwargs: Mapping[str, Any] = {},
 ) -> tuple[WarningsRecorder, Any]:
@@ -61,16 +61,16 @@ def deprecation_warning_on_call_test_helper(
             result = deprecated_callable(*args, **kwargs)
 
             assert len(record) >= 1, f"{len(record)=}"
-            assert Path(record[0].filename) == Path(
-                __file__
-            ), f"{Path(record[0].filename)=}, {Path(__file__)=}"
+            assert Path(record[0].filename) == Path(__file__), (
+                f"{Path(record[0].filename)=}, {Path(__file__)=}"
+            )
 
             return record, result
 
-        except OverDueDeprecationError as error:
-            raise error
+        except OverDueDeprecationError:
+            raise
 
-        except Exception as error:  # noqa: BLE001
+        except Exception:
             if raise_exception:
-                raise error
+                raise
             return record, None

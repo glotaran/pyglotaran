@@ -17,7 +17,7 @@ def test_create_model_scheme_json_schema(tmp_path: Path):
     blank_schema = create_model_scheme_json_schema()
 
     assert "properties" not in blank_schema["$defs"]["Parameter"]
-    assert "activation" in blank_schema["$defs"]["GlotaranDataModel"]["properties"]
+    assert "activations" in blank_schema["$defs"]["GlotaranDataModel"]["properties"]
     assert create_model_scheme_json_schema() == create_model_scheme_json_schema()
 
     params = Parameters.from_dict({"foo": {"bar": [1]}})

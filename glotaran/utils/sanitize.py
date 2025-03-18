@@ -9,14 +9,14 @@ import numpy as np
 from glotaran.utils.regex import RegexPattern as rp  # noqa: N813
 
 
-def pretty_format_numerical(value: float | int, decimal_places: int = 1) -> str:
+def pretty_format_numerical(value: float, decimal_places: int = 1) -> str:
     """Format value with with at most ``decimal_places`` decimal places.
 
     Used to format values like the t-value.
 
     Parameters
     ----------
-    value: float | int
+    value: float
         Numerical value to format.
     decimal_places: int
         Decimal places to display. Defaults to 1
@@ -81,20 +81,20 @@ def sanitize_dict_keys(d: dict) -> dict:
     dict
         A dict with tuple-like string keys converted to tuple keys
     """
-    if not isinstance(d, (dict, list)):
+    if not isinstance(d, dict | list):
         return {}
     d_new = {}
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
         if isinstance(d, dict) and isinstance(k, str) and rp.tuple_word.match(k):
             k_new = tuple(map(str, rp.word.findall(k)))
             d_new[k_new] = v
-        elif isinstance(d, (dict, list)):
+        elif isinstance(d, dict | list):
             if new_v := sanitize_dict_keys(v):
                 d[k] = new_v
     return d_new
 
 
-def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
+def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]) -> None:
     """Convert scientific notation string values to floats.
 
     Parameters
@@ -102,16 +102,16 @@ def sanity_scientific_notation_conversion(d: dict[str, Any] | list[Any]):
     d : dict[str, Any] | list[Any]
         Iterable which should be checked for scientific notation values.
     """
-    if not isinstance(d, (dict, list)):
+    if not isinstance(d, dict | list):
         return
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
-        if isinstance(v, (list, dict)):
+        if isinstance(v, list | dict):
             sanity_scientific_notation_conversion(v)
         if isinstance(v, str):
-            d[k] = convert_scientific_to_float(v)  # type: ignore[index,call-overload]
+            d[k] = convert_scientific_to_float(v)  # type: ignore[index]
 
 
-def sanitize_dict_values(d: dict[str, Any] | list[Any]):
+def sanitize_dict_values(d: dict[str, Any] | list[Any]) -> None:
     """Sanitizes a dict with broken tuples inside modifying it in-place.
 
     Broken tuples are tuples that are turned into strings by the yaml parser.
@@ -123,14 +123,14 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
     d : dict
         A (complex) dict containing (possibly nested) values of broken tuple strings.
     """
-    if not isinstance(d, (dict, list)):
+    if not isinstance(d, dict | list):
         return
     for k, v in d.items() if isinstance(d, dict) else enumerate(d):
         if isinstance(v, list):
-            leaf = all(isinstance(el, (str, tuple, float)) for el in v)
+            leaf = all(isinstance(el, str | tuple | float) for el in v)
             if leaf:
                 if "(" in str(v):
-                    d[k] = list_string_to_tuple(  # type: ignore[index,call-overload]
+                    d[k] = list_string_to_tuple(  # type: ignore[index]
                         sanitize_list_with_broken_tuples(v)
                     )
             else:
@@ -138,11 +138,11 @@ def sanitize_dict_values(d: dict[str, Any] | list[Any]):
         if isinstance(v, dict):
             sanitize_dict_values(v)
         if isinstance(v, str):
-            d[k] = string_to_tuple(v)  # type: ignore[index,call-overload]
+            d[k] = string_to_tuple(v)  # type: ignore[index]
 
 
 def string_to_tuple(
-    tuple_str: str, from_list=False
+    tuple_str: str, *, from_list: bool = False
 ) -> tuple[float, ...] | tuple[str, ...] | float | str:
     """Convert a string to a tuple if it matches a tuple pattern.
 
@@ -188,7 +188,7 @@ def list_string_to_tuple(
     return [string_to_tuple(v, from_list=True) for v in a_list]
 
 
-def sanitize_yaml(d: dict, do_keys: bool = True, do_values: bool = False) -> dict:
+def sanitize_yaml(d: dict, *, do_keys: bool = True, do_values: bool = False) -> dict:
     """Sanitize a yaml-returned dict for key or (list) values containing tuples.
 
     Parameters

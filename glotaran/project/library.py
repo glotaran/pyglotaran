@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import reduce
+from typing import TYPE_CHECKING
 from typing import TypeAlias
 from typing import Union
 
@@ -10,16 +11,17 @@ from glotaran.model.element import ExtendableElement
 from glotaran.model.errors import GlotaranModelError
 from glotaran.plugin_system.base_registry import __PluginRegistry
 
-LibraryType: TypeAlias = dict[  # type:ignore[misc,valid-type]
-    str,
-    Union[tuple(__PluginRegistry.element.values())],
-]
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+ElementType: TypeAlias = Union[tuple(__PluginRegistry.element.values())]  # type:ignore[valid-type] # noqa: UP007
+LibraryType: TypeAlias = dict[str, ElementType]
 
 
 class ModelLibrary(RootModel[LibraryType]):
     root: LibraryType
 
-    def __init__(self, **data):
+    def __init__(self, **data: ElementType) -> None:
         super().__init__(**data)
 
         extended_elements = self._get_extended_elements()
@@ -35,15 +37,16 @@ class ModelLibrary(RootModel[LibraryType]):
                     self.root[label] = reduce(lambda a, b: a.extend(b), extends)
                     extended_elements.remove(label)
             if current_size == len(extended_elements):
-                raise GlotaranModelError(
-                    "The extended elements could not be resolved because of cyclic dependencies."
-                )
+                msg = "The extended elements could not be resolved because of cyclic dependencies."
+                raise GlotaranModelError(msg)
             current_size = len(extended_elements)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ElementType]:  # type:ignore[override]
+        """Create iterator of values."""
         return iter(self.root)
 
-    def __getitem__(self, item_label: str):
+    def __getitem__(self, item_label: str) -> ElementType:
+        """Get element for root."""
         return self.root[item_label]
 
     @classmethod

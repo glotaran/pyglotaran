@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import cast
 
 import numpy as np
 import xarray as xr
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
 
-from glotaran.io.prepare_dataset import add_svd_to_dataset
+from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import iterate_data_model_elements
-from glotaran.model.data_model import iterate_data_model_global_elements
+from glotaran.model.element import Element
 from glotaran.optimization.data import LinkedOptimizationData
 from glotaran.optimization.data import OptimizationData
 from glotaran.optimization.estimation import OptimizationEstimation
@@ -21,16 +27,47 @@ if TYPE_CHECKING:
     from glotaran.typing.types import ArrayLike
 
 
+def add_svd_to_result_dataset(dataset: xr.Dataset, global_dim: str, model_dim: str) -> None:
+    for name in ["data", "residual"]:
+        if f"{name}_singular_values" in dataset:
+            continue
+        lsv, sv, rsv = np.linalg.svd(dataset[name].data, full_matrices=False)
+        dataset[f"{name}_left_singular_vectors"] = (
+            (model_dim, "left_singular_value_index"),
+            lsv,
+        )
+        dataset[f"{name}_singular_values"] = (("singular_value_index"), sv)
+        dataset[f"{name}_right_singular_vectors"] = (
+            (global_dim, "right_singular_value_index"),
+            rsv.T,
+        )
+
+
+class OptimizationResult(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+
+    elements: dict[str, xr.Dataset] = Field(default_factory=dict)
+    activations: dict[str, xr.Dataset] = Field(default_factory=dict)
+    input_data: xr.DataArray | xr.Dataset | None = None
+    residuals: xr.DataArray | xr.Dataset | None = None
+
+    @property
+    def fitted_data(self) -> xr.Dataset | xr.DataArray:
+        if self.input_data is None or self.residuals is None:
+            msg = "Data and residuals must be set to calculate fitted data."
+            raise ValueError(msg)
+        return self.input_data - self.residuals
+
+
 @dataclass
 class OptimizationObjectiveResult:
-    data: dict[str, xr.Dataset]
-    free_clp_size: int
+    optimization_results: dict[str, OptimizationResult]
     additional_penalty: float
-    dataset_penalty: dict[str, float]
+    clp_size: int
 
 
 class OptimizationObjective:
-    def __init__(self, model: ExperimentModel):
+    def __init__(self, model: ExperimentModel) -> None:
         self._data = (
             LinkedOptimizationData.from_experiment_model(model)
             if len(model.datasets) > 1
@@ -41,15 +78,13 @@ class OptimizationObjective:
     def calculate_matrices(self) -> list[OptimizationMatrix]:
         if isinstance(self._data, OptimizationData):
             return OptimizationMatrix.from_data(self._data).as_global_list(self._data.global_axis)
-        return OptimizationMatrix.from_linked_data(self._data)  # type:ignore[arg-type]
+        return OptimizationMatrix.from_linked_data(self._data)
 
     def calculate_reduced_matrices(
         self, matrices: list[OptimizationMatrix]
     ) -> list[OptimizationMatrix]:
         return [
-            matrices[i].reduce(
-                index, self._model.clp_constraints, self._model.clp_relations, copy=True
-            )
+            matrices[i].reduce(index, self._model.clp_relations, copy=True)
             for i, index in enumerate(self._data.global_axis)
         ]
 
@@ -58,7 +93,7 @@ class OptimizationObjective:
     ) -> list[OptimizationEstimation]:
         return [
             OptimizationEstimation.calculate(matrix.array, data, self._model.residual_function)
-            for matrix, data in zip(reduced_matrices, self._data.data_slices)
+            for matrix, data in zip(reduced_matrices, self._data.data_slices, strict=True)
         ]
 
     def resolve_estimations(
@@ -69,14 +104,18 @@ class OptimizationObjective:
     ) -> list[OptimizationEstimation]:
         return [
             e.resolve_clp(m.clp_axis, r.clp_axis, i, self._model.clp_relations)
-            for e, m, r, i in zip(estimations, matrices, reduced_matrices, self._data.global_axis)
+            for e, m, r, i in zip(
+                estimations, matrices, reduced_matrices, self._data.global_axis, strict=True
+            )
         ]
 
     def calculate_global_penalty(self) -> ArrayLike:
-        _, _, matrix = OptimizationMatrix.from_global_data(self._data)  # type:ignore[arg-type]
+        assert isinstance(self._data, OptimizationData)
+        assert self._data.flat_data is not None
+        _, _, matrix = OptimizationMatrix.from_global_data(self._data)
         return OptimizationEstimation.calculate(
             matrix.array,
-            self._data.flat_data,  # type:ignore[attr-defined]
+            self._data.flat_data,
             self._model.residual_function,
         ).residual
 
@@ -100,12 +139,13 @@ class OptimizationObjective:
             )
         return np.concatenate(penalties)
 
-    def get_result(self) -> OptimizationObjectiveResult:
-        return (
-            self.create_unlinked_result()
-            if isinstance(self._data, OptimizationData)
-            else self.create_linked_result()
-        )
+    def get_global_indices(self, label: str) -> list[int]:
+        assert isinstance(self._data, LinkedOptimizationData)
+        return [
+            i
+            for i, group_label in enumerate(self._data.group_labels)
+            if label in self._data.group_definitions[group_label]
+        ]
 
     def create_result_dataset(self, label: str, data: OptimizationData) -> xr.Dataset:
         assert isinstance(data.model.data, xr.Dataset)
@@ -121,224 +161,335 @@ class OptimizationObjective:
             dataset.attrs["scale"] = scale.value if isinstance(scale, Parameter) else scale
         return dataset
 
-    def add_matrix_to_dataset(self, dataset: xr.Dataset, matrix: OptimizationMatrix):
-        dataset.coords["clp_label"] = matrix.clp_axis
-        matrix_dims = (dataset.attrs["model_dimension"], "clp_label")
-        if matrix.is_index_dependent:
-            matrix_dims = (  # type:ignore[assignment]
-                dataset.attrs["global_dimension"],
-                *matrix_dims,
-            )
-        dataset["matrix"] = xr.DataArray(matrix.array, dims=matrix_dims)
+    def create_global_result(self) -> OptimizationObjectiveResult:
+        label = next(iter(self._model.datasets.keys()))
+        assert isinstance(self._data, OptimizationData)
+        result_dataset = self.create_result_dataset(label, self._data)
 
-    def add_linked_clp_and_residual_to_dataset(
-        self,
-        dataset: xr.Dataset,
-        label: str,
-        clp_axes: list[list[str]],
-        estimations: list[OptimizationEstimation],
-    ):
-        assert isinstance(self._data, LinkedOptimizationData)
-        global_indices = [
-            i
-            for i, group_label in enumerate(self._data.group_labels)
-            if label in self._data.group_definitions[group_label]
-        ]
+        global_dim = result_dataset.attrs["global_dimension"]
+        global_axis = result_dataset.coords[global_dim]
+        model_dim = result_dataset.attrs["model_dimension"]
+        model_axis = result_dataset.coords[model_dim]
 
-        clp_dims = (dataset.attrs["global_dimension"], "clp_label")
-        dataset["clp"] = xr.DataArray(
-            [
-                [
-                    estimations[i].clp[clp_axes[i].index(clp_label)]
-                    for clp_label in dataset.coords["clp_label"]
-                ]
-                for i in global_indices
-            ],
-            dims=clp_dims,
+        matrix = OptimizationMatrix.from_data(self._data).to_data_array(
+            global_dim, global_axis.to_numpy(), model_dim, model_axis.to_numpy()
         )
-
-        offsets = []
-        for i in global_indices:
-            group_label = self._data._group_labels[i]
-            group_index = self._data.group_definitions[group_label].index(label)
-            offsets.append(sum(self._data.group_sizes[group_label][:group_index]))
-        size = dataset.coords[dataset.attrs["model_dimension"]].size
-        residual_dims = (
-            dataset.attrs["global_dimension"],
-            dataset.attrs["model_dimension"],
+        global_matrix = OptimizationMatrix.from_data(self._data, global_matrix=True).to_data_array(
+            model_dim, model_axis.to_numpy(), global_dim, global_axis.to_numpy()
         )
-        dataset["residual"] = xr.DataArray(
-            [
-                estimations[i].residual[offset : offset + size]
-                for i, offset in zip(global_indices, offsets)
-            ],
-            dims=residual_dims,
-        ).T
+        _, _, full_matrix = OptimizationMatrix.from_global_data(self._data)
 
-    def add_unlinked_clp_and_residual_to_dataset(
-        self,
-        dataset: xr.Dataset,
-        estimations: list[OptimizationEstimation],
-    ):
-        clp_dims = (dataset.attrs["global_dimension"], "clp_label")
-        dataset["clp"] = xr.DataArray([e.clp for e in estimations], dims=clp_dims)
-
-        residual_dims = (
-            dataset.attrs["global_dimension"],
-            dataset.attrs["model_dimension"],
-        )
-        dataset["residual"] = xr.DataArray([e.residual for e in estimations], dims=residual_dims).T
-
-    def add_global_clp_and_residual_to_dataset(
-        self,
-        dataset: xr.Dataset,
-        data: OptimizationData,
-        matrix: OptimizationMatrix,
-    ):
-        global_matrix = OptimizationMatrix.from_data(data, global_matrix=True)
-        global_matrix_coords = (
-            (data.global_dimension, data.global_axis),
-            ("global_clp_label", matrix.clp_axis),
-        )
-        if global_matrix.is_index_dependent:
-            global_matrix_coords = (  # type:ignore[assignment]
-                (data.model_dimension, data.model_axis),
-                *global_matrix_coords,
-            )
-        dataset["global_matrix"] = xr.DataArray(global_matrix.array, coords=global_matrix_coords)
-        _, _, full_matrix = OptimizationMatrix.from_global_data(data)
+        assert self._data.flat_data is not None
         estimation = OptimizationEstimation.calculate(
             full_matrix.array,
-            data.flat_data,  # type:ignore[arg-type]
-            data.model.residual_function,
+            self._data.flat_data,
+            self._data.model.residual_function,
         )
-        dataset["clp"] = xr.DataArray(
-            estimation.clp.reshape((len(global_matrix.clp_axis), len(matrix.clp_axis))),
+        clp = xr.DataArray(
+            estimation.clp.reshape(
+                (len(global_matrix.amplitude_label), len(matrix.amplitude_label))
+            ),
             coords={
-                "global_clp_label": global_matrix.clp_axis,
-                "clp_label": matrix.clp_axis,
+                "global_clp_label": global_matrix.amplitude_label.to_numpy(),
+                "clp_label": matrix.amplitude_label.to_numpy(),
             },
             dims=["global_clp_label", "clp_label"],
         )
-        dataset["residual"] = xr.DataArray(
-            estimation.residual.reshape(
-                data.global_axis.size,
-                data.model_axis.size,
-            ),
-            coords=(
-                (data.global_dimension, data.global_axis),
-                (data.model_dimension, data.model_axis),
-            ),
+        result_dataset["residual"] = xr.DataArray(
+            estimation.residual.reshape(global_axis.size, model_axis.size),
+            coords=((global_dim, global_axis.to_numpy()), (model_dim, model_axis.to_numpy())),
         ).T
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
+        )
+        clp_size = len(matrix.amplitude_label) + len(global_matrix.amplitude_label)
+        self._data.unweight_result_dataset(result_dataset)
 
-    def finalize_result_dataset(self, dataset: xr.Dataset, data: OptimizationData, add_svd=True):
-        # Calculate RMS
-        size = dataset.residual.shape[0] * dataset.residual.shape[1]
-        dataset.attrs["root_mean_square_error"] = np.sqrt((dataset.residual**2).sum() / size).data
-        dataset["fitted_data"] = dataset.data - dataset.residual
-
-        if data.weight is not None:
-            weight = data.weight
-            if data.is_global:
-                dataset["global_weighted_matrix"] = dataset["global_matrix"]
-                dataset["global_matrix"] = dataset["global_matrix"] / weight[..., np.newaxis]
-            if "weight" not in dataset:
-                dataset["weight"] = xr.DataArray(data.weight, coords=dataset.data.coords)
-            dataset["weighted_residual"] = dataset["residual"]
-            dataset["residual"] = dataset["residual"] / weight
-            dataset["weighted_matrix"] = dataset["matrix"]
-            dataset["matrix"] = dataset["matrix"] / weight.T[..., np.newaxis]
-            dataset.attrs["weighted_root_mean_square_error"] = dataset.attrs[
-                "root_mean_square_error"
-            ]
-            dataset.attrs["root_mean_square_error"] = np.sqrt(
-                (dataset.residual**2).sum() / size
-            ).data
-
-        if add_svd:
-            for name in ["data", "residual"]:
-                add_svd_to_dataset(dataset, name, data.model_dimension, data.global_dimension)
-        for _, model in iterate_data_model_elements(data.model):
-            model.add_to_result_data(  # type:ignore[union-attr]
-                data.model, dataset, False
-            )
-        for _, model in iterate_data_model_global_elements(data.model):
-            model.add_to_result_data(  # type:ignore[union-attr]
-                data.model, dataset, True
-            )
-
-    def create_linked_result(self) -> OptimizationObjectiveResult:
-        assert isinstance(self._data, LinkedOptimizationData)
-        matrices = {
-            label: OptimizationMatrix.from_data(data) for label, data in self._data.data.items()
-        }
-        linked_matrices = OptimizationMatrix.from_linked_data(self._data, matrices)
-        clp_axes = [matrix.clp_axis for matrix in linked_matrices]
-        reduced_matrices = self.calculate_reduced_matrices(linked_matrices)
-        free_clp_size = sum(len(matrix.clp_axis) for matrix in reduced_matrices)
-        estimations = self.resolve_estimations(
-            linked_matrices,
-            reduced_matrices,
-            self.calculate_estimations(reduced_matrices),
+        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
+        result = OptimizationResult(
+            input_data=result_dataset.data,
+            residuals=result_dataset.residual,
+            elements={
+                label: xr.Dataset(
+                    {
+                        "amplitudes": clp,
+                        "global_concentrations": global_matrix,
+                        "model_concentrations": matrix,
+                    }
+                )
+            },
+        )
+        return OptimizationObjectiveResult(
+            optimization_results={label: result}, clp_size=clp_size, additional_penalty=0
         )
 
-        results = {}
-        for label, matrix in matrices.items():
-            data = self._data.data[label]
-            results[label] = self.create_result_dataset(label, data)
-            self.add_matrix_to_dataset(results[label], matrix)
-            self.add_linked_clp_and_residual_to_dataset(
-                results[label], label, clp_axes, estimations
-            )
-            self.finalize_result_dataset(results[label], data)
+    def create_single_dataset_result(self) -> OptimizationObjectiveResult:
+        assert isinstance(self._data, OptimizationData)
+        if self._data.is_global:
+            return self.create_global_result()
+
+        label = next(iter(self._model.datasets.keys()))
+        result_dataset = self.create_result_dataset(label, self._data)
+
+        global_dim = result_dataset.attrs["global_dimension"]
+        global_axis = result_dataset.coords[global_dim]
+        model_dim = result_dataset.attrs["model_dimension"]
+        model_axis = result_dataset.coords[model_dim]
+
+        concentrations = OptimizationMatrix.from_data(self._data)
+        additional_penalty = 0
+
+        clp_concentration = self.calculate_reduced_matrices(
+            concentrations.as_global_list(self._data.global_axis)
+        )
+        clp_size = sum(len(c.clp_axis) for c in clp_concentration)
+        estimations = self.resolve_estimations(
+            concentrations.as_global_list(self._data.global_axis),
+            clp_concentration,
+            self.calculate_estimations(clp_concentration),
+        )
+        amplitude_coords = {
+            global_dim: global_axis,
+            "amplitude_label": concentrations.clp_axis,
+        }
+        amplitudes = xr.DataArray(
+            [e.clp for e in estimations], dims=amplitude_coords.keys(), coords=amplitude_coords
+        )
+        concentration = concentrations.to_data_array(
+            global_dim, global_axis, model_dim, model_axis
+        )
+
+        residual_dims = (global_dim, model_dim)
+        result_dataset["residual"] = xr.DataArray(
+            [e.residual for e in estimations], dims=residual_dims
+        ).T
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
+        )
         additional_penalty = sum(
             calculate_clp_penalties(
-                linked_matrices,
+                [concentrations],
+                estimations,
+                global_axis,
+                self._model.clp_penalties,
+            )
+        )
+        element_results = self.create_element_results(
+            self._model.datasets[label], global_dim, model_dim, amplitudes, concentration
+        )
+        activations = self.create_data_model_results(
+            label, global_dim, model_dim, amplitudes, concentration
+        )
+
+        self._data.unweight_result_dataset(result_dataset)
+        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
+        result = OptimizationResult(
+            input_data=result_dataset.data,
+            residuals=result_dataset.residual,
+            elements=element_results,
+            activations=activations,
+        )
+        return OptimizationObjectiveResult(
+            optimization_results={label: result},
+            additional_penalty=additional_penalty,
+            clp_size=clp_size,
+        )
+
+    def create_multi_dataset_result(self) -> OptimizationObjectiveResult:
+        assert isinstance(self._data, LinkedOptimizationData)
+        dataset_concentrations = {
+            label: OptimizationMatrix.from_data(data) for label, data in self._data.data.items()
+        }
+        full_concentration = OptimizationMatrix.from_linked_data(
+            self._data, dataset_concentrations
+        )
+        estimated_amplitude_axes = [concentration.clp_axis for concentration in full_concentration]
+        clp_concentration = self.calculate_reduced_matrices(full_concentration)
+        clp_size = sum(len(concentration.clp_axis) for concentration in clp_concentration)
+
+        estimations = self.resolve_estimations(
+            full_concentration,
+            clp_concentration,
+            self.calculate_estimations(clp_concentration),
+        )
+        additional_penalty = sum(
+            calculate_clp_penalties(
+                full_concentration,
                 estimations,
                 self._data.global_axis,
                 self._model.clp_penalties,
             )
         )
-        dataset_penalties = {label: d.residual.sum().data for label, d in results.items()}
+
+        results = {
+            label: self.create_dataset_result(
+                label,
+                data,
+                dataset_concentrations[label],
+                estimated_amplitude_axes,
+                estimations,
+            )
+            for label, data in self._data.data.items()
+        }
         return OptimizationObjectiveResult(
-            results, free_clp_size, additional_penalty, dataset_penalties
+            optimization_results=results,
+            clp_size=clp_size,
+            additional_penalty=additional_penalty,
         )
 
-    def create_unlinked_result(self) -> OptimizationObjectiveResult:
-        assert isinstance(self._data, OptimizationData)
+    def get_dataset_amplitudes(
+        self,
+        label: str,
+        estimated_amplitude_axes: list[list[str]],
+        estimated_amplitudes: list[OptimizationEstimation],
+        amplitude_axis: ArrayLike,
+        global_dim: str,
+        global_axis: ArrayLike,
+    ) -> xr.DataArray:
+        assert isinstance(self._data, LinkedOptimizationData)
 
-        label = next(iter(self._model.datasets.keys()))
-        result = self.create_result_dataset(label, self._data)
+        global_indices = self.get_global_indices(label)
+        coords = {
+            global_dim: global_axis,
+            "amplitude_label": amplitude_axis,
+        }
+        return xr.DataArray(
+            [
+                [
+                    estimated_amplitudes[i].clp[estimated_amplitude_axes[i].index(amplitude_label)]
+                    for amplitude_label in amplitude_axis
+                ]
+                for i in global_indices
+            ],
+            dims=coords.keys(),
+            coords=coords,
+        )
 
-        matrix = OptimizationMatrix.from_data(self._data)
-        self.add_matrix_to_dataset(result, matrix)
-        additional_penalty = 0
-        if self._data.is_global:
-            self.add_global_clp_and_residual_to_dataset(result, self._data, matrix)
-            free_clp_size = len(matrix.clp_axis)
+    def get_dataset_residual(
+        self,
+        label: str,
+        estimations: list[OptimizationEstimation],
+        model_dim: str,
+        model_axis: ArrayLike,
+        global_dim: str,
+        global_axis: ArrayLike,
+    ) -> xr.DataArray:
+        assert isinstance(self._data, LinkedOptimizationData)
 
-        else:
-            reduced_matrices = self.calculate_reduced_matrices(
-                matrix.as_global_list(self._data.global_axis)
+        global_indices = self.get_global_indices(label)
+        coords = {global_dim: global_axis, model_dim: model_axis}
+        offsets = []
+        for i in global_indices:
+            group_label = self._data._group_labels[i]  # noqa: SLF001
+            group_index = self._data.group_definitions[group_label].index(label)
+            offsets.append(sum(self._data.group_sizes[group_label][:group_index]))
+        size = model_axis.size
+        return xr.DataArray(
+            [
+                estimations[i].residual[offset : offset + size]
+                for i, offset in zip(global_indices, offsets, strict=True)
+            ],
+            dims=coords.keys(),
+            coords=coords,
+        ).T
+
+    def create_element_results(
+        self,
+        model: DataModel,
+        global_dim: str,
+        model_dim: str,
+        amplitudes: xr.DataArray,
+        concentrations: xr.DataArray,
+    ) -> dict[str, xr.Dataset]:
+        assert any(isinstance(element, str) for element in model.elements) is False
+        return {
+            element.label: element.create_result_with_uid(
+                model, global_dim, model_dim, amplitudes, concentrations
             )
-            free_clp_size = sum(len(matrix.clp_axis) for matrix in reduced_matrices)
-            estimations = self.resolve_estimations(
-                matrix.as_global_list(self._data.global_axis),
-                reduced_matrices,
-                self.calculate_estimations(reduced_matrices),
-            )
-            self.add_unlinked_clp_and_residual_to_dataset(result, estimations)
-            additional_penalty = sum(
-                calculate_clp_penalties(
-                    [matrix],
-                    estimations,
-                    self._data.global_axis,
-                    self._model.clp_penalties,
-                )
-            )
+            for element in cast(list[Element], model.elements)
+        }
 
-        self.finalize_result_dataset(result, self._data)
-        dataset_penalties = {label: result.residual.sum().data}
-        return OptimizationObjectiveResult(
-            {label: result}, free_clp_size, additional_penalty, dataset_penalties
+    def create_dataset_result(
+        self,
+        label: str,
+        data: OptimizationData,
+        concentration: OptimizationMatrix,
+        estimated_amplitude_axes: list[list[str]],
+        estimations: list[OptimizationEstimation],
+    ) -> xr.Dataset:
+        assert isinstance(self._data, LinkedOptimizationData)
+        result_dataset = self.create_result_dataset(label, data)
+
+        global_dim = result_dataset.attrs["global_dimension"]
+        global_axis = result_dataset.coords[global_dim]
+        model_dim = result_dataset.attrs["model_dimension"]
+        model_axis = result_dataset.coords[model_dim]
+
+        result_dataset["residual"] = self.get_dataset_residual(
+            label, estimations, model_dim, model_axis, global_dim, global_axis
+        )
+        result_dataset.attrs["root_mean_square_error"] = np.sqrt(
+            (result_dataset.residual.to_numpy() ** 2).sum() / sum(result_dataset.residual.shape)
+        )
+        self._data.data[label].unweight_result_dataset(result_dataset)
+        result_dataset["fit"] = result_dataset.data - result_dataset.residual
+        add_svd_to_result_dataset(result_dataset, global_dim, model_dim)
+
+        concentrations = concentration.to_data_array(
+            global_dim, global_axis, model_dim, model_axis
+        )
+        amplitudes = self.get_dataset_amplitudes(
+            label,
+            estimated_amplitude_axes,
+            estimations,
+            concentrations.amplitude_label,
+            global_dim,
+            global_axis,
+        )
+        element_results = self.create_element_results(
+            self._model.datasets[label], global_dim, model_dim, amplitudes, concentrations
+        )
+        activations = self.create_data_model_results(
+            label, global_dim, model_dim, amplitudes, concentrations
+        )
+
+        return OptimizationResult(
+            input_data=result_dataset.data,
+            residuals=result_dataset.residual,
+            elements=element_results,
+            activations=activations,
+        )
+
+    def create_data_model_results(
+        self,
+        label: str,
+        global_dim: str,
+        model_dim: str,
+        amplitudes: xr.DataArray,
+        concentrations: xr.DataArray,
+    ) -> dict[str, xr.Dataset]:
+        result: dict[str, xr.Dataset] = {}
+        data_model = self._model.datasets[label]
+        assert any(isinstance(e, str) for _, e in iterate_data_model_elements(data_model)) is False
+        for data_model_cls in {
+            e.__class__.data_model_type
+            for _, e in cast(
+                Iterable[tuple[Any, Element]], iterate_data_model_elements(data_model)
+            )
+            if e.__class__.data_model_type is not None
+        }:
+            result = result | cast(type[DataModel], data_model_cls).create_result(
+                data_model,
+                global_dim,
+                model_dim,
+                amplitudes,
+                concentrations,
+            )
+        return result
+
+    def get_result(self) -> OptimizationObjectiveResult:
+        return (
+            self.create_single_dataset_result()
+            if isinstance(self._data, OptimizationData)
+            else self.create_multi_dataset_result()
         )

@@ -106,7 +106,7 @@ def is_known_data_format(format_name: str) -> bool:
     )
 
 
-def known_data_formats(full_names: bool = False) -> list[str]:
+def known_data_formats(*, full_names: bool = False) -> list[str]:
     """Names of the registered data io plugins.
 
     Parameters
@@ -175,7 +175,9 @@ def get_data_io(format_name: str) -> DataIoInterface:
 
 @not_implemented_to_value_error
 def load_dataset(
-    file_name: StrOrPath, format_name: str | None = None, **kwargs: Any
+    file_name: StrOrPath,
+    format_name: str | None = None,
+    **kwargs: Any,  # noqa: ANN401
 ) -> xr.Dataset:
     """Read data from a file to :xarraydoc:`Dataset` or :xarraydoc:`DataArray`.
 
@@ -211,10 +213,10 @@ def save_dataset(
     file_name: StrOrPath,
     format_name: str | None = None,
     *,
-    data_filters: list[str] | None = None,
+    data_filters: list[str] | None = None,  # noqa: ARG001
     allow_overwrite: bool = False,
     update_source_path: bool = True,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> None:
     """Save data from :xarraydoc:`Dataset` or :xarraydoc:`DataArray` to a file.
 
@@ -343,7 +345,7 @@ def data_io_plugin_table(*, plugin_names: bool = False, full_names: bool = False
 
 def supported_file_extensions_data_io(
     method_names: str | Sequence[str],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Get data io formats that support all methods in ``method_names``.
 
     Parameters

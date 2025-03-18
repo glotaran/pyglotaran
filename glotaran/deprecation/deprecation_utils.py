@@ -110,7 +110,7 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
         f"int parts (e.g. '0.0.1'), got {version_str!r}"
     )
     split_version = version_str.partition("-")[0].split(".")
-    if len(split_version) < 3:
+    if len(split_version) < 3:  # noqa: PLR2004
         raise ValueError(error_message)
     try:
         return tuple(map(int, (*split_version[:2], split_version[2].partition("rc")[0])))  # type:ignore[return-value]
@@ -118,7 +118,7 @@ def parse_version(version_str: str) -> tuple[int, int, int]:
         raise ValueError(error_message) from err
 
 
-def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequence[int]):
+def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequence[int]) -> None:
     """Test that qualnames import path exists when running tests.
 
     All deprecations should be tested anyway in order to get the proper
@@ -143,7 +143,7 @@ def check_qualnames_in_tests(qual_names: Sequence[str], importable_indices: Sequ
     """
     # Since this is always true for tests run with pytest we ignore the branch coverage
     if "PYTEST_CURRENT_TEST" in os.environ:  # pragma: no branch
-        for qual_name, slice_index in zip(qual_names, importable_indices):
+        for qual_name, slice_index in zip(qual_names, importable_indices, strict=False):
             qual_name_parts = qual_name.partition("(")[0].partition("[")[0].split(".")
             module_name = ".".join(qual_name_parts[:-slice_index])
             object_name = qual_name_parts[-slice_index]
@@ -174,11 +174,12 @@ def check_overdue(deprecated_qual_name_usage: str, to_be_removed_in_version: str
         parse_version(glotaran_version()) >= parse_version(to_be_removed_in_version)
         and "dev" not in glotaran_version()
     ):
-        raise OverDueDeprecationError(
+        msg = (
             f"Support for {deprecated_qual_name_usage.partition('(')[0]!r} was "
             f"supposed to be dropped in version: {to_be_removed_in_version!r}.\n"
             f"Current version is: {glotaran_version()!r}"
         )
+        raise OverDueDeprecationError(msg)
 
 
 def raise_deprecation_error(
@@ -307,7 +308,7 @@ def warn_deprecated(
     check_overdue(deprecated_qual_name_usage, to_be_removed_in_version)
     qual_names = (deprecated_qual_name_usage, new_qual_name_usage)
     selected_qual_names = [
-        qual_name for qual_name, check in zip(qual_names, check_qual_names) if check
+        qual_name for qual_name, check in zip(qual_names, check_qual_names, strict=False) if check
     ]
     selected_indices = importable_indices[: len(selected_qual_names)]
     check_qualnames_in_tests(qual_names=selected_qual_names, importable_indices=selected_indices)
@@ -405,7 +406,7 @@ def deprecate(
         """
 
         @wraps(deprecated_object)
-        def inner_wrapper(*args: Any, **kwargs: Any) -> DecoratedCallable:
+        def inner_wrapper(*args: Any, **kwargs: Any) -> DecoratedCallable:  # noqa: ANN401
             """Wrap running the function and warning."""
             warn_deprecated(
                 deprecated_qual_name_usage=deprecated_qual_name_usage,
@@ -424,7 +425,7 @@ def deprecate(
         if not isinstance(deprecated_object, type):
             return cast(DecoratedCallable, inject_warn_into_call(deprecated_object))
 
-        setattr(
+        setattr(  # noqa: B010
             deprecated_object,
             "__new__",
             inject_warn_into_call(deprecated_object.__new__),
@@ -536,9 +537,8 @@ def deprecate_dict_entry(
     dict_changed = False
 
     if not np.logical_xor(swap_keys is None, replace_rules is None):
-        raise ValueError(
-            "Exactly one of the parameters `swap_keys` or `replace_rules` needs to be provided."
-        )
+        msg = "Exactly one of the parameters `swap_keys` or `replace_rules` needs to be provided."
+        raise ValueError(msg)
     if swap_keys is not None and swap_keys[0] in dict_to_check:
         dict_changed = True
         dict_to_check[swap_keys[1]] = dict_to_check[swap_keys[0]]
@@ -562,7 +562,7 @@ def deprecate_dict_entry(
         )
 
 
-def module_attribute(module_qual_name: str, attribute_name: str) -> Any:
+def module_attribute(module_qual_name: str, attribute_name: str) -> Any:  # noqa: ANN401
     """Import and return the attribute (e.g. function or class) of a module.
 
     This is basically the same as ``from module_name import attribute_name as return_value``
@@ -590,7 +590,7 @@ def deprecate_module_attribute(
     new_qual_name: str,
     to_be_removed_in_version: str,
     module_load_overwrite: str = "",
-) -> Any:
+) -> Any:  # noqa: ANN401
     """Import and return and anttribute from the new location.
 
     This needs to be wrapped in the definition of a module wide
@@ -749,7 +749,7 @@ def deprecate_submodule(
         f"Deprecated use {new_module_name!r} instead.\n\n{new_module.__doc__}",
     )
 
-    def warn_getattr(attribute_name: str):
+    def warn_getattr(attribute_name: str) -> Any:  # noqa: ANN401
         if attribute_name == "__file__":
             return new_module.__file__
 
@@ -762,11 +762,12 @@ def deprecate_submodule(
                 and f"{module_load_overwrite}.{attribute_name}",
             )
 
-        raise AttributeError(f"module {deprecated_module_name} has no attribute {attribute_name}")
+        msg = f"module {deprecated_module_name} has no attribute {attribute_name}"
+        raise AttributeError(msg)
 
-    setattr(deprecated_module, "__getattr__", warn_getattr)
-    setattr(deprecated_module, "__package__", deprecated_module_name.split(".")[:-1])
-    setattr(deprecated_module, "__dir__", new_module.__dir__)
+    setattr(deprecated_module, "__getattr__", warn_getattr)  # noqa: B010
+    setattr(deprecated_module, "__package__", deprecated_module_name.split(".")[:-1])  # noqa: B010
+    setattr(deprecated_module, "__dir__", new_module.__dir__)  # noqa: B010
 
     sys.modules[deprecated_module_name] = deprecated_module
     return deprecated_module

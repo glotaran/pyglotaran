@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class ParameterHistory:
     """A class representing a history of parameters."""
 
-    def __init__(self):  # noqa: D107
+    def __init__(self) -> None:  # noqa: D107
         self._parameter_labels: list[str] = []
         self._parameters: list[np.ndarray] = []
         self.source_path = "parameter_history.csv"
@@ -38,10 +38,10 @@ class ParameterHistory:
         """
         history = cls()
 
-        history._parameter_labels = history_df.columns
+        history._parameter_labels = history_df.columns  # noqa: SLF001
 
         for parameter_values in history_df.to_numpy():
-            history._parameters.append(parameter_values)
+            history._parameters.append(parameter_values)  # noqa: SLF001
 
         return history
 
@@ -111,7 +111,7 @@ class ParameterHistory:
         """
         return pd.DataFrame(self._parameters, columns=self.parameter_labels)
 
-    def to_csv(self, file_name: str | PathLike[str], delimiter: str = ","):
+    def to_csv(self, file_name: str | PathLike[str], delimiter: str = ",") -> None:
         """Write a :class:`ParameterHistory` to a CSV file.
 
         Parameters
@@ -124,7 +124,7 @@ class ParameterHistory:
         self.source_path = Path(file_name).as_posix()
         self.to_dataframe().to_csv(file_name, sep=delimiter, index=False)
 
-    def append(self, parameters: Parameters, current_iteration: int = 0):
+    def append(self, parameters: Parameters, current_iteration: int = 0) -> None:
         """Append :class:`Parameters` to the history.
 
         Parameters
@@ -149,7 +149,8 @@ class ParameterHistory:
         if len(self._parameter_labels) == 0:
             self._parameter_labels = parameter_labels
         if parameter_labels != self.parameter_labels:
-            raise ValueError("Cannot append parameters. Parameter labels do not match existing.")
+            msg = "Cannot append parameters. Parameter labels do not match existing."
+            raise ValueError(msg)
 
         self._parameters.append(np.array([current_iteration, *parameter_values]))
 

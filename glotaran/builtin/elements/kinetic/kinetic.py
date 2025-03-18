@@ -1,4 +1,4 @@
-"""K-Matrix"""
+"""K-Matrix."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ class Kinetic(Item):
 
     @classmethod
     def combine(cls, kinetics: list[Kinetic]) -> Kinetic:
-        """Creates a combined matrix.
+        """Create a combined matrix.
 
         When combining k-matrices km1 and km2 (km1.combine(km2)),
         entries in km1 will be overwritten by corresponding entries in km2.
@@ -43,8 +43,8 @@ class Kinetic(Item):
         return cls(rates=reduce(lambda lhs, rhs: lhs | rhs, [k.rates for k in kinetics]))
 
     @property
-    def species(self) -> list[str]:
-        """A list of all species involved in the kinetic scheme."""
+    def compartments(self) -> list[str]:
+        """A list of all compartments involved in the kinetic scheme."""
         return list(dict.fromkeys([c for cs in self.rates for c in reversed(cs)]))
 
     @property
@@ -57,12 +57,11 @@ class Kinetic(Item):
             The compartment order.
         """
 
-        species = self.species
-        size = len(species)
+        size = len(self.compartments)
         array = np.zeros((size, size), dtype=np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = species.index(to_comp)
-            fr_idx = species.index(from_comp)
+            to_idx = self.compartments.index(to_comp)
+            fr_idx = self.compartments.index(from_comp)
             array[to_idx, fr_idx] = rate
         return array
 
@@ -75,12 +74,11 @@ class Kinetic(Item):
         compartments :
             The compartment order.
         """
-        species = self.species
-        size = len(species)
+        size = len(self.compartments)
         array = np.zeros((size, size), np.float64)
         for (to_comp, from_comp), rate in self.rates.items():
-            to_idx = species.index(to_comp)
-            fr_idx = species.index(from_comp)
+            to_idx = self.compartments.index(to_comp)
+            fr_idx = self.compartments.index(from_comp)
 
             if to_idx == fr_idx:
                 array[to_idx, fr_idx] -= rate
@@ -90,7 +88,7 @@ class Kinetic(Item):
         return array
 
     def eigen(self) -> tuple[ArrayLike, ArrayLike]:
-        """Returns the eigenvalues and eigenvectors of the k matrix.
+        """Return the eigenvalues and eigenvectors of the k matrix.
 
         Parameters
         ----------
@@ -104,7 +102,7 @@ class Kinetic(Item):
         return (eigenvalues.real, eigenvectors.real)
 
     def calculate(self, concentrations: ArrayLike | None = None) -> ArrayLike:
-        """The resulting rates of the matrix.
+        """Calculate resulting rates of the matrix.
 
         By definition, the eigenvalues of the compartmental model are negative and
         the rates are the negatives of the eigenvalues, thus the eigenvalues need to be
@@ -123,7 +121,7 @@ class Kinetic(Item):
         return -eigenvalues
 
     def a_matrix(self, concentrations: ArrayLike) -> ArrayLike:
-        """The A matrix of the KMatrix.
+        """Return A matrix of the KMatrix.
 
         Parameters
         ----------
@@ -137,7 +135,7 @@ class Kinetic(Item):
         )
 
     def a_matrix_general(self, concentrations: ArrayLike) -> np.ndarray:
-        """The A matrix of the KMatrix for a general model.
+        """Return A matrix of the KMatrix for a general model.
 
         Parameters
         ----------
@@ -153,7 +151,7 @@ class Kinetic(Item):
         return a_matrix.T
 
     def a_matrix_sequential(self) -> np.ndarray:
-        """The A matrix of the KMatrix for a sequential model.
+        """Return A matrix of the KMatrix for a sequential model.
 
         Parameters
         ----------
@@ -175,7 +173,7 @@ class Kinetic(Item):
         return a_matrix
 
     def is_sequential(self, concentrations: ArrayLike) -> bool:
-        """Returns true in the KMatrix represents an unibranched model.
+        """Return true in the KMatrix represents an unibranched model.
 
         Parameters
         ----------
@@ -186,6 +184,6 @@ class Kinetic(Item):
             return False
         array = self.array
         return not any(
-            np.nonzero(array[:, i])[0].size != 1 or i != 0 and array[i, i - 1] == 0
+            np.nonzero(array[:, i])[0].size != 1 or (i != 0 and array[i, i - 1] == 0)
             for i in range(array.shape[1])
         )

@@ -21,4 +21,5 @@ def __getattr__(attribute_name: str):
             module_load_overwrite="glotaran.deprecation.deprecation_utils.parse_version",
         )
 
-    raise AttributeError(f"module {__name__} has no attribute {attribute_name}")
+    msg = f"module {__name__} has no attribute {attribute_name}"
+    raise AttributeError(msg)

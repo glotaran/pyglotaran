@@ -109,7 +109,7 @@ def create_model_scheme_json_schema(
         "type": "string",
     }
     if parameters is not None:
-        if isinstance(parameters, (str, Path)):
+        if isinstance(parameters, str | Path):
             parameters = load_parameters(parameters)
         parameter_label_schema |= {"enum": parameters.labels}
     json_schema["$defs"]["Parameter"] = parameter_label_schema

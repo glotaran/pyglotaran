@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 def infer_file_format(
-    file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder=False
+    file_path: StrOrPath, *, needs_to_exist: bool = True, allow_folder: bool = False
 ) -> str:
     """Infer format of a file if it exists.
 
@@ -51,7 +51,8 @@ def infer_file_format(
     """
     file_path = Path(file_path)
     if file_path.is_file() is False and needs_to_exist and not allow_folder:
-        raise ValueError(f"There is no file {file_path!r}.")
+        msg = f"There is no file {file_path!r}."
+        raise ValueError(msg)
 
     file_format = file_path.suffix
     if file_format != "":
@@ -60,9 +61,8 @@ def infer_file_format(
 
     if allow_folder:
         return "yaml"
-    raise ValueError(
-        f"Cannot determine format of file {file_path!r}, please provide an explicit format."
-    )
+    msg = f"Cannot determine format of file {file_path!r}, please provide an explicit format."
+    raise ValueError(msg)
 
 
 def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
@@ -84,7 +84,7 @@ def not_implemented_to_value_error(func: DecoratedFunc) -> DecoratedFunc:
     """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
         try:
             return func(*args, **kwargs)
         except NotImplementedError as error:
@@ -123,14 +123,14 @@ def protect_from_overwrite(path: str | os.PathLike[str], *, allow_overwrite: boo
     if allow_overwrite:
         return
     if path.is_file():
-        raise FileExistsError(f"The file {path!r} already exists. \n{user_info}")
+        msg = f"The file {path!r} already exists. \n{user_info}"
+        raise FileExistsError(msg)
     if path.is_dir() and os.listdir(str(path)):
-        raise FileExistsError(
-            f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
-        )
+        msg = f"The folder {path.as_posix()!r} already exists and is not empty. \n{user_info}"
+        raise FileExistsError(msg)
 
 
-def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> Any:
+def bool_str_repr(value: Any, true_repr: str = "*", false_repr: str = "/") -> Any:  # noqa: ANN401
     """Replace boolean value with string repr.
 
     This function is a helper for table representation (e.g. with tabulate)

@@ -14,7 +14,7 @@ class GlotaranUserError(Exception):
 
 
 class GlotaranModelIssues(GlotaranModelError):  # noqa: N818
-    def __init__(self, issues: list[ItemIssue]):
+    def __init__(self, issues: list[ItemIssue]) -> None:
         joiner = "\n* "
         super().__init__(
             f"The model has issues:\n\n* {joiner.join([i.to_string() for i in issues])}"
@@ -44,7 +44,7 @@ class ItemIssue:
 class ParameterIssue(ItemIssue):
     """Issue for missing parameters."""
 
-    def __init__(self, label: str):
+    def __init__(self, label: str) -> None:
         """Create a parameter issue.
 
         Parameters

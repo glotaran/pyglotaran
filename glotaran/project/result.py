@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
 
-import xarray as xr  # noqa: TCH002
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
@@ -12,9 +11,10 @@ from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
 from glotaran.model.errors import GlotaranUserError
-from glotaran.model.experiment_model import ExperimentModel  # noqa: TCH001
-from glotaran.optimization import OptimizationResult  # noqa: TCH001
-from glotaran.parameter import Parameters  # noqa: TCH001
+from glotaran.model.experiment_model import ExperimentModel  # noqa: TC001
+from glotaran.optimization import OptimizationInfo  # noqa: TC001
+from glotaran.optimization.objective import OptimizationResult  # noqa: TC001
+from glotaran.parameter import Parameters  # noqa: TC001
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,24 +34,25 @@ SAVING_OPTIONS_DEFAULT = SavingOptions()
 class Result(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
-    data: dict[str, xr.Dataset]
+    optimization_results: dict[str, OptimizationResult]
     experiments: dict[str, ExperimentModel]
-    optimization: OptimizationResult
-    parameters_intitial: Parameters
-    parameters_optimized: Parameters
+    optimization_info: OptimizationInfo
+    initial_parameters: Parameters
+    optimized_parameters: Parameters
 
     def save(
         self,
         path: Path,
         options: SavingOptions = SAVING_OPTIONS_DEFAULT,
+        *,
         allow_overwrite: bool = False,
-    ):
+    ) -> None:
         if path.is_file():
-            raise GlotaranUserError("Save path must be a folder.")
+            msg = "Save path must be a folder."
+            raise GlotaranUserError(msg)
         if path.exists() and not allow_overwrite:
-            raise GlotaranUserError(
-                "Save path already exists. Use allow_overwrite=True to overwrite."
-            )
+            msg = "Save path already exists. Use allow_overwrite=True to overwrite."
+            raise GlotaranUserError(msg)
         result_dict: dict[str, Any] = {"data": {}, "experiments": {}}
         path.mkdir(exist_ok=True, parents=True)
 
@@ -65,21 +66,22 @@ class Result(BaseModel):
 
         data_path = path / "data"
         data_path.mkdir(exist_ok=True)
-        for label, data in self.data.items():
+        for label, data in self.optimization_results.items():
             dataset_path = data_path / f"{label}.{options.data_format}"
             result_dict["data"][label] = str(dataset_path)
-            if options.data_filter is not None:
-                data = data[options.data_filter]
+            # TODO: Make saving options more granular on a per element base
+            # if options.data_filter is not None:
+            #     data = data[options.data_filter]
             save_dataset(data, dataset_path, allow_overwrite=allow_overwrite)
 
         optimization_history_path = path / "optimization_history.csv"
         result_dict["optimization_history"] = str(optimization_history_path)
-        self.optimization.optimization_history.to_csv(optimization_history_path)
+        self.optimization_info.optimization_history.to_csv(optimization_history_path)
 
         parameters_initial_path = path / f"parameters_initial.{options.parameter_format}"
         result_dict["parameters_initial"] = str(parameters_initial_path)
         save_parameters(
-            self.parameters_intitial,
+            self.initial_parameters,
             parameters_initial_path,
             allow_overwrite=allow_overwrite,
         )
@@ -87,7 +89,7 @@ class Result(BaseModel):
         parameters_optimized_path = path / f"parameters_optimized.{options.parameter_format}"
         result_dict["parameters_optimized"] = str(parameters_optimized_path)
         save_parameters(
-            self.parameters_optimized,
+            self.optimized_parameters,
             parameters_optimized_path,
             allow_overwrite=allow_overwrite,
         )

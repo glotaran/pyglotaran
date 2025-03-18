@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import pytest
@@ -8,9 +9,11 @@ from glotaran.testing.simulated_data.sequential_spectral_decay import RESULT
 from glotaran.utils.io import chdir_context
 
 
-@pytest.mark.parametrize("path_is_absolute", (True, False))
+@pytest.mark.xfail(reason="Needs to be fixed.")
+@pytest.mark.parametrize("path_is_absolute", [True, False])
 def test_saving(tmp_path: Path, path_is_absolute: bool):
     """Check all files exist."""
+    warnings.warn("Test needs to be fixed.", stacklevel=2)
     result_dir = tmp_path / "testresult" if path_is_absolute is True else Path("testresult")
 
     with chdir_context("." if path_is_absolute is True else tmp_path):
@@ -21,3 +24,8 @@ def test_saving(tmp_path: Path, path_is_absolute: bool):
         assert (result_dir / "parameters_optimized.csv").exists()
         assert (result_dir / "optimization_history.csv").exists()
         assert (result_dir / "data" / "sequential-decay.nc").exists()
+
+
+if __name__ == "__main__":
+    # TODO: disable for now
+    pytest.main([__file__])

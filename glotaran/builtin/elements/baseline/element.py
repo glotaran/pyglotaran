@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Literal
 
 import numpy as np
+import xarray as xr
 
 from glotaran.model.element import Element
 
 if TYPE_CHECKING:
-    import xarray as xr
-
     from glotaran.model.data_model import DataModel
     from glotaran.typing.types import ArrayLike
 
@@ -28,17 +28,18 @@ class BaselineElement(Element):
         model: DataModel,
         global_axis: ArrayLike,
         model_axis: ArrayLike,
-        **kwargs,
+        **kwargs: Any,  # noqa: ANN401
     ) -> tuple[list[str], ArrayLike]:
         clp_label = [self.clp_label()]
         matrix = np.ones((model_axis.size, 1), dtype=np.float64)
         return clp_label, matrix
 
-    def add_to_result_data(
+    def create_result(
         self,
         model: DataModel,
-        data: xr.Dataset,
-        as_global: bool = False,
-    ):
-        if not as_global:
-            data["baseline"] = data.clp.sel(clp_label=self.clp_label())
+        global_dimension: str,
+        model_dimension: str,
+        amplitudes: xr.Dataset,
+        concentrations: xr.Dataset,
+    ) -> xr.Dataset:
+        return xr.Dataset({"amplitudes": amplitudes.sel(amplitude_label=self.clp_label())})

@@ -10,9 +10,8 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
-from glotaran.model.clp_constraint import ClpConstraint  # noqa: TCH001
-from glotaran.model.clp_penalties import EqualAreaPenalty  # noqa: TCH001
-from glotaran.model.clp_relation import ClpRelation  # noqa: TCH001
+from glotaran.model.clp_penalties import EqualAreaPenalty  # noqa: TC001
+from glotaran.model.clp_relation import ClpRelation  # noqa: TC001
 from glotaran.model.data_model import DataModel
 from glotaran.model.data_model import resolve_data_model
 from glotaran.model.item import ParameterType
@@ -33,12 +32,11 @@ class ExperimentModel(BaseModel):
 
     clp_link_tolerance: float = 0.0
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
-    clp_constraints: list[ClpConstraint.get_annotated_type()] = Field(default_factory=list)  # type:ignore[valid-type]
     clp_penalties: list[EqualAreaPenalty] = Field(default_factory=list)
     clp_relations: list[ClpRelation] = Field(default_factory=list)
     datasets: dict[str, DataModel]
     residual_function: Literal["variable_projection", "non_negative_least_squares"] = Field(
-        "variable_projection", description="The residual function to use."
+        default="variable_projection", description="The residual function to use."
     )
     scale: dict[str, ParameterType] = Field(
         default_factory=dict,
@@ -47,6 +45,7 @@ class ExperimentModel(BaseModel):
 
     @classmethod
     def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> ExperimentModel:
+        # ExperimentModel(datasets={})
         model_dict["datasets"] = {
             label: DataModel.from_dict(library, dataset)
             for label, dataset in model_dict.get("datasets", {}).items()
@@ -83,3 +82,6 @@ class ExperimentModel(BaseModel):
             for dataset in self.datasets.values()
             for issue in get_item_issues(dataset, parameters)
         ]
+
+
+ExperimentModel.model_rebuild()
