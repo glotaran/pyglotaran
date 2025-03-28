@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
@@ -10,6 +9,8 @@ from pydantic import ConfigDict
 from glotaran.builtin.io.yml.utils import write_dict
 from glotaran.io import save_dataset
 from glotaran.io import save_parameters
+from glotaran.io.interface import SAVING_OPTIONS_DEFAULT
+from glotaran.io.interface import SavingOptions
 from glotaran.model.errors import GlotaranUserError
 from glotaran.model.experiment_model import ExperimentModel  # noqa: TC001
 from glotaran.optimization import OptimizationInfo  # noqa: TC001
@@ -18,17 +19,6 @@ from glotaran.parameter import Parameters  # noqa: TC001
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-
-class SavingOptions(BaseModel):
-    """A collection of options for result saving."""
-
-    data_filter: list[str] | None = None
-    data_format: Literal["nc"] = "nc"
-    parameter_format: Literal["csv"] = "csv"
-
-
-SAVING_OPTIONS_DEFAULT = SavingOptions()
 
 
 class Result(BaseModel):
@@ -66,8 +56,10 @@ class Result(BaseModel):
 
         data_path = path / "data"
         data_path.mkdir(exist_ok=True)
+        data_format = options.get("data_format", "nc")
+
         for label, data in self.optimization_results.items():
-            dataset_path = data_path / f"{label}.{options.data_format}"
+            dataset_path = data_path / f"{label}.{data_format}"
             result_dict["data"][label] = str(dataset_path)
             # TODO: Make saving options more granular on a per element base
             # if options.data_filter is not None:
@@ -78,7 +70,8 @@ class Result(BaseModel):
         result_dict["optimization_history"] = str(optimization_history_path)
         self.optimization_info.optimization_history.to_csv(optimization_history_path)
 
-        parameters_initial_path = path / f"parameters_initial.{options.parameter_format}"
+        parameter_format = options.get("parameter_format", "csv")
+        parameters_initial_path = path / f"parameters_initial.{parameter_format}"
         result_dict["parameters_initial"] = str(parameters_initial_path)
         save_parameters(
             self.initial_parameters,
@@ -86,7 +79,7 @@ class Result(BaseModel):
             allow_overwrite=allow_overwrite,
         )
 
-        parameters_optimized_path = path / f"parameters_optimized.{options.parameter_format}"
+        parameters_optimized_path = path / f"parameters_optimized.{parameter_format}"
         result_dict["parameters_optimized"] = str(parameters_optimized_path)
         save_parameters(
             self.optimized_parameters,

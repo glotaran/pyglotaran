@@ -12,8 +12,8 @@ See: https://www.python.org/dev/peps/pep-3102/
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import TypedDict
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -30,18 +30,22 @@ if TYPE_CHECKING:
     DataSaver: TypeAlias = Callable[[str, xr.Dataset | xr.DataArray], None]
 
 
-@dataclass
-class SavingOptions:
+class SavingOptions(TypedDict, total=False):
     """A collection of options for result saving."""
 
-    data_filter: list[str] | None = None
-    data_format: Literal["nc"] = "nc"
-    parameter_format: Literal["csv"] = "csv"
-    report: bool = True
+    data_filter: set[Literal["input_data", "residuals", "fitted_data", "elements", "activations"]]
+    data_format: Literal["nc"] | str  # noqa: PYI051
+    parameter_format: Literal["csv"] | str  # noqa: PYI051
 
 
-SAVING_OPTIONS_DEFAULT = SavingOptions()
-SAVING_OPTIONS_MINIMAL = SavingOptions(data_filter=["fitted_data", "residual"], report=False)
+SAVING_OPTIONS_DEFAULT: SavingOptions = {
+    "data_filter": set(),
+    "data_format": "nc",
+    "parameter_format": "csv",
+}
+SAVING_OPTIONS_MINIMAL: SavingOptions = SAVING_OPTIONS_DEFAULT | {
+    "data_filter": {"input_data", "residuals", "fitted_data", "elements", "activations"}
+}
 
 
 class DataIoInterface:
