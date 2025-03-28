@@ -180,7 +180,7 @@ def validate_global_elements(
 class DataModel(Item):
     """A model for datasets."""
 
-    data: str | xr.Dataset | None = None
+    data: str | xr.Dataset | None = Field(None, exclude=True)
     # Seems unused:
     # extra_data: str | xr.Dataset | None = None
     elements: list[Element | str] = Attribute(

@@ -9,6 +9,8 @@ from typing import Literal
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
+from pydantic import SerializationInfo
+from pydantic import field_serializer
 
 from glotaran.model.clp_penalties import EqualAreaPenalty  # noqa: TC001
 from glotaran.model.clp_relation import ClpRelation  # noqa: TC001
@@ -19,6 +21,7 @@ from glotaran.model.item import get_item_issues
 from glotaran.model.item import resolve_item_parameters
 from glotaran.model.item import resolve_parameter
 from glotaran.parameter import Parameters
+from glotaran.utils.io import serialization_info_to_kwargs
 
 if TYPE_CHECKING:
     from glotaran.model.errors import ItemIssue
@@ -28,7 +31,7 @@ if TYPE_CHECKING:
 class ExperimentModel(BaseModel):
     """A dataset group for optimization."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+    model_config = ConfigDict(extra="forbid")
 
     clp_link_tolerance: float = 0.0
     clp_link_method: Literal["nearest", "backward", "forward"] = "nearest"
@@ -43,14 +46,22 @@ class ExperimentModel(BaseModel):
         description="The scales of of the datasets in the experiment.",
     )
 
+    @field_serializer("datasets")
+    def serialize_datasets(
+        self, datasets: dict[str, DataModel], info: SerializationInfo
+    ) -> dict[str, Any]:
+        return {
+            name: data_model.model_dump(**serialization_info_to_kwargs(info))
+            for name, data_model in datasets.items()
+        }
+
     @classmethod
     def from_dict(cls, library: ModelLibrary, model_dict: dict[str, Any]) -> ExperimentModel:
-        # ExperimentModel(datasets={})
-        model_dict["datasets"] = {
+        initialized_datasets = {
             label: DataModel.from_dict(library, dataset)
             for label, dataset in model_dict.get("datasets", {}).items()
         }
-        return cls.model_validate(model_dict)
+        return cls.model_validate(model_dict | {"datasets": initialized_datasets})
 
     def resolve(
         self,

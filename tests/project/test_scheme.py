@@ -76,3 +76,8 @@ def test_scheme():
     }
     result = scheme.optimize(test_parameters, datasets)
     assert result.optimization_info.success
+
+
+def test_scheme_round_trip_serialization():
+    """Dumping a scheme returns the original dict."""
+    assert Scheme.from_dict(test_scheme_dict).model_dump(exclude_unset=True) == test_scheme_dict
